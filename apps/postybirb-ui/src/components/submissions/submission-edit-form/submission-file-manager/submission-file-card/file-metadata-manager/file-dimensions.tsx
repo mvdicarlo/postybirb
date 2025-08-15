@@ -9,6 +9,7 @@ import {
   Tooltip,
   ActionIcon,
   Badge,
+  Button,
 } from '@mantine/core';
 import {
   FileMetadataFields,
@@ -19,7 +20,6 @@ import { IconInfoCircle, IconRestore } from '@tabler/icons-react';
 import { useEffect, useRef, useState } from 'react';
 import { CustomAccountDimensions } from './custom-account-dimensions';
 import {
-  calculateAspectRatio,
   updateFileDimensions,
   computeScale,
   formatAspect,
@@ -103,8 +103,13 @@ export function FileDimensions(props: FileDetailProps) {
             {scale.percent}%
           </Badge>
           {aspectText && (
-            <Tooltip label={`${rawAspect(width, height)} (~${aspectText})`} withArrow>
-              <Text size="xs" c="dimmed">{aspectText}</Text>
+            <Tooltip
+              label={`${rawAspect(width, height)} (~${aspectText})`}
+              withArrow
+            >
+              <Text size="xs" c="dimmed">
+                {aspectText}
+              </Text>
             </Tooltip>
           )}
         </Group>
@@ -146,9 +151,30 @@ export function FileDimensions(props: FileDetailProps) {
           onChange={(val) => setWidthLocked(Number(val) || 1)}
           styles={{ input: { width: 90 } }}
         />
+        <Group gap={4} mb={6}>
+          {([100, 75, 50, 25] as const).map((p) => {
+            const active = Math.round(scale.percent) === p;
+            return (
+              <Button
+                key={p}
+                size="compact-xs"
+                variant={active ? 'filled' : 'light'}
+                color={active ? 'blue' : 'gray'}
+                onClick={() => {
+                  const targetH = Math.max(
+                    1,
+                    Math.round(original.h * (p / 100)),
+                  );
+                  setHeightLocked(targetH);
+                }}
+              >
+                {p}%
+              </Button>
+            );
+          })}
+        </Group>
       </Group>
       <Divider my="xs" variant="dashed" />
-      {/* Custom Dimensions per Account extracted to subcomponent */}
       <CustomAccountDimensions
         accounts={accounts}
         file={file}

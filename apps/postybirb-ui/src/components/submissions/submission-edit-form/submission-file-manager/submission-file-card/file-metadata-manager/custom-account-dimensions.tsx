@@ -13,10 +13,26 @@ import {
   Text,
   Tooltip,
 } from '@mantine/core';
-import { AccountId, FileMetadataFields, IAccount, ISubmissionFileDto, IWebsiteInfoDto } from '@postybirb/types';
-import { IconChevronDown, IconChevronRight, IconRestore } from '@tabler/icons-react';
+import {
+  AccountId,
+  FileMetadataFields,
+  IAccount,
+  ISubmissionFileDto,
+  IWebsiteInfoDto,
+} from '@postybirb/types';
+import {
+  IconChevronDown,
+  IconChevronRight,
+  IconRestore,
+} from '@tabler/icons-react';
 import { useMemo, useRef, useState, useEffect } from 'react';
-import { getAccountDimensions, removeAccountDimensions, updateAccountDimensions, computeScale, formatAspect } from './file-dimensions-helpers';
+import {
+  getAccountDimensions,
+  removeAccountDimensions,
+  updateAccountDimensions,
+  computeScale,
+  formatAspect,
+} from './file-dimensions-helpers';
 import { useWebsites } from '../../../../../../hooks/account/use-websites';
 
 interface Props {
@@ -26,14 +42,24 @@ interface Props {
   save: () => void;
 }
 
-export function CustomAccountDimensions({ accounts, file, metadata, save }: Props) {
+export function CustomAccountDimensions({
+  accounts,
+  file,
+  metadata,
+  save,
+}: Props) {
   const { websites } = useWebsites();
   const [sectionCollapsed, setSectionCollapsed] = useState(true);
 
   const accountGroups = useMemo(() => {
-    const groups: Record<string, { accounts: IAccount[]; website: IWebsiteInfoDto }> = {};
+    const groups: Record<
+      string,
+      { accounts: IAccount[]; website: IWebsiteInfoDto }
+    > = {};
     accounts.forEach((account) => {
-      const website = websites.find((w) => w.id === account.website) as IWebsiteInfoDto | undefined;
+      const website = websites.find((w) => w.id === account.website) as
+        | IWebsiteInfoDto
+        | undefined;
       if (website) {
         if (!groups[website.id]) groups[website.id] = { accounts: [], website };
         groups[website.id].accounts.push(account);
@@ -63,7 +89,10 @@ export function CustomAccountDimensions({ accounts, file, metadata, save }: Prop
     accounts.forEach((account) => {
       if (!accountDimensions[account.id]) {
         changed = true;
-        accountDimensions[account.id] = { height: base.height, width: base.width };
+        accountDimensions[account.id] = {
+          height: base.height,
+          width: base.width,
+        };
       }
     });
     if (changed) {
@@ -72,7 +101,9 @@ export function CustomAccountDimensions({ accounts, file, metadata, save }: Prop
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accounts]);
 
-  const [collapsedWebsites, setCollapsedWebsites] = useState<Record<string, boolean>>({});
+  const [collapsedWebsites, setCollapsedWebsites] = useState<
+    Record<string, boolean>
+  >({});
   // Removed per-account lock state (always aspect locked)
   const debounceRef = useRef<Record<AccountId, number>>({});
 
@@ -115,14 +146,24 @@ export function CustomAccountDimensions({ accounts, file, metadata, save }: Prop
   return (
     <Box mt="md">
       <Card withBorder p="sm" radius="md" mb="sm">
-        <Group gap="xs" style={{ cursor: 'pointer' }} onClick={() => setSectionCollapsed((v) => !v)}>
+        <Group
+          gap="xs"
+          style={{ cursor: 'pointer' }}
+          onClick={() => setSectionCollapsed((v) => !v)}
+        >
           <ActionIcon size="xs" variant="transparent" c="gray">
-            {sectionCollapsed ? <IconChevronRight size={14} /> : <IconChevronDown size={14} />}
+            {sectionCollapsed ? (
+              <IconChevronRight size={14} />
+            ) : (
+              <IconChevronDown size={14} />
+            )}
           </ActionIcon>
           <Text size="sm" fw={600}>
             <Trans>Custom Dimensions</Trans>
           </Text>
-          <Badge size="xs" variant="light" color="gray">{accounts.length}</Badge>
+          <Badge size="xs" variant="light" color="gray">
+            {accounts.length}
+          </Badge>
         </Group>
         <Collapse in={!sectionCollapsed}>
           <Text size="xs" c="dimmed" mt="xs" mb="sm">
@@ -156,40 +197,219 @@ export function CustomAccountDimensions({ accounts, file, metadata, save }: Prop
                     <Divider my={8} variant="dashed" />
                     <Grid gutter="xs">
                       {websiteAccounts.map((account) => {
-                        const accountDims = accountDimensions[account.id] || { height: 1, width: 1 };
-                        const hasCustomDimensions = metadata.dimensions[account.id] !== undefined;
-                        const scale = computeScale(accountDims.height, accountDims.width, file.height, file.width);
-                        const aspectText = formatAspect(accountDims.height, accountDims.width);
+                        const accountDims = accountDimensions[account.id] || {
+                          height: 1,
+                          width: 1,
+                        };
+                        const hasCustomDimensions =
+                          metadata.dimensions[account.id] !== undefined;
+                        const scale = computeScale(
+                          accountDims.height,
+                          accountDims.width,
+                          file.height,
+                          file.width,
+                        );
+                        const aspectText = formatAspect(
+                          accountDims.height,
+                          accountDims.width,
+                        );
                         return (
                           <Grid.Col span={12} key={account.id} pt="xs">
-                            <Box pl="34px" px="xs" py={6} style={{ background: 'var(--mantine-color-body)', borderRadius: 6 }}>
-                              <Group justify="space-between" mb={2} wrap="nowrap" align="center">
-                                <Group gap={6} align="center" style={{ lineHeight: 1.1 }}>
-                                  <Text size="sm" fw={500} style={{ paddingTop: 1 }}>{account.name}</Text>
+                            <Box
+                              pl="34px"
+                              px="xs"
+                              py={6}
+                              style={{
+                                background: 'var(--mantine-color-body)',
+                                borderRadius: 6,
+                              }}
+                            >
+                              <Group
+                                justify="space-between"
+                                mb={2}
+                                wrap="nowrap"
+                                align="center"
+                              >
+                                <Group
+                                  gap={6}
+                                  align="center"
+                                  style={{ lineHeight: 1.1 }}
+                                >
+                                  <Text
+                                    size="sm"
+                                    fw={500}
+                                    style={{ paddingTop: 1 }}
+                                  >
+                                    {account.name}
+                                  </Text>
                                   {hasCustomDimensions ? (
-                                    <Badge size="xs" color={scale.percent === 100 ? 'gray' : 'blue'}>{scale.percent}%</Badge>
+                                    <Badge
+                                      size="xs"
+                                      color={
+                                        scale.percent === 100 ? 'gray' : 'blue'
+                                      }
+                                    >
+                                      {scale.percent}%
+                                    </Badge>
                                   ) : (
-                                    <Badge size="xs" variant="outline" color="gray"><Trans>Default</Trans></Badge>
+                                    <Badge
+                                      size="xs"
+                                      variant="outline"
+                                      color="gray"
+                                    >
+                                      <Trans>Default</Trans>
+                                    </Badge>
                                   )}
                                   {aspectText && hasCustomDimensions && (
-                                    <Text size="xs" c="dimmed" style={{ paddingTop: 1 }}>{aspectText}</Text>
+                                    <Text
+                                      size="xs"
+                                      c="dimmed"
+                                      style={{ paddingTop: 1 }}
+                                    >
+                                      {aspectText}
+                                    </Text>
                                   )}
                                 </Group>
                                 <Group gap={4} align="center">
                                   <Tooltip label={<Trans>Reset</Trans>}>
-                                    <ActionIcon size="xs" variant="subtle" onClick={(e) => { e.stopPropagation(); const d = metadata.dimensions.default ?? file; setAccountDimensions((prev) => ({ ...prev, [account.id]: { height: d.height, width: d.width } })); removeAccountDimensions(metadata, account.id); scheduleSave(account.id); }}>
+                                    <ActionIcon
+                                      size="xs"
+                                      variant="subtle"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        const d =
+                                          metadata.dimensions.default ?? file;
+                                        setAccountDimensions((prev) => ({
+                                          ...prev,
+                                          [account.id]: {
+                                            height: d.height,
+                                            width: d.width,
+                                          },
+                                        }));
+                                        removeAccountDimensions(
+                                          metadata,
+                                          account.id,
+                                        );
+                                        scheduleSave(account.id);
+                                      }}
+                                    >
                                       <IconRestore size={12} />
                                     </ActionIcon>
                                   </Tooltip>
-                                  <Switch size="xs" checked={hasCustomDimensions} onChange={(e) => { const enabled = e.currentTarget.checked; if (!enabled) { removeAccountDimensions(metadata, account.id); const d = metadata.dimensions.default ?? file; setAccountDimensions((prev) => ({ ...prev, [account.id]: { height: d.height, width: d.width } })); scheduleSave(account.id); } else { const dims = accountDimensions[account.id]; updateAccountDimensions(metadata, file, account.id, dims.height, dims.width); scheduleSave(account.id); } }} label={<Trans>Custom</Trans>} />
+                                  <Switch
+                                    size="xs"
+                                    checked={hasCustomDimensions}
+                                    onChange={(e) => {
+                                      const enabled = e.currentTarget.checked;
+                                      if (!enabled) {
+                                        removeAccountDimensions(
+                                          metadata,
+                                          account.id,
+                                        );
+                                        const d =
+                                          metadata.dimensions.default ?? file;
+                                        setAccountDimensions((prev) => ({
+                                          ...prev,
+                                          [account.id]: {
+                                            height: d.height,
+                                            width: d.width,
+                                          },
+                                        }));
+                                        scheduleSave(account.id);
+                                      } else {
+                                        const dims =
+                                          accountDimensions[account.id];
+                                        updateAccountDimensions(
+                                          metadata,
+                                          file,
+                                          account.id,
+                                          dims.height,
+                                          dims.width,
+                                        );
+                                        scheduleSave(account.id);
+                                      }
+                                    }}
+                                    label={<Trans>Custom</Trans>}
+                                  />
                                 </Group>
                               </Group>
                               {hasCustomDimensions && (
-                                <Group gap="xs" align="end" wrap="nowrap" mt={4}>
-                                  <NumberInput label={<Trans>Height</Trans>} value={accountDims.height} max={file.height} min={1} size="xs" step={10} onChange={(val) => { setH(account.id, Number(val) || 1); }} onBlur={() => applyAndSave(account.id)} styles={{ input: { width: 85 } }} />
-                                  <Text px={4} pb={4}>×</Text>
-                                  <NumberInput label={<Trans>Width</Trans>} value={accountDims.width} max={file.width} min={1} size="xs" step={10} onChange={(val) => { setW(account.id, Number(val) || 1); }} onBlur={() => applyAndSave(account.id)} styles={{ input: { width: 85 } }} />
-                                </Group>
+                                <Box pl="md">
+                                  <Group
+                                    gap="xs"
+                                    align="end"
+                                    wrap="nowrap"
+                                    mt={0}
+                                  >
+                                    <NumberInput
+                                      label={<Trans>Height</Trans>}
+                                      value={accountDims.height}
+                                      max={file.height}
+                                      min={1}
+                                      size="xs"
+                                      step={10}
+                                      onChange={(val) => {
+                                        setH(account.id, Number(val) || 1);
+                                      }}
+                                      onBlur={() => applyAndSave(account.id)}
+                                      styles={{ input: { width: 85 } }}
+                                    />
+                                    <Text px={4} pb={4}>
+                                      ×
+                                    </Text>
+                                    <NumberInput
+                                      label={<Trans>Width</Trans>}
+                                      value={accountDims.width}
+                                      max={file.width}
+                                      min={1}
+                                      size="xs"
+                                      step={10}
+                                      onChange={(val) => {
+                                        setW(account.id, Number(val) || 1);
+                                      }}
+                                      onBlur={() => applyAndSave(account.id)}
+                                      styles={{ input: { width: 85 } }}
+                                    />
+                                    <Group gap={4} mb={4}>
+                                      {([100, 75, 50, 25] as const).map((p) => {
+                                        const dims = accountDims;
+                                        const curScale = computeScale(
+                                          dims.height,
+                                          dims.width,
+                                          file.height,
+                                          file.width,
+                                        ).percent;
+                                        const active =
+                                          Math.round(curScale) === p;
+                                        return (
+                                          <ActionIcon
+                                            key={p}
+                                            variant={
+                                              active ? 'filled' : 'light'
+                                            }
+                                            color={active ? 'blue' : 'gray'}
+                                            onClick={() => {
+                                              const targetH = Math.max(
+                                                1,
+                                                Math.round(
+                                                  file.height * (p / 100),
+                                                ),
+                                              );
+                                              setH(account.id, targetH);
+                                              // apply after setting; slight delay to ensure state updated
+                                              setTimeout(
+                                                () => applyAndSave(account.id),
+                                                0,
+                                              );
+                                            }}
+                                          >
+                                            <Text size="10px">{p}%</Text>
+                                          </ActionIcon>
+                                        );
+                                      })}
+                                    </Group>
+                                  </Group>
+                                </Box>
                               )}
                             </Box>
                           </Grid.Col>
@@ -199,7 +419,8 @@ export function CustomAccountDimensions({ accounts, file, metadata, save }: Prop
                   </Collapse>
                 </Card>
               );
-            })}
+            },
+          )}
         </Collapse>
       </Card>
     </Box>
