@@ -134,6 +134,24 @@ export function SubmissionNavigationTree(props: SubmissionNavigationTreeProps) {
     ),
   });
 
+  // Update expanded state when navTree changes (e.g., when new websites are added)
+  useEffect(() => {
+    const newExpandedState = navTree.reduce(
+      (acc, node) => ({ ...acc, [node.value]: true }),
+      {},
+    );
+    
+    // Only update if there are new nodes to expand
+    const currentExpanded = tree.expandedState;
+    const hasNewNodes = Object.keys(newExpandedState).some(
+      key => !(key in currentExpanded)
+    );
+    
+    if (hasNewNodes) {
+      tree.setExpandedState(newExpandedState);
+    }
+  }, [navTree, tree]);
+
   return (
     <Box
       pos="sticky"
