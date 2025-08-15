@@ -49,6 +49,7 @@ export const FieldLabelTranslations = {
   commentPermissions: msg`Comment permissions`,
   tagPermissions: msg`Tag permissions`,
   private: msg`Private`,
+  thumbnailAsCoverArt: msg`Use thumbnail as cover art`,
 } satisfies Record<string, MessageDescriptor>;
 
 export type FieldLabelTranslationsId = keyof typeof FieldLabelTranslations;
