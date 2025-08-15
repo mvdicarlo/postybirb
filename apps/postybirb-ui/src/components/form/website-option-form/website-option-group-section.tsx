@@ -95,11 +95,7 @@ export function WebsiteOptionGroupSection(
                   style={{ zIndex: 99 }}
                 >
                   <Group wrap="nowrap">
-                    <Box
-                      c={hasValidationErrors ? 'red' : 'inherit'}
-                      flex={2}
-                      ta="center"
-                    >
+                    <Box c={hasValidationErrors ? 'red' : 'inherit'} flex={2}>
                       {hasValidationErrors ? (
                         <IconExclamationCircle
                           height="1rem"
