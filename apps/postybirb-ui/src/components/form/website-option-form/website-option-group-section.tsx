@@ -1,6 +1,7 @@
 import { Trans } from '@lingui/macro';
 import {
   ActionIcon,
+  Badge,
   Box,
   Button,
   Group,
@@ -93,16 +94,22 @@ export function WebsiteOptionGroupSection(
                   top={top ?? 0}
                   style={{ zIndex: 99 }}
                 >
-                  <Group>
-                    <Box c={hasValidationErrors ? 'red' : 'inherit'}>
+                  <Group wrap="nowrap">
+                    <Box c={hasValidationErrors ? 'red' : 'inherit'} flex={2}>
                       {hasValidationErrors ? (
                         <IconExclamationCircle
                           height="1rem"
                           style={{ verticalAlign: 'middle' }}
                         />
                       ) : null}
-                      {account.name} (
-                      {account.state.username ?? <Trans>Not logged in</Trans>})
+                      {account.name}
+                      <Badge
+                        color={account.state.isLoggedIn ? 'green' : 'red'}
+                        size="xs"
+                        ml="xs"
+                      >
+                        {account.state.username ?? <Trans>Not logged in</Trans>}
+                      </Badge>
                     </Box>
                     <ActionIcon
                       variant="subtle"

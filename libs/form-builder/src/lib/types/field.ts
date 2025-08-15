@@ -53,23 +53,52 @@ export type FieldType<
 
   /**
    * Whether the component should grow to fill the available space.
+   * @deprecated Use span instead
    */
   grow?: boolean;
-
-  /**
-   * The row in the grid.
-   */
-  row?: number;
-
-  /**
-   * The column in the grid.
-   */
-  col?: number;
 
   /**
    * Whether the field should be hidden.
    */
   hidden?: boolean;
+
+  // New section-based layout properties
+  /**
+   * The section this field belongs to for layout purposes
+   * Well-known sections: 'common', 'website', others will be grouped below
+   */
+  section?: 'common' | 'website' | string;
+  
+  /**
+   * Priority/order within the section (lower numbers appear first)
+   */
+  order?: number;
+  
+  /**
+   * Column span in 12-column grid (1-12)
+   * @default 12 (full width)
+   */
+  span?: number;
+  
+  /**
+   * Offset from left in columns (0-11)
+   */
+  offset?: number;
+  
+  /**
+   * Responsive column spans for different breakpoints
+   */
+  responsive?: {
+    xs?: number; // mobile
+    sm?: number; // tablet
+    md?: number; // desktop
+    lg?: number; // large desktop
+  };
+  
+  /**
+   * Whether the field should break to a new row
+   */
+  breakRow?: boolean;
 
   /**
    * Allow derivation of a field from derived external data

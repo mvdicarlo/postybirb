@@ -1,4 +1,8 @@
-import { BooleanField, DescriptionField, TagField } from '@postybirb/form-builder';
+import {
+  BooleanField,
+  DescriptionField,
+  TagField,
+} from '@postybirb/form-builder';
 import { DescriptionType, DescriptionValue, TagValue } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
@@ -14,6 +18,6 @@ export class DiscordMessageSubmission extends BaseWebsiteOptions {
   })
   tags: TagValue;
 
-  @BooleanField({ label: 'useTitle' })
+  @BooleanField({ label: 'useTitle', section: 'website' })
   useTitle = true;
 }

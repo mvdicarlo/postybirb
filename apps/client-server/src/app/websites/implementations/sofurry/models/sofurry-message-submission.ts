@@ -2,14 +2,12 @@ import {
   DescriptionField,
   RatingField,
   SelectField,
-  TagField,
-  TitleField,
+  TitleField
 } from '@postybirb/form-builder';
 import {
   DescriptionType,
   DescriptionValue,
-  SubmissionRating,
-  TagValue,
+  SubmissionRating
 } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 import { SofurryAccountData } from './sofurry-account-data';
@@ -42,7 +40,8 @@ export class SofurryMessageSubmission extends BaseWebsiteOptions {
         populate: 'options',
       },
     ],
-    col: 2,
+    section: 'website',
+    span: 12,
   })
   folder: string;
 }

@@ -1,6 +1,6 @@
 import { msg } from '@lingui/macro';
 import { useLingui } from '@lingui/react';
-import { Radio, SegmentedControl } from '@mantine/core';
+import { Box, Radio, SegmentedControl } from '@mantine/core';
 import { RadioFieldType, RatingFieldType } from '@postybirb/form-builder';
 import { useDefaultOption } from '../hooks/use-default-option';
 import { useValidations } from '../hooks/use-validations';
@@ -31,7 +31,7 @@ function RatingFieldControl(
   return (
     <SegmentedControl
       value={value}
-      orientation="vertical"
+      orientation={field.layout}
       size="xs"
       data={options.map((o) => ({
         label: `${o.label}${
@@ -77,17 +77,19 @@ export function RadioField(props: RadioFieldProps) {
 
   return (
     <FieldLabel {...props} validationState={validationResult}>
-      {field.formField === 'rating' ? (
-        <RatingFieldControl
-          {...(props as FormFieldProps<RatingFieldType>)}
-          defaultValue={defaultValue}
-        />
-      ) : (
-        <InnerRadioField
-          {...(props as FormFieldProps<RadioFieldType>)}
-          defaultValue={defaultValue}
-        />
-      )}
+      <Box>
+        {field.formField === 'rating' ? (
+          <RatingFieldControl
+            {...(props as FormFieldProps<RatingFieldType>)}
+            defaultValue={defaultValue}
+          />
+        ) : (
+          <InnerRadioField
+            {...(props as FormFieldProps<RadioFieldType>)}
+            defaultValue={defaultValue}
+          />
+        )}
+      </Box>
     </FieldLabel>
   );
 }

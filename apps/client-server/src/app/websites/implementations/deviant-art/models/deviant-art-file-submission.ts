@@ -23,7 +23,7 @@ export class DeviantArtFileSubmission extends BaseWebsiteOptions {
   @TitleField({
     maxLength: 50,
   })
-  title;
+  title: string;
 
   @TagField({
     maxTags: 30,
@@ -35,20 +35,9 @@ export class DeviantArtFileSubmission extends BaseWebsiteOptions {
   })
   description: DescriptionValue;
 
-  @BooleanField({
-    label: 'disableComments',
-    col: 2,
-  })
-  disableComments = false;
-
-  @BooleanField({
-    label: 'allowFreeDownload',
-    col: 2,
-  })
-  allowFreeDownload = true;
-
   @SelectField({
-    col: 2,
+    section: 'website',
+    span: 6,
     label: 'folder',
     derive: [
       {
@@ -61,12 +50,6 @@ export class DeviantArtFileSubmission extends BaseWebsiteOptions {
   })
   folders: string[] = [];
 
-  @BooleanField({
-    label: 'matureContent',
-    col: 2,
-  })
-  isMature = false;
-
   @SelectField({
     label: 'displayResolution',
     options: [
@@ -75,37 +58,64 @@ export class DeviantArtFileSubmission extends BaseWebsiteOptions {
       { value: 'max_1200', label: 'Maximum 1200px' },
       { value: 'max_1800', label: 'Maximum 1800px' },
     ],
-    col: 1,
+    section: 'website',
+    span: 6,
   })
   displayResolution = 'original';
 
   @BooleanField({
     label: 'scraps',
-    col: 2,
+    section: 'website',
+    span: 6,
   })
   scraps = false;
 
   @BooleanField({
+    label: 'disableComments',
+    section: 'website',
+    span: 6,
+  })
+  disableComments = false;
+
+  @BooleanField({
+    label: 'allowFreeDownload',
+    section: 'website',
+    span: 6,
+  })
+  allowFreeDownload = true;
+
+  @BooleanField({
+    label: 'matureContent',
+    section: 'website',
+    span: 6,
+  })
+  isMature = false;
+
+  @BooleanField({
     label: 'noAI',
-    col: 2,
+    section: 'website',
+    span: 6,
   })
   noAI = true;
 
   @BooleanField({
     label: 'aIGenerated',
-    col: 2,
+    section: 'website',
+    span: 6,
   })
   isAIGenerated = false;
 
   @BooleanField({
     label: 'isCreativeCommons',
-    col: 2,
+    section: 'website',
+    span: 6,
   })
   isCreativeCommons = false;
 
   @BooleanField({
     label: 'allowCommercialUse',
-    col: 2,
+    section: 'website',
+    span: 6,
   })
   isCommercialUse = false;
 
@@ -116,7 +126,8 @@ export class DeviantArtFileSubmission extends BaseWebsiteOptions {
       { value: 'share', label: 'Share Alike' },
       { value: 'no', label: 'No' },
     ],
-    col: 2,
+    section: 'website',
+    span: 6,
   })
   allowModifications = 'no';
 }

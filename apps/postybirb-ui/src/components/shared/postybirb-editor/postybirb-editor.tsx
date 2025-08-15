@@ -75,8 +75,8 @@ export function PostyBirbEditor(props: PostyBirbEditorProps) {
         <div
           style={{
             position: 'absolute',
-            top: '8px',
-            right: '8px',
+            top: '2px',
+            right: '4px',
             zIndex: 5,
             display: 'flex',
             alignItems: 'center',

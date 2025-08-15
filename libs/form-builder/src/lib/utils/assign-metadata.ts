@@ -164,8 +164,11 @@ export function createFieldDecorator<
           fieldOptions,
         ) as unknown as FieldAggregateType;
 
-        fields[propertyKey].row ??= Number.MAX_SAFE_INTEGER;
-        fields[propertyKey].col ??= 0;
+        // Set new defaults for section-based layout
+        fields[propertyKey].section ??= 'website';
+        fields[propertyKey].order ??= 999;
+        fields[propertyKey].span ??= 12;
+        fields[propertyKey].responsive ??= { xs: 12 };
 
         Reflect.defineMetadata(sym, fields, proto);
       };

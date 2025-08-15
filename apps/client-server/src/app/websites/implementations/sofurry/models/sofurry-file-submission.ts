@@ -4,7 +4,6 @@ import {
   RatingField,
   SelectField,
   TagField,
-  TitleField,
 } from '@postybirb/form-builder';
 import {
   DescriptionType,
@@ -45,14 +44,16 @@ export class SofurryFileSubmission extends BaseWebsiteOptions {
         populate: 'options',
       },
     ],
-    col: 2,
+    section: 'website',
+    span: 12,
   })
   folder: string;
 
   @BooleanField({
     label: 'thumbnailAsCoverArt',
     defaultValue: false,
-    row: 2,
+    section: 'website',
+    span: 12,
   })
   thumbnailAsCoverArt: boolean;
 }

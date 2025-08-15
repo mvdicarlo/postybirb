@@ -9,8 +9,6 @@ export class FurtasticFileSubmission extends BaseWebsiteOptions {
   description: DescriptionValue;
 
   @TagField({
-    col: 1,
-    row: 1,
     minTags: 1,
   })
   tags: TagValue;

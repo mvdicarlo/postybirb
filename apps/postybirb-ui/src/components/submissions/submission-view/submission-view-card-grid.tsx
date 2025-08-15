@@ -1,11 +1,16 @@
-import { Box, Grid, Transition } from '@mantine/core';
-import { useEffect, useState } from 'react';
+import { Box, Grid, Transition, useMantineTheme } from '@mantine/core';
+import { useMediaQuery } from '@mantine/hooks';
+import { useEffect, useMemo, useState } from 'react';
 import Sortable from 'sortablejs';
 import submissionApi from '../../../api/submission.api';
 import { draggableIndexesAreDefined } from '../../../helpers/sortable.helper';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
 import { ComponentErrorBoundary } from '../../error-boundary';
 import { SubmissionViewCard } from './submission-view-card/submission-view-card';
+
+function createMinWidthQuery(breakpoint: string): string {
+  return '(min-width: '.concat(breakpoint, ')');
+}
 
 type SubmissionViewCardGridProps = {
   submissions: SubmissionDto[];
@@ -16,10 +21,18 @@ type SubmissionViewCardGridProps = {
 
 export function SubmissionViewCardGrid(props: SubmissionViewCardGridProps) {
   const { submissions, onSelect, selectedSubmissions, view } = props;
+  const theme = useMantineTheme();
   const [orderedSubmissions, setOrderedSubmissions] = useState(
     submissions.sort((a, b) => a.order - b.order),
   );
   const [mounted, setMounted] = useState(false);
+
+  // Hook to detect current breakpoint using theme breakpoints
+  const mdBreakpoint = useMemo(
+    () => createMinWidthQuery(theme.breakpoints.md),
+    [theme.breakpoints.md],
+  );
+  const isMdUp = useMediaQuery(mdBreakpoint);
 
   useEffect(() => {
     setMounted(true);
@@ -73,14 +86,20 @@ export function SubmissionViewCardGrid(props: SubmissionViewCardGridProps) {
     };
   }, [orderedSubmissions]);
 
-  let span = view === 'grid' ? 6 : 12;
+  // Calculate span based on view and breakpoint
+  let span = 12; // Default for mobile
+  if (view === 'grid') {
+    span = isMdUp ? 6 : 12; // 6 columns on md+ screens, 12 on smaller
+  } else {
+    span = 12; // List view always full width
+  }
+
   if (submissions.length === 1) {
     span = 12;
   }
 
   return (
     <Box className="submission-grid-container">
-      {' '}
       <Grid id="submission-grid" gutter="md">
         {orderedSubmissions.map((submission, index) => (
           <Transition

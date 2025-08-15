@@ -11,8 +11,10 @@ export class WeasylFileSubmission extends BaseWebsiteOptions {
   tags: TagValue;
 
   @SelectField({
-    col: 1,
     label: 'category',
+    section: 'website',
+    order: 2,
+    span: 6,
     options: {
       options: WeasylCategories,
       discriminator: 'overallFileType',
@@ -21,8 +23,10 @@ export class WeasylFileSubmission extends BaseWebsiteOptions {
   category: string;
 
   @SelectField({
-    col: 1,
     label: 'folder',
+    section: 'website',
+    order: 3,
+    span: 6,
     derive: [
       {
         key: 'folders',
@@ -33,9 +37,19 @@ export class WeasylFileSubmission extends BaseWebsiteOptions {
   })
   folder: string;
 
-  @BooleanField({ label: 'critique', col: 1 })
+  @BooleanField({
+    label: 'critique',
+    section: 'website',
+    order: 4,
+    span: 6,
+  })
   critique = false;
 
-  @BooleanField({ label: 'notify', col: 1 })
+  @BooleanField({
+    label: 'notify',
+    section: 'website',
+    order: 5,
+    span: 6,
+  })
   notify = true;
 }

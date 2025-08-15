@@ -46,6 +46,8 @@ export class FurAffinityFileSubmission extends BaseWebsiteOptions {
     label: 'category',
     defaultValue: '1',
     options: FurAffinityCategories,
+    section: 'website',
+    span: 6,
   })
   category: string;
 
@@ -53,6 +55,8 @@ export class FurAffinityFileSubmission extends BaseWebsiteOptions {
     label: 'theme',
     defaultValue: '1',
     options: FurAffinityThemes,
+    section: 'website',
+    span: 6,
   })
   theme: string;
 
@@ -60,6 +64,8 @@ export class FurAffinityFileSubmission extends BaseWebsiteOptions {
     label: 'species',
     defaultValue: '1',
     options: FurAffinitySpecies,
+    section: 'website',
+    span: 6,
   })
   species: string;
 
@@ -78,6 +84,8 @@ export class FurAffinityFileSubmission extends BaseWebsiteOptions {
       { value: '6', label: 'Multiple characters' },
       { value: '7', label: 'Other / Not Specified' },
     ],
+    section: 'website',
+    span: 6,
   })
   gender: string;
 
@@ -91,18 +99,24 @@ export class FurAffinityFileSubmission extends BaseWebsiteOptions {
         populate: 'options',
       },
     ],
+    section: 'website',
+    span: 6,
   })
   folders: string[];
 
   @BooleanField({
     label: 'disableComments',
     defaultValue: false,
+    section: 'website',
+    span: 6,
   })
   disableComments: boolean;
 
   @BooleanField({
     label: 'scraps',
     defaultValue: false,
+    section: 'website',
+    span: 6,
   })
   scraps: boolean;
 }

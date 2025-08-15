@@ -15,13 +15,11 @@ import { BaseWebsiteOptions } from '../../../models/base-website-options';
 export class BlueskyFileSubmission extends BaseWebsiteOptions {
   @DescriptionField({
     descriptionType: DescriptionType.PLAINTEXT,
-    maxDescriptionLength: Infinity, // Custom lenght calculation is handled by validation logic
+    maxDescriptionLength: Infinity, // Custom length calculation is handled by validation logic
   })
   description: DescriptionValue;
 
   @TagField({
-    col: 1,
-    row: 1,
     spaceReplacer: '_',
   })
   tags: TagValue = DefaultTagValue();
@@ -42,12 +40,14 @@ export class BlueskyFileSubmission extends BaseWebsiteOptions {
   })
   labelRating: '' | 'sexual' | 'nudity' | 'porn';
 
-  @TextField({ label: 'replyToUrl' })
+  @TextField({ label: 'replyToUrl', section: 'website', span: 12 })
   replyToUrl?: string;
 
   // Note: in v3 it was threadgate
   @SelectField({
     label: 'whoCanReply',
+    section: 'website',
+    span: 12,
     options: [
       { value: '', label: 'Everybody' },
       { value: 'nobody', label: 'Nobody' },
