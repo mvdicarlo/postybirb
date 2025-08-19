@@ -9,7 +9,7 @@ import {
   Select,
 } from '@postybirb/database';
 import { EntityId, NULL_ACCOUNT_ID } from '@postybirb/types';
-import { eq, KnownKeysOnly, SQL } from 'drizzle-orm';
+import { eq, inArray, KnownKeysOnly, SQL } from 'drizzle-orm';
 import {
   DBQueryConfig,
   ExtractTablesWithRelations,
@@ -134,7 +134,7 @@ export class PostyBirbDatabase<
     }
     const result = await this.db
       .delete(this.schemaEntity)
-      .where(eq(this.schemaEntity.id, ids));
+      .where(inArray(this.schemaEntity.id, ids));
     this.notify(ids, 'delete');
     return result;
   }
