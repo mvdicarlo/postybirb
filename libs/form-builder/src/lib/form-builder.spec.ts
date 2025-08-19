@@ -21,7 +21,10 @@ describe('formBuilder', () => {
         defaultValue: false,
         type: 'boolean',
         formField: 'checkbox',
-        section: 'common',
+        section: 'website',
+        responsive: {
+          xs: 12,
+        },
         order: 999,
         span: 12,
       },
@@ -56,7 +59,10 @@ describe('formBuilder', () => {
         defaultValue: false,
         type: 'boolean',
         formField: 'checkbox',
-        section: 'common',
+        section: 'website',
+        responsive: {
+          xs: 12,
+        },
         order: 999,
         span: 12,
       },
@@ -68,7 +74,10 @@ describe('formBuilder', () => {
         defaultValue: false,
         type: 'boolean',
         formField: 'checkbox',
-        section: 'common',
+        section: 'website',
+        responsive: {
+          xs: 12,
+        },
         order: 999,
         span: 12,
       },
@@ -80,9 +89,15 @@ describe('formBuilder', () => {
         section: 'website',
         order: 999,
         span: 6,
+        responsive: {
+          xs: 12,
+        },
       },
       field3: {
-        section: 'common',
+        section: 'website',
+        responsive: {
+          xs: 12,
+        },
         order: 999,
         span: 12,
         defaultValue: {
@@ -102,7 +117,10 @@ describe('formBuilder', () => {
         defaultValue: false,
         type: 'boolean',
         formField: 'checkbox',
-        section: 'common',
+        section: 'website',
+        responsive: {
+          xs: 12,
+        },
         order: 999,
         span: 12,
       },
@@ -114,9 +132,15 @@ describe('formBuilder', () => {
         section: 'website',
         order: 999,
         span: 6,
+        responsive: {
+          xs: 12,
+        },
       },
       field3: {
-        section: 'common',
+        section: 'website',
+        responsive: {
+          xs: 12,
+        },
         order: 999,
         span: 12,
         defaultValue: {
@@ -143,7 +167,10 @@ describe('formBuilder', () => {
         defaultValue: 'hello',
         type: 'text',
         formField: 'input',
-        section: 'common',
+        section: 'website',
+        responsive: {
+          xs: 12,
+        },
         order: 999,
         span: 12,
       },
@@ -156,24 +183,25 @@ describe('formBuilder', () => {
       field: string[];
     }
 
-    expect(formBuilder(new TestType(), {})).toMatchInlineSnapshot(`
-      {
-        "field": {
-          "defaultValue": {
-            "overrideDefault": false,
-            "tags": [],
-          },
-          "formField": "tag",
-          "label": "tags",
-          "minTagLength": 1,
-          "order": 999,
-          "section": "common",
-          "spaceReplacer": "_",
-          "span": 12,
-          "type": "tag",
+    expect(formBuilder(new TestType(), {})).toEqual({
+      field: {
+        defaultValue: {
+          overrideDefault: false,
+          tags: [],
         },
-      }
-    `);
+        formField: 'tag',
+        label: 'tags',
+        minTagLength: 1,
+        order: 999,
+        responsive: {
+          xs: 12,
+        },
+        section: 'website',
+        spaceReplacer: '_',
+        span: 12,
+        type: 'tag',
+      },
+    });
   });
 
   it('should support section and layout properties', () => {
@@ -223,7 +251,10 @@ describe('formBuilder', () => {
         defaultValue: test.testBoolean,
         type: 'boolean',
         formField: 'checkbox',
-        section: 'common',
+        section: 'website',
+        responsive: {
+          xs: 12,
+        },
         order: 999,
         span: 12,
       },
