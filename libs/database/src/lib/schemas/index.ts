@@ -1,4 +1,5 @@
 export * from './account.schema';
+export * from './custom-shortcut.schema';
 export * from './directory-watcher.schema';
 export * from './file-buffer.schema';
 export * from './notification.schema';

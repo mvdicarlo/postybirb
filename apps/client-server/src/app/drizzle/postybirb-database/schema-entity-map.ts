@@ -15,6 +15,7 @@ import {
   WebsiteOptions,
   WebsitePostRecord,
 } from '../models';
+import { CustomShortcut } from '../models/custom-shortcut.entity';
 import { Notification } from '../models/notification.entity';
 
 export type DatabaseSchemaEntityMap = {
@@ -35,6 +36,7 @@ export type DatabaseSchemaEntityMap = {
   WebsiteOptionsSchema: InstanceType<typeof WebsiteOptions>;
   WebsitePostRecordSchema: InstanceType<typeof WebsitePostRecord>;
   NotificationSchema: InstanceType<typeof Notification>;
+  CustomShortcutSchema: InstanceType<typeof CustomShortcut>;
 };
 
 export const DatabaseSchemaEntityMapConst: Record<
@@ -57,4 +59,5 @@ export const DatabaseSchemaEntityMapConst: Record<
   WebsiteOptionsSchema: WebsiteOptions,
   WebsitePostRecordSchema: WebsitePostRecord,
   NotificationSchema: Notification,
+  CustomShortcutSchema: CustomShortcut,
 };
