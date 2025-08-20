@@ -25,39 +25,45 @@ import { Class } from 'type-fest';
 import { DefaultWebsiteOptions } from './default-website-options';
 
 export class BaseWebsiteOptions implements IWebsiteFormFields {
+  @RatingField({
+    required: true,
+    section: 'common',
+    order: 1,
+    span: 12,
+    layout: 'horizontal',
+  })
+  rating: SubmissionRating;
+
   @TitleField({
     required: true,
-    col: 1,
-    row: 0,
+    section: 'common',
+    order: 2,
+    span: 12,
   })
   title = '';
 
   @TagField({
-    col: 1,
-    row: 1,
+    section: 'common',
+    order: 3,
+    span: 12,
   })
   tags: TagValue = DefaultTagValue();
 
-  @TextField({
-    label: 'contentWarning',
-    col: 1,
-    row: 2,
-    hidden: true, // Keep hidden unless overridden
-  })
-  contentWarning = '';
-
   @DescriptionField({
-    col: 1,
-    row: 3,
+    section: 'common',
+    order: 4,
+    span: 12,
   })
   description: DescriptionValue = DefaultDescriptionValue();
 
-  @RatingField({
-    required: true,
-    col: 0,
-    row: 0,
+  @TextField({
+    label: 'contentWarning',
+    section: 'common',
+    order: 5,
+    span: 12,
+    hidden: true, // Keep hidden unless overridden
   })
-  rating: SubmissionRating;
+  contentWarning = '';
 
   constructor(options: Partial<BaseWebsiteOptions | IWebsiteFormFields> = {}) {
     Object.assign(this, options);

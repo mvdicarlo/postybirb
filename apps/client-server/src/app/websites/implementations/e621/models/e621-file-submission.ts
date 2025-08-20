@@ -14,8 +14,6 @@ export class E621FileSubmission extends BaseWebsiteOptions {
   description: DescriptionValue;
 
   @TagField({
-    col: 1,
-    row: 1,
     minTags: 4,
     spaceReplacer: '_',
     searchProviderId: 'e621',
@@ -24,6 +22,8 @@ export class E621FileSubmission extends BaseWebsiteOptions {
 
   @TextField({
     label: 'parentId',
+    section: 'website',
+    span: 12,
   })
   parentId?: string;
 }

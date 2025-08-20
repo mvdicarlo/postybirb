@@ -29,14 +29,18 @@ export class TelegramFileSubmission extends BaseWebsiteOptions {
     allowMultiple: true,
     minSelected: 1,
     required: true,
+    section: 'website',
+    span: 6,
   })
   channels: string[];
 
   @BooleanField({
     label: 'silent',
+    section: 'website',
+    span: 6,
   })
   silent = false;
 
-  @BooleanField({ label: 'spoiler' })
+  @BooleanField({ label: 'spoiler', section: 'website', span: 6 })
   spoiler = false;
 }

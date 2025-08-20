@@ -60,7 +60,8 @@ export class PixivFileSubmission extends BaseWebsiteOptions {
         ],
       ],
     ],
-    col: 1,
+    section: 'website',
+    span: 6,
   })
   matureContent: string[];
 
@@ -74,21 +75,24 @@ export class PixivFileSubmission extends BaseWebsiteOptions {
       { value: 'religion', label: 'Religion' },
     ],
     allowMultiple: true,
-    col: 1,
+    section: 'website',
+    span: 6,
   })
   containsContent: string[];
 
   @BooleanField({
     label: 'allowCommunityTags',
     defaultValue: true,
-    col: 1,
+    section: 'website',
+    span: 6,
   })
   communityTags: boolean;
 
   @BooleanField({
     label: 'originalWork',
     defaultValue: true,
-    col: 1,
+    section: 'website',
+    span: 6,
   })
   original: boolean;
 
@@ -96,7 +100,8 @@ export class PixivFileSubmission extends BaseWebsiteOptions {
     label: 'hasSexualContent',
     defaultValue: false,
     showWhen: [['rating', [SubmissionRating.GENERAL]]],
-    col: 1,
+    section: 'website',
+    span: 6,
   })
   sexual: boolean;
 
@@ -104,7 +109,8 @@ export class PixivFileSubmission extends BaseWebsiteOptions {
     label: 'aIGenerated',
     required: true,
     defaultValue: false,
-    col: 1,
+    section: 'website',
+    span: 6,
   })
   aiGenerated: boolean;
 }

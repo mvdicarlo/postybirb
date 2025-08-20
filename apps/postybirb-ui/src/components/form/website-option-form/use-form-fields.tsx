@@ -1,5 +1,6 @@
 import { Trans } from '@lingui/macro';
 import { Box, Loader } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
 import { FormBuilderMetadata } from '@postybirb/form-builder';
 import { IWebsiteFormFields, WebsiteOptionsDto } from '@postybirb/types';
 import { debounce } from 'lodash';
@@ -61,9 +62,23 @@ export function FormFieldsProvider({
   const saveDelayed = useCallback(
     debounce(
       (updatedValues) =>
-        websiteOptionsApi.update(option.id, {
-          data: updatedValues as IWebsiteFormFields,
-        }),
+        websiteOptionsApi
+          .update(option.id, {
+            data: updatedValues as IWebsiteFormFields,
+          })
+          .catch((err) => {
+            notifications.show({
+              id: option.id,
+              title: <Trans>Error</Trans>,
+              message: (
+                <>
+                  <Trans>Failed to update submission</Trans>
+                  <Box mt="xs">{err?.message || String(err)}</Box>
+                </>
+              ),
+              color: 'red',
+            });
+          }),
       600,
     ),
     [],

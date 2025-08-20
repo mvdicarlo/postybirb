@@ -64,6 +64,8 @@ export class InkbunnyFileSubmission extends BaseWebsiteOptions {
 
   @SelectField({
     label: 'category',
+    section: 'website',
+    span: 12,
     options: [
       { label: 'Picture/Pinup', value: '1' },
       { label: 'Sketch', value: '2' },
@@ -85,21 +87,29 @@ export class InkbunnyFileSubmission extends BaseWebsiteOptions {
 
   @BooleanField({
     label: 'blockGuests',
+    section: 'website',
+    span: 6,
   })
   blockGuests = false;
 
   @BooleanField({
     label: 'friendsOnly',
+    section: 'website',
+    span: 6,
   })
   friendsOnly = false;
 
   @BooleanField({
     label: 'notify',
+    section: 'website',
+    span: 6,
   })
   notify = true;
 
   @BooleanField({
     label: 'scraps',
+    section: 'website',
+    span: 6,
   })
   scraps = false;
 }
