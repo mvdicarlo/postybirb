@@ -89,7 +89,7 @@ export type Description = Block<
 
 export const DefaultDescription = (): Description => [];
 
-/** Default tag value @type {DescriptionValue} */
+/** Default description value @type {DescriptionValue} */
 export const DefaultDescriptionValue = (): DescriptionValue => ({
   overrideDefault: false,
   description: DefaultDescription(),

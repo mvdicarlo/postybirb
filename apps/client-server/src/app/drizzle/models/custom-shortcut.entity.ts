@@ -1,20 +1,18 @@
 import {
-    DefaultDescriptionValue,
-    DescriptionValue,
-    ICustomShortcut
+  DefaultDescription,
+  Description,
+  ICustomShortcut,
+  ICustomShortcutDto,
 } from '@postybirb/types';
 import { instanceToPlain } from 'class-transformer';
 import { DatabaseEntity } from './database-entity';
 
-export class CustomShortcut
-  extends DatabaseEntity
-  implements ICustomShortcut
-{
+export class CustomShortcut extends DatabaseEntity implements ICustomShortcut {
   name: string;
 
   inline = false;
 
-  shortcut: DescriptionValue = DefaultDescriptionValue();
+  shortcut: Description = DefaultDescription();
 
   constructor(entity: Partial<ICustomShortcut>) {
     super(entity);
@@ -27,9 +25,9 @@ export class CustomShortcut
     }) as ICustomShortcut;
   }
 
-  public toDTO(): ICustomShortcut {
+  public toDTO(): ICustomShortcutDto {
     return instanceToPlain(this, {
       enableCircularCheck: true,
-    }) as ICustomShortcut;
+    }) as ICustomShortcutDto;
   }
 }
