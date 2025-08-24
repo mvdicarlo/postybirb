@@ -49,6 +49,8 @@ Learn more: [Translation guide](./TRANSLATION.md)
 
 Please write clean code.
 
+To add new websites use `node scripts/add-website.js`
+
 Follow [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/)
 
 ## Primary Modules (/apps)
