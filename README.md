@@ -1,6 +1,9 @@
 # Postybirb
 
 <div style='flex: 1'>
+<a href="https://discord.gg/bN2rwvTs">
+<img alt="Static Badge" src="https://img.shields.io/badge/discord-%2323272a?logo=discord">
+</a>
 <a href="https://github.com/mvdicarlo/postybirb/releases/latest">
 <img alt="GitHub Downloads (all assets, latest release)" src="https://img.shields.io/github/downloads/mvdicarlo/postybirb/latest/total">
 </a>
@@ -44,6 +47,7 @@ Learn more: [Translation guide](./TRANSLATION.md)
 
 - Nx Console
 - Jest Runner
+- Prettier
 
 ## Contributing
 
@@ -63,7 +67,7 @@ posting logic, etc.
 #### Primary Technologies Used
 
 - NestJS
-- MikroOrm (sqlite3)
+- Drizzle (sqlite3)
 
 ### Postybirb
 
@@ -82,6 +86,7 @@ web-socket and https.
 #### Primary Technologies Used
 
 - React
+- Blocknote/TipTap (Text editor)
 
 -----------------
 
