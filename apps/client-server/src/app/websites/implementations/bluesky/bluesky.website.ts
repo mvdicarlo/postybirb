@@ -51,7 +51,7 @@ import { BlueskyMessageSubmission } from './models/bluesky-message-submission';
 })
 @CustomLoginFlow()
 @SupportsUsernameShortcut({
-  id: 'bsky',
+  id: 'bluesky',
   url: 'https://bsly.app/profile/$1',
 })
 @SupportsFiles({

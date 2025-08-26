@@ -38,6 +38,7 @@ import {
 } from '../../pages/route-paths';
 import {
   AccountKeybinding,
+  CustomShortcutsKeybinding,
   FileSubmissionsKeybinding,
   HomeKeybinding,
   MessageSubmissionsKeybinding,
@@ -142,7 +143,7 @@ const navigationTargets: (
     icon: <IconBlockquote />,
     label: <Trans>Custom Shortcuts</Trans>,
     globalStateKey: 'customShortcutsDrawerVisible',
-    kbd: TagConvertersKeybinding,
+    kbd: CustomShortcutsKeybinding,
   },
   {
     type: 'drawer',
@@ -313,7 +314,7 @@ export function PostyBirbLayout() {
             {navigationTargets.map((target, i) => {
               if (!target) {
                 // eslint-disable-next-line react/no-array-index-key
-                return <Divider size="md" mr={6} ml={6} key={i.toString()} />;
+                return <Divider size="sm" mr={6} ml={6} key={i.toString()} />;
               }
 
               const { key, ...rest } = target;

@@ -1,13 +1,10 @@
-import { DescriptionValue, IUpdateCustomShortcutDto } from '@postybirb/types';
-import { IsBoolean, IsObject, IsString } from 'class-validator';
+import { Description, IUpdateCustomShortcutDto } from '@postybirb/types';
+import { IsArray, IsString } from 'class-validator';
 
 export class UpdateCustomShortcutDto implements IUpdateCustomShortcutDto {
   @IsString()
   name: string;
 
-  @IsBoolean()
-  inline: boolean;
-
-  @IsObject()
-  shortcut: DescriptionValue;
+  @IsArray()
+  shortcut: Description;
 }

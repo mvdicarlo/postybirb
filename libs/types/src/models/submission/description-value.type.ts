@@ -55,6 +55,15 @@ type CustomInlineContentSchema = DefaultInlineContentSchema & {
     };
     content: 'styled';
   };
+  customShortcut: {
+    type: 'customShortcut';
+    propSchema: {
+      id: {
+        default: string;
+      };
+    };
+    content: 'styled';
+  };
 };
 
 type DefaultBlock = BlockSpec<

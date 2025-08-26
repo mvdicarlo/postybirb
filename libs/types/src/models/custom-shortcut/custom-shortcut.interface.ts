@@ -5,6 +5,5 @@ import {
 
 export interface ICustomShortcut extends IEntity {
   name: string;
-  inline: boolean;
   shortcut: Description;
 }

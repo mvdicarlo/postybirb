@@ -13,8 +13,10 @@ import { Tooltip, useMantineColorScheme } from '@mantine/core';
 import { Description, UsernameShortcut } from '@postybirb/types';
 import { IconKeyboard } from '@tabler/icons-react';
 import { useMemo } from 'react';
+import { CustomShortcutStore } from '../../../stores/custom-shortcut.store';
 import { useStore } from '../../../stores/use-store';
 import { WebsiteStore } from '../../../stores/website.store';
+import { getCustomShortcutsMenuItems } from './custom/custom-shortcut';
 import { insertDefaultShortcut } from './custom/default-shortcut';
 import { insertHr } from './custom/hr';
 import { getUsernameShortcutsMenuItems } from './custom/username-shortcut';
@@ -22,6 +24,7 @@ import { schema } from './schema';
 
 type PostyBirbEditorProps = {
   isDefaultEditor: boolean;
+  showCustomShortcuts?: boolean;
   value: Description;
   onChange: (newValue: Description) => void;
 };
@@ -31,7 +34,12 @@ const shortcutTrigger = '`'; // Backtick character for shortcuts
 
 export function PostyBirbEditor(props: PostyBirbEditorProps) {
   const theme = useMantineColorScheme();
-  const { isDefaultEditor, value, onChange } = props;
+  const {
+    isDefaultEditor,
+    showCustomShortcuts = true,
+    value,
+    onChange,
+  } = props;
   // Creates a new editor instance.
   const editor = useCreateBlockNote({
     initialContent: value?.length ? (value as never) : undefined,
@@ -44,9 +52,11 @@ export function PostyBirbEditor(props: PostyBirbEditorProps) {
       ?.filter((w) => w.usernameShortcut)
       .map((w) => w.usernameShortcut as UsernameShortcut) || [];
 
+  const { state: customShortcuts } = useStore(CustomShortcutStore);
+
   const suggestions = useMemo(() => {
     const shortcutSuggestions = [
-      isDefaultEditor ? insertDefaultShortcut(editor) : undefined,
+      !isDefaultEditor ? insertDefaultShortcut(editor) : undefined,
       insertHr(editor),
       ...getDefaultReactSlashMenuItems(editor),
     ];
@@ -114,12 +124,17 @@ export function PostyBirbEditor(props: PostyBirbEditorProps) {
         <SuggestionMenuController
           triggerCharacter={shortcutTrigger}
           getItems={async (query) =>
-            // Gets the mentions menu items
             filterSuggestionItems(
-              getUsernameShortcutsMenuItems(
-                editor as unknown as typeof schema.BlockNoteEditor,
-                shortcuts,
-              ),
+              [
+                ...getCustomShortcutsMenuItems(
+                  editor as unknown as typeof schema.BlockNoteEditor,
+                  customShortcuts || [],
+                ),
+                ...getUsernameShortcutsMenuItems(
+                  editor as unknown as typeof schema.BlockNoteEditor,
+                  shortcuts,
+                ),
+              ],
               query,
             )
           }

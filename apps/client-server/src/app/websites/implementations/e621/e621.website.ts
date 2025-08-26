@@ -42,7 +42,7 @@ import { E621FileSubmission } from './models/e621-file-submission';
   fileBatchSize: 1,
 })
 @SupportsUsernameShortcut({
-  id: 'e6',
+  id: 'e621',
   url: 'https://e621.net/user/show/$1',
 
   convert: (websiteName, shortcut) => {

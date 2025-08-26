@@ -4,6 +4,7 @@ import {
   defaultInlineContentSpecs,
   defaultStyleSpecs,
 } from '@blocknote/core';
+import { InlineCustomShortcut } from './custom/custom-shortcut';
 import { DefaultShortcut } from './custom/default-shortcut';
 import { HR } from './custom/hr';
 import { InlineUsernameShortcut } from './custom/username-shortcut';
@@ -42,6 +43,7 @@ export const schema = BlockNoteSchema.create({
   inlineContentSpecs: {
     ...defaultInlineContentSpecs,
     username: InlineUsernameShortcut,
+    customShortcut: InlineCustomShortcut,
   },
   styleSpecs: {
     ...defaultStyleSpecs,

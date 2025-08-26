@@ -45,7 +45,7 @@ import { FurbooruFileSubmission } from './models/furbooru-file-submission';
 })
 @DisableAds()
 @SupportsUsernameShortcut({
-  id: 'furb',
+  id: 'furbooru',
   url: 'https://furbooru.org/profiles/$1',
 })
 export default class Furbooru

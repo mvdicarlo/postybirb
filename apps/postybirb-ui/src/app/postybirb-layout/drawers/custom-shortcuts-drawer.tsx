@@ -1,28 +1,26 @@
 import { Trans } from '@lingui/macro';
 import {
-    Box,
-    Button,
-    Checkbox,
-    Collapse,
-    Divider,
-    Drawer,
-    Group,
-    Loader,
-    Paper,
-    Stack,
-    Text,
-    TextInput,
-    Tooltip,
+  Box,
+  Button,
+  Collapse,
+  Divider,
+  Drawer,
+  Group,
+  Loader,
+  Paper,
+  Stack,
+  Text,
+  TextInput,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { DefaultDescription, ICustomShortcutDto } from '@postybirb/types';
 import {
-    IconChevronDown,
-    IconChevronUp,
-    IconPlus,
-    IconSearch,
-    IconTrash,
+  IconChevronDown,
+  IconChevronUp,
+  IconPlus,
+  IconSearch,
+  IconTrash,
 } from '@tabler/icons-react';
 import { useMemo, useState } from 'react';
 import customShortcutApi from '../../../api/custom-shortcut.api';
@@ -43,7 +41,6 @@ function areEqualShortcut(
 ) {
   return (
     old.name === current.name &&
-    old.inline === current.inline &&
     JSON.stringify(old.shortcut) === JSON.stringify(current.shortcut)
   );
 }
@@ -58,18 +55,6 @@ function ExistingShortcut({ shortcut }: { shortcut: ICustomShortcutDto }) {
       <Group justify="space-between" mb={opened ? 'xs' : 0}>
         <Group>
           <Text fw={500}>{shortcut.name}</Text>
-          <Tooltip
-            label={
-              shortcut.inline ? <Trans>Inline</Trans> : <Trans>Block</Trans>
-            }
-          >
-            <Checkbox
-              checked={shortcut.inline}
-              readOnly
-              label={<Trans>Inline</Trans>}
-              size="xs"
-            />
-          </Tooltip>
         </Group>
         <Group>
           <Button
@@ -98,20 +83,13 @@ function ExistingShortcut({ shortcut }: { shortcut: ICustomShortcutDto }) {
             setState({ ...state, name: event.currentTarget.value })
           }
         />
-        <Checkbox
-          mt="xs"
-          checked={state.inline}
-          label={<Trans>Inline</Trans>}
-          onChange={(event) =>
-            setState({ ...state, inline: event.currentTarget.checked })
-          }
-        />
         <Box mt="xs">
           <Text size="sm" mb={4}>
             <Trans>Shortcut</Trans>
           </Text>
           <PostyBirbEditor
-            isDefaultEditor={false}
+            isDefaultEditor
+            showCustomShortcuts={false}
             value={state.shortcut}
             onChange={(val) => setState({ ...state, shortcut: val })}
           />
@@ -121,7 +99,24 @@ function ExistingShortcut({ shortcut }: { shortcut: ICustomShortcutDto }) {
             variant="light"
             disabled={!isValidShortcut(state) || !hasChanges}
             onClick={() => {
-              customShortcutApi.update(shortcut.id, state).then(() => {
+              const trimmedState = {
+                ...state,
+              };
+              // BlockNote has a tendency of adding a padding element at the end that we don't want in a custom shortcut
+              while (trimmedState.shortcut.length > 0) {
+                const lastItem =
+                  trimmedState.shortcut[trimmedState.shortcut.length - 1];
+                if (
+                  (lastItem.content as [])?.length === 0 &&
+                  lastItem.children.length === 0
+                ) {
+                  trimmedState.shortcut.pop();
+                } else {
+                  break;
+                }
+              }
+
+              customShortcutApi.update(shortcut.id, trimmedState).then(() => {
                 notifications.show({
                   title: <Trans>Updated</Trans>,
                   message: <Trans>Shortcut updated</Trans>,
@@ -160,7 +155,6 @@ function CustomShortcuts() {
   const { state: shortcuts, isLoading } = useStore(CustomShortcutStore);
   const [newShortcut, setNewShortcut] = useState<Partial<ICustomShortcutDto>>({
     name: '',
-    inline: false,
     shortcut: DefaultDescription(),
   });
   const [showNewForm, { toggle: toggleNewForm }] = useDisclosure(false);
@@ -192,7 +186,6 @@ function CustomShortcuts() {
   const resetForm = () => {
     setNewShortcut({
       name: '',
-      inline: false,
       shortcut: DefaultDescription(),
     });
   };
@@ -243,17 +236,6 @@ function CustomShortcuts() {
                 setNewShortcut({
                   ...newShortcut,
                   name: event.currentTarget.value,
-                })
-              }
-            />
-            <Checkbox
-              mt="xs"
-              checked={!!newShortcut.inline}
-              label={<Trans>Inline</Trans>}
-              onChange={(event) =>
-                setNewShortcut({
-                  ...newShortcut,
-                  inline: event.currentTarget.checked,
                 })
               }
             />

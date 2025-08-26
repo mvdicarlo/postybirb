@@ -10,8 +10,6 @@ import { DatabaseEntity } from './database-entity';
 export class CustomShortcut extends DatabaseEntity implements ICustomShortcut {
   name: string;
 
-  inline = false;
-
   shortcut: Description = DefaultDescription();
 
   constructor(entity: Partial<ICustomShortcut>) {
