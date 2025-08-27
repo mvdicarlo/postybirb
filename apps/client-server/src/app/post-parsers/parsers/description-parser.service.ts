@@ -1,8 +1,14 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { DescriptionType, UsernameShortcut } from '@postybirb/types';
+import { Inject, Injectable, Optional } from '@nestjs/common';
+import {
+  Description,
+  DescriptionType,
+  UsernameShortcut,
+} from '@postybirb/types';
 import isEqual from 'lodash/isEqual';
 import { Class } from 'type-fest';
 import { WEBSITE_IMPLEMENTATIONS } from '../../constants';
+import { CustomShortcutsService } from '../../custom-shortcuts/custom-shortcuts.service';
+import { CustomShortcut } from '../../drizzle/models/custom-shortcut.entity';
 import { SettingsService } from '../../settings/settings.service';
 import { BaseWebsiteOptions } from '../../websites/models/base-website-options';
 import { DefaultWebsiteOptions } from '../../websites/models/default-website-options';
@@ -23,6 +29,8 @@ export class DescriptionParserService {
     private readonly settingsService: SettingsService,
     @Inject(WEBSITE_IMPLEMENTATIONS)
     private readonly websiteImplementations: Class<UnknownWebsite>[],
+    @Optional()
+    private readonly customShortcutsService?: CustomShortcutsService,
   ) {
     this.websiteImplementations.forEach((website) => {
       const shortcut: UsernameShortcut | undefined =
@@ -190,4 +198,35 @@ export class DescriptionParserService {
 
     return mergedBlocks;
   }
+
+  /**
+   * Injects the content of custom shortcuts into the description content.
+   * Modifies the content in place.
+   */
+  public async injectCustomShortcuts(content: Description) {
+    for (const block of content) {
+      const c = block.content;
+      if (Array.isArray(c)) {
+        for (const contentBlock of c) {
+          if (
+            contentBlock.type === 'customShortcut' &&
+            'content' in contentBlock
+          ) {
+            const shortcut = await this.customShortcutsService.findById(
+              contentBlock.props.id,
+            );
+            if (shortcut) {
+              const converted =
+                this.convertCustomShortcutToInlineContent(shortcut);
+              // contentBlock.content = converted;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  private convertCustomShortcutToInlineContent(
+    customShortcut: CustomShortcut,
+  ) {}
 }

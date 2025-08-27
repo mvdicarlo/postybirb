@@ -93,7 +93,7 @@ export class CustomShortcutsService extends PostyBirbService<'CustomShortcutSche
    * Removes inline customShortcut items matching the given id from a Description document.
    * Simple recursive filter without whitespace normalization.
    */
-  private filterCustomShortcut(
+  public filterCustomShortcut(
     blocks: Description,
     deleteId: string,
   ): {

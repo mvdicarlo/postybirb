@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { CustomShortcutsModule } from '../custom-shortcuts/custom-shortcuts.module';
 import { FormGeneratorModule } from '../form-generator/form-generator.module';
 import { SettingsModule } from '../settings/settings.module';
 import { TagConvertersModule } from '../tag-converters/tag-converters.module';
@@ -8,7 +9,12 @@ import { TagParserService } from './parsers/tag-parser.service';
 import { PostParsersService } from './post-parsers.service';
 
 @Module({
-  imports: [TagConvertersModule, FormGeneratorModule, SettingsModule],
+  imports: [
+    TagConvertersModule,
+    FormGeneratorModule,
+    SettingsModule,
+    CustomShortcutsModule,
+  ],
   providers: [
     PostParsersService,
     TagParserService,
