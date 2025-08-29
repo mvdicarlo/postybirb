@@ -5,11 +5,14 @@ import '@mantine/dropzone/styles.css';
 import { Notifications } from '@mantine/notifications';
 import '@mantine/notifications/styles.css';
 import '@mantine/spotlight/styles.css';
+import { useEffect, useMemo, useState } from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { PageErrorBoundary } from '../components/error-boundary';
 import { AppI18nProvider } from './app-i18n-provider';
 import './app.css';
 import { PostyBirbLayout } from './postybirb-layout/postybirb-layout';
+import { Disclaimer } from './disclaimer/disclaimer';
+import { isElectronEnvironment } from '../helpers/electron.helper';
 
 const mantineTheme = createTheme({
   primaryColor: 'indigo',
@@ -89,6 +92,51 @@ const queryClient = new QueryClient({
 });
 
 export default function App() {
+  const DISCLAIMER_KEY = 'pb_disclaimer_accepted';
+
+  const initialAccepted = useMemo(() => {
+    try {
+      if (typeof window === 'undefined') return false;
+      return localStorage.getItem(DISCLAIMER_KEY) === 'true';
+    } catch {
+      return false;
+    }
+  }, []);
+
+  const [accepted, setAccepted] = useState<boolean>(initialAccepted);
+
+  useEffect(() => {
+    try {
+      if (accepted) localStorage.setItem(DISCLAIMER_KEY, 'true');
+    } catch {
+      // ignore storage errors
+    }
+  }, [accepted]);
+
+  const handleDecline = (): void => {
+    // Best-effort quit from here too, in case Disclaimer fallback paths fail.
+    try {
+      if (isElectronEnvironment() && window?.electron?.quit) {
+        window.electron.quit();
+        return;
+      }
+    } catch {
+      // fall through
+    }
+
+    // Fallbacks for browser/dev
+    window.close();
+    setTimeout(() => {
+      try {
+        if (!document.hidden) {
+          window.location.href = 'about:blank';
+        }
+      } catch {
+        // no-op
+      }
+    }, 300);
+  };
+
   return (
     <div className="postybirb">
       <MantineProvider theme={mantineTheme} defaultColorScheme="dark">
@@ -98,7 +146,14 @@ export default function App() {
 
           <QueryClientProvider client={queryClient}>
             <PageErrorBoundary>
-              <PostyBirbLayout />
+              {accepted ? (
+                <PostyBirbLayout />
+              ) : (
+                <Disclaimer
+                  onAccepted={() => setAccepted(true)}
+                  onDeclined={handleDecline}
+                />
+              )}
             </PageErrorBoundary>
           </QueryClientProvider>
         </AppI18nProvider>
