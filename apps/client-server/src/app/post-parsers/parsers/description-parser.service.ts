@@ -1,14 +1,10 @@
-import { Inject, Injectable, Optional } from '@nestjs/common';
-import {
-  Description,
-  DescriptionType,
-  UsernameShortcut,
-} from '@postybirb/types';
+import { Inject, Injectable } from '@nestjs/common';
+import { DescriptionType, UsernameShortcut } from '@postybirb/types';
+import { escapeRegExp } from 'lodash';
 import isEqual from 'lodash/isEqual';
 import { Class } from 'type-fest';
 import { WEBSITE_IMPLEMENTATIONS } from '../../constants';
 import { CustomShortcutsService } from '../../custom-shortcuts/custom-shortcuts.service';
-import { CustomShortcut } from '../../drizzle/models/custom-shortcut.entity';
 import { SettingsService } from '../../settings/settings.service';
 import { BaseWebsiteOptions } from '../../websites/models/base-website-options';
 import { DefaultWebsiteOptions } from '../../websites/models/default-website-options';
@@ -20,6 +16,7 @@ import {
   InsertionOptions,
 } from '../models/description-node/description-node-tree';
 import { IDescriptionBlockNode } from '../models/description-node/description-node.types';
+import { DescriptionInlineNode } from '../models/description-node/inline-description-node';
 
 @Injectable()
 export class DescriptionParserService {
@@ -29,7 +26,6 @@ export class DescriptionParserService {
     private readonly settingsService: SettingsService,
     @Inject(WEBSITE_IMPLEMENTATIONS)
     private readonly websiteImplementations: Class<UnknownWebsite>[],
-    @Optional()
     private readonly customShortcutsService?: CustomShortcutsService,
   ) {
     this.websiteImplementations.forEach((website) => {
@@ -122,6 +118,15 @@ export class DescriptionParserService {
       );
     }
 
+    // Inject custom shortcuts
+    description = await this.injectCustomShortcuts(
+      description,
+      descriptionType,
+      instance,
+      title,
+      tags,
+    );
+
     return description;
   }
 
@@ -203,30 +208,75 @@ export class DescriptionParserService {
    * Injects the content of custom shortcuts into the description content.
    * Modifies the content in place.
    */
-  public async injectCustomShortcuts(content: Description) {
-    for (const block of content) {
-      const c = block.content;
-      if (Array.isArray(c)) {
-        for (const contentBlock of c) {
-          if (
-            contentBlock.type === 'customShortcut' &&
-            'content' in contentBlock
-          ) {
-            const shortcut = await this.customShortcutsService.findById(
-              contentBlock.props.id,
-            );
-            if (shortcut) {
-              const converted =
-                this.convertCustomShortcutToInlineContent(shortcut);
-              // contentBlock.content = converted;
-            }
-          }
+  public async injectCustomShortcuts(
+    content: string,
+    descriptionType: DescriptionType,
+    instance: Website<unknown>,
+    title: string,
+    tags: string[],
+  ): Promise<string> {
+    const regex = DescriptionInlineNode.getCustomShortcutMarkerRegex();
+    const matches = Array.from(content.matchAll(regex));
+    if (!matches.length) return content;
+
+    let updatedContent = content;
+    for (const match of matches) {
+      const [fullMarker, id] = match;
+      const shortcut = await this.customShortcutsService?.findById(id);
+      if (shortcut) {
+        // When HTML, check to see if the marker is just surrounded by paragraph.
+        // When it is, unwrap it and prefer custom shortcut to use its own.
+        if (descriptionType === DescriptionType.HTML) {
+          const paragraphRegex = new RegExp(
+            `(<p>)?${escapeRegExp(fullMarker)}(</p>)?`,
+            'g',
+          );
+          updatedContent = updatedContent.replace(
+            paragraphRegex,
+            (m, p1, p2) => {
+              // If the marker is surrounded by paragraphs, unwrap it
+              if (p1 && p2) {
+                return fullMarker;
+              }
+              return m;
+            },
+          );
         }
+
+        const tree = new DescriptionNodeTree(
+          instance.decoratedProps.metadata.name,
+          shortcut.shortcut as unknown as Array<IDescriptionBlockNode>,
+          {
+            insertTitle: undefined,
+            insertTags: undefined,
+            insertAd: false,
+          },
+          this.websiteShortcuts,
+          {
+            title,
+            tags,
+          },
+        );
+        const rendered = this.createDescription(
+          instance,
+          descriptionType,
+          tree,
+        );
+        updatedContent = updatedContent.replace(
+          new RegExp(escapeRegExp(fullMarker), 'g'),
+          rendered,
+        );
       }
     }
-  }
+    // Strip any remaining markers (including those wrapped by empty paragraph tags)
+    const markerRegex = DescriptionInlineNode.getCustomShortcutMarkerRegex();
+    const wrappedMarkerRegex = new RegExp(
+      `<p>\\s*${markerRegex.source}\\s*<\\/p>`,
+      'g',
+    );
+    updatedContent = updatedContent.replace(wrappedMarkerRegex, '');
+    updatedContent = updatedContent.replace(markerRegex, '');
 
-  private convertCustomShortcutToInlineContent(
-    customShortcut: CustomShortcut,
-  ) {}
+    return updatedContent;
+  }
 }

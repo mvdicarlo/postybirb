@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { CustomShortcutsModule } from '../custom-shortcuts/custom-shortcuts.module';
 import { FormGeneratorModule } from '../form-generator/form-generator.module';
 import { SettingsModule } from '../settings/settings.module';
@@ -13,7 +13,7 @@ import { PostParsersService } from './post-parsers.service';
     TagConvertersModule,
     FormGeneratorModule,
     SettingsModule,
-    CustomShortcutsModule,
+    forwardRef(() => CustomShortcutsModule),
   ],
   providers: [
     PostParsersService,

@@ -7,6 +7,8 @@ import {
 import { Insert } from '@postybirb/database';
 import {
   AccountId,
+  Description,
+  DescriptionValue,
   DynamicObject,
   EntityId,
   ISubmission,
@@ -52,6 +54,19 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
         submission: true,
       }),
     );
+
+    this.repository.subscribe('CustomShortcutSchema', (ids, action) => {
+      if (action === 'delete') {
+        for (const id of ids) {
+          this.onCustomShortcutDelete(id).catch((err) =>
+            this.logger.error(
+              `Error handling custom shortcut delete for id '${id}': ${err.message}`,
+              err.stack,
+            ),
+          );
+        }
+      }
+    });
   }
 
   /**
@@ -326,5 +341,112 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
 
     this.submissionService.emit();
     return this.submissionService.findById(submissionId);
+  }
+
+  private async onCustomShortcutDelete(id: EntityId) {
+    const websiteOptions = await this.findAll();
+    for (const option of websiteOptions) {
+      const { data } = option;
+      const descValue: DescriptionValue | undefined = data?.description;
+      const blocks: Description | undefined = descValue?.description;
+
+      if (!blocks || !Array.isArray(blocks) || blocks.length === 0) {
+        continue;
+      }
+
+      const { changed, filtered } = this.filterCustomShortcut(
+        blocks,
+        String(id),
+      );
+      if (changed) {
+        const updatedDescription: DescriptionValue = {
+          ...(descValue as DescriptionValue),
+          description: filtered,
+        };
+
+        await this.repository.update(option.id, {
+          data: {
+            ...data,
+            description: updatedDescription,
+          },
+        });
+        this.submissionService.emit();
+      }
+    }
+  }
+
+  /**
+   * Removes inline customShortcut items matching the given id from a Description document.
+   * Simple recursive filter without whitespace normalization.
+   */
+  public filterCustomShortcut(
+    blocks: Description,
+    deleteId: string,
+  ): {
+    changed: boolean;
+    filtered: Description;
+  } {
+    let changed = false;
+
+    const isObject = (v: unknown): v is Record<string, unknown> =>
+      typeof v === 'object' && v !== null;
+
+    const filterInline = (content: unknown[]): unknown[] => {
+      const out: unknown[] = [];
+      for (const node of content) {
+        if (!isObject(node)) {
+          out.push(node);
+          continue;
+        }
+
+        const {
+          type,
+          props,
+          content: nodeContent,
+        } = node as {
+          type?: string;
+          props?: Record<string, unknown>;
+          content?: unknown[];
+        };
+
+        if (type === 'customShortcut' && String(props?.id ?? '') === deleteId) {
+          changed = true;
+          continue; // drop this inline
+        }
+
+        // Recurse if this inline node has its own content
+        if (Array.isArray(nodeContent)) {
+          const clone = { ...node } as Record<string, unknown> & {
+            content?: unknown[];
+          };
+          clone.content = filterInline(nodeContent);
+          out.push(clone);
+        } else {
+          out.push(node);
+        }
+      }
+      return out;
+    };
+
+    const filterBlocks = (arr: Description): Description =>
+      arr.map((blk) => {
+        const clone: typeof blk = { ...blk } as typeof blk & {
+          content?: unknown[];
+          children?: unknown;
+        };
+        if (Array.isArray(clone.content)) {
+          (clone as unknown as { content: unknown[] }).content = filterInline(
+            clone.content,
+          );
+        }
+        if (Array.isArray(clone.children)) {
+          (clone as unknown as { children: Description }).children =
+            filterBlocks(clone.children as unknown as Description);
+        }
+        return clone;
+      });
+
+    const filtered = filterBlocks(blocks);
+    return { changed, filtered };
   }
 }

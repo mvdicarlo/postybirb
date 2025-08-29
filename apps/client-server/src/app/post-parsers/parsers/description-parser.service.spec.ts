@@ -9,6 +9,7 @@ import {
   IWebsiteOptions,
 } from '@postybirb/types';
 import { WEBSITE_IMPLEMENTATIONS } from '../../constants';
+import { CustomShortcutsService } from '../../custom-shortcuts/custom-shortcuts.service';
 import { SettingsService } from '../../settings/settings.service';
 import { BaseWebsiteOptions } from '../../websites/models/base-website-options';
 import { DefaultWebsiteOptions } from '../../websites/models/default-website-options';
@@ -20,6 +21,7 @@ describe('DescriptionParserService', () => {
   let module: TestingModule;
   let service: DescriptionParserService;
   let settingsService: SettingsService;
+  let customShortcutsService: CustomShortcutsService;
   const testDescription: Description = [
     {
       id: 'test-basic-text',
@@ -67,6 +69,12 @@ describe('DescriptionParserService', () => {
           },
         },
         {
+          provide: CustomShortcutsService,
+          useValue: {
+            findById: jest.fn(),
+          },
+        },
+        {
           provide: WEBSITE_IMPLEMENTATIONS,
           useValue: [],
         },
@@ -74,6 +82,7 @@ describe('DescriptionParserService', () => {
     }).compile();
     service = module.get(DescriptionParserService);
     settingsService = module.get(SettingsService);
+    customShortcutsService = module.get(CustomShortcutsService);
     settingsService.getDefaultSettings = jest.fn().mockResolvedValue({
       settings: {
         hiddenWebsites: [],
@@ -433,6 +442,149 @@ describe('DescriptionParserService', () => {
       A link: https://postybirb.com
       Hello, Basic"
     `);
+  });
+
+  describe('CustomShortcuts ', () => {
+    it('HTML unwrapping: unwrap <p> around shortcut marker before injection', async () => {
+      // Arrange
+      const content = '<p><%PB_CUSTOM_SHORTCUT:abc-123%></p>';
+      const replacement = 'INJECTED_HTML';
+      (customShortcutsService.findById as jest.Mock).mockResolvedValue({
+        name: 'test',
+        id: 'abc-123',
+        shortcut: [
+          {
+            id: 'shortcut-block',
+            type: 'paragraph',
+            props: {
+              textColor: 'default',
+              backgroundColor: 'default',
+              textAlignment: 'left',
+            },
+            content: [{ type: 'text', text: 'Ignored', styles: {} }],
+            children: [],
+          },
+        ],
+      });
+      jest
+        .spyOn(
+          service as unknown as { createDescription: Function },
+          'createDescription',
+        )
+        .mockReturnValue(replacement as any);
+
+      // Act
+      const result = await service.injectCustomShortcuts(
+        content,
+        DescriptionType.HTML,
+        { decoratedProps: { metadata: { name: 'Test' } } } as any,
+        'title',
+        ['tag1'],
+      );
+
+      // Assert
+      expect(result).toContain(replacement);
+      expect(result).not.toContain('<p>');
+      expect(result).not.toContain('</p>');
+      expect(customShortcutsService.findById).toHaveBeenCalledWith('abc-123');
+    });
+
+    it('Injection on multiple shortcuts present: replaces all markers', async () => {
+      // Arrange
+      const content =
+        'A <%PB_CUSTOM_SHORTCUT:one%> B <%PB_CUSTOM_SHORTCUT:two%> C';
+      (customShortcutsService.findById as jest.Mock)
+        .mockResolvedValueOnce({
+          shortcut: [
+            {
+              type: 'paragraph',
+              props: {},
+              content: [{ type: 'text', text: 'First', styles: {} }],
+              children: [],
+            },
+          ],
+        })
+        .mockResolvedValueOnce({
+          shortcut: [
+            {
+              type: 'paragraph',
+              props: {},
+              content: [{ type: 'text', text: 'Second', styles: {} }],
+              children: [],
+            },
+          ],
+        });
+      const spy = jest
+        .spyOn(
+          service as unknown as { createDescription: Function },
+          'createDescription',
+        )
+        .mockReturnValueOnce('REPL_ONE' as any)
+        .mockReturnValueOnce('REPL_TWO' as any);
+
+      // Act
+      const result = await service.injectCustomShortcuts(
+        content,
+        DescriptionType.HTML,
+        { decoratedProps: { metadata: { name: 'Test' } } } as any,
+        'title',
+        ['tag1'],
+      );
+
+      // Assert
+      expect(result).toContain('REPL_ONE');
+      expect(result).toContain('REPL_TWO');
+      expect(result).not.toContain('<%PB_CUSTOM_SHORTCUT:one%>');
+      expect(result).not.toContain('<%PB_CUSTOM_SHORTCUT:two%>');
+      expect(customShortcutsService.findById).toHaveBeenCalledTimes(2);
+      expect(spy).toHaveBeenCalledTimes(2);
+    });
+
+    it('No injection when no shortcuts present: content unchanged', async () => {
+      // Arrange
+      const content = 'No markers here.';
+      (customShortcutsService.findById as jest.Mock).mockClear();
+
+      // Act
+      const result = await service.injectCustomShortcuts(
+        content,
+        DescriptionType.MARKDOWN,
+        { decoratedProps: { metadata: { name: 'Test' } } } as any,
+        'title',
+        ['tag1'],
+      );
+
+      // Assert
+      expect(result).toBe(content);
+      expect(customShortcutsService.findById).not.toHaveBeenCalled();
+    });
+
+    it('Strips remaining markers (including wrapped) when shortcuts not found', async () => {
+      // Arrange
+      (customShortcutsService.findById as jest.Mock)
+        .mockResolvedValue(undefined);
+      const marker1 = '<%PB_CUSTOM_SHORTCUT:notfound%>';
+      const marker2 = '<p><%PB_CUSTOM_SHORTCUT:also-missing%></p>';
+      const content = `Before ${marker1} Middle ${marker2} After`;
+
+      // Act
+      const result = await service.injectCustomShortcuts(
+        content,
+        DescriptionType.HTML,
+        { decoratedProps: { metadata: { name: 'Test' } } } as any,
+        'title',
+        ['tag1']
+      );
+
+      // Assert
+      expect(result).not.toContain(marker1);
+      expect(result).not.toContain('also-missing');
+      expect(result).not.toContain('<p>');
+      expect(result).not.toContain('</p>');
+      expect(result).toContain('Before');
+      expect(result).toContain('Middle');
+      expect(result).toContain('After');
+    });
   });
 
   // TODO: Add test for description type CUSTOM
