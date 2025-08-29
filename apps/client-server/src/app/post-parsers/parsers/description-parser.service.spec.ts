@@ -561,8 +561,9 @@ describe('DescriptionParserService', () => {
 
     it('Strips remaining markers (including wrapped) when shortcuts not found', async () => {
       // Arrange
-      (customShortcutsService.findById as jest.Mock)
-        .mockResolvedValue(undefined);
+      (customShortcutsService.findById as jest.Mock).mockResolvedValue(
+        undefined,
+      );
       const marker1 = '<%PB_CUSTOM_SHORTCUT:notfound%>';
       const marker2 = '<p><%PB_CUSTOM_SHORTCUT:also-missing%></p>';
       const content = `Before ${marker1} Middle ${marker2} After`;
@@ -573,7 +574,7 @@ describe('DescriptionParserService', () => {
         DescriptionType.HTML,
         { decoratedProps: { metadata: { name: 'Test' } } } as any,
         'title',
-        ['tag1']
+        ['tag1'],
       );
 
       // Assert
