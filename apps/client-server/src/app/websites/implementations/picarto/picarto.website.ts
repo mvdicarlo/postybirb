@@ -26,7 +26,7 @@ import { PicartoFileSubmission } from './models/picarto-file-submission';
 
 @WebsiteMetadata({
   name: 'picarto',
-  displayName: 'picarto',
+  displayName: 'Picarto',
 })
 @UserLoginFlow('https://picarto.tv')
 @SupportsFiles({
@@ -36,7 +36,7 @@ import { PicartoFileSubmission } from './models/picarto-file-submission';
   },
   fileBatchSize: 5, // 1 main + up to 4 variations
 })
-@SupportsUsernameShortcut({ id: 'ptv', url: 'https://picarto.tv/$1' })
+@SupportsUsernameShortcut({ id: 'picarto', url: 'https://picarto.tv/$1' })
 export default class Picarto
   extends Website<
     PicartoAccountData,
@@ -87,12 +87,15 @@ export default class Picarto
 
   calculateImageResize(file: ISubmissionFile): ImageResizeProps {
     // Max 4K image size for non-member users and <= 15MB
-    return {
-      width: 2160,
-      height: 3840,
-      maxBytes: FileSize.megabytes(15),
-      allowQualityLoss: true,
-    };
+    if (file.width > 3840 || file.height > 2160) {
+      return {
+        width: 3840,
+        height: 2160,
+        maxBytes: FileSize.megabytes(15),
+      };
+    }
+
+    return undefined;
   }
 
   async onPostFileSubmission(

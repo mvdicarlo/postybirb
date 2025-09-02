@@ -6,6 +6,8 @@ import {
 } from '@postybirb/form-builder';
 import { DescriptionType, DescriptionValue, TagValue } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
+import { PicartoCategories } from './picarto-categories';
+import { PicartoSoftware } from './picarto-software';
 
 export class PicartoFileSubmission extends BaseWebsiteOptions {
   @DescriptionField({
@@ -65,22 +67,16 @@ export class PicartoFileSubmission extends BaseWebsiteOptions {
     label: 'category',
     section: 'website',
     span: 6,
-    // Keep simple freeform list; could derive from constants later
-    options: [
-      { value: 'Creative', label: 'Creative' },
-      { value: 'Photography', label: 'Photography' },
-      { value: 'Traditional', label: 'Traditional' },
-      { value: 'Digital', label: 'Digital' },
-    ],
+    options: PicartoCategories,
   })
   category = 'Creative';
 
   @SelectField({
-    label: 'feature',
+    label: 'software',
     section: 'website',
     span: 12,
     allowMultiple: true,
-    options: [],
+    options: PicartoSoftware,
   })
   softwares: string[] = [];
 
