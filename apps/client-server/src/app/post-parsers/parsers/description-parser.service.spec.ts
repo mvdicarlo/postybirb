@@ -468,7 +468,9 @@ describe('DescriptionParserService', () => {
       });
       jest
         .spyOn(
-          service as unknown as { createDescription: Function },
+          service as unknown as {
+            createDescription: (...args: any[]) => any;
+          },
           'createDescription',
         )
         .mockReturnValue(replacement as any);
@@ -516,7 +518,9 @@ describe('DescriptionParserService', () => {
         });
       const spy = jest
         .spyOn(
-          service as unknown as { createDescription: Function },
+          service as unknown as {
+            createDescription: (...args: any[]) => any;
+          },
           'createDescription',
         )
         .mockReturnValueOnce('REPL_ONE' as any)
