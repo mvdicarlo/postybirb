@@ -5,6 +5,7 @@ import { FileSubmission, SubmissionType } from '@postybirb/types';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { AccountService } from '../account/account.service';
+import { CustomShortcutsService } from '../custom-shortcuts/custom-shortcuts.service';
 import { SubmissionFile } from '../drizzle/models';
 import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
 import { FileConverterService } from '../file-converter/file-converter.service';
@@ -116,6 +117,7 @@ describe('FileService', () => {
         SettingsService,
         FormGeneratorService,
         FileConverterService,
+        CustomShortcutsService
       ],
     }).compile();
     fileBufferRepository = new PostyBirbDatabase('FileBufferSchema');

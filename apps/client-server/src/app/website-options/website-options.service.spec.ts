@@ -3,6 +3,7 @@ import { clearDatabase } from '@postybirb/database';
 import {
   DefaultDescriptionValue,
   DefaultTagValue,
+  Description,
   SubmissionRating,
   SubmissionType,
 } from '@postybirb/types';
@@ -209,5 +210,55 @@ describe('WebsiteOptionsService', () => {
     });
 
     expect(update.data.title).toEqual('title updated');
+  });
+
+  it('filters nested inline content and children blocks', async () => {
+    const nestedBlocks: Description = [
+      {
+        id: 'test-basic-text',
+        type: 'paragraph',
+        props: {
+          textColor: 'default',
+          backgroundColor: 'default',
+          textAlignment: 'left',
+        },
+        content: [
+          { type: 'text', text: 'Hello, ', styles: { bold: true } },
+          {
+            type: 'customShortcut',
+            props: {
+              id: 'to-delete',
+            },
+            content: [
+              {
+                type: 'text',
+                text: 'User',
+                styles: {},
+              },
+            ],
+          },
+        ],
+        children: [],
+      },
+    ];
+
+    const { changed, filtered } = service.filterCustomShortcut(
+      nestedBlocks,
+      'to-delete',
+    );
+    expect(changed).toBeTruthy();
+    expect(filtered).toEqual([
+      {
+        id: 'test-basic-text',
+        type: 'paragraph',
+        props: {
+          textColor: 'default',
+          backgroundColor: 'default',
+          textAlignment: 'left',
+        },
+        content: [{ type: 'text', text: 'Hello, ', styles: { bold: true } }],
+        children: [],
+      },
+    ]);
   });
 });

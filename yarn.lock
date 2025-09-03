@@ -14011,6 +14011,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"gql-query-builder@npm:^3.8.0":
+  version: 3.8.0
+  resolution: "gql-query-builder@npm:3.8.0"
+  checksum: 10c0/52138c04be359361586c3960f48439665f7990c8536b7ef2d03c5f74faa65f429cbea114effd41b1c02ed908cef9dedfe9e42672bb4825b6cd7775016653f6c5
+  languageName: node
+  linkType: hard
+
 "graceful-fs@npm:^4.1.11, graceful-fs@npm:^4.1.2, graceful-fs@npm:^4.1.6, graceful-fs@npm:^4.2.0, graceful-fs@npm:^4.2.11, graceful-fs@npm:^4.2.4, graceful-fs@npm:^4.2.6, graceful-fs@npm:^4.2.9":
   version: 4.2.11
   resolution: "graceful-fs@npm:4.2.11"
@@ -20028,6 +20035,7 @@ __metadata:
     filesize: "npm:^10.1.6"
     form-data: "npm:^4.0.0"
     form-urlencoded: "npm:^6.1.5"
+    gql-query-builder: "npm:^3.8.0"
     hasha: "npm:^5.2.2"
     hbs: "npm:^4.2.0"
     history: "npm:^5.3.0"

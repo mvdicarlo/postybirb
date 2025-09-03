@@ -23,6 +23,7 @@ declare global {
       pickDirectory?(): Promise<string | undefined>;
       openExternalLink(url: string): void;
       getCookiesForAccount(accountId: string): Promise<string>;
+      quit(code?: number): void;
       platform: string;
       app_port: string;
       app_version: string;

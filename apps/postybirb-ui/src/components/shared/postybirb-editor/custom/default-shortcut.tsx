@@ -38,7 +38,8 @@ export const insertDefaultShortcut = (editor: BlockNoteEditor) => ({
       type: 'default',
     } as never);
   },
-  aliases: ['default', 'description'],
+  aliases: ['default'],
   group: 'Shortcuts',
   icon: <div>📝</div>,
+  subtext: 'Inserts default description'
 });

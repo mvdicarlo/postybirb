@@ -28,7 +28,7 @@ export const TestMetadata: IWebsiteMetadata = {
 };
 
 @WebsiteMetadata(TestMetadata)
-@UserLoginFlow('https://furaffinity.net')
+@UserLoginFlow('https://patreon.com')
 @SupportsFiles(['image/png', 'image/jpeg'])
 export default class TestWebsite
   extends Website<{ test: string }>

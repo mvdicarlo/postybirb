@@ -5,7 +5,7 @@
   },
   "description": "PostyBirb is a desktop application used for posting to multiple websites from one simple form.",
   "name": "postybirb",
-  "version": "4.0.4",
+  "version": "4.9.2",
   "repository": {
     "type": "git",
     "url": "git+https://mvdicarlo@github.com/mvdicarlo/postybirb.git"
@@ -108,6 +108,7 @@
     "filesize": "^10.1.6",
     "form-data": "^4.0.0",
     "form-urlencoded": "^6.1.5",
+    "gql-query-builder": "^3.8.0",
     "hasha": "^5.2.2",
     "history": "^5.3.0",
     "html-entities": "^2.6.0",
@@ -249,5 +250,5 @@
     "glob": "9",
     "jest-snapshot@npm:^29.7.0": "patch:jest-snapshot@npm%3A29.7.0#~/.yarn/patches/jest-snapshot-npm-29.7.0-15ef0a4ad6.patch"
   },
-  "packageManager": "yarn@4.9.2"
+  "packageManager": "yarn@4.9.4"
 }

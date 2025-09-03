@@ -50,6 +50,7 @@ export const FieldLabelTranslations = {
   tagPermissions: msg`Tag permissions`,
   private: msg`Private`,
   thumbnailAsCoverArt: msg`Use thumbnail as cover art`,
+  software: msg`Software`,
   characters: msg`Characters`,
   artistName: msg`Artist name`,
   offSiteArtistUrl: msg`Artist URL (Off-Site only)`,

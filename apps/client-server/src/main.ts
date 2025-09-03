@@ -67,6 +67,7 @@ async function bootstrap() {
     .setDescription('PostyBirb API')
     .setVersion('1.0')
     .addTag('account')
+    .addTag('custom-shortcut')
     .addTag('directory-watchers')
     .addTag('file')
     .addTag('file-submission')
