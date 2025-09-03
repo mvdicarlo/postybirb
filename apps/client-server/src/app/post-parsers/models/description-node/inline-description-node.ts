@@ -71,6 +71,10 @@ export class DescriptionInlineNode
       return sc ? sc.url : '';
     }
 
+    if (this.type === 'customShortcut') {
+      return DescriptionInlineNode.getCustomShortcutMarker(this.props.id);
+    }
+
     return this.content.map((child) => child.toString()).join('');
   }
 
@@ -90,6 +94,10 @@ export class DescriptionInlineNode
       if (!sc) return '';
       if (!sc.url.startsWith('http')) return `<span>${sc.url}</span>`;
       return `<a target="_blank" href="${sc.url}">${sc.username}</a>`;
+    }
+
+    if (this.type === 'customShortcut') {
+      return DescriptionInlineNode.getCustomShortcutMarker(this.props.id);
     }
 
     return `<span>${this.content
@@ -113,6 +121,18 @@ export class DescriptionInlineNode
       return sc ? `${sc.url ?? sc.username}` : '';
     }
 
+    if (this.type === 'customShortcut') {
+      return DescriptionInlineNode.getCustomShortcutMarker(this.props.id);
+    }
+
     return this.content.map((child) => child.toBBCodeString()).join('');
+  }
+
+  public static getCustomShortcutMarker(id: string) {
+    return `<%PB_CUSTOM_SHORTCUT:${id}%>`;
+  }
+
+  public static getCustomShortcutMarkerRegex() {
+    return /<%PB_CUSTOM_SHORTCUT:([a-zA-Z0-9_-]+)%>/g;
   }
 }

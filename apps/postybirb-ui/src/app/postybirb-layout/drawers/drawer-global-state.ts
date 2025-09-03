@@ -6,6 +6,7 @@ export type DrawerGlobalState = {
   tagGroupsDrawerVisible: boolean;
   tagConvertersDrawerVisible: boolean;
   notificationsDrawerVisible: boolean;
+  customShortcutsDrawerVisible: boolean;
 };
 
 export const useDrawerGlobalState = createGlobalState<DrawerGlobalState>({
@@ -14,4 +15,5 @@ export const useDrawerGlobalState = createGlobalState<DrawerGlobalState>({
   tagGroupsDrawerVisible: false,
   tagConvertersDrawerVisible: false,
   notificationsDrawerVisible: false,
+  customShortcutsDrawerVisible: false,
 });

@@ -29,6 +29,7 @@ import { UsernameShortcut } from '@postybirb/types';
 import {
   IconChevronDown,
   IconSearch,
+  IconUser,
   IconWorld,
   IconX,
 } from '@tabler/icons-react';
@@ -345,7 +346,7 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
       // Display text for selected websites
       const selectedDisplayText = useMemo(() => {
         if (selectedWebsiteIds.length === 0) {
-          return <Trans>All Bebsites</Trans>;
+          return <Trans>All Websites</Trans>;
         }
 
         if (selectedWebsiteIds.length === 1) {
@@ -616,6 +617,7 @@ export const getUsernameShortcutsMenuItems = (
 ): DefaultReactSuggestionItem[] =>
   shortcuts.map((sc) => ({
     title: sc.id,
+    icon: <IconUser size={16} />,
     onItemClick: () => {
       editor.insertInlineContent([
         {
@@ -630,4 +632,6 @@ export const getUsernameShortcutsMenuItems = (
         ' ', // add a space after the shortcut
       ]);
     },
+    // eslint-disable-next-line lingui/no-unlocalized-strings
+    group: 'Username Shortcuts',
   }));

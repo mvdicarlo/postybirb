@@ -322,6 +322,36 @@ export const DescriptionSchema = Object.freeze({
         },
       },
     },
+    customShortcut: {
+      config: {
+        type: 'customShortcut',
+        propSchema: {
+          id: {
+            default: '1815252911811',
+          },
+        },
+        content: 'styled',
+      },
+      implementation: {
+        node: {
+          type: 'node',
+          name: 'customShortcut',
+          parent: null,
+          child: null,
+          config: {
+            name: 'customShortcut',
+            defaultOptions: {},
+            inline: true,
+            group: 'inline',
+            selectable: true,
+            atom: false,
+            content: 'inline*',
+          },
+          options: {},
+          storage: {},
+        },
+      },
+    },
   },
   styleSpecs: {
     bold: {
@@ -571,6 +601,15 @@ export const DescriptionSchema = Object.freeze({
           default: '',
         },
         only: {
+          default: '',
+        },
+      },
+      content: 'styled',
+    },
+    customShortcut: {
+      type: 'customShortcut',
+      propSchema: {
+        id: {
           default: '',
         },
       },

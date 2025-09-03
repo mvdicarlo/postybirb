@@ -1,8 +1,9 @@
-export * from './events/account.events';
-export * from './events/notification.events';
-export * from './events/settings.events';
-export * from './events/submission-template.events';
-export * from './events/submission.events';
-export * from './events/tag-converter.events';
-export * from './events/tag-group.events';
-export * from './events/website.events';
+export const ACCOUNT_UPDATES = 'ACCOUNT_UPDATES';
+export const NOTIFICATION_UPDATES = 'NOTIFICATION_UPDATES';
+export const SETTINGS_UPDATES = 'SETTINGS_UPDATES';
+export const SUBMISSION_TEMPLATE_UPDATES = 'SUBMISSION_TEMPLATE_UPDATES';
+export const SUBMISSION_UPDATES = 'SUBMISSION_UPDATES';
+export const TAG_CONVERTER_UPDATES = 'TAG_CONVERTER_UPDATES';
+export const TAG_GROUP_UPDATES = 'TAG_GROUP_UPDATES';
+export const WEBSITE_UPDATES = 'WEBSITE_UPDATES';
+export const CUSTOM_SHORTCUT_UPDATES = 'CUSTOM_SHORTCUT_UPDATES';

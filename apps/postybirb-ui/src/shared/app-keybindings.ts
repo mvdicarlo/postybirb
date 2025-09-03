@@ -7,6 +7,7 @@ export const TagConvertersKeybinding = 'Alt+C';
 export const MessageSubmissionsKeybinding = 'Alt+M';
 export const NotificationsKeybinding = 'Alt+N';
 export const FileSubmissionsKeybinding = 'Alt+F';
+export const CustomShortcutsKeybinding = 'Alt+D';
 export const UndoKeybinding = 'Control+Z';
 export const RedoKeybinding = 'Control+Y';
 export const SpotlightKeybinding = 'Control+K';

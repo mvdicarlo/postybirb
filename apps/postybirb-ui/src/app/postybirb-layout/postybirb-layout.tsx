@@ -18,6 +18,7 @@ import {
   IconArrowBarRight,
   IconArrowUp,
   IconBell,
+  IconBlockquote,
   IconFile,
   IconHome,
   IconMessage,
@@ -37,6 +38,7 @@ import {
 } from '../../pages/route-paths';
 import {
   AccountKeybinding,
+  CustomShortcutsKeybinding,
   FileSubmissionsKeybinding,
   HomeKeybinding,
   MessageSubmissionsKeybinding,
@@ -48,6 +50,7 @@ import {
 import { NotificationStore } from '../../stores/notification.store';
 import { useStore } from '../../stores/use-store';
 import { AccountDrawer } from './drawers/account-drawer/account-drawer';
+import { CustomShortcutsDrawer } from './drawers/custom-shortcuts-drawer';
 import { NotificationsDrawer } from './drawers/notifications-drawer';
 import { SettingsDrawer } from './drawers/settings-drawer/settings-drawer';
 import { TagConverterDrawer } from './drawers/tag-converter-drawer';
@@ -133,6 +136,14 @@ const navigationTargets: (
     label: <Trans>Tag Converters</Trans>,
     globalStateKey: 'tagConvertersDrawerVisible',
     kbd: TagConvertersKeybinding,
+  },
+  {
+    type: 'drawer',
+    key: 'custom-shortcuts',
+    icon: <IconBlockquote />,
+    label: <Trans>Custom Shortcuts</Trans>,
+    globalStateKey: 'customShortcutsDrawerVisible',
+    kbd: CustomShortcutsKeybinding,
   },
   {
     type: 'drawer',
@@ -230,6 +241,7 @@ function Layout() {
       <TagGroupDrawer />
       <TagConverterDrawer />
       <NotificationsDrawer />
+      <CustomShortcutsDrawer />
       <ScrollToTop />
       <View />
     </Box>
@@ -302,7 +314,7 @@ export function PostyBirbLayout() {
             {navigationTargets.map((target, i) => {
               if (!target) {
                 // eslint-disable-next-line react/no-array-index-key
-                return <Divider size="md" mr={6} ml={6} key={i.toString()} />;
+                return <Divider size="sm" mr={6} ml={6} key={i.toString()} />;
               }
 
               const { key, ...rest } = target;

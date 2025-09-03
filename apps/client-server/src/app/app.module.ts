@@ -6,6 +6,7 @@ import { join } from 'path';
 import { AccountModule } from './account/account.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { CustomShortcutsModule } from './custom-shortcuts/custom-shortcuts.module';
 import { DirectoryWatchersModule } from './directory-watchers/directory-watchers.module';
 import { FileConverterModule } from './file-converter/file-converter.module';
 import { FileModule } from './file/file.module';
@@ -52,6 +53,7 @@ import { WebsitesModule } from './websites/websites.module';
     FileConverterModule,
     NotificationsModule,
     RemoteModule,
+    CustomShortcutsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
