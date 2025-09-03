@@ -59,7 +59,7 @@ export default class Toyhouse extends Website<ToyhouseAccountData> implements
       const characters = this.getCharacters($);
       const username = $.querySelector('.navbar .display-user-tiny > span.display-user-username').text.trim();
 
-      this.setWebsiteData({ characters: characters });
+      this.setWebsiteData({ characters });
 
       return this.loginState.setLogin(true, username);
     } catch (e) {
@@ -204,13 +204,14 @@ function parseArtistInfo(submission: PostFields<ToyhouseFileSubmission>) {
       'artist_name[]': [submission.artistName, ''],
       'artist_credit[]': ['', ''],
     };
-  } else {
-    return {
-      'artist[]': ['onsite', 'onsite'],
-      'artist_username[]': [submission.artistName, ''],
-      'artist_url[]': ['', ''],
-      'artist_name[]': ['', ''],
-      'artist_credit[]': ['', ''],
-    };
   }
+
+  // On-Site artist.
+  return {
+    'artist[]': ['onsite', 'onsite'],
+    'artist_username[]': [submission.artistName, ''],
+    'artist_url[]': ['', ''],
+    'artist_name[]': ['', ''],
+    'artist_credit[]': ['', ''],
+  };
 }
