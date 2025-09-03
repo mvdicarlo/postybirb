@@ -1,10 +1,22 @@
-import { ActionIcon, Box, Input, Loader, ScrollArea, Text } from '@mantine/core';
 import {
-    SelectOption,
-    SelectOptionGroup,
-    SelectOptionSingle,
+  ActionIcon,
+  Box,
+  Input,
+  Loader,
+  ScrollArea,
+  Text,
+} from '@mantine/core';
+import {
+  SelectOption,
+  SelectOptionGroup,
+  SelectOptionSingle,
 } from '@postybirb/form-builder';
-import { IconCheck, IconChevronDown, IconSearch, IconX } from '@tabler/icons-react';
+import {
+  IconCheck,
+  IconChevronDown,
+  IconSearch,
+  IconX,
+} from '@tabler/icons-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import './select.css';
 
@@ -31,6 +43,8 @@ interface BaseSelectProps {
   loading?: boolean;
   clearable?: boolean;
   searchable?: boolean;
+  /** When searchable is undefined, search will auto-enable when options length >= this threshold */
+  searchThreshold?: number;
   maxDropdownHeight?: number;
   error?: boolean;
   description?: string;
@@ -129,9 +143,11 @@ function renderOption(
     if (option.value !== undefined) {
       const isSelected = selectedValues.includes(option.value);
       const selectableOption = { label: option.label, value: option.value };
-      const optionIndex = flatOptions.findIndex(opt => opt.value === option.value);
+      const optionIndex = flatOptions.findIndex(
+        (opt) => opt.value === option.value,
+      );
       const isFocused = optionIndex === focusedIndex;
-      
+
       elements.push(
         <Box
           key={`group-${option.value}`}
@@ -171,14 +187,24 @@ function renderOption(
     // Render child items
     for (const item of option.items) {
       elements.push(
-        ...renderOption(item, selectedValues, onOptionClick, depth + 1, size, flatOptions, focusedIndex),
+        ...renderOption(
+          item,
+          selectedValues,
+          onOptionClick,
+          depth + 1,
+          size,
+          flatOptions,
+          focusedIndex,
+        ),
       );
     }
   } else if (isOptionSingle(option)) {
     const isSelected = selectedValues.includes(option.value);
-    const optionIndex = flatOptions.findIndex(opt => opt.value === option.value);
+    const optionIndex = flatOptions.findIndex(
+      (opt) => opt.value === option.value,
+    );
     const isFocused = optionIndex === focusedIndex;
-    
+
     elements.push(
       <Box
         key={option.value}
@@ -194,9 +220,7 @@ function renderOption(
         <Text className="select-option-label" truncate size={size}>
           {option.label}
         </Text>
-        {isSelected && (
-          <IconCheck size={16} className="select-option-check" />
-        )}
+        {isSelected && <IconCheck size={16} className="select-option-check" />}
       </Box>,
     );
   }
@@ -215,7 +239,8 @@ export function Select(props: SelectProps): JSX.Element {
     size = 'sm',
     loading = false,
     clearable = false,
-    searchable = false,
+    searchable,
+    searchThreshold = 7,
     maxDropdownHeight = 220,
     error = false,
     description,
@@ -223,6 +248,12 @@ export function Select(props: SelectProps): JSX.Element {
     withAsterisk = false,
     nothingFoundMessage,
   } = props;
+  // Determine if search is enabled (explicit prop wins, otherwise auto-enable by threshold)
+  const enableSearch = ((): boolean => {
+    if (typeof searchable === 'boolean') return searchable;
+    return options.length >= searchThreshold;
+  })();
+
   const [opened, setOpened] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [focusedIndex, setFocusedIndex] = useState(-1);
@@ -248,98 +279,118 @@ export function Select(props: SelectProps): JSX.Element {
 
   // Filter options based on search query with improved fuzzy search
   const filteredOptions = React.useMemo(() => {
-    if (!searchable || !searchQuery.trim()) return options;
-    
+    if (!enableSearch || !searchQuery.trim()) return options;
+
     const query = searchQuery.toLowerCase().trim();
-    
+
     const filterOption = (option: SelectOption): SelectOption | null => {
       if (isOptionGroup(option)) {
         const filteredItems = option.items
-          .map(item => filterOption(item))
+          .map((item) => filterOption(item))
           .filter(Boolean) as SelectOption[];
-        
+
         // Check if group label matches (fuzzy search)
-        const groupMatches = option.label.toLowerCase().includes(query) ||
-          query.split(' ').every(word => option.label.toLowerCase().includes(word));
-        
+        const groupMatches =
+          option.label.toLowerCase().includes(query) ||
+          query
+            .split(' ')
+            .every((word) => option.label.toLowerCase().includes(word));
+
         if (groupMatches || filteredItems.length > 0) {
           return {
             ...option,
-            items: filteredItems
+            items: filteredItems,
           };
         }
         return null;
       }
-      
+
       // Fuzzy search for individual options
-      const optionMatches = option.label.toLowerCase().includes(query) ||
-        query.split(' ').every(word => option.label.toLowerCase().includes(word)) ||
-        option.label.toLowerCase().split(' ').some(word => word.startsWith(query));
-      
+      const optionMatches =
+        option.label.toLowerCase().includes(query) ||
+        query
+          .split(' ')
+          .every((word) => option.label.toLowerCase().includes(word)) ||
+        option.label
+          .toLowerCase()
+          .split(' ')
+          .some((word) => word.startsWith(query));
+
       return optionMatches ? option : null;
     };
-    
-    return options.map(option => filterOption(option)).filter(Boolean) as SelectOption[];
-  }, [options, searchQuery, searchable]);
 
-  const flatSelectableOptions = React.useMemo(() => 
-    flattenSelectableOptions(filteredOptions), [filteredOptions]
+    return options
+      .map((option) => filterOption(option))
+      .filter(Boolean) as SelectOption[];
+  }, [options, searchQuery, enableSearch]);
+
+  const flatSelectableOptions = React.useMemo(
+    () => flattenSelectableOptions(filteredOptions),
+    [filteredOptions],
   );
 
-  const handleOptionClick = useCallback((option: SelectOptionSingle) => {
-    if (disabled) return;
+  const handleOptionClick = useCallback(
+    (option: SelectOptionSingle) => {
+      if (disabled) return;
 
-    if (multiple) {
-      const currentValues = Array.isArray(value) ? value : [];
-      const isSelected = currentValues.includes(option.value);
+      if (multiple) {
+        const currentValues = Array.isArray(value) ? value : [];
+        const isSelected = currentValues.includes(option.value);
 
-      let newValues: string[];
-      let removedOptions: SelectOption[] = [];
-      let addedOptions: SelectOption[] = [];
+        let newValues: string[];
+        let removedOptions: SelectOption[] = [];
+        let addedOptions: SelectOption[] = [];
 
-      if (isSelected) {
-        newValues = currentValues.filter((v) => v !== option.value);
-        removedOptions = [option];
+        if (isSelected) {
+          newValues = currentValues.filter((v) => v !== option.value);
+          removedOptions = [option];
+        } else {
+          newValues = [...currentValues, option.value];
+          addedOptions = [option];
+        }
+
+        const newSelectedOptions = getSelectedOptions(newValues, options);
+        (onChange as SelectMultiProps['onChange'])(
+          newSelectedOptions,
+          removedOptions,
+          addedOptions,
+        );
       } else {
-        newValues = [...currentValues, option.value];
-        addedOptions = [option];
+        const currentOption = value
+          ? getSelectedOptions(value, options)[0] || null
+          : null;
+        const newOption = option.value === value ? null : option;
+
+        (onChange as SelectSingleProps['onChange'])(
+          newOption,
+          currentOption,
+          newOption,
+        );
+
+        // Close dropdown for single select
+        setOpened(false);
+        setSearchQuery('');
       }
+    },
+    [disabled, multiple, value, options, onChange],
+  );
 
-      const newSelectedOptions = getSelectedOptions(newValues, options);
-      (onChange as SelectMultiProps['onChange'])(
-        newSelectedOptions,
-        removedOptions,
-        addedOptions,
-      );
-    } else {
-      const currentOption = value
-        ? getSelectedOptions(value, options)[0] || null
-        : null;
-      const newOption = option.value === value ? null : option;
+  const handleClear = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (disabled) return;
 
-      (onChange as SelectSingleProps['onChange'])(
-        newOption,
-        currentOption,
-        newOption,
-      );
-      
-      // Close dropdown for single select
-      setOpened(false);
-      setSearchQuery('');
-    }
-  }, [disabled, multiple, value, options, onChange]);
-
-  const handleClear = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (disabled) return;
-
-    if (multiple) {
-      (onChange as SelectMultiProps['onChange'])([], selectedOptions, []);
-    } else {
-      const currentOption = value ? getSelectedOptions(value, options)[0] || null : null;
-      (onChange as SelectSingleProps['onChange'])(null, currentOption, null);
-    }
-  }, [disabled, multiple, onChange, selectedOptions, value, options]);
+      if (multiple) {
+        (onChange as SelectMultiProps['onChange'])([], selectedOptions, []);
+      } else {
+        const currentOption = value
+          ? getSelectedOptions(value, options)[0] || null
+          : null;
+        (onChange as SelectSingleProps['onChange'])(null, currentOption, null);
+      }
+    },
+    [disabled, multiple, onChange, selectedOptions, value, options],
+  );
 
   const handleToggle = useCallback(() => {
     if (!disabled && !loading) {
@@ -347,84 +398,131 @@ export function Select(props: SelectProps): JSX.Element {
       if (!opened) {
         setFocusedIndex(-1);
         // Focus search input when opening if searchable
-        if (searchable) {
+        if (enableSearch) {
           setTimeout(() => searchRef.current?.focus(), 0);
         }
       }
     }
-  }, [disabled, loading, opened, searchable]);
+  }, [disabled, loading, opened, enableSearch]);
 
-  const handleTriggerKeyDown = useCallback((event: React.KeyboardEvent) => {
-    if (event.key === 'Enter') {
-      event.preventDefault();
-      if (opened && focusedIndex >= 0) {
+  const handleTriggerKeyDown = useCallback(
+    (event: React.KeyboardEvent) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        if (opened && focusedIndex >= 0) {
+          const focusedOption = flatSelectableOptions[focusedIndex];
+          if (focusedOption) {
+            handleOptionClick(focusedOption);
+          }
+        } else if (!disabled && !loading) {
+          setOpened(!opened);
+        }
+      } else if (event.key === ' ') {
+        event.preventDefault();
+        if (!disabled && !loading) {
+          setOpened(!opened);
+        }
+      } else if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        if (!opened && !disabled && !loading) {
+          setOpened(true);
+        } else if (opened) {
+          setFocusedIndex((prev) =>
+            prev < flatSelectableOptions.length - 1 ? prev + 1 : 0,
+          );
+        }
+      } else if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        if (opened) {
+          setFocusedIndex((prev) =>
+            prev > 0 ? prev - 1 : flatSelectableOptions.length - 1,
+          );
+        }
+      } else if (event.key === 'Escape') {
+        setOpened(false);
+        setSearchQuery('');
+        setFocusedIndex(-1);
+        triggerRef.current?.focus();
+      } else if (
+        event.key === 'Backspace' &&
+        clearable &&
+        selectedOptions.length > 0
+      ) {
+        event.preventDefault();
+        const mockEvent = { stopPropagation: () => {} } as React.MouseEvent;
+        handleClear(mockEvent);
+      } else if (event.key === 'Tab') {
+        setOpened(false);
+        setSearchQuery('');
+        setFocusedIndex(-1);
+      } else if (
+        !opened &&
+        enableSearch &&
+        event.key.length === 1 &&
+        !event.ctrlKey &&
+        !event.metaKey &&
+        !event.altKey
+      ) {
+        // Type-to-open & seed search
+        setOpened(true);
+        setSearchQuery((prev) => (prev + event.key).trim());
+        setTimeout(() => searchRef.current?.focus(), 0);
+      }
+    },
+    [
+      opened,
+      focusedIndex,
+      flatSelectableOptions,
+      handleOptionClick,
+      disabled,
+      loading,
+      clearable,
+      selectedOptions,
+      handleClear,
+      enableSearch,
+    ],
+  );
+
+  const handleSearchChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setSearchQuery(event.target.value);
+      setFocusedIndex(-1);
+    },
+    [],
+  );
+
+  const handleSearchKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLInputElement>) => {
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        setFocusedIndex((prev) => {
+          if (flatSelectableOptions.length === 0) return -1;
+          if (prev < 0) return 0;
+          return prev < flatSelectableOptions.length - 1 ? prev + 1 : 0;
+        });
+      } else if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        setFocusedIndex((prev) => {
+          if (flatSelectableOptions.length === 0) return -1;
+          if (prev < 0) return flatSelectableOptions.length - 1;
+          return prev > 0 ? prev - 1 : flatSelectableOptions.length - 1;
+        });
+      } else if (event.key === 'Escape') {
+        event.preventDefault();
+        setOpened(false);
+        setSearchQuery('');
+        setFocusedIndex(-1);
+        triggerRef.current?.focus();
+      } else if (event.key === 'Enter' && focusedIndex >= 0) {
+        event.preventDefault();
         const focusedOption = flatSelectableOptions[focusedIndex];
         if (focusedOption) {
           handleOptionClick(focusedOption);
         }
-      } else if (!disabled && !loading) {
-        setOpened(!opened);
       }
-    } else if (event.key === ' ') {
-      event.preventDefault();
-      if (!disabled && !loading) {
-        setOpened(!opened);
-      }
-    } else if (event.key === 'ArrowDown') {
-      event.preventDefault();
-      if (!opened && !disabled && !loading) {
-        setOpened(true);
-      } else if (opened) {
-        setFocusedIndex(prev => 
-          prev < flatSelectableOptions.length - 1 ? prev + 1 : 0
-        );
-      }
-    } else if (event.key === 'ArrowUp') {
-      event.preventDefault();
-      if (opened) {
-        setFocusedIndex(prev => 
-          prev > 0 ? prev - 1 : flatSelectableOptions.length - 1
-        );
-      }
-    } else if (event.key === 'Escape') {
-      setOpened(false);
-      setSearchQuery('');
-      setFocusedIndex(-1);
-      triggerRef.current?.focus();
-    } else if (event.key === 'Backspace' && clearable && selectedOptions.length > 0) {
-      event.preventDefault();
-      const mockEvent = { stopPropagation: () => {} } as React.MouseEvent;
-      handleClear(mockEvent);
-    } else if (event.key === 'Tab') {
-      setOpened(false);
-      setSearchQuery('');
-      setFocusedIndex(-1);
-    }
-  }, [opened, focusedIndex, flatSelectableOptions, handleOptionClick, disabled, loading, clearable, selectedOptions, handleClear]);
-
-  const handleSearchChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(event.target.value);
-    setFocusedIndex(-1);
-  }, []);
-
-  const handleSearchKeyDown = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'ArrowDown') {
-      event.preventDefault();
-      setFocusedIndex(0);
-    } else if (event.key === 'Escape') {
-      event.preventDefault();
-      setOpened(false);
-      setSearchQuery('');
-      setFocusedIndex(-1);
-      triggerRef.current?.focus();
-    } else if (event.key === 'Enter' && focusedIndex >= 0) {
-      event.preventDefault();
-      const focusedOption = flatSelectableOptions[focusedIndex];
-      if (focusedOption) {
-        handleOptionClick(focusedOption);
-      }
-    }
-  }, [focusedIndex, flatSelectableOptions, handleOptionClick]);
+    },
+    [focusedIndex, flatSelectableOptions, handleOptionClick],
+  );
 
   const handleClickOutside = useCallback((event: MouseEvent) => {
     const target = event.target as Element;
@@ -447,7 +545,7 @@ export function Select(props: SelectProps): JSX.Element {
   useEffect(() => {
     if (opened && focusedIndex >= 0 && optionsRef.current) {
       const focusedElement = optionsRef.current.querySelector(
-        `[data-option-index="${focusedIndex}"]`
+        `[data-option-index="${focusedIndex}"]`,
       ) as HTMLElement;
       if (focusedElement) {
         focusedElement.scrollIntoView({ block: 'nearest' });
@@ -469,7 +567,7 @@ export function Select(props: SelectProps): JSX.Element {
           </Text>
         </Box>
       )}
-      
+
       <Box
         className={`select-container ${disabled ? 'disabled' : ''} ${opened ? 'opened' : ''} ${error ? 'error' : ''} ${loading ? 'loading' : ''}`}
       >
@@ -483,7 +581,9 @@ export function Select(props: SelectProps): JSX.Element {
           aria-haspopup="listbox"
           aria-disabled={disabled}
           aria-invalid={error}
-          aria-label={label || (typeof placeholder === 'string' ? placeholder : undefined)}
+          aria-label={
+            label || (typeof placeholder === 'string' ? placeholder : undefined)
+          }
           onClick={handleToggle}
           onKeyDown={handleTriggerKeyDown}
           data-size={size}
@@ -496,8 +596,11 @@ export function Select(props: SelectProps): JSX.Element {
           >
             {displayText}
           </Text>
-          
-          <Box className="select-controls" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+
+          <Box
+            className="select-controls"
+            style={{ display: 'flex', alignItems: 'center', gap: 4 }}
+          >
             {loading && <Loader size={size === 'xs' ? 12 : 16} />}
             {clearable && selectedOptions.length > 0 && !loading && (
               <ActionIcon
@@ -514,18 +617,21 @@ export function Select(props: SelectProps): JSX.Element {
             <IconChevronDown
               size={size === 'xs' ? 14 : 16}
               className={`select-arrow ${opened ? 'up' : 'down'}`}
-              style={{ 
+              style={{
                 color: 'var(--mantine-color-dimmed)',
                 transform: opened ? 'rotate(180deg)' : 'rotate(0deg)',
-                transition: TRANSITION_STYLE
+                transition: TRANSITION_STYLE,
               }}
             />
           </Box>
         </Box>
 
         {opened && (
-          <Box className="select-dropdown" style={{ maxHeight: maxDropdownHeight }}>
-            {searchable && (
+          <Box
+            className="select-dropdown"
+            style={{ maxHeight: maxDropdownHeight }}
+          >
+            {enableSearch && (
               <Box p="xs" className="select-search-container">
                 <Input
                   ref={searchRef}
@@ -541,19 +647,21 @@ export function Select(props: SelectProps): JSX.Element {
                       border: BORDER_STYLE,
                       '&:focus': {
                         borderColor: 'var(--mantine-color-blue-filled)',
-                      }
-                    }
+                      },
+                    },
                   }}
                 />
               </Box>
             )}
-            
-            <ScrollArea.Autosize mah={maxDropdownHeight - (searchable ? 70 : 0)}>
-              <Box 
+
+            <ScrollArea.Autosize
+              mah={maxDropdownHeight - (enableSearch ? 70 : 0)}
+            >
+              <Box
                 ref={optionsRef}
                 id={dropdownId}
-                className="select-options" 
-                role="listbox" 
+                className="select-options"
+                role="listbox"
                 aria-multiselectable={multiple}
                 aria-label={`${filteredOptions.length} ${OPTIONS_AVAILABLE_TEXT}`}
               >
@@ -574,7 +682,10 @@ export function Select(props: SelectProps): JSX.Element {
                 ) : (
                   <Box p="sm" ta="center">
                     <Text c="dimmed" size="sm">
-                      {nothingFoundMessage || (searchQuery ? NO_SEARCH_RESULTS_TEXT : NO_OPTIONS_TEXT)}
+                      {nothingFoundMessage ||
+                        (searchQuery
+                          ? NO_SEARCH_RESULTS_TEXT
+                          : NO_OPTIONS_TEXT)}
                     </Text>
                   </Box>
                 )}
@@ -583,7 +694,7 @@ export function Select(props: SelectProps): JSX.Element {
           </Box>
         )}
       </Box>
-      
+
       {description && (
         <Box mt={5}>
           <Text size="xs" c="dimmed">
@@ -591,7 +702,7 @@ export function Select(props: SelectProps): JSX.Element {
           </Text>
         </Box>
       )}
-      
+
       {error && typeof error === 'string' && (
         <Box mt={5}>
           <Text size="xs" c="red">
