@@ -28,7 +28,6 @@ export class FurAffinityFileSubmission extends BaseWebsiteOptions {
   description: DescriptionValue;
 
   @TagField({
-    maxTagLength: 500,
     spaceReplacer: '_',
   })
   tags: TagValue;
