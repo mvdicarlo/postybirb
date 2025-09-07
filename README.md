@@ -39,9 +39,9 @@ Learn more: [Translation guide](./TRANSLATION.md)
 
 ## Project Setup
 
-1. Install nodejs if not installed
+1. Ensure your NodeJS version is 24.6.0 or higher
 2. Clone project using git
-3. `corepack enable` To make yarn use correct version
+3. `corepack enable` To use yarn 4.9.x
 4. `yarn install` Installs dependencies
 5. `yarn run setup` Installs hooks/husky
 6. `yarn start` Starts app
