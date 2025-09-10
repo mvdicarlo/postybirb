@@ -7,6 +7,7 @@ export { default as E621 } from './e621/e621.website';
 export { default as FurAffinity } from './fur-affinity/fur-affinity.website';
 export { default as Furbooru } from './furbooru/furbooru.website';
 export { default as Furtastic } from './furtastic/furtastic.website';
+export { default as HentaiFoundry } from './hentai-foundry/hentai-foundry.website';
 export { default as Inkbunny } from './inkbunny/inkbunny.website';
 export { default as Itaku } from './itaku/itaku.website';
 export { default as KoFi } from './ko-fi/ko-fi.website';
@@ -18,4 +19,3 @@ export { default as Sofurry } from './sofurry/sofurry.website';
 export { default as Telegram } from './telegram/telegram.website';
 export { default as Toyhouse } from './toyhouse/toyhouse.website';
 export { default as Weasyl } from './weasyl/weasyl.website';
-
