@@ -38,9 +38,9 @@
     "dep-graph": "nx dep-graph",
     "help": "nx help",
     "postinstall": "exitzero electron-builder install-app-deps",
-    "setup": "run-s setup:husky",
-    "setup:husky": "husky install",
-    "generate-migration": "drizzle-kit generate"
+    "setup": "run-s prepare",
+    "generate-migration": "drizzle-kit generate",
+    "prepare": "husky"
   },
   "dependencies": {
     "@atproto/api": "^0.15.7",
@@ -225,6 +225,7 @@
     "eslint-plugin-testing-library": "^5.0.3",
     "exitzero": "^1.0.1",
     "hbs": "^4.2.0",
+    "husky": "^9.1.7",
     "inquirer": "^12.3.0",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "~28.1.1",
