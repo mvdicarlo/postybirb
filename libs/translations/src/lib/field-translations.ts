@@ -76,7 +76,6 @@ export const FieldLabelTranslations = {
   characters: msg`Characters`,
   artistName: msg`Artist name`,
   offSiteArtistUrl: msg`Artist URL (Off-Site only)`,
-  nudity: msg`Nudity`,
   gore: msg`Gore`,
   sensitiveContent: msg`Sensitive content`,
   authorizedViewers: msg`Authorized viewers`,
