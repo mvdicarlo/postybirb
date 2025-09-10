@@ -4,7 +4,7 @@ import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
 export class CustomMessageSubmission extends BaseWebsiteOptions {
   @DescriptionField({
-    descriptionType: DescriptionType.HTML
+    descriptionType: DescriptionType.RUNTIME,
   })
   description: DescriptionValue;
 }

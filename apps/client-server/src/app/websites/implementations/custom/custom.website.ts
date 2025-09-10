@@ -1,11 +1,12 @@
 import {
   CustomAccountData,
+  DescriptionType,
   ILoginState,
   ImageResizeProps,
   IPostResponse,
   ISubmissionFile,
   PostData,
-  PostResponse
+  PostResponse,
 } from '@postybirb/types';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
@@ -17,6 +18,7 @@ import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
 import { FileWebsite } from '../../models/website-modifiers/file-website';
 import { MessageWebsite } from '../../models/website-modifiers/message-website';
+import { WithRuntimeDescriptionParser } from '../../models/website-modifiers/with-runtime-description-parser';
 import { Website } from '../../website';
 import { CustomFileSubmission } from './models/custom-file-submission';
 import { CustomMessageSubmission } from './models/custom-message-submission';
@@ -31,7 +33,8 @@ export default class Custom
   extends Website<CustomAccountData>
   implements
     FileWebsite<CustomFileSubmission>,
-    MessageWebsite<CustomMessageSubmission>
+    MessageWebsite<CustomMessageSubmission>,
+    WithRuntimeDescriptionParser
 {
   protected BASE_URL = '';
 
@@ -80,7 +83,7 @@ export default class Custom
       cancellationToken.throwIfCancelled();
 
       const data = this.websiteDataStore.getData();
-      
+
       if (!data?.fileUrl) {
         throw new Error('Custom website was not provided a File Posting URL.');
       }
@@ -91,10 +94,7 @@ export default class Custom
       const builder = new PostBuilder(this, cancellationToken)
         .asMultipart()
         .setField(data.titleField || 'title', options.title)
-        .setField(
-          data.descriptionField || 'description', 
-          this.parseDescription(options.description, data.descriptionType)
-        )
+        .setField(data.descriptionField || 'description', options.description)
         .setField(data.tagField || 'tags', options.tags.join(','))
         .setField(data.ratingField || 'rating', options.rating);
 
@@ -131,7 +131,7 @@ export default class Custom
 
       // Add custom headers
       if (data.headers) {
-        data.headers.forEach(header => {
+        data.headers.forEach((header) => {
           if (header.name && header.value) {
             builder.withHeader(header.name, header.value);
           }
@@ -151,7 +151,10 @@ export default class Custom
         })
         .withException(new Error('Failed to post to custom webhook'));
     } catch (error) {
-      this.logger.error('Unexpected error during custom file submission', error);
+      this.logger.error(
+        'Unexpected error during custom file submission',
+        error,
+      );
       return PostResponse.fromWebsite(this)
         .withException(
           error instanceof Error ? error : new Error(String(error)),
@@ -174,9 +177,11 @@ export default class Custom
       cancellationToken.throwIfCancelled();
 
       const data = this.websiteDataStore.getData();
-      
+
       if (!data?.notificationUrl) {
-        throw new Error('Custom website was not provided a Notification Posting URL.');
+        throw new Error(
+          'Custom website was not provided a Notification Posting URL.',
+        );
       }
 
       const { options } = postData;
@@ -185,16 +190,13 @@ export default class Custom
       const builder = new PostBuilder(this, cancellationToken)
         .asMultipart()
         .setField(data.titleField || 'title', options.title)
-        .setField(
-          data.descriptionField || 'description', 
-          this.parseDescription(options.description, data.descriptionType)
-        )
+        .setField(data.descriptionField || 'description', options.description)
         .setField(data.tagField || 'tags', options.tags.join(','))
         .setField(data.ratingField || 'rating', options.rating);
 
       // Add custom headers
       if (data.headers) {
-        data.headers.forEach(header => {
+        data.headers.forEach((header) => {
           if (header.name && header.value) {
             builder.withHeader(header.name, header.value);
           }
@@ -214,7 +216,10 @@ export default class Custom
         })
         .withException(new Error('Failed to post to custom webhook'));
     } catch (error) {
-      this.logger.error('Unexpected error during custom message submission', error);
+      this.logger.error(
+        'Unexpected error during custom message submission',
+        error,
+      );
       return PostResponse.fromWebsite(this)
         .withException(
           error instanceof Error ? error : new Error(String(error)),
@@ -225,10 +230,18 @@ export default class Custom
 
   onValidateMessageSubmission = validatorPassthru;
 
-  private parseDescription(description: string, descriptionType?: string): string {
-    // For now, return as-is. In the future, this could implement 
-    // parsing for different description types (markdown, bbcode, etc.)
-    // similar to the legacy implementation
-    return description;
+  getRuntimeParser(): DescriptionType {
+    const { descriptionType } = this.getWebsiteData();
+    switch (descriptionType) {
+      case 'bbcode':
+        return DescriptionType.BBCODE;
+      case 'md':
+        return DescriptionType.MARKDOWN;
+      case 'text':
+        return DescriptionType.PLAINTEXT;
+      case 'html':
+      default:
+        return DescriptionType.HTML;
+    }
   }
 }

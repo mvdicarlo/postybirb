@@ -4,7 +4,7 @@ import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
 export class CustomFileSubmission extends BaseWebsiteOptions {
   @DescriptionField({
-    descriptionType: DescriptionType.HTML
+    descriptionType: DescriptionType.RUNTIME,
   })
   description: DescriptionValue;
 }

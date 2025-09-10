@@ -9,6 +9,7 @@ import { SettingsService } from '../../settings/settings.service';
 import { BaseWebsiteOptions } from '../../websites/models/base-website-options';
 import { DefaultWebsiteOptions } from '../../websites/models/default-website-options';
 import { isWithCustomDescriptionParser } from '../../websites/models/website-modifiers/with-custom-description-parser';
+import { isWithRuntimeDescriptionParser } from '../../websites/models/website-modifiers/with-runtime-description-parser';
 import { UnknownWebsite, Website } from '../../websites/website';
 import { DEFAULT_MARKER } from '../models/description-node/block-description-node';
 import {
@@ -153,6 +154,17 @@ export class DescriptionParserService {
         }
         throw new Error(
           `Website does not implement custom description parser: ${instance.constructor.name}`,
+        );
+      case DescriptionType.RUNTIME:
+        if (isWithRuntimeDescriptionParser(instance)) {
+          return this.createDescription(
+            instance,
+            instance.getRuntimeParser(),
+            tree,
+          );
+        }
+        throw new Error(
+          `Website does not implement runtime description mapping: ${instance.constructor.name}`,
         );
       default:
         throw new Error(`Unsupported description type: ${descriptionType}`);
