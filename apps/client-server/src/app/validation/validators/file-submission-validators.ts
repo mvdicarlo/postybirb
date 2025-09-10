@@ -65,6 +65,10 @@ function validateTextFileRequiresFallback({
     if (getFileType(file.fileName) === FileType.TEXT) {
       const supportedMimeTypes =
         websiteInstance.decoratedProps.fileOptions?.acceptedMimeTypes ?? [];
+      if (supportedMimeTypes.length === 0) {
+        // Assume empty to accept all file types if no accepted mime types are specified
+        return;
+      }
       // Fail validation if the file is not supported and no alt file is provided
       if (!supportedMimeTypes.includes(file.mimeType) && !file.hasAltFile) {
         result.errors.push({
