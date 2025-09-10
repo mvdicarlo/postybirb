@@ -17,4 +17,5 @@ export { default as Pillowfort } from './pillowfort/pillowfort.website';
 export { default as Pixiv } from './pixiv/pixiv.website';
 export { default as Sofurry } from './sofurry/sofurry.website';
 export { default as Telegram } from './telegram/telegram.website';
+export { default as Toyhouse } from './toyhouse/toyhouse.website';
 export { default as Weasyl } from './weasyl/weasyl.website';

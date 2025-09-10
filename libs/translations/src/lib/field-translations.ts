@@ -73,6 +73,15 @@ export const FieldLabelTranslations = {
   nudity: msg`Nudity`,
   timeTaken: msg`Time Taken`,
   reference: msg`Reference`,
+  characters: msg`Characters`,
+  artistName: msg`Artist name`,
+  offSiteArtistUrl: msg`Artist URL (Off-Site only)`,
+  nudity: msg`Nudity`,
+  gore: msg`Gore`,
+  sensitiveContent: msg`Sensitive content`,
+  authorizedViewers: msg`Authorized viewers`,
+  publicViewers: msg`Public viewers`,
+  watermark: msg`Watermark`,
 } satisfies Record<string, MessageDescriptor>;
 
 export type FieldLabelTranslationsId = keyof typeof FieldLabelTranslations;
