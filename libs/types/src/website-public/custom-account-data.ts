@@ -7,7 +7,7 @@ export interface CustomAccountData {
   notificationUrl?: string;
   ratingField?: string;
   tagField?: string;
-  thumbnaiField?: string;
+  thumbnailField?: string;
   titleField?: string;
   altTextField?: string;
 }

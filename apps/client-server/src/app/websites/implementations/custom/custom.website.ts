@@ -48,7 +48,7 @@ export default class Custom
       notificationUrl: true,
       ratingField: true,
       tagField: true,
-      thumbnaiField: true,
+      thumbnailField: true,
       titleField: true,
       altTextField: true,
     };
@@ -100,18 +100,15 @@ export default class Custom
 
       // Add files
       const fileFieldName = data.fileField || 'file';
-      files.forEach((file, index) => {
-        if (files.length === 1) {
-          builder.addFile(fileFieldName, file);
-        } else {
-          builder.addFile(`${fileFieldName}[${index}]`, file);
-        }
-      });
+      if (files.length > 1) {
+        builder.addFiles(fileFieldName, files);
+      } else {
+        builder.addFile(fileFieldName, files[0]);
+      }
 
-      // Add thumbnail if provided
-      if (data.thumbnaiField) {
+      if (data.thumbnailField) {
         builder.setConditional(
-          data.thumbnaiField,
+          data.thumbnailField,
           !!files[0]?.thumbnail,
           files[0].thumbnailToPostFormat(),
         );
@@ -120,7 +117,7 @@ export default class Custom
       // Add alt text if provided (this would need to be custom data for PostingFile)
       if (data.altTextField) {
         files.forEach((file, index) => {
-          const altText = ''; // PostingFile doesn't have altText property in this version
+          const { altText } = file.metadata;
           if (files.length === 1) {
             builder.setField(data.altTextField, altText);
           } else {
@@ -141,12 +138,16 @@ export default class Custom
       const result = await builder.send<unknown>(data.fileUrl);
 
       if (result.statusCode === 200) {
-        return PostResponse.fromWebsite(this).withAdditionalInfo(result.body);
+        return PostResponse.fromWebsite(this).withAdditionalInfo({
+          ...result,
+          sentBody: builder.getSanitizedData(),
+        });
       }
 
       return PostResponse.fromWebsite(this)
         .withAdditionalInfo({
           body: result.body,
+          sentBody: builder.getSanitizedData(),
           statusCode: result.statusCode,
         })
         .withException(new Error('Failed to post to custom webhook'));

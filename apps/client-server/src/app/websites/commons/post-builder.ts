@@ -505,6 +505,14 @@ export class PostBuilder {
     }
   }
 
+  /**
+   * Exposes ability to retrieve data for logging outside of the builder
+   * if needed.
+   */
+  public getSanitizedData(): Record<string, Value> {
+    return this.sanitizeDataForLogging(this.data);
+  }
+
   private sanitizeDataForLogging(
     data: Record<string, Value>,
   ): Record<string, Value> {

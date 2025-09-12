@@ -2,30 +2,30 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import {
-  LoadCommitEvent,
+  ConsoleMessageEvent,
+  ContextMenuEvent,
+  DidChangeThemeColorEvent,
   DidFailLoadEvent,
   DidFrameFinishLoadEvent,
-  PageTitleUpdatedEvent,
-  PageFaviconUpdatedEvent,
-  ConsoleMessageEvent,
-  FoundInPageEvent,
-  WillNavigateEvent,
-  DidStartNavigationEvent,
-  DidRedirectNavigationEvent,
-  DidNavigateEvent,
   DidFrameNavigateEvent,
+  DidNavigateEvent,
   DidNavigateInPageEvent,
+  DidRedirectNavigationEvent,
+  DidStartNavigationEvent,
+  FoundInPageEvent,
   IpcMessageEvent,
-  PluginCrashedEvent,
-  DidChangeThemeColorEvent,
-  UpdateTargetUrlEvent,
-  ContextMenuEvent,
+  KeyboardInputEvent,
+  LoadCommitEvent,
   LoadURLOptions,
-  WebviewTagPrintOptions,
-  PrintToPDFOptions,
   MouseInputEvent,
   MouseWheelInputEvent,
-  KeyboardInputEvent,
+  PageFaviconUpdatedEvent,
+  PageTitleUpdatedEvent,
+  PluginCrashedEvent,
+  PrintToPDFOptions,
+  UpdateTargetUrlEvent,
+  WebviewTagPrintOptions,
+  WillNavigateEvent,
 } from 'electron';
 
 export interface WebviewTag extends HTMLElement {
@@ -786,7 +786,7 @@ export interface WebviewTag extends HTMLElement {
    * A `Boolean`. When this attribute is present the guest page will be allowed to
    * open new windows. Popups are disabled by default.
    */
-  allowpopups: boolean;
+  allowpopups: boolean | string;
   /**
    * A `String` which is a list of strings which specifies the blink features to be
    * disabled separated by `,`. The full list of supported feature strings can be
