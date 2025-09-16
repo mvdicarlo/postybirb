@@ -5,6 +5,7 @@ import DiscordLoginView from './discord/discord-login-view';
 import E621LoginView from './e621/e621-login-view';
 import InkbunnyLoginView from './inkbunny/inkbunny-login-view';
 import TelegramLoginView from './telegram/telegram-login-view';
+import TwitterLoginView from './twitter/twitter-login-view';
 
 const CustomLoginComponents: Record<
   string,
@@ -17,6 +18,7 @@ const CustomLoginComponents: Record<
   Inkbunny: InkbunnyLoginView,
   Telegram: TelegramLoginView,
   e621: E621LoginView,
+  Twitter: TwitterLoginView,
 });
 
 export function getCustomLoginComponent(

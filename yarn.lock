@@ -20096,6 +20096,7 @@ __metadata:
     tinykeys: "npm:^3.0.0"
     tslib: "npm:2.5.2"
     turndown: "npm:^7.2.0"
+    twitter-api-v2: "npm:^1.27.0"
     type-fest: "npm:^4.26.1"
     typescript: "npm:^5.8.3"
     uuid: "npm:^10.0.0"
@@ -23685,6 +23686,13 @@ __metadata:
   version: 0.14.5
   resolution: "tweetnacl@npm:0.14.5"
   checksum: 10c0/4612772653512c7bc19e61923fbf42903f5e0389ec76a4a1f17195859d114671ea4aa3b734c2029ce7e1fa7e5cc8b80580f67b071ecf0b46b5636d030a0102a2
+  languageName: node
+  linkType: hard
+
+"twitter-api-v2@npm:^1.27.0":
+  version: 1.27.0
+  resolution: "twitter-api-v2@npm:1.27.0"
+  checksum: 10c0/3c3d4c976053ed72afbbf5382fd8b777d1243e2ee738a32bbab13ba0e72699a276b02a493262594ae459ebeadc65de81eba25ce58453a0383b93042ce6815f4e
   languageName: node
   linkType: hard
 
