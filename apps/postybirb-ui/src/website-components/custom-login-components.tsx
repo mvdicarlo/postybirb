@@ -1,5 +1,6 @@
 import { CustomLoginComponentProvider } from '../models/custom-login-component-provider';
 import BlueskyLoginView from './bluesky/bluesky-login-view';
+import CustomLoginView from './custom/custom-login-view';
 import DiscordLoginView from './discord/discord-login-view';
 import E621LoginView from './e621/e621-login-view';
 import InkbunnyLoginView from './inkbunny/inkbunny-login-view';
@@ -10,10 +11,11 @@ const CustomLoginComponents: Record<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   CustomLoginComponentProvider<any>
 > = Object.freeze({
-  Discord: DiscordLoginView,
-  Telegram: TelegramLoginView,
   Bluesky: BlueskyLoginView,
+  Custom: CustomLoginView,
+  Discord: DiscordLoginView,
   Inkbunny: InkbunnyLoginView,
+  Telegram: TelegramLoginView,
   e621: E621LoginView,
 });
 

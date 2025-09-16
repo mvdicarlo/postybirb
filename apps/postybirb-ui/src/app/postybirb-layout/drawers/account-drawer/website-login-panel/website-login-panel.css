@@ -2,13 +2,15 @@
   position: absolute;
   top: 0;
   height: calc(100vh);
-  overflow-y: auto;
+  overflow: hidden; /* Remove scroll from main container */
   z-index: 1000;
   background-color: var(--mantine-color-body);
   border-left: 1px solid var(--mantine-color-gray-filled);
   margin-top: 0px;
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
 }
 
 .postybirb__website-login-panel__header {
@@ -17,6 +19,16 @@
   background-color: var(--mantine-color-body);
   z-index: 10;
   margin-bottom: 1rem;
+  flex-shrink: 0; /* Prevent header from shrinking */
+}
+
+.postybirb__website-login-panel__content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0 1rem 1rem 1rem;
+  pointer-events: auto;
+  user-select: auto;
 }
 
 .postybirb__website-login-webview {

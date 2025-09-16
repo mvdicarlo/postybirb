@@ -10,10 +10,11 @@ import {
 } from '@mantine/core';
 import { IAccountDto, IWebsiteInfoDto } from '@postybirb/types';
 import { IconWorld } from '@tabler/icons-react';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import accountApi from '../../../../../api/account.api';
 import remoteApi from '../../../../../api/remote.api';
 import { AccountLoginWebview } from '../../../../../components/account/account-login-webview/account-login-webview';
+import { REMOTE_HOST_KEY } from '../../../../../transports/http-client';
 import { getCustomLoginComponent } from '../../../../../website-components/custom-login-components';
 import {
   getOverlayOffset,
@@ -56,24 +57,57 @@ function LoginPanel(props: Omit<WebsiteLoginPanelProps, 'onClose'>) {
     }
   }
 
-  return (
-    // eslint-disable-next-line lingui/no-unlocalized-strings
-    <Box h="calc(100% - 50px)" p="sm">
-      {loginMethod}
-    </Box>
-  );
+  return loginMethod;
 }
 
 export function WebsiteLoginPanel(props: WebsiteLoginPanelProps) {
   const { account, website, onClose } = props;
+  const contentRef = useRef<HTMLDivElement>(null);
   const offset =
     document
       .getElementsByClassName('account-drawer')[0]
       ?.querySelector('section')?.offsetWidth ?? 0;
 
+  // Handle wheel events to override any preventDefault calls from parent components
+  useEffect(() => {
+    const contentElement = contentRef.current;
+    if (!contentElement) {
+      return undefined;
+    }
+
+    const handleWheel = (event: WheelEvent) => {
+      // Stop the event from bubbling up to parent components that might preventDefault
+      event.stopPropagation();
+
+      // Only prevent default if we're at scroll boundaries and trying to scroll further
+      const { scrollTop, scrollHeight, clientHeight } = contentElement;
+      const isAtTop = scrollTop === 0;
+      const isAtBottom = scrollTop + clientHeight >= scrollHeight - 1;
+
+      if ((isAtTop && event.deltaY < 0) || (isAtBottom && event.deltaY > 0)) {
+        // At boundary, let the event bubble (don't prevent default)
+        return;
+      }
+
+      // Manually handle the scroll
+      const scrollAmount = event.deltaY;
+      contentElement.scrollTop += scrollAmount;
+
+      // Prevent default to stop any parent components from interfering
+      event.preventDefault();
+    };
+
+    contentElement.addEventListener('wheel', handleWheel, { passive: false });
+
+    // Cleanup function
+    return () => {
+      contentElement.removeEventListener('wheel', handleWheel);
+    };
+  }, []);
+
   useEffect(
     () => () => {
-      if (localStorage.getItem('remote_url')?.length) {
+      if (localStorage.getItem(REMOTE_HOST_KEY)?.length) {
         remoteApi
           .setCookies(account.id)
           .then(() => {
@@ -101,7 +135,6 @@ export function WebsiteLoginPanel(props: WebsiteLoginPanelProps) {
 
   return (
     <Box
-      p="sm"
       className="postybirb__website-login-panel"
       style={{
         left: totalOffset,
@@ -131,7 +164,9 @@ export function WebsiteLoginPanel(props: WebsiteLoginPanelProps) {
           />
         </Flex>
       </Paper>
-      <LoginPanel {...props} />
+      <Box className="postybirb__website-login-panel__content" ref={contentRef}>
+        <LoginPanel {...props} />
+      </Box>
     </Box>
   );
 }

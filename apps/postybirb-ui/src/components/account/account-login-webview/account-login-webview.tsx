@@ -52,8 +52,8 @@ export function AccountLoginWebview(props: AccountLoginWebviewProps) {
         webpreferences="nativeWindowOpen=1"
         // eslint-disable-next-line react/no-unknown-property
         partition={`persist:${id}`}
-        // eslint-disable-next-line react/no-unknown-property
-        allowpopups
+        // eslint-disable-next-line react/no-unknown-property, @typescript-eslint/no-explicit-any
+        allowpopups={'true' as any}
       />
     </Box>
   );
