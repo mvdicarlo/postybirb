@@ -9,7 +9,7 @@ import {
   Stepper,
   Text,
   TextInput,
-  Title
+  Title,
 } from '@mantine/core';
 import { TwitterAccountData, TwitterOAuthRoutes } from '@postybirb/types';
 import {
@@ -21,7 +21,10 @@ import {
 } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 import websitesApi from '../../api/websites.api';
-import { ExternalLink } from '../../components/external-link/external-link';
+import {
+  ExternalLink,
+  openLink,
+} from '../../components/external-link/external-link';
 import { LoginComponentProps } from '../../models/login-component-props';
 import {
   createLoginHttpErrorHander,
@@ -149,7 +152,11 @@ export default function TwitterLoginView(
                 required
                 value={apiKey}
                 onChange={(e) => setApiKey(e.currentTarget.value.trim())}
-                description={<Trans>Found in your Twitter app's Keys and tokens section</Trans>}
+                description={
+                  <Trans>
+                    Found in your Twitter app's Keys and tokens section
+                  </Trans>
+                }
               />
 
               <PasswordInput
@@ -159,14 +166,17 @@ export default function TwitterLoginView(
                 required
                 value={apiSecret}
                 onChange={(e) => setApiSecret(e.currentTarget.value.trim())}
-                description={<Trans>Keep this secret and never share it publicly</Trans>}
+                description={
+                  <Trans>Keep this secret and never share it publicly</Trans>
+                }
               />
 
               {data?.apiKey && data?.apiSecret && (
                 <Alert color="blue" variant="light">
                   <Text size="sm">
                     <Trans>
-                      You have existing API keys. You can modify them above or proceed to the next step.
+                      You have existing API keys. You can modify them above or
+                      proceed to the next step.
                     </Trans>
                   </Text>
                 </Alert>
@@ -187,7 +197,9 @@ export default function TwitterLoginView(
                       .then(() => {
                         setKeysStored(true);
                         setActiveStep(1); // Advance to next step
-                        notifyLoginSuccess(<Trans>API keys saved successfully</Trans>);
+                        notifyLoginSuccess(
+                          <Trans>API keys saved successfully</Trans>,
+                        );
                       })
                       .catch(
                         createLoginHttpErrorHander(
@@ -197,14 +209,15 @@ export default function TwitterLoginView(
                       .finally(() => setIsStoringKeys(false));
                   }}
                 >
-                  {keysStored ? <Trans>Update API Keys</Trans> : <Trans>Save API Keys</Trans>}
+                  {keysStored ? (
+                    <Trans>Update API Keys</Trans>
+                  ) : (
+                    <Trans>Save API Keys</Trans>
+                  )}
                 </Button>
-                
+
                 {keysStored && (
-                  <Button
-                    variant="light"
-                    onClick={() => setActiveStep(1)}
-                  >
+                  <Button variant="light" onClick={() => setActiveStep(1)}>
                     <Trans>Proceed to Authorization</Trans>
                   </Button>
                 )}
@@ -221,7 +234,9 @@ export default function TwitterLoginView(
           <Paper p="md" withBorder>
             <Stack gap="md">
               <Text size="sm" c="dimmed">
-                <Trans>Click the button below to get your authorization URL</Trans>
+                <Trans>
+                  Click the button below to get your authorization URL
+                </Trans>
               </Text>
 
               <Group>
@@ -241,11 +256,13 @@ export default function TwitterLoginView(
                           setAuthorizationUrl(res.url || '');
                           if (res.oauthToken) setRequestToken(res.oauthToken);
                           setActiveStep(2); // Advance to next step
-                          notifyLoginSuccess(<Trans>Authorization URL generated</Trans>);
-                          
+                          notifyLoginSuccess(
+                            <Trans>Authorization URL generated</Trans>,
+                          );
+
                           // Automatically open the authorization URL in the browser
                           if (res.url) {
-                            window.open(res.url, '_blank');
+                            openLink(res.url);
                           }
                         } else {
                           notifyLoginFailed(res.message);
@@ -276,14 +293,18 @@ export default function TwitterLoginView(
                 <Alert color="blue" variant="light">
                   <Group>
                     <ExternalLink href={authorizationUrl}>
-                      <Button variant="light" leftSection={<IconExternalLink size={16} />}>
+                      <Button
+                        variant="light"
+                        leftSection={<IconExternalLink size={16} />}
+                      >
                         <Trans>Open Twitter Authorization Page</Trans>
                       </Button>
                     </ExternalLink>
                   </Group>
                   <Text size="sm" mt="xs">
                     <Trans>
-                      Click the link above, authorize the app, and copy the PIN code below
+                      Click the link above, authorize the app, and copy the PIN
+                      code below
                     </Trans>
                   </Text>
                 </Alert>
@@ -296,7 +317,11 @@ export default function TwitterLoginView(
                 value={pin}
                 required
                 onChange={(e) => setPin(e.currentTarget.value.trim())}
-                description={<Trans>You'll get this PIN after authorizing on Twitter</Trans>}
+                description={
+                  <Trans>
+                    You'll get this PIN after authorizing on Twitter
+                  </Trans>
+                }
               />
 
               <Group>
@@ -313,7 +338,9 @@ export default function TwitterLoginView(
                       )
                       .then((res) => {
                         if (res.success) {
-                          notifyLoginSuccess(<Trans>Successfully logged in to Twitter!</Trans>);
+                          notifyLoginSuccess(
+                            <Trans>Successfully logged in to Twitter!</Trans>,
+                          );
                           setPin('');
                           setAuthorizationUrl('');
                           setRequestToken(undefined);
@@ -349,7 +376,7 @@ export default function TwitterLoginView(
         >
           <Trans>Back</Trans>
         </Button>
-        
+
         <Button
           leftSection={<IconRefresh size={16} />}
           onClick={handleStartOver}

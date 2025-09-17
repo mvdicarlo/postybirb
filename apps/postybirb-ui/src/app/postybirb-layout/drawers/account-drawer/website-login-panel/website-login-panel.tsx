@@ -16,10 +16,7 @@ import remoteApi from '../../../../../api/remote.api';
 import { AccountLoginWebview } from '../../../../../components/account/account-login-webview/account-login-webview';
 import { REMOTE_HOST_KEY } from '../../../../../transports/http-client';
 import { getCustomLoginComponent } from '../../../../../website-components/custom-login-components';
-import {
-  getOverlayOffset,
-  getVerticalScrollbarOffset,
-} from '../../drawer.util';
+import { getOverlayOffset } from '../../drawer.util';
 import './website-login-panel.css';
 
 type WebsiteLoginPanelProps = {
@@ -68,40 +65,16 @@ export function WebsiteLoginPanel(props: WebsiteLoginPanelProps) {
       .getElementsByClassName('account-drawer')[0]
       ?.querySelector('section')?.offsetWidth ?? 0;
 
-  // Handle wheel events to override any preventDefault calls from parent components
   useEffect(() => {
-    const contentElement = contentRef.current;
-    if (!contentElement) {
-      return undefined;
+    const el = document.getElementById('postybirb__main');
+    if (el) {
+      el.style.overflow = 'hidden';
     }
 
-    const handleWheel = (event: WheelEvent) => {
-      // Stop the event from bubbling up to parent components that might preventDefault
-      event.stopPropagation();
-
-      // Only prevent default if we're at scroll boundaries and trying to scroll further
-      const { scrollTop, scrollHeight, clientHeight } = contentElement;
-      const isAtTop = scrollTop === 0;
-      const isAtBottom = scrollTop + clientHeight >= scrollHeight - 1;
-
-      if ((isAtTop && event.deltaY < 0) || (isAtBottom && event.deltaY > 0)) {
-        // At boundary, let the event bubble (don't prevent default)
-        return;
-      }
-
-      // Manually handle the scroll
-      const scrollAmount = event.deltaY;
-      contentElement.scrollTop += scrollAmount;
-
-      // Prevent default to stop any parent components from interfering
-      event.preventDefault();
-    };
-
-    contentElement.addEventListener('wheel', handleWheel, { passive: false });
-
-    // Cleanup function
     return () => {
-      contentElement.removeEventListener('wheel', handleWheel);
+      if (el) {
+        el.style.overflow = '';
+      }
     };
   }, []);
 
@@ -130,12 +103,15 @@ export function WebsiteLoginPanel(props: WebsiteLoginPanelProps) {
   }
 
   const totalOffset = offset - 1;
-  const widthOffset =
-    offset + getOverlayOffset() + getVerticalScrollbarOffset();
+  const widthOffset = offset + getOverlayOffset();
 
   return (
     <Box
       className="postybirb__website-login-panel"
+      onWheelCapture={(event) => {
+        // Avoids behavior of other scrolls interfering with panel scrolling
+        event.stopPropagation();
+      }}
       style={{
         left: totalOffset,
         width: `calc(100vw - ${widthOffset}px)`,
