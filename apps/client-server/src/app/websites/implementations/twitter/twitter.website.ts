@@ -10,6 +10,7 @@ import {
   TwitterAccountData,
   TwitterOAuthRoutes,
 } from '@postybirb/types';
+import { parseTweet } from 'twitter-text';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import { DisableAds } from '../../decorators/disable-ads.decorator';
@@ -197,6 +198,17 @@ export default class Twitter
   ): Promise<SimpleValidationResult> {
     const validator = this.createValidator<TwitterFileSubmission>();
 
+    const parsed = parseTweet(postData.options.description ?? '');
+    if (parsed.weightedLength > 280) {
+      validator.warning(
+        'validation.description.max-length',
+        {
+          currentLength: parsed.weightedLength,
+          maxLength: 280,
+        },
+        'description',
+      );
+    }
     return validator.result;
   }
 
@@ -239,6 +251,17 @@ export default class Twitter
   ): Promise<SimpleValidationResult> {
     const validator = this.createValidator<TwitterMessageSubmission>();
 
+    const parsed = parseTweet(postData.options.description ?? '');
+    if (parsed.weightedLength > 280) {
+      validator.warning(
+        'validation.description.max-length',
+        {
+          currentLength: parsed.weightedLength,
+          maxLength: 280,
+        },
+        'description',
+      );
+    }
     return validator.result;
   }
 }
