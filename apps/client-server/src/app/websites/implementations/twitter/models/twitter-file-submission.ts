@@ -9,6 +9,7 @@ import {
   SubmissionRating,
 } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
+import { ContentBlurValue } from '../twitter-api-service/twitter-api-service';
 
 export class TwitterFileSubmission extends BaseWebsiteOptions {
   @DescriptionField({
@@ -51,5 +52,5 @@ export class TwitterFileSubmission extends BaseWebsiteOptions {
       },
     ],
   })
-  contentBlur: undefined | 'other' | 'adult_content' | 'graphical_violence';
+  contentBlur: ContentBlurValue;
 }

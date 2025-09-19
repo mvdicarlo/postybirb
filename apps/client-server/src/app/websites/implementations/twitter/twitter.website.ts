@@ -1,5 +1,5 @@
-import { Http } from '@postybirb/http';
 import {
+  FileType,
   ILoginState,
   ImageResizeProps,
   ISubmissionFile,
@@ -10,9 +10,11 @@ import {
   TwitterAccountData,
   TwitterOAuthRoutes,
 } from '@postybirb/types';
+import { chunk } from 'lodash';
 import { parseTweet } from 'twitter-text';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
+import FileSize from '../../../utils/filesize.util';
 import { DisableAds } from '../../decorators/disable-ads.decorator';
 import { CustomLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
@@ -24,7 +26,10 @@ import { MessageWebsite } from '../../models/website-modifiers/message-website';
 import { Website } from '../../website';
 import { TwitterFileSubmission } from './models/twitter-file-submission';
 import { TwitterMessageSubmission } from './models/twitter-message-submission';
-import { TwitterApiServiceV2 } from './twitter-api-service/twitter-api-service';
+import {
+  TweetResultMeta,
+  TwitterApiServiceV2,
+} from './twitter-api-service/twitter-api-service';
 
 @WebsiteMetadata({
   name: 'twitter',
@@ -35,14 +40,22 @@ import { TwitterApiServiceV2 } from './twitter-api-service/twitter-api-service';
   id: 'twitter',
   url: 'https://x.com/$1',
 })
-@SupportsFiles([
-  'image/png',
-  'image/jpeg',
-  'image/gif',
-  'video/mp4',
-  'video/mov',
-  'image/webp',
-])
+@SupportsFiles({
+  fileBatchSize: 120,
+  acceptedMimeTypes: [
+    'image/png',
+    'image/jpeg',
+    'image/gif',
+    'video/mp4',
+    'video/mov',
+    'image/webp',
+  ],
+  acceptedFileSizes: {
+    'image/gif': FileSize.megabytes(15),
+    [FileType.IMAGE]: FileSize.megabytes(5),
+    [FileType.VIDEO]: FileSize.megabytes(15),
+  },
+})
 @DisableAds()
 export default class Twitter
   extends Website<TwitterAccountData>
@@ -166,31 +179,72 @@ export default class Twitter
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfCancelled();
-    const formData = {
-      file: files[0].toPostFormat(),
-      thumb: files[0].thumbnailToPostFormat(),
-      description: postData.options.description,
-      tags: postData.options.tags.join(', '),
-      title: postData.options.title,
-      rating: postData.options.rating,
-    };
+    const filePartitions = chunk(files, 4);
+    const { accessToken, accessTokenSecret, apiKey, apiSecret } =
+      this.getWebsiteData();
+    const results: TweetResultMeta[] = [];
+    for (const partition of filePartitions) {
+      const result = await TwitterApiServiceV2.postMedia(
+        { apiKey, apiSecret, accessToken, accessTokenSecret },
+        partition,
+        postData,
+        results.length > 0 ? results[results.length - 1].id : undefined,
+      );
 
-    const result = await Http.post<string>(`${this.BASE_URL}/submit`, {
-      partition: this.accountId,
-      data: formData,
-      type: 'multipart',
-    });
+      if (!result.success || cancellationToken.isCancelled) {
+        const cleanupSuccess = await this.cleanUpFailedPost(
+          results,
+          apiKey,
+          apiSecret,
+          accessToken,
+          accessTokenSecret,
+        );
+        return PostResponse.fromWebsite(this)
+          .withMessage(
+            `Post failed${cleanupSuccess ? '' : ' and was unable to delete partially created tweets (manual cleanup needed)'}`,
+          )
+          .withAdditionalInfo(result)
+          .withException(new Error(result.error || 'Failed to post'));
+      }
 
-    if (result.statusCode === 200) {
-      return PostResponse.fromWebsite(this).withAdditionalInfo(result.body);
+      results.push(result);
     }
 
-    return PostResponse.fromWebsite(this)
-      .withAdditionalInfo({
-        body: result.body,
-        statusCode: result.statusCode,
-      })
-      .withException(new Error('Failed to post'));
+    return PostResponse.fromWebsite(this).withAdditionalInfo(results);
+  }
+
+  private async cleanUpFailedPost(
+    results: TweetResultMeta[],
+    apiKey: string,
+    apiSecret: string,
+    accessToken: string,
+    accessTokenSecret: string,
+  ) {
+    if (results.length > 1) {
+      try {
+        const deleteResult = await TwitterApiServiceV2.deleteFailedReplyChain(
+          { apiKey, apiSecret, accessToken, accessTokenSecret },
+          results.map((r) => r.id).filter((id) => !!id) as string[],
+        );
+
+        if (deleteResult.errors.length > 0) {
+          this.logger
+            .withMetadata(deleteResult.errors)
+            .warn('Some tweets could not be deleted');
+        }
+
+        if (deleteResult.deletedIds.length > 0) {
+          this.logger.info(
+            `Cleaned up ${deleteResult.deletedIds.length} tweets from failed thread`,
+          );
+        }
+      } catch (err) {
+        this.logger.error('Failed to cleanup failed reply chain:', err);
+        return false;
+      }
+    }
+
+    return true;
   }
 
   async onValidateFileSubmission(
@@ -221,29 +275,27 @@ export default class Twitter
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfCancelled();
-    const formData = {
-      description: postData.options.description,
-      tags: postData.options.tags.join(', '),
-      title: postData.options.title,
-      rating: postData.options.rating,
-    };
+    const { accessToken, accessTokenSecret, apiKey, apiSecret } =
+      this.getWebsiteData();
 
-    const result = await Http.post<string>(`${this.BASE_URL}/submit`, {
-      partition: this.accountId,
-      data: formData,
-      type: 'multipart',
-    });
+    const result = await TwitterApiServiceV2.postStatus(
+      {
+        accessToken,
+        accessTokenSecret,
+        apiKey,
+        apiSecret,
+      },
+      postData,
+      undefined,
+    );
 
-    if (result.statusCode === 200) {
-      return PostResponse.fromWebsite(this).withAdditionalInfo(result.body);
+    if (!result.success) {
+      return PostResponse.fromWebsite(this)
+        .withAdditionalInfo(result)
+        .withException(new Error(result.error || 'Failed to post'));
     }
 
-    return PostResponse.fromWebsite(this)
-      .withAdditionalInfo({
-        body: result.body,
-        statusCode: result.statusCode,
-      })
-      .withException(new Error('Failed to post'));
+    return PostResponse.fromWebsite(this).withAdditionalInfo(result);
   }
 
   async onValidateMessageSubmission(
