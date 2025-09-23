@@ -210,7 +210,9 @@ export default class Twitter
       results.push(result);
     }
 
-    return PostResponse.fromWebsite(this).withAdditionalInfo(results);
+    return PostResponse.fromWebsite(this)
+      .withAdditionalInfo(results)
+      .withSourceUrl(results[0]?.url);
   }
 
   private async cleanUpFailedPost(
@@ -295,7 +297,9 @@ export default class Twitter
         .withException(new Error(result.error || 'Failed to post'));
     }
 
-    return PostResponse.fromWebsite(this).withAdditionalInfo(result);
+    return PostResponse.fromWebsite(this)
+      .withAdditionalInfo(result)
+      .withSourceUrl(result.url);
   }
 
   async onValidateMessageSubmission(

@@ -35,7 +35,7 @@ export function FileSubmissionManagementPage() {
   if (activeTab === 'submissions') {
     display = (
       <>
-        <SubmissionUploader key="submission-uploader" />
+        <SubmissionUploader key="submission-uploader" showTemplatePicker />
         <SubmissionView submissions={fileSubmissions} type={TYPE} />
       </>
     );

@@ -212,7 +212,8 @@ export function EditSubmissionPage() {
   const data = [...submissions, ...templates].find((s) => s.id === id);
   const submission = useMemo(
     () => data ?? new SubmissionDto({} as ISubmissionDto),
-    [data],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [data, data?.updatedAt],
   );
 
   const defaultOption = submission.getDefaultOptions();

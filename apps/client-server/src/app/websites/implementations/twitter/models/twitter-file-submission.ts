@@ -36,7 +36,7 @@ export class TwitterFileSubmission extends BaseWebsiteOptions {
     options: [
       {
         label: 'None',
-        value: undefined,
+        value: '',
       },
       {
         label: 'Other',

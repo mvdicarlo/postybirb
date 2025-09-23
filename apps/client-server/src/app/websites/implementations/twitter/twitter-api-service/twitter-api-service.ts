@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Logger } from '@postybirb/logger';
+import { Logger, PostyBirbLogger } from '@postybirb/logger';
 import { PostData } from '@postybirb/types';
 import {
   InlineErrorV2,
@@ -56,7 +56,16 @@ export type ContentBlurValue =
  * @class TwitterApiServiceV2
  */
 export class TwitterApiServiceV2 {
-  private static Logger = Logger(TwitterApiServiceV2.constructor.name);
+  private static logger: PostyBirbLogger;
+
+  private static get Logger() {
+    if (TwitterApiServiceV2.logger) {
+      return TwitterApiServiceV2.logger;
+    }
+
+    TwitterApiServiceV2.logger = Logger(TwitterApiServiceV2.name);
+    return TwitterApiServiceV2.logger;
+  }
 
   /**
    * Create an authenticated Twitter client
@@ -333,7 +342,7 @@ export class TwitterApiServiceV2 {
       try {
         const { tweetId, tweetResponse } = await this.postTweet(
           client,
-          text,
+          replyTo ? '' : text, // Omit text if this is a reply to avoid duplication
           mediaIds,
           replyTo,
         );
