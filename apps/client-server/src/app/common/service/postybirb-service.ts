@@ -3,7 +3,6 @@ import { SchemaKey } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import { EntityId } from '@postybirb/types';
 import { SQL } from 'drizzle-orm';
-import { debounce } from 'lodash';
 import { FindOptions } from '../../drizzle/postybirb-database/find-options.type';
 import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
 import { WSGateway } from '../../web-socket/web-socket-gateway';
@@ -19,11 +18,6 @@ export abstract class PostyBirbService<TSchemaKey extends SchemaKey> {
   protected readonly logger = Logger(this.constructor.name);
 
   protected readonly repository: PostyBirbDatabase<TSchemaKey>;
-
-  private readonly debouncedEmits = new Map<
-    string,
-    ReturnType<typeof debounce>
-  >();
 
   constructor(
     private readonly table: TSchemaKey | PostyBirbDatabase<TSchemaKey>,
@@ -44,27 +38,7 @@ export abstract class PostyBirbService<TSchemaKey extends SchemaKey> {
    */
   protected async emit(event: WebSocketEvents) {
     if (this.webSocket) {
-      const eventKey = event.event;
-
-      // Get or create debounced function for this event type
-      if (!this.debouncedEmits.has(eventKey)) {
-        const debouncedEmit = debounce((latestEvent: WebSocketEvents) => {
-          this.logger.debug(
-            `Emitting debounced event '${latestEvent.event} [${latestEvent.data.length}]'`,
-          );
-          if (this.webSocket) {
-            this.webSocket.emit(latestEvent);
-          }
-        }, 50);
-
-        this.debouncedEmits.set(eventKey, debouncedEmit);
-      }
-
-      // Call the debounced function with the latest event
-      const debouncedFunction = this.debouncedEmits.get(eventKey);
-      if (debouncedFunction) {
-        debouncedFunction(event);
-      }
+      this.webSocket.emit(event);
     }
   }
 
