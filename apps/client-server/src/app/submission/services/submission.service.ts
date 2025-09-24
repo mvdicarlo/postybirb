@@ -59,6 +59,7 @@ export class SubmissionService
   constructor(
     @Inject(forwardRef(() => WebsiteOptionsService))
     private readonly websiteOptionsService: WebsiteOptionsService,
+    @Inject(forwardRef(() => FileSubmissionService))
     private readonly fileSubmissionService: FileSubmissionService,
     private readonly messageSubmissionService: MessageSubmissionService,
     @Optional() webSocket: WSGateway,

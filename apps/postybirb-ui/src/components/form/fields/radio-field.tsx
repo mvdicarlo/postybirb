@@ -1,6 +1,6 @@
 import { msg } from '@lingui/macro';
 import { useLingui } from '@lingui/react';
-import { Box, Radio, SegmentedControl } from '@mantine/core';
+import { Box, SegmentedControl } from '@mantine/core';
 import { RadioFieldType, RatingFieldType } from '@postybirb/form-builder';
 import { useDefaultOption } from '../hooks/use-default-option';
 import { useValidations } from '../hooks/use-validations';
@@ -58,15 +58,24 @@ function InnerRadioField(
   const value: string = (values[propKey] as string) || field.defaultValue || '';
 
   return (
-    <Radio.Group value={value} onChange={(e) => setFieldValue(propKey, e)}>
-      {field.options.map((o) => (
-        <Radio
-          key={o.toString()}
-          value={o.value as string | number}
-          label={o.label}
-        />
-      ))}
-    </Radio.Group>
+    <SegmentedControl
+      value={value}
+      // orientation={field.layout}
+      size="xs"
+      data={field.options.map((o) => ({
+        label: `${o.label}${
+          field.defaultValue !== undefined &&
+          o.value &&
+          o.value.toString() === field.defaultValue
+            ? ` *`
+            : ''
+        }`,
+        value: o.value ? o.value.toString() : '',
+      }))}
+      onChange={(e) => {
+        setFieldValue(propKey, e);
+      }}
+    />
   );
 }
 

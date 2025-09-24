@@ -10,15 +10,13 @@ import {
 } from '@mantine/core';
 import { IAccountDto, IWebsiteInfoDto } from '@postybirb/types';
 import { IconWorld } from '@tabler/icons-react';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import accountApi from '../../../../../api/account.api';
 import remoteApi from '../../../../../api/remote.api';
 import { AccountLoginWebview } from '../../../../../components/account/account-login-webview/account-login-webview';
+import { REMOTE_HOST_KEY } from '../../../../../transports/http-client';
 import { getCustomLoginComponent } from '../../../../../website-components/custom-login-components';
-import {
-  getOverlayOffset,
-  getVerticalScrollbarOffset,
-} from '../../drawer.util';
+import { getOverlayOffset } from '../../drawer.util';
 import './website-login-panel.css';
 
 type WebsiteLoginPanelProps = {
@@ -56,24 +54,33 @@ function LoginPanel(props: Omit<WebsiteLoginPanelProps, 'onClose'>) {
     }
   }
 
-  return (
-    // eslint-disable-next-line lingui/no-unlocalized-strings
-    <Box h="calc(100% - 50px)" p="sm">
-      {loginMethod}
-    </Box>
-  );
+  return loginMethod;
 }
 
 export function WebsiteLoginPanel(props: WebsiteLoginPanelProps) {
   const { account, website, onClose } = props;
+  const contentRef = useRef<HTMLDivElement>(null);
   const offset =
     document
       .getElementsByClassName('account-drawer')[0]
       ?.querySelector('section')?.offsetWidth ?? 0;
 
+  useEffect(() => {
+    const el = document.getElementById('postybirb__main');
+    if (el) {
+      el.style.overflow = 'hidden';
+    }
+
+    return () => {
+      if (el) {
+        el.style.overflow = '';
+      }
+    };
+  }, []);
+
   useEffect(
     () => () => {
-      if (localStorage.getItem('remote_url')?.length) {
+      if (localStorage.getItem(REMOTE_HOST_KEY)?.length) {
         remoteApi
           .setCookies(account.id)
           .then(() => {
@@ -96,13 +103,15 @@ export function WebsiteLoginPanel(props: WebsiteLoginPanelProps) {
   }
 
   const totalOffset = offset - 1;
-  const widthOffset =
-    offset + getOverlayOffset() + getVerticalScrollbarOffset();
+  const widthOffset = offset + getOverlayOffset();
 
   return (
     <Box
-      p="sm"
       className="postybirb__website-login-panel"
+      onWheelCapture={(event) => {
+        // Avoids behavior of other scrolls interfering with panel scrolling
+        event.stopPropagation();
+      }}
       style={{
         left: totalOffset,
         width: `calc(100vw - ${widthOffset}px)`,
@@ -131,7 +140,9 @@ export function WebsiteLoginPanel(props: WebsiteLoginPanelProps) {
           />
         </Flex>
       </Paper>
-      <LoginPanel {...props} />
+      <Box className="postybirb__website-login-panel__content" ref={contentRef}>
+        <LoginPanel {...props} />
+      </Box>
     </Box>
   );
 }

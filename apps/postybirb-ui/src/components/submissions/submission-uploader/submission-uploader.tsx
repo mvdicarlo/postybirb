@@ -73,7 +73,7 @@ async function uploadFiles({
 } & SubmissionUploaderProps) {
   const snapshot = [...files];
   let submissionIds: SubmissionId[] = [];
-  
+
   if (appendToSubmission && appendToSubmission.type === SubmissionType.FILE) {
     await fileSubmissionApi.appendFiles(
       appendToSubmission.id,
@@ -82,20 +82,25 @@ async function uploadFiles({
     );
   } else {
     // Create file submissions and get their IDs
-    const response = await submissionApi.createFileSubmission(SubmissionType.FILE, snapshot);
+    const response = await submissionApi.createFileSubmission(
+      SubmissionType.FILE,
+      snapshot,
+    );
     const createdSubmissions = response.body as SubmissionDto[];
-    submissionIds = createdSubmissions.map((submission: SubmissionDto) => submission.id);
-    
+    submissionIds = createdSubmissions.map(
+      (submission: SubmissionDto) => submission.id,
+    );
+
     // Apply template to each created submission if templateId is provided
     if (templateId && submissionIds.length > 0) {
       await Promise.all(
         submissionIds.map((submissionId) =>
-          submissionApi.applyTemplate(submissionId, templateId)
-        )
+          submissionApi.applyTemplate(submissionId, templateId),
+        ),
       );
     }
   }
-  
+
   onComplete();
 }
 
@@ -282,13 +287,17 @@ function UploadButton({
 
 type SubmissionUploaderProps = {
   appendToSubmission?: SubmissionDto;
+  // eslint-disable-next-line react/no-unused-prop-types
+  showTemplatePicker?: boolean;
 };
 
 export function SubmissionUploader(props: SubmissionUploaderProps) {
-  const { appendToSubmission } = props;
+  const { appendToSubmission, showTemplatePicker } = props;
   const [files, setFiles] = useState<FileWithPath[]>([]);
   const [cropFile, setCropFile] = useState<FileWithPath | null>(null);
-  const [selectedTemplate, setSelectedTemplate] = useState<SubmissionDto | undefined>();
+  const [selectedTemplate, setSelectedTemplate] = useState<
+    SubmissionDto | undefined
+  >();
 
   const onDelete = (file: FileWithPath) => {
     const index = files.findIndex((f) => f.name === file.name);
@@ -431,14 +440,18 @@ export function SubmissionUploader(props: SubmissionUploaderProps) {
                 </Flex>
               </Dropzone>
 
-              <Box mb="md">
-                <TemplatePicker
-                  type={SubmissionType.FILE}
-                  selected={selectedTemplate?.id}
-                  label={<Trans>Apply template to uploaded files (optional)</Trans>}
-                  onChange={setSelectedTemplate}
-                />
-              </Box>
+              {showTemplatePicker ? (
+                <Box mb="md">
+                  <TemplatePicker
+                    type={SubmissionType.FILE}
+                    selected={selectedTemplate?.id}
+                    label={
+                      <Trans>Apply template to uploaded files (optional)</Trans>
+                    }
+                    onChange={setSelectedTemplate}
+                  />
+                </Box>
+              ) : null}
 
               <UploadButton
                 appendToSubmission={appendToSubmission}

@@ -1,12 +1,17 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import {
   EntityId,
   FileMetadataFields,
   FileSubmission,
+  isFileSubmission,
   ISubmission,
   SubmissionId,
   SubmissionType,
-  isFileSubmission,
 } from '@postybirb/types';
 import { PostyBirbService } from '../../common/service/postybirb-service';
 import { FileService } from '../../file/file.service';
@@ -14,6 +19,7 @@ import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
 import { UpdateAltFileDto } from '../dtos/update-alt-file.dto';
 import { ISubmissionService } from './submission-service.interface';
+import { SubmissionService } from './submission.service';
 
 /**
  * Service that implements logic for manipulating a FileSubmission.
@@ -27,7 +33,11 @@ export class FileSubmissionService
   extends PostyBirbService<'SubmissionSchema'>
   implements ISubmissionService<FileSubmission>
 {
-  constructor(private readonly fileService: FileService) {
+  constructor(
+    private readonly fileService: FileService,
+    @Inject(forwardRef(() => SubmissionService))
+    private readonly submissionService: SubmissionService,
+  ) {
     super('SubmissionSchema');
   }
 
@@ -106,6 +116,7 @@ export class FileSubmissionService
       await this.repository.update(submission.id, {
         metadata: submission.metadata,
       });
+      this.submissionService.emit();
     }
     return submission;
   }
@@ -128,6 +139,7 @@ export class FileSubmissionService
     await this.repository.update(submission.id, {
       metadata: submission.metadata,
     });
+    this.submissionService.emit();
   }
 
   /**
@@ -148,6 +160,7 @@ export class FileSubmissionService
     this.guardIsFileSubmission(submission);
 
     await this.fileService.update(file, fileId, true);
+    this.submissionService.emit();
   }
 
   /**

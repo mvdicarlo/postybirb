@@ -2000,6 +2000,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/runtime@npm:^7.3.1":
+  version: 7.28.4
+  resolution: "@babel/runtime@npm:7.28.4"
+  checksum: 10c0/792ce7af9750fb9b93879cc9d1db175701c4689da890e6ced242ea0207c9da411ccf16dc04e689cc01158b28d7898c40d75598f4559109f761c12ce01e959bf7
+  languageName: node
+  linkType: hard
+
 "@babel/template@npm:^7.24.7, @babel/template@npm:^7.25.0, @babel/template@npm:^7.27.1, @babel/template@npm:^7.27.2, @babel/template@npm:^7.3.3":
   version: 7.27.2
   resolution: "@babel/template@npm:7.27.2"
@@ -7107,6 +7114,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/node@npm:^22.7.7":
+  version: 22.18.1
+  resolution: "@types/node@npm:22.18.1"
+  dependencies:
+    undici-types: "npm:~6.21.0"
+  checksum: 10c0/1912b0ea6cb9ef59722b0fed64652388e13b41d52569c16198f1278a882837bbf4c8a4ec913e852893356f07c0c44b4e00fbca289ac7222741d03449104e22fe
+  languageName: node
+  linkType: hard
+
 "@types/parse-json@npm:^4.0.0":
   version: 4.0.2
   resolution: "@types/parse-json@npm:4.0.2"
@@ -10148,6 +10164,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"core-js@npm:^2.5.0":
+  version: 2.6.12
+  resolution: "core-js@npm:2.6.12"
+  checksum: 10c0/00128efe427789120a06b819adc94cc72b96955acb331cb71d09287baf9bd37bebd191d91f1ee4939c893a050307ead4faea08876f09115112612b6a05684b63
+  languageName: node
+  linkType: hard
+
 "core-util-is@npm:1.0.2":
   version: 1.0.2
   resolution: "core-util-is@npm:1.0.2"
@@ -11557,16 +11580,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"electron@npm:^32":
-  version: 32.1.2
-  resolution: "electron@npm:32.1.2"
+"electron@npm:^35":
+  version: 35.7.5
+  resolution: "electron@npm:35.7.5"
   dependencies:
     "@electron/get": "npm:^2.0.0"
-    "@types/node": "npm:^20.9.0"
+    "@types/node": "npm:^22.7.7"
     extract-zip: "npm:^2.0.1"
   bin:
     electron: cli.js
-  checksum: 10c0/9e453e046e024b1454fb212e977d622feba3b6d24ff922a360c06177ec8bcbe58e729e105260285e79c0a203dfcb42d3d795844030bba8681016ab50b7d4bb87
+  checksum: 10c0/2c331e438b655b25a8b49ce038878cdc61a42481fcdf464ecb5648585a2c83f1edc5d8e0a8de582713f8e3dc8a3b35aaa136735ad68f8009ee2369f3b2e79c15
   languageName: node
   linkType: hard
 
@@ -20020,7 +20043,7 @@ __metadata:
     dotenv: "npm:10.0.0"
     drizzle-kit: "npm:^0.30.4"
     drizzle-orm: "npm:^0.39.2"
-    electron: "npm:^32"
+    electron: "npm:^35"
     electron-builder: "npm:^24.13.3"
     electron-builder-squirrel-windows: "npm:24.13.3"
     electron-context-menu: "npm:^3.1.1"
@@ -20097,6 +20120,8 @@ __metadata:
     tinykeys: "npm:^3.0.0"
     tslib: "npm:2.5.2"
     turndown: "npm:^7.2.0"
+    twitter-api-v2: "npm:^1.27.0"
+    twitter-text: "npm:^3.1.0"
     type-fest: "npm:^4.26.1"
     typescript: "npm:^5.8.3"
     uuid: "npm:^10.0.0"
@@ -20546,7 +20571,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"punycode@npm:^1.4.1":
+"punycode@npm:1.4.1, punycode@npm:^1.4.1":
   version: 1.4.1
   resolution: "punycode@npm:1.4.1"
   checksum: 10c0/354b743320518aef36f77013be6e15da4db24c2b4f62c5f1eb0529a6ed02fbaf1cb52925785f6ab85a962f2b590d9cd5ad730b70da72b5f180e2556b8bd3ca08
@@ -23689,6 +23714,32 @@ __metadata:
   languageName: node
   linkType: hard
 
+"twemoji-parser@npm:^11.0.2":
+  version: 11.0.2
+  resolution: "twemoji-parser@npm:11.0.2"
+  checksum: 10c0/b06116434ef19dcf34fcc44129482dcf561a4f78fd6525aba55329b5a50b525c68125f95d040e9274cd9a1f3e8315b8e6842bb735c68069530a9cb28422130d6
+  languageName: node
+  linkType: hard
+
+"twitter-api-v2@npm:^1.27.0":
+  version: 1.27.0
+  resolution: "twitter-api-v2@npm:1.27.0"
+  checksum: 10c0/3c3d4c976053ed72afbbf5382fd8b777d1243e2ee738a32bbab13ba0e72699a276b02a493262594ae459ebeadc65de81eba25ce58453a0383b93042ce6815f4e
+  languageName: node
+  linkType: hard
+
+"twitter-text@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "twitter-text@npm:3.1.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.3.1"
+    core-js: "npm:^2.5.0"
+    punycode: "npm:1.4.1"
+    twemoji-parser: "npm:^11.0.2"
+  checksum: 10c0/34f2b42df7a0cde707ae3d9138b0232eabced946ab9f825b2500fbcc0c8be8a494fdf98ab5f4c44d7c652843c0c3846ab0aba952c7e3ca90aad69edb06dccdf5
+  languageName: node
+  linkType: hard
+
 "type-check@npm:^0.4.0, type-check@npm:~0.4.0":
   version: 0.4.0
   resolution: "type-check@npm:0.4.0"
@@ -23943,6 +23994,13 @@ __metadata:
   version: 6.19.8
   resolution: "undici-types@npm:6.19.8"
   checksum: 10c0/078afa5990fba110f6824823ace86073b4638f1d5112ee26e790155f481f2a868cc3e0615505b6f4282bdf74a3d8caad715fd809e870c2bb0704e3ea6082f344
+  languageName: node
+  linkType: hard
+
+"undici-types@npm:~6.21.0":
+  version: 6.21.0
+  resolution: "undici-types@npm:6.21.0"
+  checksum: 10c0/c01ed51829b10aa72fc3ce64b747f8e74ae9b60eafa19a7b46ef624403508a54c526ffab06a14a26b3120d055e1104d7abe7c9017e83ced038ea5cf52f8d5e04
   languageName: node
   linkType: hard
 

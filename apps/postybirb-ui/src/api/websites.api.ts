@@ -17,7 +17,7 @@ class WebsitesApi {
     id: WebsiteId,
     route: R,
     data: T[R]['request'],
-  ) {
+  ): Promise<T[R]['response']> {
     const response = await this.client.post(`oauth`, {
       route: route as string,
       id,
