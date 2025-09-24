@@ -22,7 +22,7 @@ the time it takes to post submissions to multiple websites.
 ## V4 Initiative
 
 v4 sets out to be more flexible for adding new features and updates not easily
-supported on v3. It also aims to be more contributor friendly and ease the 
+supported on v3. It also aims to be more contributor friendly and ease the
 implementation of websites where possible.
 
 ## Looking for v3 (PostyBirb+)?
@@ -39,9 +39,12 @@ Learn more: [Translation guide](./TRANSLATION.md)
 
 ## Project Setup
 
-1. `yarn install` Installs dependencies
-2. `yarn run setup` Installs hooks/husky
-3. `yarn start` Starts app
+1. Ensure your NodeJS version is 24.6.0 or higher
+2. Clone project using git
+3. `corepack enable` Make NodeJS use the yarn version specific to the project (from package.json)
+4. `yarn install` Installs dependencies
+5. `yarn run setup` Installs hooks/husky
+6. `yarn start` Starts app
 
 ### Recommended Plugins (VSCode)
 
@@ -88,6 +91,6 @@ web-socket and https.
 - React
 - Blocknote/TipTap (Text editor)
 
------------------
+---
 
 This project was generated using [Nx](https://nx.dev).
