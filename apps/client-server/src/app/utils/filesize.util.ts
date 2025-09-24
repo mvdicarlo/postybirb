@@ -4,10 +4,10 @@
  */
 export default class FileSize {
   static megabytes(size: number): number {
-    return size * 1048576;
+    return size * 1000000;
   }
 
   static bytesToMB(size: number): number {
-    return size / 1048576;
+    return size / 1000000;
   }
 }

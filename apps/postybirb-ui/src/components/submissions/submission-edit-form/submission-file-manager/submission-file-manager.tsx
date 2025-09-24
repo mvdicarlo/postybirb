@@ -32,23 +32,34 @@ function orderFiles(
   const { metadata, files } = submission;
   const { order } = metadata;
 
-  const orderedFiles: ISubmissionFileDto[] = Array(order.length);
+  const orderedFiles: ISubmissionFileDto[] = Array(files.length);
+  const unorderedFiles: ISubmissionFileDto[] = [];
+
   files.forEach((file) => {
     const index = order.findIndex((id) => id === file.id);
-    if (index > -1) {
+    if (index > -1 && index < orderedFiles.length) {
       orderedFiles[index] = file;
+    } else {
+      // If file is not in order array, add it to unordered list
+      unorderedFiles.push(file);
     }
   });
 
-  return orderedFiles.filter((f) => !!f);
+  // Filter out undefined entries and append unordered files
+  const result = orderedFiles.filter((f) => !!f);
+  return [...result, ...unorderedFiles];
 }
 
 function FileView({ submission }: SubmissionEditFormFileManagerProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [orderedFiles, setOrderedFiles] = useState(orderFiles(submission));
+  
+  // Track file IDs to ensure reactivity when files are added/removed
+  const fileIds = submission.files.map(f => f.id).join(',');
+  
   useEffect(() => {
     setOrderedFiles(orderFiles(submission));
-  }, [submission]);
+  }, [submission, fileIds]);
   useEffect(() => {
     const el = ref.current;
     // No sort for only 1 file

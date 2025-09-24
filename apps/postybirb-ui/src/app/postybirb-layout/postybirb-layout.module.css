@@ -102,7 +102,7 @@
 
 .contentContainer {
   animation: fadeIn 0.3s ease;
-  padding-top: 8px;
+  /* padding-top: 8px; */
 }
 
 .toggleButtonContainer {

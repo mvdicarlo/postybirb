@@ -93,6 +93,18 @@ export class PostyBirbDatabase<
     );
   }
 
+  /**
+   * Forcefully calls notify.
+   * To be used where database updates occur outside of normal db calls
+   * such as during transaction and direct db mutations.
+   *
+   * @param {EntityId[]} ids
+   * @param {Action} action
+   */
+  public forceNotify(ids: EntityId[], action: Action) {
+    this.notify(ids, action);
+  }
+
   public get EntityClass() {
     return DatabaseSchemaEntityMapConst[this.schemaKey];
   }

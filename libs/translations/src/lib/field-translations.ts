@@ -81,6 +81,7 @@ export const FieldLabelTranslations = {
   authorizedViewers: msg`Authorized viewers`,
   publicViewers: msg`Public viewers`,
   watermark: msg`Watermark`,
+  contentBlur: msg`Content Blur`,
 } satisfies Record<string, MessageDescriptor>;
 
 export type FieldLabelTranslationsId = keyof typeof FieldLabelTranslations;

@@ -34,7 +34,7 @@ export function SubmissionEditForm(props: SubmissionEditFormProps) {
   const isSpecialSubmissionType =
     submission.isMultiSubmission || submission.isTemplate;
 
-  const top = 148;
+  const top = 154;
 
   const optionsGroupedByWebsiteId = useMemo(
     () =>

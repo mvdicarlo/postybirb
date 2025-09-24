@@ -13,6 +13,7 @@ import {
 import { getFileType } from '@postybirb/utils/file-type';
 import { filesize } from 'filesize';
 import submissionApi from '../../../../../../api/submission.api';
+import { ComponentErrorBoundary } from '../../../../../error-boundary';
 import { BasicWebsiteSelect } from '../../../../../form/website-select/basic-website-select';
 import { FileDimensions } from './file-dimensions';
 import { FileSourceUrls } from './file-source-urls';
@@ -146,11 +147,11 @@ export function FileMetadataManager(props: FileMetadataManagerProps) {
   };
   const detailProps: FileDetailProps = { file, metadata: meta, accounts, save };
   return (
-    <>
+    <ComponentErrorBoundary>
       <FileDetails {...detailProps} />
       <FileMetadata {...detailProps} />
       {fileType === FileType.IMAGE ? <FileDimensions {...detailProps} /> : null}
       {fileType !== FileType.TEXT ? <FileSourceUrls {...detailProps} /> : null}
-    </>
+    </ComponentErrorBoundary>
   );
 }
