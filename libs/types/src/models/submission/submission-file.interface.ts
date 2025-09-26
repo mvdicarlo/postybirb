@@ -1,3 +1,4 @@
+import { AccountId, ModifiedFileDimension } from '@postybirb/types';
 import { EntityId, IEntity } from '../database/entity.interface';
 import { IFileBuffer } from '../file/file-buffer.interface';
 import { IFileDimensions } from '../file/file-dimensions.interface';
@@ -20,6 +21,8 @@ export interface ISubmissionFile extends IFileDimensions, IEntity {
    * @type {ISubmission<FileSubmissionMetadata>}
    */
   submission: ISubmission<FileSubmissionMetadata>;
+
+  submissionId: EntityId;
 
   /**
    * Name of the file.
@@ -91,4 +94,49 @@ export interface ISubmissionFile extends IFileDimensions, IEntity {
   thumbnailId?: EntityId;
 
   altFileId?: EntityId;
+
+  metadata: SubmissionFileMetadata;
+
+  order: number;
 }
+
+export interface SubmissionFileMetadata {
+  /**
+   * The alternative text for the file.
+   * @type {string}
+   */
+  altText?: string;
+
+  /**
+   * The spoiler text for the file.
+   * @type {string}
+   */
+  spoilerText?: string;
+
+  /**
+   * The dimensions of the file for different websites.
+   * @type {Record<AccountId, ModifiedFileDimension>}
+   */
+  dimensions: Record<AccountId, ModifiedFileDimension>;
+
+  /**
+   * The list of websites where the file is ignored.
+   * @type {AccountId[]}
+   */
+  ignoredWebsites: AccountId[];
+
+  /**
+   * The source URLs for the file.
+   * @type {string[]}
+   */
+  sourceUrls: string[];
+}
+
+export const DefaultSubmissionFileMetadata: () => SubmissionFileMetadata =
+  () => ({
+    altText: '',
+    spoilerText: '',
+    dimensions: {},
+    ignoredWebsites: [],
+    sourceUrls: [],
+  });

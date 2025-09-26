@@ -3,6 +3,8 @@ import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import { CommonSchema, id } from './common.schema';
 import { FileBufferSchema } from './file-buffer.schema';
 import { SubmissionSchema } from './submission.schema';
+// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
+import { SubmissionFileMetadata } from '../../../../types/src/index';
 
 export const SubmissionFileSchema = sqliteTable('submission-file', {
   ...CommonSchema(),
@@ -23,6 +25,11 @@ export const SubmissionFileSchema = sqliteTable('submission-file', {
   mimeType: text().notNull(),
   size: integer().notNull(),
   width: integer().notNull(),
+  metadata: text({ mode: 'json' })
+    .notNull()
+    .$type<SubmissionFileMetadata>()
+    .default({} as SubmissionFileMetadata),
+  order: integer().default(Number.MAX_SAFE_INTEGER).notNull(),
 });
 
 export const SubmissionFileRelations = relations(

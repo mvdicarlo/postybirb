@@ -3,6 +3,7 @@ import {
   FileSubmissionMetadata,
   ISubmissionFile,
   ISubmissionFileDto,
+  SubmissionFileMetadata,
 } from '@postybirb/types';
 import { instanceToPlain, Type } from 'class-transformer';
 import { PostyBirbDatabase } from '../postybirb-database/postybirb-database';
@@ -48,6 +49,10 @@ export class SubmissionFile extends DatabaseEntity implements ISubmissionFile {
   width: number;
 
   height: number;
+
+  metadata: SubmissionFileMetadata;
+
+  order: number;
 
   constructor(entity: Partial<SubmissionFile>) {
     super(entity);

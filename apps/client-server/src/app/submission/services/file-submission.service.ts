@@ -6,10 +6,10 @@ import {
 } from '@nestjs/common';
 import {
   EntityId,
-  FileMetadataFields,
   FileSubmission,
   isFileSubmission,
   ISubmission,
+  SubmissionFileMetadata,
   SubmissionId,
   SubmissionType,
 } from '@postybirb/types';
@@ -17,6 +17,7 @@ import { PostyBirbService } from '../../common/service/postybirb-service';
 import { FileService } from '../../file/file.service';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
+import { ReorderSubmissionFilesDto } from '../dtos/reorder-submission-files.dto';
 import { UpdateAltFileDto } from '../dtos/update-alt-file.dto';
 import { ISubmissionService } from './submission-service.interface';
 import { SubmissionService } from './submission.service';
@@ -49,8 +50,6 @@ export class FileSubmissionService
     // eslint-disable-next-line no-param-reassign
     submission.metadata = {
       ...submission.metadata,
-      order: [],
-      fileMetadata: {},
     };
 
     await this.appendFile(submission, file, false);
@@ -59,7 +58,7 @@ export class FileSubmissionService
   private guardIsFileSubmission(submission: ISubmission) {
     if (!isFileSubmission(submission)) {
       throw new BadRequestException(
-        `Submission '${submission.id}' is not a ${SubmissionType.FILE} submission.`,
+        `Submission '${(submission as ISubmission).id}' is not a ${SubmissionType.FILE} submission.`,
       );
     }
 
@@ -92,26 +91,10 @@ export class FileSubmissionService
     this.guardIsFileSubmission(submission);
 
     const createdFile = await this.fileService.create(file, submission);
-    submission.metadata.order.push(createdFile.id);
     this.logger
       .withMetadata(submission)
       .info(`Created file ${createdFile.id} = ${submission.id}`);
 
-    const fileModifications: FileMetadataFields = {
-      altText: '',
-      dimensions: {
-        default: {
-          fileId: createdFile.id,
-          height: createdFile.height,
-          width: createdFile.width,
-        },
-      },
-      ignoredWebsites: [],
-      sourceUrls: [],
-    };
-
-    // eslint-disable-next-line no-param-reassign
-    submission.metadata.fileMetadata[createdFile.id] = fileModifications;
     if (persist) {
       await this.repository.update(submission.id, {
         metadata: submission.metadata,
@@ -127,19 +110,7 @@ export class FileSubmissionService
     )) as unknown as FileSubmission;
     this.guardIsFileSubmission(submission);
 
-    if (
-      !submission.metadata.order.some(
-        (metaFileOrderId) => metaFileOrderId === fileId,
-      )
-    ) {
-      throw new BadRequestException('File not found on submission');
-    }
-
     await this.fileService.update(file, fileId, false);
-    await this.repository.update(submission.id, {
-      metadata: submission.metadata,
-    });
-    this.submissionService.emit();
   }
 
   /**
@@ -176,10 +147,6 @@ export class FileSubmissionService
     this.guardIsFileSubmission(submission);
 
     await this.fileService.remove(fileId);
-    // eslint-disable-next-line no-param-reassign
-    submission.metadata.order = submission.metadata.order.filter(
-      (metaFileOrderId) => metaFileOrderId !== fileId,
-    );
     await this.repository.update(submission.id, {
       metadata: submission.metadata,
     });
@@ -191,5 +158,13 @@ export class FileSubmissionService
 
   updateAltFileText(id: EntityId, update: UpdateAltFileDto) {
     return this.fileService.updateAltText(id, update);
+  }
+
+  updateMetadata(id: EntityId, update: SubmissionFileMetadata) {
+    return this.fileService.updateMetadata(id, update);
+  }
+
+  reorderFiles(update: ReorderSubmissionFilesDto) {
+    return this.fileService.reorderFiles(update);
   }
 }

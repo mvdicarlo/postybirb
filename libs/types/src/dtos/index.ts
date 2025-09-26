@@ -20,6 +20,7 @@ export * from './settings/update-settings.dto';
 export * from './submission/apply-multi-submission.dto';
 export * from './submission/create-submission.dto';
 export * from './submission/file-buffer.dto';
+export * from './submission/reorder-submission-files.dto';
 export * from './submission/submission-file.dto';
 export * from './submission/submission.dto';
 export * from './submission/update-alt-file.dto';

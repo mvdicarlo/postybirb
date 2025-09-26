@@ -4,7 +4,6 @@ import { Logger } from '@postybirb/logger';
 import {
   AccountId,
   EntityId,
-  FileMetadataFields,
   FileSubmission,
   FileSubmissionMetadata,
   FileType,
@@ -16,6 +15,7 @@ import {
   PostRecordState,
   PostResponse,
   ScheduleType,
+  SubmissionFileMetadata,
   SubmissionId,
   SubmissionType,
 } from '@postybirb/types';
@@ -449,27 +449,25 @@ export class PostManagerService {
       instance.decoratedProps.fileOptions.fileBatchSize ?? 1,
       1,
     );
-    const orderedFiles: SubmissionFile[] = [];
-    const metadata = submission.metadata.fileMetadata;
-    const files = submission.files
-      .filter(
-        // Filter out files that have been marked by the user as ignored for this website.
-        (f) => !metadata[f.id]?.ignoredWebsites?.includes(instance.accountId),
-      )
-      .filter(
-        // Only post files that haven't been posted
-        // Ensures CONTINUED posts don't post files that have already been posted.
-        (f) => websitePostRecord.metadata.postedFiles.indexOf(f.id) === -1,
-      );
-    submission.metadata.order.forEach((fileId) => {
-      const file = files.find((f) => f.id === fileId);
-      if (file) {
-        orderedFiles.push(file);
-      }
-    });
+    const files =
+      submission.files
+        .filter(
+          // Filter out files that have been marked by the user as ignored for this website.
+          (f) => !f.metadata.ignoredWebsites?.includes(instance.accountId),
+        )
+        .filter(
+          // Only post files that haven't been posted
+          // Ensures CONTINUED posts don't post files that have already been posted.
+          (f) => websitePostRecord.metadata.postedFiles.indexOf(f.id) === -1,
+        )
+        .sort((a, b) => {
+          const aOrder = a.order ?? Number.MAX_SAFE_INTEGER;
+          const bOrder = b.order ?? Number.MAX_SAFE_INTEGER;
+          return aOrder - bOrder;
+        }) ?? [];
 
     // Split files into batches based on instance file batch size
-    const batches = chunk(orderedFiles, fileBatchSize);
+    const batches = chunk(files, fileBatchSize);
     let batchIndex = 0;
     const parent = await this.postRepository.findById(
       websitePostRecord.postRecordId,
@@ -502,13 +500,7 @@ export class PostManagerService {
           }
         });
 
-        const fileWithMetadata = f.withMetadata(
-          metadata[f.id] ?? {
-            ignoredWebsites: [],
-            dimensions: null,
-            sourceUrls: [],
-          },
-        );
+        const fileWithMetadata = f.withMetadata(f.metadata);
 
         fileWithMetadata.metadata.sourceUrls = [
           ...(fileWithMetadata.metadata.sourceUrls ?? []),
@@ -586,7 +578,7 @@ export class PostManagerService {
     if (!file.file) {
       await file.load();
     }
-    const fileMetadata: FileMetadataFields = submission.metadata[file.id];
+    const fileMetadata: SubmissionFileMetadata = file.metadata;
     let resizeParams: ImageResizeProps | undefined;
     const { fileOptions } = instance.decoratedProps;
     const allowedMimeTypes = fileOptions.acceptedMimeTypes ?? [];
@@ -678,7 +670,7 @@ export class PostManagerService {
   ) {
     let resizeParams = instance.calculateImageResize(file);
     const fileParams: ModifiedFileDimension =
-      submission.metadata.fileMetadata[file.id].dimensions[instance.accountId];
+      file.metadata.dimensions[instance.accountId];
     if (fileParams) {
       if (fileParams.width) {
         if (!resizeParams) {

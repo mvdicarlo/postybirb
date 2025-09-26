@@ -2,13 +2,18 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { read } from '@postybirb/fs';
 import { Logger } from '@postybirb/logger';
-import { EntityId, FileSubmission } from '@postybirb/types';
+import {
+  EntityId,
+  FileSubmission,
+  SubmissionFileMetadata,
+} from '@postybirb/types';
 import type { queueAsPromised } from 'fastq';
 import fastq from 'fastq';
 import { readFile } from 'fs/promises';
 import { cpus } from 'os';
 import { SubmissionFile } from '../drizzle/models';
 import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
+import { ReorderSubmissionFilesDto } from '../submission/dtos/reorder-submission-files.dto';
 import { UpdateAltFileDto } from '../submission/dtos/update-alt-file.dto';
 import { MulterFileInfo, TaskOrigin } from './models/multer-file-info';
 import { CreateTask, Task, UpdateTask } from './models/task';
@@ -167,5 +172,19 @@ export class FileService {
     return this.fileBufferRepository.update(id, {
       buffer: Buffer.from(update.html ?? ''),
     });
+  }
+
+  async updateMetadata(id: string, update: SubmissionFileMetadata) {
+    const file = await this.findFile(id);
+    file.metadata = { ...file.metadata, ...update };
+    await this.fileRepository.update(id, file);
+  }
+
+  async reorderFiles(update: ReorderSubmissionFilesDto) {
+    await Promise.all(
+      Object.entries(update.order).map(([id, order]) =>
+        this.fileRepository.update(id, { order }),
+      ),
+    );
   }
 }

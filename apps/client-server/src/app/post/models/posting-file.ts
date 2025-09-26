@@ -1,9 +1,9 @@
 import { FormFile } from '@postybirb/http';
 import {
-  FileMetadataFields,
   FileType,
   IFileBuffer,
   SubmissionFileId,
+  SubmissionFileMetadata,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { parse } from 'path';
@@ -36,7 +36,7 @@ export class PostingFile {
 
   public readonly height: number;
 
-  public metadata: FileMetadataFields;
+  public metadata: SubmissionFileMetadata;
 
   public readonly thumbnail?: ThumbnailOptions;
 
@@ -60,7 +60,7 @@ export class PostingFile {
     return `${file.id}${ext}`;
   }
 
-  public withMetadata(metadata: FileMetadataFields): PostingFile {
+  public withMetadata(metadata: SubmissionFileMetadata): PostingFile {
     this.metadata = metadata;
     return this;
   }

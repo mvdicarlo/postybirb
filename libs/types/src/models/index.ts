@@ -17,8 +17,6 @@ export * from './settings/settings.constants';
 export * from './settings/settings.interface';
 export * from './submission/default-submission-file-props';
 export * from './submission/description-value.type';
-export * from './submission/file-submission/file-metadata-fields.type';
-export * from './submission/file-submission/file-metadata.type';
 export * from './submission/file-submission/file-submission';
 export * from './submission/file-submission/file-submission-metadata.type';
 export * from './submission/file-submission/modified-file-dimension.type';
@@ -50,3 +48,4 @@ export * from './website/website-data.interface';
 export * from './website/website-info.interface';
 export * from './website/website-login-type';
 export * from './website/website.type';
+

@@ -1,34 +1,34 @@
 import { Trans } from '@lingui/macro';
 import {
+  ActionIcon,
+  Badge,
   Box,
+  Button,
   Divider,
-  Grid,
   Group,
   NumberInput,
   Text,
   Tooltip,
-  ActionIcon,
-  Badge,
-  Button,
 } from '@mantine/core';
 import {
-  FileMetadataFields,
   IAccount,
   ISubmissionFileDto,
+  SubmissionFileMetadata,
 } from '@postybirb/types';
 import { IconInfoCircle, IconRestore } from '@tabler/icons-react';
-import { useEffect, useRef, useState } from 'react';
+import { debounce } from 'lodash';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { CustomAccountDimensions } from './custom-account-dimensions';
 import {
-  updateFileDimensions,
   computeScale,
   formatAspect,
   rawAspect,
+  updateFileDimensions,
 } from './file-dimensions-helpers';
 
 type FileDetailProps = {
   file: ISubmissionFileDto;
-  metadata: FileMetadataFields;
+  metadata: SubmissionFileMetadata;
   accounts: IAccount[];
   save: () => void;
 };
@@ -47,36 +47,41 @@ export function FileDimensions(props: FileDetailProps) {
   const scale = computeScale(height, width, original.h, original.w);
   const aspectText = formatAspect(height, width);
 
-  // Debounced save when height/width change
-  const debounceTimer = useRef<number | null>(null);
-  useEffect(() => {
-    updateFileDimensions(metadata, file, height, width);
-    if (debounceTimer.current) window.clearTimeout(debounceTimer.current);
-    debounceTimer.current = window.setTimeout(() => {
-      save();
-    }, 400);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [height, width]);
+  // Debounced save function
+  const debouncedSave = useMemo(() => debounce(() => save(), 400), [save]);
+
+  // Explicitly apply current dimensions to metadata and schedule save if changed from provided
+  const applyDimensions = (nextH: number, nextW: number) => {
+    // Clamp fallback values
+    const safeH = nextH || 1;
+    const safeW = nextW || 1;
+    setHeight(safeH);
+    setWidth(safeW);
+
+    updateFileDimensions(metadata, file, safeH, safeW);
+
+    debouncedSave();
+  };
+
+  // Cleanup only for debounce
+  useEffect(() => () => debouncedSave.cancel(), [debouncedSave]);
 
   const setHeightLocked = (h: number) => {
     const ratio = aspectRef.current; // width/height (fixed to original)
     const clampedH = Math.min(h, original.h);
     const newW = Math.min(Math.round(clampedH * ratio), original.w);
-    setHeight(clampedH || 1);
-    setWidth(newW || 1);
+    applyDimensions(clampedH || 1, newW || 1);
   };
 
   const setWidthLocked = (w: number) => {
     const ratio = aspectRef.current; // width/height
     const clampedW = Math.min(w, original.w);
     const newH = Math.min(Math.round(clampedW / ratio), original.h);
-    setWidth(clampedW || 1);
-    setHeight(newH || 1);
+    applyDimensions(newH || 1, clampedW || 1);
   };
 
   const reset = () => {
-    setHeight(original.h);
-    setWidth(original.w);
+    applyDimensions(original.h, original.w);
   };
 
   return (

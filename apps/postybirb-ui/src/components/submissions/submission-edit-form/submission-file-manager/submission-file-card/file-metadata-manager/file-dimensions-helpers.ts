@@ -1,14 +1,18 @@
-import { AccountId, FileMetadataFields, ISubmissionFileDto, ModifiedFileDimension } from '@postybirb/types';
+import {
+  AccountId,
+  ISubmissionFileDto,
+  ModifiedFileDimension,
+  SubmissionFileMetadata,
+} from '@postybirb/types';
 
 export function updateFileDimensions(
-  metadata: FileMetadataFields,
+  metadata: SubmissionFileMetadata,
   file: ISubmissionFileDto,
   height: number,
   width: number,
 ) {
   // eslint-disable-next-line no-param-reassign
   metadata.dimensions.default = {
-    fileId: file.id,
     height,
     width,
   };
@@ -34,7 +38,7 @@ export function calculateAspectRatio(
 }
 
 export function updateAccountDimensions(
-  metadata: FileMetadataFields,
+  metadata: SubmissionFileMetadata,
   file: ISubmissionFileDto,
   accountId: AccountId,
   height: number,
@@ -42,18 +46,17 @@ export function updateAccountDimensions(
 ) {
   if (!metadata.dimensions) {
     // eslint-disable-next-line no-param-reassign
-    metadata.dimensions = {} as any; // fallback
+    metadata.dimensions = {}; // fallback
   }
   // eslint-disable-next-line no-param-reassign
   metadata.dimensions[accountId] = {
-    fileId: file.id,
     height,
     width,
   };
 }
 
 export function removeAccountDimensions(
-  metadata: FileMetadataFields,
+  metadata: SubmissionFileMetadata,
   accountId: AccountId,
 ) {
   if (metadata.dimensions) {
@@ -63,19 +66,29 @@ export function removeAccountDimensions(
 }
 
 export function getAccountDimensions(
-  metadata: FileMetadataFields,
+  metadata: SubmissionFileMetadata,
   accountId: AccountId,
   file: ISubmissionFileDto,
 ): ModifiedFileDimension {
   return metadata.dimensions[accountId] ?? metadata.dimensions.default ?? file;
 }
 
-export function computeScale(height: number, width: number, originalHeight: number, originalWidth: number) {
-  const scale = originalHeight && originalWidth ? Math.min(height / originalHeight, width / originalWidth) : 1;
+export function computeScale(
+  height: number,
+  width: number,
+  originalHeight: number,
+  originalWidth: number,
+) {
+  const scale =
+    originalHeight && originalWidth
+      ? Math.min(height / originalHeight, width / originalWidth)
+      : 1;
   return { scale, percent: Math.round(scale * 100) };
 }
 
-function gcd(a: number, b: number): number { return b === 0 ? a : gcd(b, a % b); }
+function gcd(a: number, b: number): number {
+  return b === 0 ? a : gcd(b, a % b);
+}
 export function formatAspect(height: number, width: number) {
   if (!height || !width) return '';
   const longerIsWidth = width >= height;
@@ -91,9 +104,14 @@ export function formatAspect(height: number, width: number) {
   if (maxComponent <= 20) {
     display = `${rw}:${rh}`; // classic (e.g. 16:9)
   } else {
-    const normalized = decimal.toFixed(decimal < 10 ? 2 : 1).replace(/\.0+$/, '').replace(/(\.[1-9]*)0+$/, '$1');
+    const normalized = decimal
+      .toFixed(decimal < 10 ? 2 : 1)
+      .replace(/\.0+$/, '')
+      .replace(/(\.[1-9]*)0+$/, '$1');
     display = longerIsWidth ? `${normalized}:1` : `1:${normalized}`;
   }
   return display;
 }
-export function rawAspect(width: number, height: number) { return `${width}:${height}`; }
+export function rawAspect(width: number, height: number) {
+  return `${width}:${height}`;
+}

@@ -49,11 +49,14 @@ export class PostFileResizerService {
       throw new Error('File buffer is missing');
     }
 
-    return new PostingFile(
+    const newPostingFile = new PostingFile(
       file.id,
       await this.processPrimaryFile(file, resize),
       await this.processThumbnailFile(file),
     );
+
+    newPostingFile.metadata = file.metadata;
+    return newPostingFile;
   }
 
   private async processPrimaryFile(

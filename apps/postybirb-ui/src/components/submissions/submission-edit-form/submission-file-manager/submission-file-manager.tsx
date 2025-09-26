@@ -13,7 +13,7 @@ import { FileSubmissionMetadata, ISubmissionFileDto } from '@postybirb/types';
 import { IconArrowsSort, IconFilePlus } from '@tabler/icons-react';
 import { useEffect, useRef, useState } from 'react';
 import Sortable from 'sortablejs';
-import submissionApi from '../../../../api/submission.api';
+import fileSubmissionApi from '../../../../api/file-submission.api';
 import { draggableIndexesAreDefined } from '../../../../helpers/sortable.helper';
 import { SubmissionDto } from '../../../../models/dtos/submission.dto';
 import { SubmissionUploader } from '../../submission-uploader/submission-uploader';
@@ -29,34 +29,23 @@ type SubmissionEditFormFileManagerProps = {
 function orderFiles(
   submission: SubmissionDto<FileSubmissionMetadata>,
 ): ISubmissionFileDto[] {
-  const { metadata, files } = submission;
-  const { order } = metadata;
-
-  const orderedFiles: ISubmissionFileDto[] = Array(files.length);
-  const unorderedFiles: ISubmissionFileDto[] = [];
-
-  files.forEach((file) => {
-    const index = order.findIndex((id) => id === file.id);
-    if (index > -1 && index < orderedFiles.length) {
-      orderedFiles[index] = file;
-    } else {
-      // If file is not in order array, add it to unordered list
-      unorderedFiles.push(file);
-    }
-  });
-
-  // Filter out undefined entries and append unordered files
-  const result = orderedFiles.filter((f) => !!f);
-  return [...result, ...unorderedFiles];
+  const { files } = submission;
+  return files
+    .filter((f) => !!f)
+    .sort((a, b) => {
+      const aOrder = a.order ?? Number.MAX_SAFE_INTEGER;
+      const bOrder = b.order ?? Number.MAX_SAFE_INTEGER;
+      return aOrder - bOrder;
+    });
 }
 
 function FileView({ submission }: SubmissionEditFormFileManagerProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [orderedFiles, setOrderedFiles] = useState(orderFiles(submission));
-  
+
   // Track file IDs to ensure reactivity when files are added/removed
-  const fileIds = submission.files.map(f => f.id).join(',');
-  
+  const fileIds = submission.files.map((f) => f.id).join(',');
+
   useEffect(() => {
     setOrderedFiles(orderFiles(submission));
   }, [submission, fileIds]);
@@ -83,17 +72,38 @@ function FileView({ submission }: SubmissionEditFormFileManagerProps) {
           draggableIndexesAreDefined(event) &&
           event.oldIndex !== event.newIndex
         ) {
+          // Create a copy of ordered files for manipulation
           const newOrderedFiles = [...orderedFiles];
+
+          // Remove the moved file from its old position
           const [movedFile] = newOrderedFiles.splice(
             event.oldDraggableIndex,
             1,
           );
+
+          // Insert the moved file at its new position
           newOrderedFiles.splice(event.newDraggableIndex, 0, movedFile);
-          // eslint-disable-next-line no-param-reassign
-          submission.metadata.order = newOrderedFiles.map((f) => f.id);
+
+          // Update order property for all files based on their new positions
+          // Use the current timestamp as a base to ensure unique, sequential order values
+          const baseOrder = Date.now();
+          newOrderedFiles.forEach((file, index) => {
+            // eslint-disable-next-line no-param-reassign
+            file.order = baseOrder + index;
+          });
+
+          // Update local state immediately for responsive UI
           setOrderedFiles(newOrderedFiles);
-          submissionApi.update(submission.id, {
-            metadata: submission.metadata,
+
+          // Persist changes to backend
+          fileSubmissionApi.reorder({
+            order: newOrderedFiles.reduce(
+              (acc: Record<string, number>, file) => {
+                acc[file.id] = file.order ?? 0;
+                return acc;
+              },
+              {},
+            ),
           });
         }
       },

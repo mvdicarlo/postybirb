@@ -518,6 +518,8 @@ export class SubmissionService
               hasThumbnail: file.hasThumbnail,
               hasCustomThumbnail: file.hasCustomThumbnail,
               hasAltFile: file.hasAltFile,
+              metadata: file.metadata,
+              order: file.order,
             })
             .returning()
         )[0];
@@ -572,24 +574,6 @@ export class SubmissionService
         // eslint-disable-next-line prefer-destructuring
         const metadata: FileSubmissionMetadata =
           newSubmission.metadata as FileSubmissionMetadata;
-        // Fix metadata
-        const index = metadata.order.findIndex((fileId) => fileId === file.id);
-        if (index > -1) {
-          metadata.order[index] = newFile.id;
-        }
-        if (metadata.fileMetadata[oldId]) {
-          metadata.fileMetadata[newFile.id] = {
-            ...metadata.fileMetadata[oldId],
-            dimensions: {
-              ...metadata.fileMetadata[oldId].dimensions,
-              default: {
-                ...metadata.fileMetadata[oldId].dimensions.default,
-                fileId: newFile.id,
-              },
-            },
-          };
-          delete metadata.fileMetadata[oldId];
-        }
       }
 
       // Save updated metadata

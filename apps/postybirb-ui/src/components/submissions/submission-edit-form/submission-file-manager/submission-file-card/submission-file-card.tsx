@@ -1,6 +1,5 @@
 import { Box, Divider, Flex, Paper } from '@mantine/core';
 import {
-  FileSubmissionMetadata,
   FileType,
   ISubmissionFileDto,
   NULL_ACCOUNT_ID,
@@ -27,7 +26,7 @@ export function SubmissionFileCard({
   draggable: boolean;
   totalFiles: number;
 }) {
-  const metadata = submission.metadata as FileSubmissionMetadata;
+  const { metadata } = file;
   return (
     <Paper
       key={file.id}

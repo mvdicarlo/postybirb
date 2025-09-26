@@ -1,7 +1,6 @@
 import { SelectOption } from '@postybirb/form-builder';
 import { Http } from '@postybirb/http';
 import {
-  FileSubmissionMetadata,
   FileType,
   ILoginState,
   ImageResizeProps,
@@ -298,10 +297,8 @@ export default class Itaku
 
     const { submission, options } = postData;
     if (!options.shareOnFeed) {
-      const metadata = submission.metadata as FileSubmissionMetadata;
-      const filesToPost = Object.values(metadata.fileMetadata).filter(
-        ({ ignoredWebsites }) =>
-          ignoredWebsites.length && !ignoredWebsites.includes(this.accountId),
+      const filesToPost = submission.files.filter(
+        (file) => !file.metadata?.ignoredWebsites.includes(this.accountId),
       );
 
       if (filesToPost.length > 1) {

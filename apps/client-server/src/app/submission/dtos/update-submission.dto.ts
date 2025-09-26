@@ -1,11 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  FileSubmissionMetadata,
   ISubmissionMetadata,
   IUpdateSubmissionDto,
   IWebsiteFormFields,
   ScheduleType,
-  WebsiteOptionsDto,
+  WebsiteOptionsDto
 } from '@postybirb/types';
 import {
   IsArray,
@@ -57,5 +56,5 @@ export class UpdateSubmissionDto implements IUpdateSubmissionDto {
   @ApiProperty()
   @IsOptional()
   @IsObject()
-  metadata?: ISubmissionMetadata | FileSubmissionMetadata;
+  metadata?: ISubmissionMetadata;
 }
