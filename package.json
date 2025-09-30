@@ -38,9 +38,9 @@
     "dep-graph": "nx dep-graph",
     "help": "nx help",
     "postinstall": "exitzero electron-builder install-app-deps",
-    "setup": "run-s prepare",
-    "generate-migration": "drizzle-kit generate",
-    "prepare": "husky"
+    "setup": "run-s setup:husky",
+    "setup:husky": "yarn husky",
+    "generate-migration": "drizzle-kit generate"
   },
   "dependencies": {
     "@atproto/api": "^0.15.7",
@@ -255,3 +255,4 @@
   },
   "packageManager": "yarn@4.9.4"
 }
+
