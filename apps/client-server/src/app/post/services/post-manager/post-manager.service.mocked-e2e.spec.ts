@@ -1,5 +1,6 @@
 import { clearDatabase } from '@postybirb/database';
 import {
+  DefaultSubmissionFileMetadata,
   FileSubmissionMetadata,
   FileType,
   ILoginState,
@@ -128,10 +129,7 @@ describe('PostManagerServiceMocks', () => {
       id: 'test',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      metadata: {
-        order: [],
-        fileMetadata: {},
-      },
+      metadata: {},
       type: SubmissionType.FILE,
       files: [],
       options: [],
@@ -172,16 +170,9 @@ describe('PostManagerServiceMocks', () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       }),
+      order: 1,
+      metadata: DefaultSubmissionFileMetadata(),
     });
-
-    submission.metadata.order.push(file.id);
-    submission.metadata.fileMetadata[file.id] = {
-      altText: 'Test Alt Text',
-      spoilerText: 'Test Spoiler Text',
-      ignoredWebsites: [],
-      dimensions: {},
-      sourceUrls: [],
-    };
 
     submission.files.push(file);
 

@@ -3,16 +3,15 @@ import { Trans } from '@lingui/macro';
 import { Badge, Box, Grid, Group, Text, TextInput } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import {
-  FileMetadataFields,
-  FileSubmissionMetadata,
   FileType,
   IAccount,
   ISubmissionFileDto,
+  SubmissionFileMetadata,
   SubmissionId,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { filesize } from 'filesize';
-import submissionApi from '../../../../../../api/submission.api';
+import fileSubmissionApi from '../../../../../../api/file-submission.api';
 import { ComponentErrorBoundary } from '../../../../../error-boundary';
 import { BasicWebsiteSelect } from '../../../../../form/website-select/basic-website-select';
 import { FileDimensions } from './file-dimensions';
@@ -20,14 +19,14 @@ import { FileSourceUrls } from './file-source-urls';
 
 type FileMetadataManagerProps = {
   file: ISubmissionFileDto;
-  metadata: FileSubmissionMetadata;
+  metadata: SubmissionFileMetadata;
   submissionId: SubmissionId;
   accounts: IAccount[];
 };
 
 type FileDetailProps = Pick<FileMetadataManagerProps, 'file' | 'accounts'> & {
   // eslint-disable-next-line react/no-unused-prop-types
-  metadata: FileMetadataFields;
+  metadata: SubmissionFileMetadata;
   // eslint-disable-next-line react/no-unused-prop-types
   save: () => void;
 };
@@ -135,9 +134,9 @@ function FileMetadata(props: FileDetailProps) {
 export function FileMetadataManager(props: FileMetadataManagerProps) {
   const { submissionId, file, metadata, accounts } = props;
   const fileType = getFileType(file.fileName);
-  const meta = metadata.fileMetadata[file.id];
+  const meta = file.metadata;
   const save = () => {
-    submissionApi.update(submissionId, { metadata }).catch((e) => {
+    fileSubmissionApi.updateMetadata(file.id, metadata).catch((e) => {
       notifications.show({
         title: <Trans>Failed to save file metadata</Trans>,
         message: e.message,

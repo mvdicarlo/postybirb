@@ -7,15 +7,11 @@
  */
 export type ModifiedFileDimension = {
   /**
-   * The ID of the file.
-   * @type {string}
-   */
-  fileId: string;
-  /**
    * The height of the file in pixels.
    * @type {number}
    */
   height: number;
+
   /**
    * The width of the file in pixels.
    * @type {number}

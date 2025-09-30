@@ -18,8 +18,13 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { EntityId, SubmissionId } from '@postybirb/types';
+import {
+  EntityId,
+  SubmissionFileMetadata,
+  SubmissionId,
+} from '@postybirb/types';
 import { MulterFileInfo } from '../file/models/multer-file-info';
+import { ReorderSubmissionFilesDto } from './dtos/reorder-submission-files.dto';
 import { UpdateAltFileDto } from './dtos/update-alt-file.dto';
 import { FileSubmissionService } from './services/file-submission.service';
 import { SubmissionService } from './services/submission.service';
@@ -125,5 +130,20 @@ export class FileSubmissionController {
     @Body() update: UpdateAltFileDto,
   ) {
     return this.service.updateAltFileText(id, update);
+  }
+
+  @Patch('metadata/:id')
+  @ApiOkResponse({ description: 'Updated Metadata.' })
+  async updateMetadata(
+    @Param('id') id: EntityId,
+    @Body() update: SubmissionFileMetadata,
+  ) {
+    return this.service.updateMetadata(id, update);
+  }
+
+  @Patch('reorder')
+  @ApiOkResponse({ description: 'Files reordered.' })
+  async reorderFiles(@Body() update: ReorderSubmissionFilesDto) {
+    return this.service.reorderFiles(update);
   }
 }

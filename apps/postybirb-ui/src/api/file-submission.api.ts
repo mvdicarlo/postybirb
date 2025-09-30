@@ -1,4 +1,10 @@
-import { EntityId, ISubmissionDto, SubmissionId } from '@postybirb/types';
+import {
+  EntityId,
+  IReorderSubmissionFilesDto,
+  ISubmissionDto,
+  SubmissionFileMetadata,
+  SubmissionId,
+} from '@postybirb/types';
 import { HttpClient } from '../transports/http-client';
 
 export type FileUpdateTarget = 'file' | 'thumbnail';
@@ -35,6 +41,14 @@ class FileSubmissionsApi {
 
   updateAltText(altFileId: EntityId, html: string) {
     return this.client.patch(`alt/${altFileId}`, { html });
+  }
+
+  updateMetadata(id: EntityId, update: SubmissionFileMetadata) {
+    return this.client.patch(`metadata/${id}`, update);
+  }
+
+  reorder(update: IReorderSubmissionFilesDto) {
+    return this.client.patch(`reorder`, update);
   }
 }
 

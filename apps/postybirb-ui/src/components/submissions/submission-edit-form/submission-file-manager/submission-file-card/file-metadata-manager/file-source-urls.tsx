@@ -1,19 +1,19 @@
 import { Trans } from '@lingui/macro';
 import {
-    ActionIcon,
-    Box,
-    Grid,
-    Group,
-    Text,
-    TextInput,
-    Tooltip,
+  ActionIcon,
+  Box,
+  Grid,
+  Group,
+  Text,
+  TextInput,
+  Tooltip,
 } from '@mantine/core';
-import { FileMetadataFields } from '@postybirb/types';
+import { SubmissionFileMetadata } from '@postybirb/types';
 import { IconInfoCircle, IconPlus, IconTrash } from '@tabler/icons-react';
 import { useState } from 'react';
 
 type FileDetailProps = {
-  metadata: FileMetadataFields;
+  metadata: SubmissionFileMetadata;
   save: () => void;
 };
 

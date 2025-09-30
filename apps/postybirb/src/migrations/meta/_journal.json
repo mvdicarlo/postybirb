@@ -15,6 +15,13 @@
       "when": 1756210703918,
       "tag": "0001_noisy_kate_bishop",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1758887195072,
+      "tag": "0002_pretty_sunfire",
+      "breakpoints": true
     }
   ]
 }

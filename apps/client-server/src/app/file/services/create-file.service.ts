@@ -3,7 +3,12 @@ import { Injectable } from '@nestjs/common';
 import { Insert, PostyBirbTransaction, Select } from '@postybirb/database';
 import { removeFile } from '@postybirb/fs';
 import { Logger } from '@postybirb/logger';
-import { FileSubmission, FileType, IFileBuffer } from '@postybirb/types';
+import {
+  DefaultSubmissionFileMetadata,
+  FileSubmission,
+  FileType,
+  IFileBuffer,
+} from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { eq } from 'drizzle-orm';
 import { async as hash } from 'hasha';
@@ -185,21 +190,23 @@ export class CreateFileService {
     buf: Buffer,
   ): Promise<SubmissionFile> {
     const { mimetype: mimeType, originalname, size } = file;
+    const submissionFile: Insert<'SubmissionFileSchema'> = {
+      submissionId: submission.id,
+      mimeType,
+      fileName: originalname,
+      size,
+      hash: await hash(buf, { algorithm: 'sha256' }),
+      width: 0,
+      height: 0,
+      hasThumbnail: false,
+      metadata: DefaultSubmissionFileMetadata(),
+      order: Date.now(),
+    };
     const sf = fromDatabaseRecord(
       SubmissionFile,
       await tx
         .insert(this.fileRepository.schemaEntity)
-        .values({
-          submissionId: submission.id,
-          mimeType,
-          fileName: originalname,
-          size,
-          hash: await hash(buf, { algorithm: 'sha256' }),
-          width: 0,
-          height: 0,
-          hasThumbnail: false,
-          hasAltFile: false,
-        })
+        .values(submissionFile)
         .returning(),
     );
 
@@ -235,6 +242,15 @@ export class CreateFileService {
       height: meta.height ?? 0,
       hasThumbnail: true,
       thumbnailId: thumbnail.id,
+      metadata: {
+        ...entity.metadata,
+        dimensions: {
+          default: {
+            width: meta.width ?? 0,
+            height: meta.height ?? 0,
+          },
+        },
+      },
     };
 
     return fromDatabaseRecord(

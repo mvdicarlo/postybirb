@@ -15,30 +15,30 @@ import {
 } from '@mantine/core';
 import {
   AccountId,
-  FileMetadataFields,
   IAccount,
   ISubmissionFileDto,
   IWebsiteInfoDto,
+  SubmissionFileMetadata,
 } from '@postybirb/types';
 import {
   IconChevronDown,
   IconChevronRight,
   IconRestore,
 } from '@tabler/icons-react';
-import { useMemo, useRef, useState, useEffect } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useWebsites } from '../../../../../../hooks/account/use-websites';
 import {
+  computeScale,
+  formatAspect,
   getAccountDimensions,
   removeAccountDimensions,
   updateAccountDimensions,
-  computeScale,
-  formatAspect,
 } from './file-dimensions-helpers';
-import { useWebsites } from '../../../../../../hooks/account/use-websites';
 
 interface Props {
   accounts: IAccount[];
   file: ISubmissionFileDto;
-  metadata: FileMetadataFields;
+  metadata: SubmissionFileMetadata;
   save: () => void;
 }
 

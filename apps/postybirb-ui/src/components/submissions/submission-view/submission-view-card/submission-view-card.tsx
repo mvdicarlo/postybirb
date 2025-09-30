@@ -225,7 +225,7 @@ function SubmissionViewCardComponent(props: SubmissionViewCardProps) {
             </Box>
           ) : null}
           <Box style={{ flex: 1, minWidth: 0 }}>
-            <Title order={4} lineClamp={1} mb={4}>
+            <Title order={4} lineClamp={1}>
               {title}
             </Title>
             <Group p="apart" mb={4}>
@@ -248,6 +248,28 @@ function SubmissionViewCardComponent(props: SubmissionViewCardProps) {
                 />
               </Text>
             </Group>
+            {files.length > 1 ? (
+              <Group
+                className="submission-card-additional-files"
+                gap={4}
+                wrap="nowrap"
+                style={{
+                  overflowX: 'auto',
+                  maxWidth: '100%',
+                  // Hide scrollbar in Webkit while still scrollable
+                  WebkitOverflowScrolling: 'touch',
+                }}
+              >
+                {files.slice(1).map((f) => (
+                  <SubmissionFilePreview
+                    key={f.id}
+                    file={f}
+                    height={32}
+                    width={32}
+                  />
+                ))}
+              </Group>
+            ) : null}
           </Box>
 
           <SubmissionViewCardActions submission={submission} />

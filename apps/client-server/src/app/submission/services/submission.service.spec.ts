@@ -213,23 +213,7 @@ describe('SubmissionService', () => {
       schedule: {
         scheduleType: ScheduleType.NONE,
       },
-      metadata: {
-        fileMetadata: {
-          [file.id]: {
-            altText: '',
-            dimensions: {
-              default: {
-                fileId: file.id,
-                height: 202,
-                width: 138,
-              },
-            },
-            ignoredWebsites: [],
-            sourceUrls: [],
-          },
-        },
-        order: [file.id],
-      },
+      metadata: {},
       files: [
         {
           createdAt: file.createdAt,
@@ -248,6 +232,19 @@ describe('SubmissionService', () => {
           altFileId: null,
           thumbnailId: file.thumbnailId,
           updatedAt: file.updatedAt,
+          metadata: {
+            altText: '',
+            dimensions: {
+              default: {
+                height: 202,
+                width: 138,
+              },
+            },
+            ignoredWebsites: [],
+            sourceUrls: [],
+            spoilerText: '',
+          },
+          order: file.order,
         },
       ],
       posts: [],
@@ -516,22 +513,12 @@ describe('SubmissionService', () => {
 
     for (const file of duplicated.files) {
       expect(record.files.find((f) => f.id === file.id)).toBeUndefined();
-      expect(duplicatedMetadata.order).toContain(file.id);
-      expect(duplicatedMetadata.fileMetadata[file.id]).toBeDefined();
-      expect(
-        duplicatedMetadata.fileMetadata[file.id].dimensions.default.fileId,
-      ).toEqual(file.id);
     }
 
     // Check that the original metadata is preserved
     const originalMetadata = record?.metadata as FileSubmissionMetadata;
     for (const file of record.files) {
       expect(duplicated.files.find((f) => f.id === file.id)).toBeUndefined();
-      expect(originalMetadata.order).toContain(file.id);
-      expect(originalMetadata.fileMetadata[file.id]).toBeDefined();
-      expect(
-        originalMetadata.fileMetadata[file.id].dimensions.default.fileId,
-      ).toEqual(file.id);
     }
   });
 });

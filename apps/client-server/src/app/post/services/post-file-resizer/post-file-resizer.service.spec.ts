@@ -1,5 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ISubmission, ISubmissionFile } from '@postybirb/types';
+import {
+  DefaultSubmissionFileMetadata,
+  ISubmission,
+  ISubmissionFile,
+} from '@postybirb/types';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { ImageUtil } from '../../../file/utils/image.util';
@@ -41,6 +45,9 @@ describe('PostFileResizerService', () => {
       width,
       height,
       primaryFileId: 'test',
+      submissionId: 'test',
+      metadata: DefaultSubmissionFileMetadata(),
+      order: 0,
       file: {
         submissionFileId: 'test',
         fileName,
