@@ -14,6 +14,7 @@ import { eq } from 'drizzle-orm';
 import { async as hash } from 'hasha';
 import { html as htmlBeautify } from 'js-beautify';
 import * as mammoth from 'mammoth';
+import { parse } from 'path';
 import { Sharp } from 'sharp';
 import { promisify } from 'util';
 import { v4 as uuid } from 'uuid';
@@ -282,16 +283,23 @@ export class CreateFileService {
       buffer: thumbnailBuf,
       height,
       width,
+      mimeType: thumbnailMimeType,
     } = await this.generateThumbnail(
       sharpInstance,
       fileEntity.height,
       fileEntity.width,
+      file.mimetype,
     );
+
+    // Remove existing extension and add the appropriate thumbnail extension
+    const fileNameWithoutExt = parse(fileEntity.fileName).name;
+    const thumbnailExt = thumbnailMimeType === 'image/jpeg' ? 'jpg' : 'png';
+
     return this.createFileBufferEntity(tx, fileEntity, thumbnailBuf, {
       height,
       width,
-      mimeType: 'image/png',
-      fileName: `thumbnail_${fileEntity.fileName}.png`,
+      mimeType: thumbnailMimeType,
+      fileName: `thumbnail_${fileNameWithoutExt}.${thumbnailExt}`,
     });
   }
 
@@ -301,13 +309,20 @@ export class CreateFileService {
    * @param {Sharp} sharpInstance
    * @param {number} fileHeight
    * @param {number} fileWidth
-   * @return {*}  {Promise<{ width: number; height: number; buffer: Buffer }>}
+   * @param {string} sourceMimeType - The mimetype of the source image
+   * @return {*}  {Promise<{ width: number; height: number; buffer: Buffer; mimeType: string }>}
    */
   public async generateThumbnail(
     sharpInstance: Sharp,
     fileHeight: number,
     fileWidth: number,
-  ): Promise<{ width: number; height: number; buffer: Buffer }> {
+    sourceMimeType: string,
+  ): Promise<{
+    width: number;
+    height: number;
+    buffer: Buffer;
+    mimeType: string;
+  }> {
     const preferredDimension = 300;
 
     let width = preferredDimension;
@@ -325,12 +340,16 @@ export class CreateFileService {
       width = Math.min(fileWidth, width);
     }
 
-    const buffer = await sharpInstance
-      .resize(width, height)
-      .png({ quality: 92, force: true })
-      .toBuffer();
+    const resized = sharpInstance.resize(width, height);
 
-    return { buffer, height, width };
+    const isJpeg =
+      sourceMimeType === 'image/jpeg' || sourceMimeType === 'image/jpg';
+    const buffer = isJpeg
+      ? await resized.jpeg({ quality: 99, force: true }).toBuffer()
+      : await resized.png({ quality: 99, force: true }).toBuffer();
+    const mimeType = isJpeg ? 'image/jpeg' : 'image/png';
+
+    return { buffer, height, width, mimeType };
   }
 
   /**

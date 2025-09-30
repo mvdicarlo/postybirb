@@ -263,10 +263,12 @@ export class UpdateFileService {
         buffer: thumbnailBuf,
         width: thumbnailWidth,
         height: thumbnailHeight,
+        mimeType: thumbnailMimeType,
       } = await this.createFileService.generateThumbnail(
         sharpInstance,
         height,
         width,
+        file.mimetype,
       );
 
       await tx
@@ -276,6 +278,7 @@ export class UpdateFileService {
           width: thumbnailWidth,
           height: thumbnailHeight,
           size: thumbnailBuf.length,
+          mimeType: thumbnailMimeType,
         })
         .where(
           eq(

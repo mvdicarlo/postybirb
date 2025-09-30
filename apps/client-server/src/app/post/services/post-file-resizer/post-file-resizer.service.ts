@@ -130,11 +130,13 @@ export class PostFileResizerService {
       height = 500;
     }
     instance = await this.resizeImage(instance, width, height);
+    let { mimeType } = thumb;
     const extension = metadata.hasAlpha ? '.png' : '.jpeg';
     if (metadata.hasAlpha) {
       instance = instance.png();
     } else {
       instance = instance.jpeg({ quality: 99 });
+      mimeType = 'image/jpeg';
     }
 
     ({ width, height } = await instance.metadata());
@@ -142,7 +144,7 @@ export class PostFileResizerService {
     return {
       buffer: await instance.toBuffer(),
       fileName: `${name}${extension}`,
-      mimeType: thumb.mimeType,
+      mimeType,
       height,
       width,
     };
@@ -168,19 +170,19 @@ export class PostFileResizerService {
     let s = instance;
     const metadata = await instance.metadata();
     // If PNG and no alpha channel, convert to JPEG
-    if (mimeType === 'image/png' && !metadata.hasAlpha) {
-      // eslint-disable-next-line no-param-reassign
-      mimeType = 'image/jpeg';
-      s = s.jpeg({ quality: 100 });
-    }
+    // if (mimeType === 'image/png' && !metadata.hasAlpha) {
+    //   // eslint-disable-next-line no-param-reassign
+    //   mimeType = 'image/jpeg';
+    //   s = s.jpeg({ quality: 100 });
+    // }
 
-    if (
-      mimeType === 'image/jpeg' &&
-      allowQualityLoss &&
-      (await this.isFileTooLarge(s, maxBytes))
-    ) {
-      s = s.jpeg({ quality: 98 });
-    }
+    // if (
+    //   mimeType === 'image/jpeg' &&
+    //   allowQualityLoss &&
+    //   (await this.isFileTooLarge(s, maxBytes))
+    // ) {
+    //   s = s.jpeg({ quality: 98 });
+    // }
 
     let counter = 0;
     while (await this.isFileTooLarge(s, maxBytes)) {
