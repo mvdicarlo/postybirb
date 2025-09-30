@@ -47,6 +47,7 @@ describe('PostFileResizerService', () => {
       primaryFileId: 'test',
       submissionId: 'test',
       metadata: DefaultSubmissionFileMetadata(),
+      order: 0,
       file: {
         submissionFileId: 'test',
         fileName,
