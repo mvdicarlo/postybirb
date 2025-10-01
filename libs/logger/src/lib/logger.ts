@@ -2,8 +2,10 @@ import { PostyBirbDirectories } from '@postybirb/fs';
 import { LogLayer, LoggerType } from 'loglayer';
 import * as winston from 'winston';
 import { Logger as WinstonLogger } from 'winston';
+import { getAppInsightsClient } from './app-insights';
 import { SerializeDevLog } from './serializers/serialize-dev-log';
 import { serializeError } from './serializers/serialize-errors';
+import { AppInsightsTransport } from './winston-appinsights-transport';
 
 export { SerializeDevLog };
 export type PostyBirbLogger = LogLayer<WinstonLogger>;
@@ -13,8 +15,14 @@ let log: PostyBirbLogger;
 export function initializeLogger(
   instance: WinstonLogger,
   errorSerialize = true,
+  enableAppInsights = true,
 ): void {
   if (log) return;
+
+  // Add App Insights transport if initialized (only error level to reduce noise)
+  if (enableAppInsights && getAppInsightsClient()) {
+    instance.add(new AppInsightsTransport({ level: 'error' }));
+  }
 
   log = new LogLayer({
     logger: {

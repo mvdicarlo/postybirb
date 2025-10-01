@@ -22,6 +22,7 @@ import {
   IconRefresh,
 } from '@tabler/icons-react';
 import { Component, ReactNode, useState } from 'react';
+import { trackUIException } from '../../app-insights-ui';
 
 /**
  * Copyable error details component
@@ -200,6 +201,31 @@ export class ErrorBoundary extends Component<
     this.setState({
       error,
       errorInfo,
+    });
+
+    // Extract component name from stack for better tracking
+    const getComponentName = (componentStack?: string): string | null => {
+      if (!componentStack) return null;
+      const lines = componentStack.trim().split('\n');
+      const firstComponentLine = lines.find((line) =>
+        line.trim().startsWith('in '),
+      );
+      if (firstComponentLine) {
+        const match = firstComponentLine.trim().match(/^in (\w+)/);
+        return match ? match[1] : null;
+      }
+      return null;
+    };
+
+    const componentName = getComponentName(errorInfo.componentStack);
+    const { level = 'section' } = this.props;
+
+    // Track exception in Application Insights
+    trackUIException(error, {
+      source: 'error-boundary',
+      level,
+      component: componentName || 'unknown',
+      componentStack: errorInfo.componentStack.substring(0, 500), // Limit length
     });
 
     // Call the onError callback if provided

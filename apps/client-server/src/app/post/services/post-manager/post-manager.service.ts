@@ -1,6 +1,11 @@
 /* eslint-disable no-param-reassign */
 import { Injectable, Optional } from '@nestjs/common';
-import { Logger } from '@postybirb/logger';
+import {
+  Logger,
+  trackEvent,
+  trackException,
+  trackMetric,
+} from '@postybirb/logger';
 import {
   AccountId,
   EntityId,
@@ -195,10 +200,31 @@ export class PostManagerService {
       return;
     }
     const allCompleted = entity.children.every((c) => !!c.completedAt);
+    const finalState = allCompleted
+      ? PostRecordState.DONE
+      : PostRecordState.FAILED;
+
     await this.postRepository.update(entity.id, {
       completedAt: new Date().toISOString(),
-      state: allCompleted ? PostRecordState.DONE : PostRecordState.FAILED,
+      state: finalState,
     });
+
+    // Calculate success and failure counts
+    const successCount = entity.children.filter((c) => c.errors.length === 0)
+      .length;
+    const failureCount = entity.children.filter((c) => c.errors.length > 0)
+      .length;
+
+    // Track overall post completion in App Insights
+    trackEvent('PostCompleted', {
+      submissionId: entity.submissionId,
+      submissionType: entity.submission?.type ?? 'unknown',
+      state: finalState,
+      websiteCount: String(entity.children.length),
+      successCount: String(successCount),
+      failureCount: String(failureCount),
+    });
+
     if (
       allCompleted &&
       entity.submission.schedule.scheduleType !== ScheduleType.RECURRING
@@ -365,6 +391,31 @@ export class PostManagerService {
       postResponse: websitePostRecord.postResponse,
       postData: websitePostRecord.postData,
     });
+
+    // Track successful post in App Insights
+    const { account } = websitePostRecord;
+    const websiteName = account?.website ?? 'unknown';
+
+    trackEvent('PostSuccess', {
+      website: websiteName,
+      accountId: websitePostRecord.accountId,
+      submissionId: this.currentPost?.submissionId ?? 'unknown',
+      submissionType: this.currentPost?.submission?.type ?? 'unknown',
+      hasSourceUrl: res.sourceUrl ? 'true' : 'false',
+      completed: completed ? 'true' : 'false',
+      isFileBatch: fileIds?.length ? 'true' : 'false',
+      fileCount: fileIds?.length ? String(fileIds.length) : '0',
+    });
+
+    // Track success metric per website
+    trackMetric(`post.success.${websiteName}`, 1, {
+      website: websiteName,
+      submissionType: this.currentPost?.submission?.type ?? 'unknown',
+    });
+
+    this.logger
+      .withMetadata({ websitePostRecord, result: res })
+      .info(`Post successful for ${websiteName}`);
   }
 
   /**
@@ -398,6 +449,39 @@ export class PostManagerService {
       postResponse: websitePostRecord.postResponse,
       postData: websitePostRecord.postData,
     });
+
+    // Track failed post in App Insights
+    const { account } = websitePostRecord;
+    const websiteName = account?.website ?? 'unknown';
+
+    trackEvent('PostFailure', {
+      website: websiteName,
+      accountId: websitePostRecord.accountId,
+      submissionId: this.currentPost?.submissionId ?? 'unknown',
+      submissionType: this.currentPost?.submission?.type ?? 'unknown',
+      errorMessage: res.message ?? 'unknown',
+      stage: res.stage ?? 'unknown',
+      hasException: res.exception ? 'true' : 'false',
+      isFileBatch: fileIds?.length ? 'true' : 'false',
+      fileCount: fileIds?.length ? String(fileIds.length) : '0',
+    });
+
+    // Track failure metric per website
+    trackMetric(`post.failure.${websiteName}`, 1, {
+      website: websiteName,
+      submissionType: this.currentPost?.submission?.type ?? 'unknown',
+    });
+
+    // Track the exception if present
+    if (res.exception) {
+      trackException(res.exception, {
+        website: websiteName,
+        accountId: websitePostRecord.accountId,
+        submissionId: this.currentPost?.submissionId ?? 'unknown',
+        stage: res.stage ?? 'unknown',
+        errorMessage: res.message ?? 'unknown',
+      });
+    }
   }
 
   /**

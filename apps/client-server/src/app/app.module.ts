@@ -4,6 +4,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { AccountModule } from './account/account.module';
+import { AppInsightsModule } from './app-insights/app-insights.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CustomShortcutsModule } from './custom-shortcuts/custom-shortcuts.module';
@@ -29,6 +30,7 @@ import { WebsitesModule } from './websites/websites.module';
 
 @Module({
   imports: [
+    AppInsightsModule,
     ScheduleModule.forRoot(),
     AccountModule,
     WebSocketModule,
