@@ -10,7 +10,6 @@ import { getFileType } from '@postybirb/utils/file-type';
 import type { queueAsPromised } from 'fastq';
 import fastq from 'fastq';
 import { cpus } from 'os';
-import { parse } from 'path';
 import { Sharp } from 'sharp';
 import { ImageUtil } from '../../../file/utils/image.util';
 import { PostingFile, ThumbnailOptions } from '../../models/posting-file';
@@ -120,30 +119,13 @@ export class PostFileResizerService {
     thumb = thumb ?? { ...file.file }; // Ensure file to process
 
     let instance = ImageUtil.load(thumb.buffer);
-    let width: number;
-    let height: number;
-    const metadata = await instance.metadata();
-    // Chose the larger dimension to scale down
-    if (metadata.width >= metadata.height) {
-      width = 500;
-    } else {
-      height = 500;
-    }
-    instance = await this.resizeImage(instance, width, height);
-    let { mimeType } = thumb;
-    const extension = metadata.hasAlpha ? '.png' : '.jpeg';
-    if (metadata.hasAlpha) {
-      instance = instance.png();
-    } else {
-      instance = instance.jpeg({ quality: 99 });
-      mimeType = 'image/jpeg';
-    }
+    instance = await this.resizeImage(instance, 500, 500);
+    const { mimeType } = thumb;
 
-    ({ width, height } = await instance.metadata());
-    const { name } = parse(thumb.fileName);
+    const { width, height } = await instance.metadata();
     return {
       buffer: await instance.toBuffer(),
-      fileName: `${name}${extension}`,
+      fileName: thumb.fileName,
       mimeType,
       height,
       width,
@@ -155,7 +137,9 @@ export class PostFileResizerService {
     this.logger.withMetadata({ width, height, metadata }).info('Resizing');
     if (metadata.width > width || metadata.height > height) {
       return ImageUtil.load(
-        await instance.resize({ width, height, fit: 'inside' }).toBuffer(),
+        await instance
+          .resize({ width, height, fit: 'inside', withoutEnlargement: true })
+          .toBuffer(),
       );
     }
     return instance;

@@ -197,7 +197,13 @@ export default class Newgrounds
         .asMultipart()
         .setField('userkey', userKey)
         .setField('link_icon', '1')
-        .addFile('new_image', primaryFile);
+        .addFile('new_image', primaryFile)
+        .setField('width', primaryFile.width)
+        .setField('height', primaryFile.height)
+        .setField(
+          'cropdata',
+          `{"x":0,"y":45,"width":${primaryFile.width},"height":${primaryFile.height}}`,
+        );
 
       if (primaryFile.thumbnail) {
         fileUploadBuilder.addThumbnail('thumbnail', primaryFile);

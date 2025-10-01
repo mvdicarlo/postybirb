@@ -323,24 +323,17 @@ export class CreateFileService {
     buffer: Buffer;
     mimeType: string;
   }> {
-    const preferredDimension = 300;
+    const preferredDimension = 400;
 
-    let width = preferredDimension;
-    let height = Math.floor(
-      fileHeight
-        ? (fileHeight / fileWidth) * preferredDimension
-        : preferredDimension,
+    // Resize with aspect ratio preserved - Sharp will calculate the other dimension
+    const resized = sharpInstance.resize(
+      preferredDimension,
+      preferredDimension,
+      {
+        fit: 'inside', // Ensure image fits within the box while maintaining aspect ratio
+        withoutEnlargement: true, // Don't enlarge if image is smaller than target
+      },
     );
-
-    if (fileHeight) {
-      height = Math.min(fileHeight, height);
-    }
-
-    if (fileWidth) {
-      width = Math.min(fileWidth, width);
-    }
-
-    const resized = sharpInstance.resize(width, height);
 
     const isJpeg =
       sourceMimeType === 'image/jpeg' || sourceMimeType === 'image/jpg';
@@ -348,6 +341,11 @@ export class CreateFileService {
       ? await resized.jpeg({ quality: 99, force: true }).toBuffer()
       : await resized.png({ quality: 99, force: true }).toBuffer();
     const mimeType = isJpeg ? 'image/jpeg' : 'image/png';
+
+    // Get the actual dimensions after the buffer is generated
+    const metadata = await ImageUtil.load(buffer).metadata();
+    const width = metadata.width ?? preferredDimension;
+    const height = metadata.height ?? preferredDimension;
 
     return { buffer, height, width, mimeType };
   }
