@@ -1,3 +1,5 @@
+import { CancellationError } from './cancellation-error';
+
 /**
  * CancellableToken is a simple class that can be used to cancel a task.
  * @class CancellableToken
@@ -15,7 +17,7 @@ export class CancellableToken {
 
   public throwIfCancelled(): void {
     if (this.cancelled) {
-      throw new Error('Task was cancelled.');
+      throw new CancellationError();
     }
   }
 }

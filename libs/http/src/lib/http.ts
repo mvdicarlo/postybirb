@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 import { Logger } from '@nestjs/common';
+import { trackDependency, trackException } from '@postybirb/logger';
 import {
   BrowserWindow,
   ClientRequest,
@@ -72,13 +73,64 @@ function getPartitionKey(partition: string): string {
 
 /**
  * Http module that wraps around Electron's {ClientRequest} and {net}.
- * @todo Post testing
- * @todo Test return the responseUrl
+ * Tracks all HTTP requests to Application Insights for monitoring.
  *
  * @class Http
  */
 export class Http {
   private static logger: Logger = new Logger(Http.name);
+
+  /**
+   * Tracks an HTTP request as a dependency in Application Insights
+   * This populates the Application Map and dependency views
+   * Creates a hierarchical structure: postybirb-app -> hostname -> method + pathname
+   */
+  private static trackHttpDependency(
+    method: string,
+    url: string,
+    statusCode: number,
+    duration: number,
+    success: boolean,
+    error?: Error,
+  ): void {
+    try {
+      const urlObj = new URL(url);
+      const target = urlObj.hostname;
+      const name = `${method} ${urlObj.pathname}`;
+
+      // Track as HTTP dependency
+      // Using hostname as the target creates sub-dependency trees
+      // hostname -> method + pathname hierarchy in Application Map
+      trackDependency(
+        name,
+        target,
+        'HTTP',
+        url.substring(0, 500), // Full URL as data
+        duration,
+        success,
+        statusCode,
+        {
+          method,
+          domain: target,
+          hasError: error ? 'true' : 'false',
+        },
+      );
+
+      // Track exception separately if request failed
+      if (error || statusCode >= 400) {
+        trackException(error ?? new Error(`Status ${statusCode}`), {
+          source: 'http-dependency',
+          method,
+          url: url.substring(0, 200),
+          domain: target,
+          statusCode: String(statusCode),
+        });
+      }
+    } catch (trackingError) {
+      // Don't let tracking errors break the actual HTTP request
+      console.error('Error tracking HTTP dependency:', trackingError);
+    }
+  }
 
   private static createClientRequest(
     options: HttpOptions,
@@ -303,22 +355,49 @@ export class Http {
       return Promise.reject(new Error('No internet connection.'));
     }
 
-    const response = await new Promise<HttpResponse<T>>((resolve, reject) => {
-      const req = Http.createClientRequest(options, {
-        ...(crOptions ?? {}),
-        url,
-      });
-      Http.handleError(req, reject);
-      Http.handleResponse(url, req, resolve, reject);
-      req.end();
-    });
+    const startTime = Date.now();
+    let statusCode = 0;
+    let success = false;
+    let error: Error | undefined;
 
-    const { body } = response;
-    if (typeof body === 'string' && Http.isOnCloudFlareChallengePage(body)) {
-      console.log('Cloudflare detected. Attempting to bypass...');
-      return Http.performBrowserWindowGetRequest<T>(url, options, crOptions);
+    try {
+      const response = await new Promise<HttpResponse<T>>((resolve, reject) => {
+        const req = Http.createClientRequest(options, {
+          ...(crOptions ?? {}),
+          url,
+        });
+        Http.handleError(req, reject);
+        Http.handleResponse(url, req, resolve, reject);
+        req.end();
+      });
+
+      const { body } = response;
+      statusCode = response.statusCode ?? 0;
+      success = statusCode >= 200 && statusCode < 400;
+
+      if (typeof body === 'string' && Http.isOnCloudFlareChallengePage(body)) {
+        console.log('Cloudflare detected. Attempting to bypass...');
+        return await Http.performBrowserWindowGetRequest<T>(
+          url,
+          options,
+          crOptions,
+        );
+      }
+      return response;
+    } catch (err) {
+      error = err instanceof Error ? err : new Error(String(err));
+      throw err;
+    } finally {
+      const duration = Date.now() - startTime;
+      Http.trackHttpDependency(
+        'GET',
+        url,
+        statusCode,
+        duration,
+        success,
+        error,
+      );
     }
-    return response;
   }
 
   /**
@@ -361,27 +440,54 @@ export class Http {
       return Promise.reject(new Error('No internet connection.'));
     }
 
-    const response = await new Promise<HttpResponse<T>>((resolve, reject) => {
-      const req = Http.createClientRequest(options, {
-        ...(crOptions ?? {}),
-        url,
-        method,
+    const startTime = Date.now();
+    let statusCode = 0;
+    let success = false;
+    let error: Error | undefined;
+
+    try {
+      const response = await new Promise<HttpResponse<T>>((resolve, reject) => {
+        const req = Http.createClientRequest(options, {
+          ...(crOptions ?? {}),
+          url,
+          method,
+        });
+        Http.handleError(req, reject);
+        Http.handleResponse(url, req, resolve, reject);
+
+        const { contentType, buffer } = Http.createPostBody(options);
+        req.setHeader('Content-Type', contentType);
+        req.write(buffer);
+        req.end();
       });
-      Http.handleError(req, reject);
-      Http.handleResponse(url, req, resolve, reject);
 
-      const { contentType, buffer } = Http.createPostBody(options);
-      req.setHeader('Content-Type', contentType);
-      req.write(buffer);
-      req.end();
-    });
+      const { body } = response;
+      statusCode = response.statusCode ?? 0;
+      success = statusCode >= 200 && statusCode < 400;
 
-    const { body } = response;
-    if (typeof body === 'string' && Http.isOnCloudFlareChallengePage(body)) {
-      console.log('Cloudflare detected. Attempting to bypass...');
-      return Http.performBrowserWindowPostRequest<T>(url, options, crOptions);
+      if (typeof body === 'string' && Http.isOnCloudFlareChallengePage(body)) {
+        console.log('Cloudflare detected. Attempting to bypass...');
+        return await Http.performBrowserWindowPostRequest<T>(
+          url,
+          options,
+          crOptions,
+        );
+      }
+      return response;
+    } catch (err) {
+      error = err instanceof Error ? err : new Error(String(err));
+      throw err;
+    } finally {
+      const duration = Date.now() - startTime;
+      Http.trackHttpDependency(
+        method.toUpperCase(),
+        url,
+        statusCode,
+        duration,
+        success,
+        error,
+      );
     }
-    return response;
   }
 
   private static async performBrowserWindowGetRequest<T>(

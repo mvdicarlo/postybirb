@@ -49,6 +49,7 @@ import { MessageWebsite } from '../../../websites/models/website-modifiers/messa
 import { UnknownWebsite, Website } from '../../../websites/website';
 import { WebsiteRegistryService } from '../../../websites/website-registry.service';
 import { CancellableToken } from '../../models/cancellable-token';
+import { CancellationError } from '../../models/cancellation-error';
 import { PostingFile } from '../../models/posting-file';
 import { PostFileResizerService } from '../post-file-resizer/post-file-resizer.service';
 
@@ -210,10 +211,12 @@ export class PostManagerService {
     });
 
     // Calculate success and failure counts
-    const successCount = entity.children.filter((c) => c.errors.length === 0)
-      .length;
-    const failureCount = entity.children.filter((c) => c.errors.length > 0)
-      .length;
+    const successCount = entity.children.filter(
+      (c) => c.errors.length === 0,
+    ).length;
+    const failureCount = entity.children.filter(
+      (c) => c.errors.length > 0,
+    ).length;
 
     // Track overall post completion in App Insights
     trackEvent('PostCompleted', {
@@ -276,6 +279,7 @@ export class PostManagerService {
     }
 
     const { submission } = entity;
+    let data: PostData | undefined;
     try {
       const supportedTypes = instance.getSupportedTypes();
       if (!supportedTypes.includes(submission.type)) {
@@ -289,7 +293,7 @@ export class PostManagerService {
       );
 
       this.logger.info('Preparing post data');
-      const data = await this.preparePostData(submission, instance, option);
+      data = await this.preparePostData(submission, instance, option);
       this.logger.withMetadata(data).info('Post data prepared');
       websitePostRecord.postData = {
         parsedOptions: data.options,
@@ -317,7 +321,7 @@ export class PostManagerService {
                   instance.decoratedProps.metadata.name
                 }`,
               );
-      await this.handleFailureResult(websitePostRecord, errorResponse);
+      await this.handleFailureResult(websitePostRecord, errorResponse, data);
     }
   }
 
@@ -363,6 +367,7 @@ export class PostManagerService {
   private async handleSuccessResult(
     websitePostRecord: WebsitePostRecord,
     res: IPostResponse,
+    postData: PostData,
     completed = true,
     fileIds?: EntityId[],
   ): Promise<void> {
@@ -402,9 +407,8 @@ export class PostManagerService {
       submissionId: this.currentPost?.submissionId ?? 'unknown',
       submissionType: this.currentPost?.submission?.type ?? 'unknown',
       hasSourceUrl: res.sourceUrl ? 'true' : 'false',
-      completed: completed ? 'true' : 'false',
-      isFileBatch: fileIds?.length ? 'true' : 'false',
       fileCount: fileIds?.length ? String(fileIds.length) : '0',
+      options: this.redactPostDataForLogging(postData),
     });
 
     // Track success metric per website
@@ -427,6 +431,7 @@ export class PostManagerService {
   private async handleFailureResult(
     websitePostRecord: WebsitePostRecord,
     res: IPostResponse,
+    postData: PostData,
     fileIds?: EntityId[],
   ): Promise<void> {
     if (res.exception) {
@@ -454,33 +459,36 @@ export class PostManagerService {
     const { account } = websitePostRecord;
     const websiteName = account?.website ?? 'unknown';
 
-    trackEvent('PostFailure', {
-      website: websiteName,
-      accountId: websitePostRecord.accountId,
-      submissionId: this.currentPost?.submissionId ?? 'unknown',
-      submissionType: this.currentPost?.submission?.type ?? 'unknown',
-      errorMessage: res.message ?? 'unknown',
-      stage: res.stage ?? 'unknown',
-      hasException: res.exception ? 'true' : 'false',
-      isFileBatch: fileIds?.length ? 'true' : 'false',
-      fileCount: fileIds?.length ? String(fileIds.length) : '0',
-    });
-
-    // Track failure metric per website
-    trackMetric(`post.failure.${websiteName}`, 1, {
-      website: websiteName,
-      submissionType: this.currentPost?.submission?.type ?? 'unknown',
-    });
-
-    // Track the exception if present
-    if (res.exception) {
-      trackException(res.exception, {
+    // Track non-cancellation failures
+    if (!(res.exception && res.exception instanceof CancellationError)) {
+      trackEvent('PostFailure', {
         website: websiteName,
         accountId: websitePostRecord.accountId,
         submissionId: this.currentPost?.submissionId ?? 'unknown',
+        submissionType: this.currentPost?.submission?.type ?? 'unknown',
+        errorMessage: res.message ?? res.exception.message ?? 'unknown',
         stage: res.stage ?? 'unknown',
-        errorMessage: res.message ?? 'unknown',
+        hasException: res.exception ? 'true' : 'false',
+        fileCount: fileIds?.length ? String(fileIds.length) : '0',
+        options: this.redactPostDataForLogging(postData),
       });
+
+      // Track failure metric per website
+      trackMetric(`post.failure.${websiteName}`, 1, {
+        website: websiteName,
+        submissionType: this.currentPost?.submission?.type ?? 'unknown',
+      });
+
+      // Track the exception if present
+      if (res.exception) {
+        trackException(res.exception, {
+          website: websiteName,
+          accountId: websitePostRecord.accountId,
+          submissionId: this.currentPost?.submissionId ?? 'unknown',
+          stage: res.stage ?? 'unknown',
+          errorMessage: res.message ?? 'unknown',
+        });
+      }
     }
   }
 
@@ -504,9 +512,9 @@ export class PostManagerService {
 
     websitePostRecord.postResponse.push(result);
     if (result.exception) {
-      await this.handleFailureResult(websitePostRecord, result);
+      await this.handleFailureResult(websitePostRecord, result, data);
     } else {
-      await this.handleSuccessResult(websitePostRecord, result);
+      await this.handleSuccessResult(websitePostRecord, result, data);
     }
   }
 
@@ -621,12 +629,18 @@ export class PostManagerService {
       );
 
       if (result.exception) {
-        await this.handleFailureResult(websitePostRecord, result, fileIds);
+        await this.handleFailureResult(websitePostRecord, result, data);
         // Behavior is to stop posting if a batch fails.
         return;
       }
 
-      await this.handleSuccessResult(websitePostRecord, result, false, fileIds);
+      await this.handleSuccessResult(
+        websitePostRecord,
+        result,
+        data,
+        false,
+        fileIds,
+      );
       await this.markFilesAsPosted(websitePostRecord, submission, batch);
       this.logger
         .withMetadata(result)
@@ -929,5 +943,14 @@ export class PostManagerService {
     websiteOptions: WebsiteOptions,
   ): Promise<PostData> {
     return this.postParserService.parse(submission, instance, websiteOptions);
+  }
+
+  private redactPostDataForLogging(postData: PostData): string {
+    const opts = { ...postData.options };
+    // Redact sensitive information
+    if (opts.description) {
+      opts.description = `[REDACTED ${opts.description.length}]`;
+    }
+    return JSON.stringify({ options: opts });
   }
 }

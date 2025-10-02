@@ -1,4 +1,3 @@
-import * as winston from 'winston';
 import TransportStream from 'winston-transport';
 import { getAppInsightsClient } from './app-insights';
 
@@ -56,9 +55,13 @@ export class AppInsightsTransport extends TransportStream {
       });
 
       // If it's an error with an exception, also track it as an exception
-      if (level === 'error' && meta.error instanceof Error) {
+      let err = meta.error;
+      if (!(meta.error instanceof Error) && info.message instanceof Error) {
+        err = info.message;
+      }
+      if (level === 'error' && err instanceof Error) {
         client.trackException({
-          exception: meta.error,
+          exception: err,
           properties,
         });
       }

@@ -39,13 +39,34 @@ export function initializeAppInsights(config: AppInsightsConfig): void {
   }
 
   try {
+    // For Application Insights SDK v3 (OpenTelemetry-based), we need to set
+    // OTEL_RESOURCE_ATTRIBUTES to properly configure cloud role name and instance
+    // This must be set BEFORE calling setup()
+    const cloudRoleName = config.cloudRole || 'postybirb';
+    const cloudRoleInstance = 'postybirb-app';
+
+    // Build the OTEL resource attributes
+    // service.name maps to cloud_RoleName
+    // service.instance.id maps to cloud_RoleInstance
+    const resourceAttributes = [
+      `service.name=${cloudRoleName}`,
+      `service.instance.id=${cloudRoleInstance}`,
+    ];
+
+    if (config.appVersion) {
+      resourceAttributes.push(`service.version=${config.appVersion}`);
+    }
+
+    // Set the environment variable that OpenTelemetry uses
+    process.env.OTEL_RESOURCE_ATTRIBUTES = resourceAttributes.join(',');
+
     appInsights
       .setup(config.connectionString || config.instrumentationKey)
-      .setAutoDependencyCorrelation(true)
+      .setAutoDependencyCorrelation(false)
       .setAutoCollectRequests(true)
       .setAutoCollectPerformance(false, false) // Disable extended metrics
       .setAutoCollectExceptions(true)
-      .setAutoCollectDependencies(true)
+      .setAutoCollectDependencies(false)
       .setAutoCollectConsole(false) // We'll use Winston transport instead
       .setUseDiskRetryCaching(true)
       .setSendLiveMetrics(false)
@@ -53,26 +74,15 @@ export function initializeAppInsights(config: AppInsightsConfig): void {
         appInsights.DistributedTracingModes.AI_AND_W3C,
       );
 
-    // Set cloud role name to distinguish between components
-    if (config.cloudRole) {
-      appInsights.defaultClient.context.tags[
-        appInsights.defaultClient.context.keys.cloudRole
-      ] = config.cloudRole;
-    }
-
-    // Set application version
-    if (config.appVersion) {
-      appInsights.defaultClient.context.tags[
-        appInsights.defaultClient.context.keys.applicationVersion
-      ] = config.appVersion;
-    }
-
+    // Start the Application Insights client
     appInsights.start();
     client = appInsights.defaultClient;
     isInitialized = true;
 
     // eslint-disable-next-line no-console
-    console.log(`Application Insights initialized for ${config.cloudRole}`);
+    console.log(
+      `Application Insights initialized for ${cloudRoleName} (instance: ${cloudRoleInstance})`,
+    );
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error('Failed to initialize Application Insights:', error);
@@ -152,6 +162,34 @@ export function trackTrace(
   if (client) {
     client.trackTrace({
       message,
+      properties,
+    });
+  }
+}
+
+/**
+ * Track a dependency (HTTP call, database query, etc.)
+ * This populates the Application Map and Dependency views in App Insights
+ */
+export function trackDependency(
+  name: string,
+  target: string,
+  dependencyTypeName: string,
+  data: string,
+  duration: number,
+  success: boolean,
+  resultCode?: number,
+  properties?: { [key: string]: string },
+): void {
+  if (client) {
+    client.trackDependency({
+      name,
+      dependencyTypeName,
+      target,
+      data,
+      duration,
+      success,
+      resultCode,
       properties,
     });
   }
