@@ -1,5 +1,6 @@
 import {
   BooleanField,
+  DateTimeField,
   DescriptionField,
   SelectField,
 } from '@postybirb/form-builder';
@@ -25,13 +26,22 @@ export class PatreonFileSubmission extends BaseWebsiteOptions {
   })
   tiers: string[] = ['-1']; // Default to "All"
 
-  // TODO - Date Field
+  @DateTimeField({
+    label: 'schedule',
+    showTime: true,
+    min: new Date(),
+  })
   schedule?: string;
 
+  @DateTimeField({
+    label: 'earlyAccess',
+    showTime: true,
+    min: new Date(),
+  })
   earlyAccess?: Date;
 
   @BooleanField({
-    label: 'charge',
+    label: 'chargePatrons',
   })
   charge = false;
 
