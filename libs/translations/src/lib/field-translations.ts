@@ -88,6 +88,7 @@ export const FieldLabelTranslations = {
   creativeCommons: msg`Creative Commons`,
   commercial: msg`Commercial use`,
   modification: msg`Modification`,
+  accessTiers: msg`Access Tiers`,
 } satisfies Record<string, MessageDescriptor>;
 
 export type FieldLabelTranslationsId = keyof typeof FieldLabelTranslations;

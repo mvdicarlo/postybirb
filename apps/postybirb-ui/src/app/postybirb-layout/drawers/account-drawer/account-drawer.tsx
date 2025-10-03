@@ -114,8 +114,8 @@ export function AccountDrawer() {
 
           <Group mb="md">
             <Input
+              autoFocus
               leftSection={<IconSearch size={16} />}
-              placeholder={_(msg`Search websites...`)}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.currentTarget.value)}
               style={{ flex: 1 }}
