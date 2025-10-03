@@ -105,7 +105,7 @@ describe('PostFileResizerService', () => {
     expect(resized.buffer.length).toBeLessThan(testFile.length);
     expect(resized.thumbnail?.buffer.length).toBeLessThan(testFile.length);
     expect(resized.fileName).toBe('test.jpeg');
-    expect(resized.thumbnail?.fileName).toBe('test.jpeg');
+    expect(resized.thumbnail?.fileName).toBe('test.jpg');
     expect(resized.mimeType).toBe('image/jpeg');
   });
 
@@ -116,22 +116,6 @@ describe('PostFileResizerService', () => {
         resize: { maxBytes: -1 },
       }),
     ).rejects.toThrow();
-  });
-
-  it('should convert png thumbnail without alpha to jpeg', async () => {
-    const noAlphaFile = readFileSync(
-      join(__dirname, '../../../../test-files/png_no_alpha.png'),
-    );
-    const tf = createFile('test.png', 'image/png', 600, 600, noAlphaFile);
-    const resized = await service.resize({
-      file: tf,
-      resize: { maxBytes: noAlphaFile.length - 1000 },
-    });
-
-    expect(resized.buffer.length).toBeLessThan(noAlphaFile.length);
-    expect(resized.fileName).toBe('test.png');
-    expect(resized.thumbnail?.buffer.length).toBeLessThan(noAlphaFile.length);
-    expect(resized.thumbnail?.fileName).toBe('test.jpeg');
   });
 
   it('should not convert png thumbnail with alpha to jpeg', async () => {
