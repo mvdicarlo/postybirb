@@ -1,6 +1,8 @@
 import { SelectOption } from '@postybirb/form-builder';
 import { Http } from '@postybirb/http';
 import {
+  DynamicObject,
+  FileType,
   ILoginState,
   ImageResizeProps,
   ISubmissionFile,
@@ -24,7 +26,23 @@ import { Website } from '../../website';
 import { PatreonAccountData } from './models/patreon-account-data';
 import { PatreonFileSubmission } from './models/patreon-file-submission';
 import { PatreonMessageSubmission } from './models/patreon-message-submission';
+import { PatreonNewPostResponse } from './models/patreon-post-types';
 import { PatreonCampaignResponse } from './patreon-types';
+
+type PatreonAccessRuleSegment = Array<{
+  type: 'access-rule';
+  id: string;
+  attributes: object;
+}>;
+
+type PatreonTagSegment = Array<{
+  type: 'post_tag';
+  id: string;
+  attributes: {
+    value: string;
+    cardinality: 1;
+  };
+}>;
 
 @WebsiteMetadata({
   name: 'patreon',
@@ -146,12 +164,69 @@ export default class Patreon
     }));
   }
 
+  private getPostType(fileType: FileType): string {
+    switch (fileType) {
+      case FileType.AUDIO:
+        return 'audio_embed';
+      case FileType.IMAGE:
+        return 'image_file';
+      case FileType.VIDEO:
+        return 'video';
+      case FileType.TEXT:
+      default:
+        return 'text_only';
+    }
+  }
+
   createFileModel(): PatreonFileSubmission {
     return new PatreonFileSubmission();
   }
 
   calculateImageResize(file: ISubmissionFile): ImageResizeProps {
     return undefined;
+  }
+
+  private async initializePost() {
+    const res = await Http.post<PatreonNewPostResponse>(
+      `${this.BASE_URL}/api/posts?fields[post]=post_type%2Cpost_metadata&include=drop&json-api-version=1.0&json-api-use-default-includes=false`,
+      {
+        partition: this.accountId,
+        type: 'json',
+        data: {
+          data: {
+            type: 'post',
+            attributes: {
+              post_type: 'text_only',
+            },
+          },
+        },
+        headers: {
+          'X-Csrf-Signature': this.sessionData.csrf,
+        },
+      },
+    );
+
+    PostResponse.validateBody(this, res);
+    return res.body;
+  }
+
+  private async finalizePost(
+    postUrl: string,
+    data: DynamicObject,
+  ): Promise<void> {
+    const res = await Http.patch(
+      `${postUrl}?json-api-version=1.0&json-api-use-default-includes=false&include=[]`,
+      {
+        partition: this.accountId,
+        type: 'json',
+        data,
+        headers: {
+          'X-Csrf-Signature': this.sessionData.csrf,
+        },
+      },
+    );
+
+    PostResponse.validateBody(this, res);
   }
 
   async onPostFileSubmission(
@@ -161,29 +236,13 @@ export default class Patreon
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfCancelled();
-    const formData = {
-      file: files[0].toPostFormat(),
-      thumb: files[0].thumbnailToPostFormat(),
-      description: postData.options.description,
-      tags: postData.options.tags.join(', '),
-      title: postData.options.title,
-      rating: postData.options.rating,
-    };
 
-    const result = await Http.post<string>(`${this.BASE_URL}/submit`, {
-      partition: this.accountId,
-      data: formData,
-      type: 'multipart',
-    });
-
-    if (result.statusCode === 200) {
-      return PostResponse.fromWebsite(this).withAdditionalInfo(result.body);
-    }
+    const initializedPost = await this.initializePost();
 
     return PostResponse.fromWebsite(this)
       .withAdditionalInfo({
-        body: result.body,
-        statusCode: result.statusCode,
+        body: initializedPost,
+        statusCode: initializedPost,
       })
       .withException(new Error('Failed to post'));
   }
@@ -205,29 +264,27 @@ export default class Patreon
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfCancelled();
-    const formData = {
-      description: postData.options.description,
-      tags: postData.options.tags.join(', '),
-      title: postData.options.title,
-      rating: postData.options.rating,
+
+    const initializedPost = await this.initializePost();
+
+    const tags = this.createTagsSegment(postData.options.tags || []);
+    const accessTiers = this.createAccessRuleSegment(
+      postData.options.tiers || [],
+    );
+
+    const postAttributes = {
+      data: this.createDataSegment(postData, tags, accessTiers, 'text_only'),
+      meta: this.createDefaultMetadataSegment(),
+      included: [...tags, ...accessTiers],
     };
 
-    const result = await Http.post<string>(`${this.BASE_URL}/submit`, {
-      partition: this.accountId,
-      data: formData,
-      type: 'multipart',
-    });
-
-    if (result.statusCode === 200) {
-      return PostResponse.fromWebsite(this).withAdditionalInfo(result.body);
-    }
+    await this.finalizePost(initializedPost.links.self, postAttributes);
 
     return PostResponse.fromWebsite(this)
       .withAdditionalInfo({
-        body: result.body,
-        statusCode: result.statusCode,
+        postAttributes,
       })
-      .withException(new Error('Failed to post'));
+      .withSourceUrl(`${this.BASE_URL}/posts/${initializedPost.data.id}`);
   }
 
   async onValidateMessageSubmission(
@@ -236,5 +293,96 @@ export default class Patreon
     const validator = this.createValidator<PatreonMessageSubmission>();
 
     return validator.result;
+  }
+
+  private createTagsSegment(tags: string[]): PatreonTagSegment {
+    return tags.slice(0, 50).map((tag) => ({
+      type: 'post_tag',
+      id: `user_defined;${tag}`,
+      attributes: {
+        value: tag,
+        cardinality: 1,
+      },
+    }));
+  }
+
+  private createAccessRuleSegment(
+    patreonTiers: string[],
+  ): PatreonAccessRuleSegment {
+    return patreonTiers.map((tier) => ({
+      type: 'access-rule',
+      id: `user_defined;${tier}`,
+      attributes: {},
+    }));
+  }
+
+  private createDefaultMetadataSegment() {
+    return {
+      auto_save: true,
+      send_notifications: true,
+    };
+  }
+
+  private createDataSegment(
+    postData:
+      | PostData<PatreonMessageSubmission>
+      | PostData<PatreonFileSubmission>,
+    tagSegment: PatreonTagSegment,
+    rulesSegment: PatreonAccessRuleSegment,
+    postType: string,
+  ) {
+    const { options } = postData;
+    const dataAttributes = {
+      type: 'post',
+      attributes: {
+        comments_write_access_level: 'all',
+        content: options.description ?? '<p></p>',
+        is_paid: options.charge,
+        is_monetized: false,
+        new_post_email_type: 'preview_only',
+        paywall_display: 'post_layout',
+        post_type: postType,
+        preview_asset_type: 'default',
+        teaser_text: options.teaser,
+        thumbnail_position: null,
+        title: options.title,
+        video_preview_start_ms: null,
+        video_preview_end_ms: null,
+        is_preview_blurred: true,
+        allow_preview_in_rss: true,
+        post_metadata: {
+          platform: {},
+        },
+        tags: {
+          publish: true,
+        },
+      },
+      relationships: {
+        // post_tag: {},
+        // 'access-rule': {
+        //   data: {
+        //     type: 'access-rule',
+        //     id: rulesSegment[0].id,
+        //   },
+        // },
+        user_defined_tags: {
+          data: tagSegment.map((tag) => ({
+            id: tag.id,
+            type: 'post_tag',
+          })),
+        },
+        access_rules: {
+          data: rulesSegment.map((rule) => ({
+            id: rule.id,
+            type: 'access-rule',
+          })),
+        },
+        collections: {
+          data: [],
+        },
+      },
+    };
+
+    return dataAttributes;
   }
 }

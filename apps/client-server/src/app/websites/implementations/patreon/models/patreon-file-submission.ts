@@ -3,6 +3,7 @@ import {
   DateTimeField,
   DescriptionField,
   SelectField,
+  TextField,
 } from '@postybirb/form-builder';
 import { DescriptionType, DescriptionValue } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
@@ -25,6 +26,11 @@ export class PatreonFileSubmission extends BaseWebsiteOptions {
     ],
   })
   tiers: string[] = ['-1']; // Default to "All"
+
+  @TextField({
+    label: 'teaser',
+  })
+  teaser = '';
 
   @DateTimeField({
     label: 'schedule',

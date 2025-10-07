@@ -128,7 +128,10 @@ export class DescriptionParserService {
       tags,
     );
 
-    return description;
+    return description
+      .replace(/(<div><\/div>)$/, '')
+      .replace(/(<p><\/p>)$/, '')
+      .trim();
   }
 
   private createDescription(
