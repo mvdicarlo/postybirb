@@ -1,15 +1,18 @@
 import 'reflect-metadata';
 import { createFieldDecorator } from '../utils/assign-metadata';
 
+// ISO String
+export type DateString = string;
+
 type ExtraOptions = {
   /**
    * Minimum date/time allowed (ISO string or Date)
    */
-  min?: string | Date;
+  min?: DateString;
   /**
    * Maximum date/time allowed (ISO string or Date)
    */
-  max?: string | Date;
+  max?: DateString;
   /**
    * Whether to show time picker (false = date only)
    * @default true

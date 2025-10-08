@@ -62,6 +62,7 @@ export class PostResponse implements IPostResponse {
   static validateBody(
     website: { id: string },
     res: HttpResponse<unknown>,
+    stage?: string,
   ): void {
     if (res.statusCode > 303) {
       // eslint-disable-next-line @typescript-eslint/no-throw-literal
@@ -71,6 +72,7 @@ export class PostResponse implements IPostResponse {
             `Unexpected status code from ${res.responseUrl}: ${res.statusCode}`,
           ),
         )
+        .atStage(stage || 'Unknown')
         .withAdditionalInfo(res.body);
     }
   }

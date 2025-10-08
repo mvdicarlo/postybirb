@@ -94,6 +94,7 @@ export const FieldLabelTranslations = {
   earlyAccess: msg`Early Access`,
   chargePatrons: msg`Charge Patrons`,
   allAsAttachment: msg`Attach Images as Attachments`,
+  collections: msg`Collections`,
 } satisfies Record<string, MessageDescriptor>;
 
 export type FieldLabelTranslationsId = keyof typeof FieldLabelTranslations;

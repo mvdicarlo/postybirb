@@ -15,6 +15,7 @@ export class PatreonFileSubmission extends BaseWebsiteOptions {
   description: DescriptionValue;
 
   @SelectField({
+    required: true,
     label: 'accessTiers',
     allowMultiple: true,
     options: [], // Populated dynamically
@@ -24,35 +25,55 @@ export class PatreonFileSubmission extends BaseWebsiteOptions {
         populate: 'options',
       },
     ],
+    span: 12,
   })
   tiers: string[] = ['-1']; // Default to "All"
 
+  @SelectField({
+    label: 'collections',
+    allowMultiple: true,
+    options: [], // Populated dynamically
+    derive: [
+      {
+        key: 'collections',
+        populate: 'options',
+      },
+    ],
+    span: 12,
+  })
+  collections: string[] = [];
+
   @TextField({
     label: 'teaser',
+    span: 12,
   })
   teaser = '';
 
   @DateTimeField({
     label: 'schedule',
     showTime: true,
-    min: new Date(),
+    min: new Date().toISOString(),
+    span: 6,
   })
   schedule?: string;
 
   @DateTimeField({
     label: 'earlyAccess',
     showTime: true,
-    min: new Date(),
+    min: new Date().toISOString(),
+    span: 6,
   })
   earlyAccess?: Date;
 
   @BooleanField({
     label: 'chargePatrons',
+    span: 3,
   })
   charge = false;
 
   @BooleanField({
     label: 'allAsAttachment',
+    span: 3,
   })
   allAsAttachment = false;
 }
