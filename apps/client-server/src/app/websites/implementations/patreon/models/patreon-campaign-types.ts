@@ -4,7 +4,7 @@
 
 export interface PatreonCampaignResponse {
   data: PatreonCampaign;
-  included?: Array<PatreonUser | PatreonReward>;
+  included?: Array<PatreonUser | PatreonReward | PatreonAccessRule>;
   links: {
     self: string;
   };
@@ -153,6 +153,27 @@ export interface PatreonReward {
   attributes: PatreonRewardAttributes;
   relationships?: {
     campaign: PatreonRelationship<'campaign'>;
+  };
+}
+
+export interface PatreonAccessRule {
+  id: string;
+  type: 'access-rule';
+  attributes: {
+    access_rule_type:
+      | 'patrons'
+      | 'public'
+      | 'min_cents_pledged'
+      | 'non_member'
+      | 'tier';
+  };
+  relationships: {
+    tier: {
+      data: {
+        id: string;
+        type: string;
+      };
+    };
   };
 }
 

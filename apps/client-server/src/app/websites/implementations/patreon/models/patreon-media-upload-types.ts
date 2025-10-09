@@ -6,7 +6,11 @@ export type PatreonMediaState =
 
 export type PatreonMediaOwnerType = 'post' | 'user' | 'campaign';
 
-export type PatreonMediaOwnerRelationship = 'main' | 'thumbnail' | 'attachment';
+export type PatreonMediaOwnerRelationship =
+  | 'main'
+  | 'thumbnail'
+  | 'attachment'
+  | 'audio';
 
 export type PatreonMediaType = 'image' | 'video' | 'audio';
 

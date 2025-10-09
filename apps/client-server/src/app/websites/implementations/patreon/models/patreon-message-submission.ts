@@ -26,7 +26,7 @@ export class PatreonMessageSubmission extends BaseWebsiteOptions {
     ],
     span: 12,
   })
-  tiers: string[] = ['-1']; // Default to "All"
+  tiers: string[] = [];
 
   @SelectField({
     label: 'collections',

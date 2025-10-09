@@ -27,7 +27,7 @@ export class PatreonFileSubmission extends BaseWebsiteOptions {
     ],
     span: 12,
   })
-  tiers: string[] = ['-1']; // Default to "All"
+  tiers: string[] = [];
 
   @SelectField({
     label: 'collections',
@@ -70,6 +70,12 @@ export class PatreonFileSubmission extends BaseWebsiteOptions {
     span: 3,
   })
   charge = false;
+
+  @BooleanField({
+    label: 'uploadThumbnail',
+    span: 3,
+  })
+  uploadThumbnail = false;
 
   @BooleanField({
     label: 'allAsAttachment',

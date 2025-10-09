@@ -30,7 +30,7 @@ export class PostingFile {
 
   public readonly fileType: FileType;
 
-  public fileName: string;
+  public readonly fileName: string;
 
   public readonly width: number;
 

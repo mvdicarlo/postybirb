@@ -1,5 +1,5 @@
 import { SelectOption } from '@postybirb/form-builder';
-import { Http } from '@postybirb/http';
+import { FormFile, Http } from '@postybirb/http';
 import {
   DynamicObject,
   FileType,
@@ -141,8 +141,10 @@ export default class Patreon
       );
       if (campaignBadge) {
         const campaignId = campaignBadge.id.split(':')[1];
+        const campaignQueryString =
+          '?fields[rewardItem]=title%2Cdescription%2Coffer_id%2Citem_type%2Cis_deleted%2Cis_ended%2Cis_published&fields[accessRule]=access_rule_type%2Camount_cents%2Cpost_count&include=post_aggregation%2Ccreator.campaign%2Ccreator.pledge_to_current_user.null%2Cconnected_socials%2Ccurrent_user_pledge.reward.null%2Ccurrent_user_pledge.campaign.null%2Crewards.items.null%2Crewards.cadence_options.null%2Crss_auth_token%2Caccess_rules.tier.null%2Cactive_offer.rewards.null%2Cscheduled_offer.rewards.null%2Ccreator.pledges.campaign.null%2Creward_items.template%2Crewards.null%2Crewards.reward_recommendations%2Cthanks_embed%2Cthanks_msg&json-api-version=1.0&json-api-use-default-includes=false';
         const campaignResult = await Http.get<PatreonCampaignResponse>(
-          `${this.BASE_URL}/api/campaigns/${campaignId}`,
+          `${this.BASE_URL}/api/campaigns/${campaignId}${campaignQueryString}`,
           { partition: this.accountId },
         );
 
@@ -166,14 +168,40 @@ export default class Patreon
     const { included } = campaign;
     if (!included) return [];
     const rewards = included.filter((item) => item.type === 'reward');
-    return rewards.map((reward) => ({
-      label: `${
-        reward.attributes.title ||
-        reward.attributes.description ||
-        'Untitled Reward'
-      }${reward.attributes.amount_cents ? ` - $${(reward.attributes.amount_cents / 100).toFixed(2)}` : ''}`,
-      value: reward.id,
-    }));
+    const accessRules = included.filter((item) => item.type === 'access-rule');
+
+    return accessRules
+      .map((accessRule) => {
+        const { id, attributes, relationships } = accessRule;
+        let label: string;
+
+        if (attributes.access_rule_type === 'public') {
+          label = 'Everyone';
+        }
+
+        if (attributes.access_rule_type === 'patrons') {
+          label = 'Patrons (All Tiers)';
+        }
+
+        if (attributes.access_rule_type === 'tier') {
+          const rewardTier = rewards.find(
+            (reward) => reward.id === relationships.tier.data.id,
+          );
+          if (rewardTier) {
+            label = `${
+              rewardTier.attributes.title ||
+              rewardTier.attributes.description ||
+              'Untitled Reward'
+            } (${(rewardTier.attributes.amount_cents / 100).toFixed(2)} ${rewardTier.attributes.currency})`;
+          }
+        }
+
+        return {
+          value: id,
+          label,
+        };
+      })
+      .filter((option) => !!option.label);
   }
 
   private async loadCollections(campaignId: string): Promise<SelectOption[]> {
@@ -267,7 +295,7 @@ export default class Patreon
       },
     );
 
-    PostResponse.validateBody(this, res);
+    PostResponse.validateBody(this, res, 'Finalize Post');
   }
 
   private getMediaType(fileType: FileType): PatreonMediaType | undefined {
@@ -285,13 +313,14 @@ export default class Patreon
 
   private async uploadMedia(
     postId: string,
-    file: PostingFile,
+    file: FormFile,
+    fileType: FileType,
     asAttachment: boolean,
     cancellationToken: CancellableToken,
   ): Promise<PatreonMediaUploadResponse> {
     const { ext } = parseFileName(file.fileName);
     const fileNameGUID = `${v4().toUpperCase()}${ext}`;
-    if (file.fileType === FileType.TEXT || file.fileType === FileType.UNKNOWN) {
+    if (fileType === FileType.TEXT || fileType === FileType.UNKNOWN) {
       // eslint-disable-next-line no-param-reassign
       asAttachment = true;
     }
@@ -304,10 +333,12 @@ export default class Patreon
           size_bytes: file.buffer.length,
           owner_id: postId,
           owner_type: 'post',
-          owner_relationship: asAttachment ? 'attachment' : 'main',
-          media_type: asAttachment
-            ? undefined
-            : this.getMediaType(file.fileType),
+          owner_relationship: asAttachment
+            ? 'attachment'
+            : fileType === FileType.AUDIO
+              ? 'audio'
+              : 'main',
+          media_type: asAttachment ? undefined : this.getMediaType(fileType),
         },
       },
     };
@@ -326,8 +357,7 @@ export default class Patreon
 
     PostResponse.validateBody(this, init, 'Media Upload Initial Stage');
 
-    // eslint-disable-next-line no-param-reassign
-    file.fileName = fileNameGUID;
+    file.setFileName(fileNameGUID);
     const builder = new PostBuilder(this, cancellationToken)
       .asMultipart()
       .withData(init.body.data.attributes.upload_parameters)
@@ -376,18 +406,40 @@ export default class Patreon
     cancellationToken.throwIfCancelled();
     const initializedPost = await this.initializePost();
 
+    const uploadThumbnail =
+      postData.options.uploadThumbnail || files[0].fileType === FileType.AUDIO;
+
+    const filesToUpload: { file: FormFile; fileType: FileType }[] = [];
+
+    if (
+      uploadThumbnail &&
+      files[0].thumbnail &&
+      files[0].thumbnail.mimeType.startsWith('image')
+    ) {
+      filesToUpload.push({
+        file: files[0].thumbnailToPostFormat(),
+        fileType: FileType.IMAGE,
+      });
+    }
+
+    filesToUpload.push(
+      ...files.map((f) => ({
+        file: f.toPostFormat(),
+        fileType: f.fileType,
+      })),
+    );
+
     const uploadedFiles = await Promise.all(
-      files.map((f) =>
+      filesToUpload.map(({ file, fileType }) =>
         this.uploadMedia(
           initializedPost.data.id,
-          f,
+          file,
+          fileType,
           postData.options.allAsAttachment,
           cancellationToken,
         ),
       ),
     );
-
-    throw new Error('Fake Error');
 
     const tags = this.createTagsSegment(postData.options.tags || []);
     const accessTiers = this.createAccessRuleSegment(
@@ -395,7 +447,17 @@ export default class Patreon
     );
 
     const postAttributes = {
-      data: this.createDataSegment(postData, tags, accessTiers, 'text_only'),
+      data: this.createDataSegment(
+        postData,
+        tags,
+        accessTiers,
+        postData.options.allAsAttachment
+          ? 'text_only'
+          : this.getPostType(files[0].fileType),
+        uploadedFiles
+          .filter((f) => f.data.attributes.media_type === 'image') // Metadata only matters for image types
+          .map((f) => f.data.id),
+      ),
       meta: this.createDefaultMetadataSegment(),
       included: [...tags, ...accessTiers],
     };
@@ -494,6 +556,7 @@ export default class Patreon
     tagSegment: PatreonTagSegment,
     rulesSegment: PatreonAccessRuleSegment,
     postType: string,
+    mediaIds?: string[],
   ) {
     const { options } = postData;
     const {
@@ -523,8 +586,6 @@ export default class Patreon
         video_preview_end_ms: null,
         is_preview_blurred: true,
         allow_preview_in_rss: true,
-        scheduled_for: schedule ?? undefined,
-        change_visibility_at: earlyAccess ?? undefined,
         post_metadata: {
           platform: {},
         },
@@ -550,6 +611,14 @@ export default class Patreon
         },
       },
     };
+
+    if (schedule) {
+      (dataAttributes.attributes as any).scheduled_for = schedule;
+    }
+
+    if (earlyAccess) {
+      (dataAttributes.attributes as any).change_visibility_at = earlyAccess;
+    }
 
     return dataAttributes;
   }
