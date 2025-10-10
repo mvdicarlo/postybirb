@@ -206,6 +206,40 @@ export const TranslationMessages: TranslationsMap = {
 
   'validation.field.required': () => <Trans>Required</Trans>,
 
+  'validation.datetime.invalid-format': (props) => {
+    const { value } = props;
+    return (
+      <Trans>Invalid date format: {value}. Expected ISO date string.</Trans>
+    );
+  },
+
+  'validation.datetime.min': (props) => {
+    const { currentDate, minDate } = props;
+    return (
+      <Trans>
+        Date {currentDate} is before minimum allowed date {minDate}
+      </Trans>
+    );
+  },
+
+  'validation.datetime.max': (props) => {
+    const { currentDate, maxDate } = props;
+    return (
+      <Trans>
+        Date {currentDate} is after maximum allowed date {maxDate}
+      </Trans>
+    );
+  },
+
+  'validation.datetime.range': (props) => {
+    const { currentDate, minDate, maxDate } = props;
+    return (
+      <Trans>
+        Date {currentDate} is outside allowed range ({minDate} - {maxDate})
+      </Trans>
+    );
+  },
+
   'validation.file.bluesky.unsupported-combination-of-files': () => (
     <Trans>
       Supports either a set of images, a single video, or a single GIF.

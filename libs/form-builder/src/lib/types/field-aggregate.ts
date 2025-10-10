@@ -1,5 +1,6 @@
 import {
   BooleanField,
+  DateTimeField,
   DescriptionField,
   RadioField,
   RatingField,
@@ -22,9 +23,13 @@ export type BooleanFieldType = ExtractFieldTypeFromDecorator<
   typeof BooleanField
 >;
 export type RadioFieldType = ExtractFieldTypeFromDecorator<typeof RadioField>;
+export type DateTimeFieldType = ExtractFieldTypeFromDecorator<
+  typeof DateTimeField
+>;
 
 export type FieldAggregateType =
   | BooleanFieldType
+  | DateTimeFieldType
   | TextFieldType
   | RadioFieldType
   | RatingFieldType

@@ -1,4 +1,5 @@
 export * from './boolean-field.decorator';
+export * from './date-time-field.decorator';
 export * from './description-field.decorator';
 export * from './radio-field.decorator';
 export * from './rating.decorator';

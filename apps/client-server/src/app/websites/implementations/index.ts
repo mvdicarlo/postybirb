@@ -22,3 +22,4 @@ export { default as Weasyl } from './weasyl/weasyl.website';
 export { default as Custom } from './custom/custom.website';
 export { default as Twitter } from './twitter/twitter.website';
 export { default as Newgrounds } from './newgrounds/newgrounds.website';
+export { default as Patreon } from './patreon/patreon.website';

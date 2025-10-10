@@ -241,7 +241,8 @@ export class Http {
         let body: T | string = message.toString();
         if (
           headers['content-type'] &&
-          headers['content-type'].includes('application/json')
+          (headers['content-type'].includes('application/json') ||
+            headers['content-type'].includes('application/vnd.api+json'))
         ) {
           try {
             body = JSON.parse(body) as T;

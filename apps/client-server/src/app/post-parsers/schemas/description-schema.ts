@@ -513,12 +513,8 @@ export const DescriptionSchema = Object.freeze({
       type: 'paragraph',
       content: 'inline',
       propSchema: {
-        backgroundColor: {
-          default: 'default',
-        },
-        textColor: {
-          default: 'default',
-        },
+        backgroundColor: { default: 'default' },
+        textColor: { default: 'default' },
         textAlignment: {
           default: 'left',
           values: ['left', 'center', 'right', 'justify'],
@@ -529,32 +525,21 @@ export const DescriptionSchema = Object.freeze({
       type: 'heading',
       content: 'inline',
       propSchema: {
-        backgroundColor: {
-          default: 'default',
-        },
-        textColor: {
-          default: 'default',
-        },
+        backgroundColor: { default: 'default' },
+        textColor: { default: 'default' },
         textAlignment: {
           default: 'left',
           values: ['left', 'center', 'right', 'justify'],
         },
-        level: {
-          default: 1,
-          values: [1, 2, 3],
-        },
+        level: { default: 1, values: [1, 2, 3] },
       },
     },
     bulletListItem: {
       type: 'bulletListItem',
       content: 'inline',
       propSchema: {
-        backgroundColor: {
-          default: 'default',
-        },
-        textColor: {
-          default: 'default',
-        },
+        backgroundColor: { default: 'default' },
+        textColor: { default: 'default' },
         textAlignment: {
           default: 'left',
           values: ['left', 'center', 'right', 'justify'],
@@ -565,28 +550,78 @@ export const DescriptionSchema = Object.freeze({
       type: 'numberedListItem',
       content: 'inline',
       propSchema: {
-        backgroundColor: {
-          default: 'default',
-        },
-        textColor: {
-          default: 'default',
-        },
+        backgroundColor: { default: 'default' },
+        textColor: { default: 'default' },
         textAlignment: {
           default: 'left',
           values: ['left', 'center', 'right', 'justify'],
         },
       },
     },
-    hr: {
-      type: 'hr',
-      propSchema: {},
-      content: 'none',
+    checkListItem: {
+      type: 'checkListItem',
+      content: 'inline',
+      propSchema: {
+        backgroundColor: { default: 'default' },
+        textColor: { default: 'default' },
+        textAlignment: {
+          default: 'left',
+          values: ['left', 'center', 'right', 'justify'],
+        },
+        checked: { default: false },
+      },
     },
-    default: {
-      type: 'default',
-      propSchema: {},
+    image: {
+      type: 'image',
+      propSchema: {
+        textAlignment: {
+          default: 'left',
+          values: ['left', 'center', 'right', 'justify'],
+        },
+        backgroundColor: { default: 'default' },
+        name: { default: '' },
+        url: { default: '' },
+        caption: { default: '' },
+        showPreview: { default: true },
+        previewWidth: { default: 512 },
+      },
       content: 'none',
+      isFileBlock: true,
+      fileBlockAccept: ['image/*'],
     },
+    video: {
+      type: 'video',
+      propSchema: {
+        textAlignment: {
+          default: 'left',
+          values: ['left', 'center', 'right', 'justify'],
+        },
+        backgroundColor: { default: 'default' },
+        name: { default: '' },
+        url: { default: '' },
+        caption: { default: '' },
+        showPreview: { default: true },
+        previewWidth: { default: 512 },
+      },
+      content: 'none',
+      isFileBlock: true,
+      fileBlockAccept: ['video/*'],
+    },
+    audio: {
+      type: 'audio',
+      propSchema: {
+        backgroundColor: { default: 'default' },
+        name: { default: '' },
+        url: { default: '' },
+        caption: { default: '' },
+        showPreview: { default: true },
+      },
+      content: 'none',
+      isFileBlock: true,
+      fileBlockAccept: ['audio/*'],
+    },
+    hr: { type: 'hr', propSchema: {}, content: 'none' },
+    default: { type: 'default', propSchema: {}, content: 'none' },
   },
   inlineContentSchema: {
     text: 'text',

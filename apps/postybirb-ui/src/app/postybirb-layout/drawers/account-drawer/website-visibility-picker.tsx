@@ -1,4 +1,4 @@
-import { Trans, msg } from '@lingui/macro';
+import { Trans } from '@lingui/macro';
 import { useLingui } from '@lingui/react';
 import {
   ActionIcon,
@@ -89,7 +89,6 @@ export function WebsiteVisibilityPicker() {
           <Box mb="xs">
             <Input
               size="xs"
-              placeholder={_(msg`Search websites...`)}
               leftSection={<IconSearch size={14} />}
               value={search}
               onChange={(e) => setSearch(e.currentTarget.value)}
