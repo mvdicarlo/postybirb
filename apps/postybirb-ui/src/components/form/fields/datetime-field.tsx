@@ -1,6 +1,7 @@
 /* eslint-disable lingui/no-unlocalized-strings */
 import { DateTimePicker } from '@mantine/dates';
 import { DateTimeFieldType } from '@postybirb/form-builder';
+import { IconCalendar } from '@tabler/icons-react';
 import moment from 'moment';
 import { useDefaultOption } from '../hooks/use-default-option';
 import { useValidations } from '../hooks/use-validations';
@@ -31,6 +32,7 @@ function DateTimePickerField(
 
   return (
     <DateTimePicker
+      rightSection={<IconCalendar />}
       value={dateValue}
       onChange={(date) => {
         // Convert Date to ISO string when storing

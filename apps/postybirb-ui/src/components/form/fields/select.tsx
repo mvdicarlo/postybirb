@@ -93,6 +93,8 @@ function flattenSelectableOptions(
         flattened.push({
           label: option.label,
           value: option.value,
+          data: option.data,
+          mutuallyExclusive: option.mutuallyExclusive,
         });
       }
       // Recursively add child items
@@ -142,7 +144,12 @@ function renderOption(
     // Render group header (selectable if it has a value)
     if (option.value !== undefined) {
       const isSelected = selectedValues.includes(option.value);
-      const selectableOption = { label: option.label, value: option.value };
+      const selectableOption: SelectOptionSingle = {
+        label: option.label,
+        value: option.value,
+        data: option.data,
+        mutuallyExclusive: option.mutuallyExclusive,
+      };
       const optionIndex = flatOptions.findIndex(
         (opt) => opt.value === option.value,
       );

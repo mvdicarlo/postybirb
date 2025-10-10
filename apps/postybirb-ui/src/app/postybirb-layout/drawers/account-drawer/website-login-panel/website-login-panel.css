@@ -1,12 +1,11 @@
 .postybirb__website-login-panel {
-  position: absolute;
+  position: fixed;
   top: 0;
-  height: calc(100vh);
-  overflow: hidden; /* Remove scroll from main container */
+  height: 100vh;
+  overflow: hidden;
   z-index: 1000;
   background-color: var(--mantine-color-body);
   border-left: 1px solid var(--mantine-color-gray-filled);
-  margin-top: 0px;
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   display: flex;

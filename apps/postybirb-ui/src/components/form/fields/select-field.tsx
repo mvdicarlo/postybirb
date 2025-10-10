@@ -67,12 +67,54 @@ export function SelectField(props: FormFieldProps<SelectFieldType>) {
         multiple={field.allowMultiple}
         value={value}
         options={selectOptions}
-        onChange={(options) => {
+        onChange={(options, removed, added) => {
           if (Array.isArray(options)) {
-            setFieldValue(
-              propKey,
-              options.map((o) => o.value),
-            );
+            // Handle multi-select with mutually exclusive logic
+            if (
+              field.allowMultiple &&
+              Array.isArray(added) &&
+              added.length > 0
+            ) {
+              // Check if any of the newly added options are mutually exclusive
+              const addedOption = added[0];
+
+              if (
+                'mutuallyExclusive' in addedOption &&
+                addedOption.mutuallyExclusive
+              ) {
+                // If the added option is mutually exclusive, only keep it
+                setFieldValue(propKey, [addedOption.value]);
+              } else {
+                // Check if any currently selected option is mutually exclusive
+                const hasExclusiveOption = options.some(
+                  (opt) => 'mutuallyExclusive' in opt && opt.mutuallyExclusive,
+                );
+
+                if (hasExclusiveOption) {
+                  // If there's an exclusive option selected, deselect it and keep the new options
+                  const nonExclusiveOptions = options.filter(
+                    (opt) =>
+                      !('mutuallyExclusive' in opt && opt.mutuallyExclusive),
+                  );
+                  setFieldValue(
+                    propKey,
+                    nonExclusiveOptions.map((o) => o.value),
+                  );
+                } else {
+                  // Normal multi-select behavior
+                  setFieldValue(
+                    propKey,
+                    options.map((o) => o.value),
+                  );
+                }
+              }
+            } else {
+              // Normal removal or no additions
+              setFieldValue(
+                propKey,
+                options.map((o) => o.value),
+              );
+            }
           } else {
             setFieldValue(propKey, options?.value);
           }

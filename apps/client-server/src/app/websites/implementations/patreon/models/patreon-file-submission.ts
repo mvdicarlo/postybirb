@@ -17,6 +17,7 @@ export class PatreonFileSubmission extends BaseWebsiteOptions {
   @SelectField({
     required: true,
     label: 'accessTiers',
+    minSelected: 1,
     allowMultiple: true,
     options: [], // Populated dynamically
     derive: [

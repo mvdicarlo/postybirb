@@ -16,6 +16,7 @@ export class PatreonMessageSubmission extends BaseWebsiteOptions {
 
   @SelectField({
     label: 'accessTiers',
+    minSelected: 1,
     allowMultiple: true,
     options: [], // Populated dynamically
     derive: [

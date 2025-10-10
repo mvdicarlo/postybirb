@@ -174,13 +174,18 @@ export default class Patreon
       .map((accessRule) => {
         const { id, attributes, relationships } = accessRule;
         let label: string;
+        let mutuallyExclusive = false;
+        let cost = 0;
 
         if (attributes.access_rule_type === 'public') {
           label = 'Everyone';
+          mutuallyExclusive = true;
         }
 
         if (attributes.access_rule_type === 'patrons') {
           label = 'Patrons (All Tiers)';
+          mutuallyExclusive = true;
+          cost = 1; // Ensure this is sorted above free
         }
 
         if (attributes.access_rule_type === 'tier') {
@@ -188,6 +193,7 @@ export default class Patreon
             (reward) => reward.id === relationships.tier.data.id,
           );
           if (rewardTier) {
+            cost = rewardTier.attributes.amount_cents;
             label = `${
               rewardTier.attributes.title ||
               rewardTier.attributes.description ||
@@ -196,12 +202,22 @@ export default class Patreon
           }
         }
 
+        if (cost === 0) {
+          mutuallyExclusive = true;
+        }
+
         return {
           value: id,
           label,
+          mutuallyExclusive,
+          data: {
+            accessRules,
+            cost,
+          },
         };
       })
-      .filter((option) => !!option.label);
+      .filter((option) => !!option.label)
+      .sort((a, b) => a.data.cost - b.data.cost);
   }
 
   private async loadCollections(campaignId: string): Promise<SelectOption[]> {
@@ -516,8 +532,6 @@ export default class Patreon
     postData: PostData<PatreonMessageSubmission>,
   ): Promise<SimpleValidationResult> {
     const validator = this.createValidator<PatreonMessageSubmission>();
-    // TODO - Validation for charge and schedule conflict
-    // TODO - Validation for Access Tier conflicts (everyone/free + paid option)
     return validator.result;
   }
 
@@ -537,14 +551,14 @@ export default class Patreon
   ): PatreonAccessRuleSegment {
     return patreonTiers.map((tier) => ({
       type: 'access-rule',
-      id: `user_defined;${tier}`,
+      id: `${tier}`,
       attributes: {},
     }));
   }
 
   private createDefaultMetadataSegment() {
     return {
-      auto_save: true,
+      auto_save: false,
       send_notifications: true,
     };
   }
@@ -586,11 +600,13 @@ export default class Patreon
         video_preview_end_ms: null,
         is_preview_blurred: true,
         allow_preview_in_rss: true,
+        scheduled_for: schedule || undefined,
+        change_visibility_at: earlyAccess || undefined,
         post_metadata: {
           platform: {},
         },
         tags: {
-          publish: true,
+          publish: !schedule,
         },
       },
       relationships: {
@@ -611,14 +627,6 @@ export default class Patreon
         },
       },
     };
-
-    if (schedule) {
-      (dataAttributes.attributes as any).scheduled_for = schedule;
-    }
-
-    if (earlyAccess) {
-      (dataAttributes.attributes as any).change_visibility_at = earlyAccess;
-    }
 
     return dataAttributes;
   }
