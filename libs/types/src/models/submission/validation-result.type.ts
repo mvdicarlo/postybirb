@@ -149,6 +149,26 @@ export interface ValidationMessages {
 
   'validation.field.required': object;
 
+  'validation.datetime.invalid-format': {
+    value: string;
+  };
+
+  'validation.datetime.min': {
+    currentDate: string;
+    minDate: string;
+  };
+
+  'validation.datetime.max': {
+    currentDate: string;
+    maxDate: string;
+  };
+
+  'validation.datetime.range': {
+    currentDate: string;
+    minDate: string;
+    maxDate: string;
+  };
+
   // ----------- Website specific validation messages --------------
   'validation.file.itaku.must-share-feed': object;
 

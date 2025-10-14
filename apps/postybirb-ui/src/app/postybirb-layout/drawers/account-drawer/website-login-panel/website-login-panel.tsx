@@ -5,6 +5,7 @@ import {
   Flex,
   Group,
   Paper,
+  Portal,
   Text,
   Title,
 } from '@mantine/core';
@@ -60,23 +61,13 @@ function LoginPanel(props: Omit<WebsiteLoginPanelProps, 'onClose'>) {
 export function WebsiteLoginPanel(props: WebsiteLoginPanelProps) {
   const { account, website, onClose } = props;
   const contentRef = useRef<HTMLDivElement>(null);
-  const offset =
+  const drawerOffset =
     document
       .getElementsByClassName('account-drawer')[0]
       ?.querySelector('section')?.offsetWidth ?? 0;
 
-  useEffect(() => {
-    const el = document.getElementById('postybirb__main');
-    if (el) {
-      el.style.overflow = 'hidden';
-    }
-
-    return () => {
-      if (el) {
-        el.style.overflow = '';
-      }
-    };
-  }, []);
+  const sidenavOffset =
+    document.getElementById('postybirb__navbar')?.offsetWidth ?? 0;
 
   useEffect(
     () => () => {
@@ -98,51 +89,56 @@ export function WebsiteLoginPanel(props: WebsiteLoginPanelProps) {
     [],
   );
 
-  if (!offset) {
+  if (!drawerOffset) {
     return null;
   }
 
-  const totalOffset = offset - 1;
-  const widthOffset = offset + getOverlayOffset();
+  const totalOffset = drawerOffset + sidenavOffset;
+  const widthOffset = drawerOffset + getOverlayOffset();
 
   return (
-    <Box
-      className="postybirb__website-login-panel"
-      onWheelCapture={(event) => {
-        // Avoids behavior of other scrolls interfering with panel scrolling
-        event.stopPropagation();
-      }}
-      style={{
-        left: totalOffset,
-        width: `calc(100vw - ${widthOffset}px)`,
-        height: '100vh',
-      }}
-    >
-      <Paper
-        className="postybirb__website-login-panel__header"
-        shadow="sm"
-        p="md"
-        withBorder
+    <Portal>
+      <Box
+        className="postybirb__website-login-panel"
+        onWheelCapture={(event) => {
+          // Avoids behavior of other scrolls interfering with panel scrolling
+          event.stopPropagation();
+        }}
+        style={{
+          left: totalOffset,
+          width: `calc(100vw - ${widthOffset}px)`,
+          height: '100vh',
+        }}
       >
-        <Flex align="center" justify="space-between">
-          <Group>
-            <IconWorld size={24} />
-            <Box>
-              <Title order={3}>{website.displayName}</Title>
-              <Text size="sm">{account.name}</Text>
-            </Box>
-          </Group>
-          <CloseButton
-            size="lg"
-            onClick={() => {
-              onClose();
-            }}
-          />
-        </Flex>
-      </Paper>
-      <Box className="postybirb__website-login-panel__content" ref={contentRef}>
-        <LoginPanel {...props} />
+        <Paper
+          className="postybirb__website-login-panel__header"
+          shadow="sm"
+          p="md"
+          withBorder
+        >
+          <Flex align="center" justify="space-between">
+            <Group>
+              <IconWorld size={24} />
+              <Box>
+                <Title order={3}>{website.displayName}</Title>
+                <Text size="sm">{account.name}</Text>
+              </Box>
+            </Group>
+            <CloseButton
+              size="lg"
+              onClick={() => {
+                onClose();
+              }}
+            />
+          </Flex>
+        </Paper>
+        <Box
+          className="postybirb__website-login-panel__content"
+          ref={contentRef}
+        >
+          <LoginPanel {...props} />
+        </Box>
       </Box>
-    </Box>
+    </Portal>
   );
 }

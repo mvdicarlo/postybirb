@@ -264,7 +264,7 @@ export class PostBuilder {
    *        .addFile('reference', referenceFile);
    * ```
    */
-  addFile(key: string, file: PostingFile) {
+  addFile(key: string, file: PostingFile | FormFile) {
     this.insert(key, file);
     return this;
   }
@@ -497,7 +497,10 @@ export class PostBuilder {
    * @param key - The field name
    * @param value - The field value (can be a PostingFile or FieldValue)
    */
-  private insert(key: string, value: FieldValue | PostingFile): void {
+  private insert(
+    key: string,
+    value: FieldValue | PostingFile | FormFile,
+  ): void {
     const v = this.convert(value);
     this.data[key] = v;
     if (v instanceof FormFile) {
