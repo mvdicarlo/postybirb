@@ -63,7 +63,7 @@ import { BlueskyMessageSubmission } from './models/bluesky-message-submission';
     'video/mov',
     'video/webm',
   ],
-  acceptedFileSizes: { '*': 1_000_000 },
+  acceptedFileSizes: { '*': 50_000_000 },
   fileBatchSize: 4,
 })
 @DisableAds()
