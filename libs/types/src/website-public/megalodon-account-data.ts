@@ -19,7 +19,7 @@ export type MegalodonAccountData = {
   displayName?: string;
 
   // Instance type for polymorphic behavior if needed
-  instanceType?: 'mastodon' | 'pleroma' | 'pixelfed';
+  instanceType?: string;
 };
 
 export type MegalodonOAuthRoutes = {

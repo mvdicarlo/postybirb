@@ -74,6 +74,7 @@ export class PostFileResizerService {
           sharpInstance,
           resize.width,
           resize.height,
+          'Primary',
         );
       }
     }
@@ -119,7 +120,7 @@ export class PostFileResizerService {
     thumb = thumb ?? { ...file.file }; // Ensure file to process
 
     let instance = ImageUtil.load(thumb.buffer);
-    instance = await this.resizeImage(instance, 500, 500);
+    instance = await this.resizeImage(instance, 500, 500, 'thumbnail');
     const { mimeType } = thumb;
 
     const { width, height } = await instance.metadata();
@@ -132,9 +133,16 @@ export class PostFileResizerService {
     };
   }
 
-  private async resizeImage(instance: Sharp, width: number, height: number) {
+  private async resizeImage(
+    instance: Sharp,
+    width: number,
+    height: number,
+    source: string,
+  ) {
     const metadata = await instance.metadata();
-    this.logger.withMetadata({ width, height, metadata }).info('Resizing');
+    this.logger
+      .withMetadata({ width, height, metadata })
+      .info(`Resizing (${source})`);
     if (metadata.width > width || metadata.height > height) {
       return ImageUtil.load(
         await instance
@@ -178,6 +186,7 @@ export class PostFileResizerService {
         instance, // scale against original only
         Math.round(metadata.width * resizePercent),
         Math.round(metadata.height * resizePercent),
+        'Primary Scaling',
       );
 
       if (!(await this.isFileTooLarge(s, maxBytes))) return s;

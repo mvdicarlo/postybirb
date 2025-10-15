@@ -1,3 +1,5 @@
+import { FileType } from '@postybirb/types';
+import FileSize from '../../../utils/filesize.util';
 import { CustomLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
@@ -33,7 +35,11 @@ import { MegalodonWebsite } from '../megalodon/megalodon.website';
     'video/3gpp',
     'audio/x-ms-wma',
   ],
-  acceptedFileSizes: { '*': 40_000_000 }, // 40MB default
+  acceptedFileSizes: {
+    [FileType.IMAGE]: FileSize.megabytes(16),
+    [FileType.AUDIO]: FileSize.megabytes(100),
+    [FileType.VIDEO]: FileSize.megabytes(200),
+  },
   fileBatchSize: 4,
 })
 export default class Mastodon extends MegalodonWebsite {

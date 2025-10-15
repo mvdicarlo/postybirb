@@ -9,8 +9,10 @@ import {
     PostData,
     PostResponse,
     SimpleValidationResult,
+    SubmissionRating,
 } from '@postybirb/types';
-import { Entity } from 'megalodon';
+import { detector, Entity } from 'megalodon';
+import { Readable } from 'stream';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
@@ -18,7 +20,10 @@ import { FileWebsite } from '../../models/website-modifiers/file-website';
 import { MessageWebsite } from '../../models/website-modifiers/message-website';
 import { OAuthWebsite } from '../../models/website-modifiers/oauth-website';
 import { Website } from '../../website';
-import { MegalodonApiService } from './megalodon-api-service';
+import {
+    FediverseInstanceTypes,
+    MegalodonApiService,
+} from './megalodon-api-service';
 import { MegalodonFileSubmission } from './models/megalodon-file-submission';
 import { MegalodonMessageSubmission } from './models/megalodon-message-submission';
 
@@ -106,10 +111,21 @@ export abstract class MegalodonWebsite
    * Get the Megalodon API instance type.
    * Subclasses must override to specify their type.
    */
-  protected abstract getMegalodonInstanceType():
-    | 'mastodon'
-    | 'pleroma'
-    | 'pixelfed';
+  protected abstract getMegalodonInstanceType(): FediverseInstanceTypes;
+
+  private async detectMegalodonInstanceType(
+    instanceUrl: string,
+  ): Promise<FediverseInstanceTypes | undefined> {
+    const instanceType = await detector(instanceUrl);
+    return instanceType;
+  }
+
+  private async getInstanceType(
+    instanceUrl: string,
+  ): Promise<FediverseInstanceTypes> {
+    const detectedType = await this.detectMegalodonInstanceType(instanceUrl);
+    return detectedType || this.getMegalodonInstanceType();
+  }
 
   // OAuth step handlers
   public onAuthRoute: OAuthRouteHandlers<MegalodonOAuthRoutes> = {
@@ -118,9 +134,10 @@ export abstract class MegalodonWebsite
         const normalizedUrl = this.normalizeInstanceUrl(instanceUrl);
 
         // Register app with the instance
+        const instanceType = await this.getInstanceType(instanceUrl);
         const appData = await MegalodonApiService.registerApp(
           normalizedUrl,
-          this.getMegalodonInstanceType(),
+          instanceType,
           {
             client_name: this.getAppName(),
             redirect_uris: this.getRedirectUri(),
@@ -144,7 +161,7 @@ export abstract class MegalodonWebsite
           instanceUrl: normalizedUrl,
           clientId: appData.clientId,
           clientSecret: appData.clientSecret,
-          instanceType: this.getMegalodonInstanceType(),
+          instanceType,
         });
 
         return {
@@ -251,6 +268,11 @@ export abstract class MegalodonWebsite
           this.decoratedProps.fileOptions.fileBatchSize =
             this.instanceLimits.maxMediaAttachments || 4;
 
+          if (this.instanceLimits.supportedMimeTypes?.length) {
+            this.decoratedProps.fileOptions.acceptedMimeTypes =
+              this.instanceLimits.supportedMimeTypes;
+          }
+
           if (this.instanceLimits.imageSizeLimit) {
             this.decoratedProps.fileOptions.acceptedFileSizes = {
               [FileType.IMAGE]: this.instanceLimits.imageSizeLimit,
@@ -260,6 +282,9 @@ export abstract class MegalodonWebsite
           if (this.instanceLimits.videoSizeLimit) {
             this.decoratedProps.fileOptions.acceptedFileSizes = {
               [FileType.VIDEO]: this.instanceLimits.videoSizeLimit,
+            };
+            this.decoratedProps.fileOptions.acceptedFileSizes = {
+              [FileType.AUDIO]: this.instanceLimits.videoSizeLimit,
             };
           }
         }
@@ -420,6 +445,20 @@ export abstract class MegalodonWebsite
       file.height &&
       file.width * file.height > imageMatrixLimit;
 
+    this.logger
+      .withMetadata({
+        fileName: file.fileName,
+        fileSize: file.size,
+        fileWidth: file.width,
+        fileHeight: file.height,
+        filePixels: file.width && file.height ? file.width * file.height : 0,
+        imageSizeLimit,
+        imageMatrixLimit,
+        exceedsSize,
+        exceedsMatrix,
+      })
+      .debug('Checking image resize requirements');
+
     // Only return resize props if the file exceeds limits
     if (!exceedsSize && !exceedsMatrix) {
       return undefined;
@@ -442,6 +481,10 @@ export abstract class MegalodonWebsite
       props.width = Math.floor(file.width * scaleFactor);
       props.height = Math.floor(file.height * scaleFactor);
     }
+
+    this.logger
+      .withMetadata({ resizeProps: props })
+      .info('Image resize required');
 
     return props;
   }
@@ -467,27 +510,53 @@ export abstract class MegalodonWebsite
       for (const file of files) {
         cancellationToken.throwIfCancelled();
 
-        const uploadResult = await client.uploadMedia(file.buffer, {
+        this.logger
+          .withMetadata({
+            fileName: file.fileName,
+            fileSize: file.buffer.length,
+            mimeType: file.mimeType,
+            hasAltText: !!file.metadata.altText,
+          })
+          .info('Uploading media file to Fediverse instance');
+
+        // Megalodon's uploadMedia uses form-data which expects a stream
+        // combined-stream checks for stream-like objects using isStreamLike
+        // Create a Readable stream from the buffer
+        const stream = Readable.from(file.buffer);
+        
+        // Add metadata properties that form-data looks for when creating the Content-Disposition header
+        // These properties are checked by form-data to set filename and content-type
+        Object.assign(stream, {
+          path: file.fileName,
+          name: file.fileName,
+          type: file.mimeType,
+        });
+
+        const uploadResult = await client.uploadMedia(stream, {
           description: file.metadata.altText || undefined,
         });
+
+        this.logger
+          .withMetadata({
+            mediaId: uploadResult.data.id,
+            mediaType: uploadResult.data.type,
+          })
+          .info('Media file uploaded successfully');
 
         mediaIds.push(uploadResult.data.id);
       }
 
       // Build description with tags
-      let description = postData.options.description || '';
-      const tags = postData.options.tags || [];
-      if (tags.length > 0) {
-        const processedTags = tags
-          .map((tag) => this.createFileModel().processTag(tag))
-          .join(' ');
-        description = `${description}\n\n${processedTags}`.trim();
-      }
+      const description = postData.options.description || '';
+
+      const isSensitiveRating =
+        postData.options.rating === SubmissionRating.ADULT ||
+        postData.options.rating === SubmissionRating.EXTREME;
 
       // Create status with media
       const statusResult = await client.postStatus(description, {
         media_ids: mediaIds,
-        sensitive: postData.options.sensitive || false,
+        sensitive: postData.options.sensitive || isSensitiveRating || false,
         visibility: postData.options.visibility || 'public',
         spoiler_text: postData.options.spoilerText || undefined,
         language: postData.options.language || undefined,
@@ -497,7 +566,9 @@ export abstract class MegalodonWebsite
       // Check if it's a Status (not ScheduledStatus)
       if ('uri' in status) {
         const sourceUrl = status.url || status.uri;
-        return PostResponse.fromWebsite(this).withSourceUrl(sourceUrl);
+        return PostResponse.fromWebsite(this)
+          .withAdditionalInfo(statusResult.data)
+          .withSourceUrl(sourceUrl);
       }
 
       // ScheduledStatus - post was scheduled for later
@@ -537,8 +608,12 @@ export abstract class MegalodonWebsite
         description = `${description}\n\n${processedTags}`.trim();
       }
 
+      const isSensitiveRating =
+        postData.options.rating === SubmissionRating.ADULT ||
+        postData.options.rating === SubmissionRating.EXTREME;
+
       const statusResult = await client.postStatus(description, {
-        sensitive: postData.options.sensitive || false,
+        sensitive: postData.options.sensitive || isSensitiveRating || false,
         visibility: postData.options.visibility || 'public',
         spoiler_text: postData.options.spoilerText || undefined,
         language: postData.options.language || undefined,

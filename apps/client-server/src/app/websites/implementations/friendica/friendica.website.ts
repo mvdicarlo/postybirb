@@ -6,8 +6,8 @@ import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { MegalodonWebsite } from '../megalodon/megalodon.website';
 
 @WebsiteMetadata({
-  name: 'pleroma',
-  displayName: 'Pleroma',
+  name: 'friendica',
+  displayName: 'Friendica',
 })
 @CustomLoginFlow()
 @SupportsFiles({
@@ -15,13 +15,25 @@ import { MegalodonWebsite } from '../megalodon/megalodon.website';
     'image/png',
     'image/jpeg',
     'image/gif',
-    'application/x-shockwave-flash',
-    'video/x-flv',
+    'image/webp',
+    'image/avif',
+    'image/heic',
+    'image/heif',
     'video/mp4',
+    'video/webm',
+    'video/x-m4v',
+    'video/quicktime',
     'application/msword',
     'application/rtf',
     'text/plain',
-    'audio/mpeg',
+    'audio/mpeg', // mp3
+    'audio/wav',
+    'audio/ogg', // ogg, oga
+    'audio/opus',
+    'audio/aac',
+    'audio/mp4',
+    'video/3gpp',
+    'audio/x-ms-wma',
   ],
   acceptedFileSizes: {
     [FileType.IMAGE]: FileSize.megabytes(16),
@@ -30,12 +42,12 @@ import { MegalodonWebsite } from '../megalodon/megalodon.website';
   },
   fileBatchSize: 4,
 })
-export default class Pleroma extends MegalodonWebsite {
-  protected getMegalodonInstanceType(): 'pleroma' {
-    return 'pleroma';
+export default class Friendica extends MegalodonWebsite {
+  protected getMegalodonInstanceType(): 'friendica' {
+    return 'friendica';
   }
 
   protected getDefaultMaxDescriptionLength(): number {
-    return 5000;
+    return 500;
   }
 }

@@ -5,6 +5,14 @@ export interface AppRegistrationData {
   clientSecret: string;
 }
 
+export type FediverseInstanceTypes =
+  | 'mastodon'
+  | 'pleroma'
+  | 'friendica'
+  | 'firefish'
+  | 'gotosocial'
+  | 'pixelfed';
+
 /**
  * Service wrapper for Megalodon library operations.
  */
@@ -14,7 +22,7 @@ export class MegalodonApiService {
    */
   static async registerApp(
     instanceUrl: string,
-    type: 'mastodon' | 'pleroma' | 'pixelfed',
+    type: FediverseInstanceTypes,
     options: {
       client_name: string;
       redirect_uris: string;
@@ -68,7 +76,7 @@ export class MegalodonApiService {
     clientSecret: string,
     code: string,
     redirectUri: string,
-    type: 'mastodon' | 'pleroma' | 'pixelfed',
+    type: FediverseInstanceTypes,
   ): Promise<{ access_token: string }> {
     const baseUrl = `https://${instanceUrl}`;
 
@@ -90,7 +98,7 @@ export class MegalodonApiService {
   static createClient(
     instanceUrl: string,
     accessToken: string,
-    type: 'mastodon' | 'pleroma' | 'pixelfed',
+    type: FediverseInstanceTypes,
   ): MegalodonInterface {
     const baseUrl = `https://${instanceUrl}`;
     return generator(type, baseUrl, accessToken);
