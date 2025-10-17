@@ -4,6 +4,7 @@ import CustomLoginView from './custom/custom-login-view';
 import DiscordLoginView from './discord/discord-login-view';
 import E621LoginView from './e621/e621-login-view';
 import InkbunnyLoginView from './inkbunny/inkbunny-login-view';
+import MegalodonLoginView from './megalodon/megalodon-login-view';
 import TelegramLoginView from './telegram/telegram-login-view';
 import TwitterLoginView from './twitter/twitter-login-view';
 
@@ -15,10 +16,15 @@ const CustomLoginComponents: Record<
   Bluesky: BlueskyLoginView,
   Custom: CustomLoginView,
   Discord: DiscordLoginView,
+  Friendica: MegalodonLoginView,
+  GoToSocial: MegalodonLoginView,
   Inkbunny: InkbunnyLoginView,
+  Mastodon: MegalodonLoginView,
+  Pixelfed: MegalodonLoginView,
+  Pleroma: MegalodonLoginView,
   Telegram: TelegramLoginView,
-  e621: E621LoginView,
   Twitter: TwitterLoginView,
+  e621: E621LoginView,
 });
 
 export function getCustomLoginComponent(
