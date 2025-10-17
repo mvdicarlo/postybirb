@@ -1,51 +1,41 @@
 msgid ""
-msgstr ""
-"Project-Id-Version: \n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: \n"
-"PO-Revision-Date: \n"
-"Last-Translator: \n"
-"Language: \n"
-"Language-Team: \n"
-"Content-Type: \n"
-"Content-Transfer-Encoding: \n"
-"Plural-Forms: \n"
+msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: \nPOT-Creation-Date: \nPO-Revision-Date: 2025-10-10 17:07+0000\nLast-Translator: Vaclovas Intas <Gateway_31@protonmail.com>\nLanguage-Team: Lithuanian <https://hosted.weblate.org/projects/postybirb/postybirb/lt/>\nLanguage: lt\nContent-Type: \nContent-Transfer-Encoding: \nPlural-Forms: nplurals=3; plural=(n % 10 == 1 && (n % 100 < 11 || n % 100 > 19)) ? 0 : ((n % 10 >= 2 && n % 10 <= 9 && (n % 100 < 11 || n % 100 > 19)) ? 1 : 2);\nX-Generator: Weblate 5.14-dev\n"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx
 msgid "({fileSizeString}) is too large (max {maxFileSizeString}) and an attempt will be made to reduce size when posting"
-msgstr ""
+msgstr "({fileSizeString}) yra per didelis (didžiausias {maxFileSizeString}) ir bus bandoma sumažinti jo dydį siunčiant."
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card.tsx
 msgid "{0, plural, one {website} other {websites}}"
-msgstr ""
+msgstr "{0, plural, one {svetainė} few {svetainės} many {svetaines} other {svetainių}}"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx
 msgid "{0} tags copied to clipboard"
-msgstr ""
+msgstr "{0} žymės nukopijuotos į iškarpinę"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx
 msgid "{0} tags imported from clipboard"
-msgstr ""
+msgstr "{0} žymės importuotos iš iškarpinės"
 
 #: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx
 msgid "2FA enabled, password required. It won't be stored."
-msgstr ""
+msgstr "2FA įjungtas, slaptažodis privalomas. Jis nebus saugomas."
 
 #: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx
 msgid "Account"
-msgstr ""
+msgstr "Paskyra"
 
 #: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx
 msgid "Account data updated"
-msgstr ""
+msgstr "Paskyros duomenys atnaujinti"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx
 msgid "Account Name"
-msgstr ""
+msgstr "Paskyros pavadinimas"
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
 msgid "Account Options"
-msgstr ""
+msgstr "Paskyros parinktys"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/account-drawer.tsx
@@ -2418,15 +2408,15 @@ msgstr "Saityno gaudyklė privaloma."
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
 msgid "Website"
-msgstr ""
+msgstr "Svetainė"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
 msgid "Website Conversions"
-msgstr ""
+msgstr "Svetainės konversijos"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-visibility-picker.tsx
 msgid "Website Visibility"
-msgstr ""
+msgstr "Svetainės matomumas"
 
 #: apps/postybirb-ui/src/components/shared/postybirb-editor/custom/username-shortcut.tsx
 #: apps/postybirb-ui/src/components/form/website-select/website-select.tsx
@@ -2481,8 +2471,8 @@ msgstr "Jūsų naršyklė nepalaiko vaizdo įrašo žymės."
 
 #: apps/postybirb-ui/src/website-components/bluesky/bluesky-login-view.tsx
 msgid "Your handle - for example yourname.bsky.social or username.ext"
-msgstr ""
+msgstr "Jūsų socialinio naudotojo vardas. Pavyzdžiui, jūsųvardas.bsky.lt arba naudotojovardas.ext."
 
 #: apps/postybirb-ui/src/components/dashboard/recent-posts/recent-posts.tsx
 msgid "Your recent submission history will appear here"
-msgstr ""
+msgstr "Čia bus rodomas jūsų naujausias pateikimų istorija."
