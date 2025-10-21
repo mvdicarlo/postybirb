@@ -142,7 +142,7 @@ export class DescriptionNodeTree {
           {
             id: 'title',
             type: 'heading',
-            props: { level: '3' },
+            props: { level: '2' },
             content: [
               {
                 type: 'text',

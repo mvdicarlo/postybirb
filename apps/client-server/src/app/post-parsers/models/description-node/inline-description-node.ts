@@ -79,7 +79,6 @@ export class DescriptionInlineNode
   }
 
   toHtmlString(): string {
-    // TODO - figure out if we need img/video/audio tags support here
     if (!this.content.length) return '';
 
     if (this.type === 'link') {
