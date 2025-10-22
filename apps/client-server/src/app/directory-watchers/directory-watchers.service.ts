@@ -6,7 +6,7 @@ import {
   SubmissionType,
 } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/electron';
-import { readFile, readdir, writeFile } from 'fs/promises';
+import { mkdir, readdir, rename, writeFile } from 'fs/promises';
 import { getType } from 'mime';
 import { join } from 'path';
 import { PostyBirbService } from '../common/service/postybirb-service';
@@ -18,21 +18,37 @@ import { WSGateway } from '../web-socket/web-socket-gateway';
 import { CreateDirectoryWatcherDto } from './dtos/create-directory-watcher.dto';
 import { UpdateDirectoryWatcherDto } from './dtos/update-directory-watcher.dto';
 
-type WatcherMetadata = {
-  read: string[];
-};
+/**
+ * Directory structure for file processing:
+ *
+ * {watch-path}/        <- Users drop files here
+ *   ├── processing/    <- Files being actively processed
+ *   ├── completed/     <- Successfully processed files
+ *   └── failed/        <- Files that failed processing (with .error.txt)
+ */
 
 /**
  * A directory watcher service that reads created watchers and checks
  * for new files added to the folder.
  *
- * If a new file is detected it will attempt to process it.
+ * Files are moved through different folders based on processing status,
+ * eliminating the need for metadata tracking.
  *
  * @class DirectoryWatchersService
  * @extends {PostyBirbService<DirectoryWatcher>}
  */
 @Injectable()
 export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcherSchema'> {
+  private runningWatchers = new Set<EntityId>();
+
+  private recoveredWatchers = new Set<EntityId>();
+
+  private readonly SUBFOLDER_PROCESSING = 'processing';
+
+  private readonly SUBFOLDER_COMPLETED = 'completed';
+
+  private readonly SUBFOLDER_FAILED = 'failed';
+
   constructor(
     private readonly submissionService: SubmissionService,
     private readonly notificationService: NotificationsService,
@@ -48,7 +64,87 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
   private async run() {
     if (!IsTestEnvironment()) {
       const entities = await this.repository.findAll();
-      entities.filter((e) => !!e.path).forEach((e) => this.read(e));
+      entities
+        .filter((e) => !!e.path)
+        .forEach((e) => {
+          // Recover orphaned files on first run
+          if (!this.recoveredWatchers.has(e.id)) {
+            this.recoverOrphanedFiles(e);
+            this.recoveredWatchers.add(e.id);
+          }
+
+          // Process new files if not already running
+          if (!this.runningWatchers.has(e.id)) {
+            this.runningWatchers.add(e.id);
+            this.read(e).finally(() => this.runningWatchers.delete(e.id));
+          }
+        });
+    }
+  }
+
+  /**
+   * Ensures all required subdirectories exist.
+   *
+   * @param {string} basePath
+   */
+  private async ensureDirectoryStructure(basePath: string): Promise<void> {
+    const subfolders = [
+      this.SUBFOLDER_PROCESSING,
+      this.SUBFOLDER_COMPLETED,
+      this.SUBFOLDER_FAILED,
+    ];
+
+    for (const folder of subfolders) {
+      await mkdir(join(basePath, folder), { recursive: true });
+    }
+  }
+
+  /**
+   * Recovers files that were left in the processing folder due to app crash/restart.
+   * Moves them back to the main watch folder for reprocessing.
+   *
+   * @param {DirectoryWatcher} watcher
+   */
+  private async recoverOrphanedFiles(watcher: DirectoryWatcher): Promise<void> {
+    try {
+      await this.ensureDirectoryStructure(watcher.path);
+
+      const processingPath = join(watcher.path, this.SUBFOLDER_PROCESSING);
+      const orphanedFiles = await readdir(processingPath);
+
+      if (orphanedFiles.length > 0) {
+        this.logger.info(
+          `Recovering ${orphanedFiles.length} orphaned files in ${watcher.path}`,
+        );
+
+        for (const file of orphanedFiles) {
+          const sourcePath = join(processingPath, file);
+          const targetPath = join(watcher.path, file);
+
+          try {
+            await rename(sourcePath, targetPath);
+            this.logger.info(`Recovered orphaned file: ${file}`);
+          } catch (err) {
+            this.logger.error(err, `Failed to recover orphaned file: ${file}`);
+          }
+        }
+
+        this.notificationService.create({
+          title: 'Directory Watcher Recovery',
+          message: `Recovered ${orphanedFiles.length} orphaned files in '${watcher.path}'`,
+          type: 'info',
+          tags: ['directory-watcher', 'recovery'],
+          data: {
+            recoveredFiles: orphanedFiles,
+            watcherId: watcher.id,
+          },
+        });
+      }
+    } catch (err) {
+      this.logger.error(
+        err,
+        `Failed to recover orphaned files for watcher ${watcher.id}`,
+      );
     }
   }
 
@@ -58,48 +154,50 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
    * @param {DirectoryWatcher} watcher
    */
   private async read(watcher: DirectoryWatcher) {
-    const metaFileName = join(watcher.path, 'pb-meta.json');
     try {
-      const meta = await this.getMetadata(watcher);
-      const filesInDirectory = (await readdir(watcher.path))
-        .filter((file) => file !== 'pb-meta.json')
-        .filter((file) => !meta.read.includes(file));
+      // Ensure directory structure exists
+      await this.ensureDirectoryStructure(watcher.path);
 
-      const promises = filesInDirectory.map(async (file) => {
-        await this.processFile(watcher, file);
-        meta.read.push(file);
-      });
+      const allFiles = await readdir(watcher.path);
+      const filesInDirectory = allFiles.filter(
+        (file) =>
+          file !== this.SUBFOLDER_PROCESSING &&
+          file !== this.SUBFOLDER_COMPLETED &&
+          file !== this.SUBFOLDER_FAILED,
+      );
 
-      await Promise.allSettled(promises);
+      // Only process and notify if there are files
+      if (filesInDirectory.length === 0) {
+        return;
+      }
 
+      const results = { success: [], failed: [] };
+
+      // Process files sequentially
+      for (const file of filesInDirectory) {
+        try {
+          await this.processFileWithMove(watcher, file);
+          results.success.push(file);
+        } catch (err) {
+          this.logger.error(err, `Failed to process file ${file}`);
+          results.failed.push({ file, error: err.message });
+        }
+      }
+
+      // Create notification with success/failure breakdown
       this.notificationService.create({
         title: 'Directory Watcher',
-        message: `Processed ${filesInDirectory.length} files in '${watcher.path}'`,
-        type: 'info',
+        message: `Processed ${results.success.length} of ${filesInDirectory.length} files in '${watcher.path}'`,
+        type: results.failed.length > 0 ? 'warning' : 'info',
         tags: ['directory-watcher'],
         data: {
-          processedFiles: filesInDirectory,
+          successCount: results.success.length,
+          failedCount: results.failed.length,
+          successFiles: results.success,
+          failedFiles: results.failed,
           watcherId: watcher.id,
         },
       });
-
-      // Update metadata after all is processed
-      writeFile(metaFileName, JSON.stringify(meta, null, 1)).catch(
-        (err: Error) => {
-          this.logger
-            .withError(err)
-            .error(`Failed to update metadata for '${metaFileName}'`);
-          this.notificationService.create({
-            title: 'Directory Watcher Error',
-            message: `Failed to update metadata for '${metaFileName}' which may cause issues with future file processing.`,
-            type: 'error',
-            tags: ['directory-watcher'],
-            data: {
-              error: err.message,
-            },
-          });
-        },
-      );
     } catch (e) {
       this.logger.error(e, `Failed to read directory ${watcher.path}`);
       this.notificationService.create({
@@ -115,49 +213,51 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
   }
 
   /**
-   * Gets metadata for directory watcher.
-   *
-   * @param {DirectoryWatcher} watcher
-   * @returns {Promise<WatcherMetadata>}
-   */
-  private async getMetadata(
-    watcher: DirectoryWatcher,
-  ): Promise<WatcherMetadata> {
-    try {
-      const metadata = JSON.parse(
-        (await readFile(join(watcher.path, 'pb-meta.json'))).toString(),
-      ) as WatcherMetadata;
-      if (!metadata.read) {
-        metadata.read = []; // protect user modification
-      }
-      return metadata;
-    } catch {
-      return { read: [] };
-    }
-  }
-
-  /**
-   * Attempts to process file and apply action.
+   * Processes a file using the move/archive pattern.
+   * Files are moved through: main folder -> processing -> completed/failed
    *
    * @param {DirectoryWatcher} watcher
    * @param {string} fileName
    */
-  private async processFile(watcher: DirectoryWatcher, fileName: string) {
-    const filePath = join(watcher.path, fileName);
-    const multerInfo: MulterFileInfo = {
-      fieldname: '',
-      origin: 'directory-watcher',
-      originalname: fileName,
-      encoding: '',
-      mimetype: getType(fileName),
-      size: 0,
-      destination: '',
-      filename: fileName,
-      path: filePath,
-    };
-    this.logger.info(`Processing file ${filePath}`);
-    let submissionId = null;
+  private async processFileWithMove(
+    watcher: DirectoryWatcher,
+    fileName: string,
+  ): Promise<void> {
+    const sourcePath = join(watcher.path, fileName);
+    const processingPath = join(
+      watcher.path,
+      this.SUBFOLDER_PROCESSING,
+      fileName,
+    );
+    const completedPath = join(
+      watcher.path,
+      this.SUBFOLDER_COMPLETED,
+      fileName,
+    );
+    const failedPath = join(watcher.path, this.SUBFOLDER_FAILED, fileName);
+
+    let currentLocation = sourcePath;
+    let submissionId: EntityId | null = null;
+
     try {
+      // Step 1: Move to processing folder (atomic operation)
+      await rename(sourcePath, processingPath);
+      currentLocation = processingPath;
+      this.logger.info(`Processing file ${fileName}`);
+
+      // Step 2: Process the file
+      const multerInfo: MulterFileInfo = {
+        fieldname: '',
+        origin: 'directory-watcher',
+        originalname: fileName,
+        encoding: '',
+        mimetype: getType(fileName),
+        size: 0,
+        destination: '',
+        filename: fileName,
+        path: processingPath, // Use processing path
+      };
+
       switch (watcher.importAction) {
         case DirectoryWatcherImportAction.NEW_SUBMISSION: {
           const submission = await this.submissionService.create(
@@ -168,6 +268,7 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
             multerInfo,
           );
           submissionId = submission.id;
+
           if (watcher.template) {
             await this.submissionService.applyOverridingTemplate(
               submission.id,
@@ -180,11 +281,52 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
         default:
           break;
       }
+
+      // Step 3: Move to completed folder
+      await rename(processingPath, completedPath);
+      this.logger.info(
+        `Successfully processed file ${fileName} (submission: ${submissionId})`,
+      );
     } catch (err) {
-      this.logger.error(err, `Failed to process file ${filePath}`);
+      this.logger.error(err, `Failed to process file ${fileName}`);
+
+      // Cleanup submission if it was created
       if (submissionId) {
-        await this.submissionService.remove(submissionId);
+        await this.submissionService
+          .remove(submissionId)
+          .catch((cleanupErr) => {
+            this.logger.error(
+              cleanupErr,
+              `Failed to cleanup submission ${submissionId}`,
+            );
+          });
       }
+
+      // Move to failed folder and create error file
+      try {
+        await rename(currentLocation, failedPath);
+
+        // Create error details file
+        const errorFilePath = join(
+          watcher.path,
+          this.SUBFOLDER_FAILED,
+          `${fileName}.error.txt`,
+        );
+        const errorDetails = [
+          `File: ${fileName}`,
+          `Failed at: ${new Date().toISOString()}`,
+          `Error: ${err.message}`,
+          `Stack: ${err.stack || 'N/A'}`,
+        ].join('\n');
+
+        await writeFile(errorFilePath, errorDetails);
+      } catch (moveErr) {
+        this.logger.error(
+          moveErr,
+          `Failed to move file to failed folder: ${fileName}`,
+        );
+      }
+
       throw err;
     }
   }
@@ -192,12 +334,39 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
   async create(
     createDto: CreateDirectoryWatcherDto,
   ): Promise<DirectoryWatcher> {
+    // Validate path exists and is accessible
+    try {
+      await readdir(createDto.path);
+    } catch (err) {
+      throw new BadRequestException(
+        `Path '${createDto.path}' does not exist or is not accessible`,
+      );
+    }
+
+    // Create directory structure
+    await this.ensureDirectoryStructure(createDto.path);
+
     return this.repository.insert(createDto);
   }
 
   async update(id: EntityId, update: UpdateDirectoryWatcherDto) {
     this.logger.withMetadata(update).info(`Updating DirectoryWatcher '${id}'`);
     const entity = await this.repository.findById(id, { failOnMissing: true });
+
+    // Validate path if being updated
+    if (update.path && update.path !== entity.path) {
+      try {
+        await readdir(update.path);
+      } catch (err) {
+        throw new BadRequestException(
+          `Path '${update.path}' does not exist or is not accessible`,
+        );
+      }
+
+      // Create directory structure for new path
+      await this.ensureDirectoryStructure(update.path);
+    }
+
     const template = update.templateId
       ? await this.submissionService.findById(update.templateId, {
           failOnMissing: true,
@@ -206,6 +375,7 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
     if (template && !template.isTemplate) {
       throw new BadRequestException('Template Id provided is not a template.');
     }
+
     return this.repository.update(id, {
       importAction: update.importAction ?? entity.importAction,
       path: update.path ?? entity.path,
