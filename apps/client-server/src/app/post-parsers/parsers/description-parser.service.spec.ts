@@ -444,7 +444,358 @@ describe('DescriptionParserService', () => {
     `);
   });
 
-  // TODO: Add test for custom shortcuts with new architecture
+  describe('Custom Shortcuts', () => {
+    it('should inject single custom shortcut', async () => {
+      const instance = {
+        decoratedProps: {
+          allowAd: false,
+          metadata: {
+            name: 'Test',
+          },
+        },
+      };
+
+      const shortcutContent: Description = [
+        {
+          id: 'shortcut-1',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [
+            { type: 'text', text: 'Commission Info', styles: { bold: true } },
+          ],
+          children: [],
+        },
+      ];
+
+      customShortcutsService.findById = jest
+        .fn()
+        .mockResolvedValue({
+          id: 'cs-1',
+          name: 'commission',
+          shortcut: shortcutContent,
+        });
+
+      const descriptionWithShortcut: Description = [
+        {
+          id: 'test-with-shortcut',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [
+            { type: 'text', text: 'Check out my ', styles: {} },
+            { type: 'customShortcut', props: { id: 'cs-1' }, content: [] },
+          ],
+          children: [],
+        },
+      ];
+
+      const defaultOptions = createWebsiteOptions(descriptionWithShortcut);
+      const websiteOptions = createWebsiteOptions(undefined);
+      const description = await service.parse(
+        instance as unknown as UnknownWebsite,
+        new DefaultWebsiteOptions(defaultOptions.data),
+        new BaseWebsiteOptions(websiteOptions.data),
+        [],
+        '',
+      );
+
+      expect(customShortcutsService.findById).toHaveBeenCalledWith('cs-1');
+      expect(description).toMatchInlineSnapshot(
+        `"<div>Check out my <div><span><b>Commission Info</b></span></div></div>"`,
+      );
+    });
+
+    it('should inject multiple custom shortcuts', async () => {
+      const instance = {
+        decoratedProps: {
+          allowAd: false,
+          metadata: {
+            name: 'Test',
+          },
+        },
+      };
+
+      const commissionShortcut: Description = [
+        {
+          id: 'shortcut-1',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [{ type: 'text', text: 'Commissions Open!', styles: {} }],
+          children: [],
+        },
+      ];
+
+      const priceShortcut: Description = [
+        {
+          id: 'shortcut-2',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [{ type: 'text', text: '$50 per hour', styles: {} }],
+          children: [],
+        },
+      ];
+
+      customShortcutsService.findById = jest
+        .fn()
+        .mockImplementation((id: string) => {
+          if (id === 'cs-1')
+            return Promise.resolve({
+              id: 'cs-1',
+              name: 'commission',
+              shortcut: commissionShortcut,
+            });
+          if (id === 'cs-2')
+            return Promise.resolve({
+              id: 'cs-2',
+              name: 'price',
+              shortcut: priceShortcut,
+            });
+          return Promise.resolve(null);
+        });
+
+      const descriptionWithShortcuts: Description = [
+        {
+          id: 'test-multiple',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [
+            { type: 'customShortcut', props: { id: 'cs-1' }, content: [] },
+            { type: 'text', text: ' - ', styles: {} },
+            { type: 'customShortcut', props: { id: 'cs-2' }, content: [] },
+          ],
+          children: [],
+        },
+      ];
+
+      const defaultOptions = createWebsiteOptions(descriptionWithShortcuts);
+      const websiteOptions = createWebsiteOptions(undefined);
+      const description = await service.parse(
+        instance as unknown as UnknownWebsite,
+        new DefaultWebsiteOptions(defaultOptions.data),
+        new BaseWebsiteOptions(websiteOptions.data),
+        [],
+        '',
+      );
+
+      expect(customShortcutsService.findById).toHaveBeenCalledWith('cs-1');
+      expect(customShortcutsService.findById).toHaveBeenCalledWith('cs-2');
+      expect(description).toMatchInlineSnapshot(
+        `"<div><div>Commissions Open!</div> - <div>$50 per hour</div></div>"`,
+      );
+    });
+
+    it('should handle missing custom shortcut gracefully', async () => {
+      const instance = {
+        decoratedProps: {
+          allowAd: false,
+          metadata: {
+            name: 'Test',
+          },
+        },
+      };
+
+      customShortcutsService.findById = jest.fn().mockResolvedValue(null);
+
+      const descriptionWithMissing: Description = [
+        {
+          id: 'test-missing',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [
+            { type: 'text', text: 'Before ', styles: {} },
+            {
+              type: 'customShortcut',
+              props: { id: 'cs-missing' },
+              content: [],
+            },
+            { type: 'text', text: ' After', styles: {} },
+          ],
+          children: [],
+        },
+      ];
+
+      const defaultOptions = createWebsiteOptions(descriptionWithMissing);
+      const websiteOptions = createWebsiteOptions(undefined);
+      const description = await service.parse(
+        instance as unknown as UnknownWebsite,
+        new DefaultWebsiteOptions(defaultOptions.data),
+        new BaseWebsiteOptions(websiteOptions.data),
+        [],
+        '',
+      );
+
+      expect(customShortcutsService.findById).toHaveBeenCalledWith(
+        'cs-missing',
+      );
+      // Missing shortcut should be ignored/skipped
+      expect(description).toMatchInlineSnapshot(`"<div>Before  After</div>"`);
+    });
+
+    it('should resolve custom shortcuts with different output formats', async () => {
+      const instance = {
+        decoratedProps: {
+          allowAd: false,
+          metadata: {
+            name: 'Test',
+          },
+        },
+      };
+
+      class PlaintextBaseWebsiteOptions extends BaseWebsiteOptions {
+        @DescriptionField({ descriptionType: DescriptionType.PLAINTEXT })
+        description: DescriptionValue;
+      }
+
+      const shortcutContent: Description = [
+        {
+          id: 'shortcut-1',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [
+            { type: 'text', text: 'Bold Text', styles: { bold: true } },
+          ],
+          children: [],
+        },
+      ];
+
+      customShortcutsService.findById = jest
+        .fn()
+        .mockResolvedValue({
+          id: 'cs-1',
+          name: 'bold',
+          shortcut: shortcutContent,
+        });
+
+      const descriptionWithShortcut: Description = [
+        {
+          id: 'test-plaintext',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [
+            { type: 'text', text: 'Text: ', styles: {} },
+            { type: 'customShortcut', props: { id: 'cs-1' }, content: [] },
+          ],
+          children: [],
+        },
+      ];
+
+      const defaultOptions = createWebsiteOptions(descriptionWithShortcut);
+      const websiteOptions = createWebsiteOptions(undefined);
+      const description = await service.parse(
+        instance as unknown as UnknownWebsite,
+        new DefaultWebsiteOptions(defaultOptions.data),
+        new PlaintextBaseWebsiteOptions(websiteOptions.data),
+        [],
+        '',
+      );
+
+      expect(description).toMatchInlineSnapshot(`"Text: Bold Text"`);
+    });
+
+    it('should resolve custom shortcuts with links and styling', async () => {
+      const instance = {
+        decoratedProps: {
+          allowAd: false,
+          metadata: {
+            name: 'Test',
+          },
+        },
+      };
+
+      const shortcutWithLink: Description = [
+        {
+          id: 'shortcut-link',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [
+            { type: 'text', text: 'Visit my ', styles: {} },
+            {
+              type: 'link',
+              href: 'https://portfolio.example.com',
+              content: [
+                { type: 'text', text: 'portfolio', styles: { bold: true } },
+              ],
+            },
+          ],
+          children: [],
+        },
+      ];
+
+      customShortcutsService.findById = jest
+        .fn()
+        .mockResolvedValue({
+          id: 'cs-link',
+          name: 'portfolio',
+          shortcut: shortcutWithLink,
+        });
+
+      const descriptionWithShortcut: Description = [
+        {
+          id: 'test-link',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [
+            { type: 'customShortcut', props: { id: 'cs-link' }, content: [] },
+          ],
+          children: [],
+        },
+      ];
+
+      const defaultOptions = createWebsiteOptions(descriptionWithShortcut);
+      const websiteOptions = createWebsiteOptions(undefined);
+      const description = await service.parse(
+        instance as unknown as UnknownWebsite,
+        new DefaultWebsiteOptions(defaultOptions.data),
+        new BaseWebsiteOptions(websiteOptions.data),
+        [],
+        '',
+      );
+
+      expect(description).toMatchInlineSnapshot(
+        `"<div><div>Visit my <a target="_blank" href="https://portfolio.example.com"><span><b>portfolio</b></span></a></div></div>"`,
+      );
+    });
+  });
+
   // TODO: Add test for description type CUSTOM
   // TODO: Add test for title and tag insertion
 });

@@ -152,42 +152,21 @@ export class DescriptionParserService {
   }
 
   /**
-   * Pre-resolves all custom shortcuts found in the description tree recursively.
-   * Handles nested shortcuts and cycle detection.
+   * Pre-resolves all custom shortcuts found in the description tree.
+   * Note: Does not handle nested shortcuts - users should not create circular references.
    */
   private async resolveCustomShortcuts(
     blocks: Array<IDescriptionBlockNode>,
-    visited: Set<string> = new Set(),
   ): Promise<Map<string, IDescriptionBlockNode[]>> {
     const customShortcuts = new Map<string, IDescriptionBlockNode[]>();
     const shortcutIds = this.findCustomShortcutIds(blocks);
 
     for (const id of shortcutIds) {
-      if (visited.has(id)) {
-        // Circular reference detected, skip
-        continue;
-      }
-
-      visited.add(id);
       const shortcut = await this.customShortcutsService?.findById(id);
       if (shortcut) {
         const shortcutBlocks = this.mergeBlocks(
           shortcut.shortcut as unknown as Array<IDescriptionBlockNode>,
         );
-
-        // Recursively resolve nested shortcuts
-        const nestedShortcuts = await this.resolveCustomShortcuts(
-          shortcutBlocks,
-          new Set(visited),
-        );
-
-        // Merge nested shortcuts into the main map
-        nestedShortcuts.forEach((value, key) => {
-          if (!customShortcuts.has(key)) {
-            customShortcuts.set(key, value);
-          }
-        });
-
         customShortcuts.set(id, shortcutBlocks);
       }
     }
