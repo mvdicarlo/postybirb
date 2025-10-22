@@ -1,10 +1,10 @@
-import { CustomDescriptionParser } from '../../../post-parsers/models/description-node/description-node-tree';
+import { CustomNodeHandler } from '../../../post-parsers/models/description-node/converters/custom-converter';
 
 export interface WithCustomDescriptionParser {
   /**
    * The custom description parser.
    */
-  onDescriptionParse: CustomDescriptionParser;
+  onDescriptionParse: CustomNodeHandler;
 
   /**
    * Post-process the description after parsing for any additional modifications.

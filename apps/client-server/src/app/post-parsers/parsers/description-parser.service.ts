@@ -1,6 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { DescriptionType, UsernameShortcut } from '@postybirb/types';
-import { escapeRegExp } from 'lodash';
 import isEqual from 'lodash/isEqual';
 import { Class } from 'type-fest';
 import { WEBSITE_IMPLEMENTATIONS } from '../../constants';
@@ -11,13 +10,12 @@ import { DefaultWebsiteOptions } from '../../websites/models/default-website-opt
 import { isWithCustomDescriptionParser } from '../../websites/models/website-modifiers/with-custom-description-parser';
 import { isWithRuntimeDescriptionParser } from '../../websites/models/website-modifiers/with-runtime-description-parser';
 import { UnknownWebsite, Website } from '../../websites/website';
-import { DEFAULT_MARKER } from '../models/description-node/block-description-node';
 import {
   DescriptionNodeTree,
   InsertionOptions,
 } from '../models/description-node/description-node-tree';
+import { ConversionContext } from '../models/description-node/description-node.base';
 import { IDescriptionBlockNode } from '../models/description-node/description-node.types';
-import { DescriptionInlineNode } from '../models/description-node/inline-description-node';
 
 @Injectable()
 export class DescriptionParserService {
@@ -79,54 +77,33 @@ export class DescriptionParserService {
       descriptionValue.description as unknown as Array<IDescriptionBlockNode>,
     );
 
-    const tree = new DescriptionNodeTree(
-      instance.decoratedProps.metadata.name,
+    // Pre-resolve custom shortcuts recursively
+    const customShortcuts = await this.resolveCustomShortcuts(
       mergedDescriptionBlocks,
-      insertionOptions,
-      this.websiteShortcuts,
-      {
-        title,
-        tags,
-      },
     );
 
-    let description = this.createDescription(instance, descriptionType, tree);
+    // Pre-resolve default description
+    const defaultDescription = this.mergeBlocks(
+      defaultOptions.description
+        .description as unknown as Array<IDescriptionBlockNode>,
+    );
 
-    // Support inserting default description by replacing the default marker.
-    if (description.includes(DEFAULT_MARKER)) {
-      const defaultMergedBlocks = this.mergeBlocks(
-        defaultOptions.description
-          .description as unknown as Array<IDescriptionBlockNode>,
-      );
-      const defaultTree = new DescriptionNodeTree(
-        instance.decoratedProps.metadata.name,
-        defaultMergedBlocks,
-        {
-          insertTitle: undefined,
-          insertTags: undefined,
-          insertAd: false,
-        },
-        this.websiteShortcuts,
-        {
-          title,
-          tags,
-        },
-      );
-
-      description = description.replace(
-        DEFAULT_MARKER,
-        this.createDescription(instance, descriptionType, defaultTree),
-      );
-    }
-
-    // Inject custom shortcuts
-    description = await this.injectCustomShortcuts(
-      description,
-      descriptionType,
-      instance,
+    const context: ConversionContext = {
+      website: instance.decoratedProps.metadata.name,
+      shortcuts: this.websiteShortcuts,
+      customShortcuts,
+      defaultDescription,
       title,
       tags,
+    };
+
+    const tree = new DescriptionNodeTree(
+      context,
+      mergedDescriptionBlocks,
+      insertionOptions,
     );
+
+    const description = this.createDescription(instance, descriptionType, tree);
 
     return description
       .replace(/(<div><\/div>)$/, '')
@@ -175,6 +152,92 @@ export class DescriptionParserService {
   }
 
   /**
+   * Pre-resolves all custom shortcuts found in the description tree recursively.
+   * Handles nested shortcuts and cycle detection.
+   */
+  private async resolveCustomShortcuts(
+    blocks: Array<IDescriptionBlockNode>,
+    visited: Set<string> = new Set(),
+  ): Promise<Map<string, IDescriptionBlockNode[]>> {
+    const customShortcuts = new Map<string, IDescriptionBlockNode[]>();
+    const shortcutIds = this.findCustomShortcutIds(blocks);
+
+    for (const id of shortcutIds) {
+      if (visited.has(id)) {
+        // Circular reference detected, skip
+        continue;
+      }
+
+      visited.add(id);
+      const shortcut = await this.customShortcutsService?.findById(id);
+      if (shortcut) {
+        const shortcutBlocks = this.mergeBlocks(
+          shortcut.shortcut as unknown as Array<IDescriptionBlockNode>,
+        );
+
+        // Recursively resolve nested shortcuts
+        const nestedShortcuts = await this.resolveCustomShortcuts(
+          shortcutBlocks,
+          new Set(visited),
+        );
+
+        // Merge nested shortcuts into the main map
+        nestedShortcuts.forEach((value, key) => {
+          if (!customShortcuts.has(key)) {
+            customShortcuts.set(key, value);
+          }
+        });
+
+        customShortcuts.set(id, shortcutBlocks);
+      }
+    }
+
+    return customShortcuts;
+  }
+
+  /**
+   * Recursively finds all custom shortcut IDs in the description tree.
+   */
+  private findCustomShortcutIds(
+    blocks: Array<IDescriptionBlockNode>,
+  ): Set<string> {
+    const ids = new Set<string>();
+
+    const processContent = (content: unknown[]) => {
+      for (const item of content) {
+        if (
+          typeof item === 'object' &&
+          item !== null &&
+          'type' in item &&
+          item.type === 'customShortcut' &&
+          'props' in item &&
+          typeof item.props === 'object' &&
+          item.props !== null &&
+          'id' in item.props
+        ) {
+          ids.add(item.props.id as string);
+        }
+        if (
+          typeof item === 'object' &&
+          item !== null &&
+          'content' in item &&
+          Array.isArray(item.content)
+        ) {
+          processContent(item.content);
+        }
+      }
+    };
+
+    for (const block of blocks) {
+      if (block.content && Array.isArray(block.content)) {
+        processContent(block.content);
+      }
+    }
+
+    return ids;
+  }
+
+  /**
    * Merges block into the same type if they are adjacent and have the same type.
    * Merge occurs on block level if all the props in the block are the same.
    *
@@ -217,81 +280,5 @@ export class DescriptionParserService {
     }
 
     return mergedBlocks;
-  }
-
-  /**
-   * Injects the content of custom shortcuts into the description content.
-   * Modifies the content in place.
-   */
-  public async injectCustomShortcuts(
-    content: string,
-    descriptionType: DescriptionType,
-    instance: Website<unknown>,
-    title: string,
-    tags: string[],
-  ): Promise<string> {
-    const regex = DescriptionInlineNode.getCustomShortcutMarkerRegex();
-    const matches = Array.from(content.matchAll(regex));
-    if (!matches.length) return content;
-
-    let updatedContent = content;
-    for (const match of matches) {
-      const [fullMarker, id] = match;
-      const shortcut = await this.customShortcutsService?.findById(id);
-      if (shortcut) {
-        // When HTML, check to see if the marker is just surrounded by paragraph.
-        // When it is, unwrap it and prefer custom shortcut to use its own.
-        if (descriptionType === DescriptionType.HTML) {
-          const paragraphRegex = new RegExp(
-            `(<p>)?${escapeRegExp(fullMarker)}(</p>)?`,
-            'g',
-          );
-          updatedContent = updatedContent.replace(
-            paragraphRegex,
-            (m, p1, p2) => {
-              // If the marker is surrounded by paragraphs, unwrap it
-              if (p1 && p2) {
-                return fullMarker;
-              }
-              return m;
-            },
-          );
-        }
-
-        const tree = new DescriptionNodeTree(
-          instance.decoratedProps.metadata.name,
-          shortcut.shortcut as unknown as Array<IDescriptionBlockNode>,
-          {
-            insertTitle: undefined,
-            insertTags: undefined,
-            insertAd: false,
-          },
-          this.websiteShortcuts,
-          {
-            title,
-            tags,
-          },
-        );
-        const rendered = this.createDescription(
-          instance,
-          descriptionType,
-          tree,
-        );
-        updatedContent = updatedContent.replace(
-          new RegExp(escapeRegExp(fullMarker), 'g'),
-          rendered,
-        );
-      }
-    }
-    // Strip any remaining markers (including those wrapped by empty paragraph tags)
-    const markerRegex = DescriptionInlineNode.getCustomShortcutMarkerRegex();
-    const wrappedMarkerRegex = new RegExp(
-      `<p>\\s*${markerRegex.source}\\s*<\\/p>`,
-      'g',
-    );
-    updatedContent = updatedContent.replace(wrappedMarkerRegex, '');
-    updatedContent = updatedContent.replace(markerRegex, '');
-
-    return updatedContent;
   }
 }
