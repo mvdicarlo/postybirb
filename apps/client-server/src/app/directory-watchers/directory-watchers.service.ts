@@ -334,17 +334,19 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
   async create(
     createDto: CreateDirectoryWatcherDto,
   ): Promise<DirectoryWatcher> {
-    // Validate path exists and is accessible
-    try {
-      await readdir(createDto.path);
-    } catch (err) {
-      throw new BadRequestException(
-        `Path '${createDto.path}' does not exist or is not accessible`,
-      );
-    }
+    // Validate path exists and is accessible (only if path is provided)
+    if (createDto.path) {
+      try {
+        await readdir(createDto.path);
+      } catch (err) {
+        throw new BadRequestException(
+          `Path '${createDto.path}' does not exist or is not accessible`,
+        );
+      }
 
-    // Create directory structure
-    await this.ensureDirectoryStructure(createDto.path);
+      // Create directory structure
+      await this.ensureDirectoryStructure(createDto.path);
+    }
 
     return this.repository.insert(createDto);
   }
@@ -376,10 +378,17 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
       throw new BadRequestException('Template Id provided is not a template.');
     }
 
-    return this.repository.update(id, {
+    const updatedEntity = await this.repository.update(id, {
       importAction: update.importAction ?? entity.importAction,
       path: update.path ?? entity.path,
       templateId: update.templateId ?? entity.templateId,
     });
+
+    // If this is the first time setting a path (from null/empty to valid path), ensure directory structure
+    if (!entity.path && updatedEntity.path) {
+      await this.ensureDirectoryStructure(updatedEntity.path);
+    }
+
+    return updatedEntity;
   }
 }

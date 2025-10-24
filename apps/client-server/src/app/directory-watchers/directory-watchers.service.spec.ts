@@ -151,4 +151,49 @@ describe('DirectoryWatchersService', () => {
       "Path 'non-existent-path' does not exist or is not accessible",
     );
   });
+
+  it('should create entity without path (UI flow)', async () => {
+    const dto = new CreateDirectoryWatcherDto();
+    dto.importAction = DirectoryWatcherImportAction.NEW_SUBMISSION;
+    // No path provided
+
+    const record = await service.create(dto);
+
+    // Verify entity was created without path
+    expect(record.importAction).toBe(dto.importAction);
+    expect(record.path).toBeNull();
+
+    // Verify no directory structure was created
+    expect(mkdir).not.toHaveBeenCalled();
+  });
+
+  it('should create directory structure when path is first set via update', async () => {
+    // Create without path
+    const dto = new CreateDirectoryWatcherDto();
+    dto.importAction = DirectoryWatcherImportAction.NEW_SUBMISSION;
+    const record = await service.create(dto);
+
+    expect(record.path).toBeNull();
+
+    // Clear mocks from create
+    jest.clearAllMocks();
+
+    // Update with path
+    const updateDto = new UpdateDirectoryWatcherDto();
+    updateDto.path = 'new-path';
+    const updatedRecord = await service.update(record.id, updateDto);
+
+    expect(updatedRecord.path).toBe('new-path');
+
+    // Verify directory structure was created
+    expect(mkdir).toHaveBeenCalledWith(join('new-path', 'processing'), {
+      recursive: true,
+    });
+    expect(mkdir).toHaveBeenCalledWith(join('new-path', 'completed'), {
+      recursive: true,
+    });
+    expect(mkdir).toHaveBeenCalledWith(join('new-path', 'failed'), {
+      recursive: true,
+    });
+  });
 });
