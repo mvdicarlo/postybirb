@@ -3,6 +3,7 @@ import { Description } from '@postybirb/types';
 import TurndownService from 'turndown';
 import { DescriptionBlockNode } from './block-description-node';
 import { BBCodeConverter } from './converters/bbcode-converter';
+import { BaseConverter } from './converters/base-converter';
 import {
   CustomConverter,
   CustomNodeHandler,
@@ -100,6 +101,13 @@ export class DescriptionNodeTree {
    */
   parseCustom(blockHandler: CustomNodeHandler): string {
     const converter = new CustomConverter(blockHandler);
+    return converter.convertBlocks(this.withInsertions(), this.context);
+  }
+
+  /**
+   * Allows for custom conversion using a provided converter.
+   */
+  parseWithConverter(converter: BaseConverter): string {
     return converter.convertBlocks(this.withInsertions(), this.context);
   }
 

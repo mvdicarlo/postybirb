@@ -13,7 +13,6 @@ import {
   SubmissionRating,
 } from '@postybirb/types';
 import { app } from 'electron';
-import { CustomDescriptionParser } from '../../../post-parsers/models/description-node/description-node-tree';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
@@ -53,10 +52,7 @@ import { E621FileSubmission } from './models/e621-file-submission';
 @DisableAds()
 export default class E621
   extends Website<E621AccountData>
-  implements
-    FileWebsite<E621FileSubmission>,
-    OAuthWebsite<E621OAuthRoutes>,
-    WithCustomDescriptionParser
+  implements FileWebsite<E621FileSubmission>, OAuthWebsite<E621OAuthRoutes>
 {
   protected BASE_URL = 'https://e621.net/';
 
@@ -103,15 +99,6 @@ export default class E621
     return undefined;
   }
 
-  // Spec: https://e621.net/help/dtext
-  // onDescriptionParse is called for each line, idk why it can contain multiline somehow
-  onDescriptionParse: CustomDescriptionParser = (node) =>
-    node.toBBCodeString().replaceAll('\n', '');
-
-  // [url=https://example.com/]lemonynade[/url]`
-  onAfterDescriptionParse = (description: string) =>
-    description.replace(/\[url=([^\]]*)\]([^[]*)\[\/url\]/, '"$2":[$1]');
-
   private readonly headers = { 'User-Agent': `PostyBirb/${app.getVersion()}` };
 
   private async request<T>(
@@ -143,6 +130,11 @@ export default class E621
     cancellableToken.throwIfCancelled();
     const accountData = this.websiteDataStore.getData();
     const file = files[0];
+
+    // Spec: https://e621.net/help/dtext
+    const description = postData.options.description
+      .replaceAll('\n', '')
+      .replace(/\[url=([^\]]*)\]([^[]*)\[\/url\]/, '"$2":[$1]');
     const formData = {
       login: accountData.username,
       api_key: accountData.key,

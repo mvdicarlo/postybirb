@@ -127,10 +127,8 @@ export class DescriptionParserService {
         return tree.toBBCode();
       case DescriptionType.CUSTOM:
         if (isWithCustomDescriptionParser(instance)) {
-          const initialDescription = tree.parseCustom(
-            instance.onDescriptionParse,
-          );
-          return instance.onAfterDescriptionParse(initialDescription);
+          const converter = instance.getDescriptionConverter();
+          return tree.parseWithConverter(converter);
         }
         throw new Error(
           `Website does not implement custom description parser: ${instance.constructor.name}`,

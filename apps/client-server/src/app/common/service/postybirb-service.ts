@@ -37,8 +37,12 @@ export abstract class PostyBirbService<TSchemaKey extends SchemaKey> {
    * @param {WebSocketEvents} event
    */
   protected async emit(event: WebSocketEvents) {
-    if (this.webSocket) {
-      this.webSocket.emit(event);
+    try {
+      if (this.webSocket) {
+        this.webSocket.emit(event);
+      }
+    } catch (err) {
+      this.logger.error(`Error emitting websocket event: ${event.event}`, err);
     }
   }
 

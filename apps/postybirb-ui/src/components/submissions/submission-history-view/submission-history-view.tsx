@@ -85,7 +85,7 @@ function bucketizeSubmissionsByPostDate(submissions: SubmissionDto[]) {
     buckets[key][submission.id] = { submission };
   });
 
-  return Object.entries(buckets).sort(([a], [b]) => Number(a) - Number(b));
+  return Object.entries(buckets).sort(([a], [b]) => Number(b) - Number(a));
 }
 
 /**

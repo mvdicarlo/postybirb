@@ -1,6 +1,9 @@
+// BlockNote types are used in the UI, but conversion happens via DescriptionNode
+// No need to import BlockNote in the server-side website implementation
 import { Http } from '@postybirb/http';
 import {
   DynamicObject,
+  FileType,
   ILoginState,
   ImageResizeProps,
   ISubmissionFile,
@@ -10,19 +13,21 @@ import {
   SubmissionRating,
 } from '@postybirb/types';
 import parse from 'node-html-parser';
-import { DescriptionNode } from '../../../post-parsers/models/description-node/description-node.base';
+import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
+import { NpfConverter } from '../../../post-parsers/models/description-node/converters/npf-converter';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
+import FileSize from '../../../utils/filesize.util';
 import { PostBuilder } from '../../commons/post-builder';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
+import { SupportsUsernameShortcut } from '../../decorators/supports-username-shortcut.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
 import { FileWebsite } from '../../models/website-modifiers/file-website';
 import { MessageWebsite } from '../../models/website-modifiers/message-website';
 import { WithCustomDescriptionParser } from '../../models/website-modifiers/with-custom-description-parser';
 import { Website } from '../../website';
-import { convertToNpf } from './block-to-npf';
 import { TumblrAccountData } from './models/tumblr-account-data';
 import { TumblrFileSubmission } from './models/tumblr-file-submission';
 import { TumblrMessageSubmission } from './models/tumblr-message-submission';
@@ -47,13 +52,37 @@ type TumblrPostResponse = {
 
 // TODO - Figure out custom shortcut insertions
 // TODO - Posting Images
-// TODO - NSFW Flag Values
 @WebsiteMetadata({
   name: 'tumblr',
   displayName: 'Tumblr',
 })
 @UserLoginFlow('https://www.tumblr.com')
-@SupportsFiles(['image/png', 'image/jpeg'])
+@SupportsUsernameShortcut({
+  id: 'tumblr',
+  url: 'https://www.tumblr.com/blog/$1',
+})
+@SupportsFiles({
+  acceptedMimeTypes: [
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'image/jfif',
+    'image/pjpeg',
+    'image/webp',
+    'audio/mp3',
+    'audio/mpeg',
+    'video/quicktime',
+    'video/x-m4v',
+    'video/mp4',
+  ],
+  fileBatchSize: 30,
+  acceptedFileSizes: {
+    [FileType.AUDIO]: FileSize.megabytes(10),
+    [FileType.VIDEO]: FileSize.megabytes(500),
+    [FileType.IMAGE]: FileSize.megabytes(20),
+    'image/gif': FileSize.megabytes(3),
+  },
+})
 export default class Tumblr
   extends Website<TumblrAccountData, TumblrSessionData>
   implements
@@ -162,22 +191,28 @@ export default class Tumblr
     return new TumblrMessageSubmission();
   }
 
+  getDescriptionConverter(): BaseConverter {
+    return new NpfConverter();
+  }
+
   async onPostMessageSubmission(
     postData: PostData<TumblrMessageSubmission>,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
-    // Need to unwrap description from JSON string to NPF
-    const description = JSON.parse(
-      `[${postData.options.description.replaceAll('\n', ',')}]`,
-    ).flat();
+    // Description is a JSON string of NPF blocks from the NpfConverter
+    const npfBlocks = JSON.parse(postData.options.description);
+
     const builder = new PostBuilder(this, cancellationToken)
       .asJson()
       .withHeader('Authorization', `Bearer ${this.sessionData.apiToken}`)
       .withHeader('Referer', 'https://www.tumblr.com/new/text')
       .withHeader('Origin', 'https://www.tumblr.com')
       .withHeader('X-Csrf', this.sessionData.csrf)
-      .setField('community_label_categories', [])
-      .setField('content', description)
+      .setField(
+        'community_label_categories',
+        this.getCommunityLabelCategories(postData),
+      )
+      .setField('content', npfBlocks)
       .setField(
         'has_community_label',
         postData.options.rating !== SubmissionRating.GENERAL,
@@ -186,7 +221,7 @@ export default class Tumblr
       .setField('layout', [
         {
           type: 'rows',
-          display: description.map((block, index) => ({ blocks: [index] })),
+          display: npfBlocks.map((block, index) => ({ blocks: [index] })),
         },
       ])
       .setField('tags', postData.options.tags?.join(', '));
@@ -223,13 +258,27 @@ export default class Tumblr
     return validator.result;
   }
 
-  onDescriptionParse(node: DescriptionNode): string {
-    // Convert to NPF and return as JSON string to satisfy and unpack later
-    const npf = convertToNpf(node);
-    return JSON.stringify(npf);
-  }
+  private getCommunityLabelCategories(
+    postData: PostData<TumblrMessageSubmission | TumblrFileSubmission>,
+  ): string[] {
+    const labels = [];
+    const { options } = postData;
+    if (options.rating === SubmissionRating.GENERAL) {
+      return [];
+    }
 
-  onAfterDescriptionParse(description: string) {
-    return description;
+    if (options.drugUse) {
+      labels.push('drug_use');
+    }
+
+    if (options.violence) {
+      labels.push('violence');
+    }
+
+    if (options.sexualContent) {
+      labels.push('sexual_content');
+    }
+
+    return labels;
   }
 }
