@@ -50,8 +50,6 @@ type TumblrPostResponse = {
   };
 };
 
-// TODO - Figure out custom shortcut insertions
-// TODO - Posting Images
 @WebsiteMetadata({
   name: 'tumblr',
   displayName: 'Tumblr',
@@ -151,24 +149,61 @@ export default class Tumblr
     batchIndex: number,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
-    const formData = {
-      file: files[0].toPostFormat(),
-      thumb: files[0].thumbnailToPostFormat(),
-      description: postData.options.description,
-      tags: postData.options.tags.join(', '),
-      title: postData.options.title,
-      rating: postData.options.rating,
-    };
+    // Description is a JSON string of NPF blocks from the NpfConverter
+    const npfBlocks = JSON.parse(postData.options.description);
 
-    const result = await Http.post<string>(`${this.BASE_URL}/submit`, {
-      partition: this.accountId,
-      data: formData,
-      type: 'multipart',
-    });
+    const blogId = postData.options.blog;
 
-    if (result.statusCode === 200) {
-      return PostResponse.fromWebsite(this).withAdditionalInfo(result.body);
+    // Upload files and add them as NPF media blocks
+    const mediaBlocks = await this.uploadFiles(
+      files,
+      blogId,
+      cancellationToken,
+    );
+
+    // Combine description blocks with media blocks
+    const allBlocks = [...npfBlocks, ...mediaBlocks];
+
+    const builder = new PostBuilder(this, cancellationToken)
+      .asJson()
+      .withHeader('Authorization', `Bearer ${this.sessionData.apiToken}`)
+      .withHeader('Referer', 'https://www.tumblr.com/new/text')
+      .withHeader('Origin', 'https://www.tumblr.com')
+      .withHeader('X-Csrf', this.sessionData.csrf)
+      .setField(
+        'community_label_categories',
+        this.getCommunityLabelCategories(postData),
+      )
+      .setField('content', allBlocks)
+      .setField(
+        'has_community_label',
+        postData.options.rating !== SubmissionRating.GENERAL,
+      )
+      .setField('hide_trail', false)
+      .setField('layout', [
+        {
+          type: 'rows',
+          display: allBlocks.map((block, index) => ({ blocks: [index] })),
+        },
+      ])
+      .setField('tags', postData.options.tags?.join(', '));
+
+    const result = await builder.send<TumblrPostResponse>(
+      `${this.BASE_URL}/api/v2/blog/${blogId}/posts`,
+    );
+
+    if (
+      result.body.response.state === 'published' ||
+      result.body.response.state === 'transcoding' // publishing video
+    ) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const blogData = this.getWebsiteData().blogs.find(
+        (b) => b.value === blogId,
+      )!;
+      const postUrl = `${blogData.data.url}/${result.body.response.id}`;
+      return PostResponse.fromWebsite(this)
+        .withAdditionalInfo(result.body)
+        .withSourceUrl(postUrl);
     }
 
     return PostResponse.fromWebsite(this)
@@ -205,7 +240,7 @@ export default class Tumblr
     const builder = new PostBuilder(this, cancellationToken)
       .asJson()
       .withHeader('Authorization', `Bearer ${this.sessionData.apiToken}`)
-      .withHeader('Referer', 'https://www.tumblr.com/new/text')
+      .withHeader('Referer', 'https://www.tumblr.com')
       .withHeader('Origin', 'https://www.tumblr.com')
       .withHeader('X-Csrf', this.sessionData.csrf)
       .setField(
@@ -228,7 +263,7 @@ export default class Tumblr
 
     const blogId = postData.options.blog;
     const result = await builder.send<TumblrPostResponse>(
-      `https://www.tumblr.com/api/v2/blog/${blogId}/posts`,
+      `${this.BASE_URL}/api/v2/blog/${blogId}/posts`,
     );
 
     if (result.body.response.state === 'published') {
@@ -280,5 +315,100 @@ export default class Tumblr
     }
 
     return labels;
+  }
+
+  /**
+   * Uploads files to Tumblr and returns NPF media blocks
+   */
+  private async uploadFiles(
+    files: PostingFile[],
+    blogId: string,
+    cancellationToken: CancellableToken,
+  ): Promise<DynamicObject[]> {
+    const mediaBlocks: DynamicObject[] = [];
+
+    for (const file of files) {
+      cancellationToken.throwIfCancelled();
+
+      try {
+        const uploadedMedia = await this.uploadSingleFile(file, blogId);
+
+        // Create NPF media block based on file type
+        if (file.fileType === FileType.IMAGE) {
+          mediaBlocks.push({
+            type: 'image',
+            media: uploadedMedia,
+            alt_text: file.metadata?.altText || '',
+            provider: 'tumblr',
+          });
+        } else if (file.fileType === FileType.VIDEO) {
+          mediaBlocks.push({
+            type: 'video',
+            provider: 'tumblr',
+            media: uploadedMedia[0],
+          });
+        } else if (file.fileType === FileType.AUDIO) {
+          mediaBlocks.push({
+            type: 'audio',
+            provider: 'tumblr',
+            media: uploadedMedia[0],
+          });
+        }
+      } catch (error) {
+        this.logger.error(`Failed to upload file ${file.fileName}`, error);
+        throw error;
+      }
+    }
+
+    return mediaBlocks;
+  }
+
+  private getMediaType(file: PostingFile): string {
+    switch (file.fileType) {
+      case FileType.AUDIO:
+        return 'audio';
+      case FileType.IMAGE:
+        return 'image';
+      case FileType.VIDEO:
+        return 'video';
+      default:
+        throw new Error('Unsupported file type');
+    }
+  }
+
+  /**
+   * Uploads a single file to Tumblr and returns media information
+   * @param file - The file to upload
+   * @param blogId - The blog ID to upload to (optional, uses first blog if not provided)
+   */
+  private async uploadSingleFile(
+    file: PostingFile,
+    blogId: string,
+  ): Promise<DynamicObject[]> {
+    // Upload file using multipart form data
+    const uploadBuilder = new PostBuilder(this, new CancellableToken())
+      .asMultipart()
+      .withHeader('Authorization', `Bearer ${this.sessionData.apiToken}`)
+      .withHeader('Referer', 'https://www.tumblr.com')
+      .withHeader('Origin', 'https://www.tumblr.com')
+      .withHeader('X-Csrf', this.sessionData.csrf)
+      .addFile('file', file);
+
+    const uploadResult = await uploadBuilder.send<{
+      meta: { status: number; msg: string };
+      response: {
+        id?: string;
+        url?: string;
+        width?: number;
+        height?: number;
+      };
+    }>(`${this.BASE_URL}/api/v2/media/${this.getMediaType(file)}`);
+
+    if (!uploadResult.body.response?.url) {
+      throw new Error('Failed to upload file - no URL returned');
+    }
+
+    // Return media object(s) in Tumblr NPF format
+    return [uploadResult.body.response];
   }
 }
