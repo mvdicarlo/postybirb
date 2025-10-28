@@ -37,6 +37,7 @@ export default class StoreManager<T extends IdBasedRecord> {
     private readonly websocketDomain: string,
     private readonly refreshDataFn: () => Promise<T[]>,
     private readonly options: StorageManagerOptions<T> = {},
+    private readonly alias = '',
   ) {
     this.data = [];
     this.subject = new Subject<StoreManagerDataResult<T>>();
@@ -46,12 +47,19 @@ export default class StoreManager<T extends IdBasedRecord> {
     );
     refreshDataFn()
       .then((messages: T[]) => this.handleMessages(messages))
+      // eslint-disable-next-line no-console
+      .catch((err) => {
+        // eslint-disable-next-line lingui/no-unlocalized-strings, no-console
+        console.error('Error', this.websocketDomain, this.alias, err);
+      })
       .finally(() => {
         this.initLoadCompleted = true;
       });
   }
 
   private handleMessages(messages: T[]): void {
+    // eslint-disable-next-line lingui/no-unlocalized-strings, no-console
+    console.log('Handle', this.websocketDomain, this.alias, messages.length);
     let m = messages ?? [];
     if (this.options.filter) {
       m = m.filter(this.options.filter);
@@ -70,6 +78,8 @@ export default class StoreManager<T extends IdBasedRecord> {
   }
 
   public getData(): StoreManagerDataResult<T> {
+    // eslint-disable-next-line no-console
+    console.log(this.websocketDomain, this.alias, this.data.length);
     const data = JSON.parse(JSON.stringify(this.data ?? []));
     const { ModelConstructor } = this.options;
     const records = ModelConstructor

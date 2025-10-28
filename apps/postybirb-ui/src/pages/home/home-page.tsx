@@ -24,7 +24,7 @@ export default function HomePage() {
     .find((submission) => submission.getPostingRecord() !== undefined)
     ?.getPostingRecord();
   const postRecords = submissions.flatMap((submission) => submission.posts);
-  
+
   // Calculate stats
   const activeSubmissions = submissions.filter((s) => !s.isArchived);
   const scheduledSubmissions = submissions.filter((s) => s.isScheduled);
@@ -33,28 +33,42 @@ export default function HomePage() {
   const numInQueue = queueRecords.length;
 
   // Calculate submission type breakdown for total submissions
-  const fileSubmissions = activeSubmissions.filter((s) => s.type === SubmissionType.FILE).length;
-  const messageSubmissions = activeSubmissions.filter((s) => s.type === SubmissionType.MESSAGE).length;
-  
+  const fileSubmissions = activeSubmissions.filter(
+    (s) => s.type === SubmissionType.FILE,
+  ).length;
+  const messageSubmissions = activeSubmissions.filter(
+    (s) => s.type === SubmissionType.MESSAGE,
+  ).length;
+
   const submissionBreakdown = {
     files: fileSubmissions,
     messages: messageSubmissions,
   };
 
   // Calculate submission type breakdown for scheduled submissions
-  const scheduledFileSubmissions = scheduledSubmissions.filter((s) => s.type === SubmissionType.FILE).length;
-  const scheduledMessageSubmissions = scheduledSubmissions.filter((s) => s.type === SubmissionType.MESSAGE).length;
-  
+  const scheduledFileSubmissions = scheduledSubmissions.filter(
+    (s) => s.type === SubmissionType.FILE,
+  ).length;
+  const scheduledMessageSubmissions = scheduledSubmissions.filter(
+    (s) => s.type === SubmissionType.MESSAGE,
+  ).length;
+
   const scheduledBreakdown = {
     files: scheduledFileSubmissions,
     messages: scheduledMessageSubmissions,
   };
 
   // Calculate submission type breakdown for queue submissions
-  const queueSubmissions = submissions.filter((s) => queueRecords.some(q => q.submissionId === s.id));
-  const queueFileSubmissions = queueSubmissions.filter((s) => s.type === SubmissionType.FILE).length;
-  const queueMessageSubmissions = queueSubmissions.filter((s) => s.type === SubmissionType.MESSAGE).length;
-  
+  const queueSubmissions = submissions.filter((s) =>
+    queueRecords.some((q) => q.submissionId === s.id),
+  );
+  const queueFileSubmissions = queueSubmissions.filter(
+    (s) => s.type === SubmissionType.FILE,
+  ).length;
+  const queueMessageSubmissions = queueSubmissions.filter(
+    (s) => s.type === SubmissionType.MESSAGE,
+  ).length;
+
   const queueBreakdown = {
     files: queueFileSubmissions,
     messages: queueMessageSubmissions,
