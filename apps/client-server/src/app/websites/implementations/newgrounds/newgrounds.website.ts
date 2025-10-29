@@ -41,7 +41,7 @@ type NewgroundsPostResponse = {
 })
 @UserLoginFlow('https://www.newgrounds.com/login')
 @SupportsUsernameShortcut({
-  id: 'ng',
+  id: 'newgrounds',
   url: 'https://$1.newgrounds.com',
 })
 @SupportsFiles({
