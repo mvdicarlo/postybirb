@@ -647,7 +647,9 @@ export class PostManagerService {
       }
     }
 
-    return new PostingFile(file.id, file.file, file.thumbnail);
+    return new PostingFile(file.id, file.file, file.thumbnail).withMetadata(
+      file.metadata,
+    );
   }
 
   private async markFilesAsPosted(

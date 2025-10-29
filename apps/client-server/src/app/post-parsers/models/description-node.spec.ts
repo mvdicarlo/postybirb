@@ -1,5 +1,6 @@
 import { Description } from '@postybirb/types';
 import { DescriptionNodeTree } from './description-node/description-node-tree';
+import { ConversionContext } from './description-node/description-node.base';
 import { IDescriptionBlockNode } from './description-node/description-node.types';
 
 describe('DescriptionNode', () => {
@@ -35,19 +36,24 @@ describe('DescriptionNode', () => {
       },
     ];
 
-    const tree = new DescriptionNodeTree(
-      'test',
-      shortcutDescription as unknown as Array<IDescriptionBlockNode>,
-      {
-        insertAd: false,
-      },
-      {
+    const context: ConversionContext = {
+      website: 'test',
+      shortcuts: {
         test: {
           id: 'test',
           url: 'https://test.postybirb.com/$1',
         },
       },
-      {},
+      customShortcuts: new Map(),
+      defaultDescription: [],
+    };
+
+    const tree = new DescriptionNodeTree(
+      context,
+      shortcutDescription as unknown as Array<IDescriptionBlockNode>,
+      {
+        insertAd: false,
+      },
     );
 
     expect(tree.toPlainText()).toBe('Hello, https://test.postybirb.com/User');
@@ -91,13 +97,9 @@ describe('DescriptionNode', () => {
       },
     ];
 
-    const tree = new DescriptionNodeTree(
-      'test',
-      shortcutDescription as unknown as Array<IDescriptionBlockNode>,
-      {
-        insertAd: false,
-      },
-      {
+    const context: ConversionContext = {
+      website: 'test',
+      shortcuts: {
         test: {
           id: 'test',
           url: 'https://test.postybirb.com/$1',
@@ -109,7 +111,16 @@ describe('DescriptionNode', () => {
           },
         },
       },
-      {},
+      customShortcuts: new Map(),
+      defaultDescription: [],
+    };
+
+    const tree = new DescriptionNodeTree(
+      context,
+      shortcutDescription as unknown as Array<IDescriptionBlockNode>,
+      {
+        insertAd: false,
+      },
     );
 
     expect(tree.toPlainText()).toBe('Hello, <!~User>');
@@ -145,22 +156,25 @@ describe('DescriptionNode', () => {
       },
     ];
 
+    const context: ConversionContext = {
+      website: 'test',
+      shortcuts: {},
+      customShortcuts: new Map(),
+      defaultDescription: [],
+    };
+
     const tree = new DescriptionNodeTree(
-      'test',
+      context,
       multiParagraphDescription as unknown as Array<IDescriptionBlockNode>,
       {
         insertAd: false,
       },
-      {},
-      {},
     );
 
     expect(tree.toPlainText()).toBe('First paragraph.\r\nSecond paragraph.');
     expect(tree.toHtml()).toBe(
       '<div>First paragraph.</div><div>Second paragraph.</div>',
     );
-    expect(tree.toBBCode()).toBe(
-      'First paragraph.\nSecond paragraph.',
-    );
+    expect(tree.toBBCode()).toBe('First paragraph.\nSecond paragraph.');
   });
 });

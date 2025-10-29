@@ -29,3 +29,4 @@ export { default as Telegram } from './telegram/telegram.website';
 export { default as Toyhouse } from './toyhouse/toyhouse.website';
 export { default as Twitter } from './twitter/twitter.website';
 export { default as Weasyl } from './weasyl/weasyl.website';
+export { default as Tumblr } from './tumblr/tumblr.website';
