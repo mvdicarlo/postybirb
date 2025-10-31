@@ -30,6 +30,11 @@ const DEFAULT_HEADERS: Record<string, string> = {
   'Accept-Encoding': 'gzip, deflate, br',
 };
 
+export interface HttpRequestOptions {
+  // Skips adding index to url encoded data for arrays
+  skipUrlEncodedIndexing?: boolean;
+}
+
 interface HttpOptions {
   headers?: Record<string, string>;
   queryParameters?: Record<
@@ -42,6 +47,7 @@ interface HttpOptions {
     | readonly boolean[]
   >;
   partition: string | undefined;
+  options?: HttpRequestOptions;
 }
 
 export interface PostOptions extends HttpOptions {
@@ -139,7 +145,7 @@ export class Http {
   private static createPostBody(
     options: PostOptions | BinaryPostOptions,
   ): CreateBodyData {
-    const { data, type } = options;
+    const { data, type, options: httpOptions } = options;
     switch (type) {
       case 'json': {
         return {
@@ -149,9 +155,10 @@ export class Http {
       }
 
       case 'urlencoded': {
+        const skipIndex = httpOptions?.skipUrlEncodedIndexing ?? false;
         return {
           contentType: 'application/x-www-form-urlencoded',
-          buffer: Buffer.from(urlEncoded(data)),
+          buffer: Buffer.from(urlEncoded(data, { skipIndex })),
         };
       }
 

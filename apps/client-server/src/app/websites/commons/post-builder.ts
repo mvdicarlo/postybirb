@@ -1,4 +1,9 @@
-import { FormFile, Http, PostOptions } from '@postybirb/http';
+import {
+  FormFile,
+  Http,
+  HttpRequestOptions,
+  PostOptions,
+} from '@postybirb/http';
 import { Logger } from '@postybirb/logger';
 import { FileType, PostResponse } from '@postybirb/types';
 import { CancellableToken } from '../../post/models/cancellable-token';
@@ -44,6 +49,13 @@ export class PostBuilder {
    * @private
    */
   private data: Record<string, Value> = {};
+
+  /**
+   * Custom HTTP request options to be send with the request.
+   * @private
+   * @type {HttpRequestOptions}
+   */
+  private readonly httpRequestOptions: HttpRequestOptions = {};
 
   /**
    * HTTP headers to include with the request.
@@ -143,8 +155,9 @@ export class PostBuilder {
    *
    * @returns The PostBuilder instance for method chaining
    */
-  asUrlEncoded() {
+  asUrlEncoded(skipIndex = false) {
     this.postType = 'urlencoded';
+    this.httpRequestOptions.skipUrlEncodedIndexing = skipIndex;
     return this;
   }
 
@@ -367,6 +380,7 @@ export class PostBuilder {
         url,
         headers: Object.keys(this.headers),
         data: this.sanitizeDataForLogging(data),
+        httpRequestOptions: this.httpRequestOptions,
       })
       .debug(`Sending ${this.postType} request to ${url} with data:`);
 
@@ -381,6 +395,7 @@ export class PostBuilder {
           type: this.postType,
           data,
           headers: this.headers,
+          options: this.httpRequestOptions,
         });
         this.logger.debug(`Received response from ${url}:`, value.statusCode);
         PostResponse.validateBody(this.website, value);
