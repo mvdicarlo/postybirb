@@ -31,13 +31,18 @@ export interface IWebsitePostRecord extends IEntity {
    */
   completedAt: string;
 
-  accountId: AccountId;
+  /**
+   * The account ID associated with the post record.
+   * Null if the account was deleted.
+   * @type {AccountId}
+   */
+  accountId?: AccountId;
 
   /**
    * The account the post is made with.
    * @type {IAccount}
    */
-  account: IAccount;
+  account?: IAccount;
 
   /**
    * The error(s) associated with the post record.

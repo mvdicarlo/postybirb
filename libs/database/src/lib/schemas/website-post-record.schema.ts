@@ -14,7 +14,6 @@ import { PostRecordSchema } from './post-record.schema';
 export const WebsitePostRecordSchema = sqliteTable('website-post-record', {
   ...CommonSchema(),
   accountId: id()
-    .notNull()
     .references(() => AccountSchema.id, {
       onDelete: 'set null',
     }),

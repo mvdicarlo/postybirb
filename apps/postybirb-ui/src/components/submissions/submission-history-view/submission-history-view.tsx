@@ -26,6 +26,7 @@ import {
   IAccountDto,
   IPostRecord,
   IWebsitePostRecord,
+  NullAccount,
   PostRecordState,
   SubmissionId,
   SubmissionType,
@@ -54,6 +55,13 @@ type SubmissionViewProps = {
   type: SubmissionType;
   submissions?: SubmissionDto[];
 };
+
+function getAccount(
+  accountId: EntityId | undefined,
+  accountsMap: Map<EntityId, IAccountDto>,
+): IAccountDto {
+  return accountsMap.get(accountId || '') || (new NullAccount() as IAccountDto);
+}
 
 /**
  * Organizes submissions by date for display
@@ -126,7 +134,7 @@ function WebsitePostRow({
   const sourceUrls = post.metadata.source
     ? [post.metadata.source]
     : uniq(Object.values(post.metadata.sourceMap)).filter(Boolean);
-  const account = accountsMap.get(post.accountId) || post.account;
+  const account = getAccount(post.accountId, accountsMap);
 
   return (
     <Table.Tr key={post.id}>
@@ -336,18 +344,20 @@ function PostTimelineItem({
       bullet={bullet}
     >
       <Group gap="xs">
-        {post.children.map((child) => (
-          <Badge
-            size="xs"
-            variant="outline"
-            color={child.errors.length ? 'red' : 'green'}
-            key={child.id}
-          >
-            {accountsMap.get(child.accountId)?.websiteInfo
-              ?.websiteDisplayName ?? <Trans>Unknown</Trans>}{' '}
-            ({accountsMap.get(child.accountId)?.name ?? child.account.name})
-          </Badge>
-        ))}
+        {post.children.map((child) => {
+          const account = getAccount(child.accountId, accountsMap);
+          const displayName = account?.websiteInfo?.websiteDisplayName;
+          return (
+            <Badge
+              size="xs"
+              variant="outline"
+              color={child.errors.length ? 'red' : 'green'}
+              key={child.id}
+            >
+              {displayName ?? <Trans>Unknown</Trans>} ({account?.name})
+            </Badge>
+          );
+        })}
       </Group>
       <Text size="xs" c="dimmed">
         {completedAt}
