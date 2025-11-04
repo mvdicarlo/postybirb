@@ -1,6 +1,5 @@
 .recent-post-item {
   border-radius: var(--mantine-radius-lg);
-  margin-bottom: var(--mantine-spacing-md);
   padding: var(--mantine-spacing-md);
   background-color: var(--mantine-color-white);
   border: 1px solid var(--mantine-color-gray-3);
@@ -76,15 +75,4 @@
     var(--mantine-color-dark-6) 0%,
     var(--mantine-color-red-9) 100%
   );
-}
-
-.thumbnail {
-  border-radius: var(--mantine-radius-md);
-  overflow: hidden;
-  box-shadow: var(--mantine-shadow-sm);
-  transition: transform 0.2s ease;
-}
-
-.recent-post-item:hover .thumbnail {
-  transform: scale(1.05);
 }
