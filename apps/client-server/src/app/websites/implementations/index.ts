@@ -26,6 +26,7 @@ export { default as Pixiv } from './pixiv/pixiv.website';
 export { default as Pleroma } from './pleroma/pleroma.website';
 export { default as Sofurry } from './sofurry/sofurry.website';
 export { default as SubscribeStar } from './subscribe-star/subscribe-star.website';
+export { default as SubscribeStarAdult } from './subscribe-star/subscribe-star-adult.website';
 export { default as Telegram } from './telegram/telegram.website';
 export { default as Toyhouse } from './toyhouse/toyhouse.website';
 export { default as Tumblr } from './tumblr/tumblr.website';
