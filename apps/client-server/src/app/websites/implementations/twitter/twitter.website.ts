@@ -39,6 +39,13 @@ import {
 @SupportsUsernameShortcut({
   id: 'twitter',
   url: 'https://x.com/$1',
+  convert: (websiteName, shortcut) => {
+    if (websiteName === 'twitter' && shortcut === 'twitter') {
+      return '@$1';
+    }
+
+    return undefined;
+  },
 })
 @SupportsFiles({
   fileBatchSize: 120,
