@@ -57,6 +57,28 @@ type CaraPostResult = {
   };
 };
 
+type S3UploadCredentials = {
+  token: {
+    Credentials: {
+      AccessKeyId: string;
+      SecretAccessKey: string;
+      SessionToken: string;
+    };
+  };
+  key: string;
+  bucket: string;
+  region: string;
+};
+
+type S3UploadRequest = {
+  filename: string;
+  filetype: string;
+  _nextS3: { strategy: string };
+  uploadType: string;
+  postId: string;
+  name: string;
+};
+
 @WebsiteMetadata({
   name: 'cara',
   displayName: 'Cara',
@@ -134,6 +156,54 @@ export default class Cara
     return undefined;
   }
 
+  /**
+   * Request S3 upload credentials from Cara API
+   */
+  private async getS3UploadCredentials(
+    uploadRequest: S3UploadRequest,
+  ): Promise<S3UploadCredentials> {
+    const response = await Http.post<S3UploadCredentials>(
+      `${this.BASE_URL}/api/s3-upload`,
+      {
+        partition: this.accountId,
+        type: 'json',
+        data: uploadRequest,
+      },
+    );
+
+    if (response.statusCode !== 200 || !response.body) {
+      throw new Error(
+        `Failed to get S3 upload credentials for ${uploadRequest.filename}`,
+      );
+    }
+
+    return response.body;
+  }
+
+  /**
+   * Upload a file to S3 using provided credentials
+   */
+  private async uploadToS3(
+    credentials: S3UploadCredentials,
+    buffer: Buffer,
+    mimeType: string,
+  ): Promise<void> {
+    const s3Url = `https://${credentials.bucket}.s3.${credentials.region}.amazonaws.com/${credentials.key}?x-id=PutObject`;
+
+    await Http.put(s3Url, {
+      partition: this.accountId,
+      type: 'binary',
+      data: buffer,
+      headers: {
+        'Content-Type': mimeType,
+        'x-amz-security-token': credentials.token.Credentials.SessionToken,
+      },
+    });
+  }
+
+  /**
+   * Upload an image file to Cara (both primary image and thumbnail)
+   */
   private async uploadImage(
     file: PostingFile,
     postId: string,
@@ -145,8 +215,8 @@ export default class Cara
   }> {
     cancellationToken.throwIfCancelled();
 
-    // Step 1: Get S3 upload credentials for primary image
-    const primaryImageUploadRequest = {
+    // Upload primary image
+    const primaryImageRequest: S3UploadRequest = {
       filename: file.fileName,
       filetype: file.mimeType,
       _nextS3: { strategy: 'aws-sdk' },
@@ -155,47 +225,17 @@ export default class Cara
       name: username,
     };
 
-    const primaryUploadResponse = await Http.post<{
-      token: {
-        Credentials: {
-          AccessKeyId: string;
-          SecretAccessKey: string;
-          SessionToken: string;
-        };
-      };
-      key: string;
-      bucket: string;
-      region: string;
-    }>(`${this.BASE_URL}/api/s3-upload`, {
-      partition: this.accountId,
-      type: 'json',
-      data: primaryImageUploadRequest,
-    });
-
-    if (primaryUploadResponse.statusCode !== 200 || !primaryUploadResponse.body) {
-      throw new Error('Failed to get S3 upload credentials for primary image');
-    }
+    const primaryCredentials =
+      await this.getS3UploadCredentials(primaryImageRequest);
 
     cancellationToken.throwIfCancelled();
 
-    // Step 2: Upload primary image to S3
-    const primaryS3Url = `https://${primaryUploadResponse.body.bucket}.s3.${primaryUploadResponse.body.region}.amazonaws.com/${primaryUploadResponse.body.key}?x-id=PutObject`;
-
-    await Http.post(primaryS3Url, {
-      partition: this.accountId,
-      type: 'binary',
-      data: file.buffer,
-      headers: {
-        'Content-Type': file.mimeType,
-        'x-amz-security-token':
-          primaryUploadResponse.body.token.Credentials.SessionToken,
-      },
-    });
+    await this.uploadToS3(primaryCredentials, file.buffer, file.mimeType);
 
     cancellationToken.throwIfCancelled();
 
-    // Step 3: Get S3 upload credentials for cover image (thumbnail)
-    const coverImageUploadRequest = {
+    // Upload cover image (thumbnail)
+    const coverImageRequest: S3UploadRequest = {
       filename: 'post-cover-image.jpeg',
       filetype: '',
       _nextS3: { strategy: 'aws-sdk' },
@@ -204,49 +244,19 @@ export default class Cara
       name: username,
     };
 
-    const coverUploadResponse = await Http.post<{
-      token: {
-        Credentials: {
-          AccessKeyId: string;
-          SecretAccessKey: string;
-          SessionToken: string;
-        };
-      };
-      key: string;
-      bucket: string;
-      region: string;
-    }>(`${this.BASE_URL}/api/s3-upload`, {
-      partition: this.accountId,
-      type: 'json',
-      data: coverImageUploadRequest,
-    });
-
-    if (coverUploadResponse.statusCode !== 200 || !coverUploadResponse.body) {
-      throw new Error('Failed to get S3 upload credentials for cover image');
-    }
+    const coverCredentials =
+      await this.getS3UploadCredentials(coverImageRequest);
 
     cancellationToken.throwIfCancelled();
-
-    // Step 4: Upload cover image (thumbnail) to S3
-    const coverS3Url = `https://${coverUploadResponse.body.bucket}.s3.${coverUploadResponse.body.region}.amazonaws.com/${coverUploadResponse.body.key}?x-id=PutObject`;
 
     const thumbnailBuffer = file.thumbnail?.buffer || file.buffer;
     const thumbnailMimeType = file.thumbnail?.mimeType || file.mimeType;
 
-    await Http.post(coverS3Url, {
-      partition: this.accountId,
-      type: 'binary',
-      data: thumbnailBuffer,
-      headers: {
-        'Content-Type': thumbnailMimeType,
-        'x-amz-security-token':
-          coverUploadResponse.body.token.Credentials.SessionToken,
-      },
-    });
+    await this.uploadToS3(coverCredentials, thumbnailBuffer, thumbnailMimeType);
 
     return {
-      imageId: primaryUploadResponse.body.key,
-      coverImageId: coverUploadResponse.body.key,
+      imageId: primaryCredentials.key,
+      coverImageId: coverCredentials.key,
     };
   }
 
@@ -266,7 +276,7 @@ export default class Cara
       imageId: string;
       coverImageId: string;
     }[] = [];
-    
+
     for (const file of files) {
       const uploadResult = await this.uploadImage(
         file,
