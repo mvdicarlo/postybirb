@@ -249,6 +249,14 @@ export class DescriptionParserService {
   private findUsernames(blocks: Array<IDescriptionBlockNode>): Set<string> {
     const usernames = new Set<string>();
 
+    // Type guard for text nodes
+    const isTextNode = (item: unknown): item is { type: 'text'; text: string } =>
+      typeof item === 'object' &&
+      item !== null &&
+      'type' in item &&
+      item.type === 'text' &&
+      'text' in item;
+
     const processContent = (content: unknown[]) => {
       for (const item of content) {
         if (
@@ -261,8 +269,8 @@ export class DescriptionParserService {
         ) {
           // Extract the username text from the content
           const username = item.content
-            .filter((c: unknown) => typeof c === 'object' && c !== null && 'type' in c && c.type === 'text' && 'text' in c)
-            .map((c: { text: string }) => c.text)
+            .filter(isTextNode)
+            .map((c) => c.text)
             .join('')
             .trim();
           if (username) {

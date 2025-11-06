@@ -39,11 +39,10 @@ export class UserConvertersService extends PostyBirbService<'UserConverterSchema
    * @return {*}  {Promise<string>}
    */
   async convert(instance: Website<unknown>, username: string): Promise<string> {
-    const converters = await this.repository.find({
+    const converter = await this.repository.findOne({
       where: (converter, { eq: eqFn }) => eqFn(converter.username, username),
     });
     
-    const converter = converters[0];
     if (!converter) {
       return username;
     }
