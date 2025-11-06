@@ -98,13 +98,17 @@ export abstract class BaseConverter implements NodeConverter<string> {
       .map((child) => child.text)
       .join('')
       .trim();
+    
+    // Check if we have a conversion for this username
+    const convertedUsername = context.usernameConversions?.get(username) ?? username;
+    
     const shortcut: UsernameShortcut | undefined =
       context.shortcuts[node.props.shortcut];
     const url =
       shortcut?.convert?.call(node, context.website, node.props.shortcut) ??
       shortcut?.url;
-    return username && url
-      ? { url: url.replace('$1', username), username }
+    return convertedUsername && url
+      ? { url: url.replace('$1', convertedUsername), username: convertedUsername }
       : undefined;
   }
 }

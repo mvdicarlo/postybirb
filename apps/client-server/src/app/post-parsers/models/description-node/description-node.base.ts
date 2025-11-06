@@ -36,6 +36,7 @@ export interface ConversionContext {
   defaultDescription: IDescriptionBlockNode[];
   title?: string;
   tags?: string[];
+  usernameConversions?: Map<string, string>;
 }
 
 /**

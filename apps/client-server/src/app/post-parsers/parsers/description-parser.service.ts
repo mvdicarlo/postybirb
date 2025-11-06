@@ -5,6 +5,7 @@ import { Class } from 'type-fest';
 import { WEBSITE_IMPLEMENTATIONS } from '../../constants';
 import { CustomShortcutsService } from '../../custom-shortcuts/custom-shortcuts.service';
 import { SettingsService } from '../../settings/settings.service';
+import { UserConvertersService } from '../../user-converters/user-converters.service';
 import { BaseWebsiteOptions } from '../../websites/models/base-website-options';
 import { DefaultWebsiteOptions } from '../../websites/models/default-website-options';
 import { isWithCustomDescriptionParser } from '../../websites/models/website-modifiers/with-custom-description-parser';
@@ -26,6 +27,7 @@ export class DescriptionParserService {
     @Inject(WEBSITE_IMPLEMENTATIONS)
     private readonly websiteImplementations: Class<UnknownWebsite>[],
     private readonly customShortcutsService?: CustomShortcutsService,
+    private readonly userConvertersService?: UserConvertersService,
   ) {
     this.websiteImplementations.forEach((website) => {
       const shortcut: UsernameShortcut | undefined =
@@ -82,6 +84,12 @@ export class DescriptionParserService {
       mergedDescriptionBlocks,
     );
 
+    // Pre-resolve usernames
+    const usernameConversions = await this.resolveUsernames(
+      mergedDescriptionBlocks,
+      instance,
+    );
+
     // Pre-resolve default description
     const defaultDescription = this.mergeBlocks(
       defaultOptions.description
@@ -95,6 +103,7 @@ export class DescriptionParserService {
       defaultDescription,
       title,
       tags,
+      usernameConversions,
     };
 
     const tree = new DescriptionNodeTree(
@@ -212,6 +221,72 @@ export class DescriptionParserService {
     }
 
     return ids;
+  }
+
+  /**
+   * Pre-resolves all usernames found in the description tree.
+   */
+  private async resolveUsernames(
+    blocks: Array<IDescriptionBlockNode>,
+    instance: Website<unknown>,
+  ): Promise<Map<string, string>> {
+    const usernameConversions = new Map<string, string>();
+    const usernames = this.findUsernames(blocks);
+
+    for (const username of usernames) {
+      const converted =
+        (await this.userConvertersService?.convert(instance, username)) ??
+        username;
+      usernameConversions.set(username, converted);
+    }
+
+    return usernameConversions;
+  }
+
+  /**
+   * Recursively finds all usernames in the description tree.
+   */
+  private findUsernames(blocks: Array<IDescriptionBlockNode>): Set<string> {
+    const usernames = new Set<string>();
+
+    const processContent = (content: unknown[]) => {
+      for (const item of content) {
+        if (
+          typeof item === 'object' &&
+          item !== null &&
+          'type' in item &&
+          item.type === 'username' &&
+          'content' in item &&
+          Array.isArray(item.content)
+        ) {
+          // Extract the username text from the content
+          const username = item.content
+            .filter((c: unknown) => typeof c === 'object' && c !== null && 'type' in c && c.type === 'text' && 'text' in c)
+            .map((c: { text: string }) => c.text)
+            .join('')
+            .trim();
+          if (username) {
+            usernames.add(username);
+          }
+        }
+        if (
+          typeof item === 'object' &&
+          item !== null &&
+          'content' in item &&
+          Array.isArray(item.content)
+        ) {
+          processContent(item.content);
+        }
+      }
+    };
+
+    for (const block of blocks) {
+      if (block.content && Array.isArray(block.content)) {
+        processContent(block.content);
+      }
+    }
+
+    return usernames;
   }
 
   /**
