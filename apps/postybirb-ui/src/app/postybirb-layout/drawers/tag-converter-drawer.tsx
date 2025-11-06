@@ -2,39 +2,39 @@
 import { Trans, msg } from '@lingui/macro';
 import { useLingui } from '@lingui/react';
 import {
-  ActionIcon,
-  Badge,
-  Box,
-  Button,
-  Collapse,
-  Divider,
-  Drawer,
-  Fieldset,
-  Group,
-  Loader,
-  Paper,
-  ScrollArea,
-  Stack,
-  Text,
-  TextInput,
-  Tooltip,
+    ActionIcon,
+    Badge,
+    Box,
+    Button,
+    Collapse,
+    Divider,
+    Drawer,
+    Fieldset,
+    Group,
+    Loader,
+    Paper,
+    ScrollArea,
+    Stack,
+    Text,
+    TextInput,
+    Tooltip,
 } from '@mantine/core';
 import { useClipboard, useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import {
-  ICreateTagConverterDto,
-  IWebsiteInfoDto,
-  TagConverterDto,
+    ICreateTagConverterDto,
+    IWebsiteInfoDto,
+    TagConverterDto,
 } from '@postybirb/types';
 import {
-  IconChevronDown,
-  IconChevronUp,
-  IconClipboardCopy,
-  IconPlus,
-  IconSearch,
-  IconSortAscending,
-  IconSortDescending,
-  IconX,
+    IconChevronDown,
+    IconChevronUp,
+    IconClipboardCopy,
+    IconPlus,
+    IconSearch,
+    IconSortAscending,
+    IconSortDescending,
+    IconX,
 } from '@tabler/icons-react';
 import { useMemo, useState } from 'react';
 import tagConvertersApi from '../../../api/tag-converters.api';
@@ -69,7 +69,6 @@ function WebsiteConverterInputs({
   disabled?: boolean;
 }) {
   const { _ } = useLingui();
-  const [viewMode, setViewMode] = useState<'compact' | 'table'>('table');
   const sitesWithValues = useMemo(
     () => websites.filter((site) => value[site.id]?.trim().length > 0),
     [websites, value],
@@ -113,133 +112,80 @@ function WebsiteConverterInputs({
             </Group>
           )}
         </Group>
-        <Group>
-          <Button.Group>
-            <Button
-              variant={viewMode === 'table' ? 'filled' : 'default'}
-              size="compact-xs"
-              onClick={() => setViewMode('table')}
-            >
-              <Trans>Table</Trans>
-            </Button>
-            <Button
-              variant={viewMode === 'compact' ? 'filled' : 'default'}
-              size="compact-xs"
-              onClick={() => setViewMode('compact')}
-            >
-              <Trans>Compact</Trans>
-            </Button>
-          </Button.Group>
-        </Group>
       </Group>
 
       <Divider mb="md" />
 
-      {viewMode === 'table' && (
-        <Box style={{ maxHeight: 'calc(100vh - 440px)', overflowY: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr>
-                <th
-                  style={{
-                    textAlign: 'left',
-                    padding: '8px',
-                    borderBottom: '1px solid #ddd',
-                  }}
-                >
-                  <Trans>Website</Trans>
-                </th>
-                <th
-                  style={{
-                    textAlign: 'left',
-                    padding: '8px',
-                    borderBottom: '1px solid #ddd',
-                  }}
-                >
-                  <Trans>Conversion</Trans>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {websites.map((website) => (
-                <tr key={website.id}>
-                  <td
-                    style={{
-                      padding: '8px',
-                      borderBottom: '1px solid #eee',
-                      width: '30%',
-                    }}
-                  >
-                    <Group>
-                      <Text>{website.displayName}</Text>
-                      {value[website.id]?.trim().length > 0 && (
-                        <Badge size="xs" variant="light" color="green">
-                          <Trans>Set</Trans>
-                        </Badge>
-                      )}
-                    </Group>
-                  </td>
-                  <td
-                    style={{
-                      padding: '8px',
-                      borderBottom: '1px solid #eee',
-                      width: '70%',
-                    }}
-                  >
-                    <TextInput
-                      size="xs"
-                      value={value[website.id] ?? ''}
-                      placeholder={_(
-                        msg`Enter conversion for ${website.displayName}`,
-                      )}
-                      onChange={(event) =>
-                        handleChange(website.id, event.currentTarget.value)
-                      }
-                      onBlur={(event) =>
-                        handleBlur(website.id, event.currentTarget.value)
-                      }
-                      disabled={disabled}
-                    />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </Box>
-      )}
-
-      {viewMode === 'compact' && (
-        <Box style={{ maxHeight: 'calc(100vh - 440px)', overflowY: 'auto' }}>
-          <Group grow align="flex-start" wrap="wrap">
+      <Box style={{ maxHeight: 'calc(100vh - 440px)', overflowY: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr>
+              <th
+                style={{
+                  textAlign: 'left',
+                  padding: '8px',
+                  borderBottom: '1px solid #ddd',
+                }}
+              >
+                <Trans>Website</Trans>
+              </th>
+              <th
+                style={{
+                  textAlign: 'left',
+                  padding: '8px',
+                  borderBottom: '1px solid #ddd',
+                }}
+              >
+                <Trans>Conversion</Trans>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
             {websites.map((website) => (
-              <Box key={website.id} w="48%" mb="xs">
-                <TextInput
-                  size="xs"
-                  label={
-                    <Group>
-                      <Text size="sm">{website.displayName}</Text>
-                      {value[website.id]?.trim().length > 0 && (
-                        <Badge size="xs" variant="light" color="green">
-                          <Trans>Set</Trans>
-                        </Badge>
-                      )}
-                    </Group>
-                  }
-                  value={value[website.id] ?? ''}
-                  placeholder={_(msg`Enter conversion`)}
-                  onChange={(event) =>
-                    handleChange(website.id, event.currentTarget.value)
-                  }
-                  onBlur={(event) =>
-                    handleBlur(website.id, event.currentTarget.value)
-                  }
-                  disabled={disabled}
-                />
-              </Box>
+              <tr key={website.id}>
+                <td
+                  style={{
+                    padding: '8px',
+                    borderBottom: '1px solid #eee',
+                    width: '30%',
+                  }}
+                >
+                  <Group>
+                    <Text>{website.displayName}</Text>
+                    {value[website.id]?.trim().length > 0 && (
+                      <Badge size="xs" variant="light" color="green">
+                        <Trans>Set</Trans>
+                      </Badge>
+                    )}
+                  </Group>
+                </td>
+                <td
+                  style={{
+                    padding: '8px',
+                    borderBottom: '1px solid #eee',
+                    width: '70%',
+                  }}
+                >
+                  <TextInput
+                    size="xs"
+                    value={value[website.id] ?? ''}
+                    placeholder={_(
+                      msg`Enter conversion for ${website.displayName}`,
+                    )}
+                    onChange={(event) =>
+                      handleChange(website.id, event.currentTarget.value)
+                    }
+                    onBlur={(event) =>
+                      handleBlur(website.id, event.currentTarget.value)
+                    }
+                    disabled={disabled}
+                  />
+                </td>
+              </tr>
             ))}
-          </Group>
-        </Box>
-      )}
+          </tbody>
+        </table>
+      </Box>
     </Box>
   );
 }
