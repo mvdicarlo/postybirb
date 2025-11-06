@@ -46,7 +46,7 @@ interface HttpOptions {
     | readonly number[]
     | readonly boolean[]
   >;
-  partition: string | undefined;
+  partition?: string | undefined;
   options?: HttpRequestOptions;
 }
 
@@ -165,7 +165,7 @@ export class Http {
 
       case 'binary':
         return {
-          contentType: 'binary/octet-stream',
+          contentType: 'application/octet-stream',
           buffer: data as Buffer,
         };
 

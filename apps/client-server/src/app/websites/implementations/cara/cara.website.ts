@@ -1,3 +1,4 @@
+import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { Http } from '@postybirb/http';
 import {
   FileType,
@@ -78,6 +79,23 @@ type S3UploadRequest = {
   postId: string;
   name: string;
 };
+
+type CaraMediaItem = {
+  id: string;
+  src: string;
+  isCoverImg: boolean;
+  order: number;
+  mediaSrc: null;
+  isEmbed: boolean;
+  embedType: null;
+  isAiAutoFlagged: null;
+  tags: Array<{
+    value: string;
+    type: string;
+  }>;
+};
+
+type CaraUploadResult = CaraMediaItem[];
 
 @WebsiteMetadata({
   name: 'cara',
@@ -188,17 +206,30 @@ export default class Cara
     buffer: Buffer,
     mimeType: string,
   ): Promise<void> {
-    const s3Url = `https://${credentials.bucket}.s3.${credentials.region}.amazonaws.com/${credentials.key}?x-id=PutObject`;
+    const { AccessKeyId, SecretAccessKey, SessionToken } =
+      credentials.token.Credentials;
 
-    await Http.put(s3Url, {
-      partition: this.accountId,
-      type: 'binary',
-      data: buffer,
-      headers: {
-        'Content-Type': mimeType,
-        'x-amz-security-token': credentials.token.Credentials.SessionToken,
+    const client = new S3Client({
+      region: credentials.region,
+      credentials: {
+        accessKeyId: AccessKeyId,
+        secretAccessKey: SecretAccessKey,
+        sessionToken: SessionToken,
       },
     });
+
+    try {
+      await client.send(
+        new PutObjectCommand({
+          Bucket: credentials.bucket,
+          Key: credentials.key,
+          Body: buffer,
+          ContentType: mimeType || 'application/octet-stream',
+        }),
+      );
+    } catch (error) {
+      throw new Error(`Failed to upload file to S3: ${String(error)}`);
+    }
   }
 
   /**
@@ -208,11 +239,10 @@ export default class Cara
     file: PostingFile,
     postId: string,
     username: string,
+    uploadCover: boolean,
+    order: number,
     cancellationToken: CancellableToken,
-  ): Promise<{
-    imageId: string;
-    coverImageId: string;
-  }> {
+  ): Promise<CaraUploadResult> {
     cancellationToken.throwIfCancelled();
 
     // Upload primary image
@@ -234,30 +264,63 @@ export default class Cara
 
     cancellationToken.throwIfCancelled();
 
-    // Upload cover image (thumbnail)
-    const coverImageRequest: S3UploadRequest = {
-      filename: 'post-cover-image.jpeg',
-      filetype: '',
-      _nextS3: { strategy: 'aws-sdk' },
-      uploadType: 'POST_CONTENT',
-      postId,
-      name: username,
+    // Create primary media item
+    const primaryMedia: CaraMediaItem = {
+      id: uuid(),
+      src: primaryCredentials.key,
+      isCoverImg: false,
+      order,
+      mediaSrc: null,
+      isEmbed: false,
+      embedType: null,
+      isAiAutoFlagged: null,
+      tags: [],
     };
 
-    const coverCredentials =
-      await this.getS3UploadCredentials(coverImageRequest);
+    let coverMedia: CaraMediaItem | undefined;
+    if (uploadCover) {
+      // Upload cover image (thumbnail)
+      const coverImageRequest: S3UploadRequest = {
+        filename: 'post-cover-image.jpeg',
+        filetype: '',
+        _nextS3: { strategy: 'aws-sdk' },
+        uploadType: 'POST_CONTENT',
+        postId,
+        name: username,
+      };
 
-    cancellationToken.throwIfCancelled();
+      const coverCredentials =
+        await this.getS3UploadCredentials(coverImageRequest);
 
-    const thumbnailBuffer = file.thumbnail?.buffer || file.buffer;
-    const thumbnailMimeType = file.thumbnail?.mimeType || file.mimeType;
+      cancellationToken.throwIfCancelled();
 
-    await this.uploadToS3(coverCredentials, thumbnailBuffer, thumbnailMimeType);
+      const thumbnailBuffer = file.thumbnail?.buffer || file.buffer;
+      const thumbnailMimeType = file.thumbnail?.mimeType || file.mimeType;
 
-    return {
-      imageId: primaryCredentials.key,
-      coverImageId: coverCredentials.key,
-    };
+      await this.uploadToS3(
+        coverCredentials,
+        thumbnailBuffer,
+        thumbnailMimeType,
+      );
+
+      // Create cover media item
+      coverMedia = {
+        id: 'cover',
+        src: coverCredentials.key,
+        isCoverImg: true,
+        order: -1,
+        mediaSrc: null,
+        isEmbed: false,
+        embedType: null,
+        isAiAutoFlagged: null,
+        tags: [],
+      };
+    }
+
+    if (uploadCover && coverMedia) {
+      return [primaryMedia, coverMedia];
+    }
+    return [primaryMedia];
   }
 
   async onPostFileSubmission(
@@ -272,21 +335,6 @@ export default class Cara
     const postId = uuid();
     const username = this.loginState.username || 'unknown';
 
-    const imageUploads: {
-      imageId: string;
-      coverImageId: string;
-    }[] = [];
-
-    for (const file of files) {
-      const uploadResult = await this.uploadImage(
-        file,
-        postId,
-        username,
-        cancellationToken,
-      );
-      imageUploads.push(uploadResult);
-    }
-
     const builder = new PostBuilder(this, cancellationToken)
       .asJson()
       .setField('addToPortfolio', postData.options.addToPortfolio)
@@ -300,6 +348,32 @@ export default class Cara
 
     const post = await builder.send<CaraPostResult>(
       `${this.BASE_URL}/api/posts`,
+    );
+
+    const imageUploads: CaraUploadResult = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const uploadResult = await this.uploadImage(
+        file,
+        postId,
+        username,
+        i === 0, // Only upload cover for the first image
+        i, // Order index
+        cancellationToken,
+      );
+      imageUploads.push(...uploadResult);
+    }
+
+    const mediaBuilder = new PostBuilder(this, cancellationToken)
+      .asJson()
+      .withData({
+        addToPortfolio: postData.options.addToPortfolio,
+        postMedia: imageUploads,
+      });
+
+    const media = await mediaBuilder.send<CaraPostResult>(
+      `${this.BASE_URL}/api/posts/${post.body.data.id}/media`,
     );
 
     if (post.body?.data?.id) {
