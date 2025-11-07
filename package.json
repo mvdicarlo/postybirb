@@ -44,6 +44,10 @@
   },
   "dependencies": {
     "@atproto/api": "^0.15.7",
+    "@aws-crypto/sha256-js": "^5.2.0",
+    "@aws-sdk/client-s3": "^3.925.0",
+    "@aws-sdk/protocol-http": "^3.374.0",
+    "@aws-sdk/signature-v4": "^3.374.0",
     "@blocknote/core": "^0.15.11",
     "@blocknote/mantine": "^0.15.11",
     "@blocknote/react": "^0.15.11",

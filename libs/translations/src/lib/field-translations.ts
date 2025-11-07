@@ -99,6 +99,7 @@ export const FieldLabelTranslations = {
   language: msg`Language`,
   blog: msg`Blog`,
   drugUse: msg`Drug / Alcohol`,
+  addToPortfolio: msg`Add to Portfolio`,
 } satisfies Record<string, MessageDescriptor>;
 
 export type FieldLabelTranslationsId = keyof typeof FieldLabelTranslations;
