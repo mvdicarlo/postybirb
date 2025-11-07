@@ -1,6 +1,7 @@
 import type {
   FieldLabelTranslations,
   FieldLabelTranslationsId,
+  FieldLabelUntranslatedId,
 } from '@postybirb/translations';
 import { PrimitiveRecord } from './primitive-record';
 
@@ -39,7 +40,7 @@ export type FieldType<
   /**
    * The translation id of the label to display. All possible values can be found here: {@link FieldLabelTranslations}.
    */
-  label: FieldLabelTranslationsId;
+  label: FieldLabelTranslationsId | FieldLabelUntranslatedId;
 
   /**
    * Whether the field is considered required.

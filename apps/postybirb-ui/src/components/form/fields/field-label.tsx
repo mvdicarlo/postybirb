@@ -2,7 +2,10 @@ import { MessageDescriptor } from '@lingui/core';
 import { useLingui } from '@lingui/react';
 import { Input } from '@mantine/core';
 import type { FieldAggregateType } from '@postybirb/form-builder';
-import { FieldLabelTranslations } from '@postybirb/translations';
+import {
+  FieldLabelTranslations,
+  FieldLabelUntranslated,
+} from '@postybirb/translations';
 import { PropsWithChildren } from 'react';
 import { ValidationTranslation } from '../../translations/validation-translation';
 import { UseValidationResult } from '../hooks/use-validations';
@@ -16,9 +19,17 @@ export function getTranslatedLabel(
   field: FieldAggregateType,
   converter: (msg: MessageDescriptor) => string,
 ): string {
-  const translationLabel = FieldLabelTranslations[field.label];
+  const translationLabel =
+    FieldLabelTranslations[field.label as keyof typeof FieldLabelTranslations];
 
   if (!translationLabel) {
+    const untranslatedLabel =
+      FieldLabelUntranslated[
+        field.label as keyof typeof FieldLabelUntranslated
+      ];
+    if (untranslatedLabel) {
+      return untranslatedLabel as unknown as string;
+    }
     // eslint-disable-next-line lingui/no-unlocalized-strings, no-console
     console.warn('Missing translation for field', field);
     return field.label;

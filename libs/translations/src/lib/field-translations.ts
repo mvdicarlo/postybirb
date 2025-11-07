@@ -51,19 +51,10 @@ export const FieldLabelTranslations = {
   private: msg`Private`,
   thumbnailAsCoverArt: msg`Use thumbnail as cover art`,
   software: msg`Software`,
-  rape: msg`Rape`,
-  incest: msg`Incest`,
-  scat: msg`Scat`,
   other: msg`Other`,
-  futa: msg`Futa`,
-  guro: msg`Guro`,
   female: msg`Female`,
   male: msg`Male`,
-  beast: msg`Beast`,
   furry: msg`Furry`,
-  teen: msg`Teen`,
-  yuri: msg`Yuri`,
-  yaoi: msg`Yaoi`,
   media: msg`Media`,
   spoilers: msg`Spoilers`,
   sexualContent: msg`Sexual Content`,
@@ -76,7 +67,6 @@ export const FieldLabelTranslations = {
   characters: msg`Characters`,
   artistName: msg`Artist name`,
   offSiteArtistUrl: msg`Artist URL (Off-Site only)`,
-  gore: msg`Gore`,
   sensitiveContent: msg`Sensitive content`,
   authorizedViewers: msg`Authorized viewers`,
   publicViewers: msg`Public viewers`,
@@ -100,6 +90,22 @@ export const FieldLabelTranslations = {
   blog: msg`Blog`,
   drugUse: msg`Drug / Alcohol`,
   addToPortfolio: msg`Add to Portfolio`,
+  gore: msg`Gore`,
+} satisfies Record<string, MessageDescriptor>;
+
+// These labels are not translated and are used in cases where translation is not desired.
+// Primarily to keep more offensive words from public translation requests.
+export const FieldLabelUntranslated = {
+  rape: `Rape` as unknown as MessageDescriptor,
+  incest: `Incest` as unknown as MessageDescriptor,
+  scat: `Scat` as unknown as MessageDescriptor,
+  futa: `Futa` as unknown as MessageDescriptor,
+  guro: `Guro` as unknown as MessageDescriptor,
+  beast: `Beast` as unknown as MessageDescriptor,
+  teen: `Teen` as unknown as MessageDescriptor,
+  yuri: `Yuri` as unknown as MessageDescriptor,
+  yaoi: `Yaoi` as unknown as MessageDescriptor,
 } satisfies Record<string, MessageDescriptor>;
 
 export type FieldLabelTranslationsId = keyof typeof FieldLabelTranslations;
+export type FieldLabelUntranslatedId = keyof typeof FieldLabelUntranslated;
