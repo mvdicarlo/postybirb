@@ -42,7 +42,9 @@ describe('UserConvertersService', () => {
   });
 
   it('should create entities', async () => {
-    const dto = createUserConverterDto('my_friend', { default: 'converted_friend' });
+    const dto = createUserConverterDto('my_friend', {
+      default: 'converted_friend',
+    });
 
     const record = await service.create(dto);
     const converters = await service.findAll();
@@ -59,8 +61,12 @@ describe('UserConvertersService', () => {
   });
 
   it('should fail to create duplicate user converters', async () => {
-    const dto = createUserConverterDto('my_friend', { default: 'converted_friend' });
-    const dto2 = createUserConverterDto('my_friend', { default: 'converted_friend2' });
+    const dto = createUserConverterDto('my_friend', {
+      default: 'converted_friend',
+    });
+    const dto2 = createUserConverterDto('my_friend', {
+      default: 'converted_friend2',
+    });
 
     await service.create(dto);
 
@@ -74,7 +80,9 @@ describe('UserConvertersService', () => {
   });
 
   it('should update entities', async () => {
-    const dto = createUserConverterDto('my_friend', { default: 'converted_friend' });
+    const dto = createUserConverterDto('my_friend', {
+      default: 'converted_friend',
+    });
 
     const record = await service.create(dto);
     const converters = await service.findAll();
@@ -82,7 +90,10 @@ describe('UserConvertersService', () => {
 
     const updateDto = new UpdateUserConverterDto();
     updateDto.username = 'my_friend';
-    updateDto.convertTo = { default: 'converted_friend', bluesky: 'converted_friend2' };
+    updateDto.convertTo = {
+      default: 'converted_friend',
+      bluesky: 'converted_friend2',
+    };
     await service.update(record.id, updateDto);
     const updatedRec = await service.findById(record.id);
     expect(updatedRec.username).toBe(updateDto.username);
@@ -90,7 +101,9 @@ describe('UserConvertersService', () => {
   });
 
   it('should delete entities', async () => {
-    const dto = createUserConverterDto('my_friend', { default: 'converted_friend' });
+    const dto = createUserConverterDto('my_friend', {
+      default: 'converted_friend',
+    });
 
     const record = await service.create(dto);
     expect(await service.findAll()).toHaveLength(1);
@@ -100,10 +113,13 @@ describe('UserConvertersService', () => {
   });
 
   it('should convert usernames', async () => {
-    const dto = createUserConverterDto('my_friend', { default: 'default_friend', bluesky: 'friend.bsky.social' });
+    const dto = createUserConverterDto('my_friend', {
+      default: 'default_friend',
+      bluesky: 'friend.bsky.social',
+    });
 
     await service.create(dto);
-    
+
     // Test conversion for bluesky
     const resultBluesky = await service.convert(
       { decoratedProps: { metadata: { name: 'bluesky' } } } as any,
