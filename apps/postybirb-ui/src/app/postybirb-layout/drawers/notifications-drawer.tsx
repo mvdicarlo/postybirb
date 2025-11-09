@@ -463,6 +463,7 @@ export function NotificationsDrawer() {
             </Popover>
           </Group>
 
+          {/* eslint-disable-next-line lingui/no-unlocalized-strings */}
           <ScrollArea h="calc(100% - 130px)" offsetScrollbars>
             {isLoading ? (
               <Center h="100%">
