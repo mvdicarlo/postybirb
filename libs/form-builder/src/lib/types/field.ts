@@ -1,7 +1,6 @@
 import type {
   FieldLabelTranslations,
   FieldLabelTranslationsId,
-  FieldLabelUntranslatedId,
 } from '@postybirb/translations';
 import { PrimitiveRecord } from './primitive-record';
 
@@ -36,11 +35,17 @@ export type FieldType<
    * Metadata for determining what type of field to generate.
    */
   formField?: F;
-
   /**
-   * The translation id of the label to display. All possible values can be found here: {@link FieldLabelTranslations}.
+   * The translation id of the label to display. All possible values can be found here: {@link FieldLabelTranslations}. Use `{ untranslated: string }` **ONLY** if it is difficult to translate the label and the website itself does not provide a translation for it, or if it is NSFW/offensive and should not be shown in public translations.
    */
-  label: FieldLabelTranslationsId | FieldLabelUntranslatedId;
+  label:
+    | FieldLabelTranslationsId
+    | {
+        /**
+         * Use **ONLY** if it is difficult to translate the label and the website itself does not provide a translation for it, or if it is NSFW/offensive and should not be shown in public translations.
+         */
+        untranslated: string;
+      };
 
   /**
    * Whether the field is considered required.
