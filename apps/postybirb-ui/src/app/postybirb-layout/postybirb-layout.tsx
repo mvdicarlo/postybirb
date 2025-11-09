@@ -19,6 +19,7 @@ import {
   IconArrowUp,
   IconBell,
   IconBlockquote,
+  IconDatabase,
   IconFile,
   IconHome,
   IconMessage,
@@ -42,6 +43,7 @@ import {
   FileSubmissionsKeybinding,
   HomeKeybinding,
   MessageSubmissionsKeybinding,
+  NotificationsKeybinding,
   SettingsKeybinding,
   SpotlightKeybinding,
   TagConvertersKeybinding,
@@ -51,6 +53,7 @@ import { NotificationStore } from '../../stores/notification.store';
 import { useStore } from '../../stores/use-store';
 import { AccountDrawer } from './drawers/account-drawer/account-drawer';
 import { CustomShortcutsDrawer } from './drawers/custom-shortcuts-drawer';
+import { MigrationDrawer } from './drawers/migration-drawer/migration-drawer';
 import { NotificationsDrawer } from './drawers/notifications-drawer';
 import { SettingsDrawer } from './drawers/settings-drawer/settings-drawer';
 import { TagConverterDrawer } from './drawers/tag-converter-drawer';
@@ -111,7 +114,7 @@ const navigationTargets: (
     label: <Trans>Notifications</Trans>,
     globalStateKey: 'notificationsDrawerVisible',
     icon: <NotificationsIcon />,
-    kbd: 'Alt+N',
+    kbd: NotificationsKeybinding,
   },
   {
     type: 'drawer',
@@ -152,6 +155,14 @@ const navigationTargets: (
     icon: <IconSettings />,
     label: <Trans>Settings</Trans>,
     kbd: SettingsKeybinding,
+  },
+  null,
+  {
+    type: 'drawer',
+    key: 'data-migration',
+    icon: <IconDatabase />,
+    label: <Trans>PostyBirb+ (V3) Migration</Trans>,
+    globalStateKey: 'dataMigrationVisible',
   },
 ];
 
@@ -242,6 +253,7 @@ function Layout() {
       <TagConverterDrawer />
       <NotificationsDrawer />
       <CustomShortcutsDrawer />
+      <MigrationDrawer />
       <ScrollToTop />
       <View />
     </Box>
