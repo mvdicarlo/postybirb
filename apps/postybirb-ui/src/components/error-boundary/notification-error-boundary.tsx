@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+/* eslint-disable lingui/no-unlocalized-strings */
 import { Trans } from '@lingui/react/macro';
 import { notifications } from '@mantine/notifications';
 import { ReactNode } from 'react';
@@ -22,7 +24,6 @@ export function NotificationErrorBoundary({
     <ErrorBoundary
       level={level}
       onError={(error, errorInfo) => {
-        // eslint-disable-next-line lingui/no-unlocalized-strings, no-console
         console.error(
           'Error caught by NotificationErrorBoundary:',
           error,
@@ -61,7 +62,6 @@ export function SilentErrorBoundary({
     <ErrorBoundary
       level="component"
       onError={(error, errorInfo) => {
-        // eslint-disable-next-line lingui/no-unlocalized-strings, no-console
         console.warn('Silent error boundary caught error:', error, errorInfo);
         onError?.(error, errorInfo);
       }}
