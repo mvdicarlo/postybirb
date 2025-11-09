@@ -1,4 +1,4 @@
-import { Trans } from '@lingui/macro';
+import { Trans } from "@lingui/react/macro";
 import { Box, Space, Stack } from '@mantine/core';
 import { IPostQueueRecord, SubmissionType } from '@postybirb/types';
 import { IconClock, IconHome } from '@tabler/icons-react';

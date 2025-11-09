@@ -1,5 +1,5 @@
+import { msg } from "@lingui/core/macro";
 import { MessageDescriptor } from '@lingui/core';
-import { msg } from '@lingui/macro';
 
 export const FieldLabelTranslations = {
   aIGenerated: msg`AI generated`,

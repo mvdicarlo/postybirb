@@ -1,4 +1,4 @@
-import { Trans } from '@lingui/macro';
+import { Trans } from "@lingui/react/macro";
 import { Box, Button, Loader, Space } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { ISubmissionDto, ScheduleType, SubmissionType } from '@postybirb/types';

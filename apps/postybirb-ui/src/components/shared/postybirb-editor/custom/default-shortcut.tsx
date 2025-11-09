@@ -1,7 +1,7 @@
+import { Trans } from "@lingui/react/macro";
 /* eslint-disable lingui/no-unlocalized-strings */
 import { BlockNoteEditor, insertOrUpdateBlock } from '@blocknote/core';
 import { createReactBlockSpec } from '@blocknote/react';
-import { Trans } from '@lingui/macro';
 import { Badge } from '@mantine/core';
 
 export const DefaultShortcut = createReactBlockSpec(

@@ -1,5 +1,5 @@
+import { msg } from "@lingui/core/macro";
 import { i18n } from '@lingui/core';
-import { msg } from '@lingui/macro';
 import {
   DefaultDescriptionValue,
   DefaultTagValue,

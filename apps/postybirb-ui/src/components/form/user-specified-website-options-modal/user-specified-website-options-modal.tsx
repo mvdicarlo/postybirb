@@ -1,5 +1,4 @@
-import { Trans } from '@lingui/macro';
-import { useLingui } from '@lingui/react';
+import { Trans, useLingui } from '@lingui/react/macro';
 import { Button, Checkbox, Modal, Stack } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { FormBuilderMetadata } from '@postybirb/form-builder';
@@ -20,7 +19,7 @@ type UserSpecifiedWebsiteOptionsSaveModalProps = {
 export function UserSpecifiedWebsiteOptionsSaveModal(
   props: UserSpecifiedWebsiteOptionsSaveModalProps,
 ) {
-  const { _ } = useLingui();
+  const { t } = useLingui();
   const [isSaving, setIsSaving] = useState(false);
   const { opened, type, accountId, values, form, onClose } = props;
   const [selectedFields, setSelectedFields] = useState<Record<string, boolean>>(
@@ -38,7 +37,7 @@ export function UserSpecifiedWebsiteOptionsSaveModal(
           .sort((a, b) => a[1].label.localeCompare(b[1].label))
           .map(([key, field]) => (
             <Checkbox
-              label={getTranslatedLabel(field, _)}
+              label={getTranslatedLabel(field, t)}
               key={key}
               checked={selectedFields[key] ?? false}
               onChange={(event) => {

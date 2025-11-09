@@ -1,5 +1,4 @@
-/* eslint-disable lingui/no-unlocalized-strings */
-import { Trans } from '@lingui/macro';
+import { Trans } from '@lingui/react/macro';
 import {
   ActionIcon,
   AppShell,
@@ -67,6 +66,7 @@ function AppImage() {
     <div className={classes.logoContainer}>
       <img
         src="/app-icon.png"
+        // eslint-disable-next-line lingui/no-unlocalized-strings
         alt="postybirb icon"
         className={classes.logoImage}
       />
@@ -111,6 +111,7 @@ const navigationTargets: (
     label: <Trans>Notifications</Trans>,
     globalStateKey: 'notificationsDrawerVisible',
     icon: <NotificationsIcon />,
+    // eslint-disable-next-line lingui/no-unlocalized-strings
     kbd: 'Alt+N',
   },
   {
@@ -207,6 +208,7 @@ function ScrollToTop() {
           onClick={scrollToTop}
           variant="filled"
           radius="xl"
+          // eslint-disable-next-line lingui/no-unlocalized-strings
           aria-label="Scroll to top"
         >
           <IconArrowUp size={16} />

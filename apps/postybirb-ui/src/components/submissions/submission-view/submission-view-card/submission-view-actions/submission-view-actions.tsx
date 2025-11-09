@@ -1,5 +1,4 @@
-import { msg } from '@lingui/macro';
-import { useLingui } from '@lingui/react';
+import { useLingui } from '@lingui/react/macro';
 import { Box, Flex, Group, Input, Paper } from '@mantine/core';
 import { SubmissionType } from '@postybirb/types';
 import { IconSearch } from '@tabler/icons-react';
@@ -35,7 +34,7 @@ export function SubmissionViewActions(props: SubmissionViewActionsProps) {
     view,
     setView,
   } = props;
-  const { _ } = useLingui();
+  const { t } = useLingui();
 
   const actionProps: SubmissionViewActionProps = {
     submissions,
@@ -61,7 +60,7 @@ export function SubmissionViewActions(props: SubmissionViewActionsProps) {
           </Group>
           <Input
             flex="6"
-            placeholder={_(msg`Search`)}
+            placeholder={t`Search`}
             width="100%"
             leftSection={<IconSearch />}
             value={nameFilter}

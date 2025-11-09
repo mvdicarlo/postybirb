@@ -1,5 +1,4 @@
-import { msg, Trans } from '@lingui/macro';
-import { useLingui } from '@lingui/react';
+import { Trans, useLingui } from '@lingui/react/macro';
 import { Avatar, Badge, Box, rem, Text } from '@mantine/core';
 import { Spotlight, SpotlightActionData } from '@mantine/spotlight';
 import { SubmissionType } from '@postybirb/types';
@@ -24,33 +23,33 @@ import { defaultTargetProvider } from '../../../transports/http-client';
 import './postybirb-spotlight.css';
 
 export function PostybirbSpotlight() {
-  const { _ } = useLingui();
+  const { t } = useLingui();
   const { state: submissions } = useStore(SubmissionStore);
   const { state: templates } = useStore(SubmissionTemplateStore);
 
   const navigateTo = useNavigate();
   const navigationTargets: SpotlightActionData[] = [
     {
-      group: _(msg`Navigation`),
+      group: t`Navigation`,
       id: 'home',
-      label: _(msg`Home`),
-      description: _(msg`Go to the main dashboard`),
+      label: t`Home`,
+      description: t`Go to the main dashboard`,
       leftSection: <IconHome size={24} stroke={1.5} />,
       onClick: () => navigateTo(HomePath),
     },
     {
-      group: _(msg`Navigation`),
+      group: t`Navigation`,
       id: 'file-submissions',
-      label: _(msg`Post a file`),
-      description: _(msg`Create a new file submission`),
+      label: t`Post a file`,
+      description: t`Create a new file submission`,
       leftSection: <IconFile size={24} stroke={1.5} />,
       onClick: () => navigateTo(FileSubmissionPath),
     },
     {
-      group: _(msg`Navigation`),
+      group: t`Navigation`,
       id: 'message-submissions',
-      label: _(msg`Post a message`),
-      description: _(msg`Create a new message submission`),
+      label: t`Post a message`,
+      description: t`Create a new message submission`,
       leftSection: <IconMessage size={24} stroke={1.5} />,
       onClick: () => navigateTo(MessageSubmissionPath),
     },
@@ -62,8 +61,7 @@ export function PostybirbSpotlight() {
     const src = files.length
       ? `${defaultTargetProvider()}/api/file/thumbnail/${files[0].id}`
       : null;
-    const title =
-      s.getDefaultOptions()?.data.title || _(msg`Unknown submission`);
+    const title = s.getDefaultOptions()?.data.title || t`Unknown submission`;
 
     const leftSection = isFileType ? (
       src ? (
@@ -80,14 +78,12 @@ export function PostybirbSpotlight() {
     );
 
     return {
-      group: isFileType
-        ? _(msg`File submissions`)
-        : _(msg`Message submissions`),
+      group: isFileType ? t`File submissions` : t`Message submissions`,
       id: s.id,
       label: title,
       description: isFileType
-        ? _(msg`Edit file submission`)
-        : _(msg`Edit message submission`),
+        ? t`Edit file submission`
+        : t`Edit message submission`,
       rightSection: (
         <Badge size="sm" variant="light" color={isFileType ? 'blue' : 'green'}>
           {isFileType ? <Trans>File</Trans> : <Trans>Message</Trans>}
@@ -98,13 +94,13 @@ export function PostybirbSpotlight() {
     };
   });
 
-  const templateOptions: SpotlightActionData[] = templates.map((t) => {
-    const isFileType = t.type === SubmissionType.FILE;
+  const templateOptions: SpotlightActionData[] = templates.map((template) => {
+    const isFileType = template.type === SubmissionType.FILE;
     return {
-      group: _(msg`Submission templates`),
-      id: t.id,
-      label: t.getTemplateName(),
-      description: _(msg`Use this template for a new submission`),
+      group: t`Submission templates`,
+      id: template.id,
+      label: template.getTemplateName(),
+      description: t`Use this template for a new submission`,
       rightSection: (
         <Badge size="sm" variant="light" color={isFileType ? 'cyan' : 'teal'}>
           <Trans>Template</Trans>
@@ -115,7 +111,7 @@ export function PostybirbSpotlight() {
           <IconTemplate size={24} />
         </Avatar>
       ),
-      onClick: () => navigateTo(`${EditSubmissionPath}/${t.id}`),
+      onClick: () => navigateTo(`${EditSubmissionPath}/${template.id}`),
     };
   });
 
@@ -131,7 +127,7 @@ export function PostybirbSpotlight() {
       }
       highlightQuery
       searchProps={{
-        placeholder: _(msg`Search for submissions, templates, or actions...`),
+        placeholder: t`Search for submissions, templates, or actions...`,
         leftSection: (
           <IconSearch
             style={{ width: rem(20), height: rem(20) }}

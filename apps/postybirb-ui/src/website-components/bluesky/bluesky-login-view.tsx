@@ -1,4 +1,4 @@
-import { Trans } from '@lingui/macro';
+import { Trans } from "@lingui/react/macro";
 import { Box, Button, Stack, Text, TextInput } from '@mantine/core';
 import { BlueskyAccountData, BlueskyOAuthRoutes } from '@postybirb/types';
 import { useState } from 'react';

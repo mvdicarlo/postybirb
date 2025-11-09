@@ -1,4 +1,4 @@
-import { Trans } from '@lingui/macro';
+import { Trans } from "@lingui/react/macro";
 import { Box, Button, Modal } from '@mantine/core';
 import { FileWithPath } from '@mantine/dropzone';
 import { ISubmissionFileDto } from '@postybirb/types';

@@ -1,3 +1,4 @@
+import { Trans } from "@lingui/react/macro";
 import { BlockNoteEditor, filterSuggestionItems } from '@blocknote/core';
 import { BlockNoteView } from '@blocknote/mantine';
 import {
@@ -5,7 +6,6 @@ import {
   getDefaultReactSlashMenuItems,
   useCreateBlockNote,
 } from '@blocknote/react';
-import { Trans } from '@lingui/macro';
 import {
   Input,
   Loader,

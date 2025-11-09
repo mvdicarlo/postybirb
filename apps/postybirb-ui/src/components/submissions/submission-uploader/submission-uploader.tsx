@@ -1,5 +1,4 @@
-/* eslint-disable lingui/no-unlocalized-strings */
-import { Trans } from '@lingui/macro';
+import { Trans } from '@lingui/react/macro';
 import {
   ActionIcon,
   Box,
@@ -166,6 +165,7 @@ function Preview({
             {file.name}
           </Text>
           <Text size="xs" c="dimmed">
+            {/* eslint-disable-next-line lingui/no-unlocalized-strings */}
             {(file.size / 1024 / 1024).toFixed(2)} MB • {type}
           </Text>
         </Box>

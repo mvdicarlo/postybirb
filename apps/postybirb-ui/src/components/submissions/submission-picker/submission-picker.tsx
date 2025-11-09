@@ -1,5 +1,4 @@
-import { msg, Trans } from '@lingui/macro';
-import { useLingui } from '@lingui/react';
+import { Trans, useLingui } from '@lingui/react/macro';
 import {
   Box,
   ComboboxItem,
@@ -47,12 +46,12 @@ function getSubmissionLabel(
 
 export function SubmissionPicker(props: SubmissionPickerProps) {
   const { type, value, onChange } = props;
-  const { _ } = useLingui();
+  const { t } = useLingui();
   const { state, isLoading } = useStore(SubmissionStore);
   const submissions = state.filter((submission) => submission.type === type);
 
   const submissionOptions: ComboboxItem[] = submissions.map((submission) => ({
-    label: submission.getDefaultOptions().data.title ?? _(msg`Unknown`),
+    label: submission.getDefaultOptions().data.title ?? t`Unknown`,
     value: submission.id,
   }));
 

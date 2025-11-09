@@ -1,14 +1,13 @@
-import { msg, Trans } from '@lingui/macro';
+import { Trans, useLingui } from '@lingui/react/macro';
 import { Box, Card, Group, Select, Stack, Switch, Text } from '@mantine/core';
 import { IconTags } from '@tabler/icons-react';
 import settingsApi from '../../../../api/settings.api';
 import { TagSearchProviders } from '../../../../components/form/fields/tag-search/tag-search-providers';
-import { useTrans } from '../../../../hooks/use-trans';
 import { useSettings } from '../../../../stores/use-settings';
 
 export function TagsSettings() {
   const { settingsId, settings } = useSettings();
-  const i18n = useTrans();
+  const { t } = useLingui();
 
   return (
     <Card shadow="sm" padding="lg" radius="md" withBorder>
@@ -29,7 +28,7 @@ export function TagsSettings() {
               </Text>
             }
             data={[
-              { label: i18n(msg`None`), value: '' },
+              { label: t`None`, value: '' },
               ...Object.keys(TagSearchProviders),
             ]}
             value={settings?.tagSearchProvider.id ?? ''}
