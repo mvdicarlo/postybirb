@@ -24,7 +24,7 @@ declare global {
       openExternalLink(url: string): void;
       getCookiesForAccount(accountId: string): Promise<string>;
       quit(code?: number): void;
-      platform: string;
+      platform: NodeJS.Platform;
       app_port: string;
       app_version: string;
 

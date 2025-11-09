@@ -47,6 +47,7 @@ export function SpellcheckerSettings() {
     return null;
 
   const enabled = startupSettings.data?.spellchecker ?? true;
+  const isOSX = window.electron.platform === 'darwin';
 
   return (
     <Card shadow="sm" padding="lg" radius="md" withBorder>
@@ -64,7 +65,7 @@ export function SpellcheckerSettings() {
             label={<Trans>Enabled</Trans>}
             checked={enabled}
             onChange={(event) => {
-              window.electron.setSpellcheckerEnabled(
+              window.electron.setSpellCheckerEnabled(
                 event.currentTarget.checked,
               );
               settingsApi
@@ -74,18 +75,37 @@ export function SpellcheckerSettings() {
                 .finally(startupSettings.refetch);
             }}
           />
+          {isOSX && (
+            <Text fw={500} size="xs">
+              <Trans>
+                Spellchecker advanced configuration is controlled by system on
+                MacOS.
+              </Trans>
+            </Text>
+          )}
           <MultiSelect
             label={
               <Text size="sm" fw={500} mb="xs">
                 <Trans>Languages to check</Trans>
               </Text>
             }
-            data={allSpellcheckerLanguages.data?.map((e) => {
-              const translated = languages.find(
-                (language) => language[1] === e,
-              )?.[0];
-              return { label: translated ? t(translated) : e, value: e };
-            })}
+            data={allSpellcheckerLanguages.data
+              ?.map((e) => {
+                const translated = languages.find(
+                  (language) => language[1] === e,
+                )?.[0];
+                return { label: translated ? t(translated) : e, value: e };
+              })
+              .sort((a, b) => {
+                // Move translated language to top
+                const aTranslated = allSpellcheckerLanguages.data.includes(
+                  a.label,
+                );
+                const bTranslated = allSpellcheckerLanguages.data.includes(
+                  b.label,
+                );
+                return aTranslated === bTranslated ? 0 : aTranslated ? 1 : -1;
+              })}
             value={spellcheckerLanguages.data}
             searchable
             clearable
@@ -103,7 +123,7 @@ export function SpellcheckerSettings() {
                 .setSpellcheckerLanguages(value)
                 .finally(() => spellcheckerLanguages.refetch());
             }}
-            disabled={!enabled}
+            disabled={!enabled || isOSX}
           />
           <TagsInput
             label={
@@ -123,7 +143,7 @@ export function SpellcheckerSettings() {
                 .setSpellcheckerWords(value)
                 .finally(() => spellcheckerWords.refetch());
             }}
-            disabled={!enabled}
+            disabled={!enabled || isOSX}
           />
         </Box>
       </Stack>
