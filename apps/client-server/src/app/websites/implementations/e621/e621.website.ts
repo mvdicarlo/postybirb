@@ -25,7 +25,6 @@ import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
 import { FileWebsite } from '../../models/website-modifiers/file-website';
 import { OAuthWebsite } from '../../models/website-modifiers/oauth-website';
-import { WithCustomDescriptionParser } from '../../models/website-modifiers/with-custom-description-parser';
 import { Website } from '../../website';
 import { E621FileSubmission } from './models/e621-file-submission';
 
@@ -141,7 +140,7 @@ export default class E621
       'upload[tag_string]': postData.options.tags.join(' ').trim(),
       'upload[file]': file.toPostFormat(),
       'upload[rating]': this.getRating(postData.options.rating),
-      'upload[description]': postData.options.description,
+      'upload[description]': description,
       'upload[parent_id]': postData.options.parentId || '',
       'upload[source]': file.metadata.sourceUrls
         .filter((s) => !!s)
