@@ -1,4 +1,4 @@
-import { Plural, Trans } from "@lingui/react/macro";
+import { Plural, Trans } from '@lingui/react/macro';
 import {
   ActionIcon,
   Alert,
@@ -43,6 +43,7 @@ import { useStore } from '../../../../stores/use-store';
 import { ComponentErrorBoundary } from '../../../error-boundary/specialized-error-boundaries';
 import { WebsiteOptionGroupSection } from '../../../form/website-option-form/website-option-group-section';
 import { ImplementedWebsiteSelect } from '../../../form/website-select/implemented-website-select';
+import { UpdateOnLanguageChange } from '../../../translations/update-on-language-change';
 import { ValidationTranslation } from '../../../translations/validation-translation';
 import { SubmissionFilePreview } from '../../submission-file-preview/submission-file-preview';
 import { SubmissionScheduler } from '../../submission-scheduler/submission-scheduler';
@@ -236,7 +237,9 @@ function SubmissionViewCardComponent(props: SubmissionViewCardProps) {
                 title={new Date(lastEdited.updatedAt).toLocaleString()}
               >
                 <Trans>Last modified:</Trans>{' '}
-                {moment(lastEdited.updatedAt).fromNow()}
+                <UpdateOnLanguageChange
+                  render={() => moment(lastEdited.updatedAt).fromNow()}
+                />
               </Text>
 
               <Text size="xs">

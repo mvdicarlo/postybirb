@@ -53,6 +53,7 @@ const config = {
     'react/react-in-jsx-scope': 'off',
     'react/no-unescaped-entities': 'off',
     'react/sort-comp': 'off',
+    'react/prop-types': 'off',
 
     '@typescript-eslint/ban-types': 'warn',
     '@typescript-eslint/no-unused-vars': 'off',
