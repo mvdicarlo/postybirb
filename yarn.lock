@@ -4807,36 +4807,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@lingui/babel-plugin-extract-messages@npm:5.3.3":
-  version: 5.3.3
-  resolution: "@lingui/babel-plugin-extract-messages@npm:5.3.3"
-  checksum: 10c0/56b62066f3a5616bfdb7d745a3ee7a827dc835d53cc6a4e51e562a979b1ac1ec7513abbd4292d20ea291911553d543fbb2094bb35ff72594e5fb5ee65137cdf6
-  languageName: node
-  linkType: hard
-
 "@lingui/babel-plugin-extract-messages@npm:5.5.2":
   version: 5.5.2
   resolution: "@lingui/babel-plugin-extract-messages@npm:5.5.2"
   checksum: 10c0/979c09750517c7699bf306f0b135400a743163a67bc079b4ea30aa7d74ccd22d93ccc62cbb7cb82e20c371e367e5af38be1440f66f8210967134b7ba8f76cf61
-  languageName: node
-  linkType: hard
-
-"@lingui/babel-plugin-lingui-macro@npm:5.3.3":
-  version: 5.3.3
-  resolution: "@lingui/babel-plugin-lingui-macro@npm:5.3.3"
-  dependencies:
-    "@babel/core": "npm:^7.20.12"
-    "@babel/runtime": "npm:^7.20.13"
-    "@babel/types": "npm:^7.20.7"
-    "@lingui/conf": "npm:5.3.3"
-    "@lingui/core": "npm:5.3.3"
-    "@lingui/message-utils": "npm:5.3.3"
-  peerDependencies:
-    babel-plugin-macros: 2 || 3
-  peerDependenciesMeta:
-    babel-plugin-macros:
-      optional: true
-  checksum: 10c0/5bc43e947b386148ef82d404ba5973eb8a4af11dd2a99ecbf6de85d307c7b7e2781dc54bdd94849e65c61a8e68a122d8590021800faba5f403b1dd6619a5d6fc
   languageName: node
   linkType: hard
 
@@ -4859,42 +4833,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@lingui/cli@npm:5.3.3":
-  version: 5.3.3
-  resolution: "@lingui/cli@npm:5.3.3"
-  dependencies:
-    "@babel/core": "npm:^7.21.0"
-    "@babel/generator": "npm:^7.21.1"
-    "@babel/parser": "npm:^7.22.0"
-    "@babel/runtime": "npm:^7.21.0"
-    "@babel/types": "npm:^7.21.2"
-    "@lingui/babel-plugin-extract-messages": "npm:5.3.3"
-    "@lingui/babel-plugin-lingui-macro": "npm:5.3.3"
-    "@lingui/conf": "npm:5.3.3"
-    "@lingui/core": "npm:5.3.3"
-    "@lingui/format-po": "npm:5.3.3"
-    "@lingui/message-utils": "npm:5.3.3"
-    chokidar: "npm:3.5.1"
-    cli-table: "npm:^0.3.11"
-    commander: "npm:^10.0.0"
-    convert-source-map: "npm:^2.0.0"
-    date-fns: "npm:^3.6.0"
-    esbuild: "npm:^0.25.1"
-    glob: "npm:^11.0.0"
-    micromatch: "npm:^4.0.7"
-    normalize-path: "npm:^3.0.0"
-    ora: "npm:^5.1.0"
-    picocolors: "npm:^1.1.1"
-    pofile: "npm:^1.1.4"
-    pseudolocale: "npm:^2.0.0"
-    source-map: "npm:^0.8.0-beta.0"
-  bin:
-    lingui: ./dist/lingui.js
-  checksum: 10c0/287541d22852f512bc5c7168917c606ece3053e9e52c3313ba751564c4c4d14f024083159c7b716b1f5b7db039894c6ea6fbcd27bac1e0f0a264d353613e81c8
-  languageName: node
-  linkType: hard
-
-"@lingui/cli@npm:^5.3.3":
+"@lingui/cli@npm:5.5.2, @lingui/cli@npm:^5.5":
   version: 5.5.2
   resolution: "@lingui/cli@npm:5.5.2"
   dependencies:
@@ -4931,19 +4870,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@lingui/conf@npm:5.3.3":
-  version: 5.3.3
-  resolution: "@lingui/conf@npm:5.3.3"
-  dependencies:
-    "@babel/runtime": "npm:^7.20.13"
-    cosmiconfig: "npm:^8.0.0"
-    jest-validate: "npm:^29.4.3"
-    jiti: "npm:^1.17.1"
-    picocolors: "npm:^1.1.1"
-  checksum: 10c0/14ab766fec2f96c25a481805f66055d9831ba4a0bc1d66f063259459af3fddc42a610a0cafc6fd59c69b99032f6e463ac812577a5e3538cbe149fadb7eaaaa5d
-  languageName: node
-  linkType: hard
-
 "@lingui/conf@npm:5.5.2":
   version: 5.5.2
   resolution: "@lingui/conf@npm:5.5.2"
@@ -4957,25 +4883,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@lingui/core@npm:5.3.3":
-  version: 5.3.3
-  resolution: "@lingui/core@npm:5.3.3"
-  dependencies:
-    "@babel/runtime": "npm:^7.20.13"
-    "@lingui/message-utils": "npm:5.3.3"
-  peerDependencies:
-    "@lingui/babel-plugin-lingui-macro": 5.3.3
-    babel-plugin-macros: 2 || 3
-  peerDependenciesMeta:
-    "@lingui/babel-plugin-lingui-macro":
-      optional: true
-    babel-plugin-macros:
-      optional: true
-  checksum: 10c0/8059f5b7b14e5af2f273ae9dc992f240f1b68321b6192118e720048efea2b848c182c091f802b112dfd606d787a8973ec7d213206803b02205001db600ad66a7
-  languageName: node
-  linkType: hard
-
-"@lingui/core@npm:5.5.2, @lingui/core@npm:^5.3.3":
+"@lingui/core@npm:5.5.2, @lingui/core@npm:^5.5":
   version: 5.5.2
   resolution: "@lingui/core@npm:5.5.2"
   dependencies:
@@ -4993,18 +4901,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@lingui/format-po@npm:5.3.3":
-  version: 5.3.3
-  resolution: "@lingui/format-po@npm:5.3.3"
-  dependencies:
-    "@lingui/conf": "npm:5.3.3"
-    "@lingui/message-utils": "npm:5.3.3"
-    date-fns: "npm:^3.6.0"
-    pofile: "npm:^1.1.4"
-  checksum: 10c0/98c6da49e963453d0cf0f686d049a443b15e7e1f0e81a43608d2e1ae03ec540490c44274c3220039c92fac4bc77c44ca005e222bb861f0a176209f694f94d839
-  languageName: node
-  linkType: hard
-
 "@lingui/format-po@npm:5.5.2":
   version: 5.5.2
   resolution: "@lingui/format-po@npm:5.5.2"
@@ -5017,31 +4913,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@lingui/macro@npm:^5.3.3":
-  version: 5.3.3
-  resolution: "@lingui/macro@npm:5.3.3"
+"@lingui/macro@npm:^5.5":
+  version: 5.5.2
+  resolution: "@lingui/macro@npm:5.5.2"
   dependencies:
-    "@lingui/core": "npm:5.3.3"
-    "@lingui/react": "npm:5.3.3"
+    "@lingui/core": "npm:5.5.2"
+    "@lingui/react": "npm:5.5.2"
   peerDependencies:
-    "@lingui/babel-plugin-lingui-macro": 5.3.3
+    "@lingui/babel-plugin-lingui-macro": 5.5.2
     babel-plugin-macros: 2 || 3
   peerDependenciesMeta:
     "@lingui/babel-plugin-lingui-macro":
       optional: true
     babel-plugin-macros:
       optional: true
-  checksum: 10c0/9dcb76c41fe0bc8c33a98a0c733d973f928eb8c52b720b358d6d5b40b0b44348253b873af666c28fc6cf100a8080129d596418701470093421dac22241a06118
-  languageName: node
-  linkType: hard
-
-"@lingui/message-utils@npm:5.3.3":
-  version: 5.3.3
-  resolution: "@lingui/message-utils@npm:5.3.3"
-  dependencies:
-    "@messageformat/parser": "npm:^5.0.0"
-    js-sha256: "npm:^0.10.1"
-  checksum: 10c0/fa8367352b7b41ed1ffafe75cda16f4c80247c0e25dbc4898e01f1ad6a69c1347b7389b2fe6c91ddf839abdc120fe5ac1e56864ccdb4bb79186daeedd27b7fa9
+  checksum: 10c0/16058c08275d536db21d20aec798255e8df8c1d05f1e181ec91ccd900ab69bd97d0b3084aabe6f2cbb6042fb582ff010d176a552c823ab0f54ca8f9dbd1369cb
   languageName: node
   linkType: hard
 
@@ -5055,14 +4941,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@lingui/react@npm:5.3.3, @lingui/react@npm:^5.3.3":
-  version: 5.3.3
-  resolution: "@lingui/react@npm:5.3.3"
+"@lingui/react@npm:5.5.2, @lingui/react@npm:^5.5":
+  version: 5.5.2
+  resolution: "@lingui/react@npm:5.5.2"
   dependencies:
     "@babel/runtime": "npm:^7.20.13"
-    "@lingui/core": "npm:5.3.3"
+    "@lingui/core": "npm:5.5.2"
   peerDependencies:
-    "@lingui/babel-plugin-lingui-macro": 5.3.3
+    "@lingui/babel-plugin-lingui-macro": 5.5.2
     babel-plugin-macros: 2 || 3
     react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
   peerDependenciesMeta:
@@ -5070,7 +4956,7 @@ __metadata:
       optional: true
     babel-plugin-macros:
       optional: true
-  checksum: 10c0/afe2d9d9ea07606411cda177be524963a7b562181140c4d2e8e619fc41f5464ddc563f4dfa1388a56bf8c04890f7f872efe16faa6d9cd8c4b7cf7af87a2d72dc
+  checksum: 10c0/b621cdc18d13846d7591ce061a3fb63a32f79e8b4626ccb25ab5ac0f1f57c9ba382afdb2e03cb4db7d1901af4d19ebace68c7e68c8464d87a96c27d854881622
   languageName: node
   linkType: hard
 
@@ -5088,15 +4974,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@lingui/vite-plugin@npm:^5.3.3":
-  version: 5.3.3
-  resolution: "@lingui/vite-plugin@npm:5.3.3"
+"@lingui/vite-plugin@npm:^5.5":
+  version: 5.5.2
+  resolution: "@lingui/vite-plugin@npm:5.5.2"
   dependencies:
-    "@lingui/cli": "npm:5.3.3"
-    "@lingui/conf": "npm:5.3.3"
+    "@lingui/cli": "npm:5.5.2"
+    "@lingui/conf": "npm:5.5.2"
   peerDependencies:
     vite: ^3 || ^4 || ^5.0.9 || ^6 || ^7
-  checksum: 10c0/d65696a1b5a65e8bd9fc18405adc66fbf6767759f68e5c9739db5bee58e969c652f8422666826cf69a34e8b4ef99e0b6d3f8aa103e05db4f765f8c0a0b91ecb1
+  checksum: 10c0/bd542af7fa6f6ee13fe6d1519fc50bc6c97c506c92a91141a2afb111666c4156a29f85b9587757c3009087cf94c40c00fc17ab90397abeeacbcd36fac00ecad9
   languageName: node
   linkType: hard
 
@@ -17137,7 +17023,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jiti@npm:^1.17.1, jiti@npm:^1.19.1":
+"jiti@npm:^1.19.1":
   version: 1.21.6
   resolution: "jiti@npm:1.21.6"
   bin:
@@ -20954,12 +20840,12 @@ __metadata:
     "@fullcalendar/timegrid": "npm:^6.1.15"
     "@iarna/rtf-to-html": "npm:^1.1.0"
     "@kayahr/jest-electron-runner": "patch:@kayahr/jest-electron-runner@npm%3A29.14.0#~/.yarn/patches/@kayahr-jest-electron-runner-npm-29.14.0-4658d116d6.patch"
-    "@lingui/cli": "npm:^5.3.3"
-    "@lingui/core": "npm:^5.3.3"
-    "@lingui/macro": "npm:^5.3.3"
-    "@lingui/react": "npm:^5.3.3"
+    "@lingui/cli": "npm:^5.5"
+    "@lingui/core": "npm:^5.5"
+    "@lingui/macro": "npm:^5.5"
+    "@lingui/react": "npm:^5.5"
     "@lingui/swc-plugin": "npm:^5.5.2"
-    "@lingui/vite-plugin": "npm:^5.3.3"
+    "@lingui/vite-plugin": "npm:^5.5"
     "@mantine/core": "npm:^7.17.4"
     "@mantine/dates": "npm:^7.17.4"
     "@mantine/dropzone": "npm:^7.17.4"
