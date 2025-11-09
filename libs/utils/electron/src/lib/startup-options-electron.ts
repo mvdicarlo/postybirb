@@ -4,15 +4,17 @@ import { join } from 'path';
 
 export type StartupOptions = {
   startAppOnSystemStartup: boolean;
+  spellchecker: boolean;
   appDataPath: string;
   port: string;
 };
 
 const FILE_PATH = join(app.getAppPath(), 'startup.json');
-const DEFAULT_STARTUP_OPTIONS = {
+const DEFAULT_STARTUP_OPTIONS: StartupOptions = {
   startAppOnSystemStartup: false,
-  port: '9487',
+  spellchecker: true,
   appDataPath: join(app.getPath('documents'), 'PostyBirb'),
+  port: '9487',
 };
 
 function init(): StartupOptions {

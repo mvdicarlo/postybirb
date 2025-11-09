@@ -27,6 +27,13 @@ declare global {
       platform: string;
       app_port: string;
       app_version: string;
+
+      setSpellCheckerEnabled(value: boolean): void;
+      setSpellcheckerLanguages: (languages: string[]) => Promise<void>;
+      getSpellcheckerLanguages: () => Promise<string[]>;
+      getAllSpellcheckerLanguages: () => Promise<string[]>;
+      getSpellcheckerWords: () => Promise<string[]>;
+      setSpellcheckerWords: (words: string[]) => Promise<void>;
     };
   }
 }

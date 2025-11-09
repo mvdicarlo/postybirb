@@ -13,6 +13,7 @@ import {
   IconBell,
   IconDeviceDesktop,
   IconFileDescription,
+  IconLanguage,
   IconRouter,
   IconTags,
 } from '@tabler/icons-react';
@@ -28,6 +29,7 @@ import { AppSettings } from './app-settings';
 import { DescriptionSettings } from './description-settings';
 import { NotificationsSettings } from './notifications-settings';
 import { RemoteSettings } from './remote-settings';
+import { SpellcheckerSettings } from './spellchecker-settings';
 import { TagsSettings } from './tags-settings';
 
 export function SettingsDrawer() {
@@ -116,6 +118,14 @@ export function SettingsDrawer() {
                 >
                   <Trans>Tags</Trans>
                 </Tabs.Tab>
+
+                <Tabs.Tab
+                  value="spellchecker"
+                  leftSection={<IconLanguage size={16} />}
+                  fw={activeTab === 'spellchecker' ? 'bold' : 'normal'}
+                >
+                  <Trans>Spellchecker</Trans>
+                </Tabs.Tab>
               </Tabs.List>
 
               <ScrollArea h="100%" offsetScrollbars>
@@ -125,6 +135,7 @@ export function SettingsDrawer() {
                   {activeTab === 'notifications' && <NotificationsSettings />}
                   {activeTab === 'remote' && <RemoteSettings />}
                   {activeTab === 'tags' && <TagsSettings />}
+                  {activeTab === 'spellchecker' && <SpellcheckerSettings />}
                 </Box>
               </ScrollArea>
             </Group>
