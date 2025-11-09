@@ -16,6 +16,10 @@ type UserSpecifiedWebsiteOptionsSaveModalProps = {
   onClose: () => void;
 };
 
+function labelString(label: string | { untranslated: string }) {
+  return typeof label === 'string' ? label : label.untranslated;
+}
+
 export function UserSpecifiedWebsiteOptionsSaveModal(
   props: UserSpecifiedWebsiteOptionsSaveModalProps,
 ) {
@@ -34,7 +38,9 @@ export function UserSpecifiedWebsiteOptionsSaveModal(
     >
       <Stack>
         {Object.entries(form)
-          .sort((a, b) => a[1].label.localeCompare(b[1].label))
+          .sort((a, b) =>
+            labelString(a[1].label).localeCompare(labelString(b[1].label)),
+          )
           .map(([key, field]) => (
             <Checkbox
               label={getTranslatedLabel(field, t)}
