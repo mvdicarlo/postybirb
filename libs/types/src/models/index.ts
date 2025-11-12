@@ -34,6 +34,7 @@ export * from './tag/tag-converter.interface';
 export * from './tag/tag-group.interface';
 export * from './tag/tag-value.type';
 export * from './tag/tag.type';
+export * from './user/user-converter.interface';
 export * from './website-options/user-specified-website-options.interface';
 export * from './website-options/website-options.interface';
 export * from './website/file-website-form-fields.interface';

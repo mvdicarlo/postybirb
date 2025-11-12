@@ -2,57 +2,57 @@
 import { Trans, msg } from '@lingui/macro';
 import { useLingui } from '@lingui/react';
 import {
-    ActionIcon,
-    Badge,
-    Box,
-    Button,
-    Collapse,
-    Divider,
-    Drawer,
-    Fieldset,
-    Group,
-    Loader,
-    Paper,
-    ScrollArea,
-    Stack,
-    Text,
-    TextInput,
-    Tooltip,
+  ActionIcon,
+  Badge,
+  Box,
+  Button,
+  Collapse,
+  Divider,
+  Drawer,
+  Fieldset,
+  Group,
+  Loader,
+  Paper,
+  ScrollArea,
+  Stack,
+  Text,
+  TextInput,
+  Tooltip,
 } from '@mantine/core';
 import { useClipboard, useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import {
-    ICreateTagConverterDto,
-    IWebsiteInfoDto,
-    TagConverterDto,
+  ICreateUserConverterDto,
+  IWebsiteInfoDto,
+  UserConverterDto,
 } from '@postybirb/types';
 import {
-    IconChevronDown,
-    IconChevronUp,
-    IconClipboardCopy,
-    IconPlus,
-    IconSearch,
-    IconSortAscending,
-    IconSortDescending,
-    IconX,
+  IconChevronDown,
+  IconChevronUp,
+  IconClipboardCopy,
+  IconPlus,
+  IconSearch,
+  IconSortAscending,
+  IconSortDescending,
+  IconX,
 } from '@tabler/icons-react';
 import { useMemo, useState } from 'react';
-import tagConvertersApi from '../../../api/tag-converters.api';
+import userConvertersApi from '../../../api/user-converters.api';
 import { ComponentErrorBoundary } from '../../../components/error-boundary/specialized-error-boundaries';
 import { DeleteActionPopover } from '../../../components/shared/delete-action-popover/delete-action-popover';
-import { TagConverterStore } from '../../../stores/tag-converter-store';
 import { useStore } from '../../../stores/use-store';
+import { UserConverterStore } from '../../../stores/user-converter-store';
 import { WebsiteStore } from '../../../stores/website.store';
 import { getOverlayOffset, getPortalTarget, marginOffset } from './drawer.util';
 import { useDrawerToggle } from './use-drawer-toggle';
 
-function isValid(converter: ICreateTagConverterDto) {
-  return converter.tag.trim().length > 0;
+function isValid(converter: ICreateUserConverterDto) {
+  return converter.username.trim().length > 0;
 }
 
 function areEqual(
-  old: Pick<ICreateTagConverterDto, 'tag' | 'convertTo'>,
-  current: Pick<ICreateTagConverterDto, 'tag' | 'convertTo'>,
+  old: Pick<ICreateUserConverterDto, 'username' | 'convertTo'>,
+  current: Pick<ICreateUserConverterDto, 'username' | 'convertTo'>,
 ) {
   return JSON.stringify(old) === JSON.stringify(current);
 }
@@ -136,7 +136,7 @@ function WebsiteConverterInputs({
                   borderBottom: '1px solid #ddd',
                 }}
               >
-                <Trans>Conversion</Trans>
+                <Trans>Username</Trans>
               </th>
             </tr>
           </thead>
@@ -170,7 +170,7 @@ function WebsiteConverterInputs({
                     size="xs"
                     value={value[website.id] ?? ''}
                     placeholder={_(
-                      msg`Enter conversion for ${website.displayName}`,
+                      msg`Enter username for ${website.displayName}`,
                     )}
                     onChange={(event) =>
                       handleChange(website.id, event.currentTarget.value)
@@ -190,21 +190,21 @@ function WebsiteConverterInputs({
   );
 }
 
-function ExistingTagConverter(props: {
-  tagConverter: TagConverterDto;
-  tagSupportingWebsites: IWebsiteInfoDto[];
+function ExistingUserConverter(props: {
+  userConverter: UserConverterDto;
+  websites: IWebsiteInfoDto[];
 }) {
   const { _ } = useLingui();
-  const { tagConverter, tagSupportingWebsites } = props;
-  const [state, setState] = useState<ICreateTagConverterDto>({
-    tag: tagConverter.tag,
-    convertTo: { ...tagConverter.convertTo },
+  const { userConverter, websites } = props;
+  const [state, setState] = useState<ICreateUserConverterDto>({
+    username: userConverter.username,
+    convertTo: { ...userConverter.convertTo },
   });
   const [opened, { toggle }] = useDisclosure(false);
   const clipboard = useClipboard();
 
   const hasChanges = !areEqual(
-    { tag: tagConverter.tag, convertTo: tagConverter.convertTo },
+    { username: userConverter.username, convertTo: userConverter.convertTo },
     state,
   );
 
@@ -219,12 +219,12 @@ function ExistingTagConverter(props: {
     const text = Object.entries(state.convertTo)
       .filter(([, value]) => value.trim().length > 0)
       .map(([site, value]) => {
-        const website = tagSupportingWebsites.find((w) => w.id === site);
+        const website = websites.find((w) => w.id === site);
         return `${website?.displayName || site}: ${value}`;
       })
       .join('\n');
 
-    clipboard.copy(`Tag: ${state.tag}\n${text}`);
+    clipboard.copy(`Username: ${state.username}\n${text}`);
     notifications.show({
       title: <Trans>Copied</Trans>,
       message: <Trans>Converter details copied to clipboard</Trans>,
@@ -237,7 +237,7 @@ function ExistingTagConverter(props: {
     <Paper withBorder p="xs" radius="md" shadow={opened ? 'sm' : undefined}>
       <Group justify="space-between" mb={opened ? 'xs' : 0}>
         <Group>
-          <Text fw={500}>{tagConverter.tag}</Text>
+          <Text fw={500}>{userConverter.username}</Text>
           <Badge size="xs" variant="light" color="blue">
             {activeConversions} <Trans>sites</Trans>
           </Badge>
@@ -274,37 +274,37 @@ function ExistingTagConverter(props: {
         <Divider my="xs" />
         <TextInput
           required
-          value={state.tag}
-          label={<Trans>Tag</Trans>}
+          value={state.username}
+          label={<Trans>Username</Trans>}
           onChange={(event) =>
             setState({
               ...state,
-              tag: event.currentTarget.value,
+              username: event.currentTarget.value,
             })
           }
         />
         <WebsiteConverterInputs
           value={state.convertTo}
           onChange={(convertTo) => setState({ ...state, convertTo })}
-          websites={tagSupportingWebsites}
+          websites={websites}
         />
         <Group mt="md" grow>
           <Button
             variant="light"
             disabled={!isValid(state) || !hasChanges}
             onClick={() => {
-              tagConvertersApi
-                .update(tagConverter.id, state)
+              userConvertersApi
+                .update(userConverter.id, state)
                 .then(() => {
                   notifications.show({
-                    title: state.tag,
-                    message: <Trans>Tag converter updated</Trans>,
+                    title: state.username,
+                    message: <Trans>User converter updated</Trans>,
                     color: 'green',
                   });
                 })
                 .catch(() => {
                   notifications.show({
-                    title: state.tag,
+                    title: state.username,
                     message: <Trans>Failed to update</Trans>,
                     color: 'red',
                   });
@@ -316,14 +316,14 @@ function ExistingTagConverter(props: {
           <DeleteActionPopover
             additionalContent={
               <Text size="sm" mt="xs">
-                {tagConverter.tag}
+                {userConverter.username}
               </Text>
             }
             onDelete={() => {
-              tagConvertersApi.remove([tagConverter.id]).then(() => {
+              userConvertersApi.remove([userConverter.id]).then(() => {
                 notifications.show({
-                  title: tagConverter.tag,
-                  message: <Trans>Tag converter deleted</Trans>,
+                  title: userConverter.username,
+                  message: <Trans>User converter deleted</Trans>,
                   color: 'green',
                 });
               });
@@ -335,14 +335,14 @@ function ExistingTagConverter(props: {
   );
 }
 
-function TagConverters() {
+function UserConverters() {
   const { _ } = useLingui();
-  const { state: tagConverters, isLoading } = useStore(TagConverterStore);
+  const { state: userConverters, isLoading } = useStore(UserConverterStore);
   const { state: websiteInfo, isLoading: isLoadingWebsiteInfo } =
     useStore(WebsiteStore);
   const [newConverterFields, setNewConverterFields] =
-    useState<ICreateTagConverterDto>({
-      tag: '',
+    useState<ICreateUserConverterDto>({
+      username: '',
       convertTo: {},
     });
   const [search, setSearch] = useState('');
@@ -350,29 +350,29 @@ function TagConverters() {
     useDisclosure(false);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
-  const sortedTagConverters = useMemo(
+  const sortedUserConverters = useMemo(
     () =>
-      [...(tagConverters || [])].sort((a, b) => {
+      [...(userConverters || [])].sort((a, b) => {
         if (sortDirection === 'asc') {
-          return a.tag.localeCompare(b.tag);
+          return a.username.localeCompare(b.username);
         }
-        return b.tag.localeCompare(a.tag);
+        return b.username.localeCompare(a.username);
       }),
-    [tagConverters, sortDirection],
+    [userConverters, sortDirection],
   );
 
-  const filteredTagConverters = useMemo(() => {
-    if (!search.trim()) return sortedTagConverters;
+  const filteredUserConverters = useMemo(() => {
+    if (!search.trim()) return sortedUserConverters;
 
     const searchLower = search.toLowerCase();
-    return sortedTagConverters.filter(
+    return sortedUserConverters.filter(
       (converter) =>
-        converter.tag.toLowerCase().includes(searchLower) ||
+        converter.username.toLowerCase().includes(searchLower) ||
         Object.values(converter.convertTo).some((value) =>
           value.toLowerCase().includes(searchLower),
         ),
     );
-  }, [sortedTagConverters, search]);
+  }, [sortedUserConverters, search]);
 
   const toggleSortDirection = () => {
     setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
@@ -380,23 +380,23 @@ function TagConverters() {
 
   const resetForm = () => {
     setNewConverterFields({
-      tag: '',
+      username: '',
       convertTo: {},
     });
   };
 
-  const handlePasteTagFromClipboard = async () => {
+  const handlePasteUsernameFromClipboard = async () => {
     try {
       const clipboardText = await navigator.clipboard.readText();
       if (clipboardText) {
         setNewConverterFields((prev) => ({
           ...prev,
-          tag: clipboardText.trim(),
+          username: clipboardText.trim(),
         }));
 
         notifications.show({
-          title: <Trans>Tag Pasted</Trans>,
-          message: <Trans>Tag pasted from clipboard</Trans>,
+          title: <Trans>Username Pasted</Trans>,
+          message: <Trans>Username pasted from clipboard</Trans>,
           color: 'blue',
         });
       }
@@ -413,16 +413,16 @@ function TagConverters() {
     return <Loader />;
   }
 
-  const tagSupportingWebsites = (websiteInfo ?? []).sort((a, b) =>
-    a.displayName.localeCompare(b.displayName),
-  );
+  const websites = (websiteInfo ?? [])
+    .filter((website) => website.usernameShortcut !== undefined)
+    .sort((a, b) => a.displayName.localeCompare(b.displayName));
 
   return (
     <Box>
       <Stack gap="md">
         <Group grow>
           <TextInput
-            placeholder={_(msg`Search tag converters...`)}
+            placeholder={_(msg`Search user converters...`)}
             leftSection={<IconSearch size={16} />}
             rightSection={
               search ? (
@@ -443,8 +443,8 @@ function TagConverters() {
         <Group justify="space-between">
           <Group>
             <Text fw={500} size="md">
-              <Trans>Tag Converters</Trans> ({filteredTagConverters.length}/
-              {tagConverters?.length || 0})
+              <Trans>User Converters</Trans> ({filteredUserConverters.length}/
+              {userConverters?.length || 0})
             </Text>
             <Group ml="xs">
               <Tooltip
@@ -489,7 +489,7 @@ function TagConverters() {
           <Fieldset
             legend={
               <Box mx="4">
-                <Trans>Create new tag converter</Trans>
+                <Trans>Create new user converter</Trans>
               </Box>
             }
           >
@@ -497,21 +497,21 @@ function TagConverters() {
               <TextInput
                 required
                 style={{ flex: 1 }}
-                value={newConverterFields.tag}
-                label={<Trans>Tag</Trans>}
+                value={newConverterFields.username}
+                label={<Trans>Username</Trans>}
                 onChange={(event) =>
                   setNewConverterFields({
                     ...newConverterFields,
-                    tag: event.currentTarget.value,
+                    username: event.currentTarget.value,
                   })
                 }
               />
               <Button
                 variant="subtle"
                 size="xs"
-                onClick={handlePasteTagFromClipboard}
+                onClick={handlePasteUsernameFromClipboard}
                 leftSection={<IconClipboardCopy size={14} />}
-                aria-label={_(msg`Paste tag from clipboard`)}
+                aria-label={_(msg`Paste username from clipboard`)}
               >
                 <Trans>Paste</Trans>
               </Button>
@@ -522,7 +522,7 @@ function TagConverters() {
               onChange={(convertTo) =>
                 setNewConverterFields({ ...newConverterFields, convertTo })
               }
-              websites={tagSupportingWebsites}
+              websites={websites}
             />
 
             <Group mt="md" grow>
@@ -531,7 +531,7 @@ function TagConverters() {
                 color="gray"
                 onClick={resetForm}
                 disabled={
-                  newConverterFields.tag === '' &&
+                  newConverterFields.username === '' &&
                   Object.keys(newConverterFields.convertTo).length === 0
                 }
               >
@@ -541,20 +541,21 @@ function TagConverters() {
                 variant="filled"
                 disabled={
                   !isValid(newConverterFields) ||
-                  tagConverters.some(
-                    (tagConverter) =>
-                      tagConverter.tag === newConverterFields.tag.trim(),
+                  userConverters.some(
+                    (userConverter) =>
+                      userConverter.username ===
+                      newConverterFields.username.trim(),
                   )
                 }
                 onClick={() => {
-                  tagConvertersApi.create(newConverterFields).then(() => {
+                  userConvertersApi.create(newConverterFields).then(() => {
                     setNewConverterFields({
-                      tag: '',
+                      username: '',
                       convertTo: {},
                     });
                     notifications.show({
-                      title: newConverterFields.tag,
-                      message: <Trans>Tag converter created</Trans>,
+                      title: newConverterFields.username,
+                      message: <Trans>User converter created</Trans>,
                       color: 'green',
                     });
                   });
@@ -566,14 +567,14 @@ function TagConverters() {
           </Fieldset>
         </Collapse>
 
-        {filteredTagConverters.length > 0 ? (
+        {filteredUserConverters.length > 0 ? (
           <ScrollArea h="calc(100vh - 280px)" offsetScrollbars>
             <Stack gap="sm">
-              {filteredTagConverters.map((tagConverter) => (
-                <ExistingTagConverter
-                  key={tagConverter.id}
-                  tagConverter={tagConverter}
-                  tagSupportingWebsites={tagSupportingWebsites}
+              {filteredUserConverters.map((userConverter) => (
+                <ExistingUserConverter
+                  key={userConverter.id}
+                  userConverter={userConverter}
+                  websites={websites}
                 />
               ))}
             </Stack>
@@ -582,11 +583,11 @@ function TagConverters() {
           <Paper p="lg" withBorder radius="md" ta="center">
             {search ? (
               <Text c="dimmed">
-                <Trans>No tag converters match your search</Trans>
+                <Trans>No user converters match your search</Trans>
               </Text>
             ) : (
               <Text c="dimmed">
-                <Trans>No tag converters created yet</Trans>
+                <Trans>No user converters created yet</Trans>
               </Text>
             )}
           </Paper>
@@ -596,8 +597,8 @@ function TagConverters() {
   );
 }
 
-export function TagConverterDrawer() {
-  const [visible, toggle] = useDrawerToggle('tagConvertersDrawerVisible');
+export function UserConverterDrawer() {
+  const [visible, toggle] = useDrawerToggle('userConvertersDrawerVisible');
   return (
     <ComponentErrorBoundary>
       <Drawer
@@ -616,7 +617,7 @@ export function TagConverterDrawer() {
         onClose={() => toggle()}
         title={
           <Text fw="bold" size="1.2rem">
-            <Trans>Tag Converters</Trans>
+            <Trans>User Converters</Trans>
           </Text>
         }
         styles={{
@@ -626,7 +627,7 @@ export function TagConverterDrawer() {
           },
         }}
       >
-        <TagConverters />
+        <UserConverters />
       </Drawer>
     </ComponentErrorBoundary>
   );

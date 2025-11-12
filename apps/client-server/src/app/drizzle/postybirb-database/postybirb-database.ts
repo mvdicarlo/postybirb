@@ -50,6 +50,7 @@ export class PostyBirbDatabase<
     SubmissionSchema: [],
     TagConverterSchema: [],
     TagGroupSchema: [],
+    UserConverterSchema: [],
     UserSpecifiedWebsiteOptionsSchema: [],
     WebsiteDataSchema: [],
     WebsiteOptionsSchema: [],

@@ -78,6 +78,7 @@ async function bootstrap() {
     .addTag('submissions')
     .addTag('tag-converters')
     .addTag('tag-groups')
+    .addTag('user-converters')
     .addTag('website-option')
     .addTag('websites')
     .build();

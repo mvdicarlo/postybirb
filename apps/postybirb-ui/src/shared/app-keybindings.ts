@@ -4,6 +4,7 @@ export const AccountKeybinding = 'Alt+A';
 export const HomeKeybinding = 'Alt+H';
 export const TagGroupsKeybinding = 'Alt+T';
 export const TagConvertersKeybinding = 'Alt+C';
+export const UserConvertersKeybinding = 'Alt+U';
 export const MessageSubmissionsKeybinding = 'Alt+M';
 export const NotificationsKeybinding = 'Alt+N';
 export const FileSubmissionsKeybinding = 'Alt+F';
