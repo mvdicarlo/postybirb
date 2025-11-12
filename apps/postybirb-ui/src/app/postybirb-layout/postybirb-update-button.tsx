@@ -1,5 +1,4 @@
-/* eslint-disable react/no-danger */
-import { Trans } from '@lingui/macro';
+import { Trans } from '@lingui/react/macro';
 import { Alert, Button, HoverCard, Stack, Text, Title } from '@mantine/core';
 import { IconDeviceDesktopUp } from '@tabler/icons-react';
 import { useQuery } from 'react-query';
@@ -50,6 +49,7 @@ export function PostyBirbUpdateButton() {
                 <strong>{note.version}</strong>:
                 <div
                   style={{ marginLeft: '16px' }}
+                  // eslint-disable-next-line react/no-danger
                   dangerouslySetInnerHTML={{ __html: note.note ?? '' }}
                 />
               </Text>

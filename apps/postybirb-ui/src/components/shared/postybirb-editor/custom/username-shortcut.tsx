@@ -1,3 +1,4 @@
+import { Trans } from "@lingui/react/macro";
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable react-hooks/rules-of-hooks */
@@ -7,7 +8,6 @@ import {
   createReactInlineContentSpec,
   useBlockNoteEditor,
 } from '@blocknote/react';
-import { Trans } from '@lingui/macro';
 import {
   Badge,
   Box,

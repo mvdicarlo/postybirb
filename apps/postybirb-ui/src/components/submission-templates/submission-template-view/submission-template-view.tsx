@@ -1,5 +1,4 @@
-import { msg, Trans } from '@lingui/macro';
-import { useLingui } from '@lingui/react';
+import { Trans, useLingui } from '@lingui/react/macro';
 import {
   ActionIcon,
   Box,
@@ -46,7 +45,7 @@ function createNewTemplate(name: string, type: SubmissionType) {
 function CreateTemplateForm(props: SubmissionViewProps): JSX.Element {
   const { type } = props;
   const [value, setValue] = useState('');
-  const { _ } = useLingui();
+  const { t } = useLingui();
 
   const create = (name: string) => {
     if (isValidName(value)) {
@@ -76,7 +75,7 @@ function CreateTemplateForm(props: SubmissionViewProps): JSX.Element {
       onChange={(e) => setValue(e.target.value)}
       error={value.length && !isValidName(value)}
       label={<Trans>Create Submission Template</Trans>}
-      placeholder={_(msg`Enter a name for the template`)}
+      placeholder={t`Enter a name for the template`}
       onKeyDown={(e) => {
         if (e.key === 'Enter' && isValidName(value)) {
           create(value);

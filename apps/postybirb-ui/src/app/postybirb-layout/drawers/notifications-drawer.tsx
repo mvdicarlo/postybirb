@@ -1,7 +1,4 @@
-/* eslint-disable no-console */
-/* eslint-disable lingui/no-unlocalized-strings */
-import { msg, Trans } from '@lingui/macro';
-import { useLingui } from '@lingui/react';
+import { Trans, useLingui } from '@lingui/react/macro';
 import {
   ActionIcon,
   Badge,
@@ -92,12 +89,14 @@ function NotificationCard({ notification }: { notification: INotification }) {
         isRead: !notification.isRead,
       })
       .catch((error) => {
+        // eslint-disable-next-line lingui/no-unlocalized-strings, no-console
         console.error('Failed to update notification read status', error);
       });
   };
 
   const deleteNotification = () => {
     notificationApi.remove([notification.id]).catch((error) => {
+      // eslint-disable-next-line lingui/no-unlocalized-strings, no-console
       console.error('Failed to delete notification', error);
     });
   };
@@ -108,6 +107,7 @@ function NotificationCard({ notification }: { notification: INotification }) {
   // Generate styles for card coloring
   const cardStyles = {
     root: {
+      // eslint-disable-next-line lingui/no-unlocalized-strings
       borderLeft: `4px solid var(--mantine-color-${color}-8)`,
     },
   };
@@ -183,7 +183,7 @@ export function NotificationsDrawer() {
   const [visible, toggle] = useDrawerToggle('notificationsDrawerVisible');
   const [activeTab, setActiveTab] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const { _ } = useLingui();
+  const { t } = useLingui();
   const { state: notifications, isLoading } = useStore(NotificationStore);
   const [clearPopoverOpened, setClearPopoverOpened] = useState(false);
 
@@ -245,6 +245,7 @@ export function NotificationsDrawer() {
         }),
       ),
     ).catch((error) => {
+      // eslint-disable-next-line lingui/no-unlocalized-strings, no-console
       console.error('Failed to mark all notifications as read', error);
     });
   };
@@ -253,6 +254,7 @@ export function NotificationsDrawer() {
     const notificationIds = notifications.map((n) => n.id);
     if (notificationIds.length > 0) {
       notificationApi.remove(notificationIds).catch((error) => {
+        // eslint-disable-next-line lingui/no-unlocalized-strings, no-console
         console.error('Failed to clear notifications', error);
       });
     }
@@ -265,6 +267,7 @@ export function NotificationsDrawer() {
     const notificationIds = filteredNotifications.map((n) => n.id);
     if (notificationIds.length > 0) {
       notificationApi.remove(notificationIds).catch((error) => {
+        // eslint-disable-next-line no-console, lingui/no-unlocalized-strings
         console.error('Failed to clear notifications', error);
       });
     }
@@ -300,7 +303,7 @@ export function NotificationsDrawer() {
       >
         <Stack gap="md" h="100%">
           <Input
-            placeholder={_(msg`Search notifications...`)}
+            placeholder={t`Search notifications...`}
             leftSection={<IconSearch size={16} />}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.currentTarget.value)}
@@ -460,6 +463,7 @@ export function NotificationsDrawer() {
             </Popover>
           </Group>
 
+          {/* eslint-disable-next-line lingui/no-unlocalized-strings */}
           <ScrollArea h="calc(100% - 130px)" offsetScrollbars>
             {isLoading ? (
               <Center h="100%">

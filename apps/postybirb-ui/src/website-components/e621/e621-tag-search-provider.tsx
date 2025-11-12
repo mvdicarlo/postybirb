@@ -1,4 +1,4 @@
-import { Plural, Trans } from '@lingui/macro';
+import { Plural, Trans } from "@lingui/react/macro";
 import { Box, DefaultMantineColor, Loader, Popover, Text } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { E621TagCategory, TagSearchProviderSettings } from '@postybirb/types';

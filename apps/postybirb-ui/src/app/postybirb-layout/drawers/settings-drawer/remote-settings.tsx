@@ -1,40 +1,39 @@
-import { Trans, msg } from '@lingui/macro';
-import { useLingui } from '@lingui/react';
+import { Trans, useLingui } from '@lingui/react/macro';
 import {
-    Box,
-    Button,
-    Card,
-    Divider,
-    Group,
-    Radio,
-    Stack,
-    Text,
-    TextInput,
+  Box,
+  Button,
+  Card,
+  Divider,
+  Group,
+  Radio,
+  Stack,
+  Text,
+  TextInput,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { RemoteConfig } from '@postybirb/utils/electron';
 import {
-    IconCopy,
-    IconEye,
-    IconEyeOff,
-    IconNetwork,
-    IconPlug,
-    IconRouter,
-    IconServer,
+  IconCopy,
+  IconEye,
+  IconEyeOff,
+  IconNetwork,
+  IconPlug,
+  IconRouter,
+  IconServer,
 } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 import remoteApi from '../../../../api/remote.api';
 import { useLocalStorage } from '../../../../hooks/use-local-storage';
 import {
-    REMOTE_HOST_KEY,
-    REMOTE_MODE_KEY,
-    REMOTE_PASSWORD_KEY,
+  REMOTE_HOST_KEY,
+  REMOTE_MODE_KEY,
+  REMOTE_PASSWORD_KEY,
 } from '../../../../transports/http-client';
 
 const LAN_IP_PLACEHOLDER = 'localhost:9487';
 
 export function RemoteSettings() {
-  const { _ } = useLingui();
+  const { t } = useLingui();
   const [isTestingConnection, setIsTestingConnection] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [remoteConfig, setRemoteConfig] = useState<RemoteConfig>({
@@ -84,8 +83,8 @@ export function RemoteSettings() {
     try {
       await remoteApi.testPing();
       notifications.show({
-        title: _(msg`Success`),
-        message: _(msg`Successfully connected to the remote host`),
+        title: t`Success`,
+        message: t`Successfully connected to the remote host`,
         color: 'green',
       });
     } catch (error) {
@@ -311,9 +310,7 @@ export function RemoteSettings() {
                   px={4}
                   onClick={() => setShowLanIp((v) => !v)}
                   tabIndex={-1}
-                  aria-label={
-                    showLanIp ? _(msg`Hide LAN IP`) : _(msg`Show LAN IP`)
-                  }
+                  aria-label={showLanIp ? t`Hide LAN IP` : t`Show LAN IP`}
                 >
                   {showLanIp ? <IconEyeOff size={14} /> : <IconEye size={14} />}
                 </Button>
@@ -325,20 +322,20 @@ export function RemoteSettings() {
                     try {
                       await navigator.clipboard.writeText(lanIp);
                       notifications.show({
-                        title: _(msg`Copied`),
-                        message: _(msg`LAN IP copied to clipboard`),
+                        title: t`Copied`,
+                        message: t`LAN IP copied to clipboard`,
                         color: 'green',
                       });
                     } catch {
                       notifications.show({
-                        title: _(msg`Copy failed`),
-                        message: _(msg`Could not copy LAN IP`),
+                        title: t`Copy failed`,
+                        message: t`Could not copy LAN IP`,
                         color: 'red',
                       });
                     }
                   }}
                   tabIndex={-1}
-                  aria-label={_(msg`Copy LAN IP`)}
+                  aria-label={t`Copy LAN IP`}
                 >
                   <IconCopy size={14} />
                 </Button>

@@ -1,4 +1,4 @@
-import { Trans } from '@lingui/macro';
+import { Trans } from "@lingui/react/macro";
 import { Box, Button, Stack, TextInput } from '@mantine/core';
 import { FurtasticAccountLoginData } from '@postybirb/types';
 import { IconLink, IconMail, IconPassword } from '@tabler/icons-react';

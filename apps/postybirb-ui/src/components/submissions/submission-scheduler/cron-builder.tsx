@@ -1,4 +1,5 @@
-import { msg, Trans } from '@lingui/macro';
+import { msg } from '@lingui/core/macro';
+import { Trans, useLingui } from '@lingui/react/macro';
 import {
   Box,
   Button,
@@ -11,7 +12,6 @@ import {
   Tooltip,
 } from '@mantine/core';
 import { useEffect, useRef, useState } from 'react';
-import { useTrans } from '../../../hooks/use-trans';
 
 interface CronBuilderProps {
   value: string;
@@ -164,7 +164,7 @@ function DaySelector({
   dayOfWeek: string;
   onPartChange: (part: TimeUnit, value: string) => void;
 }) {
-  const t = useTrans();
+  const { t } = useLingui();
   return (
     <Box>
       <Text size="sm" fw={500}>
@@ -203,7 +203,7 @@ function MonthSelector({
   month: string;
   onPartChange: (part: TimeUnit, value: string) => void;
 }) {
-  const t = useTrans();
+  const { t } = useLingui();
 
   return (
     <Box>
@@ -215,7 +215,7 @@ function MonthSelector({
       </Text>
       <NativeSelect
         data={[
-          { value: '*', label: t(msg`Every month`) },
+          { value: '*', label: t`Every month` },
           ...MONTHS.map((e) => ({ value: e.value, label: t(e.label) })),
         ]}
         value={month}

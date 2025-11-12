@@ -1,5 +1,5 @@
 import { MessageDescriptor } from '@lingui/core';
-import { msg } from '@lingui/macro';
+import { msg } from '@lingui/core/macro';
 
 export const FieldLabelTranslations = {
   aIGenerated: msg`AI generated`,
@@ -93,19 +93,4 @@ export const FieldLabelTranslations = {
   gore: msg`Gore`,
 } satisfies Record<string, MessageDescriptor>;
 
-// These labels are not translated and are used in cases where translation is not desired.
-// Primarily to keep more offensive words from public translation requests.
-export const FieldLabelUntranslated = {
-  rape: `Rape` as unknown as MessageDescriptor,
-  incest: `Incest` as unknown as MessageDescriptor,
-  scat: `Scat` as unknown as MessageDescriptor,
-  futa: `Futa` as unknown as MessageDescriptor,
-  guro: `Guro` as unknown as MessageDescriptor,
-  beast: `Beast` as unknown as MessageDescriptor,
-  teen: `Teen` as unknown as MessageDescriptor,
-  yuri: `Yuri` as unknown as MessageDescriptor,
-  yaoi: `Yaoi` as unknown as MessageDescriptor,
-} satisfies Record<string, MessageDescriptor>;
-
 export type FieldLabelTranslationsId = keyof typeof FieldLabelTranslations;
-export type FieldLabelUntranslatedId = keyof typeof FieldLabelUntranslated;

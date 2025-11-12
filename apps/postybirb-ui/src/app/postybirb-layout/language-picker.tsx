@@ -1,5 +1,4 @@
-import { Trans, msg } from '@lingui/macro';
-import { useLingui } from '@lingui/react';
+import { Trans, useLingui } from '@lingui/react/macro';
 import {
   ActionIcon,
   Badge,
@@ -21,7 +20,7 @@ import { languages } from '../languages';
 import './language-picker.css';
 
 export function LanguagePicker() {
-  const { _ } = useLingui();
+  const { t } = useLingui();
   const [locale, setLocale] = use18n();
   const [opened, { toggle, close }] = useDisclosure(false);
   const { hovered, ref } = useHover();
@@ -41,7 +40,7 @@ export function LanguagePicker() {
       >
         <Menu.Target>
           <Tooltip
-            label={_(msg`Change language`)}
+            label={t`Change language`}
             position="right"
             withArrow
             openDelay={500}
@@ -51,7 +50,7 @@ export function LanguagePicker() {
               variant={hovered || opened ? 'light' : 'subtle'}
               radius="md"
               size="lg"
-              aria-label={_(msg`Change language`)}
+              aria-label={t`Change language`}
               c="inherit"
             >
               <IconLanguageHiragana
@@ -105,7 +104,7 @@ export function LanguagePicker() {
                 color={isActive || isHovered ? 'blue' : undefined}
                 fw={isActive ? 500 : undefined}
               >
-                {_(label)}
+                {t(label)}
               </Menu.Item>
             );
           })}

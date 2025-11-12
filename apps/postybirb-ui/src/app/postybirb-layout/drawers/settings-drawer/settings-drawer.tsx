@@ -1,5 +1,4 @@
-/* eslint-disable lingui/no-unlocalized-strings */
-import { Trans } from '@lingui/macro';
+import { Trans } from '@lingui/react/macro';
 import {
   Box,
   Drawer,
@@ -70,6 +69,7 @@ export function SettingsDrawer() {
             orientation="vertical"
             styles={{
               list: {
+                // eslint-disable-next-line lingui/no-unlocalized-strings
                 flex: '0 0 125px',
               },
               panel: {
