@@ -2,16 +2,18 @@
 import { Description } from '@postybirb/types';
 import TurndownService from 'turndown';
 import { DescriptionBlockNode } from './block-description-node';
-import { BBCodeConverter } from './converters/bbcode-converter';
 import { BaseConverter } from './converters/base-converter';
+import { BBCodeConverter } from './converters/bbcode-converter';
 import {
-  CustomConverter,
-  CustomNodeHandler,
+    CustomConverter,
+    CustomNodeHandler,
 } from './converters/custom-converter';
 import { HtmlConverter } from './converters/html-converter';
 import { PlainTextConverter } from './converters/plaintext-converter';
 import { ConversionContext } from './description-node.base';
 import { BlockTypes, IDescriptionBlockNode } from './description-node.types';
+import { DescriptionInlineNode } from './inline-description-node';
+import { DescriptionTextNode } from './text-description-node';
 
 export type InsertionOptions = {
   insertTitle?: string;
@@ -24,7 +26,7 @@ export class DescriptionNodeTree {
 
   private readonly insertionOptions: InsertionOptions;
 
-  private readonly context: ConversionContext;
+  private context: ConversionContext;
 
   private readonly ad: Description = [
     {
@@ -109,6 +111,77 @@ export class DescriptionNodeTree {
    */
   parseWithConverter(converter: BaseConverter): string {
     return converter.convertBlocks(this.withInsertions(), this.context);
+  }
+
+  /**
+   * Updates the context with resolved shortcuts and usernames.
+   */
+  public updateContext(updates: Partial<ConversionContext>): void {
+    this.context = { ...this.context, ...updates };
+  }
+
+  /**
+   * Finds all inline nodes of a specific type in the tree.
+   */
+  public findInlineNodesByType(type: string): Array<DescriptionInlineNode> {
+    const found: Array<DescriptionInlineNode> = [];
+
+    const traverse = (
+      content: Array<DescriptionInlineNode | DescriptionTextNode>,
+    ) => {
+      for (const node of content) {
+        if (node instanceof DescriptionInlineNode && node.type === type) {
+          found.push(node);
+        }
+        // Only DescriptionInlineNode has content, DescriptionTextNode has text
+        if (node instanceof DescriptionInlineNode) {
+          traverse(node.content);
+        }
+      }
+    };
+
+    for (const block of this.nodes) {
+      traverse(block.content);
+    }
+
+    return found;
+  }
+
+  /**
+   * Finds all custom shortcut IDs in the tree.
+   */
+  public findCustomShortcutIds(): Set<string> {
+    const ids = new Set<string>();
+    const shortcuts = this.findInlineNodesByType('customShortcut');
+
+    for (const shortcut of shortcuts) {
+      if (shortcut.props.id) {
+        ids.add(shortcut.props.id);
+      }
+    }
+
+    return ids;
+  }
+
+  /**
+   * Finds all usernames in the tree.
+   */
+  public findUsernames(): Set<string> {
+    const usernames = new Set<string>();
+    const usernameNodes = this.findInlineNodesByType('username');
+
+    for (const node of usernameNodes) {
+      const username = node.content
+        .filter((c) => c instanceof DescriptionTextNode)
+        .map((c) => c.text)
+        .join('')
+        .trim();
+      if (username) {
+        usernames.add(username);
+      }
+    }
+
+    return usernames;
   }
 
   private withInsertions(): Array<DescriptionBlockNode> {

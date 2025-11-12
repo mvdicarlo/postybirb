@@ -413,9 +413,9 @@ function UserConverters() {
     return <Loader />;
   }
 
-  const websites = (websiteInfo ?? []).sort((a, b) =>
-    a.displayName.localeCompare(b.displayName),
-  );
+  const websites = (websiteInfo ?? [])
+    .filter((website) => website.usernameShortcut !== undefined)
+    .sort((a, b) => a.displayName.localeCompare(b.displayName));
 
   return (
     <Box>
@@ -543,7 +543,8 @@ function UserConverters() {
                   !isValid(newConverterFields) ||
                   userConverters.some(
                     (userConverter) =>
-                      userConverter.username === newConverterFields.username.trim(),
+                      userConverter.username ===
+                      newConverterFields.username.trim(),
                   )
                 }
                 onClick={() => {
