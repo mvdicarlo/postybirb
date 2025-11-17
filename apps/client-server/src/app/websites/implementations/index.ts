@@ -33,3 +33,4 @@ export { default as Tumblr } from './tumblr/tumblr.website';
 export { default as Twitter } from './twitter/twitter.website';
 export { default as Weasyl } from './weasyl/weasyl.website';
 export { default as Cara } from './cara/cara.website';
+export { default as Derpibooru } from './derpibooru/derpibooru.website';
