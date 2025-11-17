@@ -4,13 +4,13 @@ import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { SupportsUsernameShortcut } from '../../decorators/supports-username-shortcut.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { PhilomenaWebsite } from '../philomena/philomena.website';
-import { DerpibooruFileSubmission } from './models/derpibooru-file-submission';
+import { ManebooruFileSubmission } from './models/manebooru-file-submission';
 
 @WebsiteMetadata({
-  name: 'derpibooru',
-  displayName: 'Derpibooru',
+  name: 'manebooru',
+  displayName: 'Manebooru',
 })
-@UserLoginFlow('https://derpibooru.org/sessions/new')
+@UserLoginFlow('https://manebooru.art/sessions/new')
 @SupportsFiles({
   acceptedMimeTypes: [
     'image/jpeg',
@@ -26,13 +26,13 @@ import { DerpibooruFileSubmission } from './models/derpibooru-file-submission';
   acceptsExternalSourceUrls: true,
 })
 @SupportsUsernameShortcut({
-  id: 'derpibooru',
-  url: 'https://derpibooru.org/profiles/$1',
+  id: 'manebooru',
+  url: 'https://manebooru.art/profiles/$1',
 })
-export default class Derpibooru extends PhilomenaWebsite<DerpibooruFileSubmission> {
-  protected BASE_URL = 'https://derpibooru.org';
+export default class Manebooru extends PhilomenaWebsite<ManebooruFileSubmission> {
+  protected BASE_URL = 'https://manebooru.art';
 
-  createFileModel(): DerpibooruFileSubmission {
-    return new DerpibooruFileSubmission();
+  createFileModel(): ManebooruFileSubmission {
+    return new ManebooruFileSubmission();
   }
 }
