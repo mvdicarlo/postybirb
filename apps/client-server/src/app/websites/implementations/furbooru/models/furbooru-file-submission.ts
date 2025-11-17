@@ -1,15 +1,10 @@
-import { DescriptionField, TagField } from '@postybirb/form-builder';
-import { DescriptionType, DescriptionValue, TagValue } from '@postybirb/types';
-import { BaseWebsiteOptions } from '../../../models/base-website-options';
+import { TagField } from '@postybirb/form-builder';
+import { TagValue } from '@postybirb/types';
+import { PhilomenaFileSubmission } from '../../philomena/models/philomena-file-submission';
 
-export class FurbooruFileSubmission extends BaseWebsiteOptions {
+export class FurbooruFileSubmission extends PhilomenaFileSubmission {
   @TagField({
     minTags: 5,
   })
   tags: TagValue;
-
-  @DescriptionField({
-    descriptionType: DescriptionType.MARKDOWN,
-  })
-  description: DescriptionValue;
 }
