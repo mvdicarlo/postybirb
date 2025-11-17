@@ -1,7 +1,8 @@
-import { Plural, Trans } from '@lingui/macro';
+import { Plural, Trans } from "@lingui/react/macro";
 import { Text } from '@mantine/core';
 import {
   FileType,
+  SubmissionRating,
   ValidationMessage,
   ValidationMessages,
 } from '@postybirb/types';
@@ -344,6 +345,31 @@ export const TranslationMessages: TranslationsMap = {
   'validation.folder.missing-or-invalid': () => (
     <Trans>Selected option is invalid or missing</Trans>
   ),
+
+  'validation.rating.unsupported-rating': (props: {
+    rating: string;
+  }): JSX.Element => {
+    const { rating } = props;
+    let ratingLabel: JSX.Element;
+    switch (rating) {
+      case SubmissionRating.GENERAL:
+        ratingLabel = <Trans>General</Trans>;
+        break;
+      case SubmissionRating.MATURE:
+        ratingLabel = <Trans>Mature</Trans>;
+        break;
+      case SubmissionRating.ADULT:
+        ratingLabel = <Trans>Adult</Trans>;
+        break;
+      case SubmissionRating.EXTREME:
+        ratingLabel = <Trans>Extreme</Trans>;
+        break;
+      default:
+        ratingLabel = <span>{rating}</span>;
+        break;
+    }
+    return <Trans>Unsupported rating: {ratingLabel}</Trans>;
+  },
 };
 
 export function ValidationTranslation({

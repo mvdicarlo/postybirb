@@ -1,5 +1,4 @@
-import { Trans, msg } from '@lingui/macro';
-import { useLingui } from '@lingui/react';
+import { Trans, useLingui } from '@lingui/react/macro';
 import {
   Box,
   Divider,
@@ -38,7 +37,7 @@ export function AccountDrawer() {
   const [filter, setFilter] = useState<'all' | 'logged-in' | 'not-logged-in'>(
     'all',
   );
-  const { _ } = useLingui();
+  const { t } = useLingui();
 
   const filteredAndSearchedWebsites = useMemo(() => {
     if (!searchQuery && filter === 'all') return filteredWebsites;
@@ -141,9 +140,9 @@ export function AccountDrawer() {
             value={filter}
             onChange={(value) => setFilter(value as typeof filter)}
             data={[
-              { value: 'all', label: _(msg`All`) },
-              { value: 'logged-in', label: _(msg`Logged In`) },
-              { value: 'not-logged-in', label: _(msg`Not Logged In`) },
+              { value: 'all', label: t`All` },
+              { value: 'logged-in', label: t`Logged In` },
+              { value: 'not-logged-in', label: t`Not Logged In` },
             ]}
           />
 

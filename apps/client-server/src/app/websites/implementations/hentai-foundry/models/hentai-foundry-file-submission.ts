@@ -189,7 +189,7 @@ export class HentaiFoundryFileSubmission extends BaseWebsiteOptions {
   disableComments: boolean;
 
   @BooleanField({
-    label: 'yaoi',
+    label: { untranslated: 'Yaoi' },
     defaultValue: false,
     section: 'website',
     span: 6,
@@ -197,7 +197,7 @@ export class HentaiFoundryFileSubmission extends BaseWebsiteOptions {
   yaoi: boolean;
 
   @BooleanField({
-    label: 'yuri',
+    label: { untranslated: 'Yuri' },
     defaultValue: false,
     section: 'website',
     span: 6,
@@ -205,7 +205,7 @@ export class HentaiFoundryFileSubmission extends BaseWebsiteOptions {
   yuri: boolean;
 
   @BooleanField({
-    label: 'teen',
+    label: { untranslated: 'Teen' },
     defaultValue: false,
     section: 'website',
     span: 6,
@@ -213,7 +213,7 @@ export class HentaiFoundryFileSubmission extends BaseWebsiteOptions {
   teen: boolean;
 
   @BooleanField({
-    label: 'guro',
+    label: { untranslated: 'Guro' },
     defaultValue: false,
     section: 'website',
     span: 6,
@@ -229,7 +229,7 @@ export class HentaiFoundryFileSubmission extends BaseWebsiteOptions {
   furry: boolean;
 
   @BooleanField({
-    label: 'beast',
+    label: { untranslated: 'Beast' },
     defaultValue: false,
     section: 'website',
     span: 6,
@@ -253,7 +253,7 @@ export class HentaiFoundryFileSubmission extends BaseWebsiteOptions {
   female: boolean;
 
   @BooleanField({
-    label: 'futa',
+    label: { untranslated: 'Futa' },
     defaultValue: false,
     section: 'website',
     span: 6,
@@ -261,7 +261,7 @@ export class HentaiFoundryFileSubmission extends BaseWebsiteOptions {
   futa: boolean;
 
   @BooleanField({
-    label: 'other',
+    label: { untranslated: 'Other' },
     defaultValue: false,
     section: 'website',
     span: 6,
@@ -269,7 +269,7 @@ export class HentaiFoundryFileSubmission extends BaseWebsiteOptions {
   other: boolean;
 
   @BooleanField({
-    label: 'scat',
+    label: { untranslated: 'Scat' },
     defaultValue: false,
     section: 'website',
     span: 6,
@@ -277,7 +277,7 @@ export class HentaiFoundryFileSubmission extends BaseWebsiteOptions {
   scat: boolean;
 
   @BooleanField({
-    label: 'incest',
+    label: { untranslated: 'Incest' },
     defaultValue: false,
     section: 'website',
     span: 6,
@@ -285,7 +285,7 @@ export class HentaiFoundryFileSubmission extends BaseWebsiteOptions {
   incest: boolean;
 
   @BooleanField({
-    label: 'rape',
+    label: { untranslated: 'Rape' },
     defaultValue: false,
     section: 'website',
     span: 6,

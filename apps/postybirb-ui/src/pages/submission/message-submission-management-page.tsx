@@ -1,5 +1,4 @@
-import { msg, Trans } from '@lingui/macro';
-import { useLingui } from '@lingui/react';
+import { Trans, useLingui } from '@lingui/react/macro';
 import {
   ActionIcon,
   Box,
@@ -40,7 +39,7 @@ function createNewMessageSubmission(name: string) {
 
 function CreateMessageSubmissionForm(): JSX.Element {
   const [value, setValue] = useState('');
-  const { _ } = useLingui();
+  const { t } = useLingui();
 
   return (
     <TextInput
@@ -50,7 +49,7 @@ function CreateMessageSubmissionForm(): JSX.Element {
       onChange={(e) => setValue(e.target.value)}
       error={value.length && !isValidName(value)}
       label={<Trans>Create Message Submission</Trans>}
-      placeholder={_(msg`Enter a name for the new message submission`)}
+      placeholder={t`Enter a name for the new message submission`}
       onKeyDown={(e) => {
         if (e.key === 'Enter' && isValidName(value)) {
           createNewMessageSubmission(value).then(() => setValue(''));

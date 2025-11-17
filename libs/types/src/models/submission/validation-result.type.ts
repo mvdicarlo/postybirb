@@ -169,6 +169,10 @@ export interface ValidationMessages {
     maxDate: string;
   };
 
+  'validation.rating.unsupported-rating': {
+    rating: string;
+  };
+
   // ----------- Website specific validation messages --------------
   'validation.file.itaku.must-share-feed': object;
 

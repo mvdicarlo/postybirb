@@ -1,5 +1,5 @@
+import { Trans } from "@lingui/react/macro";
 import { Draggable } from '@fullcalendar/interaction';
-import { Trans } from '@lingui/macro';
 import {
   Avatar,
   Badge,

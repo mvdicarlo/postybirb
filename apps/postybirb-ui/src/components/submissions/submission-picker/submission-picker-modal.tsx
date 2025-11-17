@@ -1,4 +1,4 @@
-import { Trans } from '@lingui/macro';
+import { Trans } from "@lingui/react/macro";
 import { Button, Group, Modal, Stack, Title } from '@mantine/core';
 import { SubmissionId, SubmissionType } from '@postybirb/types';
 import { PropsWithChildren, useState } from 'react';

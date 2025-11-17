@@ -1,5 +1,4 @@
-import { msg, Trans } from '@lingui/macro';
-import { useLingui } from '@lingui/react';
+import { Trans, useLingui } from '@lingui/react/macro';
 import {
   Accordion,
   Badge,
@@ -185,7 +184,7 @@ function WebsitePostRow({
  * Displays details of a post record
  */
 function PostDetailsView({ post }: { post: IPostRecord | null }) {
-  const { _ } = useLingui();
+  const { t } = useLingui();
   const { map: accountsMap } = useStore(AccountStore);
 
   if (!post) {
@@ -201,7 +200,7 @@ function PostDetailsView({ post }: { post: IPostRecord | null }) {
   const handleSaveToFile = () => {
     const filename = exportPostRecordToFile(post);
     showNotification({
-      title: _(msg`File saved`),
+      title: t`File saved`,
       message: filename,
       color: 'green',
     });
@@ -370,7 +369,7 @@ function PostTimelineItem({
  * Card displaying submission history
  */
 function SubmissionHistoryCard({ submission }: { submission: SubmissionDto }) {
-  const { _ } = useLingui();
+  const { t } = useLingui();
   const { map: accountsMap } = useStore(AccountStore);
   const [isRestoring, setIsRestoring] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -394,14 +393,14 @@ function SubmissionHistoryCard({ submission }: { submission: SubmissionDto }) {
       setIsRestoring(true);
       await submissionApi.unarchive(submission.id);
       showNotification({
-        title: _(msg`Submission restored`),
+        title: t`Submission restored`,
         message: submission.getDefaultOptions().data.title,
         color: 'green',
         icon: <IconCheck size={16} />,
       });
     } catch (error) {
       showNotification({
-        title: _(msg`Restore failed`),
+        title: t`Restore failed`,
         message: String(error),
         color: 'red',
         icon: <IconX size={16} />,
@@ -416,14 +415,14 @@ function SubmissionHistoryCard({ submission }: { submission: SubmissionDto }) {
       setIsDeleting(true);
       await submissionApi.remove([submission.id]);
       showNotification({
-        title: _(msg`Submission deleted`),
+        title: t`Submission deleted`,
         message: submission.getDefaultOptions().data.title,
         color: 'green',
         icon: <IconCheck size={16} />,
       });
     } catch (error) {
       showNotification({
-        title: _(msg`Delete failed`),
+        title: t`Delete failed`,
         message: String(error),
         color: 'red',
         icon: <IconX size={16} />,
@@ -503,7 +502,7 @@ export function SubmissionHistoryView({
   type,
   submissions: providedSubmissions,
 }: SubmissionViewProps) {
-  const { _ } = useLingui();
+  const { t } = useLingui();
   const { state: storeSubmissions } = useStore(SubmissionStore);
   const [nameFilter, setNameFilter] = useState<string>('');
 
@@ -563,7 +562,7 @@ export function SubmissionHistoryView({
           <Flex align="center">
             <Input
               flex="6"
-              placeholder={_(msg`Search`)}
+              placeholder={t`Search`}
               width="100%"
               leftSection={<IconSearch />}
               value={nameFilter}

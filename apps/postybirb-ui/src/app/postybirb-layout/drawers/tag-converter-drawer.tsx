@@ -1,40 +1,38 @@
-/* eslint-disable lingui/no-unlocalized-strings */
-import { Trans, msg } from '@lingui/macro';
-import { useLingui } from '@lingui/react';
+import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import {
-    ActionIcon,
-    Badge,
-    Box,
-    Button,
-    Collapse,
-    Divider,
-    Drawer,
-    Fieldset,
-    Group,
-    Loader,
-    Paper,
-    ScrollArea,
-    Stack,
-    Text,
-    TextInput,
-    Tooltip,
+  ActionIcon,
+  Badge,
+  Box,
+  Button,
+  Collapse,
+  Divider,
+  Drawer,
+  Fieldset,
+  Group,
+  Loader,
+  Paper,
+  ScrollArea,
+  Stack,
+  Text,
+  TextInput,
+  Tooltip,
 } from '@mantine/core';
 import { useClipboard, useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import {
-    ICreateTagConverterDto,
-    IWebsiteInfoDto,
-    TagConverterDto,
+  ICreateTagConverterDto,
+  IWebsiteInfoDto,
+  TagConverterDto,
 } from '@postybirb/types';
 import {
-    IconChevronDown,
-    IconChevronUp,
-    IconClipboardCopy,
-    IconPlus,
-    IconSearch,
-    IconSortAscending,
-    IconSortDescending,
-    IconX,
+  IconChevronDown,
+  IconChevronUp,
+  IconClipboardCopy,
+  IconPlus,
+  IconSearch,
+  IconSortAscending,
+  IconSortDescending,
+  IconX,
 } from '@tabler/icons-react';
 import { useMemo, useState } from 'react';
 import tagConvertersApi from '../../../api/tag-converters.api';
@@ -68,7 +66,7 @@ function WebsiteConverterInputs({
   websites: IWebsiteInfoDto[];
   disabled?: boolean;
 }) {
-  const { _ } = useLingui();
+  const { t } = useLingui();
   const sitesWithValues = useMemo(
     () => websites.filter((site) => value[site.id]?.trim().length > 0),
     [websites, value],
@@ -94,7 +92,17 @@ function WebsiteConverterInputs({
         <Group>
           <Text size="sm" fw={500}>
             <Trans>Website Conversions</Trans>{' '}
-            {sitesWithValues.length > 0 && `(${sitesWithValues.length} active)`}
+            {sitesWithValues.length > 0 && (
+              <>
+                (${sitesWithValues.length}{' '}
+                <Plural
+                  value={sitesWithValues.length}
+                  one="active"
+                  other="active"
+                />
+                )
+              </>
+            )}
           </Text>
           {sitesWithValues.length > 0 && (
             <Group gap={5}>
@@ -113,10 +121,14 @@ function WebsiteConverterInputs({
           )}
         </Group>
       </Group>
-
       <Divider mb="md" />
-
-      <Box style={{ maxHeight: 'calc(100vh - 440px)', overflowY: 'auto' }}>
+      <Box
+        style={{
+          // eslint-disable-next-line lingui/no-unlocalized-strings
+          maxHeight: 'calc(100vh - 440px)',
+          overflowY: 'auto',
+        }}
+      >
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr>
@@ -141,8 +153,8 @@ function WebsiteConverterInputs({
             </tr>
           </thead>
           <tbody>
-            {websites.map((website) => (
-              <tr key={website.id}>
+            {websites.map(({ id, displayName }) => (
+              <tr key={id}>
                 <td
                   style={{
                     padding: '8px',
@@ -151,8 +163,8 @@ function WebsiteConverterInputs({
                   }}
                 >
                   <Group>
-                    <Text>{website.displayName}</Text>
-                    {value[website.id]?.trim().length > 0 && (
+                    <Text>{displayName}</Text>
+                    {value[id]?.trim().length > 0 && (
                       <Badge size="xs" variant="light" color="green">
                         <Trans>Set</Trans>
                       </Badge>
@@ -168,15 +180,13 @@ function WebsiteConverterInputs({
                 >
                   <TextInput
                     size="xs"
-                    value={value[website.id] ?? ''}
-                    placeholder={_(
-                      msg`Enter conversion for ${website.displayName}`,
-                    )}
+                    value={value[id] ?? ''}
+                    placeholder={t`Enter conversion for ${displayName}`}
                     onChange={(event) =>
-                      handleChange(website.id, event.currentTarget.value)
+                      handleChange(id, event.currentTarget.value)
                     }
                     onBlur={(event) =>
-                      handleBlur(website.id, event.currentTarget.value)
+                      handleBlur(id, event.currentTarget.value)
                     }
                     disabled={disabled}
                   />
@@ -194,7 +204,7 @@ function ExistingTagConverter(props: {
   tagConverter: TagConverterDto;
   tagSupportingWebsites: IWebsiteInfoDto[];
 }) {
-  const { _ } = useLingui();
+  const { t } = useLingui();
   const { tagConverter, tagSupportingWebsites } = props;
   const [state, setState] = useState<ICreateTagConverterDto>({
     tag: tagConverter.tag,
@@ -224,6 +234,7 @@ function ExistingTagConverter(props: {
       })
       .join('\n');
 
+    // eslint-disable-next-line lingui/no-unlocalized-strings
     clipboard.copy(`Tag: ${state.tag}\n${text}`);
     notifications.show({
       title: <Trans>Copied</Trans>,
@@ -246,7 +257,7 @@ function ExistingTagConverter(props: {
               variant="subtle"
               size="xs"
               onClick={handleCopyToClipboard}
-              aria-label={_(msg`Copy converter details`)}
+              aria-label={t`Copy converter details`}
             >
               <IconClipboardCopy size={16} />
             </ActionIcon>
@@ -336,7 +347,7 @@ function ExistingTagConverter(props: {
 }
 
 function TagConverters() {
-  const { _ } = useLingui();
+  const { t } = useLingui();
   const { state: tagConverters, isLoading } = useStore(TagConverterStore);
   const { state: websiteInfo, isLoading: isLoadingWebsiteInfo } =
     useStore(WebsiteStore);
@@ -422,14 +433,14 @@ function TagConverters() {
       <Stack gap="md">
         <Group grow>
           <TextInput
-            placeholder={_(msg`Search tag converters...`)}
+            placeholder={t`Search tag converters...`}
             leftSection={<IconSearch size={16} />}
             rightSection={
               search ? (
                 <ActionIcon
                   variant="transparent"
                   onClick={() => setSearch('')}
-                  aria-label={_(msg`Clear search`)}
+                  aria-label={t`Clear search`}
                 >
                   <IconX size={16} />
                 </ActionIcon>
@@ -460,7 +471,7 @@ function TagConverters() {
                   variant="subtle"
                   size="sm"
                   onClick={toggleSortDirection}
-                  aria-label={_(msg`Toggle sort direction`)}
+                  aria-label={t`Toggle sort direction`}
                 >
                   {sortDirection === 'asc' ? (
                     <IconSortAscending size={16} />
@@ -511,7 +522,7 @@ function TagConverters() {
                 size="xs"
                 onClick={handlePasteTagFromClipboard}
                 leftSection={<IconClipboardCopy size={14} />}
-                aria-label={_(msg`Paste tag from clipboard`)}
+                aria-label={t`Paste tag from clipboard`}
               >
                 <Trans>Paste</Trans>
               </Button>
@@ -567,6 +578,7 @@ function TagConverters() {
         </Collapse>
 
         {filteredTagConverters.length > 0 ? (
+          // eslint-disable-next-line lingui/no-unlocalized-strings
           <ScrollArea h="calc(100vh - 280px)" offsetScrollbars>
             <Stack gap="sm">
               {filteredTagConverters.map((tagConverter) => (

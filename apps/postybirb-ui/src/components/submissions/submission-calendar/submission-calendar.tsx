@@ -1,10 +1,10 @@
+import { Trans } from "@lingui/react/macro";
 import { EventClickArg, EventDropArg } from '@fullcalendar/core';
 import { EventImpl } from '@fullcalendar/core/internal';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin, { DropArg } from '@fullcalendar/interaction';
 import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
-import { Trans } from '@lingui/macro';
 import {
   ActionIcon,
   Badge,
