@@ -24,15 +24,17 @@ jobs:
         with:
           fetch-depth: 0
 
-        # This is needed to be run before node setup, because node setup uses yarn to get cache dir
-      - name: Enable corepack to use Yarn v4
-        run: corepack enable
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
-          cache: 'yarn'
+          node-version: '20'
+
+      - name: Enable Corepack and Yarn v4
+        # use bash on all OSes so the script is the same
+        shell: bash
+        run: |
+          corepack enable
+          corepack prepare yarn@4.9.4 --activate
 
       # Cache Electron binaries
       - name: Cache Electron binaries
@@ -48,7 +50,8 @@ jobs:
 
       # Install dependencies with proper caching
       - name: Install dependencies
-        run: yarn install --immutable
+        shell: bash
+        run: corepack yarn install --immutable
         env:
           CYPRESS_INSTALL_BINARY: 0
           ELECTRON_CACHE: ~/.cache/electron
@@ -56,13 +59,15 @@ jobs:
 
       # Build the application
       - name: Build application
-        run: yarn build:prod
+        shell: bash
+        run: corepack yarn build:prod
         env:
           NODE_ENV: production
 
       # Build Electron app
       - name: Build Electron app
-        run: yarn electron-builder --${{ matrix.platform }} --publish=always
+        shell: bash
+        run: corepack yarn electron-builder --${{ matrix.platform }} --publish=always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
