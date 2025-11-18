@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 /* eslint-disable lingui/no-unlocalized-strings */
-import { Trans } from '@lingui/macro';
+import { Trans } from '@lingui/react/macro';
 import { notifications } from '@mantine/notifications';
 import { ReactNode } from 'react';
 import { ErrorBoundary } from './error-boundary';
@@ -9,12 +9,12 @@ import { ErrorBoundary } from './error-boundary';
  * Error boundary that integrates with the Mantine notifications system
  * Shows user-friendly notifications when errors occur
  */
-export function NotificationErrorBoundary({ 
+export function NotificationErrorBoundary({
   children,
   showNotification = true,
   notificationTitle,
-  level = 'section'
-}: { 
+  level = 'section',
+}: {
   children: ReactNode;
   showNotification?: boolean;
   notificationTitle?: ReactNode;
@@ -24,12 +24,18 @@ export function NotificationErrorBoundary({
     <ErrorBoundary
       level={level}
       onError={(error, errorInfo) => {
-        console.error('Error caught by NotificationErrorBoundary:', error, errorInfo);
-        
+        console.error(
+          'Error caught by NotificationErrorBoundary:',
+          error,
+          errorInfo,
+        );
+
         if (showNotification) {
           notifications.show({
             title: notificationTitle || <Trans>Something went wrong</Trans>,
-            message: error.message || <Trans>An unexpected error occurred</Trans>,
+            message: error.message || (
+              <Trans>An unexpected error occurred</Trans>
+            ),
             color: 'red',
             autoClose: 5000,
           });
@@ -45,10 +51,10 @@ export function NotificationErrorBoundary({
  * Silent error boundary that only logs errors without showing UI fallback
  * Useful for non-critical components where you want the app to continue functioning
  */
-export function SilentErrorBoundary({ 
+export function SilentErrorBoundary({
   children,
-  onError
-}: { 
+  onError,
+}: {
   children: ReactNode;
   onError?: (error: Error, errorInfo: { componentStack: string }) => void;
 }) {

@@ -11,6 +11,7 @@ import {
 import { WEBSITE_IMPLEMENTATIONS } from '../../constants';
 import { CustomShortcutsService } from '../../custom-shortcuts/custom-shortcuts.service';
 import { SettingsService } from '../../settings/settings.service';
+import { UserConvertersService } from '../../user-converters/user-converters.service';
 import { BaseWebsiteOptions } from '../../websites/models/base-website-options';
 import { DefaultWebsiteOptions } from '../../websites/models/default-website-options';
 import { UnknownWebsite } from '../../websites/website';
@@ -22,6 +23,7 @@ describe('DescriptionParserService', () => {
   let service: DescriptionParserService;
   let settingsService: SettingsService;
   let customShortcutsService: CustomShortcutsService;
+  let userConvertersService: UserConvertersService;
   const testDescription: Description = [
     {
       id: 'test-basic-text',
@@ -75,6 +77,14 @@ describe('DescriptionParserService', () => {
           },
         },
         {
+          provide: UserConvertersService,
+          useValue: {
+            convert: jest.fn().mockImplementation((instance, username) => 
+              Promise.resolve(username)
+            ),
+          },
+        },
+        {
           provide: WEBSITE_IMPLEMENTATIONS,
           useValue: [],
         },
@@ -83,6 +93,7 @@ describe('DescriptionParserService', () => {
     service = module.get(DescriptionParserService);
     settingsService = module.get(SettingsService);
     customShortcutsService = module.get(CustomShortcutsService);
+    userConvertersService = module.get(UserConvertersService);
     settingsService.getDefaultSettings = jest.fn().mockResolvedValue({
       settings: {
         hiddenWebsites: [],

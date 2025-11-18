@@ -1,5 +1,4 @@
-/* eslint-disable react/no-unescaped-entities */
-import { Trans } from '@lingui/macro';
+import { Trans } from "@lingui/react/macro";
 import { Badge, Box, Grid, Group, Text, TextInput } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import {

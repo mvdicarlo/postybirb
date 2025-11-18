@@ -1,5 +1,4 @@
-/* eslint-disable lingui/no-unlocalized-strings */
-import { Trans } from '@lingui/macro';
+import { Trans } from '@lingui/react/macro';
 import {
   ActionIcon,
   AppShell,
@@ -27,6 +26,7 @@ import {
   IconTags,
   IconTransform,
   IconUser,
+  IconUsers,
 } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 import { Outlet, useLocation } from 'react-router';
@@ -46,6 +46,7 @@ import {
   SpotlightKeybinding,
   TagConvertersKeybinding,
   TagGroupsKeybinding,
+  UserConvertersKeybinding,
 } from '../../shared/app-keybindings';
 import { NotificationStore } from '../../stores/notification.store';
 import { useStore } from '../../stores/use-store';
@@ -55,6 +56,7 @@ import { NotificationsDrawer } from './drawers/notifications-drawer';
 import { SettingsDrawer } from './drawers/settings-drawer/settings-drawer';
 import { TagConverterDrawer } from './drawers/tag-converter-drawer';
 import { TagGroupDrawer } from './drawers/tag-group-drawer';
+import { UserConverterDrawer } from './drawers/user-converter-drawer';
 import { LanguagePicker } from './language-picker';
 import classes from './postybirb-layout.module.css';
 import { PostybirbSpotlight } from './postybirb-spotlight/postybirb-spotlight';
@@ -67,6 +69,7 @@ function AppImage() {
     <div className={classes.logoContainer}>
       <img
         src="/app-icon.png"
+        // eslint-disable-next-line lingui/no-unlocalized-strings
         alt="postybirb icon"
         className={classes.logoImage}
       />
@@ -111,6 +114,7 @@ const navigationTargets: (
     label: <Trans>Notifications</Trans>,
     globalStateKey: 'notificationsDrawerVisible',
     icon: <NotificationsIcon />,
+    // eslint-disable-next-line lingui/no-unlocalized-strings
     kbd: 'Alt+N',
   },
   {
@@ -136,6 +140,14 @@ const navigationTargets: (
     label: <Trans>Tag Converters</Trans>,
     globalStateKey: 'tagConvertersDrawerVisible',
     kbd: TagConvertersKeybinding,
+  },
+  {
+    type: 'drawer',
+    key: 'user-converters',
+    icon: <IconUsers />,
+    label: <Trans>User Converters</Trans>,
+    globalStateKey: 'userConvertersDrawerVisible',
+    kbd: UserConvertersKeybinding,
   },
   {
     type: 'drawer',
@@ -207,6 +219,7 @@ function ScrollToTop() {
           onClick={scrollToTop}
           variant="filled"
           radius="xl"
+          // eslint-disable-next-line lingui/no-unlocalized-strings
           aria-label="Scroll to top"
         >
           <IconArrowUp size={16} />
@@ -240,6 +253,7 @@ function Layout() {
       <SettingsDrawer />
       <TagGroupDrawer />
       <TagConverterDrawer />
+      <UserConverterDrawer />
       <NotificationsDrawer />
       <CustomShortcutsDrawer />
       <ScrollToTop />

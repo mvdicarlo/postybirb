@@ -34,7 +34,7 @@ function isFileFiltered(
   submission: FileSubmission,
   websiteInstance: UnknownWebsite,
 ): boolean {
-  if (file.metadata?.ignoredWebsites.includes(websiteInstance.accountId)) {
+  if (file.metadata?.ignoredWebsites?.includes(websiteInstance.accountId)) {
     return true;
   }
   return false;

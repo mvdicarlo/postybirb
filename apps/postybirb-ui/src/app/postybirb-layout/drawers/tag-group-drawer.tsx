@@ -1,5 +1,4 @@
-import { Trans, msg } from '@lingui/macro';
-import { useLingui } from '@lingui/react';
+import { Trans, useLingui } from '@lingui/react/macro';
 import {
   ActionIcon,
   Badge,
@@ -74,7 +73,7 @@ function TagBadgePreview({ tags }: { tags: string[] }) {
 }
 
 function ExistingTagGroup(props: { tagGroup: TagGroupDto }) {
-  const { _ } = useLingui();
+  const { t } = useLingui();
   const { tagGroup } = props;
   const [state, setState] = useState<ICreateTagGroupDto>({
     name: tagGroup.name,
@@ -90,9 +89,10 @@ function ExistingTagGroup(props: { tagGroup: TagGroupDto }) {
 
   const handleCopyTags = () => {
     clipboard.copy(tagGroup.tags.join(', '));
+    const amountOfTags = tagGroup.tags.length;
     notifications.show({
       title: <Trans>Copied</Trans>,
-      message: _(msg`${tagGroup.tags.length} tags copied to clipboard`),
+      message: t`${amountOfTags} tags copied to clipboard`,
       color: 'blue',
       autoClose: 2000,
     });
@@ -244,7 +244,7 @@ function ExistingTagGroup(props: { tagGroup: TagGroupDto }) {
 }
 
 function TagGroups() {
-  const { _ } = useLingui();
+  const { t } = useLingui();
   const { state: tagGroups, isLoading } = useStore(TagGroupStore);
   const [newGroupFields, setNewGroupFields] = useState<ICreateTagGroupDto>({
     name: '',
@@ -304,9 +304,10 @@ function TagGroups() {
             tags: [...new Set([...prev.tags, ...tags])],
           }));
 
+          const amountOfTags = tags.length;
           notifications.show({
             title: <Trans>Tags Pasted</Trans>,
-            message: _(msg`${tags.length} tags imported from clipboard`),
+            message: t`${amountOfTags} tags imported from clipboard`,
             color: 'blue',
           });
         }
@@ -329,7 +330,7 @@ function TagGroups() {
       <Stack gap="md">
         <Group grow>
           <TextInput
-            placeholder={_(msg`Search`)}
+            placeholder={t`Search`}
             leftSection={<IconSearch size={16} />}
             rightSection={
               search ? (
@@ -353,8 +354,8 @@ function TagGroups() {
               <Tooltip
                 label={
                   sortDirection === 'asc'
-                    ? _(msg`Sort Descending`)
-                    : _(msg`Sort Ascending`)
+                    ? t`Sort Descending`
+                    : t`Sort Ascending`
                 }
               >
                 <ActionIcon
@@ -414,7 +415,7 @@ function TagGroups() {
                   size="xs"
                   onClick={handlePasteFromClipboard}
                   leftSection={<IconClipboardCopy size={14} />}
-                  aria-label={_(msg`Paste tags from clipboard`)}
+                  aria-label={t`Paste tags from clipboard`}
                 >
                   <Trans>Paste from clipboard</Trans>
                 </Button>

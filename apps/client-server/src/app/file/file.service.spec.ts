@@ -20,6 +20,7 @@ import { FileSubmissionService } from '../submission/services/file-submission.se
 import { MessageSubmissionService } from '../submission/services/message-submission.service';
 import { SubmissionService } from '../submission/services/submission.service';
 import { TagConvertersService } from '../tag-converters/tag-converters.service';
+import { UserConvertersService } from '../user-converters/user-converters.service';
 import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
 import { ValidationService } from '../validation/validation.service';
 import { WebsiteOptionsService } from '../website-options/website-options.service';
@@ -86,7 +87,9 @@ describe('FileService', () => {
 
   beforeAll(() => {
     PostyBirbDirectories.initializeDirectories();
-    testFile = readFileSync(join(__dirname, '../../test-files/small_image.jpg'));
+    testFile = readFileSync(
+      join(__dirname, '../../test-files/small_image.jpg'),
+    );
     testFile2 = readFileSync(
       join(__dirname, '../../test-files/png_with_alpha.png'),
     );
@@ -117,7 +120,8 @@ describe('FileService', () => {
         SettingsService,
         FormGeneratorService,
         FileConverterService,
-        CustomShortcutsService
+        CustomShortcutsService,
+        UserConvertersService,
       ],
     }).compile();
     fileBufferRepository = new PostyBirbDatabase('FileBufferSchema');

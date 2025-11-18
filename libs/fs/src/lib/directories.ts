@@ -1,6 +1,6 @@
 import {
-  getStartupOptions,
-  IsTestEnvironment,
+    getStartupOptions,
+    IsTestEnvironment,
 } from '@postybirb/utils/electron';
 import { app } from 'electron';
 import { join } from 'path';
@@ -28,23 +28,32 @@ const LOGS_DIRECTORY = join(POSTYBIRB_DIRECTORY, 'logs');
 /** Directory used for storing uploaded files. */
 const TEMP_DIRECTORY = join(POSTYBIRB_DIRECTORY, 'temp');
 
+/** Flag to prevent redundant initialization */
+let directoriesInitialized = false;
+
 function clearTempDirectory() {
   deleteDirSync(TEMP_DIRECTORY);
   ensureDirSync(TEMP_DIRECTORY);
 }
 
 function initializeDirectories() {
+  if (directoriesInitialized) {
+    return;
+  }
+  
   ensureDirSync(DATA_DIRECTORY);
   ensureDirSync(LOGS_DIRECTORY);
   clearTempDirectory();
+  
+  directoriesInitialized = true;
 }
 
 export {
-  clearTempDirectory,
-  DATA_DIRECTORY,
-  initializeDirectories,
-  LOGS_DIRECTORY,
-  POSTYBIRB_DIRECTORY,
-  TEMP_DIRECTORY
+    clearTempDirectory,
+    DATA_DIRECTORY,
+    initializeDirectories,
+    LOGS_DIRECTORY,
+    POSTYBIRB_DIRECTORY,
+    TEMP_DIRECTORY
 };
 

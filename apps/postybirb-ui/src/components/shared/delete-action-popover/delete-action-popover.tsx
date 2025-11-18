@@ -1,5 +1,4 @@
-import { Trans, msg } from '@lingui/macro';
-import { useLingui } from '@lingui/react';
+import { Trans, useLingui } from '@lingui/react/macro';
 import {
   ActionIcon,
   Button,
@@ -19,7 +18,7 @@ type DeleteActionPopoverProps = {
 };
 
 export function DeleteActionPopover(props: DeleteActionPopoverProps) {
-  const { _ } = useLingui();
+  const { t } = useLingui();
   const { showText, additionalContent, disabled, onDelete } = props;
   const [opened, setOpened] = useState(false);
 
@@ -40,7 +39,7 @@ export function DeleteActionPopover(props: DeleteActionPopoverProps) {
             leftSection={<IconTrash size={16} />}
             onClick={() => setOpened(true)}
             disabled={disabled}
-            aria-label={_(msg`Delete item`)}
+            aria-label={t`Delete item`}
           >
             <Trans>Delete</Trans>
           </Button>
@@ -51,7 +50,7 @@ export function DeleteActionPopover(props: DeleteActionPopoverProps) {
               color="red"
               onClick={() => setOpened(true)}
               disabled={disabled}
-              aria-label={_(msg`Delete item`)}
+              aria-label={t`Delete item`}
             >
               <IconTrash size={16} />
             </ActionIcon>

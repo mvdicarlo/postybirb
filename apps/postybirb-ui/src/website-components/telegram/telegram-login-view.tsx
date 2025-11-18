@@ -1,4 +1,4 @@
-import { Trans } from '@lingui/macro';
+import { Trans } from "@lingui/react/macro";
 import { Box, Button, NumberInput, Stack, TextInput } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { TelegramAccountData, TelegramOAuthRoutes } from '@postybirb/types';

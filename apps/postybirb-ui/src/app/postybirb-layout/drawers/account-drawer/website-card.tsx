@@ -1,5 +1,4 @@
-import { Trans, msg } from '@lingui/macro';
-import { useLingui } from '@lingui/react';
+import { Trans, useLingui } from '@lingui/react/macro';
 import {
   ActionIcon,
   Badge,
@@ -47,7 +46,7 @@ type AccountItemProps = {
 };
 
 function AccountItem({ account, website, onLogin }: AccountItemProps) {
-  const { _ } = useLingui();
+  const { t } = useLingui();
   const [accountName, setAccountName] = useState(account.name);
 
   const handleNameSave = () => {
@@ -74,7 +73,7 @@ function AccountItem({ account, website, onLogin }: AccountItemProps) {
           size="xs"
           value={accountName}
           onChange={(e) => setAccountName(e.currentTarget.value)}
-          placeholder={_(msg`Name`)}
+          placeholder={t`Name`}
           onBlur={handleNameSave}
           leftSection={<IconEdit size={14} color="gray" />}
           styles={{
@@ -169,7 +168,7 @@ function NewAccountItem({
   onAccountCreated?: () => void;
   autoStart?: boolean;
 }) {
-  const { _ } = useLingui();
+  const { t } = useLingui();
   const [isAdding, setIsAdding] = useState(autoStart);
   const [newAccountName, setNewAccountName] = useState('');
 
@@ -221,7 +220,7 @@ function NewAccountItem({
             size="xs"
             value={newAccountName}
             onChange={(e) => setNewAccountName(e.currentTarget.value)}
-            placeholder={_(msg`Enter account name`)}
+            placeholder={t`Enter account name`}
             autoFocus
             onKeyDown={(e) => {
               if (e.key === 'Enter') {

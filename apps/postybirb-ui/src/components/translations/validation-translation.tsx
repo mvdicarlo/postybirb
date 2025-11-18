@@ -1,4 +1,4 @@
-import { Plural, Trans } from '@lingui/macro';
+import { Plural, Trans } from "@lingui/react/macro";
 import { Text } from '@mantine/core';
 import {
   FileType,

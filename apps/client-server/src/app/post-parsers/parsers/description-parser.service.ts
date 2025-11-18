@@ -5,6 +5,7 @@ import { Class } from 'type-fest';
 import { WEBSITE_IMPLEMENTATIONS } from '../../constants';
 import { CustomShortcutsService } from '../../custom-shortcuts/custom-shortcuts.service';
 import { SettingsService } from '../../settings/settings.service';
+import { UserConvertersService } from '../../user-converters/user-converters.service';
 import { BaseWebsiteOptions } from '../../websites/models/base-website-options';
 import { DefaultWebsiteOptions } from '../../websites/models/default-website-options';
 import { isWithCustomDescriptionParser } from '../../websites/models/website-modifiers/with-custom-description-parser';
@@ -26,6 +27,7 @@ export class DescriptionParserService {
     @Inject(WEBSITE_IMPLEMENTATIONS)
     private readonly websiteImplementations: Class<UnknownWebsite>[],
     private readonly customShortcutsService?: CustomShortcutsService,
+    private readonly userConvertersService?: UserConvertersService,
   ) {
     this.websiteImplementations.forEach((website) => {
       const shortcut: UsernameShortcut | undefined =
@@ -77,24 +79,21 @@ export class DescriptionParserService {
       descriptionValue.description as unknown as Array<IDescriptionBlockNode>,
     );
 
-    // Pre-resolve custom shortcuts recursively
-    const customShortcuts = await this.resolveCustomShortcuts(
-      mergedDescriptionBlocks,
-    );
-
     // Pre-resolve default description
     const defaultDescription = this.mergeBlocks(
       defaultOptions.description
         .description as unknown as Array<IDescriptionBlockNode>,
     );
 
+    // Build tree once with minimal context
     const context: ConversionContext = {
       website: instance.decoratedProps.metadata.name,
       shortcuts: this.websiteShortcuts,
-      customShortcuts,
+      customShortcuts: new Map(),
       defaultDescription,
       title,
       tags,
+      usernameConversions: new Map(),
     };
 
     const tree = new DescriptionNodeTree(
@@ -102,6 +101,18 @@ export class DescriptionParserService {
       mergedDescriptionBlocks,
       insertionOptions,
     );
+
+    // Resolve and inject into the same tree
+    const customShortcuts = await this.resolveCustomShortcutsFromTree(tree);
+    const usernameConversions = await this.resolveUsernamesFromTree(
+      tree,
+      instance,
+    );
+
+    tree.updateContext({
+      customShortcuts,
+      usernameConversions,
+    });
 
     const description = this.createDescription(instance, descriptionType, tree);
 
@@ -153,11 +164,11 @@ export class DescriptionParserService {
    * Pre-resolves all custom shortcuts found in the description tree.
    * Note: Does not handle nested shortcuts - users should not create circular references.
    */
-  private async resolveCustomShortcuts(
-    blocks: Array<IDescriptionBlockNode>,
+  private async resolveCustomShortcutsFromTree(
+    tree: DescriptionNodeTree,
   ): Promise<Map<string, IDescriptionBlockNode[]>> {
     const customShortcuts = new Map<string, IDescriptionBlockNode[]>();
-    const shortcutIds = this.findCustomShortcutIds(blocks);
+    const shortcutIds = tree.findCustomShortcutIds();
 
     for (const id of shortcutIds) {
       const shortcut = await this.customShortcutsService?.findById(id);
@@ -173,45 +184,23 @@ export class DescriptionParserService {
   }
 
   /**
-   * Recursively finds all custom shortcut IDs in the description tree.
+   * Pre-resolves all usernames found in the description tree.
    */
-  private findCustomShortcutIds(
-    blocks: Array<IDescriptionBlockNode>,
-  ): Set<string> {
-    const ids = new Set<string>();
+  private async resolveUsernamesFromTree(
+    tree: DescriptionNodeTree,
+    instance: Website<unknown>,
+  ): Promise<Map<string, string>> {
+    const usernameConversions = new Map<string, string>();
+    const usernames = tree.findUsernames();
 
-    const processContent = (content: unknown[]) => {
-      for (const item of content) {
-        if (
-          typeof item === 'object' &&
-          item !== null &&
-          'type' in item &&
-          item.type === 'customShortcut' &&
-          'props' in item &&
-          typeof item.props === 'object' &&
-          item.props !== null &&
-          'id' in item.props
-        ) {
-          ids.add(item.props.id as string);
-        }
-        if (
-          typeof item === 'object' &&
-          item !== null &&
-          'content' in item &&
-          Array.isArray(item.content)
-        ) {
-          processContent(item.content);
-        }
-      }
-    };
-
-    for (const block of blocks) {
-      if (block.content && Array.isArray(block.content)) {
-        processContent(block.content);
-      }
+    for (const username of usernames) {
+      const converted =
+        (await this.userConvertersService?.convert(instance, username)) ??
+        username;
+      usernameConversions.set(username, converted);
     }
 
-    return ids;
+    return usernameConversions;
   }
 
   /**
