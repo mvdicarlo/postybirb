@@ -1,5 +1,4 @@
-import { Trans, msg } from '@lingui/macro';
-import { useLingui } from '@lingui/react';
+import { Trans, useLingui } from '@lingui/react/macro';
 import {
   Box,
   Button,
@@ -28,7 +27,6 @@ import {
 import { IconInfoCircle } from '@tabler/icons-react';
 import { useState } from 'react';
 import { useWebsites } from '../../../hooks/account/use-websites';
-import { TransHook } from '../../../hooks/use-trans';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
 import { SubmissionTemplateStore } from '../../../stores/submission-template.store';
 import { SubmissionStore } from '../../../stores/submission.store';
@@ -55,7 +53,7 @@ type AccountGroup = {
 function groupWebsiteOptions(
   submissions: SubmissionDto[],
   accounts: IAccountDto[],
-  _: TransHook,
+  t: ReturnType<typeof useLingui>['t'],
 ): Record<string, AccountGroup> {
   const groups: Record<string, AccountGroup> = {};
   submissions.forEach((submission) => {
@@ -64,9 +62,9 @@ function groupWebsiteOptions(
         accounts.find((a) => a.id === option.accountId) ??
         ({
           id: NULL_ACCOUNT_ID,
-          name: _(msg`Default`),
+          name: t`Default`,
           websiteInfo: {
-            websiteDisplayName: _(msg`Default`),
+            websiteDisplayName: t`Default`,
           },
         } as IAccountDto);
       if (!groups[account.id]) {
@@ -90,7 +88,7 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
   const { submissionId, type, onApply, onClose } = props;
   const { state: templateState } = useStore(SubmissionTemplateStore);
   const { state: submissionsState } = useStore(SubmissionStore);
-  const { _ } = useLingui();
+  const { t } = useLingui();
   const { accounts } = useWebsites();
   const [selected, setSelected] = useState<string[]>([]);
   const [selectedWebsiteOptions, setSelectedWebsiteOptions] =
@@ -107,27 +105,29 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
   }));
 
   const submissionOptions: ComboboxItem[] = submissions.map((submission) => ({
-    label: submission.getDefaultOptions().data.title ?? _(msg`Unknown`),
+    label: submission.getDefaultOptions().data.title ?? t`Unknown`,
     value: submission.id,
   }));
 
   const options: ComboboxItemGroup[] = [
     {
-      group: _(msg`Templates`),
+      group: t`Templates`,
       items: templateOptions,
     },
     {
-      group: _(msg`Submissions`),
+      group: t`Submissions`,
       items: submissionOptions,
     },
   ];
 
   const selectedTemplates: SubmissionDto[] = selected.map(
     (s) =>
-      [...templates, ...submissions].find((t) => t.id === s) as SubmissionDto,
+      [...templates, ...submissions].find(
+        (template) => template.id === s,
+      ) as SubmissionDto,
   );
 
-  const selectedGroups = groupWebsiteOptions(selectedTemplates, accounts, _);
+  const selectedGroups = groupWebsiteOptions(selectedTemplates, accounts, t);
 
   const clearSelection = () => {
     setSelected([]);
@@ -153,7 +153,7 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
         group.submissions.forEach(({ submission, option }) => {
           checkboxOptions.push({
             id: option.id,
-            label: submission.getDefaultOptions().data.title ?? _(msg`Unknown`),
+            label: submission.getDefaultOptions().data.title ?? t`Unknown`,
             option,
           });
         });
@@ -165,11 +165,11 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
               <Group gap="xs" wrap="nowrap" align="center">
                 <Text fw={500} size="sm">
                   {group.account.id === NULL_ACCOUNT_ID
-                    ? _(msg`Default`)
+                    ? t`Default`
                     : `${group.account.websiteInfo.websiteDisplayName} - ${group.account.name}`}
                 </Text>
                 <Text size="xs" c="dimmed" fs="italic">
-                  ({checkboxOptions.length - 1} {_(msg`options`)})
+                  ({checkboxOptions.length - 1} {t`options`})
                 </Text>
               </Group>
             }
@@ -311,9 +311,8 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
             // On first option pick
             if (!selectedWebsiteOptions && newOpts.length) {
               const sub: Record<AccountId, WebsiteOptionsDto> = {};
-              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
               const template = [...templates, ...submissions].find(
-                (t) => t.id === newOpts[0],
+                (temp) => temp.id === newOpts[0],
               );
               if (!template) {
                 // eslint-disable-next-line lingui/no-unlocalized-strings, no-console

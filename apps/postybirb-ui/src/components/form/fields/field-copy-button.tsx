@@ -1,4 +1,4 @@
-import { Trans } from '@lingui/macro';
+import { Trans } from "@lingui/react/macro";
 import { ActionIcon, CopyButton, Tooltip, rem } from '@mantine/core';
 import { IconCheck, IconCopy } from '@tabler/icons-react';
 

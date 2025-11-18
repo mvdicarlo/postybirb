@@ -13,6 +13,7 @@ import { eq } from 'drizzle-orm';
 import { async as hash } from 'hasha';
 import { html as htmlBeautify } from 'js-beautify';
 import * as mammoth from 'mammoth';
+import { parse } from 'path';
 import { promisify } from 'util';
 import { SubmissionFile } from '../../drizzle/models';
 import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
@@ -263,11 +264,16 @@ export class UpdateFileService {
         buffer: thumbnailBuf,
         width: thumbnailWidth,
         height: thumbnailHeight,
+        mimeType: thumbnailMimeType,
       } = await this.createFileService.generateThumbnail(
         sharpInstance,
         height,
         width,
+        file.mimetype,
       );
+
+      const fileNameWithoutExt = parse(file.filename).name;
+      const thumbnailExt = thumbnailMimeType === 'image/jpeg' ? 'jpg' : 'png';
 
       await tx
         .update(this.fileBufferRepository.schemaEntity)
@@ -276,6 +282,8 @@ export class UpdateFileService {
           width: thumbnailWidth,
           height: thumbnailHeight,
           size: thumbnailBuf.length,
+          mimeType: thumbnailMimeType,
+          fileName: `thumbnail_${fileNameWithoutExt}.${thumbnailExt}`,
         })
         .where(
           eq(

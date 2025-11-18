@@ -1,15 +1,11 @@
-import { CustomDescriptionParser } from '../../../post-parsers/models/description-node/description-node-tree';
+import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
 
 export interface WithCustomDescriptionParser {
   /**
-   * The custom description parser.
+   * Returns the converter to use for parsing descriptions.
+   * The converter should extend BaseConverter and output the desired format.
    */
-  onDescriptionParse: CustomDescriptionParser;
-
-  /**
-   * Post-process the description after parsing for any additional modifications.
-   */
-  onAfterDescriptionParse: (description: string) => string;
+  getDescriptionConverter(): BaseConverter;
 }
 
 export function isWithCustomDescriptionParser(
@@ -18,7 +14,6 @@ export function isWithCustomDescriptionParser(
   return (
     typeof website === 'object' &&
     website !== null &&
-    'onDescriptionParse' in website &&
-    'onAfterDescriptionParse' in website
+    'getDescriptionConverter' in website
   );
 }

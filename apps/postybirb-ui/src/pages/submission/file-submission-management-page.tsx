@@ -1,4 +1,4 @@
-import { Trans } from '@lingui/macro';
+import { Trans } from "@lingui/react/macro";
 import { Box, Loader, Space, Stack } from '@mantine/core';
 import { SubmissionType } from '@postybirb/types';
 import {

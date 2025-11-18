@@ -1,25 +1,20 @@
-import { Trans, msg } from '@lingui/macro';
-import { useLingui } from '@lingui/react';
+import { Trans, useLingui } from '@lingui/react/macro';
 import {
-    Box,
-    Button,
-    Card,
-    Group,
-    Stack,
-    Switch,
-    Text,
-    TextInput,
+  Box,
+  Button,
+  Card,
+  Group,
+  Stack,
+  Switch,
+  Text,
+  TextInput,
 } from '@mantine/core';
-import {
-    IconDeviceDesktop,
-    IconFolder,
-    IconRouter,
-} from '@tabler/icons-react';
+import { IconDeviceDesktop, IconFolder, IconRouter } from '@tabler/icons-react';
 import { useQuery } from 'react-query';
 import settingsApi from '../../../../api/settings.api';
 
 export function AppSettings() {
-  const { _ } = useLingui();
+  const { t } = useLingui();
   const {
     data: startupSettings,
     isLoading,
@@ -90,7 +85,7 @@ export function AppSettings() {
               style={{ flex: 1 }}
               leftSection={<IconFolder size={18} />}
               value={startupSettings?.appDataPath ?? ''}
-              placeholder={_(msg`Click to select folder`)}
+              placeholder={t`Click to select folder`}
               readOnly
             />
             <Button

@@ -1,5 +1,9 @@
-import { UsernameShortcut } from '@postybirb/types';
-import { DescriptionNode } from './description-node.base';
+import {
+  ConversionContext,
+  DescriptionNode,
+  IDescriptionBlockNodeClass,
+  NodeConverter,
+} from './description-node.base';
 import {
   BlockTypes,
   IDescriptionBlockNode,
@@ -10,105 +14,31 @@ import {
 import { DescriptionInlineNode } from './inline-description-node';
 import { DescriptionTextNode } from './text-description-node';
 
-export const DEFAULT_MARKER = '<%PB_DEFAULT%>';
-
 export class DescriptionBlockNode
   extends DescriptionNode<IDescriptionBlockNode['type']>
-  implements IDescriptionBlockNode
+  implements IDescriptionBlockNode, IDescriptionBlockNodeClass
 {
   id: string;
 
   content: Array<DescriptionInlineNode | DescriptionTextNode>;
 
-  constructor(
-    website: string,
-    node: IDescriptionBlockNode,
-    shortcuts: Record<string, UsernameShortcut>,
-  ) {
-    super(website, node, shortcuts);
+  constructor(node: IDescriptionBlockNode) {
+    super(node);
     this.id = node.id;
     this.content =
       node.content?.map((child) => {
         if (BlockTypes.includes(child.type)) {
           throw new Error('Block nodes cannot contain other block nodes');
         } else if (child.type === 'text') {
-          return new DescriptionTextNode(
-            website,
-            child as IDescriptionTextNode,
-            shortcuts,
-          );
+          return new DescriptionTextNode(child as IDescriptionTextNode);
         } else if (InlineTypes.includes(child.type)) {
-          return new DescriptionInlineNode(
-            website,
-            child as IDescriptionInlineNode,
-            shortcuts,
-          );
+          return new DescriptionInlineNode(child as IDescriptionInlineNode);
         }
         throw new Error(`Unknown node type: ${child.type}`);
       }) ?? [];
   }
 
-  toString(): string {
-    if (this.type === 'default') return DEFAULT_MARKER;
-    if (this.type === 'hr') return '----------';
-    return this.content.map((child) => child.toString()).join('');
-  }
-
-  toHtmlString(): string {
-    let block = null;
-    if (this.type === 'paragraph') block = 'div';
-    if (this.type === 'heading') block = `h${this.props.level}`;
-    if (this.type === 'hr') return '<hr>';
-    if (this.type === 'default') return DEFAULT_MARKER;
-    if (block === null) throw new Error(`Unsupported block type: ${this.type}`);
-
-    const styles: string[] = [];
-    if (this.props.textColor && this.props.textColor !== 'default') {
-      styles.push(`color: ${this.props.textColor}`);
-    }
-    if (
-      this.props.backgroundColor &&
-      this.props.backgroundColor !== 'default'
-    ) {
-      styles.push(`background-color: ${this.props.backgroundColor}`);
-    }
-    if (
-      this.props.textAlignment &&
-      this.props.textAlignment !== 'default' &&
-      this.props.textAlignment !== 'left'
-    ) {
-      styles.push(`text-align: ${this.props.textAlignment}`);
-    }
-
-    const stylesString = styles.join(';');
-    return `<${block}${
-      stylesString.length ? ` styles="${stylesString}"` : ''
-    }>${this.content.map((child) => child.toHtmlString()).join('')}</${block}>`;
-  }
-
-  toBBCodeString(): string {
-    let block = null;
-    let text = null;
-
-    // No block type for a base paragraph
-    if (this.type === 'paragraph') {
-      text = this.content.map((child) => child.toBBCodeString()).join('');
-    }
-    if (this.type === 'hr') return '[hr]';
-    if (this.type === 'default') return DEFAULT_MARKER;
-    if (this.type === 'heading') block = `h${this.props.level}`;
-
-    if (block === null && text === null)
-      throw new Error(`Unsupported block type: ${this.type}`);
-
-    text ??= `[${block}]${this.content
-      .map((child) => child.toBBCodeString())
-      .join('')}[/${block}]`;
-
-    if (this.props.textColor && this.props.textColor !== 'default') {
-      text = `[color=${this.props.textColor}]${text}[/color]`;
-    }
-
-    return text;
+  accept<T>(converter: NodeConverter<T>, context: ConversionContext): T {
+    return converter.convertBlockNode(this, context);
   }
 }

@@ -1,5 +1,5 @@
 import { MessageDescriptor } from '@lingui/core';
-import { useLingui } from '@lingui/react';
+import { useLingui } from '@lingui/react/macro';
 import { Input } from '@mantine/core';
 import type { FieldAggregateType } from '@postybirb/form-builder';
 import { FieldLabelTranslations } from '@postybirb/translations';
@@ -16,7 +16,10 @@ export function getTranslatedLabel(
   field: FieldAggregateType,
   converter: (msg: MessageDescriptor) => string,
 ): string {
-  const translationLabel = FieldLabelTranslations[field.label];
+  if (typeof field.label !== 'string') return field.label.untranslated;
+
+  const translationLabel =
+    FieldLabelTranslations[field.label as keyof typeof FieldLabelTranslations];
 
   if (!translationLabel) {
     // eslint-disable-next-line lingui/no-unlocalized-strings, no-console
@@ -32,9 +35,9 @@ export function FieldLabel(
 ): JSX.Element {
   const { field, children, propKey, validationState } = props;
   const { errors, warnings } = validationState;
-  const { _ } = useLingui();
+  const { t } = useLingui();
 
-  const label = field.label ? getTranslatedLabel(field, _) : undefined;
+  const label = field.label ? getTranslatedLabel(field, t) : undefined;
 
   return (
     <Input.Wrapper required={field.required} label={label}>

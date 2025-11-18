@@ -1,6 +1,7 @@
 import { Box } from '@mantine/core';
 import type {
   BooleanFieldType,
+  DateTimeFieldType,
   DescriptionFieldType,
   RadioFieldType,
   SelectFieldType,
@@ -9,6 +10,7 @@ import type {
 } from '@postybirb/form-builder';
 import { useValidations } from '../hooks/use-validations';
 import { BooleanField } from './boolean-field';
+import { DateTimeField } from './datetime-field';
 import { DescriptionField } from './description-field';
 import './field.css';
 import { FormFieldProps } from './form-field.type';
@@ -69,6 +71,11 @@ export function Field(props: FormFieldProps): JSX.Element | null {
     case 'select':
       formField = (
         <SelectField {...(props as FormFieldProps<SelectFieldType>)} />
+      );
+      break;
+    case 'datetime':
+      formField = (
+        <DateTimeField {...(props as FormFieldProps<DateTimeFieldType>)} />
       );
       break;
     default:

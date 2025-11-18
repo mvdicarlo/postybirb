@@ -10,7 +10,6 @@ import { getFileType } from '@postybirb/utils/file-type';
 import type { queueAsPromised } from 'fastq';
 import fastq from 'fastq';
 import { cpus } from 'os';
-import { parse } from 'path';
 import { Sharp } from 'sharp';
 import { ImageUtil } from '../../../file/utils/image.util';
 import { PostingFile, ThumbnailOptions } from '../../models/posting-file';
@@ -75,6 +74,7 @@ export class PostFileResizerService {
           sharpInstance,
           resize.width,
           resize.height,
+          'Primary',
         );
       }
     }
@@ -120,40 +120,34 @@ export class PostFileResizerService {
     thumb = thumb ?? { ...file.file }; // Ensure file to process
 
     let instance = ImageUtil.load(thumb.buffer);
-    let width: number;
-    let height: number;
-    const metadata = await instance.metadata();
-    // Chose the larger dimension to scale down
-    if (metadata.width >= metadata.height) {
-      width = 500;
-    } else {
-      height = 500;
-    }
-    instance = await this.resizeImage(instance, width, height);
-    const extension = metadata.hasAlpha ? '.png' : '.jpeg';
-    if (metadata.hasAlpha) {
-      instance = instance.png();
-    } else {
-      instance = instance.jpeg({ quality: 99 });
-    }
+    instance = await this.resizeImage(instance, 500, 500, 'thumbnail');
+    const { mimeType } = thumb;
 
-    ({ width, height } = await instance.metadata());
-    const { name } = parse(thumb.fileName);
+    const { width, height } = await instance.metadata();
     return {
       buffer: await instance.toBuffer(),
-      fileName: `${name}${extension}`,
-      mimeType: thumb.mimeType,
+      fileName: thumb.fileName,
+      mimeType,
       height,
       width,
     };
   }
 
-  private async resizeImage(instance: Sharp, width: number, height: number) {
+  private async resizeImage(
+    instance: Sharp,
+    width: number,
+    height: number,
+    source: string,
+  ) {
     const metadata = await instance.metadata();
-    this.logger.withMetadata({ width, height, metadata }).info('Resizing');
+    this.logger
+      .withMetadata({ width, height, metadata })
+      .info(`Resizing (${source})`);
     if (metadata.width > width || metadata.height > height) {
       return ImageUtil.load(
-        await instance.resize({ width, height, fit: 'inside' }).toBuffer(),
+        await instance
+          .resize({ width, height, fit: 'inside', withoutEnlargement: true })
+          .toBuffer(),
       );
     }
     return instance;
@@ -168,19 +162,19 @@ export class PostFileResizerService {
     let s = instance;
     const metadata = await instance.metadata();
     // If PNG and no alpha channel, convert to JPEG
-    if (mimeType === 'image/png' && !metadata.hasAlpha) {
-      // eslint-disable-next-line no-param-reassign
-      mimeType = 'image/jpeg';
-      s = s.jpeg({ quality: 100 });
-    }
+    // if (mimeType === 'image/png' && !metadata.hasAlpha) {
+    //   // eslint-disable-next-line no-param-reassign
+    //   mimeType = 'image/jpeg';
+    //   s = s.jpeg({ quality: 100 });
+    // }
 
-    if (
-      mimeType === 'image/jpeg' &&
-      allowQualityLoss &&
-      (await this.isFileTooLarge(s, maxBytes))
-    ) {
-      s = s.jpeg({ quality: 98 });
-    }
+    // if (
+    //   mimeType === 'image/jpeg' &&
+    //   allowQualityLoss &&
+    //   (await this.isFileTooLarge(s, maxBytes))
+    // ) {
+    //   s = s.jpeg({ quality: 98 });
+    // }
 
     let counter = 0;
     while (await this.isFileTooLarge(s, maxBytes)) {
@@ -192,6 +186,7 @@ export class PostFileResizerService {
         instance, // scale against original only
         Math.round(metadata.width * resizePercent),
         Math.round(metadata.height * resizePercent),
+        'Primary Scaling',
       );
 
       if (!(await this.isFileTooLarge(s, maxBytes))) return s;

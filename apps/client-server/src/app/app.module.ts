@@ -22,6 +22,7 @@ import { SubmissionModule } from './submission/submission.module';
 import { TagConvertersModule } from './tag-converters/tag-converters.module';
 import { TagGroupsModule } from './tag-groups/tag-groups.module';
 import { UpdateModule } from './update/update.module';
+import { UserConvertersModule } from './user-converters/user-converters.module';
 import { UserSpecifiedWebsiteOptionsModule } from './user-specified-website-options/user-specified-website-options.module';
 import { ValidationModule } from './validation/validation.module';
 import { WebSocketModule } from './web-socket/web-socket.module';
@@ -46,6 +47,7 @@ import { WebsitesModule } from './websites/websites.module';
     WebsiteOptionsModule,
     TagGroupsModule,
     TagConvertersModule,
+    UserConvertersModule,
     DirectoryWatchersModule,
     UserSpecifiedWebsiteOptionsModule,
     UpdateModule,

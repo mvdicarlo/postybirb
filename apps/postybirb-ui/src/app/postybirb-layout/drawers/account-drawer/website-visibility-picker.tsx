@@ -1,5 +1,4 @@
-import { Trans, msg } from '@lingui/macro';
-import { useLingui } from '@lingui/react';
+import { Trans, useLingui } from '@lingui/react/macro';
 import {
   ActionIcon,
   Badge,
@@ -19,7 +18,7 @@ import { useWebsites } from '../../../../hooks/account/use-websites';
 export function WebsiteVisibilityPicker() {
   const { websites, isLoading, filteredWebsites, setHiddenWebsites } =
     useWebsites();
-  const { _ } = useLingui();
+  const { t } = useLingui();
   const [opened, { toggle, close }] = useDisclosure(false);
   const [search, setSearch] = useState('');
 
@@ -89,7 +88,6 @@ export function WebsiteVisibilityPicker() {
           <Box mb="xs">
             <Input
               size="xs"
-              placeholder={_(msg`Search websites...`)}
               leftSection={<IconSearch size={14} />}
               value={search}
               onChange={(e) => setSearch(e.currentTarget.value)}

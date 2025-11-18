@@ -1,4 +1,4 @@
-import { Trans } from '@lingui/macro';
+import { Trans } from "@lingui/react/macro";
 import { ActionIcon, Button, Group, Popover, Text } from '@mantine/core';
 import { IconTrash, IconX } from '@tabler/icons-react';
 import fileSubmissionApi from '../../../../../api/file-submission.api';

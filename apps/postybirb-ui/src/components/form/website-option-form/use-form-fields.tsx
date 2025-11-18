@@ -1,4 +1,4 @@
-import { Trans } from '@lingui/macro';
+import { Trans } from "@lingui/react/macro";
 import { Box, Loader } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { FormBuilderMetadata } from '@postybirb/form-builder';

@@ -10,6 +10,7 @@ import {
   SubmissionFile,
   TagConverter,
   TagGroup,
+  UserConverter,
   UserSpecifiedWebsiteOptions,
   WebsiteData,
   WebsiteOptions,
@@ -29,6 +30,7 @@ export type DatabaseSchemaEntityMap = {
   SubmissionSchema: InstanceType<typeof Submission>;
   TagConverterSchema: InstanceType<typeof TagConverter>;
   TagGroupSchema: InstanceType<typeof TagGroup>;
+  UserConverterSchema: InstanceType<typeof UserConverter>;
   UserSpecifiedWebsiteOptionsSchema: InstanceType<
     typeof UserSpecifiedWebsiteOptions
   >;
@@ -54,6 +56,7 @@ export const DatabaseSchemaEntityMapConst: Record<
   SubmissionSchema: Submission,
   TagConverterSchema: TagConverter,
   TagGroupSchema: TagGroup,
+  UserConverterSchema: UserConverter,
   UserSpecifiedWebsiteOptionsSchema: UserSpecifiedWebsiteOptions,
   WebsiteDataSchema: WebsiteData,
   WebsiteOptionsSchema: WebsiteOptions,

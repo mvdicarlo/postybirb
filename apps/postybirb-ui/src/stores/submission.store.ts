@@ -18,4 +18,6 @@ export const SubmissionStore: StoreManager<SubmissionDto> =
           body.filter(filter).map((d) => new SubmissionDto(d)),
         ),
     { ModelConstructor: SubmissionDto, filter },
+    // eslint-disable-next-line lingui/no-unlocalized-strings
+    'Submissions',
   );

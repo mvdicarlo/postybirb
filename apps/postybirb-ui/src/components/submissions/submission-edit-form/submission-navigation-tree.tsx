@@ -1,4 +1,4 @@
-import { Trans } from '@lingui/macro';
+import { Trans } from "@lingui/react/macro";
 import {
   Box,
   Group,
@@ -203,11 +203,9 @@ export function SubmissionNavigationTree(props: SubmissionNavigationTreeProps) {
                       }}
                     />
                   )}
-
                   {!hasChildren && level > 0 && (
-                    <Box w={18} /> // Empty space for alignment when no chevron
+                    (<Box w={18} />) // Empty space for alignment when no chevron
                   )}
-
                   <Box
                     component="span"
                     style={{ cursor: hasChildren ? 'default' : 'pointer' }}

@@ -1,13 +1,19 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Description, UsernameShortcut } from '@postybirb/types';
+import { Description } from '@postybirb/types';
 import TurndownService from 'turndown';
 import { DescriptionBlockNode } from './block-description-node';
-import { DescriptionNode } from './description-node.base';
+import { BaseConverter } from './converters/base-converter';
+import { BBCodeConverter } from './converters/bbcode-converter';
 import {
-  BlockTypes,
-  IDescriptionBlockNode,
-  ShortcutEnabledFields,
-} from './description-node.types';
+    CustomConverter,
+    CustomNodeHandler,
+} from './converters/custom-converter';
+import { HtmlConverter } from './converters/html-converter';
+import { PlainTextConverter } from './converters/plaintext-converter';
+import { ConversionContext } from './description-node.base';
+import { BlockTypes, IDescriptionBlockNode } from './description-node.types';
+import { DescriptionInlineNode } from './inline-description-node';
+import { DescriptionTextNode } from './text-description-node';
 
 export type InsertionOptions = {
   insertTitle?: string;
@@ -15,14 +21,12 @@ export type InsertionOptions = {
   insertAd: boolean;
 };
 
-export type CustomDescriptionParser = (node: DescriptionNode) => string;
-
 export class DescriptionNodeTree {
-  private readonly website: string;
-
   private readonly nodes: Array<DescriptionBlockNode>;
 
   private readonly insertionOptions: InsertionOptions;
+
+  private context: ConversionContext;
 
   private readonly ad: Description = [
     {
@@ -58,78 +62,126 @@ export class DescriptionNodeTree {
   ];
 
   constructor(
-    website: string,
+    context: ConversionContext,
     nodes: Array<IDescriptionBlockNode>,
     insertionOptions: InsertionOptions,
-    shortcuts: Record<string, UsernameShortcut>,
-    fieldShortcuts: ShortcutEnabledFields,
   ) {
-    this.website = website;
+    this.context = context;
     this.insertionOptions = insertionOptions;
     this.nodes =
       nodes.map((node) => {
         if (BlockTypes.includes(node.type)) {
-          return new DescriptionBlockNode(website, node, shortcuts ?? {});
+          return new DescriptionBlockNode(node);
         }
         throw new Error('Root nodes must be block nodes');
       }) ?? [];
   }
 
-  /**
-   * Converts the description tree to a string.
-   *
-   * @return {*}  {string}
-   */
   toBBCode(): string {
-    return this.withInsertions()
-      .map((node) => node.toBBCodeString())
-      .join('\n')
-      .trim();
+    const converter = new BBCodeConverter();
+    return converter.convertBlocks(this.withInsertions(), this.context).trim();
   }
 
-  /**
-   * Converts the description tree to plain text.
-   *
-   * @return {*}  {string}
-   */
   toPlainText(): string {
-    return this.withInsertions()
-      .map((node) => node.toString())
-      .join('\r\n')
-      .trim();
+    const converter = new PlainTextConverter();
+    return converter.convertBlocks(this.withInsertions(), this.context).trim();
   }
 
-  /**
-   * Converts the description tree to HTML.
-   *
-   * @return {*}  {string}
-   */
-  public toHtml(): string {
-    return this.withInsertions()
-      .map((node) => node.toHtmlString())
-      .join('');
+  toHtml(): string {
+    const converter = new HtmlConverter();
+    return converter.convertBlocks(this.withInsertions(), this.context);
   }
 
-  /**
-   * Converts the description tree to markdown.
-   *
-   * @param {TurndownService} [turndownService] - Optional custom turndown service instance.
-   * @return {*}  {string}
-   */
-  public toMarkdown(turndownService?: TurndownService): string {
+  toMarkdown(turndownService?: TurndownService): string {
     const converter = turndownService ?? new TurndownService();
     const html = this.toHtml();
     return converter.turndown(html);
   }
 
   /**
-   * Allows for custom parsing of the description tree.
-   *
-   * @param {(node: DescriptionNode) => void} cb
-   * @return {*}  {string}
+   * Allows for custom conversion using a provided handler.
    */
-  public parseCustom(cb: (node: DescriptionNode) => void): string {
-    return this.withInsertions().map(cb).join('\n');
+  parseCustom(blockHandler: CustomNodeHandler): string {
+    const converter = new CustomConverter(blockHandler);
+    return converter.convertBlocks(this.withInsertions(), this.context);
+  }
+
+  /**
+   * Allows for custom conversion using a provided converter.
+   */
+  parseWithConverter(converter: BaseConverter): string {
+    return converter.convertBlocks(this.withInsertions(), this.context);
+  }
+
+  /**
+   * Updates the context with resolved shortcuts and usernames.
+   */
+  public updateContext(updates: Partial<ConversionContext>): void {
+    this.context = { ...this.context, ...updates };
+  }
+
+  /**
+   * Finds all inline nodes of a specific type in the tree.
+   */
+  public findInlineNodesByType(type: string): Array<DescriptionInlineNode> {
+    const found: Array<DescriptionInlineNode> = [];
+
+    const traverse = (
+      content: Array<DescriptionInlineNode | DescriptionTextNode>,
+    ) => {
+      for (const node of content) {
+        if (node instanceof DescriptionInlineNode && node.type === type) {
+          found.push(node);
+        }
+        // Only DescriptionInlineNode has content, DescriptionTextNode has text
+        if (node instanceof DescriptionInlineNode) {
+          traverse(node.content);
+        }
+      }
+    };
+
+    for (const block of this.nodes) {
+      traverse(block.content);
+    }
+
+    return found;
+  }
+
+  /**
+   * Finds all custom shortcut IDs in the tree.
+   */
+  public findCustomShortcutIds(): Set<string> {
+    const ids = new Set<string>();
+    const shortcuts = this.findInlineNodesByType('customShortcut');
+
+    for (const shortcut of shortcuts) {
+      if (shortcut.props.id) {
+        ids.add(shortcut.props.id);
+      }
+    }
+
+    return ids;
+  }
+
+  /**
+   * Finds all usernames in the tree.
+   */
+  public findUsernames(): Set<string> {
+    const usernames = new Set<string>();
+    const usernameNodes = this.findInlineNodesByType('username');
+
+    for (const node of usernameNodes) {
+      const username = node.content
+        .filter((c) => c instanceof DescriptionTextNode)
+        .map((c) => c.text)
+        .join('')
+        .trim();
+      if (username) {
+        usernames.add(username);
+      }
+    }
+
+    return usernames;
   }
 
   private withInsertions(): Array<DescriptionBlockNode> {
@@ -137,45 +189,37 @@ export class DescriptionNodeTree {
     const { insertAd, insertTags, insertTitle } = this.insertionOptions;
     if (insertTitle) {
       nodes.unshift(
-        new DescriptionBlockNode(
-          this.website,
-          {
-            id: 'title',
-            type: 'heading',
-            props: { level: '3' },
-            content: [
-              {
-                type: 'text',
-                text: insertTitle,
-                styles: {},
-                props: {},
-              },
-            ],
-          },
-          {},
-        ),
+        new DescriptionBlockNode({
+          id: 'title',
+          type: 'heading',
+          props: { level: '2' },
+          content: [
+            {
+              type: 'text',
+              text: insertTitle,
+              styles: {},
+              props: {},
+            },
+          ],
+        }),
       );
     }
 
     if (insertTags) {
       nodes.push(
-        new DescriptionBlockNode(
-          this.website,
-          {
-            id: 'tags',
-            type: 'paragraph',
-            props: {},
-            content: [
-              {
-                type: 'text',
-                text: insertTags.join(' '),
-                styles: {},
-                props: {},
-              },
-            ],
-          },
-          {},
-        ),
+        new DescriptionBlockNode({
+          id: 'tags',
+          type: 'paragraph',
+          props: {},
+          content: [
+            {
+              type: 'text',
+              text: insertTags.join(' '),
+              styles: {},
+              props: {},
+            },
+          ],
+        }),
       );
     }
 
@@ -183,11 +227,7 @@ export class DescriptionNodeTree {
       nodes.push(
         ...this.ad.map(
           (node) =>
-            new DescriptionBlockNode(
-              this.website,
-              node as unknown as IDescriptionBlockNode,
-              {},
-            ),
+            new DescriptionBlockNode(node as unknown as IDescriptionBlockNode),
         ),
       );
     }
