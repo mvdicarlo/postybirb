@@ -59,6 +59,9 @@ jobs:
         # These flags needed to speed up ci
       - name: Install dependencies
         run: yarn install --immutable
+        env:
+          CYPRESS_INSTALL_BINARY: 0  # Skip downloading Cypress binary (not needed for CI)
+          YARN_ENABLE_SCRIPTS: false # Prevent postinstall (electron-builder app deps) from running in CI
 
         # Used to calculate affected
       - name: Setup SHAs
