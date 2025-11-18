@@ -42,7 +42,9 @@
     "postinstall": "exitzero electron-builder install-app-deps",
     "setup": "run-s setup:husky",
     "setup:husky": "yarn husky",
-    "generate:sql": "drizzle-kit generate"
+    "generate:sql": "drizzle-kit generate",
+    "inject:app-insights": "node scripts/inject-app-insights.js",
+    "inject:app-insights:clear": "node scripts/inject-app-insights.js --clear"
   },
   "dependencies": {
     "@atproto/api": "^0.15.7",

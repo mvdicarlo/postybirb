@@ -54,6 +54,11 @@ jobs:
           ELECTRON_CACHE: ~/.cache/electron
           ELECTRON_BUILDER_CACHE: ~/.cache/electron-builder
 
+      - name: Inject Application Insights connection string
+        env:
+          APP_INSIGHTS_KEY: ${{ secrets.APP_INSIGHTS_KEY }}
+        run: yarn inject:app-insights
+
       # Build the application
       - name: Build application
         run: yarn build:prod

@@ -11,9 +11,7 @@ export interface AppInsightsConfig {
   appVersion?: string;
 }
 
-const appInsightsConnectionString =
-  process.env.APPLICATIONINSIGHTS_CONNECTION_STRING ||
-  '<%APP_INSIGHTS_CONNECTION_STRING%>';
+const appInsightsConnectionString = null;
 
 /**
  * Initialize Application Insights
