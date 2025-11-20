@@ -188,7 +188,7 @@
     "@nx/vite": "17.3.2",
     "@nx/web": "17.3.2",
     "@nx/workspace": "17.3.2",
-    "@swc/core": "^1.11.31",
+    "@swc/core": "1.13.1",
     "@swc/jest": "^0.2.38",
     "@testing-library/react": "13.4.0",
     "@types/cron": "^2.4.0",
@@ -256,7 +256,8 @@
   },
   "resolutions": {
     "glob": "9",
-    "jest-snapshot@npm:^29.7.0": "patch:jest-snapshot@npm%3A29.7.0#~/.yarn/patches/jest-snapshot-npm-29.7.0-15ef0a4ad6.patch"
+    "jest-snapshot@npm:^29.7.0": "patch:jest-snapshot@npm%3A29.7.0#~/.yarn/patches/jest-snapshot-npm-29.7.0-15ef0a4ad6.patch",
+    "@swc/core": "1.13.1"
   },
   "packageManager": "yarn@4.9.4"
 }

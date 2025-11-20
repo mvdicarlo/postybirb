@@ -45,15 +45,9 @@ import { Website } from '../../website';
 import { BlueskyFileSubmission } from './models/bluesky-file-submission';
 import { BlueskyMessageSubmission } from './models/bluesky-message-submission';
 
-@WebsiteMetadata({
-  name: 'bluesky',
-  displayName: 'BlueSky',
-})
+@WebsiteMetadata({ name: 'bluesky', displayName: 'BlueSky' })
 @CustomLoginFlow()
-@SupportsUsernameShortcut({
-  id: 'bluesky',
-  url: 'https://bsly.app/profile/$1',
-})
+@SupportsUsernameShortcut({ id: 'bluesky', url: 'https://bsly.app/profile/$1' })
 @SupportsFiles({
   acceptedMimeTypes: [
     'image/png',
@@ -87,10 +81,7 @@ export default class Bluesky
   readonly MAX_CHARS = 300;
 
   public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<BlueskyAccountData> =
-    {
-      username: true,
-      password: true,
-    };
+    { username: true, password: true };
 
   private agent = new AtpAgent({ service: 'https://bsky.social' });
 
@@ -314,10 +305,7 @@ export default class Bluesky
     if (rt.graphemeLength > this.MAX_CHARS) {
       validator.error(
         'validation.description.max-length',
-        {
-          maxLength: this.MAX_CHARS,
-          currentLength: rt.graphemeLength,
-        },
+        { maxLength: this.MAX_CHARS, currentLength: rt.graphemeLength },
         'description',
       );
     }
@@ -453,10 +441,7 @@ export default class Bluesky
         });
       }
 
-      return {
-        images: uploadedImages,
-        $type: 'app.bsky.embed.images',
-      };
+      return { images: uploadedImages, $type: 'app.bsky.embed.images' };
     }
 
     for (const file of files) {
@@ -470,11 +455,7 @@ export default class Bluesky
         const altText = file.metadata.altText || '';
         this.checkVideoUploadLimits(agent);
         const ref = await this.uploadVideo(agent, file);
-        return {
-          video: ref,
-          alt: altText,
-          $type: 'app.bsky.embed.video',
-        };
+        return { video: ref, alt: altText, $type: 'app.bsky.embed.video' };
       }
     }
 
@@ -548,7 +529,7 @@ export default class Bluesky
     const url = `https://video.bsky.app/xrpc/app.bsky.video.uploadVideo?did=${did}&name=${name}`;
     const req: RequestInit = {
       method: 'POST',
-      body: file.buffer,
+      body: file.buffer as BodyInit,
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': file.mimeType,
