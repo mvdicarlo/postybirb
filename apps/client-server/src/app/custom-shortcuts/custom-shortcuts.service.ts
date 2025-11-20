@@ -49,10 +49,10 @@ export class CustomShortcutsService extends PostyBirbService<'CustomShortcutSche
     return this.repository.update(id, updateCustomShortcutDto);
   }
 
-  public async remove(id: EntityId): Promise<void> {
+  public async remove(id: EntityId) {
     const existing = await this.repository.findById(id, {
       failOnMissing: true,
     });
-    await super.remove(id);
+    return super.remove(id);
   }
 }
