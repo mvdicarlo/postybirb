@@ -1,6 +1,6 @@
 import * as rtf from '@iarna/rtf-to-html';
 import { Injectable } from '@nestjs/common';
-import { Insert, PostyBirbTransaction, Select } from '@postybirb/database';
+import { Insert, Select } from '@postybirb/database';
 import { removeFile } from '@postybirb/fs';
 import { Logger } from '@postybirb/logger';
 import {
@@ -25,6 +25,10 @@ import {
   SubmissionFile,
 } from '../../drizzle/models';
 import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
+import {
+  TransactionContext,
+  withTransactionContext,
+} from '../../drizzle/transaction-context';
 import { MulterFileInfo } from '../models/multer-file-info';
 import { ImageUtil } from '../utils/image.util';
 
@@ -61,10 +65,12 @@ export class CreateFileService {
   ): Promise<SubmissionFile> {
     try {
       this.logger.withMetadata(file).info(`Creating SubmissionFile entity`);
-      const newSubmission = await this.fileRepository.db.transaction(
-        async (tx: PostyBirbTransaction) => {
+
+      const newSubmission = await withTransactionContext(
+        this.fileRepository.db,
+        async (ctx) => {
           let entity = await this.createSubmissionFile(
-            tx,
+            ctx,
             file,
             submission,
             buf,
@@ -72,19 +78,20 @@ export class CreateFileService {
 
           if (ImageUtil.isImage(file.mimetype, true)) {
             this.logger.info('[Mutation] Populating as Image');
-            entity = await this.populateAsImageFile(tx, entity, file, buf);
+            entity = await this.populateAsImageFile(ctx, entity, file, buf);
           }
 
           if (getFileType(file.originalname) === FileType.TEXT) {
-            await this.createSubmissionTextAltFile(tx, entity, file, buf);
+            await this.createSubmissionTextAltFile(ctx, entity, file, buf);
           }
 
           const primaryFile = await this.createFileBufferEntity(
-            tx,
+            ctx,
             entity,
             buf,
           );
-          await tx
+          await ctx
+            .getDb()
             .update(this.fileRepository.schemaEntity)
             .set({ primaryFileId: primaryFile.id })
             .where(eq(this.fileRepository.schemaEntity.id, entity.id));
@@ -98,7 +105,7 @@ export class CreateFileService {
       return await this.fileRepository.findById(newSubmission.id);
     } catch (err) {
       this.logger.error(err.message, err.stack);
-      return await Promise.reject(err);
+      throw err;
     } finally {
       if (!file.origin) {
         removeFile(file.path);
@@ -115,7 +122,7 @@ export class CreateFileService {
    * @param {Buffer} buf
    */
   async createSubmissionTextAltFile(
-    tx: PostyBirbTransaction,
+    ctx: TransactionContext,
     entity: SubmissionFile,
     file: MulterFileInfo,
     buf: Buffer,
@@ -155,7 +162,7 @@ export class CreateFileService {
         htmlBeautify(altText, { wrap_line_length: 120 }),
       );
       const altFile = await this.createFileBufferEntity(
-        tx,
+        ctx,
         entity,
         prettifiedBuf,
         {
@@ -163,7 +170,8 @@ export class CreateFileService {
           fileName: `${entity.fileName}.html`,
         },
       );
-      await tx
+      await ctx
+        .getDb()
         .update(this.fileRepository.schemaEntity)
         .set({
           altFileId: altFile.id,
@@ -185,7 +193,7 @@ export class CreateFileService {
    * @return {*}  {Promise<SubmissionFile>}
    */
   private async createSubmissionFile(
-    tx: PostyBirbTransaction,
+    ctx: TransactionContext,
     file: MulterFileInfo,
     submission: FileSubmission,
     buf: Buffer,
@@ -205,13 +213,16 @@ export class CreateFileService {
     };
     const sf = fromDatabaseRecord(
       SubmissionFile,
-      await tx
+      await ctx
+        .getDb()
         .insert(this.fileRepository.schemaEntity)
         .values(submissionFile)
         .returning(),
     );
 
-    return sf[0];
+    const entity = sf[0];
+    ctx.track('SubmissionFileSchema', entity.id);
+    return entity;
   }
 
   /**
@@ -224,7 +235,7 @@ export class CreateFileService {
    * @return {*}  {Promise<void>}
    */
   private async populateAsImageFile(
-    tx: PostyBirbTransaction,
+    ctx: TransactionContext,
     entity: SubmissionFile,
     file: MulterFileInfo,
     buf: Buffer,
@@ -233,7 +244,7 @@ export class CreateFileService {
 
     const meta = await sharpInstance.metadata();
     const thumbnail = await this.createFileThumbnail(
-      tx,
+      ctx,
       entity,
       file,
       sharpInstance,
@@ -256,7 +267,8 @@ export class CreateFileService {
 
     return fromDatabaseRecord(
       SubmissionFile,
-      await tx
+      await ctx
+        .getDb()
         .update(this.fileRepository.schemaEntity)
         .set(update)
         .where(eq(this.fileRepository.schemaEntity.id, entity.id))
@@ -274,7 +286,7 @@ export class CreateFileService {
    * @return {*}  {Promise<IFileBuffer>}
    */
   public async createFileThumbnail(
-    tx: PostyBirbTransaction,
+    ctx: TransactionContext,
     fileEntity: SubmissionFile,
     file: MulterFileInfo,
     sharpInstance: Sharp,
@@ -295,7 +307,7 @@ export class CreateFileService {
     const fileNameWithoutExt = parse(fileEntity.fileName).name;
     const thumbnailExt = thumbnailMimeType === 'image/jpeg' ? 'jpg' : 'png';
 
-    return this.createFileBufferEntity(tx, fileEntity, thumbnailBuf, {
+    return this.createFileBufferEntity(ctx, fileEntity, thumbnailBuf, {
       height,
       width,
       mimeType: thumbnailMimeType,
@@ -359,7 +371,7 @@ export class CreateFileService {
    * @return {*}  {IFileBuffer}
    */
   public async createFileBufferEntity(
-    tx: PostyBirbTransaction,
+    ctx: TransactionContext,
     fileEntity: SubmissionFile,
     buf: Buffer,
     opts: Select<'FileBufferSchema'> = {} as Select<'FileBufferSchema'>,
@@ -377,12 +389,16 @@ export class CreateFileService {
       ...opts,
     };
 
-    return fromDatabaseRecord(
+    const result = fromDatabaseRecord(
       FileBuffer,
-      await tx
+      await ctx
+        .getDb()
         .insert(this.fileBufferRepository.schemaEntity)
         .values(data)
         .returning(),
     )[0];
+
+    ctx.track('FileBufferSchema', result.id);
+    return result;
   }
 }
