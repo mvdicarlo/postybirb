@@ -43,8 +43,23 @@ Learn more: [Translation guide](./TRANSLATION.md)
 2. Clone project using git
 3. `corepack enable` Make NodeJS use the yarn version specific to the project (from package.json)
 4. `yarn install` Installs dependencies
-5. `yarn run setup` Installs hooks/husky
-6. `yarn start` Starts app
+5. If it fails with `➤ YN0009: │ better-sqlite3@npm:11.8.0 couldn't be built successfully`: <summary>
+
+  <details>
+       If you're on windows run
+
+```
+winget install -e --id Microsoft.VisualStudio.2022.BuildTools --override "--passive --wait --add Microsoft.VisualStudio.Workload.VCTools;includeRecommended"
+```
+
+If you're on linux or other OS please create an issue with log from the unsucessfull build. It will have instructions on which packages are required and we will add them there. But generally it should work out of box if you have C++ compiler installed
+
+  </details>
+
+</summary>
+
+6. `yarn run setup` Installs hooks/husky
+7. `yarn start` Starts app
 
 ### Recommended Plugins (VSCode)
 

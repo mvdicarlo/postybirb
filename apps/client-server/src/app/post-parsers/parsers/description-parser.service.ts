@@ -1,23 +1,22 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { DescriptionType, UsernameShortcut } from '@postybirb/types';
-import { escapeRegExp } from 'lodash';
 import isEqual from 'lodash/isEqual';
 import { Class } from 'type-fest';
 import { WEBSITE_IMPLEMENTATIONS } from '../../constants';
 import { CustomShortcutsService } from '../../custom-shortcuts/custom-shortcuts.service';
 import { SettingsService } from '../../settings/settings.service';
+import { UserConvertersService } from '../../user-converters/user-converters.service';
 import { BaseWebsiteOptions } from '../../websites/models/base-website-options';
 import { DefaultWebsiteOptions } from '../../websites/models/default-website-options';
 import { isWithCustomDescriptionParser } from '../../websites/models/website-modifiers/with-custom-description-parser';
 import { isWithRuntimeDescriptionParser } from '../../websites/models/website-modifiers/with-runtime-description-parser';
 import { UnknownWebsite, Website } from '../../websites/website';
-import { DEFAULT_MARKER } from '../models/description-node/block-description-node';
 import {
   DescriptionNodeTree,
   InsertionOptions,
 } from '../models/description-node/description-node-tree';
+import { ConversionContext } from '../models/description-node/description-node.base';
 import { IDescriptionBlockNode } from '../models/description-node/description-node.types';
-import { DescriptionInlineNode } from '../models/description-node/inline-description-node';
 
 @Injectable()
 export class DescriptionParserService {
@@ -28,6 +27,7 @@ export class DescriptionParserService {
     @Inject(WEBSITE_IMPLEMENTATIONS)
     private readonly websiteImplementations: Class<UnknownWebsite>[],
     private readonly customShortcutsService?: CustomShortcutsService,
+    private readonly userConvertersService?: UserConvertersService,
   ) {
     this.websiteImplementations.forEach((website) => {
       const shortcut: UsernameShortcut | undefined =
@@ -79,56 +79,47 @@ export class DescriptionParserService {
       descriptionValue.description as unknown as Array<IDescriptionBlockNode>,
     );
 
-    const tree = new DescriptionNodeTree(
-      instance.decoratedProps.metadata.name,
-      mergedDescriptionBlocks,
-      insertionOptions,
-      this.websiteShortcuts,
-      {
-        title,
-        tags,
-      },
+    // Pre-resolve default description
+    const defaultDescription = this.mergeBlocks(
+      defaultOptions.description
+        .description as unknown as Array<IDescriptionBlockNode>,
     );
 
-    let description = this.createDescription(instance, descriptionType, tree);
-
-    // Support inserting default description by replacing the default marker.
-    if (description.includes(DEFAULT_MARKER)) {
-      const defaultMergedBlocks = this.mergeBlocks(
-        defaultOptions.description
-          .description as unknown as Array<IDescriptionBlockNode>,
-      );
-      const defaultTree = new DescriptionNodeTree(
-        instance.decoratedProps.metadata.name,
-        defaultMergedBlocks,
-        {
-          insertTitle: undefined,
-          insertTags: undefined,
-          insertAd: false,
-        },
-        this.websiteShortcuts,
-        {
-          title,
-          tags,
-        },
-      );
-
-      description = description.replace(
-        DEFAULT_MARKER,
-        this.createDescription(instance, descriptionType, defaultTree),
-      );
-    }
-
-    // Inject custom shortcuts
-    description = await this.injectCustomShortcuts(
-      description,
-      descriptionType,
-      instance,
+    // Build tree once with minimal context
+    const context: ConversionContext = {
+      website: instance.decoratedProps.metadata.name,
+      shortcuts: this.websiteShortcuts,
+      customShortcuts: new Map(),
+      defaultDescription,
       title,
       tags,
+      usernameConversions: new Map(),
+    };
+
+    const tree = new DescriptionNodeTree(
+      context,
+      mergedDescriptionBlocks,
+      insertionOptions,
     );
 
-    return description;
+    // Resolve and inject into the same tree
+    const customShortcuts = await this.resolveCustomShortcutsFromTree(tree);
+    const usernameConversions = await this.resolveUsernamesFromTree(
+      tree,
+      instance,
+    );
+
+    tree.updateContext({
+      customShortcuts,
+      usernameConversions,
+    });
+
+    const description = this.createDescription(instance, descriptionType, tree);
+
+    return description
+      .replace(/(<div><\/div>)$/, '')
+      .replace(/(<p><\/p>)$/, '')
+      .trim();
   }
 
   private createDescription(
@@ -147,10 +138,8 @@ export class DescriptionParserService {
         return tree.toBBCode();
       case DescriptionType.CUSTOM:
         if (isWithCustomDescriptionParser(instance)) {
-          const initialDescription = tree.parseCustom(
-            instance.onDescriptionParse,
-          );
-          return instance.onAfterDescriptionParse(initialDescription);
+          const converter = instance.getDescriptionConverter();
+          return tree.parseWithConverter(converter);
         }
         throw new Error(
           `Website does not implement custom description parser: ${instance.constructor.name}`,
@@ -169,6 +158,49 @@ export class DescriptionParserService {
       default:
         throw new Error(`Unsupported description type: ${descriptionType}`);
     }
+  }
+
+  /**
+   * Pre-resolves all custom shortcuts found in the description tree.
+   * Note: Does not handle nested shortcuts - users should not create circular references.
+   */
+  private async resolveCustomShortcutsFromTree(
+    tree: DescriptionNodeTree,
+  ): Promise<Map<string, IDescriptionBlockNode[]>> {
+    const customShortcuts = new Map<string, IDescriptionBlockNode[]>();
+    const shortcutIds = tree.findCustomShortcutIds();
+
+    for (const id of shortcutIds) {
+      const shortcut = await this.customShortcutsService?.findById(id);
+      if (shortcut) {
+        const shortcutBlocks = this.mergeBlocks(
+          shortcut.shortcut as unknown as Array<IDescriptionBlockNode>,
+        );
+        customShortcuts.set(id, shortcutBlocks);
+      }
+    }
+
+    return customShortcuts;
+  }
+
+  /**
+   * Pre-resolves all usernames found in the description tree.
+   */
+  private async resolveUsernamesFromTree(
+    tree: DescriptionNodeTree,
+    instance: Website<unknown>,
+  ): Promise<Map<string, string>> {
+    const usernameConversions = new Map<string, string>();
+    const usernames = tree.findUsernames();
+
+    for (const username of usernames) {
+      const converted =
+        (await this.userConvertersService?.convert(instance, username)) ??
+        username;
+      usernameConversions.set(username, converted);
+    }
+
+    return usernameConversions;
   }
 
   /**
@@ -214,81 +246,5 @@ export class DescriptionParserService {
     }
 
     return mergedBlocks;
-  }
-
-  /**
-   * Injects the content of custom shortcuts into the description content.
-   * Modifies the content in place.
-   */
-  public async injectCustomShortcuts(
-    content: string,
-    descriptionType: DescriptionType,
-    instance: Website<unknown>,
-    title: string,
-    tags: string[],
-  ): Promise<string> {
-    const regex = DescriptionInlineNode.getCustomShortcutMarkerRegex();
-    const matches = Array.from(content.matchAll(regex));
-    if (!matches.length) return content;
-
-    let updatedContent = content;
-    for (const match of matches) {
-      const [fullMarker, id] = match;
-      const shortcut = await this.customShortcutsService?.findById(id);
-      if (shortcut) {
-        // When HTML, check to see if the marker is just surrounded by paragraph.
-        // When it is, unwrap it and prefer custom shortcut to use its own.
-        if (descriptionType === DescriptionType.HTML) {
-          const paragraphRegex = new RegExp(
-            `(<p>)?${escapeRegExp(fullMarker)}(</p>)?`,
-            'g',
-          );
-          updatedContent = updatedContent.replace(
-            paragraphRegex,
-            (m, p1, p2) => {
-              // If the marker is surrounded by paragraphs, unwrap it
-              if (p1 && p2) {
-                return fullMarker;
-              }
-              return m;
-            },
-          );
-        }
-
-        const tree = new DescriptionNodeTree(
-          instance.decoratedProps.metadata.name,
-          shortcut.shortcut as unknown as Array<IDescriptionBlockNode>,
-          {
-            insertTitle: undefined,
-            insertTags: undefined,
-            insertAd: false,
-          },
-          this.websiteShortcuts,
-          {
-            title,
-            tags,
-          },
-        );
-        const rendered = this.createDescription(
-          instance,
-          descriptionType,
-          tree,
-        );
-        updatedContent = updatedContent.replace(
-          new RegExp(escapeRegExp(fullMarker), 'g'),
-          rendered,
-        );
-      }
-    }
-    // Strip any remaining markers (including those wrapped by empty paragraph tags)
-    const markerRegex = DescriptionInlineNode.getCustomShortcutMarkerRegex();
-    const wrappedMarkerRegex = new RegExp(
-      `<p>\\s*${markerRegex.source}\\s*<\\/p>`,
-      'g',
-    );
-    updatedContent = updatedContent.replace(wrappedMarkerRegex, '');
-    updatedContent = updatedContent.replace(markerRegex, '');
-
-    return updatedContent;
   }
 }

@@ -1,5 +1,4 @@
-import { msg, Trans } from '@lingui/macro';
-import { useLingui } from '@lingui/react';
+import { Trans, useLingui } from '@lingui/react/macro';
 import {
   Accordion,
   Badge,
@@ -26,6 +25,7 @@ import {
   IAccountDto,
   IPostRecord,
   IWebsitePostRecord,
+  NullAccount,
   PostRecordState,
   SubmissionId,
   SubmissionType,
@@ -54,6 +54,13 @@ type SubmissionViewProps = {
   type: SubmissionType;
   submissions?: SubmissionDto[];
 };
+
+function getAccount(
+  accountId: EntityId | undefined,
+  accountsMap: Map<EntityId, IAccountDto>,
+): IAccountDto {
+  return accountsMap.get(accountId || '') || (new NullAccount() as IAccountDto);
+}
 
 /**
  * Organizes submissions by date for display
@@ -85,7 +92,7 @@ function bucketizeSubmissionsByPostDate(submissions: SubmissionDto[]) {
     buckets[key][submission.id] = { submission };
   });
 
-  return Object.entries(buckets).sort(([a], [b]) => Number(a) - Number(b));
+  return Object.entries(buckets).sort(([a], [b]) => Number(b) - Number(a));
 }
 
 /**
@@ -126,7 +133,7 @@ function WebsitePostRow({
   const sourceUrls = post.metadata.source
     ? [post.metadata.source]
     : uniq(Object.values(post.metadata.sourceMap)).filter(Boolean);
-  const account = accountsMap.get(post.accountId) || post.account;
+  const account = getAccount(post.accountId, accountsMap);
 
   return (
     <Table.Tr key={post.id}>
@@ -177,7 +184,7 @@ function WebsitePostRow({
  * Displays details of a post record
  */
 function PostDetailsView({ post }: { post: IPostRecord | null }) {
-  const { _ } = useLingui();
+  const { t } = useLingui();
   const { map: accountsMap } = useStore(AccountStore);
 
   if (!post) {
@@ -193,7 +200,7 @@ function PostDetailsView({ post }: { post: IPostRecord | null }) {
   const handleSaveToFile = () => {
     const filename = exportPostRecordToFile(post);
     showNotification({
-      title: _(msg`File saved`),
+      title: t`File saved`,
       message: filename,
       color: 'green',
     });
@@ -336,18 +343,20 @@ function PostTimelineItem({
       bullet={bullet}
     >
       <Group gap="xs">
-        {post.children.map((child) => (
-          <Badge
-            size="xs"
-            variant="outline"
-            color={child.errors.length ? 'red' : 'green'}
-            key={child.id}
-          >
-            {accountsMap.get(child.accountId)?.websiteInfo
-              ?.websiteDisplayName ?? <Trans>Unknown</Trans>}{' '}
-            ({accountsMap.get(child.accountId)?.name ?? child.account.name})
-          </Badge>
-        ))}
+        {post.children.map((child) => {
+          const account = getAccount(child.accountId, accountsMap);
+          const displayName = account?.websiteInfo?.websiteDisplayName;
+          return (
+            <Badge
+              size="xs"
+              variant="outline"
+              color={child.errors.length ? 'red' : 'green'}
+              key={child.id}
+            >
+              {displayName ?? <Trans>Unknown</Trans>} ({account?.name})
+            </Badge>
+          );
+        })}
       </Group>
       <Text size="xs" c="dimmed">
         {completedAt}
@@ -360,7 +369,7 @@ function PostTimelineItem({
  * Card displaying submission history
  */
 function SubmissionHistoryCard({ submission }: { submission: SubmissionDto }) {
-  const { _ } = useLingui();
+  const { t } = useLingui();
   const { map: accountsMap } = useStore(AccountStore);
   const [isRestoring, setIsRestoring] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -384,14 +393,14 @@ function SubmissionHistoryCard({ submission }: { submission: SubmissionDto }) {
       setIsRestoring(true);
       await submissionApi.unarchive(submission.id);
       showNotification({
-        title: _(msg`Submission restored`),
+        title: t`Submission restored`,
         message: submission.getDefaultOptions().data.title,
         color: 'green',
         icon: <IconCheck size={16} />,
       });
     } catch (error) {
       showNotification({
-        title: _(msg`Restore failed`),
+        title: t`Restore failed`,
         message: String(error),
         color: 'red',
         icon: <IconX size={16} />,
@@ -406,14 +415,14 @@ function SubmissionHistoryCard({ submission }: { submission: SubmissionDto }) {
       setIsDeleting(true);
       await submissionApi.remove([submission.id]);
       showNotification({
-        title: _(msg`Submission deleted`),
+        title: t`Submission deleted`,
         message: submission.getDefaultOptions().data.title,
         color: 'green',
         icon: <IconCheck size={16} />,
       });
     } catch (error) {
       showNotification({
-        title: _(msg`Delete failed`),
+        title: t`Delete failed`,
         message: String(error),
         color: 'red',
         icon: <IconX size={16} />,
@@ -493,7 +502,7 @@ export function SubmissionHistoryView({
   type,
   submissions: providedSubmissions,
 }: SubmissionViewProps) {
-  const { _ } = useLingui();
+  const { t } = useLingui();
   const { state: storeSubmissions } = useStore(SubmissionStore);
   const [nameFilter, setNameFilter] = useState<string>('');
 
@@ -553,7 +562,7 @@ export function SubmissionHistoryView({
           <Flex align="center">
             <Input
               flex="6"
-              placeholder={_(msg`Search`)}
+              placeholder={t`Search`}
               width="100%"
               leftSection={<IconSearch />}
               value={nameFilter}

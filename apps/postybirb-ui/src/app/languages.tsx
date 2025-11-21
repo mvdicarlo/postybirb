@@ -1,4 +1,4 @@
-import { msg } from '@lingui/macro';
+import { msg } from "@lingui/core/macro";
 import 'dayjs/locale/es';
 import 'dayjs/locale/ru';
 

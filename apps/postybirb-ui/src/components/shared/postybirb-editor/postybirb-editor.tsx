@@ -1,3 +1,4 @@
+import { Trans } from "@lingui/react/macro";
 /* eslint-disable lingui/no-unlocalized-strings */
 import { BlockNoteEditor, filterSuggestionItems } from '@blocknote/core';
 import '@blocknote/core/fonts/inter.css';
@@ -8,7 +9,6 @@ import {
   getDefaultReactSlashMenuItems,
   useCreateBlockNote,
 } from '@blocknote/react';
-import { Trans } from '@lingui/macro';
 import { Tooltip, useMantineColorScheme } from '@mantine/core';
 import { Description, UsernameShortcut } from '@postybirb/types';
 import { IconKeyboard } from '@tabler/icons-react';

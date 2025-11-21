@@ -1,3 +1,4 @@
+import { Trans } from "@lingui/react/macro";
 import { useEffect, useMemo, useState } from 'react';
 import {
   Button,
@@ -10,7 +11,6 @@ import {
   Text,
   Title,
 } from '@mantine/core';
-import { Trans } from '@lingui/macro';
 
 export type DisclaimerProps = {
   onAccepted: () => void;

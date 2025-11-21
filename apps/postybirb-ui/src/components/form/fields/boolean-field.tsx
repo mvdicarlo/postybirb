@@ -1,4 +1,4 @@
-import { useLingui } from '@lingui/react';
+import { useLingui } from '@lingui/react/macro';
 import { Checkbox } from '@mantine/core';
 import {
   BooleanFieldType,
@@ -12,7 +12,7 @@ import { FormFieldProps } from './form-field.type';
 
 export function BooleanField(props: FormFieldProps<BooleanFieldType>) {
   const { field, propKey } = props;
-  const { _ } = useLingui();
+  const { t } = useLingui();
   const { values, setFieldValue } = useFormFields();
   const validations = useValidations(props);
 
@@ -39,7 +39,7 @@ export function BooleanField(props: FormFieldProps<BooleanFieldType>) {
         onChange={(event) =>
           setFieldValue(propKey, event.currentTarget.checked)
         }
-        label={getTranslatedLabel(field, _)}
+        label={getTranslatedLabel(field, t)}
       />
     </FieldLabel>
   );

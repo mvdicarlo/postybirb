@@ -11,7 +11,6 @@ import {
 import {
   FileBufferSchema,
   Insert,
-  PostyBirbTransaction,
   SubmissionFileSchema,
   SubmissionSchema,
   WebsiteOptionsSchema,
@@ -35,6 +34,7 @@ import * as path from 'path';
 import { PostyBirbService } from '../../common/service/postybirb-service';
 import { FileBuffer, Submission, WebsiteOptions } from '../../drizzle/models';
 import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
+import { withTransactionContext } from '../../drizzle/transaction-context';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { WSGateway } from '../../web-socket/web-socket-gateway';
 import { WebsiteOptionsService } from '../../website-options/website-options.service';
@@ -283,25 +283,38 @@ export class SubmissionService
       (option: WebsiteOptions) => option.accountId === NULL_ACCOUNT_ID,
     );
     const defaultTitle = defaultOption?.data?.title;
-    await this.repository.db.transaction(async (tx: PostyBirbTransaction) => {
+
+    // Prepare all option insertions before the transaction
+    const newOptionInsertions: Insert<'WebsiteOptionsSchema'>[] =
+      await Promise.all(
+        template.options.map((option) =>
+          this.websiteOptionsService.createOptionInsertObject(
+            submission,
+            option.accountId,
+            option.data,
+            (option.isDefault ? defaultTitle : option?.data?.title) ?? '',
+          ),
+        ),
+      );
+
+    await withTransactionContext(this.repository.db, async (ctx) => {
       // clear all existing options
-      await tx
+      await ctx
+        .getDb()
         .delete(WebsiteOptionsSchema)
         .where(eq(WebsiteOptionsSchema.submissionId, id));
 
-      const newOptionInsertions: Insert<'WebsiteOptionsSchema'>[] =
-        await Promise.all(
-          template.options.map((option) =>
-            this.websiteOptionsService.createOptionInsertObject(
-              submission,
-              option.accountId,
-              option.data,
-              (option.isDefault ? defaultTitle : option?.data?.title) ?? '',
-            ),
-          ),
-        );
+      await ctx
+        .getDb()
+        .insert(WebsiteOptionsSchema)
+        .values(newOptionInsertions);
 
-      await tx.insert(WebsiteOptionsSchema).values(newOptionInsertions);
+      // Track all created options for cleanup if needed
+      newOptionInsertions.forEach((option) => {
+        if (option.id) {
+          ctx.track('WebsiteOptionsSchema', option.id);
+        }
+      });
     });
 
     try {
@@ -398,8 +411,9 @@ export class SubmissionService
   }
 
   public async remove(id: SubmissionId) {
-    await super.remove(id);
+    const result = await super.remove(id);
     this.emit();
+    return result;
   }
 
   async applyMultiSubmission(applyMultiSubmissionDto: ApplyMultiSubmissionDto) {
@@ -478,9 +492,10 @@ export class SubmissionService
         files: true,
       },
     });
-    await this.repository.db.transaction(async (tx: PostyBirbTransaction) => {
+    await withTransactionContext(this.repository.db, async (ctx) => {
       const newSubmission = (
-        await tx
+        await ctx
+          .getDb()
           .insert(SubmissionSchema)
           .values({
             metadata: entityToDuplicate.metadata,
@@ -493,19 +508,20 @@ export class SubmissionService
           })
           .returning()
       )[0];
+      ctx.track('SubmissionSchema', newSubmission.id);
 
-      await tx.insert(WebsiteOptionsSchema).values(
-        entityToDuplicate.options.map((option) => ({
-          ...option,
-          id: undefined,
-          submissionId: newSubmission.id,
-        })),
-      );
+      const optionValues = entityToDuplicate.options.map((option) => ({
+        ...option,
+        id: undefined,
+        submissionId: newSubmission.id,
+      }));
+      await ctx.getDb().insert(WebsiteOptionsSchema).values(optionValues);
 
       for (const file of entityToDuplicate.files) {
         await file.load();
         const newFile = (
-          await tx
+          await ctx
+            .getDb()
             .insert(SubmissionFileSchema)
             .values({
               submissionId: newSubmission.id,
@@ -523,9 +539,11 @@ export class SubmissionService
             })
             .returning()
         )[0];
+        ctx.track('SubmissionFileSchema', newFile.id);
 
         const primaryFile = (
-          await tx
+          await ctx
+            .getDb()
             .insert(FileBufferSchema)
             .values({
               ...file.file,
@@ -534,10 +552,12 @@ export class SubmissionService
             })
             .returning()
         )[0];
+        ctx.track('FileBufferSchema', primaryFile.id);
 
         const thumbnail: FileBuffer | undefined = file.thumbnail
           ? (
-              await tx
+              await ctx
+                .getDb()
                 .insert(FileBufferSchema)
                 .values({
                   ...file.thumbnail,
@@ -547,10 +567,14 @@ export class SubmissionService
                 .returning()
             )[0]
           : undefined;
+        if (thumbnail) {
+          ctx.track('FileBufferSchema', thumbnail.id);
+        }
 
         const altFile: FileBuffer | undefined = file.altFile
           ? (
-              await tx
+              await ctx
+                .getDb()
                 .insert(FileBufferSchema)
                 .values({
                   ...file.altFile,
@@ -560,8 +584,12 @@ export class SubmissionService
                 .returning()
             )[0]
           : undefined;
+        if (altFile) {
+          ctx.track('FileBufferSchema', altFile.id);
+        }
 
-        await tx
+        await ctx
+          .getDb()
           .update(SubmissionFileSchema)
           .set({
             primaryFileId: primaryFile.id,
@@ -577,7 +605,8 @@ export class SubmissionService
       }
 
       // Save updated metadata
-      await tx
+      await ctx
+        .getDb()
         .update(SubmissionSchema)
         .set({ metadata: newSubmission.metadata })
         .where(eq(SubmissionSchema.id, newSubmission.id));

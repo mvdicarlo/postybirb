@@ -31,6 +31,11 @@ const DEFAULT_HEADERS: Record<string, string> = {
   'Accept-Encoding': 'gzip, deflate, br',
 };
 
+export interface HttpRequestOptions {
+  // Skips adding index to url encoded data for arrays
+  skipUrlEncodedIndexing?: boolean;
+}
+
 interface HttpOptions {
   headers?: Record<string, string>;
   queryParameters?: Record<
@@ -42,7 +47,8 @@ interface HttpOptions {
     | readonly number[]
     | readonly boolean[]
   >;
-  partition: string | undefined;
+  partition?: string | undefined;
+  options?: HttpRequestOptions;
 }
 
 export interface PostOptions extends HttpOptions {
@@ -161,7 +167,8 @@ export class Http {
     const req = net.request(clientRequestOptions);
     if (
       clientRequestOptions.method === 'POST' ||
-      clientRequestOptions.method === 'PATCH'
+      clientRequestOptions.method === 'PATCH' ||
+      clientRequestOptions.method === 'PUT'
     ) {
       if ((options as PostOptions).type === 'multipart') {
         req.chunkedEncoding = true;
@@ -191,7 +198,7 @@ export class Http {
   private static createPostBody(
     options: PostOptions | BinaryPostOptions,
   ): CreateBodyData {
-    const { data, type } = options;
+    const { data, type, options: httpOptions } = options;
     switch (type) {
       case 'json': {
         return {
@@ -201,15 +208,16 @@ export class Http {
       }
 
       case 'urlencoded': {
+        const skipIndex = httpOptions?.skipUrlEncodedIndexing ?? false;
         return {
           contentType: 'application/x-www-form-urlencoded',
-          buffer: Buffer.from(urlEncoded(data)),
+          buffer: Buffer.from(urlEncoded(data, { skipIndex })),
         };
       }
 
       case 'binary':
         return {
-          contentType: 'binary/octet-stream',
+          contentType: 'application/octet-stream',
           buffer: data as Buffer,
         };
 
@@ -293,7 +301,8 @@ export class Http {
         let body: T | string = message.toString();
         if (
           headers['content-type'] &&
-          headers['content-type'].includes('application/json')
+          (headers['content-type'].includes('application/json') ||
+            headers['content-type'].includes('application/vnd.api+json'))
         ) {
           try {
             body = JSON.parse(body) as T;
@@ -430,8 +439,23 @@ export class Http {
     return Http.postLike('patch', url, options, crOptions ?? {});
   }
 
+  /**
+   * Creates a PUT method request.
+   *
+   * @param url
+   * @param options
+   * @param crOptions
+   */
+  static put<T>(
+    url: string,
+    options: PostOptions | BinaryPostOptions,
+    crOptions?: ClientRequestConstructorOptions,
+  ): Promise<HttpResponse<T>> {
+    return Http.postLike('put', url, options, crOptions ?? {});
+  }
+
   private static async postLike<T>(
-    method: 'post' | 'patch',
+    method: 'post' | 'patch' | 'put',
     url: string,
     options: PostOptions | BinaryPostOptions,
     crOptions: ClientRequestConstructorOptions,

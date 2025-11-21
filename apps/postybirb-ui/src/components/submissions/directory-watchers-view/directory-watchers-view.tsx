@@ -1,5 +1,4 @@
-import { Trans, msg } from '@lingui/macro';
-import { useLingui } from '@lingui/react';
+import { Trans, useLingui } from '@lingui/react/macro';
 import {
   ActionIcon,
   Box,
@@ -47,11 +46,11 @@ function hasChanged(
 function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
   const { directoryWatcher, refetch } = props;
   const [state, setState] = useState({ ...directoryWatcher });
-  const { _ } = useLingui();
+  const { t } = useLingui();
 
   const options = [
     {
-      label: _(msg`Create new submission`),
+      label: t`Create new submission`,
       value: DirectoryWatcherImportAction.NEW_SUBMISSION,
     },
   ];
@@ -66,7 +65,7 @@ function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
         <Input
           leftSection={<IconFolder />}
           disabled={!window?.electron?.pickDirectory}
-          value={state.path ?? _(msg`Select folder`)}
+          value={state.path ?? t`Select folder`}
           readOnly
           onClick={() => {
             if (window?.electron?.pickDirectory) {
@@ -117,7 +116,7 @@ function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
         <ActionIcon
           variant="transparent"
           disabled={!hasChanged(directoryWatcher, state)}
-          aria-label={_(msg`Save folder upload changes`)}
+          aria-label={t`Save folder upload changes`}
           onClick={() => {
             directoryWatchersApi
               .update(directoryWatcher.id, {

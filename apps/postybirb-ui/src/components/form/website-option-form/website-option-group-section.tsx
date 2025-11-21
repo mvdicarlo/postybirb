@@ -1,4 +1,4 @@
-import { Trans } from '@lingui/macro';
+import { Trans } from "@lingui/react/macro";
 import {
   ActionIcon,
   Badge,
@@ -95,7 +95,11 @@ export function WebsiteOptionGroupSection(
                   style={{ zIndex: 99 }}
                 >
                   <Group wrap="nowrap">
-                    <Box c={hasValidationErrors ? 'red' : 'inherit'} flex={2}>
+                    <Box
+                      c={hasValidationErrors ? 'red' : 'inherit'}
+                      flex={2}
+                      ml="16"
+                    >
                       {hasValidationErrors ? (
                         <IconExclamationCircle
                           height="1rem"

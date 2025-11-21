@@ -50,6 +50,7 @@ export class PostyBirbDatabase<
     SubmissionSchema: [],
     TagConverterSchema: [],
     TagGroupSchema: [],
+    UserConverterSchema: [],
     UserSpecifiedWebsiteOptionsSchema: [],
     WebsiteDataSchema: [],
     WebsiteOptionsSchema: [],
@@ -127,10 +128,12 @@ export class PostyBirbDatabase<
   public async insert(
     value: Insert<TSchemaKey> | Insert<TSchemaKey>[],
   ): Promise<TEntityClass | TEntityClass[]> {
-    const inserts = await this.db
+    const insertQuery = this.db
       .insert(this.schemaEntity)
       .values(value)
       .returning();
+    // After calling .returning(), the result is always an array of the selected fields
+    const inserts = (await insertQuery) as Array<Select<TSchemaKey>>;
     this.notify(
       inserts.map((insert) => insert.id),
       'insert',

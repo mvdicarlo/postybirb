@@ -19,7 +19,7 @@ export class WebsitePostRecord
 {
   postRecordId: EntityId;
 
-  accountId: AccountId;
+  accountId?: AccountId;
 
   @Type(() => PostRecord)
   parent: PostRecord;
@@ -33,7 +33,7 @@ export class WebsitePostRecord
   completedAt: string;
 
   @Type(() => Account)
-  account: Account;
+  account?: Account;
 
   errors: IWebsiteError[] = [];
 

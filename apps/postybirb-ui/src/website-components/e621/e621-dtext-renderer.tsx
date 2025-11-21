@@ -1,4 +1,4 @@
-import { Trans } from '@lingui/macro';
+import { Trans } from "@lingui/react/macro";
 import React from 'react';
 
 // May be used for preview feature, still needs to have actual

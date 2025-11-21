@@ -1,7 +1,8 @@
-import { Plural, Trans } from '@lingui/macro';
+import { Plural, Trans } from "@lingui/react/macro";
 import { Text } from '@mantine/core';
 import {
   FileType,
+  SubmissionRating,
   ValidationMessage,
   ValidationMessages,
 } from '@postybirb/types';
@@ -206,6 +207,40 @@ export const TranslationMessages: TranslationsMap = {
 
   'validation.field.required': () => <Trans>Required</Trans>,
 
+  'validation.datetime.invalid-format': (props) => {
+    const { value } = props;
+    return (
+      <Trans>Invalid date format: {value}. Expected ISO date string.</Trans>
+    );
+  },
+
+  'validation.datetime.min': (props) => {
+    const { currentDate, minDate } = props;
+    return (
+      <Trans>
+        Date {currentDate} is before minimum allowed date {minDate}
+      </Trans>
+    );
+  },
+
+  'validation.datetime.max': (props) => {
+    const { currentDate, maxDate } = props;
+    return (
+      <Trans>
+        Date {currentDate} is after maximum allowed date {maxDate}
+      </Trans>
+    );
+  },
+
+  'validation.datetime.range': (props) => {
+    const { currentDate, minDate, maxDate } = props;
+    return (
+      <Trans>
+        Date {currentDate} is outside allowed range ({minDate} - {maxDate})
+      </Trans>
+    );
+  },
+
   'validation.file.bluesky.unsupported-combination-of-files': () => (
     <Trans>
       Supports either a set of images, a single video, or a single GIF.
@@ -310,6 +345,31 @@ export const TranslationMessages: TranslationsMap = {
   'validation.folder.missing-or-invalid': () => (
     <Trans>Selected option is invalid or missing</Trans>
   ),
+
+  'validation.rating.unsupported-rating': (props: {
+    rating: string;
+  }): JSX.Element => {
+    const { rating } = props;
+    let ratingLabel: JSX.Element;
+    switch (rating) {
+      case SubmissionRating.GENERAL:
+        ratingLabel = <Trans>General</Trans>;
+        break;
+      case SubmissionRating.MATURE:
+        ratingLabel = <Trans>Mature</Trans>;
+        break;
+      case SubmissionRating.ADULT:
+        ratingLabel = <Trans>Adult</Trans>;
+        break;
+      case SubmissionRating.EXTREME:
+        ratingLabel = <Trans>Extreme</Trans>;
+        break;
+      default:
+        ratingLabel = <span>{rating}</span>;
+        break;
+    }
+    return <Trans>Unsupported rating: {ratingLabel}</Trans>;
+  },
 };
 
 export function ValidationTranslation({

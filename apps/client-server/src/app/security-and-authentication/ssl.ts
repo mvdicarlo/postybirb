@@ -4,23 +4,28 @@ import { mkdir, readFile, stat, writeFile } from 'fs/promises';
 import forge from 'node-forge';
 import { join } from 'path';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(forge as any).options.usePureJavaScript = true;
-
 export class SSL {
+  private static cachedCerts?: { key: string; cert: string };
+
   static async getOrCreateSSL(): Promise<{ key: string; cert: string }> {
+    // Return cached certs if available
+    if (this.cachedCerts) {
+      return this.cachedCerts;
+    }
+
     const logger = Logger().withContext({ name: 'SSL' });
     const path = join(app.getPath('userData'), 'auth');
     const keyPath = join(path, 'key.pem');
     const certPath = join(path, 'cert.pem');
 
+    // Check if certificates already exist
     let exists = false;
     try {
       await stat(certPath);
       exists = true;
     } catch {
       try {
-        await mkdir(path);
+        await mkdir(path, { recursive: true });
       } catch (err) {
         if (err.code !== 'EEXIST') {
           logger.error(err);
@@ -29,15 +34,18 @@ export class SSL {
     }
 
     if (exists) {
-      return {
+      const certs = {
         key: (await readFile(keyPath)).toString(),
         cert: (await readFile(certPath)).toString(),
       };
+      this.cachedCerts = certs;
+      return certs;
     }
 
     logger.trace('Creating SSL certs...');
     const { pki } = forge;
 
+    // Generate RSA key pair - will use native crypto if available
     const keys = pki.rsa.generateKeyPair(2048);
     const cert = pki.createCertificate();
 
@@ -67,6 +75,9 @@ export class SSL {
     await Promise.all([writeFile(keyPath, pkey), writeFile(certPath, pcert)]);
 
     logger.info('SSL Certs created');
-    return { cert: pcert, key: pkey };
+
+    const certs = { cert: pcert, key: pkey };
+    this.cachedCerts = certs;
+    return certs;
   }
 }

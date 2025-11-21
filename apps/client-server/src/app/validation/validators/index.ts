@@ -1,4 +1,5 @@
 import * as commonFieldValidators from './common-field-validators';
+import * as dateTimeValidators from './datetime-field-validators';
 import * as descriptionValidators from './description-validators';
 import * as fileValidators from './file-submission-validators';
 import * as selectFieldValidators from './select-field-validators';
@@ -13,4 +14,5 @@ export const validators: Validator[] = [
   ...Object.values(fileValidators),
   ...Object.values(commonFieldValidators),
   ...Object.values(selectFieldValidators),
+  ...Object.values(dateTimeValidators),
 ];

@@ -115,7 +115,7 @@ export class PostQueueService extends PostyBirbService<'PostQueueRecordSchema'> 
 
       submissionIds.forEach((id) => this.postManager.cancelIfRunning(id));
 
-      await this.repository.deleteById(records.map((r) => r.id));
+      return await this.repository.deleteById(records.map((r) => r.id));
     } catch (error) {
       this.logger.withMetadata({ error }).error('Failed to dequeue posts');
       throw new InternalServerErrorException(error.message);

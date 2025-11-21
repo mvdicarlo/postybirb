@@ -13,7 +13,6 @@ import {
   SubmissionRating,
 } from '@postybirb/types';
 import { app } from 'electron';
-import { CustomDescriptionParser } from '../../../post-parsers/models/description-node/description-node-tree';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
@@ -26,7 +25,6 @@ import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
 import { FileWebsite } from '../../models/website-modifiers/file-website';
 import { OAuthWebsite } from '../../models/website-modifiers/oauth-website';
-import { WithCustomDescriptionParser } from '../../models/website-modifiers/with-custom-description-parser';
 import { Website } from '../../website';
 import { E621FileSubmission } from './models/e621-file-submission';
 
@@ -53,10 +51,7 @@ import { E621FileSubmission } from './models/e621-file-submission';
 @DisableAds()
 export default class E621
   extends Website<E621AccountData>
-  implements
-    FileWebsite<E621FileSubmission>,
-    OAuthWebsite<E621OAuthRoutes>,
-    WithCustomDescriptionParser
+  implements FileWebsite<E621FileSubmission>, OAuthWebsite<E621OAuthRoutes>
 {
   protected BASE_URL = 'https://e621.net/';
 
@@ -103,15 +98,6 @@ export default class E621
     return undefined;
   }
 
-  // Spec: https://e621.net/help/dtext
-  // onDescriptionParse is called for each line, idk why it can contain multiline somehow
-  onDescriptionParse: CustomDescriptionParser = (node) =>
-    node.toBBCodeString().replaceAll('\n', '');
-
-  // [url=https://example.com/]lemonynade[/url]`
-  onAfterDescriptionParse = (description: string) =>
-    description.replace(/\[url=([^\]]*)\]([^[]*)\[\/url\]/, '"$2":[$1]');
-
   private readonly headers = { 'User-Agent': `PostyBirb/${app.getVersion()}` };
 
   private async request<T>(
@@ -143,13 +129,18 @@ export default class E621
     cancellableToken.throwIfCancelled();
     const accountData = this.websiteDataStore.getData();
     const file = files[0];
+
+    // Spec: https://e621.net/help/dtext
+    const description = postData.options.description
+      .replaceAll('\n', '')
+      .replace(/\[url=([^\]]*)\]([^[]*)\[\/url\]/, '"$2":[$1]');
     const formData = {
       login: accountData.username,
       api_key: accountData.key,
       'upload[tag_string]': postData.options.tags.join(' ').trim(),
       'upload[file]': file.toPostFormat(),
       'upload[rating]': this.getRating(postData.options.rating),
-      'upload[description]': postData.options.description,
+      'upload[description]': description,
       'upload[parent_id]': postData.options.parentId || '',
       'upload[source]': file.metadata.sourceUrls
         .filter((s) => !!s)

@@ -1,5 +1,11 @@
 import { setInterval } from 'timers/promises';
 
+export function wait(milliseconds: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, milliseconds);
+  });
+}
+
 export async function waitUntil(
   fn: () => boolean,
   milliseconds: number,

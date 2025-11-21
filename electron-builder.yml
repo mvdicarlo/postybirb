@@ -56,9 +56,10 @@ linux:
       arch:
         - x64
         - arm64
-    # - target: snap
-    #   arch:
-    #     - x64
+    - target: snap
+      arch:
+        - x64
+        - arm64
     - target: deb
       arch:
         - x64
@@ -68,18 +69,17 @@ linux:
         - x64
         - arm64
 
-# snap: # snap causes issues when it cannot publish to the snap store
-#   summary: "PostyBirb - Multi-site posting application"
-#   description: "PostyBirb helps artists post art and other multimedia to multiple websites more quickly."
-#   grade: stable
-#   confinement: strict
-#   publish: false
-#   plugs:
-#     - default
-#     - home
-#     - network
-#     - removable-media
-#   artifactName: "${productName}-${version}-linux-snap-${arch}.${ext}"
+snap:
+  summary: "PostyBirb - Multi-site posting application"
+  description: "PostyBirb helps artists post art and other multimedia to multiple websites more quickly."
+  grade: stable
+  confinement: strict
+  plugs:
+    - default
+    - home
+    - network
+    - removable-media
+  artifactName: "${productName}-${version}-linux-snap-${arch}.${ext}"
 
 deb:
   priority: optional

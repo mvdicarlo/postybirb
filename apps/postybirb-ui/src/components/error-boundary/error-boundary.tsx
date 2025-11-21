@@ -1,7 +1,5 @@
 /* eslint-disable lingui/no-unlocalized-strings */
-/* eslint-disable react/sort-comp */
-/* eslint-disable no-console */
-import { Trans } from '@lingui/macro';
+import { Trans } from '@lingui/react/macro';
 import {
   ActionIcon,
   Alert,
@@ -77,6 +75,7 @@ function CopyableErrorDetails({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
+      // eslint-disable-next-line lingui/no-unlocalized-strings, no-console
       console.error('Failed to copy to clipboard:', err);
     }
   };
@@ -196,6 +195,7 @@ export class ErrorBoundary extends Component<
   }
 
   componentDidCatch(error: Error, errorInfo: { componentStack: string }) {
+    // eslint-disable-next-line lingui/no-unlocalized-strings, no-console
     console.error('ErrorBoundary caught an error:', error, errorInfo);
 
     this.setState({

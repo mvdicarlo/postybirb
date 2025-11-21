@@ -35,11 +35,17 @@ export type FieldType<
    * Metadata for determining what type of field to generate.
    */
   formField?: F;
-
   /**
-   * The translation id of the label to display. All possible values can be found here: {@link FieldLabelTranslations}.
+   * The translation id of the label to display. All possible values can be found here: {@link FieldLabelTranslations}. Use `{ untranslated: string }` **ONLY** if it is difficult to translate the label and the website itself does not provide a translation for it, or if it is NSFW/offensive and should not be shown in public translations.
    */
-  label: FieldLabelTranslationsId;
+  label:
+    | FieldLabelTranslationsId
+    | {
+        /**
+         * Use **ONLY** if it is difficult to translate the label and the website itself does not provide a translation for it, or if it is NSFW/offensive and should not be shown in public translations.
+         */
+        untranslated: string;
+      };
 
   /**
    * Whether the field is considered required.
@@ -68,23 +74,23 @@ export type FieldType<
    * Well-known sections: 'common', 'website', others will be grouped below
    */
   section?: 'common' | 'website' | string;
-  
+
   /**
    * Priority/order within the section (lower numbers appear first)
    */
   order?: number;
-  
+
   /**
    * Column span in 12-column grid (1-12)
    * @default 12 (full width)
    */
   span?: number;
-  
+
   /**
    * Offset from left in columns (0-11)
    */
   offset?: number;
-  
+
   /**
    * Responsive column spans for different breakpoints
    */
@@ -94,7 +100,7 @@ export type FieldType<
     md?: number; // desktop
     lg?: number; // large desktop
   };
-  
+
   /**
    * Whether the field should break to a new row
    */
@@ -109,6 +115,11 @@ export type FieldType<
     populate: string;
   }[];
 
+  /**
+   * Shows in the UI when all properties are satisfied.
+   * Evaluates in field.tsx
+   * @type {Array<[keyof T, any[]]>}
+   */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   showWhen?: Array<[keyof T, any[]]>;
 };

@@ -1,15 +1,15 @@
 import {
-  BadRequestException,
-  Injectable,
-  OnModuleInit,
-  Optional,
+    BadRequestException,
+    Injectable,
+    OnModuleInit,
+    Optional,
 } from '@nestjs/common';
 import { ACCOUNT_UPDATES } from '@postybirb/socket-events';
 import {
-  AccountId,
-  IWebsiteMetadata,
-  NULL_ACCOUNT_ID,
-  NullAccount,
+    AccountId,
+    IWebsiteMetadata,
+    NULL_ACCOUNT_ID,
+    NullAccount,
 } from '@postybirb/types';
 import { ne } from 'drizzle-orm';
 import { Class } from 'type-fest';
@@ -51,18 +51,24 @@ export class AccountService
 
   /**
    * Initializes all website login timers and creates instances for known accounts.
+   * Heavy operations are deferred to avoid blocking application startup.
    */
   async onModuleInit() {
+    // Critical path: only populate null account to ensure database is ready
     await this.populateNullAccount();
-    await this.deleteUnregisteredAccounts();
-    await this.initWebsiteRegistry();
-    this.initWebsiteLoginRefreshTimers();
 
-    this.emit();
+    // Defer heavy operations to avoid blocking NestJS initialization
+    setImmediate(async () => {
+      await this.deleteUnregisteredAccounts();
+      await this.initWebsiteRegistry();
+      this.initWebsiteLoginRefreshTimers();
 
-    Object.keys(this.loginRefreshTimers).forEach((interval) =>
-      this.executeOnLoginForInterval(interval),
-    );
+      this.emit();
+
+      Object.keys(this.loginRefreshTimers).forEach((interval) =>
+        this.executeOnLoginForInterval(interval),
+      );
+    });
   }
 
   private async deleteUnregisteredAccounts() {

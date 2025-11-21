@@ -20,6 +20,7 @@ import { FileSubmissionService } from '../submission/services/file-submission.se
 import { MessageSubmissionService } from '../submission/services/message-submission.service';
 import { SubmissionService } from '../submission/services/submission.service';
 import { TagConvertersService } from '../tag-converters/tag-converters.service';
+import { UserConvertersService } from '../user-converters/user-converters.service';
 import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
 import { ValidationService } from '../validation/validation.service';
 import { WebsiteOptionsService } from '../website-options/website-options.service';
@@ -86,7 +87,9 @@ describe('FileService', () => {
 
   beforeAll(() => {
     PostyBirbDirectories.initializeDirectories();
-    testFile = readFileSync(join(__dirname, '../../test-files/small_image.jpg'));
+    testFile = readFileSync(
+      join(__dirname, '../../test-files/small_image.jpg'),
+    );
     testFile2 = readFileSync(
       join(__dirname, '../../test-files/png_with_alpha.png'),
     );
@@ -117,7 +120,8 @@ describe('FileService', () => {
         SettingsService,
         FormGeneratorService,
         FileConverterService,
-        CustomShortcutsService
+        CustomShortcutsService,
+        UserConvertersService,
       ],
     }).compile();
     fileBufferRepository = new PostyBirbDatabase('FileBufferSchema');
@@ -242,5 +246,51 @@ describe('FileService', () => {
     expect(updatedFile.file.submissionFileId).toEqual(file.id);
     expect(updatedFile.file.mimeType).toEqual(updateFileInfo.mimetype);
     expect(updatedFile.file.buffer).toEqual(testFile2);
+  });
+
+  it('should cleanup entities on transaction failure', async () => {
+    const path = setup();
+    const submission = await createSubmission();
+    const fileInfo = createMulterData(path[0]);
+
+    // Get initial count of entities
+    const initialFiles = await new PostyBirbDatabase(
+      'SubmissionFileSchema',
+    ).findAll();
+    const initialBuffers = await fileBufferRepository.findAll();
+    const initialFileCount = initialFiles.length;
+    const initialBufferCount = initialBuffers.length;
+
+    // Mock a method to throw an error partway through creation
+    const createFileService = module.get<CreateFileService>(CreateFileService);
+    const originalMethod = createFileService.createFileBufferEntity;
+    let callCount = 0;
+    jest
+      .spyOn(createFileService, 'createFileBufferEntity')
+      .mockImplementation(async (...args) => {
+        callCount++;
+        // Fail on the second buffer creation (thumbnail)
+        if (callCount === 2) {
+          throw new Error('Simulated error during buffer creation');
+        }
+        return originalMethod.apply(createFileService, args);
+      });
+
+    // Attempt to create a file, which should fail and trigger cleanup
+    await expect(
+      service.create(fileInfo, submission as unknown as FileSubmission),
+    ).rejects.toThrow('Simulated error during buffer creation');
+
+    // Verify that entities were cleaned up
+    const finalFiles = await new PostyBirbDatabase(
+      'SubmissionFileSchema',
+    ).findAll();
+    const finalBuffers = await fileBufferRepository.findAll();
+
+    expect(finalFiles.length).toBe(initialFileCount);
+    expect(finalBuffers.length).toBe(initialBufferCount);
+
+    // Restore the original method
+    jest.restoreAllMocks();
   });
 });
