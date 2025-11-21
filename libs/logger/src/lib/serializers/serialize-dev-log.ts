@@ -7,7 +7,6 @@ import { isErrorLike } from './serialize-errors';
 
 // For some reason combining already existing formatters
 // Was not enough to make logging look like NestJS
-// So i decided to create custom seriliazer
 
 export class SerializeDevLog {
   timestamp = winston.format.timestamp({ format: 'YYYY-MM-DD hh:mm:ss.SSS A' });
@@ -28,10 +27,10 @@ export class SerializeDevLog {
       ...clearCtx
     } = info;
 
-    delete clearCtx.level;
-    delete clearCtx[SPLAT];
-    delete clearCtx[MESSAGE];
-    delete clearCtx.splat;
+    delete (clearCtx as any).level;
+    delete (clearCtx as any)[SPLAT];
+    delete (clearCtx as any)[MESSAGE];
+    delete (clearCtx as any).splat;
 
     // Stringify
     const stringifiedCtx = util.inspect(clearCtx, {
@@ -58,10 +57,12 @@ export class SerializeDevLog {
     if (timestamp) label += `[${timestamp}]`;
     if (prefix) label += `[${prefix}]`;
     if (level) label += `[${level.toUpperCase()}]`;
-    if (padding) label += padding[level];
+    if (padding && level && typeof padding === 'object' && level in padding) {
+      label += (padding as Record<string, string>)[level];
+    }
 
     // Colorize label
-    label = this.colorizer.colorize(level, label);
+    label = this.colorizer.colorize(level || 'info', label);
 
     // Mix all
     info[MESSAGE] = `${label} ${message}${clearCtxString}`;

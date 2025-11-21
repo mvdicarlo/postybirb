@@ -42,7 +42,9 @@
     "postinstall": "exitzero electron-builder install-app-deps",
     "setup": "run-s setup:husky",
     "setup:husky": "yarn husky",
-    "generate:sql": "drizzle-kit generate"
+    "generate:sql": "drizzle-kit generate",
+    "inject:app-insights": "node scripts/inject-app-insights.js",
+    "inject:app-insights:clear": "node scripts/inject-app-insights.js --clear"
   },
   "dependencies": {
     "@atproto/api": "^0.15.7",
@@ -69,6 +71,7 @@
     "@mantine/hooks": "^7.17.4",
     "@mantine/notifications": "^7.17.4",
     "@mantine/spotlight": "^7.17.4",
+    "@microsoft/applicationinsights-web": "^3.3.10",
     "@nestjs/common": "^10.4.16",
     "@nestjs/core": "^10.4.16",
     "@nestjs/platform-express": "^10.4.16",
@@ -97,6 +100,7 @@
     "@tiptap/html": "^2.12.0",
     "@tiptap/pm": "^2.7.0",
     "@types/sortablejs": "^1.15.8",
+    "applicationinsights": "^3.12.0",
     "async-mutex": "^0.5.0",
     "better-sqlite3": "^12.4.1",
     "class-transformer": "^0.5.1",
@@ -156,7 +160,8 @@
     "type-fest": "^4.26.1",
     "uuid": "^10.0.0",
     "winston": "^3.14.2",
-    "winston-daily-rotate-file": "^5.0.0"
+    "winston-daily-rotate-file": "^5.0.0",
+    "winston-transport": "^4.9.0"
   },
   "devDependencies": {
     "@babel/core": "^7.14.5",

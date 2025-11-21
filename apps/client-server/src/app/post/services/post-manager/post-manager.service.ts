@@ -1,6 +1,11 @@
 /* eslint-disable no-param-reassign */
 import { Injectable, Optional } from '@nestjs/common';
-import { Logger } from '@postybirb/logger';
+import {
+  Logger,
+  trackEvent,
+  trackException,
+  trackMetric,
+} from '@postybirb/logger';
 import {
   AccountId,
   EntityId,
@@ -44,6 +49,7 @@ import { MessageWebsite } from '../../../websites/models/website-modifiers/messa
 import { UnknownWebsite, Website } from '../../../websites/website';
 import { WebsiteRegistryService } from '../../../websites/website-registry.service';
 import { CancellableToken } from '../../models/cancellable-token';
+import { CancellationError } from '../../models/cancellation-error';
 import { PostingFile } from '../../models/posting-file';
 import { PostFileResizerService } from '../post-file-resizer/post-file-resizer.service';
 
@@ -195,10 +201,33 @@ export class PostManagerService {
       return;
     }
     const allCompleted = entity.children.every((c) => !!c.completedAt);
+    const finalState = allCompleted
+      ? PostRecordState.DONE
+      : PostRecordState.FAILED;
+
     await this.postRepository.update(entity.id, {
       completedAt: new Date().toISOString(),
-      state: allCompleted ? PostRecordState.DONE : PostRecordState.FAILED,
+      state: finalState,
     });
+
+    // Calculate success and failure counts
+    const successCount = entity.children.filter(
+      (c) => c.errors.length === 0,
+    ).length;
+    const failureCount = entity.children.filter(
+      (c) => c.errors.length > 0,
+    ).length;
+
+    // Track overall post completion in App Insights
+    trackEvent('PostCompleted', {
+      submissionId: entity.submissionId,
+      submissionType: entity.submission?.type ?? 'unknown',
+      state: finalState,
+      websiteCount: String(entity.children.length),
+      successCount: String(successCount),
+      failureCount: String(failureCount),
+    });
+
     if (
       allCompleted &&
       entity.submission.schedule.scheduleType !== ScheduleType.RECURRING
@@ -250,6 +279,7 @@ export class PostManagerService {
     }
 
     const { submission } = entity;
+    let data: PostData | undefined;
     try {
       const supportedTypes = instance.getSupportedTypes();
       if (!supportedTypes.includes(submission.type)) {
@@ -263,7 +293,7 @@ export class PostManagerService {
       );
 
       this.logger.info('Preparing post data');
-      const data = await this.preparePostData(submission, instance, option);
+      data = await this.preparePostData(submission, instance, option);
       this.logger.withMetadata(data).info('Post data prepared');
       websitePostRecord.postData = {
         parsedOptions: data.options,
@@ -291,7 +321,7 @@ export class PostManagerService {
                   instance.decoratedProps.metadata.name
                 }`,
               );
-      await this.handleFailureResult(websitePostRecord, errorResponse);
+      await this.handleFailureResult(websitePostRecord, errorResponse, data);
     }
   }
 
@@ -337,6 +367,7 @@ export class PostManagerService {
   private async handleSuccessResult(
     websitePostRecord: WebsitePostRecord,
     res: IPostResponse,
+    postData: PostData,
     completed = true,
     fileIds?: EntityId[],
   ): Promise<void> {
@@ -365,6 +396,30 @@ export class PostManagerService {
       postResponse: websitePostRecord.postResponse,
       postData: websitePostRecord.postData,
     });
+
+    // Track successful post in App Insights
+    const { account } = websitePostRecord;
+    const websiteName = account?.website ?? 'unknown';
+
+    trackEvent('PostSuccess', {
+      website: websiteName,
+      accountId: websitePostRecord.accountId,
+      submissionId: this.currentPost?.submissionId ?? 'unknown',
+      submissionType: this.currentPost?.submission?.type ?? 'unknown',
+      hasSourceUrl: res.sourceUrl ? 'true' : 'false',
+      fileCount: fileIds?.length ? String(fileIds.length) : '0',
+      options: this.redactPostDataForLogging(postData),
+    });
+
+    // Track success metric per website
+    trackMetric(`post.success.${websiteName}`, 1, {
+      website: websiteName,
+      submissionType: this.currentPost?.submission?.type ?? 'unknown',
+    });
+
+    this.logger
+      .withMetadata({ websitePostRecord, result: res })
+      .info(`Post successful for ${websiteName}`);
   }
 
   /**
@@ -376,6 +431,7 @@ export class PostManagerService {
   private async handleFailureResult(
     websitePostRecord: WebsitePostRecord,
     res: IPostResponse,
+    postData: PostData,
     fileIds?: EntityId[],
   ): Promise<void> {
     if (res.exception) {
@@ -398,6 +454,42 @@ export class PostManagerService {
       postResponse: websitePostRecord.postResponse,
       postData: websitePostRecord.postData,
     });
+
+    // Track failed post in App Insights
+    const { account } = websitePostRecord;
+    const websiteName = account?.website ?? 'unknown';
+
+    // Track non-cancellation failures
+    if (!(res.exception && res.exception instanceof CancellationError)) {
+      trackEvent('PostFailure', {
+        website: websiteName,
+        accountId: websitePostRecord.accountId,
+        submissionId: this.currentPost?.submissionId ?? 'unknown',
+        submissionType: this.currentPost?.submission?.type ?? 'unknown',
+        errorMessage: res.message ?? res.exception.message ?? 'unknown',
+        stage: res.stage ?? 'unknown',
+        hasException: res.exception ? 'true' : 'false',
+        fileCount: fileIds?.length ? String(fileIds.length) : '0',
+        options: this.redactPostDataForLogging(postData),
+      });
+
+      // Track failure metric per website
+      trackMetric(`post.failure.${websiteName}`, 1, {
+        website: websiteName,
+        submissionType: this.currentPost?.submission?.type ?? 'unknown',
+      });
+
+      // Track the exception if present
+      if (res.exception) {
+        trackException(res.exception, {
+          website: websiteName,
+          accountId: websitePostRecord.accountId,
+          submissionId: this.currentPost?.submissionId ?? 'unknown',
+          stage: res.stage ?? 'unknown',
+          errorMessage: res.message ?? 'unknown',
+        });
+      }
+    }
   }
 
   /**
@@ -420,9 +512,9 @@ export class PostManagerService {
 
     websitePostRecord.postResponse.push(result);
     if (result.exception) {
-      await this.handleFailureResult(websitePostRecord, result);
+      await this.handleFailureResult(websitePostRecord, result, data);
     } else {
-      await this.handleSuccessResult(websitePostRecord, result);
+      await this.handleSuccessResult(websitePostRecord, result, data);
     }
   }
 
@@ -537,12 +629,18 @@ export class PostManagerService {
       );
 
       if (result.exception) {
-        await this.handleFailureResult(websitePostRecord, result, fileIds);
+        await this.handleFailureResult(websitePostRecord, result, data);
         // Behavior is to stop posting if a batch fails.
         return;
       }
 
-      await this.handleSuccessResult(websitePostRecord, result, false, fileIds);
+      await this.handleSuccessResult(
+        websitePostRecord,
+        result,
+        data,
+        false,
+        fileIds,
+      );
       await this.markFilesAsPosted(websitePostRecord, submission, batch);
       this.logger
         .withMetadata(result)
@@ -847,5 +945,14 @@ export class PostManagerService {
     websiteOptions: WebsiteOptions,
   ): Promise<PostData> {
     return this.postParserService.parse(submission, instance, websiteOptions);
+  }
+
+  private redactPostDataForLogging(postData: PostData): string {
+    const opts = { ...postData.options };
+    // Redact sensitive information
+    if (opts.description) {
+      opts.description = `[REDACTED ${opts.description.length}]`;
+    }
+    return JSON.stringify({ options: opts });
   }
 }
