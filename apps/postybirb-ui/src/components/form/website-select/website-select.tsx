@@ -7,7 +7,7 @@ import {
 } from '@mantine/core';
 import { IAccountDto, NULL_ACCOUNT_ID, SubmissionType } from '@postybirb/types';
 import { IconCheck } from '@tabler/icons-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useWebsites } from '../../../hooks/account/use-websites';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
 
@@ -20,8 +20,19 @@ type WebsiteSelectProps = {
 export function WebsiteSelect(props: WebsiteSelectProps) {
   const { submission, size, onSelect } = props;
   const { accounts, filteredAccounts } = useWebsites();
-  const [selectedAccounts, setSelectedAccounts] = useState<IAccountDto[]>([]);
-  const [isOpen, setIsOpen] = useState(false);
+  const [value, setValue] = useState<string[]>(
+    submission.options
+      .filter((o) => o.accountId !== NULL_ACCOUNT_ID)
+      .map((o) => o.accountId)
+  );
+
+  // Sync value with submission.options when it changes externally
+  useEffect(() => {
+    const newValue = submission.options
+      .filter((o) => o.accountId !== NULL_ACCOUNT_ID)
+      .map((o) => o.accountId);
+    setValue(newValue);
+  }, [submission.options]);
 
   const options: ComboboxItemGroup[] = useMemo(
     () =>
@@ -45,35 +56,18 @@ export function WebsiteSelect(props: WebsiteSelectProps) {
     [filteredAccounts, submission.type],
   );
 
-  const onCommitChanges = (selected: IAccountDto[], force?: boolean) => {
-    setSelectedAccounts(selected);
-    if (force) {
-      onSelect(selected);
-      return;
-    }
-    if (isOpen) {
-      return;
-    }
-    onSelect(selected);
-  };
-
   return (
     <MultiSelect
       clearable
       searchable
       data={options}
       size={size}
-      defaultValue={submission.options
-        .filter((o) => o.accountId !== NULL_ACCOUNT_ID)
-        .map((o) => o.accountId)}
+      value={value}
       label={<Trans>Websites</Trans>}
-      onChange={(value) => {
-        onCommitChanges(accounts.filter((a) => value.includes(a.id)));
-      }}
-      onDropdownOpen={() => setIsOpen(true)}
-      onDropdownClose={() => {
-        onCommitChanges(selectedAccounts, true);
-        setIsOpen(false);
+      onChange={(newValue) => {
+        setValue(newValue);
+        const selectedAccounts = accounts.filter((a) => newValue.includes(a.id));
+        onSelect(selectedAccounts);
       }}
       renderOption={(item) => {
         const label = item.option.label.split('] ')[1];
