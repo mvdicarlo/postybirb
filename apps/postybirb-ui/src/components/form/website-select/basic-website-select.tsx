@@ -34,6 +34,7 @@ export function BasicWebsiteSelect(props: WebsiteSelectProps) {
 
   return (
     <MultiSelect
+      className="postybirb__b-website-select"
       size={size ?? 'sm'}
       label={label}
       clearable

@@ -40,19 +40,31 @@ export function PageHeader(props: PageHeaderProps) {
     },
     [navigateTo],
   );
-  const titleField = useMemo(
-    () => (
+
+  const truncateLimit = 20;
+  const titleField = useMemo(() => {
+    const text = typeof title === 'string' ? title : '';
+    const displayTitle =
+      text.length > truncateLimit
+        ? `${text.slice(0, truncateLimit)}...`
+        : title;
+
+    return (
       <Box className="postybirb__page-header__title-section">
-        <Group className="postybirb__page-header__title-group">
+        <Group className="postybirb__page-header__title-group" wrap="nowrap">
           <Box className="postybirb__page-header__icon-container">{icon}</Box>
-          <Title order={2} className="postybirb__page-header__title">
-            {title}
+          <Title
+            order={4}
+            className="postybirb__page-header__title"
+            lineClamp={1}
+            title={typeof title === 'string' ? title : undefined}
+          >
+            {displayTitle}
           </Title>
         </Group>
       </Box>
-    ),
-    [icon, title],
-  );
+    );
+  }, [icon, title]);
   const breadcrumb = useMemo(
     () =>
       breadcrumbs && (
@@ -60,6 +72,12 @@ export function PageHeader(props: PageHeaderProps) {
           <Breadcrumbs separator="›">
             {breadcrumbs.map((bc, index) => {
               const isLast = index === breadcrumbs.length - 1;
+              const text = typeof bc.text === 'string' ? bc.text : '';
+              const displayText =
+                text.length > truncateLimit
+                  ? `${text.slice(0, truncateLimit)}...`
+                  : bc.text;
+
               return (
                 <Anchor
                   key={bc.target}
@@ -71,8 +89,9 @@ export function PageHeader(props: PageHeaderProps) {
                     onBreadcrumbClick(e, bc.target);
                   }}
                   style={{ cursor: isLast ? 'default' : 'pointer' }}
+                  title={typeof bc.text === 'string' ? bc.text : undefined}
                 >
-                  {bc.text}
+                  {displayText}
                 </Anchor>
               );
             })}
