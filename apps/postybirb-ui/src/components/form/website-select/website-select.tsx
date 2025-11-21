@@ -1,4 +1,4 @@
-import { Trans, t } from '@lingui/react/macro';
+import { Trans } from '@lingui/react/macro';
 import {
   Badge,
   Box,
