@@ -10,10 +10,7 @@ import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { PhilomenaWebsite } from '../philomena/philomena.website';
 import { FurbooruFileSubmission } from './models/furbooru-file-submission';
 
-@WebsiteMetadata({
-  name: 'furbooru',
-  displayName: 'Furbooru',
-})
+@WebsiteMetadata({ name: 'furbooru', displayName: 'Furbooru' })
 @UserLoginFlow('https://furbooru.org/session/new')
 @SupportsFiles({
   acceptedMimeTypes: [
@@ -24,9 +21,7 @@ import { FurbooruFileSubmission } from './models/furbooru-file-submission';
     'image/gif',
     'video/webm',
   ],
-  acceptedFileSizes: {
-    '*': FileSize.megabytes(100),
-  },
+  acceptedFileSizes: { '*': FileSize.megabytes(100) },
 })
 @DisableAds()
 @SupportsUsernameShortcut({
@@ -47,21 +42,23 @@ export default class Furbooru extends PhilomenaWebsite<FurbooruFileSubmission> {
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     try {
-      return await super.onPostFileSubmission(
+      const result = await super.onPostFileSubmission(
         postData,
         files,
         batchIndex,
         cancellationToken,
       );
+      return result;
     } catch (err) {
       // Users have reported it working on a second attempt
       this.logger?.warn(err, 'Furbooru Post Retry');
-      return await super.onPostFileSubmission(
+      const retry = await super.onPostFileSubmission(
         postData,
         files,
         batchIndex,
         cancellationToken,
       );
+      return retry;
     }
   }
 }

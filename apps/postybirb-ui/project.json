@@ -3,6 +3,7 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "apps/postybirb-ui/src",
   "projectType": "application",
+  "tags": [],
   "targets": {
     "build": {
       "executor": "@nx/vite:build",
@@ -75,7 +76,8 @@
         "production": {
           "buildTarget": "postybirb-ui:build:production"
         }
-      }
+      },
+      "dependsOn": ["build"]
     },
     "typecheck": {
       "executor": "nx:run-commands",
@@ -83,6 +85,5 @@
         "command": "tsc -b {projectRoot}/tsconfig.json --incremental --pretty"
       }
     }
-  },
-  "tags": []
+  }
 }

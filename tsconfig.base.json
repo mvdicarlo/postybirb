@@ -2,7 +2,6 @@
   "compileOnSave": false,
   "compilerOptions": {
     "esModuleInterop": true,
-    "rootDir": ".",
     "sourceMap": true,
     "declaration": false,
     "moduleResolution": "node",
@@ -16,6 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@postybirb/database": ["libs/database/src/index.ts"],
       "@postybirb/form-builder": ["libs/form-builder/src/index.ts"],
       "@postybirb/fs": ["libs/fs/src/index.ts"],
       "@postybirb/http": ["libs/http/src/index.ts"],
@@ -24,8 +24,7 @@
       "@postybirb/translations": ["libs/translations/src/index.ts"],
       "@postybirb/types": ["libs/types/src/index.ts"],
       "@postybirb/utils/electron": ["libs/utils/electron/src/index.ts"],
-      "@postybirb/utils/file-type": ["libs/utils/file-type/src/index.ts"],
-      "@postybirb/database": ["libs/database/src/index.ts"]
+      "@postybirb/utils/file-type": ["libs/utils/file-type/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

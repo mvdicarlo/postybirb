@@ -1,7 +1,4 @@
 {
-  "affected": {
-    "defaultBase": "main"
-  },
   "generators": {
     "@nx/react": {
       "application": {
@@ -57,5 +54,7 @@
       "!{projectRoot}/.eslintrc.js"
     ]
   },
-  "parallel": 1
+  "parallel": 1,
+  "useInferencePlugins": false,
+  "defaultBase": "main"
 }
