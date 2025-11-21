@@ -57,7 +57,9 @@ export class SerializeDevLog {
     if (timestamp) label += `[${timestamp}]`;
     if (prefix) label += `[${prefix}]`;
     if (level) label += `[${level.toUpperCase()}]`;
-    if (padding && level) label += padding[level];
+    if (padding && level && typeof padding === 'object' && level in padding) {
+      label += (padding as Record<string, string>)[level];
+    }
 
     // Colorize label
     label = this.colorizer.colorize(level || 'info', label);

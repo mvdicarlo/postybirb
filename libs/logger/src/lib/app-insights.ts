@@ -11,7 +11,7 @@ export interface AppInsightsConfig {
   appVersion?: string;
 }
 
-const appInsightsConnectionString = null;
+const appInsightsConnectionString: string | null = null;
 
 /**
  * Initialize Application Insights
@@ -20,7 +20,7 @@ const appInsightsConnectionString = null;
  */
 export function initializeAppInsights(config: AppInsightsConfig): void {
   // eslint-disable-next-line no-param-reassign
-  config.connectionString = appInsightsConnectionString;
+  config.connectionString = appInsightsConnectionString ?? undefined;
   // eslint-disable-next-line no-param-reassign
   config.cloudRole = 'postybirb';
   if (
