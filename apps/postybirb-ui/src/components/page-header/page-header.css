@@ -80,6 +80,11 @@
   background: transparent;
 }
 
+.postybirb__page-header__title-section {
+  flex: 1;
+  min-width: 0;
+}
+
 .postybirb__page-header__header-top {
   padding: var(--mantine-spacing-md) var(--mantine-spacing-md);
   border-bottom: 1px solid var(--mantine-color-gray-3);
@@ -92,14 +97,17 @@
 .postybirb__page-header__title-group {
   align-items: center;
   gap: var(--mantine-spacing-md);
+  flex: 1;
+  min-width: 0;
 }
 
 .postybirb__page-header__icon-container {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
   border-radius: var(--mantine-radius-lg);
   background: linear-gradient(
     135deg,
@@ -150,9 +158,14 @@
 
 .postybirb__page-header__title {
   font-weight: 700;
-  font-size: 2rem;
+  font-size: 1.5rem;
   color: var(--mantine-color-text);
   margin: 0;
   line-height: 1.2;
   letter-spacing: -0.025em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
 }

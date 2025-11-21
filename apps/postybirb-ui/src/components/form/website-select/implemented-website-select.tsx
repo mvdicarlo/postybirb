@@ -15,7 +15,6 @@ export function ImplementedWebsiteSelect(props: ImplementedWebsiteSelectProps) {
   const { submission } = props;
   return (
     <WebsiteSelect
-      size="md"
       submission={submission}
       onSelect={(selectedAccounts) => {
         const existingOptions = submission.options.filter((o) => !o.isDefault);
