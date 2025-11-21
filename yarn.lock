@@ -5031,7 +5031,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@kayahr/jest-electron-runner@patch:@kayahr/jest-electron-runner@npm%3A29.14.0#~/.yarn/patches/@kayahr-jest-electron-runner-npm-29.14.0-4658d116d6.patch":
+"@kayahr/jest-electron-runner@npm:29.15.0":
   version: 29.15.0
   resolution: "@kayahr/jest-electron-runner@npm:29.15.0"
   dependencies:
@@ -23570,7 +23570,7 @@ __metadata:
     "@fullcalendar/react": "npm:^6.1.15"
     "@fullcalendar/timegrid": "npm:^6.1.15"
     "@iarna/rtf-to-html": "npm:^1.1.0"
-    "@kayahr/jest-electron-runner": "patch:@kayahr/jest-electron-runner@npm%3A29.14.0#~/.yarn/patches/@kayahr-jest-electron-runner-npm-29.14.0-4658d116d6.patch"
+    "@kayahr/jest-electron-runner": "npm:29.15.0"
     "@lingui/cli": "npm:^5.5"
     "@lingui/core": "npm:^5.5"
     "@lingui/macro": "npm:^5.5"
