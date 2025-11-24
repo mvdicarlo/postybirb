@@ -1,4 +1,4 @@
-import { Trans } from "@lingui/react/macro";
+import { Trans } from '@lingui/react/macro';
 import {
   Box,
   Button,
@@ -20,6 +20,8 @@ import {
   IconChevronUp,
   IconPlus,
   IconSearch,
+  IconSortAscendingLetters,
+  IconSortDescendingLetters,
   IconTrash,
 } from '@tabler/icons-react';
 import { useMemo, useState } from 'react';
@@ -28,6 +30,7 @@ import { ComponentErrorBoundary } from '../../../components/error-boundary';
 import { PostyBirbEditor } from '../../../components/shared/postybirb-editor/postybirb-editor';
 import { CustomShortcutStore } from '../../../stores/custom-shortcut.store';
 import { useStore } from '../../../stores/use-store';
+import { CommonTranslations } from '../../../translations/common-translations';
 import { getOverlayOffset, getPortalTarget, marginOffset } from './drawer.util';
 import { useDrawerToggle } from './use-drawer-toggle';
 
@@ -69,7 +72,7 @@ function ExistingShortcut({ shortcut }: { shortcut: ICustomShortcutDto }) {
               )
             }
           >
-            <Trans>Edit</Trans>
+            <CommonTranslations.Edit />
           </Button>
         </Group>
       </Group>
@@ -78,14 +81,14 @@ function ExistingShortcut({ shortcut }: { shortcut: ICustomShortcutDto }) {
         <TextInput
           required
           value={state.name}
-          label={<Trans>Name</Trans>}
+          label={<CommonTranslations.Name />}
           onChange={(event) =>
             setState({ ...state, name: event.currentTarget.value })
           }
         />
         <Box mt="xs">
           <Text size="sm" mb={4}>
-            <Trans>Shortcut</Trans>
+            <CommonTranslations.Shortcut />
           </Text>
           <PostyBirbEditor
             isDefaultEditor
@@ -99,9 +102,7 @@ function ExistingShortcut({ shortcut }: { shortcut: ICustomShortcutDto }) {
             variant="light"
             disabled={!isValidShortcut(state) || !hasChanges}
             onClick={() => {
-              const trimmedState = {
-                ...state,
-              };
+              const trimmedState = { ...state };
               // BlockNote has a tendency of adding a padding element at the end that we don't want in a custom shortcut
               while (trimmedState.shortcut.length > 0) {
                 const lastItem =
@@ -118,15 +119,18 @@ function ExistingShortcut({ shortcut }: { shortcut: ICustomShortcutDto }) {
 
               customShortcutApi.update(shortcut.id, trimmedState).then(() => {
                 notifications.show({
-                  title: <Trans>Updated</Trans>,
-                  message: <Trans>Shortcut updated</Trans>,
+                  message: (
+                    <CommonTranslations.NounUpdated
+                      noun={<CommonTranslations.Shortcut />}
+                    />
+                  ),
                   color: 'green',
                   autoClose: 2000,
                 });
               });
             }}
           >
-            <Trans>Save</Trans>
+            <CommonTranslations.Save />
           </Button>
           <Button
             variant="light"
@@ -135,15 +139,18 @@ function ExistingShortcut({ shortcut }: { shortcut: ICustomShortcutDto }) {
             onClick={() => {
               customShortcutApi.remove([shortcut.id]).then(() => {
                 notifications.show({
-                  title: <Trans>Deleted</Trans>,
-                  message: <Trans>Shortcut deleted</Trans>,
+                  message: (
+                    <CommonTranslations.NounDeleted
+                      noun={<CommonTranslations.Shortcut />}
+                    />
+                  ),
                   color: 'red',
                   autoClose: 2000,
                 });
               });
             }}
           >
-            <Trans>Delete</Trans>
+            <CommonTranslations.Delete />
           </Button>
         </Group>
       </Collapse>
@@ -184,10 +191,7 @@ function CustomShortcuts() {
   }, [sortedShortcuts, search]);
 
   const resetForm = () => {
-    setNewShortcut({
-      name: '',
-      shortcut: DefaultDescription(),
-    });
+    setNewShortcut({ name: '', shortcut: DefaultDescription() });
   };
 
   if (isLoading) {
@@ -210,7 +214,9 @@ function CustomShortcuts() {
             variant="light"
             onClick={toggleNewForm}
           >
-            <Trans>New Shortcut</Trans>
+            <CommonTranslations.NounNew
+              noun={<CommonTranslations.Shortcut />}
+            />
           </Button>
           <Button
             variant="subtle"
@@ -220,9 +226,9 @@ function CustomShortcuts() {
             }
           >
             {sortDirection === 'asc' ? (
-              <Trans>Sort Asc</Trans>
+              <IconSortAscendingLetters />
             ) : (
-              <Trans>Sort Desc</Trans>
+              <IconSortDescendingLetters />
             )}
           </Button>
         </Group>
@@ -231,7 +237,7 @@ function CustomShortcuts() {
             <TextInput
               required
               value={newShortcut.name}
-              label={<Trans>Name</Trans>}
+              label={<CommonTranslations.Name />}
               onChange={(event) =>
                 setNewShortcut({
                   ...newShortcut,
@@ -241,7 +247,7 @@ function CustomShortcuts() {
             />
             <Box mt="xs">
               <Text size="sm" mb={4}>
-                <Trans>Shortcut</Trans>
+                <CommonTranslations.Shortcut />
               </Text>
               <PostyBirbEditor
                 isDefaultEditor={false}
@@ -256,22 +262,26 @@ function CustomShortcuts() {
                 variant="light"
                 disabled={!isValidShortcut(newShortcut)}
                 onClick={() => {
-                  customShortcutApi
-                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                    .create({ name: newShortcut.name! })
-                    .then(() => {
-                      notifications.show({
-                        title: <Trans>Created</Trans>,
-                        message: <Trans>Shortcut created</Trans>,
-                        color: 'green',
-                        autoClose: 2000,
+                  if (newShortcut.name) {
+                    customShortcutApi
+                      .create({ name: newShortcut.name })
+                      .then(() => {
+                        notifications.show({
+                          message: (
+                            <CommonTranslations.NounCreated
+                              noun={<CommonTranslations.Shortcut />}
+                            />
+                          ),
+                          color: 'green',
+                          autoClose: 2000,
+                        });
+                        resetForm();
+                        toggleNewForm();
                       });
-                      resetForm();
-                      toggleNewForm();
-                    });
+                  }
                 }}
               >
-                <Trans>Create</Trans>
+                <CommonTranslations.Save />
               </Button>
             </Group>
           </Paper>
@@ -284,7 +294,7 @@ function CustomShortcuts() {
           </Stack>
         ) : (
           <Text c="dimmed" ta="center">
-            <Trans>No shortcuts found</Trans>
+            <CommonTranslations.NoItemsFound />
           </Text>
         )}
       </Stack>
@@ -300,13 +310,8 @@ export function CustomShortcutsDrawer() {
         closeOnClickOutside
         ml={-marginOffset}
         size="lg"
-        portalProps={{
-          target: getPortalTarget(),
-        }}
-        overlayProps={{
-          left: getOverlayOffset(),
-          zIndex: 100,
-        }}
+        portalProps={{ target: getPortalTarget() }}
+        overlayProps={{ left: getOverlayOffset(), zIndex: 100 }}
         trapFocus
         opened={visible}
         onClose={() => toggle()}
@@ -315,12 +320,7 @@ export function CustomShortcutsDrawer() {
             <Trans>Custom Shortcuts</Trans>
           </Text>
         }
-        styles={{
-          body: {
-            padding: '16px',
-            height: 'calc(100% - 60px)',
-          },
-        }}
+        styles={{ body: { padding: '16px', height: 'calc(100% - 60px)' } }}
       >
         <CustomShortcuts />
       </Drawer>

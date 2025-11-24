@@ -1,4 +1,4 @@
-import { Plural, Trans, useLingui } from '@lingui/react/macro';
+import { Trans } from '@lingui/react/macro';
 import {
   ActionIcon,
   Badge,
@@ -8,6 +8,7 @@ import {
   Divider,
   Drawer,
   Fieldset,
+  Flex,
   Group,
   Loader,
   Paper,
@@ -17,7 +18,7 @@ import {
   TextInput,
   Tooltip,
 } from '@mantine/core';
-import { useClipboard, useDisclosure } from '@mantine/hooks';
+import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import {
   ICreateTagConverterDto,
@@ -25,9 +26,9 @@ import {
   TagConverterDto,
 } from '@postybirb/types';
 import {
+  IconCheck,
   IconChevronDown,
   IconChevronUp,
-  IconClipboardCopy,
   IconPlus,
   IconSearch,
   IconSortAscending,
@@ -41,6 +42,7 @@ import { DeleteActionPopover } from '../../../components/shared/delete-action-po
 import { TagConverterStore } from '../../../stores/tag-converter-store';
 import { useStore } from '../../../stores/use-store';
 import { WebsiteStore } from '../../../stores/website.store';
+import { CommonTranslations } from '../../../translations/common-translations';
 import { getOverlayOffset, getPortalTarget, marginOffset } from './drawer.util';
 import { useDrawerToggle } from './use-drawer-toggle';
 
@@ -66,24 +68,17 @@ function WebsiteConverterInputs({
   websites: IWebsiteInfoDto[];
   disabled?: boolean;
 }) {
-  const { t } = useLingui();
   const sitesWithValues = useMemo(
     () => websites.filter((site) => value[site.id]?.trim().length > 0),
     [websites, value],
   );
 
   const handleChange = (siteId: string, newValue: string) => {
-    onChange({
-      ...value,
-      [siteId]: newValue,
-    });
+    onChange({ ...value, [siteId]: newValue });
   };
 
   const handleBlur = (siteId: string, newValue: string) => {
-    onChange({
-      ...value,
-      [siteId]: newValue.trim(),
-    });
+    onChange({ ...value, [siteId]: newValue.trim() });
   };
 
   return (
@@ -91,18 +86,7 @@ function WebsiteConverterInputs({
       <Group justify="space-between" mb="md">
         <Group>
           <Text size="sm" fw={500}>
-            <Trans>Website Conversions</Trans>{' '}
-            {sitesWithValues.length > 0 && (
-              <>
-                (${sitesWithValues.length}{' '}
-                <Plural
-                  value={sitesWithValues.length}
-                  one="active"
-                  other="active"
-                />
-                )
-              </>
-            )}
+            <Trans>Website Conversions</Trans>
           </Text>
           {sitesWithValues.length > 0 && (
             <Group gap={5}>
@@ -139,7 +123,7 @@ function WebsiteConverterInputs({
                   borderBottom: '1px solid #ddd',
                 }}
               >
-                <Trans>Website</Trans>
+                <CommonTranslations.Website />
               </th>
               <th
                 style={{
@@ -166,7 +150,10 @@ function WebsiteConverterInputs({
                     <Text>{displayName}</Text>
                     {value[id]?.trim().length > 0 && (
                       <Badge size="xs" variant="light" color="green">
-                        <Trans>Set</Trans>
+                        <IconCheck
+                          size="1rem"
+                          style={{ verticalAlign: 'middle' }}
+                        />
                       </Badge>
                     )}
                   </Group>
@@ -181,7 +168,6 @@ function WebsiteConverterInputs({
                   <TextInput
                     size="xs"
                     value={value[id] ?? ''}
-                    placeholder={t`Enter conversion for ${displayName}`}
                     onChange={(event) =>
                       handleChange(id, event.currentTarget.value)
                     }
@@ -204,66 +190,36 @@ function ExistingTagConverter(props: {
   tagConverter: TagConverterDto;
   tagSupportingWebsites: IWebsiteInfoDto[];
 }) {
-  const { t } = useLingui();
   const { tagConverter, tagSupportingWebsites } = props;
   const [state, setState] = useState<ICreateTagConverterDto>({
     tag: tagConverter.tag,
     convertTo: { ...tagConverter.convertTo },
   });
   const [opened, { toggle }] = useDisclosure(false);
-  const clipboard = useClipboard();
 
   const hasChanges = !areEqual(
     { tag: tagConverter.tag, convertTo: tagConverter.convertTo },
     state,
   );
 
-  // Count how many website conversions are active
-  const activeConversions = useMemo(
+  const sitesWithValues = useMemo(
     () =>
-      Object.values(state.convertTo).filter((v) => v.trim().length > 0).length,
-    [state.convertTo],
+      tagSupportingWebsites.filter(
+        (site) => state.convertTo[site.id]?.trim().length > 0,
+      ),
+    [tagSupportingWebsites, state.convertTo],
   );
-
-  const handleCopyToClipboard = () => {
-    const text = Object.entries(state.convertTo)
-      .filter(([, value]) => value.trim().length > 0)
-      .map(([site, value]) => {
-        const website = tagSupportingWebsites.find((w) => w.id === site);
-        return `${website?.displayName || site}: ${value}`;
-      })
-      .join('\n');
-
-    // eslint-disable-next-line lingui/no-unlocalized-strings
-    clipboard.copy(`Tag: ${state.tag}\n${text}`);
-    notifications.show({
-      title: <Trans>Copied</Trans>,
-      message: <Trans>Converter details copied to clipboard</Trans>,
-      color: 'blue',
-      autoClose: 2000,
-    });
-  };
 
   return (
     <Paper withBorder p="xs" radius="md" shadow={opened ? 'sm' : undefined}>
-      <Group justify="space-between" mb={opened ? 'xs' : 0}>
-        <Group>
-          <Text fw={500}>{tagConverter.tag}</Text>
-          <Badge size="xs" variant="light" color="blue">
-            {activeConversions} <Trans>sites</Trans>
-          </Badge>
-          <Tooltip label={<Trans>Copy details</Trans>}>
-            <ActionIcon
-              variant="subtle"
-              size="xs"
-              onClick={handleCopyToClipboard}
-              aria-label={t`Copy converter details`}
-            >
-              <IconClipboardCopy size={16} />
-            </ActionIcon>
-          </Tooltip>
-        </Group>
-        <Group>
+      <Flex>
+        <Box flex="10">
+          <Text fw={500} flex="10">
+            {tagConverter.tag}
+          </Text>
+        </Box>
+
+        <Box flex="1">
           <Button
             variant="subtle"
             size="compact-sm"
@@ -276,9 +232,26 @@ function ExistingTagConverter(props: {
               )
             }
           >
-            {opened ? <Trans>Hide</Trans> : <Trans>Edit</Trans>}
+            {opened ? <CommonTranslations.Hide /> : <CommonTranslations.Edit />}
           </Button>
-        </Group>
+        </Box>
+      </Flex>
+      <Group>
+        {sitesWithValues.length > 0 && (
+          <Group gap={5} pt="4">
+            {sitesWithValues.map((site) => (
+              <Badge
+                key={site.id}
+                size="sm"
+                variant="light"
+                color="blue"
+                radius="sm"
+              >
+                {site.displayName}
+              </Badge>
+            ))}
+          </Group>
+        )}
       </Group>
 
       <Collapse in={opened}>
@@ -288,10 +261,7 @@ function ExistingTagConverter(props: {
           value={state.tag}
           label={<Trans>Tag</Trans>}
           onChange={(event) =>
-            setState({
-              ...state,
-              tag: event.currentTarget.value,
-            })
+            setState({ ...state, tag: event.currentTarget.value })
           }
         />
         <WebsiteConverterInputs
@@ -309,20 +279,24 @@ function ExistingTagConverter(props: {
                 .then(() => {
                   notifications.show({
                     title: state.tag,
-                    message: <Trans>Tag converter updated</Trans>,
+                    message: (
+                      <CommonTranslations.NounUpdated
+                        noun={<Trans>Tag converter</Trans>}
+                      />
+                    ),
                     color: 'green',
                   });
                 })
                 .catch(() => {
                   notifications.show({
                     title: state.tag,
-                    message: <Trans>Failed to update</Trans>,
+                    message: <CommonTranslations.FailedToUpdate />,
                     color: 'red',
                   });
                 });
             }}
           >
-            <Trans>Update</Trans>
+            <CommonTranslations.Update />
           </Button>
           <DeleteActionPopover
             additionalContent={
@@ -334,7 +308,11 @@ function ExistingTagConverter(props: {
               tagConvertersApi.remove([tagConverter.id]).then(() => {
                 notifications.show({
                   title: tagConverter.tag,
-                  message: <Trans>Tag converter deleted</Trans>,
+                  message: (
+                    <CommonTranslations.NounDeleted
+                      noun={<Trans>Tag converter</Trans>}
+                    />
+                  ),
                   color: 'green',
                 });
               });
@@ -347,15 +325,11 @@ function ExistingTagConverter(props: {
 }
 
 function TagConverters() {
-  const { t } = useLingui();
   const { state: tagConverters, isLoading } = useStore(TagConverterStore);
   const { state: websiteInfo, isLoading: isLoadingWebsiteInfo } =
     useStore(WebsiteStore);
   const [newConverterFields, setNewConverterFields] =
-    useState<ICreateTagConverterDto>({
-      tag: '',
-      convertTo: {},
-    });
+    useState<ICreateTagConverterDto>({ tag: '', convertTo: {} });
   const [search, setSearch] = useState('');
   const [showNewConverterForm, { toggle: toggleNewConverterForm }] =
     useDisclosure(false);
@@ -390,34 +364,7 @@ function TagConverters() {
   };
 
   const resetForm = () => {
-    setNewConverterFields({
-      tag: '',
-      convertTo: {},
-    });
-  };
-
-  const handlePasteTagFromClipboard = async () => {
-    try {
-      const clipboardText = await navigator.clipboard.readText();
-      if (clipboardText) {
-        setNewConverterFields((prev) => ({
-          ...prev,
-          tag: clipboardText.trim(),
-        }));
-
-        notifications.show({
-          title: <Trans>Tag Pasted</Trans>,
-          message: <Trans>Tag pasted from clipboard</Trans>,
-          color: 'blue',
-        });
-      }
-    } catch (error) {
-      notifications.show({
-        title: <Trans>Error</Trans>,
-        message: <Trans>Failed to paste from clipboard</Trans>,
-        color: 'red',
-      });
-    }
+    setNewConverterFields({ tag: '', convertTo: {} });
   };
 
   if (isLoading || isLoadingWebsiteInfo) {
@@ -433,15 +380,10 @@ function TagConverters() {
       <Stack gap="md">
         <Group grow>
           <TextInput
-            placeholder={t`Search tag converters...`}
             leftSection={<IconSearch size={16} />}
             rightSection={
               search ? (
-                <ActionIcon
-                  variant="transparent"
-                  onClick={() => setSearch('')}
-                  aria-label={t`Clear search`}
-                >
+                <ActionIcon variant="transparent" onClick={() => setSearch('')}>
                   <IconX size={16} />
                 </ActionIcon>
               ) : null
@@ -452,36 +394,6 @@ function TagConverters() {
         </Group>
 
         <Group justify="space-between">
-          <Group>
-            <Text fw={500} size="md">
-              <Trans>Tag Converters</Trans> ({filteredTagConverters.length}/
-              {tagConverters?.length || 0})
-            </Text>
-            <Group ml="xs">
-              <Tooltip
-                label={
-                  sortDirection === 'asc' ? (
-                    <Trans>Sort Descending</Trans>
-                  ) : (
-                    <Trans>Sort Ascending</Trans>
-                  )
-                }
-              >
-                <ActionIcon
-                  variant="subtle"
-                  size="sm"
-                  onClick={toggleSortDirection}
-                  aria-label={t`Toggle sort direction`}
-                >
-                  {sortDirection === 'asc' ? (
-                    <IconSortAscending size={16} />
-                  ) : (
-                    <IconSortDescending size={16} />
-                  )}
-                </ActionIcon>
-              </Tooltip>
-            </Group>
-          </Group>
           <Button
             leftSection={<IconPlus size={16} />}
             variant="light"
@@ -494,6 +406,31 @@ function TagConverters() {
               <Trans>Create New</Trans>
             )}
           </Button>
+          <Group>
+            <Group ml="xs">
+              <Tooltip
+                label={
+                  sortDirection === 'asc' ? (
+                    <CommonTranslations.SortDescending />
+                  ) : (
+                    <CommonTranslations.SortAscending />
+                  )
+                }
+              >
+                <ActionIcon
+                  variant="subtle"
+                  size="sm"
+                  onClick={toggleSortDirection}
+                >
+                  {sortDirection === 'asc' ? (
+                    <IconSortAscending size={16} />
+                  ) : (
+                    <IconSortDescending size={16} />
+                  )}
+                </ActionIcon>
+              </Tooltip>
+            </Group>
+          </Group>
         </Group>
 
         <Collapse in={showNewConverterForm}>
@@ -517,15 +454,6 @@ function TagConverters() {
                   })
                 }
               />
-              <Button
-                variant="subtle"
-                size="xs"
-                onClick={handlePasteTagFromClipboard}
-                leftSection={<IconClipboardCopy size={14} />}
-                aria-label={t`Paste tag from clipboard`}
-              >
-                <Trans>Paste</Trans>
-              </Button>
             </Group>
 
             <WebsiteConverterInputs
@@ -546,7 +474,7 @@ function TagConverters() {
                   Object.keys(newConverterFields.convertTo).length === 0
                 }
               >
-                <Trans>Clear</Trans>
+                <CommonTranslations.Clear />
               </Button>
               <Button
                 variant="filled"
@@ -559,19 +487,20 @@ function TagConverters() {
                 }
                 onClick={() => {
                   tagConvertersApi.create(newConverterFields).then(() => {
-                    setNewConverterFields({
-                      tag: '',
-                      convertTo: {},
-                    });
+                    setNewConverterFields({ tag: '', convertTo: {} });
                     notifications.show({
                       title: newConverterFields.tag,
-                      message: <Trans>Tag converter created</Trans>,
+                      message: (
+                        <CommonTranslations.NounCreated
+                          noun={<Trans>Tag converter</Trans>}
+                        />
+                      ),
                       color: 'green',
                     });
                   });
                 }}
               >
-                <Trans>Save</Trans>
+                <CommonTranslations.Save />
               </Button>
             </Group>
           </Fieldset>
@@ -592,15 +521,7 @@ function TagConverters() {
           </ScrollArea>
         ) : (
           <Paper p="lg" withBorder radius="md" ta="center">
-            {search ? (
-              <Text c="dimmed">
-                <Trans>No tag converters match your search</Trans>
-              </Text>
-            ) : (
-              <Text c="dimmed">
-                <Trans>No tag converters created yet</Trans>
-              </Text>
-            )}
+            <CommonTranslations.NoItemsFound />
           </Paper>
         )}
       </Stack>
@@ -616,13 +537,8 @@ export function TagConverterDrawer() {
         closeOnClickOutside
         ml={-marginOffset}
         size="lg"
-        portalProps={{
-          target: getPortalTarget(),
-        }}
-        overlayProps={{
-          left: getOverlayOffset(),
-          zIndex: 100,
-        }}
+        portalProps={{ target: getPortalTarget() }}
+        overlayProps={{ left: getOverlayOffset(), zIndex: 100 }}
         trapFocus
         opened={visible}
         onClose={() => toggle()}
@@ -631,12 +547,7 @@ export function TagConverterDrawer() {
             <Trans>Tag Converters</Trans>
           </Text>
         }
-        styles={{
-          body: {
-            padding: '16px',
-            height: 'calc(100% - 60px)',
-          },
-        }}
+        styles={{ body: { padding: '16px', height: 'calc(100% - 60px)' } }}
       >
         <TagConverters />
       </Drawer>

@@ -81,12 +81,12 @@ export function Disclaimer({ onAccepted, onDeclined }: DisclaimerProps) {
       >
         <Stack gap="md">
           <Title id="disclaimer-title" order={2} tabIndex={-1}>
-            <Trans id="disclaimer.title">Legal Notice & Disclaimer</Trans>
+            <Trans>Legal Notice & Disclaimer</Trans>
           </Title>
           <ScrollArea.Autosize mah={320} type="always">
             <Stack gap="sm">
               <Text size="sm">
-                <Trans id="disclaimer.paragraph1">
+                <Trans>
                   By using this application, you acknowledge that you are solely
                   responsible for how you use it and for any content you create,
                   upload, distribute, or interact with. The authors and
@@ -96,7 +96,7 @@ export function Disclaimer({ onAccepted, onDeclined }: DisclaimerProps) {
                 </Trans>
               </Text>
               <Text size="sm">
-                <Trans id="disclaimer.paragraph2">
+                <Trans>
                   You agree to comply with all applicable laws, terms of
                   service, and policies of any third party platforms you connect
                   to or interact with through this application. Do not use this
@@ -105,7 +105,7 @@ export function Disclaimer({ onAccepted, onDeclined }: DisclaimerProps) {
                 </Trans>
               </Text>
               <Text size="sm">
-                <Trans id="disclaimer.paragraph3">
+                <Trans>
                   If you do not agree with these terms, you must decline and
                   exit the application.
                 </Trans>

@@ -16,6 +16,7 @@ import { IconSearch } from '@tabler/icons-react';
 import { useMemo, useState } from 'react';
 import { ComponentErrorBoundary } from '../../../../components/error-boundary/specialized-error-boundaries';
 import { useWebsites } from '../../../../hooks/account/use-websites';
+import { CommonTranslations } from '../../../../translations/common-translations';
 import {
   getOverlayOffset,
   getPortalTarget,
@@ -79,13 +80,8 @@ export function AccountDrawer() {
           closeOnClickOutside
           size="lg"
           ml={-marginOffset}
-          portalProps={{
-            target: getPortalTarget(),
-          }}
-          overlayProps={{
-            left: getOverlayOffset(),
-            zIndex: 100,
-          }}
+          portalProps={{ target: getPortalTarget() }}
+          overlayProps={{ left: getOverlayOffset(), zIndex: 100 }}
           trapFocus
           opened={visible}
           onClose={() => {
@@ -127,7 +123,7 @@ export function AccountDrawer() {
                     style={{ cursor: 'pointer' }}
                     onClick={() => setSearchQuery('')}
                   >
-                    <Trans>Clear</Trans>
+                    <CommonTranslations.Clear />
                   </Text>
                 ) : null
               }

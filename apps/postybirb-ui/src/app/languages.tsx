@@ -1,5 +1,8 @@
 import { msg } from "@lingui/core/macro";
+import 'dayjs/locale/de';
 import 'dayjs/locale/es';
+import 'dayjs/locale/lt';
+import 'dayjs/locale/pt-br';
 import 'dayjs/locale/ru';
 
 export const languages = [
