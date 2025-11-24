@@ -28,6 +28,7 @@ import {
 import { useState } from 'react';
 import accountApi from '../../../../api/account.api';
 import { DeleteActionPopover } from '../../../../components/shared/delete-action-popover/delete-action-popover';
+import { CommonTranslations } from '../../../../translations/common-translations';
 
 type OnLoginProps = (
   login: { account: IAccountDto; website: IWebsiteInfoDto } | null,
@@ -51,10 +52,7 @@ function AccountItem({ account, website, onLogin }: AccountItemProps) {
 
   const handleNameSave = () => {
     if (accountName.trim() && accountName !== account.name) {
-      accountApi.update(account.id, {
-        name: accountName.trim(),
-        groups: [],
-      });
+      accountApi.update(account.id, { name: accountName.trim(), groups: [] });
     }
   };
 
@@ -77,11 +75,7 @@ function AccountItem({ account, website, onLogin }: AccountItemProps) {
           onBlur={handleNameSave}
           leftSection={<IconEdit size={14} color="gray" />}
           styles={{
-            input: {
-              fontWeight: 500,
-              minHeight: 'auto',
-              height: 'auto',
-            },
+            input: { fontWeight: 500, minHeight: 'auto', height: 'auto' },
           }}
         />
       </Grid.Col>
@@ -93,7 +87,7 @@ function AccountItem({ account, website, onLogin }: AccountItemProps) {
           variant="dot"
         >
           {account.state.isLoggedIn ? (
-            (account.state.username ?? <Trans>Unknown</Trans>)
+            (account.state.username ?? <CommonTranslations.Unknown />)
           ) : (
             <Trans>Not logged in</Trans>
           )}
@@ -139,7 +133,7 @@ function AccountItem({ account, website, onLogin }: AccountItemProps) {
                   });
                 }}
               >
-                <Trans>Clear Account</Trans>
+                <CommonTranslations.Clear />
               </Button>
             </Popover.Dropdown>
           </Popover>
@@ -182,7 +176,7 @@ function NewAccountItem({
         fullWidth
         mt="xs"
       >
-        <Trans>Add Account</Trans>
+        <CommonTranslations.NounAdd noun={<Trans>Account</Trans>} />
       </Button>
     );
   }
@@ -220,7 +214,7 @@ function NewAccountItem({
             size="xs"
             value={newAccountName}
             onChange={(e) => setNewAccountName(e.currentTarget.value)}
-            placeholder={t`Enter account name`}
+            placeholder={t`Name`}
             autoFocus
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
@@ -234,10 +228,10 @@ function NewAccountItem({
         <Grid.Col span={5}>
           <Group gap={5} grow>
             <Button size="xs" onClick={handleAddAccount}>
-              <Trans>Add</Trans>
+              <CommonTranslations.Save />
             </Button>
             <Button size="xs" variant="subtle" onClick={handleCancel}>
-              <Trans>Cancel</Trans>
+              <CommonTranslations.Cancel />
             </Button>
           </Group>
         </Grid.Col>
@@ -273,7 +267,7 @@ export function WebsiteCard(props: WebsiteCardProps) {
             leftSection={<IconPlus size={14} />}
             onClick={() => setShowAddForm(true)}
           >
-            <Trans>Add Account</Trans>
+            <CommonTranslations.NounAdd noun={<Trans>Account</Trans>} />
           </Button>
         </Flex>
 
@@ -330,7 +324,7 @@ export function WebsiteCard(props: WebsiteCardProps) {
         <Grid gutter={0} mb="xs">
           <Grid.Col span={5}>
             <Text size="xs" c="dimmed" fw={500} pl={5}>
-              <Trans>Account Name</Trans>
+              <CommonTranslations.Name />
             </Text>
           </Grid.Col>
           <Grid.Col span={4}>

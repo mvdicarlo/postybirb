@@ -1,4 +1,4 @@
-import { Trans, useLingui } from '@lingui/react/macro';
+import { Trans } from '@lingui/react/macro';
 import {
   Box,
   Button,
@@ -24,6 +24,7 @@ import {
 import { useEffect, useState } from 'react';
 import remoteApi from '../../../../api/remote.api';
 import { useLocalStorage } from '../../../../hooks/use-local-storage';
+import { CommonTranslations } from '../../../../translations/common-translations';
 import {
   REMOTE_HOST_KEY,
   REMOTE_MODE_KEY,
@@ -33,7 +34,6 @@ import {
 const LAN_IP_PLACEHOLDER = 'localhost:9487';
 
 export function RemoteSettings() {
-  const { t } = useLingui();
   const [isTestingConnection, setIsTestingConnection] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [remoteConfig, setRemoteConfig] = useState<RemoteConfig>({
@@ -83,8 +83,7 @@ export function RemoteSettings() {
     try {
       await remoteApi.testPing();
       notifications.show({
-        title: t`Success`,
-        message: t`Successfully connected to the remote host`,
+        message: <Trans>Successfully connected to the remote host</Trans>,
         color: 'green',
       });
     } catch (error) {
@@ -112,12 +111,8 @@ export function RemoteSettings() {
 
       <Stack mt="md" gap="md">
         <Divider />
-
         <Radio.Group
           label={<Trans>Remote Mode</Trans>}
-          description={
-            <Trans>Choose how this PostyBirb instance should operate</Trans>
-          }
           value={isHost ? 'host' : 'client'}
           onChange={(value) => setRemoteMode(value as 'host' | 'client')}
         >
@@ -174,8 +169,6 @@ export function RemoteSettings() {
                 px={4}
                 onClick={() => setShowPassword((v) => !v)}
                 tabIndex={-1}
-                // eslint-disable-next-line lingui/no-unlocalized-strings
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? (
                   <IconEyeOff size={16} />
@@ -206,8 +199,6 @@ export function RemoteSettings() {
                 px={4}
                 onClick={() => setShowPassword((v) => !v)}
                 tabIndex={-1}
-                // eslint-disable-next-line lingui/no-unlocalized-strings
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? (
                   <IconEyeOff size={16} />
@@ -253,7 +244,7 @@ export function RemoteSettings() {
                   setRemotePassword(null);
                 }}
               >
-                <Trans>Clear</Trans>
+                <CommonTranslations.Clear />
               </Button>
             </Group>
           </>
@@ -310,7 +301,6 @@ export function RemoteSettings() {
                   px={4}
                   onClick={() => setShowLanIp((v) => !v)}
                   tabIndex={-1}
-                  aria-label={showLanIp ? t`Hide LAN IP` : t`Show LAN IP`}
                 >
                   {showLanIp ? <IconEyeOff size={14} /> : <IconEye size={14} />}
                 </Button>
@@ -319,32 +309,22 @@ export function RemoteSettings() {
                   size="xs"
                   px={4}
                   onClick={async () => {
-                    try {
-                      await navigator.clipboard.writeText(lanIp);
-                      notifications.show({
-                        title: t`Copied`,
-                        message: t`LAN IP copied to clipboard`,
-                        color: 'green',
-                      });
-                    } catch {
-                      notifications.show({
-                        title: t`Copy failed`,
-                        message: t`Could not copy LAN IP`,
-                        color: 'red',
-                      });
-                    }
+                    await navigator.clipboard.writeText(lanIp);
+                    notifications.show({
+                      message: <CommonTranslations.CopiedToClipboard />,
+                      color: 'green',
+                    });
                   }}
                   tabIndex={-1}
-                  aria-label={t`Copy LAN IP`}
                 >
                   <IconCopy size={14} />
                 </Button>
               </Group>
               <Text size="xs" c="dimmed" mt="xs">
                 <Trans>
-                  Note: If you need to connect from outside your local network
-                  you will need to set up port forwarding on your router and use
-                  the public IP of the host computer.
+                  If you need to connect from outside your local network you
+                  will need to set up port forwarding on your router and use the
+                  public IP of the host computer.
                 </Trans>
               </Text>
             </Box>

@@ -3,6 +3,10 @@ import { Trans } from '@lingui/react/macro';
 type WithNounProps = { noun?: React.ReactNode };
 
 export class CommonTranslations {
+  static Unknown() {
+    return <Trans>Unknown</Trans>;
+  }
+
   static Name() {
     return <Trans>Name</Trans>;
   }
@@ -33,6 +37,10 @@ export class CommonTranslations {
 
   static Cancel() {
     return <Trans>Cancel</Trans>;
+  }
+
+  static Close() {
+    return <Trans>Close</Trans>;
   }
 
   static Update() {
@@ -96,7 +104,7 @@ export class CommonTranslations {
   }
 
   static NoItemsFound() {
-    return <Trans>No items found</Trans>;
+    return <Trans>No results found</Trans>;
   }
 
   static SortAscending() {

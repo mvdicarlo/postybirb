@@ -163,11 +163,7 @@ export function AccountDrawer() {
               ) : (
                 <Box py="xl" ta="center">
                   <Text c="dimmed">
-                    {searchQuery ? (
-                      <Trans>No websites match your search criteria</Trans>
-                    ) : (
-                      <Trans>No websites available or visible</Trans>
-                    )}
+                    <CommonTranslations.NoItemsFound />
                   </Text>
                 </Box>
               )}

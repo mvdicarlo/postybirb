@@ -49,12 +49,10 @@ msgstr ""
 msgid "Access Tiers"
 msgstr ""
 
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx
 #: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx
 msgid "Account"
-msgstr ""
-
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx
-msgid "Account Name"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
@@ -82,18 +80,12 @@ msgstr ""
 msgid "Active"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx
 #: apps/postybirb-ui/src/translations/common-translations.tsx
 msgid "Add"
 msgstr ""
 
 #: apps/postybirb-ui/src/translations/common-translations.tsx
 msgid "Add {noun}"
-msgstr ""
-
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx
-msgid "Add Account"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-manager.tsx
@@ -383,7 +375,6 @@ msgstr ""
 msgid "By using this application, you acknowledge that you are solely responsible for how you use it and for any content you create, upload, distribute, or interact with. The authors and maintainers provide this software as is without warranties of any kind and are not liable for any damages or losses resulting from its use."
 msgstr ""
 
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx
 #: apps/postybirb-ui/src/components/dashboard/submissions-list/submissions-list.tsx
 #: apps/postybirb-ui/src/components/shared/delete-action-popover/delete-action-popover.tsx
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
@@ -434,10 +425,6 @@ msgstr ""
 msgid "Choose Fields"
 msgstr "Felder auswählen"
 
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/remote-settings.tsx
-msgid "Choose how this PostyBirb instance should operate"
-msgstr ""
-
 #: apps/postybirb-ui/src/components/submissions/submission-picker/submission-picker-modal.tsx
 msgid "Choose Submissions"
 msgstr ""
@@ -452,14 +439,9 @@ msgid "Choose when to post this submission"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/notifications-drawer.tsx
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/remote-settings.tsx
 #: apps/postybirb-ui/src/translations/common-translations.tsx
 msgid "Clear"
 msgstr "Leeren"
-
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx
-msgid "Clear Account"
-msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
 msgid "Clear all"
@@ -496,6 +478,7 @@ msgid "Client Mode"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-calendar/submission-calendar.tsx
+#: apps/postybirb-ui/src/translations/common-translations.tsx
 msgid "Close"
 msgstr ""
 
@@ -584,7 +567,6 @@ msgstr ""
 msgid "Converted:"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/remote-settings.tsx
 #: apps/postybirb-ui/src/components/dashboard/recent-posts/recent-posts.tsx
 #: apps/postybirb-ui/src/components/form/fields/field-copy-button.tsx
 #: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx
@@ -608,21 +590,9 @@ msgstr "Kopieren"
 msgid "Copy error details"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/remote-settings.tsx
-msgid "Copy failed"
-msgstr ""
-
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/remote-settings.tsx
-msgid "Copy LAN IP"
-msgstr ""
-
 #: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx
 #: apps/postybirb-ui/src/translations/common-translations.tsx
 msgid "Copy to clipboard"
-msgstr ""
-
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/remote-settings.tsx
-msgid "Could not copy LAN IP"
 msgstr ""
 
 #: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx
@@ -876,10 +846,6 @@ msgstr ""
 msgid "Don't post to"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-visibility-picker.tsx
-msgid "Done"
-msgstr ""
-
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx
 msgid "Drag or use arrow keys to change order."
 msgstr ""
@@ -953,10 +919,6 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-view/submission-template-view.tsx
 msgid "Enter a name for the template"
-msgstr ""
-
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx
-msgid "Enter account name"
 msgstr ""
 
 #: apps/postybirb-ui/src/website-components/megalodon/megalodon-login-view.tsx
@@ -1299,10 +1261,6 @@ msgstr ""
 msgid "Hide Form"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/remote-settings.tsx
-msgid "Hide LAN IP"
-msgstr ""
-
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx
 #: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx
 #: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx
@@ -1350,6 +1308,10 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/disclaimer/disclaimer.tsx
 msgid "If you do not agree with these terms, you must decline and exit the application."
+msgstr ""
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/remote-settings.tsx
+msgid "If you need to connect from outside your local network you will need to set up port forwarding on your router and use the public IP of the host computer."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/form/fields/tag-field.tsx
@@ -1425,10 +1387,6 @@ msgstr ""
 
 #: apps/postybirb-ui/src/website-components/twitter/twitter-login-view.tsx
 msgid "Keep this secret and never share it publicly"
-msgstr ""
-
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/remote-settings.tsx
-msgid "LAN IP copied to clipboard"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/language-picker.tsx
@@ -1578,6 +1536,7 @@ msgid "Monthly (1st of month)"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx
 #: apps/postybirb-ui/src/translations/common-translations.tsx
@@ -1619,19 +1578,12 @@ msgstr ""
 msgid "No history available"
 msgstr ""
 
-#: apps/postybirb-ui/src/translations/common-translations.tsx
-msgid "No items found"
-msgstr ""
-
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-login-panel/website-login-panel.tsx
-msgid "No login component found."
-msgstr ""
-
 #: apps/postybirb-ui/src/components/dashboard/recent-posts/recent-posts.tsx
 msgid "No Recent Posts"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx
+#: apps/postybirb-ui/src/translations/common-translations.tsx
 msgid "No results found"
 msgstr ""
 
@@ -1675,21 +1627,9 @@ msgstr ""
 msgid "No websites"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/account-drawer.tsx
-msgid "No websites available or visible"
-msgstr ""
-
 #: apps/postybirb-ui/src/components/form/website-select/website-select.tsx
 #: apps/postybirb-ui/src/components/shared/postybirb-editor/custom/username-shortcut.tsx
 msgid "No websites found"
-msgstr ""
-
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-visibility-picker.tsx
-msgid "No websites match your search"
-msgstr ""
-
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/account-drawer.tsx
-msgid "No websites match your search criteria"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/tags-settings.tsx
@@ -1713,10 +1653,6 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/account-drawer.tsx
 msgid "Not Logged In"
-msgstr ""
-
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/remote-settings.tsx
-msgid "Note: If you need to connect from outside your local network you will need to set up port forwarding on your router and use the public IP of the host computer."
 msgstr ""
 
 #: apps/postybirb-ui/src/website-components/custom/custom-login-view.tsx
@@ -2308,10 +2244,6 @@ msgstr ""
 msgid "Show All"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/remote-settings.tsx
-msgid "Show LAN IP"
-msgstr ""
-
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/notifications-settings.tsx
 msgid "Show notification on file watcher error"
 msgstr ""
@@ -2502,7 +2434,6 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/notifications-drawer.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/notifications-drawer.tsx
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/remote-settings.tsx
 #: apps/postybirb-ui/src/components/dashboard/recent-posts/recent-posts.tsx
 #: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx
 msgid "Success"
@@ -2783,7 +2714,6 @@ msgstr ""
 msgid "Unable to display form"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx
 #: apps/postybirb-ui/src/components/shared/postybirb-editor/custom/username-shortcut.tsx
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
@@ -2793,6 +2723,7 @@ msgstr ""
 #: apps/postybirb-ui/src/components/submissions/submission-schedule-view/submission-schedule-view.tsx
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card.tsx
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx
+#: apps/postybirb-ui/src/translations/common-translations.tsx
 msgid "Unknown"
 msgstr ""
 
