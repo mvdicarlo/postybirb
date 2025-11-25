@@ -1,10 +1,9 @@
-import { Trans } from "@lingui/react/macro";
+import { Trans } from '@lingui/react/macro';
 import {
   Box,
   Button,
   Group,
   Paper,
-  Text,
   ThemeIcon,
   Title,
   Transition,
@@ -37,19 +36,11 @@ export function QueueControl() {
       // Update settings
       if (settingsId) {
         await settingsApi.update(settingsId, {
-          settings: {
-            ...settings,
-            queuePaused: paused,
-          },
+          settings: { ...settings, queuePaused: paused },
         });
       }
 
       notifications.show({
-        title: paused ? (
-          <Trans>Queue Paused</Trans>
-        ) : (
-          <Trans>Queue Resumed</Trans>
-        ),
         message: paused ? (
           <Trans>Submission processing has been paused</Trans>
         ) : (
@@ -58,11 +49,7 @@ export function QueueControl() {
         color: paused ? 'orange' : 'green',
       });
     } catch (error) {
-      notifications.show({
-        title: <Trans>Error</Trans>,
-        message: (error as Error).message,
-        color: 'red',
-      });
+      notifications.show({ message: (error as Error).message, color: 'red' });
     } finally {
       setIsLoading(false);
     }
@@ -94,13 +81,6 @@ export function QueueControl() {
             <Title order={4}>
               <Trans>Queue Control</Trans>
             </Title>
-            <Text size="sm" c="dimmed">
-              {isPaused ? (
-                <Trans>Submission processing is paused</Trans>
-              ) : (
-                <Trans>Submission processing is active</Trans>
-              )}
-            </Text>
           </Box>
         </Group>
         <Transition mounted transition="scale" duration={200}>

@@ -120,9 +120,9 @@ function ExistingShortcut({ shortcut }: { shortcut: ICustomShortcutDto }) {
               customShortcutApi.update(shortcut.id, trimmedState).then(() => {
                 notifications.show({
                   message: (
-                    <CommonTranslations.NounUpdated
-                      noun={<CommonTranslations.Shortcut />}
-                    />
+                    <CommonTranslations.NounUpdated>
+                      <CommonTranslations.Shortcut />
+                    </CommonTranslations.NounUpdated>
                   ),
                   color: 'green',
                   autoClose: 2000,
@@ -140,9 +140,9 @@ function ExistingShortcut({ shortcut }: { shortcut: ICustomShortcutDto }) {
               customShortcutApi.remove([shortcut.id]).then(() => {
                 notifications.show({
                   message: (
-                    <CommonTranslations.NounDeleted
-                      noun={<CommonTranslations.Shortcut />}
-                    />
+                    <CommonTranslations.NounDeleted>
+                      <CommonTranslations.Shortcut />
+                    </CommonTranslations.NounDeleted>
                   ),
                   color: 'red',
                   autoClose: 2000,
@@ -214,9 +214,9 @@ function CustomShortcuts() {
             variant="light"
             onClick={toggleNewForm}
           >
-            <CommonTranslations.NounNew
-              noun={<CommonTranslations.Shortcut />}
-            />
+            <CommonTranslations.NounNew>
+              <CommonTranslations.Shortcut />
+            </CommonTranslations.NounNew>
           </Button>
           <Button
             variant="subtle"
@@ -268,9 +268,9 @@ function CustomShortcuts() {
                       .then(() => {
                         notifications.show({
                           message: (
-                            <CommonTranslations.NounCreated
-                              noun={<CommonTranslations.Shortcut />}
-                            />
+                            <CommonTranslations.NounCreated>
+                              <CommonTranslations.Shortcut />
+                            </CommonTranslations.NounCreated>
                           ),
                           color: 'green',
                           autoClose: 2000,

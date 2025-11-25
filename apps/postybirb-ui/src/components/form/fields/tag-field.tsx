@@ -1,4 +1,4 @@
-import { Trans } from "@lingui/react/macro";
+import { Trans } from '@lingui/react/macro';
 import {
   Badge,
   Box,
@@ -72,14 +72,18 @@ export function TagField(props: FormFieldProps<TagFieldType>): JSX.Element {
   const tagValue = fieldValue.tags || [];
   const allTags = [...tagValue, ...(defaultOption?.tags || [])];
 
-  const convertedTags = (
-    account
-      ? allTags.map((tag) => [
-          tag,
-          getTagConversion(account.website, tagConverters, tag),
-        ])
-      : []
-  ).filter(([tag, converted]) => converted !== tag);
+  const convertedTags = account
+    ? allTags
+        .map((tag) => {
+          const converted = getTagConversion(
+            account.website,
+            tagConverters,
+            tag,
+          );
+          return [tag, converted] as [Tag, Tag];
+        })
+        .filter(([tag, converted]) => converted !== tag)
+    : [];
 
   const tagGroupsOptions = tagGroups.map((tagGroup) => ({
     label: `${TAG_GROUP_LABEL}${JSON.stringify(tagGroup)}`,
@@ -95,10 +99,7 @@ export function TagField(props: FormFieldProps<TagFieldType>): JSX.Element {
         tags: uniq(tags.filter((tag) => !defaultTags.includes(tag))),
       });
     } else {
-      setFieldValue(propKey, {
-        ...fieldValue,
-        tags: uniq(tags),
-      });
+      setFieldValue(propKey, { ...fieldValue, tags: uniq(tags) });
     }
   };
 
@@ -125,19 +126,18 @@ export function TagField(props: FormFieldProps<TagFieldType>): JSX.Element {
           />
         )}
         {convertedTags.length > 0 && (
-          <Box>
-            <Text display="inline-block" size="sm" c="green">
-              <Trans>Converted:</Trans>
-            </Text>
-            <Group display="inline-block" ml="4">
+          <Box mb="xs">
+            <Group gap="xs">
               {convertedTags.map(([tag, convertedTag]) => (
                 <Badge key={tag} size="xs" variant="light">
-                  {tag}{' '}
-                  <IconArrowRight
-                    size="0.75rem"
-                    style={{ verticalAlign: 'middle' }}
-                  />{' '}
-                  {convertedTag}
+                  <Group gap="4">
+                    {tag}
+                    <IconArrowRight
+                      size="0.75rem"
+                      style={{ verticalAlign: 'middle' }}
+                    />
+                    {convertedTag}
+                  </Group>
                 </Badge>
               ))}
             </Group>
@@ -152,10 +152,7 @@ export function TagField(props: FormFieldProps<TagFieldType>): JSX.Element {
           searchValue={search.searchValue}
           onSearchChange={search.onSearchChange}
           onClear={() => {
-            setFieldValue(propKey, {
-              ...fieldValue,
-              tags: [],
-            });
+            setFieldValue(propKey, { ...fieldValue, tags: [] });
           }}
           description={
             field.maxTags ? `${totalTags ?? 0} / ${field.maxTags}` : undefined

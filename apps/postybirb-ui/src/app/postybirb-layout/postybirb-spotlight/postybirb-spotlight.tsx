@@ -19,6 +19,7 @@ import {
 import { SubmissionTemplateStore } from '../../../stores/submission-template.store';
 import { SubmissionStore } from '../../../stores/submission.store';
 import { useStore } from '../../../stores/use-store';
+import { CommonTranslations } from '../../../translations/common-translations';
 import { defaultTargetProvider } from '../../../transports/http-client';
 import './postybirb-spotlight.css';
 
@@ -27,13 +28,14 @@ export function PostybirbSpotlight() {
   const { state: submissions } = useStore(SubmissionStore);
   const { state: templates } = useStore(SubmissionTemplateStore);
 
+  const unarchivedSubmissions = submissions.filter((s) => !s.isArchived);
+
   const navigateTo = useNavigate();
   const navigationTargets: SpotlightActionData[] = [
     {
       group: t`Navigation`,
       id: 'home',
       label: t`Home`,
-      description: t`Go to the main dashboard`,
       leftSection: <IconHome size={24} stroke={1.5} />,
       onClick: () => navigateTo(HomePath),
     },
@@ -41,7 +43,6 @@ export function PostybirbSpotlight() {
       group: t`Navigation`,
       id: 'file-submissions',
       label: t`Post a file`,
-      description: t`Create a new file submission`,
       leftSection: <IconFile size={24} stroke={1.5} />,
       onClick: () => navigateTo(FileSubmissionPath),
     },
@@ -49,58 +50,50 @@ export function PostybirbSpotlight() {
       group: t`Navigation`,
       id: 'message-submissions',
       label: t`Post a message`,
-      description: t`Create a new message submission`,
       leftSection: <IconMessage size={24} stroke={1.5} />,
       onClick: () => navigateTo(MessageSubmissionPath),
     },
   ];
 
-  const submissionOptions: SpotlightActionData[] = submissions.map((s) => {
-    const isFileType = s.type === SubmissionType.FILE;
-    const { files } = s;
-    const src = files.length
-      ? `${defaultTargetProvider()}/api/file/thumbnail/${files[0].id}`
-      : null;
-    const title = s.getDefaultOptions()?.data.title || t`Unknown submission`;
+  const submissionOptions: SpotlightActionData[] = unarchivedSubmissions.map(
+    (s) => {
+      const isFileType = s.type === SubmissionType.FILE;
+      const { files } = s;
+      const src = files.length
+        ? `${defaultTargetProvider()}/api/file/thumbnail/${files[0].id}`
+        : null;
+      const title = s.getDefaultOptions()?.data.title || t`Unknown`;
 
-    const leftSection = isFileType ? (
-      src ? (
-        <Avatar src={src} size={40} radius="sm" />
+      const leftSection = isFileType ? (
+        src ? (
+          <Avatar src={src} size={40} radius="sm" />
+        ) : (
+          <Avatar radius="sm" size={40} color="blue">
+            <IconFile size={24} />
+          </Avatar>
+        )
       ) : (
-        <Avatar radius="sm" size={40} color="blue">
-          <IconFile size={24} />
+        <Avatar radius="sm" size={40} color="green">
+          <IconMessage size={24} />
         </Avatar>
-      )
-    ) : (
-      <Avatar radius="sm" size={40} color="green">
-        <IconMessage size={24} />
-      </Avatar>
-    );
+      );
 
-    return {
-      group: isFileType ? t`File submissions` : t`Message submissions`,
-      id: s.id,
-      label: title,
-      description: isFileType
-        ? t`Edit file submission`
-        : t`Edit message submission`,
-      rightSection: (
-        <Badge size="sm" variant="light" color={isFileType ? 'blue' : 'green'}>
-          {isFileType ? <Trans>File</Trans> : <Trans>Message</Trans>}
-        </Badge>
-      ),
-      leftSection,
-      onClick: () => navigateTo(`${EditSubmissionPath}/${s.id}`),
-    };
-  });
+      return {
+        group: isFileType ? t`File Submissions` : t`Message Submissions`,
+        id: s.id,
+        label: title,
+        leftSection,
+        onClick: () => navigateTo(`${EditSubmissionPath}/${s.id}`),
+      };
+    },
+  );
 
   const templateOptions: SpotlightActionData[] = templates.map((template) => {
     const isFileType = template.type === SubmissionType.FILE;
     return {
-      group: t`Submission templates`,
+      group: t`Submission Templates`,
       id: template.id,
       label: template.getTemplateName(),
-      description: t`Use this template for a new submission`,
       rightSection: (
         <Badge size="sm" variant="light" color={isFileType ? 'cyan' : 'teal'}>
           <Trans>Template</Trans>
@@ -121,13 +114,12 @@ export function PostybirbSpotlight() {
       nothingFound={
         <Box py="lg" ta="center">
           <Text c="dimmed" fz="sm">
-            <Trans>No results found</Trans>
+            <CommonTranslations.NoItemsFound />
           </Text>
         </Box>
       }
       highlightQuery
       searchProps={{
-        placeholder: t`Search for submissions, templates, or actions...`,
         leftSection: (
           <IconSearch
             style={{ width: rem(20), height: rem(20) }}
@@ -139,10 +131,7 @@ export function PostybirbSpotlight() {
         actionsGroup: 'spotlight-actions-group',
         action: 'spotlight-action',
       }}
-      transitionProps={{
-        transition: 'pop',
-        duration: 200,
-      }}
+      transitionProps={{ transition: 'pop', duration: 200 }}
     />
   );
 }

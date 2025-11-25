@@ -263,9 +263,9 @@ function ExistingUserConverter(props: {
                   notifications.show({
                     title: state.username,
                     message: (
-                      <CommonTranslations.NounUpdated
-                        noun={<Trans>User converter</Trans>}
-                      />
+                      <CommonTranslations.NounUpdated>
+                        <Trans>User converter</Trans>
+                      </CommonTranslations.NounUpdated>
                     ),
                     color: 'green',
                   });
@@ -292,9 +292,9 @@ function ExistingUserConverter(props: {
                 notifications.show({
                   title: userConverter.username,
                   message: (
-                    <CommonTranslations.NounDeleted
-                      noun={<Trans>User converter</Trans>}
-                    />
+                    <CommonTranslations.NounDeleted>
+                      <Trans>User converter</Trans>
+                    </CommonTranslations.NounDeleted>
                   ),
                   color: 'green',
                 });
@@ -475,9 +475,9 @@ function UserConverters() {
                     notifications.show({
                       title: newConverterFields.username,
                       message: (
-                        <CommonTranslations.NounCreated
-                          noun={<Trans>User converter</Trans>}
-                        />
+                        <CommonTranslations.NounCreated>
+                          <Trans>User converter</Trans>
+                        </CommonTranslations.NounCreated>
                       ),
                       color: 'green',
                     });

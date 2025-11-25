@@ -176,7 +176,9 @@ function NewAccountItem({
         fullWidth
         mt="xs"
       >
-        <CommonTranslations.NounAdd noun={<Trans>Account</Trans>} />
+        <CommonTranslations.NounAdd>
+          <Trans>Account</Trans>
+        </CommonTranslations.NounAdd>
       </Button>
     );
   }
@@ -267,7 +269,9 @@ export function WebsiteCard(props: WebsiteCardProps) {
             leftSection={<IconPlus size={14} />}
             onClick={() => setShowAddForm(true)}
           >
-            <CommonTranslations.NounAdd noun={<Trans>Account</Trans>} />
+            <CommonTranslations.NounAdd>
+              <Trans>Account</Trans>
+            </CommonTranslations.NounAdd>
           </Button>
         </Flex>
 

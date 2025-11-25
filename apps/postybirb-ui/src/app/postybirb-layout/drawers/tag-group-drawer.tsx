@@ -114,7 +114,7 @@ function ExistingTagGroup(props: { tagGroup: TagGroupDto }) {
         <TextInput
           required
           value={state.name}
-          label={<Trans>Name</Trans>}
+          label={<CommonTranslations.Name />}
           onChange={(event) =>
             setState({ ...state, name: event.currentTarget.value })
           }
@@ -141,9 +141,9 @@ function ExistingTagGroup(props: { tagGroup: TagGroupDto }) {
                   notifications.show({
                     title: state.name,
                     message: (
-                      <CommonTranslations.NounUpdated
-                        noun={<Trans>Tag group</Trans>}
-                      />
+                      <CommonTranslations.NounUpdated>
+                        <Trans>Tag group</Trans>
+                      </CommonTranslations.NounUpdated>
                     ),
                     color: 'green',
                   });
@@ -170,9 +170,9 @@ function ExistingTagGroup(props: { tagGroup: TagGroupDto }) {
                 notifications.show({
                   title: tagGroup.name,
                   message: (
-                    <CommonTranslations.NounDeleted
-                      noun={<Trans>Tag group</Trans>}
-                    />
+                    <CommonTranslations.NounDeleted>
+                      <Trans>Tag group</Trans>
+                    </CommonTranslations.NounDeleted>
                   ),
                   color: 'green',
                 });
@@ -300,7 +300,7 @@ function TagGroups() {
             <TextInput
               required
               value={newGroupFields.name}
-              label={<Trans>Name</Trans>}
+              label={<CommonTranslations.Name />}
               onChange={(event) =>
                 setNewGroupFields({
                   ...newGroupFields,
@@ -343,9 +343,9 @@ function TagGroups() {
                     notifications.show({
                       title: newGroupFields.name,
                       message: (
-                        <CommonTranslations.NounCreated
-                          noun={<Trans>Tag group</Trans>}
-                        />
+                        <CommonTranslations.NounCreated>
+                          <Trans>Tag group</Trans>
+                        </CommonTranslations.NounCreated>
                       ),
                       color: 'green',
                     });

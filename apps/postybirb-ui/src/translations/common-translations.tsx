@@ -1,8 +1,65 @@
 import { Trans } from '@lingui/react/macro';
+import { SubmissionType } from '@postybirb/types';
+import { PropsWithChildren } from 'react';
 
-type WithNounProps = { noun?: React.ReactNode };
+type WithNounProps = PropsWithChildren;
 
 export class CommonTranslations {
+  static File() {
+    return <Trans>File</Trans>;
+  }
+
+  static Message() {
+    return <Trans>Message</Trans>;
+  }
+
+  static NounSubmission(props: WithNounProps) {
+    const { children } = props;
+    if (children) {
+      return <Trans>{children} Submission</Trans>;
+    }
+    return <Trans>Submission</Trans>;
+  }
+
+  static FileSubmission() {
+    return (
+      <CommonTranslations.NounSubmission>
+        <CommonTranslations.File />
+      </CommonTranslations.NounSubmission>
+    );
+  }
+
+  static MessageSubmission() {
+    return (
+      <CommonTranslations.NounSubmission>
+        <CommonTranslations.Message />
+      </CommonTranslations.NounSubmission>
+    );
+  }
+
+  static SubmissionType(props: {
+    type: SubmissionType;
+    withSubmission?: boolean;
+  }) {
+    const { type, withSubmission } = props;
+    switch (type) {
+      case SubmissionType.FILE:
+        return withSubmission ? (
+          <CommonTranslations.FileSubmission />
+        ) : (
+          <CommonTranslations.File />
+        );
+      case SubmissionType.MESSAGE:
+        return withSubmission ? (
+          <CommonTranslations.MessageSubmission />
+        ) : (
+          <CommonTranslations.Message />
+        );
+      default:
+        return <CommonTranslations.Unknown />;
+    }
+  }
+
   static Unknown() {
     return <Trans>Unknown</Trans>;
   }
@@ -64,41 +121,41 @@ export class CommonTranslations {
   }
 
   static NounAdd(props: WithNounProps) {
-    const { noun } = props;
-    if (noun) {
-      return <Trans>Add {noun}</Trans>;
+    const { children } = props;
+    if (children) {
+      return <Trans>Add {children}</Trans>;
     }
     return <Trans>Add</Trans>;
   }
 
   static NounNew(props: WithNounProps) {
-    const { noun } = props;
-    if (noun) {
-      return <Trans>New {noun}</Trans>;
+    const { children } = props;
+    if (children) {
+      return <Trans>New {children}</Trans>;
     }
     return <Trans>New</Trans>;
   }
 
   static NounUpdated(props: WithNounProps) {
-    const { noun } = props;
-    if (noun) {
-      return <Trans>{noun} updated</Trans>;
+    const { children } = props;
+    if (children) {
+      return <Trans>{children} updated</Trans>;
     }
     return <Trans>Updated</Trans>;
   }
 
   static NounDeleted(props: WithNounProps) {
-    const { noun } = props;
-    if (noun) {
-      return <Trans>{noun} deleted</Trans>;
+    const { children } = props;
+    if (children) {
+      return <Trans>{children} deleted</Trans>;
     }
     return <Trans>Deleted</Trans>;
   }
 
   static NounCreated(props: WithNounProps) {
-    const { noun } = props;
-    if (noun) {
-      return <Trans>{noun} created</Trans>;
+    const { children } = props;
+    if (children) {
+      return <Trans>{children} created</Trans>;
     }
     return <Trans>Created</Trans>;
   }

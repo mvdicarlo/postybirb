@@ -1,4 +1,4 @@
-import { Trans } from "@lingui/react/macro";
+import { Trans } from '@lingui/react/macro';
 import {
   ActionIcon,
   Badge,
@@ -110,7 +110,7 @@ function SubmissionItem({
           </Text>
           <Group justify="flex-end">
             <Button variant="default" onClick={confirmModal.close} radius="md">
-              <Trans>Cancel</Trans>
+              <Trans>No</Trans>
             </Button>
             <Button
               color="red"
@@ -280,7 +280,6 @@ export function SubmissionsList({
     try {
       await postManagerApi.cancelIfRunning(submissionId);
       notifications.show({
-        title: <Trans>Submission Cancelled</Trans>,
         message: <Trans>The submission has been cancelled</Trans>,
         color: 'green',
       });
@@ -297,7 +296,6 @@ export function SubmissionsList({
     try {
       await postQueueApi.dequeue([submissionId]);
       notifications.show({
-        title: <Trans>Submission Removed</Trans>,
         message: <Trans>The submission has been removed from the queue</Trans>,
         color: 'green',
       });
@@ -325,7 +323,6 @@ export function SubmissionsList({
         });
 
         notifications.show({
-          title: <Trans>Submission Unscheduled</Trans>,
           message: <Trans>The submission has been unscheduled</Trans>,
           color: 'green',
         });

@@ -1,4 +1,4 @@
-import { Trans } from "@lingui/react/macro";
+import { Trans } from '@lingui/react/macro';
 import {
   Accordion,
   Alert,
@@ -35,6 +35,7 @@ import { uniq } from 'lodash';
 import moment from 'moment';
 import { useMemo } from 'react';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
+import { CommonTranslations } from '../../../translations/common-translations';
 import { ExternalLink } from '../../external-link/external-link';
 import { SubmissionFilePreview } from '../../submissions/submission-file-preview/submission-file-preview';
 import './recent-posts.css';
@@ -57,9 +58,9 @@ export function RecentPosts({ posts, submissions }: RecentPostsProps) {
           const submission = submissions.find(
             (s) => s.id === post.submissionId,
           );
-          const title =
-            // eslint-disable-next-line lingui/no-unlocalized-strings
-            submission?.getDefaultOptions()?.data?.title || 'Untitled';
+          const title = submission?.getDefaultOptions()?.data?.title || (
+            <CommonTranslations.Unknown />
+          );
 
           const completedAt = post.completedAt
             ? // eslint-disable-next-line lingui/no-unlocalized-strings
@@ -74,8 +75,7 @@ export function RecentPosts({ posts, submissions }: RecentPostsProps) {
             post.children
               ?.filter((child) => child.errors && child.errors.length > 0)
               .map((child) => ({
-                // eslint-disable-next-line lingui/no-unlocalized-strings
-                account: child.account?.name || 'Unknown',
+                account: child.account?.name || <CommonTranslations.Unknown />,
                 website: child.account?.website,
                 errors: child.errors,
               })) || [];
@@ -93,8 +93,9 @@ export function RecentPosts({ posts, submissions }: RecentPostsProps) {
                       Boolean,
                     );
                 return {
-                  // eslint-disable-next-line lingui/no-unlocalized-strings
-                  account: child.account?.name || 'Unknown',
+                  account: child.account?.name || (
+                    <CommonTranslations.Unknown />
+                  ),
                   website:
                     child.account?.website ||
                     child.account?.websiteInfo?.websiteDisplayName,
@@ -135,11 +136,8 @@ export function RecentPosts({ posts, submissions }: RecentPostsProps) {
           </ThemeIcon>
           <Box ta="center">
             <Title order={4} c="dimmed">
-              <Trans>No Recent Posts</Trans>
+              <CommonTranslations.NoItemsFound />
             </Title>
-            <Text size="sm" c="dimmed" mt={4}>
-              <Trans>Your recent submission history will appear here</Trans>
-            </Text>
           </Box>
         </Stack>
       </Paper>
@@ -216,11 +214,10 @@ export function RecentPosts({ posts, submissions }: RecentPostsProps) {
                         </Text>
                         <Tooltip
                           label={
-                            post.submissionType === SubmissionType.FILE ? (
-                              <Trans>File Submission</Trans>
-                            ) : (
-                              <Trans>Message Submission</Trans>
-                            )
+                            <CommonTranslations.SubmissionType
+                              withSubmission
+                              type={post.submissionType}
+                            />
                           }
                         >
                           <Badge
@@ -232,11 +229,9 @@ export function RecentPosts({ posts, submissions }: RecentPostsProps) {
                                 : 'cyan'
                             }
                           >
-                            {post.submissionType === SubmissionType.FILE ? (
-                              <Trans>File</Trans>
-                            ) : (
-                              <Trans>Message</Trans>
-                            )}
+                            <CommonTranslations.SubmissionType
+                              type={post.submissionType}
+                            />
                           </Badge>
                         </Tooltip>
                       </Group>
@@ -322,7 +317,7 @@ export function RecentPosts({ posts, submissions }: RecentPostsProps) {
                                         </Stack>
                                       ) : (
                                         <Text size="xs" c="dimmed">
-                                          <Trans>No source URL available</Trans>
+                                          <CommonTranslations.NoItemsFound />
                                         </Text>
                                       )}
                                     </Box>
@@ -409,7 +404,7 @@ export function RecentPosts({ posts, submissions }: RecentPostsProps) {
                                             mb="xs"
                                           >
                                             <Text size="xs" fw={500}>
-                                              <Trans>Error JSON</Trans>
+                                              <Trans>Error</Trans>
                                             </Text>
                                             <CopyButton
                                               value={errorJson}
@@ -428,9 +423,9 @@ export function RecentPosts({ posts, submissions }: RecentPostsProps) {
                                                   variant="subtle"
                                                 >
                                                   {copied ? (
-                                                    <Trans>Copied</Trans>
+                                                    <CommonTranslations.CopiedToClipboard />
                                                   ) : (
-                                                    <Trans>Copy</Trans>
+                                                    <CommonTranslations.CopyToClipboard />
                                                   )}
                                                 </Button>
                                               )}

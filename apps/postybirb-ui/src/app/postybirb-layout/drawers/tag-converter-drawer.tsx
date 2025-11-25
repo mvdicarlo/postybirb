@@ -280,9 +280,9 @@ function ExistingTagConverter(props: {
                   notifications.show({
                     title: state.tag,
                     message: (
-                      <CommonTranslations.NounUpdated
-                        noun={<Trans>Tag converter</Trans>}
-                      />
+                      <CommonTranslations.NounUpdated>
+                        <Trans>Tag converter</Trans>
+                      </CommonTranslations.NounUpdated>
                     ),
                     color: 'green',
                   });
@@ -309,9 +309,9 @@ function ExistingTagConverter(props: {
                 notifications.show({
                   title: tagConverter.tag,
                   message: (
-                    <CommonTranslations.NounDeleted
-                      noun={<Trans>Tag converter</Trans>}
-                    />
+                    <CommonTranslations.NounDeleted>
+                      <Trans>Tag converter</Trans>
+                    </CommonTranslations.NounDeleted>
                   ),
                   color: 'green',
                 });
@@ -491,9 +491,9 @@ function TagConverters() {
                     notifications.show({
                       title: newConverterFields.tag,
                       message: (
-                        <CommonTranslations.NounCreated
-                          noun={<Trans>Tag converter</Trans>}
-                        />
+                        <CommonTranslations.NounCreated>
+                          <Trans>Tag converter</Trans>
+                        </CommonTranslations.NounCreated>
                       ),
                       color: 'green',
                     });

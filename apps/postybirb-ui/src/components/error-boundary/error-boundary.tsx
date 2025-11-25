@@ -1,26 +1,21 @@
 /* eslint-disable lingui/no-unlocalized-strings */
 import { Trans } from '@lingui/react/macro';
 import {
-  ActionIcon,
   Alert,
   Box,
   Button,
   Code,
   Container,
+  CopyButton,
   ScrollArea,
   Stack,
   Text,
   Title,
-  Tooltip,
 } from '@mantine/core';
-import {
-  IconAlertTriangle,
-  IconCheck,
-  IconCopy,
-  IconRefresh,
-} from '@tabler/icons-react';
-import { Component, ReactNode, useState } from 'react';
+import { IconAlertTriangle, IconCopy, IconRefresh } from '@tabler/icons-react';
+import { Component, ReactNode } from 'react';
 import { trackUIException } from '../../app-insights-ui';
+import { CommonTranslations } from '../../translations/common-translations';
 
 /**
  * Copyable error details component
@@ -32,8 +27,6 @@ function CopyableErrorDetails({
   error: Error;
   errorInfo?: { componentStack: string };
 }) {
-  const [copied, setCopied] = useState(false);
-
   // Extract the component name from the component stack
   const getComponentName = (componentStack?: string): string | null => {
     if (!componentStack) return null;
@@ -56,55 +49,43 @@ function CopyableErrorDetails({
 
   const componentName = getComponentName(errorInfo?.componentStack);
 
-  const copyErrorToClipboard = async () => {
-    const errorDetails = [
-      `Error: ${error.message}`,
-      componentName ? `Component: ${componentName}` : '',
-      '',
-      'Stack Trace:',
-      error.stack || 'No stack trace available',
-      '',
-      'Component Stack:',
-      errorInfo?.componentStack || 'No component stack available',
-    ]
-      .filter(Boolean)
-      .join('\n');
-
-    try {
-      await navigator.clipboard.writeText(errorDetails);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      // eslint-disable-next-line lingui/no-unlocalized-strings, no-console
-      console.error('Failed to copy to clipboard:', err);
-    }
-  };
+  const errorDetails = [
+    `Error: ${error.message}`,
+    componentName ? `Component: ${componentName}` : '',
+    '',
+    'Stack Trace:',
+    error.stack || 'No stack trace available',
+    '',
+    'Component Stack:',
+    errorInfo?.componentStack || 'No component stack available',
+  ]
+    .filter(Boolean)
+    .join('\n');
 
   return (
     <Box mt="sm">
       <Stack gap="xs">
         <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Text size="xs" fw={500}>
-            <Trans>Error Details:</Trans>
+            <Trans>Error</Trans>:
           </Text>
-          <Tooltip
-            label={
-              copied ? (
-                <Trans>Copied!</Trans>
-              ) : (
-                <Trans>Copy error details</Trans>
-              )
-            }
-          >
-            <ActionIcon
-              size="sm"
-              variant="subtle"
-              onClick={copyErrorToClipboard}
-              color={copied ? 'green' : 'gray'}
-            >
-              {copied ? <IconCheck size={14} /> : <IconCopy size={14} />}
-            </ActionIcon>
-          </Tooltip>
+          <CopyButton value={errorDetails} timeout={2000}>
+            {({ copied, copy }) => (
+              <Button
+                color={copied ? 'teal' : 'gray'}
+                onClick={copy}
+                leftSection={<IconCopy size={12} />}
+                size="xs"
+                variant="subtle"
+              >
+                {copied ? (
+                  <CommonTranslations.CopiedToClipboard />
+                ) : (
+                  <CommonTranslations.CopyToClipboard />
+                )}
+              </Button>
+            )}
+          </CopyButton>
         </Box>
 
         <ScrollArea.Autosize mah={120}>
@@ -182,26 +163,18 @@ export class ErrorBoundary extends Component<
 
   constructor(props: ErrorBoundaryProps) {
     super(props);
-    this.state = {
-      hasError: false,
-    };
+    this.state = { hasError: false };
   }
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-    return {
-      hasError: true,
-      error,
-    };
+    return { hasError: true, error };
   }
 
   componentDidCatch(error: Error, errorInfo: { componentStack: string }) {
     // eslint-disable-next-line lingui/no-unlocalized-strings, no-console
     console.error('ErrorBoundary caught an error:', error, errorInfo);
 
-    this.setState({
-      error,
-      errorInfo,
-    });
+    this.setState({ error, errorInfo });
 
     // Extract component name from stack for better tracking
     const getComponentName = (componentStack?: string): string | null => {
@@ -343,6 +316,8 @@ export class ErrorBoundary extends Component<
                 </Trans>
               </Text>
             </div>
+
+            <CopyableErrorDetails error={error} errorInfo={errorInfo} />
 
             <Stack gap="sm">
               <Button

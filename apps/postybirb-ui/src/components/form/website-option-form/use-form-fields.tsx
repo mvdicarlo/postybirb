@@ -1,4 +1,4 @@
-import { Trans } from "@lingui/react/macro";
+import { Trans } from '@lingui/react/macro';
 import { Box, Loader } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { FormBuilderMetadata } from '@postybirb/form-builder';
@@ -63,19 +63,12 @@ export function FormFieldsProvider({
     debounce(
       (updatedValues) =>
         websiteOptionsApi
-          .update(option.id, {
-            data: updatedValues as IWebsiteFormFields,
-          })
+          .update(option.id, { data: updatedValues as IWebsiteFormFields })
           .catch((err) => {
             notifications.show({
               id: option.id,
-              title: <Trans>Error</Trans>,
-              message: (
-                <>
-                  <Trans>Failed to update submission</Trans>
-                  <Box mt="xs">{err?.message || String(err)}</Box>
-                </>
-              ),
+              title: <Trans>Failed to update submission</Trans>,
+              message: <Box mt="xs">{err?.message || String(err)}</Box>,
               color: 'red',
             });
           }),
@@ -112,11 +105,7 @@ export function FormFieldsProvider({
   );
 
   const contextValue = useMemo(
-    () => ({
-      formFields: formFields ?? {},
-      values,
-      setFieldValue,
-    }),
+    () => ({ formFields: formFields ?? {}, values, setFieldValue }),
     [formFields, values, setFieldValue],
   );
 
