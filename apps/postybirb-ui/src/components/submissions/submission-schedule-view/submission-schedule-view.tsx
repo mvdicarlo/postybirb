@@ -1,5 +1,5 @@
-import { Trans } from "@lingui/react/macro";
 import { Draggable } from '@fullcalendar/interaction';
+import { Trans } from '@lingui/react/macro';
 import {
   Avatar,
   Badge,
@@ -9,11 +9,9 @@ import {
   Stack,
   Text,
   Title,
-  Tooltip,
 } from '@mantine/core';
 import { ScheduleType, SubmissionType } from '@postybirb/types';
 import {
-  IconCalendar,
   IconCalendarOff,
   IconDragDrop,
   IconFileText,
@@ -23,18 +21,17 @@ import { useEffect, useRef } from 'react';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
 import { SubmissionStore } from '../../../stores/submission.store';
 import { useStore } from '../../../stores/use-store';
+import { CommonTranslations } from '../../../translations/common-translations';
 import { defaultTargetProvider } from '../../../transports/http-client';
 import '../submission-calendar/fullcalendar.css';
 import { SubmissionCalendar } from '../submission-calendar/submission-calendar';
 
-type SubmissionScheduleViewProps = {
-  type: SubmissionType;
-};
+type SubmissionScheduleViewProps = { type: SubmissionType };
 
 function SubmissionCard({ submission }: { submission: SubmissionDto }) {
   const dragRef = useRef(null);
   const title = submission.getDefaultOptions().data.title || (
-    <Trans>Unknown</Trans>
+    <CommonTranslations.Unknown />
   );
   const hasThumbnail = submission.files.length > 0;
   const createdAt = moment(submission.createdAt).fromNow();
@@ -91,15 +88,13 @@ function SubmissionCard({ submission }: { submission: SubmissionDto }) {
             </Title>
 
             <Group p="apart" gap="xs">
-              <Tooltip label={<Trans>Drag to schedule</Trans>}>
-                <Badge
-                  leftSection={<IconDragDrop size={14} />}
-                  color="blue"
-                  variant="light"
-                >
-                  <Trans>Drag to schedule</Trans>
-                </Badge>
-              </Tooltip>
+              <Badge
+                leftSection={<IconDragDrop size={14} />}
+                color="blue"
+                variant="light"
+              >
+                <Trans>Drag to schedule</Trans>
+              </Badge>
             </Group>
           </Stack>
         </Group>
@@ -112,8 +107,8 @@ function SubmissionCardList({ submissions }: { submissions: SubmissionDto[] }) {
   if (submissions.length === 0) {
     return (
       <Paper p="md" withBorder>
-        <Text ta="center" color="dimmed">
-          <Trans>No unscheduled submissions</Trans>
+        <Text ta="center" c="dimmed">
+          <CommonTranslations.NoItemsFound />
         </Text>
       </Paper>
     );
@@ -151,13 +146,6 @@ export function SubmissionScheduleView(props: SubmissionScheduleViewProps) {
 
   return (
     <Stack gap="lg">
-      <Title order={3}>
-        <Group gap="xs">
-          <IconCalendar size={24} />
-          <Trans>Submission Schedule</Trans>
-        </Group>
-      </Title>
-
       <Group align="flex-start" gap="xl" grow>
         <Box style={{ width: '300px', flexShrink: 0, flexGrow: 0 }}>
           <SubmissionCardList submissions={unscheduledSubmissions} />

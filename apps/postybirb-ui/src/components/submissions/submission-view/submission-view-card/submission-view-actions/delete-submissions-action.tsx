@@ -1,4 +1,3 @@
-import { Trans } from "@lingui/react/macro";
 import {
   ActionIcon,
   Box,
@@ -9,6 +8,7 @@ import {
 } from '@mantine/core';
 import { IconTrash } from '@tabler/icons-react';
 import submissionApi from '../../../../../api/submission.api';
+import { CommonTranslations } from '../../../../../translations/common-translations';
 import { SubmissionViewActionProps } from './submission-view-actions.props';
 
 export function DeleteSubmissionsAction({
@@ -16,7 +16,7 @@ export function DeleteSubmissionsAction({
   onSelect,
 }: SubmissionViewActionProps) {
   return (
-    <Popover withArrow>
+    <Popover withArrow position="right">
       <Popover.Target>
         <Indicator
           color="red"
@@ -35,9 +35,7 @@ export function DeleteSubmissionsAction({
       </Popover.Target>
       <Popover.Dropdown>
         <Text c="orange" size="lg">
-          <Trans>
-            Are you sure you want to delete this? This action cannot be undone.
-          </Trans>
+          <CommonTranslations.ConfirmDelete />
         </Text>
         <Box ta="center" mt="sm">
           <Button
@@ -49,7 +47,7 @@ export function DeleteSubmissionsAction({
               onSelect([]);
             }}
           >
-            <Trans>Delete</Trans>
+            <CommonTranslations.Delete />
           </Button>
         </Box>
       </Popover.Dropdown>

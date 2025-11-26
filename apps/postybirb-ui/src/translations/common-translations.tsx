@@ -84,8 +84,32 @@ export class CommonTranslations {
     return <Trans>Shortcut</Trans>;
   }
 
+  static Default() {
+    return <Trans>Default</Trans>;
+  }
+
+  static DefaultSaveTooltip() {
+    return (
+      <Trans>
+        Save current form values as the default values for future submissions
+      </Trans>
+    );
+  }
+
+  static DefaultSaveAction() {
+    return <Trans>Save defaults</Trans>;
+  }
+
   static Delete() {
     return <Trans>Delete</Trans>;
+  }
+
+  static ConfirmDelete() {
+    return (
+      <Trans>
+        Are you sure you want to delete? This action cannot be undone.
+      </Trans>
+    );
   }
 
   static Clear() {
@@ -142,6 +166,14 @@ export class CommonTranslations {
       return <Trans>{children} updated</Trans>;
     }
     return <Trans>Updated</Trans>;
+  }
+
+  static NounUpdateFailed(props: WithNounProps) {
+    const { children } = props;
+    if (children) {
+      return <Trans>{children} update failed</Trans>;
+    }
+    return <Trans>Update failed</Trans>;
   }
 
   static NounDeleted(props: WithNounProps) {

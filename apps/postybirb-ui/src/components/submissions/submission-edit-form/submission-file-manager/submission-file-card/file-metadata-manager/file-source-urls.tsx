@@ -1,28 +1,61 @@
-import { Trans } from "@lingui/react/macro";
-import {
-  ActionIcon,
-  Box,
-  Grid,
-  Group,
-  Text,
-  TextInput,
-  Tooltip,
-} from '@mantine/core';
+import { Trans } from '@lingui/react/macro';
+import { ActionIcon, Box, Grid, Group, Text, TextInput } from '@mantine/core';
 import { SubmissionFileMetadata } from '@postybirb/types';
-import { IconInfoCircle, IconPlus, IconTrash } from '@tabler/icons-react';
+import { IconPlus, IconTrash } from '@tabler/icons-react';
 import { useState } from 'react';
 
-type FileDetailProps = {
-  metadata: SubmissionFileMetadata;
-  save: () => void;
-};
+type FileDetailProps = { metadata: SubmissionFileMetadata; save: () => void };
 
 // URL validation utility
 function isValidUrl(url: string): boolean {
   if (!url || !url.trim()) return true; // Empty URLs are valid (optional)
+
+  const trimmedUrl = url.trim();
+
   try {
-    // eslint-disable-next-line no-new
-    new URL(url.trim());
+    const parsed = new URL(trimmedUrl);
+
+    // Only allow http and https protocols (web-accessible URLs)
+    const validProtocols = ['http:', 'https:'];
+    if (!validProtocols.includes(parsed.protocol)) {
+      return false;
+    }
+
+    // Ensure hostname exists and is not empty
+    if (!parsed.hostname || parsed.hostname.length === 0) {
+      return false;
+    }
+
+    // Reject localhost and local IP addresses
+    if (
+      parsed.hostname === 'localhost' ||
+      parsed.hostname === '127.0.0.1' ||
+      parsed.hostname.startsWith('192.168.') ||
+      parsed.hostname.startsWith('10.') ||
+      parsed.hostname.startsWith('172.16.') ||
+      parsed.hostname === '[::1]' ||
+      parsed.hostname === '::1'
+    ) {
+      return false;
+    }
+
+    // Hostname must contain at least one dot for proper domain structure
+    if (!parsed.hostname.includes('.')) {
+      return false;
+    }
+
+    // Reject URLs with invalid characters in hostname
+    if (!/^[a-zA-Z0-9.-]+$/.test(parsed.hostname)) {
+      return false;
+    }
+
+    // Ensure the TLD (top-level domain) is at least 2 characters
+    const parts = parsed.hostname.split('.');
+    const tld = parts[parts.length - 1];
+    if (!tld || tld.length < 2) {
+      return false;
+    }
+
     return true;
   } catch {
     return false;
@@ -122,9 +155,6 @@ export function FileSourceUrls(props: FileDetailProps) {
         <Text size="sm" fw={600}>
           <Trans>Source URLs</Trans>
         </Text>
-        <Tooltip label={<Trans>Add source URLs for this file</Trans>} withArrow>
-          <IconInfoCircle size={14} style={{ opacity: 0.7 }} />
-        </Tooltip>
       </Group>
       <Grid gutter="xs">
         {urlEntries.map((entry) => {
@@ -147,28 +177,24 @@ export function FileSourceUrls(props: FileDetailProps) {
                   }
                 />
                 {!isLastEmpty && (
-                  <Tooltip label={<Trans>Remove URL</Trans>}>
-                    <ActionIcon
-                      variant="subtle"
-                      c="red"
-                      size="sm"
-                      onClick={() => removeUrl(entry.id)}
-                    >
-                      <IconTrash size={16} />
-                    </ActionIcon>
-                  </Tooltip>
+                  <ActionIcon
+                    variant="subtle"
+                    c="red"
+                    size="sm"
+                    onClick={() => removeUrl(entry.id)}
+                  >
+                    <IconTrash size={16} />
+                  </ActionIcon>
                 )}
                 {isLastEmpty && (
-                  <Tooltip label={<Trans>Add URL</Trans>}>
-                    <ActionIcon
-                      variant="subtle"
-                      c="blue"
-                      size="sm"
-                      onClick={addUrl}
-                    >
-                      <IconPlus size={16} />
-                    </ActionIcon>
-                  </Tooltip>
+                  <ActionIcon
+                    variant="subtle"
+                    c="blue"
+                    size="sm"
+                    onClick={addUrl}
+                  >
+                    <IconPlus size={16} />
+                  </ActionIcon>
                 )}
               </Group>
             </Grid.Col>

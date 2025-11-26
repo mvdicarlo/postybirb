@@ -1,4 +1,4 @@
-import { Trans } from "@lingui/react/macro";
+import { Trans } from '@lingui/react/macro';
 import {
   ActionIcon,
   Badge,
@@ -27,6 +27,7 @@ import {
 } from '@tabler/icons-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useWebsites } from '../../../../../../hooks/account/use-websites';
+import { CommonTranslations } from '../../../../../../translations/common-translations';
 import {
   computeScale,
   formatAspect,
@@ -257,7 +258,7 @@ export function CustomAccountDimensions({
                                       variant="outline"
                                       color="gray"
                                     >
-                                      <Trans>Default</Trans>
+                                      <CommonTranslations.Default />
                                     </Badge>
                                   )}
                                   {aspectText && hasCustomDimensions && (

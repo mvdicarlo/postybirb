@@ -181,7 +181,7 @@ function Preview({
               </ActionIcon>
             </Tooltip>
           )}
-          <Tooltip label={<Trans>Remove</Trans>} withArrow position="top">
+          <Tooltip label={<Trans>Delete</Trans>} withArrow position="top">
             <ActionIcon
               variant="light"
               color="red"
@@ -240,17 +240,13 @@ function UploadButton({
       });
 
       notifications.show({
-        title: <Trans>Upload complete</Trans>,
         message: <Trans>Files have been uploaded successfully</Trans>,
         color: 'green',
         icon: <IconCheck size={16} />,
       });
     } catch (error) {
       notifications.show({
-        title: <Trans>Upload failed</Trans>,
-        message: (error as Error).message || (
-          <Trans>An error occurred during upload</Trans>
-        ),
+        message: (error as Error).message || <Trans>Error</Trans>,
         color: 'red',
         icon: <IconExclamationCircle size={16} />,
       });
@@ -273,13 +269,7 @@ function UploadButton({
         radius="md"
         size="md"
       >
-        {isUploading ? (
-          <Trans>Uploading...</Trans>
-        ) : files.length > 0 ? (
-          <Trans>Upload {files.length} files</Trans>
-        ) : (
-          <Trans>Upload</Trans>
-        )}
+        <Trans>Upload</Trans>
       </Button>
     </Box>
   );
@@ -379,7 +369,7 @@ export function SubmissionUploader(props: SubmissionUploaderProps) {
             <Box>
               <Flex justify="space-between" align="center" mb="md">
                 <Text fw={600} size="md">
-                  <Trans>Files to upload ({files.length})</Trans>
+                  <Trans>Files</Trans> ({files.length})
                 </Text>
                 <Button
                   variant="outline"

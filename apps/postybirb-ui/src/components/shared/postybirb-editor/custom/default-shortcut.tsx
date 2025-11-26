@@ -1,15 +1,11 @@
-import { Trans } from "@lingui/react/macro";
 /* eslint-disable lingui/no-unlocalized-strings */
 import { BlockNoteEditor, insertOrUpdateBlock } from '@blocknote/core';
 import { createReactBlockSpec } from '@blocknote/react';
 import { Badge } from '@mantine/core';
+import { CommonTranslations } from '../../../../translations/common-translations';
 
 export const DefaultShortcut = createReactBlockSpec(
-  {
-    type: 'default',
-    propSchema: {},
-    content: 'none',
-  },
+  { type: 'default', propSchema: {}, content: 'none' },
   {
     render: () => (
       <div style={{ display: 'flex', alignItems: 'center', padding: '4px 0' }}>
@@ -19,12 +15,9 @@ export const DefaultShortcut = createReactBlockSpec(
           tt="none"
           size="sm"
           color="gray"
-          style={{
-            fontFamily: 'monospace',
-            fontSize: '12px',
-          }}
+          style={{ fontFamily: 'monospace', fontSize: '12px' }}
         >
-          <Trans>Default</Trans>
+          <CommonTranslations.Default />
         </Badge>
       </div>
     ),
@@ -34,12 +27,10 @@ export const DefaultShortcut = createReactBlockSpec(
 export const insertDefaultShortcut = (editor: BlockNoteEditor) => ({
   title: 'Default Description',
   onItemClick: () => {
-    insertOrUpdateBlock(editor, {
-      type: 'default',
-    } as never);
+    insertOrUpdateBlock(editor, { type: 'default' } as never);
   },
   aliases: ['default'],
   group: 'Shortcuts',
   icon: <div>📝</div>,
-  subtext: 'Inserts default description'
+  subtext: 'Inserts default description',
 });

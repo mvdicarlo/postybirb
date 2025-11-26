@@ -1,9 +1,10 @@
-import { Trans } from "@lingui/react/macro";
+import { Trans } from '@lingui/react/macro';
 import { Box, Loader, Space, Stack } from '@mantine/core';
 import { SubmissionType } from '@postybirb/types';
 import {
   IconCalendar,
   IconFile,
+  IconFolderUp,
   IconLogs,
   IconTemplate,
 } from '@tabler/icons-react';
@@ -71,15 +72,11 @@ export function FileSubmissionManagementPage() {
             icon: <IconTemplate />,
           },
           {
-            label: <Trans>Auto Importers (File Watcher)</Trans>,
+            label: <Trans>Auto Importers</Trans>,
             key: 'file-watcher',
-            icon: <IconTemplate />,
+            icon: <IconFolderUp />,
           },
-          {
-            label: <Trans>History</Trans>,
-            key: 'history',
-            icon: <IconLogs />,
-          },
+          { label: <Trans>History</Trans>, key: 'history', icon: <IconLogs /> },
         ]}
         onTabChange={setActiveTab}
       />

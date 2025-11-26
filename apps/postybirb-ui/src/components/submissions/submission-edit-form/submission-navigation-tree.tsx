@@ -1,4 +1,3 @@
-import { Trans } from "@lingui/react/macro";
 import {
   Box,
   Group,
@@ -17,6 +16,7 @@ import {
 } from '@tabler/icons-react';
 import { useEffect, useMemo, useState } from 'react';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
+import { CommonTranslations } from '../../../translations/common-translations';
 
 type SubmissionNavigationTreeProps = {
   submission: SubmissionDto;
@@ -86,17 +86,16 @@ export function SubmissionNavigationTree(props: SubmissionNavigationTreeProps) {
 
   const navTree: TreeNodeData[] = useMemo(
     () => [
-      {
-        value: defaultOption.id,
-        label: <Trans>Default</Trans>,
-      },
+      { value: defaultOption.id, label: <CommonTranslations.Default /> },
       ...optionsGroupedByWebsiteId.map(([, group]) => {
         const { account } = group;
         return {
           value: account.id,
           label: (
             <Text fw={600}>
-              {account.websiteInfo.websiteDisplayName ?? <Trans>Unknown</Trans>}
+              {account.websiteInfo.websiteDisplayName ?? (
+                <CommonTranslations.Unknown />
+              )}
             </Text>
           ),
           children: group.options.map((o) => {
@@ -140,13 +139,13 @@ export function SubmissionNavigationTree(props: SubmissionNavigationTreeProps) {
       (acc, node) => ({ ...acc, [node.value]: true }),
       {},
     );
-    
+
     // Only update if there are new nodes to expand
     const currentExpanded = tree.expandedState;
     const hasNewNodes = Object.keys(newExpandedState).some(
-      key => !(key in currentExpanded)
+      (key) => !(key in currentExpanded),
     );
-    
+
     if (hasNewNodes) {
       tree.setExpandedState(newExpandedState);
     }
@@ -161,9 +160,6 @@ export function SubmissionNavigationTree(props: SubmissionNavigationTreeProps) {
     >
       <Paper withBorder m="md" p="md" shadow="sm">
         <Stack gap="xs">
-          <Text fw={700} ta="center">
-            <Trans>Sections</Trans>
-          </Text>
           <Tree
             tree={tree}
             data={navTree}
@@ -204,7 +200,7 @@ export function SubmissionNavigationTree(props: SubmissionNavigationTreeProps) {
                     />
                   )}
                   {!hasChildren && level > 0 && (
-                    (<Box w={18} />) // Empty space for alignment when no chevron
+                    <Box w={18} /> // Empty space for alignment when no chevron
                   )}
                   <Box
                     component="span"

@@ -1,4 +1,4 @@
-import { Trans } from "@lingui/react/macro";
+import { Trans } from '@lingui/react/macro';
 import { Badge, Box, Grid, Group, Text, TextInput } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import {
@@ -11,6 +11,7 @@ import {
 import { getFileType } from '@postybirb/utils/file-type';
 import { filesize } from 'filesize';
 import fileSubmissionApi from '../../../../../../api/file-submission.api';
+import { CommonTranslations } from '../../../../../../translations/common-translations';
 import { ComponentErrorBoundary } from '../../../../../error-boundary';
 import { BasicWebsiteSelect } from '../../../../../form/website-select/basic-website-select';
 import { FileDimensions } from './file-dimensions';
@@ -36,7 +37,7 @@ function FileDetails(props: FileDetailProps) {
     <Group gap="lg">
       <Box>
         <Text size="xs" fw={500} c="dimmed">
-          <Trans>File Name</Trans>
+          <CommonTranslations.Name />
         </Text>
         <Text size="sm" fw={600}>
           {file.fileName}
@@ -53,7 +54,7 @@ function FileDetails(props: FileDetailProps) {
       </Box>
 
       <Box>
-        <Text size="xs" fw={500} color="dimmed">
+        <Text size="xs" fw={500} c="dimmed">
           <Trans>Type</Trans>
         </Text>
         <Badge
@@ -88,13 +89,10 @@ function FileMetadata(props: FileDetailProps) {
 
   return (
     <Box mt="md">
-      <Text size="sm" fw={600} mb={8}>
-        <Trans>Posting Options</Trans>
-      </Text>
       <Grid gutter="xs">
         <Grid.Col span={12}>
           <BasicWebsiteSelect
-            label={<Trans>Don't post to</Trans>}
+            label={<Trans>Skip Accounts</Trans>}
             size="xs"
             selected={metadata.ignoredWebsites ?? []}
             onSelect={(accounts) => {
@@ -131,13 +129,13 @@ function FileMetadata(props: FileDetailProps) {
 }
 
 export function FileMetadataManager(props: FileMetadataManagerProps) {
-  const { submissionId, file, metadata, accounts } = props;
+  const { file, metadata, accounts } = props;
   const fileType = getFileType(file.fileName);
   const meta = file.metadata;
   const save = () => {
     fileSubmissionApi.updateMetadata(file.id, metadata).catch((e) => {
       notifications.show({
-        title: <Trans>Failed to save file metadata</Trans>,
+        title: <CommonTranslations.NounUpdateFailed />,
         message: e.message,
         color: 'red',
       });

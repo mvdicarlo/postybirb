@@ -1,4 +1,4 @@
-import { Trans } from "@lingui/react/macro";
+import { Trans } from '@lingui/react/macro';
 import {
   ActionIcon,
   Box,
@@ -43,7 +43,7 @@ export function PostSelectedSubmissionsActions({
               postQueueApi.enqueue(selected.map((s) => s.id));
             }}
           >
-            <Trans>Post Selected</Trans>
+            <Trans>Post</Trans>
           </Button>
         </Box>
       </Popover.Dropdown>

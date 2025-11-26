@@ -19,6 +19,7 @@ import { IconChevronDown, IconSearch } from '@tabler/icons-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useWebsites } from '../../../hooks/account/use-websites';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
+import { CommonTranslations } from '../../../translations/common-translations';
 
 type WebsiteSelectProps = {
   submission: SubmissionDto;
@@ -266,9 +267,10 @@ export function WebsiteSelect(props: WebsiteSelectProps) {
               />
               <Badge
                 size="lg"
-                variant="filled"
+                variant="outline"
                 color="blue"
                 style={{ flexShrink: 0 }}
+                fw="500"
               >
                 {value.length}/{allAccountIds.length}
               </Badge>
@@ -322,7 +324,7 @@ export function WebsiteSelect(props: WebsiteSelectProps) {
                 />
               ) : (
                 <Text size="sm" c="dimmed" ta="center" py="md">
-                  <Trans>No websites found</Trans>
+                  <CommonTranslations.NoItemsFound />
                 </Text>
               )}
             </ScrollArea.Autosize>

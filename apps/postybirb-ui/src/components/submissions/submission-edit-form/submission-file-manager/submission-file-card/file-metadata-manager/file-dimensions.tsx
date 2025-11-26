@@ -1,4 +1,4 @@
-import { Trans } from "@lingui/react/macro";
+import { Trans } from '@lingui/react/macro';
 import {
   ActionIcon,
   Badge,
@@ -119,7 +119,7 @@ export function FileDimensions(props: FileDetailProps) {
           )}
         </Group>
         <Group gap={4}>
-          <Tooltip label={<Trans>Reset to original</Trans>}>
+          <Tooltip label={<Trans>Reset</Trans>}>
             <ActionIcon
               size="sm"
               variant="subtle"

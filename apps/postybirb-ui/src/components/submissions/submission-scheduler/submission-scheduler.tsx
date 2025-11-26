@@ -1,4 +1,4 @@
-import { Trans } from "@lingui/react/macro";
+import { Trans } from '@lingui/react/macro';
 import {
   Accordion,
   Anchor,
@@ -113,7 +113,9 @@ export function SubmissionScheduler(props: SubmissionSchedulerProps) {
         return null;
       case ScheduleType.RECURRING:
         // eslint-disable-next-line no-case-declarations
-        let cronHelp: JSX.Element | null = <Trans>Invalid CRON string</Trans>;
+        let cronHelp: JSX.Element | null = (
+          <Trans>Please provide a valid CRON string</Trans>
+        );
         // eslint-disable-next-line no-case-declarations
         let isValidCron = false;
         try {
@@ -121,18 +123,18 @@ export function SubmissionScheduler(props: SubmissionSchedulerProps) {
             isValidCron = !!Cron(internalSchedule.cron);
             cronHelp = (
               <Stack gap="xs">
-                <Text size="sm" color={isValidCron ? 'green' : 'red'}>
+                <Text size="sm" c={isValidCron ? 'green' : 'red'}>
                   {isValidCron ? (
                     cronstrue.toString(internalSchedule.cron)
                   ) : (
-                    <Trans>Invalid CRON format</Trans>
+                    <Trans>Please provide a valid CRON string</Trans>
                   )}
                 </Text>
                 {isValidCron && internalSchedule.scheduledFor && (
                   <Group gap="xs">
                     <IconClockHour4 size={14} />
                     <Text size="sm">
-                      <Trans>Next run:</Trans>{' '}
+                      <Trans>Next run</Trans>:{' '}
                       {moment(internalSchedule.scheduledFor).format('lll')}
                     </Text>
                   </Group>
@@ -211,7 +213,7 @@ export function SubmissionScheduler(props: SubmissionSchedulerProps) {
                   value={internalSchedule.cron}
                   error={
                     internalSchedule.cron && !isValidCron ? (
-                      <Trans>Invalid CRON format</Trans>
+                      <Trans>Please provide a valid CRON string</Trans>
                     ) : null
                   }
                   onChange={(event) => {
@@ -304,7 +306,7 @@ export function SubmissionScheduler(props: SubmissionSchedulerProps) {
                 }}
               />
               {date && (
-                <Text size="sm" color={isInPast ? 'red' : 'dimmed'}>
+                <Text size="sm" c={isInPast ? 'red' : 'dimmed'}>
                   {isInPast ? (
                     <Trans>
                       Warning: This date is in the past and may not behave as
@@ -447,14 +449,14 @@ export function SubmissionScheduler(props: SubmissionSchedulerProps) {
                         {internalSchedule.scheduleType ===
                         ScheduleType.RECURRING ? (
                           <>
-                            <Trans>Next:</Trans>{' '}
+                            <Trans>Next</Trans>:{' '}
                             {moment(internalSchedule.scheduledFor).format(
                               'lll',
                             )}
                           </>
                         ) : (
                           <>
-                            <Trans>Scheduled for:</Trans>{' '}
+                            <Trans>Scheduled for</Trans>:{' '}
                             {moment(internalSchedule.scheduledFor).format(
                               'lll',
                             )}
