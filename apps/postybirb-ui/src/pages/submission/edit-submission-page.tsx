@@ -1,4 +1,4 @@
-import { Trans } from "@lingui/react/macro";
+import { Trans } from '@lingui/react/macro';
 import { Box, Button, Loader, Space } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { ISubmissionDto, ScheduleType, SubmissionType } from '@postybirb/types';
@@ -25,6 +25,7 @@ import { SubmissionDto } from '../../models/dtos/submission.dto';
 import { SubmissionTemplateStore } from '../../stores/submission-template.store';
 import { SubmissionStore } from '../../stores/submission.store';
 import { useStore } from '../../stores/use-store';
+import { CommonTranslations } from '../../translations/common-translations';
 import { FileSubmissionPath, MessageSubmissionPath } from '../route-paths';
 
 function ScheduleAction({ submission }: { submission: SubmissionDto }) {
@@ -49,7 +50,7 @@ function ScheduleAction({ submission }: { submission: SubmissionDto }) {
           });
         }}
       >
-        <Trans>Unschedule</Trans>
+        <CommonTranslations.Unschedule />
       </Button>
     );
   }
@@ -78,19 +79,27 @@ function ScheduleAction({ submission }: { submission: SubmissionDto }) {
           .then(() => {
             notifications.show({
               color: 'green',
-              message: <Trans>Submission scheduled</Trans>,
+              message: (
+                <CommonTranslations.NounUpdated>
+                  <CommonTranslations.Submission />
+                </CommonTranslations.NounUpdated>
+              ),
             });
           })
           .catch((err) => {
             notifications.show({
-              title: <Trans>Failed to schedule submission</Trans>,
+              title: (
+                <CommonTranslations.NounUpdateFailed>
+                  <CommonTranslations.Submission />
+                </CommonTranslations.NounUpdateFailed>
+              ),
               message: err.message,
               color: 'red',
             });
           });
       }}
     >
-      <Trans>Schedule</Trans>
+      <CommonTranslations.Schedule />
     </Button>
   );
 }
@@ -117,7 +126,11 @@ function ApplyTemplateAction({ submission }: { submission: SubmissionDto }) {
             notifications.show({
               color: 'green',
               title: submission.getDefaultOptions().data.title,
-              message: <Trans>Template applied</Trans>,
+              message: (
+                <CommonTranslations.NounUpdated>
+                  <CommonTranslations.Template />
+                </CommonTranslations.NounUpdated>
+              ),
             });
           })
           .catch((err) => {
@@ -160,7 +173,7 @@ function PostAction({ submission }: { submission: SubmissionDto }) {
           postQueueApi.dequeue([submission.id]);
         }}
       >
-        <Trans>Cancel</Trans>
+        <CommonTranslations.Cancel />
       </Button>
     );
   }
@@ -189,14 +202,18 @@ function PostAction({ submission }: { submission: SubmissionDto }) {
           })
           .catch((err) => {
             notifications.show({
-              title: <Trans>Failed to queue submission</Trans>,
+              title: (
+                <CommonTranslations.NounUpdateFailed>
+                  <CommonTranslations.Submission />
+                </CommonTranslations.NounUpdateFailed>
+              ),
               message: err.message,
               color: 'red',
             });
           });
       }}
     >
-      <Trans>Post</Trans>
+      <CommonTranslations.Post />
     </Button>
   );
 }
@@ -237,7 +254,12 @@ export function EditSubmissionPage() {
           !submission.isTemplate
             ? [
                 {
-                  label: <Trans>Submission</Trans>,
+                  label: (
+                    <CommonTranslations.SubmissionType
+                      withSubmission
+                      type={type}
+                    />
+                  ),
                   key: 'submission',
                   icon: isFile ? <IconFile /> : <IconMessage />,
                 },
@@ -253,10 +275,8 @@ export function EditSubmissionPage() {
         title={title}
         breadcrumbs={[
           {
-            text: isFile ? (
-              <Trans>File Submissions</Trans>
-            ) : (
-              <Trans>Message Submissions</Trans>
+            text: (
+              <CommonTranslations.SubmissionType withSubmission type={type} />
             ),
             target: isFile ? FileSubmissionPath : MessageSubmissionPath,
           },

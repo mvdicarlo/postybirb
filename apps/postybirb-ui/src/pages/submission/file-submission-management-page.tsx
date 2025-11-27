@@ -18,6 +18,7 @@ import { SubmissionUploader } from '../../components/submissions/submission-uplo
 import { SubmissionView } from '../../components/submissions/submission-view/submission-view';
 import { SubmissionStore } from '../../stores/submission.store';
 import { useStore } from '../../stores/use-store';
+import { CommonTranslations } from '../../translations/common-translations';
 
 const TYPE = SubmissionType.FILE;
 
@@ -54,20 +55,20 @@ export function FileSubmissionManagementPage() {
     <>
       <PageHeader
         icon={<IconFile />}
-        title={<Trans>File Submissions</Trans>}
+        title={<CommonTranslations.FileSubmission />}
         tabs={[
           {
-            label: <Trans>Submissions</Trans>,
+            label: <CommonTranslations.Submission />,
             key: 'submissions',
             icon: <IconFile />,
           },
           {
-            label: <Trans>Schedule</Trans>,
+            label: <CommonTranslations.Schedule />,
             key: 'schedule',
             icon: <IconCalendar />,
           },
           {
-            label: <Trans>Templates</Trans>,
+            label: <CommonTranslations.Template />,
             key: 'templates',
             icon: <IconTemplate />,
           },

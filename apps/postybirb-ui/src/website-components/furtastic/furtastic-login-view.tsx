@@ -1,13 +1,14 @@
-import { Trans } from "@lingui/react/macro";
-import { Box, Button, Stack, TextInput } from '@mantine/core';
+import { Trans } from '@lingui/react/macro';
+import { Alert, Box, Button, Stack, Text, TextInput } from '@mantine/core';
 import { FurtasticAccountLoginData } from '@postybirb/types';
-import { IconLink, IconMail, IconPassword } from '@tabler/icons-react';
+import { IconInfoCircle } from '@tabler/icons-react';
 import { useState } from 'react';
 import accountApi from '../../api/account.api';
 import { ExternalLink } from '../../components/external-link/external-link';
 import { LoginComponentProps } from '../../models/login-component-props';
+import { CommonTranslations } from '../../translations/common-translations';
 import {
-  createLoginHttpErrorHander,
+  createLoginHttpErrorHandler,
   notifyLoginFailed,
   notifyLoginSuccess,
 } from '../website-login-helpers';
@@ -60,74 +61,77 @@ export default function FurtasticLoginView(
         const isValid = await testApiKey(loginData);
 
         if (!isValid) {
-          notifyLoginFailed(<Trans>Could not validate API Key</Trans>);
+          notifyLoginFailed();
           return;
         }
 
         accountApi
-          .setWebsiteData<FurtasticAccountLoginData>({
-            id,
-            data: loginData,
-          })
+          .setWebsiteData<FurtasticAccountLoginData>({ id, data: loginData })
           .then(() => {
             notifyLoginSuccess();
           })
-          .catch(createLoginHttpErrorHander())
+          .catch(createLoginHttpErrorHandler())
           .finally(() => {
             setSubmitting(false);
           });
       }}
     >
-      <Stack>
+      <Stack gap="md">
+        <Alert icon={<IconInfoCircle size={16} />} color="blue" variant="light">
+          <Text size="sm">
+            <Trans>
+              Furtastic requires API credentials for posting. Use your email
+              address and an API key from your account settings.
+            </Trans>
+          </Text>
+        </Alert>
+
         <TextInput
-          label={<Trans>Username (email address)</Trans>}
-          leftSection={<IconMail />}
+          label={<Trans>Email</Trans>}
           name="username"
+          type="email"
+          placeholder="your-email@example.com"
           required
           minLength={1}
-          defaultValue={username}
-          error={
-            username.trim().length === 0 ? (
-              <Trans>Username is required</Trans>
-            ) : null
-          }
-          onBlur={(event) => {
-            setUsername(event.currentTarget.value.trim());
+          value={username}
+          onChange={(event) => {
+            setUsername(event.currentTarget.value);
           }}
         />
+
         <TextInput
           label={<Trans>API Key</Trans>}
-          leftSection={<IconPassword />}
           name="apiKey"
           type="password"
+          // eslint-disable-next-line lingui/no-unlocalized-strings
+          placeholder="Your API key"
+          description={
+            <Text size="xs" c="dimmed">
+              <Trans context="furtastic.api-key-help">
+                Generate an API key from your{' '}
+                <ExternalLink href="https://furtastic.art/account">
+                  account settings
+                </ExternalLink>
+              </Trans>
+            </Text>
+          }
           required
           minLength={1}
-          defaultValue={apiKey}
-          error={
-            apiKey.trim().length === 0 ? (
-              <Trans>API Key is required</Trans>
-            ) : null
-          }
-          description={
-            <ExternalLink href="https://furtastic.art/account">
-              <Trans context="furtastic.api-key-help">
-                You must first get an API Key from your account settings [Manage
-                API Access] <IconLink />
-              </Trans>
-            </ExternalLink>
-          }
-          onBlur={(event) => {
-            setApiKey(event.currentTarget.value.trim());
+          value={apiKey}
+          onChange={(event) => {
+            setApiKey(event.currentTarget.value);
           }}
         />
-        <Box>
+
+        <Box mt="md">
           <Button
             type="submit"
             form={formId}
             loading={isSubmitting}
             disabled={!isFormValid}
+            fullWidth
           >
-            <Trans>Save</Trans>
+            <CommonTranslations.Save />
           </Button>
         </Box>
       </Stack>

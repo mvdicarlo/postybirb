@@ -17,7 +17,7 @@ msgstr ""
 
 #. placeholder {0}: tag.post_count
 #: apps/postybirb-ui/src/website-components/e621/e621-tag-search-provider.tsx
-msgid "{0, plural, one {Post count} other {Posts count}}"
+msgid "{0, plural, one {# post} other {# posts}}"
 msgstr ""
 
 #. placeholder {0}: Object.keys(optionsGroupedByWebsiteId).length
@@ -34,15 +34,15 @@ msgid "{children} deleted"
 msgstr ""
 
 #: apps/postybirb-ui/src/translations/common-translations.tsx
-msgid "{children} Submission"
-msgstr ""
-
-#: apps/postybirb-ui/src/translations/common-translations.tsx
 msgid "{children} update failed"
 msgstr ""
 
 #: apps/postybirb-ui/src/translations/common-translations.tsx
 msgid "{children} updated"
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/bluesky/bluesky-login-view.tsx
+msgid "<0>Tip:</0> If your handle doesn't work, try using the email linked to your account"
 msgstr ""
 
 #: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx
@@ -170,13 +170,9 @@ msgstr ""
 msgid "Alt Text"
 msgstr ""
 
-#: apps/postybirb-ui/src/website-components/custom/custom-login-view.tsx
-msgid "Alt Text Field"
-msgstr ""
-
 #. Bluesky login form
 #: apps/postybirb-ui/src/website-components/bluesky/bluesky-login-view.tsx
-msgid "An <0>app</0> password - you can get one of these in <1>Settings</1>"
+msgid "An <0>app password</0> (not your main password)"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/error-boundary/notification-error-boundary.tsx
@@ -196,10 +192,6 @@ msgstr ""
 msgid "API Key (Consumer Key)"
 msgstr ""
 
-#: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx
-msgid "API Key is required"
-msgstr ""
-
 #: apps/postybirb-ui/src/website-components/twitter/twitter-login-view.tsx
 msgid "API keys saved successfully"
 msgstr ""
@@ -212,8 +204,20 @@ msgstr ""
 msgid "App"
 msgstr ""
 
+#: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx
+msgid "App API Hash"
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx
+msgid "App API ID"
+msgstr ""
+
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/app-settings.tsx
 msgid "App Folder"
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/bluesky/bluesky-login-view.tsx
+msgid "App Password"
 msgstr ""
 
 #: apps/postybirb-ui/src/website-components/megalodon/megalodon-login-view.tsx
@@ -232,10 +236,6 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
 msgid "Apply template to uploaded files (optional)"
-msgstr ""
-
-#: apps/postybirb-ui/src/pages/submission/multi-edit-submission-page.tsx
-msgid "Apply to Submissions"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
@@ -315,15 +315,6 @@ msgstr ""
 msgid "Back"
 msgstr ""
 
-#: apps/postybirb-ui/src/website-components/custom/custom-login-view.tsx
-msgid "BBCode"
-msgstr ""
-
-#. Bluesky login form
-#: apps/postybirb-ui/src/website-components/bluesky/bluesky-login-view.tsx
-msgid "Be sure that the username is in the format handle.bsky.social. If you are using custom domain, make sure to include full username, e.g. domain.ext, handle.domain.ext"
-msgstr ""
-
 #: libs/translations/src/lib/field-translations.ts
 msgid "Block guests"
 msgstr ""
@@ -352,12 +343,10 @@ msgstr ""
 msgid "By using this application, you acknowledge that you are solely responsible for how you use it and for any content you create, upload, distribute, or interact with. The authors and maintainers provide this software as is without warranties of any kind and are not liable for any damages or losses resulting from its use."
 msgstr ""
 
-#: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx
 #: apps/postybirb-ui/src/translations/common-translations.tsx
 msgid "Cancel"
 msgstr ""
 
-#: apps/postybirb-ui/src/website-components/e621/e621-tag-search-provider.tsx
 #: libs/translations/src/lib/field-translations.ts
 msgid "Category"
 msgstr ""
@@ -482,17 +471,12 @@ msgstr ""
 msgid "Complete Authorization"
 msgstr ""
 
-#: apps/postybirb-ui/src/website-components/megalodon/megalodon-login-view.tsx
 #: apps/postybirb-ui/src/website-components/twitter/twitter-login-view.tsx
 msgid "Complete Login"
 msgstr ""
 
 #: apps/postybirb-ui/src/website-components/twitter/twitter-login-view.tsx
 msgid "Configure API Keys"
-msgstr ""
-
-#: apps/postybirb-ui/src/website-components/custom/custom-login-view.tsx
-msgid "Configure custom webhook URLs and field mappings for your custom integration. You need at least one URL (File URL for file submissions or Notification URL for text-only posts)."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/dashboard/submissions-list/submissions-list.tsx
@@ -531,8 +515,8 @@ msgstr ""
 msgid "Copy to clipboard"
 msgstr ""
 
-#: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx
-msgid "Could not validate API Key"
+#: apps/postybirb-ui/src/website-components/bluesky/bluesky-login-view.tsx
+msgid "Create an app password in Bluesky Settings"
 msgstr ""
 
 #: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx
@@ -563,7 +547,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx
 msgctxt "telegram.app-id-help"
-msgid "Create telegram app to retrieve api_id and api_hash <0/>"
+msgid "Create telegram app to retrieve api_id and api_hash"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx
@@ -596,17 +580,9 @@ msgstr ""
 msgid "Custom Dimensions"
 msgstr ""
 
-#: apps/postybirb-ui/src/website-components/custom/custom-login-view.tsx
-msgid "Custom headers for authentication or other purposes"
-msgstr ""
-
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/custom-shortcuts-drawer.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx
 msgid "Custom Shortcuts"
-msgstr ""
-
-#: apps/postybirb-ui/src/website-components/custom/custom-login-view.tsx
-msgid "Custom website is for websites that you own and understand the actual backend of."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
@@ -690,10 +666,6 @@ msgstr ""
 msgid "Description"
 msgstr ""
 
-#: apps/postybirb-ui/src/website-components/custom/custom-login-view.tsx
-msgid "Description Field"
-msgstr ""
-
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx
 msgid "Description length is greater then maximum ({currentLength} / {maxLength})"
 msgstr ""
@@ -704,10 +676,6 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/description-settings.tsx
 msgid "Description Settings"
-msgstr ""
-
-#: apps/postybirb-ui/src/website-components/custom/custom-login-view.tsx
-msgid "Description Type"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/form/website-select/website-select.tsx
@@ -729,10 +697,6 @@ msgstr ""
 
 #: libs/translations/src/lib/field-translations.ts
 msgid "Display resolution"
-msgstr ""
-
-#: apps/postybirb-ui/src/website-components/megalodon/megalodon-login-view.tsx
-msgid "Do not include https:// - just the domain name"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx
@@ -763,6 +727,10 @@ msgstr ""
 msgid "Duplicate"
 msgstr ""
 
+#: apps/postybirb-ui/src/website-components/e621/e621-login-view.tsx
+msgid "e621 requires API credentials for posting. You'll need to generate an API key from your account settings to authenticate PostyBirb."
+msgstr ""
+
 #: libs/translations/src/lib/field-translations.ts
 msgid "Early Access"
 msgstr ""
@@ -781,6 +749,10 @@ msgstr ""
 
 #: apps/postybirb-ui/src/pages/submission/multi-edit-submission-page.tsx
 msgid "Edit Multiple"
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx
+msgid "Email"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/notifications-settings.tsx
@@ -861,7 +833,6 @@ msgstr ""
 msgid "Failed"
 msgstr ""
 
-#: apps/postybirb-ui/src/website-components/megalodon/megalodon-login-view.tsx
 #: apps/postybirb-ui/src/website-components/twitter/twitter-login-view.tsx
 msgid "Failed to complete authorization"
 msgstr ""
@@ -875,7 +846,6 @@ msgid "Failed to get user warnings. You can check your account manually"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx
-#: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx
 msgid "Failed to queue submission"
 msgstr ""
 
@@ -884,7 +854,6 @@ msgid "Failed to register with instance"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx
-#: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx
 msgid "Failed to schedule submission"
 msgstr ""
 
@@ -932,23 +901,12 @@ msgstr ""
 msgid "File"
 msgstr ""
 
-#: apps/postybirb-ui/src/website-components/custom/custom-login-view.tsx
-msgid "File Field"
-msgstr ""
-
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx
-#: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx
-#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx
-#: apps/postybirb-ui/src/pages/submission/multi-edit-submission-page.tsx
 msgid "File Submissions"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx
 msgid "File types do not match. Please upload a file of the same type."
-msgstr ""
-
-#: apps/postybirb-ui/src/website-components/custom/custom-login-view.tsx
-msgid "File URL"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/notifications-settings.tsx
@@ -987,6 +945,11 @@ msgstr ""
 msgid "Form Error"
 msgstr ""
 
+#. Bluesky login form
+#: apps/postybirb-ui/src/website-components/bluesky/bluesky-login-view.tsx
+msgid "Format should be <0>handle.bsky.social</0> or <1>domain.ext</1> for custom domains"
+msgstr ""
+
 #: apps/postybirb-ui/src/website-components/twitter/twitter-login-view.tsx
 msgid "Found in your Twitter app's Keys and tokens section"
 msgstr ""
@@ -1003,12 +966,26 @@ msgstr ""
 msgid "Furry"
 msgstr ""
 
+#: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx
+msgid "Furtastic requires API credentials for posting. Use your email address and an API key from your account settings."
+msgstr ""
+
 #: libs/translations/src/lib/field-translations.ts
 msgid "Gender"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx
 msgid "General"
+msgstr ""
+
+#. E621 login form
+#: apps/postybirb-ui/src/website-components/e621/e621-login-view.tsx
+msgid "Generate an API key from your <0>account settings</0>"
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx
+msgctxt "furtastic.api-key-help"
+msgid "Generate an API key from your <0>account settings</0>"
 msgstr ""
 
 #: apps/postybirb-ui/src/website-components/twitter/twitter-login-view.tsx
@@ -1050,10 +1027,6 @@ msgstr ""
 
 #: libs/translations/src/lib/field-translations.ts
 msgid "Has sexual content"
-msgstr ""
-
-#: apps/postybirb-ui/src/website-components/custom/custom-login-view.tsx
-msgid "Headers"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager/custom-account-dimensions.tsx
@@ -1116,10 +1089,6 @@ msgstr ""
 msgid "I have read, understand, and accept the disclaimer."
 msgstr ""
 
-#: apps/postybirb-ui/src/website-components/bluesky/bluesky-login-view.tsx
-msgid "If handle does not work, try using email linked to your account instead"
-msgstr ""
-
 #: apps/postybirb-ui/src/app/disclaimer/disclaimer.tsx
 msgid "If you do not agree with these terms, you must decline and exit the application."
 msgstr ""
@@ -1172,10 +1141,6 @@ msgstr ""
 msgid "Invalid post URL to reply to."
 msgstr ""
 
-#: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx
-msgid "Is a forum"
-msgstr ""
-
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx
 msgid "It is recommended to add at least 10 general tags <0>( {generalTags} / 10 )</0>. See <1>tagging checklist</1>"
 msgstr ""
@@ -1224,7 +1189,7 @@ msgid "Logged In"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx
-#: apps/postybirb-ui/src/website-components/inkbunny/inkbunny-login-view.tsx
+#: apps/postybirb-ui/src/website-components/megalodon/megalodon-login-view.tsx
 msgid "Login"
 msgstr ""
 
@@ -1265,10 +1230,6 @@ msgstr ""
 msgid "Mark as Unread"
 msgstr ""
 
-#: apps/postybirb-ui/src/website-components/custom/custom-login-view.tsx
-msgid "Markdown"
-msgstr ""
-
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx
 msgid "Mature"
 msgstr ""
@@ -1294,9 +1255,6 @@ msgid "Message"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx
-#: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx
-#: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx
-#: apps/postybirb-ui/src/pages/submission/multi-edit-submission-page.tsx
 msgid "Message Submissions"
 msgstr ""
 
@@ -1401,6 +1359,10 @@ msgstr ""
 msgid "No websites"
 msgstr ""
 
+#: apps/postybirb-ui/src/website-components/e621/e621-tag-search-provider.tsx
+msgid "No wiki page available"
+msgstr ""
+
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/tags-settings.tsx
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
@@ -1418,10 +1380,6 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/account-drawer.tsx
 msgid "Not Logged In"
-msgstr ""
-
-#: apps/postybirb-ui/src/website-components/custom/custom-login-view.tsx
-msgid "Notification URL"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/notifications-drawer.tsx
@@ -1466,6 +1424,10 @@ msgstr ""
 msgid "Open CRON helper website"
 msgstr ""
 
+#: apps/postybirb-ui/src/website-components/inkbunny/inkbunny-login-view.tsx
+msgid "Open Inkbunny Account Settings"
+msgstr ""
+
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/app-settings.tsx
 msgid "Open PostyBirb on computer startup"
 msgstr ""
@@ -1502,7 +1464,6 @@ msgstr ""
 msgid "Parent ID"
 msgstr ""
 
-#: apps/postybirb-ui/src/website-components/bluesky/bluesky-login-view.tsx
 #: apps/postybirb-ui/src/website-components/inkbunny/inkbunny-login-view.tsx
 msgid "Password"
 msgstr ""
@@ -1532,20 +1493,16 @@ msgid "Paused"
 msgstr ""
 
 #: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx
-msgid "Phone Number (International Format)"
+msgid "Phone Number"
 msgstr ""
 
 #: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx
 msgctxt "telegram.phone-number-help"
-msgid "Phone number must be in international format <0/>"
+msgid "Phone number must be in international format"
 msgstr ""
 
 #: apps/postybirb-ui/src/website-components/twitter/twitter-login-view.tsx
 msgid "PIN / Verifier Code"
-msgstr ""
-
-#: apps/postybirb-ui/src/website-components/custom/custom-login-view.tsx
-msgid "Plain Text"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager/file-source-urls.tsx
@@ -1562,7 +1519,7 @@ msgstr ""
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-actions/post-selected-submissions-action.tsx
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx
-#: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx
+#: apps/postybirb-ui/src/translations/common-translations.tsx
 msgid "Post"
 msgstr ""
 
@@ -1596,6 +1553,10 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/dashboard/submissions-list/submissions-list.tsx
 msgid "Posting"
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx
+msgid "PostyBirb uses Discord webhooks to post content to your server. Make sure you have the necessary permissions to create webhooks in your target channel."
 msgstr ""
 
 #. Main file data
@@ -1645,10 +1606,6 @@ msgstr ""
 msgid "Rating"
 msgstr ""
 
-#: apps/postybirb-ui/src/website-components/custom/custom-login-view.tsx
-msgid "Rating Field"
-msgstr ""
-
 #: apps/postybirb-ui/src/pages/home/home-page.tsx
 msgid "Recent"
 msgstr ""
@@ -1675,7 +1632,7 @@ msgid "Reference"
 msgstr ""
 
 #: apps/postybirb-ui/src/website-components/megalodon/megalodon-login-view.tsx
-msgid "Register with Instance"
+msgid "Register Instance"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/error-boundary/error-boundary.tsx
@@ -1796,11 +1753,6 @@ msgid "Saturday"
 msgstr ""
 
 #: apps/postybirb-ui/src/translations/common-translations.tsx
-#: apps/postybirb-ui/src/website-components/bluesky/bluesky-login-view.tsx
-#: apps/postybirb-ui/src/website-components/custom/custom-login-view.tsx
-#: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx
-#: apps/postybirb-ui/src/website-components/e621/e621-login-view.tsx
-#: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx
 msgid "Save"
 msgstr ""
 
@@ -1824,9 +1776,7 @@ msgstr ""
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-actions/schedule-submissions-action.tsx
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card.tsx
-#: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx
-#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx
-#: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx
+#: apps/postybirb-ui/src/translations/common-translations.tsx
 #: libs/translations/src/lib/field-translations.ts
 msgid "Schedule"
 msgstr ""
@@ -1913,7 +1863,7 @@ msgid "Selected option is invalid or missing"
 msgstr ""
 
 #: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx
-msgid "Send code"
+msgid "Send Code"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx
@@ -1933,11 +1883,7 @@ msgid "September"
 msgstr ""
 
 #: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx
-msgid "Server Level"
-msgstr ""
-
-#: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx
-msgid "Server level perks"
+msgid "Server Boost Level"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/settings-drawer.tsx
@@ -2067,7 +2013,6 @@ msgstr ""
 #: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx
-#: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx
 #: apps/postybirb-ui/src/translations/common-translations.tsx
 msgid "Submission"
 msgstr ""
@@ -2090,7 +2035,6 @@ msgid "Submission queued"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx
-#: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx
 msgid "Submission scheduled"
 msgstr ""
 
@@ -2105,8 +2049,6 @@ msgstr ""
 #: apps/postybirb-ui/src/components/dashboard/dashboard-stats/dashboard-stats.tsx
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
 #: apps/postybirb-ui/src/components/submissions/submission-picker/submission-picker.tsx
-#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx
-#: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx
 msgid "Submissions"
 msgstr ""
 
@@ -2186,10 +2128,6 @@ msgstr ""
 msgid "Tag Converters"
 msgstr ""
 
-#: apps/postybirb-ui/src/website-components/custom/custom-login-view.tsx
-msgid "Tag Field"
-msgstr ""
-
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx
@@ -2224,8 +2162,16 @@ msgstr ""
 msgid "Tags Settings"
 msgstr ""
 
+#: apps/postybirb-ui/src/app/languages.tsx
+msgid "Tamil"
+msgstr ""
+
 #: libs/translations/src/lib/field-translations.ts
 msgid "Teaser"
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx
+msgid "Telegram requires API credentials and phone number authentication. You'll need to create a Telegram app and verify your phone number."
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx
@@ -2235,18 +2181,15 @@ msgstr ""
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-view/submission-template-view.tsx
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx
 #: apps/postybirb-ui/src/models/dtos/submission.dto.ts
+#: apps/postybirb-ui/src/translations/common-translations.tsx
 msgid "Template"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-actions/apply-submission-template-action.tsx
-#: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx
-#: apps/postybirb-ui/src/pages/submission/multi-edit-submission-page.tsx
 msgid "Template applied"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
-#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx
-#: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx
 msgid "Templates"
 msgstr ""
 
@@ -2278,14 +2221,6 @@ msgstr ""
 msgid "The URL of the PostyBirb host instance. Check the host's remote settings to get the correct URL."
 msgstr ""
 
-#: apps/postybirb-ui/src/website-components/custom/custom-login-view.tsx
-msgid "The URL that will be posted to when submitting files"
-msgstr ""
-
-#: apps/postybirb-ui/src/website-components/custom/custom-login-view.tsx
-msgid "The URL that will be posted to when submitting text-only posts"
-msgstr ""
-
 #: libs/translations/src/lib/field-translations.ts
 msgid "Theme"
 msgstr ""
@@ -2294,9 +2229,8 @@ msgstr ""
 msgid "This component encountered an error and couldn't render properly."
 msgstr ""
 
-#. Bluesky login form
-#: apps/postybirb-ui/src/website-components/bluesky/bluesky-login-view.tsx
-msgid "This doesn't look like an app password. You need to use an <0>app</0> password, <1>not</1> your account password! You can generate an app password in the Bluesky settings under the Advanced section."
+#: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx
+msgid "This is a forum channel"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/app-settings.tsx
@@ -2315,10 +2249,6 @@ msgstr ""
 msgid "Thumbnail"
 msgstr ""
 
-#: apps/postybirb-ui/src/website-components/custom/custom-login-view.tsx
-msgid "Thumbnail Field"
-msgstr ""
-
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "Thursday"
 msgstr ""
@@ -2329,10 +2259,6 @@ msgstr ""
 
 #: libs/translations/src/lib/field-translations.ts
 msgid "Title"
-msgstr ""
-
-#: apps/postybirb-ui/src/website-components/custom/custom-login-view.tsx
-msgid "Title Field"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx
@@ -2388,7 +2314,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-calendar/submission-calendar.tsx
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx
-#: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx
+#: apps/postybirb-ui/src/translations/common-translations.tsx
 msgid "Unschedule"
 msgstr ""
 
@@ -2432,10 +2358,6 @@ msgstr ""
 msgid "Updated"
 msgstr ""
 
-#: apps/postybirb-ui/src/pages/submission/multi-edit-submission-page.tsx
-msgid "Updates applied"
-msgstr ""
-
 #: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
 msgid "Upload"
 msgstr ""
@@ -2460,6 +2382,10 @@ msgstr ""
 msgid "Use title"
 msgstr ""
 
+#: apps/postybirb-ui/src/website-components/bluesky/bluesky-login-view.tsx
+msgid "Use your Bluesky handle or email along with an app password. App passwords are more secure than your main password and can be revoked at any time."
+msgstr ""
+
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/user-converter-drawer.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/user-converter-drawer.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/user-converter-drawer.tsx
@@ -2479,16 +2405,8 @@ msgstr ""
 msgid "Username"
 msgstr ""
 
-#: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx
-msgid "Username (email address)"
-msgstr ""
-
-#: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx
-msgid "Username is required"
-msgstr ""
-
 #: apps/postybirb-ui/src/website-components/bluesky/bluesky-login-view.tsx
-msgid "Username or email"
+msgid "Username or Email"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx
@@ -2522,10 +2440,6 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/error-boundary/error-boundary.tsx
 msgid "We encountered an unexpected error. Please try refreshing the page."
-msgstr ""
-
-#: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx
-msgid "Webhook is required"
 msgstr ""
 
 #: apps/postybirb-ui/src/translations/common-translations.tsx
@@ -2596,17 +2510,7 @@ msgid "You have recent {negativeOrNeutral} feedback: {feedback}, you can view it
 msgstr ""
 
 #: apps/postybirb-ui/src/website-components/inkbunny/inkbunny-login-view.tsx
-msgid "You must first enable API access in your <0>account settings</0> under \"API (External Scripting)\"."
-msgstr ""
-
-#: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx
-msgctxt "furtastic.api-key-help"
-msgid "You must first get an API Key from your account settings [Manage API Access] <0/>"
-msgstr ""
-
-#. E621 login form
-#: apps/postybirb-ui/src/website-components/e621/e621-login-view.tsx
-msgid "You must first get an API Key in your account settings [Manage API Access]"
+msgid "You must first enable API access in your account settings under \"API (External Scripting)\" before you can authenticate with PostyBirb."
 msgstr ""
 
 #: apps/postybirb-ui/src/website-components/twitter/twitter-login-view.tsx
@@ -2618,5 +2522,9 @@ msgid "You'll get this PIN after authorizing on Twitter"
 msgstr ""
 
 #: apps/postybirb-ui/src/website-components/bluesky/bluesky-login-view.tsx
-msgid "Your handle - for example yourname.bsky.social or username.ext"
+msgid "Your handle (e.g. <0>yourname.bsky.social</0>) or custom domain (e.g. <1>username.ext</1>)"
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/inkbunny/inkbunny-login-view.tsx
+msgid "Your password will not be stored"
 msgstr ""

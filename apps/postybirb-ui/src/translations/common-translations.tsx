@@ -5,6 +5,26 @@ import { PropsWithChildren } from 'react';
 type WithNounProps = PropsWithChildren;
 
 export class CommonTranslations {
+  static Post() {
+    return <Trans>Post</Trans>;
+  }
+
+  static Template() {
+    return <Trans>Template</Trans>;
+  }
+
+  static Submission() {
+    return <Trans>Submission</Trans>;
+  }
+
+  static Schedule() {
+    return <Trans>Schedule</Trans>;
+  }
+
+  static Unschedule() {
+    return <Trans>Unschedule</Trans>;
+  }
+
   static File() {
     return <Trans>File</Trans>;
   }
@@ -16,9 +36,13 @@ export class CommonTranslations {
   static NounSubmission(props: WithNounProps) {
     const { children } = props;
     if (children) {
-      return <Trans>{children} Submission</Trans>;
+      return (
+        <>
+          {children} <CommonTranslations.Submission />
+        </>
+      );
     }
-    return <Trans>Submission</Trans>;
+    return <CommonTranslations.Submission />;
   }
 
   static FileSubmission() {
