@@ -4,6 +4,7 @@ import { join } from 'path';
 import { LegacyConverter } from './converters/legacy-converter';
 import { LegacyTagConverterConverter } from './converters/legacy-tag-converter.converter';
 import { LegacyTagGroupConverter } from './converters/legacy-tag-group.converter';
+import { LegacyUserAccountConverter } from './converters/legacy-user-account.converter';
 import { LegacyImportDto } from './dtos/legacy-import.dto';
 
 @Injectable()
@@ -17,6 +18,16 @@ export class LegacyDatabaseImporterService {
     const path = importRequest.customPath || this.LEGACY_POSTYBIRB_PLUS_PATH;
 
     const errors: Error[] = [];
+    if (importRequest.accounts) {
+      // Import user accounts
+      const result = await this.processImport(
+        new LegacyUserAccountConverter(path),
+      );
+      if (result.error) {
+        errors.push(result.error);
+      }
+    }
+
     if (importRequest.tagGroups) {
       // Import tag groups
       const result = await this.processImport(

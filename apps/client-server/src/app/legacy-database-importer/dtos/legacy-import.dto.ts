@@ -5,6 +5,9 @@ export class LegacyImportDto {
   tagGroups: boolean;
 
   @IsBoolean()
+  accounts: boolean;
+
+  @IsBoolean()
   tagConverters: boolean;
 
   @IsOptional()

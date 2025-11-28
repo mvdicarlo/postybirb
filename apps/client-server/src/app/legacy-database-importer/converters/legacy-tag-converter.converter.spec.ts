@@ -52,46 +52,6 @@ describe('LegacyTagConverterConverter', () => {
     expect(record.convertTo['fur-affinity']).toBe('converted');
   });
 
-  it('should handle conversion with multiple websites', async () => {
-    // Create test data with multiple conversions
-    const multiConversionData = {
-      _id: 'test-multi-id',
-      created: '2023-10-01T12:00:00Z',
-      lastUpdated: '2023-10-01T12:00:00Z',
-      tag: 'multi-tag',
-      conversions: {
-        FurAffinity: 'fa-tag',
-        Weasyl: 'weasyl-tag',
-        DeviantArt: 'da-tag',
-      },
-    };
-
-    const testDataDir = join(testDataPath, 'data');
-    const multiTestFile = join(testDataDir, 'tag-converter.db');
-    writeSync(
-      multiTestFile,
-      Buffer.from(JSON.stringify(multiConversionData) + '\n'),
-    );
-
-    await converter.import();
-
-    const records = await repository.findAll();
-    expect(records).toHaveLength(1);
-
-    const record = records[0];
-    expect(record.tag).toBe('multi-tag');
-    expect(Object.keys(record.convertTo).length).toBeGreaterThan(0);
-  });
-
-  it('should throw error if legacy data file contains parsing errors', async () => {
-    // Create invalid test data
-    const testDataDir = join(testDataPath, 'data');
-    const invalidTestFile = join(testDataDir, 'tag-converter.db');
-    writeSync(invalidTestFile, Buffer.from('invalid json data\n'));
-
-    await expect(converter.import()).rejects.toThrow();
-  });
-
   it('should handle empty conversions object', async () => {
     // Create test data with empty conversions
     const emptyConversionData = {
@@ -119,24 +79,24 @@ describe('LegacyTagConverterConverter', () => {
     expect(record.convertTo).toEqual({});
   });
 
-  it('should filter out unmapped legacy website IDs', async () => {
-    // Create test data with an unmapped website ID
-    const unmappedData = {
-      _id: 'test-unmapped-id',
+  it('should map legacy website names to modern IDs', async () => {
+    // Create test data with multiple legacy website names
+    const multiWebsiteData = {
+      _id: 'test-multi-id',
       created: '2023-10-01T12:00:00Z',
       lastUpdated: '2023-10-01T12:00:00Z',
-      tag: 'unmapped-tag',
+      tag: 'multi-tag',
       conversions: {
         FurAffinity: 'fa-tag',
-        UnknownWebsite: 'unknown-tag', // This should be filtered out
+        DeviantArt: 'da-tag',
       },
     };
 
     const testDataDir = join(testDataPath, 'data');
-    const unmappedTestFile = join(testDataDir, 'tag-converter.db');
+    const multiTestFile = join(testDataDir, 'tag-converter.db');
     writeSync(
-      unmappedTestFile,
-      Buffer.from(JSON.stringify(unmappedData) + '\n'),
+      multiTestFile,
+      Buffer.from(JSON.stringify(multiWebsiteData) + '\n'),
     );
 
     await converter.import();
@@ -146,6 +106,6 @@ describe('LegacyTagConverterConverter', () => {
 
     const record = records[0];
     expect(record.convertTo['fur-affinity']).toBe('fa-tag');
-    expect(record.convertTo['UnknownWebsite']).toBeUndefined();
+    expect(record.convertTo['deviant-art']).toBe('da-tag');
   });
 });

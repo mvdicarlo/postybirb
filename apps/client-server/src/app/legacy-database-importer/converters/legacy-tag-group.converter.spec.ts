@@ -36,12 +36,6 @@ describe('LegacyTagGroupConverter', () => {
     repository = new PostyBirbDatabase('TagGroupSchema');
   });
 
-  it('should get modern database instance', () => {
-    const db = converter.getModernDatabase();
-    expect(db).toBeDefined();
-    expect(db).toBeInstanceOf(PostyBirbDatabase);
-  });
-
   it('should import and convert legacy tag group data', async () => {
     await converter.import();
 

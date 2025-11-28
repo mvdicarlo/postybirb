@@ -20,7 +20,7 @@ export abstract class LegacyConverter {
     return join(this.databasePath, 'data', `${this.legacyFileName}.db`);
   }
 
-  public getModernDatabase() {
+  private getModernDatabase() {
     return new PostyBirbDatabase(this.modernSchemaKey);
   }
 
@@ -48,9 +48,21 @@ export abstract class LegacyConverter {
     }
     const modernDb = this.getModernDatabase();
 
+    let skippedCount = 0;
     for (const legacyEntity of result.records) {
       const modernEntity = legacyEntity.convert();
+
+      // Skip null conversions (e.g., deprecated websites)
+      if (modernEntity === null) {
+        skippedCount++;
+        continue;
+      }
+
       await modernDb.insert(modernEntity);
+    }
+
+    if (skippedCount > 0) {
+      logger.info(`Skipped ${skippedCount} records during conversion`);
     }
 
     logger.info(`Import for ${this.legacyFileName} completed successfully.`);
