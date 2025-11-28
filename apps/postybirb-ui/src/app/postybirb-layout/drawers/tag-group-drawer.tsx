@@ -293,7 +293,7 @@ function TagGroups() {
           <Fieldset
             legend={
               <Box mx="4">
-                <Trans>Create new tag group</Trans>
+                <Trans>New</Trans>
               </Box>
             }
           >

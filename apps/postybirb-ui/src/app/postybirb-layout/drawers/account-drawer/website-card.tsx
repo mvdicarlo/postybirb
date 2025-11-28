@@ -89,7 +89,7 @@ function AccountItem({ account, website, onLogin }: AccountItemProps) {
           {account.state.isLoggedIn ? (
             (account.state.username ?? <CommonTranslations.Unknown />)
           ) : (
-            <Trans>Not logged in</Trans>
+            <CommonTranslations.NotLoggedIn />
           )}
         </Badge>
       </Grid.Col>

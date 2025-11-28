@@ -22,9 +22,7 @@ export function AppSettings() {
   } = useQuery(
     'startup',
     () => settingsApi.getStartupOptions().then((res) => res.body),
-    {
-      cacheTime: 0,
-    },
+    { cacheTime: 0 },
   );
 
   if (isLoading) return null;
@@ -69,9 +67,7 @@ export function AppSettings() {
             }
 
             settingsApi
-              .updateSystemStartupSettings({
-                port: newPort.toString(),
-              })
+              .updateSystemStartupSettings({ port: newPort.toString() })
               .finally(refetch);
           }}
         />
@@ -85,7 +81,6 @@ export function AppSettings() {
               style={{ flex: 1 }}
               leftSection={<IconFolder size={18} />}
               value={startupSettings?.appDataPath ?? ''}
-              placeholder={t`Click to select folder`}
               readOnly
             />
             <Button
@@ -94,9 +89,7 @@ export function AppSettings() {
                   window.electron.pickDirectory().then((appDataPath) => {
                     if (appDataPath) {
                       settingsApi
-                        .updateSystemStartupSettings({
-                          appDataPath,
-                        })
+                        .updateSystemStartupSettings({ appDataPath })
                         .finally(() => {
                           refetch();
                         });

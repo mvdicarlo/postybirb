@@ -5,6 +5,14 @@ import { PropsWithChildren } from 'react';
 type WithNounProps = PropsWithChildren;
 
 export class CommonTranslations {
+  static NotLoggedIn() {
+    return <Trans>Not Logged In</Trans>;
+  }
+
+  static LoggedIn() {
+    return <Trans>Logged In</Trans>;
+  }
+
   static Post() {
     return <Trans>Post</Trans>;
   }

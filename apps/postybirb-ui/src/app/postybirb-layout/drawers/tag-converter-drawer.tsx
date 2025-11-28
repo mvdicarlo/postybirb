@@ -437,7 +437,7 @@ function TagConverters() {
           <Fieldset
             legend={
               <Box mx="4">
-                <Trans>Create new tag converter</Trans>
+                <Trans>New</Trans>
               </Box>
             }
           >

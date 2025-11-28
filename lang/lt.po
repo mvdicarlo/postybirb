@@ -423,10 +423,6 @@ msgstr ""
 msgid "Click the link above, authorize the app, and copy the PIN code below"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/app-settings.tsx
-msgid "Click to select folder"
-msgstr ""
-
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/remote-settings.tsx
 msgid "Client Mode"
 msgstr ""
@@ -532,18 +528,6 @@ msgstr ""
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx
 msgid "Create new submission"
 msgstr "Kurti naują pateikimą"
-
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
-msgid "Create new tag converter"
-msgstr "Kurti naują žymių konverterį"
-
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx
-msgid "Create new tag group"
-msgstr "Kurti naują žymių grupę"
-
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/user-converter-drawer.tsx
-msgid "Create new user converter"
-msgstr ""
 
 #: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx
 msgctxt "telegram.app-id-help"
@@ -1184,6 +1168,7 @@ msgid "Log in to different instance"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/account-drawer.tsx
+#: apps/postybirb-ui/src/translations/common-translations.tsx
 #: apps/postybirb-ui/src/website-components/megalodon/megalodon-login-view.tsx
 msgid "Logged In"
 msgstr ""
@@ -1299,6 +1284,9 @@ msgid "Navigation"
 msgstr "Naršymas"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/notifications-drawer.tsx
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/user-converter-drawer.tsx
 #: apps/postybirb-ui/src/translations/common-translations.tsx
 msgid "New"
 msgstr ""
@@ -1373,12 +1361,12 @@ msgstr ""
 msgid "Not all tag providers support this feature."
 msgstr ""
 
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx
 #: apps/postybirb-ui/src/components/form/website-option-form/website-option-group-section.tsx
 msgid "Not logged in"
 msgstr "Neprisijungta"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/account-drawer.tsx
+#: apps/postybirb-ui/src/translations/common-translations.tsx
 msgid "Not Logged In"
 msgstr ""
 

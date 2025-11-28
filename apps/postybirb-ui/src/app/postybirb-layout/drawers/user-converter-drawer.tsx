@@ -420,7 +420,7 @@ function UserConverters() {
           <Fieldset
             legend={
               <Box mx="4">
-                <Trans>Create new user converter</Trans>
+                <Trans>New</Trans>
               </Box>
             }
           >
