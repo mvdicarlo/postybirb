@@ -1,12 +1,17 @@
 import { ITagConverter } from '@postybirb/types';
 import { WebsiteNameMapper } from '../utils/website-name-mapper';
-import { LegacyConverterEntity, MinimalEntity } from './legacy-converter-entity';
+import {
+    LegacyConverterEntity,
+    MinimalEntity,
+} from './legacy-converter-entity';
 
 /**
  * Legacy tag converter entity from PostyBirb Plus
  * Converts a tag to website-specific tags
  */
-export class LegacyTagConverter implements LegacyConverterEntity<ITagConverter> {
+export class LegacyTagConverter
+  implements LegacyConverterEntity<ITagConverter>
+{
   _id: string;
 
   created: number;
@@ -21,7 +26,7 @@ export class LegacyTagConverter implements LegacyConverterEntity<ITagConverter> 
     Object.assign(this, data);
   }
 
-  convert(): MinimalEntity<ITagConverter> {
+  async convert(): Promise<MinimalEntity<ITagConverter>> {
     const conversionsMap: Record<string, string> = {};
     for (const [legacyWebsiteId, convertedTag] of Object.entries(
       this.conversions,

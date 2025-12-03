@@ -6,5 +6,5 @@ export type MinimalEntity<T extends IEntity> = Omit<
 >;
 
 export interface LegacyConverterEntity<T extends IEntity> {
-  convert(): MinimalEntity<T>;
+  convert(): Promise<MinimalEntity<T>>;
 }

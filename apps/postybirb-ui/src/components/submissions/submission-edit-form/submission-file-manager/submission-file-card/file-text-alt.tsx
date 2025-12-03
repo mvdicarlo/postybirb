@@ -1,11 +1,11 @@
-import { Trans } from "@lingui/react/macro";
-import { BlockNoteEditor, filterSuggestionItems } from '@blocknote/core';
+import { BlockNoteEditor } from '@blocknote/core';
 import { BlockNoteView } from '@blocknote/mantine';
 import {
   SuggestionMenuController,
   getDefaultReactSlashMenuItems,
   useCreateBlockNote,
 } from '@blocknote/react';
+import { Trans } from '@lingui/react/macro';
 import {
   Input,
   Loader,
@@ -81,13 +81,19 @@ export function FileTextAlt(props: FileTextFileAltProps) {
         >
           <SuggestionMenuController
             triggerCharacter="/"
-            getItems={async (query) =>
-              // Gets all default slash menu items and `insertAlert` item.
-              filterSuggestionItems(
-                [...getDefaultReactSlashMenuItems(editor)],
-                query,
-              )
-            }
+            getItems={async (query) => {
+              // Gets all default slash menu items filtered by query
+              const items = getDefaultReactSlashMenuItems(editor);
+              const lowerQuery = query.toLowerCase();
+              return items.filter(
+                (item) =>
+                  item.title.toLowerCase().includes(lowerQuery) ||
+                  (item.aliases &&
+                    item.aliases.some((alias: string) =>
+                      alias.toLowerCase().includes(lowerQuery),
+                    )),
+              );
+            }}
           />
         </BlockNoteView>
       </ScrollArea.Autosize>

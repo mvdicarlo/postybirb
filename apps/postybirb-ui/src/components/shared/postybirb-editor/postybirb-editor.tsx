@@ -1,6 +1,6 @@
 import { Trans } from "@lingui/react/macro";
 /* eslint-disable lingui/no-unlocalized-strings */
-import { BlockNoteEditor, filterSuggestionItems } from '@blocknote/core';
+import { BlockNoteEditor } from '@blocknote/core';
 import '@blocknote/core/fonts/inter.css';
 import { BlockNoteView } from '@blocknote/mantine';
 import '@blocknote/mantine/style.css';
@@ -116,28 +116,42 @@ export function PostyBirbEditor(props: PostyBirbEditorProps) {
       >
         <SuggestionMenuController
           triggerCharacter="/"
-          getItems={async (query) =>
-            // Gets all default slash menu items and `insertAlert` item.
-            filterSuggestionItems(suggestions, query)
-          }
+          getItems={async (query) => {
+            // Gets all default slash menu items and custom items, filtered by query
+            const lowerQuery = query.toLowerCase();
+            return suggestions.filter(
+              (item) =>
+                item.title.toLowerCase().includes(lowerQuery) ||
+                (item.aliases &&
+                  item.aliases.some((alias: string) =>
+                    alias.toLowerCase().includes(lowerQuery)
+                  ))
+            );
+          }}
         />
         <SuggestionMenuController
           triggerCharacter={shortcutTrigger}
-          getItems={async (query) =>
-            filterSuggestionItems(
-              [
-                ...getCustomShortcutsMenuItems(
-                  editor as unknown as typeof schema.BlockNoteEditor,
-                  customShortcuts || [],
-                ),
-                ...getUsernameShortcutsMenuItems(
-                  editor as unknown as typeof schema.BlockNoteEditor,
-                  shortcuts,
-                ),
-              ],
-              query,
-            )
-          }
+          getItems={async (query) => {
+            const items = [
+              ...getCustomShortcutsMenuItems(
+                editor as unknown as typeof schema.BlockNoteEditor,
+                customShortcuts || [],
+              ),
+              ...getUsernameShortcutsMenuItems(
+                editor as unknown as typeof schema.BlockNoteEditor,
+                shortcuts,
+              ),
+            ];
+            const lowerQuery = query.toLowerCase();
+            return items.filter(
+              (item) =>
+                item.title.toLowerCase().includes(lowerQuery) ||
+                (item.aliases &&
+                  item.aliases.some((alias: string) =>
+                    alias.toLowerCase().includes(lowerQuery)
+                  ))
+            );
+          }}
         />
       </BlockNoteView>
     </div>

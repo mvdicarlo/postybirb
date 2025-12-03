@@ -67,25 +67,25 @@ type CustomInlineContentSchema = DefaultInlineContentSchema & {
 };
 
 type DefaultBlock = BlockSpec<
+  'default',
   {
-    type: 'default';
-    content: 'inline';
-    propSchema: never;
+    default: {
+      default: undefined;
+      type: 'string';
+    };
   },
-  any,
-  any,
-  any
+  'inline'
 >;
 
 type HrBlock = BlockSpec<
+  'hr',
   {
-    type: 'hr';
-    content: 'inline';
-    propSchema: never;
+    hr: {
+      default: undefined;
+      type: 'string';
+    };
   },
-  any,
-  any,
-  any
+  'inline'
 >;
 
 type CustomBlockContentSchema = DefaultBlockSchema &

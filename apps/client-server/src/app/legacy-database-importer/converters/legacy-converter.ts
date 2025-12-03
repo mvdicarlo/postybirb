@@ -50,7 +50,7 @@ export abstract class LegacyConverter {
 
     let skippedCount = 0;
     for (const legacyEntity of result.records) {
-      const modernEntity = legacyEntity.convert();
+      const modernEntity = await legacyEntity.convert();
 
       // Skip null conversions (e.g., deprecated websites)
       if (modernEntity === null) {

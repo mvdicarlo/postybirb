@@ -1,5 +1,5 @@
 /* eslint-disable lingui/no-unlocalized-strings */
-import { BlockNoteEditor, insertOrUpdateBlock } from '@blocknote/core';
+import { BlockNoteEditor } from '@blocknote/core';
 import { createReactBlockSpec } from '@blocknote/react';
 
 export const HR = createReactBlockSpec(
@@ -16,9 +16,13 @@ export const HR = createReactBlockSpec(
 export const insertHr = (editor: BlockNoteEditor) => ({
   title: 'Horizontal Rule',
   onItemClick: () => {
-    insertOrUpdateBlock(editor, {
-      type: 'hr',
-    } as never);
+    editor.insertBlocks(
+      [{
+        type: 'hr',
+      }] as never,
+      editor.getTextCursorPosition().block,
+      'after'
+    );
   },
   aliases: ['hr'],
   group: 'Basic blocks',

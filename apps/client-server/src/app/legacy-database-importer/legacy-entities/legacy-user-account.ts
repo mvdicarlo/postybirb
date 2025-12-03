@@ -1,8 +1,8 @@
 import { IAccount } from '@postybirb/types';
 import { WebsiteNameMapper } from '../utils/website-name-mapper';
 import {
-    LegacyConverterEntity,
-    MinimalEntity,
+  LegacyConverterEntity,
+  MinimalEntity,
 } from './legacy-converter-entity';
 
 /**
@@ -26,7 +26,7 @@ export class LegacyUserAccount implements LegacyConverterEntity<IAccount> {
     Object.assign(this, data);
   }
 
-  convert(): MinimalEntity<IAccount> | null {
+  async convert(): Promise<MinimalEntity<IAccount> | null> {
     const newWebsiteId = WebsiteNameMapper.map(this.website);
 
     // Skip accounts for deprecated websites

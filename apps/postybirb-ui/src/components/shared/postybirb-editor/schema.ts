@@ -12,8 +12,8 @@ import { InlineUsernameShortcut } from './custom/username-shortcut';
 const getModifiedBlockSpecs = () => {
   const blockSpecs = {
     ...defaultBlockSpecs,
-    hr: HR,
-    default: DefaultShortcut,
+    hr: HR(),
+    default: DefaultShortcut(),
   };
 
   delete (blockSpecs as Partial<typeof blockSpecs>).table;

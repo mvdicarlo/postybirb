@@ -23,7 +23,7 @@ export class LegacyTagGroup implements LegacyConverterEntity<ITagGroup> {
     Object.assign(this, data);
   }
 
-  convert(): MinimalEntity<ITagGroup> {
+  async convert(): Promise<MinimalEntity<ITagGroup>> {
     return {
       // eslint-disable-next-line no-underscore-dangle
       id: this._id,

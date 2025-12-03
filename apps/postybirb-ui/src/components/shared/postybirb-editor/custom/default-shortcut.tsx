@@ -1,6 +1,6 @@
-import { Trans } from "@lingui/react/macro";
+import { Trans } from '@lingui/react/macro';
 /* eslint-disable lingui/no-unlocalized-strings */
-import { BlockNoteEditor, insertOrUpdateBlock } from '@blocknote/core';
+import { BlockNoteEditor } from '@blocknote/core';
 import { createReactBlockSpec } from '@blocknote/react';
 import { Badge } from '@mantine/core';
 
@@ -34,12 +34,16 @@ export const DefaultShortcut = createReactBlockSpec(
 export const insertDefaultShortcut = (editor: BlockNoteEditor) => ({
   title: 'Default Description',
   onItemClick: () => {
-    insertOrUpdateBlock(editor, {
-      type: 'default',
-    } as never);
+    editor.insertBlocks(
+      [{
+        type: 'default',
+      }] as never,
+      editor.getTextCursorPosition().block,
+      'after'
+    );
   },
   aliases: ['default'],
   group: 'Shortcuts',
   icon: <div>📝</div>,
-  subtext: 'Inserts default description'
+  subtext: 'Inserts default description',
 });
