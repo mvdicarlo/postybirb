@@ -1,4 +1,4 @@
-import { CommandBus, EventBus } from '@nestjs/cqrs';
+import { CommandBus, EventBus, QueryBus } from '@nestjs/cqrs';
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
 import { Account } from '../drizzle/models';
@@ -16,6 +16,8 @@ import { TriggerAccountLoginHandler } from './commands/trigger-account-login.han
 import { CreateAccountDto } from './dtos/create-account.dto';
 import { AccountCreatedEvent } from './events/account-created.event';
 import { AccountCreatedHandler } from './events/account-created.handler';
+import { GetAccountQuery } from './queries/get-account.query';
+import { GetAccountsQuery } from './queries/get-accounts.query';
 
 describe('Account CQRS', () => {
   let commandService: AccountCommandService;
@@ -25,6 +27,7 @@ describe('Account CQRS', () => {
   let accountCreatedHandler: AccountCreatedHandler;
 
   let commandBus: CommandBus;
+  let queryBus: QueryBus;
   let eventBus: EventBus;
   let websiteRegistry: WebsiteRegistryService;
   let webSocket: WSGateway;
@@ -44,6 +47,12 @@ describe('Account CQRS', () => {
         AccountCreatedHandler,
         {
           provide: CommandBus,
+          useValue: {
+            execute: jest.fn(),
+          },
+        },
+        {
+          provide: QueryBus,
           useValue: {
             execute: jest.fn(),
           },
@@ -85,6 +94,7 @@ describe('Account CQRS', () => {
       AccountCreatedHandler,
     );
     commandBus = module.get<CommandBus>(CommandBus);
+    queryBus = module.get<QueryBus>(QueryBus);
     eventBus = module.get<EventBus>(EventBus);
     websiteRegistry = module.get<WebsiteRegistryService>(
       WebsiteRegistryService,
@@ -99,6 +109,18 @@ describe('Account CQRS', () => {
       expect(commandBus.execute).toHaveBeenCalledWith(
         new CreateAccountCommand(dto),
       );
+    });
+
+    it('should dispatch GetAccountQuery', async () => {
+      await commandService.getAccount('test-id');
+      expect(queryBus.execute).toHaveBeenCalledWith(
+        new GetAccountQuery('test-id'),
+      );
+    });
+
+    it('should dispatch GetAccountsQuery', async () => {
+      await commandService.getAccounts();
+      expect(queryBus.execute).toHaveBeenCalledWith(new GetAccountsQuery());
     });
   });
 
