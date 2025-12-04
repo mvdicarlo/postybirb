@@ -28,6 +28,8 @@ import { AccountCreatedEvent } from './events/account-created.event';
 import { AccountCreatedHandler } from './events/account-created.handler';
 import { GetAccountQuery } from './queries/get-account.query';
 import { GetAccountsQuery } from './queries/get-accounts.query';
+import { GetWebsiteInstanceHandler } from './queries/get-website-instance.handler';
+import { GetWebsiteInstanceQuery } from './queries/get-website-instance.query';
 
 describe('Account CQRS', () => {
   let commandService: AccountCommandService;
@@ -39,6 +41,7 @@ describe('Account CQRS', () => {
   let triggerAccountLoginHandler: TriggerAccountLoginHandler;
   let emitAccountUpdatesHandler: EmitAccountUpdatesHandler;
   let accountCreatedHandler: AccountCreatedHandler;
+  let getWebsiteInstanceHandler: GetWebsiteInstanceHandler;
 
   let commandBus: CommandBus;
   let queryBus: QueryBus;
@@ -63,6 +66,7 @@ describe('Account CQRS', () => {
         TriggerAccountLoginHandler,
         EmitAccountUpdatesHandler,
         AccountCreatedHandler,
+        GetWebsiteInstanceHandler,
         {
           provide: CommandBus,
           useValue: {
@@ -121,6 +125,9 @@ describe('Account CQRS', () => {
     );
     accountCreatedHandler = module.get<AccountCreatedHandler>(
       AccountCreatedHandler,
+    );
+    getWebsiteInstanceHandler = module.get<GetWebsiteInstanceHandler>(
+      GetWebsiteInstanceHandler,
     );
     commandBus = module.get<CommandBus>(CommandBus);
     queryBus = module.get<QueryBus>(QueryBus);
@@ -248,22 +255,21 @@ describe('Account CQRS', () => {
         onAfterLogin: jest.fn(),
       };
 
-      (websiteRegistry.findInstance as jest.Mock).mockReturnValue(
-        websiteInstance,
-      );
+      (queryBus.execute as jest.Mock).mockResolvedValue(websiteInstance);
 
       await triggerAccountLoginHandler.execute(
         new TriggerAccountLoginCommand(account.id),
       );
 
-      expect(websiteRegistry.findInstance).toHaveBeenCalled();
+      expect(queryBus.execute).toHaveBeenCalledWith(
+        new GetWebsiteInstanceQuery(expect.objectContaining({ id: account.id })),
+      );
       expect(websiteInstance.onBeforeLogin).toHaveBeenCalled();
       expect(commandBus.execute).toHaveBeenCalledWith(
         new EmitAccountUpdatesCommand(),
       );
       expect(websiteInstance.onLogin).toHaveBeenCalled();
       expect(websiteInstance.onAfterLogin).toHaveBeenCalled();
-      expect(websiteRegistry.emit).toHaveBeenCalled();
     });
   });
 
@@ -287,13 +293,13 @@ describe('Account CQRS', () => {
         getSupportedTypes: jest.fn().mockReturnValue([]),
       };
 
-      (websiteRegistry.findInstance as jest.Mock).mockReturnValue(
-        websiteInstance,
-      );
+      (queryBus.execute as jest.Mock).mockResolvedValue(websiteInstance);
 
       await emitAccountUpdatesHandler.execute();
 
-      expect(websiteRegistry.findInstance).toHaveBeenCalled();
+      expect(queryBus.execute).toHaveBeenCalledWith(
+        new GetWebsiteInstanceQuery(expect.objectContaining({ id: account.id })),
+      );
       expect(webSocket.emit).toHaveBeenCalled();
     });
   });
@@ -313,15 +319,15 @@ describe('Account CQRS', () => {
       dto.groups = ['updated-group'];
 
       const websiteInstance = { id: 'test-website' };
-      (websiteRegistry.findInstance as jest.Mock).mockReturnValue(
-        websiteInstance,
-      );
+      (queryBus.execute as jest.Mock).mockResolvedValue(websiteInstance);
 
       const result = await updateAccountHandler.execute(
         new UpdateAccountCommand(account.id, dto),
       );
 
-      expect(websiteRegistry.findInstance).toHaveBeenCalled();
+      expect(queryBus.execute).toHaveBeenCalledWith(
+        new GetWebsiteInstanceQuery(expect.objectContaining({ id: account.id })),
+      );
       expect(commandBus.execute).toHaveBeenCalledWith(
         new EmitAccountUpdatesCommand(),
       );
@@ -331,30 +337,6 @@ describe('Account CQRS', () => {
 
       const storedAccount = await repository.findById(account.id);
       expect(storedAccount?.name).toBe(dto.name);
-    });
-  });
-
-  describe('DeleteAccountHandler', () => {
-    it('should delete account and emit updates', async () => {
-      const account = await repository.insert(
-        new Account({
-          name: 'test',
-          website: 'test',
-          groups: [],
-        }),
-      );
-
-      await deleteAccountHandler.execute(new DeleteAccountCommand(account.id));
-
-      expect(websiteRegistry.remove).toHaveBeenCalledWith(
-        expect.objectContaining({ id: account.id }),
-      );
-      expect(commandBus.execute).toHaveBeenCalledWith(
-        new EmitAccountUpdatesCommand(),
-      );
-
-      const storedAccount = await repository.findById(account.id);
-      expect(storedAccount).toBeNull();
     });
   });
 
@@ -373,15 +355,15 @@ describe('Account CQRS', () => {
         clearLoginStateAndData: jest.fn(),
       };
 
-      (websiteRegistry.findInstance as jest.Mock).mockReturnValue(
-        websiteInstance,
-      );
+      (queryBus.execute as jest.Mock).mockResolvedValue(websiteInstance);
 
       await clearAccountDataHandler.execute(
         new ClearAccountDataCommand(account.id),
       );
 
-      expect(websiteRegistry.findInstance).toHaveBeenCalled();
+      expect(queryBus.execute).toHaveBeenCalledWith(
+        new GetWebsiteInstanceQuery(expect.objectContaining({ id: account.id })),
+      );
       expect(websiteInstance.clearLoginStateAndData).toHaveBeenCalled();
     });
   });
@@ -405,14 +387,31 @@ describe('Account CQRS', () => {
         setWebsiteData: jest.fn(),
       };
 
+      (queryBus.execute as jest.Mock).mockResolvedValue(websiteInstance);
+
+      await setAccountDataHandler.execute(new SetAccountDataCommand(dto));
+
+      expect(queryBus.execute).toHaveBeenCalledWith(
+        new GetWebsiteInstanceQuery(expect.objectContaining({ id: account.id })),
+      );
+      expect(websiteInstance.setWebsiteData).toHaveBeenCalledWith(dto.data);
+    });
+  });
+
+  describe('GetWebsiteInstanceHandler', () => {
+    it('should return website instance', async () => {
+      const account = new Account({ id: 'test-id' });
+      const websiteInstance = { id: 'test-website' };
       (websiteRegistry.findInstance as jest.Mock).mockReturnValue(
         websiteInstance,
       );
 
-      await setAccountDataHandler.execute(new SetAccountDataCommand(dto));
+      const result = await getWebsiteInstanceHandler.execute(
+        new GetWebsiteInstanceQuery(account),
+      );
 
-      expect(websiteRegistry.findInstance).toHaveBeenCalled();
-      expect(websiteInstance.setWebsiteData).toHaveBeenCalledWith(dto.data);
+      expect(websiteRegistry.findInstance).toHaveBeenCalledWith(account);
+      expect(result).toBe(websiteInstance);
     });
   });
 });

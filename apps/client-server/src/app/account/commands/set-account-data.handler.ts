@@ -1,7 +1,7 @@
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { CommandHandler, ICommandHandler, QueryBus } from '@nestjs/cqrs';
 import { Logger } from '@postybirb/logger';
 import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
-import { WebsiteRegistryService } from '../../websites/website-registry.service';
+import { GetWebsiteInstanceQuery } from '../queries/get-website-instance.query';
 import { SetAccountDataCommand } from './set-account-data.command';
 
 @CommandHandler(SetAccountDataCommand)
@@ -12,7 +12,7 @@ export class SetAccountDataHandler
 
   private readonly repository = new PostyBirbDatabase('AccountSchema');
 
-  constructor(private readonly websiteRegistry: WebsiteRegistryService) {}
+  constructor(private readonly queryBus: QueryBus) {}
 
   async execute(command: SetAccountDataCommand): Promise<void> {
     const { dto } = command;
@@ -20,7 +20,9 @@ export class SetAccountDataHandler
     const account = await this.repository.findById(dto.id, {
       failOnMissing: true,
     });
-    const instance = this.websiteRegistry.findInstance(account);
+    const instance = await this.queryBus.execute(
+      new GetWebsiteInstanceQuery(account),
+    );
     await instance.setWebsiteData(dto.data);
   }
 }

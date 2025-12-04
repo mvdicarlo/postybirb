@@ -15,6 +15,7 @@ import { UpdateAccountHandler } from './commands/update-account.handler';
 import { AccountCreatedHandler } from './events/account-created.handler';
 import { GetAccountHandler } from './queries/get-account.handler';
 import { GetAccountsHandler } from './queries/get-accounts.handler';
+import { GetWebsiteInstanceHandler } from './queries/get-website-instance.handler';
 
 @Module({
   imports: [CqrsModule, WebsitesModule],
@@ -32,6 +33,7 @@ import { GetAccountsHandler } from './queries/get-accounts.handler';
     AccountCreatedHandler,
     GetAccountHandler,
     GetAccountsHandler,
+    GetWebsiteInstanceHandler,
   ],
   controllers: [AccountController],
   exports: [AccountService],

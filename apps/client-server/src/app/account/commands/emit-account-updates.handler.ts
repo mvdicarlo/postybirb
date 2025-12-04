@@ -1,11 +1,11 @@
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { CommandHandler, ICommandHandler, QueryBus } from '@nestjs/cqrs';
 import { Logger } from '@postybirb/logger';
 import { ACCOUNT_UPDATES } from '@postybirb/socket-events';
 import { NULL_ACCOUNT_ID } from '@postybirb/types';
 import { ne } from 'drizzle-orm';
 import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
 import { WSGateway } from '../../web-socket/web-socket-gateway';
-import { WebsiteRegistryService } from '../../websites/website-registry.service';
+import { GetWebsiteInstanceQuery } from '../queries/get-website-instance.query';
 import { EmitAccountUpdatesCommand } from './emit-account-updates.command';
 
 @CommandHandler(EmitAccountUpdatesCommand)
@@ -17,7 +17,7 @@ export class EmitAccountUpdatesHandler
   private readonly repository = new PostyBirbDatabase('AccountSchema');
 
   constructor(
-    private readonly websiteRegistry: WebsiteRegistryService,
+    private readonly queryBus: QueryBus,
     private readonly webSocket: WSGateway,
   ) {}
 
@@ -27,10 +27,14 @@ export class EmitAccountUpdatesHandler
         where: ne(this.repository.schemaEntity.id, NULL_ACCOUNT_ID),
       });
 
-      const dtos = accounts.map((account) => {
-        const instance = this.websiteRegistry.findInstance(account);
-        return account.withWebsiteInstance(instance).toDTO();
-      });
+      const dtos = await Promise.all(
+        accounts.map(async (account) => {
+          const instance = await this.queryBus.execute(
+            new GetWebsiteInstanceQuery(account),
+          );
+          return account.withWebsiteInstance(instance).toDTO();
+        }),
+      );
 
       this.webSocket.emit({
         event: ACCOUNT_UPDATES,

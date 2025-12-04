@@ -1,8 +1,13 @@
-import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import {
+    CommandBus,
+    CommandHandler,
+    ICommandHandler,
+    QueryBus,
+} from '@nestjs/cqrs';
 import { Logger } from '@postybirb/logger';
 import { Account } from '../../drizzle/models';
 import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
-import { WebsiteRegistryService } from '../../websites/website-registry.service';
+import { GetWebsiteInstanceQuery } from '../queries/get-website-instance.query';
 import { EmitAccountUpdatesCommand } from './emit-account-updates.command';
 import { UpdateAccountCommand } from './update-account.command';
 
@@ -15,8 +20,8 @@ export class UpdateAccountHandler
   private readonly repository = new PostyBirbDatabase('AccountSchema');
 
   constructor(
-    private readonly websiteRegistry: WebsiteRegistryService,
     private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
   ) {}
 
   async execute(command: UpdateAccountCommand): Promise<Account> {
@@ -24,7 +29,9 @@ export class UpdateAccountHandler
     this.logger.withMetadata(updateAccountDto).info(`Updating Account '${id}'`);
 
     const account = await this.repository.update(id, updateAccountDto);
-    const instance = this.websiteRegistry.findInstance(account);
+    const instance = await this.queryBus.execute(
+      new GetWebsiteInstanceQuery(account),
+    );
 
     await this.commandBus.execute(new EmitAccountUpdatesCommand());
 

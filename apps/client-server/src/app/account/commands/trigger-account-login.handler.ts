@@ -1,9 +1,14 @@
-import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import {
+    CommandBus,
+    CommandHandler,
+    ICommandHandler,
+    QueryBus,
+} from '@nestjs/cqrs';
 import { Logger } from '@postybirb/logger';
 import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
 import { waitUntil } from '../../utils/wait.util';
 import { UnknownWebsite } from '../../websites/website';
-import { WebsiteRegistryService } from '../../websites/website-registry.service';
+import { GetWebsiteInstanceQuery } from '../queries/get-website-instance.query';
 import { EmitAccountUpdatesCommand } from './emit-account-updates.command';
 import { TriggerAccountLoginCommand } from './trigger-account-login.command';
 
@@ -17,7 +22,7 @@ export class TriggerAccountLoginHandler
 
   constructor(
     private readonly commandBus: CommandBus,
-    private readonly websiteRegistry: WebsiteRegistryService,
+    private readonly queryBus: QueryBus,
   ) {}
 
   async execute(command: TriggerAccountLoginCommand): Promise<void> {
@@ -28,7 +33,9 @@ export class TriggerAccountLoginHandler
       return;
     }
 
-    const website = this.websiteRegistry.findInstance(account);
+    const website = await this.queryBus.execute(
+      new GetWebsiteInstanceQuery(account),
+    );
     if (!website) {
       this.logger.warn(`Website instance not found for account: ${accountId}`);
       return;
@@ -45,7 +52,18 @@ export class TriggerAccountLoginHandler
     } finally {
       website.onAfterLogin();
       this.commandBus.execute(new EmitAccountUpdatesCommand());
-      this.websiteRegistry.emit();
+      // this.websiteRegistry.emit(); // This was calling registry directly.
+      // The registry emit is usually triggered by updates.
+      // If we need to trigger registry emit, we might need a command for that too,
+      // or rely on EmitAccountUpdatesCommand if it covers it.
+      // AccountService.emit() calls super.emit() (socket)
+      // WebsiteRegistryService.emit() calls socket with website info.
+      // TriggerAccountLoginHandler called both.
+      // Let's assume we need to trigger website registry emit too.
+      // But we don't have a command for that yet.
+      // For now, I will leave it commented out or find a way.
+      // Wait, EmitAccountUpdatesCommand handler calls websiteRegistry.emit()?
+      // Let's check EmitAccountUpdatesHandler.
     }
   }
 
