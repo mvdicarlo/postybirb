@@ -10,6 +10,7 @@ import {
 } from '@mantine/core';
 import {
   IconBell,
+  IconDatabase,
   IconDeviceDesktop,
   IconFileDescription,
   IconRouter,
@@ -25,6 +26,7 @@ import {
 import { useDrawerToggle } from '../use-drawer-toggle';
 import { AppSettings } from './app-settings';
 import { DescriptionSettings } from './description-settings';
+import { LegacyImportSettings } from './legacy-import-settings';
 import { NotificationsSettings } from './notifications-settings';
 import { RemoteSettings } from './remote-settings';
 import { TagsSettings } from './tags-settings';
@@ -116,6 +118,14 @@ export function SettingsDrawer() {
                 >
                   <Trans>Tags</Trans>
                 </Tabs.Tab>
+
+                <Tabs.Tab
+                  value="legacy-import"
+                  leftSection={<IconDatabase size={16} />}
+                  fw={activeTab === 'legacy-import' ? 'bold' : 'normal'}
+                >
+                  <Trans>Import</Trans>
+                </Tabs.Tab>
               </Tabs.List>
 
               <ScrollArea h="100%" offsetScrollbars>
@@ -125,6 +135,7 @@ export function SettingsDrawer() {
                   {activeTab === 'notifications' && <NotificationsSettings />}
                   {activeTab === 'remote' && <RemoteSettings />}
                   {activeTab === 'tags' && <TagsSettings />}
+                  {activeTab === 'legacy-import' && <LegacyImportSettings />}
                 </Box>
               </ScrollArea>
             </Group>

@@ -6,7 +6,7 @@ import { Badge } from '@mantine/core';
 
 export const DefaultShortcut = createReactBlockSpec(
   {
-    type: 'default',
+    type: 'defaultShortcut',
     propSchema: {},
     content: 'none',
   },
@@ -35,11 +35,13 @@ export const insertDefaultShortcut = (editor: BlockNoteEditor) => ({
   title: 'Default Description',
   onItemClick: () => {
     editor.insertBlocks(
-      [{
-        type: 'default',
-      }] as never,
+      [
+        {
+          type: 'defaultShortcut',
+        },
+      ] as never,
       editor.getTextCursorPosition().block,
-      'after'
+      'before',
     );
   },
   aliases: ['default'],

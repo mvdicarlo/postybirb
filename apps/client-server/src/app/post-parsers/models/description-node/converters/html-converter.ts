@@ -1,9 +1,9 @@
 import { encode } from 'html-entities';
 import {
-    ConversionContext,
-    IDescriptionBlockNodeClass,
-    IDescriptionInlineNodeClass,
-    IDescriptionTextNodeClass,
+  ConversionContext,
+  IDescriptionBlockNodeClass,
+  IDescriptionInlineNodeClass,
+  IDescriptionTextNodeClass,
 } from '../description-node.base';
 import { BaseConverter } from './base-converter';
 
@@ -17,7 +17,7 @@ export class HtmlConverter extends BaseConverter {
     context: ConversionContext,
   ): string {
     // Handle special block types
-    if (node.type === 'default') {
+    if (node.type === 'defaultShortcut') {
       return this.convertRawBlocks(context.defaultDescription, context);
     }
 

@@ -1,26 +1,40 @@
-import { Trans } from "@lingui/react/macro";
+import { Trans } from '@lingui/react/macro';
 /* eslint-disable lingui/no-unlocalized-strings */
-import { BlockNoteEditor } from '@blocknote/core';
+import {
+  BlockNoteEditor,
+  BlockNoteSchema,
+  defaultBlockSpecs,
+  defaultInlineContentSpecs,
+  defaultStyleSpecs,
+} from '@blocknote/core';
 import '@blocknote/core/fonts/inter.css';
 import { BlockNoteView } from '@blocknote/mantine';
 import '@blocknote/mantine/style.css';
 import {
-  SuggestionMenuController,
+  DefaultReactSuggestionItem,
   getDefaultReactSlashMenuItems,
+  SuggestionMenuController,
   useCreateBlockNote,
 } from '@blocknote/react';
 import { Tooltip, useMantineColorScheme } from '@mantine/core';
 import { Description, UsernameShortcut } from '@postybirb/types';
 import { IconKeyboard } from '@tabler/icons-react';
-import { useMemo } from 'react';
 import { CustomShortcutStore } from '../../../stores/custom-shortcut.store';
 import { useStore } from '../../../stores/use-store';
 import { WebsiteStore } from '../../../stores/website.store';
-import { getCustomShortcutsMenuItems } from './custom/custom-shortcut';
-import { insertDefaultShortcut } from './custom/default-shortcut';
-import { insertHr } from './custom/hr';
-import { getUsernameShortcutsMenuItems } from './custom/username-shortcut';
-import { schema } from './schema';
+import {
+  getCustomShortcutsMenuItems,
+  InlineCustomShortcut,
+} from './custom/custom-shortcut';
+import {
+  DefaultShortcut,
+  insertDefaultShortcut,
+} from './custom/default-shortcut';
+import {
+  getUsernameShortcutsMenuItems,
+  InlineUsernameShortcut,
+} from './custom/username-shortcut';
+import { filterSuggestionItems } from './filter-suggestion-item';
 
 type PostyBirbEditorProps = {
   isDefaultEditor: boolean;
@@ -32,6 +46,30 @@ type PostyBirbEditorProps = {
 // eslint-disable-next-line lingui/text-restrictions
 const shortcutTrigger = '`'; // Backtick character for shortcuts
 
+export const getCustomSlashMenuItems = (
+  editor: BlockNoteEditor,
+  isDefaultEditor: boolean,
+): DefaultReactSuggestionItem[] => {
+  // Step 1: Default items
+  const defaultItems = getDefaultReactSlashMenuItems(editor);
+
+  // Step 2: Filter out unwanted items
+  const filtered = defaultItems.filter((item) => {
+    if (item.key === 'table') return false;
+    if (item.key === 'emoji') return false;
+    return true;
+  });
+
+  const items = [...filtered];
+
+  if (isDefaultEditor) {
+    // Step 3: Add DefaultShortcut item
+    items.push(insertDefaultShortcut(editor));
+  }
+
+  return items;
+};
+
 export function PostyBirbEditor(props: PostyBirbEditorProps) {
   const theme = useMantineColorScheme();
   const {
@@ -40,6 +78,28 @@ export function PostyBirbEditor(props: PostyBirbEditorProps) {
     value,
     onChange,
   } = props;
+
+  const schema = BlockNoteSchema.create({
+    blockSpecs: {
+      paragraph: defaultBlockSpecs.paragraph,
+      heading: defaultBlockSpecs.heading,
+      divider: defaultBlockSpecs.divider,
+      audio: defaultBlockSpecs.audio,
+      video: defaultBlockSpecs.video,
+      image: defaultBlockSpecs.image,
+      table: defaultBlockSpecs.table,
+      defaultShortcut: DefaultShortcut(),
+    },
+    inlineContentSpecs: {
+      ...defaultInlineContentSpecs,
+      customShortcut: InlineCustomShortcut,
+      username: InlineUsernameShortcut,
+    },
+    styleSpecs: {
+      ...defaultStyleSpecs,
+    },
+  });
+
   // Creates a new editor instance.
   const editor = useCreateBlockNote({
     initialContent: value?.length ? (value as never) : undefined,
@@ -53,16 +113,6 @@ export function PostyBirbEditor(props: PostyBirbEditorProps) {
       .map((w) => w.usernameShortcut as UsernameShortcut) || [];
 
   const { state: customShortcuts } = useStore(CustomShortcutStore);
-
-  const suggestions = useMemo(() => {
-    const shortcutSuggestions = [
-      !isDefaultEditor ? insertDefaultShortcut(editor) : undefined,
-      insertHr(editor),
-      ...getDefaultReactSlashMenuItems(editor),
-    ];
-
-    return shortcutSuggestions.filter((sc) => sc !== undefined);
-  }, [editor, isDefaultEditor]);
 
   return (
     <div
@@ -116,31 +166,26 @@ export function PostyBirbEditor(props: PostyBirbEditorProps) {
       >
         <SuggestionMenuController
           triggerCharacter="/"
-          getItems={async (query) => {
-            // Gets all default slash menu items and custom items, filtered by query
-            const lowerQuery = query.toLowerCase();
-            return suggestions.filter(
-              (item) =>
-                item.title.toLowerCase().includes(lowerQuery) ||
-                (item.aliases &&
-                  item.aliases.some((alias: string) =>
-                    alias.toLowerCase().includes(lowerQuery)
-                  ))
-            );
-          }}
+          getItems={async (query) =>
+            filterSuggestionItems(
+              getCustomSlashMenuItems(editor, isDefaultEditor),
+              query,
+            )
+          }
         />
         <SuggestionMenuController
           triggerCharacter={shortcutTrigger}
           getItems={async (query) => {
             const items = [
-              ...getCustomShortcutsMenuItems(
-                editor as unknown as typeof schema.BlockNoteEditor,
-                customShortcuts || [],
-              ),
-              ...getUsernameShortcutsMenuItems(
-                editor as unknown as typeof schema.BlockNoteEditor,
-                shortcuts,
-              ),
+              ...(showCustomShortcuts
+                ? getCustomShortcutsMenuItems(
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    editor as any,
+                    customShortcuts || [],
+                  )
+                : []),
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              ...getUsernameShortcutsMenuItems(editor as any, shortcuts),
             ];
             const lowerQuery = query.toLowerCase();
             return items.filter(
@@ -148,8 +193,8 @@ export function PostyBirbEditor(props: PostyBirbEditorProps) {
                 item.title.toLowerCase().includes(lowerQuery) ||
                 (item.aliases &&
                   item.aliases.some((alias: string) =>
-                    alias.toLowerCase().includes(lowerQuery)
-                  ))
+                    alias.toLowerCase().includes(lowerQuery),
+                  )),
             );
           }}
         />

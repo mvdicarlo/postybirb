@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ServerBlockNoteEditor } from '@blocknote/server-util';
 import { Description, ICustomShortcut } from '@postybirb/types';
 import {
-  LegacyConverterEntity,
-  MinimalEntity,
+    LegacyConverterEntity,
+    MinimalEntity,
 } from './legacy-converter-entity';
 
 export class LegacyCustomShortcut
@@ -34,6 +33,8 @@ export class LegacyCustomShortcut
     const contentWithWrappedShortcuts = this.wrapLegacyShortcuts(this.content);
 
     // Step 2: Parse HTML with wrapped shortcuts to BlockNote format
+    // Lazy-load BlockNote to avoid ESM compatibility issues in Electron
+    const { ServerBlockNoteEditor } = await import('@blocknote/server-util');
     const editor = ServerBlockNoteEditor.create();
     let shortcut = (await editor.tryParseHTMLToBlocks(
       contentWithWrappedShortcuts,
@@ -176,8 +177,8 @@ export class LegacyCustomShortcut
 
   /**
    * Converts {default} shortcuts to block-level elements.
-   * - If default is alone in a block, convert the block to type: 'default'
-   * - If default is with other content, remove it and insert a default block before
+   * - If default is alone in a block, convert the block to type: 'defaultShortcut'
+   * - If default is with other content, remove it and insert a defaultShortcut block before
    */
   private convertDefaultToBlock(blocks: Description): Description {
     const result: any[] = [];
@@ -210,9 +211,9 @@ export class LegacyCustomShortcut
           );
 
           if (hasOtherContent) {
-            // Default was with other content - insert default block before this one
+            // Default was with other content - insert defaultShortcut block before this one
             result.push({
-              type: 'default',
+              type: 'defaultShortcut',
               props: {},
               content: [],
               children: [],
@@ -224,9 +225,9 @@ export class LegacyCustomShortcut
               content: otherContent,
             });
           } else {
-            // Default was alone - convert this block to default type
+            // Default was alone - convert this block to defaultShortcut type
             result.push({
-              type: 'default',
+              type: 'defaultShortcut',
               props: {},
               content: [],
               children: block.children || [],

@@ -1,6 +1,13 @@
-import { BlockNoteEditor } from '@blocknote/core';
+import {
+  BlockNoteEditor,
+  BlockNoteSchema,
+  defaultBlockSpecs,
+  defaultInlineContentSpecs,
+  defaultStyleSpecs,
+} from '@blocknote/core';
 import { BlockNoteView } from '@blocknote/mantine';
 import {
+  DefaultReactSuggestionItem,
   SuggestionMenuController,
   getDefaultReactSlashMenuItems,
   useCreateBlockNote,
@@ -17,7 +24,21 @@ import { debounce } from 'lodash';
 import { useCallback, useEffect } from 'react';
 import { useQuery } from 'react-query';
 import fileSubmissionApi from '../../../../../api/file-submission.api';
+import { filterSuggestionItems } from '../../../../shared/postybirb-editor/filter-suggestion-item';
 import { altFileSchema } from '../../../../shared/postybirb-editor/schema';
+
+const getCustomSlashMenuItems = (
+  editor: BlockNoteEditor,
+): DefaultReactSuggestionItem[] =>
+  getDefaultReactSlashMenuItems(editor).filter((item) => {
+    if (item.key === 'table') {
+      return false;
+    }
+    if (item.key === 'emoji') {
+      return false;
+    }
+    return true;
+  });
 
 type FileTextFileAltProps = {
   file: ISubmissionFileDto;
@@ -34,6 +55,25 @@ export function FileTextAlt(props: FileTextFileAltProps) {
     fileSubmissionApi.getAltText(file.altFileId!).then((res) => res.body),
   );
   const theme = useMantineColorScheme();
+
+  const schema = BlockNoteSchema.create({
+    blockSpecs: {
+      paragraph: defaultBlockSpecs.paragraph,
+      heading: defaultBlockSpecs.heading,
+      divider: defaultBlockSpecs.divider,
+      audio: defaultBlockSpecs.audio,
+      video: defaultBlockSpecs.video,
+      image: defaultBlockSpecs.image,
+      table: defaultBlockSpecs.table,
+    },
+    inlineContentSpecs: {
+      ...defaultInlineContentSpecs,
+    },
+    styleSpecs: {
+      ...defaultStyleSpecs,
+    },
+  });
+
   // Creates a new editor instance.
   const editor = useCreateBlockNote({
     initialContent: undefined,
@@ -81,19 +121,9 @@ export function FileTextAlt(props: FileTextFileAltProps) {
         >
           <SuggestionMenuController
             triggerCharacter="/"
-            getItems={async (query) => {
-              // Gets all default slash menu items filtered by query
-              const items = getDefaultReactSlashMenuItems(editor);
-              const lowerQuery = query.toLowerCase();
-              return items.filter(
-                (item) =>
-                  item.title.toLowerCase().includes(lowerQuery) ||
-                  (item.aliases &&
-                    item.aliases.some((alias: string) =>
-                      alias.toLowerCase().includes(lowerQuery),
-                    )),
-              );
-            }}
+            getItems={async (query) =>
+              filterSuggestionItems(getCustomSlashMenuItems(editor), query)
+            }
           />
         </BlockNoteView>
       </ScrollArea.Autosize>

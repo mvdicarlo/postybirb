@@ -152,12 +152,12 @@ describe('LegacyCustomShortcutConverter', () => {
     const record = records[0];
     expect(record.name).toBe('testshortcut');
 
-    // Verify the structure - should have 2 blocks: default block + paragraph with content
+    // Verify the structure - should have 2 blocks: defaultShortcut block + paragraph with content
     expect(record.shortcut).toHaveLength(2);
 
-    // First block should be the default block
+    // First block should be the defaultShortcut block
     expect(record.shortcut[0]).toMatchObject({
-      type: 'default',
+      type: 'defaultShortcut',
       props: {},
       content: [],
       children: [],
@@ -281,10 +281,10 @@ describe('LegacyCustomShortcutConverter', () => {
 
     const record = records[0];
 
-    // Should have a single default block
+    // Should have a single defaultShortcut block
     expect(record.shortcut).toMatchObject([
       {
-        type: 'default',
+        type: 'defaultShortcut',
         props: {},
         content: [],
         children: [],
@@ -292,7 +292,7 @@ describe('LegacyCustomShortcutConverter', () => {
     ]);
   });
 
-  it('should insert default block before paragraph when {default} is with other content', async () => {
+  it('should insert defaultShortcut block before paragraph when {default} is with other content', async () => {
     const shortcutData = {
       _id: 'test-default-with-content',
       created: '2023-10-01T12:00:00Z',
@@ -313,10 +313,10 @@ describe('LegacyCustomShortcutConverter', () => {
 
     const record = records[0];
 
-    // Should have 2 blocks: default block + paragraph with remaining text
+    // Should have 2 blocks: defaultShortcut block + paragraph with remaining text
     expect(record.shortcut).toMatchObject([
       {
-        type: 'default',
+        type: 'defaultShortcut',
         props: {},
         content: [],
         children: [],
@@ -358,16 +358,16 @@ describe('LegacyCustomShortcutConverter', () => {
 
     const record = records[0];
 
-    // Should have 3 blocks: default (from first para), default (inserted), paragraph (remaining content)
+    // Should have 3 blocks: defaultShortcut (from first para), defaultShortcut (inserted), paragraph (remaining content)
     expect(record.shortcut).toMatchObject([
       {
-        type: 'default',
+        type: 'defaultShortcut',
         props: {},
         content: [],
         children: [],
       },
       {
-        type: 'default',
+        type: 'defaultShortcut',
         props: {},
         content: [],
         children: [],
