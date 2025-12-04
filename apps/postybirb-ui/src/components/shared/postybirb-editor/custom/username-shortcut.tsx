@@ -1,4 +1,4 @@
-import { Trans } from "@lingui/react/macro";
+import { Trans } from '@lingui/react/macro';
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable react-hooks/rules-of-hooks */
@@ -16,7 +16,6 @@ import {
   Divider,
   Group,
   Popover,
-  ScrollArea,
   Stack,
   Text,
   TextInput,
@@ -36,6 +35,7 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useStore } from '../../../../stores/use-store';
 import { WebsiteStore } from '../../../../stores/website.store';
+import { CommonTranslations } from '../../../../translations/common-translations';
 import { schema } from '../schema';
 import './shortcut.css';
 
@@ -224,7 +224,12 @@ function Shortcut(props: {
 
   return (
     <span ref={ref}>
-      <Badge variant="outline" radius="xs" tt="none">
+      <Badge
+        variant="outline"
+        radius="xs"
+        tt="none"
+        style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
+      >
         {el}
       </Badge>
     </span>
@@ -235,15 +240,9 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
   {
     type: 'username',
     propSchema: {
-      id: {
-        default: Date.now().toString(),
-      },
-      shortcut: {
-        default: '',
-      },
-      only: {
-        default: '',
-      },
+      id: { default: Date.now().toString() },
+      shortcut: { default: '' },
+      only: { default: '' },
     },
     content: 'styled',
   },
@@ -261,11 +260,7 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
 
       // Available website options
       const websiteOptions = useMemo(
-        () =>
-          websites.map((w) => ({
-            value: w.id,
-            label: w.displayName,
-          })),
+        () => websites.map((w) => ({ value: w.id, label: w.displayName })),
         [websites],
       );
 
@@ -296,9 +291,7 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
           if (inline) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (inline as Record<string, any>).props.only = newOnlyValue;
-            editor.updateBlock(block.id, {
-              content: block.content,
-            });
+            editor.updateBlock(block.id, { content: block.content });
           }
         },
         [editor, props.inlineContent.props.id],
@@ -351,7 +344,7 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
 
         if (selectedWebsiteIds.length === 1) {
           const website = websites.find((w) => w.id === selectedWebsiteIds[0]);
-          return website?.displayName || <Trans>Unknown</Trans>;
+          return website?.displayName || <CommonTranslations.Unknown />;
         }
 
         const names = selectedWebsiteIds
@@ -380,9 +373,7 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
         if (inline) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (inline as any).content = [{ type: 'text', text: '', styles: {} }];
-          editor.updateBlock(block.id, {
-            content: block.content,
-          });
+          editor.updateBlock(block.id, { content: block.content });
         }
       }, [editor, props.inlineContent.props.id]);
 
@@ -392,11 +383,18 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
           style={{ verticalAlign: 'text-bottom', position: 'relative' }}
         >
           <Badge
+            className="username-shortcut-badge"
             variant="outline"
             contentEditable={false}
             radius="xs"
             tt="uppercase"
             size="sm"
+            h="fit-content"
+            style={{
+              borderRight: 'none',
+              borderTopRightRadius: 0,
+              borderBottomRightRadius: 0,
+            }}
           >
             {props.inlineContent.props.shortcut}
             <span
@@ -420,29 +418,39 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
               <Popover.Target>
                 <Tooltip
                   label={<Trans>Select websites to apply usernames to</Trans>}
+                  withArrow
                 >
                   <Badge
                     variant="light"
                     size="sm"
                     color={badgeColor}
                     contentEditable={false}
-                    radius="xs"
+                    radius="sm"
                     onClick={toggle}
-                    pr={0}
+                    pr={4}
+                    pl={6}
                     style={{
                       cursor: 'pointer',
                       // eslint-disable-next-line lingui/no-unlocalized-strings
                       transition: 'all 0.2s ease',
                     }}
+                    styles={{ root: { textTransform: 'none' } }}
                     rightSection={
-                      <IconChevronDown
-                        size={10}
-                        style={{
-                          transform: opened ? 'rotate(180deg)' : 'rotate(0deg)',
-                          // eslint-disable-next-line lingui/no-unlocalized-strings
-                          transition: 'transform 0.2s ease',
-                        }}
-                      />
+                      <Box
+                        ml={4}
+                        style={{ display: 'flex', alignItems: 'center' }}
+                      >
+                        <IconChevronDown
+                          size={12}
+                          style={{
+                            transform: opened
+                              ? 'rotate(180deg)'
+                              : 'rotate(0deg)',
+                            // eslint-disable-next-line lingui/no-unlocalized-strings
+                            transition: 'transform 0.2s ease',
+                          }}
+                        />
+                      </Box>
                     }
                   >
                     {selectedDisplayText}
@@ -454,7 +462,11 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
                 <Stack gap="xs">
                   {/* Header */}
                   <Box>
-                    <Group align="apart" p="xs">
+                    <Group
+                      align="apart"
+                      p="xs"
+                      style={{ alignItems: 'center' }}
+                    >
                       <Group gap="xs">
                         <ThemeIcon size="sm" variant="light" color="blue">
                           <IconWorld size={14} />
@@ -508,23 +520,13 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
                           <Trans>Select All</Trans>
                         )}
                       </Button>
-                      <Button
-                        size="xs"
-                        variant="light"
-                        color="orange"
-                        onClick={handleClearAll}
-                        disabled={selectedWebsiteIds.length === 0}
-                        style={{ flex: 1 }}
-                      >
-                        <Trans>All Websites</Trans>
-                      </Button>
                     </Group>
                   </Box>
 
                   <Divider />
 
                   {/* Website list */}
-                  <ScrollArea style={{ maxHeight: '200px' }}>
+                  <Box style={{ maxHeight: '200px', overflow: 'auto' }}>
                     {filteredWebsiteOptions.length > 0 ? (
                       <Stack gap={0} p="xs">
                         {filteredWebsiteOptions.map((option) => {
@@ -550,9 +552,7 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
                                   onChange={() => {}} // Handled by button click
                                   size="xs"
                                   color="blue"
-                                  styles={{
-                                    input: { cursor: 'pointer' },
-                                  }}
+                                  styles={{ input: { cursor: 'pointer' } }}
                                 />
                                 <Text
                                   size="sm"
@@ -574,31 +574,12 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
                       </Stack>
                     ) : (
                       <Box p="md">
-                        <Text ta="center" color="dimmed" size="sm">
-                          <Trans>No websites found</Trans>
+                        <Text ta="center" c="dimmed" size="sm">
+                          <CommonTranslations.NoItemsFound />
                         </Text>
                       </Box>
                     )}
-                  </ScrollArea>
-
-                  {/* Footer info */}
-                  {selectedWebsiteIds.length > 0 && (
-                    <>
-                      <Divider />
-                      <Box
-                        p="sm"
-                        style={{
-                          backgroundColor: 'var(--mantine-color-blue-1)',
-                        }}
-                      >
-                        <Text size="xs" color="blue" fw={500}>
-                          <Trans>
-                            This shortcut will apply to the selected websites.
-                          </Trans>
-                        </Text>
-                      </Box>
-                    </>
-                  )}
+                  </Box>
                 </Stack>
               </Popover.Dropdown>
             </Popover>
@@ -622,11 +603,7 @@ export const getUsernameShortcutsMenuItems = (
       editor.insertInlineContent([
         {
           type: 'username',
-          props: {
-            id: Date.now().toString(),
-            shortcut: sc.id,
-            only: '',
-          },
+          props: { id: Date.now().toString(), shortcut: sc.id, only: '' },
           content: 'username',
         },
         ' ', // add a space after the shortcut

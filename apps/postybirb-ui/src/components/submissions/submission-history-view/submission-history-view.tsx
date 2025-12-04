@@ -35,6 +35,7 @@ import {
   IconCopy,
   IconDeviceFloppy,
   IconExternalLink,
+  IconLink,
   IconPlus,
   IconSearch,
   IconSend,
@@ -47,6 +48,7 @@ import { SubmissionDto } from '../../../models/dtos/submission.dto';
 import { AccountStore } from '../../../stores/account.store';
 import { SubmissionStore } from '../../../stores/submission.store';
 import { useStore } from '../../../stores/use-store';
+import { CommonTranslations } from '../../../translations/common-translations';
 import { ExternalLink } from '../../external-link/external-link';
 import { DeleteActionPopover } from '../../shared/delete-action-popover/delete-action-popover';
 
@@ -200,7 +202,7 @@ function PostDetailsView({ post }: { post: IPostRecord | null }) {
   const handleSaveToFile = () => {
     const filename = exportPostRecordToFile(post);
     showNotification({
-      title: t`File saved`,
+      title: <CommonTranslations.NounCreated />,
       message: filename,
       color: 'green',
     });
@@ -219,7 +221,7 @@ function PostDetailsView({ post }: { post: IPostRecord | null }) {
                 <Trans>Status</Trans>
               </Table.Th>
               <Table.Th>
-                <Trans>URL</Trans>
+                <IconLink height="1rem" />
               </Table.Th>
             </Table.Tr>
           </Table.Thead>
@@ -235,7 +237,7 @@ function PostDetailsView({ post }: { post: IPostRecord | null }) {
               <Table.Tr>
                 <Table.Td colSpan={3} style={{ textAlign: 'center' }}>
                   <Text c="dimmed">
-                    <Trans>No website posts available</Trans>
+                    <CommonTranslations.NoItemsFound />
                   </Text>
                 </Table.Td>
               </Table.Tr>
@@ -266,9 +268,9 @@ function PostDetailsView({ post }: { post: IPostRecord | null }) {
                       size="xs"
                     >
                       {copied ? (
-                        <Trans>Copied</Trans>
+                        <CommonTranslations.CopiedToClipboard />
                       ) : (
-                        <Trans>Copy to clipboard</Trans>
+                        <CommonTranslations.CopyToClipboard />
                       )}
                     </Button>
                   )}
@@ -353,7 +355,7 @@ function PostTimelineItem({
               color={child.errors.length ? 'red' : 'green'}
               key={child.id}
             >
-              {displayName ?? <Trans>Unknown</Trans>} ({account?.name})
+              {displayName ?? <CommonTranslations.Unknown />} ({account?.name})
             </Badge>
           );
         })}
@@ -393,14 +395,22 @@ function SubmissionHistoryCard({ submission }: { submission: SubmissionDto }) {
       setIsRestoring(true);
       await submissionApi.unarchive(submission.id);
       showNotification({
-        title: t`Submission restored`,
+        title: (
+          <CommonTranslations.NounUpdated>
+            <Trans>Submission</Trans>
+          </CommonTranslations.NounUpdated>
+        ),
         message: submission.getDefaultOptions().data.title,
         color: 'green',
         icon: <IconCheck size={16} />,
       });
     } catch (error) {
       showNotification({
-        title: t`Restore failed`,
+        title: (
+          <CommonTranslations.NounUpdateFailed>
+            <Trans>Submission</Trans>
+          </CommonTranslations.NounUpdateFailed>
+        ),
         message: String(error),
         color: 'red',
         icon: <IconX size={16} />,
@@ -415,14 +425,17 @@ function SubmissionHistoryCard({ submission }: { submission: SubmissionDto }) {
       setIsDeleting(true);
       await submissionApi.remove([submission.id]);
       showNotification({
-        title: t`Submission deleted`,
+        title: (
+          <CommonTranslations.NounDeleted>
+            <Trans>Submission</Trans>
+          </CommonTranslations.NounDeleted>
+        ),
         message: submission.getDefaultOptions().data.title,
         color: 'green',
         icon: <IconCheck size={16} />,
       });
     } catch (error) {
       showNotification({
-        title: t`Delete failed`,
         message: String(error),
         color: 'red',
         icon: <IconX size={16} />,
@@ -562,7 +575,6 @@ export function SubmissionHistoryView({
           <Flex align="center">
             <Input
               flex="6"
-              placeholder={t`Search`}
               width="100%"
               leftSection={<IconSearch />}
               value={nameFilter}
@@ -571,7 +583,7 @@ export function SubmissionHistoryView({
           </Flex>
         </Paper>
       </Box>
-      <Box>{renderHistoryItems()}</Box>
+      <Stack>{renderHistoryItems()}</Stack>
     </Stack>
   );
 }

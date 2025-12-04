@@ -1,14 +1,22 @@
-import { Trans } from "@lingui/react/macro";
-import { Box, Button, NumberInput, Stack, TextInput } from '@mantine/core';
+import { Trans } from '@lingui/react/macro';
+import {
+  Alert,
+  Box,
+  Button,
+  NumberInput,
+  Stack,
+  Text,
+  TextInput,
+} from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { TelegramAccountData, TelegramOAuthRoutes } from '@postybirb/types';
-import { IconLink } from '@tabler/icons-react';
+import { IconInfoCircle } from '@tabler/icons-react';
 import { useState } from 'react';
 import websitesApi from '../../api/websites.api';
 import { ExternalLink } from '../../components/external-link/external-link';
 import { LoginComponentProps } from '../../models/login-component-props';
 import {
-  createLoginHttpErrorHander,
+  createLoginHttpErrorHandler,
   notifyLoginFailed,
   notifyLoginSuccess,
 } from '../website-login-helpers';
@@ -35,10 +43,18 @@ export default function TelegramLoginView(
 
   return (
     <>
-      <Stack>
+      <Stack gap="md">
+        <Alert icon={<IconInfoCircle size={16} />} color="blue" variant="light">
+          <Text size="sm">
+            <Trans>
+              Telegram requires API credentials and phone number authentication.
+              You'll need to create a Telegram app and verify your phone number.
+            </Trans>
+          </Text>
+        </Alert>
+
         <NumberInput
-          // eslint-disable-next-line lingui/no-unlocalized-strings
-          label="App api_id"
+          label={<Trans>App API ID</Trans>}
           name="appId"
           required
           minLength={1}
@@ -46,7 +62,7 @@ export default function TelegramLoginView(
           description={
             <ExternalLink href="https://core.telegram.org/myapp">
               <Trans context="telegram.app-id-help">
-                Create telegram app to retrieve api_id and api_hash <IconLink />
+                Create telegram app to retrieve api_id and api_hash
               </Trans>
             </ExternalLink>
           }
@@ -54,9 +70,9 @@ export default function TelegramLoginView(
             setAppId(Number(event));
           }}
         />
+
         <TextInput
-          // eslint-disable-next-line lingui/no-unlocalized-strings
-          label="App api_hash"
+          label={<Trans>App API Hash</Trans>}
           required
           defaultValue={appHash}
           minLength={1}
@@ -64,14 +80,15 @@ export default function TelegramLoginView(
             setAppHash(event.currentTarget.value.trim());
           }}
         />
+
         <TextInput
-          label={<Trans>Phone Number (International Format)</Trans>}
+          label={<Trans>Phone Number</Trans>}
           defaultValue={phoneNumber}
           required
           description={
             <ExternalLink href="https://developers.omnisend.com/guides/e164-phone-number-formatting">
               <Trans context="telegram.phone-number-help">
-                Phone number must be in international format <IconLink />
+                Phone number must be in international format
               </Trans>
             </ExternalLink>
           }
@@ -79,10 +96,12 @@ export default function TelegramLoginView(
             setPhoneNumber(event.currentTarget.value.replace(/[^0-9+]/g, ''));
           }}
         />
-        <Box>
+
+        <Box mt="md">
           <Button
             loading={isSendingCode}
             disabled={!isValid}
+            fullWidth
             onClick={(event) => {
               event.preventDefault();
               setIsSendingCode(true);
@@ -91,14 +110,10 @@ export default function TelegramLoginView(
                 .performOAuthStep<TelegramOAuthRoutes>(
                   id,
                   'startAuthentication',
-                  {
-                    appId,
-                    phoneNumber,
-                    appHash,
-                  },
+                  { appId, phoneNumber, appHash },
                 )
                 .catch(
-                  createLoginHttpErrorHander(
+                  createLoginHttpErrorHandler(
                     <Trans>Failed to send code to begin authentication</Trans>,
                   ),
                 )
@@ -112,14 +127,14 @@ export default function TelegramLoginView(
                 .finally(() => setIsSendingCode(false));
             }}
           >
-            <Trans>Send code</Trans>
+            <Trans>Send Code</Trans>
           </Button>
         </Box>
       </Stack>
+
       {displayCodeDialog && (
-        <Stack>
+        <Stack gap="md">
           <TextInput
-            // eslint-disable-next-line lingui/no-unlocalized-strings
             label={<Trans>Code</Trans>}
             autoFocus
             required
@@ -137,6 +152,7 @@ export default function TelegramLoginView(
             }}
             minLength={1}
           />
+
           <TextInput
             label={<Trans>Cloud Password</Trans>}
             type="password"
@@ -158,10 +174,12 @@ export default function TelegramLoginView(
               setPassword(event.currentTarget.value.trim());
             }}
           />
-          <Box>
+
+          <Box mt="md">
             <Button
               loading={isAuthenticating}
               disabled={!code}
+              fullWidth
               onClick={() => {
                 submit();
 
@@ -204,7 +222,7 @@ export default function TelegramLoginView(
                       }
                     })
                     .catch(
-                      createLoginHttpErrorHander(
+                      createLoginHttpErrorHandler(
                         <Trans>Error while authenticating Telegram</Trans>,
                       ),
                     )

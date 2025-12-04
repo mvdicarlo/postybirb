@@ -1,12 +1,18 @@
-import { Trans } from "@lingui/react/macro";
-import { Box, Button, Stack, TextInput } from '@mantine/core';
+import { Trans } from '@lingui/react/macro';
+import { Alert, Box, Button, Stack, Text, TextInput } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { E621AccountData, E621OAuthRoutes } from '@postybirb/types';
+import { IconInfoCircle } from '@tabler/icons-react';
 import { useState } from 'react';
 import websitesApi from '../../api/websites.api';
 import { ExternalLink } from '../../components/external-link/external-link';
 import HttpErrorResponse from '../../models/http-error-response';
 import { LoginComponentProps } from '../../models/login-component-props';
+import { CommonTranslations } from '../../translations/common-translations';
+import {
+  notifyLoginFailed,
+  notifyLoginSuccess,
+} from '../website-login-helpers';
 
 const formId = 'e621-login-form';
 
@@ -27,23 +33,15 @@ export default function E621LoginView(
         setSubmitting(true);
         websitesApi
           .performOAuthStep<E621OAuthRoutes>(id, 'login', {
-            username,
-            key,
+            username: username.trim(),
+            key: key.trim(),
           })
           .then(({ result }) => {
             if (result) {
-              notifications.show({
-                title: 'Login success.',
-                message: 'Login success.',
-                color: 'green',
-              });
+              notifyLoginSuccess();
               setKey('');
             } else {
-              notifications.show({
-                title: 'Login failed.',
-                message: 'Check that username and API Key are valid.',
-                color: 'red',
-              });
+              notifyLoginFailed();
             }
           })
           .catch(({ error }: { error: HttpErrorResponse }) => {
@@ -62,44 +60,62 @@ export default function E621LoginView(
           });
       }}
     >
-      <Stack>
+      <Stack gap="md">
+        <Alert icon={<IconInfoCircle size={16} />} color="blue" variant="light">
+          <Text size="sm">
+            <Trans>
+              e621 requires API credentials for posting. You'll need to generate
+              an API key from your account settings to authenticate PostyBirb.
+            </Trans>
+          </Text>
+        </Alert>
+
         <TextInput
           label={<Trans>Username</Trans>}
           name="username"
+          placeholder="your_username"
           required
           minLength={1}
-          defaultValue={username}
-          onBlur={(event) => {
-            setUsername(event.currentTarget.value.trim());
+          value={username}
+          onChange={(event) => {
+            setUsername(event.currentTarget.value);
           }}
         />
+
         <TextInput
           // eslint-disable-next-line lingui/no-unlocalized-strings
           label="API Key"
           name="password"
+          type="password"
+          // eslint-disable-next-line lingui/no-unlocalized-strings
+          placeholder="Your API key"
           description={
-            <ExternalLink href="https://e621.net/users/home">
+            <Text size="xs" c="dimmed">
               <Trans comment="E621 login form">
-                You must first get an API Key in your account settings [Manage
-                API Access]
+                Generate an API key from your{' '}
+                <ExternalLink href="https://e621.net/users/home">
+                  account settings
+                </ExternalLink>
               </Trans>
-            </ExternalLink>
+            </Text>
           }
           required
           minLength={1}
-          defaultValue={key}
-          onBlur={(event) => {
-            setKey(event.currentTarget.value.trim());
+          value={key}
+          onChange={(event) => {
+            setKey(event.currentTarget.value);
           }}
         />
-        <Box>
+
+        <Box mt="md">
           <Button
             type="submit"
             form={formId}
             loading={isSubmitting}
             disabled={!username || !key}
+            fullWidth
           >
-            <Trans>Save</Trans>
+            <CommonTranslations.Save />
           </Button>
         </Box>
       </Stack>

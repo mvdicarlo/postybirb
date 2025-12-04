@@ -1,4 +1,4 @@
-import { Trans } from "@lingui/react/macro";
+import { Trans } from '@lingui/react/macro';
 import { notifications } from '@mantine/notifications';
 import React from 'react';
 import HttpErrorResponse from '../models/http-error-response';
@@ -21,7 +21,7 @@ export function notifyLoginFailed(message?: React.ReactNode) {
   });
 }
 
-export function createLoginHttpErrorHander(action?: React.ReactNode) {
+export function createLoginHttpErrorHandler(action?: React.ReactNode) {
   return ({ error }: { error: HttpErrorResponse }) => {
     notifications.show({
       title: (

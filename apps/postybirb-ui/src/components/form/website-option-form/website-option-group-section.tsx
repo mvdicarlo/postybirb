@@ -1,4 +1,4 @@
-import { Trans } from "@lingui/react/macro";
+import { Trans } from '@lingui/react/macro';
 import {
   ActionIcon,
   Badge,
@@ -20,6 +20,7 @@ import {
 import { IconExclamationCircle, IconX } from '@tabler/icons-react';
 import { useState } from 'react';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
+import { CommonTranslations } from '../../../translations/common-translations';
 import { ComponentErrorBoundary } from '../../error-boundary';
 import { WebsiteOptionForm } from './website-option-form';
 
@@ -46,19 +47,12 @@ export function WebsiteOptionGroupSection(
   const accountName = isDefaultAccount ? (
     <Group>
       <span>
-        <Trans>Default</Trans>
+        <CommonTranslations.Default />
       </span>
 
-      <Tooltip
-        label={
-          <Trans>
-            Save current form values as the default values for future
-            submissions
-          </Trans>
-        }
-      >
+      <Tooltip label={<CommonTranslations.DefaultSaveTooltip />}>
         <Button variant="subtle">
-          <Trans>Save defaults</Trans>
+          <CommonTranslations.DefaultSaveAction />
         </Button>
       </Tooltip>
     </Group>
@@ -125,14 +119,7 @@ export function WebsiteOptionGroupSection(
                     >
                       <IconX />
                     </ActionIcon>
-                    <Tooltip
-                      label={
-                        <Trans>
-                          Save current form values as the default values for
-                          future submissions
-                        </Trans>
-                      }
-                    >
+                    <Tooltip label={<CommonTranslations.DefaultSaveTooltip />}>
                       <Button
                         variant="subtle"
                         onClick={() =>
@@ -142,7 +129,7 @@ export function WebsiteOptionGroupSection(
                           })
                         }
                       >
-                        <Trans>Save defaults</Trans>
+                        <CommonTranslations.DefaultSaveAction />
                       </Button>
                     </Tooltip>
                   </Group>

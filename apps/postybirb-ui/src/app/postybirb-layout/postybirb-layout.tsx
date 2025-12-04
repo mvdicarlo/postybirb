@@ -42,6 +42,7 @@ import {
   FileSubmissionsKeybinding,
   HomeKeybinding,
   MessageSubmissionsKeybinding,
+  NotificationsKeybinding,
   SettingsKeybinding,
   SpotlightKeybinding,
   TagConvertersKeybinding,
@@ -70,19 +71,14 @@ function AppImage() {
       <img
         src="/app-icon.png"
         // eslint-disable-next-line lingui/no-unlocalized-strings
-        alt="postybirb icon"
+        alt="postybirb"
         className={classes.logoImage}
       />
     </div>
   );
 }
 
-const navigationTargets: (
-  | null
-  | (SideNavLinkProps & {
-      key: string;
-    })
-)[] = [
+const navigationTargets: (null | (SideNavLinkProps & { key: string }))[] = [
   {
     type: 'link',
     key: 'home',
@@ -114,8 +110,7 @@ const navigationTargets: (
     label: <Trans>Notifications</Trans>,
     globalStateKey: 'notificationsDrawerVisible',
     icon: <NotificationsIcon />,
-    // eslint-disable-next-line lingui/no-unlocalized-strings
-    kbd: 'Alt+N',
+    kbd: NotificationsKeybinding,
   },
   {
     type: 'drawer',
@@ -197,10 +192,7 @@ function ScrollToTop() {
   const scrollToTop = () => {
     const mainContent = document.querySelector('#postybirb__main');
     if (mainContent) {
-      mainContent.scrollTo({
-        top: 0,
-        behavior: 'smooth',
-      });
+      mainContent.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -219,8 +211,6 @@ function ScrollToTop() {
           onClick={scrollToTop}
           variant="filled"
           radius="xl"
-          // eslint-disable-next-line lingui/no-unlocalized-strings
-          aria-label="Scroll to top"
         >
           <IconArrowUp size={16} />
         </ActionIcon>
@@ -286,10 +276,7 @@ export function PostyBirbLayout() {
 
   return (
     <AppShell
-      navbar={{
-        width: sideNavToggled ? 60 : 240,
-        breakpoint: 'xs',
-      }}
+      navbar={{ width: sideNavToggled ? 60 : 240, breakpoint: 'xs' }}
       className={isDark ? classes.darkAppShell : ''}
     >
       <AppShell.Navbar

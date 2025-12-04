@@ -1,4 +1,4 @@
-import { Trans, useLingui } from '@lingui/react/macro';
+import { Trans } from '@lingui/react/macro';
 import {
   ActionIcon,
   Badge,
@@ -14,11 +14,11 @@ import { useDisclosure } from '@mantine/hooks';
 import { IconCheck, IconEye, IconSearch, IconX } from '@tabler/icons-react';
 import { useMemo, useState } from 'react';
 import { useWebsites } from '../../../../hooks/account/use-websites';
+import { CommonTranslations } from '../../../../translations/common-translations';
 
 export function WebsiteVisibilityPicker() {
   const { websites, isLoading, filteredWebsites, setHiddenWebsites } =
     useWebsites();
-  const { t } = useLingui();
   const [opened, { toggle, close }] = useDisclosure(false);
   const [search, setSearch] = useState('');
 
@@ -172,7 +172,7 @@ export function WebsiteVisibilityPicker() {
                 })
               ) : (
                 <Text c="dimmed" ta="center" size="sm" py="xs">
-                  <Trans>No websites match your search</Trans>
+                  <CommonTranslations.NoItemsFound />
                 </Text>
               )}
             </Box>
@@ -180,7 +180,7 @@ export function WebsiteVisibilityPicker() {
 
           <Group p="right" mt="xs">
             <Button size="xs" onClick={close}>
-              <Trans>Done</Trans>
+              <CommonTranslations.Close />
             </Button>
           </Group>
         </Popover.Dropdown>

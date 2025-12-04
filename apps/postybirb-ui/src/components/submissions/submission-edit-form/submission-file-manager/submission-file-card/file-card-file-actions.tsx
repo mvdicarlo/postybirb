@@ -1,4 +1,4 @@
-import { Trans } from "@lingui/react/macro";
+import { Trans } from '@lingui/react/macro';
 import {
   ActionIcon,
   Badge,
@@ -25,6 +25,7 @@ import { useState } from 'react';
 import fileSubmissionApi, {
   FileUpdateTarget,
 } from '../../../../../api/file-submission.api';
+import { CommonTranslations } from '../../../../../translations/common-translations';
 import { defaultTargetProvider } from '../../../../../transports/http-client';
 import {
   EditImageFromSource,
@@ -45,7 +46,10 @@ function CardImageProvider(file: ISubmissionFileDto) {
           <source src={src} type="audio/mp3" />
           <source src={src} type="audio/mpeg3" />
           <source src={src} type="audio/wav" />
-          <Trans>Your browser does not support the audio tag.</Trans>
+          <source src={src} type="audio/webm" />
+          <source src={src} type="audio/aac" />
+          <source src={src} type="audio/flac" />
+          <source src={src} type="audio/x-m4a" />
         </audio>
       );
     case FileType.TEXT:
@@ -58,7 +62,9 @@ function CardImageProvider(file: ISubmissionFileDto) {
         <video width="150" height="100" controls>
           <source src={src} type="video/mp4" />
           <source src={src} type="video/ogg" />
-          <Trans>Your browser does not support the video tag.</Trans>
+          <source src={src} type="video/webm" />
+          <source src={src} type="video/x-matroska" />
+          <source src={src} type="video/quicktime" />
         </video>
       );
     case FileType.UNKNOWN:
@@ -187,7 +193,7 @@ export function FileCardFileActions(props: FileCardFileActionsProps) {
                   // Only allow replacing files with the same type
                   if (fileType !== newFileType) {
                     notifications.show({
-                      title: <Trans>Invalid file type</Trans>,
+                      title: <CommonTranslations.NounUpdateFailed />,
                       message: (
                         <Trans>
                           File types do not match. Please upload a file of the

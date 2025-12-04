@@ -1,6 +1,6 @@
-import { Trans } from "@lingui/react/macro";
 import { ActionIcon, CopyButton, Tooltip, rem } from '@mantine/core';
 import { IconCheck, IconCopy } from '@tabler/icons-react';
+import { CommonTranslations } from '../../../translations/common-translations';
 
 export function FieldCopyButton({ value }: { value: string | undefined }) {
   if (!value || typeof value !== 'string') {
@@ -11,7 +11,13 @@ export function FieldCopyButton({ value }: { value: string | undefined }) {
     <CopyButton value={value?.trim() || ''} timeout={2000}>
       {({ copied, copy }) => (
         <Tooltip
-          label={copied ? <Trans>Copied</Trans> : <Trans>Copy</Trans>}
+          label={
+            copied ? (
+              <CommonTranslations.CopiedToClipboard />
+            ) : (
+              <CommonTranslations.CopyToClipboard />
+            )
+          }
           withArrow
           position="right"
         >

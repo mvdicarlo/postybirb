@@ -40,7 +40,7 @@ export function LanguagePicker() {
       >
         <Menu.Target>
           <Tooltip
-            label={t`Change language`}
+            label={<Trans>Language</Trans>}
             position="right"
             withArrow
             openDelay={500}
@@ -50,7 +50,7 @@ export function LanguagePicker() {
               variant={hovered || opened ? 'light' : 'subtle'}
               radius="md"
               size="lg"
-              aria-label={t`Change language`}
+              aria-label={t`Language`}
               c="inherit"
             >
               <IconLanguageHiragana

@@ -40,6 +40,7 @@ import websiteOptionsApi from '../../../../api/website-options.api';
 import { SubmissionDto } from '../../../../models/dtos/submission.dto';
 import { AccountStore } from '../../../../stores/account.store';
 import { useStore } from '../../../../stores/use-store';
+import { CommonTranslations } from '../../../../translations/common-translations';
 import { ComponentErrorBoundary } from '../../../error-boundary/specialized-error-boundaries';
 import { WebsiteOptionGroupSection } from '../../../form/website-option-form/website-option-group-section';
 import { ImplementedWebsiteSelect } from '../../../form/website-select/implemented-website-select';
@@ -61,7 +62,7 @@ function SubmissionViewCardComponent(props: SubmissionViewCardProps) {
   const { type } = submission;
   const { files } = submission;
   const defaultOption = submission.getDefaultOptions();
-  const title = defaultOption.data.title || <Trans>Unknown</Trans>;
+  const title = defaultOption.data.title || <CommonTranslations.Unknown />;
 
   const optionsGroupedByWebsiteId = submission.options
     .filter((o) => !o.isDefault)
@@ -73,10 +74,7 @@ function SubmissionViewCardComponent(props: SubmissionViewCardProps) {
         }
         const websiteId = account.website;
         if (!acc[websiteId]) {
-          acc[websiteId] = {
-            account,
-            options: [],
-          };
+          acc[websiteId] = { account, options: [] };
         }
         acc[websiteId].options.push(option);
         return acc;
@@ -236,7 +234,7 @@ function SubmissionViewCardComponent(props: SubmissionViewCardProps) {
                 c="dimmed"
                 title={new Date(lastEdited.updatedAt).toLocaleString()}
               >
-                <Trans>Last modified:</Trans>{' '}
+                <Trans>Last modified</Trans>:{' '}
                 <UpdateOnLanguageChange
                   render={() => moment(lastEdited.updatedAt).fromNow()}
                 />

@@ -1,11 +1,5 @@
-import { Trans } from "@lingui/react/macro";
-import {
-    Card,
-    Group,
-    Stack,
-    Switch,
-    Text,
-} from '@mantine/core';
+import { Trans } from '@lingui/react/macro';
+import { Card, Group, Stack, Switch, Text } from '@mantine/core';
 import { IconBell } from '@tabler/icons-react';
 import settingsApi from '../../../../api/settings.api';
 import { useSettings } from '../../../../stores/use-settings';
@@ -51,7 +45,7 @@ export function NotificationsSettings() {
           <>
             <Switch
               ml="md"
-              label={<Trans>Show notification on post success</Trans>}
+              label={<Trans>Post Success</Trans>}
               checked={
                 settings?.desktopNotifications?.showOnPostSuccess ?? false
               }
@@ -64,7 +58,7 @@ export function NotificationsSettings() {
             />
             <Switch
               ml="md"
-              label={<Trans>Show notification on post error</Trans>}
+              label={<Trans>Post failure</Trans>}
               checked={settings?.desktopNotifications?.showOnPostError ?? true}
               onChange={(event) => {
                 updateDesktopNotifications(
@@ -75,7 +69,7 @@ export function NotificationsSettings() {
             />
             <Switch
               ml="md"
-              label={<Trans>Show notification on file watcher success</Trans>}
+              label={<Trans>File Watcher Success</Trans>}
               checked={
                 settings?.desktopNotifications?.showOnDirectoryWatcherSuccess ??
                 false
@@ -89,7 +83,7 @@ export function NotificationsSettings() {
             />
             <Switch
               ml="md"
-              label={<Trans>Show notification on file watcher error</Trans>}
+              label={<Trans>File Watcher Failure</Trans>}
               checked={
                 settings?.desktopNotifications?.showOnDirectoryWatcherError ??
                 true

@@ -31,6 +31,7 @@ import { SubmissionDto } from '../../../models/dtos/submission.dto';
 import { SubmissionTemplateStore } from '../../../stores/submission-template.store';
 import { SubmissionStore } from '../../../stores/submission.store';
 import { useStore } from '../../../stores/use-store';
+import { CommonTranslations } from '../../../translations/common-translations';
 import './template-picker-modal.css';
 
 type TemplatePickerModalProps = {
@@ -63,21 +64,13 @@ function groupWebsiteOptions(
         ({
           id: NULL_ACCOUNT_ID,
           name: t`Default`,
-          websiteInfo: {
-            websiteDisplayName: t`Default`,
-          },
+          websiteInfo: { websiteDisplayName: t`Default` },
         } as IAccountDto);
       if (!groups[account.id]) {
-        groups[account.id] = {
-          account,
-          submissions: [],
-        };
+        groups[account.id] = { account, submissions: [] };
       }
 
-      groups[account.id].submissions.push({
-        submission,
-        option,
-      });
+      groups[account.id].submissions.push({ submission, option });
     });
   });
 
@@ -97,7 +90,10 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
   const [overrideTitle, setOverrideTitle] = useState(false);
 
   const templates = templateState.filter((s) => s.type === type);
-  const submissions = submissionsState.filter((s) => s.id !== submissionId);
+  const submissions = submissionsState
+    .filter((s) => s.isArchived === false)
+    .filter((s) => s.id !== submissionId)
+    .filter((s) => s.type === type);
 
   const templateOptions: ComboboxItem[] = templates.map((template) => ({
     label: template.getTemplateName(),
@@ -105,19 +101,13 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
   }));
 
   const submissionOptions: ComboboxItem[] = submissions.map((submission) => ({
-    label: submission.getDefaultOptions().data.title ?? t`Unknown`,
+    label: submission.getTitle() ?? t`Unknown`,
     value: submission.id,
   }));
 
   const options: ComboboxItemGroup[] = [
-    {
-      group: t`Templates`,
-      items: templateOptions,
-    },
-    {
-      group: t`Submissions`,
-      items: submissionOptions,
-    },
+    { group: t`Templates`, items: templateOptions },
+    { group: t`Submissions`, items: submissionOptions },
   ];
 
   const selectedTemplates: SubmissionDto[] = selected.map(
@@ -129,11 +119,6 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
 
   const selectedGroups = groupWebsiteOptions(selectedTemplates, accounts, t);
 
-  const clearSelection = () => {
-    setSelected([]);
-    setSelectedWebsiteOptions(undefined);
-  };
-
   const groupedFormRows = selectedWebsiteOptions
     ? Object.values(selectedGroups).map((group) => {
         // Uses group.account.id for null type to keep id uniqueness for radio values
@@ -142,12 +127,7 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
           label: string | JSX.Element;
           id: string;
           option?: WebsiteOptionsDto;
-        }[] = [
-          {
-            label: <Trans context="Template picker checkbox">None</Trans>,
-            id: nullId,
-          },
-        ];
+        }[] = [{ label: <Trans>None</Trans>, id: nullId }];
 
         const currentSelection = selectedWebsiteOptions[group.account.id];
         group.submissions.forEach(({ submission, option }) => {
@@ -167,9 +147,6 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
                   {group.account.id === NULL_ACCOUNT_ID
                     ? t`Default`
                     : `${group.account.websiteInfo.websiteDisplayName} - ${group.account.name}`}
-                </Text>
-                <Text size="xs" c="dimmed" fs="italic">
-                  ({checkboxOptions.length - 1} {t`options`})
                 </Text>
               </Group>
             }
@@ -300,9 +277,8 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
           clearable
           required
           searchable
-          nothingFoundMessage={<Trans>No templates found</Trans>}
+          nothingFoundMessage={<CommonTranslations.NoItemsFound />}
           label={<Trans>Select templates or submissions to import</Trans>}
-          description={<Trans>You can select multiple items</Trans>}
           data={options}
           style={{ width: '100%' }}
           value={selected}
@@ -368,7 +344,7 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
           c="var(--mantine-color-text)"
           onClick={onClose}
         >
-          <Trans>Cancel</Trans>
+          <CommonTranslations.Cancel />
         </Button>
         <Button
           disabled={Object.values(selectedWebsiteOptions ?? {}).length === 0}
@@ -398,7 +374,7 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
             }
           }}
         >
-          <Trans>Apply</Trans>
+          <CommonTranslations.Save />
         </Button>
       </Group>
     </Modal>

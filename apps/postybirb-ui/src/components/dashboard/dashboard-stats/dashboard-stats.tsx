@@ -1,4 +1,4 @@
-import { Trans } from "@lingui/react/macro";
+import { Trans } from '@lingui/react/macro';
 import {
   Badge,
   Box,
@@ -19,7 +19,11 @@ import {
 } from '@tabler/icons-react';
 import { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileSubmissionPath, MessageSubmissionPath } from '../../../pages/route-paths';
+import {
+  FileSubmissionPath,
+  MessageSubmissionPath,
+} from '../../../pages/route-paths';
+import { CommonTranslations } from '../../../translations/common-translations';
 import classes from './dashboard-stats.module.css';
 
 interface SubmissionBreakdown {
@@ -50,7 +54,11 @@ function StatCard({
     violet: { from: 'violet.5', to: 'grape.5', deg: 135 },
     teal: { from: 'teal.5', to: 'green.5', deg: 135 },
   };
-  const gradient = gradients[color] || { from: 'blue.5', to: 'cyan.5', deg: 135 };
+  const gradient = gradients[color] || {
+    from: 'blue.5',
+    to: 'cyan.5',
+    deg: 135,
+  };
   return (
     <Paper
       className={
@@ -107,31 +115,51 @@ export function DashboardStats({
       <Grid.Col span={{ base: 12, md: 4 }}>
         <StatCard
           icon={<IconFileText size={36} />}
-          title={<Trans>Total Submissions</Trans>}
+          title={<Trans>Submissions</Trans>}
           value={numSubmissions}
           color="blue"
         >
           {submissionBreakdown && (
             <Group justify="center" gap="xs" className={classes.breakdownRow}>
-              <Box className={classes.breakdownBox} style={{ cursor: 'pointer' }} onClick={() => navigate(FileSubmissionPath)}>
+              <Box
+                className={classes.breakdownBox}
+                style={{ cursor: 'pointer' }}
+                onClick={() => navigate(FileSubmissionPath)}
+              >
                 <ThemeIcon size={24} radius="xl" color="blue" variant="light">
                   <IconFile size={16} />
                 </ThemeIcon>
                 <Text size="xs" className={classes.breakdownLabel}>
-                  <Trans>Files</Trans>
+                  <CommonTranslations.File />
                 </Text>
-                <Badge color="blue" variant="light" size="lg" radius="xl" mt={2}>
+                <Badge
+                  color="blue"
+                  variant="light"
+                  size="lg"
+                  radius="xl"
+                  mt={2}
+                >
                   {submissionBreakdown.files}
                 </Badge>
               </Box>
-              <Box className={classes.breakdownBox} style={{ cursor: 'pointer' }} onClick={() => navigate(MessageSubmissionPath)}>
+              <Box
+                className={classes.breakdownBox}
+                style={{ cursor: 'pointer' }}
+                onClick={() => navigate(MessageSubmissionPath)}
+              >
                 <ThemeIcon size={24} radius="xl" color="green" variant="light">
                   <IconMessage size={16} />
                 </ThemeIcon>
                 <Text size="xs" className={classes.breakdownLabel}>
-                  <Trans>Messages</Trans>
+                  <CommonTranslations.Message />
                 </Text>
-                <Badge color="green" variant="light" size="lg" radius="xl" mt={2}>
+                <Badge
+                  color="green"
+                  variant="light"
+                  size="lg"
+                  radius="xl"
+                  mt={2}
+                >
                   {submissionBreakdown.messages}
                 </Badge>
               </Box>
@@ -148,25 +176,45 @@ export function DashboardStats({
         >
           {scheduledBreakdown && (
             <Group justify="center" gap="xs" className={classes.breakdownRow}>
-              <Box className={classes.breakdownBox} style={{ cursor: 'pointer' }} onClick={() => navigate(FileSubmissionPath)}>
+              <Box
+                className={classes.breakdownBox}
+                style={{ cursor: 'pointer' }}
+                onClick={() => navigate(FileSubmissionPath)}
+              >
                 <ThemeIcon size={24} radius="xl" color="blue" variant="light">
                   <IconFile size={16} />
                 </ThemeIcon>
                 <Text size="xs" className={classes.breakdownLabel}>
-                  <Trans>Files</Trans>
+                  <CommonTranslations.File />
                 </Text>
-                <Badge color="blue" variant="light" size="lg" radius="xl" mt={2}>
+                <Badge
+                  color="blue"
+                  variant="light"
+                  size="lg"
+                  radius="xl"
+                  mt={2}
+                >
                   {scheduledBreakdown.files}
                 </Badge>
               </Box>
-              <Box className={classes.breakdownBox} style={{ cursor: 'pointer' }} onClick={() => navigate(MessageSubmissionPath)}>
+              <Box
+                className={classes.breakdownBox}
+                style={{ cursor: 'pointer' }}
+                onClick={() => navigate(MessageSubmissionPath)}
+              >
                 <ThemeIcon size={24} radius="xl" color="green" variant="light">
                   <IconMessage size={16} />
                 </ThemeIcon>
                 <Text size="xs" className={classes.breakdownLabel}>
-                  <Trans>Messages</Trans>
+                  <CommonTranslations.Message />
                 </Text>
-                <Badge color="green" variant="light" size="lg" radius="xl" mt={2}>
+                <Badge
+                  color="green"
+                  variant="light"
+                  size="lg"
+                  radius="xl"
+                  mt={2}
+                >
                   {scheduledBreakdown.messages}
                 </Badge>
               </Box>
@@ -177,31 +225,51 @@ export function DashboardStats({
       <Grid.Col span={{ base: 12, md: 4 }}>
         <StatCard
           icon={<IconClock size={36} />}
-          title={<Trans>In Queue</Trans>}
+          title={<Trans>Queued</Trans>}
           value={numInQueue}
           color="teal"
         >
           {queueBreakdown && (
             <Group justify="center" gap="xs" className={classes.breakdownRow}>
-              <Box className={classes.breakdownBox} style={{ cursor: 'pointer' }} onClick={() => navigate(FileSubmissionPath)}>
+              <Box
+                className={classes.breakdownBox}
+                style={{ cursor: 'pointer' }}
+                onClick={() => navigate(FileSubmissionPath)}
+              >
                 <ThemeIcon size={24} radius="xl" color="blue" variant="light">
                   <IconFile size={16} />
                 </ThemeIcon>
                 <Text size="xs" className={classes.breakdownLabel}>
-                  <Trans>Files</Trans>
+                  <CommonTranslations.File />
                 </Text>
-                <Badge color="blue" variant="light" size="lg" radius="xl" mt={2}>
+                <Badge
+                  color="blue"
+                  variant="light"
+                  size="lg"
+                  radius="xl"
+                  mt={2}
+                >
                   {queueBreakdown.files}
                 </Badge>
               </Box>
-              <Box className={classes.breakdownBox} style={{ cursor: 'pointer' }} onClick={() => navigate(MessageSubmissionPath)}>
+              <Box
+                className={classes.breakdownBox}
+                style={{ cursor: 'pointer' }}
+                onClick={() => navigate(MessageSubmissionPath)}
+              >
                 <ThemeIcon size={24} radius="xl" color="green" variant="light">
                   <IconMessage size={16} />
                 </ThemeIcon>
                 <Text size="xs" className={classes.breakdownLabel}>
-                  <Trans>Messages</Trans>
+                  <CommonTranslations.Message />
                 </Text>
-                <Badge color="green" variant="light" size="lg" radius="xl" mt={2}>
+                <Badge
+                  color="green"
+                  variant="light"
+                  size="lg"
+                  radius="xl"
+                  mt={2}
+                >
                   {queueBreakdown.messages}
                 </Badge>
               </Box>

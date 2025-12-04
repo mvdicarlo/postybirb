@@ -1,4 +1,4 @@
-import { useLingui } from '@lingui/react/macro';
+import { Trans } from '@lingui/react/macro';
 import { ActionIcon, Tooltip, useMantineColorScheme } from '@mantine/core';
 import {
   IconMoon,
@@ -12,7 +12,6 @@ import './theme-picker.css';
 export function ThemePicker() {
   const { colorScheme, setColorScheme } = useMantineColorScheme();
   const [hovered, setHovered] = useState(false);
-  const { t } = useLingui();
 
   const isDark = colorScheme === 'dark';
   const icon = isDark ? <IconMoon size={22} /> : <IconSun size={22} />;
@@ -21,9 +20,11 @@ export function ThemePicker() {
   ) : (
     <IconSunFilled size={22} />
   );
-  const tooltipLabel = isDark
-    ? t`Switch to light mode`
-    : t`Switch to dark mode`;
+  const tooltipLabel = isDark ? (
+    <Trans>Switch to light mode</Trans>
+  ) : (
+    <Trans>Switch to dark mode</Trans>
+  );
 
   const swapTheme = () => setColorScheme(isDark ? 'light' : 'dark');
 
@@ -37,7 +38,6 @@ export function ThemePicker() {
         radius="md"
         className="theme-picker-button"
         size="lg"
-        aria-label={tooltipLabel}
         c="inherit"
       >
         <div className="theme-icon-container">{hovered ? hoverIcon : icon}</div>

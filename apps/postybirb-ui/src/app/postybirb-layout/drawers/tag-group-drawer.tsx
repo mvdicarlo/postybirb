@@ -1,4 +1,4 @@
-import { Trans, useLingui } from '@lingui/react/macro';
+import { Trans } from '@lingui/react/macro';
 import {
   ActionIcon,
   Badge,
@@ -8,8 +8,8 @@ import {
   Divider,
   Drawer,
   Fieldset,
+  Flex,
   Group,
-  HoverCard,
   Loader,
   Paper,
   ScrollArea,
@@ -38,6 +38,7 @@ import { ComponentErrorBoundary } from '../../../components/error-boundary/speci
 import { DeleteActionPopover } from '../../../components/shared/delete-action-popover/delete-action-popover';
 import { TagGroupStore } from '../../../stores/tag-group-store';
 import { useStore } from '../../../stores/use-store';
+import { CommonTranslations } from '../../../translations/common-translations';
 import { getOverlayOffset, getPortalTarget, marginOffset } from './drawer.util';
 import { useDrawerToggle } from './use-drawer-toggle';
 
@@ -52,28 +53,7 @@ function areEqual(
   return JSON.stringify(old) === JSON.stringify(current);
 }
 
-function TagBadgePreview({ tags }: { tags: string[] }) {
-  const visibleTags = tags.slice(0, 5);
-  const remainingCount = Math.max(0, tags.length - 5);
-
-  return (
-    <Group gap="xs">
-      {visibleTags.map((tag) => (
-        <Text key={tag} size="xs" c="dimmed" span>
-          {tag}
-        </Text>
-      ))}
-      {remainingCount > 0 && (
-        <Text size="xs" c="dimmed" span>
-          +{remainingCount} <Trans>more</Trans>
-        </Text>
-      )}
-    </Group>
-  );
-}
-
 function ExistingTagGroup(props: { tagGroup: TagGroupDto }) {
-  const { t } = useLingui();
   const { tagGroup } = props;
   const [state, setState] = useState<ICreateTagGroupDto>({
     name: tagGroup.name,
@@ -89,10 +69,8 @@ function ExistingTagGroup(props: { tagGroup: TagGroupDto }) {
 
   const handleCopyTags = () => {
     clipboard.copy(tagGroup.tags.join(', '));
-    const amountOfTags = tagGroup.tags.length;
     notifications.show({
-      title: <Trans>Copied</Trans>,
-      message: t`${amountOfTags} tags copied to clipboard`,
+      message: <CommonTranslations.CopiedToClipboard />,
       color: 'blue',
       autoClose: 2000,
     });
@@ -100,68 +78,35 @@ function ExistingTagGroup(props: { tagGroup: TagGroupDto }) {
 
   return (
     <Paper withBorder p="xs" radius="md" shadow={opened ? 'sm' : undefined}>
-      <Group justify="space-between" mb={opened ? 'xs' : 0}>
+      <Flex justify="space-between" mb={opened ? 'xs' : 0}>
         <Group>
-          <HoverCard
-            shadow="md"
-            position="right"
-            withArrow
-            openDelay={300}
-            closeDelay={200}
-            width={280}
-          >
-            <HoverCard.Target>
-              <Text fw={500} style={{ cursor: 'pointer' }}>
-                {tagGroup.name}{' '}
-                <Badge size="xs" variant="light" color="gray">
-                  {tagGroup.tags.length}
-                </Badge>
-              </Text>
-            </HoverCard.Target>
-            <HoverCard.Dropdown>
-              <Text size="sm" fw={500}>
-                <Trans>Tags in this group:</Trans>
-              </Text>
-              <Box mt="xs" style={{ maxHeight: '150px', overflowY: 'auto' }}>
-                {tagGroup.tags.map((tag) => (
-                  <Badge
-                    key={tag}
-                    size="sm"
-                    variant="light"
-                    color="blue"
-                    radius="sm"
-                    mr="xs"
-                    mb="xs"
-                  >
-                    {tag}
-                  </Badge>
-                ))}
-              </Box>
-            </HoverCard.Dropdown>
-          </HoverCard>
-          <TagBadgePreview tags={tagGroup.tags} />
-          <Tooltip label={<Trans>Copy all tags</Trans>}>
+          <Text fw={500}>{tagGroup.name} </Text>
+          <Badge size="xs" variant="light" color="gray">
+            {tagGroup.tags.length}
+          </Badge>
+          <Tooltip label={<CommonTranslations.CopyToClipboard />}>
             <ActionIcon variant="subtle" size="xs" onClick={handleCopyTags}>
               <IconClipboardCopy size={16} />
             </ActionIcon>
           </Tooltip>
         </Group>
-        <Group>
-          <Button
-            variant="subtle"
-            size="compact-sm"
-            onClick={toggle}
-            rightSection={
-              opened ? (
-                <IconChevronUp size={16} />
-              ) : (
-                <IconChevronDown size={16} />
-              )
-            }
-          >
-            {opened ? <Trans>Hide</Trans> : <Trans>Edit</Trans>}
-          </Button>
-        </Group>
+        <Button
+          variant="subtle"
+          size="compact-sm"
+          onClick={toggle}
+          rightSection={
+            opened ? <IconChevronUp size={16} /> : <IconChevronDown size={16} />
+          }
+        >
+          {opened ? <CommonTranslations.Hide /> : <CommonTranslations.Edit />}
+        </Button>
+      </Flex>
+      <Group gap={5} pt="4">
+        {tagGroup.tags.map((tag) => (
+          <Badge size="xs" variant="light" color="blue" radius="sm" key={tag}>
+            {tag}
+          </Badge>
+        ))}
       </Group>
 
       <Collapse in={opened}>
@@ -169,12 +114,9 @@ function ExistingTagGroup(props: { tagGroup: TagGroupDto }) {
         <TextInput
           required
           value={state.name}
-          label={<Trans>Group Name</Trans>}
+          label={<CommonTranslations.Name />}
           onChange={(event) =>
-            setState({
-              ...state,
-              name: event.currentTarget.value,
-            })
+            setState({ ...state, name: event.currentTarget.value })
           }
         />
         <TagsInput
@@ -184,17 +126,9 @@ function ExistingTagGroup(props: { tagGroup: TagGroupDto }) {
           value={state.tags}
           label={<Trans>Tags</Trans>}
           onClear={() => {
-            setState({
-              ...state,
-              tags: [],
-            });
+            setState({ ...state, tags: [] });
           }}
-          onChange={(value) =>
-            setState({
-              ...state,
-              tags: value,
-            })
-          }
+          onChange={(value) => setState({ ...state, tags: value })}
         />
         <Group mt="md" grow>
           <Button
@@ -206,20 +140,24 @@ function ExistingTagGroup(props: { tagGroup: TagGroupDto }) {
                 .then(() => {
                   notifications.show({
                     title: state.name,
-                    message: <Trans>Tag group updated</Trans>,
+                    message: (
+                      <CommonTranslations.NounUpdated>
+                        <Trans>Tag group</Trans>
+                      </CommonTranslations.NounUpdated>
+                    ),
                     color: 'green',
                   });
                 })
                 .catch(() => {
                   notifications.show({
                     title: state.name,
-                    message: <Trans>Failed to update</Trans>,
+                    message: <CommonTranslations.FailedToUpdate />,
                     color: 'red',
                   });
                 });
             }}
           >
-            <Trans>Update</Trans>
+            <CommonTranslations.Update />
           </Button>
           <DeleteActionPopover
             additionalContent={
@@ -231,7 +169,11 @@ function ExistingTagGroup(props: { tagGroup: TagGroupDto }) {
               tagGroupsApi.remove([tagGroup.id]).then(() => {
                 notifications.show({
                   title: tagGroup.name,
-                  message: <Trans>Tag group deleted</Trans>,
+                  message: (
+                    <CommonTranslations.NounDeleted>
+                      <Trans>Tag group</Trans>
+                    </CommonTranslations.NounDeleted>
+                  ),
                   color: 'green',
                 });
               });
@@ -244,7 +186,6 @@ function ExistingTagGroup(props: { tagGroup: TagGroupDto }) {
 }
 
 function TagGroups() {
-  const { t } = useLingui();
   const { state: tagGroups, isLoading } = useStore(TagGroupStore);
   const [newGroupFields, setNewGroupFields] = useState<ICreateTagGroupDto>({
     name: '',
@@ -279,46 +220,11 @@ function TagGroups() {
   }, [sortedTagGroups, search]);
 
   const resetForm = () => {
-    setNewGroupFields({
-      name: '',
-      tags: [],
-    });
+    setNewGroupFields({ name: '', tags: [] });
   };
 
   const toggleSortDirection = () => {
     setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
-  };
-
-  const handlePasteFromClipboard = async () => {
-    try {
-      const clipboardText = await navigator.clipboard.readText();
-      if (clipboardText) {
-        const tags = clipboardText
-          .split(/[,\n]/)
-          .map((tag) => tag.trim())
-          .filter((tag) => tag.length > 0);
-
-        if (tags.length > 0) {
-          setNewGroupFields((prev) => ({
-            ...prev,
-            tags: [...new Set([...prev.tags, ...tags])],
-          }));
-
-          const amountOfTags = tags.length;
-          notifications.show({
-            title: <Trans>Tags Pasted</Trans>,
-            message: t`${amountOfTags} tags imported from clipboard`,
-            color: 'blue',
-          });
-        }
-      }
-    } catch (error) {
-      notifications.show({
-        title: <Trans>Error</Trans>,
-        message: <Trans>Failed to paste from clipboard</Trans>,
-        color: 'red',
-      });
-    }
   };
 
   if (isLoading) {
@@ -330,7 +236,6 @@ function TagGroups() {
       <Stack gap="md">
         <Group grow>
           <TextInput
-            placeholder={t`Search`}
             leftSection={<IconSearch size={16} />}
             rightSection={
               search ? (
@@ -345,17 +250,27 @@ function TagGroups() {
         </Group>
 
         <Group justify="space-between">
+          <Button
+            leftSection={<IconPlus size={16} />}
+            variant="light"
+            size="compact-sm"
+            onClick={toggleNewGroupForm}
+          >
+            {showNewGroupForm ? (
+              <Trans>Hide Form</Trans>
+            ) : (
+              <Trans>Create New</Trans>
+            )}
+          </Button>
           <Group>
-            <Text fw={500} size="md">
-              <Trans>Tag Groups</Trans> ({filteredTagGroups.length}/
-              {tagGroups?.length || 0})
-            </Text>
             <Group ml="xs">
               <Tooltip
                 label={
-                  sortDirection === 'asc'
-                    ? t`Sort Descending`
-                    : t`Sort Ascending`
+                  sortDirection === 'asc' ? (
+                    <CommonTranslations.SortDescending />
+                  ) : (
+                    <CommonTranslations.SortAscending />
+                  )
                 }
               >
                 <ActionIcon
@@ -372,32 +287,20 @@ function TagGroups() {
               </Tooltip>
             </Group>
           </Group>
-          <Button
-            leftSection={<IconPlus size={16} />}
-            variant="light"
-            size="compact-sm"
-            onClick={toggleNewGroupForm}
-          >
-            {showNewGroupForm ? (
-              <Trans>Hide Form</Trans>
-            ) : (
-              <Trans>Create New</Trans>
-            )}
-          </Button>
         </Group>
 
         <Collapse in={showNewGroupForm}>
           <Fieldset
             legend={
               <Box mx="4">
-                <Trans>Create new tag group</Trans>
+                <Trans>New</Trans>
               </Box>
             }
           >
             <TextInput
               required
               value={newGroupFields.name}
-              label={<Trans>Group Name</Trans>}
+              label={<CommonTranslations.Name />}
               onChange={(event) =>
                 setNewGroupFields({
                   ...newGroupFields,
@@ -410,25 +313,13 @@ function TagGroups() {
                 <Text component="label" size="sm" fw={500}>
                   <Trans>Tags</Trans>
                 </Text>
-                <Button
-                  variant="subtle"
-                  size="xs"
-                  onClick={handlePasteFromClipboard}
-                  leftSection={<IconClipboardCopy size={14} />}
-                  aria-label={t`Paste tags from clipboard`}
-                >
-                  <Trans>Paste from clipboard</Trans>
-                </Button>
               </Group>
               <TagsInput
                 required
                 clearable
                 value={newGroupFields.tags}
                 onChange={(value) =>
-                  setNewGroupFields({
-                    ...newGroupFields,
-                    tags: value,
-                  })
+                  setNewGroupFields({ ...newGroupFields, tags: value })
                 }
               />
             </Box>
@@ -441,26 +332,27 @@ function TagGroups() {
                   newGroupFields.name === '' && newGroupFields.tags.length === 0
                 }
               >
-                <Trans>Clear</Trans>
+                <CommonTranslations.Clear />
               </Button>
               <Button
                 variant="filled"
                 disabled={!isValidTagGroup(newGroupFields)}
                 onClick={() => {
                   tagGroupsApi.create(newGroupFields).then(() => {
-                    setNewGroupFields({
-                      name: '',
-                      tags: [],
-                    });
+                    setNewGroupFields({ name: '', tags: [] });
                     notifications.show({
                       title: newGroupFields.name,
-                      message: <Trans>Tag group created</Trans>,
+                      message: (
+                        <CommonTranslations.NounCreated>
+                          <Trans>Tag group</Trans>
+                        </CommonTranslations.NounCreated>
+                      ),
                       color: 'green',
                     });
                   });
                 }}
               >
-                <Trans>Save</Trans>
+                <CommonTranslations.Save />
               </Button>
             </Group>
           </Fieldset>
@@ -477,15 +369,7 @@ function TagGroups() {
           </ScrollArea>
         ) : (
           <Paper p="lg" withBorder radius="md" ta="center">
-            {search ? (
-              <Text c="dimmed">
-                <Trans>No tag groups match your search or filters</Trans>
-              </Text>
-            ) : (
-              <Text c="dimmed">
-                <Trans>No tag groups created yet</Trans>
-              </Text>
-            )}
+            <CommonTranslations.NoItemsFound />
           </Paper>
         )}
       </Stack>
@@ -501,13 +385,8 @@ export function TagGroupDrawer() {
         closeOnClickOutside
         ml={-marginOffset}
         size="lg"
-        portalProps={{
-          target: getPortalTarget(),
-        }}
-        overlayProps={{
-          left: getOverlayOffset(),
-          zIndex: 100,
-        }}
+        portalProps={{ target: getPortalTarget() }}
+        overlayProps={{ left: getOverlayOffset(), zIndex: 100 }}
         trapFocus
         opened={visible}
         onClose={() => toggle()}
@@ -516,12 +395,7 @@ export function TagGroupDrawer() {
             <Trans>Tag Groups</Trans>
           </Text>
         }
-        styles={{
-          body: {
-            padding: '16px',
-            height: 'calc(100% - 60px)',
-          },
-        }}
+        styles={{ body: { padding: '16px', height: 'calc(100% - 60px)' } }}
       >
         <TagGroups />
       </Drawer>
