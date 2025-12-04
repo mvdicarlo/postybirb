@@ -9,6 +9,8 @@ import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { AccountCommandService } from './account.command.service';
 import { CreateAccountCommand } from './commands/create-account.command';
 import { CreateAccountHandler } from './commands/create-account.handler';
+import { DeleteAccountCommand } from './commands/delete-account.command';
+import { DeleteAccountHandler } from './commands/delete-account.handler';
 import { EmitAccountUpdatesCommand } from './commands/emit-account-updates.command';
 import { EmitAccountUpdatesHandler } from './commands/emit-account-updates.handler';
 import { TriggerAccountLoginCommand } from './commands/trigger-account-login.command';
@@ -26,6 +28,7 @@ describe('Account CQRS', () => {
   let commandService: AccountCommandService;
   let createAccountHandler: CreateAccountHandler;
   let updateAccountHandler: UpdateAccountHandler;
+  let deleteAccountHandler: DeleteAccountHandler;
   let triggerAccountLoginHandler: TriggerAccountLoginHandler;
   let emitAccountUpdatesHandler: EmitAccountUpdatesHandler;
   let accountCreatedHandler: AccountCreatedHandler;
@@ -47,6 +50,7 @@ describe('Account CQRS', () => {
         AccountCommandService,
         CreateAccountHandler,
         UpdateAccountHandler,
+        DeleteAccountHandler,
         TriggerAccountLoginHandler,
         EmitAccountUpdatesHandler,
         AccountCreatedHandler,
@@ -75,6 +79,7 @@ describe('Account CQRS', () => {
             create: jest.fn(),
             findInstance: jest.fn(),
             emit: jest.fn(),
+            remove: jest.fn(),
           },
         },
         {
@@ -91,6 +96,8 @@ describe('Account CQRS', () => {
       module.get<CreateAccountHandler>(CreateAccountHandler);
     updateAccountHandler =
       module.get<UpdateAccountHandler>(UpdateAccountHandler);
+    deleteAccountHandler =
+      module.get<DeleteAccountHandler>(DeleteAccountHandler);
     triggerAccountLoginHandler = module.get<TriggerAccountLoginHandler>(
       TriggerAccountLoginHandler,
     );
@@ -123,6 +130,13 @@ describe('Account CQRS', () => {
       await commandService.updateAccount('test-id', dto);
       expect(commandBus.execute).toHaveBeenCalledWith(
         new UpdateAccountCommand('test-id', dto),
+      );
+    });
+
+    it('should dispatch DeleteAccountCommand', async () => {
+      await commandService.deleteAccount('test-id');
+      expect(commandBus.execute).toHaveBeenCalledWith(
+        new DeleteAccountCommand('test-id'),
       );
     });
 
@@ -280,6 +294,30 @@ describe('Account CQRS', () => {
 
       const storedAccount = await repository.findById(account.id);
       expect(storedAccount?.name).toBe(dto.name);
+    });
+  });
+
+  describe('DeleteAccountHandler', () => {
+    it('should delete account and emit updates', async () => {
+      const account = await repository.insert(
+        new Account({
+          name: 'test',
+          website: 'test',
+          groups: [],
+        }),
+      );
+
+      await deleteAccountHandler.execute(new DeleteAccountCommand(account.id));
+
+      expect(websiteRegistry.remove).toHaveBeenCalledWith(
+        expect.objectContaining({ id: account.id }),
+      );
+      expect(commandBus.execute).toHaveBeenCalledWith(
+        new EmitAccountUpdatesCommand(),
+      );
+
+      const storedAccount = await repository.findById(account.id);
+      expect(storedAccount).toBeNull();
     });
   });
 });

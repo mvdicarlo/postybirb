@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Account } from '../drizzle/models';
 import { CreateAccountCommand } from './commands/create-account.command';
+import { DeleteAccountCommand } from './commands/delete-account.command';
 import { UpdateAccountCommand } from './commands/update-account.command';
 import { CreateAccountDto } from './dtos/create-account.dto';
 import { UpdateAccountDto } from './dtos/update-account.dto';
@@ -26,6 +27,10 @@ export class AccountCommandService {
     return this.commandBus.execute(
       new UpdateAccountCommand(id, updateAccountDto),
     );
+  }
+
+  public async deleteAccount(id: string): Promise<void> {
+    return this.commandBus.execute(new DeleteAccountCommand(id));
   }
 
   public async getAccount(id: string): Promise<Account> {

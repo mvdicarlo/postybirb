@@ -5,6 +5,7 @@ import { AccountCommandService } from './account.command.service';
 import { AccountController } from './account.controller';
 import { AccountService } from './account.service';
 import { CreateAccountHandler } from './commands/create-account.handler';
+import { DeleteAccountHandler } from './commands/delete-account.handler';
 import { EmitAccountUpdatesHandler } from './commands/emit-account-updates.handler';
 import { TriggerAccountLoginHandler } from './commands/trigger-account-login.handler';
 import { UpdateAccountHandler } from './commands/update-account.handler';
@@ -19,6 +20,7 @@ import { GetAccountsHandler } from './queries/get-accounts.handler';
     AccountCommandService,
     CreateAccountHandler,
     UpdateAccountHandler,
+    DeleteAccountHandler,
     TriggerAccountLoginHandler,
     EmitAccountUpdatesHandler,
     AccountCreatedHandler,
