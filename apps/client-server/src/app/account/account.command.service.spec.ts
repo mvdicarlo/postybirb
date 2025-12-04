@@ -206,15 +206,17 @@ describe('Account CQRS', () => {
 
       const websiteInstance = { id: 'test-website' };
 
-      (websiteRegistry.canCreate as jest.Mock).mockReturnValue(true);
-      (websiteRegistry.create as jest.Mock).mockResolvedValue(websiteInstance);
+      // Mock QueryBus to return true for CanCreateWebsiteQuery
+      (queryBus.execute as jest.Mock).mockResolvedValue(true);
+      // Mock CommandBus to return websiteInstance for CreateWebsiteInstanceCommand
+      (commandBus.execute as jest.Mock).mockResolvedValue(websiteInstance);
 
       const result = await createAccountHandler.execute(
         new CreateAccountCommand(dto),
       );
 
-      expect(websiteRegistry.canCreate).toHaveBeenCalledWith(dto.website);
-      expect(websiteRegistry.create).toHaveBeenCalled();
+      expect(queryBus.execute).toHaveBeenCalled();
+      expect(commandBus.execute).toHaveBeenCalled();
       expect(eventBus.publish).toHaveBeenCalledWith(
         expect.any(AccountCreatedEvent),
       );

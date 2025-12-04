@@ -1,9 +1,9 @@
 import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Logger } from '@postybirb/logger';
 import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
-import { WebsiteRegistryService } from '../../websites/website-registry.service';
 import { DeleteAccountCommand } from './delete-account.command';
 import { EmitAccountUpdatesCommand } from './emit-account-updates.command';
+import { RemoveWebsiteInstanceCommand } from './remove-website-instance.command';
 
 @CommandHandler(DeleteAccountCommand)
 export class DeleteAccountHandler
@@ -13,10 +13,7 @@ export class DeleteAccountHandler
 
   private readonly repository = new PostyBirbDatabase('AccountSchema');
 
-  constructor(
-    private readonly websiteRegistry: WebsiteRegistryService,
-    private readonly commandBus: CommandBus,
-  ) {}
+  constructor(private readonly commandBus: CommandBus) {}
 
   async execute(command: DeleteAccountCommand): Promise<void> {
     const { id } = command;
@@ -24,7 +21,9 @@ export class DeleteAccountHandler
 
     const account = await this.repository.findById(id);
     if (account) {
-      this.websiteRegistry.remove(account);
+      await this.commandBus.execute(
+        new RemoveWebsiteInstanceCommand(account),
+      );
       await this.repository.deleteById([id]);
       await this.commandBus.execute(new EmitAccountUpdatesCommand());
     }
