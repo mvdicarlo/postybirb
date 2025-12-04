@@ -7,17 +7,22 @@ import { DatabaseSchemaEntityMapConst } from '../drizzle/postybirb-database/sche
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { AccountCommandService } from './account.command.service';
+import { ClearAccountDataCommand } from './commands/clear-account-data.command';
+import { ClearAccountDataHandler } from './commands/clear-account-data.handler';
 import { CreateAccountCommand } from './commands/create-account.command';
 import { CreateAccountHandler } from './commands/create-account.handler';
 import { DeleteAccountCommand } from './commands/delete-account.command';
 import { DeleteAccountHandler } from './commands/delete-account.handler';
 import { EmitAccountUpdatesCommand } from './commands/emit-account-updates.command';
 import { EmitAccountUpdatesHandler } from './commands/emit-account-updates.handler';
+import { SetAccountDataCommand } from './commands/set-account-data.command';
+import { SetAccountDataHandler } from './commands/set-account-data.handler';
 import { TriggerAccountLoginCommand } from './commands/trigger-account-login.command';
 import { TriggerAccountLoginHandler } from './commands/trigger-account-login.handler';
 import { UpdateAccountCommand } from './commands/update-account.command';
 import { UpdateAccountHandler } from './commands/update-account.handler';
 import { CreateAccountDto } from './dtos/create-account.dto';
+import { SetWebsiteDataRequestDto } from './dtos/set-website-data-request.dto';
 import { UpdateAccountDto } from './dtos/update-account.dto';
 import { AccountCreatedEvent } from './events/account-created.event';
 import { AccountCreatedHandler } from './events/account-created.handler';
@@ -29,6 +34,8 @@ describe('Account CQRS', () => {
   let createAccountHandler: CreateAccountHandler;
   let updateAccountHandler: UpdateAccountHandler;
   let deleteAccountHandler: DeleteAccountHandler;
+  let clearAccountDataHandler: ClearAccountDataHandler;
+  let setAccountDataHandler: SetAccountDataHandler;
   let triggerAccountLoginHandler: TriggerAccountLoginHandler;
   let emitAccountUpdatesHandler: EmitAccountUpdatesHandler;
   let accountCreatedHandler: AccountCreatedHandler;
@@ -51,6 +58,8 @@ describe('Account CQRS', () => {
         CreateAccountHandler,
         UpdateAccountHandler,
         DeleteAccountHandler,
+        ClearAccountDataHandler,
+        SetAccountDataHandler,
         TriggerAccountLoginHandler,
         EmitAccountUpdatesHandler,
         AccountCreatedHandler,
@@ -98,6 +107,12 @@ describe('Account CQRS', () => {
       module.get<UpdateAccountHandler>(UpdateAccountHandler);
     deleteAccountHandler =
       module.get<DeleteAccountHandler>(DeleteAccountHandler);
+    clearAccountDataHandler = module.get<ClearAccountDataHandler>(
+      ClearAccountDataHandler,
+    );
+    setAccountDataHandler = module.get<SetAccountDataHandler>(
+      SetAccountDataHandler,
+    );
     triggerAccountLoginHandler = module.get<TriggerAccountLoginHandler>(
       TriggerAccountLoginHandler,
     );
@@ -137,6 +152,28 @@ describe('Account CQRS', () => {
       await commandService.deleteAccount('test-id');
       expect(commandBus.execute).toHaveBeenCalledWith(
         new DeleteAccountCommand('test-id'),
+      );
+    });
+
+    it('should dispatch TriggerAccountLoginCommand', async () => {
+      await commandService.triggerLogin('test-id');
+      expect(commandBus.execute).toHaveBeenCalledWith(
+        new TriggerAccountLoginCommand('test-id'),
+      );
+    });
+
+    it('should dispatch ClearAccountDataCommand', async () => {
+      await commandService.clearAccountData('test-id');
+      expect(commandBus.execute).toHaveBeenCalledWith(
+        new ClearAccountDataCommand('test-id'),
+      );
+    });
+
+    it('should dispatch SetAccountDataCommand', async () => {
+      const dto = new SetWebsiteDataRequestDto();
+      await commandService.setAccountData(dto);
+      expect(commandBus.execute).toHaveBeenCalledWith(
+        new SetAccountDataCommand(dto),
       );
     });
 
@@ -318,6 +355,64 @@ describe('Account CQRS', () => {
 
       const storedAccount = await repository.findById(account.id);
       expect(storedAccount).toBeNull();
+    });
+  });
+
+  describe('ClearAccountDataHandler', () => {
+    it('should clear account data', async () => {
+      const account = await repository.insert(
+        new Account({
+          name: 'test',
+          website: 'test',
+          groups: [],
+        }),
+      );
+
+      const websiteInstance = {
+        id: 'test-website',
+        clearLoginStateAndData: jest.fn(),
+      };
+
+      (websiteRegistry.findInstance as jest.Mock).mockReturnValue(
+        websiteInstance,
+      );
+
+      await clearAccountDataHandler.execute(
+        new ClearAccountDataCommand(account.id),
+      );
+
+      expect(websiteRegistry.findInstance).toHaveBeenCalled();
+      expect(websiteInstance.clearLoginStateAndData).toHaveBeenCalled();
+    });
+  });
+
+  describe('SetAccountDataHandler', () => {
+    it('should set account data', async () => {
+      const account = await repository.insert(
+        new Account({
+          name: 'test',
+          website: 'test',
+          groups: [],
+        }),
+      );
+
+      const dto = new SetWebsiteDataRequestDto();
+      dto.id = account.id;
+      dto.data = { test: 'data' };
+
+      const websiteInstance = {
+        id: 'test-website',
+        setWebsiteData: jest.fn(),
+      };
+
+      (websiteRegistry.findInstance as jest.Mock).mockReturnValue(
+        websiteInstance,
+      );
+
+      await setAccountDataHandler.execute(new SetAccountDataCommand(dto));
+
+      expect(websiteRegistry.findInstance).toHaveBeenCalled();
+      expect(websiteInstance.setWebsiteData).toHaveBeenCalledWith(dto.data);
     });
   });
 });

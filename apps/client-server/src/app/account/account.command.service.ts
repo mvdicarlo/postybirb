@@ -1,10 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Account } from '../drizzle/models';
+import { ClearAccountDataCommand } from './commands/clear-account-data.command';
 import { CreateAccountCommand } from './commands/create-account.command';
 import { DeleteAccountCommand } from './commands/delete-account.command';
+import { SetAccountDataCommand } from './commands/set-account-data.command';
+import { TriggerAccountLoginCommand } from './commands/trigger-account-login.command';
 import { UpdateAccountCommand } from './commands/update-account.command';
 import { CreateAccountDto } from './dtos/create-account.dto';
+import { SetWebsiteDataRequestDto } from './dtos/set-website-data-request.dto';
 import { UpdateAccountDto } from './dtos/update-account.dto';
 import { GetAccountQuery } from './queries/get-account.query';
 import { GetAccountsQuery } from './queries/get-accounts.query';
@@ -31,6 +35,18 @@ export class AccountCommandService {
 
   public async deleteAccount(id: string): Promise<void> {
     return this.commandBus.execute(new DeleteAccountCommand(id));
+  }
+
+  public async triggerLogin(id: string): Promise<void> {
+    return this.commandBus.execute(new TriggerAccountLoginCommand(id));
+  }
+
+  public async clearAccountData(id: string): Promise<void> {
+    return this.commandBus.execute(new ClearAccountDataCommand(id));
+  }
+
+  public async setAccountData(dto: SetWebsiteDataRequestDto): Promise<void> {
+    return this.commandBus.execute(new SetAccountDataCommand(dto));
   }
 
   public async getAccount(id: string): Promise<Account> {
