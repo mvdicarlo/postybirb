@@ -1,7 +1,7 @@
 import { Logger, PostyBirbLogger } from '@postybirb/logger';
 import { DynamicObject, IAccount } from '@postybirb/types';
 import { WebsiteData } from '../drizzle/models';
-import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
+import type { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
 
 /**
  * Saves website specific data associated with an account.
