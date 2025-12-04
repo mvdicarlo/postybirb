@@ -7,6 +7,7 @@ import { AccountService } from './account.service';
 import { CreateAccountHandler } from './commands/create-account.handler';
 import { EmitAccountUpdatesHandler } from './commands/emit-account-updates.handler';
 import { TriggerAccountLoginHandler } from './commands/trigger-account-login.handler';
+import { UpdateAccountHandler } from './commands/update-account.handler';
 import { AccountCreatedHandler } from './events/account-created.handler';
 import { GetAccountHandler } from './queries/get-account.handler';
 import { GetAccountsHandler } from './queries/get-accounts.handler';
@@ -17,6 +18,7 @@ import { GetAccountsHandler } from './queries/get-accounts.handler';
     AccountService,
     AccountCommandService,
     CreateAccountHandler,
+    UpdateAccountHandler,
     TriggerAccountLoginHandler,
     EmitAccountUpdatesHandler,
     AccountCreatedHandler,

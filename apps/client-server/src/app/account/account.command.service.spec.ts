@@ -13,7 +13,10 @@ import { EmitAccountUpdatesCommand } from './commands/emit-account-updates.comma
 import { EmitAccountUpdatesHandler } from './commands/emit-account-updates.handler';
 import { TriggerAccountLoginCommand } from './commands/trigger-account-login.command';
 import { TriggerAccountLoginHandler } from './commands/trigger-account-login.handler';
+import { UpdateAccountCommand } from './commands/update-account.command';
+import { UpdateAccountHandler } from './commands/update-account.handler';
 import { CreateAccountDto } from './dtos/create-account.dto';
+import { UpdateAccountDto } from './dtos/update-account.dto';
 import { AccountCreatedEvent } from './events/account-created.event';
 import { AccountCreatedHandler } from './events/account-created.handler';
 import { GetAccountQuery } from './queries/get-account.query';
@@ -22,6 +25,7 @@ import { GetAccountsQuery } from './queries/get-accounts.query';
 describe('Account CQRS', () => {
   let commandService: AccountCommandService;
   let createAccountHandler: CreateAccountHandler;
+  let updateAccountHandler: UpdateAccountHandler;
   let triggerAccountLoginHandler: TriggerAccountLoginHandler;
   let emitAccountUpdatesHandler: EmitAccountUpdatesHandler;
   let accountCreatedHandler: AccountCreatedHandler;
@@ -42,6 +46,7 @@ describe('Account CQRS', () => {
       providers: [
         AccountCommandService,
         CreateAccountHandler,
+        UpdateAccountHandler,
         TriggerAccountLoginHandler,
         EmitAccountUpdatesHandler,
         AccountCreatedHandler,
@@ -84,6 +89,8 @@ describe('Account CQRS', () => {
     commandService = module.get<AccountCommandService>(AccountCommandService);
     createAccountHandler =
       module.get<CreateAccountHandler>(CreateAccountHandler);
+    updateAccountHandler =
+      module.get<UpdateAccountHandler>(UpdateAccountHandler);
     triggerAccountLoginHandler = module.get<TriggerAccountLoginHandler>(
       TriggerAccountLoginHandler,
     );
@@ -108,6 +115,14 @@ describe('Account CQRS', () => {
       await commandService.createAccount(dto);
       expect(commandBus.execute).toHaveBeenCalledWith(
         new CreateAccountCommand(dto),
+      );
+    });
+
+    it('should dispatch UpdateAccountCommand', async () => {
+      const dto = new UpdateAccountDto();
+      await commandService.updateAccount('test-id', dto);
+      expect(commandBus.execute).toHaveBeenCalledWith(
+        new UpdateAccountCommand('test-id', dto),
       );
     });
 
@@ -229,6 +244,42 @@ describe('Account CQRS', () => {
 
       expect(websiteRegistry.findInstance).toHaveBeenCalled();
       expect(webSocket.emit).toHaveBeenCalled();
+    });
+  });
+
+  describe('UpdateAccountHandler', () => {
+    it('should update account and emit updates', async () => {
+      const account = await repository.insert(
+        new Account({
+          name: 'test',
+          website: 'test',
+          groups: [],
+        }),
+      );
+
+      const dto = new UpdateAccountDto();
+      dto.name = 'updated-name';
+      dto.groups = ['updated-group'];
+
+      const websiteInstance = { id: 'test-website' };
+      (websiteRegistry.findInstance as jest.Mock).mockReturnValue(
+        websiteInstance,
+      );
+
+      const result = await updateAccountHandler.execute(
+        new UpdateAccountCommand(account.id, dto),
+      );
+
+      expect(websiteRegistry.findInstance).toHaveBeenCalled();
+      expect(commandBus.execute).toHaveBeenCalledWith(
+        new EmitAccountUpdatesCommand(),
+      );
+      expect(result).toBeDefined();
+      expect(result.name).toBe(dto.name);
+      expect(result.groups).toEqual(dto.groups);
+
+      const storedAccount = await repository.findById(account.id);
+      expect(storedAccount?.name).toBe(dto.name);
     });
   });
 });
