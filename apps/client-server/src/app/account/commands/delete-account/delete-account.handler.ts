@@ -1,9 +1,9 @@
 import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Logger } from '@postybirb/logger';
-import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
+import { PostyBirbDatabase } from '../../../drizzle/postybirb-database/postybirb-database';
+import { EmitAccountUpdatesCommand } from '../emit-account-updates/emit-account-updates.command';
+import { RemoveWebsiteInstanceCommand } from '../remove-website-instance/remove-website-instance.command';
 import { DeleteAccountCommand } from './delete-account.command';
-import { EmitAccountUpdatesCommand } from './emit-account-updates.command';
-import { RemoveWebsiteInstanceCommand } from './remove-website-instance.command';
 
 @CommandHandler(DeleteAccountCommand)
 export class DeleteAccountHandler

@@ -1,5 +1,5 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { WebsiteRegistryService } from '../../websites/website-registry.service';
+import { WebsiteRegistryService } from '../../../websites/website-registry.service';
 import { CanCreateWebsiteQuery } from './can-create-website.query';
 
 @QueryHandler(CanCreateWebsiteQuery)

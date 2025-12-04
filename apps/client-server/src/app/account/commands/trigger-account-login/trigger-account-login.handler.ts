@@ -5,12 +5,12 @@ import {
     QueryBus,
 } from '@nestjs/cqrs';
 import { Logger } from '@postybirb/logger';
-import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
-import { waitUntil } from '../../utils/wait.util';
-import { UnknownWebsite } from '../../websites/website';
-import { GetWebsiteInstanceQuery } from '../queries/get-website-instance.query';
-import { EmitAccountUpdatesCommand } from './emit-account-updates.command';
-import { EmitWebsiteUpdatesCommand } from './emit-website-updates.command';
+import { PostyBirbDatabase } from '../../../drizzle/postybirb-database/postybirb-database';
+import { waitUntil } from '../../../utils/wait.util';
+import { UnknownWebsite } from '../../../websites/website';
+import { GetWebsiteInstanceQuery } from '../../queries/get-website-instance/get-website-instance.query';
+import { EmitAccountUpdatesCommand } from '../emit-account-updates/emit-account-updates.command';
+import { EmitWebsiteUpdatesCommand } from '../emit-website-updates/emit-website-updates.command';
 import { TriggerAccountLoginCommand } from './trigger-account-login.command';
 
 @CommandHandler(TriggerAccountLoginCommand)

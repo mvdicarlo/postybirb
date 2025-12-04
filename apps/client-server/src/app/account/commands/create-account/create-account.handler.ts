@@ -7,12 +7,12 @@ import {
     QueryBus,
 } from '@nestjs/cqrs';
 import { Logger } from '@postybirb/logger';
-import { Account } from '../../drizzle/models';
-import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
-import { AccountCreatedEvent } from '../events/account-created.event';
-import { CanCreateWebsiteQuery } from '../queries/can-create-website.query';
+import { Account } from '../../../drizzle/models';
+import { PostyBirbDatabase } from '../../../drizzle/postybirb-database/postybirb-database';
+import { AccountCreatedEvent } from '../../events/account-created/account-created.event';
+import { CanCreateWebsiteQuery } from '../../queries/can-create-website/can-create-website.query';
+import { CreateWebsiteInstanceCommand } from '../create-website-instance/create-website-instance.command';
 import { CreateAccountCommand } from './create-account.command';
-import { CreateWebsiteInstanceCommand } from './create-website-instance.command';
 
 @CommandHandler(CreateAccountCommand)
 export class CreateAccountHandler

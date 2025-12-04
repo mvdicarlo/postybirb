@@ -1,6 +1,6 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { UnknownWebsite } from '../../websites/website';
-import { WebsiteRegistryService } from '../../websites/website-registry.service';
+import { UnknownWebsite } from '../../../websites/website';
+import { WebsiteRegistryService } from '../../../websites/website-registry.service';
 import { GetWebsiteInstanceQuery } from './get-website-instance.query';
 
 @QueryHandler(GetWebsiteInstanceQuery)

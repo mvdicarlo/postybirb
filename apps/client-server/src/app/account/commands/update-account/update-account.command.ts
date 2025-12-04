@@ -1,5 +1,5 @@
 import { ICommand } from '@nestjs/cqrs';
-import { UpdateAccountDto } from '../dtos/update-account.dto';
+import { UpdateAccountDto } from '../../dtos/update-account.dto';
 
 export class UpdateAccountCommand implements ICommand {
   constructor(

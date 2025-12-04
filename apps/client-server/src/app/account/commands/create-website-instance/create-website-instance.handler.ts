@@ -1,6 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { UnknownWebsite } from '../../websites/website';
-import { WebsiteRegistryService } from '../../websites/website-registry.service';
+import { UnknownWebsite } from '../../../websites/website';
+import { WebsiteRegistryService } from '../../../websites/website-registry.service';
 import { CreateWebsiteInstanceCommand } from './create-website-instance.command';
 
 @CommandHandler(CreateWebsiteInstanceCommand)

@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler, QueryBus } from '@nestjs/cqrs';
 import { Logger } from '@postybirb/logger';
-import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
-import { GetWebsiteInstanceQuery } from '../queries/get-website-instance.query';
+import { PostyBirbDatabase } from '../../../drizzle/postybirb-database/postybirb-database';
+import { GetWebsiteInstanceQuery } from '../../queries/get-website-instance/get-website-instance.query';
 import { ClearAccountDataCommand } from './clear-account-data.command';
 
 @CommandHandler(ClearAccountDataCommand)

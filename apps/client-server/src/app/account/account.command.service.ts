@@ -1,17 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Account } from '../drizzle/models';
-import { ClearAccountDataCommand } from './commands/clear-account-data.command';
-import { CreateAccountCommand } from './commands/create-account.command';
-import { DeleteAccountCommand } from './commands/delete-account.command';
-import { SetAccountDataCommand } from './commands/set-account-data.command';
-import { TriggerAccountLoginCommand } from './commands/trigger-account-login.command';
-import { UpdateAccountCommand } from './commands/update-account.command';
+import { ClearAccountDataCommand } from './commands/clear-account-data/clear-account-data.command';
+import { CreateAccountCommand } from './commands/create-account/create-account.command';
+import { DeleteAccountCommand } from './commands/delete-account/delete-account.command';
+import { SetAccountDataCommand } from './commands/set-account-data/set-account-data.command';
+import { TriggerAccountLoginCommand } from './commands/trigger-account-login/trigger-account-login.command';
+import { UpdateAccountCommand } from './commands/update-account/update-account.command';
 import { CreateAccountDto } from './dtos/create-account.dto';
 import { SetWebsiteDataRequestDto } from './dtos/set-website-data-request.dto';
 import { UpdateAccountDto } from './dtos/update-account.dto';
-import { GetAccountQuery } from './queries/get-account.query';
-import { GetAccountsQuery } from './queries/get-accounts.query';
+import { GetAccountQuery } from './queries/get-account/get-account.query';
+import { GetAccountsQuery } from './queries/get-accounts/get-accounts.query';
 
 @Injectable()
 export class AccountCommandService {

@@ -1,5 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { WebsiteRegistryService } from '../../websites/website-registry.service';
+import { WebsiteRegistryService } from '../../../websites/website-registry.service';
 import { EmitWebsiteUpdatesCommand } from './emit-website-updates.command';
 
 @CommandHandler(EmitWebsiteUpdatesCommand)

@@ -1,6 +1,6 @@
 import { CommandBus, EventsHandler, IEventHandler } from '@nestjs/cqrs';
 import { Logger } from '@postybirb/logger';
-import { TriggerAccountLoginCommand } from '../commands/trigger-account-login.command';
+import { TriggerAccountLoginCommand } from '../../commands/trigger-account-login/trigger-account-login.command';
 import { AccountCreatedEvent } from './account-created.event';
 
 @EventsHandler(AccountCreatedEvent)

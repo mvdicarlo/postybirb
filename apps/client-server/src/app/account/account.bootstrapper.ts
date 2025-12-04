@@ -10,10 +10,10 @@ import { Class } from 'type-fest';
 import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
 import { UnknownWebsite } from '../websites/website';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
-import { DeleteAccountCommand } from './commands/delete-account.command';
-import { EmitAccountUpdatesCommand } from './commands/emit-account-updates.command';
-import { TriggerAccountLoginCommand } from './commands/trigger-account-login.command';
-import { GetAccountsQuery } from './queries/get-accounts.query';
+import { DeleteAccountCommand } from './commands/delete-account/delete-account.command';
+import { EmitAccountUpdatesCommand } from './commands/emit-account-updates/emit-account-updates.command';
+import { TriggerAccountLoginCommand } from './commands/trigger-account-login/trigger-account-login.command';
+import { GetAccountsQuery } from './queries/get-accounts/get-accounts.query';
 
 @Injectable()
 export class AccountBootstrapper implements OnModuleInit {

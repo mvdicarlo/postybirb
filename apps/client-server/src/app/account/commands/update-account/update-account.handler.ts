@@ -5,10 +5,10 @@ import {
     QueryBus,
 } from '@nestjs/cqrs';
 import { Logger } from '@postybirb/logger';
-import { Account } from '../../drizzle/models';
-import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
-import { GetWebsiteInstanceQuery } from '../queries/get-website-instance.query';
-import { EmitAccountUpdatesCommand } from './emit-account-updates.command';
+import { Account } from '../../../drizzle/models';
+import { PostyBirbDatabase } from '../../../drizzle/postybirb-database/postybirb-database';
+import { GetWebsiteInstanceQuery } from '../../queries/get-website-instance/get-website-instance.query';
+import { EmitAccountUpdatesCommand } from '../emit-account-updates/emit-account-updates.command';
 import { UpdateAccountCommand } from './update-account.command';
 
 @CommandHandler(UpdateAccountCommand)
