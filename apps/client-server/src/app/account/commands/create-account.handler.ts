@@ -1,10 +1,10 @@
 import { BadRequestException } from '@nestjs/common';
 import {
-  CommandBus,
-  CommandHandler,
-  EventBus,
-  ICommandHandler,
-  QueryBus,
+    CommandBus,
+    CommandHandler,
+    EventBus,
+    ICommandHandler,
+    QueryBus,
 } from '@nestjs/cqrs';
 import { Logger } from '@postybirb/logger';
 import { Account } from '../../drizzle/models';
