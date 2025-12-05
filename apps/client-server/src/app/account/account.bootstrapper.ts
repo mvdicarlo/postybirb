@@ -6,6 +6,7 @@ import {
     NULL_ACCOUNT_ID,
     NullAccount,
 } from '@postybirb/types';
+import { IsTestEnvironment } from '@postybirb/utils/electron';
 import { Class } from 'type-fest';
 import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
 import { UnknownWebsite } from '../websites/website';
@@ -125,7 +126,9 @@ export class AccountBootstrapper implements OnModuleInit {
   }
 
   public async emit() {
-    this.commandBus.execute(new EmitAccountUpdatesCommand());
+    if (!IsTestEnvironment()) {
+      this.commandBus.execute(new EmitAccountUpdatesCommand());
+    }
   }
 
   /**

@@ -7,9 +7,12 @@ import {
 import { ACCOUNT_UPDATES } from '@postybirb/socket-events';
 import {
     AccountId,
-    NULL_ACCOUNT_ID
+    IWebsiteMetadata,
+    NULL_ACCOUNT_ID,
+    NullAccount,
 } from '@postybirb/types';
 import { ne } from 'drizzle-orm';
+import { Class } from 'type-fest';
 import { PostyBirbService } from '../common/service/postybirb-service';
 import { Account } from '../drizzle/models';
 import { FindOptions } from '../drizzle/postybirb-database/find-options.type';
@@ -30,11 +33,20 @@ export class AccountService
   extends PostyBirbService<'AccountSchema'>
   implements OnModuleInit
 {
+  private readonly loginRefreshTimers: Record<
+    string,
+    {
+      timer: NodeJS.Timeout;
+      websites: Class<UnknownWebsite>[];
+    }
+  > = {};
+
   constructor(
     private readonly websiteRegistry: WebsiteRegistryService,
     @Optional() webSocket?: WSGateway,
   ) {
     super('AccountSchema', webSocket);
+    this.repository.subscribe('AccountSchema', () => this.emit());
   }
 
   /**
@@ -42,7 +54,90 @@ export class AccountService
    * Heavy operations are deferred to avoid blocking application startup.
    */
   async onModuleInit() {
-    // Logic moved to AccountBootstrapper
+    // Critical path: only populate null account to ensure database is ready
+    await this.populateNullAccount();
+
+    // Defer heavy operations to avoid blocking NestJS initialization
+    setImmediate(async () => {
+      await this.deleteUnregisteredAccounts();
+      await this.initWebsiteRegistry();
+      this.initWebsiteLoginRefreshTimers();
+
+      this.emit();
+
+      Object.keys(this.loginRefreshTimers).forEach((interval) =>
+        this.executeOnLoginForInterval(interval),
+      );
+    });
+  }
+
+  private async deleteUnregisteredAccounts() {
+    const accounts = await this.repository.find({
+      where: ne(this.repository.schemaEntity.id, NULL_ACCOUNT_ID),
+    });
+    const unregisteredAccounts = accounts.filter(
+      (account) => !this.websiteRegistry.canCreate(account.website),
+    );
+    for (const account of unregisteredAccounts) {
+      try {
+        this.logger
+          .withMetadata(account)
+          .warn(
+            `Deleting unregistered account: ${account.id} (${account.name})`,
+          );
+        await this.repository.deleteById([account.id]);
+      } catch (err) {
+        this.logger
+          .withError(err)
+          .withMetadata(account)
+          .error(`Failed to delete unregistered account: ${account.id}`);
+      }
+    }
+  }
+
+  /**
+   * Create the Nullable typed account.
+   */
+  private async populateNullAccount(): Promise<void> {
+    if (!(await this.repository.findById(NULL_ACCOUNT_ID))) {
+      await this.repository.insert(new NullAccount());
+    }
+  }
+
+  /**
+   * Loads accounts into website registry.
+   */
+  private async initWebsiteRegistry(): Promise<void> {
+    const accounts = await this.repository.find({
+      where: ne(this.repository.schemaEntity.id, NULL_ACCOUNT_ID),
+    });
+    await Promise.all(
+      accounts.map((account) => this.websiteRegistry.create(account)),
+    ).catch((err) => {
+      this.logger.error(err, 'onModuleInit');
+    });
+  }
+
+  /**
+   * Creates website login check timers.
+   */
+  private initWebsiteLoginRefreshTimers(): void {
+    const availableWebsites = this.websiteRegistry.getAvailableWebsites();
+    availableWebsites.forEach((website) => {
+      const interval: number =
+        (website.prototype.decoratedProps.metadata as IWebsiteMetadata)
+          .refreshInterval ?? 60_000 * 60;
+      if (!this.loginRefreshTimers[interval]) {
+        this.loginRefreshTimers[interval] = {
+          websites: [],
+          timer: setInterval(() => {
+            this.executeOnLoginForInterval(interval);
+          }, interval),
+        };
+      }
+
+      this.loginRefreshTimers[interval].websites.push(website);
+    });
   }
 
   public async emit() {
@@ -52,6 +147,21 @@ export class AccountService
     super.emit({
       event: ACCOUNT_UPDATES,
       data: dtos.map((dto) => dto.toDTO()),
+    });
+  }
+
+  /**
+   * Runs onLogin on all created website instances within a specific interval
+   * and updates website login state.
+   *
+   * @param {string} interval
+   */
+  private async executeOnLoginForInterval(interval: string | number) {
+    const { websites } = this.loginRefreshTimers[interval];
+    websites.forEach((website) => {
+      this.websiteRegistry.getInstancesOf(website).forEach((instance) => {
+        this.executeOnLogin(instance);
+      });
     });
   }
 

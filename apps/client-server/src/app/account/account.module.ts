@@ -21,29 +21,31 @@ import { GetAccountHandler } from './queries/get-account/get-account.handler';
 import { GetAccountsHandler } from './queries/get-accounts/get-accounts.handler';
 import { GetWebsiteInstanceHandler } from './queries/get-website-instance/get-website-instance.handler';
 
+export const AccountProviders = [
+  AccountBootstrapper,
+  AccountCommandService,
+  AccountCreatedHandler,
+  AccountService,
+  CanCreateWebsiteHandler,
+  ClearAccountDataHandler,
+  CreateAccountHandler,
+  CreateWebsiteInstanceHandler,
+  DeleteAccountHandler,
+  EmitAccountUpdatesHandler,
+  EmitWebsiteUpdatesHandler,
+  GetAccountHandler,
+  GetAccountsHandler,
+  GetWebsiteInstanceHandler,
+  RemoveWebsiteInstanceHandler,
+  SetAccountDataHandler,
+  TriggerAccountLoginHandler,
+  UpdateAccountHandler,
+];
+
 @Module({
   imports: [CqrsModule, WebsitesModule],
-  providers: [
-    AccountService,
-    AccountCommandService,
-    AccountBootstrapper,
-    CreateAccountHandler,
-    UpdateAccountHandler,
-    DeleteAccountHandler,
-    TriggerAccountLoginHandler,
-    EmitAccountUpdatesHandler,
-    ClearAccountDataHandler,
-    SetAccountDataHandler,
-    AccountCreatedHandler,
-    GetAccountHandler,
-    GetAccountsHandler,
-    GetWebsiteInstanceHandler,
-    CanCreateWebsiteHandler,
-    CreateWebsiteInstanceHandler,
-    RemoveWebsiteInstanceHandler,
-    EmitWebsiteUpdatesHandler,
-  ],
+  providers: [...AccountProviders],
   controllers: [AccountController],
-  exports: [AccountService],
+  exports: [AccountService, AccountCommandService, AccountBootstrapper],
 })
 export class AccountModule {}

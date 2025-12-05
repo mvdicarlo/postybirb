@@ -85,7 +85,7 @@ export class WebsiteRegistryService {
   }
 
   public async emit() {
-    if (this.webSocket) {
+    if (!IsTestEnvironment() && this.webSocket) {
       this.webSocket.emit({
         event: WEBSITE_UPDATES,
         data: await this.getWebsiteInfo(),

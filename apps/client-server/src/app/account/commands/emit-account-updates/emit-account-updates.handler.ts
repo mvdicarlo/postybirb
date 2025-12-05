@@ -1,3 +1,4 @@
+import { Optional } from '@nestjs/common';
 import { CommandHandler, ICommandHandler, QueryBus } from '@nestjs/cqrs';
 import { Logger } from '@postybirb/logger';
 import { ACCOUNT_UPDATES } from '@postybirb/socket-events';
@@ -18,7 +19,7 @@ export class EmitAccountUpdatesHandler
 
   constructor(
     private readonly queryBus: QueryBus,
-    private readonly webSocket: WSGateway,
+    @Optional() private readonly webSocket: WSGateway,
   ) {}
 
   async execute(): Promise<void> {
