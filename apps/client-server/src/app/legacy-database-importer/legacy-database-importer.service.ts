@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Logger } from '@postybirb/logger';
 import { app } from 'electron';
 import { join } from 'path';
 import { LegacyConverter } from './converters/legacy-converter';
@@ -10,6 +11,8 @@ import { LegacyImportDto } from './dtos/legacy-import.dto';
 
 @Injectable()
 export class LegacyDatabaseImporterService {
+  private readonly logger = Logger(LegacyDatabaseImporterService.name);
+
   protected readonly LEGACY_POSTYBIRB_PLUS_PATH = join(
     app.getPath('documents'),
     'PostyBirb',
@@ -66,9 +69,14 @@ export class LegacyDatabaseImporterService {
     converter: LegacyConverter,
   ): Promise<{ error?: Error }> {
     try {
+      this.logger.info(`Starting import for ${converter.legacyFileName}...`);
       await converter.import();
       return {};
     } catch (error) {
+      this.logger.error(
+        `Import for ${converter.legacyFileName} failed.`,
+        error,
+      );
       return { error };
     }
   }

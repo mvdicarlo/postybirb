@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import { SchemaKey } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import { join } from 'path';
@@ -50,6 +51,14 @@ export abstract class LegacyConverter {
 
     let skippedCount = 0;
     for (const legacyEntity of result.records) {
+      const exists = await modernDb.findById(legacyEntity._id);
+      if (exists) {
+        logger.warn(
+          `Entity with ID ${legacyEntity._id} already exists in modern database. Skipping.`,
+        );
+        continue;
+      }
+
       const modernEntity = await legacyEntity.convert();
 
       // Skip null conversions (e.g., deprecated websites)

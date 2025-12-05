@@ -1,4 +1,5 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { Logger } from '@postybirb/logger';
 import { promises as fs } from 'fs';
 
 export interface ParseResult<T> {
@@ -18,7 +19,7 @@ export interface ParseError {
  */
 @Injectable()
 export class NdjsonParser {
-  private readonly logger = new Logger(NdjsonParser.name);
+  private readonly logger = Logger(NdjsonParser.name);
 
   /**
    * Parse an NDJSON file and instantiate objects of the specified class
@@ -61,7 +62,7 @@ export class NdjsonParser {
           `Parsed ${filePath}: ${records.length} records, ${errors.length} errors`,
         );
       } else {
-        this.logger.log(`Parsed ${filePath}: ${records.length} records`);
+        this.logger.info(`Parsed ${filePath}: ${records.length} records`);
       }
 
       return { records, errors };
