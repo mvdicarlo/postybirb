@@ -40,9 +40,6 @@ mac:
   signIgnore: []
   target:
     - target: dmg
-      arch:
-        - x64
-        - arm64
   notarize:
     teamId: "ZRKS9CNUQZ"
 
@@ -53,23 +50,13 @@ linux:
   description: "PostyBirb helps artists post art and other multimedia to multiple websites more quickly."
   target:
     - target: AppImage
-      arch:
-        - x64
-        - arm64
     - target: snap
-      arch:
-        - x64
-        - arm64
     - target: deb
-      arch:
-        - x64
-        - arm64
     - target: rpm
-      arch:
-        - x64
-        - arm64
 
 snap:
+  publish:
+    provider: github
   summary: "PostyBirb - Multi-site posting application"
   description: "PostyBirb helps artists post art and other multimedia to multiple websites more quickly."
   grade: stable

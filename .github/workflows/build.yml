@@ -5,18 +5,33 @@ on:
 
 jobs:
   build:
+    name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
 
     strategy:
       fail-fast: false
       matrix:
         include:
-          - os: macos-latest
+          - name: macOS (x64)
+            os: macos-latest
             platform: mac
-          - os: ubuntu-latest
+            arch: x64
+          - name: macOS (arm64)
+            os: macos-latest
+            platform: mac
+            arch: arm64
+          - name: Linux (x64)
+            os: ubuntu-latest
             platform: linux
-          - os: windows-latest
+            arch: x64
+          - name: Linux (arm64)
+            os: ubuntu-22.04-arm64
+            platform: linux
+            arch: arm64
+          - name: Windows (x64)
+            os: windows-latest
             platform: win
+            arch: x64
 
     steps:
       - name: Checkout repository
@@ -74,7 +89,7 @@ jobs:
 
       # Build Electron app
       - name: Build Electron app
-        run: yarn electron-builder --${{ matrix.platform }} --publish=always
+        run: yarn electron-builder --${{ matrix.platform }} --${{ matrix.arch }} --publish=always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
