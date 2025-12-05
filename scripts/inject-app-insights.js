@@ -10,8 +10,8 @@ const TARGET_FILES = [
   'apps/postybirb-ui/src/app-insights-ui.ts',
   'libs/logger/src/lib/app-insights.ts',
 ];
-const PLACEHOLDER_STATEMENT = 'const appInsightsConnectionString = null;';
-const STATEMENT_REGEX = /const appInsightsConnectionString = [^;]+;/;
+const PLACEHOLDER_STATEMENT = 'const appInsightsConnectionString: string | null = null;';
+const STATEMENT_REGEX = /const appInsightsConnectionString(?::\s*string\s*\|\s*null)?\s*=\s*[^;]+;/;
 
 const shouldClear = process.argv.includes('--clear');
 const appInsightsKey = process.env.APP_INSIGHTS_KEY?.trim();
@@ -23,7 +23,7 @@ if (!shouldClear && !appInsightsKey) {
 
 const replacementStatement = shouldClear
   ? PLACEHOLDER_STATEMENT
-  : `const appInsightsConnectionString = ${JSON.stringify(appInsightsKey)};`;
+  : `const appInsightsConnectionString: string | null = ${JSON.stringify(appInsightsKey)};`;
 
 /**
  * @param {string} relativePath
