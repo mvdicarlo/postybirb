@@ -1,15 +1,15 @@
 import {
-    BadRequestException,
-    Injectable,
-    OnModuleInit,
-    Optional,
+  BadRequestException,
+  Injectable,
+  OnModuleInit,
+  Optional,
 } from '@nestjs/common';
 import { ACCOUNT_UPDATES } from '@postybirb/socket-events';
 import {
-    AccountId,
-    IWebsiteMetadata,
-    NULL_ACCOUNT_ID,
-    NullAccount,
+  AccountId,
+  IWebsiteMetadata,
+  NULL_ACCOUNT_ID,
+  NullAccount,
 } from '@postybirb/types';
 import { ne } from 'drizzle-orm';
 import { Class } from 'type-fest';

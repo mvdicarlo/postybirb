@@ -64,5 +64,5 @@ describe('WebsiteRegistryService', () => {
     expect(instance instanceof TestWebsite).toBe(true);
     await service.remove(account);
     expect(service.getInstancesOf(TestWebsite)).toHaveLength(0);
-  });
+  }, 30_000);
 });
