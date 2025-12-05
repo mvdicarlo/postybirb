@@ -62,7 +62,7 @@ export const getCustomSlashMenuItems = (
 
   const items = [...filtered];
 
-  if (isDefaultEditor) {
+  if (!isDefaultEditor) {
     // Step 3: Add DefaultShortcut item
     items.push(insertDefaultShortcut(editor));
   }

@@ -1,10 +1,10 @@
 import { UsernameShortcut } from '@postybirb/types';
 import {
-    ConversionContext,
-    IDescriptionBlockNodeClass,
-    IDescriptionInlineNodeClass,
-    IDescriptionTextNodeClass,
-    NodeConverter,
+  ConversionContext,
+  IDescriptionBlockNodeClass,
+  IDescriptionInlineNodeClass,
+  IDescriptionTextNodeClass,
+  NodeConverter,
 } from '../description-node.base';
 import { IDescriptionBlockNode } from '../description-node.types';
 
@@ -32,6 +32,8 @@ export abstract class BaseConverter implements NodeConverter<string> {
     context: ConversionContext,
   ): string;
 
+  private processingDefaultDescription = false;
+
   /**
    * Converts an array of block nodes.
    */
@@ -52,11 +54,25 @@ export abstract class BaseConverter implements NodeConverter<string> {
     blocks: IDescriptionBlockNode[],
     context: ConversionContext,
   ): string {
-    // Import locally to avoid circular dependency
-    // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
-    const { DescriptionBlockNode } = require('../block-description-node');
-    const nodes = blocks.map((block) => new DescriptionBlockNode(block));
-    return this.convertBlocks(nodes, context);
+    const isDefaultDescription = blocks === context.defaultDescription;
+    if (isDefaultDescription) {
+      if (this.processingDefaultDescription) {
+        return '';
+      }
+      this.processingDefaultDescription = true;
+    }
+
+    try {
+      // Import locally to avoid circular dependency
+      // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+      const { DescriptionBlockNode } = require('../block-description-node');
+      const nodes = blocks.map((block) => new DescriptionBlockNode(block));
+      return this.convertBlocks(nodes, context);
+    } finally {
+      if (isDefaultDescription) {
+        this.processingDefaultDescription = false;
+      }
+    }
   }
 
   /**

@@ -19,7 +19,7 @@ export class BBCodeConverter extends BaseConverter {
       return this.convertRawBlocks(context.defaultDescription, context);
     }
 
-    if (node.type === 'hr') return '[hr]';
+    if (node.type === 'divider') return '[hr]';
 
     // Media blocks not supported in BBCode
     if (

@@ -25,7 +25,6 @@ import { useCallback, useEffect } from 'react';
 import { useQuery } from 'react-query';
 import fileSubmissionApi from '../../../../../api/file-submission.api';
 import { filterSuggestionItems } from '../../../../shared/postybirb-editor/filter-suggestion-item';
-import { altFileSchema } from '../../../../shared/postybirb-editor/schema';
 
 const getCustomSlashMenuItems = (
   editor: BlockNoteEditor,
@@ -77,7 +76,7 @@ export function FileTextAlt(props: FileTextFileAltProps) {
   // Creates a new editor instance.
   const editor = useCreateBlockNote({
     initialContent: undefined,
-    schema: altFileSchema,
+    schema,
   }) as unknown as BlockNoteEditor;
 
   // eslint-disable-next-line react-hooks/exhaustive-deps

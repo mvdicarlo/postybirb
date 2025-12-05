@@ -19,7 +19,7 @@ export class PlainTextConverter extends BaseConverter {
       return this.convertRawBlocks(context.defaultDescription, context);
     }
 
-    if (node.type === 'hr') return '----------';
+    if (node.type === 'divider') return '----------';
 
     // Skip media blocks
     if (

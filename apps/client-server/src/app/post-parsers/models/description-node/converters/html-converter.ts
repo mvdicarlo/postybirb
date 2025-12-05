@@ -21,7 +21,7 @@ export class HtmlConverter extends BaseConverter {
       return this.convertRawBlocks(context.defaultDescription, context);
     }
 
-    if (node.type === 'hr') return '<hr>';
+    if (node.type === 'divider') return '<hr>';
     if (node.type === 'image') return this.convertImage(node);
     if (node.type === 'video') return this.convertVideo(node);
     if (node.type === 'audio') return this.convertAudio(node);
