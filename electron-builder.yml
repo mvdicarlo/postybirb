@@ -63,9 +63,6 @@ snap:
   confinement: strict
   plugs:
     - default
-    - home
-    - network
-    - removable-media
   artifactName: "${productName}-${version}-linux-snap-${arch}.${ext}"
 
 deb:
