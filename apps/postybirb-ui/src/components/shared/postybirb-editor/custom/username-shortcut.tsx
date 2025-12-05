@@ -36,7 +36,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useStore } from '../../../../stores/use-store';
 import { WebsiteStore } from '../../../../stores/website.store';
 import { CommonTranslations } from '../../../../translations/common-translations';
-import { schema } from '../schema';
 import './shortcut.css';
 
 function getMyInlineNode(editor: BlockNoteEditor, id: string) {
@@ -593,7 +592,7 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
 );
 
 export const getUsernameShortcutsMenuItems = (
-  editor: typeof schema.BlockNoteEditor,
+  editor: BlockNoteEditor,
   shortcuts: UsernameShortcut[],
 ): DefaultReactSuggestionItem[] =>
   shortcuts.map((sc) => ({
@@ -605,7 +604,7 @@ export const getUsernameShortcutsMenuItems = (
           type: 'username',
           props: { id: Date.now().toString(), shortcut: sc.id, only: '' },
           content: 'username',
-        },
+        } as never,
         ' ', // add a space after the shortcut
       ]);
     },
