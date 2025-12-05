@@ -79,9 +79,11 @@ describe('DescriptionParserService', () => {
         {
           provide: UserConvertersService,
           useValue: {
-            convert: jest.fn().mockImplementation((instance, username) => 
-              Promise.resolve(username)
-            ),
+            convert: jest
+              .fn()
+              .mockImplementation((instance, username) =>
+                Promise.resolve(username),
+              ),
           },
         },
         {
@@ -423,9 +425,9 @@ describe('DescriptionParserService', () => {
     const websiteOptions = createWebsiteOptions([
       {
         id: 'test-basic-default',
-        type: 'default',
+        type: 'defaultShortcut',
         props: {} as never,
-        content: [],
+        content: [] as never,
         children: [],
       },
       {
@@ -482,13 +484,11 @@ describe('DescriptionParserService', () => {
         },
       ];
 
-      customShortcutsService.findById = jest
-        .fn()
-        .mockResolvedValue({
-          id: 'cs-1',
-          name: 'commission',
-          shortcut: shortcutContent,
-        });
+      customShortcutsService.findById = jest.fn().mockResolvedValue({
+        id: 'cs-1',
+        name: 'commission',
+        shortcut: shortcutContent,
+      });
 
       const descriptionWithShortcut: Description = [
         {
@@ -696,13 +696,11 @@ describe('DescriptionParserService', () => {
         },
       ];
 
-      customShortcutsService.findById = jest
-        .fn()
-        .mockResolvedValue({
-          id: 'cs-1',
-          name: 'bold',
-          shortcut: shortcutContent,
-        });
+      customShortcutsService.findById = jest.fn().mockResolvedValue({
+        id: 'cs-1',
+        name: 'bold',
+        shortcut: shortcutContent,
+      });
 
       const descriptionWithShortcut: Description = [
         {
@@ -767,13 +765,11 @@ describe('DescriptionParserService', () => {
         },
       ];
 
-      customShortcutsService.findById = jest
-        .fn()
-        .mockResolvedValue({
-          id: 'cs-link',
-          name: 'portfolio',
-          shortcut: shortcutWithLink,
-        });
+      customShortcutsService.findById = jest.fn().mockResolvedValue({
+        id: 'cs-link',
+        name: 'portfolio',
+        shortcut: shortcutWithLink,
+      });
 
       const descriptionWithShortcut: Description = [
         {

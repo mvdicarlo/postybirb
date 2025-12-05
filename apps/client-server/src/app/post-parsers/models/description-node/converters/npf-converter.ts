@@ -193,10 +193,10 @@ export class NpfConverter extends BaseConverter {
         return this.convertVideo(node);
       case 'audio':
         return this.convertAudio(node);
-      case 'hr':
+      case 'divider':
         // Tumblr NPF doesn't have a horizontal rule, use empty text block
         return { type: 'text', text: '' };
-      case 'default':
+      case 'defaultShortcut':
         // Default markers become empty text blocks
         return { type: 'text', text: '' };
       default:
@@ -212,7 +212,10 @@ export class NpfConverter extends BaseConverter {
     node: IDescriptionBlockNodeClass,
     context: ConversionContext,
   ): NPFTextBlock {
-    const text = this.extractText(node.content as IDescriptionInlineNodeClass[], context);
+    const text = this.extractText(
+      node.content as IDescriptionInlineNodeClass[],
+      context,
+    );
     const formatting =
       this.currentFormatting.length > 0 ? this.currentFormatting : undefined;
 
@@ -230,7 +233,10 @@ export class NpfConverter extends BaseConverter {
     node: IDescriptionBlockNodeClass,
     context: ConversionContext,
   ): NPFTextBlock {
-    const text = this.extractText(node.content as IDescriptionInlineNodeClass[], context);
+    const text = this.extractText(
+      node.content as IDescriptionInlineNodeClass[],
+      context,
+    );
     const level = parseInt(node.props.level || '1', 10);
 
     // NPF supports heading1 and heading2
@@ -249,13 +255,7 @@ export class NpfConverter extends BaseConverter {
    * Converts an image block to NPF image block.
    */
   private convertImage(node: IDescriptionBlockNodeClass): NPFImageBlock {
-    const {
-      url = '',
-      name,
-      caption,
-      previewWidth,
-      previewHeight,
-    } = node.props;
+    const { url = '', name, caption, previewWidth, previewHeight } = node.props;
     const alt = name || caption || '';
     const width = parseInt(previewWidth || '0', 10) || undefined;
     const height = parseInt(previewHeight || '0', 10) || undefined;
@@ -337,7 +337,10 @@ export class NpfConverter extends BaseConverter {
         // For NPF, we need to extract just the text from shortcut blocks
         // and merge it into the current text block
         for (const block of shortcutBlocks) {
-          text += this.extractText(block.content as IDescriptionInlineNodeClass[], context);
+          text += this.extractText(
+            block.content as IDescriptionInlineNodeClass[],
+            context,
+          );
         }
       }
       return text;
@@ -421,7 +424,9 @@ export class NpfConverter extends BaseConverter {
 
     for (const node of content) {
       if (node.type === 'text') {
-        text += this.convertTextNode(node as unknown as IDescriptionTextNodeClass);
+        text += this.convertTextNode(
+          node as unknown as IDescriptionTextNodeClass,
+        );
       } else {
         text += this.convertInlineNode(node, context);
       }

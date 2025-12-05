@@ -1,8 +1,8 @@
 import {
-    ConversionContext,
-    IDescriptionBlockNodeClass,
-    IDescriptionInlineNodeClass,
-    IDescriptionTextNodeClass,
+  ConversionContext,
+  IDescriptionBlockNodeClass,
+  IDescriptionInlineNodeClass,
+  IDescriptionTextNodeClass,
 } from '../description-node.base';
 import { BaseConverter } from './base-converter';
 
@@ -15,11 +15,11 @@ export class PlainTextConverter extends BaseConverter {
     node: IDescriptionBlockNodeClass,
     context: ConversionContext,
   ): string {
-    if (node.type === 'default') {
+    if (node.type === 'defaultShortcut') {
       return this.convertRawBlocks(context.defaultDescription, context);
     }
 
-    if (node.type === 'hr') return '----------';
+    if (node.type === 'divider') return '----------';
 
     // Skip media blocks
     if (
