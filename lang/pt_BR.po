@@ -68,6 +68,7 @@ msgid "Account Options"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/account-drawer.tsx
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/legacy-import-settings.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx
 msgid "Accounts"
 msgstr ""
@@ -327,10 +328,6 @@ msgstr ""
 msgid "Bluesky automatically converts GIFs to videos."
 msgstr ""
 
-#: apps/postybirb-ui/src/app/languages.tsx
-msgid "Brazil"
-msgstr ""
-
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/app-settings.tsx
 msgid "Browse"
 msgstr ""
@@ -565,6 +562,7 @@ msgid "Custom Dimensions"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/custom-shortcuts-drawer.tsx
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/legacy-import-settings.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx
 msgid "Custom Shortcuts"
 msgstr ""
@@ -1090,8 +1088,29 @@ msgstr ""
 msgid "Image"
 msgstr ""
 
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/legacy-import-settings.tsx
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/settings-drawer.tsx
+msgid "Import"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx
 msgid "Import Action"
+msgstr ""
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/legacy-import-settings.tsx
+msgid "Import completed successfully!"
+msgstr ""
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/legacy-import-settings.tsx
+msgid "Import Errors"
+msgstr ""
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/legacy-import-settings.tsx
+msgid "Import from PostyBirb Plus"
+msgstr ""
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/legacy-import-settings.tsx
+msgid "Import your data from PostyBirb Plus. Select which types of data you want to import."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx
@@ -1501,6 +1520,10 @@ msgstr ""
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
 msgid "Please provide a valid CRON string"
+msgstr ""
+
+#: apps/postybirb-ui/src/app/languages.tsx
+msgid "Portuguese (Brazil)"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx
@@ -2111,6 +2134,7 @@ msgstr ""
 msgid "Tag converter"
 msgstr ""
 
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/legacy-import-settings.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx
 msgid "Tag Converters"
@@ -2122,6 +2146,7 @@ msgstr ""
 msgid "Tag group"
 msgstr ""
 
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/legacy-import-settings.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx
 msgid "Tag Groups"
