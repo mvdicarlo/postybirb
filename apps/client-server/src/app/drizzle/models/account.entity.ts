@@ -1,6 +1,6 @@
 import { IAccount, IAccountDto } from '@postybirb/types';
 import { Exclude, instanceToPlain, Type } from 'class-transformer';
-import { UnknownWebsite } from '../../websites/website';
+import type { UnknownWebsite } from '../../websites/website';
 import { DatabaseEntity } from './database-entity';
 import { WebsiteData } from './website-data.entity';
 

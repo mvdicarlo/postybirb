@@ -5806,6 +5806,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@nestjs/cqrs@npm:^10.2.8":
+  version: 10.2.8
+  resolution: "@nestjs/cqrs@npm:10.2.8"
+  dependencies:
+    uuid: "npm:11.0.2"
+  peerDependencies:
+    "@nestjs/common": ^9.0.0 || ^10.0.0
+    "@nestjs/core": ^9.0.0 || ^10.0.0
+    reflect-metadata: ^0.1.13 || ^0.2.0
+    rxjs: ^7.2.0
+  checksum: 10c0/fb56a282d07d5eb8c1619e1dac777f094496f37d7b9aee94c942dde27d6e1516559aaa762d737c3a60dee7a7bae6a7adffa2ba6cf6296bcf60f762517d52d0cb
+  languageName: node
+  linkType: hard
+
 "@nestjs/mapped-types@npm:2.0.2":
   version: 2.0.2
   resolution: "@nestjs/mapped-types@npm:2.0.2"
@@ -23587,6 +23601,7 @@ __metadata:
     "@microsoft/applicationinsights-web": "npm:^3.3.10"
     "@nestjs/common": "npm:^10.4.16"
     "@nestjs/core": "npm:^10.4.16"
+    "@nestjs/cqrs": "npm:^10.2.8"
     "@nestjs/platform-express": "npm:^10.4.16"
     "@nestjs/platform-socket.io": "npm:^10.4.16"
     "@nestjs/schedule": "npm:^4"
@@ -28322,6 +28337,15 @@ __metadata:
   version: 1.0.1
   resolution: "utils-merge@npm:1.0.1"
   checksum: 10c0/02ba649de1b7ca8854bfe20a82f1dfbdda3fb57a22ab4a8972a63a34553cf7aa51bc9081cf7e001b035b88186d23689d69e71b510e610a09a4c66f68aa95b672
+  languageName: node
+  linkType: hard
+
+"uuid@npm:11.0.2":
+  version: 11.0.2
+  resolution: "uuid@npm:11.0.2"
+  bin:
+    uuid: dist/esm/bin/uuid
+  checksum: 10c0/bd0670a0d6f77f1932da7544c51c32ceb467f3835382df2265f3275c4981d32c136a08a4369fb027ecfffd0b2ae48f19a28266ef636c7347264d5720e85d5ba0
   languageName: node
   linkType: hard
 

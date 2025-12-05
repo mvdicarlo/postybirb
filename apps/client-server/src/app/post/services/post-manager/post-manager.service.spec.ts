@@ -12,7 +12,9 @@ import {
 } from '@postybirb/types';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { AccountModule } from '../../../account/account.module';
+import {
+  AccountModule
+} from '../../../account/account.module';
 import { AccountService } from '../../../account/account.service';
 import { CreateAccountDto } from '../../../account/dtos/create-account.dto';
 import { PostyBirbDatabase } from '../../../drizzle/postybirb-database/postybirb-database';
