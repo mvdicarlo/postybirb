@@ -20,11 +20,10 @@ import { SubmissionDto } from '../../../models/dtos/submission.dto';
 import { EditSubmissionPath } from '../../../pages/route-paths';
 import { SubmissionTemplateStore } from '../../../stores/submission-template.store';
 import { useStore } from '../../../stores/use-store';
+import { CommonTranslations } from '../../../translations/common-translations';
 import { DeleteActionPopover } from '../../shared/delete-action-popover/delete-action-popover';
 
-type SubmissionViewProps = {
-  type: SubmissionType;
-};
+type SubmissionViewProps = { type: SubmissionType };
 
 function isValidName(name: string): boolean {
   if (name && name.trim().length) {
@@ -35,11 +34,7 @@ function isValidName(name: string): boolean {
 }
 
 function createNewTemplate(name: string, type: SubmissionType) {
-  return submissionsApi.create({
-    name,
-    type,
-    isTemplate: true,
-  });
+  return submissionsApi.create({ name, type, isTemplate: true });
 }
 
 function CreateTemplateForm(props: SubmissionViewProps): JSX.Element {
@@ -53,13 +48,21 @@ function CreateTemplateForm(props: SubmissionViewProps): JSX.Element {
         .then(() => {
           setValue('');
           notifications.show({
-            message: <Trans>Template created</Trans>,
+            message: (
+              <CommonTranslations.NounCreated>
+                <Trans>Template</Trans>
+              </CommonTranslations.NounCreated>
+            ),
             color: 'green',
           });
         })
         .catch((err) => {
           notifications.show({
-            title: <Trans>Failed to create template</Trans>,
+            title: (
+              <CommonTranslations.NounUpdateFailed>
+                <Trans>Template</Trans>
+              </CommonTranslations.NounUpdateFailed>
+            ),
             message: err.message,
             color: 'red',
           });
@@ -74,8 +77,11 @@ function CreateTemplateForm(props: SubmissionViewProps): JSX.Element {
       value={value}
       onChange={(e) => setValue(e.target.value)}
       error={value.length && !isValidName(value)}
-      label={<Trans>Create Submission Template</Trans>}
-      placeholder={t`Enter a name for the template`}
+      label={
+        <CommonTranslations.NounNew>
+          <Trans>Template</Trans>
+        </CommonTranslations.NounNew>
+      }
       onKeyDown={(e) => {
         if (e.key === 'Enter' && isValidName(value)) {
           create(value);
@@ -99,7 +105,7 @@ function SubmissionTemplateViewCard({ template }: { template: SubmissionDto }) {
     <Card px="xl">
       <Card.Section>
         <TextInput
-          label={<Trans>Template Name</Trans>}
+          label={<CommonTranslations.Name />}
           defaultValue={template.getTemplateName()}
           onBlur={(e) => {
             const name = e.target.value.trim();
@@ -107,12 +113,14 @@ function SubmissionTemplateViewCard({ template }: { template: SubmissionDto }) {
               return;
             }
             submissionsApi
-              .updateTemplateName(template.id, {
-                name,
-              })
+              .updateTemplateName(template.id, { name })
               .then(() => {
                 notifications.show({
-                  message: <Trans>Template name has been updated</Trans>,
+                  message: (
+                    <CommonTranslations.NounUpdated>
+                      <Trans>Template</Trans>
+                    </CommonTranslations.NounUpdated>
+                  ),
                   color: 'green',
                 });
               });
@@ -134,7 +142,7 @@ function SubmissionTemplateViewCard({ template }: { template: SubmissionDto }) {
               navigateTo(`${EditSubmissionPath}/${template.id}`);
             }}
           >
-            <Trans>Edit</Trans>
+            <CommonTranslations.Edit />
           </Button>
         </Group>
       </Card.Section>

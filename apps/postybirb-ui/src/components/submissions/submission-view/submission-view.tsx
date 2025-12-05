@@ -1,8 +1,9 @@
-import { Trans } from "@lingui/react/macro";
+import { Trans } from '@lingui/react/macro';
 import { Box, Paper, Stack, Text, Transition } from '@mantine/core';
 import { SubmissionType } from '@postybirb/types';
 import { useEffect, useState } from 'react';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
+import { CommonTranslations } from '../../../translations/common-translations';
 import { SubmissionViewCardGrid } from './submission-view-card-grid';
 import { SubmissionViewActions } from './submission-view-card/submission-view-actions/submission-view-actions';
 
@@ -74,7 +75,7 @@ export function SubmissionView(props: SubmissionViewProps) {
                   >
                     <Text c="dimmed" size="lg">
                       {nameFilter ? (
-                        <Trans>No submissions match your search criteria</Trans>
+                        <CommonTranslations.NoItemsFound />
                       ) : (
                         <Trans>
                           No submissions available. Upload some files to get

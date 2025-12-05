@@ -3,6 +3,7 @@ import BlueskyLoginView from './bluesky/bluesky-login-view';
 import CustomLoginView from './custom/custom-login-view';
 import DiscordLoginView from './discord/discord-login-view';
 import E621LoginView from './e621/e621-login-view';
+import FurtasticLoginView from './furtastic/furtastic-login-view';
 import InkbunnyLoginView from './inkbunny/inkbunny-login-view';
 import MegalodonLoginView from './megalodon/megalodon-login-view';
 import TelegramLoginView from './telegram/telegram-login-view';
@@ -17,6 +18,7 @@ const CustomLoginComponents: Record<
   Custom: CustomLoginView,
   Discord: DiscordLoginView,
   Friendica: MegalodonLoginView,
+  Furtastic: FurtasticLoginView,
   GoToSocial: MegalodonLoginView,
   Inkbunny: InkbunnyLoginView,
   Mastodon: MegalodonLoginView,

@@ -4,6 +4,7 @@ import 'dayjs/locale/es';
 import 'dayjs/locale/lt';
 import 'dayjs/locale/pt-br';
 import 'dayjs/locale/ru';
+import 'dayjs/locale/ta';
 
 export const languages = [
   [msg`English`, 'en'],
@@ -12,6 +13,7 @@ export const languages = [
   [msg`Portuguese (Brazil)`, 'pt-BR'],
   [msg`Russian`, 'ru'],
   [msg`Spanish`, 'es'],
+  [msg`Tamil`, 'ta'],
 ] as const;
 
 export const supportedLocaleCodes = languages.map(([, code]) => code);
@@ -23,13 +25,15 @@ export const dateLocaleMap: Record<string, string> = {
   'pt-BR': 'pt-br',
   ru: 'ru',
   es: 'es',
+  ta: 'ta',
 };
 
 export const calendarLanguageMap: Record<string, string> = {
   'pt-BR': 'pt-br',
-  en: 'en',
-  de: 'de',
-  lt: 'lt',
-  ru: 'ru',
-  es: 'es',
+  en: 'en-US',
+  de: 'de-DE',
+  lt: 'lt-LT',
+  ru: 'ru-RU',
+  es: 'pt-BR',
+  ta: 'ta-IN',
 };

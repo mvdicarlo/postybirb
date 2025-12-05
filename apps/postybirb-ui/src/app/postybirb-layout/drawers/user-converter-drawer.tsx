@@ -1,6 +1,4 @@
-/* eslint-disable lingui/no-unlocalized-strings */
-import { Trans, msg } from '@lingui/macro';
-import { useLingui } from '@lingui/react';
+import { Trans } from '@lingui/react/macro';
 import {
   ActionIcon,
   Badge,
@@ -19,7 +17,7 @@ import {
   TextInput,
   Tooltip,
 } from '@mantine/core';
-import { useClipboard, useDisclosure } from '@mantine/hooks';
+import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import {
   ICreateUserConverterDto,
@@ -27,9 +25,9 @@ import {
   UserConverterDto,
 } from '@postybirb/types';
 import {
+  IconCheck,
   IconChevronDown,
   IconChevronUp,
-  IconClipboardCopy,
   IconPlus,
   IconSearch,
   IconSortAscending,
@@ -43,6 +41,7 @@ import { DeleteActionPopover } from '../../../components/shared/delete-action-po
 import { useStore } from '../../../stores/use-store';
 import { UserConverterStore } from '../../../stores/user-converter-store';
 import { WebsiteStore } from '../../../stores/website.store';
+import { CommonTranslations } from '../../../translations/common-translations';
 import { getOverlayOffset, getPortalTarget, marginOffset } from './drawer.util';
 import { useDrawerToggle } from './use-drawer-toggle';
 
@@ -68,24 +67,17 @@ function WebsiteConverterInputs({
   websites: IWebsiteInfoDto[];
   disabled?: boolean;
 }) {
-  const { _ } = useLingui();
   const sitesWithValues = useMemo(
     () => websites.filter((site) => value[site.id]?.trim().length > 0),
     [websites, value],
   );
 
   const handleChange = (siteId: string, newValue: string) => {
-    onChange({
-      ...value,
-      [siteId]: newValue,
-    });
+    onChange({ ...value, [siteId]: newValue });
   };
 
   const handleBlur = (siteId: string, newValue: string) => {
-    onChange({
-      ...value,
-      [siteId]: newValue.trim(),
-    });
+    onChange({ ...value, [siteId]: newValue.trim() });
   };
 
   return (
@@ -93,8 +85,7 @@ function WebsiteConverterInputs({
       <Group justify="space-between" mb="md">
         <Group>
           <Text size="sm" fw={500}>
-            <Trans>Website Conversions</Trans>{' '}
-            {sitesWithValues.length > 0 && `(${sitesWithValues.length} active)`}
+            <Trans>Website Conversions</Trans>
           </Text>
           {sitesWithValues.length > 0 && (
             <Group gap={5}>
@@ -116,7 +107,13 @@ function WebsiteConverterInputs({
 
       <Divider mb="md" />
 
-      <Box style={{ maxHeight: 'calc(100vh - 440px)', overflowY: 'auto' }}>
+      <Box
+        style={{
+          // eslint-disable-next-line lingui/no-unlocalized-strings
+          maxHeight: 'calc(100vh - 440px)',
+          overflowY: 'auto',
+        }}
+      >
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr>
@@ -127,7 +124,7 @@ function WebsiteConverterInputs({
                   borderBottom: '1px solid #ddd',
                 }}
               >
-                <Trans>Website</Trans>
+                <CommonTranslations.Website />
               </th>
               <th
                 style={{
@@ -154,7 +151,10 @@ function WebsiteConverterInputs({
                     <Text>{website.displayName}</Text>
                     {value[website.id]?.trim().length > 0 && (
                       <Badge size="xs" variant="light" color="green">
-                        <Trans>Set</Trans>
+                        <IconCheck
+                          size="1rem"
+                          style={{ verticalAlign: 'middle' }}
+                        />
                       </Badge>
                     )}
                   </Group>
@@ -169,9 +169,6 @@ function WebsiteConverterInputs({
                   <TextInput
                     size="xs"
                     value={value[website.id] ?? ''}
-                    placeholder={_(
-                      msg`Enter username for ${website.displayName}`,
-                    )}
                     onChange={(event) =>
                       handleChange(website.id, event.currentTarget.value)
                     }
@@ -194,14 +191,12 @@ function ExistingUserConverter(props: {
   userConverter: UserConverterDto;
   websites: IWebsiteInfoDto[];
 }) {
-  const { _ } = useLingui();
   const { userConverter, websites } = props;
   const [state, setState] = useState<ICreateUserConverterDto>({
     username: userConverter.username,
     convertTo: { ...userConverter.convertTo },
   });
   const [opened, { toggle }] = useDisclosure(false);
-  const clipboard = useClipboard();
 
   const hasChanges = !areEqual(
     { username: userConverter.username, convertTo: userConverter.convertTo },
@@ -215,42 +210,14 @@ function ExistingUserConverter(props: {
     [state.convertTo],
   );
 
-  const handleCopyToClipboard = () => {
-    const text = Object.entries(state.convertTo)
-      .filter(([, value]) => value.trim().length > 0)
-      .map(([site, value]) => {
-        const website = websites.find((w) => w.id === site);
-        return `${website?.displayName || site}: ${value}`;
-      })
-      .join('\n');
-
-    clipboard.copy(`Username: ${state.username}\n${text}`);
-    notifications.show({
-      title: <Trans>Copied</Trans>,
-      message: <Trans>Converter details copied to clipboard</Trans>,
-      color: 'blue',
-      autoClose: 2000,
-    });
-  };
-
   return (
     <Paper withBorder p="xs" radius="md" shadow={opened ? 'sm' : undefined}>
       <Group justify="space-between" mb={opened ? 'xs' : 0}>
         <Group>
           <Text fw={500}>{userConverter.username}</Text>
           <Badge size="xs" variant="light" color="blue">
-            {activeConversions} <Trans>sites</Trans>
+            {activeConversions}
           </Badge>
-          <Tooltip label={<Trans>Copy details</Trans>}>
-            <ActionIcon
-              variant="subtle"
-              size="xs"
-              onClick={handleCopyToClipboard}
-              aria-label={_(msg`Copy converter details`)}
-            >
-              <IconClipboardCopy size={16} />
-            </ActionIcon>
-          </Tooltip>
         </Group>
         <Group>
           <Button
@@ -265,7 +232,7 @@ function ExistingUserConverter(props: {
               )
             }
           >
-            {opened ? <Trans>Hide</Trans> : <Trans>Edit</Trans>}
+            {opened ? <CommonTranslations.Hide /> : <CommonTranslations.Edit />}
           </Button>
         </Group>
       </Group>
@@ -277,10 +244,7 @@ function ExistingUserConverter(props: {
           value={state.username}
           label={<Trans>Username</Trans>}
           onChange={(event) =>
-            setState({
-              ...state,
-              username: event.currentTarget.value,
-            })
+            setState({ ...state, username: event.currentTarget.value })
           }
         />
         <WebsiteConverterInputs
@@ -298,20 +262,24 @@ function ExistingUserConverter(props: {
                 .then(() => {
                   notifications.show({
                     title: state.username,
-                    message: <Trans>User converter updated</Trans>,
+                    message: (
+                      <CommonTranslations.NounUpdated>
+                        <Trans>User converter</Trans>
+                      </CommonTranslations.NounUpdated>
+                    ),
                     color: 'green',
                   });
                 })
                 .catch(() => {
                   notifications.show({
                     title: state.username,
-                    message: <Trans>Failed to update</Trans>,
+                    message: <CommonTranslations.FailedToUpdate />,
                     color: 'red',
                   });
                 });
             }}
           >
-            <Trans>Update</Trans>
+            <CommonTranslations.Update />
           </Button>
           <DeleteActionPopover
             additionalContent={
@@ -323,7 +291,11 @@ function ExistingUserConverter(props: {
               userConvertersApi.remove([userConverter.id]).then(() => {
                 notifications.show({
                   title: userConverter.username,
-                  message: <Trans>User converter deleted</Trans>,
+                  message: (
+                    <CommonTranslations.NounDeleted>
+                      <Trans>User converter</Trans>
+                    </CommonTranslations.NounDeleted>
+                  ),
                   color: 'green',
                 });
               });
@@ -336,15 +308,11 @@ function ExistingUserConverter(props: {
 }
 
 function UserConverters() {
-  const { _ } = useLingui();
   const { state: userConverters, isLoading } = useStore(UserConverterStore);
   const { state: websiteInfo, isLoading: isLoadingWebsiteInfo } =
     useStore(WebsiteStore);
   const [newConverterFields, setNewConverterFields] =
-    useState<ICreateUserConverterDto>({
-      username: '',
-      convertTo: {},
-    });
+    useState<ICreateUserConverterDto>({ username: '', convertTo: {} });
   const [search, setSearch] = useState('');
   const [showNewConverterForm, { toggle: toggleNewConverterForm }] =
     useDisclosure(false);
@@ -379,34 +347,7 @@ function UserConverters() {
   };
 
   const resetForm = () => {
-    setNewConverterFields({
-      username: '',
-      convertTo: {},
-    });
-  };
-
-  const handlePasteUsernameFromClipboard = async () => {
-    try {
-      const clipboardText = await navigator.clipboard.readText();
-      if (clipboardText) {
-        setNewConverterFields((prev) => ({
-          ...prev,
-          username: clipboardText.trim(),
-        }));
-
-        notifications.show({
-          title: <Trans>Username Pasted</Trans>,
-          message: <Trans>Username pasted from clipboard</Trans>,
-          color: 'blue',
-        });
-      }
-    } catch (error) {
-      notifications.show({
-        title: <Trans>Error</Trans>,
-        message: <Trans>Failed to paste from clipboard</Trans>,
-        color: 'red',
-      });
-    }
+    setNewConverterFields({ username: '', convertTo: {} });
   };
 
   if (isLoading || isLoadingWebsiteInfo) {
@@ -422,15 +363,10 @@ function UserConverters() {
       <Stack gap="md">
         <Group grow>
           <TextInput
-            placeholder={_(msg`Search user converters...`)}
             leftSection={<IconSearch size={16} />}
             rightSection={
               search ? (
-                <ActionIcon
-                  variant="transparent"
-                  onClick={() => setSearch('')}
-                  aria-label={_(msg`Clear search`)}
-                >
+                <ActionIcon variant="transparent" onClick={() => setSearch('')}>
                   <IconX size={16} />
                 </ActionIcon>
               ) : null
@@ -441,36 +377,6 @@ function UserConverters() {
         </Group>
 
         <Group justify="space-between">
-          <Group>
-            <Text fw={500} size="md">
-              <Trans>User Converters</Trans> ({filteredUserConverters.length}/
-              {userConverters?.length || 0})
-            </Text>
-            <Group ml="xs">
-              <Tooltip
-                label={
-                  sortDirection === 'asc' ? (
-                    <Trans>Sort Descending</Trans>
-                  ) : (
-                    <Trans>Sort Ascending</Trans>
-                  )
-                }
-              >
-                <ActionIcon
-                  variant="subtle"
-                  size="sm"
-                  onClick={toggleSortDirection}
-                  aria-label={_(msg`Toggle sort direction`)}
-                >
-                  {sortDirection === 'asc' ? (
-                    <IconSortAscending size={16} />
-                  ) : (
-                    <IconSortDescending size={16} />
-                  )}
-                </ActionIcon>
-              </Tooltip>
-            </Group>
-          </Group>
           <Button
             leftSection={<IconPlus size={16} />}
             variant="light"
@@ -483,13 +389,38 @@ function UserConverters() {
               <Trans>Create New</Trans>
             )}
           </Button>
+          <Group>
+            <Group ml="xs">
+              <Tooltip
+                label={
+                  sortDirection === 'asc' ? (
+                    <CommonTranslations.SortDescending />
+                  ) : (
+                    <CommonTranslations.SortAscending />
+                  )
+                }
+              >
+                <ActionIcon
+                  variant="subtle"
+                  size="sm"
+                  onClick={toggleSortDirection}
+                >
+                  {sortDirection === 'asc' ? (
+                    <IconSortAscending size={16} />
+                  ) : (
+                    <IconSortDescending size={16} />
+                  )}
+                </ActionIcon>
+              </Tooltip>
+            </Group>
+          </Group>
         </Group>
 
         <Collapse in={showNewConverterForm}>
           <Fieldset
             legend={
               <Box mx="4">
-                <Trans>Create new user converter</Trans>
+                <Trans>New</Trans>
               </Box>
             }
           >
@@ -506,15 +437,6 @@ function UserConverters() {
                   })
                 }
               />
-              <Button
-                variant="subtle"
-                size="xs"
-                onClick={handlePasteUsernameFromClipboard}
-                leftSection={<IconClipboardCopy size={14} />}
-                aria-label={_(msg`Paste username from clipboard`)}
-              >
-                <Trans>Paste</Trans>
-              </Button>
             </Group>
 
             <WebsiteConverterInputs
@@ -535,7 +457,7 @@ function UserConverters() {
                   Object.keys(newConverterFields.convertTo).length === 0
                 }
               >
-                <Trans>Clear</Trans>
+                <CommonTranslations.Clear />
               </Button>
               <Button
                 variant="filled"
@@ -549,25 +471,27 @@ function UserConverters() {
                 }
                 onClick={() => {
                   userConvertersApi.create(newConverterFields).then(() => {
-                    setNewConverterFields({
-                      username: '',
-                      convertTo: {},
-                    });
+                    setNewConverterFields({ username: '', convertTo: {} });
                     notifications.show({
                       title: newConverterFields.username,
-                      message: <Trans>User converter created</Trans>,
+                      message: (
+                        <CommonTranslations.NounCreated>
+                          <Trans>User converter</Trans>
+                        </CommonTranslations.NounCreated>
+                      ),
                       color: 'green',
                     });
                   });
                 }}
               >
-                <Trans>Save</Trans>
+                <CommonTranslations.Save />
               </Button>
             </Group>
           </Fieldset>
         </Collapse>
 
         {filteredUserConverters.length > 0 ? (
+          // eslint-disable-next-line lingui/no-unlocalized-strings
           <ScrollArea h="calc(100vh - 280px)" offsetScrollbars>
             <Stack gap="sm">
               {filteredUserConverters.map((userConverter) => (
@@ -581,15 +505,7 @@ function UserConverters() {
           </ScrollArea>
         ) : (
           <Paper p="lg" withBorder radius="md" ta="center">
-            {search ? (
-              <Text c="dimmed">
-                <Trans>No user converters match your search</Trans>
-              </Text>
-            ) : (
-              <Text c="dimmed">
-                <Trans>No user converters created yet</Trans>
-              </Text>
-            )}
+            <CommonTranslations.NoItemsFound />
           </Paper>
         )}
       </Stack>
@@ -605,13 +521,8 @@ export function UserConverterDrawer() {
         closeOnClickOutside
         ml={-marginOffset}
         size="lg"
-        portalProps={{
-          target: getPortalTarget(),
-        }}
-        overlayProps={{
-          left: getOverlayOffset(),
-          zIndex: 100,
-        }}
+        portalProps={{ target: getPortalTarget() }}
+        overlayProps={{ left: getOverlayOffset(), zIndex: 100 }}
         trapFocus
         opened={visible}
         onClose={() => toggle()}
@@ -620,12 +531,7 @@ export function UserConverterDrawer() {
             <Trans>User Converters</Trans>
           </Text>
         }
-        styles={{
-          body: {
-            padding: '16px',
-            height: 'calc(100% - 60px)',
-          },
-        }}
+        styles={{ body: { padding: '16px', height: 'calc(100% - 60px)' } }}
       >
         <UserConverters />
       </Drawer>

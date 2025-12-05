@@ -1,5 +1,5 @@
-import { msg } from "@lingui/core/macro";
 import { i18n } from '@lingui/core';
+import { msg } from '@lingui/core/macro';
 import {
   DefaultDescriptionValue,
   DefaultTagValue,
@@ -119,6 +119,15 @@ export class SubmissionDto<
       scheduledFor: date ? date.toISOString() : undefined,
       metadata: this.metadata,
     });
+  }
+
+  public getTitle(): string | undefined {
+    if (this.isTemplate) {
+      return this.getTemplateName();
+    }
+    const defaultOption = this.getDefaultOptions();
+    const title = defaultOption?.data?.title;
+    return title;
   }
 
   public copy(): SubmissionDto<T, O> {

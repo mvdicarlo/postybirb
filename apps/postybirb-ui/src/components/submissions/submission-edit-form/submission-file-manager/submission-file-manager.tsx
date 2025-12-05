@@ -1,7 +1,6 @@
-import { Trans } from "@lingui/react/macro";
+import { Trans } from '@lingui/react/macro';
 import {
   Box,
-  Center,
   Group,
   Paper,
   ScrollArea,
@@ -10,7 +9,7 @@ import {
   Text,
 } from '@mantine/core';
 import { FileSubmissionMetadata, ISubmissionFileDto } from '@postybirb/types';
-import { IconArrowsSort, IconFilePlus } from '@tabler/icons-react';
+import { IconArrowsSort } from '@tabler/icons-react';
 import { useEffect, useRef, useState } from 'react';
 import Sortable from 'sortablejs';
 import fileSubmissionApi from '../../../../api/file-submission.api';
@@ -57,8 +56,6 @@ function FileView({ submission }: SubmissionEditFormFileManagerProps) {
     }
 
     if (!el) {
-      // eslint-disable-next-line lingui/no-unlocalized-strings, no-console
-      console.warn('Could not find sortable element');
       return () => {};
     }
     const sortable = new Sortable(el, {
@@ -159,18 +156,7 @@ function FileView({ submission }: SubmissionEditFormFileManagerProps) {
               />
             ))}
           </Stack>
-        ) : (
-          <Center p="xl">
-            <Stack align="center" gap="xs">
-              <IconFilePlus size={48} opacity={0.5} />
-              <Text c="dimmed" size="sm">
-                <Trans>
-                  Add files to your submission using the uploader below
-                </Trans>
-              </Text>
-            </Stack>
-          </Center>
-        )}
+        ) : null}
       </ScrollArea>
     </Paper>
   );

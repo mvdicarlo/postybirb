@@ -1,4 +1,4 @@
-import { Trans } from "@lingui/react/macro";
+import { Trans } from '@lingui/react/macro';
 import {
   Box,
   Button,
@@ -18,6 +18,7 @@ import { useLocalStorage } from 'react-use';
 import Sortable from 'sortablejs';
 import { draggableIndexesAreDefined } from '../../../../helpers/sortable.helper';
 import { SubmissionDto } from '../../../../models/dtos/submission.dto';
+import { CommonTranslations } from '../../../../translations/common-translations';
 import { ScheduleGlobalKey } from '../../submission-scheduler/submission-scheduler';
 import './submission-view-multi-scheduler-modal.css';
 
@@ -37,11 +38,7 @@ function getIncrement(index: number, value: number, isLargest: boolean) {
 function getNextDate(
   date: Date,
   index: number,
-  increments: {
-    days: number;
-    hours: number;
-    minutes: number;
-  },
+  increments: { days: number; hours: number; minutes: number },
 ): Date {
   const { days, hours, minutes } = increments;
   const nextDate = new Date(date);
@@ -278,10 +275,10 @@ export function SubmissionViewMultiSchedulerModal(
             c="var(--mantine-color-text)"
             onClick={onClose}
           >
-            <Trans>Cancel</Trans>
+            <CommonTranslations.Cancel />
           </Button>
           <Button disabled={!isValid} onClick={submit}>
-            <Trans>Apply</Trans>
+            <CommonTranslations.Save />
           </Button>
         </Group>
       </Box>

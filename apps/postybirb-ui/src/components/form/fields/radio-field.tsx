@@ -11,9 +11,7 @@ type RadioFieldProps =
   | FormFieldProps<RadioFieldType>
   | FormFieldProps<RatingFieldType>;
 
-type CommonFieldProps = {
-  defaultValue: string | undefined;
-};
+type CommonFieldProps = { defaultValue: string | undefined };
 
 function RatingFieldControl(
   props: FormFieldProps<RatingFieldType> & CommonFieldProps,

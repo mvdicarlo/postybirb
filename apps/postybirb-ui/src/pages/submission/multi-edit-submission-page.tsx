@@ -1,4 +1,4 @@
-import { Trans } from "@lingui/react/macro";
+import { Trans } from '@lingui/react/macro';
 import { Box, Button, Loader, Radio, Space } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { ISubmissionDto, SubmissionType } from '@postybirb/types';
@@ -19,6 +19,7 @@ import { SubmissionPickerModal } from '../../components/submissions/submission-p
 import { SubmissionDto } from '../../models/dtos/submission.dto';
 import { MultiSubmissionStore } from '../../stores/multi-submission.store';
 import { useStore } from '../../stores/use-store';
+import { CommonTranslations } from '../../translations/common-translations';
 import { FileSubmissionPath, MessageSubmissionPath } from '../route-paths';
 
 function ApplyTemplateAction({ submission }: { submission: SubmissionDto }) {
@@ -43,7 +44,11 @@ function ApplyTemplateAction({ submission }: { submission: SubmissionDto }) {
             notifications.show({
               color: 'green',
               title: submission.getDefaultOptions().data.title,
-              message: <Trans>Template applied</Trans>,
+              message: (
+                <CommonTranslations.NounUpdated>
+                  <CommonTranslations.Submission />
+                </CommonTranslations.NounUpdated>
+              ),
             });
           })
           .catch((err) => {
@@ -91,14 +96,15 @@ function ApplyMultiSubmissionAction({
           .then(() => {
             notifications.show({
               color: 'green',
-              message: <Trans>Updates applied</Trans>,
+              message: (
+                <CommonTranslations.NounUpdated>
+                  <CommonTranslations.Submission />
+                </CommonTranslations.NounUpdated>
+              ),
             });
           })
           .catch((err) => {
-            notifications.show({
-              color: 'red',
-              message: err.message,
-            });
+            notifications.show({ color: 'red', message: err.message });
           });
         setModalVisible(false);
       }}
@@ -139,7 +145,7 @@ function ApplyMultiSubmissionAction({
         leftSection={<IconDeviceFloppy />}
         onClick={() => setModalVisible(true)}
       >
-        <Trans>Apply to Submissions</Trans>
+        <CommonTranslations.Save />
       </Button>
       {picker}
     </>
@@ -170,10 +176,11 @@ export function MultiEditSubmissionPage() {
         title={<Trans>Edit Multiple</Trans>}
         breadcrumbs={[
           {
-            text: isFile ? (
-              <Trans>File Submissions</Trans>
-            ) : (
-              <Trans>Message Submissions</Trans>
+            text: (
+              <CommonTranslations.SubmissionType
+                withSubmission
+                type={type as SubmissionType}
+              />
             ),
             target: isFile ? FileSubmissionPath : MessageSubmissionPath,
           },

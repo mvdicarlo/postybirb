@@ -1,7 +1,18 @@
-import { Plural, Trans } from "@lingui/react/macro";
-import { Box, DefaultMantineColor, Loader, Popover, Text } from '@mantine/core';
+import { Plural, Trans } from '@lingui/react/macro';
+import {
+  Badge,
+  Box,
+  DefaultMantineColor,
+  Divider,
+  Group,
+  Loader,
+  Popover,
+  Stack,
+  Text,
+} from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { E621TagCategory, TagSearchProviderSettings } from '@postybirb/types';
+import { IconBook, IconPhoto } from '@tabler/icons-react';
 import { useCallback, useRef } from 'react';
 import { useAsync } from 'react-use';
 import { TagSearchProvider } from '../../components/form/fields/tag-search/tag-search-provider';
@@ -99,52 +110,94 @@ function E621TagSearchItem(props: {
   }, [tagController]);
 
   return (
-    <Popover width={600} position="left" shadow="md" opened={opened}>
+    <Popover position="left" shadow="md" opened={opened}>
       <Popover.Target>
-        <Text
-          inherit
-          c={colors[tag.category]}
-          onMouseEnter={tagController.open}
-          onMouseLeave={onTextMouseLeave}
-        >
-          {tag.name} ({tag.post_count})
-        </Text>
+        <Group gap={4} wrap="nowrap">
+          <Text
+            inherit
+            c={colors[tag.category]}
+            fw={500}
+            onMouseEnter={tagController.open}
+            onMouseLeave={onTextMouseLeave}
+            style={{ cursor: 'help' }}
+          >
+            {tag.name}
+          </Text>
+          <Badge
+            size="xs"
+            variant="light"
+            color={colors[tag.category] || 'gray'}
+            onMouseEnter={tagController.open}
+            onMouseLeave={onTextMouseLeave}
+            style={{ cursor: 'help' }}
+          >
+            {tag.post_count}
+          </Badge>
+        </Group>
       </Popover.Target>
-      <Popover.Dropdown>
+      <Popover.Dropdown p="md">
         <Box
           onMouseEnter={dropdownController.open}
           onMouseLeave={dropdownController.close}
           onClick={(event) => event.stopPropagation()}
         >
-          <Text size="sm">
-            <strong>
-              <Plural
-                value={tag.post_count}
-                one="Post count"
-                other="Posts count"
-              />
-            </strong>
-            : {tag.post_count}
-          </Text>
-          <Text size="sm">
-            <strong>
-              <Trans>Category</Trans>
-            </strong>
-            : {E621TagCategory[tag.category]}
-          </Text>
-          {settings.showWikiInHelpOnHover && (
-            <Text size="sm">
-              <strong>
-                <Trans>Description</Trans>
-              </strong>
-              :{' '}
-              {wikiPage.loading ? (
-                <Loader width={10} />
-              ) : (
-                <E621Dtext dtext={wikiPage.value?.body ?? ''} />
-              )}
-            </Text>
-          )}
+          <Stack gap="sm">
+            <Group gap="xs">
+              <Text size="lg" fw={600} c={colors[tag.category]}>
+                {tag.name}
+              </Text>
+              <Badge
+                size="sm"
+                variant="filled"
+                color={colors[tag.category] || 'gray'}
+              >
+                {E621TagCategory[tag.category]}
+              </Badge>
+            </Group>
+
+            <Divider />
+
+            <Group gap="xs">
+              <IconPhoto size={16} />
+              <Text size="sm" c="dimmed">
+                <Plural value={tag.post_count} one="# post" other="# posts" />
+              </Text>
+            </Group>
+
+            {settings.showWikiInHelpOnHover && (
+              <Group gap="xs" align="flex-start">
+                <IconBook size={16} style={{ marginTop: 2 }} />
+                <Box style={{ flex: 1 }}>
+                  <Text size="sm" fw={500} mb={4}>
+                    <Trans>Description</Trans>
+                  </Text>
+                  {wikiPage.loading ? (
+                    <Group gap="xs">
+                      <Loader size="xs" />
+                      <Text size="xs" c="dimmed">
+                        <Loader />
+                      </Text>
+                    </Group>
+                  ) : wikiPage.value?.body ? (
+                    <Box
+                      style={{
+                        maxHeight: 300,
+                        overflowY: 'auto',
+                        // eslint-disable-next-line lingui/no-unlocalized-strings
+                        padding: '8px 0',
+                      }}
+                    >
+                      <E621Dtext dtext={wikiPage.value.body} />
+                    </Box>
+                  ) : (
+                    <Text size="sm" c="dimmed" fs="italic">
+                      <Trans>No wiki page available</Trans>
+                    </Text>
+                  )}
+                </Box>
+              </Group>
+            )}
+          </Stack>
         </Box>
       </Popover.Dropdown>
     </Popover>

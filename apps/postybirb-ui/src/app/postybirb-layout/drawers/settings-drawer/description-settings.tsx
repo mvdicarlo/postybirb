@@ -1,11 +1,5 @@
-import { Trans } from "@lingui/react/macro";
-import {
-    Card,
-    Group,
-    Stack,
-    Switch,
-    Text,
-} from '@mantine/core';
+import { Trans } from '@lingui/react/macro';
+import { Card, Group, Stack, Switch, Text } from '@mantine/core';
 import { IconFileDescription } from '@tabler/icons-react';
 import settingsApi from '../../../../api/settings.api';
 import { useSettings } from '../../../../stores/use-settings';
@@ -30,7 +24,7 @@ export function DescriptionSettings() {
             <Group gap="xs">
               <Text>
                 <Trans>
-                  Allow PostyBirb to insert an Ad into the description
+                  Allow PostyBirb to self-advertise at the end of descriptions
                 </Trans>
               </Text>
             </Group>
@@ -38,10 +32,7 @@ export function DescriptionSettings() {
           checked={settings?.allowAd ?? true}
           onChange={(event) => {
             settingsApi.update(settingsId, {
-              settings: {
-                ...settings,
-                allowAd: event.currentTarget.checked,
-              },
+              settings: { ...settings, allowAd: event.currentTarget.checked },
             });
           }}
         />

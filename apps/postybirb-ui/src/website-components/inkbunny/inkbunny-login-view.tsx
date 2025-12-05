@@ -1,17 +1,20 @@
-import { Trans } from "@lingui/react/macro";
+import { Trans } from '@lingui/react/macro';
 import {
   Alert,
   Box,
   Button,
   PasswordInput,
   Stack,
+  Text,
   TextInput,
 } from '@mantine/core';
 import { InkbunnyAccountData } from '@postybirb/types';
+import { IconInfoCircle } from '@tabler/icons-react';
 import { useState } from 'react';
 import accountApi from '../../api/account.api';
 import { ExternalLink } from '../../components/external-link/external-link';
 import { LoginComponentProps } from '../../models/login-component-props';
+import { CommonTranslations } from '../../translations/common-translations';
 import {
   notifyLoginFailed,
   notifyLoginSuccess,
@@ -42,9 +45,7 @@ export default function InkbunnyLoginView(
         `https://inkbunny.net/api_login.php?username=${encodeURIComponent(
           username.trim(),
         )}&password=${encodeURIComponent(password)}`,
-        {
-          method: 'GET',
-        },
+        { method: 'GET' },
       );
 
       const authData = await authResponse.json();
@@ -53,10 +54,7 @@ export default function InkbunnyLoginView(
         // Save the authentication data
         await accountApi.setWebsiteData<InkbunnyAccountData>({
           id,
-          data: {
-            username: username.trim(),
-            sid: authData.sid,
-          },
+          data: { username: username.trim(), sid: authData.sid },
         });
 
         notifyLoginSuccess();
@@ -73,20 +71,24 @@ export default function InkbunnyLoginView(
 
   return (
     <form id={formId} onSubmit={handleSubmit}>
-      <Stack>
-        <Alert color="blue">
-          <Trans>
-            You must first enable API access in your{' '}
-            <ExternalLink href="https://inkbunny.net/account.php">
-              account settings
-            </ExternalLink>{' '}
-            under "API (External Scripting)".
-          </Trans>
+      <Stack gap="md">
+        <Alert icon={<IconInfoCircle size={16} />} color="blue" variant="light">
+          <Text size="sm">
+            <Trans>
+              You must first enable API access in your account settings under
+              "API (External Scripting)" before you can authenticate with
+              PostyBirb.
+            </Trans>
+          </Text>
+          <ExternalLink href="https://inkbunny.net/account.php">
+            <Trans>Open Inkbunny Account Settings</Trans>
+          </ExternalLink>
         </Alert>
 
         <TextInput
           label={<Trans>Username</Trans>}
           name="username"
+          placeholder="your_username"
           required
           value={username}
           onChange={(event) => setUsername(event.currentTarget.value)}
@@ -95,19 +97,27 @@ export default function InkbunnyLoginView(
         <PasswordInput
           label={<Trans>Password</Trans>}
           name="password"
+          // eslint-disable-next-line lingui/no-unlocalized-strings
+          placeholder="Your password"
           required
           value={password}
           onChange={(event) => setPassword(event.currentTarget.value)}
+          description={
+            <Text size="xs" c="dimmed">
+              <Trans>Your password will not be stored</Trans>
+            </Text>
+          }
         />
 
-        <Box>
+        <Box mt="md">
           <Button
             type="submit"
             form={formId}
             loading={isSubmitting}
             disabled={!isFormValid}
+            fullWidth
           >
-            <Trans>Login</Trans>
+            <CommonTranslations.Save />
           </Button>
         </Box>
       </Stack>

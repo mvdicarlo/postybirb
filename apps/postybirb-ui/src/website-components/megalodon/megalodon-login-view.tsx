@@ -1,13 +1,13 @@
-import { Trans } from "@lingui/react/macro";
+import { Trans } from '@lingui/react/macro';
 import {
-    Alert,
-    Button,
-    Paper,
-    Stack,
-    Stepper,
-    Text,
-    TextInput,
-    Title,
+  Alert,
+  Button,
+  Paper,
+  Stack,
+  Stepper,
+  Text,
+  TextInput,
+  Title,
 } from '@mantine/core';
 import { MegalodonAccountData, MegalodonOAuthRoutes } from '@postybirb/types';
 import { IconCheck, IconExternalLink, IconServer } from '@tabler/icons-react';
@@ -16,8 +16,8 @@ import websitesApi from '../../api/websites.api';
 import { ExternalLink } from '../../components/external-link/external-link';
 import { LoginComponentProps } from '../../models/login-component-props';
 import {
-    createLoginHttpErrorHander,
-    notifyLoginSuccess,
+  createLoginHttpErrorHandler,
+  notifyLoginSuccess,
 } from '../website-login-helpers';
 
 const AUTH_CODE_PLACEHOLDER = 'Authorization code';
@@ -90,9 +90,6 @@ export default function MegalodonLoginView(
                 required
                 value={instanceUrl}
                 onChange={(e) => setInstanceUrl(e.currentTarget.value.trim())}
-                description={
-                  <Trans>Do not include https:// - just the domain name</Trans>
-                }
               />
 
               <Button
@@ -100,11 +97,14 @@ export default function MegalodonLoginView(
                 loading={isRegistering}
                 onClick={() => {
                   setIsRegistering(true);
+                  const cleanedUrl = instanceUrl
+                    .replace(/^https?:\/\//, '')
+                    .replace(/\/$/, '');
                   websitesApi
                     .performOAuthStep<MegalodonOAuthRoutes, 'registerApp'>(
                       id,
                       'registerApp',
-                      { instanceUrl },
+                      { instanceUrl: cleanedUrl },
                     )
                     .then((res) => {
                       if (res.success && res.authorizationUrl) {
@@ -118,14 +118,14 @@ export default function MegalodonLoginView(
                       }
                     })
                     .catch(
-                      createLoginHttpErrorHander(
+                      createLoginHttpErrorHandler(
                         <Trans>Failed to register with instance</Trans>,
                       ),
                     )
                     .finally(() => setIsRegistering(false));
                 }}
               >
-                <Trans>Register with Instance</Trans>
+                <Trans>Register Instance</Trans>
               </Button>
             </Stack>
           </Paper>
@@ -179,15 +179,11 @@ export default function MegalodonLoginView(
                         throw new Error(res.message);
                       }
                     })
-                    .catch(
-                      createLoginHttpErrorHander(
-                        <Trans>Failed to complete authorization</Trans>,
-                      ),
-                    )
+                    .catch(createLoginHttpErrorHandler())
                     .finally(() => setIsCompleting(false));
                 }}
               >
-                <Trans>Complete Login</Trans>
+                <Trans>Login</Trans>
               </Button>
 
               <Button

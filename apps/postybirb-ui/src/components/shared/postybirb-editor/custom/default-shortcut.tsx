@@ -1,8 +1,8 @@
-import { Trans } from '@lingui/react/macro';
 /* eslint-disable lingui/no-unlocalized-strings */
 import { BlockNoteEditor } from '@blocknote/core';
 import { createReactBlockSpec } from '@blocknote/react';
 import { Badge } from '@mantine/core';
+import { CommonTranslations } from '../../../../translations/common-translations';
 
 export const DefaultShortcut = createReactBlockSpec(
   {
@@ -19,12 +19,9 @@ export const DefaultShortcut = createReactBlockSpec(
           tt="none"
           size="sm"
           color="gray"
-          style={{
-            fontFamily: 'monospace',
-            fontSize: '12px',
-          }}
+          style={{ fontFamily: 'monospace', fontSize: '12px' }}
         >
-          <Trans>Default</Trans>
+          <CommonTranslations.Default />
         </Badge>
       </div>
     ),

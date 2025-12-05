@@ -60,7 +60,6 @@ export function SubmissionViewActions(props: SubmissionViewActionsProps) {
           </Group>
           <Input
             flex="6"
-            placeholder={t`Search`}
             width="100%"
             leftSection={<IconSearch />}
             value={nameFilter}

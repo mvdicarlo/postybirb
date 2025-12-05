@@ -3,14 +3,9 @@ import { Observable, Subject } from 'rxjs';
 import { Constructor } from 'type-fest';
 import AppSocket from '../transports/websocket';
 
-export type IdBasedRecord = {
-  id: EntityId;
-};
+export type IdBasedRecord = { id: EntityId };
 
-export type StoreManagerDataResult<T> = {
-  data: T[];
-  map: Map<EntityId, T>;
-};
+export type StoreManagerDataResult<T> = { data: T[]; map: Map<EntityId, T> };
 
 export type StorageManagerOptions<T> = {
   ModelConstructor?: Constructor<T>;
@@ -59,7 +54,7 @@ export default class StoreManager<T extends IdBasedRecord> {
 
   private handleMessages(messages: T[]): void {
     // eslint-disable-next-line lingui/no-unlocalized-strings, no-console
-    console.log('Handle', this.websocketDomain, this.alias, messages.length);
+    console.debug('Handle', this.websocketDomain, this.alias, messages.length);
     let m = messages ?? [];
     if (this.options.filter) {
       m = m.filter(this.options.filter);
@@ -79,7 +74,7 @@ export default class StoreManager<T extends IdBasedRecord> {
 
   public getData(): StoreManagerDataResult<T> {
     // eslint-disable-next-line no-console
-    console.log(this.websocketDomain, this.alias, this.data.length);
+    console.debug(this.websocketDomain, this.alias, this.data.length);
     const data = JSON.parse(JSON.stringify(this.data ?? []));
     const { ModelConstructor } = this.options;
     const records = ModelConstructor
