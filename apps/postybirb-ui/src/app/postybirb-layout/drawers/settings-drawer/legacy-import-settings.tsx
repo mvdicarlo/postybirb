@@ -1,12 +1,12 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
-    Alert,
-    Button,
-    Card,
-    Checkbox,
-    Group,
-    Stack,
-    Text,
+  Alert,
+  Button,
+  Card,
+  Checkbox,
+  Group,
+  Stack,
+  Text,
 } from '@mantine/core';
 import { IconDatabase, IconInfoCircle } from '@tabler/icons-react';
 import { useState } from 'react';
@@ -131,8 +131,8 @@ export function LegacyImportSettings() {
         {errors.length > 0 && (
           <Alert color="red" title={<Trans>Import Errors</Trans>}>
             <Stack gap="xs">
-              {errors.map((error, index) => (
-                <Text key={index} size="sm">
+              {errors.map((error) => (
+                <Text key={error.message} size="sm">
                   {error.message}
                 </Text>
               ))}
