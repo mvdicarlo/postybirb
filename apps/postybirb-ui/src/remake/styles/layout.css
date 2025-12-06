@@ -1,0 +1,171 @@
+/**
+ * Layout-specific styles for the PostyBirb UI.
+ * Custom flexbox layout (no AppShell) with transitions.
+ */
+
+/* Layout container - full viewport height */
+.postybirb_layout {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Side navigation */
+.postybirb_sidenav {
+  display: flex;
+  flex-direction: column;
+  width: 280px;
+  min-width: 280px;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  background-color: var(--mantine-color-body);
+  border-right: 1px solid var(--mantine-color-default-border);
+  transition: width 200ms ease, min-width 200ms ease;
+  z-index: 100;
+  overflow: hidden;
+}
+
+.postybirb_sidenav.collapsed {
+  width: 60px;
+  min-width: 60px;
+}
+
+/* Sidenav header (contains collapse button) */
+.postybirb_sidenav-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  border-bottom: 1px solid var(--mantine-color-default-border);
+  min-height: 56px;
+}
+
+.postybirb_sidenav.collapsed .postybirb_sidenav-header {
+  justify-content: center;
+  padding: 12px 8px;
+}
+
+/* Sidenav navigation items container */
+.postybirb_sidenav-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+/* Nav item label visibility */
+.postybirb_sidenav.collapsed .postybirb_nav-label {
+  display: none;
+}
+
+/* Main content wrapper - adjusts for sidenav */
+.postybirb_main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  margin-left: 280px;
+  min-height: 100vh;
+  transition: margin-left 200ms ease;
+}
+
+.postybirb_main.sidenav-collapsed {
+  margin-left: 60px;
+}
+
+/* Sub-navigation bar */
+.postybirb_subnav {
+  display: flex;
+  align-items: center;
+  height: 48px;
+  min-height: 48px;
+  padding: 0 16px;
+  background-color: var(--mantine-color-body);
+  border-bottom: 1px solid var(--mantine-color-default-border);
+}
+
+.postybirb_subnav.hidden {
+  display: none;
+}
+
+/* Content navbar (with pagination) */
+.postybirb_content-navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 48px;
+  min-height: 48px;
+  padding: 0 16px;
+  background-color: var(--mantine-color-body);
+  border-bottom: 1px solid var(--mantine-color-default-border);
+}
+
+.postybirb_content-navbar-title {
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.postybirb_content-navbar-center {
+  display: flex;
+  justify-content: center;
+  flex: 1;
+}
+
+.postybirb_content-navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Primary content area - scrollable */
+.postybirb_content-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  position: relative;
+}
+
+/* Loading overlay for content area */
+.postybirb_content-area-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.8);
+  z-index: 10;
+}
+
+[data-mantine-color-scheme='dark'] .postybirb_content-area-loading {
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+/* Responsive adjustments for minimum viewport */
+@media (min-width: 1024px) {
+  .postybirb_layout {
+    /* Layout works at minimum supported viewport - add responsive rules here if needed */
+    display: flex;
+  }
+}
+
+/* Collapse toggle button */
+.remake-collapse-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* Sidenav logo/brand area */
+.remake-sidenav-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.remake-sidenav.collapsed .remake-sidenav-brand span {
+  display: none;
+}
