@@ -4,29 +4,80 @@
  */
 
 import type { ComponentType, ReactNode } from 'react';
+import type { DrawerStateKey } from '../stores/drawer-state';
 
 /**
- * Represents a single item in the side navigation.
+ * Base properties shared by all navigation items.
  */
-export interface NavigationItem {
+interface NavigationItemBase {
   /** Unique identifier for the navigation item */
   id: string;
 
   /** Display label shown when sidenav is expanded */
-  label: string;
+  label: ReactNode;
 
   /** Icon component to display (always visible, even when collapsed) */
-  icon: ComponentType<{ size?: number | string }>;
+  icon: ReactNode;
 
-  /** Route path this item navigates to */
-  path: string;
-
-  /** Optional badge content (e.g., unread count) */
-  badge?: string | number;
+  /** Optional keyboard shortcut */
+  kbd?: string;
 
   /** Whether this item is disabled */
   disabled?: boolean;
 }
+
+/**
+ * Navigation item that links to a route.
+ */
+export interface NavigationLinkItem extends NavigationItemBase {
+  /** Type discriminator */
+  type: 'link';
+
+  /** Route path this item navigates to */
+  path: string;
+}
+
+/**
+ * Navigation item that toggles a drawer.
+ */
+export interface NavigationDrawerItem extends NavigationItemBase {
+  /** Type discriminator */
+  type: 'drawer';
+
+  /** Key in the global drawer state to toggle */
+  drawerKey: DrawerStateKey;
+}
+
+/**
+ * Navigation item with custom click behavior.
+ */
+export interface NavigationCustomItem extends NavigationItemBase {
+  /** Type discriminator */
+  type: 'custom';
+
+  /** Click handler */
+  onClick: () => void;
+}
+
+/**
+ * Represents a divider in the navigation list.
+ */
+export interface NavigationDivider {
+  /** Type discriminator */
+  type: 'divider';
+
+  /** Unique identifier */
+  id: string;
+}
+
+/**
+ * Union type for all navigation item types.
+ */
+export type NavigationItem =
+  | NavigationLinkItem
+  | NavigationDrawerItem
+  | NavigationCustomItem
+  | NavigationDivider;
 
 /**
  * Represents an item in the contextual sub-navigation bar.

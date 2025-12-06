@@ -6,8 +6,18 @@
 import { Box } from '@mantine/core';
 import { Outlet, useLocation } from 'react-router-dom';
 import { getSubNavConfig, navItems } from '../../config/nav-items';
+import { useKeybindings } from '../../hooks/use-keybindings';
 import { useSideNav } from '../../hooks/use-sidenav';
 import '../../styles/layout.css';
+import {
+    AccountDrawer,
+    CustomShortcutsDrawer,
+    NotificationsDrawer,
+    SettingsDrawer,
+    TagConverterDrawer,
+    TagGroupDrawer,
+    UserConverterDrawer,
+} from '../drawers/drawers';
 import { ContentArea } from './content-area';
 import { ContentNavbar } from './content-navbar';
 import { SideNav } from './side-nav';
@@ -21,11 +31,23 @@ export function Layout() {
   const { collapsed, setCollapsed } = useSideNav();
   const location = useLocation();
 
+  // Set up global keybindings
+  useKeybindings();
+
   // Get sub-nav configuration based on current route
   const subNavConfig = getSubNavConfig(location.pathname);
 
   return (
     <Box className="postybirb_layout">
+      {/* Drawers */}
+      <SettingsDrawer />
+      <AccountDrawer />
+      <TagGroupDrawer />
+      <TagConverterDrawer />
+      <UserConverterDrawer />
+      <NotificationsDrawer />
+      <CustomShortcutsDrawer />
+
       {/* Side Navigation */}
       <SideNav
         items={navItems}

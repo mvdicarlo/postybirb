@@ -2,7 +2,7 @@
  * HomePage - Demo section for the Home navigation item.
  */
 
-import { Trans } from '@lingui/macro';
+import { Trans } from '@lingui/react/macro';
 import { Paper, Stack, Text, Title } from '@mantine/core';
 
 /**

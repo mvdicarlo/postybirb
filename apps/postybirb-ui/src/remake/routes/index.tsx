@@ -3,29 +3,10 @@
  * Defines all routes and their corresponding page components.
  */
 
-import { createBrowserRouter, Navigate, type RouteObject } from 'react-router-dom';
-
-// Lazy load page components for code splitting
-import { Center, Loader } from '@mantine/core';
-import { lazy, Suspense } from 'react';
-
-// Layout will be imported once created
-// For now, we define routes that will be used with the Layout
-
-const HomePage = lazy(() => import('./pages/home/home-page').then((m) => ({ default: m.HomePage })));
-const SubmissionsPage = lazy(() => import('./pages/submissions/submissions-page').then((m) => ({ default: m.SubmissionsPage })));
-const SettingsPage = lazy(() => import('./pages/settings/settings-page').then((m) => ({ default: m.SettingsPage })));
-
-/**
- * Loading fallback component for lazy-loaded routes.
- */
-function PageLoader() {
-  return (
-    <Center style={{ minHeight: 200 }}>
-      <Loader />
-    </Center>
-  );
-}
+import { Navigate, type RouteObject } from 'react-router-dom';
+import { FileSubmissionsPage } from './pages/file-submissions/file-submissions-page';
+import { HomePage } from './pages/home/home-page';
+import { MessageSubmissionsPage } from './pages/message-submissions/message-submissions-page';
 
 /**
  * Route definitions for the remake app.
@@ -34,27 +15,15 @@ function PageLoader() {
 export const routes: RouteObject[] = [
   {
     path: '/',
-    element: (
-      <Suspense fallback={<PageLoader />}>
-        <HomePage />
-      </Suspense>
-    ),
+    element: <HomePage />,
   },
   {
-    path: '/submissions',
-    element: (
-      <Suspense fallback={<PageLoader />}>
-        <SubmissionsPage />
-      </Suspense>
-    ),
+    path: '/file-submissions',
+    element: <FileSubmissionsPage />,
   },
   {
-    path: '/settings',
-    element: (
-      <Suspense fallback={<PageLoader />}>
-        <SettingsPage />
-      </Suspense>
-    ),
+    path: '/message-submissions',
+    element: <MessageSubmissionsPage />,
   },
   {
     // Catch-all redirect to home
@@ -62,11 +31,3 @@ export const routes: RouteObject[] = [
     element: <Navigate to="/" replace />,
   },
 ];
-
-/**
- * Create the router instance.
- * Note: This will be wrapped with Layout in the RemakeApp entry point.
- */
-export function createRemakeRouter() {
-  return createBrowserRouter(routes);
-}
