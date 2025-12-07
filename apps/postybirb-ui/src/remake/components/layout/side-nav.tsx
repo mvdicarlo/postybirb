@@ -123,6 +123,7 @@ export function SideNav({
             label={collapsed ? undefined : <Trans>Collapse</Trans>}
             leftSection={collapsed ? <IconChevronRight size={20} /> : <IconChevronLeft size={20} />}
             onClick={() => onCollapsedChange(!collapsed)}
+            aria-label={collapsed ? 'Expand navigation' : 'Collapse navigation'}
             style={{
               borderRadius: 'var(--mantine-radius-sm)',
             }}

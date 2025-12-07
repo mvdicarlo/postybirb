@@ -21,23 +21,29 @@ export function I18nProvider({
 }: RemakeI18nProviderProps) {
   const [loaded, setLoaded] = useState(false);
 
-  const loadLocale = useCallback(
-    async (lang: string) => {
-      // Vite plugin lingui automatically converts .po files into plain json
-      // during production build and vite converts dynamic import into the path map.
-      // We don't need to cache these imported messages because browser's import
-      // call does it automatically.
-      // eslint-disable-next-line no-param-reassign
-      lang = lang ?? 'en';
-      const { messages } = await import(`../../../../../lang/${lang}.po`);
-      i18n.loadAndActivate({ locale: lang, messages });
-      if (!loaded) setLoaded(true);
-    },
-    [loaded]
-  );
+  const loadLocale = useCallback(async (lang: string) => {
+    // Vite plugin lingui automatically converts .po files into plain json
+    // during production build and vite converts dynamic import into the path map.
+    // We don't need to cache these imported messages because browser's import
+    // call does it automatically.
+    // eslint-disable-next-line no-param-reassign
+    lang = lang ?? 'en';
+    const { messages } = await import(`../../../../../lang/${lang}.po`);
+    i18n.loadAndActivate({ locale: lang, messages });
+    setLoaded(true);
+  }, []);
 
   useEffect(() => {
-    loadLocale(locale);
+    let cancelled = false;
+    loadLocale(locale).catch((error) => {
+      if (!cancelled) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to load locale:', locale, error);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [locale, loadLocale]);
 
   const [tooLongLoading, setTooLongLoading] = useState(false);

@@ -18,6 +18,7 @@ import {
     TagGroupDrawer,
     UserConverterDrawer,
 } from '../drawers/drawers';
+import { RouteErrorBoundary } from '../error-boundary';
 import { ContentArea } from './content-area';
 import { ContentNavbar } from './content-navbar';
 import { SideNav } from './side-nav';
@@ -71,7 +72,9 @@ export function Layout() {
 
         {/* Primary Content Area */}
         <ContentArea>
-          <Outlet />
+          <RouteErrorBoundary routeKey={location.pathname}>
+            <Outlet />
+          </RouteErrorBoundary>
         </ContentArea>
       </Box>
     </Box>

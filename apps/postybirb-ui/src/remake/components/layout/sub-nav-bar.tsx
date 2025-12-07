@@ -24,7 +24,6 @@ export function SubNavBar({ config }: SubNavBarProps) {
           {config.items.map((item) => {
             const buttonContent = (
               <Button
-                key={item.id}
                 variant={item.active ? 'filled' : 'subtle'}
                 size="compact-sm"
                 disabled={item.disabled}
@@ -44,7 +43,7 @@ export function SubNavBar({ config }: SubNavBarProps) {
               );
             }
 
-            return buttonContent;
+            return <Box key={item.id}>{buttonContent}</Box>;
           })}
         </Group>
       </ScrollArea>

@@ -5,6 +5,7 @@
 
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { useShallow } from 'zustand/react/shallow';
 
 /**
  * Drawer visibility keys.
@@ -147,29 +148,37 @@ export const useActiveDrawer = () => useUIStore((state) => state.activeDrawer);
 
 /** Select drawer actions */
 export const useDrawerActions = () =>
-  useUIStore((state) => ({
-    openDrawer: state.openDrawer,
-    closeDrawer: state.closeDrawer,
-    toggleDrawer: state.toggleDrawer,
-  }));
+  useUIStore(
+    useShallow((state) => ({
+      openDrawer: state.openDrawer,
+      closeDrawer: state.closeDrawer,
+      toggleDrawer: state.toggleDrawer,
+    }))
+  );
 
 /** Select file submissions filter */
 export const useFileSubmissionsFilter = () =>
-  useUIStore((state) => ({
-    filter: state.fileSubmissionsFilter,
-    setFilter: state.setFileSubmissionsFilter,
-  }));
+  useUIStore(
+    useShallow((state) => ({
+      filter: state.fileSubmissionsFilter,
+      setFilter: state.setFileSubmissionsFilter,
+    }))
+  );
 
 /** Select message submissions filter */
 export const useMessageSubmissionsFilter = () =>
-  useUIStore((state) => ({
-    filter: state.messageSubmissionsFilter,
-    setFilter: state.setMessageSubmissionsFilter,
-  }));
+  useUIStore(
+    useShallow((state) => ({
+      filter: state.messageSubmissionsFilter,
+      setFilter: state.setMessageSubmissionsFilter,
+    }))
+  );
 
 /** Select sub-nav visibility */
 export const useSubNavVisible = () =>
-  useUIStore((state) => ({
-    visible: state.subNavVisible,
-    setVisible: state.setSubNavVisible,
-  }));
+  useUIStore(
+    useShallow((state) => ({
+      visible: state.subNavVisible,
+      setVisible: state.setSubNavVisible,
+    }))
+  );
