@@ -18,7 +18,7 @@ export function SubNavBar({ config }: SubNavBarProps) {
   }
 
   return (
-    <Box className="postybirb_subnav">
+    <Box className="postybirb__subnav">
       <ScrollArea type="auto" offsetScrollbars scrollbarSize={6}>
         <Group gap="xs" wrap="nowrap">
           {config.items.map((item) => {

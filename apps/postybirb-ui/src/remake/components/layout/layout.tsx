@@ -40,7 +40,7 @@ export function Layout() {
   const subNavConfig = getSubNavConfig(location.pathname);
 
   return (
-    <Box className="postybirb_layout">
+    <Box className="postybirb__layout">
       {/* Dialogs and Drawers */}
       <SettingsDialog />
       <AccountDrawer />
@@ -58,7 +58,7 @@ export function Layout() {
       />
 
       {/* Main Content Area */}
-      <Box className={`postybirb_main ${collapsed ? 'sidenav-collapsed' : ''}`}>
+      <Box className={`postybirb__main ${collapsed ? 'postybirb__main--sidenav_collapsed' : ''}`}>
         {/* Sub-Navigation Bar */}
         <SubNavBar config={subNavConfig} />
 

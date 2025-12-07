@@ -19,14 +19,14 @@ export function ContentNavbar({ config, onPageChange }: ContentNavbarProps) {
     showPagination && pagination && pagination.totalPages > 1;
 
   return (
-    <Box className="remake-content-navbar">
+    <Box className="postybirb__content_navbar">
       {/* Left: Title */}
-      <Box className="remake-content-navbar-title">
+      <Box className="postybirb__content_navbar_title">
         {title && <Text fw={500}>{title}</Text>}
       </Box>
 
       {/* Center: Pagination */}
-      <Box className="remake-content-navbar-center">
+      <Box className="postybirb__content_navbar_center">
         {shouldShowPagination && pagination && (
           <Pagination
             total={pagination.totalPages}
@@ -38,7 +38,7 @@ export function ContentNavbar({ config, onPageChange }: ContentNavbarProps) {
       </Box>
 
       {/* Right: Actions */}
-      <Group className="remake-content-navbar-actions" gap="xs">
+      <Group className="postybirb__content_navbar_actions" gap="xs">
         {actions}
       </Group>
     </Box>

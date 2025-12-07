@@ -13,7 +13,7 @@ import type { ContentAreaProps } from '../../types/navigation';
  */
 export function ContentArea({ children, loading = false }: ContentAreaProps) {
   return (
-    <Box className="postybirb_content-area" pos="relative">
+    <Box className="postybirb__content_area" pos="relative">
       <LoadingOverlay
         visible={loading}
         zIndex={10}

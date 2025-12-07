@@ -103,15 +103,15 @@ export function SideNav({
   const location = useLocation();
 
   return (
-    <Box className={`postybirb_sidenav ${collapsed ? 'collapsed' : ''}`}>
+    <Box className={`postybirb__sidenav ${collapsed ? 'postybirb__sidenav--collapsed' : ''}`}>
       {/* Header with app icon */}
-      <Box className="postybirb_sidenav-header">
+      <Box className="postybirb__sidenav_header">
         {/* eslint-disable-next-line lingui/no-unlocalized-strings */}
         <Image src="/app-icon.png" alt="PostyBirb" w={32} h={32} />
       </Box>
 
       {/* Navigation Items */}
-      <Box className="postybirb_sidenav-nav">
+      <Box className="postybirb__sidenav_nav">
         {/* Collapse/Expand toggle as first nav item */}
         <Tooltip
           label={collapsed ? <Trans>Expand</Trans> : <Trans>Collapse</Trans>}
