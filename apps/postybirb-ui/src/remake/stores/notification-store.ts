@@ -2,6 +2,7 @@
  * Notification Store - Zustand store for notification entities.
  */
 
+import { NOTIFICATION_UPDATES } from '@postybirb/socket-events';
 import type { INotification } from '@postybirb/types';
 import { useShallow } from 'zustand/react/shallow';
 import notificationApi from '../api/notification.api';
@@ -22,8 +23,11 @@ const fetchNotifications = async (): Promise<INotification[]> => {
 export const useNotificationStore = createEntityStore<INotification, NotificationRecord>(
   fetchNotifications,
   (dto) => new NotificationRecord(dto),
-  // eslint-disable-next-line lingui/no-unlocalized-strings
-  'NotificationStore'
+  {
+    // eslint-disable-next-line lingui/no-unlocalized-strings
+    storeName: 'NotificationStore',
+    websocketEvent: NOTIFICATION_UPDATES,
+  }
 );
 
 /**

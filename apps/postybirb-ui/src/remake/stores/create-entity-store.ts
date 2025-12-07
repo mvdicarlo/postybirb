@@ -6,6 +6,7 @@
 import type { EntityId } from '@postybirb/types';
 import { create } from 'zustand';
 import { useShallow } from 'zustand/react/shallow';
+import AppSocket from '../transports/websocket';
 import type { BaseRecord } from './records/base-record';
 
 /**
@@ -49,17 +50,29 @@ export interface BaseEntityActions<T extends BaseRecord> {
 export type EntityStore<T extends BaseRecord> = BaseEntityState<T> & BaseEntityActions<T>;
 
 /**
+ * Options for creating an entity store.
+ */
+export interface CreateEntityStoreOptions {
+  /** Name of the store for debugging */
+  storeName: string;
+  /** Websocket event name to subscribe to for real-time updates (optional) */
+  websocketEvent?: string;
+}
+
+/**
  * Factory function to create an entity store.
- * 
+ *
  * @param fetchFn - Async function that fetches DTOs from the API
  * @param createRecord - Function that converts a DTO to a Record class
- * @param storeName - Name of the store for debugging
+ * @param options - Store configuration options
  */
 export function createEntityStore<TDto, TRecord extends BaseRecord>(
   fetchFn: () => Promise<TDto[]>,
   createRecord: (dto: TDto) => TRecord,
-  storeName: string
+  options: CreateEntityStoreOptions
 ) {
+  const { storeName, websocketEvent } = options;
+
   const initialState: BaseEntityState<TRecord> = {
     records: [],
     recordsMap: new Map(),
@@ -68,7 +81,7 @@ export function createEntityStore<TDto, TRecord extends BaseRecord>(
     lastLoadedAt: null,
   };
 
-  return create<EntityStore<TRecord>>((set, get) => ({
+  const store = create<EntityStore<TRecord>>((set, get) => ({
     ...initialState,
 
     loadAll: async () => {
@@ -128,6 +141,29 @@ export function createEntityStore<TDto, TRecord extends BaseRecord>(
       set(initialState);
     },
   }));
+
+  // Subscribe to websocket events if event name is provided
+  if (websocketEvent) {
+    AppSocket.on(websocketEvent, (dtos: TDto[]) => {
+      // eslint-disable-next-line no-console, lingui/no-unlocalized-strings
+      console.debug(`[${storeName}] Received ${dtos.length} records via websocket`);
+
+      const records = dtos.map(createRecord);
+      const recordsMap = new Map<EntityId, TRecord>();
+      records.forEach((record) => {
+        recordsMap.set(record.id, record);
+      });
+
+      store.setState({
+        records,
+        recordsMap,
+        loadingState: 'loaded',
+        lastLoadedAt: new Date(),
+      });
+    });
+  }
+
+  return store;
 }
 
 /**

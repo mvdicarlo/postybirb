@@ -1,5 +1,6 @@
 /**
  * Directory Watcher Store - Zustand store for directory watcher entities.
+ * Note: No websocket event exists for directory watchers.
  */
 
 import type { DirectoryWatcherDto } from '@postybirb/types';
@@ -22,8 +23,11 @@ const fetchDirectoryWatchers = async (): Promise<DirectoryWatcherDto[]> => {
 export const useDirectoryWatcherStore = createEntityStore<DirectoryWatcherDto, DirectoryWatcherRecord>(
   fetchDirectoryWatchers,
   (dto) => new DirectoryWatcherRecord(dto),
-  // eslint-disable-next-line lingui/no-unlocalized-strings
-  'DirectoryWatcherStore'
+  {
+    // eslint-disable-next-line lingui/no-unlocalized-strings
+    storeName: 'DirectoryWatcherStore',
+    // No websocket event for directory watchers
+  }
 );
 
 /**

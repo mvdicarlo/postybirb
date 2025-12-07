@@ -9,6 +9,7 @@ export {
     useRecordsSelector,
     type BaseEntityActions,
     type BaseEntityState,
+    type CreateEntityStoreOptions,
     type EntityStore,
     type LoadingState
 } from './create-entity-store';

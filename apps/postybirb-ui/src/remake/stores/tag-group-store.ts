@@ -2,6 +2,7 @@
  * Tag Group Store - Zustand store for tag group entities.
  */
 
+import { TAG_GROUP_UPDATES } from '@postybirb/socket-events';
 import type { TagGroupDto } from '@postybirb/types';
 import { useShallow } from 'zustand/react/shallow';
 import tagGroupsApi from '../api/tag-groups.api';
@@ -22,8 +23,11 @@ const fetchTagGroups = async (): Promise<TagGroupDto[]> => {
 export const useTagGroupStore = createEntityStore<TagGroupDto, TagGroupRecord>(
   fetchTagGroups,
   (dto) => new TagGroupRecord(dto),
-  // eslint-disable-next-line lingui/no-unlocalized-strings
-  'TagGroupStore'
+  {
+    // eslint-disable-next-line lingui/no-unlocalized-strings
+    storeName: 'TagGroupStore',
+    websocketEvent: TAG_GROUP_UPDATES,
+  }
 );
 
 /**

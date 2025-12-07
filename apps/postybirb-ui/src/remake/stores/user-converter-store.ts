@@ -2,6 +2,7 @@
  * User Converter Store - Zustand store for user converter entities.
  */
 
+import { USER_CONVERTER_UPDATES } from '@postybirb/socket-events';
 import type { UserConverterDto } from '@postybirb/types';
 import { useShallow } from 'zustand/react/shallow';
 import userConvertersApi from '../api/user-converters.api';
@@ -22,8 +23,11 @@ const fetchUserConverters = async (): Promise<UserConverterDto[]> => {
 export const useUserConverterStore = createEntityStore<UserConverterDto, UserConverterRecord>(
   fetchUserConverters,
   (dto) => new UserConverterRecord(dto),
-  // eslint-disable-next-line lingui/no-unlocalized-strings
-  'UserConverterStore'
+  {
+    // eslint-disable-next-line lingui/no-unlocalized-strings
+    storeName: 'UserConverterStore',
+    websocketEvent: USER_CONVERTER_UPDATES,
+  }
 );
 
 /**

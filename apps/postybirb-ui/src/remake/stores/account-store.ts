@@ -2,6 +2,7 @@
  * Account Store - Zustand store for account entities.
  */
 
+import { ACCOUNT_UPDATES } from '@postybirb/socket-events';
 import type { AccountId, IAccountDto } from '@postybirb/types';
 import { useShallow } from 'zustand/react/shallow';
 import accountApi from '../api/account.api';
@@ -22,8 +23,11 @@ const fetchAccounts = async (): Promise<IAccountDto[]> => {
 export const useAccountStore = createEntityStore<IAccountDto, AccountRecord>(
   fetchAccounts,
   (dto) => new AccountRecord(dto),
-  // eslint-disable-next-line lingui/no-unlocalized-strings
-  'AccountStore'
+  {
+    // eslint-disable-next-line lingui/no-unlocalized-strings
+    storeName: 'AccountStore',
+    websocketEvent: ACCOUNT_UPDATES,
+  }
 );
 
 /**

@@ -2,6 +2,7 @@
  * Tag Converter Store - Zustand store for tag converter entities.
  */
 
+import { TAG_CONVERTER_UPDATES } from '@postybirb/socket-events';
 import type { TagConverterDto } from '@postybirb/types';
 import { useShallow } from 'zustand/react/shallow';
 import tagConvertersApi from '../api/tag-converters.api';
@@ -22,8 +23,11 @@ const fetchTagConverters = async (): Promise<TagConverterDto[]> => {
 export const useTagConverterStore = createEntityStore<TagConverterDto, TagConverterRecord>(
   fetchTagConverters,
   (dto) => new TagConverterRecord(dto),
-  // eslint-disable-next-line lingui/no-unlocalized-strings
-  'TagConverterStore'
+  {
+    // eslint-disable-next-line lingui/no-unlocalized-strings
+    storeName: 'TagConverterStore',
+    websocketEvent: TAG_CONVERTER_UPDATES,
+  }
 );
 
 /**

@@ -2,6 +2,7 @@
  * Custom Shortcut Store - Zustand store for custom shortcut entities.
  */
 
+import { CUSTOM_SHORTCUT_UPDATES } from '@postybirb/socket-events';
 import type { ICustomShortcutDto } from '@postybirb/types';
 import { useShallow } from 'zustand/react/shallow';
 import customShortcutApi from '../api/custom-shortcut.api';
@@ -22,8 +23,11 @@ const fetchCustomShortcuts = async (): Promise<ICustomShortcutDto[]> => {
 export const useCustomShortcutStore = createEntityStore<ICustomShortcutDto, CustomShortcutRecord>(
   fetchCustomShortcuts,
   (dto) => new CustomShortcutRecord(dto),
-  // eslint-disable-next-line lingui/no-unlocalized-strings
-  'CustomShortcutStore'
+  {
+    // eslint-disable-next-line lingui/no-unlocalized-strings
+    storeName: 'CustomShortcutStore',
+    websocketEvent: CUSTOM_SHORTCUT_UPDATES,
+  }
 );
 
 /**
