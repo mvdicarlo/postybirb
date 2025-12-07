@@ -23,7 +23,9 @@
   top: 0;
   background-color: var(--mantine-color-body);
   border-right: 1px solid var(--mantine-color-default-border);
-  transition: width 200ms ease, min-width 200ms ease;
+  transition:
+    width 200ms ease,
+    min-width 200ms ease;
   z-index: 100;
   overflow: hidden;
 }
@@ -168,4 +170,42 @@
 
 .remake-sidenav.collapsed .remake-sidenav-brand span {
   display: none;
+}
+
+/* Improved scrollbars */
+:root {
+  --scrollbar-width: 8px;
+  --scrollbar-track-color: transparent;
+  --scrollbar-thumb-color: rgba(0, 0, 0, 0.2);
+  --scrollbar-thumb-hover-color: rgba(0, 0, 0, 0.3);
+}
+
+:root[data-mantine-color-scheme='dark'] {
+  --scrollbar-thumb-color: rgba(255, 255, 255, 0.15);
+  --scrollbar-thumb-hover-color: rgba(255, 255, 255, 0.25);
+}
+
+/* WebKit browsers */
+::-webkit-scrollbar {
+  width: var(--scrollbar-width);
+  height: var(--scrollbar-width);
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track-color);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover-color);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb-color) var(--scrollbar-track-color);
 }

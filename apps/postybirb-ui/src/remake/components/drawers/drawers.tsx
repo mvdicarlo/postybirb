@@ -7,6 +7,9 @@ import { Trans } from '@lingui/react/macro';
 import { Drawer, Stack, Text, Title } from '@mantine/core';
 import { type DrawerKey, useActiveDrawer, useDrawerActions } from '../../stores/ui-store';
 
+// Re-export the SettingsDialog
+export { SettingsDialog } from '../dialogs/settings-dialog/settings-dialog';
+
 /**
  * Props for stub drawer components.
  */
@@ -37,18 +40,6 @@ function StubDrawer({ drawerKey, title }: StubDrawerProps) {
         </Text>
       </Stack>
     </Drawer>
-  );
-}
-
-/**
- * Settings drawer stub.
- */
-export function SettingsDrawer() {
-  return (
-    <StubDrawer
-      drawerKey="settings"
-      title={<Title order={3}><Trans>Settings</Trans></Title>}
-    />
   );
 }
 

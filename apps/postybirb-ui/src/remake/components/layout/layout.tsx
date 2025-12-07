@@ -13,7 +13,7 @@ import {
     AccountDrawer,
     CustomShortcutsDrawer,
     NotificationsDrawer,
-    SettingsDrawer,
+    SettingsDialog,
     TagConverterDrawer,
     TagGroupDrawer,
     UserConverterDrawer,
@@ -41,8 +41,8 @@ export function Layout() {
 
   return (
     <Box className="postybirb_layout">
-      {/* Drawers */}
-      <SettingsDrawer />
+      {/* Dialogs and Drawers */}
+      <SettingsDialog />
       <AccountDrawer />
       <TagGroupDrawer />
       <TagConverterDrawer />
