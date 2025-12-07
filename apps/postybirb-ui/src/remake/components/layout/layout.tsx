@@ -7,7 +7,7 @@ import { Box } from '@mantine/core';
 import { Outlet, useLocation } from 'react-router-dom';
 import { getSubNavConfig, navItems } from '../../config/nav-items';
 import { useKeybindings } from '../../hooks/use-keybindings';
-import { useSideNav } from '../../hooks/use-sidenav';
+import { useSidenavCollapsed, useUIStore } from '../../stores/ui-store';
 import '../../styles/layout.css';
 import {
     AccountDrawer,
@@ -28,7 +28,8 @@ import { SubNavBar } from './sub-nav-bar';
  * Includes sidenav, sub-nav bar, content navbar, and content area.
  */
 export function Layout() {
-  const { collapsed, setCollapsed } = useSideNav();
+  const collapsed = useSidenavCollapsed();
+  const setSidenavCollapsed = useUIStore((state) => state.setSidenavCollapsed);
   const location = useLocation();
 
   // Set up global keybindings
@@ -52,7 +53,7 @@ export function Layout() {
       <SideNav
         items={navItems}
         collapsed={collapsed}
-        onCollapsedChange={setCollapsed}
+        onCollapsedChange={setSidenavCollapsed}
       />
 
       {/* Main Content Area */}

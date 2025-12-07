@@ -4,7 +4,7 @@
  */
 
 /* eslint-disable lingui/no-unlocalized-strings */
-import { Trans } from '@lingui/macro';
+import { Trans } from '@lingui/react/macro';
 import { Badge, Group, Paper, Stack, Text, Title } from '@mantine/core';
 import { useState } from 'react';
 

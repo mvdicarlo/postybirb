@@ -8,7 +8,7 @@ import { Trans } from '@lingui/react/macro';
 import { Box, Divider, Image, Kbd, NavLink as MantineNavLink, Tooltip } from '@mantine/core';
 import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { toggleDrawer } from '../../stores/drawer-state';
+import { useDrawerActions } from '../../stores/ui-store';
 import '../../styles/layout.css';
 import type { NavigationItem, SideNavProps } from '../../types/navigation';
 
@@ -24,6 +24,7 @@ function NavItemRenderer({
   collapsed: boolean;
   isActive: boolean;
 }) {
+  const { toggleDrawer } = useDrawerActions();
   // Build the label with optional keyboard shortcut
   const labelContent = collapsed ? undefined : (
     <Box style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>

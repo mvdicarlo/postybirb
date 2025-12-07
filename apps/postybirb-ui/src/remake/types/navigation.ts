@@ -4,7 +4,7 @@
  */
 
 import type { ComponentType, ReactNode } from 'react';
-import type { DrawerStateKey } from '../stores/drawer-state';
+import type { DrawerKey } from '../stores/ui-store';
 
 /**
  * Base properties shared by all navigation items.
@@ -45,7 +45,7 @@ export interface NavigationDrawerItem extends NavigationItemBase {
   type: 'drawer';
 
   /** Key in the global drawer state to toggle */
-  drawerKey: DrawerStateKey;
+  drawerKey: DrawerKey;
 }
 
 /**

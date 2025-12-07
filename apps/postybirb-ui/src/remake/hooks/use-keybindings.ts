@@ -19,7 +19,7 @@ import {
     toTinykeysFormat,
     UserConvertersKeybinding,
 } from '../config/keybindings';
-import { toggleDrawer } from '../stores/drawer-state';
+import { useUIStore } from '../stores/ui-store';
 
 /**
  * Route paths for navigation keybindings.
@@ -36,6 +36,7 @@ const RoutePaths = {
  */
 export function useKeybindings(): void {
   const navigate = useNavigate();
+  const toggleDrawer = useUIStore((state) => state.toggleDrawer);
 
   useEffect(() => {
     const unsubscribe = tinykeys(window, {
@@ -56,34 +57,34 @@ export function useKeybindings(): void {
       // Drawer toggle keybindings
       [toTinykeysFormat(SettingsKeybinding)]: (event: KeyboardEvent) => {
         event.preventDefault();
-        toggleDrawer('settingsDrawerVisible');
+        toggleDrawer('settings');
       },
       [toTinykeysFormat(AccountKeybinding)]: (event: KeyboardEvent) => {
         event.preventDefault();
-        toggleDrawer('accountDrawerVisible');
+        toggleDrawer('accounts');
       },
       [toTinykeysFormat(TagGroupsKeybinding)]: (event: KeyboardEvent) => {
         event.preventDefault();
-        toggleDrawer('tagGroupsDrawerVisible');
+        toggleDrawer('tagGroups');
       },
       [toTinykeysFormat(TagConvertersKeybinding)]: (event: KeyboardEvent) => {
         event.preventDefault();
-        toggleDrawer('tagConvertersDrawerVisible');
+        toggleDrawer('tagConverters');
       },
       [toTinykeysFormat(UserConvertersKeybinding)]: (event: KeyboardEvent) => {
         event.preventDefault();
-        toggleDrawer('userConvertersDrawerVisible');
+        toggleDrawer('userConverters');
       },
       [toTinykeysFormat(NotificationsKeybinding)]: (event: KeyboardEvent) => {
         event.preventDefault();
-        toggleDrawer('notificationsDrawerVisible');
+        toggleDrawer('notifications');
       },
       [toTinykeysFormat(CustomShortcutsKeybinding)]: (event: KeyboardEvent) => {
         event.preventDefault();
-        toggleDrawer('customShortcutsDrawerVisible');
+        toggleDrawer('customShortcuts');
       },
     });
 
     return unsubscribe;
-  }, [navigate]);
+  }, [navigate, toggleDrawer]);
 }

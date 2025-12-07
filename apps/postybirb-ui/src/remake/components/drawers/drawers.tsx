@@ -5,13 +5,13 @@
 
 import { Trans } from '@lingui/react/macro';
 import { Drawer, Stack, Text, Title } from '@mantine/core';
-import { useDrawerState, type DrawerStateKey } from '../../stores/drawer-state';
+import { type DrawerKey, useActiveDrawer, useDrawerActions } from '../../stores/ui-store';
 
 /**
  * Props for stub drawer components.
  */
 interface StubDrawerProps {
-  drawerKey: DrawerStateKey;
+  drawerKey: DrawerKey;
   title: React.ReactNode;
 }
 
@@ -19,12 +19,14 @@ interface StubDrawerProps {
  * Base stub drawer component.
  */
 function StubDrawer({ drawerKey, title }: StubDrawerProps) {
-  const [opened, toggle] = useDrawerState(drawerKey);
+  const activeDrawer = useActiveDrawer();
+  const { closeDrawer } = useDrawerActions();
+  const opened = activeDrawer === drawerKey;
 
   return (
     <Drawer
       opened={opened}
-      onClose={toggle}
+      onClose={closeDrawer}
       title={title}
       position="right"
       size="md"
@@ -44,7 +46,7 @@ function StubDrawer({ drawerKey, title }: StubDrawerProps) {
 export function SettingsDrawer() {
   return (
     <StubDrawer
-      drawerKey="settingsDrawerVisible"
+      drawerKey="settings"
       title={<Title order={3}><Trans>Settings</Trans></Title>}
     />
   );
@@ -56,7 +58,7 @@ export function SettingsDrawer() {
 export function AccountDrawer() {
   return (
     <StubDrawer
-      drawerKey="accountDrawerVisible"
+      drawerKey="accounts"
       title={<Title order={3}><Trans>Accounts</Trans></Title>}
     />
   );
@@ -68,7 +70,7 @@ export function AccountDrawer() {
 export function TagGroupDrawer() {
   return (
     <StubDrawer
-      drawerKey="tagGroupsDrawerVisible"
+      drawerKey="tagGroups"
       title={<Title order={3}><Trans>Tag Groups</Trans></Title>}
     />
   );
@@ -80,7 +82,7 @@ export function TagGroupDrawer() {
 export function TagConverterDrawer() {
   return (
     <StubDrawer
-      drawerKey="tagConvertersDrawerVisible"
+      drawerKey="tagConverters"
       title={<Title order={3}><Trans>Tag Converters</Trans></Title>}
     />
   );
@@ -92,7 +94,7 @@ export function TagConverterDrawer() {
 export function UserConverterDrawer() {
   return (
     <StubDrawer
-      drawerKey="userConvertersDrawerVisible"
+      drawerKey="userConverters"
       title={<Title order={3}><Trans>User Converters</Trans></Title>}
     />
   );
@@ -104,7 +106,7 @@ export function UserConverterDrawer() {
 export function NotificationsDrawer() {
   return (
     <StubDrawer
-      drawerKey="notificationsDrawerVisible"
+      drawerKey="notifications"
       title={<Title order={3}><Trans>Notifications</Trans></Title>}
     />
   );
@@ -116,7 +118,7 @@ export function NotificationsDrawer() {
 export function CustomShortcutsDrawer() {
   return (
     <StubDrawer
-      drawerKey="customShortcutsDrawerVisible"
+      drawerKey="customShortcuts"
       title={<Title order={3}><Trans>Custom Shortcuts</Trans></Title>}
     />
   );

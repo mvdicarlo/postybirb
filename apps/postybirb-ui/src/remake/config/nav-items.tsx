@@ -95,7 +95,7 @@ export const navItems: NavigationItem[] = [
     id: 'notifications',
     icon: <IconBell size={20} />,
     label: <Trans>Notifications</Trans>,
-    drawerKey: 'notificationsDrawerVisible',
+    drawerKey: 'notifications',
     kbd: NotificationsKeybinding,
   },
   {
@@ -103,7 +103,7 @@ export const navItems: NavigationItem[] = [
     id: 'accounts',
     icon: <IconUser size={20} />,
     label: <Trans>Accounts</Trans>,
-    drawerKey: 'accountDrawerVisible',
+    drawerKey: 'accounts',
     kbd: AccountKeybinding,
   },
   {
@@ -111,7 +111,7 @@ export const navItems: NavigationItem[] = [
     id: 'tag-groups',
     icon: <IconTags size={20} />,
     label: <Trans>Tag Groups</Trans>,
-    drawerKey: 'tagGroupsDrawerVisible',
+    drawerKey: 'tagGroups',
     kbd: TagGroupsKeybinding,
   },
   {
@@ -119,7 +119,7 @@ export const navItems: NavigationItem[] = [
     id: 'tag-converters',
     icon: <IconTransform size={20} />,
     label: <Trans>Tag Converters</Trans>,
-    drawerKey: 'tagConvertersDrawerVisible',
+    drawerKey: 'tagConverters',
     kbd: TagConvertersKeybinding,
   },
   {
@@ -127,7 +127,7 @@ export const navItems: NavigationItem[] = [
     id: 'user-converters',
     icon: <IconUsers size={20} />,
     label: <Trans>User Converters</Trans>,
-    drawerKey: 'userConvertersDrawerVisible',
+    drawerKey: 'userConverters',
     kbd: UserConvertersKeybinding,
   },
   {
@@ -135,7 +135,7 @@ export const navItems: NavigationItem[] = [
     id: 'custom-shortcuts',
     icon: <IconBlockquote size={20} />,
     label: <Trans>Custom Shortcuts</Trans>,
-    drawerKey: 'customShortcutsDrawerVisible',
+    drawerKey: 'customShortcuts',
     kbd: CustomShortcutsKeybinding,
   },
   {
@@ -143,7 +143,7 @@ export const navItems: NavigationItem[] = [
     id: 'settings',
     icon: <IconSettings size={20} />,
     label: <Trans>Settings</Trans>,
-    drawerKey: 'settingsDrawerVisible',
+    drawerKey: 'settings',
     kbd: SettingsKeybinding,
   },
 ];
