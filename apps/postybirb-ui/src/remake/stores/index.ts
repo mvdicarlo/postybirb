@@ -83,5 +83,21 @@ export {
     useUserConverters, useUserConvertersLoading, useUserConvertersMap, type UserConverterStore
 } from './user-converter-store';
 
+// Settings Store
+export {
+    useAllowAd,
+    useDesktopNotifications,
+    useHiddenWebsites,
+    useLanguage,
+    useQueuePaused,
+    useSettings,
+    useSettingsActions,
+    useSettingsLoading,
+    useSettingsOptions,
+    useSettingsStore,
+    useTagSearchProvider,
+    type SettingsStore
+} from './settings-store';
+
 // Record classes
 export * from './records';

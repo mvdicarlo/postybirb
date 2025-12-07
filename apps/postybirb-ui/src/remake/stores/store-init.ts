@@ -8,6 +8,7 @@ import { useAccountStore } from './account-store';
 import { useCustomShortcutStore } from './custom-shortcut-store';
 import { useDirectoryWatcherStore } from './directory-watcher-store';
 import { useNotificationStore } from './notification-store';
+import { useSettingsStore } from './settings-store';
 import { useSubmissionStore } from './submission-store';
 import { useTagConverterStore } from './tag-converter-store';
 import { useTagGroupStore } from './tag-group-store';
@@ -20,6 +21,7 @@ import { useUserConverterStore } from './user-converter-store';
 export async function loadAllStores(): Promise<void> {
   await Promise.all([
     useAccountStore.getState().loadAll(),
+    useSettingsStore.getState().loadAll(),
     useSubmissionStore.getState().loadAll(),
     useCustomShortcutStore.getState().loadAll(),
     useDirectoryWatcherStore.getState().loadAll(),
@@ -64,6 +66,7 @@ export function useInitializeStores() {
 export function areAllStoresLoaded(): boolean {
   return (
     useAccountStore.getState().loadingState === 'loaded' &&
+    useSettingsStore.getState().loadingState === 'loaded' &&
     useSubmissionStore.getState().loadingState === 'loaded' &&
     useCustomShortcutStore.getState().loadingState === 'loaded' &&
     useDirectoryWatcherStore.getState().loadingState === 'loaded' &&
@@ -79,6 +82,7 @@ export function areAllStoresLoaded(): boolean {
  */
 export function clearAllStores(): void {
   useAccountStore.getState().clear();
+  useSettingsStore.getState().clear();
   useSubmissionStore.getState().clear();
   useCustomShortcutStore.getState().clear();
   useDirectoryWatcherStore.getState().clear();
