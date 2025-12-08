@@ -1,17 +1,13 @@
 /**
- * Stub drawer components for the remake UI.
+ * Drawer components for the remake UI.
  * These are placeholders that will be implemented later.
- * Drawers slide out from the sidenav instead of the screen edge.
+ * Drawers slide out from the section panel area using custom SectionDrawer.
  */
 
 import { Trans } from '@lingui/react/macro';
-import { Drawer, Stack, Text, Title } from '@mantine/core';
-import {
-    type DrawerKey,
-    useActiveDrawer,
-    useDrawerActions,
-    useSidenavCollapsed,
-} from '../../stores/ui-store';
+import { Stack, Text } from '@mantine/core';
+import { type DrawerKey, useActiveDrawer, useDrawerActions } from '../../stores/ui-store';
+import { SectionDrawer } from './section-drawer';
 
 // Re-export the SettingsDialog
 export { SettingsDialog } from '../dialogs/settings-dialog/settings-dialog';
@@ -26,49 +22,25 @@ interface StubDrawerProps {
 
 /**
  * Base stub drawer component.
- * Drawer slides out from the right edge of the sidenav.
+ * Uses custom SectionDrawer that slides from the section panel area.
  */
 function StubDrawer({ drawerKey, title }: StubDrawerProps) {
   const activeDrawer = useActiveDrawer();
   const { closeDrawer } = useDrawerActions();
-  const collapsed = useSidenavCollapsed();
   const opened = activeDrawer === drawerKey;
 
-  // Sidenav width based on collapsed state
-  const sidenavWidth = collapsed ? 60 : 280;
-
   return (
-    <Drawer
+    <SectionDrawer
       opened={opened}
       onClose={closeDrawer}
       title={title}
-      position="left"
-      size="md"
-      withinPortal
-      styles={{
-        root: {
-          // Position drawer to start after sidenav
-          left: sidenavWidth,
-          width: `calc(100% - ${sidenavWidth}px)`,
-        },
-        inner: {
-          left: sidenavWidth,
-        },
-        overlay: {
-          left: sidenavWidth,
-        },
-      }}
-      transitionProps={{
-        transition: 'slide-right',
-        duration: 200,
-      }}
     >
       <Stack gap="md">
         <Text c="dimmed">
           <Trans>This feature is coming soon.</Trans>
         </Text>
       </Stack>
-    </Drawer>
+    </SectionDrawer>
   );
 }
 
@@ -79,7 +51,7 @@ export function AccountDrawer() {
   return (
     <StubDrawer
       drawerKey="accounts"
-      title={<Title order={3}><Trans>Accounts</Trans></Title>}
+      title={<Trans>Accounts</Trans>}
     />
   );
 }
@@ -91,7 +63,7 @@ export function TagGroupDrawer() {
   return (
     <StubDrawer
       drawerKey="tagGroups"
-      title={<Title order={3}><Trans>Tag Groups</Trans></Title>}
+      title={<Trans>Tag Groups</Trans>}
     />
   );
 }
@@ -103,7 +75,7 @@ export function TagConverterDrawer() {
   return (
     <StubDrawer
       drawerKey="tagConverters"
-      title={<Title order={3}><Trans>Tag Converters</Trans></Title>}
+      title={<Trans>Tag Converters</Trans>}
     />
   );
 }
@@ -115,7 +87,7 @@ export function UserConverterDrawer() {
   return (
     <StubDrawer
       drawerKey="userConverters"
-      title={<Title order={3}><Trans>User Converters</Trans></Title>}
+      title={<Trans>User Converters</Trans>}
     />
   );
 }
@@ -127,7 +99,7 @@ export function NotificationsDrawer() {
   return (
     <StubDrawer
       drawerKey="notifications"
-      title={<Title order={3}><Trans>Notifications</Trans></Title>}
+      title={<Trans>Notifications</Trans>}
     />
   );
 }
@@ -139,7 +111,7 @@ export function CustomShortcutsDrawer() {
   return (
     <StubDrawer
       drawerKey="customShortcuts"
-      title={<Title order={3}><Trans>Custom Shortcuts</Trans></Title>}
+      title={<Trans>Custom Shortcuts</Trans>}
     />
   );
 }

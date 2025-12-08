@@ -46,14 +46,8 @@ export function Layout() {
 
   return (
     <Box className="postybirb__layout">
-      {/* Dialogs and Drawers */}
+      {/* Dialogs (not drawers - they render inside content_split) */}
       <SettingsDialog />
-      <AccountDrawer />
-      <TagGroupDrawer />
-      <TagConverterDrawer />
-      <UserConverterDrawer />
-      <NotificationsDrawer />
-      <CustomShortcutsDrawer />
 
       {/* Side Navigation */}
       <SideNav
@@ -73,13 +67,21 @@ export function Layout() {
         />
 
         {/* Split Content Area: Section Panel + Primary Content */}
-        <Box className="postybirb__content_split">
+        <Box id="postybirb-content-split" className="postybirb__content_split">
           {/* Section Panel (Master) - left side list */}
           <SectionPanel viewState={viewState} />
 
           {/* Primary Content (Detail) - right side detail view */}
           <PrimaryContent viewState={viewState} />
         </Box>
+
+        {/* Section Drawers - use Portal to render into content_split */}
+        <AccountDrawer />
+        <TagGroupDrawer />
+        <TagConverterDrawer />
+        <UserConverterDrawer />
+        <NotificationsDrawer />
+        <CustomShortcutsDrawer />
       </Box>
     </Box>
   );

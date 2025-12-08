@@ -7,17 +7,18 @@ import '@mantine/core/styles.css';
 import '@mantine/dates/styles.css';
 import '@mantine/notifications/styles.css';
 
-import { MantineProvider } from '@mantine/core';
+import { MantineProvider, useMantineColorScheme } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { PageErrorBoundary } from './components/error-boundary';
 import { Layout } from './components/layout/layout';
 import { I18nProvider } from './providers/i18n-provider';
 import { loadAllStores } from './stores';
+import { useColorScheme, usePrimaryColor } from './stores/ui-store';
 import './styles/layout.css';
 import { cssVariableResolver } from './theme/css-variable-resolver';
-import { theme } from './theme/theme';
+import { createAppTheme } from './theme/theme';
 import './theme/theme-styles.css';
 
 const queryClient = new QueryClient({
@@ -29,11 +30,41 @@ const queryClient = new QueryClient({
 });
 
 /**
+ * Inner app component that uses the color scheme from state.
+ * Must be inside MantineProvider to use useMantineColorScheme.
+ */
+function AppContent() {
+  const colorScheme = useColorScheme();
+  const { setColorScheme } = useMantineColorScheme();
+
+  // Sync our store's colorScheme with Mantine's colorScheme
+  useEffect(() => {
+    setColorScheme(colorScheme);
+  }, [colorScheme, setColorScheme]);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <PageErrorBoundary>
+        <Layout />
+      </PageErrorBoundary>
+    </QueryClientProvider>
+  );
+}
+
+/**
  * Root application component for the remake UI.
  * Includes all necessary providers: Mantine, i18n, and React Query.
  * Uses state-driven navigation via UI store viewState.
  */
 export function RemakeApp() {
+  const primaryColor = usePrimaryColor();
+
+  // Create theme with dynamic primary color
+  const dynamicTheme = useMemo(
+    () => createAppTheme(primaryColor),
+    [primaryColor]
+  );
+
   useEffect(() => {
     loadAllStores()
       .then(() => {
@@ -47,14 +78,10 @@ export function RemakeApp() {
   }, []);
 
   return (
-    <MantineProvider theme={theme} cssVariablesResolver={cssVariableResolver} defaultColorScheme="auto">
+    <MantineProvider theme={dynamicTheme} cssVariablesResolver={cssVariableResolver} defaultColorScheme="auto">
       <I18nProvider>
         <Notifications zIndex={5000} />
-        <QueryClientProvider client={queryClient}>
-          <PageErrorBoundary>
-            <Layout />
-          </PageErrorBoundary>
-        </QueryClientProvider>
+        <AppContent />
       </I18nProvider>
     </MantineProvider>
   );

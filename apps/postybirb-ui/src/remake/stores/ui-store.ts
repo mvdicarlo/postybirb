@@ -26,6 +26,31 @@ export type DrawerKey =
 export type SubmissionFilter = 'all' | 'drafts' | 'scheduled' | 'posted' | 'failed';
 
 /**
+ * Color scheme options (matches Mantine's MantineColorScheme).
+ */
+export type ColorScheme = 'light' | 'dark' | 'auto';
+
+/**
+ * Valid Mantine primary colors.
+ */
+export const MANTINE_COLORS = [
+  'red',
+  'pink',
+  'grape',
+  'violet',
+  'indigo',
+  'blue',
+  'cyan',
+  'teal',
+  'green',
+  'lime',
+  'yellow',
+  'orange',
+] as const;
+
+export type MantinePrimaryColor = typeof MANTINE_COLORS[number];
+
+/**
  * UI State interface.
  */
 interface UIState {
@@ -47,6 +72,10 @@ interface UIState {
 
   // Language/locale
   language: string;
+
+  // Appearance
+  colorScheme: ColorScheme;
+  primaryColor: MantinePrimaryColor;
 }
 
 /**
@@ -74,6 +103,10 @@ interface UIActions {
 
   // Language actions
   setLanguage: (language: string) => void;
+
+  // Appearance actions
+  setColorScheme: (scheme: ColorScheme) => void;
+  setPrimaryColor: (color: MantinePrimaryColor) => void;
 
   // Reset
   resetUIState: () => void;
@@ -122,6 +155,8 @@ const initialState: UIState = {
   messageSubmissionsFilter: 'all',
   subNavVisible: true,
   language: getDefaultLanguage(),
+  colorScheme: 'auto',
+  primaryColor: 'red',
 };
 
 /**
@@ -163,6 +198,10 @@ export const useUIStore = create<UIStore>()(
       // Language actions
       setLanguage: (language) => set({ language }),
 
+      // Appearance actions
+      setColorScheme: (colorScheme) => set({ colorScheme }),
+      setPrimaryColor: (primaryColor) => set({ primaryColor }),
+
       // Reset to initial state
       resetUIState: () => set(initialState),
     }),
@@ -177,6 +216,8 @@ export const useUIStore = create<UIStore>()(
         messageSubmissionsFilter: state.messageSubmissionsFilter,
         subNavVisible: state.subNavVisible,
         language: state.language,
+        colorScheme: state.colorScheme,
+        primaryColor: state.primaryColor,
       }),
     }
   )
@@ -242,6 +283,23 @@ export const useLanguageActions = () =>
     useShallow((state) => ({
       language: state.language,
       setLanguage: state.setLanguage,
+    }))
+  );
+
+/** Select color scheme */
+export const useColorScheme = () => useUIStore((state) => state.colorScheme);
+
+/** Select primary color */
+export const usePrimaryColor = () => useUIStore((state) => state.primaryColor);
+
+/** Select appearance actions */
+export const useAppearanceActions = () =>
+  useUIStore(
+    useShallow((state) => ({
+      colorScheme: state.colorScheme,
+      primaryColor: state.primaryColor,
+      setColorScheme: state.setColorScheme,
+      setPrimaryColor: state.setPrimaryColor,
     }))
   );
 

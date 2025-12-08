@@ -5,33 +5,35 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-  Box,
-  CloseButton,
-  Group,
-  Modal,
-  NavLink,
-  ScrollArea,
-  Stack,
-  Text,
-  Title,
+    Box,
+    CloseButton,
+    Group,
+    Modal,
+    NavLink,
+    ScrollArea,
+    Stack,
+    Text,
+    Title,
 } from '@mantine/core';
 import {
-  IconBell,
-  IconDatabase,
-  IconDeviceDesktop,
-  IconFileDescription,
-  IconRouter,
-  IconTags,
+    IconBell,
+    IconDatabase,
+    IconDeviceDesktop,
+    IconFileDescription,
+    IconPalette,
+    IconRouter,
+    IconTags,
 } from '@tabler/icons-react';
 import { useCallback, useState } from 'react';
 import { useActiveDrawer, useDrawerActions } from '../../../stores';
 import {
-  AppSettingsSection,
-  DescriptionSettingsSection,
-  ImportSettingsSection,
-  NotificationsSettingsSection,
-  RemoteSettingsSection,
-  TagsSettingsSection,
+    AppearanceSettingsSection,
+    AppSettingsSection,
+    DescriptionSettingsSection,
+    ImportSettingsSection,
+    NotificationsSettingsSection,
+    RemoteSettingsSection,
+    TagsSettingsSection,
 } from './sections';
 import classes from './settings-dialog.module.css';
 
@@ -40,6 +42,7 @@ import classes from './settings-dialog.module.css';
 // ============================================================================
 
 type SettingsSection =
+  | 'appearance'
   | 'app'
   | 'description'
   | 'notifications'
@@ -58,6 +61,11 @@ interface NavItem {
 // ============================================================================
 
 const NAV_ITEMS: NavItem[] = [
+  {
+    id: 'appearance',
+    label: <Trans>Appearance</Trans>,
+    icon: <IconPalette size={18} />,
+  },
   {
     id: 'app',
     label: <Trans>App</Trans>,
@@ -97,12 +105,14 @@ const NAV_ITEMS: NavItem[] = [
 export function SettingsDialog() {
   const activeDrawer = useActiveDrawer();
   const { closeDrawer } = useDrawerActions();
-  const [activeSection, setActiveSection] = useState<SettingsSection>('app');
+  const [activeSection, setActiveSection] = useState<SettingsSection>('appearance');
 
   const opened = activeDrawer === 'settings';
 
   const renderSection = useCallback(() => {
     switch (activeSection) {
+      case 'appearance':
+        return <AppearanceSettingsSection />;
       case 'app':
         return <AppSettingsSection />;
       case 'description':
