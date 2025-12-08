@@ -60,6 +60,36 @@ export interface NavigationCustomItem extends NavigationItemBase {
 }
 
 /**
+ * Navigation item for theme toggle.
+ * Icon and label are handled dynamically based on current theme.
+ */
+export interface NavigationThemeItem {
+  /** Type discriminator */
+  type: 'theme';
+
+  /** Unique identifier */
+  id: string;
+
+  /** Optional keyboard shortcut */
+  kbd?: string;
+}
+
+/**
+ * Navigation item for language picker.
+ * Icon and label are handled dynamically based on current locale.
+ */
+export interface NavigationLanguageItem {
+  /** Type discriminator */
+  type: 'language';
+
+  /** Unique identifier */
+  id: string;
+
+  /** Optional keyboard shortcut */
+  kbd?: string;
+}
+
+/**
  * Represents a divider in the navigation list.
  */
 export interface NavigationDivider {
@@ -77,6 +107,8 @@ export type NavigationItem =
   | NavigationLinkItem
   | NavigationDrawerItem
   | NavigationCustomItem
+  | NavigationThemeItem
+  | NavigationLanguageItem
   | NavigationDivider;
 
 /**

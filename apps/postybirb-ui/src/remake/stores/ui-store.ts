@@ -40,6 +40,9 @@ interface UIState {
 
   // Sub-nav visibility per route
   subNavVisible: boolean;
+
+  // Language/locale
+  language: string;
 }
 
 /**
@@ -62,6 +65,9 @@ interface UIActions {
   // Sub-nav actions
   setSubNavVisible: (visible: boolean) => void;
 
+  // Language actions
+  setLanguage: (language: string) => void;
+
   // Reset
   resetUIState: () => void;
 }
@@ -72,6 +78,33 @@ interface UIActions {
 export type UIStore = UIState & UIActions;
 
 /**
+ * Supported locale codes for the application.
+ */
+const SUPPORTED_LOCALES = ['en', 'de', 'lt', 'pt-BR', 'ru', 'es', 'ta'];
+
+/**
+ * Get default language from browser or fall back to English.
+ * Matches browser locale against supported locales.
+ */
+const getDefaultLanguage = (): string => {
+  if (typeof navigator !== 'undefined') {
+    const browserLocale = navigator.language;
+    
+    // Check for exact match first (e.g., pt-BR)
+    if (SUPPORTED_LOCALES.includes(browserLocale)) {
+      return browserLocale;
+    }
+    
+    // Try base language (e.g., en-US -> en)
+    const baseLocale = browserLocale.split('-')[0];
+    if (SUPPORTED_LOCALES.includes(baseLocale)) {
+      return baseLocale;
+    }
+  }
+  return 'en';
+};
+
+/**
  * Initial/default UI state.
  */
 const initialState: UIState = {
@@ -80,6 +113,7 @@ const initialState: UIState = {
   fileSubmissionsFilter: 'all',
   messageSubmissionsFilter: 'all',
   subNavVisible: true,
+  language: getDefaultLanguage(),
 };
 
 /**
@@ -115,6 +149,9 @@ export const useUIStore = create<UIStore>()(
       // Sub-nav actions
       setSubNavVisible: (visible) => set({ subNavVisible: visible }),
 
+      // Language actions
+      setLanguage: (language) => set({ language }),
+
       // Reset to initial state
       resetUIState: () => set(initialState),
     }),
@@ -127,6 +164,7 @@ export const useUIStore = create<UIStore>()(
         fileSubmissionsFilter: state.fileSubmissionsFilter,
         messageSubmissionsFilter: state.messageSubmissionsFilter,
         subNavVisible: state.subNavVisible,
+        language: state.language,
       }),
     }
   )
@@ -180,5 +218,17 @@ export const useSubNavVisible = () =>
     useShallow((state) => ({
       visible: state.subNavVisible,
       setVisible: state.setSubNavVisible,
+    }))
+  );
+
+/** Select language state */
+export const useLanguage = () => useUIStore((state) => state.language);
+
+/** Select language actions */
+export const useLanguageActions = () =>
+  useUIStore(
+    useShallow((state) => ({
+      language: state.language,
+      setLanguage: state.setLanguage,
     }))
   );

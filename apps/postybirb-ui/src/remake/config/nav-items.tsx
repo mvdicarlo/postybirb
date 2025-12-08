@@ -146,6 +146,18 @@ export const navItems: NavigationItem[] = [
     drawerKey: 'settings',
     kbd: SettingsKeybinding,
   },
+
+  // Theme toggle
+  {
+    type: 'theme',
+    id: 'theme-toggle',
+  },
+
+  // Language picker
+  {
+    type: 'language',
+    id: 'language-picker',
+  },
 ];
 
 /**

@@ -18,8 +18,8 @@ import { I18nProvider } from './providers/i18n-provider';
 import { routes } from './routes';
 import { loadAllStores } from './stores';
 import './styles/layout.css';
-import { cssVariableResolver } from "./theme/css-variable-resolver";
-import { theme } from "./theme/theme";
+import { cssVariableResolver } from './theme/css-variable-resolver';
+import { theme } from './theme/theme';
 import './theme/theme-styles.css';
 
 /**
@@ -33,14 +33,6 @@ const router = createBrowserRouter([
   },
 ]);
 
-/**
- * Props for RemakeApp component.
- */
-interface RemakeAppProps {
-  /** Locale for translations (default: 'en') */
-  locale?: string;
-}
-
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -52,29 +44,31 @@ const queryClient = new QueryClient({
 /**
  * Root application component for the remake UI.
  * Includes all necessary providers: Mantine, i18n, and React Router.
+ * I18nProvider listens to language state from UI store.
  */
-export function RemakeApp({ locale = 'en' }: RemakeAppProps) {
-    useEffect(() => {
-        loadAllStores()
-            .then(() => {
-                // eslint-disable-next-line lingui/no-unlocalized-strings
-                console.log("All stores loaded successfully");
-            })
-            .catch((error) => {
-                // eslint-disable-next-line lingui/no-unlocalized-strings
-                console.error("Failed to load all stores", error);
-            });
-    }, [])
+export function RemakeApp() {
+  useEffect(() => {
+    loadAllStores()
+      .then(() => {
+        // eslint-disable-next-line no-console, lingui/no-unlocalized-strings
+        console.log('All stores loaded successfully');
+      })
+      .catch((error) => {
+        // eslint-disable-next-line no-console, lingui/no-unlocalized-strings
+        console.error('Failed to load all stores', error);
+      });
+  }, []);
+
   return (
     <MantineProvider theme={theme} cssVariablesResolver={cssVariableResolver} defaultColorScheme="auto">
-        <I18nProvider locale={locale}>
-            <Notifications zIndex={5000} />
-            <QueryClientProvider client={queryClient}>
-                <PageErrorBoundary>
-                    <RouterProvider router={router} />
-                </PageErrorBoundary>
-            </QueryClientProvider>
-        </I18nProvider>
+      <I18nProvider>
+        <Notifications zIndex={5000} />
+        <QueryClientProvider client={queryClient}>
+          <PageErrorBoundary>
+            <RouterProvider router={router} />
+          </PageErrorBoundary>
+        </QueryClientProvider>
+      </I18nProvider>
     </MantineProvider>
   );
 }

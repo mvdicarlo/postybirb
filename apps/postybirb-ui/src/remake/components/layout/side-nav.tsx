@@ -11,6 +11,8 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { useDrawerActions } from '../../stores/ui-store';
 import '../../styles/layout.css';
 import type { NavigationItem, SideNavProps } from '../../types/navigation';
+import { LanguagePicker } from '../language-picker';
+import { ThemePicker } from '../theme-picker';
 
 /**
  * Render a single navigation item based on its type.
@@ -25,7 +27,26 @@ function NavItemRenderer({
   isActive: boolean;
 }) {
   const { toggleDrawer } = useDrawerActions();
-  // Build the label with optional keyboard shortcut
+
+  // Handle theme item separately using the ThemePicker component
+  if (item.type === 'theme') {
+    return (
+      <Box key={item.id}>
+        <ThemePicker collapsed={collapsed} kbd={item.kbd} />
+      </Box>
+    );
+  }
+
+  // Handle language item separately using the LanguagePicker component
+  if (item.type === 'language') {
+    return (
+      <Box key={item.id}>
+        <LanguagePicker collapsed={collapsed} kbd={item.kbd} />
+      </Box>
+    );
+  }
+
+  // Build the label with optional keyboard shortcut (only for non-theme items)
   const labelContent = collapsed ? undefined : (
     <Box style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
       <span>{item.label}</span>
@@ -123,6 +144,7 @@ export function SideNav({
             label={collapsed ? undefined : <Trans>Collapse</Trans>}
             leftSection={collapsed ? <IconChevronRight size={20} /> : <IconChevronLeft size={20} />}
             onClick={() => onCollapsedChange(!collapsed)}
+            // eslint-disable-next-line lingui/no-unlocalized-strings
             aria-label={collapsed ? 'Expand navigation' : 'Collapse navigation'}
             style={{
               borderRadius: 'var(--mantine-radius-sm)',

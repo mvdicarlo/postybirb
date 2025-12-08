@@ -1,11 +1,17 @@
 /**
  * Stub drawer components for the remake UI.
  * These are placeholders that will be implemented later.
+ * Drawers slide out from the sidenav instead of the screen edge.
  */
 
 import { Trans } from '@lingui/react/macro';
 import { Drawer, Stack, Text, Title } from '@mantine/core';
-import { type DrawerKey, useActiveDrawer, useDrawerActions } from '../../stores/ui-store';
+import {
+    type DrawerKey,
+    useActiveDrawer,
+    useDrawerActions,
+    useSidenavCollapsed,
+} from '../../stores/ui-store';
 
 // Re-export the SettingsDialog
 export { SettingsDialog } from '../dialogs/settings-dialog/settings-dialog';
@@ -20,19 +26,42 @@ interface StubDrawerProps {
 
 /**
  * Base stub drawer component.
+ * Drawer slides out from the right edge of the sidenav.
  */
 function StubDrawer({ drawerKey, title }: StubDrawerProps) {
   const activeDrawer = useActiveDrawer();
   const { closeDrawer } = useDrawerActions();
+  const collapsed = useSidenavCollapsed();
   const opened = activeDrawer === drawerKey;
+
+  // Sidenav width based on collapsed state
+  const sidenavWidth = collapsed ? 60 : 280;
 
   return (
     <Drawer
       opened={opened}
       onClose={closeDrawer}
       title={title}
-      position="right"
+      position="left"
       size="md"
+      withinPortal
+      styles={{
+        root: {
+          // Position drawer to start after sidenav
+          left: sidenavWidth,
+          width: `calc(100% - ${sidenavWidth}px)`,
+        },
+        inner: {
+          left: sidenavWidth,
+        },
+        overlay: {
+          left: sidenavWidth,
+        },
+      }}
+      transitionProps={{
+        transition: 'slide-right',
+        duration: 200,
+      }}
     >
       <Stack gap="md">
         <Text c="dimmed">

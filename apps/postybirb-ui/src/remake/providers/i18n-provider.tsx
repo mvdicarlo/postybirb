@@ -1,6 +1,6 @@
 /**
  * RemakeI18nProvider - Wraps the application with Lingui i18n support.
- * Based on the existing app-i18n-provider.tsx pattern.
+ * Listens to language changes from the UI store.
  */
 
 /* eslint-disable lingui/no-unlocalized-strings */
@@ -9,16 +9,15 @@ import { I18nProvider as LinguiI18nProvider } from '@lingui/react';
 import { Group, Loader } from '@mantine/core';
 import { DatesProvider } from '@mantine/dates';
 import { useCallback, useEffect, useState } from 'react';
-import type { RemakeI18nProviderProps } from '../types/navigation';
+import { useLanguage } from '../stores/ui-store';
 
 /**
  * Provides Lingui i18n context and Mantine DatesProvider for the remake app.
  * Loads locale messages dynamically from the lang directory.
+ * Listens to language state from UI store for reactive updates.
  */
-export function I18nProvider({
-  children,
-  locale = 'en',
-}: RemakeI18nProviderProps) {
+export function I18nProvider({ children }: { children: React.ReactNode }) {
+  const locale = useLanguage();
   const [loaded, setLoaded] = useState(false);
 
   const loadLocale = useCallback(async (lang: string) => {
