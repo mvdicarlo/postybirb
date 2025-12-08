@@ -1,5 +1,5 @@
 /**
- * RemakeI18nProvider - Wraps the application with Lingui i18n support.
+ * I18nProvider - Wraps the application with Lingui i18n support.
  * Listens to language changes from the UI store.
  */
 
@@ -8,11 +8,12 @@ import { i18n } from '@lingui/core';
 import { I18nProvider as LinguiI18nProvider } from '@lingui/react';
 import { Group, Loader } from '@mantine/core';
 import { DatesProvider } from '@mantine/dates';
+import moment from 'moment/min/moment-with-locales';
 import { useCallback, useEffect, useState } from 'react';
 import { useLanguage } from '../stores/ui-store';
 
 /**
- * Provides Lingui i18n context and Mantine DatesProvider for the remake app.
+ * Provides Lingui i18n context and Mantine DatesProvider for the app.
  * Loads locale messages dynamically from the lang directory.
  * Listens to language state from UI store for reactive updates.
  */
@@ -29,6 +30,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     lang = lang ?? 'en';
     const { messages } = await import(`../../../../../lang/${lang}.po`);
     i18n.loadAndActivate({ locale: lang, messages });
+    moment.locale(lang);
     setLoaded(true);
   }, []);
 

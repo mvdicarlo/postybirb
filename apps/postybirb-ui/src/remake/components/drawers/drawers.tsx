@@ -15,6 +15,9 @@ export { SettingsDialog } from '../dialogs/settings-dialog/settings-dialog';
 // Re-export the TagGroupDrawer
 export { TagGroupDrawer } from './tag-group-drawer';
 
+// Re-export the NotificationsDrawer
+export { NotificationsDrawer } from './notifications-drawer';
+
 /**
  * Props for stub drawer components.
  */
@@ -79,18 +82,6 @@ export function UserConverterDrawer() {
     <StubDrawer
       drawerKey="userConverters"
       title={<Trans>User Converters</Trans>}
-    />
-  );
-}
-
-/**
- * Notifications drawer stub.
- */
-export function NotificationsDrawer() {
-  return (
-    <StubDrawer
-      drawerKey="notifications"
-      title={<Trans>Notifications</Trans>}
     />
   );
 }
