@@ -12,4 +12,5 @@ export { SubmissionRecord } from './submission-record';
 export { TagConverterRecord } from './tag-converter-record';
 export { TagGroupRecord } from './tag-group-record';
 export { UserConverterRecord } from './user-converter-record';
+export { WebsiteRecord } from './website-record';
 

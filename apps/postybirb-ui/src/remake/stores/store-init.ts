@@ -13,6 +13,7 @@ import { useSubmissionStore } from './submission-store';
 import { useTagConverterStore } from './tag-converter-store';
 import { useTagGroupStore } from './tag-group-store';
 import { useUserConverterStore } from './user-converter-store';
+import { useWebsiteStore } from './website-store';
 
 /**
  * Load all entity stores in parallel.
@@ -29,6 +30,7 @@ export async function loadAllStores(): Promise<void> {
     useTagConverterStore.getState().loadAll(),
     useTagGroupStore.getState().loadAll(),
     useUserConverterStore.getState().loadAll(),
+    useWebsiteStore.getState().loadAll(),
   ]);
 }
 
@@ -73,7 +75,8 @@ export function areAllStoresLoaded(): boolean {
     useNotificationStore.getState().loadingState === 'loaded' &&
     useTagConverterStore.getState().loadingState === 'loaded' &&
     useTagGroupStore.getState().loadingState === 'loaded' &&
-    useUserConverterStore.getState().loadingState === 'loaded'
+    useUserConverterStore.getState().loadingState === 'loaded' &&
+    useWebsiteStore.getState().loadingState === 'loaded'
   );
 }
 
@@ -90,4 +93,5 @@ export function clearAllStores(): void {
   useTagConverterStore.getState().clear();
   useTagGroupStore.getState().clear();
   useUserConverterStore.getState().clear();
+  useWebsiteStore.getState().clear();
 }
