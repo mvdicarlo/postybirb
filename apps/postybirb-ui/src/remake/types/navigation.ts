@@ -5,13 +5,14 @@
 
 import type { ComponentType, ReactNode } from 'react';
 import type { DrawerKey } from '../stores/ui-store';
+import type { ViewState } from './view-state';
 
 // =============================================================================
 // Navigation Item Types
 // =============================================================================
 
 /**
- * Base properties shared by standard navigation items (link, drawer, custom).
+ * Base properties shared by standard navigation items (link, drawer, custom, view).
  */
 interface NavigationItemBase {
   /** Unique identifier for the navigation item */
@@ -31,7 +32,17 @@ interface NavigationItemBase {
 }
 
 /**
- * Navigation item that links to a route.
+ * Navigation item that sets a view state.
+ * This is the primary navigation type for state-driven navigation.
+ */
+export interface NavigationViewItem extends NavigationItemBase {
+  type: 'view';
+  /** View state to set when clicked */
+  viewState: ViewState;
+}
+
+/**
+ * Navigation item that links to a route (legacy/external use).
  */
 export interface NavigationLinkItem extends NavigationItemBase {
   type: 'link';
@@ -95,6 +106,7 @@ export interface NavigationDivider {
  * Union type for all navigation item types.
  */
 export type NavigationItem =
+  | NavigationViewItem
   | NavigationLinkItem
   | NavigationDrawerItem
   | NavigationCustomItem
@@ -107,8 +119,17 @@ export type NavigationItem =
  */
 export function isStandardNavItem(
   item: NavigationItem
-): item is NavigationLinkItem | NavigationDrawerItem | NavigationCustomItem {
-  return item.type === 'link' || item.type === 'drawer' || item.type === 'custom';
+): item is NavigationViewItem | NavigationLinkItem | NavigationDrawerItem | NavigationCustomItem {
+  return item.type === 'view' || item.type === 'link' || item.type === 'drawer' || item.type === 'custom';
+}
+
+/**
+ * Type guard to check if a navigation item is a view state item.
+ */
+export function isViewNavItem(
+  item: NavigationItem
+): item is NavigationViewItem {
+  return item.type === 'view';
 }
 
 /**

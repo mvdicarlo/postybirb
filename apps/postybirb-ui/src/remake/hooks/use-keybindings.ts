@@ -4,7 +4,6 @@
  */
 
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { tinykeys } from 'tinykeys';
 import {
     AccountKeybinding,
@@ -19,23 +18,19 @@ import {
     toTinykeysFormat,
     UserConvertersKeybinding,
 } from '../config/keybindings';
-import { useUIStore } from '../stores/ui-store';
-
-/**
- * Route paths for navigation keybindings.
- */
-const RoutePaths = {
-  Home: '/',
-  FileSubmissions: '/file-submissions',
-  MessageSubmissions: '/message-submissions',
-} as const;
+import { useUIStore, useViewStateActions } from '../stores/ui-store';
+import {
+    createFileSubmissionsViewState,
+    createHomeViewState,
+    createMessageSubmissionsViewState,
+} from '../types/view-state';
 
 /**
  * Hook to set up global keybindings using tinykeys.
  * Handles both navigation and drawer toggle shortcuts.
  */
 export function useKeybindings(): void {
-  const navigate = useNavigate();
+  const { setViewState } = useViewStateActions();
   const toggleDrawer = useUIStore((state) => state.toggleDrawer);
 
   useEffect(() => {
@@ -43,15 +38,15 @@ export function useKeybindings(): void {
       // Navigation keybindings
       [toTinykeysFormat(HomeKeybinding)]: (event: KeyboardEvent) => {
         event.preventDefault();
-        navigate(RoutePaths.Home);
+        setViewState(createHomeViewState());
       },
       [toTinykeysFormat(FileSubmissionsKeybinding)]: (event: KeyboardEvent) => {
         event.preventDefault();
-        navigate(RoutePaths.FileSubmissions);
+        setViewState(createFileSubmissionsViewState());
       },
       [toTinykeysFormat(MessageSubmissionsKeybinding)]: (event: KeyboardEvent) => {
         event.preventDefault();
-        navigate(RoutePaths.MessageSubmissions);
+        setViewState(createMessageSubmissionsViewState());
       },
 
       // Drawer toggle keybindings
@@ -86,5 +81,5 @@ export function useKeybindings(): void {
     });
 
     return unsubscribe;
-  }, [navigate, toggleDrawer]);
+  }, [setViewState, toggleDrawer]);
 }

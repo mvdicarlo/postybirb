@@ -6,6 +6,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { useShallow } from 'zustand/react/shallow';
+import { defaultViewState, type ViewState } from '../types/view-state';
 
 /**
  * Drawer visibility keys.
@@ -34,6 +35,9 @@ interface UIState {
   // Drawers - only one can be open at a time
   activeDrawer: DrawerKey | null;
 
+  // View state - controls which section/view is active and its parameters
+  viewState: ViewState;
+
   // View preferences
   fileSubmissionsFilter: SubmissionFilter;
   messageSubmissionsFilter: SubmissionFilter;
@@ -57,6 +61,9 @@ interface UIActions {
   openDrawer: (drawer: DrawerKey) => void;
   closeDrawer: () => void;
   toggleDrawer: (drawer: DrawerKey) => void;
+
+  // View state actions
+  setViewState: (viewState: ViewState) => void;
 
   // Filter actions
   setFileSubmissionsFilter: (filter: SubmissionFilter) => void;
@@ -110,6 +117,7 @@ const getDefaultLanguage = (): string => {
 const initialState: UIState = {
   sidenavCollapsed: false,
   activeDrawer: null,
+  viewState: defaultViewState,
   fileSubmissionsFilter: 'all',
   messageSubmissionsFilter: 'all',
   subNavVisible: true,
@@ -142,6 +150,9 @@ export const useUIStore = create<UIStore>()(
           activeDrawer: state.activeDrawer === drawer ? null : drawer,
         })),
 
+      // View state actions
+      setViewState: (viewState) => set({ viewState }),
+
       // Filter actions
       setFileSubmissionsFilter: (filter) => set({ fileSubmissionsFilter: filter }),
       setMessageSubmissionsFilter: (filter) => set({ messageSubmissionsFilter: filter }),
@@ -161,6 +172,7 @@ export const useUIStore = create<UIStore>()(
       // Only persist certain fields (exclude activeDrawer as it should reset on reload)
       partialize: (state) => ({
         sidenavCollapsed: state.sidenavCollapsed,
+        viewState: state.viewState,
         fileSubmissionsFilter: state.fileSubmissionsFilter,
         messageSubmissionsFilter: state.messageSubmissionsFilter,
         subNavVisible: state.subNavVisible,
@@ -232,3 +244,24 @@ export const useLanguageActions = () =>
       setLanguage: state.setLanguage,
     }))
   );
+
+/** Select view state */
+export const useViewState = () => useUIStore((state) => state.viewState);
+
+/** Select view state actions */
+export const useViewStateActions = () =>
+  useUIStore(
+    useShallow((state) => ({
+      viewState: state.viewState,
+      setViewState: state.setViewState,
+    }))
+  );
+
+/**
+ * Toggle section panel visibility hook (stub for future use).
+ * Will be implemented when section panel collapse is needed.
+ */
+export const useToggleSectionPanel = () => 
+  // Stub - returns a no-op function for now
+   () => {}
+;

@@ -1,14 +1,20 @@
 /**
  * Layout - Main layout shell using custom flexbox structure.
  * No AppShell - fully custom layout for maximum control.
+ * Uses state-driven navigation instead of React Router.
  */
 
 import { Box } from '@mantine/core';
-import { Outlet, useLocation } from 'react-router-dom';
-import { getSubNavConfig, navItems } from '../../config/nav-items';
+import { navItems } from '../../config/nav-items';
 import { useKeybindings } from '../../hooks/use-keybindings';
-import { useSidenavCollapsed, useUIStore } from '../../stores/ui-store';
+import {
+    useSidenavCollapsed,
+    useUIStore,
+    useViewState,
+} from '../../stores/ui-store';
 import '../../styles/layout.css';
+import { hasSectionPanel } from '../../types/view-state';
+import { cn } from '../../utils/class-names';
 import {
     AccountDrawer,
     CustomShortcutsDrawer,
@@ -18,26 +24,25 @@ import {
     TagGroupDrawer,
     UserConverterDrawer,
 } from '../drawers/drawers';
-import { RouteErrorBoundary } from '../error-boundary';
-import { ContentArea } from './content-area';
-import { ContentNavbar } from './content-navbar';
+import { PrimaryContent } from './primary-content';
+import { SectionPanel } from './section-panel';
 import { SideNav } from './side-nav';
 import { SubNavBar } from './sub-nav-bar';
 
 /**
  * Root layout component that orchestrates the overall page structure.
- * Includes sidenav, sub-nav bar, content navbar, and content area.
+ * Includes sidenav, section panel (master), and primary content (detail).
  */
 export function Layout() {
   const collapsed = useSidenavCollapsed();
   const setSidenavCollapsed = useUIStore((state) => state.setSidenavCollapsed);
-  const location = useLocation();
+  const viewState = useViewState();
 
   // Set up global keybindings
   useKeybindings();
 
-  // Get sub-nav configuration based on current route
-  const subNavConfig = getSubNavConfig(location.pathname);
+  // Determine if the current view has a section panel
+  const showSectionPanel = hasSectionPanel(viewState);
 
   return (
     <Box className="postybirb__layout">
@@ -58,24 +63,23 @@ export function Layout() {
       />
 
       {/* Main Content Area */}
-      <Box className={`postybirb__main ${collapsed ? 'postybirb__main--sidenav_collapsed' : ''}`}>
-        {/* Sub-Navigation Bar */}
-        <SubNavBar config={subNavConfig} />
-
-        {/* Content Navbar with Pagination */}
-        <ContentNavbar
+      <Box className={cn(['postybirb__main'], { 'postybirb__main--sidenav_collapsed': collapsed })}>
+        {/* Sub-Navigation Bar - shown based on view state */}
+        <SubNavBar
           config={{
-            showPagination: false,
-            title: undefined,
+            visible: showSectionPanel,
+            items: [],
           }}
         />
 
-        {/* Primary Content Area */}
-        <ContentArea>
-          <RouteErrorBoundary routeKey={location.pathname}>
-            <Outlet />
-          </RouteErrorBoundary>
-        </ContentArea>
+        {/* Split Content Area: Section Panel + Primary Content */}
+        <Box className="postybirb__content_split">
+          {/* Section Panel (Master) - left side list */}
+          <SectionPanel viewState={viewState} />
+
+          {/* Primary Content (Detail) - right side detail view */}
+          <PrimaryContent viewState={viewState} />
+        </Box>
       </Box>
     </Box>
   );

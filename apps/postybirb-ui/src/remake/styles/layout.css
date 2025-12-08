@@ -226,7 +226,71 @@
   gap: 8px;
 }
 
-/* Primary content area - scrollable */
+/* =============================================================================
+   Split Content Layout - Master/Detail Pattern
+   ============================================================================= */
+
+/* Container for split content (section panel + primary content) */
+.postybirb__content_split {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Section Panel (Master) - left side list */
+.postybirb__section_panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: var(--mantine-color-body);
+  border-right: 1px solid var(--mantine-color-default-border);
+  overflow: hidden;
+}
+
+/* Section panel scroll area */
+.postybirb__section_panel_scroll {
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Section panel scroll area - primary color scrollbar */
+.postybirb__section_panel_scroll .mantine-ScrollArea-scrollbar {
+  --scrollbar-color: color-mix(
+    in srgb,
+    var(--mantine-primary-color-filled) 40%,
+    transparent
+  );
+}
+
+.postybirb__section_panel_scroll .mantine-ScrollArea-scrollbar:hover {
+  --scrollbar-color: color-mix(
+    in srgb,
+    var(--mantine-primary-color-filled) 65%,
+    transparent
+  );
+}
+
+.postybirb__section_panel_scroll .mantine-ScrollArea-thumb {
+  background-color: var(--scrollbar-color);
+}
+
+/* Primary Content (Detail) - right side detail view */
+.postybirb__primary_content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  background-color: var(--mantine-color-body);
+}
+
+/* Primary content scrollable area (below navbar) */
+.postybirb__primary_content_area {
+  flex: 1;
+  overflow-y: auto;
+  position: relative;
+}
+
+/* Primary content area - scrollable (legacy, may be removed) */
 .postybirb__content_area {
   flex: 1;
   overflow-y: auto;

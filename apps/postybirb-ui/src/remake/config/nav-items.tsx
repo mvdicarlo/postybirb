@@ -1,52 +1,48 @@
 /**
  * Navigation configuration for the PostyBirb layout.
- * Defines the main sidenav items matching the original layout.
+ * Defines the main sidenav items using state-driven navigation.
  */
 
 import { Trans } from '@lingui/react/macro';
 import {
-  IconBell,
-  IconBlockquote,
-  IconBrandDiscord,
-  IconCoffee,
-  IconFile,
-  IconHome,
-  IconMessage,
-  IconSearch,
-  IconSettings,
-  IconTags,
-  IconTransform,
-  IconUser,
-  IconUsers,
+    IconBell,
+    IconBlockquote,
+    IconBrandDiscord,
+    IconCoffee,
+    IconFile,
+    IconHome,
+    IconMessage,
+    IconSearch,
+    IconSettings,
+    IconTags,
+    IconTransform,
+    IconUser,
+    IconUsers,
 } from '@tabler/icons-react';
 import type { NavigationItem, SubNavConfig } from '../types/navigation';
+import {
+    createFileSubmissionsViewState,
+    createMessageSubmissionsViewState,
+    defaultViewState,
+} from '../types/view-state';
 import { openUrl } from '../utils';
 import {
-  AccountKeybinding,
-  CustomShortcutsKeybinding,
-  FileSubmissionsKeybinding,
-  HomeKeybinding,
-  MessageSubmissionsKeybinding,
-  NotificationsKeybinding,
-  SettingsKeybinding,
-  SpotlightKeybinding,
-  TagConvertersKeybinding,
-  TagGroupsKeybinding,
-  UserConvertersKeybinding,
+    AccountKeybinding,
+    CustomShortcutsKeybinding,
+    FileSubmissionsKeybinding,
+    HomeKeybinding,
+    MessageSubmissionsKeybinding,
+    NotificationsKeybinding,
+    SettingsKeybinding,
+    SpotlightKeybinding,
+    TagConvertersKeybinding,
+    TagGroupsKeybinding,
+    UserConvertersKeybinding,
 } from './keybindings';
 
 /**
- * Route paths for the application.
- */
-export const RoutePaths = {
-  Home: '/',
-  FileSubmissions: '/file-submissions',
-  MessageSubmissions: '/message-submissions',
-} as const;
-
-/**
  * Main navigation items displayed in the side navigation.
- * Matches the navigationTargets from the original postybirb-layout.
+ * Uses view state navigation for primary sections.
  */
 export const navItems: NavigationItem[] = [
   // Search (spotlight) - custom action
@@ -63,29 +59,29 @@ export const navItems: NavigationItem[] = [
     },
   },
 
-  // Main navigation links
+  // Main navigation - view state items
   {
-    type: 'link',
+    type: 'view',
     id: 'home',
     icon: <IconHome size={20} />,
     label: <Trans>Home</Trans>,
-    path: RoutePaths.Home,
+    viewState: defaultViewState,
     kbd: HomeKeybinding,
   },
   {
-    type: 'link',
+    type: 'view',
     id: 'file-submissions',
     icon: <IconFile size={20} />,
     label: <Trans>Post Files</Trans>,
-    path: RoutePaths.FileSubmissions,
+    viewState: createFileSubmissionsViewState(),
     kbd: FileSubmissionsKeybinding,
   },
   {
-    type: 'link',
+    type: 'view',
     id: 'message-submissions',
     icon: <IconMessage size={20} />,
     label: <Trans>Send Messages</Trans>,
-    path: RoutePaths.MessageSubmissions,
+    viewState: createMessageSubmissionsViewState(),
     kbd: MessageSubmissionsKeybinding,
   },
 

@@ -1,7 +1,7 @@
 /**
  * SideNav - Collapsible side navigation panel using Mantine NavLink.
  * Supports expanded and collapsed states with smooth transitions.
- * Handles link, drawer, and custom navigation items.
+ * Handles view, drawer, and custom navigation items.
  */
 
 import { Trans } from '@lingui/react/macro';
@@ -16,8 +16,7 @@ import {
     Tooltip,
 } from '@mantine/core';
 import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
-import { NavLink, useLocation } from 'react-router-dom';
-import { useDrawerActions } from '../../stores/ui-store';
+import { useDrawerActions, useViewState, useViewStateActions } from '../../stores/ui-store';
 import '../../styles/layout.css';
 import type { NavigationItem, SideNavProps } from '../../types/navigation';
 import { cn } from '../../utils/class-names';
@@ -37,6 +36,7 @@ function NavItemRenderer({
   isActive: boolean;
 }) {
   const { toggleDrawer } = useDrawerActions();
+  const { setViewState } = useViewStateActions();
 
   // Handle theme item separately using the ThemePicker component
   if (item.type === 'theme') {
@@ -73,11 +73,20 @@ function NavItemRenderer({
 
   let navLinkContent: React.ReactNode;
 
-  if (item.type === 'link') {
+  if (item.type === 'view') {
     navLinkContent = (
       <MantineNavLink
-        component={NavLink}
-        to={item.path}
+        onClick={() => setViewState(item.viewState)}
+        active={isActive}
+        {...commonProps}
+      />
+    );
+  } else if (item.type === 'link') {
+    // Legacy link type - kept for backwards compatibility
+    navLinkContent = (
+      <MantineNavLink
+        component="a"
+        href={item.path}
         active={isActive}
         {...commonProps}
       />
@@ -132,7 +141,7 @@ export function SideNav({
   collapsed,
   onCollapsedChange,
 }: SideNavProps) {
-  const location = useLocation();
+  const viewState = useViewState();
 
   return (
     <Box className={cn(['postybirb__sidenav'], { 'postybirb__sidenav--collapsed': collapsed })}>
@@ -171,11 +180,9 @@ export function SideNav({
             return <Divider key={item.id} my="xs" />;
           }
 
-          // Determine if link item is active
+          // Determine if view item is active based on current viewState
           const isActive =
-            item.type === 'link' &&
-            (location.pathname === item.path ||
-              (item.path !== '/' && location.pathname.startsWith(item.path)));
+            item.type === 'view' && item.viewState.type === viewState.type;
 
           return (
             <NavItemRenderer
