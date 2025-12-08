@@ -6,8 +6,12 @@
 import type { ComponentType, ReactNode } from 'react';
 import type { DrawerKey } from '../stores/ui-store';
 
+// =============================================================================
+// Navigation Item Types
+// =============================================================================
+
 /**
- * Base properties shared by all navigation items.
+ * Base properties shared by standard navigation items (link, drawer, custom).
  */
 interface NavigationItemBase {
   /** Unique identifier for the navigation item */
@@ -30,9 +34,7 @@ interface NavigationItemBase {
  * Navigation item that links to a route.
  */
 export interface NavigationLinkItem extends NavigationItemBase {
-  /** Type discriminator */
   type: 'link';
-
   /** Route path this item navigates to */
   path: string;
 }
@@ -41,9 +43,7 @@ export interface NavigationLinkItem extends NavigationItemBase {
  * Navigation item that toggles a drawer.
  */
 export interface NavigationDrawerItem extends NavigationItemBase {
-  /** Type discriminator */
   type: 'drawer';
-
   /** Key in the global drawer state to toggle */
   drawerKey: DrawerKey;
 }
@@ -52,51 +52,42 @@ export interface NavigationDrawerItem extends NavigationItemBase {
  * Navigation item with custom click behavior.
  */
 export interface NavigationCustomItem extends NavigationItemBase {
-  /** Type discriminator */
   type: 'custom';
-
   /** Click handler */
   onClick: () => void;
+}
+
+/**
+ * Base for special navigation items (no label/icon - handled internally).
+ */
+interface NavigationSpecialItemBase {
+  /** Unique identifier */
+  id: string;
+  /** Optional keyboard shortcut */
+  kbd?: string;
 }
 
 /**
  * Navigation item for theme toggle.
  * Icon and label are handled dynamically based on current theme.
  */
-export interface NavigationThemeItem {
-  /** Type discriminator */
+export interface NavigationThemeItem extends NavigationSpecialItemBase {
   type: 'theme';
-
-  /** Unique identifier */
-  id: string;
-
-  /** Optional keyboard shortcut */
-  kbd?: string;
 }
 
 /**
  * Navigation item for language picker.
  * Icon and label are handled dynamically based on current locale.
  */
-export interface NavigationLanguageItem {
-  /** Type discriminator */
+export interface NavigationLanguageItem extends NavigationSpecialItemBase {
   type: 'language';
-
-  /** Unique identifier */
-  id: string;
-
-  /** Optional keyboard shortcut */
-  kbd?: string;
 }
 
 /**
  * Represents a divider in the navigation list.
  */
 export interface NavigationDivider {
-  /** Type discriminator */
   type: 'divider';
-
-  /** Unique identifier */
   id: string;
 }
 
@@ -110,6 +101,28 @@ export type NavigationItem =
   | NavigationThemeItem
   | NavigationLanguageItem
   | NavigationDivider;
+
+/**
+ * Type guard to check if a navigation item has standard properties (label, icon).
+ */
+export function isStandardNavItem(
+  item: NavigationItem
+): item is NavigationLinkItem | NavigationDrawerItem | NavigationCustomItem {
+  return item.type === 'link' || item.type === 'drawer' || item.type === 'custom';
+}
+
+/**
+ * Type guard to check if a navigation item is a special item (theme, language).
+ */
+export function isSpecialNavItem(
+  item: NavigationItem
+): item is NavigationThemeItem | NavigationLanguageItem {
+  return item.type === 'theme' || item.type === 'language';
+}
+
+// =============================================================================
+// Sub-Navigation Types
+// =============================================================================
 
 /**
  * Represents an item in the contextual sub-navigation bar.
@@ -148,6 +161,10 @@ export interface SubNavConfig {
   visible: boolean;
 }
 
+// =============================================================================
+// Content & Pagination Types
+// =============================================================================
+
 /**
  * Pagination state for content area.
  */
@@ -182,16 +199,9 @@ export interface ContentNavbarConfig {
   actions?: ReactNode;
 }
 
-/**
- * Props for the RemakeI18nProvider component.
- */
-export interface RemakeI18nProviderProps {
-  /** Child components to wrap with i18n context */
-  children: ReactNode;
-
-  /** Locale code (e.g., 'en', 'de', 'es') - defaults to 'en' */
-  locale?: string;
-}
+// =============================================================================
+// Component Props Types
+// =============================================================================
 
 /**
  * Props for the Layout component.
@@ -247,6 +257,10 @@ export interface ContentAreaProps {
   /** Optional loading state */
   loading?: boolean;
 }
+
+// =============================================================================
+// Layout Constants
+// =============================================================================
 
 /**
  * Layout dimensions and constants.

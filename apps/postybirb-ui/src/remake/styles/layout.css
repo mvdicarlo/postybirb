@@ -4,6 +4,71 @@
  * Naming convention: postybirb__snake_case
  */
 
+/* =============================================================================
+   Utility Classes - Reusable across components
+   ============================================================================= */
+
+/* Flexbox utilities */
+.postybirb__flex_row {
+  display: flex;
+  flex-direction: row;
+}
+
+.postybirb__flex_center {
+  display: flex;
+  align-items: center;
+}
+
+.postybirb__flex_between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+/* Gap utilities */
+.postybirb__gap_xs {
+  gap: 4px;
+}
+
+.postybirb__gap_sm {
+  gap: 8px;
+}
+
+.postybirb__gap_md {
+  gap: 12px;
+}
+
+/* Nav item label - used in sidenav, theme picker, language picker */
+.postybirb__nav_item_label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+/* Tooltip content with kbd shortcut */
+.postybirb__tooltip_content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Kbd element alignment fix */
+.postybirb__kbd_aligned {
+  display: flex;
+  align-items: center;
+}
+
+/* NavLink border radius - applied via CSS instead of inline */
+.postybirb__sidenav_nav .mantine-NavLink-root {
+  border-radius: var(--mantine-radius-sm);
+}
+
+/* =============================================================================
+   Layout Container
+   ============================================================================= */
+
 /* Layout container - full viewport height */
 .postybirb__layout {
   display: flex;
@@ -40,7 +105,7 @@
 .postybirb__sidenav_header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   padding: 12px;
   border-bottom: 1px solid var(--mantine-color-default-border);
   min-height: 56px;
@@ -51,14 +116,54 @@
   padding: 12px 8px;
 }
 
+/* Sidenav scroll area - fills remaining space */
+.postybirb__sidenav_scroll {
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Sidenav scroll area - primary color scrollbar */
+.postybirb__sidenav_scroll .mantine-ScrollArea-scrollbar {
+  --scrollbar-color: color-mix(
+    in srgb,
+    var(--mantine-primary-color-filled) 40%,
+    transparent
+  );
+}
+
+.postybirb__sidenav_scroll .mantine-ScrollArea-scrollbar:hover {
+  --scrollbar-color: color-mix(
+    in srgb,
+    var(--mantine-primary-color-filled) 65%,
+    transparent
+  );
+}
+
+.postybirb__sidenav_scroll .mantine-ScrollArea-thumb {
+  background-color: var(--scrollbar-color);
+}
+
 /* Sidenav navigation items container */
 .postybirb__sidenav_nav {
-  flex: 1;
-  overflow-y: auto;
   padding: 8px;
 }
 
+/* Center nav link icons when sidenav is collapsed */
+.postybirb__sidenav--collapsed .postybirb__sidenav_nav .mantine-NavLink-root {
+  justify-content: center;
+}
+
+.postybirb__sidenav--collapsed
+  .postybirb__sidenav_nav
+  .mantine-NavLink-section {
+  margin: 0;
+}
+
 /* Nav item label visibility */
+.postybirb__nav_label {
+  display: block;
+}
+
 .postybirb__sidenav--collapsed .postybirb__nav_label {
   display: none;
 }
@@ -144,20 +249,28 @@
   background-color: rgba(0, 0, 0, 0.6);
 }
 
-/* Improved scrollbars */
+/* =============================================================================
+   Custom Scrollbars - Elegant, slim design using Mantine's primary color
+   ============================================================================= */
+
 :root {
-  --scrollbar-width: 8px;
+  --scrollbar-width: 6px;
   --scrollbar-track-color: transparent;
-  --scrollbar-thumb-color: rgba(0, 0, 0, 0.2);
-  --scrollbar-thumb-hover-color: rgba(0, 0, 0, 0.3);
+  /* Uses primary color with transparency for subtle, cohesive look */
+  --scrollbar-thumb-color: color-mix(
+    in srgb,
+    var(--mantine-primary-color-filled) 40%,
+    transparent
+  );
+  --scrollbar-thumb-hover-color: color-mix(
+    in srgb,
+    var(--mantine-primary-color-filled) 65%,
+    transparent
+  );
+  --scrollbar-thumb-active-color: var(--mantine-primary-color-filled);
 }
 
-:root[data-mantine-color-scheme='dark'] {
-  --scrollbar-thumb-color: rgba(255, 255, 255, 0.15);
-  --scrollbar-thumb-hover-color: rgba(255, 255, 255, 0.25);
-}
-
-/* WebKit browsers */
+/* WebKit browsers (Chrome, Safari, Edge) */
 ::-webkit-scrollbar {
   width: var(--scrollbar-width);
   height: var(--scrollbar-width);
@@ -165,13 +278,30 @@
 
 ::-webkit-scrollbar-track {
   background: var(--scrollbar-track-color);
+  border-radius: var(--mantine-radius-sm);
 }
 
 ::-webkit-scrollbar-thumb {
   background: var(--scrollbar-thumb-color);
-  border-radius: 4px;
+  border-radius: var(--mantine-radius-sm);
+  transition: background 150ms ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--scrollbar-thumb-hover-color);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: var(--scrollbar-thumb-active-color);
+}
+
+/* Hide scrollbar corner (where vertical and horizontal scrollbars meet) */
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb-color) var(--scrollbar-track-color);
 }

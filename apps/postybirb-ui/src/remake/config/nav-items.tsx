@@ -5,31 +5,34 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-    IconBell,
-    IconBlockquote,
-    IconFile,
-    IconHome,
-    IconMessage,
-    IconSearch,
-    IconSettings,
-    IconTags,
-    IconTransform,
-    IconUser,
-    IconUsers,
+  IconBell,
+  IconBlockquote,
+  IconBrandDiscord,
+  IconCoffee,
+  IconFile,
+  IconHome,
+  IconMessage,
+  IconSearch,
+  IconSettings,
+  IconTags,
+  IconTransform,
+  IconUser,
+  IconUsers,
 } from '@tabler/icons-react';
 import type { NavigationItem, SubNavConfig } from '../types/navigation';
+import { openUrl } from '../utils';
 import {
-    AccountKeybinding,
-    CustomShortcutsKeybinding,
-    FileSubmissionsKeybinding,
-    HomeKeybinding,
-    MessageSubmissionsKeybinding,
-    NotificationsKeybinding,
-    SettingsKeybinding,
-    SpotlightKeybinding,
-    TagConvertersKeybinding,
-    TagGroupsKeybinding,
-    UserConvertersKeybinding,
+  AccountKeybinding,
+  CustomShortcutsKeybinding,
+  FileSubmissionsKeybinding,
+  HomeKeybinding,
+  MessageSubmissionsKeybinding,
+  NotificationsKeybinding,
+  SettingsKeybinding,
+  SpotlightKeybinding,
+  TagConvertersKeybinding,
+  TagGroupsKeybinding,
+  UserConvertersKeybinding,
 } from './keybindings';
 
 /**
@@ -157,6 +160,31 @@ export const navItems: NavigationItem[] = [
   {
     type: 'language',
     id: 'language-picker',
+  },
+
+  // Divider before external links
+  { type: 'divider', id: 'divider-2' },
+
+  // Discord
+  {
+    type: 'custom',
+    id: 'discord',
+    icon: <IconBrandDiscord size={20} />,
+    label: <Trans>Discord</Trans>,
+    onClick: () => {
+      openUrl('https://discord.gg/8ZqF4HXy89');
+    },
+  },
+
+  // Ko-fi
+  {
+    type: 'custom',
+    id: 'kofi',
+    icon: <IconCoffee size={20} />,
+    label: <Trans>Ko-fi</Trans>,
+    onClick: () => {
+      openUrl('https://ko-fi.com/A81124JD')
+    },
   },
 ];
 

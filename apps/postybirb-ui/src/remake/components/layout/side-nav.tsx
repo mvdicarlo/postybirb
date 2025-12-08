@@ -5,12 +5,22 @@
  */
 
 import { Trans } from '@lingui/react/macro';
-import { Box, Divider, Image, Kbd, NavLink as MantineNavLink, Tooltip } from '@mantine/core';
+import {
+    Box,
+    Divider,
+    Image,
+    Kbd,
+    NavLink as MantineNavLink,
+    ScrollArea,
+    Title,
+    Tooltip,
+} from '@mantine/core';
 import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useDrawerActions } from '../../stores/ui-store';
 import '../../styles/layout.css';
 import type { NavigationItem, SideNavProps } from '../../types/navigation';
+import { cn } from '../../utils/class-names';
 import { LanguagePicker } from '../language-picker';
 import { ThemePicker } from '../theme-picker';
 
@@ -48,7 +58,7 @@ function NavItemRenderer({
 
   // Build the label with optional keyboard shortcut (only for non-theme items)
   const labelContent = collapsed ? undefined : (
-    <Box style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+    <Box className="postybirb__nav_item_label">
       <span>{item.label}</span>
       {item.kbd && <Kbd size="xs">{item.kbd}</Kbd>}
     </Box>
@@ -59,9 +69,6 @@ function NavItemRenderer({
     label: labelContent,
     leftSection: item.icon,
     disabled: item.disabled,
-    style: {
-      borderRadius: 'var(--mantine-radius-sm)',
-    },
   };
 
   let navLinkContent: React.ReactNode;
@@ -96,9 +103,13 @@ function NavItemRenderer({
       <Tooltip
         key={item.id}
         label={
-          <Box>
-            {item.label}
-            {item.kbd && <Kbd size="xs" ml="xs">{item.kbd}</Kbd>}
+          <Box className="postybirb__tooltip_content">
+            <span>{item.label}</span>
+            {item.kbd && (
+              <Kbd size="xs" className="postybirb__kbd_aligned">
+                {item.kbd}
+              </Kbd>
+            )}
           </Box>
         }
         position="right"
@@ -124,17 +135,22 @@ export function SideNav({
   const location = useLocation();
 
   return (
-    <Box className={`postybirb__sidenav ${collapsed ? 'postybirb__sidenav--collapsed' : ''}`}>
+    <Box className={cn(['postybirb__sidenav'], { 'postybirb__sidenav--collapsed': collapsed })}>
       {/* Header with app icon */}
       <Box className="postybirb__sidenav_header">
         {/* eslint-disable-next-line lingui/no-unlocalized-strings */}
         <Image src="/app-icon.png" alt="PostyBirb" w={32} h={32} />
+        {/* eslint-disable-next-line lingui/no-unlocalized-strings */}
+        {!collapsed && <Title order={4} className="postybirb__sidenav_title" ml="xs">
+          PostyBirb
+        </Title>}
       </Box>
 
       {/* Navigation Items */}
-      <Box className="postybirb__sidenav_nav">
-        {/* Collapse/Expand toggle as first nav item */}
-        <Tooltip
+      <ScrollArea className="postybirb__sidenav_scroll" type="hover" scrollbarSize={6}>
+        <Box className="postybirb__sidenav_nav">
+          {/* Collapse/Expand toggle as first nav item */}
+          <Tooltip
           label={collapsed ? <Trans>Expand</Trans> : <Trans>Collapse</Trans>}
           position="right"
           withArrow
@@ -146,9 +162,6 @@ export function SideNav({
             onClick={() => onCollapsedChange(!collapsed)}
             // eslint-disable-next-line lingui/no-unlocalized-strings
             aria-label={collapsed ? 'Expand navigation' : 'Collapse navigation'}
-            style={{
-              borderRadius: 'var(--mantine-radius-sm)',
-            }}
           />
         </Tooltip>
 
@@ -173,7 +186,8 @@ export function SideNav({
             />
           );
         })}
-      </Box>
+        </Box>
+      </ScrollArea>
     </Box>
   );
 }

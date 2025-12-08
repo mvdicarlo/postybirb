@@ -5,20 +5,22 @@
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
-  Badge,
-  Box,
-  Group,
-  Kbd,
-  Menu,
-  NavLink as MantineNavLink,
-  Text,
-  Tooltip,
+    Badge,
+    Box,
+    Group,
+    Kbd,
+    NavLink as MantineNavLink,
+    Menu,
+    Text,
+    Tooltip,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { IconCheck, IconLanguage, IconWorld } from '@tabler/icons-react';
 import { useState } from 'react';
 import { languages } from '../../i18n/languages';
 import { useLanguageActions } from '../../stores/ui-store';
+import '../../styles/layout.css';
+import { cn } from '../../utils/class-names';
 import './language-picker.css';
 
 interface LanguagePickerProps {
@@ -42,14 +44,7 @@ export function LanguagePicker({ collapsed = false, kbd }: LanguagePickerProps) 
   const currentLanguageName = currentLanguage ? t(currentLanguage[0]) : locale;
 
   const labelContent = collapsed ? undefined : (
-    <Box
-      style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        width: '100%',
-      }}
-    >
+    <Box className="postybirb__nav_item_label">
       <span>{currentLanguageName}</span>
       {kbd && <Kbd size="xs">{kbd}</Kbd>}
     </Box>
@@ -60,9 +55,6 @@ export function LanguagePicker({ collapsed = false, kbd }: LanguagePickerProps) 
       label={labelContent}
       leftSection={<IconLanguage size={20} />}
       active={opened}
-      style={{
-        borderRadius: 'var(--mantine-radius-sm)',
-      }}
     />
   );
 
@@ -81,10 +73,10 @@ export function LanguagePicker({ collapsed = false, kbd }: LanguagePickerProps) 
         {collapsed ? (
           <Tooltip
             label={
-              <Box>
-                <Trans>Language</Trans>
+              <Box className="postybirb__tooltip_content">
+                <span><Trans>Language</Trans></span>
                 {kbd && (
-                  <Kbd size="xs" ml="xs">
+                  <Kbd size="xs" className="postybirb__kbd_aligned">
                     {kbd}
                   </Kbd>
                 )}
@@ -124,9 +116,9 @@ export function LanguagePicker({ collapsed = false, kbd }: LanguagePickerProps) 
           return (
             <Menu.Item
               key={value}
-              className={`postybirb__language_picker_item ${
-                isActive ? 'postybirb__language_picker_item--selected' : ''
-              }`}
+              className={cn(['postybirb__language_picker_item'], {
+                'postybirb__language_picker_item--selected': isActive,
+              })}
               leftSection={
                 isActive ? <IconCheck size={16} /> : <IconWorld size={16} />
               }

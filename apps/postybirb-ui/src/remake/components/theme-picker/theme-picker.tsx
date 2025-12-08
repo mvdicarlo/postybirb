@@ -6,6 +6,7 @@
 import { Trans } from '@lingui/react/macro';
 import { Box, Kbd, NavLink as MantineNavLink, Tooltip, useMantineColorScheme } from '@mantine/core';
 import { IconMoon, IconSun } from '@tabler/icons-react';
+import '../../styles/layout.css';
 
 interface ThemePickerProps {
   /** Whether to show in collapsed mode (icon only with tooltip) */
@@ -24,7 +25,7 @@ export function ThemePicker({ collapsed = false, kbd }: ThemePickerProps) {
 
   const themeIcon = isDark ? <IconSun size={20} /> : <IconMoon size={20} />;
   const themeLabel = collapsed ? undefined : (
-    <Box style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+    <Box className="postybirb__nav_item_label">
       <span>{isDark ? <Trans>Light Mode</Trans> : <Trans>Dark Mode</Trans>}</span>
       {kbd && <Kbd size="xs">{kbd}</Kbd>}
     </Box>
@@ -35,9 +36,6 @@ export function ThemePicker({ collapsed = false, kbd }: ThemePickerProps) {
       onClick={() => toggleColorScheme()}
       label={themeLabel}
       leftSection={themeIcon}
-      style={{
-        borderRadius: 'var(--mantine-radius-sm)',
-      }}
     />
   );
 
@@ -45,9 +43,13 @@ export function ThemePicker({ collapsed = false, kbd }: ThemePickerProps) {
     return (
       <Tooltip
         label={
-          <Box>
-            {isDark ? <Trans>Light Mode</Trans> : <Trans>Dark Mode</Trans>}
-            {kbd && <Kbd size="xs" ml="xs">{kbd}</Kbd>}
+          <Box className="postybirb__tooltip_content">
+            <span>{isDark ? <Trans>Light Mode</Trans> : <Trans>Dark Mode</Trans>}</span>
+            {kbd && (
+              <Kbd size="xs" className="postybirb__kbd_aligned">
+                {kbd}
+              </Kbd>
+            )}
           </Box>
         }
         position="right"
