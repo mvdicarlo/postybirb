@@ -10,7 +10,7 @@ import type {
     UsernameShortcut,
     WebsiteFileOptions,
     WebsiteId,
-    WebsiteLoginType,
+    WebsiteLoginType
 } from '@postybirb/types';
 
 /**
@@ -75,30 +75,16 @@ export class WebsiteRecord {
   }
 
   /**
-   * Check if this website uses OAuth login.
-   */
-  get isOAuth(): boolean {
-    return this.loginType === 'oauth';
-  }
-
-  /**
    * Check if this website uses user/password login.
    */
   get isUserLogin(): boolean {
-    return this.loginType === 'user';
+    return this.loginType.type === 'user';
   }
 
   /**
    * Check if this website uses custom login.
    */
   get isCustomLogin(): boolean {
-    return this.loginType === 'custom';
-  }
-
-  /**
-   * Get the website's icon URL if available.
-   */
-  get iconUrl(): string | undefined {
-    return this.metadata.icon;
+    return this.loginType.type === 'custom';
   }
 }
