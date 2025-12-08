@@ -9,10 +9,8 @@ import { Trans } from '@lingui/react/macro';
 import {
     ActionIcon,
     Box,
-    Button,
     Checkbox,
     Group,
-    Popover,
     Stack,
     Table,
     TagsInput,
@@ -23,11 +21,12 @@ import {
 import { useDebouncedCallback, useDebouncedValue } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { IconPlus, IconSearch, IconTrash } from '@tabler/icons-react';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import tagGroupsApi from '../../../api/tag-groups.api';
 import { useTagGroups } from '../../../stores';
 import type { TagGroupRecord } from '../../../stores/records';
 import { useActiveDrawer, useDrawerActions } from '../../../stores/ui-store';
+import { HoldToConfirmButton } from '../../hold-to-confirm';
 import { SectionDrawer } from '../section-drawer';
 
 /**
@@ -182,7 +181,8 @@ function EditableTagsCell({
 // ============================================================================
 
 /**
- * Delete selected tag groups button with popover confirmation.
+ * Hold-to-confirm delete button.
+ * User must hold mouse down or Enter key for 1 second to confirm deletion.
  */
 function DeleteSelectedButton({
   selectedIds,
@@ -191,10 +191,9 @@ function DeleteSelectedButton({
   selectedIds: Set<string>;
   onDeleted: () => void;
 }) {
-  const [opened, setOpened] = useState(false);
   const count = selectedIds.size;
 
-  const handleDelete = async () => {
+  const handleDelete = useCallback(async () => {
     try {
       await tagGroupsApi.remove([...selectedIds]);
       notifications.show({
@@ -202,47 +201,34 @@ function DeleteSelectedButton({
         color: 'green',
       });
       onDeleted();
-      setOpened(false);
     } catch {
       notifications.show({
-        // eslint-disable-next-line lingui/no-unlocalized-strings
-        title: 'Error',
+        title: <Trans>Error</Trans>,
         message: <Trans>Failed to delete tag groups</Trans>,
         color: 'red',
       });
     }
-  };
+  }, [selectedIds, count, onDeleted]);
 
   return (
-    <Popover opened={opened} onChange={setOpened} position="bottom" withArrow>
-      <Popover.Target>
-        <Tooltip label={<Trans>Delete</Trans>}>
-          <ActionIcon
-            variant="subtle"
-            color="red"
-            disabled={count === 0}
-            onClick={() => setOpened(true)}
-          >
-            <IconTrash size={18} />
-          </ActionIcon>
-        </Tooltip>
-      </Popover.Target>
-      <Popover.Dropdown>
-        <Stack gap="sm">
-          <Text size="sm">
-            <Trans>Delete {count} tag group(s)?</Trans>
-          </Text>
-          <Group gap="xs" justify="flex-end">
-            <Button size="xs" variant="default" onClick={() => setOpened(false)}>
-              <Trans>Cancel</Trans>
-            </Button>
-            <Button size="xs" color="red" onClick={handleDelete}>
-              <Trans>Delete</Trans>
-            </Button>
-          </Group>
-        </Stack>
-      </Popover.Dropdown>
-    </Popover>
+    <Tooltip
+      label={
+        count === 0 ? (
+          <Trans>Select items to delete</Trans>
+        ) : (
+          <Trans>Hold to delete {count} item(s)</Trans>
+        )
+      }
+    >
+      <HoldToConfirmButton
+        variant="subtle"
+        color="red"
+        disabled={count === 0}
+        onConfirm={handleDelete}
+      >
+        <IconTrash size={18} />
+      </HoldToConfirmButton>
+    </Tooltip>
   );
 }
 
@@ -268,8 +254,7 @@ function CreateTagGroupForm() {
       setName('');
     } catch {
       notifications.show({
-        // eslint-disable-next-line lingui/no-unlocalized-strings
-        title: 'Error',
+        title: <Trans>Error</Trans>,
         message: <Trans>Failed to create tag group</Trans>,
         color: 'red',
       });
