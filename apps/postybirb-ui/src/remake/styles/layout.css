@@ -108,7 +108,7 @@
   justify-content: center;
   padding: 12px;
   border-bottom: 1px solid var(--mantine-color-default-border);
-  min-height: 60px;
+  min-height: var(--postybirb-header-height);
 }
 
 .postybirb__sidenav--collapsed .postybirb__sidenav_header {
@@ -341,8 +341,8 @@
   justify-content: space-between;
   padding: 12px 16px;
   border-bottom: 1px solid var(--mantine-color-default-border);
-  height: 60px;
-  min-height: 60px;
+  height: var(--postybirb-header-height);
+  min-height: var(--postybirb-header-height);
 }
 
 /* Drawer body - scrollable content area */
@@ -439,4 +439,12 @@
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--scrollbar-thumb-color) var(--scrollbar-track-color);
+}
+
+/* =============================================================================
+    CSS Variables - Global layout measurements
+    ============================================================================= */
+
+:root {
+  --postybirb-header-height: 60px;
 }

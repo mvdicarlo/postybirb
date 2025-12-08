@@ -12,6 +12,9 @@ import { SectionDrawer } from './section-drawer';
 // Re-export the SettingsDialog
 export { SettingsDialog } from '../dialogs/settings-dialog/settings-dialog';
 
+// Re-export the TagGroupDrawer
+export { TagGroupDrawer } from './tag-group-drawer';
+
 /**
  * Props for stub drawer components.
  */
@@ -52,18 +55,6 @@ export function AccountDrawer() {
     <StubDrawer
       drawerKey="accounts"
       title={<Trans>Accounts</Trans>}
-    />
-  );
-}
-
-/**
- * Tag groups drawer stub.
- */
-export function TagGroupDrawer() {
-  return (
-    <StubDrawer
-      drawerKey="tagGroups"
-      title={<Trans>Tag Groups</Trans>}
     />
   );
 }
