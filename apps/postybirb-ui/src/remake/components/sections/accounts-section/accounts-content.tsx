@@ -77,22 +77,23 @@ function UserLoginContent({
  */
 interface CustomLoginContentProps {
   loginType: CustomLoginType;
-  websiteName: string;
-  accountName: string;
+  account: NonNullable<ReturnType<typeof useAccount>>;
+  website: NonNullable<ReturnType<typeof useWebsite>>;
 }
 
 function CustomLoginContent({
   loginType,
-  websiteName,
-  accountName,
+  account,
+  website,
 }: CustomLoginContentProps) {
   return (
     <Box h="100%" style={{ display: 'flex', flexDirection: 'column' }}>
-      <AccountHeader websiteName={websiteName} accountName={accountName} />
+      <AccountHeader websiteName={website.displayName} accountName={account.name} />
       <Divider />
-      <Box style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Box style={{ flex: 1, overflow: 'auto', p: 'md' }}>
         <CustomLoginPlaceholder
-          websiteName={websiteName}
+          account={account}
+          website={website}
           loginComponentName={loginType.loginComponentName}
         />
       </Box>
@@ -153,8 +154,8 @@ export function AccountsContent({ viewState }: AccountsContentProps) {
     return (
       <CustomLoginContent
         loginType={website.loginType}
-        websiteName={website.displayName}
-        accountName={account.name}
+        account={account}
+        website={website}
       />
     );
   }

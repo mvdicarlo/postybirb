@@ -1,32 +1,51 @@
 /**
- * CustomLoginPlaceholder - Placeholder component for custom login websites.
- * Will be replaced with actual custom login components in the future.
+ * CustomLoginPlaceholder - Renders custom login components for websites.
+ * Falls back to a placeholder if the login component is not yet implemented.
  */
 
 import { Trans } from '@lingui/react/macro';
 import { IconLogin } from '@tabler/icons-react';
+import type { AccountRecord } from '../../../stores/records/account-record';
+import type { WebsiteRecord } from '../../../stores/records/website-record';
 import { EmptyState } from '../../empty-state';
+import { getLoginViewComponent } from '../../website-login-views';
 
 interface CustomLoginPlaceholderProps {
-  /** Name of the website for display */
-  websiteName: string;
-  /** Name of the custom login component (for future implementation) */
+  /** The account being logged into */
+  account: AccountRecord;
+  /** The website configuration */
+  website: WebsiteRecord;
+  /** Name of the custom login component */
   loginComponentName: string;
 }
 
 /**
- * Placeholder component shown for websites that use custom login.
- * This will be replaced with the actual custom login component integration.
+ * Renders the custom login component for a website.
+ * Falls back to a placeholder if the component is not implemented.
  */
 export function CustomLoginPlaceholder({
-  websiteName,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  account,
+  website,
   loginComponentName,
 }: CustomLoginPlaceholderProps) {
+  const LoginComponent = getLoginViewComponent(loginComponentName);
+
+  // Render the actual login component if available
+  if (LoginComponent) {
+    return (
+      <LoginComponent
+        account={account}
+        website={website}
+        data={account.data}
+      />
+    );
+  }
+
+  // Fallback placeholder for unimplemented login components
   return (
     <EmptyState
       icon={<IconLogin size={32} stroke={1.5} />}
-      message={<Trans>Custom login for {websiteName}</Trans>}
+      message={<Trans>Custom login for {website.displayName}</Trans>}
       description={
         <Trans>
           This website uses a custom login form. Support coming soon.
