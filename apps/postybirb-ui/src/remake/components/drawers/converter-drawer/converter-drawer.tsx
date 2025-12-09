@@ -29,7 +29,6 @@ import {
     IconChevronDown,
     IconChevronRight,
     IconPlus,
-    IconSearch,
     IconTrash,
     IconX,
 } from '@tabler/icons-react';
@@ -45,6 +44,7 @@ import {
 } from '../../../utils/notifications';
 import { EmptyState } from '../../empty-state';
 import { HoldToConfirmButton } from '../../hold-to-confirm';
+import { SearchInput } from '../../shared';
 import { SectionDrawer } from '../section-drawer';
 
 // ============================================================================
@@ -747,13 +747,12 @@ export function ConverterDrawer<
 
         {/* Search and actions */}
         <Group gap="xs">
-          <TextInput
+          <SearchInput
             flex={1}
             size="sm"
-            placeholder={t`Search...`}
-            leftSection={<IconSearch size={16} />}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.currentTarget.value)}
+            onClear={() => setSearchQuery('')}
           />
           <DeleteSelectedButton
             selectedIds={selectedIds}

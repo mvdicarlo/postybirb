@@ -1,0 +1,282 @@
+/**
+ * WebsiteAccountCard - Compact card showing a website with its accounts.
+ * Displays login status and allows account selection.
+ */
+
+import { Trans } from '@lingui/react/macro';
+import {
+    ActionIcon,
+    Badge,
+    Box,
+    Button,
+    Collapse,
+    Group,
+    Paper,
+    Popover,
+    Stack,
+    Text,
+    Tooltip,
+    UnstyledButton,
+} from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
+import {
+    IconChevronDown,
+    IconChevronRight,
+    IconLogin,
+    IconPlus,
+    IconRefresh,
+    IconTrash,
+    IconUser,
+} from '@tabler/icons-react';
+import type { AccountRecord } from '../../../stores/records';
+import type { WebsiteRecord } from '../../../stores/records/website-record';
+import { HoldToConfirmButton } from '../../hold-to-confirm';
+
+interface WebsiteAccountCardProps {
+  /** Website record */
+  website: WebsiteRecord;
+  /** Accounts for this website */
+  accounts: AccountRecord[];
+  /** Currently selected account ID */
+  selectedAccountId: string | null;
+  /** Callback when an account is selected */
+  onAccountSelect: (accountId: string) => void;
+  /** Callback when login is requested for an account */
+  onLoginRequest?: (accountId: string) => void;
+  /** Callback when add account is requested */
+  onAddAccount?: () => void;
+  /** Callback when delete is requested for an account */
+  onDeleteAccount?: (accountId: string) => void;
+  /** Callback when reset is requested for an account */
+  onResetAccount?: (accountId: string) => void;
+}
+
+/**
+ * Single account row within a website card.
+ */
+function AccountRow({
+  account,
+  isSelected,
+  onSelect,
+  onLoginRequest,
+  onDelete,
+  onReset,
+}: {
+  account: AccountRecord;
+  isSelected: boolean;
+  onSelect: () => void;
+  onLoginRequest?: () => void;
+  onDelete?: () => void;
+  onReset?: () => void;
+}) {
+  const [resetPopoverOpened, { open: openResetPopover, close: closeResetPopover }] = useDisclosure(false);
+
+  const handleReset = () => {
+    onReset?.();
+    closeResetPopover();
+  };
+
+  return (
+    <Group
+      gap="xs"
+      px="xs"
+      py={4}
+      wrap="nowrap"
+      style={{
+        borderRadius: 'var(--mantine-radius-sm)',
+        backgroundColor: isSelected
+          ? 'var(--mantine-color-primary-light)'
+          : undefined,
+      }}
+    >
+      <UnstyledButton onClick={onSelect} style={{ flex: 1, minWidth: 0 }}>
+        <Group gap="xs" wrap="nowrap">
+          <IconUser size={14} style={{ opacity: 0.5, flexShrink: 0 }} />
+
+          <Box style={{ flex: 1, minWidth: 0 }}>
+            <Text size="xs" truncate>
+              {account.name}
+            </Text>
+            {account.username && (
+              <Text size="xs" c="dimmed" truncate>
+                {account.username}
+              </Text>
+            )}
+          </Box>
+
+          {account.isLoggedIn ? (
+            <Badge size="xs" color="green" variant="light">
+              <Trans>Online</Trans>
+            </Badge>
+          ) : account.isPending ? (
+            <Badge size="xs" color="yellow" variant="light">
+              <Trans>Pending</Trans>
+            </Badge>
+          ) : (
+            <Badge size="xs" color="gray" variant="light">
+              <Trans>Offline</Trans>
+            </Badge>
+          )}
+        </Group>
+      </UnstyledButton>
+
+      {/* Action buttons */}
+      <Group gap={4} wrap="nowrap">
+        {/* Login button - only show when not logged in */}
+        {!account.isLoggedIn && !account.isPending && (
+          <Tooltip label={<Trans>Login</Trans>}>
+            <ActionIcon
+              size="xs"
+              variant="subtle"
+              color="blue"
+              onClick={(e) => {
+                e.stopPropagation();
+                onLoginRequest?.();
+              }}
+            >
+              <IconLogin size={12} />
+            </ActionIcon>
+          </Tooltip>
+        )}
+
+        {/* Reset button with confirmation popover */}
+        <Popover
+          opened={resetPopoverOpened}
+          onClose={closeResetPopover}
+          position="left"
+          withArrow
+          shadow="md"
+        >
+          <Popover.Target>
+            <Tooltip label={<Trans>Reset account data</Trans>}>
+              <ActionIcon
+                size="xs"
+                variant="subtle"
+                color="yellow"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openResetPopover();
+                }}
+              >
+                <IconRefresh size={12} />
+              </ActionIcon>
+            </Tooltip>
+          </Popover.Target>
+          <Popover.Dropdown>
+            <Stack gap="xs">
+              <Text size="xs" fw={500}>
+                <Trans>Reset account?</Trans>
+              </Text>
+              <Text size="xs" c="dimmed">
+                <Trans>This will clear all account data and cookies.</Trans>
+              </Text>
+              <Group gap="xs" justify="flex-end">
+                <Button size="xs" variant="default" onClick={closeResetPopover}>
+                  <Trans>Cancel</Trans>
+                </Button>
+                <Button size="xs" color="yellow" onClick={handleReset}>
+                  <Trans>Reset</Trans>
+                </Button>
+              </Group>
+            </Stack>
+          </Popover.Dropdown>
+        </Popover>
+
+        {/* Delete button - hold to confirm */}
+        <Tooltip label={<Trans>Hold to delete</Trans>}>
+          <Box onClick={(e) => e.stopPropagation()}>
+            <HoldToConfirmButton
+              size="xs"
+              variant="subtle"
+              color="red"
+              onConfirm={() => onDelete?.()}
+            >
+              <IconTrash size={12} />
+            </HoldToConfirmButton>
+          </Box>
+        </Tooltip>
+      </Group>
+    </Group>
+  );
+}
+
+/**
+ * Compact card for a website showing its accounts.
+ */
+export function WebsiteAccountCard({
+  website,
+  accounts,
+  selectedAccountId,
+  onAccountSelect,
+  onLoginRequest,
+  onAddAccount,
+  onDeleteAccount,
+  onResetAccount,
+}: WebsiteAccountCardProps) {
+  const [expanded, { toggle }] = useDisclosure(true);
+
+  const loggedInCount = accounts.filter((a) => a.isLoggedIn).length;
+  const totalCount = accounts.length;
+
+  return (
+    <Paper withBorder radius="sm" p={0}>
+      {/* Website header */}
+      <UnstyledButton onClick={toggle} style={{ width: '100%' }}>
+        <Group gap="xs" px="sm" py="xs" wrap="nowrap">
+          {expanded ? (
+            <IconChevronDown size={14} style={{ flexShrink: 0 }} />
+          ) : (
+            <IconChevronRight size={14} style={{ flexShrink: 0 }} />
+          )}
+
+          <Text size="sm" fw={500} style={{ flex: 1 }} truncate>
+            {website.displayName}
+          </Text>
+
+          <Badge
+            size="xs"
+            variant="light"
+            color={loggedInCount > 0 ? 'green' : 'gray'}
+          >
+            {loggedInCount}/{totalCount}
+          </Badge>
+        </Group>
+      </UnstyledButton>
+
+      {/* Accounts list */}
+      <Collapse in={expanded}>
+        <Stack gap={2} pb="xs" px="xs">
+          {accounts.length === 0 ? (
+            <Text size="xs" c="dimmed" ta="center" py="xs">
+              <Trans>No accounts</Trans>
+            </Text>
+          ) : (
+            accounts.map((account) => (
+              <AccountRow
+                key={account.id}
+                account={account}
+                isSelected={account.id === selectedAccountId}
+                onSelect={() => onAccountSelect(account.id)}
+                onLoginRequest={() => onLoginRequest?.(account.id)}
+                onDelete={() => onDeleteAccount?.(account.id)}
+                onReset={() => onResetAccount?.(account.id)}
+              />
+            ))
+          )}
+
+          {/* Add account button */}
+          {onAddAccount && (
+            <UnstyledButton onClick={onAddAccount}>
+              <Group gap="xs" px="xs" py={4}>
+                <IconPlus size={14} style={{ opacity: 0.5 }} />
+                <Text size="xs" c="dimmed">
+                  <Trans>Add account</Trans>
+                </Text>
+              </Group>
+            </UnstyledButton>
+          )}
+        </Stack>
+      </Collapse>
+    </Paper>
+  );
+}

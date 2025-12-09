@@ -6,6 +6,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { useShallow } from 'zustand/react/shallow';
+import { AccountLoginFilter } from '../types/account-filters';
 import { defaultViewState, type ViewState } from '../types/view-state';
 
 /**
@@ -24,6 +25,9 @@ export type DrawerKey =
  * Sub-navigation filter options.
  */
 export type SubmissionFilter = 'all' | 'drafts' | 'scheduled' | 'posted' | 'failed';
+
+// Re-export AccountLoginFilter enum from types
+export { AccountLoginFilter } from '../types/account-filters';
 
 /**
  * Color scheme options (matches Mantine's MantineColorScheme).
@@ -76,6 +80,11 @@ interface UIState {
   // Appearance
   colorScheme: ColorScheme;
   primaryColor: MantinePrimaryColor;
+
+  // Accounts section
+  hiddenWebsites: string[];
+  accountsSearchQuery: string;
+  accountsLoginFilter: AccountLoginFilter;
 }
 
 /**
@@ -107,6 +116,12 @@ interface UIActions {
   // Appearance actions
   setColorScheme: (scheme: ColorScheme) => void;
   setPrimaryColor: (color: MantinePrimaryColor) => void;
+
+  // Accounts section actions
+  setHiddenWebsites: (websiteIds: string[]) => void;
+  toggleWebsiteVisibility: (websiteId: string) => void;
+  setAccountsSearchQuery: (query: string) => void;
+  setAccountsLoginFilter: (filter: AccountLoginFilter) => void;
 
   // Reset
   resetUIState: () => void;
@@ -157,6 +172,9 @@ const initialState: UIState = {
   language: getDefaultLanguage(),
   colorScheme: 'auto',
   primaryColor: 'red',
+  hiddenWebsites: [],
+  accountsSearchQuery: '',
+  accountsLoginFilter: AccountLoginFilter.All,
 };
 
 /**
@@ -202,13 +220,24 @@ export const useUIStore = create<UIStore>()(
       setColorScheme: (colorScheme) => set({ colorScheme }),
       setPrimaryColor: (primaryColor) => set({ primaryColor }),
 
+      // Accounts section actions
+      setHiddenWebsites: (hiddenWebsites) => set({ hiddenWebsites }),
+      toggleWebsiteVisibility: (websiteId) =>
+        set((state) => ({
+          hiddenWebsites: state.hiddenWebsites.includes(websiteId)
+            ? state.hiddenWebsites.filter((id) => id !== websiteId)
+            : [...state.hiddenWebsites, websiteId],
+        })),
+      setAccountsSearchQuery: (accountsSearchQuery) => set({ accountsSearchQuery }),
+      setAccountsLoginFilter: (accountsLoginFilter) => set({ accountsLoginFilter }),
+
       // Reset to initial state
       resetUIState: () => set(initialState),
     }),
     {
       name: STORAGE_KEY,
       storage: createJSONStorage(() => localStorage),
-      // Only persist certain fields (exclude activeDrawer as it should reset on reload)
+      // Only persist certain fields (exclude activeDrawer and accountsSearchQuery as they should reset on reload)
       partialize: (state) => ({
         sidenavCollapsed: state.sidenavCollapsed,
         viewState: state.viewState,
@@ -218,6 +247,8 @@ export const useUIStore = create<UIStore>()(
         language: state.language,
         colorScheme: state.colorScheme,
         primaryColor: state.primaryColor,
+        hiddenWebsites: state.hiddenWebsites,
+        accountsLoginFilter: state.accountsLoginFilter,
       }),
     }
   )
@@ -323,3 +354,24 @@ export const useToggleSectionPanel = () =>
   // Stub - returns a no-op function for now
    () => {}
 ;
+
+// ============================================================================
+// Accounts Section Selectors
+// ============================================================================
+
+/** Select hidden websites */
+export const useHiddenWebsites = () => useUIStore((state) => state.hiddenWebsites);
+
+/** Select accounts section filter state and actions */
+export const useAccountsFilter = () =>
+  useUIStore(
+    useShallow((state) => ({
+      searchQuery: state.accountsSearchQuery,
+      loginFilter: state.accountsLoginFilter,
+      hiddenWebsites: state.hiddenWebsites,
+      setSearchQuery: state.setAccountsSearchQuery,
+      setLoginFilter: state.setAccountsLoginFilter,
+      setHiddenWebsites: state.setHiddenWebsites,
+      toggleWebsiteVisibility: state.toggleWebsiteVisibility,
+    }))
+  );

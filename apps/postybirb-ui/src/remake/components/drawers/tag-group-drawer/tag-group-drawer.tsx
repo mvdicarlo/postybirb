@@ -18,7 +18,7 @@ import {
     Tooltip,
 } from '@mantine/core';
 import { useDebouncedCallback, useDebouncedValue } from '@mantine/hooks';
-import { IconPlus, IconSearch, IconTrash } from '@tabler/icons-react';
+import { IconPlus, IconTrash } from '@tabler/icons-react';
 import { useCallback, useMemo, useState } from 'react';
 import tagGroupsApi from '../../../api/tag-groups.api';
 import { useTagGroups } from '../../../stores';
@@ -33,6 +33,7 @@ import {
 } from '../../../utils/notifications';
 import { EmptyState } from '../../empty-state';
 import { HoldToConfirmButton } from '../../hold-to-confirm';
+import { SearchInput } from '../../shared';
 import { SectionDrawer } from '../section-drawer';
 
 /**
@@ -438,13 +439,12 @@ export function TagGroupDrawer() {
 
         {/* Search and delete actions */}
         <Group gap="xs">
-          <TextInput
+          <SearchInput
             flex={1}
             size="sm"
-            placeholder={t`Search...`}
-            leftSection={<IconSearch size={16} />}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.currentTarget.value)}
+            onClear={() => setSearchQuery('')}
           />
           <DeleteSelectedButton
             selectedIds={selectedIds}

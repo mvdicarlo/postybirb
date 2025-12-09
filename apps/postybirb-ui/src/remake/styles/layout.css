@@ -123,7 +123,7 @@
 }
 
 /* Sidenav scroll area - primary color scrollbar */
-.postybirb__sidenav_scroll .mantine-ScrollArea-scrollbar {
+.mantine-ScrollArea-scrollbar {
   --scrollbar-color: color-mix(
     in srgb,
     var(--mantine-primary-color-filled) 40%,
@@ -131,7 +131,7 @@
   );
 }
 
-.postybirb__sidenav_scroll .mantine-ScrollArea-scrollbar:hover {
+.mantine-ScrollArea-scrollbar:hover {
   --scrollbar-color: color-mix(
     in srgb,
     var(--mantine-primary-color-filled) 65%,
@@ -139,7 +139,7 @@
   );
 }
 
-.postybirb__sidenav_scroll .mantine-ScrollArea-thumb {
+.mantine-ScrollArea-thumb {
   background-color: var(--scrollbar-color);
 }
 
@@ -233,33 +233,7 @@
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   z-index: 1;
-}
-
-/* Section panel scroll area */
-.postybirb__section_panel_scroll {
-  flex: 1;
-  overflow: hidden;
-}
-
-/* Section panel scroll area - primary color scrollbar */
-.postybirb__section_panel_scroll .mantine-ScrollArea-scrollbar {
-  --scrollbar-color: color-mix(
-    in srgb,
-    var(--mantine-primary-color-filled) 40%,
-    transparent
-  );
-}
-
-.postybirb__section_panel_scroll .mantine-ScrollArea-scrollbar:hover {
-  --scrollbar-color: color-mix(
-    in srgb,
-    var(--mantine-primary-color-filled) 65%,
-    transparent
-  );
-}
-
-.postybirb__section_panel_scroll .mantine-ScrollArea-thumb {
-  background-color: var(--scrollbar-color);
+  max-height: 100vh;
 }
 
 /* Primary Content (Detail) - right side detail view */
