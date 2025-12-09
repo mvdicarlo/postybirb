@@ -129,6 +129,22 @@ export function AccountsSection({ viewState, onItemSelect }: AccountsSectionProp
     });
   }, [websites, hiddenWebsites, searchQuery, loginFilter, accountsByWebsite]);
 
+  // Sort websites: those with accounts first (alphabetically), then those without (alphabetically)
+  // eslint-disable-next-line arrow-body-style
+  const sortedWebsites = useMemo(() => {
+    return [...filteredWebsites].sort((a, b) => {
+      const aHasAccounts = (accountsByWebsite.get(a.id)?.length ?? 0) > 0;
+      const bHasAccounts = (accountsByWebsite.get(b.id)?.length ?? 0) > 0;
+
+      // Prioritize websites with accounts
+      if (aHasAccounts && !bHasAccounts) return -1;
+      if (!aHasAccounts && bHasAccounts) return 1;
+
+      // Within each group, sort alphabetically
+      return a.displayName.localeCompare(b.displayName);
+    });
+  }, [filteredWebsites, accountsByWebsite]);
+
   // Filter accounts within each website based on search
   const getFilteredAccounts = (websiteId: string) => {
     const websiteAccounts = accountsByWebsite.get(websiteId) ?? [];
@@ -160,7 +176,7 @@ export function AccountsSection({ viewState, onItemSelect }: AccountsSectionProp
           <Box p="md" ta="center">
             <Loader size="sm" />
           </Box>
-        ) : filteredWebsites.length === 0 ? (
+        ) : sortedWebsites.length === 0 ? (
           <Box p="md" ta="center">
             <Text size="sm" c="dimmed">
               <Trans>No websites found</Trans>
@@ -168,7 +184,7 @@ export function AccountsSection({ viewState, onItemSelect }: AccountsSectionProp
           </Box>
         ) : (
           <Stack gap="xs" p="xs">
-            {filteredWebsites.map((website) => (
+            {sortedWebsites.map((website) => (
               <WebsiteAccountCard
                 key={website.id}
                 website={website}

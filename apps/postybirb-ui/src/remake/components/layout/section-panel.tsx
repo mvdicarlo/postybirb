@@ -64,9 +64,7 @@ export function SectionPanel({ viewState, onItemSelect }: SectionPanelProps) {
       className="postybirb__section_panel"
       style={{ width: config.defaultWidth }}
     >
-      {/* <ScrollArea className="postybirb__section_panel_scroll" type="hover" scrollbarSize={6}> */}
       <SectionContent viewState={viewState} onItemSelect={onItemSelect} />
-      {/* </ScrollArea> */}
     </Box>
   );
 }
