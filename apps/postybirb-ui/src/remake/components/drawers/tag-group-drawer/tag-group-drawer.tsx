@@ -274,6 +274,7 @@ function CreateTagGroupForm() {
       <TextInput
         flex={1}
         size="sm"
+        placeholder={t`New`}
         leftSection={<IconPlus size={16} />}
         value={name}
         onChange={(e) => setName(e.currentTarget.value)}

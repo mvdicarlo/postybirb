@@ -18,6 +18,12 @@ export { TagGroupDrawer } from './tag-group-drawer';
 // Re-export the NotificationsDrawer
 export { NotificationsDrawer } from './notifications-drawer';
 
+// Re-export the TagConverterDrawer
+export { TagConverterDrawer } from './tag-converter-drawer';
+
+// Re-export the UserConverterDrawer
+export { UserConverterDrawer } from './user-converter-drawer';
+
 /**
  * Props for stub drawer components.
  */
@@ -58,30 +64,6 @@ export function AccountDrawer() {
     <StubDrawer
       drawerKey="accounts"
       title={<Trans>Accounts</Trans>}
-    />
-  );
-}
-
-/**
- * Tag converters drawer stub.
- */
-export function TagConverterDrawer() {
-  return (
-    <StubDrawer
-      drawerKey="tagConverters"
-      title={<Trans>Tag Converters</Trans>}
-    />
-  );
-}
-
-/**
- * User converters drawer stub.
- */
-export function UserConverterDrawer() {
-  return (
-    <StubDrawer
-      drawerKey="userConverters"
-      title={<Trans>User Converters</Trans>}
     />
   );
 }
