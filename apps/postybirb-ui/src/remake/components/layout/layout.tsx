@@ -8,27 +8,24 @@ import { Box } from '@mantine/core';
 import { navItems } from '../../config/nav-items';
 import { useKeybindings } from '../../hooks/use-keybindings';
 import {
-    useSidenavCollapsed,
-    useUIStore,
-    useViewState,
+  useSidenavCollapsed,
+  useUIStore,
+  useViewState,
 } from '../../stores/ui-store';
 import '../../styles/layout.css';
-import { hasSectionPanel } from '../../types/view-state';
 import { cn } from '../../utils/class-names';
 import {
-    AccountDrawer,
-    CustomShortcutsDrawer,
-    FileWatcherDrawer,
-    NotificationsDrawer,
-    SettingsDialog,
-    TagConverterDrawer,
-    TagGroupDrawer,
-    UserConverterDrawer,
+  CustomShortcutsDrawer,
+  FileWatcherDrawer,
+  NotificationsDrawer,
+  SettingsDialog,
+  TagConverterDrawer,
+  TagGroupDrawer,
+  UserConverterDrawer,
 } from '../drawers/drawers';
 import { PrimaryContent } from './primary-content';
 import { SectionPanel } from './section-panel';
 import { SideNav } from './side-nav';
-import { SubNavBar } from './sub-nav-bar';
 
 /**
  * Root layout component that orchestrates the overall page structure.
@@ -41,9 +38,6 @@ export function Layout() {
 
   // Set up global keybindings
   useKeybindings();
-
-  // Determine if the current view has a section panel
-  const showSectionPanel = hasSectionPanel(viewState);
 
   return (
     <Box className="postybirb__layout">
@@ -59,14 +53,6 @@ export function Layout() {
 
       {/* Main Content Area */}
       <Box className={cn(['postybirb__main'], { 'postybirb__main--sidenav_collapsed': collapsed })}>
-        {/* Sub-Navigation Bar - shown based on view state */}
-        <SubNavBar
-          config={{
-            visible: showSectionPanel,
-            items: [],
-          }}
-        />
-
         {/* Split Content Area: Section Panel + Primary Content */}
         <Box id="postybirb-content-split" className="postybirb__content_split">
           {/* Section Panel (Master) - left side list */}
@@ -77,7 +63,6 @@ export function Layout() {
         </Box>
 
         {/* Section Drawers - use Portal to render into content_split */}
-        <AccountDrawer />
         <TagGroupDrawer />
         <TagConverterDrawer />
         <UserConverterDrawer />

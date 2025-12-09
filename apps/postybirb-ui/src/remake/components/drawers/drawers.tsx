@@ -60,18 +60,6 @@ function StubDrawer({ drawerKey, title }: StubDrawerProps) {
 }
 
 /**
- * Account drawer stub.
- */
-export function AccountDrawer() {
-  return (
-    <StubDrawer
-      drawerKey="accounts"
-      title={<Trans>Accounts</Trans>}
-    />
-  );
-}
-
-/**
  * Custom shortcuts drawer stub.
  */
 export function CustomShortcutsDrawer() {

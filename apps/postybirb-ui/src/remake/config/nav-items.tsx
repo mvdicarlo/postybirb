@@ -5,41 +5,42 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-    IconBell,
-    IconBlockquote,
-    IconBrandDiscord,
-    IconCoffee,
-    IconFile,
-    IconFolderSearch,
-    IconHome,
-    IconMessage,
-    IconSearch,
-    IconSettings,
-    IconTags,
-    IconTransform,
-    IconUser,
-    IconUsers,
+  IconBell,
+  IconBlockquote,
+  IconBrandDiscord,
+  IconCoffee,
+  IconFile,
+  IconFolderSearch,
+  IconHome,
+  IconMessage,
+  IconSearch,
+  IconSettings,
+  IconTags,
+  IconTransform,
+  IconUser,
+  IconUsers,
 } from '@tabler/icons-react';
-import type { NavigationItem, SubNavConfig } from '../types/navigation';
+import type { NavigationItem } from '../types/navigation';
 import {
-    createFileSubmissionsViewState,
-    createMessageSubmissionsViewState,
-    defaultViewState,
+  createAccountsViewState,
+  createFileSubmissionsViewState,
+  createMessageSubmissionsViewState,
+  defaultViewState,
 } from '../types/view-state';
 import { openUrl } from '../utils';
 import {
-    AccountKeybinding,
-    CustomShortcutsKeybinding,
-    FileSubmissionsKeybinding,
-    FileWatchersKeybinding,
-    HomeKeybinding,
-    MessageSubmissionsKeybinding,
-    NotificationsKeybinding,
-    SettingsKeybinding,
-    SpotlightKeybinding,
-    TagConvertersKeybinding,
-    TagGroupsKeybinding,
-    UserConvertersKeybinding,
+  AccountKeybinding,
+  CustomShortcutsKeybinding,
+  FileSubmissionsKeybinding,
+  FileWatchersKeybinding,
+  HomeKeybinding,
+  MessageSubmissionsKeybinding,
+  NotificationsKeybinding,
+  SettingsKeybinding,
+  SpotlightKeybinding,
+  TagConvertersKeybinding,
+  TagGroupsKeybinding,
+  UserConvertersKeybinding,
 } from './keybindings';
 
 /**
@@ -72,6 +73,14 @@ export const navItems: NavigationItem[] = [
   },
   {
     type: 'view',
+    id: 'accounts',
+    icon: <IconUser size={20} />,
+    label: <Trans>Accounts</Trans>,
+    viewState: createAccountsViewState(),
+    kbd: AccountKeybinding,
+  },
+  {
+    type: 'view',
     id: 'file-submissions',
     icon: <IconFile size={20} />,
     label: <Trans>Post Files</Trans>,
@@ -98,14 +107,6 @@ export const navItems: NavigationItem[] = [
     label: <Trans>Notifications</Trans>,
     drawerKey: 'notifications',
     kbd: NotificationsKeybinding,
-  },
-  {
-    type: 'drawer',
-    id: 'accounts',
-    icon: <IconUser size={20} />,
-    label: <Trans>Accounts</Trans>,
-    drawerKey: 'accounts',
-    kbd: AccountKeybinding,
   },
   {
     type: 'drawer',
@@ -192,52 +193,7 @@ export const navItems: NavigationItem[] = [
     icon: <IconCoffee size={20} />,
     label: <Trans>Ko-fi</Trans>,
     onClick: () => {
-      openUrl('https://ko-fi.com/A81124JD')
+      openUrl('https://ko-fi.com/A81124JD');
     },
   },
 ];
-
-/**
- * Sub-navigation configurations per section.
- * Used to provide contextual sub-nav items based on the current route.
- */
-/* eslint-disable lingui/no-unlocalized-strings */
-export const subNavConfigs: Record<string, SubNavConfig> = {
-  home: {
-    visible: false,
-    items: [],
-  },
-  'file-submissions': {
-    visible: true,
-    items: [
-      { id: 'all', label: 'All', active: true },
-      { id: 'drafts', label: 'Drafts' },
-      { id: 'scheduled', label: 'Scheduled' },
-      { id: 'posted', label: 'Posted' },
-      { id: 'failed', label: 'Failed' },
-    ],
-  },
-  'message-submissions': {
-    visible: true,
-    items: [
-      { id: 'all', label: 'All', active: true },
-      { id: 'drafts', label: 'Drafts' },
-      { id: 'scheduled', label: 'Scheduled' },
-      { id: 'posted', label: 'Posted' },
-      { id: 'failed', label: 'Failed' },
-    ],
-  },
-};
-/* eslint-enable lingui/no-unlocalized-strings */
-
-/**
- * Get the sub-nav configuration for a given route path.
- * @param path - The current route path
- * @returns The sub-nav configuration for the route, or a default hidden config
- */
-export function getSubNavConfig(path: string): SubNavConfig {
-  // Normalize path to section ID
-  const sectionId = path === '/' ? 'home' : path.replace(/^\//, '').split('/')[0];
-
-  return subNavConfigs[sectionId] || { visible: false, items: [] };
-}

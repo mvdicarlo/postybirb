@@ -3,18 +3,14 @@
  * Renders different content based on the current view state.
  */
 
-import { Trans } from '@lingui/react/macro';
-import { Box, ScrollArea, Text } from '@mantine/core';
+import { Box, ScrollArea } from '@mantine/core';
 import '../../styles/layout.css';
+import { getSectionPanelConfig, type ViewState } from '../../types/view-state';
 import {
-    getSectionPanelConfig,
-    isFileSubmissionsViewState,
-    isMessageSubmissionsViewState,
-    isTagConvertersViewState,
-    isTagGroupsViewState,
-    isUserConvertersViewState,
-    type ViewState,
-} from '../../types/view-state';
+    AccountsSection,
+    FileSubmissionsSection,
+    MessageSubmissionsSection,
+} from '../sections';
 
 interface SectionPanelProps {
   /** Current view state */
@@ -24,105 +20,16 @@ interface SectionPanelProps {
 }
 
 /**
- * Placeholder content for file submissions section.
- */
-function FileSubmissionsSection({ viewState, onItemSelect }: SectionPanelProps) {
-  return (
-    <Box p="md">
-      <Text size="sm" c="dimmed">
-        <Trans>File Submissions List</Trans>
-      </Text>
-      <Text size="xs" c="dimmed" mt="xs">
-        {/* eslint-disable-next-line lingui/no-unlocalized-strings */}
-        Selected: {isFileSubmissionsViewState(viewState) ? viewState.params.selectedIds.length : 0} items
-      </Text>
-    </Box>
-  );
-}
-
-/**
- * Placeholder content for message submissions section.
- */
-function MessageSubmissionsSection({ viewState, onItemSelect }: SectionPanelProps) {
-  return (
-    <Box p="md">
-      <Text size="sm" c="dimmed">
-        <Trans>Message Submissions List</Trans>
-      </Text>
-      <Text size="xs" c="dimmed" mt="xs">
-        {/* eslint-disable-next-line lingui/no-unlocalized-strings */}
-        Selected: {isMessageSubmissionsViewState(viewState) ? viewState.params.selectedIds.length : 0} items
-      </Text>
-    </Box>
-  );
-}
-
-/**
- * Placeholder content for tag groups section.
- */
-function TagGroupsSection({ viewState, onItemSelect }: SectionPanelProps) {
-  return (
-    <Box p="md">
-      <Text size="sm" c="dimmed">
-        <Trans>Tag Groups List</Trans>
-      </Text>
-      <Text size="xs" c="dimmed" mt="xs">
-        {/* eslint-disable-next-line lingui/no-unlocalized-strings */}
-        Selected: {isTagGroupsViewState(viewState) ? viewState.params.selectedId || 'none' : 'none'}
-      </Text>
-    </Box>
-  );
-}
-
-/**
- * Placeholder content for tag converters section.
- */
-function TagConvertersSection({ viewState, onItemSelect }: SectionPanelProps) {
-  return (
-    <Box p="md">
-      <Text size="sm" c="dimmed">
-        <Trans>Tag Converters List</Trans>
-      </Text>
-      <Text size="xs" c="dimmed" mt="xs">
-        {/* eslint-disable-next-line lingui/no-unlocalized-strings */}
-        Selected: {isTagConvertersViewState(viewState) ? viewState.params.selectedId || 'none' : 'none'}
-      </Text>
-    </Box>
-  );
-}
-
-/**
- * Placeholder content for user converters section.
- */
-function UserConvertersSection({ viewState, onItemSelect }: SectionPanelProps) {
-  return (
-    <Box p="md">
-      <Text size="sm" c="dimmed">
-        <Trans>User Converters List</Trans>
-      </Text>
-      <Text size="xs" c="dimmed" mt="xs">
-        {/* eslint-disable-next-line lingui/no-unlocalized-strings */}
-        Selected: {isUserConvertersViewState(viewState) ? viewState.params.selectedId || 'none' : 'none'}
-      </Text>
-    </Box>
-  );
-}
-
-/**
  * Renders section-specific content based on view state type.
  */
 function SectionContent({ viewState, onItemSelect }: SectionPanelProps) {
   switch (viewState.type) {
+    case 'accounts':
+      return <AccountsSection viewState={viewState} onItemSelect={onItemSelect} />;
     case 'file-submissions':
       return <FileSubmissionsSection viewState={viewState} onItemSelect={onItemSelect} />;
     case 'message-submissions':
       return <MessageSubmissionsSection viewState={viewState} onItemSelect={onItemSelect} />;
-    case 'tag-groups':
-      return <TagGroupsSection viewState={viewState} onItemSelect={onItemSelect} />;
-    case 'tag-converters':
-      return <TagConvertersSection viewState={viewState} onItemSelect={onItemSelect} />;
-    case 'user-converters':
-      return <UserConvertersSection viewState={viewState} onItemSelect={onItemSelect} />;
     default:
       return null;
   }
@@ -151,3 +58,4 @@ export function SectionPanel({ viewState, onItemSelect }: SectionPanelProps) {
     </Box>
   );
 }
+

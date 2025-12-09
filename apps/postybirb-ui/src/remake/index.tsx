@@ -56,13 +56,13 @@ function AppContent() {
  * Includes all necessary providers: Mantine, i18n, and React Query.
  * Uses state-driven navigation via UI store viewState.
  */
-export function RemakeApp() {
+export function PostyBirb() {
   const primaryColor = usePrimaryColor();
 
   // Create theme with dynamic primary color
   const dynamicTheme = useMemo(
     () => createAppTheme(primaryColor),
-    [primaryColor]
+    [primaryColor],
   );
 
   useEffect(() => {
@@ -78,7 +78,11 @@ export function RemakeApp() {
   }, []);
 
   return (
-    <MantineProvider theme={dynamicTheme} cssVariablesResolver={cssVariableResolver} defaultColorScheme="auto">
+    <MantineProvider
+      theme={dynamicTheme}
+      cssVariablesResolver={cssVariableResolver}
+      defaultColorScheme="auto"
+    >
       <I18nProvider>
         <Notifications zIndex={5000} />
         <AppContent />
@@ -86,6 +90,3 @@ export function RemakeApp() {
     </MantineProvider>
   );
 }
-
-// Default export for convenient importing
-export default RemakeApp;

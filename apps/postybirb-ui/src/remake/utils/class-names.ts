@@ -29,7 +29,7 @@ type StaticClasses = (string | undefined | null)[];
  */
 export function cn(
   staticOrConditional: StaticClasses | ConditionalClasses,
-  conditional?: ConditionalClasses
+  conditional?: ConditionalClasses,
 ): string {
   const classes: string[] = [];
 
@@ -61,5 +61,3 @@ export function cn(
 
   return classes.join(' ');
 }
-
-export default cn;

@@ -11,14 +11,13 @@ import type { SubmissionType } from '@postybirb/types';
 
 /**
  * All valid section identifiers in the application.
+ * Only includes sections that render as full views, not drawers.
  */
 export type SectionId =
   | 'home'
+  | 'accounts'
   | 'file-submissions'
-  | 'message-submissions'
-  | 'tag-groups'
-  | 'tag-converters'
-  | 'user-converters';
+  | 'message-submissions';
 
 // =============================================================================
 // Section-Specific Parameters
@@ -30,6 +29,16 @@ export type SectionId =
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface HomeParams {
   // Empty - home has no specific state
+}
+
+/**
+ * Parameters for accounts view.
+ */
+export interface AccountsParams {
+  /** Selected account ID for detail view */
+  selectedId: string | null;
+  /** Filter by website ID */
+  websiteFilter: string | null;
 }
 
 /**
@@ -56,30 +65,6 @@ export interface MessageSubmissionsParams {
   submissionType: typeof SubmissionType.MESSAGE;
 }
 
-/**
- * Parameters for tag groups view.
- */
-export interface TagGroupsParams {
-  /** Selected tag group ID */
-  selectedId: string | null;
-}
-
-/**
- * Parameters for tag converters view.
- */
-export interface TagConvertersParams {
-  /** Selected tag converter ID */
-  selectedId: string | null;
-}
-
-/**
- * Parameters for user converters view.
- */
-export interface UserConvertersParams {
-  /** Selected user converter ID */
-  selectedId: string | null;
-}
-
 // =============================================================================
 // View State - Discriminated Union
 // =============================================================================
@@ -90,6 +75,14 @@ export interface UserConvertersParams {
 export interface HomeViewState {
   type: 'home';
   params: HomeParams;
+}
+
+/**
+ * Accounts view state.
+ */
+export interface AccountsViewState {
+  type: 'accounts';
+  params: AccountsParams;
 }
 
 /**
@@ -109,39 +102,13 @@ export interface MessageSubmissionsViewState {
 }
 
 /**
- * Tag groups view state.
- */
-export interface TagGroupsViewState {
-  type: 'tag-groups';
-  params: TagGroupsParams;
-}
-
-/**
- * Tag converters view state.
- */
-export interface TagConvertersViewState {
-  type: 'tag-converters';
-  params: TagConvertersParams;
-}
-
-/**
- * User converters view state.
- */
-export interface UserConvertersViewState {
-  type: 'user-converters';
-  params: UserConvertersParams;
-}
-
-/**
  * Union type of all possible view states.
  */
 export type ViewState =
   | HomeViewState
+  | AccountsViewState
   | FileSubmissionsViewState
-  | MessageSubmissionsViewState
-  | TagGroupsViewState
-  | TagConvertersViewState
-  | UserConvertersViewState;
+  | MessageSubmissionsViewState;
 
 // =============================================================================
 // Section Panel Configuration
@@ -162,11 +129,9 @@ export interface SectionPanelConfig {
  */
 export const sectionPanelConfigs: Record<SectionId, SectionPanelConfig> = {
   home: { hasPanel: false },
+  accounts: { hasPanel: true, defaultWidth: 320 },
   'file-submissions': { hasPanel: true, defaultWidth: 320 },
   'message-submissions': { hasPanel: true, defaultWidth: 320 },
-  'tag-groups': { hasPanel: true, defaultWidth: 280 },
-  'tag-converters': { hasPanel: true, defaultWidth: 280 },
-  'user-converters': { hasPanel: true, defaultWidth: 280 },
 };
 
 /**
@@ -195,6 +160,22 @@ export function createHomeViewState(): HomeViewState {
   return {
     type: 'home',
     params: {},
+  };
+}
+
+/**
+ * Create a default accounts view state.
+ */
+export function createAccountsViewState(
+  overrides?: Partial<AccountsParams>
+): AccountsViewState {
+  return {
+    type: 'accounts',
+    params: {
+      selectedId: null,
+      websiteFilter: null,
+      ...overrides,
+    },
   };
 }
 
@@ -232,51 +213,6 @@ export function createMessageSubmissionsViewState(
   };
 }
 
-/**
- * Create a default tag groups view state.
- */
-export function createTagGroupsViewState(
-  overrides?: Partial<TagGroupsParams>
-): TagGroupsViewState {
-  return {
-    type: 'tag-groups',
-    params: {
-      selectedId: null,
-      ...overrides,
-    },
-  };
-}
-
-/**
- * Create a default tag converters view state.
- */
-export function createTagConvertersViewState(
-  overrides?: Partial<TagConvertersParams>
-): TagConvertersViewState {
-  return {
-    type: 'tag-converters',
-    params: {
-      selectedId: null,
-      ...overrides,
-    },
-  };
-}
-
-/**
- * Create a default user converters view state.
- */
-export function createUserConvertersViewState(
-  overrides?: Partial<UserConvertersParams>
-): UserConvertersViewState {
-  return {
-    type: 'user-converters',
-    params: {
-      selectedId: null,
-      ...overrides,
-    },
-  };
-}
-
 // =============================================================================
 // Type Guards
 // =============================================================================
@@ -286,6 +222,15 @@ export function createUserConvertersViewState(
  */
 export function isHomeViewState(state: ViewState): state is HomeViewState {
   return state.type === 'home';
+}
+
+/**
+ * Check if view state is accounts.
+ */
+export function isAccountsViewState(
+  state: ViewState
+): state is AccountsViewState {
+  return state.type === 'accounts';
 }
 
 /**
@@ -304,33 +249,6 @@ export function isMessageSubmissionsViewState(
   state: ViewState
 ): state is MessageSubmissionsViewState {
   return state.type === 'message-submissions';
-}
-
-/**
- * Check if view state is tag groups.
- */
-export function isTagGroupsViewState(
-  state: ViewState
-): state is TagGroupsViewState {
-  return state.type === 'tag-groups';
-}
-
-/**
- * Check if view state is tag converters.
- */
-export function isTagConvertersViewState(
-  state: ViewState
-): state is TagConvertersViewState {
-  return state.type === 'tag-converters';
-}
-
-/**
- * Check if view state is user converters.
- */
-export function isUserConvertersViewState(
-  state: ViewState
-): state is UserConvertersViewState {
-  return state.type === 'user-converters';
 }
 
 /**

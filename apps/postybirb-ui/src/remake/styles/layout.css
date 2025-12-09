@@ -182,21 +182,6 @@
   margin-left: 60px;
 }
 
-/* Sub-navigation bar */
-.postybirb__subnav {
-  display: flex;
-  align-items: center;
-  height: 48px;
-  min-height: 48px;
-  padding: 0 16px;
-  background-color: var(--mantine-color-body);
-  border-bottom: 1px solid var(--mantine-color-default-border);
-}
-
-.postybirb__subnav--hidden {
-  display: none;
-}
-
 /* Content navbar (with pagination) */
 .postybirb__content_navbar {
   display: flex;

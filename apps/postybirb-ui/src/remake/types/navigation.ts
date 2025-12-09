@@ -3,7 +3,7 @@
  * @module remake/types/navigation
  */
 
-import type { ComponentType, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import type { DrawerKey } from '../stores/ui-store';
 import type { ViewState } from './view-state';
 
@@ -145,43 +145,6 @@ export function isSpecialNavItem(
 // Sub-Navigation Types
 // =============================================================================
 
-/**
- * Represents an item in the contextual sub-navigation bar.
- */
-export interface SubNavItem {
-  /** Unique identifier */
-  id: string;
-
-  /** Display label */
-  label: string;
-
-  /** Optional icon */
-  icon?: ComponentType<{ size?: number | string }>;
-
-  /** Click handler (mutually exclusive with path) */
-  onClick?: () => void;
-
-  /** Route path (mutually exclusive with onClick) */
-  path?: string;
-
-  /** Whether this item is currently active */
-  active?: boolean;
-
-  /** Whether this item is disabled */
-  disabled?: boolean;
-}
-
-/**
- * Configuration for the sub-navigation bar.
- */
-export interface SubNavConfig {
-  /** Items to display in the sub-navigation bar */
-  items: SubNavItem[];
-
-  /** Whether to show the sub-nav bar */
-  visible: boolean;
-}
-
 // =============================================================================
 // Content & Pagination Types
 // =============================================================================
@@ -247,14 +210,6 @@ export interface SideNavProps {
 
   /** Callback when collapse state changes */
   onCollapsedChange: (collapsed: boolean) => void;
-}
-
-/**
- * Props for the SubNavBar component.
- */
-export interface SubNavBarProps {
-  /** Configuration for sub-nav content */
-  config: SubNavConfig;
 }
 
 /**

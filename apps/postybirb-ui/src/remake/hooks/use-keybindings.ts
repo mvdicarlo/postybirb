@@ -21,6 +21,7 @@ import {
 } from '../config/keybindings';
 import { useUIStore, useViewStateActions } from '../stores/ui-store';
 import {
+    createAccountsViewState,
     createFileSubmissionsViewState,
     createHomeViewState,
     createMessageSubmissionsViewState,
@@ -49,15 +50,15 @@ export function useKeybindings(): void {
         event.preventDefault();
         setViewState(createMessageSubmissionsViewState());
       },
+      [toTinykeysFormat(AccountKeybinding)]: (event: KeyboardEvent) => {
+        event.preventDefault();
+        setViewState(createAccountsViewState());
+      },
 
       // Drawer toggle keybindings
       [toTinykeysFormat(SettingsKeybinding)]: (event: KeyboardEvent) => {
         event.preventDefault();
         toggleDrawer('settings');
-      },
-      [toTinykeysFormat(AccountKeybinding)]: (event: KeyboardEvent) => {
-        event.preventDefault();
-        toggleDrawer('accounts');
       },
       [toTinykeysFormat(TagGroupsKeybinding)]: (event: KeyboardEvent) => {
         event.preventDefault();

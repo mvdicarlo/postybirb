@@ -13,7 +13,6 @@ import { defaultViewState, type ViewState } from '../types/view-state';
  */
 export type DrawerKey =
   | 'settings'
-  | 'accounts'
   | 'tagGroups'
   | 'tagConverters'
   | 'userConverters'
