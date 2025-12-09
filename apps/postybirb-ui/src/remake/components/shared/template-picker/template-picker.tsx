@@ -3,8 +3,12 @@
  * Uses the submissions store to get available templates.
  */
 
-import { type SelectProps } from '@mantine/core';
+import { t } from '@lingui/core/macro';
+import { Trans } from '@lingui/react/macro';
+import { Select, type SelectProps } from '@mantine/core';
 import { SubmissionType } from '@postybirb/types';
+import { useMemo } from 'react';
+import { useTemplateSubmissions } from '../../../stores';
 
 interface TemplatePickerProps
   extends Omit<SelectProps, 'data' | 'value' | 'onChange'> {
@@ -27,36 +31,36 @@ export function TemplatePicker({
   label,
   ...selectProps
 }: TemplatePickerProps) {
-//   const templates = useTemplateSubmissions();
+  const templates = useTemplateSubmissions();
 
-//   const options = useMemo(() => {
-//     let filtered = templates;
+  const options = useMemo(() => {
+    let filtered = templates;
 
-//     // Filter by type if specified
-//     if (type) {
-//       filtered = templates.filter((tmpl) => tmpl.type === type);
-//     }
+    // Filter by type if specified
+    if (type) {
+      filtered = templates.filter((tmpl) => tmpl.type === type);
+    }
 
-//     // Sort alphabetically by name
-//     return filtered
-//       .sort((a, b) => a.name.localeCompare(b.name))
-//       .map((template) => ({
-//         value: template.id,
-//         label: template.name,
-//       }));
-//   }, [templates, type]);
-  return null;
-//   return (
-//     <Select
-//       label={label ?? <Trans>Template</Trans>}
-//       placeholder={t`Select a template`}
-//       data={options}
-//       value={value ?? null}
-//       onChange={onChange}
-//       clearable
-//       searchable
-//       nothingFoundMessage={<Trans>No templates found</Trans>}
-//       {...selectProps}
-//     />
-//   );
+    // Sort alphabetically by name
+    return filtered
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map((template) => ({
+        value: template.id,
+        label: template.name,
+      }));
+  }, [templates, type]);
+
+  return (
+    <Select
+      label={label ?? <Trans>Template</Trans>}
+      placeholder={t`Select a template`}
+      data={options}
+      value={value ?? null}
+      onChange={onChange}
+      clearable
+      searchable
+      nothingFoundMessage={<Trans>No templates found</Trans>}
+      {...selectProps}
+    />
+  );
 }
