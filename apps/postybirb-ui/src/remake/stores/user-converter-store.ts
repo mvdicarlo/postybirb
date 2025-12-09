@@ -1,76 +1,36 @@
 /**
  * User Converter Store - Zustand store for user converter entities.
+ * Uses createTypedStore for reduced boilerplate.
  */
 
 import { USER_CONVERTER_UPDATES } from '@postybirb/socket-events';
 import type { UserConverterDto } from '@postybirb/types';
-import { useShallow } from 'zustand/react/shallow';
 import userConvertersApi from '../api/user-converters.api';
-import { createEntityStore, type EntityStore } from './create-entity-store';
+import { type EntityStore } from './create-entity-store';
+import { createTypedStore } from './create-typed-store';
 import { UserConverterRecord } from './records';
 
 /**
- * Fetch all user converters from the API.
+ * User converter store with all standard hooks.
  */
-const fetchUserConverters = async (): Promise<UserConverterDto[]> => {
-  const response = await userConvertersApi.getAll();
-  return response.body;
-};
-
-/**
- * User converter store instance.
- */
-export const useUserConverterStore = createEntityStore<UserConverterDto, UserConverterRecord>(
-  fetchUserConverters,
-  (dto) => new UserConverterRecord(dto),
-  {
-    // eslint-disable-next-line lingui/no-unlocalized-strings
-    storeName: 'UserConverterStore',
-    websocketEvent: USER_CONVERTER_UPDATES,
-  }
-);
+export const {
+  useStore: useUserConverterStore,
+  useRecords: useUserConverters,
+  useRecordsMap: useUserConvertersMap,
+  useLoading: useUserConvertersLoading,
+  useActions: useUserConverterActions,
+} = createTypedStore<UserConverterDto, UserConverterRecord>({
+  fetchFn: async () => {
+    const response = await userConvertersApi.getAll();
+    return response.body;
+  },
+  createRecord: (dto) => new UserConverterRecord(dto),
+  // eslint-disable-next-line lingui/no-unlocalized-strings
+  storeName: 'UserConverterStore',
+  websocketEvent: USER_CONVERTER_UPDATES,
+});
 
 /**
  * Type alias for the user converter store.
  */
 export type UserConverterStore = EntityStore<UserConverterRecord>;
-
-// ============================================================================
-// Selector Hooks
-// ============================================================================
-
-/**
- * Select all user converters.
- */
-export const useUserConverters = () => useUserConverterStore((state) => state.records);
-
-/**
- * Select user converters map for O(1) lookup.
- */
-export const useUserConvertersMap = () => useUserConverterStore((state) => state.recordsMap);
-
-/**
- * Select user converter loading state.
- */
-export const useUserConvertersLoading = () =>
-  useUserConverterStore(
-    useShallow((state) => ({
-      loadingState: state.loadingState,
-      error: state.error,
-      isLoading: state.loadingState === 'loading',
-      isLoaded: state.loadingState === 'loaded',
-    }))
-  );
-
-/**
- * Select user converter store actions.
- */
-export const useUserConverterActions = () =>
-  useUserConverterStore(
-    useShallow((state) => ({
-      loadAll: state.loadAll,
-      setRecords: state.setRecords,
-      getById: state.getById,
-      clear: state.clear,
-    }))
-  );

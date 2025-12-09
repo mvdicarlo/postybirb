@@ -17,7 +17,6 @@ import {
     Text,
     Tooltip,
 } from '@mantine/core';
-import { notifications as mantineNotifications } from '@mantine/notifications';
 import {
     IconAlertTriangle,
     IconBell,
@@ -37,6 +36,13 @@ import {
 } from '../../../stores/notification-store';
 import type { NotificationRecord } from '../../../stores/records';
 import { useActiveDrawer, useDrawerActions } from '../../../stores/ui-store';
+import {
+    showDeletedNotification,
+    showDeleteErrorNotification,
+    showSuccessNotification,
+    showUpdateErrorNotification,
+} from '../../../utils/notifications';
+import { EmptyState } from '../../empty-state';
 import { HoldToConfirmButton } from '../../hold-to-confirm';
 import { SectionDrawer } from '../section-drawer';
 
@@ -267,34 +273,20 @@ function BulkActions({
             notificationApi.update(n.id, { isRead: true, hasEmitted: true })
           )
       );
-      mantineNotifications.show({
-        message: <Trans>Marked {count} notification(s) as read</Trans>,
-        color: 'green',
-      });
+      showSuccessNotification(<Trans>Marked as read</Trans>);
       onClearSelection();
     } catch {
-      mantineNotifications.show({
-        title: <Trans>Error</Trans>,
-        message: <Trans>Failed to update notifications</Trans>,
-        color: 'red',
-      });
+      showUpdateErrorNotification();
     }
-  }, [selectedNotifications, count, onClearSelection]);
+  }, [selectedNotifications, onClearSelection]);
 
   const handleDelete = useCallback(async () => {
     try {
       await notificationApi.remove([...selectedIds]);
-      mantineNotifications.show({
-        message: <Trans>Deleted {count} notification(s)</Trans>,
-        color: 'green',
-      });
+      showDeletedNotification(count);
       onClearSelection();
     } catch {
-      mantineNotifications.show({
-        title: <Trans>Error</Trans>,
-        message: <Trans>Failed to delete notifications</Trans>,
-        color: 'red',
-      });
+      showDeleteErrorNotification();
     }
   }, [selectedIds, count, onClearSelection]);
 
@@ -351,11 +343,7 @@ function NotificationCard({
         hasEmitted: true,
       });
     } catch {
-      mantineNotifications.show({
-        title: <Trans>Error</Trans>,
-        message: <Trans>Failed to update notification</Trans>,
-        color: 'red',
-      });
+      showUpdateErrorNotification();
     }
   }, [notification]);
 
@@ -363,11 +351,7 @@ function NotificationCard({
     try {
       await notificationApi.remove([notification.id]);
     } catch {
-      mantineNotifications.show({
-        title: <Trans>Error</Trans>,
-        message: <Trans>Failed to delete notification</Trans>,
-        color: 'red',
-      });
+      showDeleteErrorNotification();
     }
   }, [notification.id]);
 
@@ -468,14 +452,7 @@ function NotificationList({
   const someSelected = selectedIds.size > 0 && !allSelected;
 
   if (notifications.length === 0) {
-    return (
-      <Stack align="center" justify="center" py="xl">
-        <IconBell size={48} stroke={1} opacity={0.3} />
-        <Text c="dimmed" size="sm">
-          <Trans>No notifications</Trans>
-        </Text>
-      </Stack>
-    );
+    return <EmptyState preset="no-notifications" />;
   }
 
   return (

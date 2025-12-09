@@ -1,0 +1,132 @@
+/**
+ * Typed Store Factory - Creates entity stores with all standard selector hooks.
+ * Reduces boilerplate from ~70 lines to ~15 lines per store.
+ */
+
+import { useShallow } from 'zustand/react/shallow';
+import { createEntityStore, type EntityStore } from './create-entity-store';
+import type { BaseRecord } from './records/base-record';
+
+/**
+ * Configuration for creating a typed store.
+ */
+export interface TypedStoreConfig<TDto, TRecord extends BaseRecord> {
+  /** Async function that fetches DTOs from the API */
+  fetchFn: () => Promise<TDto[]>;
+  /** Function that converts a DTO to a Record class */
+  createRecord: (dto: TDto) => TRecord;
+  /** Name of the store for debugging */
+  storeName: string;
+  /** Websocket event name to subscribe to for real-time updates (optional) */
+  websocketEvent?: string;
+}
+
+/**
+ * Return type of createTypedStore.
+ */
+export interface TypedStoreResult<TRecord extends BaseRecord> {
+  /** The underlying Zustand store */
+  useStore: ReturnType<typeof createEntityStore<unknown, TRecord>>;
+  /** Hook to get all records */
+  useRecords: () => TRecord[];
+  /** Hook to get records map for O(1) lookup */
+  useRecordsMap: () => Map<string, TRecord>;
+  /** Hook to get loading state */
+  useLoading: () => {
+    loadingState: 'idle' | 'loading' | 'loaded' | 'error';
+    error: string | null;
+    isLoading: boolean;
+    isLoaded: boolean;
+  };
+  /** Hook to get store actions */
+  useActions: () => {
+    loadAll: () => Promise<void>;
+    setRecords: (records: TRecord[]) => void;
+    getById: (id: string) => TRecord | undefined;
+    clear: () => void;
+  };
+}
+
+/**
+ * Creates an entity store with all standard selector hooks.
+ * Reduces boilerplate by generating the common selector patterns automatically.
+ *
+ * @example
+ * ```typescript
+ * export const {
+ *   useStore: useTagConverterStore,
+ *   useRecords: useTagConverters,
+ *   useRecordsMap: useTagConvertersMap,
+ *   useLoading: useTagConvertersLoading,
+ *   useActions: useTagConverterActions,
+ * } = createTypedStore({
+ *   fetchFn: () => tagConvertersApi.getAll().then((r) => r.body),
+ *   createRecord: (dto) => new TagConverterRecord(dto),
+ *   storeName: 'TagConverterStore',
+ *   websocketEvent: TAG_CONVERTER_UPDATES,
+ * });
+ * ```
+ */
+export function createTypedStore<TDto, TRecord extends BaseRecord>(
+  config: TypedStoreConfig<TDto, TRecord>
+): TypedStoreResult<TRecord> {
+  const useStore = createEntityStore<TDto, TRecord>(
+    config.fetchFn,
+    config.createRecord,
+    {
+      storeName: config.storeName,
+      websocketEvent: config.websocketEvent,
+    }
+  );
+
+  /**
+   * Hook to get all records.
+   */
+  const useRecords = () => useStore((state) => state.records);
+
+  /**
+   * Hook to get records map for O(1) lookup.
+   */
+  const useRecordsMap = () => useStore((state) => state.recordsMap);
+
+  /**
+   * Hook to get loading state.
+   */
+  const useLoading = () =>
+    useStore(
+      useShallow((state) => ({
+        loadingState: state.loadingState,
+        error: state.error,
+        isLoading: state.loadingState === 'loading',
+        isLoaded: state.loadingState === 'loaded',
+      }))
+    );
+
+  /**
+   * Hook to get store actions.
+   */
+  const useActions = () =>
+    useStore(
+      useShallow((state) => ({
+        loadAll: state.loadAll,
+        setRecords: state.setRecords,
+        getById: state.getById,
+        clear: state.clear,
+      }))
+    );
+
+  return {
+    useStore,
+    useRecords,
+    useRecordsMap,
+    useLoading,
+    useActions,
+  };
+}
+
+/**
+ * Type alias for extracting the store type from a typed store result.
+ */
+export type ExtractStoreType<T> = T extends TypedStoreResult<infer R>
+  ? EntityStore<R>
+  : never;

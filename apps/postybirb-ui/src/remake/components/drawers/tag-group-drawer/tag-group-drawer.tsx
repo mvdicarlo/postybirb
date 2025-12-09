@@ -14,18 +14,24 @@ import {
     Stack,
     Table,
     TagsInput,
-    Text,
     TextInput,
     Tooltip,
 } from '@mantine/core';
 import { useDebouncedCallback, useDebouncedValue } from '@mantine/hooks';
-import { notifications } from '@mantine/notifications';
 import { IconPlus, IconSearch, IconTrash } from '@tabler/icons-react';
 import { useCallback, useMemo, useState } from 'react';
 import tagGroupsApi from '../../../api/tag-groups.api';
 import { useTagGroups } from '../../../stores';
 import type { TagGroupRecord } from '../../../stores/records';
 import { useActiveDrawer, useDrawerActions } from '../../../stores/ui-store';
+import {
+    showCreatedNotification,
+    showCreateErrorNotification,
+    showDeletedNotification,
+    showDeleteErrorNotification,
+    showUpdateErrorNotification,
+} from '../../../utils/notifications';
+import { EmptyState } from '../../empty-state';
 import { HoldToConfirmButton } from '../../hold-to-confirm';
 import { SectionDrawer } from '../section-drawer';
 
@@ -94,11 +100,7 @@ function EditableNameCell({
     try {
       await tagGroupsApi.update(groupId, { name: trimmedName, tags });
     } catch {
-      notifications.show({
-        title: initialName,
-        message: <Trans>Failed to update tag group</Trans>,
-        color: 'red',
-      });
+      showUpdateErrorNotification(initialName);
       setName(initialName);
     }
   };
@@ -148,11 +150,7 @@ function EditableTagsCell({
     try {
       await tagGroupsApi.update(groupId, { name, tags: newTags });
     } catch {
-      notifications.show({
-        title: name,
-        message: <Trans>Failed to update tags</Trans>,
-        color: 'red',
-      });
+      showUpdateErrorNotification(name);
       setTags(initialTags);
     }
   }, 300);
@@ -196,17 +194,10 @@ function DeleteSelectedButton({
   const handleDelete = useCallback(async () => {
     try {
       await tagGroupsApi.remove([...selectedIds]);
-      notifications.show({
-        message: <Trans>{count} tag group(s) deleted</Trans>,
-        color: 'green',
-      });
+      showDeletedNotification(count);
       onDeleted();
     } catch {
-      notifications.show({
-        title: <Trans>Error</Trans>,
-        message: <Trans>Failed to delete tag groups</Trans>,
-        color: 'red',
-      });
+      showDeleteErrorNotification();
     }
   }, [selectedIds, count, onDeleted]);
 
@@ -246,18 +237,10 @@ function CreateTagGroupForm() {
     setIsCreating(true);
     try {
       await tagGroupsApi.create({ name: trimmedName, tags: [] });
-      notifications.show({
-        title: trimmedName,
-        message: <Trans>Tag group created</Trans>,
-        color: 'green',
-      });
+      showCreatedNotification(trimmedName);
       setName('');
     } catch {
-      notifications.show({
-        title: <Trans>Error</Trans>,
-        message: <Trans>Failed to create tag group</Trans>,
-        color: 'red',
-      });
+      showCreateErrorNotification(trimmedName);
     } finally {
       setIsCreating(false);
     }
@@ -352,11 +335,7 @@ function TagGroupsTable({
   onToggleSelectAll: () => void;
 }) {
   if (groups.length === 0) {
-    return (
-      <Text c="dimmed" ta="center" py="xl">
-        <Trans>No tag groups found</Trans>
-      </Text>
-    );
+    return <EmptyState preset="no-results" />;
   }
 
   const allSelected = groups.length > 0 && groups.every((g) => selectedIds.has(g.id));
