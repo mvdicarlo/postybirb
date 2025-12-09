@@ -8,7 +8,7 @@ import { Box, Divider, Loader, ScrollArea, Stack, Text } from '@mantine/core';
 import { useMemo } from 'react';
 import accountApi from '../../../api/account.api';
 import { useAccounts, useAccountsLoading } from '../../../stores/account-store';
-import { useAccountsFilter } from '../../../stores/ui-store';
+import { useAccountsFilter, useUIStore } from '../../../stores/ui-store';
 import { useWebsites, useWebsitesLoading } from '../../../stores/website-store';
 import { AccountLoginFilter } from '../../../types/account-filters';
 import {
@@ -27,25 +27,37 @@ import { WebsiteAccountCard } from './website-account-card';
 interface AccountsSectionProps {
   /** Current view state */
   viewState: ViewState;
-  /** Callback when an item is selected */
-  onItemSelect?: (itemId: string) => void;
 }
 
 /**
  * Section panel content for the accounts view.
  * Displays a list of accounts organized by website with filtering.
  */
-export function AccountsSection({ viewState, onItemSelect }: AccountsSectionProps) {
+export function AccountsSection({ viewState }: AccountsSectionProps) {
   const websites = useWebsites();
   const accounts = useAccounts();
   const { isLoading: websitesLoading } = useWebsitesLoading();
   const { isLoading: accountsLoading } = useAccountsLoading();
   const { searchQuery, loginFilter, hiddenWebsites } = useAccountsFilter();
+  const setViewState = useUIStore((state) => state.setViewState);
 
   // Get selected account ID from view state
   const selectedAccountId = isAccountsViewState(viewState)
     ? viewState.params.selectedId
     : null;
+
+  // Handle selecting an account (updates view state)
+  const handleSelectAccount = (accountId: string) => {
+    if (isAccountsViewState(viewState)) {
+      setViewState({
+        ...viewState,
+        params: {
+          ...viewState.params,
+          selectedId: accountId,
+        },
+      });
+    }
+  };
 
   // Handle deleting an account
   const handleDeleteAccount = async (accountId: string) => {
@@ -190,11 +202,8 @@ export function AccountsSection({ viewState, onItemSelect }: AccountsSectionProp
                 website={website}
                 accounts={getFilteredAccounts(website.id)}
                 selectedAccountId={selectedAccountId}
-                onAccountSelect={(accountId) => onItemSelect?.(accountId)}
-                onLoginRequest={(accountId) => {
-                  // For now, just select the account - login UI will be in content area
-                  onItemSelect?.(accountId);
-                }}
+                onAccountSelect={handleSelectAccount}
+                onLoginRequest={handleSelectAccount}
                 onDeleteAccount={handleDeleteAccount}
                 onResetAccount={handleResetAccount}
               />

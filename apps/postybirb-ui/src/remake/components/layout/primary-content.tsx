@@ -9,11 +9,10 @@ import { IconHome } from '@tabler/icons-react';
 import '../../styles/layout.css';
 import { isHomeViewState, type ViewState } from '../../types/view-state';
 import {
-    AccountsContent,
-    FileSubmissionsContent,
-    MessageSubmissionsContent,
+  AccountsContent,
+  FileSubmissionsContent,
+  MessageSubmissionsContent,
 } from '../sections';
-import { ContentNavbar } from './content-navbar';
 
 interface PrimaryContentProps {
   /** Current view state */
@@ -72,12 +71,12 @@ export function PrimaryContent({ viewState, loading = false }: PrimaryContentPro
   return (
     <Box className="postybirb__primary_content">
       {/* Content Navbar with Pagination */}
-      <ContentNavbar
+      {/* <ContentNavbar
         config={{
           showPagination: false,
           title: undefined,
         }}
-      />
+      /> */}
 
       {/* Scrollable content area */}
       <Box className="postybirb__primary_content_area" pos="relative">

@@ -202,22 +202,20 @@ function AccountRow({
 
       {/* Action buttons */}
       <Group gap={4} wrap="nowrap">
-        {/* Login button - only show when not logged in */}
-        {!account.isLoggedIn && !account.isPending && (
-          <Tooltip label={<Trans>Login</Trans>}>
-            <ActionIcon
-              size="xs"
-              variant="subtle"
-              color="blue"
-              onClick={(e) => {
-                e.stopPropagation();
-                onLoginRequest?.();
-              }}
-            >
-              <IconLogin size={12} />
-            </ActionIcon>
-          </Tooltip>
-        )}
+        {/* Login button */}
+        <Tooltip label={<Trans>Login</Trans>}>
+          <ActionIcon
+            size="xs"
+            variant="subtle"
+            color="blue"
+            onClick={(e) => {
+              e.stopPropagation();
+              onLoginRequest?.();
+            }}
+          >
+            <IconLogin size={14} />
+          </ActionIcon>
+        </Tooltip>
 
         {/* Reset button with confirmation popover */}
         <Popover
@@ -238,7 +236,7 @@ function AccountRow({
                   openResetPopover();
                 }}
               >
-                <IconRefresh size={12} />
+                <IconRefresh size={14} />
               </ActionIcon>
             </Tooltip>
           </Popover.Target>
@@ -271,7 +269,7 @@ function AccountRow({
               color="red"
               onConfirm={() => onDelete?.()}
             >
-              <IconTrash size={12} />
+              <IconTrash size={14} />
             </HoldToConfirmButton>
           </Box>
         </Tooltip>
@@ -293,7 +291,8 @@ export function WebsiteAccountCard({
   onResetAccount,
 }: WebsiteAccountCardProps) {
   const { t } = useLingui();
-  const [expanded, { toggle }] = useDisclosure(true);
+  // Default to collapsed if no accounts, expanded otherwise
+  const [expanded, { toggle }] = useDisclosure(accounts.length > 0);
   const [addPopoverOpened, { open: openAddPopover, close: closeAddPopover }] =
     useDisclosure(false);
   const [newAccountName, setNewAccountName] = useState('');

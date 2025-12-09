@@ -9,15 +9,13 @@ import { isFileSubmissionsViewState, type ViewState } from '../../../types/view-
 interface FileSubmissionsSectionProps {
   /** Current view state */
   viewState: ViewState;
-  /** Callback when an item is selected */
-  onItemSelect?: (itemId: string) => void;
 }
 
 /**
  * Section panel content for the file submissions view.
  * Displays a list of file submissions.
  */
-export function FileSubmissionsSection({ viewState, onItemSelect }: FileSubmissionsSectionProps) {
+export function FileSubmissionsSection({ viewState }: FileSubmissionsSectionProps) {
   return (
     <Box p="md">
       <Text size="sm" c="dimmed">

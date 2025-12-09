@@ -15,33 +15,19 @@ import {
 interface SectionPanelProps {
   /** Current view state */
   viewState: ViewState;
-  /** Callback when an item is selected in the section panel */
-  onItemSelect?: (itemId: string) => void;
 }
 
 /**
  * Renders section-specific content based on view state type.
  */
-function SectionContent({ viewState, onItemSelect }: SectionPanelProps) {
+function SectionContent({ viewState }: SectionPanelProps) {
   switch (viewState.type) {
     case 'accounts':
-      return (
-        <AccountsSection viewState={viewState} onItemSelect={onItemSelect} />
-      );
+      return <AccountsSection viewState={viewState} />;
     case 'file-submissions':
-      return (
-        <FileSubmissionsSection
-          viewState={viewState}
-          onItemSelect={onItemSelect}
-        />
-      );
+      return <FileSubmissionsSection viewState={viewState} />;
     case 'message-submissions':
-      return (
-        <MessageSubmissionsSection
-          viewState={viewState}
-          onItemSelect={onItemSelect}
-        />
-      );
+      return <MessageSubmissionsSection viewState={viewState} />;
     default:
       return null;
   }
@@ -51,7 +37,7 @@ function SectionContent({ viewState, onItemSelect }: SectionPanelProps) {
  * Left panel component that displays section-specific list content.
  * Only renders when the current view state has a section panel configured.
  */
-export function SectionPanel({ viewState, onItemSelect }: SectionPanelProps) {
+export function SectionPanel({ viewState }: SectionPanelProps) {
   const config = getSectionPanelConfig(viewState);
 
   // Don't render if this section doesn't have a panel
@@ -64,7 +50,7 @@ export function SectionPanel({ viewState, onItemSelect }: SectionPanelProps) {
       className="postybirb__section_panel"
       style={{ width: config.defaultWidth }}
     >
-      <SectionContent viewState={viewState} onItemSelect={onItemSelect} />
+      <SectionContent viewState={viewState} />
     </Box>
   );
 }

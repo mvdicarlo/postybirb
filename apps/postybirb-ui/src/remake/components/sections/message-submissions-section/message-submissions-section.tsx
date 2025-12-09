@@ -9,15 +9,13 @@ import { isMessageSubmissionsViewState, type ViewState } from '../../../types/vi
 interface MessageSubmissionsSectionProps {
   /** Current view state */
   viewState: ViewState;
-  /** Callback when an item is selected */
-  onItemSelect?: (itemId: string) => void;
 }
 
 /**
  * Section panel content for the message submissions view.
  * Displays a list of message submissions.
  */
-export function MessageSubmissionsSection({ viewState, onItemSelect }: MessageSubmissionsSectionProps) {
+export function MessageSubmissionsSection({ viewState }: MessageSubmissionsSectionProps) {
   return (
     <Box p="md">
       <Text size="sm" c="dimmed">
