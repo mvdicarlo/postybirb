@@ -1,10 +1,12 @@
 /**
  * SectionDrawer - Custom drawer that slides out from the section panel area.
  * Uses Portal to render into .postybirb__content_split for proper positioning.
- * Includes overlay, focus trap, and keyboard accessibility.
+ * Includes overlay and keyboard accessibility.
+ * Note: FocusTrap is intentionally omitted to avoid conflicts with Mantine's
+ * internal focus management in components like Select/Combobox.
  */
 
-import { Box, CloseButton, FocusTrap, Portal, Title } from '@mantine/core';
+import { Box, CloseButton, Portal, Title } from '@mantine/core';
 import { useEffect, useRef, useState } from 'react';
 import '../../styles/layout.css';
 import { cn } from '../../utils/class-names';
@@ -20,8 +22,6 @@ export interface SectionDrawerProps {
   children: React.ReactNode;
   /** Optional custom width (default: 360px via CSS) */
   width?: number | string;
-  /** Whether to trap focus inside the drawer (default: true) */
-  trapFocus?: boolean;
   /** Whether to close on Escape key (default: true) */
   closeOnEscape?: boolean;
   /** Whether to close on overlay click (default: true) */
@@ -38,7 +38,6 @@ export function SectionDrawer({
   title,
   children,
   width,
-  trapFocus = true,
   closeOnEscape = true,
   closeOnClickOutside = true,
 }: SectionDrawerProps) {
@@ -104,37 +103,35 @@ export function SectionDrawer({
       />
 
       {/* Drawer Panel */}
-      <FocusTrap active={opened && trapFocus}>
-        <Box
-          ref={drawerRef}
-          className={cn(
-            ['postybirb__section_drawer'],
-            { 'postybirb__section_drawer--open': opened }
-          )}
-          style={drawerStyle}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="section-drawer-title"
-        >
-          {/* Header */}
-          <Box className="postybirb__section_drawer_header">
-            <Title order={4} id="section-drawer-title">
-              {title}
-            </Title>
-            <CloseButton
-              onClick={onClose}
-              // eslint-disable-next-line lingui/no-unlocalized-strings
-              aria-label="Close drawer"
-              size="md"
-            />
-          </Box>
-
-          {/* Body */}
-          <Box className="postybirb__section_drawer_body">
-            {children}
-          </Box>
+      <Box
+        ref={drawerRef}
+        className={cn(
+          ['postybirb__section_drawer'],
+          { 'postybirb__section_drawer--open': opened }
+        )}
+        style={drawerStyle}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="section-drawer-title"
+      >
+        {/* Header */}
+        <Box className="postybirb__section_drawer_header">
+          <Title order={4} id="section-drawer-title">
+            {title}
+          </Title>
+          <CloseButton
+            onClick={onClose}
+            // eslint-disable-next-line lingui/no-unlocalized-strings
+            aria-label="Close drawer"
+            size="md"
+          />
         </Box>
-      </FocusTrap>
+
+        {/* Body - only render content when opened to avoid ref issues */}
+        <Box className="postybirb__section_drawer_body">
+          {opened && children}
+        </Box>
+      </Box>
     </Portal>
   );
 }

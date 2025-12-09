@@ -5,39 +5,41 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-  IconBell,
-  IconBlockquote,
-  IconBrandDiscord,
-  IconCoffee,
-  IconFile,
-  IconHome,
-  IconMessage,
-  IconSearch,
-  IconSettings,
-  IconTags,
-  IconTransform,
-  IconUser,
-  IconUsers,
+    IconBell,
+    IconBlockquote,
+    IconBrandDiscord,
+    IconCoffee,
+    IconFile,
+    IconFolderSearch,
+    IconHome,
+    IconMessage,
+    IconSearch,
+    IconSettings,
+    IconTags,
+    IconTransform,
+    IconUser,
+    IconUsers,
 } from '@tabler/icons-react';
 import type { NavigationItem, SubNavConfig } from '../types/navigation';
 import {
-  createFileSubmissionsViewState,
-  createMessageSubmissionsViewState,
-  defaultViewState,
+    createFileSubmissionsViewState,
+    createMessageSubmissionsViewState,
+    defaultViewState,
 } from '../types/view-state';
 import { openUrl } from '../utils';
 import {
-  AccountKeybinding,
-  CustomShortcutsKeybinding,
-  FileSubmissionsKeybinding,
-  HomeKeybinding,
-  MessageSubmissionsKeybinding,
-  NotificationsKeybinding,
-  SettingsKeybinding,
-  SpotlightKeybinding,
-  TagConvertersKeybinding,
-  TagGroupsKeybinding,
-  UserConvertersKeybinding,
+    AccountKeybinding,
+    CustomShortcutsKeybinding,
+    FileSubmissionsKeybinding,
+    FileWatchersKeybinding,
+    HomeKeybinding,
+    MessageSubmissionsKeybinding,
+    NotificationsKeybinding,
+    SettingsKeybinding,
+    SpotlightKeybinding,
+    TagConvertersKeybinding,
+    TagGroupsKeybinding,
+    UserConvertersKeybinding,
 } from './keybindings';
 
 /**
@@ -136,6 +138,14 @@ export const navItems: NavigationItem[] = [
     label: <Trans>Custom Shortcuts</Trans>,
     drawerKey: 'customShortcuts',
     kbd: CustomShortcutsKeybinding,
+  },
+  {
+    type: 'drawer',
+    id: 'file-watchers',
+    icon: <IconFolderSearch size={20} />,
+    label: <Trans>File Watchers</Trans>,
+    drawerKey: 'fileWatchers',
+    kbd: FileWatchersKeybinding,
   },
   {
     type: 'drawer',

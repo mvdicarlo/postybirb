@@ -1,9 +1,10 @@
 /**
  * Directory Watcher Store - Zustand store for directory watcher entities.
- * Note: No websocket event exists for directory watchers.
  */
 
+import { DIRECTORY_WATCHER_UPDATES } from '@postybirb/socket-events';
 import type { DirectoryWatcherDto } from '@postybirb/types';
+import { useShallow } from 'zustand/react/shallow';
 import directoryWatchersApi from '../api/directory-watchers.api';
 import { type EntityStore } from './create-entity-store';
 import { createTypedStore } from './create-typed-store';
@@ -23,7 +24,7 @@ export const {
   createRecord: (dto) => new DirectoryWatcherRecord(dto),
   // eslint-disable-next-line lingui/no-unlocalized-strings
   storeName: 'DirectoryWatcherStore',
-  // No websocket event for directory watchers
+  websocketEvent: DIRECTORY_WATCHER_UPDATES,
 });
 
 /**
@@ -37,6 +38,9 @@ export type DirectoryWatcherStore = EntityStore<DirectoryWatcherRecord>;
 
 /**
  * Select watchers with valid paths configured.
+ * Uses useShallow for stable reference when items haven't changed.
  */
 export const useActiveDirectoryWatchers = () =>
-  useDirectoryWatcherStore((state) => state.records.filter((w) => w.hasPath));
+  useDirectoryWatcherStore(
+    useShallow((state) => state.records.filter((w) => w.hasPath))
+  );

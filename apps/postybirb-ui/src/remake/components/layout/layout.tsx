@@ -18,6 +18,7 @@ import { cn } from '../../utils/class-names';
 import {
     AccountDrawer,
     CustomShortcutsDrawer,
+    FileWatcherDrawer,
     NotificationsDrawer,
     SettingsDialog,
     TagConverterDrawer,
@@ -82,6 +83,7 @@ export function Layout() {
         <UserConverterDrawer />
         <NotificationsDrawer />
         <CustomShortcutsDrawer />
+        <FileWatcherDrawer />
       </Box>
     </Box>
   );

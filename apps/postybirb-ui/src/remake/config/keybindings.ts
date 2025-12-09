@@ -18,6 +18,7 @@ export const MessageSubmissionsKeybinding = 'Alt+M';
 export const NotificationsKeybinding = 'Alt+N';
 export const FileSubmissionsKeybinding = 'Alt+F';
 export const CustomShortcutsKeybinding = 'Alt+D';
+export const FileWatchersKeybinding = 'Alt+W';
 
 /**
  * Editor keybindings

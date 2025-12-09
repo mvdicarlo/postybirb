@@ -18,7 +18,8 @@ export type DrawerKey =
   | 'tagConverters'
   | 'userConverters'
   | 'notifications'
-  | 'customShortcuts';
+  | 'customShortcuts'
+  | 'fileWatchers';
 
 /**
  * Sub-navigation filter options.

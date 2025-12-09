@@ -4,7 +4,7 @@
  */
 
 import { ActionIcon, type ActionIconProps, Progress } from '@mantine/core';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
 
 /** Default duration in ms to hold before confirming */
 const DEFAULT_HOLD_DURATION = 1000;
@@ -99,15 +99,20 @@ export interface HoldToConfirmButtonProps
  * An ActionIcon that requires holding down to confirm an action.
  * Shows a progress bar that fills as the user holds.
  */
-export function HoldToConfirmButton({
-  onConfirm,
-  duration,
-  progressColor,
-  disabled,
-  children,
-  color,
-  ...props
-}: HoldToConfirmButtonProps) {
+export const HoldToConfirmButton = forwardRef<
+  HTMLButtonElement,
+  HoldToConfirmButtonProps
+>((props, ref) => {
+  const {
+    onConfirm,
+    duration,
+    progressColor,
+    disabled,
+    children,
+    color,
+    ...rest
+  } = props;
+
   const { progress, isHolding, startHold, stopHold } = useHoldToConfirm({
     onConfirm,
     disabled,
@@ -135,7 +140,8 @@ export function HoldToConfirmButton({
 
   return (
     <ActionIcon
-      {...props}
+      ref={ref}
+      {...rest}
       color={color}
       disabled={disabled}
       onMouseDown={startHold}
@@ -143,7 +149,7 @@ export function HoldToConfirmButton({
       onMouseLeave={stopHold}
       onKeyDown={handleKeyDown}
       onKeyUp={handleKeyUp}
-      style={{ position: 'relative', overflow: 'hidden', ...props.style }}
+      style={{ position: 'relative', overflow: 'hidden', ...rest.style }}
     >
       {isHolding && (
         <Progress
@@ -162,4 +168,7 @@ export function HoldToConfirmButton({
       {children}
     </ActionIcon>
   );
-}
+});
+
+// eslint-disable-next-line lingui/no-unlocalized-strings
+HoldToConfirmButton.displayName = 'HoldToConfirmButton';

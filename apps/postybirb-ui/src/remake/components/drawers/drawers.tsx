@@ -24,6 +24,9 @@ export { TagConverterDrawer } from './tag-converter-drawer';
 // Re-export the UserConverterDrawer
 export { UserConverterDrawer } from './user-converter-drawer';
 
+// Re-export the FileWatcherDrawer
+export { FileWatcherDrawer } from './file-watcher-drawer';
+
 /**
  * Props for stub drawer components.
  */

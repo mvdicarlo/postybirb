@@ -9,6 +9,7 @@ import {
     AccountKeybinding,
     CustomShortcutsKeybinding,
     FileSubmissionsKeybinding,
+    FileWatchersKeybinding,
     HomeKeybinding,
     MessageSubmissionsKeybinding,
     NotificationsKeybinding,
@@ -77,6 +78,10 @@ export function useKeybindings(): void {
       [toTinykeysFormat(CustomShortcutsKeybinding)]: (event: KeyboardEvent) => {
         event.preventDefault();
         toggleDrawer('customShortcuts');
+      },
+      [toTinykeysFormat(FileWatchersKeybinding)]: (event: KeyboardEvent) => {
+        event.preventDefault();
+        toggleDrawer('fileWatchers');
       },
     });
 

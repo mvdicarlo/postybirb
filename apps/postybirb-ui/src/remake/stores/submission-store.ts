@@ -70,49 +70,70 @@ export const useSubmission = (id: SubmissionId) =>
 
 /**
  * Select submissions by type (FILE or MESSAGE).
+ * Uses useShallow for stable reference when items haven't changed.
  */
 export const useSubmissionsByType = (type: SubmissionType) =>
-  useSubmissionStore((state) => state.records.filter((s) => s.type === type));
+  useSubmissionStore(
+    useShallow((state) => state.records.filter((s) => s.type === type))
+  );
 
 /**
  * Select non-template, non-multi submissions (regular submissions).
+ * Uses useShallow for stable reference when items haven't changed.
  */
 export const useRegularSubmissions = () =>
-  useSubmissionStore((state) =>
-    state.records.filter((s) => !s.isTemplate && !s.isMultiSubmission)
+  useSubmissionStore(
+    useShallow((state) =>
+      state.records.filter((s) => !s.isTemplate && !s.isMultiSubmission)
+    )
   );
 
 /**
  * Select template submissions.
+ * Uses useShallow for stable reference when items haven't changed.
  */
 export const useTemplateSubmissions = () =>
-  useSubmissionStore((state) => state.records.filter((s) => s.isTemplate));
+  useSubmissionStore(
+    useShallow((state) => state.records.filter((s) => s.isTemplate))
+  );
 
 /**
  * Select scheduled submissions.
+ * Uses useShallow for stable reference when items haven't changed.
  */
 export const useScheduledSubmissions = () =>
-  useSubmissionStore((state) =>
-    state.records.filter((s) => s.isScheduled && !s.isArchived)
+  useSubmissionStore(
+    useShallow((state) =>
+      state.records.filter((s) => s.isScheduled && !s.isArchived)
+    )
   );
 
 /**
  * Select archived submissions.
+ * Uses useShallow for stable reference when items haven't changed.
  */
 export const useArchivedSubmissions = () =>
-  useSubmissionStore((state) => state.records.filter((s) => s.isArchived));
+  useSubmissionStore(
+    useShallow((state) => state.records.filter((s) => s.isArchived))
+  );
 
 /**
  * Select queued submissions.
+ * Uses useShallow for stable reference when items haven't changed.
  */
 export const useQueuedSubmissions = () =>
-  useSubmissionStore((state) => state.records.filter((s) => s.isQueued));
+  useSubmissionStore(
+    useShallow((state) => state.records.filter((s) => s.isQueued))
+  );
 
 /**
  * Select submissions with errors.
+ * Uses useShallow for stable reference when items haven't changed.
  */
 export const useSubmissionsWithErrors = () =>
-  useSubmissionStore((state) => state.records.filter((s) => s.hasErrors));
+  useSubmissionStore(
+    useShallow((state) => state.records.filter((s) => s.hasErrors))
+  );
 
 /**
  * Select submission store actions.

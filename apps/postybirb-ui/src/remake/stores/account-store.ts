@@ -70,23 +70,29 @@ export const useAccount = (id: AccountId) =>
 
 /**
  * Select only logged-in accounts.
+ * Uses useShallow for stable reference when items haven't changed.
  */
 export const useLoggedInAccounts = () =>
-  useAccountStore((state) => state.records.filter((acc) => acc.isLoggedIn));
+  useAccountStore(
+    useShallow((state) => state.records.filter((acc) => acc.isLoggedIn))
+  );
 
 /**
  * Select accounts grouped by website.
+ * Uses useShallow for stable reference when items haven't changed.
  */
 export const useAccountsByWebsite = () =>
-  useAccountStore((state) => {
-    const grouped = new Map<string, AccountRecord[]>();
-    state.records.forEach((account) => {
-      const existing = grouped.get(account.website) ?? [];
-      existing.push(account);
-      grouped.set(account.website, existing);
-    });
-    return grouped;
-  });
+  useAccountStore(
+    useShallow((state) => {
+      const grouped = new Map<string, AccountRecord[]>();
+      state.records.forEach((account) => {
+        const existing = grouped.get(account.website) ?? [];
+        existing.push(account);
+        grouped.set(account.website, existing);
+      });
+      return grouped;
+    })
+  );
 
 /**
  * Select account store actions.

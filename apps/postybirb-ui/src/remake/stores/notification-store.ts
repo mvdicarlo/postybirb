@@ -127,9 +127,12 @@ export const useNotificationsLoading = () =>
 
 /**
  * Select unread notifications.
+ * Uses useShallow for stable reference when items haven't changed.
  */
 export const useUnreadNotifications = () =>
-  useNotificationStore((state) => state.records.filter((n) => n.isUnread));
+  useNotificationStore(
+    useShallow((state) => state.records.filter((n) => n.isUnread))
+  );
 
 /**
  * Select unread notification count.
@@ -139,15 +142,21 @@ export const useUnreadNotificationCount = () =>
 
 /**
  * Select error notifications.
+ * Uses useShallow for stable reference when items haven't changed.
  */
 export const useErrorNotifications = () =>
-  useNotificationStore((state) => state.records.filter((n) => n.isError));
+  useNotificationStore(
+    useShallow((state) => state.records.filter((n) => n.isError))
+  );
 
 /**
  * Select warning notifications.
+ * Uses useShallow for stable reference when items haven't changed.
  */
 export const useWarningNotifications = () =>
-  useNotificationStore((state) => state.records.filter((n) => n.isWarning));
+  useNotificationStore(
+    useShallow((state) => state.records.filter((n) => n.isWarning))
+  );
 
 /**
  * Select notification store actions.

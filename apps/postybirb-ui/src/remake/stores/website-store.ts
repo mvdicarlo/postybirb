@@ -183,18 +183,24 @@ export const useWebsite = (id: WebsiteId) =>
 
 /**
  * Select websites that support file submissions.
+ * Uses useShallow for stable reference when items haven't changed.
  */
 export const useFileWebsites = () =>
-  useWebsiteStore((state) =>
-    state.websites.filter((website) => website.supportsFile)
+  useWebsiteStore(
+    useShallow((state) =>
+      state.websites.filter((website) => website.supportsFile)
+    )
   );
 
 /**
  * Select websites that support message submissions.
+ * Uses useShallow for stable reference when items haven't changed.
  */
 export const useMessageWebsites = () =>
-  useWebsiteStore((state) =>
-    state.websites.filter((website) => website.supportsMessage)
+  useWebsiteStore(
+    useShallow((state) =>
+      state.websites.filter((website) => website.supportsMessage)
+    )
   );
 
 /**
