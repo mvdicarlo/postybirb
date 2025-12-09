@@ -10,6 +10,7 @@ import { Box, CloseButton, Portal, Title } from '@mantine/core';
 import { useEffect, useRef, useState } from 'react';
 import '../../styles/layout.css';
 import { cn } from '../../utils/class-names';
+import { ComponentErrorBoundary } from '../error-boundary';
 
 export interface SectionDrawerProps {
   /** Whether the drawer is open */
@@ -94,10 +95,9 @@ export function SectionDrawer({
     <Portal target={portalTarget}>
       {/* Overlay */}
       <Box
-        className={cn(
-          ['postybirb__section_drawer_overlay'],
-          { 'postybirb__section_drawer_overlay--visible': opened }
-        )}
+        className={cn(['postybirb__section_drawer_overlay'], {
+          'postybirb__section_drawer_overlay--visible': opened,
+        })}
         onClick={handleOverlayClick}
         aria-hidden="true"
       />
@@ -105,10 +105,9 @@ export function SectionDrawer({
       {/* Drawer Panel */}
       <Box
         ref={drawerRef}
-        className={cn(
-          ['postybirb__section_drawer'],
-          { 'postybirb__section_drawer--open': opened }
-        )}
+        className={cn(['postybirb__section_drawer'], {
+          'postybirb__section_drawer--open': opened,
+        })}
         style={drawerStyle}
         role="dialog"
         aria-modal="true"
@@ -129,7 +128,7 @@ export function SectionDrawer({
 
         {/* Body - only render content when opened to avoid ref issues */}
         <Box className="postybirb__section_drawer_body">
-          {opened && children}
+          <ComponentErrorBoundary>{opened && children}</ComponentErrorBoundary>
         </Box>
       </Box>
     </Portal>

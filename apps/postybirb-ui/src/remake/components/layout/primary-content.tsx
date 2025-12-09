@@ -8,6 +8,7 @@ import { Box, Center, LoadingOverlay, Stack, Text, Title } from '@mantine/core';
 import { IconHome } from '@tabler/icons-react';
 import '../../styles/layout.css';
 import { isHomeViewState, type ViewState } from '../../types/view-state';
+import { ComponentErrorBoundary } from '../error-boundary';
 import {
   AccountsContent,
   FileSubmissionsContent,
@@ -34,7 +35,8 @@ function HomeContent() {
         </Title>
         <Text size="sm" c="dimmed" ta="center" maw={400}>
           <Trans>
-            Select a section from the sidebar to get started, or create a new submission.
+            Select a section from the sidebar to get started, or create a new
+            submission.
           </Trans>
         </Text>
       </Stack>
@@ -67,7 +69,10 @@ function ViewContent({ viewState }: PrimaryContentProps) {
  * Displays detail view for the currently selected item(s) in the active section.
  * Includes content navbar at the top for pagination and actions.
  */
-export function PrimaryContent({ viewState, loading = false }: PrimaryContentProps) {
+export function PrimaryContent({
+  viewState,
+  loading = false,
+}: PrimaryContentProps) {
   return (
     <Box className="postybirb__primary_content">
       {/* Content Navbar with Pagination */}
@@ -85,7 +90,9 @@ export function PrimaryContent({ viewState, loading = false }: PrimaryContentPro
           zIndex={10}
           overlayProps={{ radius: 'sm', blur: 2 }}
         />
-        <ViewContent viewState={viewState} />
+        <ComponentErrorBoundary>
+          <ViewContent viewState={viewState} />
+        </ComponentErrorBoundary>
       </Box>
     </Box>
   );

@@ -27,6 +27,12 @@ export const {
 });
 
 /**
+ * Export the store for direct access outside of React components.
+ * Used by BlockNote inline content specs that render outside React context.
+ */
+export const customShortcutStoreRef = useCustomShortcutStore;
+
+/**
  * Type alias for the custom shortcut store.
  */
 export type CustomShortcutStore = EntityStore<CustomShortcutRecord>;

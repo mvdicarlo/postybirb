@@ -47,6 +47,7 @@ export {
 
 // Custom Shortcut Store
 export {
+    customShortcutStoreRef,
     useCustomShortcutActions, useCustomShortcutStore,
     useCustomShortcuts, useCustomShortcutsLoading, useCustomShortcutsMap, type CustomShortcutStore
 } from './custom-shortcut-store';

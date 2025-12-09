@@ -1,3 +1,4 @@
+import { de, en, es, ru } from '@blocknote/core/locales';
 import { msg } from '@lingui/core/macro';
 import 'dayjs/locale/de';
 import 'dayjs/locale/es';
@@ -36,4 +37,15 @@ export const calendarLanguageMap: Record<string, string> = {
   ru: 'ru-RU',
   es: 'pt-BR',
   ta: 'ta-IN',
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const blockNoteLocaleLanguageMap: Record<string, any> = {
+  'pt-BR': es,
+  en,
+  de,
+  lt: en,
+  ru,
+  es,
+  ta: en,
 };

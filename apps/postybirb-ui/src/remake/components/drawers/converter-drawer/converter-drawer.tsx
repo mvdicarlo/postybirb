@@ -9,38 +9,38 @@
 import { t } from '@lingui/core/macro';
 import { Trans } from '@lingui/react/macro';
 import {
-    ActionIcon,
-    Badge,
-    Box,
-    Card,
-    Checkbox,
-    Collapse,
-    Combobox,
-    Group,
-    ScrollArea,
-    Stack,
-    Text,
-    TextInput,
-    Tooltip,
-    useCombobox,
+  ActionIcon,
+  Badge,
+  Box,
+  Card,
+  Checkbox,
+  Collapse,
+  Combobox,
+  Group,
+  ScrollArea,
+  Stack,
+  Text,
+  TextInput,
+  Tooltip,
+  useCombobox,
 } from '@mantine/core';
 import { useDebouncedCallback, useDebouncedValue } from '@mantine/hooks';
 import {
-    IconChevronDown,
-    IconChevronRight,
-    IconPlus,
-    IconTrash,
-    IconX,
+  IconChevronDown,
+  IconChevronRight,
+  IconPlus,
+  IconTrash,
+  IconX,
 } from '@tabler/icons-react';
 import { useCallback, useMemo, useState } from 'react';
 import type { BaseRecord } from '../../../stores/records/base-record';
 import { useWebsites } from '../../../stores/website-store';
 import {
-    showCreatedNotification,
-    showCreateErrorNotification,
-    showDeletedNotification,
-    showDeleteErrorNotification,
-    showUpdateErrorNotification,
+  showCreatedNotification,
+  showCreateErrorNotification,
+  showDeletedNotification,
+  showDeleteErrorNotification,
+  showUpdateErrorNotification,
 } from '../../../utils/notifications';
 import { EmptyState } from '../../empty-state';
 import { HoldToConfirmButton } from '../../hold-to-confirm';
@@ -751,7 +751,7 @@ export function ConverterDrawer<
             flex={1}
             size="sm"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.currentTarget.value)}
+            onChange={setSearchQuery}
             onClear={() => setSearchQuery('')}
           />
           <DeleteSelectedButton

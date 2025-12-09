@@ -6,8 +6,15 @@
 
 import { Trans } from '@lingui/react/macro';
 import { Stack, Text } from '@mantine/core';
-import { type DrawerKey, useActiveDrawer, useDrawerActions } from '../../stores/ui-store';
+import {
+  type DrawerKey,
+  useActiveDrawer,
+  useDrawerActions,
+} from '../../stores/ui-store';
 import { SectionDrawer } from './section-drawer';
+
+// Import the CustomShortcutsDrawer implementation for wrapping
+import { CustomShortcutsDrawer as CustomShortcutsDrawerComponent } from './custom-shortcuts-drawer';
 
 // Re-export the SettingsDialog
 export { SettingsDialog } from '../dialogs/settings-dialog/settings-dialog';
@@ -45,11 +52,7 @@ function StubDrawer({ drawerKey, title }: StubDrawerProps) {
   const opened = activeDrawer === drawerKey;
 
   return (
-    <SectionDrawer
-      opened={opened}
-      onClose={closeDrawer}
-      title={title}
-    >
+    <SectionDrawer opened={opened} onClose={closeDrawer} title={title}>
       <Stack gap="md">
         <Text c="dimmed">
           <Trans>This feature is coming soon.</Trans>
@@ -60,13 +63,15 @@ function StubDrawer({ drawerKey, title }: StubDrawerProps) {
 }
 
 /**
- * Custom shortcuts drawer stub.
+ * Custom shortcuts drawer wrapper.
+ * Connects the drawer to the UI store.
  */
 export function CustomShortcutsDrawer() {
+  const activeDrawer = useActiveDrawer();
+  const { closeDrawer } = useDrawerActions();
+  const opened = activeDrawer === 'customShortcuts';
+
   return (
-    <StubDrawer
-      drawerKey="customShortcuts"
-      title={<Trans>Custom Shortcuts</Trans>}
-    />
+    <CustomShortcutsDrawerComponent opened={opened} onClose={closeDrawer} />
   );
 }

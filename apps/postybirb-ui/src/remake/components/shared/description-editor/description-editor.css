@@ -1,0 +1,22 @@
+/* Description Editor Styles */
+
+/* Make the editor fill its container height */
+.description-editor-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.description-editor-container .bn-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.description-editor-container .bn-editor {
+  flex: 1;
+}
+
+/* Ensure the root element also expands */
+.description-editor-container [data-theming-css-variables-demo] {
+  height: 100%;
+}

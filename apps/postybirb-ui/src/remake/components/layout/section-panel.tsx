@@ -6,6 +6,7 @@
 import { Box } from '@mantine/core';
 import '../../styles/layout.css';
 import { getSectionPanelConfig, type ViewState } from '../../types/view-state';
+import { ComponentErrorBoundary } from '../error-boundary';
 import {
   AccountsSection,
   FileSubmissionsSection,
@@ -50,7 +51,9 @@ export function SectionPanel({ viewState }: SectionPanelProps) {
       className="postybirb__section_panel"
       style={{ width: config.defaultWidth }}
     >
-      <SectionContent viewState={viewState} />
+      <ComponentErrorBoundary>
+        <SectionContent viewState={viewState} />
+      </ComponentErrorBoundary>
     </Box>
   );
 }
