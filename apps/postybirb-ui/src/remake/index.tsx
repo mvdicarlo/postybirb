@@ -11,6 +11,7 @@ import { MantineProvider, useMantineColorScheme } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 import { useEffect, useMemo } from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
+import { Disclaimer } from './components/disclaimer/disclaimer';
 import { PageErrorBoundary } from './components/error-boundary';
 import { Layout } from './components/layout/layout';
 import { I18nProvider } from './providers/i18n-provider';
@@ -85,7 +86,9 @@ export function PostyBirb() {
     >
       <I18nProvider>
         <Notifications zIndex={5000} />
-        <AppContent />
+        <Disclaimer>
+          <AppContent />
+        </Disclaimer>
       </I18nProvider>
     </MantineProvider>
   );
