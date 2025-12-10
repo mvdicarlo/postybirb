@@ -176,4 +176,11 @@ export class SubmissionRecord extends BaseRecord {
 
     return latest;
   }
+
+  /**
+   * Check if the submission has a schedule time or cron expression configured.
+   */
+  get hasScheduleTime(): boolean {
+    return Boolean(this.schedule.scheduledFor || this.schedule.cron);
+  }
 }

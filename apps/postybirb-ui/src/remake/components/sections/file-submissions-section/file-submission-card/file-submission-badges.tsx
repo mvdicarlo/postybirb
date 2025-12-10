@@ -1,0 +1,129 @@
+/**
+ * FileSubmissionBadges - Status badges for file submissions.
+ */
+
+import { Trans } from '@lingui/react/macro';
+import { Badge, Group, Tooltip } from '@mantine/core';
+import {
+    IconAlertTriangle,
+    IconCalendar,
+    IconCircleCheck,
+    IconGlobe,
+    IconLoader,
+    IconX,
+} from '@tabler/icons-react';
+import type { SubmissionRecord } from '../../../../stores/records';
+
+interface FileSubmissionBadgesProps {
+  /** The submission record to display badges for */
+  submission: SubmissionRecord;
+}
+
+/**
+ * Displays status badges for a file submission.
+ * Shows scheduled, queued, errors, warnings, ready, no websites, and file count badges.
+ */
+export function FileSubmissionBadges({
+  submission,
+}: FileSubmissionBadgesProps) {
+  return (
+    <Group gap={4}>
+      {/* Scheduled badge */}
+      {submission.isScheduled && (
+        <Tooltip
+          label={
+            submission.scheduledDate
+              ? submission.scheduledDate.toLocaleString()
+              : undefined
+          }
+        >
+          <Badge
+            size="xs"
+            variant="light"
+            color="blue"
+            leftSection={<IconCalendar size={10} />}
+          >
+            <Trans>Scheduled</Trans>
+          </Badge>
+        </Tooltip>
+      )}
+
+      {/* Queued badge */}
+      {submission.isQueued && (
+        <Badge
+          size="xs"
+          variant="light"
+          color="cyan"
+          leftSection={<IconLoader size={10} />}
+        >
+          <Trans>Queued</Trans>
+        </Badge>
+      )}
+
+      {/* Validation errors */}
+      {submission.hasErrors && (
+        <Tooltip label={<Trans>Has validation errors</Trans>}>
+          <Badge
+            size="xs"
+            variant="light"
+            color="red"
+            leftSection={<IconX size={10} />}
+          >
+            <Trans>Errors</Trans>
+          </Badge>
+        </Tooltip>
+      )}
+
+      {/* Validation warnings */}
+      {submission.hasWarnings && !submission.hasErrors && (
+        <Tooltip label={<Trans>Has validation warnings</Trans>}>
+          <Badge
+            size="xs"
+            variant="light"
+            color="yellow"
+            leftSection={<IconAlertTriangle size={10} />}
+          >
+            <Trans>Warnings</Trans>
+          </Badge>
+        </Tooltip>
+      )}
+
+      {/* Valid badge (no errors/warnings) */}
+      {!submission.hasErrors &&
+        !submission.hasWarnings &&
+        submission.hasWebsiteOptions && (
+          <Tooltip label={<Trans>Ready to post</Trans>}>
+            <Badge
+              size="xs"
+              variant="light"
+              color="green"
+              leftSection={<IconCircleCheck size={10} />}
+            >
+              <Trans>Ready</Trans>
+            </Badge>
+          </Tooltip>
+        )}
+
+      {/* No websites badge */}
+      {!submission.hasWebsiteOptions && (
+        <Tooltip label={<Trans>No websites selected</Trans>}>
+          <Badge
+            size="xs"
+            variant="light"
+            color="gray"
+            leftSection={<IconGlobe size={10} />}
+          >
+            <Trans>No websites</Trans>
+          </Badge>
+        </Tooltip>
+      )}
+
+      {/* Files count */}
+      {submission.files.length > 1 && (
+        <Badge size="xs" variant="outline" color="gray">
+          {submission.files.length} <Trans>files</Trans>
+        </Badge>
+      )}
+    </Group>
+  );
+}

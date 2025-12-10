@@ -57,6 +57,9 @@ export function FileSubmissionsSection({
     ? viewState.params.selectedIds
     : [];
 
+  // Track the last selected item for shift+click range selection
+  const lastSelectedIdRef = useRef<string | null>(null);
+
   // Filter submissions based on search query and filter
   const filteredSubmissions = useMemo(() => {
     let result = fileSubmissions.filter(
@@ -152,16 +155,44 @@ export function FileSubmissionsSection({
 
     let newSelectedIds: string[];
 
-    if (event.ctrlKey || event.metaKey) {
+    if (event.shiftKey && lastSelectedIdRef.current) {
+      // Shift+click: select range from last selected to current
+      const lastIndex = orderedSubmissions.findIndex(
+        (s) => s.id === lastSelectedIdRef.current
+      );
+      const currentIndex = orderedSubmissions.findIndex((s) => s.id === id);
+
+      if (lastIndex !== -1 && currentIndex !== -1) {
+        const startIndex = Math.min(lastIndex, currentIndex);
+        const endIndex = Math.max(lastIndex, currentIndex);
+        const rangeIds = orderedSubmissions
+          .slice(startIndex, endIndex + 1)
+          .map((s) => s.id);
+
+        // Merge with existing selection if Ctrl is also held
+        if (event.ctrlKey || event.metaKey) {
+          const combined = new Set([...selectedIds, ...rangeIds]);
+          newSelectedIds = [...combined];
+        } else {
+          newSelectedIds = rangeIds;
+        }
+      } else {
+        // Fallback to single selection if indices not found
+        newSelectedIds = [id];
+        lastSelectedIdRef.current = id;
+      }
+    } else if (event.ctrlKey || event.metaKey) {
       // Toggle selection with Ctrl/Cmd click
       if (selectedIds.includes(id)) {
         newSelectedIds = selectedIds.filter((sid) => sid !== id);
       } else {
         newSelectedIds = [...selectedIds, id];
       }
+      lastSelectedIdRef.current = id;
     } else {
       // Single selection
       newSelectedIds = [id];
+      lastSelectedIdRef.current = id;
     }
 
     setViewState({
