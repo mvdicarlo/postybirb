@@ -2,6 +2,7 @@
  * Shared types for FileSubmissionCard components.
  */
 
+import { TagValue } from '@postybirb/types';
 import type { SubmissionRecord } from '../../../../stores/records';
 
 /**
@@ -20,6 +21,8 @@ export interface FileSubmissionCardProps {
   onDuplicate?: (id: string) => void;
   /** Handler for editing this submission */
   onEdit?: (id: string) => void;
+  /** Handler for changing the submission tags */
+  onTagsChange?: (id: string, tags: TagValue) => void;
   /** Handler for updating the submission title */
   onTitleChange?: (id: string, title: string) => void;
   /** Handler for posting the submission */

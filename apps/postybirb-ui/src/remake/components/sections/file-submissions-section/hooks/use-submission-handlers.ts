@@ -2,7 +2,7 @@
  * Hook for submission action handlers.
  */
 
-import { SubmissionType } from '@postybirb/types';
+import { SubmissionType, TagValue } from '@postybirb/types';
 import { useCallback, useRef } from 'react';
 import postQueueApi from '../../../../api/post-queue.api';
 import submissionApi from '../../../../api/submission.api';
@@ -10,12 +10,12 @@ import websiteOptionsApi from '../../../../api/website-options.api';
 import type { SubmissionRecord } from '../../../../stores/records';
 import { useUIStore } from '../../../../stores/ui-store';
 import {
-    isFileSubmissionsViewState,
-    type ViewState,
+  isFileSubmissionsViewState,
+  type ViewState,
 } from '../../../../types/view-state';
 import {
-    showDeletedNotification,
-    showDeleteErrorNotification,
+  showDeletedNotification,
+  showDeleteErrorNotification,
 } from '../../../../utils/notifications';
 
 interface UseSubmissionHandlersProps {
@@ -33,7 +33,9 @@ interface UseSubmissionHandlersResult {
   /** Handle creating a new submission (opens file picker) */
   handleCreateSubmission: () => void;
   /** Handle file selection for new submission */
-  handleFileChange: (event: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
+  handleFileChange: (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => Promise<void>;
   /** Handle deleting a submission */
   handleDelete: (id: string) => Promise<void>;
   /** Handle deleting all selected submissions */
@@ -44,6 +46,8 @@ interface UseSubmissionHandlersResult {
   handleDuplicate: (id: string) => Promise<void>;
   /** Handle editing a submission (select it) */
   handleEdit: (id: string) => void;
+  /** Handle changing the submission tags */
+  handleTagsChange: (id: string, tags: TagValue) => Promise<void>;
   /** Handle changing the submission title */
   handleTitleChange: (id: string, title: string) => Promise<void>;
   /** Handle posting a submission */
@@ -77,7 +81,7 @@ export function useSubmissionHandlers({
       try {
         await submissionApi.createFileSubmission(
           SubmissionType.FILE,
-          Array.from(files)
+          Array.from(files),
         );
       } catch {
         // Error handling could be added here
@@ -88,7 +92,7 @@ export function useSubmissionHandlers({
         fileInputRef.current.value = '';
       }
     },
-    []
+    [],
   );
 
   // Handle deleting a submission
@@ -112,7 +116,7 @@ export function useSubmissionHandlers({
         showDeleteErrorNotification();
       }
     },
-    [viewState, selectedIds, setViewState]
+    [viewState, selectedIds, setViewState],
   );
 
   // Handle deleting all selected submissions
@@ -196,7 +200,7 @@ export function useSubmissionHandlers({
         },
       });
     },
-    [viewState, setViewState]
+    [viewState, setViewState],
   );
 
   // Handle changing the submission title
@@ -219,7 +223,30 @@ export function useSubmissionHandlers({
         // Error handling could be added here
       }
     },
-    [allSubmissions]
+    [allSubmissions],
+  );
+
+  // Handle changing the submission tags
+  const handleTagsChange = useCallback(
+    async (id: string, tags: TagValue) => {
+      const submission = allSubmissions.find((s) => s.id === id);
+      if (!submission) return;
+
+      const defaultOptions = submission.getDefaultOptions();
+      if (!defaultOptions) return;
+
+      try {
+        await websiteOptionsApi.update(defaultOptions.id, {
+          data: {
+            ...defaultOptions.data,
+            tags,
+          },
+        });
+      } catch {
+        // Error handling could be added here
+      }
+    },
+    [allSubmissions],
   );
 
   // Handle posting a submission
@@ -246,7 +273,7 @@ export function useSubmissionHandlers({
       });
       // TODO: Open schedule modal or panel
     },
-    [viewState, setViewState]
+    [viewState, setViewState],
   );
 
   return {
@@ -257,6 +284,7 @@ export function useSubmissionHandlers({
     handleDeleteSelected,
     handleDuplicate,
     handleEdit,
+    handleTagsChange,
     handleTitleChange,
     handlePost,
     handlePostSelected,

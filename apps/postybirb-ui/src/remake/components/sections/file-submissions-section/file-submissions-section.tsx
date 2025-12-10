@@ -79,6 +79,7 @@ export function FileSubmissionsSection({
     handleDeleteSelected,
     handleDuplicate,
     handleEdit,
+    handleTagsChange,
     handleTitleChange,
     handlePost,
     handlePostSelected,
@@ -236,6 +237,7 @@ export function FileSubmissionsSection({
           onDelete={handleDelete}
           onDuplicate={handleDuplicate}
           onEdit={handleEdit}
+          onTagsChange={handleTagsChange}
           onTitleChange={handleTitleChange}
           onPost={handlePost}
           onSchedule={handleSchedule}

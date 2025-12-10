@@ -4,6 +4,7 @@
  */
 
 import { Box, Card, Group, Stack, Text } from '@mantine/core';
+import { TagValue } from '@postybirb/types';
 import { IconClock, IconGripVertical } from '@tabler/icons-react';
 import clsx from 'clsx';
 import moment from 'moment/min/moment-with-locales';
@@ -11,6 +12,7 @@ import { useCallback } from 'react';
 import '../file-submissions-section.css';
 import { FileSubmissionActions } from './file-submission-actions';
 import { FileSubmissionBadges } from './file-submission-badges';
+import { FileSubmissionQuickEditActions } from './file-submission-quick-edit-actions';
 import { FileSubmissionThumbnail } from './file-submission-thumbnail';
 import { FileSubmissionTitle } from './file-submission-title';
 import type { FileSubmissionCardProps } from './types';
@@ -26,6 +28,7 @@ export function FileSubmissionCard({
   onDelete,
   onDuplicate,
   onEdit,
+  onTagsChange,
   onTitleChange,
   onPost,
   onSchedule,
@@ -38,14 +41,21 @@ export function FileSubmissionCard({
     (event: React.MouseEvent) => {
       onSelect?.(submission.id, event);
     },
-    [onSelect, submission.id]
+    [onSelect, submission.id],
+  );
+
+  const handleTagsChange = useCallback(
+    (tags: TagValue) => {
+      onTagsChange?.(submission.id, tags);
+    },
+    [onTagsChange, submission.id],
   );
 
   const handleTitleChange = useCallback(
     (title: string) => {
       onTitleChange?.(submission.id, title);
     },
-    [onTitleChange, submission.id]
+    [onTitleChange, submission.id],
   );
 
   const handlePost = useCallback(() => {
@@ -86,64 +96,75 @@ export function FileSubmissionCard({
       className={clsx(
         'postybirb__file_submission__card',
         isSelected && 'postybirb__file_submission__card--selected',
-        className
+        className,
       )}
     >
-      <Group gap="xs" wrap="nowrap" align="center">
-        {/* Drag handle */}
-        {draggable && (
-          <Box
-            className="sort-handle postybirb__file_submission__drag_handle"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <IconGripVertical size={16} />
-          </Box>
-        )}
+      <Stack gap="xs">
+        <Group gap="xs" wrap="nowrap" align="center">
+          {/* Drag handle */}
+          {draggable && (
+            <Box
+              className="sort-handle postybirb__file_submission__drag_handle"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <IconGripVertical size={16} />
+            </Box>
+          )}
 
-        {/* Thumbnail with optional HoverCard preview */}
-        <FileSubmissionThumbnail
-          thumbnailUrl={thumbnailUrl}
-          alt={submission.name}
-          canPreview={canPreviewImage}
-        />
-
-        {/* Content */}
-        <Stack gap={4} className="postybirb__file_submission__card_content">
-          {/* Editable Title */}
-          <FileSubmissionTitle
-            title={submission.title}
-            name={submission.name}
-            onTitleChange={handleTitleChange}
+          {/* Thumbnail with optional HoverCard preview */}
+          <FileSubmissionThumbnail
+            thumbnailUrl={thumbnailUrl}
+            alt={submission.name}
+            canPreview={canPreviewImage}
           />
 
-          {/* Status badges */}
-          <FileSubmissionBadges submission={submission} />
+          {/* Content */}
+          <Stack gap={4} className="postybirb__file_submission__card_content">
+            {/* Editable Title */}
+            <FileSubmissionTitle
+              title={submission.title}
+              name={submission.name}
+              onTitleChange={handleTitleChange}
+            />
 
-          {/* Last modified */}
-          <Group gap={4}>
-            <IconClock size={12} className="postybirb__file_submission__timestamp_icon" />
-            <Text
-              size="xs"
-              c="dimmed"
-              title={submission.lastModified.toLocaleString()}
-            >
-              {moment(submission.lastModified).fromNow()}
-            </Text>
-          </Group>
-        </Stack>
+            {/* Status badges */}
+            <FileSubmissionBadges submission={submission} />
 
-        {/* Action buttons and menu */}
-        <FileSubmissionActions
-          canPost={canPost}
-          hasScheduleTime={submission.hasScheduleTime}
-          isScheduled={submission.isScheduled}
-          onPost={handlePost}
-          onSchedule={handleSchedule}
-          onEdit={handleEdit}
-          onDuplicate={handleDuplicate}
-          onDelete={handleDelete}
-        />
-      </Group>
+            {/* Last modified */}
+            <Group gap={4}>
+              <IconClock
+                size={12}
+                className="postybirb__file_submission__timestamp_icon"
+              />
+              <Text
+                size="xs"
+                c="dimmed"
+                title={submission.lastModified.toLocaleString()}
+              >
+                {moment(submission.lastModified).fromNow()}
+              </Text>
+            </Group>
+          </Stack>
+
+          {/* Action buttons and menu */}
+          <FileSubmissionActions
+            canPost={canPost}
+            hasScheduleTime={submission.hasScheduleTime}
+            isScheduled={submission.isScheduled}
+            onPost={handlePost}
+            onSchedule={handleSchedule}
+            onEdit={handleEdit}
+            onDuplicate={handleDuplicate}
+            onDelete={handleDelete}
+          />
+        </Group>
+        <Box ml="xl">
+          <FileSubmissionQuickEditActions
+            submission={submission}
+            onTagsChange={handleTagsChange}
+          />
+        </Box>
+      </Stack>
     </Card>
   );
 }

@@ -4,6 +4,7 @@
 
 import { Trans } from '@lingui/react/macro';
 import { Box, Loader, ScrollArea, Stack, Text } from '@mantine/core';
+import { TagValue } from '@postybirb/types';
 import type { SubmissionRecord } from '../../../stores/records';
 import { FileSubmissionCard } from './file-submission-card';
 import './file-submissions-section.css';
@@ -28,6 +29,8 @@ interface FileSubmissionListProps {
   onDuplicate: (id: string) => void;
   /** Handler for editing a submission */
   onEdit: (id: string) => void;
+  /** Handler for changing submission tags */
+  onTagsChange: (id: string, tags: TagValue) => void;
   /** Handler for changing submission title */
   onTitleChange: (id: string, title: string) => void;
   /** Handler for posting a submission */
@@ -49,6 +52,7 @@ export function FileSubmissionList({
   onDelete,
   onDuplicate,
   onEdit,
+  onTagsChange,
   onTitleChange,
   onPost,
   onSchedule,
@@ -72,7 +76,11 @@ export function FileSubmissionList({
   }
 
   return (
-    <ScrollArea className="postybirb__file_submission__list_scroll" type="hover" scrollbarSize={6}>
+    <ScrollArea
+      className="postybirb__file_submission__list_scroll"
+      type="hover"
+      scrollbarSize={6}
+    >
       <Stack gap="0" ref={containerRef}>
         {submissions.map((submission) => (
           <FileSubmissionCard
@@ -83,6 +91,7 @@ export function FileSubmissionList({
             onDelete={onDelete}
             onDuplicate={onDuplicate}
             onEdit={onEdit}
+            onTagsChange={onTagsChange}
             onTitleChange={onTitleChange}
             onPost={onPost}
             onSchedule={onSchedule}
