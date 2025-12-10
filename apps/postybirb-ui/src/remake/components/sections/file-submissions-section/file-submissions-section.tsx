@@ -6,10 +6,13 @@
 import { Trans } from '@lingui/react/macro';
 import { Box, Divider, Loader, ScrollArea, Stack, Text } from '@mantine/core';
 import { SubmissionType } from '@postybirb/types';
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import Sortable from 'sortablejs';
+import { draggableIndexesAreDefined } from '../../../../helpers/sortable.helper';
 import postQueueApi from '../../../api/post-queue.api';
 import submissionApi from '../../../api/submission.api';
 import websiteOptionsApi from '../../../api/website-options.api';
+import type { SubmissionRecord } from '../../../stores/records';
 import {
     useSubmissionsByType,
     useSubmissionsLoading,
@@ -25,6 +28,9 @@ import {
 } from '../../../utils/notifications';
 import { FileSubmissionCard } from './file-submission-card';
 import { FileSubmissionSectionHeader } from './file-submission-section-header';
+
+/** Class name for draggable submission cards */
+const DRAGGABLE_SUBMISSION_CLASS = 'draggable-submission-card';
 
 interface FileSubmissionsSectionProps {
   /** Current view state */
@@ -43,6 +49,8 @@ export function FileSubmissionsSection({
   const { filter, searchQuery } = useFileSubmissionsFilter();
   const setViewState = useUIStore((state) => state.setViewState);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const sortableContainerRef = useRef<HTMLDivElement>(null);
+  const sortableRef = useRef<Sortable | null>(null);
 
   // Get selected IDs from view state
   const selectedIds = isFileSubmissionsViewState(viewState)
@@ -54,6 +62,9 @@ export function FileSubmissionsSection({
     let result = fileSubmissions.filter(
       (s) => !s.isTemplate && !s.isMultiSubmission && !s.isArchived,
     );
+
+    // Sort by order
+    result = result.sort((a, b) => a.order - b.order);
 
     // Apply status filter
     switch (filter) {
@@ -82,6 +93,58 @@ export function FileSubmissionsSection({
 
     return result;
   }, [fileSubmissions, filter, searchQuery]);
+
+  // Local ordered state for optimistic reordering
+  const [orderedSubmissions, setOrderedSubmissions] = useState<SubmissionRecord[]>(filteredSubmissions);
+
+  // Sync ordered submissions with filtered submissions
+  useEffect(() => {
+    setOrderedSubmissions(filteredSubmissions);
+  }, [filteredSubmissions]);
+
+  // Only enable drag when showing 'all' filter (no filtering applied)
+  const isDragEnabled = filter === 'all' && !searchQuery;
+
+  // Initialize sortable
+  useEffect(() => {
+    const container = sortableContainerRef.current;
+    if (!container || !isDragEnabled) {
+      // Destroy existing sortable if drag is disabled
+      if (sortableRef.current) {
+        sortableRef.current.destroy();
+        sortableRef.current = null;
+      }
+      return undefined;
+    }
+
+    sortableRef.current = new Sortable(container, {
+      draggable: `.${DRAGGABLE_SUBMISSION_CLASS}`,
+      handle: '.sort-handle',
+      animation: 150,
+      ghostClass: 'submission-drag-ghost',
+      chosenClass: 'submission-drag-chosen',
+      onEnd: (event) => {
+        if (draggableIndexesAreDefined(event)) {
+          const newOrdered = [...orderedSubmissions];
+          const [movedSubmission] = newOrdered.splice(event.oldDraggableIndex, 1);
+          newOrdered.splice(event.newDraggableIndex, 0, movedSubmission);
+          setOrderedSubmissions(newOrdered);
+          submissionApi.reorder(movedSubmission.id, event.newDraggableIndex);
+        }
+      },
+    });
+
+    return () => {
+      if (sortableRef.current) {
+        try {
+          sortableRef.current.destroy();
+        } catch {
+          // Ignore destroy errors
+        }
+        sortableRef.current = null;
+      }
+    };
+  }, [isDragEnabled, orderedSubmissions]);
 
   // Handle selecting a submission
   const handleSelect = (id: string, event: React.MouseEvent) => {
@@ -263,8 +326,8 @@ export function FileSubmissionsSection({
             </Text>
           </Box>
         ) : (
-          <Stack gap="0">
-            {filteredSubmissions.map((submission) => (
+          <Stack gap="0" ref={sortableContainerRef}>
+            {orderedSubmissions.map((submission) => (
               <FileSubmissionCard
                 key={submission.id}
                 submission={submission}
@@ -276,6 +339,8 @@ export function FileSubmissionsSection({
                 onTitleChange={handleTitleChange}
                 onPost={handlePost}
                 onSchedule={handleSchedule}
+                draggable={isDragEnabled}
+                className={DRAGGABLE_SUBMISSION_CLASS}
               />
             ))}
           </Stack>

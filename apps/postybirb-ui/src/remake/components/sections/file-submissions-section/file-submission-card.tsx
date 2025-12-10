@@ -27,6 +27,7 @@ import {
     IconEdit,
     IconFile,
     IconGlobe,
+    IconGripVertical,
     IconLoader,
     IconSend,
     IconTrash,
@@ -57,6 +58,10 @@ interface FileSubmissionCardProps {
   onPost?: (id: string) => void;
   /** Handler for scheduling the submission */
   onSchedule?: (id: string) => void;
+  /** Whether this card is draggable for reordering */
+  draggable?: boolean;
+  /** Additional class name for the card */
+  className?: string;
 }
 
 /**
@@ -95,6 +100,8 @@ export function FileSubmissionCard({
   onTitleChange,
   onPost,
   onSchedule,
+  draggable = false,
+  className,
 }: FileSubmissionCardProps) {
   const thumbnailUrl = getThumbnailUrl(submission);
   const [localTitle, setLocalTitle] = useState(submission.title ?? '');
@@ -174,6 +181,7 @@ export function FileSubmissionCard({
       radius="0"
       withBorder
       onClick={handleClick}
+      className={className}
       style={{
         cursor: 'pointer',
         backgroundColor: isSelected
@@ -185,6 +193,23 @@ export function FileSubmissionCard({
       }}
     >
       <Group gap="sm" wrap="nowrap" align="flex-start">
+        {/* Drag handle */}
+        {draggable && (
+          <Box
+            className="sort-handle"
+            style={{
+              cursor: 'grab',
+              display: 'flex',
+              alignItems: 'center',
+              alignSelf: 'stretch',
+              opacity: 0.5,
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <IconGripVertical size={16} />
+          </Box>
+        )}
+
         {/* Thumbnail */}
         <Box
           w={48}
