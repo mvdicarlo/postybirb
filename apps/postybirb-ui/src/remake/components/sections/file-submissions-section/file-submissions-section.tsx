@@ -3,24 +3,32 @@
  * Displays a scrollable list of file submissions with filtering.
  */
 
-import { Trans } from '@lingui/react/macro';
-import { Box, Divider } from '@mantine/core';
+import { Trans, useLingui } from '@lingui/react/macro';
+import { Box, Tabs } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { useCallback, useEffect, useMemo } from 'react';
+import { IconArchive, IconFiles } from '@tabler/icons-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { tinykeys } from 'tinykeys';
-import { DeleteSelectedKeybinding, toTinykeysFormat } from '../../../config/keybindings';
+import {
+  DeleteSelectedKeybinding,
+  toTinykeysFormat,
+} from '../../../config/keybindings';
 import { useSubmissionsLoading } from '../../../stores/submission-store';
 import type { ViewState } from '../../../types/view-state';
 import { ConfirmActionModal } from '../../confirm-action-modal';
+import { ArchivedFileSubmissionList } from './archived-file-submission-list';
 import { FileSubmissionList } from './file-submission-list';
 import { FileSubmissionSectionHeader } from './file-submission-section-header';
 import './file-submissions-section.css';
 import {
-    useFileSubmissions,
-    useSubmissionHandlers,
-    useSubmissionSelection,
-    useSubmissionSortable,
+  useFileSubmissions,
+  useSubmissionHandlers,
+  useSubmissionSelection,
+  useSubmissionSortable,
 } from './hooks';
+
+/** Tab values for submissions view */
+type SubmissionTab = 'submissions' | 'archived';
 
 interface FileSubmissionsSectionProps {
   /** Current view state */
@@ -35,6 +43,10 @@ export function FileSubmissionsSection({
   viewState,
 }: FileSubmissionsSectionProps) {
   const { isLoading } = useSubmissionsLoading();
+  const { t } = useLingui();
+
+  // Current tab state
+  const [activeTab, setActiveTab] = useState<SubmissionTab>('submissions');
 
   // Get filtered and ordered submissions
   const {
@@ -45,15 +57,11 @@ export function FileSubmissionsSection({
   } = useFileSubmissions();
 
   // Selection management
-  const {
-    selectedIds,
-    selectionState,
-    handleSelect,
-    handleToggleSelectAll,
-  } = useSubmissionSelection({
-    viewState,
-    orderedSubmissions,
-  });
+  const { selectedIds, selectionState, handleSelect, handleToggleSelectAll } =
+    useSubmissionSelection({
+      viewState,
+      orderedSubmissions,
+    });
 
   // Sortable drag-and-drop
   const { containerRef } = useSubmissionSortable({
@@ -89,13 +97,15 @@ export function FileSubmissionsSection({
 
   // Count of valid submissions that can be posted
   // (must have website options and no validation errors)
-  const validPostCount = useMemo(() => {
-    return selectedIds.filter((id) => {
-      const submission = allSubmissions.find((s) => s.id === id);
-      if (!submission) return false;
-      return submission.hasWebsiteOptions && !submission.hasErrors;
-    }).length;
-  }, [selectedIds, allSubmissions]);
+  const validPostCount = useMemo(
+    () =>
+      selectedIds.filter((id) => {
+        const submission = allSubmissions.find((s) => s.id === id);
+        if (!submission) return false;
+        return submission.hasWebsiteOptions && !submission.hasErrors;
+      }).length,
+    [selectedIds, allSubmissions],
+  );
 
   // Handle delete with confirmation
   const handleDeleteWithConfirm = useCallback(() => {
@@ -116,7 +126,7 @@ export function FileSubmissionsSection({
     const unsubscribe = tinykeys(window, {
       [toTinykeysFormat(DeleteSelectedKeybinding)]: (event: KeyboardEvent) => {
         // Don't trigger if user is typing in an input
-        const activeElement = document.activeElement;
+        const { activeElement } = document;
         if (
           activeElement?.tagName === 'INPUT' ||
           activeElement?.tagName === 'TEXTAREA' ||
@@ -198,23 +208,41 @@ export function FileSubmissionsSection({
         onPostSelected={handlePostWithConfirm}
       />
 
-      <Divider />
+      {/* Tabs for Submissions / Archived */}
+      <Tabs
+        value={activeTab}
+        onChange={(value) => setActiveTab(value as SubmissionTab)}
+        className="postybirb__file_submission__tabs"
+      >
+        <Tabs.List grow>
+          <Tabs.Tab value="submissions" leftSection={<IconFiles size={14} />}>
+            {t`Submissions`}
+          </Tabs.Tab>
+          <Tabs.Tab value="archived" leftSection={<IconArchive size={14} />}>
+            {t`Archived`}
+          </Tabs.Tab>
+        </Tabs.List>
+      </Tabs>
 
-      {/* Scrollable submission list */}
-      <FileSubmissionList
-        isLoading={isLoading}
-        submissions={orderedSubmissions}
-        selectedIds={selectedIds}
-        isDragEnabled={isDragEnabled}
-        containerRef={containerRef}
-        onSelect={handleSelect}
-        onDelete={handleDelete}
-        onDuplicate={handleDuplicate}
-        onEdit={handleEdit}
-        onTitleChange={handleTitleChange}
-        onPost={handlePost}
-        onSchedule={handleSchedule}
-      />
+      {/* Tab content */}
+      {activeTab === 'submissions' ? (
+        <FileSubmissionList
+          isLoading={isLoading}
+          submissions={orderedSubmissions}
+          selectedIds={selectedIds}
+          isDragEnabled={isDragEnabled}
+          containerRef={containerRef}
+          onSelect={handleSelect}
+          onDelete={handleDelete}
+          onDuplicate={handleDuplicate}
+          onEdit={handleEdit}
+          onTitleChange={handleTitleChange}
+          onPost={handlePost}
+          onSchedule={handleSchedule}
+        />
+      ) : (
+        <ArchivedFileSubmissionList />
+      )}
     </Box>
   );
 }

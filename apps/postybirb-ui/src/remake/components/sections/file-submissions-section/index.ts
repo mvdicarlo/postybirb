@@ -1,3 +1,4 @@
+export { ArchivedFileSubmissionList } from './archived-file-submission-list';
 export { FileSubmissionCard } from './file-submission-card';
 export { FileSubmissionList } from './file-submission-list';
 export {
