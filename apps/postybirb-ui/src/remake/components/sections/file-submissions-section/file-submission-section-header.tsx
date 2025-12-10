@@ -7,6 +7,7 @@ import { Trans, useLingui } from '@lingui/react/macro';
 import {
     ActionIcon,
     Box,
+    Checkbox,
     Group,
     SegmentedControl,
     Stack,
@@ -18,9 +19,20 @@ import type { SubmissionFilter } from '../../../stores/ui-store';
 import { useFileSubmissionsFilter } from '../../../stores/ui-store';
 import { SearchInput } from '../../shared';
 
+/** Selection state for the checkbox */
+export type SelectionState = 'none' | 'partial' | 'all';
+
 interface FileSubmissionSectionHeaderProps {
   /** Handler for creating a new submission */
   onCreateSubmission?: () => void;
+  /** Current selection state */
+  selectionState?: SelectionState;
+  /** Handler for toggling select all/none */
+  onToggleSelectAll?: () => void;
+  /** Number of selected items */
+  selectedCount?: number;
+  /** Total number of items */
+  totalCount?: number;
 }
 
 /**
@@ -29,6 +41,10 @@ interface FileSubmissionSectionHeaderProps {
  */
 export function FileSubmissionSectionHeader({
   onCreateSubmission,
+  selectionState = 'none',
+  onToggleSelectAll,
+  selectedCount = 0,
+  totalCount = 0,
 }: FileSubmissionSectionHeaderProps) {
   const {
     filter,
@@ -51,11 +67,37 @@ export function FileSubmissionSectionHeader({
       }}
     >
       <Stack gap="xs">
-        {/* Title row with create button */}
+        {/* Title row with select all checkbox and create button */}
         <Group justify="space-between" align="center">
-          <Text fw={600} size="sm">
-            <Trans>File Submissions</Trans>
-          </Text>
+          <Group gap="xs">
+            <Tooltip
+              label={
+                selectionState === 'all' ? (
+                  <Trans>Deselect all</Trans>
+                ) : (
+                  <Trans>Select all</Trans>
+                )
+              }
+            >
+              <Checkbox
+                size="xs"
+                checked={selectionState === 'all'}
+                indeterminate={selectionState === 'partial'}
+                onChange={onToggleSelectAll}
+                // eslint-disable-next-line lingui/no-unlocalized-strings
+                aria-label="Select all submissions"
+              />
+            </Tooltip>
+            <Text fw={600} size="sm">
+              {selectedCount > 0 ? (
+                <Trans>
+                  {selectedCount} of {totalCount} selected
+                </Trans>
+              ) : (
+                <Trans>File Submissions</Trans>
+              )}
+            </Text>
+          </Group>
           {onCreateSubmission && (
             <Tooltip label={<Trans>Create Submission</Trans>}>
               <ActionIcon
