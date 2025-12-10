@@ -84,7 +84,7 @@ export function PrimaryContent({
       /> */}
 
       {/* Scrollable content area */}
-      <Box className="postybirb__primary_content_area" pos="relative">
+      <Box id="postybirb__primary_content_area" className="postybirb__primary_content_area" pos="relative">
         <LoadingOverlay
           visible={loading}
           zIndex={10}

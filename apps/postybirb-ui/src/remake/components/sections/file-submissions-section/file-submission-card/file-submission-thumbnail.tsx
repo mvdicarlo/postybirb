@@ -4,6 +4,7 @@
 
 import { Box, HoverCard, Image } from '@mantine/core';
 import { IconFile } from '@tabler/icons-react';
+import '../file-submissions-section.css';
 
 interface FileSubmissionThumbnailProps {
   /** URL of the thumbnail image */
@@ -25,23 +26,15 @@ export function FileSubmissionThumbnail({
   canPreview = false,
 }: FileSubmissionThumbnailProps) {
   const thumbnailBox = (
-    <Box
-      w={40}
-      h={40}
-      style={{
-        flexShrink: 0,
-        borderRadius: 'var(--mantine-radius-sm)',
-        overflow: 'hidden',
-        backgroundColor: 'var(--mantine-color-default)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
+    <Box className="postybirb__file_submission__thumbnail">
       {thumbnailUrl ? (
         <Image src={thumbnailUrl} alt={alt} w={40} h={40} fit="cover" />
       ) : (
-        <IconFile size={20} stroke={1.5} opacity={0.5} />
+        <IconFile
+          size={20}
+          stroke={1.5}
+          className="postybirb__file_submission__thumbnail_placeholder"
+        />
       )}
     </Box>
   );

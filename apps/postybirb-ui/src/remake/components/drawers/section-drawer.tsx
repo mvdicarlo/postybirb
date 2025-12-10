@@ -47,7 +47,7 @@ export function SectionDrawer({
 
   // Get portal target on mount
   useEffect(() => {
-    const target = document.getElementById('postybirb-content-split');
+    const target = document.getElementById('postybirb__primary_content_area');
     setPortalTarget(target);
   }, []);
 

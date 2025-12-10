@@ -5,8 +5,10 @@
 
 import { Box, Card, Group, Stack, Text } from '@mantine/core';
 import { IconClock, IconGripVertical } from '@tabler/icons-react';
+import clsx from 'clsx';
 import moment from 'moment/min/moment-with-locales';
 import { useCallback } from 'react';
+import '../file-submissions-section.css';
 import { FileSubmissionActions } from './file-submission-actions';
 import { FileSubmissionBadges } from './file-submission-badges';
 import { FileSubmissionThumbnail } from './file-submission-thumbnail';
@@ -81,32 +83,17 @@ export function FileSubmissionCard({
       radius="0"
       withBorder
       onClick={handleClick}
-      className={className}
-      style={{
-        cursor: 'pointer',
-        userSelect: 'none',
-        backgroundColor: isSelected
-          ? 'var(--mantine-color-primary-light)'
-          : undefined,
-        borderLeft: 'none',
-        borderRight: 'none',
-        borderTop: 'none',
-        borderColor: isSelected
-          ? 'var(--mantine-color-primary-filled)'
-          : undefined,
-      }}
+      className={clsx(
+        'postybirb__file_submission__card',
+        isSelected && 'postybirb__file_submission__card--selected',
+        className
+      )}
     >
       <Group gap="xs" wrap="nowrap" align="center">
         {/* Drag handle */}
         {draggable && (
           <Box
-            className="sort-handle"
-            style={{
-              cursor: 'grab',
-              display: 'flex',
-              alignItems: 'center',
-              opacity: 0.5,
-            }}
+            className="sort-handle postybirb__file_submission__drag_handle"
             onClick={(e) => e.stopPropagation()}
           >
             <IconGripVertical size={16} />
@@ -121,7 +108,7 @@ export function FileSubmissionCard({
         />
 
         {/* Content */}
-        <Stack gap={4} style={{ flex: 1, minWidth: 0 }}>
+        <Stack gap={4} className="postybirb__file_submission__card_content">
           {/* Editable Title */}
           <FileSubmissionTitle
             title={submission.title}
@@ -134,7 +121,7 @@ export function FileSubmissionCard({
 
           {/* Last modified */}
           <Group gap={4}>
-            <IconClock size={12} style={{ opacity: 0.5 }} />
+            <IconClock size={12} className="postybirb__file_submission__timestamp_icon" />
             <Text
               size="xs"
               c="dimmed"

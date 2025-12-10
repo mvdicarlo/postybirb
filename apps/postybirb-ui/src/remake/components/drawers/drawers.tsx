@@ -4,14 +4,10 @@
  * Drawers slide out from the section panel area using custom SectionDrawer.
  */
 
-import { Trans } from '@lingui/react/macro';
-import { Stack, Text } from '@mantine/core';
 import {
-  type DrawerKey,
   useActiveDrawer,
-  useDrawerActions,
+  useDrawerActions
 } from '../../stores/ui-store';
-import { SectionDrawer } from './section-drawer';
 
 // Import the CustomShortcutsDrawer implementation for wrapping
 import { CustomShortcutsDrawer as CustomShortcutsDrawerComponent } from './custom-shortcuts-drawer';
@@ -33,34 +29,6 @@ export { UserConverterDrawer } from './user-converter-drawer';
 
 // Re-export the FileWatcherDrawer
 export { FileWatcherDrawer } from './file-watcher-drawer';
-
-/**
- * Props for stub drawer components.
- */
-interface StubDrawerProps {
-  drawerKey: DrawerKey;
-  title: React.ReactNode;
-}
-
-/**
- * Base stub drawer component.
- * Uses custom SectionDrawer that slides from the section panel area.
- */
-function StubDrawer({ drawerKey, title }: StubDrawerProps) {
-  const activeDrawer = useActiveDrawer();
-  const { closeDrawer } = useDrawerActions();
-  const opened = activeDrawer === drawerKey;
-
-  return (
-    <SectionDrawer opened={opened} onClose={closeDrawer} title={title}>
-      <Stack gap="md">
-        <Text c="dimmed">
-          <Trans>This feature is coming soon.</Trans>
-        </Text>
-      </Stack>
-    </SectionDrawer>
-  );
-}
 
 /**
  * Custom shortcuts drawer wrapper.

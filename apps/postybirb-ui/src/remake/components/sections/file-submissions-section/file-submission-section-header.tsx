@@ -5,21 +5,22 @@
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
-  ActionIcon,
-  Box,
-  Checkbox,
-  Group,
-  Kbd,
-  SegmentedControl,
-  Stack,
-  Text,
-  Tooltip,
+    ActionIcon,
+    Box,
+    Checkbox,
+    Group,
+    Kbd,
+    SegmentedControl,
+    Stack,
+    Text,
+    Tooltip,
 } from '@mantine/core';
 import { IconPlus, IconSend, IconTrash } from '@tabler/icons-react';
 import { DeleteSelectedKeybinding } from '../../../config/keybindings';
 import type { SubmissionFilter } from '../../../stores/ui-store';
 import { useFileSubmissionsFilter } from '../../../stores/ui-store';
 import { SearchInput } from '../../shared';
+import './file-submissions-section.css';
 
 /** Selection state for the checkbox */
 export type SelectionState = 'none' | 'partial' | 'all';
@@ -63,17 +64,7 @@ export function FileSubmissionSectionHeader({
   const { t } = useLingui();
 
   return (
-    <Box
-      p="sm"
-      style={{
-        position: 'sticky',
-        top: 0,
-        zIndex: 10,
-        backgroundColor: 'var(--mantine-color-body)',
-        // eslint-disable-next-line lingui/no-unlocalized-strings
-        borderBottom: '1px solid var(--mantine-color-default-border)',
-      }}
-    >
+    <Box p="sm" className="postybirb__file_submission__header">
       <Stack gap="xs">
         {/* Title row with select all checkbox and create button */}
         <Group justify="space-between" align="center">

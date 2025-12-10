@@ -6,6 +6,7 @@ import { Trans } from '@lingui/react/macro';
 import { Box, Loader, ScrollArea, Stack, Text } from '@mantine/core';
 import type { SubmissionRecord } from '../../../stores/records';
 import { FileSubmissionCard } from './file-submission-card';
+import './file-submissions-section.css';
 import { DRAGGABLE_SUBMISSION_CLASS } from './types';
 
 interface FileSubmissionListProps {
@@ -54,7 +55,7 @@ export function FileSubmissionList({
 }: FileSubmissionListProps) {
   if (isLoading) {
     return (
-      <Box p="md" ta="center">
+      <Box className="postybirb__file_submission__list_loading">
         <Loader size="sm" />
       </Box>
     );
@@ -62,7 +63,7 @@ export function FileSubmissionList({
 
   if (submissions.length === 0) {
     return (
-      <Box p="md" ta="center">
+      <Box className="postybirb__file_submission__list_empty">
         <Text size="sm" c="dimmed">
           <Trans>No submissions found</Trans>
         </Text>
@@ -71,7 +72,7 @@ export function FileSubmissionList({
   }
 
   return (
-    <ScrollArea style={{ flex: 1 }} type="hover" scrollbarSize={6}>
+    <ScrollArea className="postybirb__file_submission__list_scroll" type="hover" scrollbarSize={6}>
       <Stack gap="0" ref={containerRef}>
         {submissions.map((submission) => (
           <FileSubmissionCard

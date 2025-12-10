@@ -14,6 +14,7 @@ import type { ViewState } from '../../../types/view-state';
 import { ConfirmActionModal } from '../../confirm-action-modal';
 import { FileSubmissionList } from './file-submission-list';
 import { FileSubmissionSectionHeader } from './file-submission-section-header';
+import './file-submissions-section.css';
 import {
     useFileSubmissions,
     useSubmissionHandlers,
@@ -136,7 +137,7 @@ export function FileSubmissionsSection({
   }, [selectedIds.length, deleteModal]);
 
   return (
-    <Box h="100%" style={{ display: 'flex', flexDirection: 'column' }}>
+    <Box h="100%" className="postybirb__file_submission__section">
       {/* Delete confirmation modal */}
       <ConfirmActionModal
         opened={deleteModalOpened}
@@ -181,7 +182,7 @@ export function FileSubmissionsSection({
         ref={fileInputRef}
         type="file"
         multiple
-        style={{ display: 'none' }}
+        className="postybirb__file_submission__file_input"
         onChange={handleFileChange}
         accept="image/*,video/*,audio/*,.gif,.webp,.png,.jpg,.jpeg,.pdf,.txt,.doc,.docx"
       />

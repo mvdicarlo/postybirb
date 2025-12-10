@@ -1,0 +1,110 @@
+/**
+ * File Submissions Section styles.
+ * Naming convention: postybirb__file_submission__element_modifier
+ */
+
+/* =============================================================================
+   Section Header
+   ============================================================================= */
+
+.postybirb__file_submission__header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding: var(--mantine-spacing-sm);
+  background-color: var(--mantine-color-body);
+  border-bottom: 1px solid var(--mantine-color-default-border);
+}
+
+/* =============================================================================
+   Section Container
+   ============================================================================= */
+
+.postybirb__file_submission__section {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Hidden file input for creating submissions */
+.postybirb__file_submission__file_input {
+  display: none;
+}
+
+/* =============================================================================
+   Submission List
+   ============================================================================= */
+
+.postybirb__file_submission__list_scroll {
+  flex: 1;
+}
+
+.postybirb__file_submission__list_loading {
+  padding: var(--mantine-spacing-md);
+  text-align: center;
+}
+
+.postybirb__file_submission__list_empty {
+  padding: var(--mantine-spacing-md);
+  text-align: center;
+}
+
+/* =============================================================================
+   Submission Card
+   ============================================================================= */
+
+.postybirb__file_submission__card {
+  cursor: pointer;
+  user-select: none;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+}
+
+.postybirb__file_submission__card--selected {
+  background-color: var(--mantine-color-primary-light);
+  border-color: var(--mantine-color-primary-filled);
+}
+
+/* Drag handle */
+.postybirb__file_submission__drag_handle {
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  opacity: 0.5;
+}
+
+.postybirb__file_submission__drag_handle:active {
+  cursor: grabbing;
+}
+
+/* Card content wrapper - fills remaining space */
+.postybirb__file_submission__card_content {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Last modified timestamp row */
+.postybirb__file_submission__timestamp_icon {
+  opacity: 0.5;
+}
+
+/* =============================================================================
+   Thumbnail
+   ============================================================================= */
+
+.postybirb__file_submission__thumbnail {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--mantine-radius-sm);
+  overflow: hidden;
+  background-color: var(--mantine-color-default);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.postybirb__file_submission__thumbnail_placeholder {
+  opacity: 0.5;
+}
