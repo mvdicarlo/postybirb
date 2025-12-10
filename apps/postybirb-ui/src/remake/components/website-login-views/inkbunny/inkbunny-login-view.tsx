@@ -19,6 +19,7 @@ import { useState } from 'react';
 import accountApi from '../../../api/account.api';
 import { ExternalLink } from '../../shared/external-link';
 import { notifyLoginFailed, notifyLoginSuccess } from '../helpers';
+import { LoginViewContainer } from '../login-view-container';
 import type { LoginViewProps } from '../types';
 
 const formId = 'inkbunny-login-form';
@@ -70,7 +71,7 @@ export function InkbunnyLoginView({
   };
 
   return (
-    <Box maw={400} mx="auto" p="md">
+    <LoginViewContainer>
       <form id={formId} onSubmit={handleSubmit}>
         <Stack gap="md">
           <Alert
@@ -127,6 +128,6 @@ export function InkbunnyLoginView({
           </Box>
         </Stack>
       </form>
-    </Box>
+    </LoginViewContainer>
   );
 }

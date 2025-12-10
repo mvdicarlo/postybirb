@@ -243,12 +243,13 @@
   flex: 1;
   overflow: hidden;
   background-color: var(--mantine-color-body);
+  max-height: 100vh;
 }
 
 /* Primary content scrollable area (below navbar) */
 .postybirb__primary_content_area {
   flex: 1;
-  overflow-y: auto;
+  overflow: hidden; /* Children manage their own scrolling */
   position: relative;
 }
 

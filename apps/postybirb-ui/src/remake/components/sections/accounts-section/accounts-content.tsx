@@ -4,7 +4,7 @@
  */
 
 import { Trans } from '@lingui/react/macro';
-import { Box, Divider, Group, Loader, Text, Title } from '@mantine/core';
+import { Box, Divider, Group, Loader, ScrollArea, Text, Title } from '@mantine/core';
 import type { CustomLoginType, UserLoginType } from '@postybirb/types';
 import { IconWorld } from '@tabler/icons-react';
 import { useAccount } from '../../../stores/account-store';
@@ -29,7 +29,13 @@ interface AccountHeaderProps {
 
 function AccountHeader({ websiteName, accountName }: AccountHeaderProps) {
   return (
-    <Box p="md" style={{ flexShrink: 0 }}>
+    <Box
+      p="md"
+      style={{
+        flexShrink: 0,
+        backgroundColor: 'var(--mantine-color-body)',
+      }}
+    >
       <Group gap="sm">
         <IconWorld size={24} stroke={1.5} />
         <Box>
@@ -90,13 +96,15 @@ function CustomLoginContent({
     <Box h="100%" style={{ display: 'flex', flexDirection: 'column' }}>
       <AccountHeader websiteName={website.displayName} accountName={account.name} />
       <Divider />
-      <Box style={{ flex: 1, overflow: 'auto', p: 'md' }}>
-        <CustomLoginPlaceholder
-          account={account}
-          website={website}
-          loginComponentName={loginType.loginComponentName}
-        />
-      </Box>
+      <ScrollArea style={{ flex: 1 }} type="hover" scrollbarSize={6}>
+        <Box p="md">
+          <CustomLoginPlaceholder
+            account={account}
+            website={website}
+            loginComponentName={loginType.loginComponentName}
+          />
+        </Box>
+      </ScrollArea>
     </Box>
   );
 }

@@ -3,28 +3,47 @@
  * Maps website login component names to their React components.
  */
 
+import { BlueskyLoginView } from './bluesky';
+import { CustomLoginView } from './custom';
+import { DiscordLoginView } from './discord';
+import { E621LoginView } from './e621';
+import { FurtasticLoginView } from './furtastic';
 import { InkbunnyLoginView } from './inkbunny';
+import { MegalodonLoginView } from './megalodon';
+import { TelegramLoginView } from './telegram';
+import { TwitterLoginView } from './twitter';
 import type { LoginViewComponent } from './types';
 
 // Re-export types and helpers
 export {
+    createLoginHttpErrorHandler,
+    notifyInfo,
     notifyLoginError,
     notifyLoginFailed,
     notifyLoginSuccess
 } from './helpers';
+export { LoginViewContainer } from './login-view-container';
 export type { LoginViewComponent, LoginViewProps } from './types';
 
 /**
  * Registry mapping loginComponentName to login view components.
  * The key must match the `loginComponentName` from the website's CustomLoginType.
  */
-const loginViewRegistry: Record<string, LoginViewComponent> = {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const loginViewRegistry: Record<string, LoginViewComponent<any>> = {
+  Bluesky: BlueskyLoginView,
+  Custom: CustomLoginView,
+  Discord: DiscordLoginView,
+  Friendica: MegalodonLoginView,
+  Furtastic: FurtasticLoginView,
+  GoToSocial: MegalodonLoginView,
   Inkbunny: InkbunnyLoginView,
-  // Add more as they are implemented:
-  // Bluesky: BlueskyLoginView,
-  // Discord: DiscordLoginView,
-  // e621: E621LoginView,
-  // etc.
+  Mastodon: MegalodonLoginView,
+  Pixelfed: MegalodonLoginView,
+  Pleroma: MegalodonLoginView,
+  Telegram: TelegramLoginView,
+  Twitter: TwitterLoginView,
+  e621: E621LoginView,
 };
 
 /**
@@ -34,7 +53,8 @@ const loginViewRegistry: Record<string, LoginViewComponent> = {
  */
 export function getLoginViewComponent(
   loginComponentName: string,
-): LoginViewComponent | undefined {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): LoginViewComponent<any> | undefined {
   return loginViewRegistry[loginComponentName];
 }
 
