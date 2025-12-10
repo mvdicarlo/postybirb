@@ -5,7 +5,7 @@ import {
     Button,
     Checkbox,
     Group,
-    NumberInput,
+    SegmentedControl,
     Stack,
     Text,
     TextInput,
@@ -106,19 +106,25 @@ export default function DiscordLoginView(
           }}
         />
 
-        <NumberInput
-          label={<Trans>Server Boost Level</Trans>}
-          value={serverLevel}
-          min={0}
-          max={3}
-          stepHoldDelay={500}
-          stepHoldInterval={100}
-          allowDecimal={false}
-          clampBehavior="strict"
-          onChange={(value) => {
-            setServerLevel(Number(value) || 0);
-          }}
-        />
+        <Box>
+          <Text size="sm" fw={500} mb={4}>
+            <Trans>Server Boost Level</Trans>
+          </Text>
+          <SegmentedControl
+            fullWidth
+            value={String(serverLevel)}
+            onChange={(value) => setServerLevel(Number(value))}
+            data={[
+              { value: '0', label: <Trans>None</Trans> },
+              { value: '1', label: <Trans>Level 1</Trans> },
+              { value: '2', label: <Trans>Level 2</Trans> },
+              { value: '3', label: <Trans>Level 3</Trans> },
+            ]}
+          />
+          <Text size="xs" c="dimmed" mt={4}>
+            <Trans>Higher boost levels allow larger file uploads</Trans>
+          </Text>
+        </Box>
 
         <Checkbox
           label={
