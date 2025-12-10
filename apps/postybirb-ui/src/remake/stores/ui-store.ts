@@ -69,6 +69,7 @@ interface UIState {
 
   // View preferences
   fileSubmissionsFilter: SubmissionFilter;
+  fileSubmissionsSearchQuery: string;
   messageSubmissionsFilter: SubmissionFilter;
 
   // Sub-nav visibility per route
@@ -105,6 +106,7 @@ interface UIActions {
 
   // Filter actions
   setFileSubmissionsFilter: (filter: SubmissionFilter) => void;
+  setFileSubmissionsSearchQuery: (query: string) => void;
   setMessageSubmissionsFilter: (filter: SubmissionFilter) => void;
 
   // Sub-nav actions
@@ -167,6 +169,7 @@ const initialState: UIState = {
   activeDrawer: null,
   viewState: defaultViewState,
   fileSubmissionsFilter: 'all',
+  fileSubmissionsSearchQuery: '',
   messageSubmissionsFilter: 'all',
   subNavVisible: true,
   language: getDefaultLanguage(),
@@ -208,6 +211,7 @@ export const useUIStore = create<UIStore>()(
 
       // Filter actions
       setFileSubmissionsFilter: (filter) => set({ fileSubmissionsFilter: filter }),
+      setFileSubmissionsSearchQuery: (query) => set({ fileSubmissionsSearchQuery: query }),
       setMessageSubmissionsFilter: (filter) => set({ messageSubmissionsFilter: filter }),
 
       // Sub-nav actions
@@ -278,12 +282,14 @@ export const useDrawerActions = () =>
     }))
   );
 
-/** Select file submissions filter */
+/** Select file submissions filter and search query */
 export const useFileSubmissionsFilter = () =>
   useUIStore(
     useShallow((state) => ({
       filter: state.fileSubmissionsFilter,
+      searchQuery: state.fileSubmissionsSearchQuery,
       setFilter: state.setFileSubmissionsFilter,
+      setSearchQuery: state.setFileSubmissionsSearchQuery,
     }))
   );
 

@@ -75,8 +75,8 @@ export function createAppTheme(
 
       Card: Card.extend({
         defaultProps: {
-          p: 'xl',
-          shadow: 'xl',
+          p: 'md',
+          shadow: 'sm',
           radius: 'var(--mantine-radius-default)',
           withBorder: true,
         },

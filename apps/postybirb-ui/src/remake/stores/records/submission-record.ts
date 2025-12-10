@@ -7,6 +7,7 @@ import type {
     ISubmissionFileDto,
     ISubmissionMetadata,
     ISubmissionScheduleInfo,
+    IWebsiteFormFields,
     PostQueueRecordDto,
     PostRecordDto,
     SubmissionId,
@@ -112,6 +113,14 @@ export class SubmissionRecord extends BaseRecord {
   }
 
   /**
+   * Check if the submission has any website options configured
+   * (excluding the default option).
+   */
+  get hasWebsiteOptions(): boolean {
+    return this.options.some((o) => !o.isDefault);
+  }
+
+  /**
    * Get the scheduled date if scheduled.
    */
   get scheduledDate(): Date | null {
@@ -119,5 +128,52 @@ export class SubmissionRecord extends BaseRecord {
       return null;
     }
     return new Date(this.schedule.scheduledFor);
+  }
+
+  /**
+   * Get the default website options for this submission.
+   * The default option contains global settings like title.
+   */
+  getDefaultOptions<O extends IWebsiteFormFields>(): WebsiteOptionsDto<O> | undefined {
+    return this.options.find((o) => o.isDefault) as WebsiteOptionsDto<O> | undefined;
+  }
+
+  /**
+   * Get the submission title.
+   * For templates, returns the template name.
+   * Otherwise returns the title from default options, or undefined.
+   */
+  get title(): string | undefined {
+    if (this.isTemplate && this.metadata?.template?.name) {
+      return this.metadata.template.name;
+    }
+    const defaultOptions = this.getDefaultOptions();
+    return defaultOptions?.data?.title as string | undefined;
+  }
+
+  /**
+   * Get the most recent modification date across the submission,
+   * its files, and its website options.
+   */
+  get lastModified(): Date {
+    let latest = this.updatedAt;
+
+    // Check files for more recent updates
+    for (const file of this.files) {
+      const fileDate = new Date(file.updatedAt);
+      if (fileDate > latest) {
+        latest = fileDate;
+      }
+    }
+
+    // Check website options for more recent updates
+    for (const option of this.options) {
+      const optionDate = new Date(option.updatedAt);
+      if (optionDate > latest) {
+        latest = optionDate;
+      }
+    }
+
+    return latest;
   }
 }
