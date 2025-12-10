@@ -2,7 +2,7 @@
  * Hook for submission action handlers.
  */
 
-import { SubmissionType, TagValue } from '@postybirb/types';
+import { IWebsiteFormFields, SubmissionType } from '@postybirb/types';
 import { useCallback, useRef } from 'react';
 import postQueueApi from '../../../../api/post-queue.api';
 import submissionApi from '../../../../api/submission.api';
@@ -10,12 +10,12 @@ import websiteOptionsApi from '../../../../api/website-options.api';
 import type { SubmissionRecord } from '../../../../stores/records';
 import { useUIStore } from '../../../../stores/ui-store';
 import {
-  isFileSubmissionsViewState,
-  type ViewState,
+    isFileSubmissionsViewState,
+    type ViewState,
 } from '../../../../types/view-state';
 import {
-  showDeletedNotification,
-  showDeleteErrorNotification,
+    showDeletedNotification,
+    showDeleteErrorNotification,
 } from '../../../../utils/notifications';
 
 interface UseSubmissionHandlersProps {
@@ -46,10 +46,11 @@ interface UseSubmissionHandlersResult {
   handleDuplicate: (id: string) => Promise<void>;
   /** Handle editing a submission (select it) */
   handleEdit: (id: string) => void;
-  /** Handle changing the submission tags */
-  handleTagsChange: (id: string, tags: TagValue) => Promise<void>;
-  /** Handle changing the submission title */
-  handleTitleChange: (id: string, title: string) => Promise<void>;
+  /** Handle changing a default option field (title, tags, rating, etc.) */
+  handleDefaultOptionChange: (
+    id: string,
+    update: Partial<IWebsiteFormFields>,
+  ) => Promise<void>;
   /** Handle posting a submission */
   handlePost: (id: string) => Promise<void>;
   /** Handle scheduling a submission */
@@ -203,9 +204,9 @@ export function useSubmissionHandlers({
     [viewState, setViewState],
   );
 
-  // Handle changing the submission title
-  const handleTitleChange = useCallback(
-    async (id: string, title: string) => {
+  // Handle changing any default option field (title, tags, rating, etc.)
+  const handleDefaultOptionChange = useCallback(
+    async (id: string, update: Partial<IWebsiteFormFields>) => {
       const submission = allSubmissions.find((s) => s.id === id);
       if (!submission) return;
 
@@ -216,30 +217,7 @@ export function useSubmissionHandlers({
         await websiteOptionsApi.update(defaultOptions.id, {
           data: {
             ...defaultOptions.data,
-            title,
-          },
-        });
-      } catch {
-        // Error handling could be added here
-      }
-    },
-    [allSubmissions],
-  );
-
-  // Handle changing the submission tags
-  const handleTagsChange = useCallback(
-    async (id: string, tags: TagValue) => {
-      const submission = allSubmissions.find((s) => s.id === id);
-      if (!submission) return;
-
-      const defaultOptions = submission.getDefaultOptions();
-      if (!defaultOptions) return;
-
-      try {
-        await websiteOptionsApi.update(defaultOptions.id, {
-          data: {
-            ...defaultOptions.data,
-            tags,
+            ...update,
           },
         });
       } catch {
@@ -284,8 +262,7 @@ export function useSubmissionHandlers({
     handleDeleteSelected,
     handleDuplicate,
     handleEdit,
-    handleTagsChange,
-    handleTitleChange,
+    handleDefaultOptionChange,
     handlePost,
     handlePostSelected,
     handleSchedule,

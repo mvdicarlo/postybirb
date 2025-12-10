@@ -4,7 +4,7 @@
  */
 
 import { Box, Card, Group, Stack, Text } from '@mantine/core';
-import { TagValue } from '@postybirb/types';
+import { IWebsiteFormFields } from '@postybirb/types';
 import { IconClock, IconGripVertical } from '@tabler/icons-react';
 import clsx from 'clsx';
 import moment from 'moment/min/moment-with-locales';
@@ -28,8 +28,7 @@ export function FileSubmissionCard({
   onDelete,
   onDuplicate,
   onEdit,
-  onTagsChange,
-  onTitleChange,
+  onDefaultOptionChange,
   onPost,
   onSchedule,
   draggable = false,
@@ -44,18 +43,11 @@ export function FileSubmissionCard({
     [onSelect, submission.id],
   );
 
-  const handleTagsChange = useCallback(
-    (tags: TagValue) => {
-      onTagsChange?.(submission.id, tags);
+  const handleDefaultOptionChange = useCallback(
+    (update: Partial<IWebsiteFormFields>) => {
+      onDefaultOptionChange?.(submission.id, update);
     },
-    [onTagsChange, submission.id],
-  );
-
-  const handleTitleChange = useCallback(
-    (title: string) => {
-      onTitleChange?.(submission.id, title);
-    },
-    [onTitleChange, submission.id],
+    [onDefaultOptionChange, submission.id],
   );
 
   const handlePost = useCallback(() => {
@@ -124,7 +116,9 @@ export function FileSubmissionCard({
             <FileSubmissionTitle
               title={submission.title}
               name={submission.name}
-              onTitleChange={handleTitleChange}
+              onTitleChange={(title) =>
+                handleDefaultOptionChange({ title })
+              }
             />
 
             {/* Status badges */}
@@ -161,7 +155,7 @@ export function FileSubmissionCard({
         <Box ml="xl">
           <FileSubmissionQuickEditActions
             submission={submission}
-            onTagsChange={handleTagsChange}
+            onDefaultOptionChange={handleDefaultOptionChange}
           />
         </Box>
       </Stack>

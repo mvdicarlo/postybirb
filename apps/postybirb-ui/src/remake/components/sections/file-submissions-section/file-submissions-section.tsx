@@ -10,8 +10,8 @@ import { IconArchive, IconFiles } from '@tabler/icons-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { tinykeys } from 'tinykeys';
 import {
-  DeleteSelectedKeybinding,
-  toTinykeysFormat,
+    DeleteSelectedKeybinding,
+    toTinykeysFormat,
 } from '../../../config/keybindings';
 import { useSubmissionsLoading } from '../../../stores/submission-store';
 import type { ViewState } from '../../../types/view-state';
@@ -21,10 +21,10 @@ import { FileSubmissionList } from './file-submission-list';
 import { FileSubmissionSectionHeader } from './file-submission-section-header';
 import './file-submissions-section.css';
 import {
-  useFileSubmissions,
-  useSubmissionHandlers,
-  useSubmissionSelection,
-  useSubmissionSortable,
+    useFileSubmissions,
+    useSubmissionHandlers,
+    useSubmissionSelection,
+    useSubmissionSortable,
 } from './hooks';
 
 /** Tab values for submissions view */
@@ -79,8 +79,7 @@ export function FileSubmissionsSection({
     handleDeleteSelected,
     handleDuplicate,
     handleEdit,
-    handleTagsChange,
-    handleTitleChange,
+    handleDefaultOptionChange,
     handlePost,
     handlePostSelected,
     handleSchedule,
@@ -237,8 +236,7 @@ export function FileSubmissionsSection({
           onDelete={handleDelete}
           onDuplicate={handleDuplicate}
           onEdit={handleEdit}
-          onTagsChange={handleTagsChange}
-          onTitleChange={handleTitleChange}
+          onDefaultOptionChange={handleDefaultOptionChange}
           onPost={handlePost}
           onSchedule={handleSchedule}
         />

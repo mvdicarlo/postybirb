@@ -4,7 +4,7 @@
 
 import { Trans } from '@lingui/react/macro';
 import { Box, Loader, ScrollArea, Stack, Text } from '@mantine/core';
-import { TagValue } from '@postybirb/types';
+import { IWebsiteFormFields } from '@postybirb/types';
 import type { SubmissionRecord } from '../../../stores/records';
 import { FileSubmissionCard } from './file-submission-card';
 import './file-submissions-section.css';
@@ -29,10 +29,8 @@ interface FileSubmissionListProps {
   onDuplicate: (id: string) => void;
   /** Handler for editing a submission */
   onEdit: (id: string) => void;
-  /** Handler for changing submission tags */
-  onTagsChange: (id: string, tags: TagValue) => void;
-  /** Handler for changing submission title */
-  onTitleChange: (id: string, title: string) => void;
+  /** Handler for changing a default option field (title, tags, rating, etc.) */
+  onDefaultOptionChange: (id: string, update: Partial<IWebsiteFormFields>) => void;
   /** Handler for posting a submission */
   onPost: (id: string) => void;
   /** Handler for scheduling a submission */
@@ -52,8 +50,7 @@ export function FileSubmissionList({
   onDelete,
   onDuplicate,
   onEdit,
-  onTagsChange,
-  onTitleChange,
+  onDefaultOptionChange,
   onPost,
   onSchedule,
 }: FileSubmissionListProps) {
@@ -91,8 +88,7 @@ export function FileSubmissionList({
             onDelete={onDelete}
             onDuplicate={onDuplicate}
             onEdit={onEdit}
-            onTagsChange={onTagsChange}
-            onTitleChange={onTitleChange}
+            onDefaultOptionChange={onDefaultOptionChange}
             onPost={onPost}
             onSchedule={onSchedule}
             draggable={isDragEnabled}
