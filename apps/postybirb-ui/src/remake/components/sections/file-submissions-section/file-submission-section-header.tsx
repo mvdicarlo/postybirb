@@ -5,19 +5,20 @@
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
-    ActionIcon,
-    Box,
-    Checkbox,
-    Group,
-    SegmentedControl,
-    Stack,
-    Text,
-    Tooltip,
+  ActionIcon,
+  Box,
+  Checkbox,
+  Group,
+  Kbd,
+  SegmentedControl,
+  Stack,
+  Text,
+  Tooltip,
 } from '@mantine/core';
 import { IconPlus, IconSend, IconTrash } from '@tabler/icons-react';
+import { DeleteSelectedKeybinding } from '../../../config/keybindings';
 import type { SubmissionFilter } from '../../../stores/ui-store';
 import { useFileSubmissionsFilter } from '../../../stores/ui-store';
-import { HoldToConfirmButton } from '../../hold-to-confirm';
 import { SearchInput } from '../../shared';
 
 /** Selection state for the checkbox */
@@ -108,23 +109,30 @@ export function FileSubmissionSectionHeader({
           <Group gap="xs">
             {/* Mass post button - only show when items are selected */}
             {selectedCount > 0 && onPostSelected && (
-              <Tooltip label={<Trans>Hold to post selected</Trans>}>
-                <HoldToConfirmButton
-                  onConfirm={onPostSelected}
+              <Tooltip label={<Trans>Post selected</Trans>}>
+                <ActionIcon
+                  onClick={onPostSelected}
                   variant="light"
                   size="sm"
                   // eslint-disable-next-line lingui/no-unlocalized-strings
                   aria-label="Post selected submissions"
                 >
                   <IconSend size={16} />
-                </HoldToConfirmButton>
+                </ActionIcon>
               </Tooltip>
             )}
             {/* Mass delete button - only show when items are selected */}
             {selectedCount > 0 && onDeleteSelected && (
-              <Tooltip label={<Trans>Hold to delete selected</Trans>}>
-                <HoldToConfirmButton
-                  onConfirm={onDeleteSelected}
+              <Tooltip
+                label={
+                  <Group gap="xs">
+                    <Trans>Delete selected</Trans>
+                    <Kbd size="xs">{DeleteSelectedKeybinding}</Kbd>
+                  </Group>
+                }
+              >
+                <ActionIcon
+                  onClick={onDeleteSelected}
                   variant="light"
                   size="sm"
                   color="red"
@@ -132,7 +140,7 @@ export function FileSubmissionSectionHeader({
                   aria-label="Delete selected submissions"
                 >
                   <IconTrash size={16} />
-                </HoldToConfirmButton>
+                </ActionIcon>
               </Tooltip>
             )}
             {onCreateSubmission && (

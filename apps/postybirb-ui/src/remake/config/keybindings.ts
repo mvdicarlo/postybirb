@@ -32,6 +32,11 @@ export const RedoKeybinding = 'Control+Y';
 export const SpotlightKeybinding = 'Control+K';
 
 /**
+ * Action keybindings
+ */
+export const DeleteSelectedKeybinding = 'Delete';
+
+/**
  * Convert keybinding format to tinykeys format.
  * 'Alt+S' -> 'Alt+s'
  * 'Control+K' -> 'Control+k'

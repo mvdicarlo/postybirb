@@ -140,11 +140,23 @@ export function useSubmissionHandlers({
   }, [selectedIds, viewState, setViewState]);
 
   // Handle posting all selected submissions
+  // Filters out submissions that have no websites or have validation errors
   const handlePostSelected = useCallback(async () => {
     if (selectedIds.length === 0) return;
 
+    // Filter to only include valid submissions:
+    // - Must have at least one website option (excluding default)
+    // - Must not have validation errors
+    const validIds = selectedIds.filter((id) => {
+      const submission = allSubmissions.find((s) => s.id === id);
+      if (!submission) return false;
+      return submission.hasWebsiteOptions && !submission.hasErrors;
+    });
+
+    if (validIds.length === 0) return;
+
     try {
-      await postQueueApi.enqueue(selectedIds);
+      await postQueueApi.enqueue(validIds);
 
       // Clear selection after posting
       if (isFileSubmissionsViewState(viewState)) {
@@ -160,7 +172,7 @@ export function useSubmissionHandlers({
     } catch {
       // Error handling could be added here
     }
-  }, [selectedIds, viewState, setViewState]);
+  }, [selectedIds, allSubmissions, viewState, setViewState]);
 
   // Handle duplicating a submission
   const handleDuplicate = useCallback(async (id: string) => {
