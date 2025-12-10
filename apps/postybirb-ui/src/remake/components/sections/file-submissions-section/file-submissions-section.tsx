@@ -61,10 +61,12 @@ export function FileSubmissionsSection({
     handleCreateSubmission,
     handleFileChange,
     handleDelete,
+    handleDeleteSelected,
     handleDuplicate,
     handleEdit,
     handleTitleChange,
     handlePost,
+    handlePostSelected,
     handleSchedule,
   } = useSubmissionHandlers({
     viewState,
@@ -91,6 +93,8 @@ export function FileSubmissionsSection({
         onToggleSelectAll={handleToggleSelectAll}
         selectedCount={selectedIds.length}
         totalCount={orderedSubmissions.length}
+        onDeleteSelected={handleDeleteSelected}
+        onPostSelected={handlePostSelected}
       />
 
       <Divider />

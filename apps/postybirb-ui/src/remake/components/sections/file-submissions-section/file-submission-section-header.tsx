@@ -14,9 +14,10 @@ import {
     Text,
     Tooltip,
 } from '@mantine/core';
-import { IconPlus } from '@tabler/icons-react';
+import { IconPlus, IconSend, IconTrash } from '@tabler/icons-react';
 import type { SubmissionFilter } from '../../../stores/ui-store';
 import { useFileSubmissionsFilter } from '../../../stores/ui-store';
+import { HoldToConfirmButton } from '../../hold-to-confirm';
 import { SearchInput } from '../../shared';
 
 /** Selection state for the checkbox */
@@ -33,6 +34,10 @@ interface FileSubmissionSectionHeaderProps {
   selectedCount?: number;
   /** Total number of items */
   totalCount?: number;
+  /** Handler for deleting selected submissions */
+  onDeleteSelected?: () => void;
+  /** Handler for posting selected submissions */
+  onPostSelected?: () => void;
 }
 
 /**
@@ -45,6 +50,8 @@ export function FileSubmissionSectionHeader({
   onToggleSelectAll,
   selectedCount = 0,
   totalCount = 0,
+  onDeleteSelected,
+  onPostSelected,
 }: FileSubmissionSectionHeaderProps) {
   const {
     filter,
@@ -98,19 +105,50 @@ export function FileSubmissionSectionHeader({
               )}
             </Text>
           </Group>
-          {onCreateSubmission && (
-            <Tooltip label={<Trans>Create Submission</Trans>}>
-              <ActionIcon
-                variant="light"
-                size="sm"
-                onClick={onCreateSubmission}
-                // eslint-disable-next-line lingui/no-unlocalized-strings
-                aria-label="Create submission"
-              >
-                <IconPlus size={16} />
-              </ActionIcon>
-            </Tooltip>
-          )}
+          <Group gap="xs">
+            {/* Mass post button - only show when items are selected */}
+            {selectedCount > 0 && onPostSelected && (
+              <Tooltip label={<Trans>Hold to post selected</Trans>}>
+                <HoldToConfirmButton
+                  onConfirm={onPostSelected}
+                  variant="light"
+                  size="sm"
+                  // eslint-disable-next-line lingui/no-unlocalized-strings
+                  aria-label="Post selected submissions"
+                >
+                  <IconSend size={16} />
+                </HoldToConfirmButton>
+              </Tooltip>
+            )}
+            {/* Mass delete button - only show when items are selected */}
+            {selectedCount > 0 && onDeleteSelected && (
+              <Tooltip label={<Trans>Hold to delete selected</Trans>}>
+                <HoldToConfirmButton
+                  onConfirm={onDeleteSelected}
+                  variant="light"
+                  size="sm"
+                  color="red"
+                  // eslint-disable-next-line lingui/no-unlocalized-strings
+                  aria-label="Delete selected submissions"
+                >
+                  <IconTrash size={16} />
+                </HoldToConfirmButton>
+              </Tooltip>
+            )}
+            {onCreateSubmission && (
+              <Tooltip label={<Trans>Create Submission</Trans>}>
+                <ActionIcon
+                  variant="light"
+                  size="sm"
+                  onClick={onCreateSubmission}
+                  // eslint-disable-next-line lingui/no-unlocalized-strings
+                  aria-label="Create submission"
+                >
+                  <IconPlus size={16} />
+                </ActionIcon>
+              </Tooltip>
+            )}
+          </Group>
         </Group>
 
         {/* Search input */}

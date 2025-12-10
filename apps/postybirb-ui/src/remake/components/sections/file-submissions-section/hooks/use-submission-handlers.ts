@@ -36,6 +36,10 @@ interface UseSubmissionHandlersResult {
   handleFileChange: (event: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
   /** Handle deleting a submission */
   handleDelete: (id: string) => Promise<void>;
+  /** Handle deleting all selected submissions */
+  handleDeleteSelected: () => Promise<void>;
+  /** Handle posting all selected submissions */
+  handlePostSelected: () => Promise<void>;
   /** Handle duplicating a submission */
   handleDuplicate: (id: string) => Promise<void>;
   /** Handle editing a submission (select it) */
@@ -110,6 +114,53 @@ export function useSubmissionHandlers({
     },
     [viewState, selectedIds, setViewState]
   );
+
+  // Handle deleting all selected submissions
+  const handleDeleteSelected = useCallback(async () => {
+    if (selectedIds.length === 0) return;
+
+    try {
+      await submissionApi.remove(selectedIds);
+      showDeletedNotification(selectedIds.length);
+
+      // Clear selection
+      if (isFileSubmissionsViewState(viewState)) {
+        setViewState({
+          ...viewState,
+          params: {
+            ...viewState.params,
+            selectedIds: [],
+            mode: 'single',
+          },
+        });
+      }
+    } catch {
+      showDeleteErrorNotification();
+    }
+  }, [selectedIds, viewState, setViewState]);
+
+  // Handle posting all selected submissions
+  const handlePostSelected = useCallback(async () => {
+    if (selectedIds.length === 0) return;
+
+    try {
+      await postQueueApi.enqueue(selectedIds);
+
+      // Clear selection after posting
+      if (isFileSubmissionsViewState(viewState)) {
+        setViewState({
+          ...viewState,
+          params: {
+            ...viewState.params,
+            selectedIds: [],
+            mode: 'single',
+          },
+        });
+      }
+    } catch {
+      // Error handling could be added here
+    }
+  }, [selectedIds, viewState, setViewState]);
 
   // Handle duplicating a submission
   const handleDuplicate = useCallback(async (id: string) => {
@@ -191,10 +242,12 @@ export function useSubmissionHandlers({
     handleCreateSubmission,
     handleFileChange,
     handleDelete,
+    handleDeleteSelected,
     handleDuplicate,
     handleEdit,
     handleTitleChange,
     handlePost,
+    handlePostSelected,
     handleSchedule,
   };
 }
