@@ -1,28 +1,28 @@
 /**
- * FileSubmissionCard - Card component for displaying a file submission in the list.
- * Shows thumbnail, editable title, status badges, and action buttons.
+ * SubmissionCard - Card component for displaying a submission in the list.
+ * Shows thumbnail (for FILE type), editable title, status badges, and action buttons.
  */
 
 import { Box, Card, Group, Stack, Text } from '@mantine/core';
-import { IWebsiteFormFields } from '@postybirb/types';
+import { IWebsiteFormFields, SubmissionType } from '@postybirb/types';
 import { IconClock, IconGripVertical } from '@tabler/icons-react';
-import clsx from 'clsx';
 import moment from 'moment/min/moment-with-locales';
-import { useCallback } from 'react';
-import '../file-submissions-section.css';
-import { FileSubmissionActions } from './file-submission-actions';
-import { FileSubmissionBadges } from './file-submission-badges';
-import { FileSubmissionQuickEditActions } from './file-submission-quick-edit-actions';
-import { FileSubmissionThumbnail } from './file-submission-thumbnail';
-import { FileSubmissionTitle } from './file-submission-title';
-import type { FileSubmissionCardProps } from './types';
+import { useCallback, useMemo } from 'react';
+import '../submissions-section.css';
+import { SubmissionActions } from './submission-actions';
+import { SubmissionBadges } from './submission-badges';
+import { SubmissionQuickEditActions } from './submission-quick-edit-actions';
+import { SubmissionThumbnail } from './submission-thumbnail';
+import { SubmissionTitle } from './submission-title';
+import type { SubmissionCardProps } from './types';
 import { getThumbnailUrl } from './utils';
 
 /**
- * Card component for displaying a file submission in the section list.
+ * Card component for displaying a submission in the section list.
  */
-export function FileSubmissionCard({
+export function SubmissionCard({
   submission,
+  submissionType,
   isSelected = false,
   onSelect,
   onDelete,
@@ -33,7 +33,7 @@ export function FileSubmissionCard({
   onSchedule,
   draggable = false,
   className,
-}: FileSubmissionCardProps) {
+}: SubmissionCardProps) {
   const thumbnailUrl = getThumbnailUrl(submission);
 
   const handleClick = useCallback(
@@ -75,9 +75,21 @@ export function FileSubmissionCard({
     submission.hasWebsiteOptions &&
     !submission.isQueued;
 
-  // Check if the primary file is an image that can be previewed
+  // Check if the primary file is an image that can be previewed (only for FILE type)
   const canPreviewImage =
+    submissionType === SubmissionType.FILE &&
     submission.primaryFile?.mimeType?.startsWith('image/');
+
+  // Only show thumbnail for FILE type submissions
+  const showThumbnail = submissionType === SubmissionType.FILE;
+
+  // Build className list
+  const cardClassName = useMemo(() => {
+    const classes = ['postybirb__submission__card'];
+    if (isSelected) classes.push('postybirb__submission__card--selected');
+    if (className) classes.push(className);
+    return classes.join(' ');
+  }, [isSelected, className]);
 
   return (
     <Card
@@ -85,50 +97,49 @@ export function FileSubmissionCard({
       radius="0"
       withBorder
       onClick={handleClick}
-      className={clsx(
-        'postybirb__file_submission__card',
-        isSelected && 'postybirb__file_submission__card--selected',
-        className,
-      )}
+      className={cardClassName}
     >
       <Stack gap="xs">
         <Group gap="xs" wrap="nowrap" align="center">
           {/* Drag handle */}
           {draggable && (
             <Box
-              className="sort-handle postybirb__file_submission__drag_handle"
+              className="sort-handle postybirb__submission__drag_handle"
               onClick={(e) => e.stopPropagation()}
             >
               <IconGripVertical size={16} />
             </Box>
           )}
 
-          {/* Thumbnail with optional HoverCard preview */}
-          <FileSubmissionThumbnail
-            thumbnailUrl={thumbnailUrl}
-            alt={submission.name}
-            canPreview={canPreviewImage}
-          />
+          {/* Thumbnail with optional HoverCard preview - only for FILE type */}
+          {showThumbnail && (
+            <SubmissionThumbnail
+              thumbnailUrl={thumbnailUrl}
+              alt={submission.name}
+              canPreview={canPreviewImage}
+            />
+          )}
 
           {/* Content */}
-          <Stack gap={4} className="postybirb__file_submission__card_content">
+          <Stack gap={4} className="postybirb__submission__card_content">
             {/* Editable Title */}
-            <FileSubmissionTitle
+            <SubmissionTitle
               title={submission.title}
               name={submission.name}
-              onTitleChange={(title) =>
-                handleDefaultOptionChange({ title })
-              }
+              onTitleChange={(title) => handleDefaultOptionChange({ title })}
             />
 
             {/* Status badges */}
-            <FileSubmissionBadges submission={submission} />
+            <SubmissionBadges
+              submission={submission}
+              submissionType={submissionType}
+            />
 
             {/* Last modified */}
             <Group gap={4}>
               <IconClock
                 size={12}
-                className="postybirb__file_submission__timestamp_icon"
+                className="postybirb__submission__timestamp_icon"
               />
               <Text
                 size="xs"
@@ -141,7 +152,7 @@ export function FileSubmissionCard({
           </Stack>
 
           {/* Action buttons and menu */}
-          <FileSubmissionActions
+          <SubmissionActions
             canPost={canPost}
             hasScheduleTime={submission.hasScheduleTime}
             isScheduled={submission.isScheduled}
@@ -152,8 +163,8 @@ export function FileSubmissionCard({
             onDelete={handleDelete}
           />
         </Group>
-        <Box ml="xl">
-          <FileSubmissionQuickEditActions
+        <Box ml={showThumbnail ? 'xl' : undefined}>
+          <SubmissionQuickEditActions
             submission={submission}
             onDefaultOptionChange={handleDefaultOptionChange}
           />

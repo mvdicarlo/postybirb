@@ -3,6 +3,7 @@
  * Manages all UI-related state including sidenav, drawers, and view preferences.
  */
 
+import { SubmissionType } from '@postybirb/types';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { useShallow } from 'zustand/react/shallow';
@@ -71,6 +72,7 @@ interface UIState {
   fileSubmissionsFilter: SubmissionFilter;
   fileSubmissionsSearchQuery: string;
   messageSubmissionsFilter: SubmissionFilter;
+  messageSubmissionsSearchQuery: string;
 
   // Sub-nav visibility per route
   subNavVisible: boolean;
@@ -108,6 +110,7 @@ interface UIActions {
   setFileSubmissionsFilter: (filter: SubmissionFilter) => void;
   setFileSubmissionsSearchQuery: (query: string) => void;
   setMessageSubmissionsFilter: (filter: SubmissionFilter) => void;
+  setMessageSubmissionsSearchQuery: (query: string) => void;
 
   // Sub-nav actions
   setSubNavVisible: (visible: boolean) => void;
@@ -171,6 +174,7 @@ const initialState: UIState = {
   fileSubmissionsFilter: 'all',
   fileSubmissionsSearchQuery: '',
   messageSubmissionsFilter: 'all',
+  messageSubmissionsSearchQuery: '',
   subNavVisible: true,
   language: getDefaultLanguage(),
   colorScheme: 'auto',
@@ -213,6 +217,7 @@ export const useUIStore = create<UIStore>()(
       setFileSubmissionsFilter: (filter) => set({ fileSubmissionsFilter: filter }),
       setFileSubmissionsSearchQuery: (query) => set({ fileSubmissionsSearchQuery: query }),
       setMessageSubmissionsFilter: (filter) => set({ messageSubmissionsFilter: filter }),
+      setMessageSubmissionsSearchQuery: (query) => set({ messageSubmissionsSearchQuery: query }),
 
       // Sub-nav actions
       setSubNavVisible: (visible) => set({ subNavVisible: visible }),
@@ -293,13 +298,35 @@ export const useFileSubmissionsFilter = () =>
     }))
   );
 
-/** Select message submissions filter */
+/** Select message submissions filter and search query */
 export const useMessageSubmissionsFilter = () =>
   useUIStore(
     useShallow((state) => ({
       filter: state.messageSubmissionsFilter,
+      searchQuery: state.messageSubmissionsSearchQuery,
       setFilter: state.setMessageSubmissionsFilter,
+      setSearchQuery: state.setMessageSubmissionsSearchQuery,
     }))
+  );
+
+/** Generic submissions filter hook - returns filter state based on submission type */
+export const useSubmissionsFilter = (type: SubmissionType) =>
+  useUIStore(
+    useShallow((state) =>
+      type === SubmissionType.FILE
+        ? {
+            filter: state.fileSubmissionsFilter,
+            searchQuery: state.fileSubmissionsSearchQuery,
+            setFilter: state.setFileSubmissionsFilter,
+            setSearchQuery: state.setFileSubmissionsSearchQuery,
+          }
+        : {
+            filter: state.messageSubmissionsFilter,
+            searchQuery: state.messageSubmissionsSearchQuery,
+            setFilter: state.setMessageSubmissionsFilter,
+            setSearchQuery: state.setMessageSubmissionsSearchQuery,
+          }
+    )
   );
 
 /** Select sub-nav visibility */

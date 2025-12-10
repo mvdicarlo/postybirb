@@ -1,13 +1,13 @@
 /**
- * File Submissions Section styles.
- * Naming convention: postybirb__file_submission__element_modifier
+ * Submissions Section styles.
+ * Naming convention: postybirb__submission__element_modifier
  */
 
 /* =============================================================================
    Section Header
    ============================================================================= */
 
-.postybirb__file_submission__header {
+.postybirb__submission__header {
   position: sticky;
   top: 0;
   z-index: 10;
@@ -20,14 +20,14 @@
    Section Container
    ============================================================================= */
 
-.postybirb__file_submission__section {
+.postybirb__submission__section {
   display: flex;
   flex-direction: column;
   height: 100%;
 }
 
 /* Hidden file input for creating submissions */
-.postybirb__file_submission__file_input {
+.postybirb__submission__file_input {
   display: none;
 }
 
@@ -35,16 +35,16 @@
    Submission List
    ============================================================================= */
 
-.postybirb__file_submission__list_scroll {
+.postybirb__submission__list_scroll {
   flex: 1;
 }
 
-.postybirb__file_submission__list_loading {
+.postybirb__submission__list_loading {
   padding: var(--mantine-spacing-md);
   text-align: center;
 }
 
-.postybirb__file_submission__list_empty {
+.postybirb__submission__list_empty {
   padding: var(--mantine-spacing-md);
   text-align: center;
 }
@@ -53,7 +53,7 @@
    Submission Card
    ============================================================================= */
 
-.postybirb__file_submission__card {
+.postybirb__submission__card {
   cursor: pointer;
   user-select: none;
   border-left: none;
@@ -61,31 +61,31 @@
   border-top: none;
 }
 
-.postybirb__file_submission__card--selected {
+.postybirb__submission__card--selected {
   background-color: var(--mantine-color-primary-light);
   border-color: var(--mantine-color-primary-filled);
 }
 
 /* Drag handle */
-.postybirb__file_submission__drag_handle {
+.postybirb__submission__drag_handle {
   cursor: grab;
   display: flex;
   align-items: center;
   opacity: 0.5;
 }
 
-.postybirb__file_submission__drag_handle:active {
+.postybirb__submission__drag_handle:active {
   cursor: grabbing;
 }
 
 /* Card content wrapper - fills remaining space */
-.postybirb__file_submission__card_content {
+.postybirb__submission__card_content {
   flex: 1;
   min-width: 0;
 }
 
 /* Last modified timestamp row */
-.postybirb__file_submission__timestamp_icon {
+.postybirb__submission__timestamp_icon {
   opacity: 0.5;
 }
 
@@ -93,7 +93,7 @@
    Thumbnail
    ============================================================================= */
 
-.postybirb__file_submission__thumbnail {
+.postybirb__submission__thumbnail {
   flex-shrink: 0;
   width: 40px;
   height: 40px;
@@ -105,7 +105,7 @@
   justify-content: center;
 }
 
-.postybirb__file_submission__thumbnail_placeholder {
+.postybirb__submission__thumbnail_placeholder {
   opacity: 0.5;
 }
 
@@ -113,11 +113,11 @@
    Tabs
    ============================================================================= */
 
-.postybirb__file_submission__tabs {
+.postybirb__submission__tabs {
   flex-shrink: 0;
 }
 
-.postybirb__file_submission__tabs_panel {
+.postybirb__submission__tabs_panel {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -128,7 +128,7 @@
    Archived List Placeholder
    ============================================================================= */
 
-.postybirb__file_submission__archived_placeholder {
+.postybirb__submission__archived_placeholder {
   display: flex;
   flex-direction: column;
   align-items: center;

@@ -1,20 +1,22 @@
 /**
- * FileSubmissionList - Renders the scrollable list of file submissions.
+ * SubmissionList - Renders the scrollable list of submissions.
  */
 
 import { Trans } from '@lingui/react/macro';
 import { Box, Loader, ScrollArea, Stack, Text } from '@mantine/core';
-import { IWebsiteFormFields } from '@postybirb/types';
+import { IWebsiteFormFields, SubmissionType } from '@postybirb/types';
 import type { SubmissionRecord } from '../../../stores/records';
-import { FileSubmissionCard } from './file-submission-card';
-import './file-submissions-section.css';
+import { SubmissionCard } from './submission-card';
+import './submissions-section.css';
 import { DRAGGABLE_SUBMISSION_CLASS } from './types';
 
-interface FileSubmissionListProps {
+interface SubmissionListProps {
   /** Whether submissions are loading */
   isLoading: boolean;
   /** Ordered list of submissions to display */
   submissions: SubmissionRecord[];
+  /** Type of submissions (FILE or MESSAGE) */
+  submissionType: SubmissionType;
   /** Currently selected submission IDs */
   selectedIds: string[];
   /** Whether drag reordering is enabled */
@@ -30,7 +32,10 @@ interface FileSubmissionListProps {
   /** Handler for editing a submission */
   onEdit: (id: string) => void;
   /** Handler for changing a default option field (title, tags, rating, etc.) */
-  onDefaultOptionChange: (id: string, update: Partial<IWebsiteFormFields>) => void;
+  onDefaultOptionChange: (
+    id: string,
+    update: Partial<IWebsiteFormFields>,
+  ) => void;
   /** Handler for posting a submission */
   onPost: (id: string) => void;
   /** Handler for scheduling a submission */
@@ -38,11 +43,12 @@ interface FileSubmissionListProps {
 }
 
 /**
- * Scrollable list of file submission cards.
+ * Scrollable list of submission cards.
  */
-export function FileSubmissionList({
+export function SubmissionList({
   isLoading,
   submissions,
+  submissionType,
   selectedIds,
   isDragEnabled,
   containerRef,
@@ -53,10 +59,10 @@ export function FileSubmissionList({
   onDefaultOptionChange,
   onPost,
   onSchedule,
-}: FileSubmissionListProps) {
+}: SubmissionListProps) {
   if (isLoading) {
     return (
-      <Box className="postybirb__file_submission__list_loading">
+      <Box className="postybirb__submission__list_loading">
         <Loader size="sm" />
       </Box>
     );
@@ -64,7 +70,7 @@ export function FileSubmissionList({
 
   if (submissions.length === 0) {
     return (
-      <Box className="postybirb__file_submission__list_empty">
+      <Box className="postybirb__submission__list_empty">
         <Text size="sm" c="dimmed">
           <Trans>No submissions found</Trans>
         </Text>
@@ -74,15 +80,16 @@ export function FileSubmissionList({
 
   return (
     <ScrollArea
-      className="postybirb__file_submission__list_scroll"
+      className="postybirb__submission__list_scroll"
       type="hover"
       scrollbarSize={6}
     >
       <Stack gap="0" ref={containerRef}>
         {submissions.map((submission) => (
-          <FileSubmissionCard
+          <SubmissionCard
             key={submission.id}
             submission={submission}
+            submissionType={submissionType}
             isSelected={selectedIds.includes(submission.id)}
             onSelect={onSelect}
             onDelete={onDelete}

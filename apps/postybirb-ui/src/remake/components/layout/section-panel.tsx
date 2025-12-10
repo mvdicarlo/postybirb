@@ -4,14 +4,12 @@
  */
 
 import { Box } from '@mantine/core';
+import { SubmissionType } from '@postybirb/types';
 import '../../styles/layout.css';
 import { getSectionPanelConfig, type ViewState } from '../../types/view-state';
 import { ComponentErrorBoundary } from '../error-boundary';
-import {
-  AccountsSection,
-  FileSubmissionsSection,
-  MessageSubmissionsSection,
-} from '../sections';
+import { AccountsSection } from '../sections/accounts-section';
+import { SubmissionsSection } from '../sections/submissions-section';
 
 interface SectionPanelProps {
   /** Current view state */
@@ -26,9 +24,19 @@ function SectionContent({ viewState }: SectionPanelProps) {
     case 'accounts':
       return <AccountsSection viewState={viewState} />;
     case 'file-submissions':
-      return <FileSubmissionsSection viewState={viewState} />;
+      return (
+        <SubmissionsSection
+          viewState={viewState}
+          submissionType={SubmissionType.FILE}
+        />
+      );
     case 'message-submissions':
-      return <MessageSubmissionsSection viewState={viewState} />;
+      return (
+        <SubmissionsSection
+          viewState={viewState}
+          submissionType={SubmissionType.MESSAGE}
+        />
+      );
     default:
       return null;
   }

@@ -1,11 +1,11 @@
 /**
- * FileSubmissionTitle - Editable title component for file submissions.
+ * SubmissionTitle - Editable title component for submissions.
  */
 
 import { Text, TextInput } from '@mantine/core';
 import { useCallback, useEffect, useState } from 'react';
 
-interface FileSubmissionTitleProps {
+interface SubmissionTitleProps {
   /** Current title value */
   title: string | undefined;
   /** Fallback name if title is empty */
@@ -17,11 +17,11 @@ interface FileSubmissionTitleProps {
 /**
  * Editable title component that shows as text and becomes an input on click.
  */
-export function FileSubmissionTitle({
+export function SubmissionTitle({
   title,
   name,
   onTitleChange,
-}: FileSubmissionTitleProps) {
+}: SubmissionTitleProps) {
   const [localTitle, setLocalTitle] = useState(title ?? '');
   const [isEditing, setIsEditing] = useState(false);
 
@@ -54,7 +54,7 @@ export function FileSubmissionTitle({
         setIsEditing(false);
       }
     },
-    [title]
+    [title],
   );
 
   if (isEditing) {

@@ -105,7 +105,7 @@ function BaseNavLink(
             </span>
           )
         }
-        onClick={onClickCapture}
+        onClickCapture={onClickCapture}
         className={`postybirb-nav-link ${active ? 'active' : ''} ${collapsed ? 'collapsed' : ''}`}
       />
     </Tooltip>

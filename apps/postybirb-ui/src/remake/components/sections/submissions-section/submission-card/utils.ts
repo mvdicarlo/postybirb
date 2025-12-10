@@ -1,5 +1,5 @@
 /**
- * Utility functions for FileSubmissionCard components.
+ * Utility functions for SubmissionCard components.
  */
 
 import type { SubmissionRecord } from '../../../../stores/records';
@@ -10,7 +10,7 @@ import { defaultTargetProvider } from '../../../../transports/http-client';
  * Returns undefined if no thumbnail is available.
  */
 export function getThumbnailUrl(
-  submission: SubmissionRecord
+  submission: SubmissionRecord,
 ): string | undefined {
   const { primaryFile } = submission;
   if (!primaryFile) return undefined;

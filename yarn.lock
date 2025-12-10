@@ -23616,6 +23616,7 @@ __metadata:
     better-sqlite3: "npm:^12.4.1"
     class-transformer: "npm:^0.5.1"
     class-validator: "npm:^0.14.1"
+    clsx: "npm:^2.1.1"
     compression: "npm:^1.7.4"
     croner: "npm:^8.1.2"
     cronstrue: "npm:^2.50.0"

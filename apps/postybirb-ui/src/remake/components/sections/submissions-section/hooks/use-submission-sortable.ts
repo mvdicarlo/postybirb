@@ -58,7 +58,7 @@ export function useSubmissionSortable({
           const newOrdered = [...orderedSubmissions];
           const [movedSubmission] = newOrdered.splice(
             event.oldDraggableIndex,
-            1
+            1,
           );
           newOrdered.splice(event.newDraggableIndex, 0, movedSubmission);
           setOrderedSubmissions(newOrdered);

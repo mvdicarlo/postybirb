@@ -6,10 +6,16 @@ import { useCallback, useMemo, useRef } from 'react';
 import type { SubmissionRecord } from '../../../../stores/records';
 import { useUIStore } from '../../../../stores/ui-store';
 import {
+    FileSubmissionsViewState,
     isFileSubmissionsViewState,
+    isMessageSubmissionsViewState,
+    MessageSubmissionsViewState,
     type ViewState,
 } from '../../../../types/view-state';
-import type { SelectionState } from '../file-submission-section-header';
+import type { SelectionState } from '../submission-section-header';
+
+/** Union type for submission view states */
+type SubmissionsViewState = FileSubmissionsViewState | MessageSubmissionsViewState;
 
 interface UseSubmissionSelectionProps {
   /** Current view state */
@@ -32,6 +38,17 @@ interface UseSubmissionSelectionResult {
 }
 
 /**
+ * Check if view state is a submissions view state (FILE or MESSAGE).
+ * Uses a type predicate for proper type narrowing.
+ */
+function isSubmissionsViewState(viewState: ViewState): viewState is SubmissionsViewState {
+  return (
+    isFileSubmissionsViewState(viewState) ||
+    isMessageSubmissionsViewState(viewState)
+  );
+}
+
+/**
  * Hook for managing submission selection with support for:
  * - Single click selection
  * - Ctrl/Cmd+click multi-select toggle
@@ -45,13 +62,15 @@ export function useSubmissionSelection({
   const setViewState = useUIStore((state) => state.setViewState);
 
   // Get selected IDs from view state (memoized to prevent unnecessary rerenders)
-  const selectedIds = useMemo(
-    () =>
-      isFileSubmissionsViewState(viewState)
-        ? viewState.params.selectedIds
-        : [],
-    [viewState]
-  );
+  const selectedIds = useMemo(() => {
+    if (isFileSubmissionsViewState(viewState)) {
+      return viewState.params.selectedIds;
+    }
+    if (isMessageSubmissionsViewState(viewState)) {
+      return viewState.params.selectedIds;
+    }
+    return [];
+  }, [viewState]);
 
   // Track the last selected item for shift+click range selection
   const lastSelectedIdRef = useRef<string | null>(null);
@@ -70,7 +89,7 @@ export function useSubmissionSelection({
   // Update view state with new selection
   const updateSelection = useCallback(
     (newSelectedIds: string[]) => {
-      if (!isFileSubmissionsViewState(viewState)) return;
+      if (!isSubmissionsViewState(viewState)) return;
 
       setViewState({
         ...viewState,
@@ -79,22 +98,22 @@ export function useSubmissionSelection({
           selectedIds: newSelectedIds,
           mode: newSelectedIds.length > 1 ? 'multi' : 'single',
         },
-      });
+      } as ViewState);
     },
-    [viewState, setViewState]
+    [viewState, setViewState],
   );
 
   // Handle selecting a submission
   const handleSelect = useCallback(
     (id: string, event: React.MouseEvent) => {
-      if (!isFileSubmissionsViewState(viewState)) return;
+      if (!isSubmissionsViewState(viewState)) return;
 
       let newSelectedIds: string[];
 
       if (event.shiftKey && lastSelectedIdRef.current) {
         // Shift+click: select range from last selected to current
         const lastIndex = orderedSubmissions.findIndex(
-          (s) => s.id === lastSelectedIdRef.current
+          (s) => s.id === lastSelectedIdRef.current,
         );
         const currentIndex = orderedSubmissions.findIndex((s) => s.id === id);
 
@@ -133,7 +152,7 @@ export function useSubmissionSelection({
 
       updateSelection(newSelectedIds);
     },
-    [viewState, orderedSubmissions, selectedIds, updateSelection]
+    [viewState, orderedSubmissions, selectedIds, updateSelection],
   );
 
   // Handle toggling select all/none
@@ -151,7 +170,7 @@ export function useSubmissionSelection({
     (ids: string[]) => {
       updateSelection(ids);
     },
-    [updateSelection]
+    [updateSelection],
   );
 
   return {

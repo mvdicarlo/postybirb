@@ -1,9 +1,10 @@
 /**
- * FileSubmissionBadges - Status badges for file submissions.
+ * SubmissionBadges - Status badges for submissions.
  */
 
 import { Trans } from '@lingui/react/macro';
 import { Badge, Group, Tooltip } from '@mantine/core';
+import { SubmissionType } from '@postybirb/types';
 import {
     IconAlertTriangle,
     IconCalendar,
@@ -14,18 +15,21 @@ import {
 } from '@tabler/icons-react';
 import type { SubmissionRecord } from '../../../../stores/records';
 
-interface FileSubmissionBadgesProps {
+interface SubmissionBadgesProps {
   /** The submission record to display badges for */
   submission: SubmissionRecord;
+  /** Type of submission (FILE or MESSAGE) - used to conditionally show file count */
+  submissionType: SubmissionType;
 }
 
 /**
- * Displays status badges for a file submission.
+ * Displays status badges for a submission.
  * Shows scheduled, queued, errors, warnings, ready, no websites, and file count badges.
  */
-export function FileSubmissionBadges({
+export function SubmissionBadges({
   submission,
-}: FileSubmissionBadgesProps) {
+  submissionType,
+}: SubmissionBadgesProps) {
   return (
     <Group gap={4}>
       {/* Scheduled badge */}
@@ -118,12 +122,13 @@ export function FileSubmissionBadges({
         </Tooltip>
       )}
 
-      {/* Files count */}
-      {submission.files.length > 1 && (
-        <Badge size="xs" variant="outline" color="gray">
-          {submission.files.length} <Trans>files</Trans>
-        </Badge>
-      )}
+      {/* Files count - only show for FILE type submissions with multiple files */}
+      {submissionType === SubmissionType.FILE &&
+        submission.files.length > 1 && (
+          <Badge size="xs" variant="outline" color="gray">
+            {submission.files.length} <Trans>files</Trans>
+          </Badge>
+        )}
     </Group>
   );
 }

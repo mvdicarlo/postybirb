@@ -10,13 +10,19 @@ import websiteOptionsApi from '../../../../api/website-options.api';
 import type { SubmissionRecord } from '../../../../stores/records';
 import { useUIStore } from '../../../../stores/ui-store';
 import {
+    FileSubmissionsViewState,
     isFileSubmissionsViewState,
+    isMessageSubmissionsViewState,
+    MessageSubmissionsViewState,
     type ViewState,
 } from '../../../../types/view-state';
 import {
     showDeletedNotification,
     showDeleteErrorNotification,
 } from '../../../../utils/notifications';
+
+/** Union type for submission view states */
+type SubmissionsViewState = FileSubmissionsViewState | MessageSubmissionsViewState;
 
 interface UseSubmissionHandlersProps {
   /** Current view state */
@@ -25,14 +31,18 @@ interface UseSubmissionHandlersProps {
   allSubmissions: SubmissionRecord[];
   /** Currently selected IDs */
   selectedIds: string[];
+  /** Type of submissions (FILE or MESSAGE) */
+  submissionType: SubmissionType;
 }
 
 interface UseSubmissionHandlersResult {
-  /** File input ref for creating submissions */
+  /** File input ref for creating file submissions */
   fileInputRef: React.RefObject<HTMLInputElement>;
-  /** Handle creating a new submission (opens file picker) */
+  /** Handle creating a new submission (opens file picker for FILE, direct create for MESSAGE) */
   handleCreateSubmission: () => void;
-  /** Handle file selection for new submission */
+  /** Handle creating a message submission with a title */
+  handleCreateMessageSubmission: (title: string) => Promise<void>;
+  /** Handle file selection for new file submission */
   handleFileChange: (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => Promise<void>;
@@ -58,22 +68,54 @@ interface UseSubmissionHandlersResult {
 }
 
 /**
+ * Check if view state is a submissions view state (FILE or MESSAGE).
+ * Uses a type predicate for proper type narrowing.
+ */
+function isSubmissionsViewState(viewState: ViewState): viewState is SubmissionsViewState {
+  return (
+    isFileSubmissionsViewState(viewState) ||
+    isMessageSubmissionsViewState(viewState)
+  );
+}
+
+/**
  * Hook for handling submission actions like delete, duplicate, edit, etc.
  */
 export function useSubmissionHandlers({
   viewState,
   allSubmissions,
   selectedIds,
+  submissionType,
 }: UseSubmissionHandlersProps): UseSubmissionHandlersResult {
   const setViewState = useUIStore((state) => state.setViewState);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Handle creating a new submission
   const handleCreateSubmission = useCallback(() => {
-    fileInputRef.current?.click();
-  }, []);
+    if (submissionType === SubmissionType.FILE) {
+      fileInputRef.current?.click();
+    }
+    // For MESSAGE type, the popover handles creation via handleCreateMessageSubmission
+  }, [submissionType]);
 
-  // Handle file selection for new submission
+  // Handle creating a message submission with title
+  const handleCreateMessageSubmission = useCallback(
+    async (title: string) => {
+      try {
+        await submissionApi.create({
+          type: SubmissionType.MESSAGE,
+          // Backend data value - not UI text
+          // eslint-disable-next-line lingui/no-unlocalized-strings
+          name: title || 'New Message',
+        });
+      } catch {
+        // Error handling could be added here
+      }
+    },
+    [],
+  );
+
+  // Handle file selection for new file submission
   const handleFileChange = useCallback(
     async (event: React.ChangeEvent<HTMLInputElement>) => {
       const { files } = event.target;
@@ -104,14 +146,14 @@ export function useSubmissionHandlers({
         showDeletedNotification(1);
 
         // Remove from selection if selected
-        if (isFileSubmissionsViewState(viewState) && selectedIds.includes(id)) {
+        if (isSubmissionsViewState(viewState) && selectedIds.includes(id)) {
           setViewState({
             ...viewState,
             params: {
               ...viewState.params,
               selectedIds: selectedIds.filter((sid) => sid !== id),
             },
-          });
+          } as ViewState);
         }
       } catch {
         showDeleteErrorNotification();
@@ -129,7 +171,7 @@ export function useSubmissionHandlers({
       showDeletedNotification(selectedIds.length);
 
       // Clear selection
-      if (isFileSubmissionsViewState(viewState)) {
+      if (isSubmissionsViewState(viewState)) {
         setViewState({
           ...viewState,
           params: {
@@ -137,7 +179,7 @@ export function useSubmissionHandlers({
             selectedIds: [],
             mode: 'single',
           },
-        });
+        } as ViewState);
       }
     } catch {
       showDeleteErrorNotification();
@@ -164,7 +206,7 @@ export function useSubmissionHandlers({
       await postQueueApi.enqueue(validIds);
 
       // Clear selection after posting
-      if (isFileSubmissionsViewState(viewState)) {
+      if (isSubmissionsViewState(viewState)) {
         setViewState({
           ...viewState,
           params: {
@@ -172,7 +214,7 @@ export function useSubmissionHandlers({
             selectedIds: [],
             mode: 'single',
           },
-        });
+        } as ViewState);
       }
     } catch {
       // Error handling could be added here
@@ -191,7 +233,7 @@ export function useSubmissionHandlers({
   // Handle editing a submission (select it)
   const handleEdit = useCallback(
     (id: string) => {
-      if (!isFileSubmissionsViewState(viewState)) return;
+      if (!isSubmissionsViewState(viewState)) return;
       setViewState({
         ...viewState,
         params: {
@@ -199,7 +241,7 @@ export function useSubmissionHandlers({
           selectedIds: [id],
           mode: 'single',
         },
-      });
+      } as ViewState);
     },
     [viewState, setViewState],
   );
@@ -240,7 +282,7 @@ export function useSubmissionHandlers({
   const handleSchedule = useCallback(
     (id: string) => {
       // For now, just select the submission - the schedule UI will be in the main panel
-      if (!isFileSubmissionsViewState(viewState)) return;
+      if (!isSubmissionsViewState(viewState)) return;
       setViewState({
         ...viewState,
         params: {
@@ -248,7 +290,7 @@ export function useSubmissionHandlers({
           selectedIds: [id],
           mode: 'single',
         },
-      });
+      } as ViewState);
       // TODO: Open schedule modal or panel
     },
     [viewState, setViewState],
@@ -257,6 +299,7 @@ export function useSubmissionHandlers({
   return {
     fileInputRef,
     handleCreateSubmission,
+    handleCreateMessageSubmission,
     handleFileChange,
     handleDelete,
     handleDeleteSelected,

@@ -1,9 +1,7 @@
 import {
-    BlockNoteEditor,
-    BlockNoteSchema,
-    defaultBlockSpecs,
-    defaultInlineContentSpecs,
-    defaultStyleSpecs,
+  defaultBlockSpecs,
+  defaultInlineContentSpecs,
+  defaultStyleSpecs,
 } from '@blocknote/core';
 import type { DefaultShortcut } from './custom-blocks/default-shortcut-block';
 import type { InlineCustomShortcut } from './custom-blocks/inline-custom-shortcut';
@@ -28,21 +26,3 @@ export type CustomInlineContentSpecs = typeof defaultInlineContentSpecs & {
  * Custom style specs (using defaults).
  */
 export type CustomStyleSpecs = typeof defaultStyleSpecs;
-
-/**
- * Custom BlockNote schema type.
- */
-export type CustomBlockNoteSchema = BlockNoteSchema<
-  CustomBlockSpecs,
-  CustomInlineContentSpecs,
-  CustomStyleSpecs
->;
-
-/**
- * Custom BlockNote editor type.
- */
-export type CustomBlockNoteEditor = BlockNoteEditor<
-  CustomBlockSpecs,
-  CustomInlineContentSpecs,
-  CustomStyleSpecs
->;

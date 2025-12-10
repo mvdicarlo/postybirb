@@ -1,12 +1,14 @@
 /**
- * FileSubmissionsSection - Section panel content for file submissions view.
- * Displays a scrollable list of file submissions with filtering.
+ * SubmissionsSection - Section panel content for submissions view.
+ * Displays a scrollable list of submissions with filtering.
+ * Works for both FILE and MESSAGE submission types.
  */
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import { Box, Tabs } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { IconArchive, IconFiles } from '@tabler/icons-react';
+import { SubmissionType } from '@postybirb/types';
+import { IconArchive, IconFiles, IconMessage } from '@tabler/icons-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { tinykeys } from 'tinykeys';
 import {
@@ -14,34 +16,30 @@ import {
     toTinykeysFormat,
 } from '../../../config/keybindings';
 import { useSubmissionsLoading } from '../../../stores/submission-store';
-import type { ViewState } from '../../../types/view-state';
 import { ConfirmActionModal } from '../../confirm-action-modal';
-import { ArchivedFileSubmissionList } from './archived-file-submission-list';
-import { FileSubmissionList } from './file-submission-list';
-import { FileSubmissionSectionHeader } from './file-submission-section-header';
-import './file-submissions-section.css';
+import { ArchivedSubmissionList } from './archived-submission-list';
 import {
-    useFileSubmissions,
     useSubmissionHandlers,
+    useSubmissions,
     useSubmissionSelection,
     useSubmissionSortable,
 } from './hooks';
+import { SubmissionList } from './submission-list';
+import { SubmissionSectionHeader } from './submission-section-header';
+import './submissions-section.css';
+import type { SubmissionsSectionProps } from './types';
 
 /** Tab values for submissions view */
 type SubmissionTab = 'submissions' | 'archived';
 
-interface FileSubmissionsSectionProps {
-  /** Current view state */
-  viewState: ViewState;
-}
-
 /**
- * Section panel content for the file submissions view.
- * Displays a scrollable list of file submissions with search and filter.
+ * Section panel content for the submissions view.
+ * Displays a scrollable list of submissions with search and filter.
  */
-export function FileSubmissionsSection({
+export function SubmissionsSection({
   viewState,
-}: FileSubmissionsSectionProps) {
+  submissionType,
+}: SubmissionsSectionProps) {
   const { isLoading } = useSubmissionsLoading();
   const { t } = useLingui();
 
@@ -54,7 +52,7 @@ export function FileSubmissionsSection({
     orderedSubmissions,
     setOrderedSubmissions,
     isDragEnabled,
-  } = useFileSubmissions();
+  } = useSubmissions({ submissionType });
 
   // Selection management
   const { selectedIds, selectionState, handleSelect, handleToggleSelectAll } =
@@ -74,6 +72,7 @@ export function FileSubmissionsSection({
   const {
     fileInputRef,
     handleCreateSubmission,
+    handleCreateMessageSubmission,
     handleFileChange,
     handleDelete,
     handleDeleteSelected,
@@ -87,6 +86,7 @@ export function FileSubmissionsSection({
     viewState,
     allSubmissions,
     selectedIds,
+    submissionType,
   });
 
   // Delete confirmation modal
@@ -146,8 +146,12 @@ export function FileSubmissionsSection({
     return unsubscribe;
   }, [selectedIds.length, deleteModal]);
 
+  // Get the appropriate icon for the submissions tab
+  const SubmissionsIcon =
+    submissionType === SubmissionType.FILE ? IconFiles : IconMessage;
+
   return (
-    <Box h="100%" className="postybirb__file_submission__section">
+    <Box h="100%" className="postybirb__submission__section">
       {/* Delete confirmation modal */}
       <ConfirmActionModal
         opened={deleteModalOpened}
@@ -187,19 +191,23 @@ export function FileSubmissionsSection({
         confirmColor="blue"
       />
 
-      {/* Hidden file input for creating submissions */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        multiple
-        className="postybirb__file_submission__file_input"
-        onChange={handleFileChange}
-        accept="image/*,video/*,audio/*,.gif,.webp,.png,.jpg,.jpeg,.pdf,.txt,.doc,.docx"
-      />
+      {/* Hidden file input for creating file submissions */}
+      {submissionType === SubmissionType.FILE && (
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          className="postybirb__submission__file_input"
+          onChange={handleFileChange}
+          accept="image/*,video/*,audio/*,.gif,.webp,.png,.jpg,.jpeg,.pdf,.txt,.doc,.docx"
+        />
+      )}
 
       {/* Sticky header */}
-      <FileSubmissionSectionHeader
+      <SubmissionSectionHeader
+        submissionType={submissionType}
         onCreateSubmission={handleCreateSubmission}
+        onCreateMessageSubmission={handleCreateMessageSubmission}
         selectionState={selectionState}
         onToggleSelectAll={handleToggleSelectAll}
         selectedCount={selectedIds.length}
@@ -212,10 +220,13 @@ export function FileSubmissionsSection({
       <Tabs
         value={activeTab}
         onChange={(value) => setActiveTab(value as SubmissionTab)}
-        className="postybirb__file_submission__tabs"
+        className="postybirb__submission__tabs"
       >
         <Tabs.List grow>
-          <Tabs.Tab value="submissions" leftSection={<IconFiles size={14} />}>
+          <Tabs.Tab
+            value="submissions"
+            leftSection={<SubmissionsIcon size={14} />}
+          >
             {t`Submissions`}
           </Tabs.Tab>
           <Tabs.Tab value="archived" leftSection={<IconArchive size={14} />}>
@@ -226,9 +237,10 @@ export function FileSubmissionsSection({
 
       {/* Tab content */}
       {activeTab === 'submissions' ? (
-        <FileSubmissionList
+        <SubmissionList
           isLoading={isLoading}
           submissions={orderedSubmissions}
+          submissionType={submissionType}
           selectedIds={selectedIds}
           isDragEnabled={isDragEnabled}
           containerRef={containerRef}
@@ -241,7 +253,7 @@ export function FileSubmissionsSection({
           onSchedule={handleSchedule}
         />
       ) : (
-        <ArchivedFileSubmissionList />
+        <ArchivedSubmissionList />
       )}
     </Box>
   );

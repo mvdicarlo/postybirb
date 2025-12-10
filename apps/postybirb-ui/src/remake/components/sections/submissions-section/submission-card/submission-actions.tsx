@@ -1,5 +1,5 @@
 /**
- * FileSubmissionActions - Action buttons and menu for file submissions.
+ * SubmissionActions - Action buttons and menu for submissions.
  */
 
 import { Trans } from '@lingui/react/macro';
@@ -15,7 +15,7 @@ import {
 import { useCallback } from 'react';
 import { HoldToConfirmButton } from '../../../hold-to-confirm';
 
-interface FileSubmissionActionsProps {
+interface SubmissionActionsProps {
   /** Whether the submission can be posted */
   canPost: boolean;
   /** Whether the submission has a schedule time configured */
@@ -35,9 +35,9 @@ interface FileSubmissionActionsProps {
 }
 
 /**
- * Action buttons (schedule, post) and dropdown menu for file submissions.
+ * Action buttons (schedule, post) and dropdown menu for submissions.
  */
-export function FileSubmissionActions({
+export function SubmissionActions({
   canPost,
   hasScheduleTime,
   isScheduled,
@@ -46,13 +46,13 @@ export function FileSubmissionActions({
   onEdit,
   onDuplicate,
   onDelete,
-}: FileSubmissionActionsProps) {
+}: SubmissionActionsProps) {
   const handleSchedule = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
       onSchedule?.();
     },
-    [onSchedule]
+    [onSchedule],
   );
 
   const handleEdit = useCallback(
@@ -60,7 +60,7 @@ export function FileSubmissionActions({
       e.stopPropagation();
       onEdit?.();
     },
-    [onEdit]
+    [onEdit],
   );
 
   const handleDuplicate = useCallback(
@@ -68,7 +68,7 @@ export function FileSubmissionActions({
       e.stopPropagation();
       onDuplicate?.();
     },
-    [onDuplicate]
+    [onDuplicate],
   );
 
   const handleDelete = useCallback(
@@ -76,7 +76,7 @@ export function FileSubmissionActions({
       e.stopPropagation();
       onDelete?.();
     },
-    [onDelete]
+    [onDelete],
   );
 
   return (

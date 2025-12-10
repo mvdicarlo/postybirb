@@ -5,15 +5,13 @@
 
 import { Trans } from '@lingui/react/macro';
 import { Box, Center, LoadingOverlay, Stack, Text, Title } from '@mantine/core';
+import { SubmissionType } from '@postybirb/types';
 import { IconHome } from '@tabler/icons-react';
 import '../../styles/layout.css';
 import { isHomeViewState, type ViewState } from '../../types/view-state';
 import { ComponentErrorBoundary } from '../error-boundary';
-import {
-  AccountsContent,
-  FileSubmissionsContent,
-  MessageSubmissionsContent,
-} from '../sections';
+import { AccountsContent } from '../sections/accounts-section';
+import { SubmissionsContent } from '../sections/submissions-section';
 
 interface PrimaryContentProps {
   /** Current view state */
@@ -56,9 +54,19 @@ function ViewContent({ viewState }: PrimaryContentProps) {
     case 'accounts':
       return <AccountsContent viewState={viewState} />;
     case 'file-submissions':
-      return <FileSubmissionsContent viewState={viewState} />;
+      return (
+        <SubmissionsContent
+          viewState={viewState}
+          submissionType={SubmissionType.FILE}
+        />
+      );
     case 'message-submissions':
-      return <MessageSubmissionsContent viewState={viewState} />;
+      return (
+        <SubmissionsContent
+          viewState={viewState}
+          submissionType={SubmissionType.MESSAGE}
+        />
+      );
     default:
       return <HomeContent />;
   }

@@ -1,16 +1,18 @@
 /**
- * Shared types for FileSubmissionCard components.
+ * Shared types for SubmissionCard components.
  */
 
-import { IWebsiteFormFields } from '@postybirb/types';
+import { IWebsiteFormFields, SubmissionType } from '@postybirb/types';
 import type { SubmissionRecord } from '../../../../stores/records';
 
 /**
- * Props for the FileSubmissionCard component.
+ * Props for the SubmissionCard component.
  */
-export interface FileSubmissionCardProps {
+export interface SubmissionCardProps {
   /** The submission record to display */
   submission: SubmissionRecord;
+  /** Type of submission (FILE or MESSAGE) */
+  submissionType: SubmissionType;
   /** Whether this card is selected */
   isSelected?: boolean;
   /** Handler for selecting this submission */

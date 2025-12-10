@@ -1,12 +1,12 @@
 /**
- * FileSubmissionThumbnail - Thumbnail component with optional HoverCard preview.
+ * SubmissionThumbnail - Thumbnail component with optional HoverCard preview.
  */
 
 import { Box, HoverCard, Image } from '@mantine/core';
 import { IconFile } from '@tabler/icons-react';
-import '../file-submissions-section.css';
+import '../submissions-section.css';
 
-interface FileSubmissionThumbnailProps {
+interface SubmissionThumbnailProps {
   /** URL of the thumbnail image */
   thumbnailUrl: string | undefined;
   /** Alt text for the image */
@@ -16,24 +16,24 @@ interface FileSubmissionThumbnailProps {
 }
 
 /**
- * Thumbnail component for file submissions.
+ * Thumbnail component for submissions.
  * Shows the thumbnail image or a placeholder icon.
  * Optionally wraps in a HoverCard for image preview on hover.
  */
-export function FileSubmissionThumbnail({
+export function SubmissionThumbnail({
   thumbnailUrl,
   alt,
   canPreview = false,
-}: FileSubmissionThumbnailProps) {
+}: SubmissionThumbnailProps) {
   const thumbnailBox = (
-    <Box className="postybirb__file_submission__thumbnail">
+    <Box className="postybirb__submission__thumbnail">
       {thumbnailUrl ? (
         <Image src={thumbnailUrl} alt={alt} w={40} h={40} fit="cover" />
       ) : (
         <IconFile
           size={20}
           stroke={1.5}
-          className="postybirb__file_submission__thumbnail_placeholder"
+          className="postybirb__submission__thumbnail_placeholder"
         />
       )}
     </Box>

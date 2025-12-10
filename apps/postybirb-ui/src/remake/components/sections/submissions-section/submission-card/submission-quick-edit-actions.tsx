@@ -1,5 +1,5 @@
 /**
- * FileSubmissionQuickEditActions - Quick edit controls for file submissions.
+ * SubmissionQuickEditActions - Quick edit controls for submissions.
  * Provides inline editing for tags and rating without opening the full editor.
  */
 
@@ -22,7 +22,7 @@ import {
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { SubmissionRecord } from '../../../../stores';
 
-type FileSubmissionQuickEditActionsProps = {
+type SubmissionQuickEditActionsProps = {
   submission: SubmissionRecord;
   onDefaultOptionChange?: (update: Partial<IWebsiteFormFields>) => void;
 };
@@ -134,7 +134,7 @@ function QuickEditTags({ tags, onChange }: QuickEditTagsProps) {
     <TagsInput
       clearable
       size="xs"
-      className="postybirb__file_submission__quick_edit_tags"
+      className="postybirb__submission__quick_edit_tags"
       leftSection={<IconTag size="13" />}
       value={localTags}
       onChange={handleChange}
@@ -188,10 +188,10 @@ function QuickEditRating({ rating, onChange }: QuickEditRatingProps) {
   );
 }
 
-export function FileSubmissionQuickEditActions({
+export function SubmissionQuickEditActions({
   submission,
   onDefaultOptionChange,
-}: FileSubmissionQuickEditActionsProps) {
+}: SubmissionQuickEditActionsProps) {
   const defaultOptions = submission.getDefaultOptions();
   const tags = defaultOptions?.data.tags ?? DefaultTagValue();
   const rating = defaultOptions?.data.rating ?? SubmissionRating.GENERAL;
@@ -212,7 +212,7 @@ export function FileSubmissionQuickEditActions({
 
   return (
     <Group
-      className="postybirb__file_submission__quick_edit_actions"
+      className="postybirb__submission__quick_edit_actions"
       gap="2"
       align="flex-end"
     >

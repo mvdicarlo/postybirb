@@ -5,11 +5,7 @@
 
 export { AccountsContent, AccountsSection } from './accounts-section';
 export {
-    FileSubmissionsContent,
-    FileSubmissionsSection
-} from './file-submissions-section';
-export {
-    MessageSubmissionsContent,
-    MessageSubmissionsSection
-} from './message-submissions-section';
+    SubmissionsContent,
+    SubmissionsSection
+} from './submissions-section';
 
