@@ -18,20 +18,16 @@ import submissionApi from '../../../../api/submission.api';
 import websiteOptionsApi from '../../../../api/website-options.api';
 import type { SubmissionRecord } from '../../../../stores/records';
 import { useUIStore } from '../../../../stores/ui-store';
-import {
-    FileSubmissionsViewState,
-    isFileSubmissionsViewState,
-    isMessageSubmissionsViewState,
-    MessageSubmissionsViewState,
-    type ViewState,
-} from '../../../../types/view-state';
+import { type ViewState } from '../../../../types/view-state';
 import {
     showDeletedNotification,
     showDeleteErrorNotification,
+    showDuplicateErrorNotification,
+    showErrorNotification,
+    showPostErrorNotification,
+    showUpdateErrorNotification,
 } from '../../../../utils/notifications';
-
-/** Union type for submission view states */
-type SubmissionsViewState = FileSubmissionsViewState | MessageSubmissionsViewState;
+import { isSubmissionsViewState } from '../types';
 
 interface UseSubmissionHandlersProps {
   /** Current view state */
@@ -100,17 +96,6 @@ interface UseSubmissionHandlersResult {
     schedule: ISubmissionScheduleInfo,
     isScheduled: boolean,
   ) => Promise<void>;
-}
-
-/**
- * Check if view state is a submissions view state (FILE or MESSAGE).
- * Uses a type predicate for proper type narrowing.
- */
-function isSubmissionsViewState(viewState: ViewState): viewState is SubmissionsViewState {
-  return (
-    isFileSubmissionsViewState(viewState) ||
-    isMessageSubmissionsViewState(viewState)
-  );
 }
 
 /**
@@ -195,7 +180,7 @@ export function useSubmissionHandlers({
           name: title || 'New Message',
         });
       } catch {
-        // Error handling could be added here
+        showErrorNotification();
       }
     },
     [],
@@ -213,7 +198,7 @@ export function useSubmissionHandlers({
           Array.from(files),
         );
       } catch {
-        // Error handling could be added here
+        showErrorNotification();
       }
 
       // Reset the input
@@ -303,7 +288,7 @@ export function useSubmissionHandlers({
         } as ViewState);
       }
     } catch {
-      // Error handling could be added here
+      showPostErrorNotification();
     }
   }, [selectedIds, allSubmissions, viewState, setViewState]);
 
@@ -312,7 +297,7 @@ export function useSubmissionHandlers({
     try {
       await submissionApi.duplicate(id);
     } catch {
-      // Error handling could be added here
+      showDuplicateErrorNotification();
     }
   }, []);
 
@@ -349,7 +334,7 @@ export function useSubmissionHandlers({
           },
         });
       } catch {
-        // Error handling could be added here
+        showUpdateErrorNotification();
       }
     },
     [allSubmissions],
@@ -360,7 +345,7 @@ export function useSubmissionHandlers({
     try {
       await postQueueApi.enqueue([id]);
     } catch {
-      // Error handling could be added here
+      showPostErrorNotification();
     }
   }, []);
 
@@ -373,7 +358,7 @@ export function useSubmissionHandlers({
           ...schedule,
         });
       } catch {
-        // Error handling could be added here
+        showUpdateErrorNotification();
       }
     },
     [],

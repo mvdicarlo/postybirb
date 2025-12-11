@@ -1,13 +1,13 @@
 /**
  * SubmissionQuickEditActions - Quick edit controls for submissions.
  * Provides inline editing for tags and rating without opening the full editor.
+ * Uses SubmissionsContext for actions via useSubmissionActions hook.
  */
 
 import { Group, TagsInput } from '@mantine/core';
 import { useDebouncedCallback } from '@mantine/hooks';
 import {
     DefaultTagValue,
-    IWebsiteFormFields,
     SubmissionRating,
     TagValue,
 } from '@postybirb/types';
@@ -15,10 +15,10 @@ import { IconTag } from '@tabler/icons-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { SubmissionRecord } from '../../../../stores';
 import { RatingInput } from '../../../shared/rating-input';
+import { useSubmissionActions } from '../hooks';
 
 type SubmissionQuickEditActionsProps = {
   submission: SubmissionRecord;
-  onDefaultOptionChange?: (update: Partial<IWebsiteFormFields>) => void;
 };
 
 type QuickEditTagsProps = {
@@ -81,24 +81,24 @@ function QuickEditTags({ tags, onChange }: QuickEditTagsProps) {
 
 export function SubmissionQuickEditActions({
   submission,
-  onDefaultOptionChange,
 }: SubmissionQuickEditActionsProps) {
+  const { handleDefaultOptionChange } = useSubmissionActions(submission.id);
   const defaultOptions = submission.getDefaultOptions();
   const tags = defaultOptions?.data.tags ?? DefaultTagValue();
   const rating = defaultOptions?.data.rating ?? SubmissionRating.GENERAL;
 
   const handleTagsChange = useCallback(
     (newTags: TagValue) => {
-      onDefaultOptionChange?.({ tags: newTags });
+      handleDefaultOptionChange({ tags: newTags });
     },
-    [onDefaultOptionChange],
+    [handleDefaultOptionChange],
   );
 
   const handleRatingChange = useCallback(
     (newRating: SubmissionRating) => {
-      onDefaultOptionChange?.({ rating: newRating });
+      handleDefaultOptionChange({ rating: newRating });
     },
-    [onDefaultOptionChange],
+    [handleDefaultOptionChange],
   );
 
   return (

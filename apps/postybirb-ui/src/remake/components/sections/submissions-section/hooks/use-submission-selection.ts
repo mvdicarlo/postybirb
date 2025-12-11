@@ -5,17 +5,9 @@
 import { useCallback, useMemo, useRef } from 'react';
 import type { SubmissionRecord } from '../../../../stores/records';
 import { useUIStore } from '../../../../stores/ui-store';
-import {
-    FileSubmissionsViewState,
-    isFileSubmissionsViewState,
-    isMessageSubmissionsViewState,
-    MessageSubmissionsViewState,
-    type ViewState,
-} from '../../../../types/view-state';
+import { type ViewState } from '../../../../types/view-state';
 import type { SelectionState } from '../submission-section-header';
-
-/** Union type for submission view states */
-type SubmissionsViewState = FileSubmissionsViewState | MessageSubmissionsViewState;
+import { isSubmissionsViewState } from '../types';
 
 interface UseSubmissionSelectionProps {
   /** Current view state */
@@ -38,17 +30,6 @@ interface UseSubmissionSelectionResult {
 }
 
 /**
- * Check if view state is a submissions view state (FILE or MESSAGE).
- * Uses a type predicate for proper type narrowing.
- */
-function isSubmissionsViewState(viewState: ViewState): viewState is SubmissionsViewState {
-  return (
-    isFileSubmissionsViewState(viewState) ||
-    isMessageSubmissionsViewState(viewState)
-  );
-}
-
-/**
  * Hook for managing submission selection with support for:
  * - Single click selection
  * - Ctrl/Cmd+click multi-select toggle
@@ -63,10 +44,7 @@ export function useSubmissionSelection({
 
   // Get selected IDs from view state (memoized to prevent unnecessary rerenders)
   const selectedIds = useMemo(() => {
-    if (isFileSubmissionsViewState(viewState)) {
-      return viewState.params.selectedIds;
-    }
-    if (isMessageSubmissionsViewState(viewState)) {
+    if (isSubmissionsViewState(viewState)) {
       return viewState.params.selectedIds;
     }
     return [];
@@ -139,7 +117,7 @@ export function useSubmissionSelection({
       } else if (event.ctrlKey || event.metaKey) {
         // Toggle selection with Ctrl/Cmd click
         if (selectedIds.includes(id)) {
-          newSelectedIds = selectedIds.filter((sid) => sid !== id);
+          newSelectedIds = selectedIds.filter((sid: string) => sid !== id);
         } else {
           newSelectedIds = [...selectedIds, id];
         }

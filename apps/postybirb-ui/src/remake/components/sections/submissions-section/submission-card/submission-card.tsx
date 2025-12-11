@@ -1,14 +1,17 @@
 /**
  * SubmissionCard - Card component for displaying a submission in the list.
  * Shows thumbnail (for FILE type), editable title, status badges, and action buttons.
+ * Uses SubmissionsContext for actions.
  */
 
 import { BorderAnimate } from '@gfazioli/mantine-border-animate';
 import { Box, Card, Group, Stack, Text } from '@mantine/core';
-import { ISubmissionScheduleInfo, IWebsiteFormFields, SubmissionType } from '@postybirb/types';
+import { SubmissionType } from '@postybirb/types';
 import { IconClock, IconGripVertical } from '@tabler/icons-react';
 import moment from 'moment/min/moment-with-locales';
 import { useCallback, useMemo } from 'react';
+import { useSubmissionsContext } from '../context';
+import { useSubmissionActions } from '../hooks';
 import '../submissions-section.css';
 import { SubmissionActions } from './submission-actions';
 import { SubmissionBadges } from './submission-badges';
@@ -20,59 +23,33 @@ import { getThumbnailUrl } from './utils';
 
 /**
  * Card component for displaying a submission in the section list.
+ * Actions are provided via SubmissionsContext.
  */
 export function SubmissionCard({
   submission,
   submissionType,
   isSelected = false,
-  onSelect,
-  onDelete,
-  onDuplicate,
-  onEdit,
-  onDefaultOptionChange,
-  onPost,
-  onScheduleChange,
   draggable = false,
   className,
 }: SubmissionCardProps) {
+  const { onSelect } = useSubmissionsContext();
+  const {
+    handleDelete,
+    handleDuplicate,
+    handleEdit,
+    handlePost,
+    handleScheduleChange,
+    handleDefaultOptionChange,
+  } = useSubmissionActions(submission.id);
+
   const thumbnailUrl = getThumbnailUrl(submission);
 
   const handleClick = useCallback(
     (event: React.MouseEvent) => {
-      onSelect?.(submission.id, event);
+      onSelect(submission.id, event);
     },
     [onSelect, submission.id],
   );
-
-  const handleDefaultOptionChange = useCallback(
-    (update: Partial<IWebsiteFormFields>) => {
-      onDefaultOptionChange?.(submission.id, update);
-    },
-    [onDefaultOptionChange, submission.id],
-  );
-
-  const handlePost = useCallback(() => {
-    onPost?.(submission.id);
-  }, [onPost, submission.id]);
-
-  const handleScheduleChange = useCallback(
-    (schedule: ISubmissionScheduleInfo, isScheduled: boolean) => {
-      onScheduleChange?.(submission.id, schedule, isScheduled);
-    },
-    [onScheduleChange, submission.id],
-  );
-
-  const handleEdit = useCallback(() => {
-    onEdit?.(submission.id);
-  }, [onEdit, submission.id]);
-
-  const handleDuplicate = useCallback(() => {
-    onDuplicate?.(submission.id);
-  }, [onDuplicate, submission.id]);
-
-  const handleDelete = useCallback(() => {
-    onDelete?.(submission.id);
-  }, [onDelete, submission.id]);
 
   const canPost =
     !submission.hasErrors &&
@@ -168,10 +145,7 @@ export function SubmissionCard({
           />
         </Group>
         <Box ml={showThumbnail ? 'xl' : undefined}>
-          <SubmissionQuickEditActions
-            submission={submission}
-            onDefaultOptionChange={handleDefaultOptionChange}
-          />
+          <SubmissionQuickEditActions submission={submission} />
         </Box>
       </Stack>
     </Card>

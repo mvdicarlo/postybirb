@@ -96,3 +96,51 @@ export function showErrorNotification(message?: React.ReactNode) {
     color: 'red',
   });
 }
+
+/**
+ * Show a notification for failed duplication.
+ */
+export function showDuplicateErrorNotification() {
+  notifications.show({
+    message: <Trans>Failed to duplicate</Trans>,
+    color: 'red',
+  });
+}
+
+/**
+ * Show a notification for failed posting.
+ */
+export function showPostErrorNotification() {
+  notifications.show({
+    message: <Trans>Failed to post submission</Trans>,
+    color: 'red',
+  });
+}
+
+/**
+ * Utility to wrap an async operation with error notification.
+ * Shows the provided error notification function if the operation fails.
+ *
+ * @param operation - The async operation to execute
+ * @param onError - Error notification function to call on failure
+ * @returns The result of the operation, or undefined on error
+ *
+ * @example
+ * ```tsx
+ * await withErrorNotification(
+ *   () => submissionApi.duplicate(id),
+ *   showDuplicateErrorNotification
+ * );
+ * ```
+ */
+export async function withErrorNotification<T>(
+  operation: () => Promise<T>,
+  onError: () => void
+): Promise<T | undefined> {
+  try {
+    return await operation();
+  } catch {
+    onError();
+    return undefined;
+  }
+}

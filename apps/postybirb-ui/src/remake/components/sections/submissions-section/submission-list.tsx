@@ -1,11 +1,12 @@
 /**
  * SubmissionList - Renders the scrollable list of submissions.
+ * Uses SubmissionsContext for actions and state.
  */
 
 import { Trans } from '@lingui/react/macro';
 import { Box, Loader, ScrollArea, Stack, Text } from '@mantine/core';
-import { ISubmissionScheduleInfo, IWebsiteFormFields, SubmissionType } from '@postybirb/types';
 import type { SubmissionRecord } from '../../../stores/records';
+import { useSubmissionsContext } from './context';
 import { SubmissionCard } from './submission-card';
 import './submissions-section.css';
 import { DRAGGABLE_SUBMISSION_CLASS } from './types';
@@ -15,55 +16,21 @@ interface SubmissionListProps {
   isLoading: boolean;
   /** Ordered list of submissions to display */
   submissions: SubmissionRecord[];
-  /** Type of submissions (FILE or MESSAGE) */
-  submissionType: SubmissionType;
-  /** Currently selected submission IDs */
-  selectedIds: string[];
-  /** Whether drag reordering is enabled */
-  isDragEnabled: boolean;
   /** Ref for the sortable container */
   containerRef: React.RefObject<HTMLDivElement>;
-  /** Handler for selecting a submission */
-  onSelect: (id: string, event: React.MouseEvent) => void;
-  /** Handler for deleting a submission */
-  onDelete: (id: string) => void;
-  /** Handler for duplicating a submission */
-  onDuplicate: (id: string) => void;
-  /** Handler for editing a submission */
-  onEdit: (id: string) => void;
-  /** Handler for changing a default option field (title, tags, rating, etc.) */
-  onDefaultOptionChange: (
-    id: string,
-    update: Partial<IWebsiteFormFields>,
-  ) => void;
-  /** Handler for posting a submission */
-  onPost: (id: string) => void;
-  /** Handler for schedule changes */
-  onScheduleChange: (
-    id: string,
-    schedule: ISubmissionScheduleInfo,
-    isScheduled: boolean,
-  ) => void;
 }
 
 /**
  * Scrollable list of submission cards.
+ * Actions and selection are provided via SubmissionsContext.
  */
 export function SubmissionList({
   isLoading,
   submissions,
-  submissionType,
-  selectedIds,
-  isDragEnabled,
   containerRef,
-  onSelect,
-  onDelete,
-  onDuplicate,
-  onEdit,
-  onDefaultOptionChange,
-  onPost,
-  onScheduleChange,
 }: SubmissionListProps) {
+  const { submissionType, selectedIds, isDragEnabled } = useSubmissionsContext();
+
   if (isLoading) {
     return (
       <Box className="postybirb__submission__list_loading">
@@ -95,13 +62,6 @@ export function SubmissionList({
             submission={submission}
             submissionType={submissionType}
             isSelected={selectedIds.includes(submission.id)}
-            onSelect={onSelect}
-            onDelete={onDelete}
-            onDuplicate={onDuplicate}
-            onEdit={onEdit}
-            onDefaultOptionChange={onDefaultOptionChange}
-            onPost={onPost}
-            onScheduleChange={onScheduleChange}
             draggable={isDragEnabled}
             className={DRAGGABLE_SUBMISSION_CLASS}
           />

@@ -18,6 +18,7 @@ import {
 import { useSubmissionsLoading } from '../../../stores/submission-store';
 import { ConfirmActionModal } from '../../confirm-action-modal';
 import { ArchivedSubmissionList } from './archived-submission-list';
+import { SubmissionsProvider } from './context';
 import { FileSubmissionModal } from './file-submission-modal';
 import {
     useGlobalDropzone,
@@ -260,21 +261,24 @@ export function SubmissionsSection({
 
       {/* Tab content */}
       {activeTab === 'submissions' ? (
-        <SubmissionList
-          isLoading={isLoading}
-          submissions={orderedSubmissions}
+        <SubmissionsProvider
           submissionType={submissionType}
           selectedIds={selectedIds}
           isDragEnabled={isDragEnabled}
-          containerRef={containerRef}
           onSelect={handleSelect}
           onDelete={handleDelete}
           onDuplicate={handleDuplicate}
           onEdit={handleEdit}
-          onDefaultOptionChange={handleDefaultOptionChange}
           onPost={handlePost}
+          onDefaultOptionChange={handleDefaultOptionChange}
           onScheduleChange={handleScheduleChange}
-        />
+        >
+          <SubmissionList
+            isLoading={isLoading}
+            submissions={orderedSubmissions}
+            containerRef={containerRef}
+          />
+        </SubmissionsProvider>
       ) : (
         <ArchivedSubmissionList />
       )}
