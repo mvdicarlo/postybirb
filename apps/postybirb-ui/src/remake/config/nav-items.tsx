@@ -16,6 +16,7 @@ import {
   IconSearch,
   IconSettings,
   IconTags,
+  IconTemplate,
   IconTransform,
   IconUser,
   IconUsers,
@@ -25,6 +26,7 @@ import {
   createAccountsViewState,
   createFileSubmissionsViewState,
   createMessageSubmissionsViewState,
+  createTemplatesViewState,
   defaultViewState,
 } from '../types/view-state';
 import { openUrl } from '../utils';
@@ -40,6 +42,7 @@ import {
   SpotlightKeybinding,
   TagConvertersKeybinding,
   TagGroupsKeybinding,
+  TemplatesKeybinding,
   UserConvertersKeybinding,
 } from './keybindings';
 
@@ -94,6 +97,14 @@ export const navItems: NavigationItem[] = [
     label: <Trans>Send Messages</Trans>,
     viewState: createMessageSubmissionsViewState(),
     kbd: MessageSubmissionsKeybinding,
+  },
+  {
+    type: 'view',
+    id: 'templates',
+    icon: <IconTemplate size={20} />,
+    label: <Trans>Templates</Trans>,
+    viewState: createTemplatesViewState(),
+    kbd: TemplatesKeybinding,
   },
 
   // Divider

@@ -108,7 +108,7 @@ export function SubmissionQuickEditActions({
       align="flex-end"
       onClick={(e) => e.stopPropagation()}
     >
-      <RatingInput value={rating} onChange={handleRatingChange} size="xs" />
+      <RatingInput value={rating} onChange={handleRatingChange} size="sm" />
       <QuickEditTags tags={tags} onChange={handleTagsChange} />
     </Group>
   );

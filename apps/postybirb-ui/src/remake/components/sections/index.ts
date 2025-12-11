@@ -8,4 +8,5 @@ export {
     SubmissionsContent,
     SubmissionsSection
 } from './submissions-section';
+export { TemplatesContent, TemplatesSection } from './templates-section';
 

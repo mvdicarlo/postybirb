@@ -115,7 +115,7 @@ export function SubmissionCard({
           {showThumbnail && (
             <SubmissionThumbnail
               thumbnailUrl={thumbnailUrl}
-              alt={submission.name}
+              alt={submission.title}
               canPreview={canPreviewImage}
             />
           )}
@@ -125,7 +125,7 @@ export function SubmissionCard({
             {/* Editable Title */}
             <SubmissionTitle
               title={submission.title}
-              name={submission.name}
+              name={submission.title}
               onTitleChange={(title) => handleDefaultOptionChange({ title })}
             />
 

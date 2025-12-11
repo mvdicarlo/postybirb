@@ -45,7 +45,13 @@ export function SubmissionThumbnail({
       <HoverCard width={280} position="right" openDelay={400} shadow="md">
         <HoverCard.Target>{thumbnailBox}</HoverCard.Target>
         <HoverCard.Dropdown p="xs">
-          <Image src={thumbnailUrl} alt={alt} fit="contain" radius="sm" />
+          <Image
+            loading="lazy"
+            src={thumbnailUrl}
+            alt={alt}
+            fit="contain"
+            radius="sm"
+          />
         </HoverCard.Dropdown>
       </HoverCard>
     );

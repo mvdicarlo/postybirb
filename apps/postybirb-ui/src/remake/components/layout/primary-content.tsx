@@ -12,6 +12,7 @@ import { isHomeViewState, type ViewState } from '../../types/view-state';
 import { ComponentErrorBoundary } from '../error-boundary';
 import { AccountsContent } from '../sections/accounts-section';
 import { SubmissionsContent } from '../sections/submissions-section';
+import { TemplatesContent } from '../sections/templates-section';
 
 interface PrimaryContentProps {
   /** Current view state */
@@ -67,6 +68,8 @@ function ViewContent({ viewState }: PrimaryContentProps) {
           submissionType={SubmissionType.MESSAGE}
         />
       );
+    case 'templates':
+      return <TemplatesContent viewState={viewState} />;
     default:
       return <HomeContent />;
   }

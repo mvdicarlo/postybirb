@@ -43,10 +43,10 @@ export function TemplatePicker({
 
     // Sort alphabetically by name
     return filtered
-      .sort((a, b) => a.name.localeCompare(b.name))
+      .sort((a, b) => a.title.localeCompare(b.title))
       .map((template) => ({
         value: template.id,
-        label: template.name,
+        label: template.title,
       }));
   }, [templates, type]);
 

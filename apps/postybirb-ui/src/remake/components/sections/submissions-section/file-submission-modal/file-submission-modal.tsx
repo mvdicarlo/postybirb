@@ -44,6 +44,7 @@ import { FileDropzone } from './file-dropzone';
 import { FileList } from './file-list';
 import './file-submission-modal.css';
 import { FileItem, getDefaultTitle } from './file-submission-modal.utils';
+import { ImageEditor } from './image-editor';
 import { SubmissionOptions } from './submission-options';
 
 export interface FileSubmissionModalProps {
@@ -95,6 +96,9 @@ export function FileSubmissionModal({
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
 
+  // Image editor state
+  const [editingFile, setEditingFile] = useState<FileWithPath | null>(null);
+
   // Handle file drop
   const handleDrop = useCallback((acceptedFiles: FileWithPath[]) => {
     const newItems: FileItem[] = acceptedFiles.map((file) => ({
@@ -117,6 +121,37 @@ export function FileSubmissionModal({
           item.file === file ? { ...item, title: newTitle } : item,
         ),
       );
+    },
+    [],
+  );
+
+  // Handle image edit
+  const handleEdit = useCallback((file: FileWithPath) => {
+    setEditingFile(file);
+  }, []);
+
+  // Handle image edit apply - replace the original file with the edited version
+  const handleEditApply = useCallback(
+    (originalFile: FileWithPath, editedBlob: Blob) => {
+      // Create a new File from the blob with the same name
+      const baseFile = new File([editedBlob], originalFile.name, {
+        type: originalFile.type || 'image/jpeg',
+        lastModified: Date.now(),
+      });
+
+      // Create FileWithPath by adding path property
+      const editedFile: FileWithPath = Object.assign(baseFile, {
+        path: originalFile.path,
+      });
+
+      // Replace the file in the list
+      setFileItems((prev) =>
+        prev.map((item) =>
+          item.file === originalFile ? { ...item, file: editedFile } : item,
+        ),
+      );
+
+      setEditingFile(null);
     },
     [],
   );
@@ -257,6 +292,7 @@ export function FileSubmissionModal({
                   fileItems={fileItems}
                   onDelete={handleDelete}
                   onTitleChange={handleTitleChange}
+                  onEdit={handleEdit}
                 />
 
                 {/* Right column - Options */}
@@ -295,6 +331,16 @@ export function FileSubmissionModal({
           </Overlay>
         )}
       </Transition>
+
+      {/* Image Editor Modal */}
+      {editingFile && (
+        <ImageEditor
+          file={editingFile}
+          opened={!!editingFile}
+          onClose={() => setEditingFile(null)}
+          onApply={handleEditApply}
+        />
+      )}
     </Portal>
   );
 }

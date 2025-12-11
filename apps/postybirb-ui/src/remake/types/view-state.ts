@@ -17,7 +17,8 @@ export type SectionId =
   | 'home'
   | 'accounts'
   | 'file-submissions'
-  | 'message-submissions';
+  | 'message-submissions'
+  | 'templates';
 
 // =============================================================================
 // Section-Specific Parameters
@@ -65,6 +66,14 @@ export interface MessageSubmissionsParams {
   submissionType: typeof SubmissionType.MESSAGE;
 }
 
+/**
+ * Parameters for templates view.
+ */
+export interface TemplatesParams {
+  /** Currently selected template ID */
+  selectedId: string | null;
+}
+
 // =============================================================================
 // View State - Discriminated Union
 // =============================================================================
@@ -102,13 +111,22 @@ export interface MessageSubmissionsViewState {
 }
 
 /**
+ * Templates view state.
+ */
+export interface TemplatesViewState {
+  type: 'templates';
+  params: TemplatesParams;
+}
+
+/**
  * Union type of all possible view states.
  */
 export type ViewState =
   | HomeViewState
   | AccountsViewState
   | FileSubmissionsViewState
-  | MessageSubmissionsViewState;
+  | MessageSubmissionsViewState
+  | TemplatesViewState;
 
 // =============================================================================
 // Section Panel Configuration
@@ -132,6 +150,7 @@ export const sectionPanelConfigs: Record<SectionId, SectionPanelConfig> = {
   accounts: { hasPanel: true, defaultWidth: 320 },
   'file-submissions': { hasPanel: true, defaultWidth: 320 },
   'message-submissions': { hasPanel: true, defaultWidth: 320 },
+  templates: { hasPanel: true, defaultWidth: 320 },
 };
 
 /**
@@ -213,6 +232,21 @@ export function createMessageSubmissionsViewState(
   };
 }
 
+/**
+ * Create a default templates view state.
+ */
+export function createTemplatesViewState(
+  overrides?: Partial<TemplatesParams>
+): TemplatesViewState {
+  return {
+    type: 'templates',
+    params: {
+      selectedId: null,
+      ...overrides,
+    },
+  };
+}
+
 // =============================================================================
 // Type Guards
 // =============================================================================
@@ -249,6 +283,15 @@ export function isMessageSubmissionsViewState(
   state: ViewState
 ): state is MessageSubmissionsViewState {
   return state.type === 'message-submissions';
+}
+
+/**
+ * Check if view state is templates.
+ */
+export function isTemplatesViewState(
+  state: ViewState
+): state is TemplatesViewState {
+  return state.type === 'templates';
 }
 
 /**

@@ -3,17 +3,17 @@
  */
 
 import type {
-    ISubmissionDto,
-    ISubmissionFileDto,
-    ISubmissionMetadata,
-    ISubmissionScheduleInfo,
-    IWebsiteFormFields,
-    PostQueueRecordDto,
-    PostRecordDto,
-    SubmissionId,
-    SubmissionType,
-    ValidationResult,
-    WebsiteOptionsDto,
+  ISubmissionDto,
+  ISubmissionFileDto,
+  ISubmissionMetadata,
+  ISubmissionScheduleInfo,
+  IWebsiteFormFields,
+  PostQueueRecordDto,
+  PostRecordDto,
+  SubmissionId,
+  SubmissionType,
+  ValidationResult,
+  WebsiteOptionsDto,
 } from '@postybirb/types';
 import { BaseRecord } from './base-record';
 
@@ -57,24 +57,6 @@ export class SubmissionRecord extends BaseRecord {
    */
   get submissionId(): SubmissionId {
     return this.id as SubmissionId;
-  }
-
-  /**
-   * Get the submission name.
-   * For file submissions, uses the primary file name.
-   * For templates, uses the template name from metadata.
-   */
-  get name(): string {
-    // Check for template name in metadata
-    if (this.metadata?.template?.name) {
-      return this.metadata.template.name;
-    }
-    // Fall back to primary file name
-    if (this.files.length > 0 && this.files[0].fileName) {
-      return this.files[0].fileName;
-    }
-    // eslint-disable-next-line lingui/no-unlocalized-strings
-    return 'Untitled';
   }
 
   /**
@@ -134,8 +116,12 @@ export class SubmissionRecord extends BaseRecord {
    * Get the default website options for this submission.
    * The default option contains global settings like title.
    */
-  getDefaultOptions<O extends IWebsiteFormFields>(): WebsiteOptionsDto<O> | undefined {
-    return this.options.find((o) => o.isDefault) as WebsiteOptionsDto<O> | undefined;
+  getDefaultOptions<O extends IWebsiteFormFields>():
+    | WebsiteOptionsDto<O>
+    | undefined {
+    return this.options.find((o) => o.isDefault) as
+      | WebsiteOptionsDto<O>
+      | undefined;
   }
 
   /**

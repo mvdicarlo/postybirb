@@ -89,6 +89,7 @@ function getFullIcon(size: 'xs' | 'sm' | 'md', value: number) {
 /**
  * Rating input component using Mantine Rating with custom icons.
  * Displays 4 icons representing General, Mature, Adult, Extreme ratings.
+ * Only the selected rating icon is colored.
  */
 export function RatingInput({
   value,
@@ -121,14 +122,16 @@ export function RatingInput({
     [value, onChange],
   );
 
-  // Create memoized icon functions
-  const emptySymbol = useCallback(
-    (val: number) => getEmptyIcon(size, val),
-    [size],
-  );
-  const fullSymbol = useCallback(
-    (val: number) => getFullIcon(size, val),
-    [size],
+  // Create icon function that only colors the selected value
+  const getSymbol = useCallback(
+    (val: number) => {
+      // Only show the colored icon for the exact selected value
+      if (val === numericValue) {
+        return getFullIcon(size, val);
+      }
+      return getEmptyIcon(size, val);
+    },
+    [size, numericValue],
   );
 
   const ratingComponent = (
@@ -136,8 +139,9 @@ export function RatingInput({
       value={numericValue}
       count={4}
       onChange={handleChange}
-      emptySymbol={emptySymbol}
-      fullSymbol={fullSymbol}
+      emptySymbol={getSymbol}
+      fullSymbol={getSymbol}
+      highlightSelectedOnly
     />
   );
 

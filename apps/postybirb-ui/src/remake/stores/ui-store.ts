@@ -88,6 +88,10 @@ interface UIState {
   hiddenWebsites: string[];
   accountsSearchQuery: string;
   accountsLoginFilter: AccountLoginFilter;
+
+  // Templates section
+  templatesTabType: SubmissionType;
+  templatesSearchQuery: string;
 }
 
 /**
@@ -127,6 +131,10 @@ interface UIActions {
   toggleWebsiteVisibility: (websiteId: string) => void;
   setAccountsSearchQuery: (query: string) => void;
   setAccountsLoginFilter: (filter: AccountLoginFilter) => void;
+
+  // Templates section actions
+  setTemplatesTabType: (type: SubmissionType) => void;
+  setTemplatesSearchQuery: (query: string) => void;
 
   // Reset
   resetUIState: () => void;
@@ -182,6 +190,8 @@ const initialState: UIState = {
   hiddenWebsites: [],
   accountsSearchQuery: '',
   accountsLoginFilter: AccountLoginFilter.All,
+  templatesTabType: SubmissionType.FILE,
+  templatesSearchQuery: '',
 };
 
 /**
@@ -240,6 +250,10 @@ export const useUIStore = create<UIStore>()(
       setAccountsSearchQuery: (accountsSearchQuery) => set({ accountsSearchQuery }),
       setAccountsLoginFilter: (accountsLoginFilter) => set({ accountsLoginFilter }),
 
+      // Templates section actions
+      setTemplatesTabType: (templatesTabType) => set({ templatesTabType }),
+      setTemplatesSearchQuery: (templatesSearchQuery) => set({ templatesSearchQuery }),
+
       // Reset to initial state
       resetUIState: () => set(initialState),
     }),
@@ -258,6 +272,7 @@ export const useUIStore = create<UIStore>()(
         primaryColor: state.primaryColor,
         hiddenWebsites: state.hiddenWebsites,
         accountsLoginFilter: state.accountsLoginFilter,
+        templatesTabType: state.templatesTabType,
       }),
     }
   )
@@ -406,5 +421,20 @@ export const useAccountsFilter = () =>
       setLoginFilter: state.setAccountsLoginFilter,
       setHiddenWebsites: state.setHiddenWebsites,
       toggleWebsiteVisibility: state.toggleWebsiteVisibility,
+    }))
+  );
+
+// ============================================================================
+// Templates Section Selectors
+// ============================================================================
+
+/** Select templates section filter state and actions */
+export const useTemplatesFilter = () =>
+  useUIStore(
+    useShallow((state) => ({
+      tabType: state.templatesTabType,
+      searchQuery: state.templatesSearchQuery,
+      setTabType: state.setTemplatesTabType,
+      setSearchQuery: state.setTemplatesSearchQuery,
     }))
   );

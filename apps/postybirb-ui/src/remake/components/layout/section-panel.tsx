@@ -10,6 +10,7 @@ import { getSectionPanelConfig, type ViewState } from '../../types/view-state';
 import { ComponentErrorBoundary } from '../error-boundary';
 import { AccountsSection } from '../sections/accounts-section';
 import { SubmissionsSection } from '../sections/submissions-section';
+import { TemplatesSection } from '../sections/templates-section';
 
 interface SectionPanelProps {
   /** Current view state */
@@ -37,6 +38,8 @@ function SectionContent({ viewState }: SectionPanelProps) {
           submissionType={SubmissionType.MESSAGE}
         />
       );
+    case 'templates':
+      return <TemplatesSection viewState={viewState} />;
     default:
       return null;
   }

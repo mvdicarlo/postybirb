@@ -1,24 +1,22 @@
 /**
- * Hook for filtering and ordering submissions by type.
+ * Hook for filtering and ordering file submissions.
  */
 
 import { SubmissionType } from '@postybirb/types';
 import { useEffect, useMemo, useState } from 'react';
 import type { SubmissionRecord } from '../../../../stores/records';
 import { useSubmissionsByType } from '../../../../stores/submission-store';
-import { useSubmissionsFilter } from '../../../../stores/ui-store';
+import { useFileSubmissionsFilter } from '../../../../stores/ui-store';
 
-interface UseSubmissionsResult {
-  /** All submissions of the given type (unfiltered) */
+interface UseFileSubmissionsResult {
+  /** All file submissions (unfiltered) */
   allSubmissions: SubmissionRecord[];
   /** Filtered submissions based on search and filter */
   filteredSubmissions: SubmissionRecord[];
   /** Ordered submissions (for optimistic reordering) */
   orderedSubmissions: SubmissionRecord[];
   /** Update ordered submissions */
-  setOrderedSubmissions: React.Dispatch<
-    React.SetStateAction<SubmissionRecord[]>
-  >;
+  setOrderedSubmissions: React.Dispatch<React.SetStateAction<SubmissionRecord[]>>;
   /** Current filter value */
   filter: string;
   /** Current search query */
@@ -27,19 +25,12 @@ interface UseSubmissionsResult {
   isDragEnabled: boolean;
 }
 
-interface UseSubmissionsProps {
-  /** Type of submissions to filter (FILE or MESSAGE) */
-  submissionType: SubmissionType;
-}
-
 /**
- * Hook for filtering, searching, and ordering submissions.
+ * Hook for filtering, searching, and ordering file submissions.
  */
-export function useSubmissions({
-  submissionType,
-}: UseSubmissionsProps): UseSubmissionsResult {
-  const allSubmissions = useSubmissionsByType(submissionType);
-  const { filter, searchQuery } = useSubmissionsFilter(submissionType);
+export function useFileSubmissions(): UseFileSubmissionsResult {
+  const allSubmissions = useSubmissionsByType(SubmissionType.FILE);
+  const { filter, searchQuery } = useFileSubmissionsFilter();
 
   // Filter submissions based on search query and filter
   const filteredSubmissions = useMemo(() => {
