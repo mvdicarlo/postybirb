@@ -6,25 +6,27 @@
 import { useEffect } from 'react';
 import { tinykeys } from 'tinykeys';
 import {
-    AccountKeybinding,
-    CustomShortcutsKeybinding,
-    FileSubmissionsKeybinding,
-    FileWatchersKeybinding,
-    HomeKeybinding,
-    MessageSubmissionsKeybinding,
-    NotificationsKeybinding,
-    SettingsKeybinding,
-    TagConvertersKeybinding,
-    TagGroupsKeybinding,
-    toTinykeysFormat,
-    UserConvertersKeybinding,
+  AccountKeybinding,
+  CustomShortcutsKeybinding,
+  FileSubmissionsKeybinding,
+  FileWatchersKeybinding,
+  HomeKeybinding,
+  MessageSubmissionsKeybinding,
+  NotificationsKeybinding,
+  SettingsKeybinding,
+  TagConvertersKeybinding,
+  TagGroupsKeybinding,
+  TemplatesKeybinding,
+  toTinykeysFormat,
+  UserConvertersKeybinding,
 } from '../config/keybindings';
 import { useUIStore, useViewStateActions } from '../stores/ui-store';
 import {
-    createAccountsViewState,
-    createFileSubmissionsViewState,
-    createHomeViewState,
-    createMessageSubmissionsViewState,
+  createAccountsViewState,
+  createFileSubmissionsViewState,
+  createHomeViewState,
+  createMessageSubmissionsViewState,
+  createTemplatesViewState,
 } from '../types/view-state';
 
 /**
@@ -46,13 +48,19 @@ export function useKeybindings(): void {
         event.preventDefault();
         setViewState(createFileSubmissionsViewState());
       },
-      [toTinykeysFormat(MessageSubmissionsKeybinding)]: (event: KeyboardEvent) => {
+      [toTinykeysFormat(MessageSubmissionsKeybinding)]: (
+        event: KeyboardEvent,
+      ) => {
         event.preventDefault();
         setViewState(createMessageSubmissionsViewState());
       },
       [toTinykeysFormat(AccountKeybinding)]: (event: KeyboardEvent) => {
         event.preventDefault();
         setViewState(createAccountsViewState());
+      },
+      [toTinykeysFormat(TemplatesKeybinding)]: (event: KeyboardEvent) => {
+        event.preventDefault();
+        setViewState(createTemplatesViewState());
       },
 
       // Drawer toggle keybindings
