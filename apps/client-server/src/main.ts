@@ -1,18 +1,18 @@
 import {
-  ClassSerializerInterceptor,
-  INestApplication,
-  Logger,
-  PlainLiteralObject,
-  ValidationPipe,
+    ClassSerializerInterceptor,
+    INestApplication,
+    Logger,
+    PlainLiteralObject,
+    ValidationPipe,
 } from '@nestjs/common';
 import { ClassTransformOptions } from '@nestjs/common/interfaces/external/class-transform-options.interface';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { PostyBirbDirectories } from '@postybirb/fs';
 import {
-  ensureRemoteConfigExists,
-  IsTestEnvironment,
-  PostyBirbEnvConfig,
+    ensureRemoteConfigExists,
+    IsTestEnvironment,
+    PostyBirbEnvConfig,
 } from '@postybirb/utils/electron';
 import compression from 'compression';
 import sharp from 'sharp';
@@ -57,6 +57,7 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       forbidUnknownValues: true,
+      transform: true,
     }),
   );
   app.use(compression());

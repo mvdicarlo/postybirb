@@ -8,13 +8,7 @@
  */
 
 import { Trans } from '@lingui/react/macro';
-import {
-    Box,
-    Pill,
-    TagsInput,
-    TagsInputProps,
-    Text,
-} from '@mantine/core';
+import { Box, Pill, TagsInput, TagsInputProps, Text } from '@mantine/core';
 import { Tag, TagGroupDto } from '@postybirb/types';
 import { IconTag } from '@tabler/icons-react';
 import { flatten, uniq } from 'lodash';
@@ -97,8 +91,8 @@ export function SimpleTagInput({
             id: tagGroup.id,
             name: tagGroup.name,
             tags: tagGroup.tags,
-            createdAt: tagGroup.createdAt,
-            updatedAt: tagGroup.updatedAt,
+            createdAt: tagGroup.createdAt.toString(),
+            updatedAt: tagGroup.updatedAt.toString(),
           };
           return {
             label: `${TAG_GROUP_LABEL}${JSON.stringify(groupData)}`,

@@ -20,6 +20,7 @@ import { ConfirmActionModal } from '../../confirm-action-modal';
 import { ArchivedSubmissionList } from './archived-submission-list';
 import { FileSubmissionModal } from './file-submission-modal';
 import {
+    useGlobalDropzone,
     useSubmissionHandlers,
     useSubmissions,
     useSubmissionSelection,
@@ -73,6 +74,7 @@ export function SubmissionsSection({
   const {
     fileInputRef,
     isFileModalOpen,
+    openFileModal,
     closeFileModal,
     handleFileUpload,
     handleCreateSubmission,
@@ -91,6 +93,13 @@ export function SubmissionsSection({
     allSubmissions,
     selectedIds,
     submissionType,
+  });
+
+  // Global dropzone - opens modal when files are dragged into the window
+  useGlobalDropzone({
+    isOpen: isFileModalOpen,
+    onOpen: openFileModal,
+    enabled: submissionType === SubmissionType.FILE,
   });
 
   // Delete confirmation modal
