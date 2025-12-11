@@ -127,14 +127,14 @@ export class SubmissionRecord extends BaseRecord {
   /**
    * Get the submission title.
    * For templates, returns the template name.
-   * Otherwise returns the title from default options, or undefined.
+   * Otherwise returns the title from default options.
    */
-  get title(): string | undefined {
+  get title(): string {
     if (this.isTemplate && this.metadata?.template?.name) {
       return this.metadata.template.name;
     }
     const defaultOptions = this.getDefaultOptions();
-    return defaultOptions?.data?.title as string | undefined;
+    return defaultOptions?.data?.title ?? '';
   }
 
   /**
