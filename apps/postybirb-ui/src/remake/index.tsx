@@ -3,6 +3,7 @@
  * Uses state-driven navigation instead of React Router.
  */
 
+import '@gfazioli/mantine-border-animate/styles.css';
 import '@mantine/core/styles.css';
 import '@mantine/dates/styles.css';
 import '@mantine/notifications/styles.css';

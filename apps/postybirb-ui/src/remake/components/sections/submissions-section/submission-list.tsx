@@ -4,7 +4,7 @@
 
 import { Trans } from '@lingui/react/macro';
 import { Box, Loader, ScrollArea, Stack, Text } from '@mantine/core';
-import { IWebsiteFormFields, SubmissionType } from '@postybirb/types';
+import { ISubmissionScheduleInfo, IWebsiteFormFields, SubmissionType } from '@postybirb/types';
 import type { SubmissionRecord } from '../../../stores/records';
 import { SubmissionCard } from './submission-card';
 import './submissions-section.css';
@@ -38,8 +38,12 @@ interface SubmissionListProps {
   ) => void;
   /** Handler for posting a submission */
   onPost: (id: string) => void;
-  /** Handler for scheduling a submission */
-  onSchedule: (id: string) => void;
+  /** Handler for schedule changes */
+  onScheduleChange: (
+    id: string,
+    schedule: ISubmissionScheduleInfo,
+    isScheduled: boolean,
+  ) => void;
 }
 
 /**
@@ -58,7 +62,7 @@ export function SubmissionList({
   onEdit,
   onDefaultOptionChange,
   onPost,
-  onSchedule,
+  onScheduleChange,
 }: SubmissionListProps) {
   if (isLoading) {
     return (
@@ -97,7 +101,7 @@ export function SubmissionList({
             onEdit={onEdit}
             onDefaultOptionChange={onDefaultOptionChange}
             onPost={onPost}
-            onSchedule={onSchedule}
+            onScheduleChange={onScheduleChange}
             draggable={isDragEnabled}
             className={DRAGGABLE_SUBMISSION_CLASS}
           />

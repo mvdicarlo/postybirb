@@ -3,8 +3,9 @@
  * Shows thumbnail (for FILE type), editable title, status badges, and action buttons.
  */
 
+import { BorderAnimate } from '@gfazioli/mantine-border-animate';
 import { Box, Card, Group, Stack, Text } from '@mantine/core';
-import { IWebsiteFormFields, SubmissionType } from '@postybirb/types';
+import { ISubmissionScheduleInfo, IWebsiteFormFields, SubmissionType } from '@postybirb/types';
 import { IconClock, IconGripVertical } from '@tabler/icons-react';
 import moment from 'moment/min/moment-with-locales';
 import { useCallback, useMemo } from 'react';
@@ -30,7 +31,7 @@ export function SubmissionCard({
   onEdit,
   onDefaultOptionChange,
   onPost,
-  onSchedule,
+  onScheduleChange,
   draggable = false,
   className,
 }: SubmissionCardProps) {
@@ -54,9 +55,12 @@ export function SubmissionCard({
     onPost?.(submission.id);
   }, [onPost, submission.id]);
 
-  const handleSchedule = useCallback(() => {
-    onSchedule?.(submission.id);
-  }, [onSchedule, submission.id]);
+  const handleScheduleChange = useCallback(
+    (schedule: ISubmissionScheduleInfo, isScheduled: boolean) => {
+      onScheduleChange?.(submission.id, schedule, isScheduled);
+    },
+    [onScheduleChange, submission.id],
+  );
 
   const handleEdit = useCallback(() => {
     onEdit?.(submission.id);
@@ -91,7 +95,7 @@ export function SubmissionCard({
     return classes.join(' ');
   }, [isSelected, className]);
 
-  return (
+  const cardContent = (
     <Card
       p="xs"
       radius="0"
@@ -154,10 +158,10 @@ export function SubmissionCard({
           {/* Action buttons and menu */}
           <SubmissionActions
             canPost={canPost}
-            hasScheduleTime={submission.hasScheduleTime}
+            schedule={submission.schedule}
             isScheduled={submission.isScheduled}
             onPost={handlePost}
-            onSchedule={handleSchedule}
+            onScheduleChange={handleScheduleChange}
             onEdit={handleEdit}
             onDuplicate={handleDuplicate}
             onDelete={handleDelete}
@@ -172,4 +176,24 @@ export function SubmissionCard({
       </Stack>
     </Card>
   );
+
+  // Wrap with animated border if scheduled
+  if (submission.isScheduled) {
+    return (
+      <BorderAnimate
+        variant="pulse"
+        colorFrom="cyan"
+        colorTo="blue"
+        duration={3}
+        size={100}
+        blur={2}
+        borderWidth={2}
+        radius={0}
+      >
+        {cardContent}
+      </BorderAnimate>
+    );
+  }
+
+  return cardContent;
 }

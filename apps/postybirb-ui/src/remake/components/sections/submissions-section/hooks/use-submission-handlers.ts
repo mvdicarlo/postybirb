@@ -5,6 +5,7 @@
 import {
     Description,
     IFileMetadata,
+    ISubmissionScheduleInfo,
     IWebsiteFormFields,
     SubmissionId,
     SubmissionRating,
@@ -93,8 +94,12 @@ interface UseSubmissionHandlersResult {
   ) => Promise<void>;
   /** Handle posting a submission */
   handlePost: (id: string) => Promise<void>;
-  /** Handle scheduling a submission */
-  handleSchedule: (id: string) => void;
+  /** Handle schedule changes */
+  handleScheduleChange: (
+    id: string,
+    schedule: ISubmissionScheduleInfo,
+    isScheduled: boolean,
+  ) => Promise<void>;
 }
 
 /**
@@ -360,21 +365,18 @@ export function useSubmissionHandlers({
   }, []);
 
   // Handle scheduling a submission
-  const handleSchedule = useCallback(
-    (id: string) => {
-      // For now, just select the submission - the schedule UI will be in the main panel
-      if (!isSubmissionsViewState(viewState)) return;
-      setViewState({
-        ...viewState,
-        params: {
-          ...viewState.params,
-          selectedIds: [id],
-          mode: 'single',
-        },
-      } as ViewState);
-      // TODO: Open schedule modal or panel
+  const handleScheduleChange = useCallback(
+    async (id: string, schedule: ISubmissionScheduleInfo, isScheduled: boolean) => {
+      try {
+        await submissionApi.update(id, {
+          isScheduled,
+          ...schedule,
+        });
+      } catch {
+        // Error handling could be added here
+      }
     },
-    [viewState, setViewState],
+    [],
   );
 
   return {
@@ -393,6 +395,6 @@ export function useSubmissionHandlers({
     handleDefaultOptionChange,
     handlePost,
     handlePostSelected,
-    handleSchedule,
+    handleScheduleChange,
   };
 }

@@ -87,7 +87,7 @@ export function SubmissionsSection({
     handleDefaultOptionChange,
     handlePost,
     handlePostSelected,
-    handleSchedule,
+    handleScheduleChange,
   } = useSubmissionHandlers({
     viewState,
     allSubmissions,
@@ -273,7 +273,7 @@ export function SubmissionsSection({
           onEdit={handleEdit}
           onDefaultOptionChange={handleDefaultOptionChange}
           onPost={handlePost}
-          onSchedule={handleSchedule}
+          onScheduleChange={handleScheduleChange}
         />
       ) : (
         <ArchivedSubmissionList />

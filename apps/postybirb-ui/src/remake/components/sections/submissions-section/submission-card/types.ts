@@ -2,7 +2,7 @@
  * Shared types for SubmissionCard components.
  */
 
-import { IWebsiteFormFields, SubmissionType } from '@postybirb/types';
+import { ISubmissionScheduleInfo, IWebsiteFormFields, SubmissionType } from '@postybirb/types';
 import type { SubmissionRecord } from '../../../../stores/records';
 
 /**
@@ -30,8 +30,12 @@ export interface SubmissionCardProps {
   ) => void;
   /** Handler for posting the submission */
   onPost?: (id: string) => void;
-  /** Handler for scheduling the submission */
-  onSchedule?: (id: string) => void;
+  /** Handler for schedule changes */
+  onScheduleChange?: (
+    id: string,
+    schedule: ISubmissionScheduleInfo,
+    isScheduled: boolean,
+  ) => void;
   /** Whether this card is draggable for reordering */
   draggable?: boolean;
   /** Additional class name for the card */

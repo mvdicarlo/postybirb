@@ -4,8 +4,8 @@
 
 import { Trans } from '@lingui/react/macro';
 import { ActionIcon, Group, Menu, Tooltip } from '@mantine/core';
+import { ISubmissionScheduleInfo } from '@postybirb/types';
 import {
-    IconCalendar,
     IconCopy,
     IconDotsVertical,
     IconEdit,
@@ -14,18 +14,22 @@ import {
 } from '@tabler/icons-react';
 import { useCallback } from 'react';
 import { HoldToConfirmButton } from '../../../hold-to-confirm';
+import { SchedulePopover } from '../../../shared/schedule-popover';
 
 interface SubmissionActionsProps {
   /** Whether the submission can be posted */
   canPost: boolean;
-  /** Whether the submission has a schedule time configured */
-  hasScheduleTime: boolean;
+  /** Current schedule info */
+  schedule: ISubmissionScheduleInfo;
   /** Whether the submission is currently scheduled */
   isScheduled: boolean;
   /** Handler for posting the submission */
   onPost?: () => void;
-  /** Handler for scheduling the submission */
-  onSchedule?: () => void;
+  /** Handler for schedule changes */
+  onScheduleChange?: (
+    schedule: ISubmissionScheduleInfo,
+    isScheduled: boolean,
+  ) => void;
   /** Handler for editing the submission */
   onEdit?: () => void;
   /** Handler for duplicating the submission */
@@ -39,22 +43,14 @@ interface SubmissionActionsProps {
  */
 export function SubmissionActions({
   canPost,
-  hasScheduleTime,
+  schedule,
   isScheduled,
   onPost,
-  onSchedule,
+  onScheduleChange,
   onEdit,
   onDuplicate,
   onDelete,
 }: SubmissionActionsProps) {
-  const handleSchedule = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation();
-      onSchedule?.();
-    },
-    [onSchedule],
-  );
-
   const handleEdit = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
@@ -79,25 +75,26 @@ export function SubmissionActions({
     [onDelete],
   );
 
+  const handleScheduleChange = useCallback(
+    (newSchedule: ISubmissionScheduleInfo, newIsScheduled: boolean) => {
+      onScheduleChange?.(newSchedule, newIsScheduled);
+    },
+    [onScheduleChange],
+  );
+
   return (
     <>
       {/* Action buttons */}
       <Group gap={4}>
-        {/* Schedule button - only show if submission has schedule configured */}
-        {hasScheduleTime && (
-          <Tooltip label={<Trans>Schedule</Trans>}>
-            <ActionIcon
-              variant="subtle"
-              size="sm"
-              color={isScheduled ? 'blue' : 'gray'}
-              onClick={handleSchedule}
-              // eslint-disable-next-line lingui/no-unlocalized-strings
-              aria-label="Schedule submission"
-            >
-              <IconCalendar size={16} />
-            </ActionIcon>
-          </Tooltip>
-        )}
+        {/* Schedule popover */}
+        <span onClick={(e) => e.stopPropagation()}>
+          <SchedulePopover
+            schedule={schedule}
+            isScheduled={isScheduled}
+            onChange={handleScheduleChange}
+            size="sm"
+          />
+        </span>
 
         {/* Post button (hold to confirm) */}
         <Tooltip label={<Trans>Hold to post</Trans>}>
