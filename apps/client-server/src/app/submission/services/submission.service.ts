@@ -1,32 +1,32 @@
 /* eslint-disable no-param-reassign */
 import {
-    BadRequestException,
-    forwardRef,
-    Inject,
-    Injectable,
-    NotFoundException,
-    OnModuleInit,
-    Optional,
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+  OnModuleInit,
+  Optional,
 } from '@nestjs/common';
 import {
-    FileBufferSchema,
-    Insert,
-    SubmissionFileSchema,
-    SubmissionSchema,
-    WebsiteOptionsSchema,
+  FileBufferSchema,
+  Insert,
+  SubmissionFileSchema,
+  SubmissionSchema,
+  WebsiteOptionsSchema,
 } from '@postybirb/database';
 import { SUBMISSION_UPDATES } from '@postybirb/socket-events';
 import {
-    FileSubmission,
-    FileSubmissionMetadata,
-    ISubmissionDto,
-    ISubmissionMetadata,
-    MessageSubmission,
-    NULL_ACCOUNT_ID,
-    ScheduleType,
-    SubmissionId,
-    SubmissionMetadataType,
-    SubmissionType,
+  FileSubmission,
+  FileSubmissionMetadata,
+  ISubmissionDto,
+  ISubmissionMetadata,
+  MessageSubmission,
+  NULL_ACCOUNT_ID,
+  ScheduleType,
+  SubmissionId,
+  SubmissionMetadataType,
+  SubmissionType,
 } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/electron';
 import { eq } from 'drizzle-orm';
@@ -207,7 +207,10 @@ export class SubmissionService
     const defaultOptions = createSubmissionDto.defaultOptions
       ? {
           tags: createSubmissionDto.defaultOptions.tags
-            ? { overrideDefault: false, tags: createSubmissionDto.defaultOptions.tags }
+            ? {
+                overrideDefault: false,
+                tags: createSubmissionDto.defaultOptions.tags,
+              }
             : undefined,
           description: createSubmissionDto.defaultOptions.description,
           rating: createSubmissionDto.defaultOptions.rating,
@@ -656,7 +659,11 @@ export class SubmissionService
     if (entity.metadata.template) {
       entity.metadata.template.name = name;
     }
-    return this.repository.update(id, { metadata: entity.metadata });
+    const result = await this.repository.update(id, {
+      metadata: entity.metadata,
+    });
+    this.emit();
+    return result;
   }
 
   async reorder(id: SubmissionId, index: number) {

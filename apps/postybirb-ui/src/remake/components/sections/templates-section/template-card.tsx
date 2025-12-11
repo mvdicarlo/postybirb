@@ -186,16 +186,20 @@ export function TemplateCard({
                 </ActionIcon>
               </Tooltip>
               <Tooltip label={<Trans>Hold to Delete</Trans>}>
-                <HoldToConfirmButton
-                  size="xs"
-                  variant="subtle"
-                  color="red"
-                  onConfirm={handleDelete}
+                {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */}
+                <span
                   onMouseDown={(e) => e.stopPropagation()}
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <IconTrash size={12} />
-                </HoldToConfirmButton>
+                  <HoldToConfirmButton
+                    size="xs"
+                    variant="subtle"
+                    color="red"
+                    onConfirm={handleDelete}
+                  >
+                    <IconTrash size={12} />
+                  </HoldToConfirmButton>
+                </span>
               </Tooltip>
             </>
           )}
