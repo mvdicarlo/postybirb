@@ -18,6 +18,7 @@ import {
 import { useSubmissionsLoading } from '../../../stores/submission-store';
 import { ConfirmActionModal } from '../../confirm-action-modal';
 import { ArchivedSubmissionList } from './archived-submission-list';
+import { FileSubmissionModal } from './file-submission-modal';
 import {
     useSubmissionHandlers,
     useSubmissions,
@@ -71,6 +72,9 @@ export function SubmissionsSection({
   // Action handlers
   const {
     fileInputRef,
+    isFileModalOpen,
+    closeFileModal,
+    handleFileUpload,
     handleCreateSubmission,
     handleCreateMessageSubmission,
     handleFileChange,
@@ -191,7 +195,17 @@ export function SubmissionsSection({
         confirmColor="blue"
       />
 
-      {/* Hidden file input for creating file submissions */}
+      {/* File submission modal */}
+      {submissionType === SubmissionType.FILE && (
+        <FileSubmissionModal
+          opened={isFileModalOpen}
+          onClose={closeFileModal}
+          onUpload={handleFileUpload}
+          type={submissionType}
+        />
+      )}
+
+      {/* Hidden file input for creating file submissions (legacy fallback) */}
       {submissionType === SubmissionType.FILE && (
         <input
           ref={fileInputRef}

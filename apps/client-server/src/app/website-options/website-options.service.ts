@@ -233,11 +233,13 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
    *
    * @param {Submission<ISubmissionMetadata>} submission
    * @param {string} title
+   * @param {Partial<IWebsiteFormFields>} [defaultOptions] - Optional default options to merge
    * @return {*}  {Promise<WebsiteOptions>}
    */
   async createDefaultSubmissionOptions(
     submission: ISubmission<ISubmissionMetadata>,
     title: string,
+    defaultOptions?: Partial<IWebsiteFormFields>,
   ): Promise<WebsiteOptions> {
     this.logger
       .withMetadata({ id: submission.id })
@@ -251,6 +253,7 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
         NULL_ACCOUNT_ID,
         submission.type,
         title,
+        defaultOptions,
       ),
     };
 
@@ -261,8 +264,9 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
     accountId: AccountId,
     type: SubmissionType,
     title?: string,
+    defaultOptions?: Partial<IWebsiteFormFields>,
   ): Promise<IWebsiteFormFields> {
-    const defaultOptions =
+    const userSpecifiedOptions =
       (
         await this.userSpecifiedOptionsService.findByAccountAndSubmissionType(
           NULL_ACCOUNT_ID,
@@ -272,9 +276,26 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
 
     const websiteFormFields: IWebsiteFormFields = {
       ...new DefaultWebsiteOptions(),
-      ...defaultOptions,
+      ...userSpecifiedOptions,
       title,
     };
+
+    // Merge provided default options (tags, description, rating)
+    if (defaultOptions) {
+      if (defaultOptions.tags) {
+        websiteFormFields.tags = {
+          overrideDefault: false,
+          tags: defaultOptions.tags.tags ?? defaultOptions.tags.tags ?? [],
+        };
+      }
+      if (defaultOptions.description) {
+        websiteFormFields.description = defaultOptions.description;
+      }
+      if (defaultOptions.rating) {
+        websiteFormFields.rating = defaultOptions.rating;
+      }
+    }
+
     return websiteFormFields;
   }
 

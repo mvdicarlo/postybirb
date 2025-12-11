@@ -2,8 +2,16 @@
  * Hook for submission action handlers.
  */
 
-import { IWebsiteFormFields, SubmissionType } from '@postybirb/types';
-import { useCallback, useRef } from 'react';
+import {
+    Description,
+    IFileMetadata,
+    IWebsiteFormFields,
+    SubmissionId,
+    SubmissionRating,
+    SubmissionType,
+    Tag,
+} from '@postybirb/types';
+import { useCallback, useRef, useState } from 'react';
 import postQueueApi from '../../../../api/post-queue.api';
 import submissionApi from '../../../../api/submission.api';
 import websiteOptionsApi from '../../../../api/website-options.api';
@@ -35,14 +43,36 @@ interface UseSubmissionHandlersProps {
   submissionType: SubmissionType;
 }
 
+/**
+ * Parameters for file submission upload.
+ */
+export interface FileSubmissionUploadParams {
+  files: File[];
+  fileMetadata: IFileMetadata[];
+  defaultOptions: {
+    tags?: Tag[];
+    description?: Description;
+    rating?: SubmissionRating;
+  };
+  templateId?: SubmissionId;
+}
+
 interface UseSubmissionHandlersResult {
-  /** File input ref for creating file submissions */
+  /** File input ref for creating file submissions (legacy fallback) */
   fileInputRef: React.RefObject<HTMLInputElement>;
-  /** Handle creating a new submission (opens file picker for FILE, direct create for MESSAGE) */
+  /** Whether the file submission modal is open */
+  isFileModalOpen: boolean;
+  /** Open the file submission modal */
+  openFileModal: () => void;
+  /** Close the file submission modal */
+  closeFileModal: () => void;
+  /** Handle uploading files from the modal */
+  handleFileUpload: (params: FileSubmissionUploadParams) => Promise<void>;
+  /** Handle creating a new submission (opens modal for FILE, handled by header for MESSAGE) */
   handleCreateSubmission: () => void;
   /** Handle creating a message submission with a title */
   handleCreateMessageSubmission: (title: string) => Promise<void>;
-  /** Handle file selection for new file submission */
+  /** Handle file selection for new file submission (legacy/fallback) */
   handleFileChange: (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => Promise<void>;
@@ -90,13 +120,64 @@ export function useSubmissionHandlers({
   const setViewState = useUIStore((state) => state.setViewState);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // File submission modal state
+  const [isFileModalOpen, setIsFileModalOpen] = useState(false);
+
+  const openFileModal = useCallback(() => setIsFileModalOpen(true), []);
+  const closeFileModal = useCallback(() => setIsFileModalOpen(false), []);
+
+  // Handle uploading files from the modal
+  const handleFileUpload = useCallback(
+    async (params: FileSubmissionUploadParams) => {
+      const { files, fileMetadata, defaultOptions, templateId } = params;
+
+      // Convert Description to DescriptionValue for the API
+      const apiDefaultOptions = defaultOptions
+        ? {
+            tags: defaultOptions.tags,
+            rating: defaultOptions.rating,
+            description: defaultOptions.description
+              ? {
+                  overrideDefault: false,
+                  description: defaultOptions.description,
+                  insertTags: undefined,
+                  insertTitle: undefined,
+                }
+              : undefined,
+          }
+        : undefined;
+
+      // Create file submissions with metadata and default options
+      const response = await submissionApi.createFileSubmission({
+        type: SubmissionType.FILE,
+        files,
+        fileMetadata,
+        defaultOptions: apiDefaultOptions,
+      });
+
+      // Apply template if selected
+      if (templateId && response.body) {
+        const submissions = Array.isArray(response.body)
+          ? response.body
+          : [response.body];
+        await Promise.all(
+          submissions.map((sub: { id: SubmissionId }) =>
+            submissionApi.applyTemplate(sub.id, templateId),
+          ),
+        );
+      }
+    },
+    [],
+  );
+
   // Handle creating a new submission
   const handleCreateSubmission = useCallback(() => {
     if (submissionType === SubmissionType.FILE) {
-      fileInputRef.current?.click();
+      // Open the file submission modal
+      openFileModal();
     }
     // For MESSAGE type, the popover handles creation via handleCreateMessageSubmission
-  }, [submissionType]);
+  }, [submissionType, openFileModal]);
 
   // Handle creating a message submission with title
   const handleCreateMessageSubmission = useCallback(
@@ -298,6 +379,10 @@ export function useSubmissionHandlers({
 
   return {
     fileInputRef,
+    isFileModalOpen,
+    openFileModal,
+    closeFileModal,
+    handleFileUpload,
     handleCreateSubmission,
     handleCreateMessageSubmission,
     handleFileChange,

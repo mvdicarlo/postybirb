@@ -1,0 +1,83 @@
+/**
+ * FileSubmissionModal styles.
+ * Following postybirb__snake_case naming convention.
+ */
+
+/* Modal overlay */
+.postybirb__file_submission_modal_overlay {
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+  z-index: 9999;
+}
+
+/* Modal container */
+.postybirb__file_submission_modal {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+/* Header section */
+.postybirb__file_submission_modal_header {
+  border-bottom: 1px solid var(--mantine-color-default-border);
+  flex-shrink: 0;
+}
+
+/* Dropzone container */
+.postybirb__file_submission_modal_dropzone_container {
+  flex-shrink: 0;
+}
+
+/* Dropzone inner content - prevents pointer events on children */
+.postybirb__file_submission_modal_dropzone_content {
+  pointer-events: none;
+}
+
+/* Main content area */
+.postybirb__file_submission_modal_content {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Column layout for file list and options */
+.postybirb__file_submission_modal_column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Empty state card */
+.postybirb__file_submission_modal_empty {
+  flex: 1;
+}
+
+/* File list container */
+.postybirb__file_submission_modal_file_list {
+  flex: 1;
+}
+
+/* Footer section */
+.postybirb__file_submission_modal_footer {
+  border-top: 1px solid var(--mantine-color-default-border);
+  flex-shrink: 0;
+}
+
+/* File preview card - additional styling if needed */
+
+/* File preview content container */
+.postybirb__file_preview_content {
+  flex: 1;
+  min-width: 0;
+}
+
+/* File preview thumbnail */
+.postybirb__file_preview_thumbnail {
+  flex-shrink: 0;
+}

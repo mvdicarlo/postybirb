@@ -1,32 +1,32 @@
 /* eslint-disable no-param-reassign */
 import {
-  BadRequestException,
-  forwardRef,
-  Inject,
-  Injectable,
-  NotFoundException,
-  OnModuleInit,
-  Optional,
+    BadRequestException,
+    forwardRef,
+    Inject,
+    Injectable,
+    NotFoundException,
+    OnModuleInit,
+    Optional,
 } from '@nestjs/common';
 import {
-  FileBufferSchema,
-  Insert,
-  SubmissionFileSchema,
-  SubmissionSchema,
-  WebsiteOptionsSchema,
+    FileBufferSchema,
+    Insert,
+    SubmissionFileSchema,
+    SubmissionSchema,
+    WebsiteOptionsSchema,
 } from '@postybirb/database';
 import { SUBMISSION_UPDATES } from '@postybirb/socket-events';
 import {
-  FileSubmission,
-  FileSubmissionMetadata,
-  ISubmissionDto,
-  ISubmissionMetadata,
-  MessageSubmission,
-  NULL_ACCOUNT_ID,
-  ScheduleType,
-  SubmissionId,
-  SubmissionMetadataType,
-  SubmissionType,
+    FileSubmission,
+    FileSubmissionMetadata,
+    ISubmissionDto,
+    ISubmissionMetadata,
+    MessageSubmission,
+    NULL_ACCOUNT_ID,
+    ScheduleType,
+    SubmissionId,
+    SubmissionMetadataType,
+    SubmissionType,
 } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/electron';
 import { eq } from 'drizzle-orm';
@@ -187,17 +187,38 @@ export class SubmissionService
 
     submission = await this.repository.insert(submission);
 
+    // Determine the submission name/title
     let name = 'New submission';
     if (createSubmissionDto.name) {
       name = createSubmissionDto.name;
     } else if (file) {
-      name = path.parse(file.filename).name;
+      // Check for per-file title override from fileMetadata
+      const fileMetadata = createSubmissionDto.fileMetadata?.find(
+        (meta) => meta.filename === file.originalname,
+      );
+      if (fileMetadata?.title) {
+        name = fileMetadata.title;
+      } else {
+        name = path.parse(file.filename).name;
+      }
     }
+
+    // Convert defaultOptions from DTO format to IWebsiteFormFields format
+    const defaultOptions = createSubmissionDto.defaultOptions
+      ? {
+          tags: createSubmissionDto.defaultOptions.tags
+            ? { overrideDefault: false, tags: createSubmissionDto.defaultOptions.tags }
+            : undefined,
+          description: createSubmissionDto.defaultOptions.description,
+          rating: createSubmissionDto.defaultOptions.rating,
+        }
+      : undefined;
 
     try {
       await this.websiteOptionsService.createDefaultSubmissionOptions(
         submission,
         name,
+        defaultOptions,
       );
 
       switch (createSubmissionDto.type) {
