@@ -22,6 +22,7 @@ import {
     showSuccessNotification,
 } from '../../../utils/notifications';
 import { AccountSectionHeader } from './account-section-header';
+import { AccountsProvider } from './context';
 import { WebsiteAccountCard } from './website-account-card';
 
 interface AccountsSectionProps {
@@ -195,20 +196,23 @@ export function AccountsSection({ viewState }: AccountsSectionProps) {
             </Text>
           </Box>
         ) : (
-          <Stack gap="xs" p="xs">
-            {sortedWebsites.map((website) => (
-              <WebsiteAccountCard
-                key={website.id}
-                website={website}
-                accounts={getFilteredAccounts(website.id)}
-                selectedAccountId={selectedAccountId}
-                onAccountSelect={handleSelectAccount}
-                onLoginRequest={handleSelectAccount}
-                onDeleteAccount={handleDeleteAccount}
-                onResetAccount={handleResetAccount}
-              />
-            ))}
-          </Stack>
+          <AccountsProvider
+            selectedAccountId={selectedAccountId}
+            onSelectAccount={handleSelectAccount}
+            onDeleteAccount={handleDeleteAccount}
+            onResetAccount={handleResetAccount}
+            onLoginRequest={handleSelectAccount}
+          >
+            <Stack gap="xs" p="xs">
+              {sortedWebsites.map((website) => (
+                <WebsiteAccountCard
+                  key={website.id}
+                  website={website}
+                  accounts={getFilteredAccounts(website.id)}
+                />
+              ))}
+            </Stack>
+          </AccountsProvider>
         )}
       </ScrollArea>
     </Box>

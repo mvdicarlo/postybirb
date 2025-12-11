@@ -5,56 +5,47 @@
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
-  ActionIcon,
-  Badge,
-  Box,
-  Button,
-  Collapse,
-  Group,
-  Paper,
-  Popover,
-  Stack,
-  Text,
-  TextInput,
-  Tooltip,
-  UnstyledButton,
+    ActionIcon,
+    Badge,
+    Box,
+    Button,
+    Collapse,
+    Group,
+    Paper,
+    Popover,
+    Stack,
+    Text,
+    TextInput,
+    Tooltip,
+    UnstyledButton,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import {
-  IconChevronDown,
-  IconChevronRight,
-  IconLogin,
-  IconPlus,
-  IconRefresh,
-  IconTrash,
-  IconUser,
+    IconChevronDown,
+    IconChevronRight,
+    IconLogin,
+    IconPlus,
+    IconRefresh,
+    IconTrash,
+    IconUser,
 } from '@tabler/icons-react';
 import { useState } from 'react';
 import accountApi from '../../../api/account.api';
 import type { AccountRecord } from '../../../stores/records';
 import type { WebsiteRecord } from '../../../stores/records/website-record';
 import {
-  showCreateErrorNotification,
-  showCreatedNotification,
-  showUpdateErrorNotification,
+    showCreateErrorNotification,
+    showCreatedNotification,
+    showUpdateErrorNotification,
 } from '../../../utils/notifications';
 import { HoldToConfirmButton } from '../../hold-to-confirm';
+import { useAccountActions } from './hooks';
 
 interface WebsiteAccountCardProps {
   /** Website record */
   website: WebsiteRecord;
   /** Accounts for this website */
   accounts: AccountRecord[];
-  /** Currently selected account ID */
-  selectedAccountId: string | null;
-  /** Callback when an account is selected */
-  onAccountSelect: (accountId: string) => void;
-  /** Callback when login is requested for an account */
-  onLoginRequest?: (accountId: string) => void;
-  /** Callback when delete is requested for an account */
-  onDeleteAccount?: (accountId: string) => void;
-  /** Callback when reset is requested for an account */
-  onResetAccount?: (accountId: string) => void;
 }
 
 /** Maximum characters allowed for account name */
@@ -62,22 +53,21 @@ const MAX_ACCOUNT_NAME_LENGTH = 24;
 
 /**
  * Single account row within a website card.
+ * Uses AccountsContext via useAccountActions hook.
  */
 function AccountRow({
   account,
-  isSelected,
-  onSelect,
-  onLoginRequest,
-  onDelete,
-  onReset,
 }: {
   account: AccountRecord;
-  isSelected: boolean;
-  onSelect: () => void;
-  onLoginRequest?: () => void;
-  onDelete?: () => void;
-  onReset?: () => void;
 }) {
+  const {
+    isSelected,
+    handleSelect,
+    handleLoginRequest,
+    handleDelete,
+    handleReset,
+  } = useAccountActions(account.id);
+
   const [
     resetPopoverOpened,
     { open: openResetPopover, close: closeResetPopover },
@@ -85,8 +75,8 @@ function AccountRow({
   const [isEditingName, setIsEditingName] = useState(false);
   const [editName, setEditName] = useState(account.name);
 
-  const handleReset = () => {
-    onReset?.();
+  const onReset = () => {
+    handleReset();
     closeResetPopover();
   };
 
@@ -141,7 +131,7 @@ function AccountRow({
           : undefined,
       }}
     >
-      <UnstyledButton onClick={onSelect} style={{ flex: 1, minWidth: 0 }}>
+      <UnstyledButton onClick={handleSelect} style={{ flex: 1, minWidth: 0 }}>
         <Group gap="xs" wrap="nowrap">
           <IconUser size={14} style={{ opacity: 0.5, flexShrink: 0 }} />
 
@@ -210,7 +200,7 @@ function AccountRow({
             color="blue"
             onClick={(e) => {
               e.stopPropagation();
-              onLoginRequest?.();
+              handleLoginRequest();
             }}
           >
             <IconLogin size={14} />
@@ -252,7 +242,7 @@ function AccountRow({
                 <Button size="xs" variant="default" onClick={closeResetPopover}>
                   <Trans>Cancel</Trans>
                 </Button>
-                <Button size="xs" color="yellow" onClick={handleReset}>
+                <Button size="xs" color="yellow" onClick={onReset}>
                   <Trans>Reset</Trans>
                 </Button>
               </Group>
@@ -267,7 +257,7 @@ function AccountRow({
               size="xs"
               variant="subtle"
               color="red"
-              onConfirm={() => onDelete?.()}
+              onConfirm={() => handleDelete()}
             >
               <IconTrash size={14} />
             </HoldToConfirmButton>
@@ -284,11 +274,6 @@ function AccountRow({
 export function WebsiteAccountCard({
   website,
   accounts,
-  selectedAccountId,
-  onAccountSelect,
-  onLoginRequest,
-  onDeleteAccount,
-  onResetAccount,
 }: WebsiteAccountCardProps) {
   const { t } = useLingui();
   // Default to collapsed if no accounts, expanded otherwise
@@ -365,11 +350,6 @@ export function WebsiteAccountCard({
                 <AccountRow
                   key={account.id}
                   account={account}
-                  isSelected={account.id === selectedAccountId}
-                  onSelect={() => onAccountSelect(account.id)}
-                  onLoginRequest={() => onLoginRequest?.(account.id)}
-                  onDelete={() => onDeleteAccount?.(account.id)}
-                  onReset={() => onResetAccount?.(account.id)}
                 />
               ))}
 
