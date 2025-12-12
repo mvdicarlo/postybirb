@@ -23,9 +23,11 @@ class FileSubmissionsApi {
     fileId: EntityId,
     target: FileUpdateTarget,
     file: Blob,
+    filename?: string,
   ) {
     const fd = new FormData();
-    fd.append('file', file);
+    // Include filename if provided to preserve file extension and name
+    fd.append('file', file, filename);
     return this.client.post(`replace/${target}/${id}/${fileId}`, fd);
   }
 

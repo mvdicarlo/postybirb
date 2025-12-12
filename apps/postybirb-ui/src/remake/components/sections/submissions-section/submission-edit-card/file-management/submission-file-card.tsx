@@ -34,8 +34,8 @@ import { useMemo } from 'react';
 import fileSubmissionApi from '../../../../../api/file-submission.api';
 import { useAccountsMap } from '../../../../../stores/account-store';
 import { useSubmissionEditCardContext } from '../context';
+import { FileActions } from './file-actions';
 import { FileMetadata } from './file-metadata';
-import { FilePreview } from './file-preview';
 import { DRAGGABLE_FILE_CLASS } from './submission-file-manager';
 
 interface SubmissionFileCardProps {
@@ -126,7 +126,7 @@ export function SubmissionFileCard({
       )}
 
       <Flex gap="md" align="flex-start" ml={draggable ? 'md' : 0}>
-        {/* File Preview */}
+        {/* File Preview with Actions */}
         <Box
           style={{
             // eslint-disable-next-line lingui/no-unlocalized-strings
@@ -136,7 +136,7 @@ export function SubmissionFileCard({
             background: 'var(--mantine-color-dark-6)',
           }}
         >
-          <FilePreview file={file} />
+          <FileActions file={file} submissionId={submission.id} />
         </Box>
 
         {/* File Info */}
@@ -206,7 +206,7 @@ export function SubmissionFileCard({
       </Flex>
 
       {/* Expandable metadata section */}
-      <Collapse in={expanded}>
+      <Collapse in={expanded} ml="lg">
         <Divider my="sm" variant="dashed" />
         <FileMetadata file={file} accounts={accounts} />
       </Collapse>

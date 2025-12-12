@@ -1,17 +1,17 @@
 import {
-  BadRequestException,
-  forwardRef,
-  Inject,
-  Injectable,
+    BadRequestException,
+    forwardRef,
+    Inject,
+    Injectable,
 } from '@nestjs/common';
 import {
-  EntityId,
-  FileSubmission,
-  isFileSubmission,
-  ISubmission,
-  SubmissionFileMetadata,
-  SubmissionId,
-  SubmissionType,
+    EntityId,
+    FileSubmission,
+    isFileSubmission,
+    ISubmission,
+    SubmissionFileMetadata,
+    SubmissionId,
+    SubmissionType,
 } from '@postybirb/types';
 import { PostyBirbService } from '../../common/service/postybirb-service';
 import { FileService } from '../../file/file.service';
@@ -111,6 +111,7 @@ export class FileSubmissionService
     this.guardIsFileSubmission(submission);
 
     await this.fileService.update(file, fileId, false);
+    this.submissionService.emit();
   }
 
   /**
