@@ -2,6 +2,7 @@
  * FormFieldsContext - Provides form field metadata and state for website option forms.
  */
 
+import { Trans } from '@lingui/react/macro';
 import { notifications } from '@mantine/notifications';
 import {
     FieldAggregateType,
@@ -160,11 +161,12 @@ export function FormFieldsProvider({
         } catch (error) {
           // Show error toast on API failure
           notifications.show({
-            title: 'Update failed',
             message:
-              error instanceof Error
-                ? error.message
-                : 'Failed to save changes',
+              error instanceof Error ? (
+                error.message
+              ) : (
+                <Trans>Failed to save changes</Trans>
+              ),
             color: 'red',
           });
         }

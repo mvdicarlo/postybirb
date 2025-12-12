@@ -91,11 +91,9 @@ export function FormField({ fieldName, field }: FormFieldProps) {
       );
       break;
     default:
-      // eslint-disable-next-line lingui/no-unlocalized-strings
       formField = (
-        <div>
-          Unknown field type: {(field as FieldAggregateType).formField}
-        </div>
+        // eslint-disable-next-line lingui/no-unlocalized-strings
+        <div>Unknown field type: {(field as FieldAggregateType).formField}</div>
       );
   }
 

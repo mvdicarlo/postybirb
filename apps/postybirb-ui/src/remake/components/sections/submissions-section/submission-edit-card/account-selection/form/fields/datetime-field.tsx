@@ -38,9 +38,11 @@ function DateTimePickerField({
       }}
       placeholder={
         defaultValue
-          ? moment(defaultValue).format(field.format || 'YYYY-MM-DD HH:mm')
+          ? // eslint-disable-next-line lingui/no-unlocalized-strings
+            moment(defaultValue).format(field.format || 'YYYY-MM-DD HH:mm')
           : undefined
       }
+      // eslint-disable-next-line lingui/no-unlocalized-strings
       valueFormat={field.format || 'YYYY-MM-DD HH:mm'}
       withSeconds={false}
       minDate={minDate}

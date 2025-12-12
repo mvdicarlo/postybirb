@@ -3,9 +3,10 @@
  */
 
 import { Trans } from '@lingui/react/macro';
-import { Box, Checkbox, Textarea } from '@mantine/core';
+import { Box, Checkbox } from '@mantine/core';
 import { DescriptionFieldType } from '@postybirb/form-builder';
 import { DefaultDescriptionValue, DescriptionValue } from '@postybirb/types';
+import { DescriptionEditor } from '../../../../../../shared';
 import { useFormFieldsContext } from '../form-fields-context';
 import { useDefaultOption } from '../hooks/use-default-option';
 import { useValidations } from '../hooks/use-validations';
@@ -85,23 +86,15 @@ export function DescriptionField({
           label={<Trans>Insert tags at end</Trans>}
         />
         {(overrideDefault || option.isDefault) && (
-          <Textarea
-            value={descriptionText}
-            onChange={(e) => {
-              // Convert plain text back to description format
-              const newDescription = e.currentTarget.value
-                .split('\n')
-                .map((line) => ({
-                  type: 'paragraph',
-                  children: [{ text: line }],
-                }));
+          <DescriptionEditor
+            showCustomShortcuts
+            isDefaultEditor={option.isDefault}
+            onChange={(value) => {
               setValue(fieldName, {
                 ...fieldValue,
-                description: newDescription,
+                description: value,
               });
             }}
-            minRows={4}
-            autosize
           />
         )}
       </FieldLabel>
