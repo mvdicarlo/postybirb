@@ -41,11 +41,14 @@ export type AccountStore = EntityStore<AccountRecord>;
 
 /**
  * Select all accounts.
+ * Uses useShallow for stable reference when items haven't changed.
  */
-export const useAccounts = () => useAccountStore((state) => state.records);
+export const useAccounts = () =>
+  useAccountStore(useShallow((state) => state.records));
 
 /**
  * Select accounts map for O(1) lookup.
+ * Note: Map reference is stable from store, but consumers should use useShallow if deriving values.
  */
 export const useAccountsMap = () => useAccountStore((state) => state.recordsMap);
 
@@ -78,21 +81,20 @@ export const useLoggedInAccounts = () =>
   );
 
 /**
- * Select accounts grouped by website.
- * Uses useShallow for stable reference when items haven't changed.
+ * Get accounts grouped by website ID.
+ * This is a utility function, not a hook - use with useMemo in components.
  */
-export const useAccountsByWebsite = () =>
-  useAccountStore(
-    useShallow((state) => {
-      const grouped = new Map<string, AccountRecord[]>();
-      state.records.forEach((account) => {
-        const existing = grouped.get(account.website) ?? [];
-        existing.push(account);
-        grouped.set(account.website, existing);
-      });
-      return grouped;
-    })
-  );
+export const groupAccountsByWebsite = (
+  accounts: AccountRecord[]
+): Map<string, AccountRecord[]> => {
+  const grouped = new Map<string, AccountRecord[]>();
+  accounts.forEach((account) => {
+    const existing = grouped.get(account.website) ?? [];
+    existing.push(account);
+    grouped.set(account.website, existing);
+  });
+  return grouped;
+};
 
 /**
  * Select account store actions.

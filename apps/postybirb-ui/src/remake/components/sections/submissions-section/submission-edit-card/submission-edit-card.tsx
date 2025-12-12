@@ -32,7 +32,7 @@ export interface SubmissionEditCardProps {
  * Inner card component that uses context.
  */
 function SubmissionEditCardInner() {
-  const { isCollapsible, submission } = useSubmissionEditCardContext();
+  const { isCollapsible } = useSubmissionEditCardContext();
   const [expanded, { toggle }] = useDisclosure(true);
 
   // If not collapsible, always show expanded
@@ -52,7 +52,7 @@ function SubmissionEditCardInner() {
             ) : (
               <SubmissionEditCardCollapsedHeader />
             )}
-            <SubmissionEditCardActions submission={submission} />
+            <SubmissionEditCardActions />
           </Group>
         </UnstyledButton>
       ) : (

@@ -8,7 +8,7 @@ import { ComponentErrorBoundary } from '../../../../error-boundary';
 import { AccountSelectionForm } from '../account-selection';
 import { useSubmissionEditCardContext } from '../context';
 import { DefaultsForm } from '../defaults-form';
-import { FileManagementStub } from '../file-management-stub';
+import { SubmissionFileManager } from '../file-management';
 
 /**
  * Body content of the submission edit card.
@@ -25,7 +25,11 @@ export function SubmissionEditCardBody() {
   return (
     <Stack gap="md" p="md">
       {/* File Management Section (conditional) */}
-      {showFileManagement && <FileManagementStub />}
+      {showFileManagement && (
+        <ComponentErrorBoundary>
+          <SubmissionFileManager />
+        </ComponentErrorBoundary>
+      )}
 
       {/* Defaults Form - global options like title, description, tags */}
       <ComponentErrorBoundary>

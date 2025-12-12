@@ -1,0 +1,25 @@
+/**
+ * File management section styles.
+ */
+
+.postybirb__file_manager_header {
+  background: var(--mantine-color-dark-6);
+  border-top-left-radius: var(--mantine-radius-md);
+  border-top-right-radius: var(--mantine-radius-md);
+}
+
+.postybirb-sortable-file {
+  transition: box-shadow 150ms ease, transform 150ms ease;
+}
+
+.postybirb-sortable-file:hover {
+  box-shadow: var(--mantine-shadow-sm);
+}
+
+.postybirb-sortable-file.sortable-ghost {
+  opacity: 0.5;
+}
+
+.postybirb-sortable-file.sortable-chosen {
+  box-shadow: var(--mantine-shadow-md);
+}

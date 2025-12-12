@@ -1,5 +1,6 @@
 export { AccountPicker } from './account-picker';
 export type { AccountPickerProps } from './account-picker';
+export { BasicWebsiteSelect } from './basic-website-select/basic-website-select';
 export { DescriptionEditor } from './description-editor';
 export type { DescriptionEditorProps } from './description-editor';
 export { RatingInput } from './rating-input';

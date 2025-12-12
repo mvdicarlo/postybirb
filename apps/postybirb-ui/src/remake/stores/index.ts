@@ -34,8 +34,8 @@ export {
 
 // Account Store
 export {
-    useAccount, useAccountActions, useAccountStore,
-    useAccounts, useAccountsByWebsite, useAccountsLoading, useAccountsMap, useLoggedInAccounts, type AccountStore
+    groupAccountsByWebsite, useAccount, useAccountActions, useAccountStore,
+    useAccounts, useAccountsLoading, useAccountsMap, useLoggedInAccounts, type AccountStore
 } from './account-store';
 
 // Submission Store
