@@ -5,14 +5,43 @@
  */
 
 import { Trans } from '@lingui/react/macro';
-import { Box, Center, Stack, Text, Title } from '@mantine/core';
+import {
+    ActionIcon,
+    Box,
+    Card,
+    Center,
+    Divider,
+    Group,
+    ScrollArea,
+    Stack,
+    Switch,
+    Text,
+    Title,
+} from '@mantine/core';
+import type { SubmissionId } from '@postybirb/types';
 import { SubmissionType } from '@postybirb/types';
-import { IconFile, IconInbox, IconMessage } from '@tabler/icons-react';
+import {
+    IconInbox,
+    IconLayoutSidebarLeftCollapse,
+    IconLayoutSidebarLeftExpand,
+} from '@tabler/icons-react';
+import { useMemo } from 'react';
+import type { SubmissionRecord } from '../../../stores/records';
+import {
+    useSubmissionsByType,
+    useSubmissionsMap,
+} from '../../../stores/submission-store';
+import {
+    useSubNavVisible,
+    useSubmissionsContentPreferences,
+    useToggleSectionPanel,
+} from '../../../stores/ui-store';
 import {
     isFileSubmissionsViewState,
     isMessageSubmissionsViewState,
     type ViewState,
 } from '../../../types/view-state';
+import { SubmissionEditCard } from './submission-edit-card';
 
 interface SubmissionsContentProps {
   /** Current view state */
@@ -37,6 +66,76 @@ function EmptySubmissionSelection() {
   );
 }
 
+interface SubmissionsContentHeaderProps {
+  submissionType: SubmissionType;
+  selectedCount: number;
+}
+
+function SubmissionsContentHeader({
+  submissionType,
+  selectedCount,
+}: SubmissionsContentHeaderProps) {
+  const { visible: isSectionPanelVisible } = useSubNavVisible();
+  const toggleSectionPanel = useToggleSectionPanel();
+  const { preferMultiEdit, fullView, setPreferMultiEdit, setFullView } =
+    useSubmissionsContentPreferences();
+
+  const canMultiEdit = selectedCount > 1;
+
+  return (
+    <Box
+      p="md"
+      style={{ flexShrink: 0, backgroundColor: 'var(--mantine-color-body)' }}
+    >
+      <Group justify="space-between" align="center">
+        <Group gap="sm">
+          <ActionIcon
+            c="dimmed"
+            variant="transparent"
+            onClick={toggleSectionPanel}
+            // eslint-disable-next-line lingui/no-unlocalized-strings
+            aria-label="Toggle section panel"
+          >
+            {isSectionPanelVisible ? (
+              <IconLayoutSidebarLeftCollapse size={18} />
+            ) : (
+              <IconLayoutSidebarLeftExpand size={18} />
+            )}
+          </ActionIcon>
+          <Box>
+            <Title order={4} lh={1.2}>
+              {submissionType === SubmissionType.FILE ? (
+                <Trans>File Submissions</Trans>
+              ) : (
+                <Trans>Message Submissions</Trans>
+              )}
+            </Title>
+            <Text size="sm" c="dimmed">
+              <Trans>{selectedCount} selected</Trans>
+            </Text>
+          </Box>
+        </Group>
+
+        <Group gap="md">
+          <Switch
+            size="sm"
+            checked={preferMultiEdit}
+            disabled={!canMultiEdit}
+            onChange={(e) => setPreferMultiEdit(e.currentTarget.checked)}
+            label={<Trans>Mass Edit</Trans>}
+          />
+          <Switch
+            size="sm"
+            checked={fullView}
+            onChange={(e) => setFullView(e.currentTarget.checked)}
+            label={<Trans>Simple View</Trans>}
+          />
+        </Group>
+      </Group>
+    </Box>
+  );
+}
+
 /**
  * Primary content for the submissions view.
  * Shows submission details when submissions are selected.
@@ -45,50 +144,93 @@ export function SubmissionsContent({
   viewState,
   submissionType,
 }: SubmissionsContentProps) {
-  // Get selected IDs from view state
-  let selectedIds: string[] = [];
-  let mode = 'single';
+  const { selectedIds, mode } = useMemo(() => {
+    if (
+      submissionType === SubmissionType.FILE &&
+      isFileSubmissionsViewState(viewState)
+    ) {
+      return {
+        selectedIds: viewState.params.selectedIds,
+        mode: viewState.params.mode,
+      };
+    }
+    if (
+      submissionType === SubmissionType.MESSAGE &&
+      isMessageSubmissionsViewState(viewState)
+    ) {
+      return {
+        selectedIds: viewState.params.selectedIds,
+        mode: viewState.params.mode,
+      };
+    }
+    return { selectedIds: [] as string[], mode: 'single' as const };
+  }, [submissionType, viewState]);
 
-  if (
-    submissionType === SubmissionType.FILE &&
-    isFileSubmissionsViewState(viewState)
-  ) {
-    selectedIds = viewState.params.selectedIds;
-    mode = viewState.params.mode;
-  } else if (
-    submissionType === SubmissionType.MESSAGE &&
-    isMessageSubmissionsViewState(viewState)
-  ) {
-    selectedIds = viewState.params.selectedIds;
-    mode = viewState.params.mode;
-  }
+  const submissionsMap = useSubmissionsMap();
+  const selectedSubmissions = useMemo(
+    () =>
+      selectedIds
+        .map((id) => submissionsMap.get(id as SubmissionId))
+        .filter((s): s is SubmissionRecord => Boolean(s)),
+    [selectedIds, submissionsMap],
+  );
 
-  if (selectedIds.length === 0) {
-    return <EmptySubmissionSelection />;
-  }
+  const allOfType = useSubmissionsByType(submissionType);
+  const multiSubmission = useMemo(
+    () => allOfType.find((s) => s.isMultiSubmission),
+    [allOfType],
+  );
 
-  // Choose icon based on submission type
-  const Icon = submissionType === SubmissionType.FILE ? IconFile : IconMessage;
-  const titleText =
-    submissionType === SubmissionType.FILE ? (
-      <Trans>File Submission Details</Trans>
-    ) : (
-      <Trans>Message Submission Details</Trans>
-    );
+  const { preferMultiEdit, fullView } = useSubmissionsContentPreferences();
+  const effectiveMultiEdit = preferMultiEdit && selectedIds.length > 1;
+
+  // Cards are collapsible only when multiple selected and not in mass edit mode
+  const isCollapsible = selectedIds.length > 1 && !effectiveMultiEdit;
 
   return (
-    <Box p="md">
-      <Stack gap="sm">
-        <Stack gap="xs">
-          <Icon size={32} stroke={1.5} opacity={0.7} />
-          <Title order={3}>{titleText}</Title>
-        </Stack>
-        {/* Debug info - will be replaced with actual content */}
-        <Text size="sm" c="dimmed">
-          <Trans>Mode:</Trans> {mode} | <Trans>Selected:</Trans>{' '}
-          {selectedIds.length}
-        </Text>
-      </Stack>
+    <Box h="100%" style={{ display: 'flex', flexDirection: 'column' }}>
+      <SubmissionsContentHeader
+        submissionType={submissionType}
+        selectedCount={selectedIds.length}
+      />
+      <Divider />
+      <Box style={{ flex: 1, minHeight: 0 }}>
+        {selectedIds.length === 0 ? (
+          <EmptySubmissionSelection />
+        ) : (
+          <ScrollArea style={{ height: '100%' }} type="hover" scrollbarSize={6}>
+            <Box p="md">
+              <Stack gap="md">
+                {effectiveMultiEdit ? (
+                  multiSubmission ? (
+                    <SubmissionEditCard
+                      submission={multiSubmission}
+                      isCollapsible={false}
+                      fullView={fullView}
+                    />
+                  ) : (
+                    <Card withBorder radius="sm" p="md">
+                      {/* eslint-disable-next-line lingui/no-unlocalized-strings */}
+                      <Text size="sm" c="dimmed">
+                        Multi-edit record not found for this submission type.
+                      </Text>
+                    </Card>
+                  )
+                ) : (
+                  selectedSubmissions.map((submission) => (
+                    <SubmissionEditCard
+                      key={submission.id}
+                      submission={submission}
+                      isCollapsible={isCollapsible}
+                      fullView={fullView}
+                    />
+                  ))
+                )}
+              </Stack>
+            </Box>
+          </ScrollArea>
+        )}
+      </Box>
     </Box>
   );
 }

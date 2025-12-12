@@ -8,20 +8,21 @@ import { Box } from '@mantine/core';
 import { navItems } from '../../config/nav-items';
 import { useKeybindings } from '../../hooks/use-keybindings';
 import {
-  useSidenavCollapsed,
-  useUIStore,
-  useViewState,
+    useSidenavCollapsed,
+    useSubNavVisible,
+    useUIStore,
+    useViewState,
 } from '../../stores/ui-store';
 import '../../styles/layout.css';
 import { cn } from '../../utils/class-names';
 import {
-  CustomShortcutsDrawer,
-  FileWatcherDrawer,
-  NotificationsDrawer,
-  SettingsDialog,
-  TagConverterDrawer,
-  TagGroupDrawer,
-  UserConverterDrawer,
+    CustomShortcutsDrawer,
+    FileWatcherDrawer,
+    NotificationsDrawer,
+    SettingsDialog,
+    TagConverterDrawer,
+    TagGroupDrawer,
+    UserConverterDrawer,
 } from '../drawers/drawers';
 import { PrimaryContent } from './primary-content';
 import { SectionPanel } from './section-panel';
@@ -35,6 +36,7 @@ export function Layout() {
   const collapsed = useSidenavCollapsed();
   const setSidenavCollapsed = useUIStore((state) => state.setSidenavCollapsed);
   const viewState = useViewState();
+  const { visible: isSectionPanelVisible } = useSubNavVisible();
 
   // Set up global keybindings
   useKeybindings();
@@ -56,7 +58,7 @@ export function Layout() {
         {/* Split Content Area: Section Panel + Primary Content */}
         <Box id="postybirb-content-split" className="postybirb__content_split">
           {/* Section Panel (Master) - left side list */}
-          <SectionPanel viewState={viewState} />
+          {isSectionPanelVisible ? <SectionPanel viewState={viewState} /> : null}
 
           {/* Primary Content (Detail) - right side detail view */}
           <PrimaryContent viewState={viewState} />

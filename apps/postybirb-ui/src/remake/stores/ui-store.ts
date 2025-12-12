@@ -77,6 +77,10 @@ interface UIState {
   // Sub-nav visibility per route
   subNavVisible: boolean;
 
+  // Submissions primary content preferences
+  submissionsPreferMultiEdit: boolean;
+  submissionsFullView: boolean;
+
   // Language/locale
   language: string;
 
@@ -118,6 +122,11 @@ interface UIActions {
 
   // Sub-nav actions
   setSubNavVisible: (visible: boolean) => void;
+  toggleSubNavVisible: () => void;
+
+  // Submissions primary content preferences
+  setSubmissionsPreferMultiEdit: (preferMultiEdit: boolean) => void;
+  setSubmissionsFullView: (fullView: boolean) => void;
 
   // Language actions
   setLanguage: (language: string) => void;
@@ -184,6 +193,8 @@ const initialState: UIState = {
   messageSubmissionsFilter: 'all',
   messageSubmissionsSearchQuery: '',
   subNavVisible: true,
+  submissionsPreferMultiEdit: true,
+  submissionsFullView: false,
   language: getDefaultLanguage(),
   colorScheme: 'auto',
   primaryColor: 'red',
@@ -231,6 +242,12 @@ export const useUIStore = create<UIStore>()(
 
       // Sub-nav actions
       setSubNavVisible: (visible) => set({ subNavVisible: visible }),
+      toggleSubNavVisible: () => set((state) => ({ subNavVisible: !state.subNavVisible })),
+
+      // Submissions primary content preferences
+      setSubmissionsPreferMultiEdit: (submissionsPreferMultiEdit) =>
+        set({ submissionsPreferMultiEdit }),
+      setSubmissionsFullView: (submissionsFullView) => set({ submissionsFullView }),
 
       // Language actions
       setLanguage: (language) => set({ language }),
@@ -267,6 +284,8 @@ export const useUIStore = create<UIStore>()(
         fileSubmissionsFilter: state.fileSubmissionsFilter,
         messageSubmissionsFilter: state.messageSubmissionsFilter,
         subNavVisible: state.subNavVisible,
+        submissionsPreferMultiEdit: state.submissionsPreferMultiEdit,
+        submissionsFullView: state.submissionsFullView,
         language: state.language,
         colorScheme: state.colorScheme,
         primaryColor: state.primaryColor,
@@ -395,13 +414,20 @@ export const useViewStateActions = () =>
   );
 
 /**
- * Toggle section panel visibility hook (stub for future use).
- * Will be implemented when section panel collapse is needed.
+ * Toggle section panel visibility hook.
  */
-export const useToggleSectionPanel = () => 
-  // Stub - returns a no-op function for now
-   () => {}
-;
+export const useToggleSectionPanel = () => useUIStore((state) => state.toggleSubNavVisible);
+
+/** Select submissions primary content preferences */
+export const useSubmissionsContentPreferences = () =>
+  useUIStore(
+    useShallow((state) => ({
+      preferMultiEdit: state.submissionsPreferMultiEdit,
+      fullView: state.submissionsFullView,
+      setPreferMultiEdit: state.setSubmissionsPreferMultiEdit,
+      setFullView: state.setSubmissionsFullView,
+    }))
+  );
 
 // ============================================================================
 // Accounts Section Selectors
