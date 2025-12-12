@@ -62,6 +62,7 @@
     "@fullcalendar/interaction": "^6.1.15",
     "@fullcalendar/react": "^6.1.15",
     "@fullcalendar/timegrid": "^6.1.15",
+    "@gfazioli/mantine-border-animate": "^0.3.1",
     "@iarna/rtf-to-html": "^1.1.0",
     "@lingui/core": "^5.5",
     "@lingui/macro": "^5.5",
