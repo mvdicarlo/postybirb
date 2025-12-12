@@ -6,40 +6,41 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-    ActionIcon,
-    Box,
-    Card,
-    Center,
-    Divider,
-    Group,
-    ScrollArea,
-    Stack,
-    Switch,
-    Text,
-    Title,
+  ActionIcon,
+  Box,
+  Card,
+  Center,
+  Container,
+  Divider,
+  Group,
+  ScrollArea,
+  Stack,
+  Switch,
+  Text,
+  Title,
 } from '@mantine/core';
 import type { SubmissionId } from '@postybirb/types';
 import { SubmissionType } from '@postybirb/types';
 import {
-    IconInbox,
-    IconLayoutSidebarLeftCollapse,
-    IconLayoutSidebarLeftExpand,
+  IconInbox,
+  IconLayoutSidebarLeftCollapse,
+  IconLayoutSidebarLeftExpand,
 } from '@tabler/icons-react';
 import { useMemo } from 'react';
 import type { SubmissionRecord } from '../../../stores/records';
 import {
-    useSubmissionsByType,
-    useSubmissionsMap,
+  useSubmissionsByType,
+  useSubmissionsMap,
 } from '../../../stores/submission-store';
 import {
-    useSubNavVisible,
-    useSubmissionsContentPreferences,
-    useToggleSectionPanel,
+  useSubNavVisible,
+  useSubmissionsContentPreferences,
+  useToggleSectionPanel,
 } from '../../../stores/ui-store';
 import {
-    isFileSubmissionsViewState,
-    isMessageSubmissionsViewState,
-    type ViewState,
+  isFileSubmissionsViewState,
+  isMessageSubmissionsViewState,
+  type ViewState,
 } from '../../../types/view-state';
 import { SubmissionEditCard } from './submission-edit-card';
 
@@ -199,35 +200,37 @@ export function SubmissionsContent({
           <EmptySubmissionSelection />
         ) : (
           <ScrollArea style={{ height: '100%' }} type="hover" scrollbarSize={6}>
-            <Box p="md">
-              <Stack gap="md">
-                {effectiveMultiEdit ? (
-                  multiSubmission ? (
-                    <SubmissionEditCard
-                      submission={multiSubmission}
-                      isCollapsible={false}
-                      fullView={fullView}
-                    />
+            <Container size="xxl">
+              <Box p="md">
+                <Stack gap="md">
+                  {effectiveMultiEdit ? (
+                    multiSubmission ? (
+                      <SubmissionEditCard
+                        submission={multiSubmission}
+                        isCollapsible={false}
+                        fullView={fullView}
+                      />
+                    ) : (
+                      <Card withBorder radius="sm" p="md">
+                        {/* eslint-disable-next-line lingui/no-unlocalized-strings */}
+                        <Text size="sm" c="dimmed">
+                          Multi-edit record not found for this submission type.
+                        </Text>
+                      </Card>
+                    )
                   ) : (
-                    <Card withBorder radius="sm" p="md">
-                      {/* eslint-disable-next-line lingui/no-unlocalized-strings */}
-                      <Text size="sm" c="dimmed">
-                        Multi-edit record not found for this submission type.
-                      </Text>
-                    </Card>
-                  )
-                ) : (
-                  selectedSubmissions.map((submission) => (
-                    <SubmissionEditCard
-                      key={submission.id}
-                      submission={submission}
-                      isCollapsible={isCollapsible}
-                      fullView={fullView}
-                    />
-                  ))
-                )}
-              </Stack>
-            </Box>
+                    selectedSubmissions.map((submission) => (
+                      <SubmissionEditCard
+                        key={submission.id}
+                        submission={submission}
+                        isCollapsible={isCollapsible}
+                        fullView={fullView}
+                      />
+                    ))
+                  )}
+                </Stack>
+              </Box>
+            </Container>
           </ScrollArea>
         )}
       </Box>

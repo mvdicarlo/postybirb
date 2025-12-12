@@ -12,19 +12,16 @@ import {
     Group,
     Loader,
     Paper,
-    Stack,
     Text,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import {
-    SubmissionRating,
-    type WebsiteOptionsDto
-} from '@postybirb/types';
+import { SubmissionRating, type WebsiteOptionsDto } from '@postybirb/types';
 import { useCallback, useState } from 'react';
 import websiteOptionsApi from '../../../../../api/website-options.api';
 import type { AccountRecord } from '../../../../../stores/records';
 import { useSubmissionEditCardContext } from '../context';
 import './account-selection.css';
+import { FormFieldsProvider, SectionLayout } from './form';
 
 export interface AccountOptionRowProps {
   /** The account to display */
@@ -54,7 +51,8 @@ export function AccountOptionRow({
         if (checked) {
           // Get default rating from submission's default options
           const defaultOption = submission.options.find((opt) => opt.isDefault);
-          const rating = defaultOption?.data?.rating ?? SubmissionRating.GENERAL;
+          const rating =
+            defaultOption?.data?.rating ?? SubmissionRating.GENERAL;
 
           // Create a new website option for this account
           await websiteOptionsApi.create({
@@ -69,12 +67,13 @@ export function AccountOptionRow({
           close();
         }
       } catch (error) {
-        // eslint-disable-next-line no-console
+        // eslint-disable-next-line no-console, lingui/no-unlocalized-strings
         console.error('Failed to update website option:', error);
       } finally {
         setIsLoading(false);
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [submission.id, account.accountId, websiteOption, open, close],
   );
 
@@ -108,7 +107,7 @@ export function AccountOptionRow({
       </Group>
 
       {/* Expandable inline form section - shown when selected */}
-      <Collapse in={expanded && isSelected}>
+      <Collapse in={expanded && isSelected} ml="lg">
         <Paper
           withBorder
           radius="sm"
@@ -118,12 +117,11 @@ export function AccountOptionRow({
           mb="xs"
           className="postybirb__account_option_form"
         >
-          <Stack gap="xs">
-            <Text size="xs" c="dimmed">
-              <Trans>Website-specific options will appear here</Trans>
-            </Text>
-            {/* TODO: Render form fields from form-builder based on website */}
-          </Stack>
+          {websiteOption && (
+            <FormFieldsProvider option={websiteOption} submission={submission}>
+              <SectionLayout />
+            </FormFieldsProvider>
+          )}
         </Paper>
       </Collapse>
     </Box>

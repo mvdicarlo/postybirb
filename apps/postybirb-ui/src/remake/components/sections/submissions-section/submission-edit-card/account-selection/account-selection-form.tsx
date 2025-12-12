@@ -20,7 +20,10 @@ import { SubmissionType, type WebsiteOptionsDto } from '@postybirb/types';
 import { IconChevronDown, IconChevronRight } from '@tabler/icons-react';
 import { useMemo } from 'react';
 import { useAccounts } from '../../../../../stores/account-store';
-import type { AccountRecord, WebsiteRecord } from '../../../../../stores/records';
+import type {
+    AccountRecord,
+    WebsiteRecord,
+} from '../../../../../stores/records';
 import {
     useFileWebsites,
     useMessageWebsites,
@@ -74,17 +77,12 @@ function WebsiteAccountGroup({
             {website.displayName}
           </Text>
           <Group gap={4}>
-            {selectedCount > 0 && (
-              <Badge size="xs" variant="filled" color="blue">
-                {selectedCount}
-              </Badge>
-            )}
             <Badge
               size="xs"
               variant="light"
               color={loggedInCount > 0 ? 'green' : 'gray'}
             >
-              {loggedInCount}/{accounts.length}
+              {selectedCount}/{accounts.length}
             </Badge>
           </Group>
         </Group>
