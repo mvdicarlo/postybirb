@@ -25,9 +25,17 @@ export {
 // UI Store
 export {
     useActiveDrawer,
+    useCanGoBack,
+    useCanGoForward,
     useDrawerActions,
     useFileSubmissionsFilter,
-    useMessageSubmissionsFilter, useSidenavCollapsed, useSubNavVisible, useToggleSidenav, useUIStore, type DrawerKey,
+    useMessageSubmissionsFilter,
+    useNavigationHistory,
+    useSidenavCollapsed,
+    useSubNavVisible,
+    useToggleSidenav,
+    useUIStore,
+    type DrawerKey,
     type SubmissionFilter,
     type UIStore
 } from './ui-store';

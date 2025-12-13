@@ -8,7 +8,18 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { useShallow } from 'zustand/react/shallow';
 import { AccountLoginFilter } from '../types/account-filters';
-import { defaultViewState, type ViewState } from '../types/view-state';
+import {
+  createAccountsViewState,
+  createFileSubmissionsViewState,
+  createHomeViewState,
+  createMessageSubmissionsViewState,
+  createTemplatesViewState,
+  defaultViewState,
+  type SectionId,
+  type ViewState,
+} from '../types/view-state';
+import { useAccountStore } from './account-store';
+import { useSubmissionStore } from './submission-store';
 
 /**
  * Drawer visibility keys.
@@ -68,6 +79,13 @@ interface UIState {
   // View state - controls which section/view is active and its parameters
   viewState: ViewState;
 
+  // View state cache - preserves per-view state when switching between views (persisted)
+  viewStateCache: Partial<Record<SectionId, ViewState>>;
+
+  // Navigation history - tracks view navigation for back/forward (in-memory only, max 30)
+  navigationHistory: SectionId[];
+  historyIndex: number;
+
   // View preferences
   fileSubmissionsFilter: SubmissionFilter;
   fileSubmissionsSearchQuery: string;
@@ -113,6 +131,10 @@ interface UIActions {
 
   // View state actions
   setViewState: (viewState: ViewState) => void;
+  
+  // Navigation history actions
+  goBack: () => void;
+  goForward: () => void;
 
   // Filter actions
   setFileSubmissionsFilter: (filter: SubmissionFilter) => void;
@@ -188,6 +210,9 @@ const initialState: UIState = {
   sidenavCollapsed: false,
   activeDrawer: null,
   viewState: defaultViewState,
+  viewStateCache: {},
+  navigationHistory: ['home'],
+  historyIndex: 0,
   fileSubmissionsFilter: 'all',
   fileSubmissionsSearchQuery: '',
   messageSubmissionsFilter: 'all',
@@ -211,6 +236,110 @@ const initialState: UIState = {
 const STORAGE_KEY = 'postybirb_ui-state';
 
 /**
+ * Maximum number of entries in navigation history.
+ */
+const MAX_HISTORY_LENGTH = 30;
+
+/**
+ * Validate and clean a view state by checking if referenced entity IDs exist.
+ * Silently removes invalid selections.
+ */
+function validateViewState(viewState: ViewState): ViewState {
+  const submissionsMap = useSubmissionStore.getState().recordsMap;
+  const accountsMap = useAccountStore.getState().recordsMap;
+
+  switch (viewState.type) {
+    case 'file-submissions': {
+      // Validate submission IDs exist
+      const validIds = viewState.params.selectedIds.filter((id) =>
+        submissionsMap.has(id)
+      );
+      if (validIds.length !== viewState.params.selectedIds.length) {
+        return {
+          type: 'file-submissions',
+          params: {
+            ...viewState.params,
+            selectedIds: validIds,
+          },
+        };
+      }
+      return viewState;
+    }
+
+    case 'message-submissions': {
+      // Validate submission IDs exist
+      const validIds = viewState.params.selectedIds.filter((id) =>
+        submissionsMap.has(id)
+      );
+      if (validIds.length !== viewState.params.selectedIds.length) {
+        return {
+          type: 'message-submissions',
+          params: {
+            ...viewState.params,
+            selectedIds: validIds,
+          },
+        };
+      }
+      return viewState;
+    }
+
+    case 'accounts': {
+      // Validate account ID exists
+      const { selectedId } = viewState.params;
+      if (selectedId && !accountsMap.has(selectedId)) {
+        return {
+          type: 'accounts',
+          params: {
+            ...viewState.params,
+            selectedId: null,
+          },
+        };
+      }
+      return viewState;
+    }
+
+    case 'templates': {
+      // Validate template ID exists (templates are also submissions)
+      const { selectedId } = viewState.params;
+      if (selectedId && !submissionsMap.has(selectedId)) {
+        return {
+          type: 'templates',
+          params: {
+            ...viewState.params,
+            selectedId: null,
+          },
+        };
+      }
+      return viewState;
+    }
+
+    case 'home':
+    default:
+      return viewState;
+  }
+}
+
+/**
+ * Get default view state for a given section ID.
+ */
+function getDefaultViewState(sectionId: SectionId): ViewState {
+  switch (sectionId) {
+    case 'home':
+      return createHomeViewState();
+    case 'accounts':
+      return createAccountsViewState();
+    case 'file-submissions':
+      return createFileSubmissionsViewState();
+    case 'message-submissions':
+      return createMessageSubmissionsViewState();
+    case 'templates':
+      return createTemplatesViewState();
+    default:
+      return defaultViewState;
+  }
+}
+
+/**
  * Zustand store with localStorage persistence.
  */
 export const useUIStore = create<UIStore>()(
@@ -232,7 +361,102 @@ export const useUIStore = create<UIStore>()(
         })),
 
       // View state actions
-      setViewState: (viewState) => set({ viewState }),
+      setViewState: (viewState) =>
+        set((state) => {
+          const isNavigatingToNewSection = state.viewState.type !== viewState.type;
+
+          // Save current view state to cache
+          const newCache = {
+            ...state.viewStateCache,
+            [state.viewState.type]: state.viewState,
+          };
+
+          let finalViewState: ViewState;
+
+          if (isNavigatingToNewSection) {
+            // Navigating to a different section: restore from cache or use provided state
+            const cachedState = newCache[viewState.type];
+            if (cachedState && cachedState.type === viewState.type) {
+              // Restore from cache and validate
+              finalViewState = validateViewState(cachedState);
+            } else {
+              // First visit to this section or explicit state provided
+              finalViewState = viewState;
+            }
+          } else {
+            // Staying in the same section: use the provided state (updating params)
+            finalViewState = viewState;
+          }
+
+          // Update navigation history
+          let newHistory = [...state.navigationHistory];
+          let newIndex = state.historyIndex;
+
+          // Only add to history if navigating to a different section
+          if (isNavigatingToNewSection) {
+            // Truncate forward history when navigating from middle
+            newHistory = newHistory.slice(0, newIndex + 1);
+
+            // Add new entry (deduplicate consecutive duplicates)
+            const lastEntry = newHistory[newHistory.length - 1];
+            if (lastEntry !== finalViewState.type) {
+              newHistory.push(finalViewState.type);
+              newIndex = newHistory.length - 1;
+
+              // Cap history at max length
+              if (newHistory.length > MAX_HISTORY_LENGTH) {
+                newHistory = newHistory.slice(newHistory.length - MAX_HISTORY_LENGTH);
+                newIndex = newHistory.length - 1;
+              }
+            }
+          }
+
+          return {
+            viewState: finalViewState,
+            viewStateCache: newCache,
+            navigationHistory: newHistory,
+            historyIndex: newIndex,
+          };
+        }),
+
+      // Navigation history actions
+      goBack: () =>
+        set((state) => {
+          if (state.historyIndex <= 0) return state;
+
+          const newIndex = state.historyIndex - 1;
+          const targetSection = state.navigationHistory[newIndex];
+
+          // Get cached state or default for target section
+          const cachedState = state.viewStateCache[targetSection];
+          const targetViewState = cachedState
+            ? validateViewState(cachedState)
+            : getDefaultViewState(targetSection);
+
+          return {
+            viewState: targetViewState,
+            historyIndex: newIndex,
+          };
+        }),
+
+      goForward: () =>
+        set((state) => {
+          if (state.historyIndex >= state.navigationHistory.length - 1) return state;
+
+          const newIndex = state.historyIndex + 1;
+          const targetSection = state.navigationHistory[newIndex];
+
+          // Get cached state or default for target section
+          const cachedState = state.viewStateCache[targetSection];
+          const targetViewState = cachedState
+            ? validateViewState(cachedState)
+            : getDefaultViewState(targetSection);
+
+          return {
+            viewState: targetViewState,
+            historyIndex: newIndex,
+          };
+        }),
 
       // Filter actions
       setFileSubmissionsFilter: (filter) => set({ fileSubmissionsFilter: filter }),
@@ -277,12 +501,15 @@ export const useUIStore = create<UIStore>()(
     {
       name: STORAGE_KEY,
       storage: createJSONStorage(() => localStorage),
-      // Only persist certain fields (exclude activeDrawer and accountsSearchQuery as they should reset on reload)
+      // Persist state to localStorage (excludes activeDrawer, history, and historyIndex)
       partialize: (state) => ({
         sidenavCollapsed: state.sidenavCollapsed,
         viewState: state.viewState,
+        viewStateCache: state.viewStateCache,
         fileSubmissionsFilter: state.fileSubmissionsFilter,
+        fileSubmissionsSearchQuery: state.fileSubmissionsSearchQuery,
         messageSubmissionsFilter: state.messageSubmissionsFilter,
+        messageSubmissionsSearchQuery: state.messageSubmissionsSearchQuery,
         subNavVisible: state.subNavVisible,
         submissionsPreferMultiEdit: state.submissionsPreferMultiEdit,
         submissionsFullView: state.submissionsFullView,
@@ -290,8 +517,10 @@ export const useUIStore = create<UIStore>()(
         colorScheme: state.colorScheme,
         primaryColor: state.primaryColor,
         hiddenWebsites: state.hiddenWebsites,
+        accountsSearchQuery: state.accountsSearchQuery,
         accountsLoginFilter: state.accountsLoginFilter,
         templatesTabType: state.templatesTabType,
+        templatesSearchQuery: state.templatesSearchQuery,
       }),
     }
   )
@@ -464,3 +693,23 @@ export const useTemplatesFilter = () =>
       setSearchQuery: state.setTemplatesSearchQuery,
     }))
   );
+
+// ============================================================================
+// Navigation History Selectors
+// ============================================================================
+
+/** Select navigation history actions */
+export const useNavigationHistory = () =>
+  useUIStore(
+    useShallow((state) => ({
+      goBack: state.goBack,
+      goForward: state.goForward,
+    }))
+  );
+
+/** Check if navigation can go back */
+export const useCanGoBack = () => useUIStore((state) => state.historyIndex > 0);
+
+/** Check if navigation can go forward */
+export const useCanGoForward = () =>
+  useUIStore((state) => state.historyIndex < state.navigationHistory.length - 1);

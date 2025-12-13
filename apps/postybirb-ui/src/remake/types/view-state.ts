@@ -300,3 +300,72 @@ export function isTemplatesViewState(
 export function hasSectionPanel(state: ViewState): boolean {
   return getSectionPanelConfig(state).hasPanel;
 }
+
+// =============================================================================
+// Navigation Helpers
+// =============================================================================
+
+/**
+ * Type-safe navigation helper object.
+ * Provides convenient methods for creating view states with parameters.
+ * 
+ * @example
+ * ```ts
+ * // Navigate to home
+ * setViewState(navigateTo.home());
+ * 
+ * // Navigate to accounts with selection
+ * setViewState(navigateTo.accounts('account-123'));
+ * 
+ * // Navigate to file submissions with multiple selections
+ * setViewState(navigateTo.fileSubmissions(['id1', 'id2'], 'multi'));
+ * ```
+ */
+export const navigateTo = {
+  /**
+   * Navigate to home view.
+   */
+  home: () => createHomeViewState(),
+
+  /**
+   * Navigate to accounts view.
+   * @param selectedId - Optional account ID to select
+   * @param websiteFilter - Optional website ID to filter by
+   */
+  accounts: (selectedId?: string | null, websiteFilter?: string | null) =>
+    createAccountsViewState({
+      selectedId: selectedId ?? null,
+      websiteFilter: websiteFilter ?? null,
+    }),
+
+  /**
+   * Navigate to file submissions view.
+   * @param selectedIds - Optional array of submission IDs to select
+   * @param mode - Optional selection mode ('single' or 'multi')
+   */
+  fileSubmissions: (selectedIds?: string[], mode?: 'single' | 'multi') =>
+    createFileSubmissionsViewState({
+      selectedIds: selectedIds ?? [],
+      mode: mode ?? 'single',
+    }),
+
+  /**
+   * Navigate to message submissions view.
+   * @param selectedIds - Optional array of submission IDs to select
+   * @param mode - Optional selection mode ('single' or 'multi')
+   */
+  messageSubmissions: (selectedIds?: string[], mode?: 'single' | 'multi') =>
+    createMessageSubmissionsViewState({
+      selectedIds: selectedIds ?? [],
+      mode: mode ?? 'single',
+    }),
+
+  /**
+   * Navigate to templates view.
+   * @param selectedId - Optional template ID to select
+   */
+  templates: (selectedId?: string | null) =>
+    createTemplatesViewState({
+      selectedId: selectedId ?? null,
+    }),
+} as const;
