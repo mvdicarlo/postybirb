@@ -4,30 +4,17 @@
  */
 
 import { Trans } from '@lingui/react/macro';
-import {
-  Box,
-  Group,
-  Paper,
-  SegmentedControl,
-  Stack,
-  Switch,
-  Text,
-  Title,
-} from '@mantine/core';
+import { Group, Paper, Stack, Switch, Tabs, Text, Title } from '@mantine/core';
 import { DateTimePicker } from '@mantine/dates';
 import { ISubmissionScheduleInfo, ScheduleType } from '@postybirb/types';
-import {
-  IconCalendar,
-  IconCalendarOff,
-  IconRepeat,
-} from '@tabler/icons-react';
+import { IconCalendar, IconCalendarOff, IconRepeat } from '@tabler/icons-react';
 import { Cron } from 'croner';
 import moment from 'moment';
 import { useCallback, useEffect, useState } from 'react';
 import { useLocalStorage } from 'react-use';
 import { CronPicker } from '../../../../shared/schedule-popover/cron-picker';
 
-export interface ScheduleFormProps {
+interface ScheduleFormProps {
   /** Current schedule info */
   schedule: ISubmissionScheduleInfo;
   /** Whether the submission is currently scheduled */
@@ -66,7 +53,7 @@ export function ScheduleForm({
 
   // Handle schedule type change
   const handleTypeChange = useCallback(
-    (type: string) => {
+    (type: string | null) => {
       const scheduleType = type as ScheduleType;
       let newSchedule: ISubmissionScheduleInfo;
       let newIsScheduled = internalIsScheduled;
@@ -118,11 +105,11 @@ export function ScheduleForm({
     [lastUsedDate, internalIsScheduled, onChange],
   );
 
-  // Handle date change for single schedule
-  const handleDateChange = useCallback(
-    (date: Date | null) => {
+  // Handle date/time change for single schedule
+  const handleDateTimeChange = useCallback(
+    (date: string | null) => {
       if (!date) return;
-      const scheduledFor = date.toISOString();
+      const scheduledFor = new Date(date).toISOString();
       const newSchedule: ISubmissionScheduleInfo = {
         ...internalSchedule,
         scheduledFor,
@@ -167,6 +154,7 @@ export function ScheduleForm({
   const scheduledDate = internalSchedule.scheduledFor
     ? new Date(internalSchedule.scheduledFor)
     : null;
+
   const isDateInPast = scheduledDate ? scheduledDate < new Date() : false;
 
   return (
@@ -193,98 +181,90 @@ export function ScheduleForm({
           )}
         </Group>
 
-        {/* Schedule type selector */}
-        <SegmentedControl
+        {/* Vertical tabs layout */}
+        <Tabs
           value={internalSchedule.scheduleType}
           onChange={handleTypeChange}
-          size="sm"
-          fullWidth
-          data={[
-            {
-              value: ScheduleType.NONE,
-              label: (
-                <Group gap={4} justify="center">
-                  <IconCalendarOff size={14} />
-                  <Trans>None</Trans>
-                </Group>
-              ),
-            },
-            {
-              value: ScheduleType.SINGLE,
-              label: (
-                <Group gap={4} justify="center">
-                  <IconCalendar size={14} />
-                  <Trans>Once</Trans>
-                </Group>
-              ),
-            },
-            {
-              value: ScheduleType.RECURRING,
-              label: (
-                <Group gap={4} justify="center">
-                  <IconRepeat size={14} />
-                  <Trans>Recurring</Trans>
-                </Group>
-              ),
-            },
-          ]}
-        />
+          orientation="vertical"
+          variant="pills"
+        >
+          <Tabs.List>
+            <Tabs.Tab
+              value={ScheduleType.NONE}
+              leftSection={<IconCalendarOff size={16} />}
+            >
+              <Trans>None</Trans>
+            </Tabs.Tab>
+            <Tabs.Tab
+              value={ScheduleType.SINGLE}
+              leftSection={<IconCalendar size={16} />}
+            >
+              <Trans>Once</Trans>
+            </Tabs.Tab>
+            <Tabs.Tab
+              value={ScheduleType.RECURRING}
+              leftSection={<IconRepeat size={16} />}
+            >
+              <Trans>Recurring</Trans>
+            </Tabs.Tab>
+          </Tabs.List>
 
-        {/* Single schedule - Date picker */}
-        {internalSchedule.scheduleType === ScheduleType.SINGLE && (
-          <Box>
-            <DateTimePicker
-              label={<Trans>Date and Time</Trans>}
-              size="sm"
-              clearable={false}
-              // eslint-disable-next-line lingui/no-unlocalized-strings
-              valueFormat="YYYY-MM-DD HH:mm"
-              highlightToday
-              minDate={new Date()}
-              value={scheduledDate}
-              onChange={(value) => {
-                // DateTimePicker returns string when valueFormat is specified
-                if (value) {
-                  handleDateChange(new Date(value));
-                } else {
-                  handleDateChange(null);
-                }
-              }}
-              error={isDateInPast ? <Trans>Date is in the past</Trans> : null}
-            />
-            {scheduledDate && !isDateInPast && (
-              <Text size="xs" c="dimmed" mt={4}>
-                {moment(scheduledDate).fromNow()}
+          <Tabs.Panel value={ScheduleType.NONE} pl="md">
+            <Stack gap="sm">
+              <Text size="sm" c="dimmed">
+                <Trans>This submission will not be automatically posted.</Trans>
               </Text>
-            )}
-          </Box>
-        )}
+            </Stack>
+          </Tabs.Panel>
 
-        {/* Recurring schedule - CRON picker */}
-        {internalSchedule.scheduleType === ScheduleType.RECURRING && (
-          <CronPicker
-            value={internalSchedule.cron || DEFAULT_CRON}
-            onChange={handleCronChange}
-          />
-        )}
+          <Tabs.Panel value={ScheduleType.SINGLE} pl="md">
+            <Stack gap="sm">
+              <DateTimePicker
+                label={<Trans>Date and Time</Trans>}
+                size="sm"
+                clearable={false}
+                // eslint-disable-next-line lingui/no-unlocalized-strings
+                valueFormat="YYYY-MM-DD HH:mm"
+                highlightToday
+                minDate={new Date()}
+                value={scheduledDate}
+                onChange={handleDateTimeChange}
+                error={isDateInPast ? <Trans>Date is in the past</Trans> : null}
+                timePickerProps={{
+                  format: '12h',
+                }}
+              />
+              {scheduledDate && !isDateInPast && (
+                <Text size="xs" c="dimmed">
+                  {moment(scheduledDate).fromNow()}
+                </Text>
+              )}
+              <Text size="sm" c={internalIsScheduled ? 'blue' : 'dimmed'}>
+                {internalIsScheduled ? (
+                  <Trans>Submission will be posted automatically</Trans>
+                ) : (
+                  <Trans>Schedule is configured but inactive</Trans>
+                )}
+              </Text>
+            </Stack>
+          </Tabs.Panel>
 
-        {/* None - info text */}
-        {internalSchedule.scheduleType === ScheduleType.NONE && (
-          <Text size="sm" c="dimmed">
-            <Trans>This submission will not be automatically posted.</Trans>
-          </Text>
-        )}
-
-        {/* Schedule status info */}
-        {internalSchedule.scheduleType !== ScheduleType.NONE && (
-          <Text size="sm" c={internalIsScheduled ? 'blue' : 'dimmed'}>
-            {internalIsScheduled ? (
-              <Trans>Submission will be posted automatically</Trans>
-            ) : (
-              <Trans>Schedule is configured but inactive</Trans>
-            )}
-          </Text>
-        )}
+          <Tabs.Panel value={ScheduleType.RECURRING} pl="md">
+            <Stack gap="sm">
+              <CronPicker
+                value={internalSchedule.cron || DEFAULT_CRON}
+                onChange={handleCronChange}
+              />
+              <Text size="sm" c={internalIsScheduled ? 'blue' : 'dimmed'}>
+                {internalIsScheduled ? (
+                  <Trans>Submission will be posted automatically</Trans>
+                ) : (
+                  <Trans>Schedule is configured but inactive</Trans>
+                )}
+              </Text>
+            </Stack>
+          </Tabs.Panel>
+        </Tabs>
       </Stack>
     </Paper>
   );

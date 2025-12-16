@@ -6,22 +6,27 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-    Box,
-    Divider,
-    Image,
-    Kbd,
-    NavLink as MantineNavLink,
-    ScrollArea,
-    Title,
-    Tooltip,
+  Box,
+  Divider,
+  Image,
+  Kbd,
+  NavLink as MantineNavLink,
+  ScrollArea,
+  Title,
+  Tooltip,
 } from '@mantine/core';
 import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
-import { useDrawerActions, useViewState, useViewStateActions } from '../../stores/ui-store';
+import {
+  useDrawerActions,
+  useViewState,
+  useViewStateActions,
+} from '../../stores/ui-store';
 import '../../styles/layout.css';
 import type { NavigationItem, SideNavProps } from '../../types/navigation';
 import { cn } from '../../utils/class-names';
 import { LanguagePicker } from '../language-picker';
 import { ThemePicker } from '../theme-picker';
+import { UpdateButton } from '../update-button';
 
 /**
  * Render a single navigation item based on its type.
@@ -99,12 +104,7 @@ function NavItemRenderer({
       />
     );
   } else if (item.type === 'custom') {
-    navLinkContent = (
-      <MantineNavLink
-        onClick={item.onClick}
-        {...commonProps}
-      />
-    );
+    navLinkContent = <MantineNavLink onClick={item.onClick} {...commonProps} />;
   }
 
   if (collapsed) {
@@ -136,63 +136,80 @@ function NavItemRenderer({
  * Collapsible side navigation component.
  * Shows icons + labels when expanded, icons only when collapsed.
  */
-export function SideNav({
-  items,
-  collapsed,
-  onCollapsedChange,
-}: SideNavProps) {
+export function SideNav({ items, collapsed, onCollapsedChange }: SideNavProps) {
   const viewState = useViewState();
 
   return (
-    <Box className={cn(['postybirb__sidenav'], { 'postybirb__sidenav--collapsed': collapsed })}>
+    <Box
+      className={cn(['postybirb__sidenav'], {
+        'postybirb__sidenav--collapsed': collapsed,
+      })}
+    >
       {/* Header with app icon */}
       <Box className="postybirb__sidenav_header">
         {/* eslint-disable-next-line lingui/no-unlocalized-strings */}
         <Image src="/app-icon.png" alt="PostyBirb" w={32} h={32} />
-        {/* eslint-disable-next-line lingui/no-unlocalized-strings */}
-        {!collapsed && <Title order={4} className="postybirb__sidenav_title" ml="xs">
-          PostyBirb
-        </Title>}
+        {!collapsed && (
+          // eslint-disable-next-line lingui/no-unlocalized-strings
+          <Title order={4} className="postybirb__sidenav_title" ml="xs">
+            PostyBirb
+          </Title>
+        )}
       </Box>
 
       {/* Navigation Items */}
-      <ScrollArea className="postybirb__sidenav_scroll" type="hover" scrollbarSize={6}>
+      <ScrollArea
+        className="postybirb__sidenav_scroll"
+        type="hover"
+        scrollbarSize={6}
+      >
         <Box className="postybirb__sidenav_nav">
           {/* Collapse/Expand toggle as first nav item */}
           <Tooltip
-          label={collapsed ? <Trans>Expand</Trans> : <Trans>Collapse</Trans>}
-          position="right"
-          withArrow
-          disabled={!collapsed}
-        >
-          <MantineNavLink
-            label={collapsed ? undefined : <Trans>Collapse</Trans>}
-            leftSection={collapsed ? <IconChevronRight size={20} /> : <IconChevronLeft size={20} />}
-            onClick={() => onCollapsedChange(!collapsed)}
-            // eslint-disable-next-line lingui/no-unlocalized-strings
-            aria-label={collapsed ? 'Expand navigation' : 'Collapse navigation'}
-          />
-        </Tooltip>
-
-        {items.map((item) => {
-          // Handle divider
-          if (item.type === 'divider') {
-            return <Divider key={item.id} my="xs" />;
-          }
-
-          // Determine if view item is active based on current viewState
-          const isActive =
-            item.type === 'view' && item.viewState.type === viewState.type;
-
-          return (
-            <NavItemRenderer
-              key={item.id}
-              item={item}
-              collapsed={collapsed}
-              isActive={isActive}
+            label={collapsed ? <Trans>Expand</Trans> : <Trans>Collapse</Trans>}
+            position="right"
+            withArrow
+            disabled={!collapsed}
+          >
+            <MantineNavLink
+              label={collapsed ? undefined : <Trans>Collapse</Trans>}
+              leftSection={
+                collapsed ? (
+                  <IconChevronRight size={20} />
+                ) : (
+                  <IconChevronLeft size={20} />
+                )
+              }
+              onClick={() => onCollapsedChange(!collapsed)}
+              aria-label={
+                // eslint-disable-next-line lingui/no-unlocalized-strings
+                collapsed ? 'Expand navigation' : 'Collapse navigation'
+              }
             />
-          );
-        })}
+          </Tooltip>
+
+          {/* Update button - shows when update is available */}
+          <UpdateButton collapsed={collapsed} />
+
+          {items.map((item) => {
+            // Handle divider
+            if (item.type === 'divider') {
+              return <Divider key={item.id} my="xs" />;
+            }
+
+            // Determine if view item is active based on current viewState
+            const isActive =
+              item.type === 'view' && item.viewState.type === viewState.type;
+
+            return (
+              <NavItemRenderer
+                key={item.id}
+                item={item}
+                collapsed={collapsed}
+                isActive={isActive}
+              />
+            );
+          })}
         </Box>
       </ScrollArea>
     </Box>
