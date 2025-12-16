@@ -28,6 +28,10 @@ export interface AccountOptionRowProps {
   account: AccountRecord;
   /** The existing website option for this account, if selected */
   websiteOption: WebsiteOptionsDto | null;
+  /** Whether this account has validation errors */
+  hasErrors: boolean;
+  /** Whether this account has validation warnings */
+  hasWarnings: boolean;
 }
 
 /**
@@ -36,6 +40,8 @@ export interface AccountOptionRowProps {
 export function AccountOptionRow({
   account,
   websiteOption,
+  hasErrors,
+  hasWarnings,
 }: AccountOptionRowProps) {
   const { submission } = useSubmissionEditCardContext();
   const [isLoading, setIsLoading] = useState(false);
@@ -98,6 +104,16 @@ export function AccountOptionRow({
           <Text size="xs" c="dimmed">
             ({account.username})
           </Text>
+        )}
+        {hasErrors && (
+          <Badge size="xs" variant="light" color="red">
+            <Trans>Error</Trans>
+          </Badge>
+        )}
+        {hasWarnings && (
+          <Badge size="xs" variant="light" color="yellow">
+            <Trans>Warning</Trans>
+          </Badge>
         )}
         {!account.isLoggedIn && (
           <Badge size="xs" variant="light" color="orange">

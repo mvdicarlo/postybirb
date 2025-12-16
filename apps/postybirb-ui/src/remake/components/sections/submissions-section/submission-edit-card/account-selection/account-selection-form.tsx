@@ -37,6 +37,8 @@ interface WebsiteAccountGroupProps {
   accounts: AccountRecord[];
   /** Map of accountId -> WebsiteOptionsDto for quick lookup */
   optionsByAccount: Map<string, WebsiteOptionsDto>;
+  /** Map of websiteOptionId -> validation result */
+  validationsByOptionId: Map<string, { hasErrors: boolean; hasWarnings: boolean }>;
 }
 
 /**
@@ -46,6 +48,7 @@ function WebsiteAccountGroup({
   website,
   accounts,
   optionsByAccount,
+  validationsByOptionId,
 }: WebsiteAccountGroupProps) {
   const [expanded, { toggle }] = useDisclosure(false);
 
@@ -60,6 +63,21 @@ function WebsiteAccountGroup({
     () => accounts.filter((acc) => acc.isLoggedIn).length,
     [accounts],
   );
+
+  // Count errors and warnings in this website group
+  const { errorCount, warningCount } = useMemo(() => {
+    let errors = 0;
+    let warnings = 0;
+    accounts.forEach((acc) => {
+      const option = optionsByAccount.get(acc.accountId);
+      if (option) {
+        const validation = validationsByOptionId.get(option.id);
+        if (validation?.hasErrors) errors++;
+        if (validation?.hasWarnings) warnings++;
+      }
+    });
+    return { errorCount: errors, warningCount: warnings };
+  }, [accounts, optionsByAccount, validationsByOptionId]);
 
   return (
     <Paper withBorder radius="sm" p={0}>
@@ -77,6 +95,16 @@ function WebsiteAccountGroup({
             {website.displayName}
           </Text>
           <Group gap={4}>
+            {errorCount > 0 && (
+              <Badge size="xs" variant="light" color="red">
+                {errorCount} {errorCount === 1 ? 'error' : 'errors'}
+              </Badge>
+            )}
+            {warningCount > 0 && (
+              <Badge size="xs" variant="light" color="yellow">
+                {warningCount} {warningCount === 1 ? 'warning' : 'warnings'}
+              </Badge>
+            )}
             <Badge
               size="xs"
               variant="light"
@@ -90,13 +118,21 @@ function WebsiteAccountGroup({
 
       <Collapse in={expanded}>
         <Box pb="xs">
-          {accounts.map((account) => (
-            <AccountOptionRow
-              key={account.id}
-              account={account}
-              websiteOption={optionsByAccount.get(account.accountId) ?? null}
-            />
-          ))}
+          {accounts.map((account) => {
+            const option = optionsByAccount.get(account.accountId);
+            const validation = option
+              ? validationsByOptionId.get(option.id)
+              : undefined;
+            return (
+              <AccountOptionRow
+                key={account.id}
+                account={account}
+                websiteOption={option ?? null}
+                hasErrors={validation?.hasErrors ?? false}
+                hasWarnings={validation?.hasWarnings ?? false}
+              />
+            );
+          })}
         </Box>
       </Collapse>
     </Paper>
@@ -123,6 +159,20 @@ export function AccountSelectionForm() {
     });
     return map;
   }, [submission.options]);
+
+  // Build a map of websiteOptionId -> validation status
+  const validationsByOptionId = useMemo(() => {
+    const map = new Map<string, { hasErrors: boolean; hasWarnings: boolean }>();
+    submission.validations.forEach((validation) => {
+      map.set(validation.id, {
+        hasErrors: Boolean(validation.errors && validation.errors.length > 0),
+        hasWarnings: Boolean(
+          validation.warnings && validation.warnings.length > 0,
+        ),
+      });
+    });
+    return map;
+  }, [submission.validations]);
 
   // Group accounts by website
   const accountsByWebsite = useMemo(() => {
@@ -157,6 +207,7 @@ export function AccountSelectionForm() {
             website={website}
             accounts={websiteAccounts}
             optionsByAccount={optionsByAccount}
+            validationsByOptionId={validationsByOptionId}
           />
         );
       })}

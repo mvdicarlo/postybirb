@@ -36,7 +36,12 @@ export type DrawerKey =
 /**
  * Sub-navigation filter options.
  */
-export type SubmissionFilter = 'all' | 'drafts' | 'scheduled' | 'posted' | 'failed';
+export type SubmissionFilter =
+  | 'all'
+  | 'drafts'
+  | 'scheduled'
+  | 'posted'
+  | 'failed';
 
 // Re-export AccountLoginFilter enum from types
 export { AccountLoginFilter } from '../types/account-filters';
@@ -64,7 +69,7 @@ export const MANTINE_COLORS = [
   'orange',
 ] as const;
 
-export type MantinePrimaryColor = typeof MANTINE_COLORS[number];
+export type MantinePrimaryColor = (typeof MANTINE_COLORS)[number];
 
 /**
  * UI State interface.
@@ -131,7 +136,7 @@ interface UIActions {
 
   // View state actions
   setViewState: (viewState: ViewState) => void;
-  
+
   // Navigation history actions
   goBack: () => void;
   goForward: () => void;
@@ -188,12 +193,12 @@ const SUPPORTED_LOCALES = ['en', 'de', 'lt', 'pt-BR', 'ru', 'es', 'ta'];
 const getDefaultLanguage = (): string => {
   if (typeof navigator !== 'undefined') {
     const browserLocale = navigator.language;
-    
+
     // Check for exact match first (e.g., pt-BR)
     if (SUPPORTED_LOCALES.includes(browserLocale)) {
       return browserLocale;
     }
-    
+
     // Try base language (e.g., en-US -> en)
     const baseLocale = browserLocale.split('-')[0];
     if (SUPPORTED_LOCALES.includes(baseLocale)) {
@@ -252,7 +257,7 @@ function validateViewState(viewState: ViewState): ViewState {
     case 'file-submissions': {
       // Validate submission IDs exist
       const validIds = viewState.params.selectedIds.filter((id) =>
-        submissionsMap.has(id)
+        submissionsMap.has(id),
       );
       if (validIds.length !== viewState.params.selectedIds.length) {
         return {
@@ -269,7 +274,7 @@ function validateViewState(viewState: ViewState): ViewState {
     case 'message-submissions': {
       // Validate submission IDs exist
       const validIds = viewState.params.selectedIds.filter((id) =>
-        submissionsMap.has(id)
+        submissionsMap.has(id),
       );
       if (validIds.length !== viewState.params.selectedIds.length) {
         return {
@@ -349,7 +354,8 @@ export const useUIStore = create<UIStore>()(
       ...initialState,
 
       // Sidenav actions
-      toggleSidenav: () => set((state) => ({ sidenavCollapsed: !state.sidenavCollapsed })),
+      toggleSidenav: () =>
+        set((state) => ({ sidenavCollapsed: !state.sidenavCollapsed })),
       setSidenavCollapsed: (collapsed) => set({ sidenavCollapsed: collapsed }),
 
       // Drawer actions - only one drawer open at a time
@@ -363,7 +369,8 @@ export const useUIStore = create<UIStore>()(
       // View state actions
       setViewState: (viewState) =>
         set((state) => {
-          const isNavigatingToNewSection = state.viewState.type !== viewState.type;
+          const isNavigatingToNewSection =
+            state.viewState.type !== viewState.type;
 
           // Save current view state to cache
           const newCache = {
@@ -405,7 +412,9 @@ export const useUIStore = create<UIStore>()(
 
               // Cap history at max length
               if (newHistory.length > MAX_HISTORY_LENGTH) {
-                newHistory = newHistory.slice(newHistory.length - MAX_HISTORY_LENGTH);
+                newHistory = newHistory.slice(
+                  newHistory.length - MAX_HISTORY_LENGTH,
+                );
                 newIndex = newHistory.length - 1;
               }
             }
@@ -441,7 +450,8 @@ export const useUIStore = create<UIStore>()(
 
       goForward: () =>
         set((state) => {
-          if (state.historyIndex >= state.navigationHistory.length - 1) return state;
+          if (state.historyIndex >= state.navigationHistory.length - 1)
+            return state;
 
           const newIndex = state.historyIndex + 1;
           const targetSection = state.navigationHistory[newIndex];
@@ -459,19 +469,25 @@ export const useUIStore = create<UIStore>()(
         }),
 
       // Filter actions
-      setFileSubmissionsFilter: (filter) => set({ fileSubmissionsFilter: filter }),
-      setFileSubmissionsSearchQuery: (query) => set({ fileSubmissionsSearchQuery: query }),
-      setMessageSubmissionsFilter: (filter) => set({ messageSubmissionsFilter: filter }),
-      setMessageSubmissionsSearchQuery: (query) => set({ messageSubmissionsSearchQuery: query }),
+      setFileSubmissionsFilter: (filter) =>
+        set({ fileSubmissionsFilter: filter }),
+      setFileSubmissionsSearchQuery: (query) =>
+        set({ fileSubmissionsSearchQuery: query }),
+      setMessageSubmissionsFilter: (filter) =>
+        set({ messageSubmissionsFilter: filter }),
+      setMessageSubmissionsSearchQuery: (query) =>
+        set({ messageSubmissionsSearchQuery: query }),
 
       // Sub-nav actions
       setSubNavVisible: (visible) => set({ subNavVisible: visible }),
-      toggleSubNavVisible: () => set((state) => ({ subNavVisible: !state.subNavVisible })),
+      toggleSubNavVisible: () =>
+        set((state) => ({ subNavVisible: !state.subNavVisible })),
 
       // Submissions primary content preferences
       setSubmissionsPreferMultiEdit: (submissionsPreferMultiEdit) =>
         set({ submissionsPreferMultiEdit }),
-      setSubmissionsFullView: (submissionsFullView) => set({ submissionsFullView }),
+      setSubmissionsFullView: (submissionsFullView) =>
+        set({ submissionsFullView }),
 
       // Language actions
       setLanguage: (language) => set({ language }),
@@ -488,12 +504,15 @@ export const useUIStore = create<UIStore>()(
             ? state.hiddenWebsites.filter((id) => id !== websiteId)
             : [...state.hiddenWebsites, websiteId],
         })),
-      setAccountsSearchQuery: (accountsSearchQuery) => set({ accountsSearchQuery }),
-      setAccountsLoginFilter: (accountsLoginFilter) => set({ accountsLoginFilter }),
+      setAccountsSearchQuery: (accountsSearchQuery) =>
+        set({ accountsSearchQuery }),
+      setAccountsLoginFilter: (accountsLoginFilter) =>
+        set({ accountsLoginFilter }),
 
       // Templates section actions
       setTemplatesTabType: (templatesTabType) => set({ templatesTabType }),
-      setTemplatesSearchQuery: (templatesSearchQuery) => set({ templatesSearchQuery }),
+      setTemplatesSearchQuery: (templatesSearchQuery) =>
+        set({ templatesSearchQuery }),
 
       // Reset to initial state
       resetUIState: () => set(initialState),
@@ -522,8 +541,8 @@ export const useUIStore = create<UIStore>()(
         templatesTabType: state.templatesTabType,
         templatesSearchQuery: state.templatesSearchQuery,
       }),
-    }
-  )
+    },
+  ),
 );
 
 /**
@@ -532,10 +551,12 @@ export const useUIStore = create<UIStore>()(
  */
 
 /** Select sidenav collapsed state */
-export const useSidenavCollapsed = () => useUIStore((state) => state.sidenavCollapsed);
+export const useSidenavCollapsed = () =>
+  useUIStore((state) => state.sidenavCollapsed);
 
 /** Select sidenav toggle action */
-export const useToggleSidenav = () => useUIStore((state) => state.toggleSidenav);
+export const useToggleSidenav = () =>
+  useUIStore((state) => state.toggleSidenav);
 
 /** Select active drawer */
 export const useActiveDrawer = () => useUIStore((state) => state.activeDrawer);
@@ -547,7 +568,7 @@ export const useDrawerActions = () =>
       openDrawer: state.openDrawer,
       closeDrawer: state.closeDrawer,
       toggleDrawer: state.toggleDrawer,
-    }))
+    })),
   );
 
 /** Select file submissions filter and search query */
@@ -558,7 +579,7 @@ export const useFileSubmissionsFilter = () =>
       searchQuery: state.fileSubmissionsSearchQuery,
       setFilter: state.setFileSubmissionsFilter,
       setSearchQuery: state.setFileSubmissionsSearchQuery,
-    }))
+    })),
   );
 
 /** Select message submissions filter and search query */
@@ -569,7 +590,7 @@ export const useMessageSubmissionsFilter = () =>
       searchQuery: state.messageSubmissionsSearchQuery,
       setFilter: state.setMessageSubmissionsFilter,
       setSearchQuery: state.setMessageSubmissionsSearchQuery,
-    }))
+    })),
   );
 
 /** Generic submissions filter hook - returns filter state based on submission type */
@@ -588,8 +609,8 @@ export const useSubmissionsFilter = (type: SubmissionType) =>
             searchQuery: state.messageSubmissionsSearchQuery,
             setFilter: state.setMessageSubmissionsFilter,
             setSearchQuery: state.setMessageSubmissionsSearchQuery,
-          }
-    )
+          },
+    ),
   );
 
 /** Select sub-nav visibility */
@@ -598,7 +619,7 @@ export const useSubNavVisible = () =>
     useShallow((state) => ({
       visible: state.subNavVisible,
       setVisible: state.setSubNavVisible,
-    }))
+    })),
   );
 
 /** Select language state */
@@ -610,7 +631,7 @@ export const useLanguageActions = () =>
     useShallow((state) => ({
       language: state.language,
       setLanguage: state.setLanguage,
-    }))
+    })),
   );
 
 /** Select color scheme */
@@ -627,7 +648,7 @@ export const useAppearanceActions = () =>
       primaryColor: state.primaryColor,
       setColorScheme: state.setColorScheme,
       setPrimaryColor: state.setPrimaryColor,
-    }))
+    })),
   );
 
 /** Select view state */
@@ -639,13 +660,14 @@ export const useViewStateActions = () =>
     useShallow((state) => ({
       viewState: state.viewState,
       setViewState: state.setViewState,
-    }))
+    })),
   );
 
 /**
  * Toggle section panel visibility hook.
  */
-export const useToggleSectionPanel = () => useUIStore((state) => state.toggleSubNavVisible);
+export const useToggleSectionPanel = () =>
+  useUIStore((state) => state.toggleSubNavVisible);
 
 /** Select submissions primary content preferences */
 export const useSubmissionsContentPreferences = () =>
@@ -655,7 +677,7 @@ export const useSubmissionsContentPreferences = () =>
       fullView: state.submissionsFullView,
       setPreferMultiEdit: state.setSubmissionsPreferMultiEdit,
       setFullView: state.setSubmissionsFullView,
-    }))
+    })),
   );
 
 // ============================================================================
@@ -663,7 +685,8 @@ export const useSubmissionsContentPreferences = () =>
 // ============================================================================
 
 /** Select hidden websites */
-export const useHiddenWebsites = () => useUIStore((state) => state.hiddenWebsites);
+export const useHiddenWebsites = () =>
+  useUIStore((state) => state.hiddenWebsites);
 
 /** Select accounts section filter state and actions */
 export const useAccountsFilter = () =>
@@ -676,7 +699,7 @@ export const useAccountsFilter = () =>
       setLoginFilter: state.setAccountsLoginFilter,
       setHiddenWebsites: state.setHiddenWebsites,
       toggleWebsiteVisibility: state.toggleWebsiteVisibility,
-    }))
+    })),
   );
 
 // ============================================================================
@@ -691,7 +714,7 @@ export const useTemplatesFilter = () =>
       searchQuery: state.templatesSearchQuery,
       setTabType: state.setTemplatesTabType,
       setSearchQuery: state.setTemplatesSearchQuery,
-    }))
+    })),
   );
 
 // ============================================================================
@@ -704,7 +727,7 @@ export const useNavigationHistory = () =>
     useShallow((state) => ({
       goBack: state.goBack,
       goForward: state.goForward,
-    }))
+    })),
   );
 
 /** Check if navigation can go back */
@@ -712,4 +735,6 @@ export const useCanGoBack = () => useUIStore((state) => state.historyIndex > 0);
 
 /** Check if navigation can go forward */
 export const useCanGoForward = () =>
-  useUIStore((state) => state.historyIndex < state.navigationHistory.length - 1);
+  useUIStore(
+    (state) => state.historyIndex < state.navigationHistory.length - 1,
+  );

@@ -9,6 +9,7 @@ import { useMemo } from 'react';
 import { FormField } from './form-field';
 import { useFormFieldsContext } from './form-fields-context';
 import './section-layout.css';
+import { ValidationAlerts } from './validation-alerts';
 
 const COMMON_SECTION = 'common';
 
@@ -143,6 +144,9 @@ export function SectionLayout() {
 
   return (
     <Box className="section-layout">
+      {/* Non-field-specific validation alerts */}
+      <ValidationAlerts />
+
       {sections.map((section) => (
         <SectionGroupComponent key={section.name} section={section} />
       ))}

@@ -95,6 +95,13 @@ export class SubmissionRecord extends BaseRecord {
   }
 
   /**
+   * Check if the submission is currently being posted.
+   */
+  get isPosting(): boolean {
+    return this.posts.some((post) => post.state === 'RUNNING');
+  }
+
+  /**
    * Check if the submission has any website options configured
    * (excluding the default option).
    */

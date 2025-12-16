@@ -4,7 +4,20 @@
 
 import { Trans } from '@lingui/react/macro';
 import { ActionIcon, Group, Tooltip } from '@mantine/core';
-import { IconDeviceFloppy, IconSend, IconTrash } from '@tabler/icons-react';
+import {
+  IconDeviceFloppy,
+  IconPlayerStop,
+  IconSend,
+  IconTrash,
+} from '@tabler/icons-react';
+import postManagerApi from '../../../../../api/post-manager.api';
+import postQueueApi from '../../../../../api/post-queue.api';
+import submissionApi from '../../../../../api/submission.api';
+import {
+  showDeletedNotification,
+  showDeleteErrorNotification,
+  showPostErrorNotification,
+} from '../../../../../utils/notifications';
 import { HoldToConfirmButton } from '../../../../hold-to-confirm';
 import { useSubmissionEditCardContext } from '../context';
 
@@ -14,20 +27,33 @@ import { useSubmissionEditCardContext } from '../context';
 export function SubmissionEditCardActions() {
   const { submission } = useSubmissionEditCardContext();
 
-  const handlePost = () => {
-    // TODO: Implement post action
-    // eslint-disable-next-line no-console
-    console.log('Post submission');
+  const handlePost = async () => {
+    try {
+      await postQueueApi.enqueue([submission.id]);
+    } catch {
+      showPostErrorNotification();
+    }
   };
 
-  const handleDelete = () => {
-    // TODO: Implement delete action
-    // eslint-disable-next-line no-console
-    console.log('Delete submission');
+  const handleCancel = async () => {
+    try {
+      await postManagerApi.cancelIfRunning(submission.id);
+    } catch {
+      // Silently handle if not running
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      await submissionApi.remove([submission.id]);
+      showDeletedNotification(1);
+    } catch {
+      showDeleteErrorNotification();
+    }
   };
 
   if (submission.isMultiSubmission) {
-    // TODO
+    // TODO: Multi-submission actions
     return (
       <ActionIcon variant="subtle" size="sm" c="blue">
         <IconDeviceFloppy size={16} />
@@ -36,14 +62,52 @@ export function SubmissionEditCardActions() {
   }
 
   if (submission.isTemplate) {
-    // TODO
+    // Templates only need delete
     return (
-      <ActionIcon variant="subtle" size="sm" c="blue">
-        <IconDeviceFloppy size={16} />
-      </ActionIcon>
+      <Group gap={4} wrap="nowrap" onClick={(e) => e.stopPropagation()}>
+        <Tooltip label={<Trans>Hold to delete</Trans>}>
+          <HoldToConfirmButton
+            variant="subtle"
+            size="sm"
+            color="red"
+            onConfirm={handleDelete}
+          >
+            <IconTrash size={16} />
+          </HoldToConfirmButton>
+        </Tooltip>
+      </Group>
     );
   }
 
+  // If currently posting, show cancel button instead of post
+  if (submission.isPosting) {
+    return (
+      <Group gap={4} wrap="nowrap" onClick={(e) => e.stopPropagation()}>
+        <Tooltip label={<Trans>Cancel posting</Trans>}>
+          <ActionIcon
+            variant="subtle"
+            size="sm"
+            color="orange"
+            onClick={handleCancel}
+          >
+            <IconPlayerStop size={16} />
+          </ActionIcon>
+        </Tooltip>
+        <Tooltip label={<Trans>Hold to delete</Trans>}>
+          <HoldToConfirmButton
+            variant="subtle"
+            size="sm"
+            color="red"
+            onConfirm={handleDelete}
+          >
+            <IconTrash size={16} />
+          </HoldToConfirmButton>
+        </Tooltip>
+      </Group>
+    );
+  }
+
+  // Normal state: show post and delete
   return (
     <Group gap={4} wrap="nowrap" onClick={(e) => e.stopPropagation()}>
       <Tooltip label={<Trans>Hold to post</Trans>}>
