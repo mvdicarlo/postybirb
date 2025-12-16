@@ -8,6 +8,7 @@ import {
   IconBell,
   IconBlockquote,
   IconBrandDiscord,
+  IconCalendar,
   IconCoffee,
   IconFile,
   IconFolderSearch,
@@ -38,6 +39,7 @@ import {
   HomeKeybinding,
   MessageSubmissionsKeybinding,
   NotificationsKeybinding,
+  ScheduleKeybinding,
   SettingsKeybinding,
   SpotlightKeybinding,
   TagConvertersKeybinding,
@@ -111,6 +113,14 @@ export const navItems: NavigationItem[] = [
   { type: 'divider', id: 'divider-1' },
 
   // Drawer items
+  {
+    type: 'drawer',
+    id: 'schedule',
+    icon: <IconCalendar size={20} />,
+    label: <Trans>Schedule</Trans>,
+    drawerKey: 'schedule',
+    kbd: ScheduleKeybinding,
+  },
   {
     type: 'drawer',
     id: 'notifications',

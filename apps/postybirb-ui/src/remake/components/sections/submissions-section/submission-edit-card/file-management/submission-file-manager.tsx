@@ -59,9 +59,11 @@ export function SubmissionFileManager() {
         ) {
           const newOrderedFiles = [...orderedFiles];
           const [movedFile] = newOrderedFiles.splice(
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             event.oldDraggableIndex!,
             1,
           );
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           newOrderedFiles.splice(event.newDraggableIndex!, 0, movedFile);
 
           // Update order property for all files

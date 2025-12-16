@@ -14,7 +14,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useLocalStorage } from 'react-use';
 import { CronPicker } from '../../../../shared/schedule-popover/cron-picker';
 
-interface ScheduleFormProps {
+export interface ScheduleFormProps {
   /** Current schedule info */
   schedule: ISubmissionScheduleInfo;
   /** Whether the submission is currently scheduled */

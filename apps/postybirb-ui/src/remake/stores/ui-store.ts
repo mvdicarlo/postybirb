@@ -31,7 +31,8 @@ export type DrawerKey =
   | 'userConverters'
   | 'notifications'
   | 'customShortcuts'
-  | 'fileWatchers';
+  | 'fileWatchers'
+  | 'schedule';
 
 /**
  * Sub-navigation filter options.

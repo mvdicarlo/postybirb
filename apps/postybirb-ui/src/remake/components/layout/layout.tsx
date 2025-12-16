@@ -19,6 +19,7 @@ import {
     CustomShortcutsDrawer,
     FileWatcherDrawer,
     NotificationsDrawer,
+    ScheduleDrawer,
     SettingsDialog,
     TagConverterDrawer,
     TagGroupDrawer,
@@ -71,6 +72,7 @@ export function Layout() {
         <NotificationsDrawer />
         <CustomShortcutsDrawer />
         <FileWatcherDrawer />
+        <ScheduleDrawer />
       </Box>
     </Box>
   );

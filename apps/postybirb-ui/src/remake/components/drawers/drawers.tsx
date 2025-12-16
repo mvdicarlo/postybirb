@@ -30,6 +30,9 @@ export { UserConverterDrawer } from './user-converter-drawer';
 // Re-export the FileWatcherDrawer
 export { FileWatcherDrawer } from './file-watcher-drawer';
 
+// Re-export the ScheduleDrawer
+export { ScheduleDrawer } from './schedule-drawer';
+
 /**
  * Custom shortcuts drawer wrapper.
  * Connects the drawer to the UI store.

@@ -132,7 +132,7 @@ export function SubmissionCard({
                   c={submission.isScheduled ? 'blue.6' : 'dimmed'}
                   fw={submission.isScheduled ? 500 : 400}
                 >
-                  {submission.scheduledDate.toLocaleString()}
+                  {submission.scheduledDate?.toLocaleString()}
                 </Text>
               </Group>
             )}

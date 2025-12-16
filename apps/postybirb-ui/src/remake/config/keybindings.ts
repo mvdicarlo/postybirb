@@ -20,6 +20,7 @@ export const FileSubmissionsKeybinding = 'Alt+F';
 export const CustomShortcutsKeybinding = 'Alt+D';
 export const FileWatchersKeybinding = 'Alt+W';
 export const TemplatesKeybinding = 'Alt+E';
+export const ScheduleKeybinding = 'Alt+L';
 
 /**
  * Editor keybindings
