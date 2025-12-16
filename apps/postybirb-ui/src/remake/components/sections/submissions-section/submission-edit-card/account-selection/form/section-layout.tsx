@@ -3,11 +3,12 @@
  */
 
 import { Trans } from '@lingui/react/macro';
-import { Box, Skeleton, Stack, Text } from '@mantine/core';
+import { Box, Group, Skeleton, Stack, Text } from '@mantine/core';
 import { FieldAggregateType } from '@postybirb/form-builder';
 import { useMemo } from 'react';
 import { FormField } from './form-field';
 import { useFormFieldsContext } from './form-fields-context';
+import { SaveDefaultsPopover } from './save-defaults-popover';
 import './section-layout.css';
 import { ValidationAlerts } from './validation-alerts';
 
@@ -144,6 +145,11 @@ export function SectionLayout() {
 
   return (
     <Box className="section-layout">
+      {/* Header with save defaults action */}
+      <Group justify="flex-end" mb="xs">
+        <SaveDefaultsPopover />
+      </Group>
+
       {/* Non-field-specific validation alerts */}
       <ValidationAlerts />
 
