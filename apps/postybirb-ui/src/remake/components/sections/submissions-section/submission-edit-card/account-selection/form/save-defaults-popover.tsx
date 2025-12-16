@@ -5,7 +5,6 @@
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
-    ActionIcon,
     Button,
     Checkbox,
     Group,
@@ -13,11 +12,13 @@ import {
     ScrollArea,
     Stack,
     Text,
-    Tooltip,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
-import { FieldAggregateType, FormBuilderMetadata } from '@postybirb/form-builder';
+import {
+    FieldAggregateType,
+    FormBuilderMetadata,
+} from '@postybirb/form-builder';
 import { DynamicObject } from '@postybirb/types';
 import { IconDeviceFloppy } from '@tabler/icons-react';
 import { useCallback, useState } from 'react';
@@ -150,11 +151,14 @@ export function SaveDefaultsPopover() {
       width={300}
     >
       <Popover.Target>
-        <Tooltip label={<Trans>Save as defaults</Trans>} position="top">
-          <ActionIcon variant="subtle" size="sm" onClick={open}>
-            <IconDeviceFloppy size={16} />
-          </ActionIcon>
-        </Tooltip>
+        <Button
+          variant="subtle"
+          size="xs"
+          onClick={open}
+          leftSection={<IconDeviceFloppy size={14} />}
+        >
+          <Trans>Save as default</Trans>
+        </Button>
       </Popover.Target>
 
       <Popover.Dropdown>
@@ -165,6 +169,12 @@ export function SaveDefaultsPopover() {
 
           <Text size="xs" c="dimmed">
             <Trans>Select fields to save as defaults for this account.</Trans>
+            <br />
+            <br />
+            <Trans>
+              Saved fields will be automatically applied to this account in
+              future submissions.
+            </Trans>
           </Text>
 
           {/* Select All / None buttons */}

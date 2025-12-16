@@ -37,6 +37,7 @@ function groupFieldsBySection(
     if (!sectionMap.has(sectionName)) {
       sectionMap.set(sectionName, []);
     }
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     sectionMap.get(sectionName)!.push({ fieldName, field });
   });
 
@@ -51,6 +52,7 @@ function groupFieldsBySection(
   if (sectionMap.has(COMMON_SECTION)) {
     sections.push({
       name: COMMON_SECTION,
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       fields: sectionMap.get(COMMON_SECTION)!,
     });
     sectionMap.delete(COMMON_SECTION);
@@ -62,6 +64,7 @@ function groupFieldsBySection(
     .forEach((sectionName) => {
       sections.push({
         name: sectionName,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         fields: sectionMap.get(sectionName)!,
       });
     });
