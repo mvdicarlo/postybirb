@@ -113,7 +113,7 @@ export class SubmissionRecord extends BaseRecord {
    * Get the scheduled date if scheduled.
    */
   get scheduledDate(): Date | null {
-    if (!this.isScheduled || !this.schedule.scheduledFor) {
+    if (!this.schedule.scheduledFor) {
       return null;
     }
     return new Date(this.schedule.scheduledFor);

@@ -116,15 +116,42 @@ export function SubmissionCard({
               submissionType={submissionType}
             />
 
+            {/* Scheduled date - prominent when active, dimmed when inactive */}
+            {(submission.scheduledDate || submission.schedule.cron) && (
+              <Group gap={4}>
+                <IconClock
+                  size={12}
+                  style={{
+                    color: submission.isScheduled
+                      ? 'var(--mantine-color-blue-6)'
+                      : 'var(--mantine-color-dimmed)',
+                  }}
+                />
+                <Text
+                  size="xs"
+                  c={submission.isScheduled ? 'blue.6' : 'dimmed'}
+                  fw={submission.isScheduled ? 500 : 400}
+                >
+                  {submission.scheduledDate.toLocaleString()}
+                </Text>
+              </Group>
+            )}
+
             {/* Last modified */}
             <Group gap={4}>
               <IconClock
                 size={12}
                 className="postybirb__submission__timestamp_icon"
+                style={{
+                  opacity: submission.isScheduled ? 0.5 : 1,
+                }}
               />
               <Text
                 size="xs"
                 c="dimmed"
+                style={{
+                  opacity: submission.isScheduled ? 0.7 : 1,
+                }}
                 title={submission.lastModified.toLocaleString()}
               >
                 {moment(submission.lastModified).fromNow()}

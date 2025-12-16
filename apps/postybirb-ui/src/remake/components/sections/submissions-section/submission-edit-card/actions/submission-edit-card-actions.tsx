@@ -107,15 +107,27 @@ export function SubmissionEditCardActions() {
     );
   }
 
+  // Check if submission can be posted
+  const canPost = !submission.hasErrors && submission.hasWebsiteOptions;
+
+  // Determine tooltip message for disabled post button
+  let postTooltip: React.ReactNode = <Trans>Hold to post</Trans>;
+  if (submission.hasErrors) {
+    postTooltip = <Trans>Cannot post: submission has validation errors</Trans>;
+  } else if (!submission.hasWebsiteOptions) {
+    postTooltip = <Trans>Cannot post: no websites selected</Trans>;
+  }
+
   // Normal state: show post and delete
   return (
     <Group gap={4} wrap="nowrap" onClick={(e) => e.stopPropagation()}>
-      <Tooltip label={<Trans>Hold to post</Trans>}>
+      <Tooltip label={postTooltip}>
         <HoldToConfirmButton
           variant="subtle"
           size="sm"
           color="blue"
           onConfirm={handlePost}
+          disabled={!canPost}
         >
           <IconSend size={16} />
         </HoldToConfirmButton>

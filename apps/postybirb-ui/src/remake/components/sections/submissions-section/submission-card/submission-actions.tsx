@@ -1,3 +1,5 @@
+/* eslint-disable jsx-a11y/no-static-element-interactions */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
 /**
  * SubmissionActions - Action buttons and menu for submissions.
  */
@@ -6,11 +8,11 @@ import { Trans } from '@lingui/react/macro';
 import { ActionIcon, Group, Menu, Tooltip } from '@mantine/core';
 import { ISubmissionScheduleInfo } from '@postybirb/types';
 import {
-    IconCopy,
-    IconDotsVertical,
-    IconEdit,
-    IconSend,
-    IconTrash,
+  IconCopy,
+  IconDotsVertical,
+  IconEdit,
+  IconSend,
+  IconTrash,
 } from '@tabler/icons-react';
 import { useCallback } from 'react';
 import { HoldToConfirmButton } from '../../../hold-to-confirm';

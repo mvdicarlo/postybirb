@@ -1,0 +1,291 @@
+/**
+ * ScheduleForm - Inline schedule editor for submission edit card.
+ * Supports None/Once/Recurring schedule types with date picker and CRON builder.
+ */
+
+import { Trans } from '@lingui/react/macro';
+import {
+  Box,
+  Group,
+  Paper,
+  SegmentedControl,
+  Stack,
+  Switch,
+  Text,
+  Title,
+} from '@mantine/core';
+import { DateTimePicker } from '@mantine/dates';
+import { ISubmissionScheduleInfo, ScheduleType } from '@postybirb/types';
+import {
+  IconCalendar,
+  IconCalendarOff,
+  IconRepeat,
+} from '@tabler/icons-react';
+import { Cron } from 'croner';
+import moment from 'moment';
+import { useCallback, useEffect, useState } from 'react';
+import { useLocalStorage } from 'react-use';
+import { CronPicker } from '../../../../shared/schedule-popover/cron-picker';
+
+export interface ScheduleFormProps {
+  /** Current schedule info */
+  schedule: ISubmissionScheduleInfo;
+  /** Whether the submission is currently scheduled */
+  isScheduled: boolean;
+  /** Callback when schedule changes */
+  onChange: (schedule: ISubmissionScheduleInfo, isScheduled: boolean) => void;
+}
+
+const SCHEDULE_GLOBAL_KEY = 'postybirb-last-schedule';
+const DEFAULT_CRON = '0 9 * * 5'; // Friday at 9 AM
+
+/**
+ * Inline schedule form with None/Once/Recurring options.
+ */
+export function ScheduleForm({
+  schedule,
+  isScheduled,
+  onChange,
+}: ScheduleFormProps) {
+  const [internalSchedule, setInternalSchedule] =
+    useState<ISubmissionScheduleInfo>(schedule);
+  const [internalIsScheduled, setInternalIsScheduled] =
+    useState<boolean>(isScheduled);
+
+  // Persist last used schedule date
+  const [lastUsedDate, setLastUsedDate] = useLocalStorage<string | undefined>(
+    SCHEDULE_GLOBAL_KEY,
+    undefined,
+  );
+
+  // Sync internal state with props
+  useEffect(() => {
+    setInternalSchedule(schedule);
+    setInternalIsScheduled(isScheduled);
+  }, [schedule, isScheduled]);
+
+  // Handle schedule type change
+  const handleTypeChange = useCallback(
+    (type: string) => {
+      const scheduleType = type as ScheduleType;
+      let newSchedule: ISubmissionScheduleInfo;
+      let newIsScheduled = internalIsScheduled;
+
+      switch (scheduleType) {
+        case ScheduleType.SINGLE: {
+          // Use last used date if valid, otherwise tomorrow
+          let scheduledFor: string;
+          if (lastUsedDate && new Date(lastUsedDate) > new Date()) {
+            scheduledFor = lastUsedDate;
+          } else {
+            scheduledFor = moment()
+              .add(1, 'day')
+              .hour(9)
+              .minute(0)
+              .toISOString();
+          }
+          newSchedule = {
+            scheduleType,
+            scheduledFor,
+            cron: undefined,
+          };
+          break;
+        }
+        case ScheduleType.RECURRING: {
+          const nextRun = Cron(DEFAULT_CRON)?.nextRun()?.toISOString();
+          newSchedule = {
+            scheduleType,
+            cron: DEFAULT_CRON,
+            scheduledFor: nextRun,
+          };
+          break;
+        }
+        case ScheduleType.NONE:
+        default:
+          newSchedule = {
+            scheduleType: ScheduleType.NONE,
+            scheduledFor: undefined,
+            cron: undefined,
+          };
+          newIsScheduled = false;
+          break;
+      }
+
+      setInternalSchedule(newSchedule);
+      setInternalIsScheduled(newIsScheduled);
+      onChange(newSchedule, newIsScheduled);
+    },
+    [lastUsedDate, internalIsScheduled, onChange],
+  );
+
+  // Handle date change for single schedule
+  const handleDateChange = useCallback(
+    (date: Date | null) => {
+      if (!date) return;
+      const scheduledFor = date.toISOString();
+      const newSchedule: ISubmissionScheduleInfo = {
+        ...internalSchedule,
+        scheduledFor,
+      };
+      setInternalSchedule(newSchedule);
+      setLastUsedDate(scheduledFor);
+      onChange(newSchedule, internalIsScheduled);
+    },
+    [internalSchedule, internalIsScheduled, setLastUsedDate, onChange],
+  );
+
+  // Handle CRON change for recurring schedule
+  const handleCronChange = useCallback(
+    (cron: string) => {
+      let scheduledFor: string | undefined;
+      try {
+        scheduledFor = Cron(cron)?.nextRun()?.toISOString();
+      } catch {
+        // Invalid cron
+      }
+      const newSchedule: ISubmissionScheduleInfo = {
+        ...internalSchedule,
+        cron,
+        scheduledFor,
+      };
+      setInternalSchedule(newSchedule);
+      onChange(newSchedule, internalIsScheduled);
+    },
+    [internalSchedule, internalIsScheduled, onChange],
+  );
+
+  // Handle toggling schedule active state
+  const handleToggleActive = useCallback(
+    (checked: boolean) => {
+      setInternalIsScheduled(checked);
+      onChange(internalSchedule, checked);
+    },
+    [internalSchedule, onChange],
+  );
+
+  // Parse date for picker
+  const scheduledDate = internalSchedule.scheduledFor
+    ? new Date(internalSchedule.scheduledFor)
+    : null;
+  const isDateInPast = scheduledDate ? scheduledDate < new Date() : false;
+
+  return (
+    <Paper withBorder p="md" radius="sm">
+      <Stack gap="md">
+        <Group justify="space-between" align="center">
+          <Title order={6}>
+            <Trans>Schedule</Trans>
+          </Title>
+          {/* Activation toggle - only show when schedule is configured */}
+          {internalSchedule.scheduleType !== ScheduleType.NONE && (
+            <Switch
+              label={
+                internalIsScheduled ? (
+                  <Trans>Active</Trans>
+                ) : (
+                  <Trans>Inactive</Trans>
+                )
+              }
+              checked={internalIsScheduled}
+              onChange={(e) => handleToggleActive(e.currentTarget.checked)}
+              size="sm"
+            />
+          )}
+        </Group>
+
+        {/* Schedule type selector */}
+        <SegmentedControl
+          value={internalSchedule.scheduleType}
+          onChange={handleTypeChange}
+          size="sm"
+          fullWidth
+          data={[
+            {
+              value: ScheduleType.NONE,
+              label: (
+                <Group gap={4} justify="center">
+                  <IconCalendarOff size={14} />
+                  <Trans>None</Trans>
+                </Group>
+              ),
+            },
+            {
+              value: ScheduleType.SINGLE,
+              label: (
+                <Group gap={4} justify="center">
+                  <IconCalendar size={14} />
+                  <Trans>Once</Trans>
+                </Group>
+              ),
+            },
+            {
+              value: ScheduleType.RECURRING,
+              label: (
+                <Group gap={4} justify="center">
+                  <IconRepeat size={14} />
+                  <Trans>Recurring</Trans>
+                </Group>
+              ),
+            },
+          ]}
+        />
+
+        {/* Single schedule - Date picker */}
+        {internalSchedule.scheduleType === ScheduleType.SINGLE && (
+          <Box>
+            <DateTimePicker
+              label={<Trans>Date and Time</Trans>}
+              size="sm"
+              clearable={false}
+              // eslint-disable-next-line lingui/no-unlocalized-strings
+              valueFormat="YYYY-MM-DD HH:mm"
+              highlightToday
+              minDate={new Date()}
+              value={scheduledDate}
+              onChange={(value) => {
+                // DateTimePicker returns string when valueFormat is specified
+                if (value) {
+                  handleDateChange(new Date(value));
+                } else {
+                  handleDateChange(null);
+                }
+              }}
+              error={isDateInPast ? <Trans>Date is in the past</Trans> : null}
+            />
+            {scheduledDate && !isDateInPast && (
+              <Text size="xs" c="dimmed" mt={4}>
+                {moment(scheduledDate).fromNow()}
+              </Text>
+            )}
+          </Box>
+        )}
+
+        {/* Recurring schedule - CRON picker */}
+        {internalSchedule.scheduleType === ScheduleType.RECURRING && (
+          <CronPicker
+            value={internalSchedule.cron || DEFAULT_CRON}
+            onChange={handleCronChange}
+          />
+        )}
+
+        {/* None - info text */}
+        {internalSchedule.scheduleType === ScheduleType.NONE && (
+          <Text size="sm" c="dimmed">
+            <Trans>This submission will not be automatically posted.</Trans>
+          </Text>
+        )}
+
+        {/* Schedule status info */}
+        {internalSchedule.scheduleType !== ScheduleType.NONE && (
+          <Text size="sm" c={internalIsScheduled ? 'blue' : 'dimmed'}>
+            {internalIsScheduled ? (
+              <Trans>Submission will be posted automatically</Trans>
+            ) : (
+              <Trans>Schedule is configured but inactive</Trans>
+            )}
+          </Text>
+        )}
+      </Stack>
+    </Paper>
+  );
+}
