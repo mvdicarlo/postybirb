@@ -5,16 +5,16 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-    ActionIcon,
-    Badge,
-    Box,
-    Divider,
-    FileButton,
-    Group,
-    Image,
-    Stack,
-    Text,
-    Tooltip,
+  ActionIcon,
+  Badge,
+  Box,
+  Divider,
+  FileButton,
+  Group,
+  Image,
+  Stack,
+  Text,
+  Tooltip,
 } from '@mantine/core';
 import { FileWithPath } from '@mantine/dropzone';
 import { notifications } from '@mantine/notifications';
@@ -23,7 +23,7 @@ import { getFileType } from '@postybirb/utils/file-type';
 import { IconCrop, IconFileUpload, IconReplace } from '@tabler/icons-react';
 import { useState } from 'react';
 import fileSubmissionApi, {
-    FileUpdateTarget,
+  FileUpdateTarget,
 } from '../../../../../api/file-submission.api';
 import { defaultTargetProvider } from '../../../../../transports/http-client';
 import { ImageEditor } from '../../file-submission-modal/image-editor';
@@ -164,13 +164,12 @@ export function FileActions({ file, submissionId }: FileActionsProps) {
         {/* Primary File Section */}
         <Stack gap={4} align="center">
           <Badge
-            variant="filled"
-            color="blue"
+            variant="outline"
             radius="sm"
             size="xs"
             style={{ textTransform: 'none' }}
           >
-            <Trans comment="Main file data">Primary</Trans>
+            <Trans>Primary</Trans>
           </Badge>
 
           <Box
@@ -178,8 +177,7 @@ export function FileActions({ file, submissionId }: FileActionsProps) {
               borderRadius: 6,
               overflow: 'hidden',
               // eslint-disable-next-line lingui/no-unlocalized-strings
-              border: '1px solid var(--mantine-color-dark-4)',
-              background: 'var(--mantine-color-dark-7)',
+              border: '1px solid var(--mantine-color-dark-7)',
               width: 80,
               height: 80,
               display: 'flex',
@@ -227,8 +225,7 @@ export function FileActions({ file, submissionId }: FileActionsProps) {
               borderRadius: 6,
               overflow: 'hidden',
               // eslint-disable-next-line lingui/no-unlocalized-strings
-              border: '1px solid var(--mantine-color-dark-4)',
-              background: 'var(--mantine-color-dark-7)',
+              border: '1px solid var(--mantine-color-dark-7)',
               width: 80,
               height: 80,
               display: 'flex',

@@ -18,8 +18,7 @@ import { SubmissionType } from '@postybirb/types';
 import { IconFile, IconMessage } from '@tabler/icons-react';
 import { useMemo } from 'react';
 import { useSubmissionsByType } from '../../../stores/submission-store';
-import { defaultTargetProvider } from '../../../transports/http-client';
-import type { SubmissionRecord } from '../../../stores/records';
+import { getThumbnailUrl } from '../../sections/submissions-section/submission-card/utils';
 
 export interface SubmissionPickerProps extends Omit<
   MultiSelectProps,
@@ -33,22 +32,13 @@ export interface SubmissionPickerProps extends Omit<
   type: SubmissionType;
   /** Submission IDs to exclude from the picker (e.g., the source submission) */
   excludeIds?: string[];
+  /** Initial IDs to pre-select when mounting */
+  initialSelectedIds?: string[];
 }
 
 interface SubmissionMeta {
-  thumbnail: string | null;
+  thumbnail: string | undefined;
   type: SubmissionType;
-}
-
-/**
- * Get thumbnail URL for a submission's primary file.
- */
-function getThumbnailUrl(submission: SubmissionRecord): string | null {
-  const { primaryFile } = submission;
-  if (!primaryFile?.hasThumbnail || !primaryFile?.thumbnailId) {
-    return null;
-  }
-  return `${defaultTargetProvider()}/api/file/file/${primaryFile.thumbnailId}?${primaryFile.hash}`;
 }
 
 /**

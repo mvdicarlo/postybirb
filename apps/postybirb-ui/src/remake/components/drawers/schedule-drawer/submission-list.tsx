@@ -54,9 +54,6 @@ function DraggableSubmissionItem({
         <Text size="sm" lineClamp={1} style={{ flex: 1 }}>
           {title}
         </Text>
-        <Badge size="xs" variant="dot" color={isMessage ? 'green' : 'blue'}>
-          {isMessage ? <Trans>MSG</Trans> : <Trans>FILE</Trans>}
-        </Badge>
       </Group>
     </Box>
   );
@@ -78,6 +75,7 @@ export function SubmissionList() {
       (s) =>
         !s.isArchived &&
         !s.isTemplate &&
+        !s.isMultiSubmission &&
         !s.schedule.scheduledFor &&
         !s.schedule.cron,
     );

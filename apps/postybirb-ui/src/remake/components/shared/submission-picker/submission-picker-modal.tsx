@@ -3,16 +3,9 @@
  */
 
 import { Trans } from '@lingui/react/macro';
-import {
-  Button,
-  Group,
-  Modal,
-  Radio,
-  Stack,
-  Text,
-} from '@mantine/core';
+import { Button, Group, Modal, Radio, Stack, Text } from '@mantine/core';
 import { SubmissionType } from '@postybirb/types';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { SubmissionPicker } from './submission-picker';
 
 export interface SubmissionPickerModalProps {
@@ -26,6 +19,8 @@ export interface SubmissionPickerModalProps {
   type: SubmissionType;
   /** Submission IDs to exclude from the picker */
   excludeIds?: string[];
+  /** Initial IDs to pre-select when the modal opens */
+  initialSelectedIds?: string[];
   /** Modal title */
   title?: React.ReactNode;
 }
@@ -39,10 +34,18 @@ export function SubmissionPickerModal({
   onConfirm,
   type,
   excludeIds = [],
+  initialSelectedIds = [],
   title,
 }: SubmissionPickerModalProps) {
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [selectedIds, setSelectedIds] = useState<string[]>(initialSelectedIds);
   const [mergeMode, setMergeMode] = useState<'merge' | 'replace'>('merge');
+
+  // Sync initial selection when modal opens
+  useEffect(() => {
+    if (opened) {
+      setSelectedIds(initialSelectedIds);
+    }
+  }, [opened, initialSelectedIds]);
 
   const handleConfirm = () => {
     onConfirm(selectedIds, mergeMode === 'merge');
@@ -62,7 +65,7 @@ export function SubmissionPickerModal({
     <Modal
       opened={opened}
       onClose={handleClose}
-      title={title ?? <Trans>Apply to Submissions</Trans>}
+      title={title ?? <Trans>Apply</Trans>}
       size="lg"
       centered
     >
@@ -119,11 +122,8 @@ export function SubmissionPickerModal({
           <Button variant="default" onClick={handleClose}>
             <Trans>Cancel</Trans>
           </Button>
-          <Button
-            onClick={handleConfirm}
-            disabled={selectedIds.length === 0}
-          >
-            <Trans>Apply to {selectedIds.length} submission(s)</Trans>
+          <Button onClick={handleConfirm} disabled={selectedIds.length === 0}>
+            <Trans>Apply</Trans>
           </Button>
         </Group>
       </Stack>

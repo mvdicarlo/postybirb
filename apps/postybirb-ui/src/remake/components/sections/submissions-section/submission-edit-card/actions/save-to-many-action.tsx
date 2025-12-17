@@ -20,7 +20,7 @@ import { useSubmissionEditCardContext } from '../context';
  * settings to multiple target submissions.
  */
 export function SaveToManyAction() {
-  const { submission } = useSubmissionEditCardContext();
+  const { submission, targetSubmissionIds = [] } = useSubmissionEditCardContext();
   const [modalOpened, setModalOpened] = useState(false);
 
   const handleConfirm = async (submissionIds: string[], merge: boolean) => {
@@ -61,6 +61,7 @@ export function SaveToManyAction() {
         onConfirm={handleConfirm}
         type={submission.type}
         excludeIds={[submission.id]}
+        initialSelectedIds={targetSubmissionIds}
         title={<Trans>Save to Submissions</Trans>}
       />
     </>

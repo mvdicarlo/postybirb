@@ -3,13 +3,12 @@
  */
 
 .postybirb__file_manager_header {
-  background: var(--mantine-color-dark-6);
-  border-top-left-radius: var(--mantine-radius-md);
-  border-top-right-radius: var(--mantine-radius-md);
 }
 
 .postybirb-sortable-file {
-  transition: box-shadow 150ms ease, transform 150ms ease;
+  transition:
+    box-shadow 150ms ease,
+    transform 150ms ease;
 }
 
 .postybirb-sortable-file:hover {

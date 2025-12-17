@@ -81,8 +81,6 @@ function SubmissionsContentHeader({
   const { preferMultiEdit, fullView, setPreferMultiEdit, setFullView } =
     useSubmissionsContentPreferences();
 
-  const canMultiEdit = selectedCount > 1;
-
   return (
     <Box
       p="md"
@@ -121,7 +119,6 @@ function SubmissionsContentHeader({
           <Switch
             size="sm"
             checked={preferMultiEdit}
-            disabled={!canMultiEdit}
             onChange={(e) => setPreferMultiEdit(e.currentTarget.checked)}
             label={<Trans>Mass Edit</Trans>}
           />
@@ -183,7 +180,7 @@ export function SubmissionsContent({
   );
 
   const { preferMultiEdit, fullView } = useSubmissionsContentPreferences();
-  const effectiveMultiEdit = preferMultiEdit && selectedIds.length > 1;
+  const effectiveMultiEdit = preferMultiEdit;
 
   // Cards are collapsible only when multiple selected and not in mass edit mode
   const isCollapsible = selectedIds.length > 1 && !effectiveMultiEdit;
@@ -196,7 +193,7 @@ export function SubmissionsContent({
       />
       <Divider />
       <Box style={{ flex: 1, minHeight: 0 }}>
-        {selectedIds.length === 0 ? (
+        {selectedIds.length === 0 && !preferMultiEdit ? (
           <EmptySubmissionSelection />
         ) : (
           <ScrollArea style={{ height: '100%' }} type="hover" scrollbarSize={6}>
@@ -209,6 +206,7 @@ export function SubmissionsContent({
                         submission={multiSubmission}
                         isCollapsible={false}
                         fullView={fullView}
+                        targetSubmissionIds={selectedIds}
                       />
                     ) : (
                       <Card withBorder radius="sm" p="md">

@@ -26,6 +26,8 @@ export interface SubmissionEditCardProps {
   isCollapsible: boolean;
   /** Whether to show full or simple view */
   fullView: boolean;
+  /** Target submission IDs for mass edit mode (to pre-populate Save To Many) */
+  targetSubmissionIds?: string[];
 }
 
 /**
@@ -83,6 +85,7 @@ export function SubmissionEditCard({
   submission,
   isCollapsible,
   fullView,
+  targetSubmissionIds,
 }: SubmissionEditCardProps) {
   return (
     <ComponentErrorBoundary>
@@ -90,6 +93,7 @@ export function SubmissionEditCard({
         submission={submission}
         isCollapsible={isCollapsible}
         fullView={fullView}
+        targetSubmissionIds={targetSubmissionIds}
       >
         <SubmissionEditCardInner />
       </SubmissionEditCardProvider>
