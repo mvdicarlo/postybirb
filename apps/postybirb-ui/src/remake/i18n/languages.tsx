@@ -1,5 +1,9 @@
 import { de, en, es, ru } from '@blocknote/core/locales';
 import { msg } from '@lingui/core/macro';
+import 'cronstrue/locales/de';
+import 'cronstrue/locales/es';
+import 'cronstrue/locales/pt_BR';
+import 'cronstrue/locales/ru';
 import 'dayjs/locale/de';
 import 'dayjs/locale/es';
 import 'dayjs/locale/lt';
@@ -48,4 +52,19 @@ export const blockNoteLocaleLanguageMap: Record<string, any> = {
   ru,
   es,
   ta: en,
+};
+
+/**
+ * Map app locales to cronstrue locales.
+ * Unsupported locales (lt, ta) fall back to English.
+ * @see https://github.com/bradymholt/cronstrue#supported-locales
+ */
+export const cronstrueLocaleMap: Record<string, string> = {
+  en: 'en',
+  de: 'de',
+  lt: 'en', // Lithuanian not supported, fallback to English
+  'pt-BR': 'pt_BR',
+  ru: 'ru',
+  es: 'es',
+  ta: 'en', // Tamil not supported, fallback to English
 };

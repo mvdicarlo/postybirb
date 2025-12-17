@@ -3,30 +3,33 @@
  * plus manual CRON input toggle for power users.
  */
 
-import { Trans, useLingui } from '@lingui/react/macro';
+import { useLingui } from '@lingui/react';
+import { Trans, useLingui as useLinguiMacro } from '@lingui/react/macro';
 import {
-    Anchor,
-    Box,
-    Chip,
-    Group,
-    SegmentedControl,
-    Select,
-    Stack,
-    Text,
-    TextInput,
-    Tooltip,
-    useMantineColorScheme,
+  Anchor,
+  Box,
+  Chip,
+  Group,
+  SegmentedControl,
+  Select,
+  Stack,
+  Text,
+  TextInput,
+  Tooltip,
+  useMantineColorScheme,
 } from '@mantine/core';
 import { TimeInput } from '@mantine/dates';
 import {
-    IconCalendar,
-    IconCode,
-    IconExternalLink,
+  IconAt,
+  IconCalendar,
+  IconCode,
+  IconExternalLink,
 } from '@tabler/icons-react';
 import { Cron } from 'croner';
 import cronstrue from 'cronstrue';
 import moment from 'moment';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { cronstrueLocaleMap } from '../../../i18n/languages';
 
 export interface CronPickerProps {
   /** Current CRON expression */
@@ -76,7 +79,13 @@ function parseCron(cron: string): {
   try {
     const parts = cron.trim().split(' ');
     if (parts.length !== 5) {
-      return { frequency: 'weekly', selectedDays: ['5'], dayOfMonth: '1', hour: 9, minute: 0 };
+      return {
+        frequency: 'weekly',
+        selectedDays: ['5'],
+        dayOfMonth: '1',
+        hour: 9,
+        minute: 0,
+      };
     }
 
     const [minuteStr, hourStr, dayStr, , dayOfWeekStr] = parts;
@@ -87,16 +96,40 @@ function parseCron(cron: string): {
     if (dayOfWeekStr !== '*' && dayStr === '*') {
       // Weekly - has specific days of week
       const selectedDays = dayOfWeekStr.split(',').filter((d) => d !== '*');
-      return { frequency: 'weekly', selectedDays, dayOfMonth: '1', hour, minute };
+      return {
+        frequency: 'weekly',
+        selectedDays,
+        dayOfMonth: '1',
+        hour,
+        minute,
+      };
     }
     if (dayStr !== '*') {
       // Monthly - has specific day of month
-      return { frequency: 'monthly', selectedDays: [], dayOfMonth: dayStr, hour, minute };
+      return {
+        frequency: 'monthly',
+        selectedDays: [],
+        dayOfMonth: dayStr,
+        hour,
+        minute,
+      };
     }
     // Daily - runs every day
-    return { frequency: 'daily', selectedDays: [], dayOfMonth: '1', hour, minute };
+    return {
+      frequency: 'daily',
+      selectedDays: [],
+      dayOfMonth: '1',
+      hour,
+      minute,
+    };
   } catch {
-    return { frequency: 'weekly', selectedDays: ['5'], dayOfMonth: '1', hour: 9, minute: 0 };
+    return {
+      frequency: 'weekly',
+      selectedDays: ['5'],
+      dayOfMonth: '1',
+      hour: 9,
+      minute: 0,
+    };
   }
 }
 
@@ -108,7 +141,7 @@ function buildCron(
   selectedDays: string[],
   dayOfMonth: string,
   hour: number,
-  minute: number
+  minute: number,
 ): string {
   const minuteStr = String(minute);
   const hourStr = String(hour);
@@ -131,14 +164,17 @@ function buildCron(
  * CronPicker component with intuitive builder and manual input modes.
  */
 export function CronPicker({ value, onChange }: CronPickerProps) {
-  const { t } = useLingui();
+  const { t } = useLinguiMacro();
+  const { i18n } = useLingui();
   const { colorScheme } = useMantineColorScheme();
   const [mode, setMode] = useState<CronMode>('builder');
 
   // Parse initial value
   const parsed = useMemo(() => parseCron(value), [value]);
   const [frequency, setFrequency] = useState<Frequency>(parsed.frequency);
-  const [selectedDays, setSelectedDays] = useState<string[]>(parsed.selectedDays);
+  const [selectedDays, setSelectedDays] = useState<string[]>(
+    parsed.selectedDays,
+  );
   const [dayOfMonth, setDayOfMonth] = useState(parsed.dayOfMonth);
   const [hour, setHour] = useState(parsed.hour);
   const [minute, setMinute] = useState(parsed.minute);
@@ -176,7 +212,7 @@ export function CronPicker({ value, onChange }: CronPickerProps) {
       setManualCron(newCron);
       onChange(newCron);
     },
-    [onChange]
+    [onChange],
   );
 
   // Validate CRON
@@ -202,11 +238,12 @@ export function CronPicker({ value, onChange }: CronPickerProps) {
   const cronDescription = useMemo(() => {
     try {
       const cronToCheck = mode === 'custom' ? manualCron : value;
-      return cronstrue.toString(cronToCheck);
+      const locale = cronstrueLocaleMap[i18n.locale] || 'en';
+      return cronstrue.toString(cronToCheck, { locale });
     } catch {
       return null;
     }
-  }, [mode, manualCron, value]);
+  }, [mode, manualCron, value, i18n.locale]);
 
   // Handle time input change
   const handleTimeChange = useCallback((timeStr: string) => {
@@ -345,22 +382,14 @@ export function CronPicker({ value, onChange }: CronPickerProps) {
 
       {/* Description and next run */}
       {isValidCron && cronDescription && (
-        <Box
-          p="xs"
-          style={(theme) => ({
-            backgroundColor:
-              colorScheme === 'dark'
-                ? theme.colors.dark[6]
-                : theme.colors.gray[0],
-            borderRadius: theme.radius.sm,
-          })}
-        >
+        <Box p="xs">
           <Text size="xs" fw={500} c="green">
             {cronDescription}
           </Text>
           {nextRun && (
             <Text size="xs" c="dimmed">
-              <Trans>Next: {moment(nextRun).format('lll')}</Trans>
+              <IconAt size="1em" style={{ verticalAlign: 'middle' }} />{' '}
+              {moment(nextRun).format('lll')}
             </Text>
           )}
         </Box>

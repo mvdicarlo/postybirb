@@ -105,7 +105,6 @@ export function SubmissionActions({
             disabled={!canPost}
             variant="subtle"
             size="sm"
-            color="green"
             // eslint-disable-next-line lingui/no-unlocalized-strings
             aria-label="Post submission"
           >

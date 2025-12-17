@@ -5,11 +5,12 @@
 import { Trans } from '@lingui/react/macro';
 import { ActionIcon, Group, Tooltip } from '@mantine/core';
 import {
-  IconDeviceFloppy,
   IconPlayerStop,
   IconSend,
   IconTrash,
 } from '@tabler/icons-react';
+import { ApplyTemplateAction } from './apply-template-action';
+import { SaveToManyAction } from './save-to-many-action';
 import postManagerApi from '../../../../../api/post-manager.api';
 import postQueueApi from '../../../../../api/post-queue.api';
 import submissionApi from '../../../../../api/submission.api';
@@ -53,16 +54,16 @@ export function SubmissionEditCardActions() {
   };
 
   if (submission.isMultiSubmission) {
-    // TODO: Multi-submission actions
     return (
-      <ActionIcon variant="subtle" size="sm" c="blue">
-        <IconDeviceFloppy size={16} />
-      </ActionIcon>
+      <Group gap={4} wrap="nowrap" onClick={(e) => e.stopPropagation()}>
+        <ApplyTemplateAction />
+        <SaveToManyAction />
+      </Group>
     );
   }
 
   if (submission.isTemplate) {
-    // Templates only need delete
+    // Templates need delete only
     return (
       <Group gap={4} wrap="nowrap" onClick={(e) => e.stopPropagation()}>
         <Tooltip label={<Trans>Hold to delete</Trans>}>
@@ -118,9 +119,10 @@ export function SubmissionEditCardActions() {
     postTooltip = <Trans>Cannot post: no websites selected</Trans>;
   }
 
-  // Normal state: show post and delete
+  // Normal state: show template, post and delete
   return (
     <Group gap={4} wrap="nowrap" onClick={(e) => e.stopPropagation()}>
+      <ApplyTemplateAction />
       <Tooltip label={postTooltip}>
         <HoldToConfirmButton
           variant="subtle"
