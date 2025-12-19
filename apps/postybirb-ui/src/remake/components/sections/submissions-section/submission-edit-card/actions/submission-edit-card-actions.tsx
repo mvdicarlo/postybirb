@@ -9,8 +9,6 @@ import {
   IconSend,
   IconTrash,
 } from '@tabler/icons-react';
-import { ApplyTemplateAction } from './apply-template-action';
-import { SaveToManyAction } from './save-to-many-action';
 import postManagerApi from '../../../../../api/post-manager.api';
 import postQueueApi from '../../../../../api/post-queue.api';
 import submissionApi from '../../../../../api/submission.api';
@@ -21,6 +19,8 @@ import {
 } from '../../../../../utils/notifications';
 import { HoldToConfirmButton } from '../../../../hold-to-confirm';
 import { useSubmissionEditCardContext } from '../context';
+import { ApplyTemplateAction } from './apply-template-action';
+import { SaveToManyAction } from './save-to-many-action';
 
 /**
  * Actions for the submission edit card header - visible buttons, not in a menu.
@@ -114,9 +114,9 @@ export function SubmissionEditCardActions() {
   // Determine tooltip message for disabled post button
   let postTooltip: React.ReactNode = <Trans>Hold to post</Trans>;
   if (submission.hasErrors) {
-    postTooltip = <Trans>Cannot post: submission has validation errors</Trans>;
+    postTooltip = <Trans>Submission has validation errors</Trans>;
   } else if (!submission.hasWebsiteOptions) {
-    postTooltip = <Trans>Cannot post: no websites selected</Trans>;
+    postTooltip = <Trans>No websites selected</Trans>;
   }
 
   // Normal state: show template, post and delete
