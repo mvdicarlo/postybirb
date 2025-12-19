@@ -5,20 +5,20 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-    Badge,
-    Box,
-    Checkbox,
-    Collapse,
-    Group,
-    Loader,
-    Paper,
-    Text,
+  Badge,
+  Box,
+  Checkbox,
+  Collapse,
+  Group,
+  Loader,
+  Paper,
+  Text,
 } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
 import { SubmissionRating, type WebsiteOptionsDto } from '@postybirb/types';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import websiteOptionsApi from '../../../../../api/website-options.api';
 import type { AccountRecord } from '../../../../../stores/records';
+import { ComponentErrorBoundary } from '../../../../error-boundary';
 import { useSubmissionEditCardContext } from '../context';
 import './account-selection.css';
 import { FormFieldsProvider, SectionLayout } from './form';
@@ -45,9 +45,19 @@ export function AccountOptionRow({
 }: AccountOptionRowProps) {
   const { submission } = useSubmissionEditCardContext();
   const [isLoading, setIsLoading] = useState(false);
-  const [expanded, { open, close }] = useDisclosure(websiteOption !== null);
+  // Track manual collapse state - null means use default (expanded when selected)
+  const [manualExpanded, setManualExpanded] = useState<boolean | null>(null);
 
   const isSelected = websiteOption !== null;
+
+  // Determine expanded state: use manual override if set, otherwise default to selected state
+  // Reset manual state when selection changes
+  const expanded = manualExpanded ?? isSelected;
+
+  // Reset manual expanded state when websiteOption changes (e.g., template applied or removed)
+  useEffect(() => {
+    setManualExpanded(null);
+  }, [websiteOption]);
 
   // Handle checkbox toggle - calls API to add/remove website option
   const handleToggle = useCallback(
@@ -66,11 +76,11 @@ export function AccountOptionRow({
             accountId: account.accountId,
             data: { rating },
           });
-          open();
+          setManualExpanded(true);
         } else if (websiteOption) {
           // Remove the existing website option
           await websiteOptionsApi.remove([websiteOption.id]);
-          close();
+          setManualExpanded(false);
         }
       } catch (error) {
         // eslint-disable-next-line no-console, lingui/no-unlocalized-strings
@@ -80,66 +90,77 @@ export function AccountOptionRow({
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [submission.id, account.accountId, websiteOption, open, close],
+    [submission.id, account.accountId, websiteOption],
   );
 
   return (
-    <Box className="postybirb__account_option_row">
-      <Group gap="xs" px="sm" py={6} wrap="nowrap">
-        {isLoading ? (
-          <Loader size="xs" />
-        ) : (
-          <Checkbox
-            size="xs"
-            checked={isSelected}
-            onChange={(e) => handleToggle(e.currentTarget.checked)}
-            // eslint-disable-next-line lingui/no-unlocalized-strings
-            aria-label={`Select ${account.name}`}
-          />
-        )}
-        <Text size="sm" style={{ flex: 1 }}>
-          {account.name}
-        </Text>
-        {account.username && (
-          <Text size="xs" c="dimmed">
-            ({account.username})
-          </Text>
-        )}
-        {hasErrors && (
-          <Badge size="xs" variant="light" color="red">
-            <Trans>Error</Trans>
-          </Badge>
-        )}
-        {hasWarnings && (
-          <Badge size="xs" variant="light" color="yellow">
-            <Trans>Warning</Trans>
-          </Badge>
-        )}
-        {!account.isLoggedIn && (
-          <Badge size="xs" variant="light" color="orange">
-            <Trans>Not logged in</Trans>
-          </Badge>
-        )}
-      </Group>
-
-      {/* Expandable inline form section - shown when selected */}
-      <Collapse in={expanded && isSelected} ml="lg">
-        <Paper
-          withBorder
-          radius="sm"
-          p="sm"
-          ml="xl"
-          mr="sm"
-          mb="xs"
-          className="postybirb__account_option_form"
-        >
-          {websiteOption && (
-            <FormFieldsProvider option={websiteOption} submission={submission}>
-              <SectionLayout />
-            </FormFieldsProvider>
+    <ComponentErrorBoundary>
+      <Box className="postybirb__account_option_row">
+        <Group gap="xs" px="sm" py={6} wrap="nowrap">
+          {isLoading ? (
+            <Loader size="xs" />
+          ) : (
+            <Checkbox
+              size="xs"
+              checked={isSelected}
+              onChange={(e) => handleToggle(e.currentTarget.checked)}
+              // eslint-disable-next-line lingui/no-unlocalized-strings
+              aria-label={`Select ${account.name}`}
+            />
           )}
-        </Paper>
-      </Collapse>
-    </Box>
+          <Text size="sm" style={{ flex: 1 }}>
+            {account.name}
+          </Text>
+          {account.username && (
+            <Text size="xs" c="dimmed">
+              ({account.username})
+            </Text>
+          )}
+          {hasErrors && (
+            <Badge size="xs" variant="light" color="red">
+              <Trans>Error</Trans>
+            </Badge>
+          )}
+          {hasWarnings && (
+            <Badge size="xs" variant="light" color="yellow">
+              <Trans>Warning</Trans>
+            </Badge>
+          )}
+          {!account.isLoggedIn && (
+            <Badge size="xs" variant="light" color="orange">
+              <Trans>Not logged in</Trans>
+            </Badge>
+          )}
+        </Group>
+
+        {/* Expandable inline form section - shown when selected */}
+        <Collapse
+          in={expanded && isSelected}
+          ml="lg"
+          key={`${account.accountId}-${websiteOption?.id ?? 'none'}`}
+        >
+          <Paper
+            withBorder
+            radius="sm"
+            p="sm"
+            ml="xl"
+            mr="sm"
+            mb="xs"
+            className="postybirb__account_option_form"
+          >
+            {websiteOption && (
+              <ComponentErrorBoundary>
+                <FormFieldsProvider
+                  option={websiteOption}
+                  submission={submission}
+                >
+                  <SectionLayout key={websiteOption.id} />
+                </FormFieldsProvider>
+              </ComponentErrorBoundary>
+            )}
+          </Paper>
+        </Collapse>
+      </Box>
+    </ComponentErrorBoundary>
   );
 }

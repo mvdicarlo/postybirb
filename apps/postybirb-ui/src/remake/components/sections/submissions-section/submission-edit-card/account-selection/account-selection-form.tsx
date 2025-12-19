@@ -6,14 +6,14 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-    Badge,
-    Box,
-    Collapse,
-    Group,
-    Paper,
-    Stack,
-    Text,
-    UnstyledButton,
+  Badge,
+  Box,
+  Collapse,
+  Group,
+  Paper,
+  Stack,
+  Text,
+  UnstyledButton,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { SubmissionType, type WebsiteOptionsDto } from '@postybirb/types';
@@ -21,12 +21,12 @@ import { IconChevronDown, IconChevronRight } from '@tabler/icons-react';
 import { useMemo } from 'react';
 import { useAccounts } from '../../../../../stores/account-store';
 import type {
-    AccountRecord,
-    WebsiteRecord,
+  AccountRecord,
+  WebsiteRecord,
 } from '../../../../../stores/records';
 import {
-    useFileWebsites,
-    useMessageWebsites,
+  useFileWebsites,
+  useMessageWebsites,
 } from '../../../../../stores/website-store';
 import { useSubmissionEditCardContext } from '../context';
 import { AccountOptionRow } from './account-option-row';
@@ -38,7 +38,10 @@ interface WebsiteAccountGroupProps {
   /** Map of accountId -> WebsiteOptionsDto for quick lookup */
   optionsByAccount: Map<string, WebsiteOptionsDto>;
   /** Map of websiteOptionId -> validation result */
-  validationsByOptionId: Map<string, { hasErrors: boolean; hasWarnings: boolean }>;
+  validationsByOptionId: Map<
+    string,
+    { hasErrors: boolean; hasWarnings: boolean }
+  >;
 }
 
 /**
@@ -50,7 +53,7 @@ function WebsiteAccountGroup({
   optionsByAccount,
   validationsByOptionId,
 }: WebsiteAccountGroupProps) {
-  const [expanded, { toggle }] = useDisclosure(false);
+  const [expanded, { toggle, open }] = useDisclosure(false);
 
   // Count how many accounts are selected (have website options)
   const selectedCount = useMemo(

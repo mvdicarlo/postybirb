@@ -5,27 +5,28 @@
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
-    ActionIcon,
-    Box,
-    Button,
-    Checkbox,
-    Group,
-    Kbd,
-    Popover,
-    SegmentedControl,
-    Stack,
-    Text,
-    TextInput,
-    Tooltip,
+  ActionIcon,
+  Box,
+  Button,
+  Checkbox,
+  Group,
+  Kbd,
+  Popover,
+  SegmentedControl,
+  Stack,
+  Text,
+  TextInput,
+  Tooltip,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { SubmissionType } from '@postybirb/types';
-import { IconPlus, IconSend, IconTrash } from '@tabler/icons-react';
+import { SubmissionId, SubmissionType } from '@postybirb/types';
+import { IconPlus, IconSend, IconTemplate, IconTrash } from '@tabler/icons-react';
 import { useCallback, useState } from 'react';
 import { DeleteSelectedKeybinding } from '../../../config/keybindings';
 import type { SubmissionFilter } from '../../../stores/ui-store';
 import { useSubmissionsFilter } from '../../../stores/ui-store';
 import { SearchInput } from '../../shared';
+import { TemplatePickerModal } from '../../shared/template-picker';
 import './submissions-section.css';
 
 /** Selection state for the checkbox */
@@ -42,6 +43,8 @@ interface SubmissionSectionHeaderProps {
   selectionState?: SelectionState;
   /** Handler for toggling select all/none */
   onToggleSelectAll?: () => void;
+  /** Currently selected submission IDs */
+  selectedIds?: SubmissionId[];
   /** Number of selected items */
   selectedCount?: number;
   /** Total number of items */
@@ -62,6 +65,7 @@ export function SubmissionSectionHeader({
   onCreateMessageSubmission,
   selectionState = 'none',
   onToggleSelectAll,
+  selectedIds = [],
   selectedCount = 0,
   totalCount = 0,
   onDeleteSelected,
@@ -74,6 +78,9 @@ export function SubmissionSectionHeader({
   // Popover state for message submission creation
   const [popoverOpened, popover] = useDisclosure(false);
   const [messageTitle, setMessageTitle] = useState('');
+  
+  // Template picker modal state
+  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
 
   // Handle creating a message submission
   const handleCreateMessage = useCallback(() => {
@@ -141,6 +148,21 @@ export function SubmissionSectionHeader({
             </Text>
           </Group>
           <Group gap="xs">
+            {/* Apply template button - only show when items are selected */}
+            {selectedCount > 0 && (
+              <Tooltip label={<Trans>Apply template to selected</Trans>}>
+                <ActionIcon
+                  onClick={() => setIsTemplateModalOpen(true)}
+                  variant="light"
+                  size="sm"
+                  color="grape"
+                  // eslint-disable-next-line lingui/no-unlocalized-strings
+                  aria-label="Apply template to selected submissions"
+                >
+                  <IconTemplate size={16} />
+                </ActionIcon>
+              </Tooltip>
+            )}
             {/* Mass post button - only show when items are selected */}
             {selectedCount > 0 && onPostSelected && (
               <Tooltip label={<Trans>Post selected</Trans>}>
@@ -263,6 +285,15 @@ export function SubmissionSectionHeader({
           ]}
         />
       </Stack>
+
+      {/* Template picker modal for mass apply */}
+      {isTemplateModalOpen && selectedIds.length > 0 && (
+        <TemplatePickerModal
+          targetSubmissionIds={selectedIds}
+          type={submissionType}
+          onClose={() => setIsTemplateModalOpen(false)}
+        />
+      )}
     </Box>
   );
 }

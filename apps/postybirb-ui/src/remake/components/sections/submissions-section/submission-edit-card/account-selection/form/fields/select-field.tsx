@@ -3,11 +3,9 @@
  */
 
 import { Select as MantineSelect, MultiSelect } from '@mantine/core';
-import {
-    SelectFieldType,
-    SelectOption,
-} from '@postybirb/form-builder';
+import { SelectFieldType, SelectOption } from '@postybirb/form-builder';
 import { getFileType } from '@postybirb/utils/file-type';
+import { uniqBy } from 'lodash';
 import { useFormFieldsContext } from '../form-fields-context';
 import { useValidations } from '../hooks/use-validations';
 import { FieldLabel } from './field-label';
@@ -76,8 +74,7 @@ export function SelectField({
   const value =
     getValue<string | string[]>(fieldName) ?? field.defaultValue ?? '';
   const selectOptions = getSelectOptions(field.options, submission);
-  const flatOptions = flattenOptions(selectOptions);
-
+  const flatOptions = uniqBy(flattenOptions(selectOptions), 'value');
   if (field.allowMultiple) {
     const multiValue = Array.isArray(value) ? value : [];
 

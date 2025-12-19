@@ -1,4 +1,5 @@
 import {
+    AccountId,
     IApplyMultiSubmissionDto,
     ICreateSubmissionDefaultOptions,
     ICreateSubmissionDto,
@@ -6,6 +7,7 @@ import {
     ISubmissionDto,
     IUpdateSubmissionDto,
     IUpdateSubmissionTemplateNameDto,
+    IWebsiteFormFields,
     SubmissionId,
     SubmissionType,
 } from '@postybirb/types';
@@ -23,6 +25,32 @@ export interface CreateFileSubmissionOptions {
   fileMetadata?: IFileMetadata[];
   /** Default options (tags, description, rating) */
   defaultOptions?: ICreateSubmissionDefaultOptions;
+}
+
+/**
+ * DTO for applying selected template options to submissions.
+ */
+export interface ApplyTemplateOptionsDto {
+  /** Submission IDs to apply template options to */
+  targetSubmissionIds: SubmissionId[];
+  /** Template options to apply */
+  options: Array<{
+    accountId: AccountId;
+    data: IWebsiteFormFields;
+  }>;
+  /** Whether to replace title with template title */
+  overrideTitle: boolean;
+  /** Whether to replace description with template description */
+  overrideDescription: boolean;
+}
+
+/**
+ * Result from applying template options.
+ */
+export interface ApplyTemplateOptionsResult {
+  success: number;
+  failed: number;
+  errors: Array<{ submissionId: SubmissionId; error: string }>;
 }
 
 class SubmissionsApi extends BaseApi<
@@ -98,6 +126,13 @@ class SubmissionsApi extends BaseApi<
 
   applyTemplate(id: SubmissionId, templateId: SubmissionId) {
     return this.client.patch(`apply/template/${id}/${templateId}`);
+  }
+
+  applyTemplateOptions(dto: ApplyTemplateOptionsDto) {
+    return this.client.patch<ApplyTemplateOptionsResult>(
+      'apply/template/options',
+      dto,
+    );
   }
 
   unarchive(id: SubmissionId) {

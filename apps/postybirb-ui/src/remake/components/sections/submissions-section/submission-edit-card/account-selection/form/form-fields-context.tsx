@@ -5,19 +5,19 @@
 import { Trans } from '@lingui/react/macro';
 import { notifications } from '@mantine/notifications';
 import {
-    FieldAggregateType,
-    FormBuilderMetadata,
+  FieldAggregateType,
+  FormBuilderMetadata,
 } from '@postybirb/form-builder';
 import { SubmissionType, WebsiteOptionsDto } from '@postybirb/types';
 import {
-    createContext,
-    PropsWithChildren,
-    useCallback,
-    useContext,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
+  createContext,
+  PropsWithChildren,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
 } from 'react';
 import { useQuery } from 'react-query';
 import formGeneratorApi from '../../../../../../api/form-generator.api';

@@ -39,6 +39,7 @@ import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { WSGateway } from '../../web-socket/web-socket-gateway';
 import { WebsiteOptionsService } from '../../website-options/website-options.service';
 import { ApplyMultiSubmissionDto } from '../dtos/apply-multi-submission.dto';
+import { ApplyTemplateOptionsDto } from '../dtos/apply-template-options.dto';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
 import { UpdateSubmissionTemplateNameDto } from '../dtos/update-submission-template-name.dto';
 import { UpdateSubmissionDto } from '../dtos/update-submission.dto';
@@ -497,6 +498,96 @@ export class SubmissionService
     }
 
     this.emit();
+  }
+
+  /**
+   * Applies selected template options to multiple submissions.
+   * Upserts options (update if exists, create if new) with merge behavior.
+   *
+   * @param dto - The apply template options DTO
+   * @returns Object with success/failure counts
+   */
+  async applyTemplateOptions(dto: ApplyTemplateOptionsDto): Promise<{
+    success: number;
+    failed: number;
+    errors: Array<{ submissionId: SubmissionId; error: string }>;
+  }> {
+    const { targetSubmissionIds, options, overrideTitle, overrideDescription } =
+      dto;
+
+    this.logger
+      .withMetadata({
+        targetCount: targetSubmissionIds.length,
+        optionCount: options.length,
+      })
+      .info('Applying template options to submissions');
+
+    const results = {
+      success: 0,
+      failed: 0,
+      errors: [] as Array<{ submissionId: SubmissionId; error: string }>,
+    };
+
+    for (const submissionId of targetSubmissionIds) {
+      try {
+        const submission = await this.findById(submissionId, {
+          failOnMissing: true,
+        });
+
+        for (const templateOption of options) {
+          // Find existing option for this account
+          const existingOption = submission.options.find(
+            (o) => o.accountId === templateOption.accountId,
+          );
+
+          // Prepare the data to apply
+          const dataToApply = { ...templateOption.data };
+
+          // Handle title override: only replace if overrideTitle is true AND template has non-empty title
+          if (!overrideTitle || !dataToApply.title?.trim()) {
+            delete dataToApply.title;
+          }
+
+          // Handle description override: only replace if overrideDescription is true AND template has description
+          if (!overrideDescription || !dataToApply.description?.description) {
+            delete dataToApply.description;
+          }
+
+          if (existingOption) {
+            // Upsert: merge existing data with template data
+            const mergedData = {
+              ...existingOption.data,
+              ...dataToApply,
+            };
+            await this.websiteOptionsService.update(existingOption.id, {
+              data: mergedData,
+            });
+          } else {
+            // Create new option
+            await this.websiteOptionsService.createOption(
+              submission,
+              templateOption.accountId,
+              dataToApply,
+              dataToApply.title,
+            );
+          }
+        }
+
+        results.success++;
+      } catch (error) {
+        results.failed++;
+        results.errors.push({
+          submissionId,
+          error: error instanceof Error ? error.message : String(error),
+        });
+        this.logger
+          .withMetadata({ submissionId, error })
+          .error('Failed to apply template options to submission');
+      }
+    }
+
+    this.emit();
+    return results;
   }
 
   /**

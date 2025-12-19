@@ -145,6 +145,7 @@ export function SubmissionFileCard({
           {/* File Previews - Horizontal Layout */}
           <Box
             style={{
+              // eslint-disable-next-line lingui/no-unlocalized-strings
               flex: '0 0 auto',
               padding: '6px',
               borderRadius: '8px',

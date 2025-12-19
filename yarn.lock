@@ -5428,18 +5428,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mantine/dates@npm:^8":
-  version: 8.3.9
-  resolution: "@mantine/dates@npm:8.3.9"
+"@mantine/dates@npm:^8.3.10":
+  version: 8.3.10
+  resolution: "@mantine/dates@npm:8.3.10"
   dependencies:
     clsx: "npm:^2.1.1"
   peerDependencies:
-    "@mantine/core": 8.3.9
-    "@mantine/hooks": 8.3.9
+    "@mantine/core": 8.3.10
+    "@mantine/hooks": 8.3.10
     dayjs: ">=1.0.0"
     react: ^18.x || ^19.x
     react-dom: ^18.x || ^19.x
-  checksum: 10c0/6ea59bac4de23566dedfa0a7508a89ab7340cb9c98a868967a0f9c2db1e20bd743b95f91d9b42563a9cbc490e3abfee62f5c5beca72d1bb554852729932e84a0
+  checksum: 10c0/31898f6f9a9d5c0769e8db3704677c124d2f25ffce82628208d11a18f26c18feb2028c65016c261a02aca6f92b1fffd6c96908a716953af7ad0617dcf6c3c583
   languageName: node
   linkType: hard
 
@@ -23550,7 +23550,7 @@ __metadata:
     "@lingui/swc-plugin": "npm:^5.5.2"
     "@lingui/vite-plugin": "npm:^5.5"
     "@mantine/core": "npm:^8"
-    "@mantine/dates": "npm:^8"
+    "@mantine/dates": "npm:^8.3.10"
     "@mantine/dropzone": "npm:^8"
     "@mantine/form": "npm:^8"
     "@mantine/hooks": "npm:^8"

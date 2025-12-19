@@ -2,10 +2,10 @@
  * SectionLayout - Groups form fields by section and renders them in a 12-column grid.
  */
 
-import { Trans } from '@lingui/react/macro';
 import { Box, Group, Skeleton, Stack, Text } from '@mantine/core';
 import { FieldAggregateType } from '@postybirb/form-builder';
 import { useMemo } from 'react';
+import { ComponentErrorBoundary } from '../../../../../error-boundary';
 import { FormField } from './form-field';
 import { useFormFieldsContext } from './form-fields-context';
 import { SaveDefaultsPopover } from './save-defaults-popover';
@@ -88,7 +88,9 @@ function GridItem({ field, fieldName }: GridItemProps) {
 
   return (
     <Box className={classes.join(' ')}>
-      <FormField fieldName={fieldName} field={field} />
+      <ComponentErrorBoundary>
+        <FormField fieldName={fieldName} field={field} />
+      </ComponentErrorBoundary>
     </Box>
   );
 }
@@ -113,8 +115,7 @@ function SectionGroupComponent({ section }: SectionGroupComponentProps) {
 }
 
 export function SectionLayout() {
-  const { formFields, isLoading, isError } = useFormFieldsContext();
-
+  const { formFields, isLoading, isError, option } = useFormFieldsContext();
   const sections = useMemo(() => {
     if (!formFields) return [];
     return groupFieldsBySection(formFields);
@@ -131,19 +132,13 @@ export function SectionLayout() {
   }
 
   if (isError) {
-    return (
-      <Text c="red">
-        <Trans>Failed to load form fields</Trans>
-      </Text>
-    );
+    // eslint-disable-next-line lingui/no-unlocalized-strings
+    return <Text c="red">Failed to load form fields</Text>;
   }
 
   if (sections.length === 0) {
-    return (
-      <Text c="dimmed">
-        <Trans>No form fields available</Trans>
-      </Text>
-    );
+    // eslint-disable-next-line lingui/no-unlocalized-strings
+    return <Text c="dimmed">No form fields available</Text>;
   }
 
   return (
