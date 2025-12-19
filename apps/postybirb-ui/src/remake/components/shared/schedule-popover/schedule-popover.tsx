@@ -5,25 +5,25 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-    ActionIcon,
-    Box,
-    Group,
-    Popover,
-    SegmentedControl,
-    Stack,
-    Switch,
-    Text,
-    Tooltip,
+  ActionIcon,
+  Box,
+  Group,
+  Popover,
+  SegmentedControl,
+  Stack,
+  Switch,
+  Text,
+  Tooltip,
 } from '@mantine/core';
 import { DateTimePicker } from '@mantine/dates';
 import { useDisclosure } from '@mantine/hooks';
 import { ISubmissionScheduleInfo, ScheduleType } from '@postybirb/types';
 import {
-    IconCalendar,
-    IconCalendarOff,
-    IconClock,
-    IconRepeat,
-    IconX,
+  IconCalendar,
+  IconCalendarOff,
+  IconClock,
+  IconRepeat,
+  IconX,
 } from '@tabler/icons-react';
 import { Cron } from 'croner';
 import moment from 'moment';
@@ -224,14 +224,18 @@ export function SchedulePopover({
   // Handle popover close - save changes
   const handleClose = useCallback(() => {
     // Only call onChange if something changed
-    if (
-      internalSchedule !== schedule ||
-      internalIsScheduled !== isScheduled
-    ) {
+    if (internalSchedule !== schedule || internalIsScheduled !== isScheduled) {
       onChange(internalSchedule, internalIsScheduled);
     }
     close();
-  }, [internalSchedule, internalIsScheduled, schedule, isScheduled, onChange, close]);
+  }, [
+    internalSchedule,
+    internalIsScheduled,
+    schedule,
+    isScheduled,
+    onChange,
+    close,
+  ]);
 
   const displayInfo = getScheduleDisplay();
   const DisplayIcon = displayInfo.icon;
@@ -361,7 +365,7 @@ export function SchedulePopover({
           {/* None - info text */}
           {internalSchedule.scheduleType === ScheduleType.NONE && (
             <Text size="xs" c="dimmed">
-              <Trans>This submission will not be automatically posted.</Trans>
+              <Trans>No schedule configured</Trans>
             </Text>
           )}
 

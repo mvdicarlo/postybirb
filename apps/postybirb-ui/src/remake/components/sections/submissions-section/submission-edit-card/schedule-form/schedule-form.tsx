@@ -212,7 +212,7 @@ export function ScheduleForm({
           <Tabs.Panel value={ScheduleType.NONE} pl="md">
             <Stack gap="sm">
               <Text size="sm" c="dimmed">
-                <Trans>This submission will not be automatically posted.</Trans>
+                <Trans>No schedule configured</Trans>
               </Text>
             </Stack>
           </Tabs.Panel>

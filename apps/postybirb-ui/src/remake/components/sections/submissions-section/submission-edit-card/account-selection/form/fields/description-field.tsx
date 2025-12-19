@@ -87,6 +87,7 @@ export function DescriptionField({
         />
         {(overrideDefault || option.isDefault) && (
           <DescriptionEditor
+            minHeight={35}
             showCustomShortcuts
             isDefaultEditor={option.isDefault}
             onChange={(value) => {
