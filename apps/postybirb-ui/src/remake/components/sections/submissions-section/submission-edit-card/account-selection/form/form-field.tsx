@@ -4,15 +4,15 @@
 
 import { Box } from '@mantine/core';
 import type {
-    BooleanFieldType,
-    DateTimeFieldType,
-    DescriptionFieldType,
-    FieldAggregateType,
-    RadioFieldType,
-    RatingFieldType,
-    SelectFieldType,
-    TagFieldType,
-    TextFieldType,
+  BooleanFieldType,
+  DateTimeFieldType,
+  DescriptionFieldType,
+  FieldAggregateType,
+  RadioFieldType,
+  RatingFieldType,
+  SelectFieldType,
+  TagFieldType,
+  TextFieldType,
 } from '@postybirb/form-builder';
 import { BooleanField } from './fields/boolean-field';
 import { DateTimeField } from './fields/datetime-field';
@@ -34,12 +34,17 @@ export function FormField({ fieldName, field }: FormFieldProps) {
   const { getValue, option, submission } = useFormFieldsContext();
   const validations = useValidations(fieldName);
 
-  // Check showWhen condition
+  // Evaluate visibility: showWhen can override hidden
+  // If showWhen exists and evaluates to true, field is shown regardless of hidden
+  // If showWhen exists and evaluates to false, field is hidden
+  // If no showWhen and hidden is true, field is hidden
   if (field.showWhen) {
     const shouldShow = evaluateShowWhen(field, getValue, option, submission);
     if (!shouldShow) {
       return null;
     }
+  } else if (field.hidden) {
+    return null;
   }
 
   let formField: JSX.Element | null = null;

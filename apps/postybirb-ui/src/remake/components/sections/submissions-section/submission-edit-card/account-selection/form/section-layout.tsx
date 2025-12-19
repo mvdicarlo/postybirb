@@ -102,9 +102,6 @@ interface SectionGroupComponentProps {
 function SectionGroupComponent({ section }: SectionGroupComponentProps) {
   return (
     <Box className="section-group">
-      {section.name !== COMMON_SECTION && (
-        <Text className="section-title">{section.name}</Text>
-      )}
       <Box className="section-grid">
         {section.fields.map(({ fieldName, field }) => (
           <GridItem key={fieldName} fieldName={fieldName} field={field} />
