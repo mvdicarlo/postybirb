@@ -8,6 +8,7 @@ import { Trans } from '@lingui/react/macro';
 import {
   Badge,
   Box,
+  Button,
   Collapse,
   Group,
   Paper,
@@ -16,9 +17,19 @@ import {
   UnstyledButton,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { SubmissionType, type WebsiteOptionsDto } from '@postybirb/types';
-import { IconChevronDown, IconChevronRight } from '@tabler/icons-react';
-import { useMemo } from 'react';
+import {
+  SubmissionRating,
+  SubmissionType,
+  type WebsiteOptionsDto,
+} from '@postybirb/types';
+import {
+  IconChevronDown,
+  IconChevronRight,
+  IconSquare,
+  IconSquareCheck,
+} from '@tabler/icons-react';
+import { useCallback, useMemo, useState } from 'react';
+import websiteOptionsApi from '../../../../../api/website-options.api';
 import { useAccounts } from '../../../../../stores/account-store';
 import type {
   AccountRecord,
@@ -108,11 +119,7 @@ function WebsiteAccountGroup({
                 {warningCount} {warningCount === 1 ? 'warning' : 'warnings'}
               </Badge>
             )}
-            <Badge
-              size="xs"
-              variant="light"
-              color={loggedInCount > 0 ? 'green' : 'gray'}
-            >
+            <Badge size="xs" variant="light">
               {selectedCount}/{accounts.length}
             </Badge>
           </Group>
@@ -151,6 +158,8 @@ export function AccountSelectionForm() {
   const accounts = useAccounts();
   const fileWebsites = useFileWebsites();
   const messageWebsites = useMessageWebsites();
+  const [isSelectingAll, setIsSelectingAll] = useState(false);
+  const [isDeselectingAll, setIsDeselectingAll] = useState(false);
 
   // Build a map of accountId -> WebsiteOptionsDto for quick lookup
   const optionsByAccount = useMemo(() => {
@@ -195,11 +204,100 @@ export function AccountSelectionForm() {
     [submission.type, fileWebsites, messageWebsites],
   );
 
+  // Get all accounts for websites that support this submission type
+  const eligibleAccounts = useMemo(() => {
+    const websiteIds = new Set(websites.map((w) => w.id));
+    return accounts.filter((acc) => websiteIds.has(acc.website));
+  }, [accounts, websites]);
+
+  // Accounts that are not yet selected
+  const unselectedAccounts = useMemo(
+    () => eligibleAccounts.filter((acc) => !optionsByAccount.has(acc.accountId)),
+    [eligibleAccounts, optionsByAccount],
+  );
+
+  // Get default rating for new options
+  const getDefaultRating = useCallback(() => {
+    const defaultOption = submission.options.find((opt) => opt.isDefault);
+    return defaultOption?.data?.rating ?? SubmissionRating.GENERAL;
+  }, [submission.options]);
+
+  // Select all accounts
+  const handleSelectAll = useCallback(async () => {
+    if (unselectedAccounts.length === 0) return;
+
+    setIsSelectingAll(true);
+    try {
+      const rating = getDefaultRating();
+      await Promise.all(
+        unselectedAccounts.map((account) =>
+          websiteOptionsApi.create({
+            submissionId: submission.id,
+            accountId: account.accountId,
+            data: { rating },
+          }),
+        ),
+      );
+    } catch (error) {
+      // eslint-disable-next-line no-console, lingui/no-unlocalized-strings
+      console.error('Failed to select all accounts:', error);
+    } finally {
+      setIsSelectingAll(false);
+    }
+  }, [unselectedAccounts, submission.id, getDefaultRating]);
+
+  // Deselect all accounts
+  const handleDeselectAll = useCallback(async () => {
+    const selectedOptions = Array.from(optionsByAccount.values());
+    if (selectedOptions.length === 0) return;
+
+    setIsDeselectingAll(true);
+    try {
+      await websiteOptionsApi.remove(selectedOptions.map((opt) => opt.id));
+    } catch (error) {
+      // eslint-disable-next-line no-console, lingui/no-unlocalized-strings
+      console.error('Failed to deselect all accounts:', error);
+    } finally {
+      setIsDeselectingAll(false);
+    }
+  }, [optionsByAccount]);
+
+  const hasSelectedAccounts = optionsByAccount.size > 0;
+  const hasUnselectedAccounts = unselectedAccounts.length > 0;
+
   return (
     <Stack gap="xs">
-      <Text fw={600} size="sm">
-        <Trans>Websites</Trans>
-      </Text>
+      <Group justify="space-between" align="center">
+        <Text fw={600} size="sm">
+          <Trans>Websites</Trans>
+        </Text>
+        <Group gap="xs">
+          {hasUnselectedAccounts && (
+            <Button
+              size="xs"
+              variant="subtle"
+              leftSection={<IconSquareCheck size={14} />}
+              onClick={handleSelectAll}
+              loading={isSelectingAll}
+              disabled={isDeselectingAll}
+            >
+              <Trans>Select all</Trans>
+            </Button>
+          )}
+          {hasSelectedAccounts && (
+            <Button
+              size="xs"
+              variant="subtle"
+              leftSection={<IconSquare size={14} />}
+              onClick={handleDeselectAll}
+              loading={isDeselectingAll}
+              disabled={isSelectingAll}
+            >
+              <Trans>Deselect all</Trans>
+            </Button>
+          )}
+        </Group>
+      </Group>
       {websites.map((website) => {
         const websiteAccounts = accountsByWebsite.get(website.id) ?? [];
         if (websiteAccounts.length === 0) return null;

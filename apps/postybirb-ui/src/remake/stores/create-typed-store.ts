@@ -81,13 +81,15 @@ export function createTypedStore<TDto, TRecord extends BaseRecord>(
 
   /**
    * Hook to get all records.
+   * Uses shallow comparison to prevent unnecessary re-renders.
    */
-  const useRecords = () => useStore((state) => state.records);
+  const useRecords = () => useStore(useShallow((state) => state.records));
 
   /**
    * Hook to get records map for O(1) lookup.
+   * Uses shallow comparison to prevent unnecessary re-renders.
    */
-  const useRecordsMap = () => useStore((state) => state.recordsMap);
+  const useRecordsMap = () => useStore(useShallow((state) => state.recordsMap));
 
   /**
    * Hook to get loading state.

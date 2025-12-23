@@ -12,6 +12,8 @@ interface SubmissionTitleProps {
   name: string;
   /** Handler for title changes */
   onTitleChange?: (title: string) => void;
+  /** If true, title is not editable */
+  readOnly?: boolean;
 }
 
 /**
@@ -21,6 +23,7 @@ export function SubmissionTitle({
   title,
   name,
   onTitleChange,
+  readOnly = false,
 }: SubmissionTitleProps) {
   const [localTitle, setLocalTitle] = useState(title ?? '');
   const [isEditing, setIsEditing] = useState(false);
@@ -31,9 +34,10 @@ export function SubmissionTitle({
   }, [title]);
 
   const handleClick = useCallback((e: React.MouseEvent) => {
+    if (readOnly) return;
     e.stopPropagation();
     setIsEditing(true);
-  }, []);
+  }, [readOnly]);
 
   const handleBlur = useCallback(() => {
     setIsEditing(false);
@@ -88,7 +92,7 @@ export function SubmissionTitle({
       fw={500}
       lineClamp={1}
       onClick={handleClick}
-      style={{ cursor: 'text' }}
+      style={{ cursor: readOnly ? 'default' : 'text' }}
       title={title || name}
     >
       {title || name}

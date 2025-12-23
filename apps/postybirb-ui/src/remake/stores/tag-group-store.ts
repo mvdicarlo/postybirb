@@ -4,6 +4,7 @@
 
 import { TAG_GROUP_UPDATES } from '@postybirb/socket-events';
 import type { TagGroupDto } from '@postybirb/types';
+import { useShallow } from 'zustand/react/shallow';
 import tagGroupsApi from '../api/tag-groups.api';
 import AppSocket from '../transports/websocket';
 import { type EntityStore } from './create-entity-store';
@@ -45,6 +46,7 @@ export type TagGroupStore = EntityStore<TagGroupRecord>;
 
 /**
  * Select non-empty tag groups.
+ * Uses shallow comparison to prevent unnecessary re-renders.
  */
 export const useNonEmptyTagGroups = () =>
-  useTagGroupStore((state) => state.records.filter((g) => !g.isEmpty));
+  useTagGroupStore(useShallow((state) => state.records.filter((g) => !g.isEmpty)));

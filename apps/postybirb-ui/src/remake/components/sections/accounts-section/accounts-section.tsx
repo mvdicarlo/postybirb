@@ -4,7 +4,7 @@
  */
 
 import { Trans } from '@lingui/react/macro';
-import { Box, Divider, Loader, ScrollArea, Stack, Text } from '@mantine/core';
+import { Box, Divider, Loader, ScrollArea, Stack } from '@mantine/core';
 import { useMemo } from 'react';
 import accountApi from '../../../api/account.api';
 import { useAccounts, useAccountsLoading } from '../../../stores/account-store';
@@ -12,15 +12,16 @@ import { useAccountsFilter, useUIStore } from '../../../stores/ui-store';
 import { useWebsites, useWebsitesLoading } from '../../../stores/website-store';
 import { AccountLoginFilter } from '../../../types/account-filters';
 import {
-    isAccountsViewState,
-    type ViewState,
+  isAccountsViewState,
+  type ViewState,
 } from '../../../types/view-state';
 import {
-    showDeletedNotification,
-    showDeleteErrorNotification,
-    showErrorNotification,
-    showSuccessNotification,
+  showDeletedNotification,
+  showDeleteErrorNotification,
+  showErrorNotification,
+  showSuccessNotification,
 } from '../../../utils/notifications';
+import { EmptyState } from '../../empty-state';
 import { AccountSectionHeader } from './account-section-header';
 import { AccountsProvider } from './context';
 import { WebsiteAccountCard } from './website-account-card';
@@ -190,11 +191,7 @@ export function AccountsSection({ viewState }: AccountsSectionProps) {
             <Loader size="sm" />
           </Box>
         ) : sortedWebsites.length === 0 ? (
-          <Box p="md" ta="center">
-            <Text size="sm" c="dimmed">
-              <Trans>No websites found</Trans>
-            </Text>
-          </Box>
+          <EmptyState preset="no-results" />
         ) : (
           <AccountsProvider
             selectedAccountId={selectedAccountId}

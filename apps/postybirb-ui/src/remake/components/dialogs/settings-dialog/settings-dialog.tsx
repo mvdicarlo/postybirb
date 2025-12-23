@@ -5,35 +5,35 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-    Box,
-    CloseButton,
-    Group,
-    Modal,
-    NavLink,
-    ScrollArea,
-    Stack,
-    Text,
-    Title,
+  Box,
+  CloseButton,
+  Group,
+  Modal,
+  NavLink,
+  ScrollArea,
+  Stack,
+  Text,
+  Title,
 } from '@mantine/core';
 import {
-    IconBell,
-    IconDatabase,
-    IconDeviceDesktop,
-    IconFileDescription,
-    IconPalette,
-    IconRouter,
-    IconTags,
+  IconBell,
+  IconDatabase,
+  IconDeviceDesktop,
+  IconFileDescription,
+  IconPalette,
+  IconRouter,
+  IconTags,
 } from '@tabler/icons-react';
 import { useCallback, useState } from 'react';
 import { useActiveDrawer, useDrawerActions } from '../../../stores';
 import {
-    AppearanceSettingsSection,
-    AppSettingsSection,
-    DescriptionSettingsSection,
-    ImportSettingsSection,
-    NotificationsSettingsSection,
-    RemoteSettingsSection,
-    TagsSettingsSection,
+  AppearanceSettingsSection,
+  AppSettingsSection,
+  DescriptionSettingsSection,
+  ImportSettingsSection,
+  NotificationsSettingsSection,
+  RemoteSettingsSection,
+  TagsSettingsSection,
 } from './sections';
 import classes from './settings-dialog.module.css';
 

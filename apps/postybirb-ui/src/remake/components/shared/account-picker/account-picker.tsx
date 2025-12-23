@@ -91,7 +91,7 @@ function WebsiteAccountGroup({
             <Badge
               size="xs"
               variant="light"
-              color={loggedInCount > 0 ? 'green' : 'gray'}
+
             >
               {loggedInCount}/{accounts.length}
             </Badge>

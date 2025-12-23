@@ -6,7 +6,6 @@
 import { Draggable } from '@fullcalendar/interaction';
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
-  Badge,
   Box,
   Group,
   ScrollArea,
@@ -21,6 +20,7 @@ import { IconFile, IconMessage, IconSearch } from '@tabler/icons-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { SubmissionRecord } from '../../../stores/records';
 import { useSubmissions } from '../../../stores/submission-store';
+import { EmptyState } from '../../empty-state';
 
 /**
  * Single draggable submission item.
@@ -139,13 +139,7 @@ export function SubmissionList() {
       >
         <Stack gap="xs" ref={containerRef}>
           {unscheduledSubmissions.length === 0 ? (
-            <Text size="sm" c="dimmed" ta="center" py="xl">
-              {debouncedSearch ? (
-                <Trans>No matching submissions</Trans>
-              ) : (
-                <Trans>All submissions are scheduled</Trans>
-              )}
-            </Text>
+            <EmptyState preset="no-results" size="sm" />
           ) : (
             unscheduledSubmissions.map((submission) => (
               <DraggableSubmissionItem

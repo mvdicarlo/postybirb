@@ -4,18 +4,20 @@
 
 import { Trans } from '@lingui/react/macro';
 import { ActionIcon, Group, Tooltip } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
 import {
-  IconPlayerStop,
-  IconSend,
-  IconTrash,
+    IconArchiveOff,
+    IconPlayerStop,
+    IconSend,
+    IconTrash,
 } from '@tabler/icons-react';
 import postManagerApi from '../../../../../api/post-manager.api';
 import postQueueApi from '../../../../../api/post-queue.api';
 import submissionApi from '../../../../../api/submission.api';
 import {
-  showDeletedNotification,
-  showDeleteErrorNotification,
-  showPostErrorNotification,
+    showDeletedNotification,
+    showDeleteErrorNotification,
+    showPostErrorNotification,
 } from '../../../../../utils/notifications';
 import { HoldToConfirmButton } from '../../../../hold-to-confirm';
 import { useSubmissionEditCardContext } from '../context';
@@ -53,11 +55,54 @@ export function SubmissionEditCardActions() {
     }
   };
 
+  const handleUnarchive = async () => {
+    try {
+      await submissionApi.unarchive(submission.submissionId);
+      notifications.show({
+        message: <Trans>Submission restored</Trans>,
+        color: 'green',
+      });
+    } catch {
+      notifications.show({
+        message: <Trans>Failed to restore submission</Trans>,
+        color: 'red',
+      });
+    }
+  };
+
   if (submission.isMultiSubmission) {
     return (
       <Group gap={4} wrap="nowrap" onClick={(e) => e.stopPropagation()}>
         <ApplyTemplateAction />
         <SaveToManyAction />
+      </Group>
+    );
+  }
+
+  // Archived submissions: only show unarchive and delete
+  if (submission.isArchived) {
+    return (
+      <Group gap={4} wrap="nowrap" onClick={(e) => e.stopPropagation()}>
+        <Tooltip label={<Trans>Restore</Trans>}>
+          <ActionIcon
+            variant="subtle"
+            size="sm"
+            color="blue"
+            onClick={handleUnarchive}
+          >
+            <IconArchiveOff size={16} />
+          </ActionIcon>
+        </Tooltip>
+        <Tooltip label={<Trans>Hold to delete permanently</Trans>}>
+          <HoldToConfirmButton
+            variant="subtle"
+            size="sm"
+            color="red"
+            onConfirm={handleDelete}
+          >
+            <IconTrash size={16} />
+          </HoldToConfirmButton>
+        </Tooltip>
       </Group>
     );
   }

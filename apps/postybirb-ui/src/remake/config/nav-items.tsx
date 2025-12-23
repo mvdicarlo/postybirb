@@ -14,13 +14,12 @@ import {
   IconFolderSearch,
   IconHome,
   IconMessage,
-  IconSearch,
   IconSettings,
   IconTags,
   IconTemplate,
   IconTransform,
   IconUser,
-  IconUsers,
+  IconUsers
 } from '@tabler/icons-react';
 import type { NavigationItem } from '../types/navigation';
 import {
@@ -41,11 +40,10 @@ import {
   NotificationsKeybinding,
   ScheduleKeybinding,
   SettingsKeybinding,
-  SpotlightKeybinding,
   TagConvertersKeybinding,
   TagGroupsKeybinding,
   TemplatesKeybinding,
-  UserConvertersKeybinding,
+  UserConvertersKeybinding
 } from './keybindings';
 
 /**
@@ -54,18 +52,18 @@ import {
  */
 export const navItems: NavigationItem[] = [
   // Search (spotlight) - custom action
-  {
-    type: 'custom',
-    id: 'search',
-    icon: <IconSearch size={20} />,
-    label: <Trans>Search</Trans>,
-    kbd: SpotlightKeybinding,
-    onClick: () => {
-      // Spotlight will be implemented separately
-      // eslint-disable-next-line no-console, lingui/no-unlocalized-strings
-      console.log('Spotlight toggle');
-    },
-  },
+  // {
+  //   type: 'custom',
+  //   id: 'search',
+  //   icon: <IconSearch size={20} />,
+  //   label: <Trans>Search</Trans>,
+  //   kbd: SpotlightKeybinding,
+  //   onClick: () => {
+  //     // Spotlight will be implemented separately
+  //     // eslint-disable-next-line no-console, lingui/no-unlocalized-strings
+  //     console.log('Spotlight toggle');
+  //   },
+  // },
 
   // Main navigation - view state items
   {
@@ -203,7 +201,7 @@ export const navItems: NavigationItem[] = [
     icon: <IconBrandDiscord size={20} />,
     label: <Trans>Discord</Trans>,
     onClick: () => {
-      openUrl('https://discord.gg/8ZqF4HXy89');
+      openUrl('https://discord.gg/D9ucrU8jMR');
     },
   },
 

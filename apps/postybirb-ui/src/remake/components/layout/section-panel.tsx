@@ -59,6 +59,7 @@ export function SectionPanel({ viewState }: SectionPanelProps) {
 
   return (
     <Box
+      id="postybirb-section-panel"
       className="postybirb__section_panel"
       style={{ width: config.defaultWidth }}
     >

@@ -150,14 +150,14 @@ export function SubmissionSectionHeader({
           <Group gap="xs">
             {/* Apply template button - only show when items are selected */}
             {selectedCount > 0 && (
-              <Tooltip label={<Trans>Apply template to selected</Trans>}>
+              <Tooltip label={<Trans>Apply template</Trans>}>
                 <ActionIcon
                   onClick={() => setIsTemplateModalOpen(true)}
                   variant="light"
                   size="sm"
                   color="grape"
                   // eslint-disable-next-line lingui/no-unlocalized-strings
-                  aria-label="Apply template to selected submissions"
+                  aria-label="Apply template"
                 >
                   <IconTemplate size={16} />
                 </ActionIcon>
@@ -165,13 +165,13 @@ export function SubmissionSectionHeader({
             )}
             {/* Mass post button - only show when items are selected */}
             {selectedCount > 0 && onPostSelected && (
-              <Tooltip label={<Trans>Post selected</Trans>}>
+              <Tooltip label={<Trans>Post</Trans>}>
                 <ActionIcon
                   onClick={onPostSelected}
                   variant="light"
                   size="sm"
                   // eslint-disable-next-line lingui/no-unlocalized-strings
-                  aria-label="Post selected submissions"
+                  aria-label="Post"
                 >
                   <IconSend size={16} />
                 </ActionIcon>
@@ -182,7 +182,7 @@ export function SubmissionSectionHeader({
               <Tooltip
                 label={
                   <Group gap="xs">
-                    <Trans>Delete selected</Trans>
+                    <Trans>Delete</Trans>
                     <Kbd size="xs">{DeleteSelectedKeybinding}</Kbd>
                   </Group>
                 }
@@ -193,7 +193,7 @@ export function SubmissionSectionHeader({
                   size="sm"
                   color="red"
                   // eslint-disable-next-line lingui/no-unlocalized-strings
-                  aria-label="Delete selected submissions"
+                  aria-label="Delete"
                 >
                   <IconTrash size={16} />
                 </ActionIcon>

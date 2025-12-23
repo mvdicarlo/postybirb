@@ -18,6 +18,7 @@ interface PrimaryContentProps {
   /** Current view state */
   viewState: ViewState;
   /** Whether content is loading */
+  // eslint-disable-next-line react/no-unused-prop-types
   loading?: boolean;
 }
 
@@ -95,7 +96,11 @@ export function PrimaryContent({
       /> */}
 
       {/* Scrollable content area */}
-      <Box id="postybirb__primary_content_area" className="postybirb__primary_content_area" pos="relative">
+      <Box
+        id="postybirb__primary_content_area"
+        className="postybirb__primary_content_area"
+        pos="relative"
+      >
         <LoadingOverlay
           visible={loading}
           zIndex={10}

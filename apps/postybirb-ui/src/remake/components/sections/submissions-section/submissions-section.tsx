@@ -12,8 +12,8 @@ import { IconArchive, IconFiles, IconMessage } from '@tabler/icons-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { tinykeys } from 'tinykeys';
 import {
-  DeleteSelectedKeybinding,
-  toTinykeysFormat,
+    DeleteSelectedKeybinding,
+    toTinykeysFormat,
 } from '../../../config/keybindings';
 import { useSubmissionsLoading } from '../../../stores/submission-store';
 import { ConfirmActionModal } from '../../confirm-action-modal';
@@ -21,11 +21,11 @@ import { ArchivedSubmissionList } from './archived-submission-list';
 import { SubmissionsProvider } from './context';
 import { FileSubmissionModal } from './file-submission-modal';
 import {
-  useGlobalDropzone,
-  useSubmissionHandlers,
-  useSubmissions,
-  useSubmissionSelection,
-  useSubmissionSortable,
+    useGlobalDropzone,
+    useSubmissionHandlers,
+    useSubmissions,
+    useSubmissionSelection,
+    useSubmissionSortable,
 } from './hooks';
 import { SubmissionList } from './submission-list';
 import { SubmissionSectionHeader } from './submission-section-header';
@@ -96,11 +96,13 @@ export function SubmissionsSection({
     submissionType,
   });
 
-  // Global dropzone - opens modal when files are dragged into the window
+  // Global dropzone - opens modal when files are dragged into the section panel
   useGlobalDropzone({
     isOpen: isFileModalOpen,
     onOpen: openFileModal,
+    onClose: closeFileModal,
     enabled: submissionType === SubmissionType.FILE,
+    targetElementId: 'postybirb-section-panel',
   });
 
   // Delete confirmation modal
@@ -260,29 +262,29 @@ export function SubmissionsSection({
         </Tabs.List>
       </Tabs>
 
-      {/* Tab content */}
-      {activeTab === 'submissions' ? (
-        <SubmissionsProvider
-          submissionType={submissionType}
-          selectedIds={selectedIds}
-          isDragEnabled={isDragEnabled}
-          onSelect={handleSelect}
-          onDelete={handleDelete}
-          onDuplicate={handleDuplicate}
-          onEdit={handleEdit}
-          onPost={handlePost}
-          onDefaultOptionChange={handleDefaultOptionChange}
-          onScheduleChange={handleScheduleChange}
-        >
+      {/* Tab content - wrap both in SubmissionsProvider for shared selection */}
+      <SubmissionsProvider
+        submissionType={submissionType}
+        selectedIds={selectedIds}
+        isDragEnabled={isDragEnabled}
+        onSelect={handleSelect}
+        onDelete={handleDelete}
+        onDuplicate={handleDuplicate}
+        onEdit={handleEdit}
+        onPost={handlePost}
+        onDefaultOptionChange={handleDefaultOptionChange}
+        onScheduleChange={handleScheduleChange}
+      >
+        {activeTab === 'submissions' ? (
           <SubmissionList
             isLoading={isLoading}
             submissions={orderedSubmissions}
             containerRef={containerRef}
           />
-        </SubmissionsProvider>
-      ) : (
-        <ArchivedSubmissionList />
-      )}
+        ) : (
+          <ArchivedSubmissionList submissionType={submissionType} />
+        )}
+      </SubmissionsProvider>
     </Box>
   );
 }

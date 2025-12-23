@@ -6,39 +6,39 @@
 import { t } from '@lingui/core/macro';
 import { Trans } from '@lingui/react/macro';
 import {
-    ActionIcon,
-    Box,
-    Card,
-    Collapse,
-    Group,
-    ScrollArea,
-    Stack,
-    Text,
-    TextInput,
-    Tooltip,
+  ActionIcon,
+  Box,
+  Card,
+  Collapse,
+  Group,
+  ScrollArea,
+  Stack,
+  Text,
+  TextInput,
+  Tooltip,
 } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import type { Description } from '@postybirb/types';
 import {
-    IconCheck,
-    IconChevronDown,
-    IconChevronRight,
-    IconPlus,
-    IconX,
+  IconCheck,
+  IconChevronDown,
+  IconChevronRight,
+  IconPlus,
+  IconX,
 } from '@tabler/icons-react';
 import { useCallback, useMemo, useState } from 'react';
 import customShortcutApi from '../../../api/custom-shortcut.api';
 import {
-    useCustomShortcuts,
-    useCustomShortcutsLoading,
+  useCustomShortcuts,
+  useCustomShortcutsLoading,
 } from '../../../stores/custom-shortcut-store';
 import type { CustomShortcutRecord } from '../../../stores/records/custom-shortcut-record';
 import {
-    showCreatedNotification,
-    showCreateErrorNotification,
-    showDeletedNotification,
-    showDeleteErrorNotification,
-    showUpdateErrorNotification,
+  showCreatedNotification,
+  showCreateErrorNotification,
+  showDeletedNotification,
+  showDeleteErrorNotification,
+  showUpdateErrorNotification,
 } from '../../../utils/notifications';
 import { EmptyState } from '../../empty-state';
 import { HoldToConfirmButton } from '../../hold-to-confirm';
@@ -419,23 +419,9 @@ export function CustomShortcutsDrawer({
 
         {/* Content area */}
         <ScrollArea flex={1} offsetScrollbars>
-          {isEmpty && !isCreating && (
-            <EmptyState
-              message={<Trans>No custom shortcuts yet</Trans>}
-              description={
-                <Trans>
-                  Create shortcuts to insert reusable text in descriptions
-                </Trans>
-              }
-            />
-          )}
+          {isEmpty && !isCreating && <EmptyState />}
 
-          {noResults && (
-            <EmptyState
-              message={<Trans>No shortcuts found</Trans>}
-              description={<Trans>Try a different search term</Trans>}
-            />
-          )}
+          {noResults && <EmptyState />}
 
           <Stack gap="xs">
             {filteredShortcuts.map((shortcut) => (

@@ -1,6 +1,6 @@
 /**
  * Hook for global window drag-and-drop to open file submission modal.
- * Detects when files are dragged into the browser window.
+ * Detects when files are dragged into a specific target element.
  */
 
 import { useCallback, useEffect, useState } from 'react';
@@ -10,8 +10,12 @@ interface UseGlobalDropzoneProps {
   isOpen: boolean;
   /** Callback to open the modal */
   onOpen: () => void;
+  /** Callback to close the modal (called when drag leaves the window) */
+  onClose?: () => void;
   /** Whether this feature is enabled (e.g., only for FILE submission type) */
   enabled?: boolean;
+  /** The ID of the target element to listen for drag events on */
+  targetElementId?: string;
 }
 
 interface UseGlobalDropzoneResult {
@@ -20,13 +24,15 @@ interface UseGlobalDropzoneResult {
 }
 
 /**
- * Hook that listens for files being dragged into the browser window.
- * Opens the file submission modal when files are detected.
+ * Hook that listens for files being dragged into a specific target element.
+ * Opens the file submission modal when files are detected over the target.
  */
 export function useGlobalDropzone({
   isOpen,
   onOpen,
+  onClose,
   enabled = true,
+  targetElementId,
 }: UseGlobalDropzoneProps): UseGlobalDropzoneResult {
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [dragCounter, setDragCounter] = useState(0);
@@ -40,6 +46,20 @@ export function useGlobalDropzone({
     return types.includes('Files') || types.includes('application/x-moz-file');
   }, []);
 
+  // Check if the event target is within the target element
+  const isWithinTarget = useCallback(
+    (event: DragEvent): boolean => {
+      if (!targetElementId) return true; // If no target specified, allow anywhere
+      
+      const targetElement = document.getElementById(targetElementId);
+      if (!targetElement) return false;
+      
+      const eventTarget = event.target as Node;
+      return targetElement.contains(eventTarget);
+    },
+    [targetElementId]
+  );
+
   // Handle drag enter
   const handleDragEnter = useCallback(
     (event: DragEvent) => {
@@ -47,7 +67,7 @@ export function useGlobalDropzone({
       
       event.preventDefault();
       
-      if (hasFiles(event)) {
+      if (hasFiles(event) && isWithinTarget(event)) {
         setDragCounter((c) => c + 1);
         setIsDraggingOver(true);
         
@@ -55,7 +75,7 @@ export function useGlobalDropzone({
         onOpen();
       }
     },
-    [enabled, isOpen, hasFiles, onOpen]
+    [enabled, isOpen, hasFiles, isWithinTarget, onOpen]
   );
 
   // Handle drag leave
@@ -65,16 +85,25 @@ export function useGlobalDropzone({
       
       event.preventDefault();
       
+      // Check if drag is leaving the window (relatedTarget is null when leaving window)
+      const isLeavingWindow = event.relatedTarget === null;
+      
       setDragCounter((c) => {
         const newCount = c - 1;
         if (newCount <= 0) {
           setIsDraggingOver(false);
+          
+          // Close modal if drag leaves the window entirely
+          if (isLeavingWindow && isOpen && onClose) {
+            onClose();
+          }
+          
           return 0;
         }
         return newCount;
       });
     },
-    [enabled]
+    [enabled, isOpen, onClose]
   );
 
   // Handle drag over (required to allow drop)

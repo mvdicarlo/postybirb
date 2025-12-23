@@ -70,11 +70,13 @@ function EmptySubmissionSelection() {
 interface SubmissionsContentHeaderProps {
   submissionType: SubmissionType;
   selectedCount: number;
+  hasArchived: boolean;
 }
 
 function SubmissionsContentHeader({
   submissionType,
   selectedCount,
+  hasArchived,
 }: SubmissionsContentHeaderProps) {
   const { visible: isSectionPanelVisible } = useSubNavVisible();
   const toggleSectionPanel = useToggleSectionPanel();
@@ -118,6 +120,7 @@ function SubmissionsContentHeader({
         <Group gap="md">
           <Switch
             size="sm"
+            disabled={hasArchived}
             checked={preferMultiEdit}
             onChange={(e) => setPreferMultiEdit(e.currentTarget.checked)}
             label={<Trans>Mass Edit</Trans>}
@@ -178,9 +181,13 @@ export function SubmissionsContent({
     () => allOfType.find((s) => s.isMultiSubmission),
     [allOfType],
   );
+  const hasArchived = useMemo(
+    () => allOfType.some((s) => s.isArchived),
+    [allOfType],
+  );
 
   const { preferMultiEdit, fullView } = useSubmissionsContentPreferences();
-  const effectiveMultiEdit = preferMultiEdit;
+  const effectiveMultiEdit = preferMultiEdit && !hasArchived;
 
   // Cards are collapsible only when multiple selected and not in mass edit mode
   const isCollapsible = selectedIds.length > 1 && !effectiveMultiEdit;
@@ -190,6 +197,7 @@ export function SubmissionsContent({
       <SubmissionsContentHeader
         submissionType={submissionType}
         selectedCount={selectedIds.length}
+        hasArchived={hasArchived}
       />
       <Divider />
       <Box style={{ flex: 1, minHeight: 0 }}>

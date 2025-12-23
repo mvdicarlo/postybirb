@@ -3,9 +3,9 @@
  * Uses SubmissionsContext for actions and state.
  */
 
-import { Trans } from '@lingui/react/macro';
-import { Box, Loader, ScrollArea, Stack, Text } from '@mantine/core';
+import { Box, Loader, ScrollArea, Stack } from '@mantine/core';
 import type { SubmissionRecord } from '../../../stores/records';
+import { EmptyState } from '../../empty-state';
 import { useSubmissionsContext } from './context';
 import { SubmissionCard } from './submission-card';
 import './submissions-section.css';
@@ -40,13 +40,7 @@ export function SubmissionList({
   }
 
   if (submissions.length === 0) {
-    return (
-      <Box className="postybirb__submission__list_empty">
-        <Text size="sm" c="dimmed">
-          <Trans>No submissions found</Trans>
-        </Text>
-      </Box>
-    );
+    return <EmptyState preset="no-results" />;
   }
 
   return (

@@ -6,6 +6,7 @@
   background-color: var(--mantine-color-body);
   overflow: hidden;
   padding: 0 !important;
+  z-index: 300;
 }
 
 .modalBody {

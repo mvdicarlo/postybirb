@@ -70,7 +70,7 @@ export class SubmissionRecord extends BaseRecord {
    * Get the primary/first file if available.
    */
   get primaryFile(): ISubmissionFileDto | undefined {
-    return this.files[0];
+    return this.files.sort((a, b) => a.order - b.order)[0];
   }
 
   /**
