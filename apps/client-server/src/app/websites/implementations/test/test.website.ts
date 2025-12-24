@@ -80,8 +80,6 @@ export default class TestWebsite
   async onValidateFileSubmission(
     postData: PostData<TestFileSubmission>,
   ): Promise<SimpleValidationResult> {
-    await wait(15_000);
-
     return {
       warnings: [],
       errors: [],
@@ -93,7 +91,6 @@ export default class TestWebsite
     cancellationToken: CancellableToken,
   ): Promise<IPostResponse> {
     cancellationToken.throwIfCancelled();
-
     if (this.account.name === 'FAIL') {
       return PostResponse.fromWebsite(this)
         .atStage('validation')
@@ -102,6 +99,7 @@ export default class TestWebsite
     }
 
     if (this.account.name === 'SUCCESS') {
+      await wait(15_000);
       return PostResponse.fromWebsite(this)
         .atStage('validation')
         .withMessage('Forced success for testing purposes.')

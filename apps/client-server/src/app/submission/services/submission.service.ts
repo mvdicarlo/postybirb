@@ -129,17 +129,40 @@ export class SubmissionService
 
   public async findAllAsDto(): Promise<ISubmissionDto<ISubmissionMetadata>[]> {
     const all = await super.findAll();
-    return Promise.all(
-      all.map(
-        async (s) =>
-          ({
-            ...s.toDTO(),
-            validations: s.isArchived
-              ? []
-              : await this.websiteOptionsService.validateSubmission(s.id),
-          }) as ISubmissionDto<ISubmissionMetadata>,
-      ),
+
+    // Separate archived from non-archived for efficient processing
+    const archived = all.filter((s) => s.isArchived);
+    const nonArchived = all.filter((s) => !s.isArchived);
+
+    // Validate non-archived submissions in parallel batches to avoid overwhelming the system
+    const BATCH_SIZE = 10;
+    const validatedNonArchived: ISubmissionDto<ISubmissionMetadata>[] = [];
+
+    for (let i = 0; i < nonArchived.length; i += BATCH_SIZE) {
+      const batch = nonArchived.slice(i, i + BATCH_SIZE);
+      const batchResults = await Promise.all(
+        batch.map(
+          async (s) =>
+            ({
+              ...s.toDTO(),
+              validations:
+                await this.websiteOptionsService.validateSubmission(s),
+            }) as ISubmissionDto<ISubmissionMetadata>,
+        ),
+      );
+      validatedNonArchived.push(...batchResults);
+    }
+
+    // Archived submissions don't need validation
+    const archivedDtos = archived.map(
+      (s) =>
+        ({
+          ...s.toDTO(),
+          validations: [],
+        }) as ISubmissionDto<ISubmissionMetadata>,
     );
+
+    return [...validatedNonArchived, ...archivedDtos];
   }
 
   private async populateMultiSubmission(type: SubmissionType) {

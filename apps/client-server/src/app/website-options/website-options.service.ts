@@ -22,7 +22,7 @@ import {
 } from '@postybirb/types';
 import { AccountService } from '../account/account.service';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { WebsiteOptions } from '../drizzle/models';
+import { Submission, WebsiteOptions } from '../drizzle/models';
 import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
 import { FormGeneratorService } from '../form-generator/form-generator.service';
 import { SubmissionService } from '../submission/services/submission.service';
@@ -319,11 +319,18 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
 
   /**
    * Validates all submission options for a submission.
-   * @param {SubmissionId} submissionId
+   * Accepts either a submission ID (will fetch from DB) or a Submission object directly.
+   * When a Submission object is provided, it avoids a redundant database query.
+   * @param {SubmissionId | Submission} submissionOrId
    * @return {*}  {Promise<ValidationResult[]>}
    */
-  async validateSubmission(submissionId: SubmissionId) {
-    const submission = await this.submissionService.findById(submissionId);
+  async validateSubmission(
+    submissionOrId: SubmissionId | Submission,
+  ): Promise<ValidationResult[]> {
+    const submission =
+      typeof submissionOrId === 'string'
+        ? await this.submissionService.findById(submissionOrId)
+        : submissionOrId;
     return this.validationService.validateSubmission(submission);
   }
 
