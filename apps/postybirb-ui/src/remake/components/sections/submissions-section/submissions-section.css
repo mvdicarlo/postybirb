@@ -61,6 +61,12 @@
   border-top: none;
 }
 
+.postybirb__submission__card:focus-visible {
+  outline: 2px solid var(--mantine-color-blue-6);
+  outline-offset: -2px;
+  background-color: var(--mantine-color-blue-light);
+}
+
 .postybirb__submission__card--selected {
   background-color: var(--mantine-color-primary-light);
   border-color: var(--mantine-color-primary-filled);

@@ -21,8 +21,8 @@ interface UseSubmissionSelectionResult {
   selectedIds: string[];
   /** Selection state for checkbox (none/partial/all) */
   selectionState: SelectionState;
-  /** Handle selecting a submission (supports shift+click, ctrl+click) */
-  handleSelect: (id: string, event: React.MouseEvent) => void;
+  /** Handle selecting a submission (supports shift+click, ctrl+click, and keyboard) */
+  handleSelect: (id: string, event: React.MouseEvent | React.KeyboardEvent) => void;
   /** Toggle select all/none */
   handleToggleSelectAll: () => void;
   /** Update selection programmatically */
@@ -83,7 +83,7 @@ export function useSubmissionSelection({
 
   // Handle selecting a submission
   const handleSelect = useCallback(
-    (id: string, event: React.MouseEvent) => {
+    (id: string, event: React.MouseEvent | React.KeyboardEvent) => {
       if (!isSubmissionsViewState(viewState)) return;
 
       let newSelectedIds: string[];

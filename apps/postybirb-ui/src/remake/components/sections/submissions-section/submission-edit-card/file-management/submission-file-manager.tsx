@@ -102,7 +102,7 @@ export function SubmissionFileManager() {
 
   return (
     <Paper withBorder p={0} radius="md">
-      <Box p="xs" className="postybirb__file_manager_header">
+      <Box p="xs">
         <Group justify="space-between">
           <Text size="sm" fw={600}>
             <Trans>Files</Trans> ({orderedFiles.length})

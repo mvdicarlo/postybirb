@@ -53,6 +53,16 @@ export function SubmissionCard({
     [onSelect, submission.id],
   );
 
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        onSelect(submission.id, event);
+      }
+    },
+    [onSelect, submission.id],
+  );
+
   const canPost =
     !submission.hasErrors &&
     submission.hasWebsiteOptions &&
@@ -80,6 +90,9 @@ export function SubmissionCard({
       radius="0"
       withBorder
       onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      tabIndex={0}
+      role="button"
       className={cardClassName}
     >
       <Stack gap="xs">

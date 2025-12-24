@@ -2,9 +2,6 @@
  * File management section styles.
  */
 
-.postybirb__file_manager_header {
-}
-
 .postybirb-sortable-file {
   transition:
     box-shadow 150ms ease,

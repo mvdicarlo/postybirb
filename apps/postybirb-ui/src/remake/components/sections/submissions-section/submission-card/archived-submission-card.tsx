@@ -73,6 +73,16 @@ export function ArchivedSubmissionCard({
     [onSelect, submission.id],
   );
 
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        onSelect(submission.id, event);
+      }
+    },
+    [onSelect, submission.id],
+  );
+
   const handleUnarchive = useCallback(
     async (e: React.MouseEvent) => {
       e.stopPropagation();
@@ -126,6 +136,9 @@ export function ArchivedSubmissionCard({
       withBorder
       className={cardClassName}
       onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      tabIndex={0}
+      role="button"
     >
       <Stack gap="xs">
         <Group gap="xs" wrap="nowrap" align="center">

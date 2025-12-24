@@ -1,33 +1,25 @@
 /**
  * Hook for submission action handlers.
+ * Composes smaller focused hooks for better maintainability.
  */
 
 import {
-  Description,
-  IFileMetadata,
   ISubmissionScheduleInfo,
   IWebsiteFormFields,
-  SubmissionId,
-  SubmissionRating,
   SubmissionType,
-  Tag,
 } from '@postybirb/types';
-import { useCallback, useRef, useState } from 'react';
-import postQueueApi from '../../../../api/post-queue.api';
-import submissionApi from '../../../../api/submission.api';
-import websiteOptionsApi from '../../../../api/website-options.api';
 import type { SubmissionRecord } from '../../../../stores/records';
-import { useUIStore } from '../../../../stores/ui-store';
 import { type ViewState } from '../../../../types/view-state';
 import {
-  showDeletedNotification,
-  showDeleteErrorNotification,
-  showDuplicateErrorNotification,
-  showErrorNotification,
-  showPostErrorNotification,
-  showUpdateErrorNotification,
-} from '../../../../utils/notifications';
-import { isSubmissionsViewState } from '../types';
+  FileSubmissionUploadParams,
+  useSubmissionCreate,
+} from './use-submission-create';
+import { useSubmissionDelete } from './use-submission-delete';
+import { useSubmissionPost } from './use-submission-post';
+import { useSubmissionUpdate } from './use-submission-update';
+
+// Re-export types for convenience
+export type { FileSubmissionUploadParams };
 
 interface UseSubmissionHandlersProps {
   /** Current view state */
@@ -38,20 +30,6 @@ interface UseSubmissionHandlersProps {
   selectedIds: string[];
   /** Type of submissions (FILE or MESSAGE) */
   submissionType: SubmissionType;
-}
-
-/**
- * Parameters for file submission upload.
- */
-export interface FileSubmissionUploadParams {
-  files: File[];
-  fileMetadata: IFileMetadata[];
-  defaultOptions: {
-    tags?: Tag[];
-    description?: Description;
-    rating?: SubmissionRating;
-  };
-  templateId?: SubmissionId;
 }
 
 interface UseSubmissionHandlersResult {
@@ -102,6 +80,7 @@ interface UseSubmissionHandlersResult {
 
 /**
  * Hook for handling submission actions like delete, duplicate, edit, etc.
+ * Composes useSubmissionCreate, useSubmissionDelete, useSubmissionPost, and useSubmissionUpdate.
  */
 export function useSubmissionHandlers({
   viewState,
@@ -109,271 +88,39 @@ export function useSubmissionHandlers({
   selectedIds,
   submissionType,
 }: UseSubmissionHandlersProps): UseSubmissionHandlersResult {
-  const setViewState = useUIStore((state) => state.setViewState);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  // Compose smaller hooks
+  const {
+    fileInputRef,
+    isFileModalOpen,
+    openFileModal,
+    closeFileModal,
+    handleFileUpload,
+    handleCreateSubmission,
+    handleCreateMessageSubmission,
+    handleFileChange,
+  } = useSubmissionCreate({ submissionType });
 
-  // File submission modal state
-  const [isFileModalOpen, setIsFileModalOpen] = useState(false);
+  const { handleDelete, handleDeleteSelected } = useSubmissionDelete({
+    viewState,
+    selectedIds,
+  });
 
-  const openFileModal = useCallback(() => setIsFileModalOpen(true), []);
-  const closeFileModal = useCallback(() => setIsFileModalOpen(false), []);
+  const { handlePost, handlePostSelected } = useSubmissionPost({
+    viewState,
+    allSubmissions,
+    selectedIds,
+  });
 
-  // Handle uploading files from the modal
-  const handleFileUpload = useCallback(
-    async (params: FileSubmissionUploadParams) => {
-      const { files, fileMetadata, defaultOptions, templateId } = params;
-
-      // Convert Description to DescriptionValue for the API
-      const apiDefaultOptions = defaultOptions
-        ? {
-            tags: defaultOptions.tags,
-            rating: defaultOptions.rating,
-            description: defaultOptions.description
-              ? {
-                  overrideDefault: false,
-                  description: defaultOptions.description,
-                  insertTags: undefined,
-                  insertTitle: undefined,
-                }
-              : undefined,
-          }
-        : undefined;
-
-      // Create file submissions with metadata and default options
-      const response = await submissionApi.createFileSubmission({
-        type: SubmissionType.FILE,
-        files,
-        fileMetadata,
-        defaultOptions: apiDefaultOptions,
-      });
-
-      // Apply template if selected
-      if (templateId && response.body) {
-        const submissions = Array.isArray(response.body)
-          ? response.body
-          : [response.body];
-        await Promise.all(
-          submissions.map((sub: { id: SubmissionId }) =>
-            submissionApi.applyTemplate(sub.id, templateId),
-          ),
-        );
-      }
-    },
-    [],
-  );
-
-  // Handle creating a new submission
-  const handleCreateSubmission = useCallback(() => {
-    if (submissionType === SubmissionType.FILE) {
-      // Open the file submission modal
-      openFileModal();
-    }
-    // For MESSAGE type, the popover handles creation via handleCreateMessageSubmission
-  }, [submissionType, openFileModal]);
-
-  // Handle creating a message submission with title
-  const handleCreateMessageSubmission = useCallback(
-    async (title: string) => {
-      try {
-        await submissionApi.create({
-          type: SubmissionType.MESSAGE,
-          // Backend data value - not UI text
-          // eslint-disable-next-line lingui/no-unlocalized-strings
-          name: title || 'New Message',
-        });
-      } catch {
-        showErrorNotification();
-      }
-    },
-    [],
-  );
-
-  // Handle file selection for new file submission
-  const handleFileChange = useCallback(
-    async (event: React.ChangeEvent<HTMLInputElement>) => {
-      const { files } = event.target;
-      if (!files || files.length === 0) return;
-
-      try {
-        await submissionApi.createFileSubmission(
-          SubmissionType.FILE,
-          Array.from(files),
-        );
-      } catch {
-        showErrorNotification();
-      }
-
-      // Reset the input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-    },
-    [],
-  );
-
-  // Handle deleting a submission
-  const handleDelete = useCallback(
-    async (id: string) => {
-      try {
-        await submissionApi.remove([id]);
-        showDeletedNotification(1);
-
-        // Remove from selection if selected
-        if (isSubmissionsViewState(viewState) && selectedIds.includes(id)) {
-          setViewState({
-            ...viewState,
-            params: {
-              ...viewState.params,
-              selectedIds: selectedIds.filter((sid) => sid !== id),
-            },
-          } as ViewState);
-        }
-      } catch {
-        showDeleteErrorNotification();
-      }
-    },
-    [viewState, selectedIds, setViewState],
-  );
-
-  // Handle deleting all selected submissions
-  const handleDeleteSelected = useCallback(async () => {
-    if (selectedIds.length === 0) return;
-
-    try {
-      await submissionApi.remove(selectedIds);
-      showDeletedNotification(selectedIds.length);
-
-      // Clear selection
-      if (isSubmissionsViewState(viewState)) {
-        setViewState({
-          ...viewState,
-          params: {
-            ...viewState.params,
-            selectedIds: [],
-            mode: 'single',
-          },
-        } as ViewState);
-      }
-    } catch {
-      showDeleteErrorNotification();
-    }
-  }, [selectedIds, viewState, setViewState]);
-
-  // Handle posting all selected submissions
-  // Filters out submissions that have no websites or have validation errors
-  const handlePostSelected = useCallback(async () => {
-    if (selectedIds.length === 0) return;
-
-    // Filter to only include valid submissions:
-    // - Must have at least one website option (excluding default)
-    // - Must not have validation errors
-    const validIds = selectedIds.filter((id) => {
-      const submission = allSubmissions.find((s) => s.id === id);
-      if (!submission) return false;
-      return submission.hasWebsiteOptions && !submission.hasErrors;
-    });
-
-    if (validIds.length === 0) return;
-
-    try {
-      await postQueueApi.enqueue(validIds);
-
-      // Clear selection after posting
-      if (isSubmissionsViewState(viewState)) {
-        setViewState({
-          ...viewState,
-          params: {
-            ...viewState.params,
-            selectedIds: [],
-            mode: 'single',
-          },
-        } as ViewState);
-      }
-    } catch {
-      showPostErrorNotification();
-    }
-  }, [selectedIds, allSubmissions, viewState, setViewState]);
-
-  // Handle duplicating a submission
-  const handleDuplicate = useCallback(async (id: string) => {
-    try {
-      await submissionApi.duplicate(id);
-    } catch {
-      showDuplicateErrorNotification();
-    }
-  }, []);
-
-  // Handle archiving a submission
-  const handleArchive = useCallback(async (id: string) => {
-    try {
-      await submissionApi.archive(id);
-    } catch {
-      showErrorNotification();
-    }
-  }, []);
-
-  // Handle editing a submission (select it)
-  const handleEdit = useCallback(
-    (id: string) => {
-      if (!isSubmissionsViewState(viewState)) return;
-      setViewState({
-        ...viewState,
-        params: {
-          ...viewState.params,
-          selectedIds: [id],
-          mode: 'single',
-        },
-      } as ViewState);
-    },
-    [viewState, setViewState],
-  );
-
-  // Handle changing any default option field (title, tags, rating, etc.)
-  const handleDefaultOptionChange = useCallback(
-    async (id: string, update: Partial<IWebsiteFormFields>) => {
-      const submission = allSubmissions.find((s) => s.id === id);
-      if (!submission) return;
-
-      const defaultOptions = submission.getDefaultOptions();
-      if (!defaultOptions) return;
-
-      try {
-        await websiteOptionsApi.update(defaultOptions.id, {
-          data: {
-            ...defaultOptions.data,
-            ...update,
-          },
-        });
-      } catch {
-        showUpdateErrorNotification();
-      }
-    },
-    [allSubmissions],
-  );
-
-  // Handle posting a submission
-  const handlePost = useCallback(async (id: string) => {
-    try {
-      await postQueueApi.enqueue([id]);
-    } catch {
-      showPostErrorNotification();
-    }
-  }, []);
-
-  // Handle scheduling a submission
-  const handleScheduleChange = useCallback(
-    async (id: string, schedule: ISubmissionScheduleInfo, isScheduled: boolean) => {
-      try {
-        await submissionApi.update(id, {
-          isScheduled,
-          ...schedule,
-        });
-      } catch {
-        showUpdateErrorNotification();
-      }
-    },
-    [],
-  );
+  const {
+    handleDuplicate,
+    handleArchive,
+    handleEdit,
+    handleDefaultOptionChange,
+    handleScheduleChange,
+  } = useSubmissionUpdate({
+    viewState,
+    allSubmissions,
+  });
 
   return {
     fileInputRef,
@@ -395,3 +142,4 @@ export function useSubmissionHandlers({
     handleScheduleChange,
   };
 }
+

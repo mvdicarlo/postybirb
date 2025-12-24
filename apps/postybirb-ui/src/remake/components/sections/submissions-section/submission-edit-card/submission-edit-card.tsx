@@ -13,10 +13,7 @@ import {
   SubmissionEditCardProvider,
   useSubmissionEditCardContext,
 } from './context';
-import {
-  SubmissionEditCardCollapsedHeader,
-  SubmissionEditCardHeader,
-} from './header';
+import { SubmissionEditCardHeader } from './header';
 import './submission-edit-card.css';
 
 export interface SubmissionEditCardProps {
@@ -47,11 +44,7 @@ function SubmissionEditCardInner() {
           className="postybirb__edit_card_header"
         >
           <Group gap="xs" px="sm" py="xs" wrap="nowrap">
-            {isExpanded ? (
-              <SubmissionEditCardHeader />
-            ) : (
-              <SubmissionEditCardCollapsedHeader />
-            )}
+            <SubmissionEditCardHeader isExpanded={isExpanded} />
             <SubmissionEditCardActions />
           </Group>
         </UnstyledButton>
