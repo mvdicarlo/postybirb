@@ -168,28 +168,21 @@ export function SideNav({ items, collapsed, onCollapsedChange }: SideNavProps) {
       >
         <Box className="postybirb__sidenav_nav">
           {/* Collapse/Expand toggle as first nav item */}
-          <Tooltip
-            label={collapsed ? <Trans>Expand</Trans> : <Trans>Collapse</Trans>}
-            position="right"
-            withArrow
-            disabled={!collapsed}
-          >
-            <MantineNavLink
-              label={collapsed ? undefined : <Trans>Collapse</Trans>}
-              leftSection={
-                collapsed ? (
-                  <IconChevronRight size={20} />
-                ) : (
-                  <IconChevronLeft size={20} />
-                )
-              }
-              onClick={() => onCollapsedChange(!collapsed)}
-              aria-label={
-                // eslint-disable-next-line lingui/no-unlocalized-strings
-                collapsed ? 'Expand navigation' : 'Collapse navigation'
-              }
-            />
-          </Tooltip>
+
+          <MantineNavLink
+            leftSection={
+              collapsed ? (
+                <IconChevronRight size={20} />
+              ) : (
+                <IconChevronLeft size={20} />
+              )
+            }
+            onClick={() => onCollapsedChange(!collapsed)}
+            aria-label={
+              // eslint-disable-next-line lingui/no-unlocalized-strings
+              collapsed ? 'Expand navigation' : 'Collapse navigation'
+            }
+          />
 
           {/* Update button - shows when update is available */}
           <UpdateButton collapsed={collapsed} />
@@ -202,7 +195,8 @@ export function SideNav({ items, collapsed, onCollapsedChange }: SideNavProps) {
 
             // Determine if item is active based on current viewState or active drawer
             const isActive =
-              (item.type === 'view' && item.viewState.type === viewState.type) ||
+              (item.type === 'view' &&
+                item.viewState.type === viewState.type) ||
               (item.type === 'drawer' && item.drawerKey === activeDrawer);
 
             return (
