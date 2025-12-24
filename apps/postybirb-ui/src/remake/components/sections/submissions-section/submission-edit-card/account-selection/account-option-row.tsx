@@ -112,9 +112,13 @@ export function AccountOptionRow({
             {account.name}
           </Text>
           {account.username && (
-            <Text size="xs" c="dimmed">
-              ({account.username})
-            </Text>
+            <Badge
+              color="green"
+              variant="transparent"
+              style={{ textTransform: 'none' }}
+            >
+              {account.username}
+            </Badge>
           )}
           {hasErrors && (
             <Badge size="xs" variant="light" color="red">

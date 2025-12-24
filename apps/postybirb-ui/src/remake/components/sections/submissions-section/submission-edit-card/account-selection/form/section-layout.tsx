@@ -2,7 +2,7 @@
  * SectionLayout - Groups form fields by section and renders them in a 12-column grid.
  */
 
-import { Box, Group, Skeleton, Stack, Text } from '@mantine/core';
+import { Box, Skeleton, Stack, Text } from '@mantine/core';
 import { FieldAggregateType } from '@postybirb/form-builder';
 import { useMemo } from 'react';
 import { ComponentErrorBoundary } from '../../../../../error-boundary';
@@ -139,11 +139,11 @@ export function SectionLayout() {
   }
 
   return (
-    <Box className="section-layout">
+    <Box className="section-layout" pos="relative">
       {/* Header with save defaults action */}
-      <Group justify="flex-end" mb="xs">
+      <Box pos="absolute" mb="md" top={0} right={0}>
         <SaveDefaultsPopover />
-      </Group>
+      </Box>
 
       {/* Non-field-specific validation alerts */}
       <ValidationAlerts />

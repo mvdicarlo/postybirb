@@ -5,19 +5,19 @@
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
-    Button,
-    Checkbox,
-    Group,
-    Popover,
-    ScrollArea,
-    Stack,
-    Text,
+  Button,
+  Checkbox,
+  Group,
+  Popover,
+  ScrollArea,
+  Stack,
+  Text,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import {
-    FieldAggregateType,
-    FormBuilderMetadata,
+  FieldAggregateType,
+  FormBuilderMetadata,
 } from '@postybirb/form-builder';
 import { DynamicObject } from '@postybirb/types';
 import { IconDeviceFloppy } from '@tabler/icons-react';
@@ -42,7 +42,7 @@ function getLabelString(
 export function SaveDefaultsPopover() {
   const { t } = useLingui();
   const { formFields, option, submission } = useFormFieldsContext();
-  const [opened, { open, close }] = useDisclosure(false);
+  const [opened, { toggle, close }] = useDisclosure(false);
   const [selectedFields, setSelectedFields] = useState<Record<string, boolean>>(
     {},
   );
@@ -154,7 +154,7 @@ export function SaveDefaultsPopover() {
         <Button
           variant="subtle"
           size="xs"
-          onClick={open}
+          onClick={toggle}
           leftSection={<IconDeviceFloppy size={14} />}
         >
           <Trans>Save as default</Trans>
@@ -209,15 +209,20 @@ export function SaveDefaultsPopover() {
           </ScrollArea.Autosize>
 
           {/* Save button */}
-          <Button
-            size="sm"
-            loading={isSaving}
-            disabled={!hasSelectedFields}
-            onClick={handleSave}
-            fullWidth
-          >
-            <Trans>Save Selected</Trans>
-          </Button>
+          <Group gap="xs">
+            <Button size="sm" variant="default" onClick={close} flex={1}>
+              <Trans>Cancel</Trans>
+            </Button>
+            <Button
+              size="sm"
+              loading={isSaving}
+              disabled={!hasSelectedFields}
+              onClick={handleSave}
+              flex={1}
+            >
+              <Trans>Save Selected</Trans>
+            </Button>
+          </Group>
         </Stack>
       </Popover.Dropdown>
     </Popover>
