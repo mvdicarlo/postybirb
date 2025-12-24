@@ -116,7 +116,10 @@ export function SubmissionActions({
       {/* Action buttons */}
       <Group gap={4}>
         {/* Schedule popover */}
-        <span onClick={(e) => e.stopPropagation()}>
+        <span
+          onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => e.stopPropagation()}
+        >
           <SchedulePopover
             schedule={schedule}
             isScheduled={isScheduled}
@@ -141,13 +144,14 @@ export function SubmissionActions({
       </Group>
 
       {/* Actions menu */}
-      <Menu position="bottom-end" withinPortal>
+      <Menu position="bottom-end" withinPortal trapFocus returnFocus>
         <Menu.Target>
           <ActionIcon
             variant="subtle"
             size="sm"
             color="gray"
             onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
             // eslint-disable-next-line lingui/no-unlocalized-strings
             aria-label="Submission actions"
           >

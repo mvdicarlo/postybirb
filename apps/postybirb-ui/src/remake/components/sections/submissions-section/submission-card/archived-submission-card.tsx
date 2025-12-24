@@ -78,6 +78,17 @@ export function ArchivedSubmissionCard({
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
         onSelect(submission.id, event);
+      } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        event.preventDefault();
+        const currentCard = event.currentTarget as HTMLElement;
+        const cards = Array.from(
+          currentCard.closest('.postybirb__submission__list')?.querySelectorAll('.postybirb__submission__card') ?? []
+        ) as HTMLElement[];
+        const currentIndex = cards.indexOf(currentCard);
+        const nextIndex = event.key === 'ArrowDown' ? currentIndex + 1 : currentIndex - 1;
+        if (nextIndex >= 0 && nextIndex < cards.length) {
+          cards[nextIndex].focus();
+        }
       }
     },
     [onSelect, submission.id],
@@ -148,6 +159,7 @@ export function ArchivedSubmissionCard({
               thumbnailUrl={thumbnailUrl}
               alt={submission.title}
               canPreview={canPreviewImage}
+              fileCount={submission.files.length}
             />
           )}
 
@@ -185,6 +197,7 @@ export function ArchivedSubmissionCard({
                   variant="subtle"
                   size="sm"
                   onClick={handleViewHistory}
+                  onKeyDown={(e) => e.stopPropagation()}
                 >
                   <IconHistory size={16} />
                 </ActionIcon>
@@ -198,19 +211,21 @@ export function ArchivedSubmissionCard({
                 size="sm"
                 color="blue"
                 onClick={handleUnarchive}
+                onKeyDown={(e) => e.stopPropagation()}
               >
                 <IconArchiveOff size={16} />
               </ActionIcon>
             </Tooltip>
 
             {/* Actions menu */}
-            <Menu position="bottom-end" withinPortal>
+            <Menu position="bottom-end" withinPortal trapFocus returnFocus>
               <Menu.Target>
                 <ActionIcon
                   variant="subtle"
                   size="sm"
                   color="gray"
                   onClick={(e) => e.stopPropagation()}
+                  onKeyDown={(e) => e.stopPropagation()}
                 >
                   <IconDotsVertical size={16} />
                 </ActionIcon>

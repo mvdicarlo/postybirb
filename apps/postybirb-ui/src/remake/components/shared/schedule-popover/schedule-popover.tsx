@@ -255,6 +255,8 @@ export function SchedulePopover({
       withArrow
       shadow="md"
       width={320}
+      trapFocus
+      returnFocus
     >
       <Popover.Target>
         <Tooltip label={displayInfo.tooltip}>
@@ -263,6 +265,7 @@ export function SchedulePopover({
             variant="subtle"
             color={displayInfo.color}
             onClick={toggle}
+            onKeyDown={(e) => e.stopPropagation()}
             disabled={disabled}
           >
             <DisplayIcon size={size === 'xs' ? 14 : size === 'sm' ? 16 : 18} />

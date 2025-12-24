@@ -49,7 +49,7 @@ export function SubmissionList({
       type="hover"
       scrollbarSize={6}
     >
-      <Stack gap="0" ref={containerRef}>
+      <Stack gap="0" ref={containerRef} className="postybirb__submission__list">
         {submissions.map((submission) => (
           <SubmissionCard
             key={submission.id}

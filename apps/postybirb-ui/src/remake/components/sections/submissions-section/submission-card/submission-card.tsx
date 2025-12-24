@@ -58,6 +58,17 @@ export function SubmissionCard({
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
         onSelect(submission.id, event);
+      } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        event.preventDefault();
+        const currentCard = event.currentTarget as HTMLElement;
+        const cards = Array.from(
+          currentCard.closest('.postybirb__submission__list')?.querySelectorAll('.postybirb__submission__card') ?? []
+        ) as HTMLElement[];
+        const currentIndex = cards.indexOf(currentCard);
+        const nextIndex = event.key === 'ArrowDown' ? currentIndex + 1 : currentIndex - 1;
+        if (nextIndex >= 0 && nextIndex < cards.length) {
+          cards[nextIndex].focus();
+        }
       }
     },
     [onSelect, submission.id],
@@ -113,6 +124,7 @@ export function SubmissionCard({
               thumbnailUrl={thumbnailUrl}
               alt={submission.title}
               canPreview={canPreviewImage}
+              fileCount={submission.files.length}
             />
           )}
 

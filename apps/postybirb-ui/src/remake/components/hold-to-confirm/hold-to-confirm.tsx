@@ -121,6 +121,8 @@ export const HoldToConfirmButton = forwardRef<
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
+      // Stop propagation to prevent parent handlers (like card selection)
+      e.stopPropagation();
       if (e.key === 'Enter' && !e.repeat) {
         e.preventDefault();
         startHold();
@@ -131,6 +133,8 @@ export const HoldToConfirmButton = forwardRef<
 
   const handleKeyUp = useCallback(
     (e: React.KeyboardEvent) => {
+      // Stop propagation to prevent parent handlers
+      e.stopPropagation();
       if (e.key === 'Enter') {
         stopHold();
       }

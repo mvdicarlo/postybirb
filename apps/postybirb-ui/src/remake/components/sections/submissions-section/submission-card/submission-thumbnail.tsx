@@ -2,7 +2,7 @@
  * SubmissionThumbnail - Thumbnail component with optional HoverCard preview.
  */
 
-import { Box, HoverCard, Image } from '@mantine/core';
+import { Box, HoverCard, Image, Indicator } from '@mantine/core';
 import { IconFile } from '@tabler/icons-react';
 import '../submissions-section.css';
 
@@ -13,6 +13,8 @@ interface SubmissionThumbnailProps {
   alt: string;
   /** Whether the image can be previewed in a HoverCard */
   canPreview?: boolean;
+  /** Total number of files (shows indicator if > 1) */
+  fileCount?: number;
 }
 
 /**
@@ -24,19 +26,31 @@ export function SubmissionThumbnail({
   thumbnailUrl,
   alt,
   canPreview = false,
+  fileCount = 1,
 }: SubmissionThumbnailProps) {
+  // Calculate additional files (total - 1 for the primary file shown)
+  const additionalFiles = fileCount > 1 ? fileCount - 1 : 0;
+
   const thumbnailBox = (
-    <Box className="postybirb__submission__thumbnail">
-      {thumbnailUrl ? (
-        <Image src={thumbnailUrl} alt={alt} w={40} h={40} fit="cover" />
-      ) : (
-        <IconFile
-          size={20}
-          stroke={1.5}
-          className="postybirb__submission__thumbnail_placeholder"
-        />
-      )}
-    </Box>
+    <Indicator
+      label={`+${additionalFiles}`}
+      size={16}
+      position="bottom-end"
+      offset={4}
+      disabled={additionalFiles === 0}
+    >
+      <Box className="postybirb__submission__thumbnail">
+        {thumbnailUrl ? (
+          <Image src={thumbnailUrl} alt={alt} w={40} h={40} fit="cover" />
+        ) : (
+          <IconFile
+            size={20}
+            stroke={1.5}
+            className="postybirb__submission__thumbnail_placeholder"
+          />
+        )}
+      </Box>
+    </Indicator>
   );
 
   // Wrap in HoverCard if image can be previewed

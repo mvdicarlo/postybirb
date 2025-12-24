@@ -121,14 +121,6 @@ export function SubmissionBadges({
           </Badge>
         </Tooltip>
       )}
-
-      {/* Files count - only show for FILE type submissions with multiple files */}
-      {submissionType === SubmissionType.FILE &&
-        submission.files.length > 1 && (
-          <Badge size="xs" variant="outline" color="gray">
-            {submission.files.length} <Trans>files</Trans>
-          </Badge>
-        )}
     </Group>
   );
 }

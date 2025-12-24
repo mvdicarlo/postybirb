@@ -68,7 +68,7 @@ export function ArchivedSubmissionList({
       <Stack gap="xs" h="100%">
         {/* Scrollable list */}
         <ScrollArea style={{ flex: 1 }}>
-          <Stack gap="xs">
+          <Stack gap="xs" className="postybirb__submission__list">
             {filteredSubmissions.map((submission) => (
               <ArchivedSubmissionCard
                 key={submission.id}
