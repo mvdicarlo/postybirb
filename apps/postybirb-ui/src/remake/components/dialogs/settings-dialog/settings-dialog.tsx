@@ -105,7 +105,8 @@ const NAV_ITEMS: NavItem[] = [
 export function SettingsDialog() {
   const activeDrawer = useActiveDrawer();
   const { closeDrawer } = useDrawerActions();
-  const [activeSection, setActiveSection] = useState<SettingsSection>('appearance');
+  const [activeSection, setActiveSection] =
+    useState<SettingsSection>('appearance');
 
   const opened = activeDrawer === 'settings';
 
@@ -141,6 +142,7 @@ export function SettingsDialog() {
         content: classes.modalContent,
         body: classes.modalBody,
       }}
+      zIndex={400}
     >
       <div className={classes.container}>
         {/* Sidebar Navigation */}

@@ -24,7 +24,7 @@ export function ScheduleDrawer() {
       opened={opened}
       onClose={closeDrawer}
       title={<Trans>Schedule</Trans>}
-      width="90vw"
+      width="100vw"
     >
       <Group
         align="stretch"

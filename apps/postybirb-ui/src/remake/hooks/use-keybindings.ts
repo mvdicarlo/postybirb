@@ -13,6 +13,7 @@ import {
   HomeKeybinding,
   MessageSubmissionsKeybinding,
   NotificationsKeybinding,
+  ScheduleKeybinding,
   SettingsKeybinding,
   TagConvertersKeybinding,
   TagGroupsKeybinding,
@@ -145,6 +146,10 @@ export function useKeybindings(): void {
       [toTinykeysFormat(FileWatchersKeybinding)]: (event: KeyboardEvent) => {
         event.preventDefault();
         toggleDrawer('fileWatchers');
+      },
+      [toTinykeysFormat(ScheduleKeybinding)]: (event: KeyboardEvent) => {
+        event.preventDefault();
+        toggleDrawer('schedule');
       },
     });
 

@@ -17,6 +17,7 @@ import {
 } from '@mantine/core';
 import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
 import {
+  useActiveDrawer,
   useDrawerActions,
   useViewState,
   useViewStateActions,
@@ -100,6 +101,7 @@ function NavItemRenderer({
     navLinkContent = (
       <MantineNavLink
         onClick={() => toggleDrawer(item.drawerKey)}
+        active={isActive}
         {...commonProps}
       />
     );
@@ -138,6 +140,7 @@ function NavItemRenderer({
  */
 export function SideNav({ items, collapsed, onCollapsedChange }: SideNavProps) {
   const viewState = useViewState();
+  const activeDrawer = useActiveDrawer();
 
   return (
     <Box
@@ -197,9 +200,10 @@ export function SideNav({ items, collapsed, onCollapsedChange }: SideNavProps) {
               return <Divider key={item.id} my="xs" />;
             }
 
-            // Determine if view item is active based on current viewState
+            // Determine if item is active based on current viewState or active drawer
             const isActive =
-              item.type === 'view' && item.viewState.type === viewState.type;
+              (item.type === 'view' && item.viewState.type === viewState.type) ||
+              (item.type === 'drawer' && item.drawerKey === activeDrawer);
 
             return (
               <NavItemRenderer
