@@ -10,12 +10,12 @@ import { ComponentErrorBoundary } from '../../../error-boundary';
 import { SubmissionEditCardActions } from './actions';
 import { SubmissionEditCardBody } from './body';
 import {
-    SubmissionEditCardProvider,
-    useSubmissionEditCardContext,
+  SubmissionEditCardProvider,
+  useSubmissionEditCardContext,
 } from './context';
 import {
-    SubmissionEditCardCollapsedHeader,
-    SubmissionEditCardHeader,
+  SubmissionEditCardCollapsedHeader,
+  SubmissionEditCardHeader,
 } from './header';
 import './submission-edit-card.css';
 
@@ -24,8 +24,6 @@ export interface SubmissionEditCardProps {
   submission: SubmissionRecord;
   /** Whether the card can be collapsed */
   isCollapsible: boolean;
-  /** Whether to show full or simple view */
-  fullView: boolean;
   /** Target submission IDs for mass edit mode (to pre-populate Save To Many) */
   targetSubmissionIds?: string[];
 }
@@ -84,7 +82,6 @@ function SubmissionEditCardInner() {
 export function SubmissionEditCard({
   submission,
   isCollapsible,
-  fullView,
   targetSubmissionIds,
 }: SubmissionEditCardProps) {
   return (
@@ -92,7 +89,6 @@ export function SubmissionEditCard({
       <SubmissionEditCardProvider
         submission={submission}
         isCollapsible={isCollapsible}
-        fullView={fullView}
         targetSubmissionIds={targetSubmissionIds}
       >
         <SubmissionEditCardInner />

@@ -138,6 +138,10 @@ class SubmissionsApi extends BaseApi<
   unarchive(id: SubmissionId) {
     return this.client.post(`unarchive/${id}`);
   }
+
+  archive(id: SubmissionId) {
+    return this.client.post(`archive/${id}`);
+  }
 }
 
 export default new SubmissionsApi();

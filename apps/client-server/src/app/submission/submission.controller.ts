@@ -1,20 +1,20 @@
 import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Patch,
-  Post,
-  UploadedFiles,
-  UseInterceptors,
+    Body,
+    Controller,
+    Get,
+    Param,
+    Patch,
+    Post,
+    UploadedFiles,
+    UseInterceptors,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import {
-  ApiBadRequestResponse,
-  ApiConsumes,
-  ApiNotFoundResponse,
-  ApiOkResponse,
-  ApiTags,
+    ApiBadRequestResponse,
+    ApiConsumes,
+    ApiNotFoundResponse,
+    ApiOkResponse,
+    ApiTags,
 } from '@nestjs/swagger';
 import { ISubmissionDto, SubmissionId, SubmissionType } from '@postybirb/types';
 import { parse } from 'path';
@@ -91,6 +91,13 @@ export class SubmissionController extends PostyBirbController<'SubmissionSchema'
   @ApiNotFoundResponse({ description: 'Submission Id not found.' })
   async unarchive(@Param('id') id: SubmissionId) {
     return this.service.unarchive(id);
+  }
+
+  @Post('archive/:id')
+  @ApiOkResponse({ description: 'Submission archived.' })
+  @ApiNotFoundResponse({ description: 'Submission Id not found.' })
+  async archive(@Param('id') id: SubmissionId) {
+    return this.service.archive(id);
   }
 
   @Patch(':id')

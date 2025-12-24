@@ -12,6 +12,7 @@ import {
 } from '@postybirb/types';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
+import { wait } from '../../../utils/wait.util';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
@@ -79,6 +80,8 @@ export default class TestWebsite
   async onValidateFileSubmission(
     postData: PostData<TestFileSubmission>,
   ): Promise<SimpleValidationResult> {
+    await wait(15_000);
+
     return {
       warnings: [],
       errors: [],

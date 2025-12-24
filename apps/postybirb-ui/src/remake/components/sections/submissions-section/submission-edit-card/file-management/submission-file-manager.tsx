@@ -105,7 +105,7 @@ export function SubmissionFileManager() {
       <Box p="xs" className="postybirb__file_manager_header">
         <Group justify="space-between">
           <Text size="sm" fw={600}>
-            <Trans>Submission Files</Trans> ({orderedFiles.length})
+            <Trans>Files</Trans> ({orderedFiles.length})
           </Text>
           {isDraggable && (
             <Group gap="xs">

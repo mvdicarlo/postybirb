@@ -5,31 +5,29 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-  ActionIcon,
-  Box,
-  Center,
-  Container,
-  Divider,
-  Group,
-  ScrollArea,
-  Stack,
-  Switch,
-  Text,
-  Title,
+    ActionIcon,
+    Box,
+    Center,
+    Container,
+    Divider,
+    Group,
+    ScrollArea,
+    Stack,
+    Text,
+    Title,
 } from '@mantine/core';
 import type { SubmissionId } from '@postybirb/types';
 import {
-  IconInbox,
-  IconLayoutSidebarLeftCollapse,
-  IconLayoutSidebarLeftExpand,
+    IconInbox,
+    IconLayoutSidebarLeftCollapse,
+    IconLayoutSidebarLeftExpand,
 } from '@tabler/icons-react';
 import { useMemo } from 'react';
 import type { SubmissionRecord } from '../../../stores/records';
 import { useSubmissionsMap } from '../../../stores/submission-store';
 import {
-  useSubNavVisible,
-  useSubmissionsContentPreferences,
-  useToggleSectionPanel,
+    useSubNavVisible,
+    useToggleSectionPanel,
 } from '../../../stores/ui-store';
 import { isTemplatesViewState, type ViewState } from '../../../types/view-state';
 import { SubmissionEditCard } from '../submissions-section/submission-edit-card';
@@ -60,7 +58,6 @@ function EmptyTemplateSelection() {
 function TemplatesContentHeader() {
   const { visible: isSectionPanelVisible } = useSubNavVisible();
   const toggleSectionPanel = useToggleSectionPanel();
-  const { fullView, setFullView } = useSubmissionsContentPreferences();
 
   return (
     <Box
@@ -91,15 +88,6 @@ function TemplatesContentHeader() {
             </Text>
           </Box>
         </Group>
-
-        <Group gap="md">
-          <Switch
-            size="sm"
-            checked={fullView}
-            onChange={(e) => setFullView(e.currentTarget.checked)}
-            label={<Trans>Simple View</Trans>}
-          />
-        </Group>
       </Group>
     </Box>
   );
@@ -125,8 +113,6 @@ export function TemplatesContent({ viewState }: TemplatesContentProps) {
     [selectedId, submissionsMap],
   );
 
-  const { fullView } = useSubmissionsContentPreferences();
-
   return (
     <Box h="100%" style={{ display: 'flex', flexDirection: 'column' }}>
       <TemplatesContentHeader />
@@ -141,7 +127,6 @@ export function TemplatesContent({ viewState }: TemplatesContentProps) {
                 <SubmissionEditCard
                   submission={selectedTemplate}
                   isCollapsible={false}
-                  fullView={fullView}
                 />
               </Box>
             </Container>

@@ -15,6 +15,7 @@ import {
     DeleteSelectedKeybinding,
     toTinykeysFormat,
 } from '../../../config/keybindings';
+import { SubmissionRecord } from '../../../stores';
 import { useSubmissionsLoading } from '../../../stores/submission-store';
 import { ConfirmActionModal } from '../../confirm-action-modal';
 import { ArchivedSubmissionList } from './archived-submission-list';
@@ -27,6 +28,7 @@ import {
     useSubmissionSelection,
     useSubmissionSortable,
 } from './hooks';
+import { SubmissionHistoryDrawer } from './submission-history-drawer';
 import { SubmissionList } from './submission-list';
 import { SubmissionSectionHeader } from './submission-section-header';
 import './submissions-section.css';
@@ -84,6 +86,7 @@ export function SubmissionsSection({
     handleDelete,
     handleDeleteSelected,
     handleDuplicate,
+    handleArchive,
     handleEdit,
     handleDefaultOptionChange,
     handlePost,
@@ -110,6 +113,10 @@ export function SubmissionsSection({
 
   // Post confirmation modal
   const [postModalOpened, postModal] = useDisclosure(false);
+
+  // History drawer state
+  const [historySubmission, setHistorySubmission] =
+    useState<SubmissionRecord | null>(null);
 
   // Count of valid submissions that can be posted
   // (must have website options and no validation errors)
@@ -161,6 +168,21 @@ export function SubmissionsSection({
 
     return unsubscribe;
   }, [selectedIds.length, deleteModal]);
+
+  // Handle view history - find submission by id and open drawer
+  const handleViewHistory = useCallback(
+    (id: string) => {
+      const submission = allSubmissions.find((s) => s.id === id);
+      if (submission) {
+        setHistorySubmission(submission);
+      }
+    },
+    [allSubmissions],
+  );
+
+  const handleCloseHistory = useCallback(() => {
+    setHistorySubmission(null);
+  }, []);
 
   // Get the appropriate icon for the submissions tab
   const SubmissionsIcon =
@@ -272,6 +294,8 @@ export function SubmissionsSection({
         onDuplicate={handleDuplicate}
         onEdit={handleEdit}
         onPost={handlePost}
+        onArchive={handleArchive}
+        onViewHistory={handleViewHistory}
         onDefaultOptionChange={handleDefaultOptionChange}
         onScheduleChange={handleScheduleChange}
       >
@@ -285,6 +309,13 @@ export function SubmissionsSection({
           <ArchivedSubmissionList submissionType={submissionType} />
         )}
       </SubmissionsProvider>
+
+      {/* History drawer */}
+      <SubmissionHistoryDrawer
+        opened={historySubmission !== null}
+        onClose={handleCloseHistory}
+        submission={historySubmission}
+      />
     </Box>
   );
 }

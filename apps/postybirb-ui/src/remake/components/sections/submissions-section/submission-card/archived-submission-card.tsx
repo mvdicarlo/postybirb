@@ -11,7 +11,7 @@ import {
     Menu,
     Stack,
     Text,
-    Tooltip
+    Tooltip,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { SubmissionType } from '@postybirb/types';
@@ -19,7 +19,7 @@ import {
     IconArchiveOff,
     IconDotsVertical,
     IconHistory,
-    IconTrash,
+    IconTrash
 } from '@tabler/icons-react';
 import moment from 'moment/min/moment-with-locales';
 import { useCallback, useMemo } from 'react';
@@ -31,7 +31,10 @@ import { SubmissionTitle } from './submission-title';
 import type { SubmissionCardProps } from './types';
 import { getThumbnailUrl } from './utils';
 
-interface ArchivedSubmissionCardProps extends Omit<SubmissionCardProps, 'draggable'> {
+interface ArchivedSubmissionCardProps extends Omit<
+  SubmissionCardProps,
+  'draggable'
+> {
   /** Handler to open history drawer */
   onViewHistory?: () => void;
 }
@@ -117,7 +120,13 @@ export function ArchivedSubmissionCard({
   );
 
   return (
-    <Card p="xs" radius="0" withBorder className={cardClassName} onClick={handleClick}>
+    <Card
+      p="xs"
+      radius="0"
+      withBorder
+      className={cardClassName}
+      onClick={handleClick}
+    >
       <Stack gap="xs">
         <Group gap="xs" wrap="nowrap" align="center">
           {/* Thumbnail - only for FILE type */}
@@ -143,13 +152,6 @@ export function ArchivedSubmissionCard({
               submission={submission}
               submissionType={submissionType}
             />
-
-            {/* Post count */}
-            {submission.posts.length > 0 && (
-              <Text size="xs" c="dimmed">
-                <Trans>Posted {submission.posts.length} time(s)</Trans>
-              </Text>
-            )}
 
             {/* Last modified */}
             <Text

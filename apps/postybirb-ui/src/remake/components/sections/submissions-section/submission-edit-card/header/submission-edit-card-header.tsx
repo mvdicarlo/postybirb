@@ -3,7 +3,7 @@
  */
 
 import { Trans } from '@lingui/react/macro';
-import { Box, Group, Text } from '@mantine/core';
+import { Badge, Box, Group, Text } from '@mantine/core';
 import { IconChevronDown, IconChevronRight } from '@tabler/icons-react';
 import { useSubmissionEditCardContext } from '../context';
 
@@ -26,6 +26,13 @@ export function SubmissionEditCardHeader() {
       <Text fw={600} size="sm" truncate style={{ flex: 1 }}>
         {submission.title || <Trans>Untitled</Trans>}
       </Text>
+
+      {/* Archived badge */}
+      {submission.isArchived && (
+        <Badge color="grape" size="sm" variant="light">
+          <Trans>Archived</Trans>
+        </Badge>
+      )}
     </Group>
   );
 }
@@ -52,6 +59,13 @@ export function SubmissionEditCardCollapsedHeader() {
       <Text fw={600} size="sm" truncate style={{ flex: 1 }}>
         {submission.title || <Trans>Untitled</Trans>}
       </Text>
+
+      {/* Archived badge */}
+      {submission.isArchived && (
+        <Badge color="grape" size="sm" variant="light">
+          <Trans>Archived</Trans>
+        </Badge>
+      )}
     </Group>
   );
 }

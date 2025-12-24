@@ -80,7 +80,7 @@ function SubmissionsContentHeader({
 }: SubmissionsContentHeaderProps) {
   const { visible: isSectionPanelVisible } = useSubNavVisible();
   const toggleSectionPanel = useToggleSectionPanel();
-  const { preferMultiEdit, fullView, setPreferMultiEdit, setFullView } =
+  const { preferMultiEdit, setPreferMultiEdit } =
     useSubmissionsContentPreferences();
 
   return (
@@ -117,21 +117,13 @@ function SubmissionsContentHeader({
           </Box>
         </Group>
 
-        <Group gap="md">
-          <Switch
-            size="sm"
-            disabled={hasArchived}
-            checked={preferMultiEdit}
-            onChange={(e) => setPreferMultiEdit(e.currentTarget.checked)}
-            label={<Trans>Mass Edit</Trans>}
-          />
-          <Switch
-            size="sm"
-            checked={fullView}
-            onChange={(e) => setFullView(e.currentTarget.checked)}
-            label={<Trans>Simple View</Trans>}
-          />
-        </Group>
+        <Switch
+          size="sm"
+          disabled={hasArchived}
+          checked={preferMultiEdit}
+          onChange={(e) => setPreferMultiEdit(e.currentTarget.checked)}
+          label={<Trans>Mass Edit</Trans>}
+        />
       </Group>
     </Box>
   );
@@ -186,7 +178,7 @@ export function SubmissionsContent({
     [allOfType],
   );
 
-  const { preferMultiEdit, fullView } = useSubmissionsContentPreferences();
+  const { preferMultiEdit } = useSubmissionsContentPreferences();
   const effectiveMultiEdit = preferMultiEdit && !hasArchived;
 
   // Cards are collapsible only when multiple selected and not in mass edit mode
@@ -213,7 +205,6 @@ export function SubmissionsContent({
                       <SubmissionEditCard
                         submission={multiSubmission}
                         isCollapsible={false}
-                        fullView={fullView}
                         targetSubmissionIds={selectedIds}
                       />
                     ) : (
@@ -230,7 +221,6 @@ export function SubmissionsContent({
                         key={submission.id}
                         submission={submission}
                         isCollapsible={isCollapsible}
-                        fullView={fullView}
                       />
                     ))
                   )}

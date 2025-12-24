@@ -3,14 +3,14 @@
  */
 
 import {
-    Description,
-    IFileMetadata,
-    ISubmissionScheduleInfo,
-    IWebsiteFormFields,
-    SubmissionId,
-    SubmissionRating,
-    SubmissionType,
-    Tag,
+  Description,
+  IFileMetadata,
+  ISubmissionScheduleInfo,
+  IWebsiteFormFields,
+  SubmissionId,
+  SubmissionRating,
+  SubmissionType,
+  Tag,
 } from '@postybirb/types';
 import { useCallback, useRef, useState } from 'react';
 import postQueueApi from '../../../../api/post-queue.api';
@@ -20,12 +20,12 @@ import type { SubmissionRecord } from '../../../../stores/records';
 import { useUIStore } from '../../../../stores/ui-store';
 import { type ViewState } from '../../../../types/view-state';
 import {
-    showDeletedNotification,
-    showDeleteErrorNotification,
-    showDuplicateErrorNotification,
-    showErrorNotification,
-    showPostErrorNotification,
-    showUpdateErrorNotification,
+  showDeletedNotification,
+  showDeleteErrorNotification,
+  showDuplicateErrorNotification,
+  showErrorNotification,
+  showPostErrorNotification,
+  showUpdateErrorNotification,
 } from '../../../../utils/notifications';
 import { isSubmissionsViewState } from '../types';
 
@@ -81,6 +81,8 @@ interface UseSubmissionHandlersResult {
   handlePostSelected: () => Promise<void>;
   /** Handle duplicating a submission */
   handleDuplicate: (id: string) => Promise<void>;
+  /** Handle archiving a submission */
+  handleArchive: (id: string) => Promise<void>;
   /** Handle editing a submission (select it) */
   handleEdit: (id: string) => void;
   /** Handle changing a default option field (title, tags, rating, etc.) */
@@ -301,6 +303,15 @@ export function useSubmissionHandlers({
     }
   }, []);
 
+  // Handle archiving a submission
+  const handleArchive = useCallback(async (id: string) => {
+    try {
+      await submissionApi.archive(id);
+    } catch {
+      showErrorNotification();
+    }
+  }, []);
+
   // Handle editing a submission (select it)
   const handleEdit = useCallback(
     (id: string) => {
@@ -376,6 +387,7 @@ export function useSubmissionHandlers({
     handleDelete,
     handleDeleteSelected,
     handleDuplicate,
+    handleArchive,
     handleEdit,
     handleDefaultOptionChange,
     handlePost,

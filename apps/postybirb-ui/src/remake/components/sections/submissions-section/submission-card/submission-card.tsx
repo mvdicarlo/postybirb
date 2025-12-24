@@ -38,6 +38,8 @@ export function SubmissionCard({
     handleDuplicate,
     handleEdit,
     handlePost,
+    handleArchive,
+    handleViewHistory,
     handleScheduleChange,
     handleDefaultOptionChange,
   } = useSubmissionActions(submission.id);
@@ -164,10 +166,13 @@ export function SubmissionCard({
             canPost={canPost}
             schedule={submission.schedule}
             isScheduled={submission.isScheduled}
+            hasHistory={submission.posts.length > 0}
             onPost={handlePost}
             onScheduleChange={handleScheduleChange}
             onEdit={handleEdit}
             onDuplicate={handleDuplicate}
+            onViewHistory={handleViewHistory}
+            onArchive={handleArchive}
             onDelete={handleDelete}
           />
         </Group>

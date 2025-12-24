@@ -4,22 +4,25 @@
 
 import { Trans } from '@lingui/react/macro';
 import { ActionIcon, Group, Tooltip } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import {
-    IconArchiveOff,
-    IconPlayerStop,
-    IconSend,
-    IconTrash,
+  IconArchiveOff,
+  IconHistory,
+  IconPlayerStop,
+  IconSend,
+  IconTrash,
 } from '@tabler/icons-react';
 import postManagerApi from '../../../../../api/post-manager.api';
 import postQueueApi from '../../../../../api/post-queue.api';
 import submissionApi from '../../../../../api/submission.api';
 import {
-    showDeletedNotification,
-    showDeleteErrorNotification,
-    showPostErrorNotification,
+  showDeletedNotification,
+  showDeleteErrorNotification,
+  showPostErrorNotification,
 } from '../../../../../utils/notifications';
 import { HoldToConfirmButton } from '../../../../hold-to-confirm';
+import { SubmissionHistoryDrawer } from '../../submission-history-drawer';
 import { useSubmissionEditCardContext } from '../context';
 import { ApplyTemplateAction } from './apply-template-action';
 import { SaveToManyAction } from './save-to-many-action';
@@ -29,6 +32,7 @@ import { SaveToManyAction } from './save-to-many-action';
  */
 export function SubmissionEditCardActions() {
   const { submission } = useSubmissionEditCardContext();
+  const [historyOpened, historyDrawer] = useDisclosure(false);
 
   const handlePost = async () => {
     try {
@@ -79,31 +83,52 @@ export function SubmissionEditCardActions() {
     );
   }
 
-  // Archived submissions: only show unarchive and delete
+  // Archived submissions: show history (if available), unarchive and delete
   if (submission.isArchived) {
+    const hasHistory = submission.posts.length > 0;
     return (
-      <Group gap={4} wrap="nowrap" onClick={(e) => e.stopPropagation()}>
-        <Tooltip label={<Trans>Restore</Trans>}>
-          <ActionIcon
-            variant="subtle"
-            size="sm"
-            color="blue"
-            onClick={handleUnarchive}
-          >
-            <IconArchiveOff size={16} />
-          </ActionIcon>
-        </Tooltip>
-        <Tooltip label={<Trans>Hold to delete permanently</Trans>}>
-          <HoldToConfirmButton
-            variant="subtle"
-            size="sm"
-            color="red"
-            onConfirm={handleDelete}
-          >
-            <IconTrash size={16} />
-          </HoldToConfirmButton>
-        </Tooltip>
-      </Group>
+      <>
+        <Group gap={4} wrap="nowrap" onClick={(e) => e.stopPropagation()}>
+          {hasHistory && (
+            <Tooltip label={<Trans>View history</Trans>}>
+              <ActionIcon
+                variant="subtle"
+                size="sm"
+                onClick={historyDrawer.open}
+              >
+                <IconHistory size={16} />
+              </ActionIcon>
+            </Tooltip>
+          )}
+          <Tooltip label={<Trans>Restore</Trans>}>
+            <ActionIcon
+              variant="subtle"
+              size="sm"
+              color="blue"
+              onClick={handleUnarchive}
+            >
+              <IconArchiveOff size={16} />
+            </ActionIcon>
+          </Tooltip>
+          <Tooltip label={<Trans>Hold to delete permanently</Trans>}>
+            <HoldToConfirmButton
+              variant="subtle"
+              size="sm"
+              color="red"
+              onConfirm={handleDelete}
+            >
+              <IconTrash size={16} />
+            </HoldToConfirmButton>
+          </Tooltip>
+        </Group>
+
+        {/* History drawer */}
+        <SubmissionHistoryDrawer
+          opened={historyOpened}
+          onClose={historyDrawer.close}
+          submission={submission}
+        />
+      </>
     );
   }
 
@@ -156,6 +181,9 @@ export function SubmissionEditCardActions() {
   // Check if submission can be posted
   const canPost = !submission.hasErrors && submission.hasWebsiteOptions;
 
+  // Check if submission has history
+  const hasHistory = submission.posts.length > 0;
+
   // Determine tooltip message for disabled post button
   let postTooltip: React.ReactNode = <Trans>Hold to post</Trans>;
   if (submission.hasErrors) {
@@ -164,31 +192,47 @@ export function SubmissionEditCardActions() {
     postTooltip = <Trans>No websites selected</Trans>;
   }
 
-  // Normal state: show template, post and delete
+  // Normal state: show template, history (if available), post and delete
   return (
-    <Group gap={4} wrap="nowrap" onClick={(e) => e.stopPropagation()}>
-      <ApplyTemplateAction />
-      <Tooltip label={postTooltip}>
-        <HoldToConfirmButton
-          variant="subtle"
-          size="sm"
-          color="blue"
-          onConfirm={handlePost}
-          disabled={!canPost}
-        >
-          <IconSend size={16} />
-        </HoldToConfirmButton>
-      </Tooltip>
-      <Tooltip label={<Trans>Hold to delete</Trans>}>
-        <HoldToConfirmButton
-          variant="subtle"
-          size="sm"
-          color="red"
-          onConfirm={handleDelete}
-        >
-          <IconTrash size={16} />
-        </HoldToConfirmButton>
-      </Tooltip>
-    </Group>
+    <>
+      <Group gap={4} wrap="nowrap" onClick={(e) => e.stopPropagation()}>
+        <ApplyTemplateAction />
+        {hasHistory && (
+          <Tooltip label={<Trans>View history</Trans>}>
+            <ActionIcon variant="subtle" size="sm" onClick={historyDrawer.open}>
+              <IconHistory size={16} />
+            </ActionIcon>
+          </Tooltip>
+        )}
+        <Tooltip label={postTooltip}>
+          <HoldToConfirmButton
+            variant="subtle"
+            size="sm"
+            color="blue"
+            onConfirm={handlePost}
+            disabled={!canPost}
+          >
+            <IconSend size={16} />
+          </HoldToConfirmButton>
+        </Tooltip>
+        <Tooltip label={<Trans>Hold to delete</Trans>}>
+          <HoldToConfirmButton
+            variant="subtle"
+            size="sm"
+            color="red"
+            onConfirm={handleDelete}
+          >
+            <IconTrash size={16} />
+          </HoldToConfirmButton>
+        </Tooltip>
+      </Group>
+
+      {/* History drawer */}
+      <SubmissionHistoryDrawer
+        opened={historyOpened}
+        onClose={historyDrawer.close}
+        submission={submission}
+      />
+    </>
   );
 }

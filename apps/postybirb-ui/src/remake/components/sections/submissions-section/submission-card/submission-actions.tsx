@@ -8,11 +8,13 @@ import { Trans } from '@lingui/react/macro';
 import { ActionIcon, Group, Menu, Tooltip } from '@mantine/core';
 import { ISubmissionScheduleInfo } from '@postybirb/types';
 import {
-  IconCopy,
-  IconDotsVertical,
-  IconEdit,
-  IconSend,
-  IconTrash,
+    IconArchive,
+    IconCopy,
+    IconDotsVertical,
+    IconEdit,
+    IconHistory,
+    IconSend,
+    IconTrash,
 } from '@tabler/icons-react';
 import { useCallback } from 'react';
 import { HoldToConfirmButton } from '../../../hold-to-confirm';
@@ -25,6 +27,8 @@ interface SubmissionActionsProps {
   schedule: ISubmissionScheduleInfo;
   /** Whether the submission is currently scheduled */
   isScheduled: boolean;
+  /** Whether the submission has post history */
+  hasHistory?: boolean;
   /** Handler for posting the submission */
   onPost?: () => void;
   /** Handler for schedule changes */
@@ -36,6 +40,10 @@ interface SubmissionActionsProps {
   onEdit?: () => void;
   /** Handler for duplicating the submission */
   onDuplicate?: () => void;
+  /** Handler for viewing submission history */
+  onViewHistory?: () => void;
+  /** Handler for archiving the submission */
+  onArchive?: () => void;
   /** Handler for deleting the submission */
   onDelete?: () => void;
 }
@@ -47,10 +55,13 @@ export function SubmissionActions({
   canPost,
   schedule,
   isScheduled,
+  hasHistory,
   onPost,
   onScheduleChange,
   onEdit,
   onDuplicate,
+  onViewHistory,
+  onArchive,
   onDelete,
 }: SubmissionActionsProps) {
   const handleEdit = useCallback(
@@ -75,6 +86,22 @@ export function SubmissionActions({
       onDelete?.();
     },
     [onDelete],
+  );
+
+  const handleViewHistory = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      onViewHistory?.();
+    },
+    [onViewHistory],
+  );
+
+  const handleArchive = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      onArchive?.();
+    },
+    [onArchive],
   );
 
   const handleScheduleChange = useCallback(
@@ -137,7 +164,23 @@ export function SubmissionActions({
           >
             <Trans>Duplicate</Trans>
           </Menu.Item>
+          {hasHistory && onViewHistory && (
+            <Menu.Item
+              leftSection={<IconHistory size={14} />}
+              onClick={handleViewHistory}
+            >
+              <Trans>View history</Trans>
+            </Menu.Item>
+          )}
           <Menu.Divider />
+          {onArchive && (
+            <Menu.Item
+              leftSection={<IconArchive size={14} />}
+              onClick={handleArchive}
+            >
+              <Trans>Archive</Trans>
+            </Menu.Item>
+          )}
           <Menu.Item
             leftSection={<IconTrash size={14} />}
             color="red"

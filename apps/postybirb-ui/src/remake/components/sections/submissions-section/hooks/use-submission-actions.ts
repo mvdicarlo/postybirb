@@ -20,6 +20,10 @@ export interface BoundSubmissionActions {
   handleEdit: () => void;
   /** Post this submission immediately */
   handlePost: () => void;
+  /** Archive this submission (if available) */
+  handleArchive?: () => void;
+  /** View this submission's post history (if available) */
+  handleViewHistory?: () => void;
   /** Update this submission's schedule */
   handleScheduleChange: (
     schedule: ISubmissionScheduleInfo,
@@ -55,6 +59,12 @@ export function useSubmissionActions(submissionId: string): BoundSubmissionActio
       handleDuplicate: () => context.onDuplicate(submissionId),
       handleEdit: () => context.onEdit(submissionId),
       handlePost: () => context.onPost(submissionId),
+      handleArchive: context.onArchive
+        ? () => context.onArchive!(submissionId)
+        : undefined,
+      handleViewHistory: context.onViewHistory
+        ? () => context.onViewHistory!(submissionId)
+        : undefined,
       handleScheduleChange: (
         schedule: ISubmissionScheduleInfo,
         isScheduled: boolean

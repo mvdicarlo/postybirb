@@ -35,6 +35,10 @@ export interface SubmissionsContextValue {
   onEdit: (id: string) => void;
   /** Post a submission immediately */
   onPost: (id: string) => void;
+  /** Archive a submission */
+  onArchive?: (id: string) => void;
+  /** View submission history (optional - only available when drawer is configured) */
+  onViewHistory?: (id: string) => void;
   /** Update submission's default option fields */
   onDefaultOptionChange: (id: string, update: Partial<IWebsiteFormFields>) => void;
   /** Update submission's schedule */
@@ -90,6 +94,10 @@ export interface SubmissionsProviderProps {
   onEdit: (id: string) => void;
   /** Post handler */
   onPost: (id: string) => void;
+  /** Archive handler (optional) */
+  onArchive?: (id: string) => void;
+  /** View history handler (optional) */
+  onViewHistory?: (id: string) => void;
   /** Default option change handler */
   onDefaultOptionChange: (id: string, update: Partial<IWebsiteFormFields>) => void;
   /** Schedule change handler */
@@ -114,6 +122,8 @@ export function SubmissionsProvider({
   onDuplicate,
   onEdit,
   onPost,
+  onArchive,
+  onViewHistory,
   onDefaultOptionChange,
   onScheduleChange,
 }: SubmissionsProviderProps) {
@@ -127,6 +137,8 @@ export function SubmissionsProvider({
       onDuplicate,
       onEdit,
       onPost,
+      onArchive,
+      onViewHistory,
       onDefaultOptionChange,
       onScheduleChange,
     }),
@@ -139,6 +151,8 @@ export function SubmissionsProvider({
       onDuplicate,
       onEdit,
       onPost,
+      onArchive,
+      onViewHistory,
       onDefaultOptionChange,
       onScheduleChange,
     ]

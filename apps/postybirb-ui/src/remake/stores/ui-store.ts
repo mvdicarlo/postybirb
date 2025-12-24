@@ -9,14 +9,14 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import { useShallow } from 'zustand/react/shallow';
 import { AccountLoginFilter } from '../types/account-filters';
 import {
-  createAccountsViewState,
-  createFileSubmissionsViewState,
-  createHomeViewState,
-  createMessageSubmissionsViewState,
-  createTemplatesViewState,
-  defaultViewState,
-  type SectionId,
-  type ViewState,
+    createAccountsViewState,
+    createFileSubmissionsViewState,
+    createHomeViewState,
+    createMessageSubmissionsViewState,
+    createTemplatesViewState,
+    defaultViewState,
+    type SectionId,
+    type ViewState,
 } from '../types/view-state';
 import { useAccountStore } from './account-store';
 import { useSubmissionStore } from './submission-store';
@@ -103,7 +103,6 @@ interface UIState {
 
   // Submissions primary content preferences
   submissionsPreferMultiEdit: boolean;
-  submissionsFullView: boolean;
 
   // Language/locale
   language: string;
@@ -154,7 +153,6 @@ interface UIActions {
 
   // Submissions primary content preferences
   setSubmissionsPreferMultiEdit: (preferMultiEdit: boolean) => void;
-  setSubmissionsFullView: (fullView: boolean) => void;
 
   // Language actions
   setLanguage: (language: string) => void;
@@ -225,7 +223,6 @@ const initialState: UIState = {
   messageSubmissionsSearchQuery: '',
   subNavVisible: true,
   submissionsPreferMultiEdit: true,
-  submissionsFullView: false,
   language: getDefaultLanguage(),
   colorScheme: 'auto',
   primaryColor: 'red',
@@ -487,8 +484,6 @@ export const useUIStore = create<UIStore>()(
       // Submissions primary content preferences
       setSubmissionsPreferMultiEdit: (submissionsPreferMultiEdit) =>
         set({ submissionsPreferMultiEdit }),
-      setSubmissionsFullView: (submissionsFullView) =>
-        set({ submissionsFullView }),
 
       // Language actions
       setLanguage: (language) => set({ language }),
@@ -532,7 +527,6 @@ export const useUIStore = create<UIStore>()(
         messageSubmissionsSearchQuery: state.messageSubmissionsSearchQuery,
         subNavVisible: state.subNavVisible,
         submissionsPreferMultiEdit: state.submissionsPreferMultiEdit,
-        submissionsFullView: state.submissionsFullView,
         language: state.language,
         colorScheme: state.colorScheme,
         primaryColor: state.primaryColor,
@@ -675,9 +669,7 @@ export const useSubmissionsContentPreferences = () =>
   useUIStore(
     useShallow((state) => ({
       preferMultiEdit: state.submissionsPreferMultiEdit,
-      fullView: state.submissionsFullView,
       setPreferMultiEdit: state.setSubmissionsPreferMultiEdit,
-      setFullView: state.setSubmissionsFullView,
     })),
   );
 
