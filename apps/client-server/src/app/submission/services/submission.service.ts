@@ -119,10 +119,12 @@ export class SubmissionService
     if (IsTestEnvironment()) {
       return;
     }
+    const now = Date.now();
     super.emit({
       event: SUBMISSION_UPDATES,
       data: await this.findAllAsDto(),
     });
+    this.logger.info(`Emitted submission updates in ${Date.now() - now}ms`);
   }
 
   public async findAllAsDto(): Promise<ISubmissionDto<ISubmissionMetadata>[]> {

@@ -6,7 +6,7 @@ import { ISubmissionScheduleInfo, IWebsiteFormFields } from '@postybirb/types';
 import { useCallback } from 'react';
 import submissionApi from '../../../../api/submission.api';
 import websiteOptionsApi from '../../../../api/website-options.api';
-import type { SubmissionRecord } from '../../../../stores/records';
+import { useSubmissionStore } from '../../../../stores/submission-store';
 import { useUIStore } from '../../../../stores/ui-store';
 import { type ViewState } from '../../../../types/view-state';
 import {
@@ -19,8 +19,6 @@ import { isSubmissionsViewState } from '../types';
 interface UseSubmissionUpdateProps {
   /** Current view state */
   viewState: ViewState;
-  /** All submissions (for finding by ID) */
-  allSubmissions: SubmissionRecord[];
 }
 
 interface UseSubmissionUpdateResult {
@@ -48,7 +46,6 @@ interface UseSubmissionUpdateResult {
  */
 export function useSubmissionUpdate({
   viewState,
-  allSubmissions,
 }: UseSubmissionUpdateProps): UseSubmissionUpdateResult {
   const setViewState = useUIStore((state) => state.setViewState);
 
@@ -87,9 +84,10 @@ export function useSubmissionUpdate({
   );
 
   // Handle changing any default option field (title, tags, rating, etc.)
+  // Uses getState() to get current submission at call time, avoiding stale closures
   const handleDefaultOptionChange = useCallback(
     async (id: string, update: Partial<IWebsiteFormFields>) => {
-      const submission = allSubmissions.find((s) => s.id === id);
+      const submission = useSubmissionStore.getState().recordsMap.get(id);
       if (!submission) return;
 
       const defaultOptions = submission.getDefaultOptions();
@@ -106,7 +104,7 @@ export function useSubmissionUpdate({
         showUpdateErrorNotification();
       }
     },
-    [allSubmissions],
+    [],
   );
 
   // Handle scheduling a submission

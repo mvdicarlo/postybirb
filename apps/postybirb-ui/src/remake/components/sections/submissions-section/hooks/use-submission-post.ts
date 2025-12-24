@@ -4,7 +4,7 @@
 
 import { useCallback } from 'react';
 import postQueueApi from '../../../../api/post-queue.api';
-import type { SubmissionRecord } from '../../../../stores/records';
+import { useSubmissionStore } from '../../../../stores/submission-store';
 import { useUIStore } from '../../../../stores/ui-store';
 import { type ViewState } from '../../../../types/view-state';
 import { showPostErrorNotification } from '../../../../utils/notifications';
@@ -13,8 +13,6 @@ import { isSubmissionsViewState } from '../types';
 interface UseSubmissionPostProps {
   /** Current view state */
   viewState: ViewState;
-  /** All submissions (for finding by ID) */
-  allSubmissions: SubmissionRecord[];
   /** Currently selected IDs */
   selectedIds: string[];
 }
@@ -31,7 +29,6 @@ interface UseSubmissionPostResult {
  */
 export function useSubmissionPost({
   viewState,
-  allSubmissions,
   selectedIds,
 }: UseSubmissionPostProps): UseSubmissionPostResult {
   const setViewState = useUIStore((state) => state.setViewState);
@@ -47,14 +44,17 @@ export function useSubmissionPost({
 
   // Handle posting all selected submissions
   // Filters out submissions that have no websites or have validation errors
+  // Uses getState() to get current submissions at call time, avoiding stale closures
   const handlePostSelected = useCallback(async () => {
     if (selectedIds.length === 0) return;
+
+    const { recordsMap } = useSubmissionStore.getState();
 
     // Filter to only include valid submissions:
     // - Must have at least one website option (excluding default)
     // - Must not have validation errors
     const validIds = selectedIds.filter((id) => {
-      const submission = allSubmissions.find((s) => s.id === id);
+      const submission = recordsMap.get(id);
       if (!submission) return false;
       return submission.hasWebsiteOptions && !submission.hasErrors;
     });
@@ -78,7 +78,7 @@ export function useSubmissionPost({
     } catch {
       showPostErrorNotification();
     }
-  }, [selectedIds, allSubmissions, viewState, setViewState]);
+  }, [selectedIds, viewState, setViewState]);
 
   return {
     handlePost,

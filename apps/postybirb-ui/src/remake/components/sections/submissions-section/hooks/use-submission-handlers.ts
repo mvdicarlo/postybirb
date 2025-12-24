@@ -8,7 +8,6 @@ import {
   IWebsiteFormFields,
   SubmissionType,
 } from '@postybirb/types';
-import type { SubmissionRecord } from '../../../../stores/records';
 import { type ViewState } from '../../../../types/view-state';
 import {
   FileSubmissionUploadParams,
@@ -24,8 +23,6 @@ export type { FileSubmissionUploadParams };
 interface UseSubmissionHandlersProps {
   /** Current view state */
   viewState: ViewState;
-  /** All submissions (for finding by ID) */
-  allSubmissions: SubmissionRecord[];
   /** Currently selected IDs */
   selectedIds: string[];
   /** Type of submissions (FILE or MESSAGE) */
@@ -84,7 +81,6 @@ interface UseSubmissionHandlersResult {
  */
 export function useSubmissionHandlers({
   viewState,
-  allSubmissions,
   selectedIds,
   submissionType,
 }: UseSubmissionHandlersProps): UseSubmissionHandlersResult {
@@ -107,7 +103,6 @@ export function useSubmissionHandlers({
 
   const { handlePost, handlePostSelected } = useSubmissionPost({
     viewState,
-    allSubmissions,
     selectedIds,
   });
 
@@ -119,7 +114,6 @@ export function useSubmissionHandlers({
     handleScheduleChange,
   } = useSubmissionUpdate({
     viewState,
-    allSubmissions,
   });
 
   return {

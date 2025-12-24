@@ -94,7 +94,6 @@ export function SubmissionsSection({
     handleScheduleChange,
   } = useSubmissionHandlers({
     viewState,
-    allSubmissions,
     selectedIds,
     submissionType,
   });
