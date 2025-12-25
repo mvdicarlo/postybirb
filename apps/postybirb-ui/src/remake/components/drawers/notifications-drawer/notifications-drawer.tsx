@@ -164,8 +164,10 @@ function ReadStatusFilter({
         {
           value: 'unread',
           label: (
-            <Group gap={4}>
-              <Trans>Unread</Trans>
+            <Group gap={4} wrap="nowrap" justify="center">
+              <span>
+                <Trans>Unread</Trans>
+              </span>
               {unreadCount > 0 && (
                 <Badge size="xs" variant="filled" color="red">
                   {unreadCount}

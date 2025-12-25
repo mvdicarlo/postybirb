@@ -3,14 +3,13 @@
  * Renders different content based on the current view state and selection.
  */
 
-import { Trans } from '@lingui/react/macro';
-import { Box, Center, LoadingOverlay, Stack, Text, Title } from '@mantine/core';
+import { Box, LoadingOverlay } from '@mantine/core';
 import { SubmissionType } from '@postybirb/types';
-import { IconHome } from '@tabler/icons-react';
 import '../../styles/layout.css';
 import { isHomeViewState, type ViewState } from '../../types/view-state';
 import { ComponentErrorBoundary } from '../error-boundary';
 import { AccountsContent } from '../sections/accounts-section';
+import { HomeContent } from '../sections/home-section';
 import { SubmissionsContent } from '../sections/submissions-section';
 import { TemplatesContent } from '../sections/templates-section';
 
@@ -20,28 +19,6 @@ interface PrimaryContentProps {
   /** Whether content is loading */
   // eslint-disable-next-line react/no-unused-prop-types
   loading?: boolean;
-}
-
-/**
- * Home view content - welcome/dashboard.
- */
-function HomeContent() {
-  return (
-    <Center h="100%">
-      <Stack align="center" gap="md">
-        <IconHome size={64} stroke={1.5} opacity={0.5} />
-        <Title order={2} c="dimmed">
-          <Trans>Welcome to PostyBirb</Trans>
-        </Title>
-        <Text size="sm" c="dimmed" ta="center" maw={400}>
-          <Trans>
-            Select a section from the sidebar to get started, or create a new
-            submission.
-          </Trans>
-        </Text>
-      </Stack>
-    </Center>
-  );
 }
 
 /**

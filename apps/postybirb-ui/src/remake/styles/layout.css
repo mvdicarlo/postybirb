@@ -408,3 +408,21 @@
 :root {
   --postybirb-header-height: 60px;
 }
+
+/* =============================================================================
+    Stat Card - Dashboard stat card styles
+    ============================================================================= */
+
+.postybirb__stat-card--clickable {
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.postybirb__stat-card--clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--mantine-shadow-sm);
+}
+
+.postybirb__stat-card--clickable:active {
+  transform: translateY(0);
+}
