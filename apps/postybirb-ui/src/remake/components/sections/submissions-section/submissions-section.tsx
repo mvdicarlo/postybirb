@@ -66,6 +66,12 @@ export function SubmissionsSection({
       orderedSubmissions,
     });
 
+  // Get selected submission records for bulk actions
+  const selectedSubmissions = useMemo(
+    () => orderedSubmissions.filter((s) => selectedIds.includes(s.id)),
+    [orderedSubmissions, selectedIds]
+  );
+
   // Sortable drag-and-drop
   const { containerRef } = useSubmissionSortable({
     isDragEnabled,
@@ -258,6 +264,7 @@ export function SubmissionsSection({
         selectionState={selectionState}
         onToggleSelectAll={handleToggleSelectAll}
         selectedIds={selectedIds}
+        selectedSubmissions={selectedSubmissions}
         selectedCount={selectedIds.length}
         totalCount={orderedSubmissions.length}
         onDeleteSelected={handleDeleteWithConfirm}

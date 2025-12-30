@@ -20,12 +20,13 @@ import {
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { SubmissionId, SubmissionType } from '@postybirb/types';
-import { IconPlus, IconSend, IconTemplate, IconTrash } from '@tabler/icons-react';
+import { IconCalendarEvent, IconPlus, IconSend, IconTemplate, IconTrash } from '@tabler/icons-react';
 import { useCallback, useState } from 'react';
 import { DeleteSelectedKeybinding } from '../../../config/keybindings';
+import type { SubmissionRecord } from '../../../stores/records';
 import type { SubmissionFilter } from '../../../stores/ui-store';
 import { useSubmissionsFilter } from '../../../stores/ui-store';
-import { SearchInput } from '../../shared';
+import { MultiSchedulerModal, SearchInput } from '../../shared';
 import { TemplatePickerModal } from '../../shared/template-picker';
 import './submissions-section.css';
 
@@ -45,6 +46,8 @@ interface SubmissionSectionHeaderProps {
   onToggleSelectAll?: () => void;
   /** Currently selected submission IDs */
   selectedIds?: SubmissionId[];
+  /** Currently selected submission records */
+  selectedSubmissions?: SubmissionRecord[];
   /** Number of selected items */
   selectedCount?: number;
   /** Total number of items */
@@ -66,6 +69,7 @@ export function SubmissionSectionHeader({
   selectionState = 'none',
   onToggleSelectAll,
   selectedIds = [],
+  selectedSubmissions = [],
   selectedCount = 0,
   totalCount = 0,
   onDeleteSelected,
@@ -81,6 +85,9 @@ export function SubmissionSectionHeader({
   
   // Template picker modal state
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+
+  // Multi-scheduler modal state
+  const [isSchedulerModalOpen, setIsSchedulerModalOpen] = useState(false);
 
   // Handle creating a message submission
   const handleCreateMessage = useCallback(() => {
@@ -160,6 +167,21 @@ export function SubmissionSectionHeader({
                   aria-label="Apply template"
                 >
                   <IconTemplate size={16} />
+                </ActionIcon>
+              </Tooltip>
+            )}
+            {/* Schedule button - only show when items are selected */}
+            {selectedCount > 0 && (
+              <Tooltip label={<Trans>Schedule</Trans>}>
+                <ActionIcon
+                  onClick={() => setIsSchedulerModalOpen(true)}
+                  variant="light"
+                  size="sm"
+                  color="violet"
+                  // eslint-disable-next-line lingui/no-unlocalized-strings
+                  aria-label="Schedule"
+                >
+                  <IconCalendarEvent size={16} />
                 </ActionIcon>
               </Tooltip>
             )}
@@ -294,6 +316,13 @@ export function SubmissionSectionHeader({
           onClose={() => setIsTemplateModalOpen(false)}
         />
       )}
+
+      {/* Multi-scheduler modal */}
+      <MultiSchedulerModal
+        opened={isSchedulerModalOpen}
+        onClose={() => setIsSchedulerModalOpen(false)}
+        submissions={selectedSubmissions}
+      />
     </Box>
   );
 }

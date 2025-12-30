@@ -72,6 +72,22 @@
   border-color: var(--mantine-color-primary-filled);
 }
 
+.postybirb__submission__card--scheduled {
+  background-color: var(--mantine-color-blue-light);
+}
+
+.postybirb__submission__card--scheduled.postybirb__submission__card--selected {
+  background-color: color-mix(in srgb, var(--mantine-color-blue-light) 50%, var(--mantine-color-primary-light) 50%);
+}
+
+.postybirb__submission__card--has-errors {
+  background-color: var(--mantine-color-red-light);
+}
+
+.postybirb__submission__card--has-errors.postybirb__submission__card--selected {
+  background-color: color-mix(in srgb, var(--mantine-color-red-light) 50%, var(--mantine-color-primary-light) 50%);
+}
+
 /* Drag handle */
 .postybirb__submission__drag_handle {
   cursor: grab;

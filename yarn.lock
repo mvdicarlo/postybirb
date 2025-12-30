@@ -4270,19 +4270,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@gfazioli/mantine-border-animate@npm:^0.3.1":
-  version: 0.3.1
-  resolution: "@gfazioli/mantine-border-animate@npm:0.3.1"
-  peerDependencies:
-    "@mantine/core": ">=7.0.0"
-    "@mantine/hooks": ">=7.0.0"
-    "@tabler/icons-react": ^3.34.0
-    react: ^18.x || ^19.x
-    react-dom: ^18.x || ^19.x
-  checksum: 10c0/289d422bc8811e9a1e0d562eb4dca4bdbced42d7ed4ca942f3a9e2928184b270bb48581fa1047598acc257f30b55aa7878c2e359893e575dc1ea3ed96cbb4599
-  languageName: node
-  linkType: hard
-
 "@grpc/grpc-js@npm:^1.7.1":
   version: 1.14.1
   resolution: "@grpc/grpc-js@npm:1.14.1"
@@ -23540,7 +23527,6 @@ __metadata:
     "@fullcalendar/interaction": "npm:^6.1.15"
     "@fullcalendar/react": "npm:^6.1.15"
     "@fullcalendar/timegrid": "npm:^6.1.15"
-    "@gfazioli/mantine-border-animate": "npm:^0.3.1"
     "@iarna/rtf-to-html": "npm:^1.1.0"
     "@kayahr/jest-electron-runner": "npm:29.15.0"
     "@lingui/cli": "npm:^5.5"

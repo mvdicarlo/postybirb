@@ -4,7 +4,6 @@
  * Uses SubmissionsContext for actions.
  */
 
-import { BorderAnimate } from '@gfazioli/mantine-border-animate';
 import { Box, Card, Group, Stack, Text } from '@mantine/core';
 import { SubmissionType } from '@postybirb/types';
 import { IconClock, IconGripVertical } from '@tabler/icons-react';
@@ -62,10 +61,13 @@ export function SubmissionCard({
         event.preventDefault();
         const currentCard = event.currentTarget as HTMLElement;
         const cards = Array.from(
-          currentCard.closest('.postybirb__submission__list')?.querySelectorAll('.postybirb__submission__card') ?? []
+          currentCard
+            .closest('.postybirb__submission__list')
+            ?.querySelectorAll('.postybirb__submission__card') ?? [],
         ) as HTMLElement[];
         const currentIndex = cards.indexOf(currentCard);
-        const nextIndex = event.key === 'ArrowDown' ? currentIndex + 1 : currentIndex - 1;
+        const nextIndex =
+          event.key === 'ArrowDown' ? currentIndex + 1 : currentIndex - 1;
         if (nextIndex >= 0 && nextIndex < cards.length) {
           cards[nextIndex].focus();
         }
@@ -87,13 +89,32 @@ export function SubmissionCard({
   // Only show thumbnail for FILE type submissions
   const showThumbnail = submissionType === SubmissionType.FILE;
 
+  // Check if the most recent post record has any errors
+  const mostRecentPostHasErrors = useMemo(() => {
+    if (submission.posts.length === 0) return false;
+    // Get the most recent post record (last in the array or sort by date)
+    const sortedPosts = [...submission.posts].sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
+    const mostRecentPost = sortedPosts[0];
+    // Check if any child website post has errors
+    return mostRecentPost.children.some(
+      (child) => child.errors && child.errors.length > 0,
+    );
+  }, [submission.posts]);
+
   // Build className list
   const cardClassName = useMemo(() => {
     const classes = ['postybirb__submission__card'];
     if (isSelected) classes.push('postybirb__submission__card--selected');
+    if (submission.isScheduled)
+      classes.push('postybirb__submission__card--scheduled');
+    if (mostRecentPostHasErrors)
+      classes.push('postybirb__submission__card--has-errors');
     if (className) classes.push(className);
     return classes.join(' ');
-  }, [isSelected, className]);
+  }, [isSelected, submission.isScheduled, mostRecentPostHasErrors, className]);
 
   const cardContent = (
     <Card
@@ -157,7 +178,7 @@ export function SubmissionCard({
                 <Text
                   size="xs"
                   c={submission.isScheduled ? 'blue.6' : 'dimmed'}
-                  fw={submission.isScheduled ? 500 : 400}
+                  fw={submission.isScheduled ? 'bold' : undefined}
                 >
                   {submission.scheduledDate?.toLocaleString()}
                 </Text>
@@ -207,24 +228,6 @@ export function SubmissionCard({
       </Stack>
     </Card>
   );
-
-  // Wrap with animated border if scheduled
-  if (submission.isScheduled) {
-    return (
-      <BorderAnimate
-        variant="pulse"
-        colorFrom="cyan"
-        colorTo="blue"
-        duration={3}
-        size={100}
-        blur={2}
-        borderWidth={2}
-        radius={0}
-      >
-        {cardContent}
-      </BorderAnimate>
-    );
-  }
 
   return cardContent;
 }

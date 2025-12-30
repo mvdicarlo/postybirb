@@ -3,17 +3,9 @@
  * Displays the last 5 notifications with type-based icons.
  */
 
-import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import { Trans } from '@lingui/react/macro';
-import {
-  Box,
-  Group,
-  Paper,
-  Stack,
-  Text,
-  ThemeIcon,
-} from '@mantine/core';
+import { Box, Group, Paper, Stack, Text, ThemeIcon } from '@mantine/core';
 import {
   IconActivity,
   IconAlertTriangle,
@@ -21,9 +13,10 @@ import {
   IconInfoCircle,
   IconX,
 } from '@tabler/icons-react';
+import moment from 'moment/min/moment-with-locales';
 import { useMemo } from 'react';
-import type { NotificationRecord } from '../../../stores/records';
 import { useNotifications } from '../../../stores/notification-store';
+import type { NotificationRecord } from '../../../stores/records';
 import { EmptyState } from '../../empty-state';
 
 /**
@@ -50,31 +43,11 @@ function getNotificationIcon(type: NotificationRecord['type']): {
  * Hook to format relative time for notifications.
  */
 function useFormatTimeAgo() {
-  const { _ } = useLingui();
+  const { i18n } = useLingui();
 
   return (date: Date): string => {
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.round(diffMs / (1000 * 60));
-    const diffHours = Math.round(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
-
-    if (diffMins < 1) {
-      return _(msg`just now`);
-    }
-    if (diffMins < 60) {
-      return _(msg`${diffMins}m ago`);
-    }
-    if (diffHours < 24) {
-      return _(msg`${diffHours}h ago`);
-    }
-    if (diffDays === 1) {
-      return _(msg`yesterday`);
-    }
-    if (diffDays < 7) {
-      return _(msg`${diffDays}d ago`);
-    }
-    return date.toLocaleDateString();
+    moment.locale(i18n.locale);
+    return moment(date).fromNow();
   };
 }
 
@@ -91,7 +64,7 @@ export function RecentActivityPanel() {
       [...notifications]
         .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
         .slice(0, 5),
-    [notifications]
+    [notifications],
   );
 
   return (
@@ -111,7 +84,9 @@ export function RecentActivityPanel() {
             <EmptyState
               preset="no-notifications"
               message={<Trans>No recent activity</Trans>}
-              description={<Trans>Activity will appear here as you use the app</Trans>}
+              description={
+                <Trans>Activity will appear here as you use the app</Trans>
+              }
               size="sm"
             />
           </Box>
@@ -127,9 +102,22 @@ export function RecentActivityPanel() {
                   radius="sm"
                   bg="var(--mantine-color-default)"
                 >
-                  <Group justify="space-between" wrap="nowrap" align="flex-start">
-                    <Group gap="xs" wrap="nowrap" style={{ minWidth: 0, flex: 1 }}>
-                      <ThemeIcon size="sm" variant="light" color={color} radius="xl">
+                  <Group
+                    justify="space-between"
+                    wrap="nowrap"
+                    align="flex-start"
+                  >
+                    <Group
+                      gap="xs"
+                      wrap="nowrap"
+                      style={{ minWidth: 0, flex: 1 }}
+                    >
+                      <ThemeIcon
+                        size="sm"
+                        variant="light"
+                        color={color}
+                        radius="xl"
+                      >
                         {icon}
                       </ThemeIcon>
                       <Box style={{ minWidth: 0, flex: 1 }}>

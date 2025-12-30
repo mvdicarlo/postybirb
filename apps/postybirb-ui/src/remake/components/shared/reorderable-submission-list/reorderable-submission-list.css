@@ -1,0 +1,81 @@
+/**
+ * Styles for ReorderableSubmissionList component.
+ */
+
+.postybirb__reorderable-container {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  width: 100%;
+}
+
+.postybirb__reorderable-item {
+  cursor: default;
+  transition: box-shadow 150ms ease, transform 150ms ease;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.postybirb__reorderable-item:focus {
+  outline: 2px solid var(--mantine-primary-color-filled);
+  outline-offset: 2px;
+}
+
+.postybirb__reorderable-item:hover {
+  box-shadow: var(--mantine-shadow-sm);
+}
+
+.postybirb__reorderable-item-content {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-xs);
+  min-width: 0;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.postybirb__reorderable-handle {
+  cursor: grab;
+  color: var(--mantine-color-dimmed);
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: var(--mantine-radius-sm);
+  transition: background-color 150ms ease;
+  flex-shrink: 0;
+}
+
+.postybirb__reorderable-handle:hover {
+  background-color: var(--mantine-color-default-hover);
+}
+
+.postybirb__reorderable-handle:active {
+  cursor: grabbing;
+}
+
+.postybirb__reorderable-item-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+}
+
+.postybirb__reorderable-item-main > * {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.postybirb__reorderable-ghost {
+  opacity: 0.5;
+  background-color: var(--mantine-color-default);
+}
+
+.postybirb__reorderable-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100px;
+}

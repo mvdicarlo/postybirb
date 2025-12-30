@@ -3,18 +3,12 @@
  * Displays up to 5 upcoming posts with relative times.
  */
 
-import { msg } from '@lingui/core/macro';
+import { t } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import { Trans } from '@lingui/react/macro';
-import {
-  Box,
-  Group,
-  Paper,
-  Stack,
-  Text,
-  ThemeIcon,
-} from '@mantine/core';
+import { Box, Group, Paper, Stack, Text, ThemeIcon } from '@mantine/core';
 import { IconCalendarEvent, IconClock } from '@tabler/icons-react';
+import moment from 'moment/min/moment-with-locales';
 import { useMemo } from 'react';
 import { useScheduledSubmissions } from '../../../stores/submission-store';
 import { EmptyState } from '../../empty-state';
@@ -23,32 +17,11 @@ import { EmptyState } from '../../empty-state';
  * Format a date as relative time (e.g., "in 2 hours", "tomorrow").
  */
 function useFormatRelativeTime() {
-  const { _ } = useLingui();
-  
-  return (dateString: string): string => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = date.getTime() - now.getTime();
-    const diffMins = Math.round(diffMs / (1000 * 60));
-    const diffHours = Math.round(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+  const { i18n } = useLingui();
 
-    if (diffMins < 0) {
-      return _(msg`Past due`);
-    }
-    if (diffMins < 60) {
-      return _(msg`in ${diffMins} min`);
-    }
-    if (diffHours < 24) {
-      return _(msg`in ${diffHours} hour(s)`);
-    }
-    if (diffDays === 1) {
-      return _(msg`tomorrow`);
-    }
-    if (diffDays < 7) {
-      return _(msg`in ${diffDays} days`);
-    }
-    return date.toLocaleDateString();
+  return (dateString: string): string => {
+    moment.locale(i18n.locale);
+    return moment(dateString).fromNow();
   };
 }
 
@@ -126,17 +99,21 @@ export function UpcomingPostsPanel() {
                 <Group justify="space-between" wrap="nowrap">
                   <Box style={{ minWidth: 0, flex: 1 }}>
                     <Text size="sm" truncate fw={500}>
-                      {submission.metadata.displayName || _(msg`Untitled`)}
+                      {submission.title || t`Untitled`}
                     </Text>
                     <Group gap={4}>
                       <IconClock size={12} style={{ opacity: 0.6 }} />
                       <Text size="xs" c="dimmed">
-                        {formatDateTime(submission.schedule.scheduledFor as string)}
+                        {formatDateTime(
+                          submission.schedule.scheduledFor as string,
+                        )}
                       </Text>
                     </Group>
                   </Box>
                   <Text size="xs" c="violet" fw={500}>
-                    {formatRelativeTime(submission.schedule.scheduledFor as string)}
+                    {formatRelativeTime(
+                      submission.schedule.scheduledFor as string,
+                    )}
                   </Text>
                 </Group>
               </Paper>
