@@ -6,41 +6,41 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-  ActionIcon,
-  Box,
-  Card,
-  Center,
-  Container,
-  Divider,
-  Group,
-  ScrollArea,
-  Stack,
-  Switch,
-  Text,
-  Title,
+    ActionIcon,
+    Box,
+    Card,
+    Center,
+    Container,
+    Divider,
+    Group,
+    ScrollArea,
+    Stack,
+    Switch,
+    Text,
+    Title,
 } from '@mantine/core';
 import type { SubmissionId } from '@postybirb/types';
 import { SubmissionType } from '@postybirb/types';
 import {
-  IconInbox,
-  IconLayoutSidebarLeftCollapse,
-  IconLayoutSidebarLeftExpand,
+    IconInbox,
+    IconLayoutSidebarLeftCollapse,
+    IconLayoutSidebarLeftExpand,
 } from '@tabler/icons-react';
 import { useMemo } from 'react';
 import type { SubmissionRecord } from '../../../stores/records';
 import {
-  useSubmissionsByType,
-  useSubmissionsMap,
+    useSubmissionsByType,
+    useSubmissionsMap,
 } from '../../../stores/submission-store';
 import {
-  useSubNavVisible,
-  useSubmissionsContentPreferences,
-  useToggleSectionPanel,
+    useSubNavVisible,
+    useSubmissionsContentPreferences,
+    useToggleSectionPanel,
 } from '../../../stores/ui-store';
 import {
-  isFileSubmissionsViewState,
-  isMessageSubmissionsViewState,
-  type ViewState,
+    isFileSubmissionsViewState,
+    isMessageSubmissionsViewState,
+    type ViewState,
 } from '../../../types/view-state';
 import { SubmissionEditCard } from './submission-edit-card';
 
@@ -216,11 +216,12 @@ export function SubmissionsContent({
                       </Card>
                     )
                   ) : (
-                    selectedSubmissions.map((submission) => (
+                    selectedSubmissions.map((submission, index) => (
                       <SubmissionEditCard
                         key={submission.id}
                         submission={submission}
                         isCollapsible={isCollapsible}
+                        defaultExpanded={index === 0}
                       />
                     ))
                   )}

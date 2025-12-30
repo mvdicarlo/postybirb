@@ -4,21 +4,11 @@
  */
 
 import { Trans } from '@lingui/react/macro';
-import {
-  Badge,
-  Button,
-  Group,
-  Loader,
-  Paper,
-  Stack,
-  Text,
-  ThemeIcon,
-} from '@mantine/core';
-import { IconPlayerPause, IconPlayerPlay, IconStack2 } from '@tabler/icons-react';
+import { Button, Loader, Paper, Stack } from '@mantine/core';
+import { IconPlayerPause, IconPlayerPlay } from '@tabler/icons-react';
 import { useState } from 'react';
 import postQueueApi from '../../../api/post-queue.api';
 import { useQueuePaused } from '../../../stores/settings-store';
-import { useQueuedSubmissions } from '../../../stores/submission-store';
 
 /**
  * QueueControlCard component for the home dashboard.
@@ -26,7 +16,6 @@ import { useQueuedSubmissions } from '../../../stores/submission-store';
  */
 export function QueueControlCard() {
   const queuePaused = useQueuePaused();
-  const queuedSubmissions = useQueuedSubmissions();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleToggle = async () => {
@@ -43,37 +32,8 @@ export function QueueControlCard() {
   };
 
   return (
-    <Paper withBorder p="md" radius="md">
-      <Stack gap="sm">
-        <Group justify="space-between" align="flex-start">
-          <Group gap="xs">
-            <ThemeIcon
-              size="lg"
-              variant="light"
-              color={queuePaused ? 'orange' : 'green'}
-              radius="md"
-            >
-              <IconStack2 size={20} />
-            </ThemeIcon>
-            <div>
-              <Text size="sm" fw={500}>
-                <Trans>Post Queue</Trans>
-              </Text>
-              <Text size="xs" c="dimmed">
-                {queuedSubmissions.length}{' '}
-                <Trans>item(s) queued</Trans>
-              </Text>
-            </div>
-          </Group>
-          <Badge
-            color={queuePaused ? 'orange' : 'green'}
-            variant="light"
-            size="sm"
-          >
-            {queuePaused ? <Trans>Paused</Trans> : <Trans>Active</Trans>}
-          </Badge>
-        </Group>
-
+    <Paper withBorder p="md" radius="md" h="100%">
+      <Stack gap="sm" justify="center" h="100%">
         <Button
           variant="light"
           color={queuePaused ? 'green' : 'orange'}
@@ -91,7 +51,11 @@ export function QueueControlCard() {
           disabled={isLoading}
           fullWidth
         >
-          {queuePaused ? <Trans>Resume Posting</Trans> : <Trans>Pause Posting</Trans>}
+          {queuePaused ? (
+            <Trans>Resume Posting</Trans>
+          ) : (
+            <Trans>Pause Posting</Trans>
+          )}
         </Button>
       </Stack>
     </Paper>

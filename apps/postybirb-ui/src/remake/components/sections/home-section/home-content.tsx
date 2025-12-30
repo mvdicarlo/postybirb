@@ -14,6 +14,7 @@ import {
   ThemeIcon,
   Title,
 } from '@mantine/core';
+import { SubmissionType } from '@postybirb/types';
 import {
   IconCalendar,
   IconFile,
@@ -21,16 +22,15 @@ import {
   IconMessage,
   IconStack2,
 } from '@tabler/icons-react';
-import { SubmissionType } from '@postybirb/types';
-import '../../../styles/layout.css';
-import { useDrawerActions, useViewStateActions } from '../../../stores/ui-store';
+import { useAccounts } from '../../../stores/account-store';
 import {
   useQueuedSubmissions,
   useRegularSubmissions,
   useScheduledSubmissions,
   useSubmissionsByType,
 } from '../../../stores/submission-store';
-import { useAccounts } from '../../../stores/account-store';
+import { useDrawerActions, useViewStateActions } from '../../../stores/ui-store';
+import '../../../styles/layout.css';
 import {
   createFileSubmissionsViewState,
   createMessageSubmissionsViewState,
@@ -40,6 +40,7 @@ import { QueueControlCard } from './queue-control-card';
 import { RecentActivityPanel } from './recent-activity-panel';
 import { ScheduleCalendarPanel } from './schedule-calendar-panel';
 import { StatCard } from './stat-card';
+import { UpcomingPostsPanel } from './upcoming-posts-panel';
 import { ValidationIssuesPanel } from './validation-issues-panel';
 
 /**
@@ -158,8 +159,9 @@ export function HomeContent() {
             <RecentActivityPanel />
           </SimpleGrid>
 
-          {/* Validation & Account Health Row */}
-          <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md">
+          {/* Upcoming Posts & Validation Row */}
+          <SimpleGrid cols={{ base: 1, md: 3 }} spacing="md">
+            <UpcomingPostsPanel />
             <ValidationIssuesPanel />
             <AccountHealthPanel />
           </SimpleGrid>

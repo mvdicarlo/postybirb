@@ -10,8 +10,8 @@ import { ComponentErrorBoundary } from '../../../error-boundary';
 import { SubmissionEditCardActions } from './actions';
 import { SubmissionEditCardBody } from './body';
 import {
-  SubmissionEditCardProvider,
-  useSubmissionEditCardContext,
+    SubmissionEditCardProvider,
+    useSubmissionEditCardContext,
 } from './context';
 import { SubmissionEditCardHeader } from './header';
 import './submission-edit-card.css';
@@ -21,6 +21,8 @@ export interface SubmissionEditCardProps {
   submission: SubmissionRecord;
   /** Whether the card can be collapsed */
   isCollapsible: boolean;
+  /** Whether the card should be expanded by default (only applies if collapsible) */
+  defaultExpanded?: boolean;
   /** Target submission IDs for mass edit mode (to pre-populate Save To Many) */
   targetSubmissionIds?: string[];
 }
@@ -29,8 +31,8 @@ export interface SubmissionEditCardProps {
  * Inner card component that uses context.
  */
 function SubmissionEditCardInner() {
-  const { isCollapsible } = useSubmissionEditCardContext();
-  const [expanded, { toggle }] = useDisclosure(true);
+  const { isCollapsible, defaultExpanded } = useSubmissionEditCardContext();
+  const [expanded, { toggle }] = useDisclosure(defaultExpanded);
 
   // If not collapsible, always show expanded
   const isExpanded = isCollapsible ? expanded : true;
@@ -75,6 +77,7 @@ function SubmissionEditCardInner() {
 export function SubmissionEditCard({
   submission,
   isCollapsible,
+  defaultExpanded = true,
   targetSubmissionIds,
 }: SubmissionEditCardProps) {
   return (
@@ -82,6 +85,7 @@ export function SubmissionEditCard({
       <SubmissionEditCardProvider
         submission={submission}
         isCollapsible={isCollapsible}
+        defaultExpanded={defaultExpanded}
         targetSubmissionIds={targetSubmissionIds}
       >
         <SubmissionEditCardInner />

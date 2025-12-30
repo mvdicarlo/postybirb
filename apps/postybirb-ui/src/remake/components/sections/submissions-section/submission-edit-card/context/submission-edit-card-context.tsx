@@ -14,6 +14,8 @@ export interface SubmissionEditCardContextValue {
   submission: SubmissionRecord;
   /** Whether the card can be collapsed (multiple selections, not mass edit) */
   isCollapsible: boolean;
+  /** Whether the card should be expanded by default */
+  defaultExpanded: boolean;
   /** Target submission IDs for mass edit mode (to pre-populate Save To Many) */
   targetSubmissionIds?: string[];
 }
@@ -28,6 +30,7 @@ interface SubmissionEditCardProviderProps {
   children: ReactNode;
   submission: SubmissionRecord;
   isCollapsible: boolean;
+  defaultExpanded?: boolean;
   targetSubmissionIds?: string[];
 }
 
@@ -38,15 +41,17 @@ export function SubmissionEditCardProvider({
   children,
   submission,
   isCollapsible,
+  defaultExpanded = true,
   targetSubmissionIds,
 }: SubmissionEditCardProviderProps) {
   const value = useMemo<SubmissionEditCardContextValue>(
     () => ({
       submission,
       isCollapsible,
+      defaultExpanded,
       targetSubmissionIds,
     }),
-    [submission, isCollapsible, targetSubmissionIds],
+    [submission, isCollapsible, defaultExpanded, targetSubmissionIds],
   );
 
   return (

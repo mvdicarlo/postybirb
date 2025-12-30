@@ -30,19 +30,6 @@ export function DescriptionField({
   const insertTitle = fieldValue.insertTitle || false;
   const description = fieldValue.description || [];
 
-  // Convert description blocks to plain text for now (simplified)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const descriptionText = (description as any[])
-    .map((block) => {
-      if (block.children && Array.isArray(block.children)) {
-        return block.children
-          .map((child: { text?: string }) => child.text || '')
-          .join('');
-      }
-      return '';
-    })
-    .join('\n');
-
   return (
     <Box>
       <FieldLabel
@@ -87,6 +74,7 @@ export function DescriptionField({
         />
         {(overrideDefault || option.isDefault) && (
           <DescriptionEditor
+            value={description}
             minHeight={35}
             showCustomShortcuts
             isDefaultEditor={option.isDefault}
