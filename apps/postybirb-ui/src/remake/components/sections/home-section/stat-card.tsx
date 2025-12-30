@@ -3,8 +3,15 @@
  * Shows an icon, count, and label with optional click navigation.
  */
 
-import { Group, Paper, Stack, Text, ThemeIcon, UnstyledButton } from '@mantine/core';
 import type { MantineColor } from '@mantine/core';
+import {
+  Group,
+  Paper,
+  Stack,
+  Text,
+  ThemeIcon,
+  UnstyledButton,
+} from '@mantine/core';
 import type { ReactNode } from 'react';
 import { cn } from '../../../utils/class-names';
 
@@ -25,13 +32,21 @@ interface StatCardProps {
  * StatCard component for displaying dashboard metrics.
  * Becomes clickable with hover effect when onClick is provided.
  */
-export function StatCard({ icon, count, label, color = 'blue', onClick }: StatCardProps) {
+export function StatCard({
+  icon,
+  count,
+  label,
+  color = 'blue',
+  onClick,
+}: StatCardProps) {
   const content = (
     <Paper
       withBorder
       p="md"
       radius="md"
-      className={cn('postybirb__stat-card', { 'postybirb__stat-card--clickable': !!onClick })}
+      className={cn(['postybirb__stat-card'], {
+        'postybirb__stat-card--clickable': !!onClick,
+      })}
     >
       <Group justify="space-between" align="flex-start">
         <Stack gap={4}>

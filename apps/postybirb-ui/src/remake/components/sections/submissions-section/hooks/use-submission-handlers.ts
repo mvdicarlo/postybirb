@@ -52,8 +52,8 @@ interface UseSubmissionHandlersResult {
   handleDelete: (id: string) => Promise<void>;
   /** Handle deleting all selected submissions */
   handleDeleteSelected: () => Promise<void>;
-  /** Handle posting all selected submissions */
-  handlePostSelected: () => Promise<void>;
+  /** Handle posting submissions with specified order */
+  handlePostSelected: (orderedIds: string[]) => Promise<void>;
   /** Handle duplicating a submission */
   handleDuplicate: (id: string) => Promise<void>;
   /** Handle archiving a submission */
@@ -103,7 +103,6 @@ export function useSubmissionHandlers({
 
   const { handlePost, handlePostSelected } = useSubmissionPost({
     viewState,
-    selectedIds,
   });
 
   const {

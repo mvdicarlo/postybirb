@@ -3,8 +3,7 @@
  * Displays a month view with indicators for days with scheduled posts.
  */
 
-import { msg, Trans } from '@lingui/react/macro';
-import { useLingui } from '@lingui/react';
+import { Trans, useLingui } from '@lingui/react/macro';
 import {
   ActionIcon,
   Box,
@@ -30,25 +29,27 @@ import { useDrawerActions } from '../../../stores/ui-store';
  * Get weekday abbreviations for calendar header.
  */
 function useWeekdays() {
-  const { _ } = useLingui();
+  const { t } = useLingui();
   return useMemo(
     () => [
-      { key: 'sun', label: _(msg`Su`) },
-      { key: 'mon', label: _(msg`Mo`) },
-      { key: 'tue', label: _(msg`Tu`) },
-      { key: 'wed', label: _(msg`We`) },
-      { key: 'thu', label: _(msg`Th`) },
-      { key: 'fri', label: _(msg`Fr`) },
-      { key: 'sat', label: _(msg`Sa`) },
+      { key: 'sun', label: t`Su` },
+      { key: 'mon', label: t`Mo` },
+      { key: 'tue', label: t`Tu` },
+      { key: 'wed', label: t`We` },
+      { key: 'thu', label: t`Th` },
+      { key: 'fri', label: t`Fr` },
+      { key: 'sat', label: t`Sa` },
     ],
-    [_]
+    [t],
   );
 }
 
 /**
  * Day cell data for the calendar grid.
  */
-type DayCell = { type: 'empty'; position: number } | { type: 'day'; date: Date };
+type DayCell =
+  | { type: 'empty'; position: number }
+  | { type: 'day'; date: Date };
 
 /**
  * Get all days in a month as a grid (includes padding days from prev/next month).
@@ -117,17 +118,21 @@ export function ScheduleCalendarPanel() {
 
   const days = useMemo(
     () => getMonthDays(currentMonth.getFullYear(), currentMonth.getMonth()),
-    [currentMonth]
+    [currentMonth],
   );
 
   const today = new Date();
 
   const handlePrevMonth = () => {
-    setCurrentMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
+    setCurrentMonth(
+      (prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1),
+    );
   };
 
   const handleNextMonth = () => {
-    setCurrentMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
+    setCurrentMonth(
+      (prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1),
+    );
   };
 
   const handleOpenScheduleDrawer = () => {

@@ -12,8 +12,8 @@ import { IconArchive, IconFiles, IconMessage } from '@tabler/icons-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { tinykeys } from 'tinykeys';
 import {
-    DeleteSelectedKeybinding,
-    toTinykeysFormat,
+  DeleteSelectedKeybinding,
+  toTinykeysFormat,
 } from '../../../config/keybindings';
 import { SubmissionRecord } from '../../../stores';
 import { useSubmissionsLoading } from '../../../stores/submission-store';
@@ -22,12 +22,13 @@ import { ArchivedSubmissionList } from './archived-submission-list';
 import { SubmissionsProvider } from './context';
 import { FileSubmissionModal } from './file-submission-modal';
 import {
-    useGlobalDropzone,
-    useSubmissionHandlers,
-    useSubmissions,
-    useSubmissionSelection,
-    useSubmissionSortable,
+  useGlobalDropzone,
+  useSubmissionHandlers,
+  useSubmissions,
+  useSubmissionSelection,
+  useSubmissionSortable,
 } from './hooks';
+import { PostConfirmModal } from './post-confirm-modal';
 import { SubmissionHistoryDrawer } from './submission-history-drawer';
 import { SubmissionList } from './submission-list';
 import { SubmissionSectionHeader } from './submission-section-header';
@@ -123,18 +124,6 @@ export function SubmissionsSection({
   const [historySubmission, setHistorySubmission] =
     useState<SubmissionRecord | null>(null);
 
-  // Count of valid submissions that can be posted
-  // (must have website options and no validation errors)
-  const validPostCount = useMemo(
-    () =>
-      selectedIds.filter((id) => {
-        const submission = allSubmissions.find((s) => s.id === id);
-        if (!submission) return false;
-        return submission.hasWebsiteOptions && !submission.hasErrors;
-      }).length,
-    [selectedIds, allSubmissions],
-  );
-
   // Handle delete with confirmation
   const handleDeleteWithConfirm = useCallback(() => {
     if (selectedIds.length > 0) {
@@ -142,12 +131,12 @@ export function SubmissionsSection({
     }
   }, [selectedIds.length, deleteModal]);
 
-  // Handle post with confirmation (only if there are valid submissions)
+  // Handle post with confirmation (only if items are selected)
   const handlePostWithConfirm = useCallback(() => {
-    if (validPostCount > 0) {
+    if (selectedIds.length > 0) {
       postModal.open();
     }
-  }, [validPostCount, postModal]);
+  }, [selectedIds.length, postModal]);
 
   // Delete key handler
   useEffect(() => {
@@ -211,27 +200,13 @@ export function SubmissionsSection({
         confirmColor="red"
       />
 
-      {/* Post confirmation modal */}
-      <ConfirmActionModal
+      {/* Post confirmation modal with reorderable list */}
+      <PostConfirmModal
         opened={postModalOpened}
         onClose={postModal.close}
         onConfirm={handlePostSelected}
-        title={<Trans>Post Submissions</Trans>}
-        message={
-          validPostCount < selectedIds.length ? (
-            <Trans>
-              {validPostCount} of {selectedIds.length} selected submission(s)
-              are ready to post. Submissions without websites or with validation
-              errors will be skipped.
-            </Trans>
-          ) : (
-            <Trans>
-              Are you sure you want to post {validPostCount} submission(s)?
-            </Trans>
-          )
-        }
-        confirmLabel={<Trans>Post</Trans>}
-        confirmColor="blue"
+        selectedSubmissions={selectedSubmissions}
+        totalSelectedCount={selectedIds.length}
       />
 
       {/* File submission modal */}

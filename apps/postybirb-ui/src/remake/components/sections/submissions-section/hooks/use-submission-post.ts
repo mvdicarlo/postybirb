@@ -4,7 +4,6 @@
 
 import { useCallback } from 'react';
 import postQueueApi from '../../../../api/post-queue.api';
-import { useSubmissionStore } from '../../../../stores/submission-store';
 import { useUIStore } from '../../../../stores/ui-store';
 import { type ViewState } from '../../../../types/view-state';
 import { showPostErrorNotification } from '../../../../utils/notifications';
@@ -13,15 +12,13 @@ import { isSubmissionsViewState } from '../types';
 interface UseSubmissionPostProps {
   /** Current view state */
   viewState: ViewState;
-  /** Currently selected IDs */
-  selectedIds: string[];
 }
 
 interface UseSubmissionPostResult {
   /** Handle posting a submission */
   handlePost: (id: string) => Promise<void>;
-  /** Handle posting all selected submissions */
-  handlePostSelected: () => Promise<void>;
+  /** Handle posting submissions with specified order */
+  handlePostSelected: (orderedIds: string[]) => Promise<void>;
 }
 
 /**
@@ -29,7 +26,6 @@ interface UseSubmissionPostResult {
  */
 export function useSubmissionPost({
   viewState,
-  selectedIds,
 }: UseSubmissionPostProps): UseSubmissionPostResult {
   const setViewState = useUIStore((state) => state.setViewState);
 
@@ -42,43 +38,32 @@ export function useSubmissionPost({
     }
   }, []);
 
-  // Handle posting all selected submissions
-  // Filters out submissions that have no websites or have validation errors
-  // Uses getState() to get current submissions at call time, avoiding stale closures
-  const handlePostSelected = useCallback(async () => {
-    if (selectedIds.length === 0) return;
+  // Handle posting submissions in the specified order
+  // The orderedIds are pre-filtered to only include valid submissions
+  const handlePostSelected = useCallback(
+    async (orderedIds: string[]) => {
+      if (orderedIds.length === 0) return;
 
-    const { recordsMap } = useSubmissionStore.getState();
+      try {
+        await postQueueApi.enqueue(orderedIds);
 
-    // Filter to only include valid submissions:
-    // - Must have at least one website option (excluding default)
-    // - Must not have validation errors
-    const validIds = selectedIds.filter((id) => {
-      const submission = recordsMap.get(id);
-      if (!submission) return false;
-      return submission.hasWebsiteOptions && !submission.hasErrors;
-    });
-
-    if (validIds.length === 0) return;
-
-    try {
-      await postQueueApi.enqueue(validIds);
-
-      // Clear selection after posting
-      if (isSubmissionsViewState(viewState)) {
-        setViewState({
-          ...viewState,
-          params: {
-            ...viewState.params,
-            selectedIds: [],
-            mode: 'single',
-          },
-        } as ViewState);
+        // Clear selection after posting
+        if (isSubmissionsViewState(viewState)) {
+          setViewState({
+            ...viewState,
+            params: {
+              ...viewState.params,
+              selectedIds: [],
+              mode: 'single',
+            },
+          } as ViewState);
+        }
+      } catch {
+        showPostErrorNotification();
       }
-    } catch {
-      showPostErrorNotification();
-    }
-  }, [selectedIds, viewState, setViewState]);
+    },
+    [viewState, setViewState]
+  );
 
   return {
     handlePost,

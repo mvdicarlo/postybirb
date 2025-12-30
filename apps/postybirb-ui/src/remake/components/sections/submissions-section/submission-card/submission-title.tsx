@@ -3,6 +3,7 @@
  */
 
 import { Text, TextInput } from '@mantine/core';
+import { IconEdit } from '@tabler/icons-react';
 import { useCallback, useEffect, useState } from 'react';
 
 interface SubmissionTitleProps {
@@ -33,11 +34,14 @@ export function SubmissionTitle({
     setLocalTitle(title ?? '');
   }, [title]);
 
-  const handleClick = useCallback((e: React.MouseEvent) => {
-    if (readOnly) return;
-    e.stopPropagation();
-    setIsEditing(true);
-  }, [readOnly]);
+  const handleClick = useCallback(
+    (e: React.MouseEvent) => {
+      if (readOnly) return;
+      e.stopPropagation();
+      setIsEditing(true);
+    },
+    [readOnly],
+  );
 
   const handleBlur = useCallback(() => {
     setIsEditing(false);
@@ -49,6 +53,7 @@ export function SubmissionTitle({
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
+      e.stopPropagation();
       if (e.key === 'Enter') {
         e.preventDefault();
         (e.target as HTMLInputElement).blur();
@@ -88,6 +93,12 @@ export function SubmissionTitle({
 
   return (
     <Text
+      onKeyDown={(event: React.KeyboardEvent) => {
+        if (event.key === 'Enter') {
+          handleClick(event as unknown as React.MouseEvent);
+        }
+      }}
+      tabIndex={0}
       size="sm"
       fw={500}
       lineClamp={1}
@@ -95,7 +106,8 @@ export function SubmissionTitle({
       style={{ cursor: readOnly ? 'default' : 'text' }}
       title={title || name}
     >
-      {title || name}
+      {title || name}{' '}
+      <IconEdit size={12} style={{ verticalAlign: 'middle', opacity: 0.6 }} />
     </Text>
   );
 }
