@@ -150,6 +150,7 @@ describe('SubmissionService', () => {
       isScheduled: false,
       isTemplate: false,
       isArchived: false,
+      isInitialized: true,
       isMultiSubmission: false,
       schedule: {
         scheduleType: ScheduleType.NONE,
@@ -210,6 +211,7 @@ describe('SubmissionService', () => {
       isTemplate: false,
       isMultiSubmission: false,
       isArchived: false,
+      isInitialized: true,
       schedule: {
         scheduleType: ScheduleType.NONE,
       },
