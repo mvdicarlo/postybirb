@@ -3,7 +3,6 @@
  */
 
 import { Trans } from '@lingui/react/macro';
-import { notifications } from '@mantine/notifications';
 import {
   FieldAggregateType,
   FormBuilderMetadata,
@@ -22,6 +21,7 @@ import {
 import { useQuery } from 'react-query';
 import formGeneratorApi from '../../../../../../api/form-generator.api';
 import websiteOptionsApi from '../../../../../../api/website-options.api';
+import { showErrorWithContext } from '../../../../../../utils/notifications';
 import type { SubmissionRecord } from '../../../../../../stores/records';
 
 interface FormFieldsContextValue {
@@ -160,15 +160,7 @@ export function FormFieldsProvider({
           await websiteOptionsApi.update(option.id, { data: updatedData });
         } catch (error) {
           // Show error toast on API failure
-          notifications.show({
-            message:
-              error instanceof Error ? (
-                error.message
-              ) : (
-                <Trans>Failed to save changes</Trans>
-              ),
-            color: 'red',
-          });
+          showErrorWithContext(error, <Trans>Failed to save changes</Trans>);
         }
       }, debounceTime);
     },

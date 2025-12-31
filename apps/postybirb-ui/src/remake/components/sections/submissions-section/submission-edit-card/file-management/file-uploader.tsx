@@ -11,10 +11,13 @@ import {
     MS_WORD_MIME_TYPE,
     PDF_MIME_TYPE,
 } from '@mantine/dropzone';
-import { notifications } from '@mantine/notifications';
 import { IconPhoto, IconUpload, IconX } from '@tabler/icons-react';
 import { useState } from 'react';
-import fileSubmissionApi from '../../../../../../api/file-submission.api';
+import fileSubmissionApi from '../../../../../api/file-submission.api';
+import {
+  showUploadErrorNotification,
+  showWarningNotification,
+} from '../../../../../utils/notifications';
 import { useSubmissionEditCardContext } from '../context';
 
 // Supported MIME types
@@ -44,24 +47,18 @@ export function FileUploader() {
     try {
       await fileSubmissionApi.appendFiles(submission.id, 'file', files);
     } catch (error) {
-      notifications.show({
-        message:
-          // eslint-disable-next-line lingui/no-unlocalized-strings
-          error instanceof Error ? error.message : 'Failed to upload files',
-        color: 'red',
-      });
+      showUploadErrorNotification(
+        error instanceof Error ? error.message : undefined
+      );
     } finally {
       setUploading(false);
     }
   };
 
   const handleReject = () => {
-    notifications.show({
-      message:
-        // eslint-disable-next-line lingui/no-unlocalized-strings
-        'Some files were rejected. Check file type and size (max 100MB).',
-      color: 'orange',
-    });
+    showWarningNotification(
+      <Trans>Some files were rejected. Check file type and size (max 100MB).</Trans>
+    );
   };
 
   return (

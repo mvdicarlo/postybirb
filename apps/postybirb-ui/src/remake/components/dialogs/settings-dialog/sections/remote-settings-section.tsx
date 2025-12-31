@@ -13,9 +13,7 @@ import {
     TextInput,
     Title,
 } from '@mantine/core';
-import { notifications } from '@mantine/notifications';
 import {
-    IconCheck,
     IconCopy,
     IconEye,
     IconEyeOff,
@@ -23,7 +21,6 @@ import {
     IconPlug,
     IconRouter,
     IconServer,
-    IconX,
 } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 import remoteApi from '../../../../api/remote.api';
@@ -32,6 +29,11 @@ import {
     REMOTE_MODE_KEY,
     REMOTE_PASSWORD_KEY,
 } from '../../../../transports/http-client';
+import {
+  showConnectionErrorNotification,
+  showConnectionSuccessNotification,
+  showCopiedNotification,
+} from '../../../../utils/notifications';
 
 export function RemoteSettingsSection() {
   const [isTestingConnection, setIsTestingConnection] = useState(false);
@@ -77,19 +79,15 @@ export function RemoteSettingsSection() {
     setIsTestingConnection(true);
     try {
       await remoteApi.testPing();
-      notifications.show({
-        message: <Trans>Successfully connected to the remote host</Trans>,
-        color: 'green',
-        icon: <IconCheck size={16} />,
-      });
+      showConnectionSuccessNotification(
+        <Trans>Successfully connected to the remote host</Trans>
+      );
     } catch (error) {
       const err = error as { error: string; status: number; message: string };
-      notifications.show({
-        title: `${err.error} (${err.status})`,
-        message: err.message,
-        color: 'red',
-        icon: <IconX size={16} />,
-      });
+      showConnectionErrorNotification(
+        `${err.error} (${err.status})`,
+        err.message
+      );
     } finally {
       setIsTestingConnection(false);
     }
@@ -97,11 +95,7 @@ export function RemoteSettingsSection() {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    notifications.show({
-      message: <Trans>Copied to clipboard</Trans>,
-      color: 'green',
-      icon: <IconCheck size={16} />,
-    });
+    showCopiedNotification();
   };
 
   return (

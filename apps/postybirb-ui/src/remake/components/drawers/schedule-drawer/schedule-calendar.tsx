@@ -20,16 +20,13 @@ import {
   Text,
   ThemeIcon,
 } from '@mantine/core';
-import { notifications } from '@mantine/notifications';
 import { ScheduleType, SubmissionType } from '@postybirb/types';
 import {
   IconCalendarOff,
   IconCalendarTime,
-  IconCheck,
   IconClock,
   IconFile,
   IconMessage,
-  IconX,
 } from '@tabler/icons-react';
 import Cron from 'croner';
 import moment from 'moment';
@@ -37,6 +34,11 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import submissionApi from '../../../api/submission.api';
 import { useLocale } from '../../../hooks';
 import { useSubmissions } from '../../../stores/submission-store';
+import {
+  showInfoNotification,
+  showScheduleUpdatedNotification,
+  showUpdateErrorNotification,
+} from '../../../utils/notifications';
 
 /**
  * Calendar component for schedule drawer.
@@ -187,20 +189,13 @@ export function ScheduleCalendar() {
         isScheduled: false,
       })
       .then(() => {
-        notifications.show({
-          title: <Trans>Submission unscheduled</Trans>,
-          message: selectedEvent.title,
-          color: 'blue',
-          icon: <IconCheck size={16} />,
-        });
+        showInfoNotification(
+          selectedEvent.title,
+          <Trans>Submission unscheduled</Trans>
+        );
       })
       .catch((error) => {
-        notifications.show({
-          title: <Trans>Failed to update</Trans>,
-          message: error.message,
-          color: 'red',
-          icon: <IconX size={16} />,
-        });
+        showUpdateErrorNotification(error.message);
       });
 
     setModalOpened(false);
@@ -215,20 +210,10 @@ export function ScheduleCalendar() {
     submissionApi
       .update(selectedEvent.id, { isScheduled: !currentScheduledState })
       .then(() => {
-        notifications.show({
-          title: <Trans>Schedule updated</Trans>,
-          message: selectedEvent.title,
-          color: 'green',
-          icon: <IconCheck size={16} />,
-        });
+        showScheduleUpdatedNotification(selectedEvent.title);
       })
       .catch((error) => {
-        notifications.show({
-          title: <Trans>Failed to update</Trans>,
-          message: error.message,
-          color: 'red',
-          icon: <IconX size={16} />,
-        });
+        showUpdateErrorNotification(error.message);
       });
 
     setModalOpened(false);

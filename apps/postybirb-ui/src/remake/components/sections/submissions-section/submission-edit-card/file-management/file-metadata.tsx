@@ -19,7 +19,6 @@ import {
     TextInput,
     Tooltip,
 } from '@mantine/core';
-import { notifications } from '@mantine/notifications';
 import {
     FileType,
     IAccountDto,
@@ -36,6 +35,7 @@ import {
 import { debounce } from 'lodash';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import fileSubmissionApi from '../../../../../api/file-submission.api';
+import { showErrorWithContext } from '../../../../../utils/notifications';
 import { BasicWebsiteSelect } from '../../../../shared';
 
 interface FileMetadataProps {
@@ -50,12 +50,7 @@ export function FileMetadata({ file, accounts }: FileMetadataProps) {
   // Create a save function that updates metadata on the server
   const save = useCallback(() => {
     fileSubmissionApi.updateMetadata(file.id, metadata).catch((error) => {
-      notifications.show({
-        message:
-          // eslint-disable-next-line lingui/no-unlocalized-strings
-          error instanceof Error ? error.message : 'Failed to save metadata',
-        color: 'red',
-      });
+      showErrorWithContext(error, <Trans>Failed to save metadata</Trans>);
     });
   }, [file.id, metadata]);
 

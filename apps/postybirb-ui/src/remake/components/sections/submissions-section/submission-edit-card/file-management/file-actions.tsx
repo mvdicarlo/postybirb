@@ -17,7 +17,6 @@ import {
   Tooltip,
 } from '@mantine/core';
 import { FileWithPath } from '@mantine/dropzone';
-import { notifications } from '@mantine/notifications';
 import { FileType, ISubmissionFileDto, SubmissionId } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { IconCrop, IconFileUpload, IconReplace } from '@tabler/icons-react';
@@ -26,6 +25,11 @@ import fileSubmissionApi, {
   FileUpdateTarget,
 } from '../../../../../api/file-submission.api';
 import { defaultTargetProvider } from '../../../../../transports/http-client';
+import {
+  showErrorNotification,
+  showErrorWithContext,
+  showErrorWithTitleNotification,
+} from '../../../../../utils/notifications';
 import { ImageEditor } from '../../file-submission-modal/image-editor';
 import { FilePreview } from './file-preview';
 
@@ -59,12 +63,7 @@ export function FileActions({ file, submissionId }: FileActionsProps) {
         filename,
       );
     } catch (error) {
-      notifications.show({
-        message:
-          // eslint-disable-next-line lingui/no-unlocalized-strings
-          error instanceof Error ? error.message : 'Failed to replace file',
-        color: 'red',
-      });
+      showErrorWithContext(error, <Trans>Failed to replace file</Trans>);
     }
   };
 
@@ -74,15 +73,12 @@ export function FileActions({ file, submissionId }: FileActionsProps) {
     const newFileType = getFileType(payload.name);
     // Only allow replacing files with the same type
     if (fileType !== newFileType) {
-      notifications.show({
-        title: <Trans>Update Failed</Trans>,
-        message: (
-          <Trans>
-            File types do not match. Please upload a file of the same type.
-          </Trans>
-        ),
-        color: 'red',
-      });
+      showErrorWithTitleNotification(
+        <Trans>Update Failed</Trans>,
+        <Trans>
+          File types do not match. Please upload a file of the same type.
+        </Trans>
+      );
       return;
     }
 
@@ -102,10 +98,7 @@ export function FileActions({ file, submissionId }: FileActionsProps) {
     if (!payload) return;
 
     if (getFileType(payload.name) !== FileType.IMAGE) {
-      notifications.show({
-        message: <Trans>Thumbnail must be an image file.</Trans>,
-        color: 'red',
-      });
+      showErrorNotification(<Trans>Thumbnail must be an image file.</Trans>);
       return;
     }
 
@@ -128,11 +121,10 @@ export function FileActions({ file, submissionId }: FileActionsProps) {
 
       setEditorTarget('thumbnail');
       setEditorFile(primaryFile);
-    } catch (error) {
-      notifications.show({
-        message: <Trans>Failed to load primary file for cropping.</Trans>,
-        color: 'red',
-      });
+    } catch {
+      showErrorNotification(
+        <Trans>Failed to load primary file for cropping.</Trans>
+      );
     } finally {
       setIsLoadingPrimary(false);
     }

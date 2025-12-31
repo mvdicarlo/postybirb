@@ -5,7 +5,6 @@
 import { Trans } from '@lingui/react/macro';
 import { ActionIcon, Group, Tooltip } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { notifications } from '@mantine/notifications';
 import {
   IconArchiveOff,
   IconHistory,
@@ -20,6 +19,8 @@ import {
   showDeletedNotification,
   showDeleteErrorNotification,
   showPostErrorNotification,
+  showRestoredNotification,
+  showRestoreErrorNotification,
 } from '../../../../../utils/notifications';
 import { HoldToConfirmButton } from '../../../../hold-to-confirm';
 import { SubmissionHistoryDrawer } from '../../submission-history-drawer';
@@ -62,15 +63,9 @@ export function SubmissionEditCardActions() {
   const handleUnarchive = async () => {
     try {
       await submissionApi.unarchive(submission.submissionId);
-      notifications.show({
-        message: <Trans>Submission restored</Trans>,
-        color: 'green',
-      });
+      showRestoredNotification();
     } catch {
-      notifications.show({
-        message: <Trans>Failed to restore submission</Trans>,
-        color: 'red',
-      });
+      showRestoreErrorNotification();
     }
   };
 

@@ -11,35 +11,34 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-    Box,
-    Button,
-    CloseButton,
-    Flex,
-    Group,
-    Overlay,
-    Paper,
-    Portal,
-    Progress,
-    Text,
-    Transition,
+  Box,
+  Button,
+  CloseButton,
+  Flex,
+  Group,
+  Overlay,
+  Paper,
+  Portal,
+  Progress,
+  Text,
+  Transition,
 } from '@mantine/core';
 import { FileWithPath } from '@mantine/dropzone';
-import { notifications } from '@mantine/notifications';
 import {
-    DefaultDescription,
-    Description,
-    IFileMetadata,
-    SubmissionId,
-    SubmissionRating,
-    SubmissionType,
-    Tag,
+  DefaultDescription,
+  Description,
+  IFileMetadata,
+  SubmissionId,
+  SubmissionRating,
+  SubmissionType,
+  Tag,
 } from '@postybirb/types';
-import {
-    IconCheck,
-    IconExclamationCircle,
-    IconFileUpload,
-} from '@tabler/icons-react';
+import { IconFileUpload } from '@tabler/icons-react';
 import { useCallback, useEffect, useState } from 'react';
+import {
+  showUploadErrorNotification,
+  showUploadSuccessNotification,
+} from '../../../../utils/notifications';
 import { FileDropzone } from './file-dropzone';
 import { FileList } from './file-list';
 import './file-submission-modal.css';
@@ -196,11 +195,7 @@ export function FileSubmissionModal({
       clearInterval(interval);
       setProgress(100);
 
-      notifications.show({
-        message: <Trans>Files have been uploaded successfully</Trans>,
-        color: 'green',
-        icon: <IconCheck size={16} />,
-      });
+      showUploadSuccessNotification();
 
       // Reset and close
       setTimeout(() => {
@@ -213,11 +208,9 @@ export function FileSubmissionModal({
         onClose();
       }, 500);
     } catch (error) {
-      notifications.show({
-        message: (error as Error).message || <Trans>Error</Trans>,
-        color: 'red',
-        icon: <IconExclamationCircle size={16} />,
-      });
+      showUploadErrorNotification(
+        error instanceof Error ? error.message : undefined,
+      );
       setIsUploading(false);
     }
   }, [

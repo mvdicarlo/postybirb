@@ -13,7 +13,6 @@ import {
     Text,
     Tooltip,
 } from '@mantine/core';
-import { notifications } from '@mantine/notifications';
 import { SubmissionType } from '@postybirb/types';
 import {
     IconArchiveOff,
@@ -24,6 +23,12 @@ import {
 import { useCallback, useMemo } from 'react';
 import submissionApi from '../../../../api/submission.api';
 import { useLocale } from '../../../../hooks';
+import {
+  showDeletedNotification,
+  showDeleteErrorNotification,
+  showRestoredNotification,
+  showRestoreErrorNotification,
+} from '../../../../utils/notifications';
 import { useSubmissionsContext } from '../context';
 import { SubmissionBadges } from './submission-badges';
 import { SubmissionThumbnail } from './submission-thumbnail';
@@ -104,15 +109,9 @@ export function ArchivedSubmissionCard({
       e.stopPropagation();
       try {
         await submissionApi.unarchive(submission.submissionId);
-        notifications.show({
-          message: <Trans>Submission restored</Trans>,
-          color: 'green',
-        });
-      } catch (error) {
-        notifications.show({
-          message: <Trans>Failed to restore submission</Trans>,
-          color: 'red',
-        });
+        showRestoredNotification();
+      } catch {
+        showRestoreErrorNotification();
       }
     },
     [submission.submissionId],
@@ -123,15 +122,9 @@ export function ArchivedSubmissionCard({
       e.stopPropagation();
       try {
         await submissionApi.remove([submission.submissionId]);
-        notifications.show({
-          message: <Trans>Submission deleted</Trans>,
-          color: 'green',
-        });
-      } catch (error) {
-        notifications.show({
-          message: <Trans>Failed to delete submission</Trans>,
-          color: 'red',
-        });
+        showDeletedNotification();
+      } catch {
+        showDeleteErrorNotification();
       }
     },
     [submission.submissionId],

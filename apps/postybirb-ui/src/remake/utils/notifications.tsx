@@ -1,10 +1,21 @@
 /**
- * Standardized notification messages for CRUD operations.
+ * Standardized notification messages for CRUD operations and common actions.
  * Reduces translation burden by using consistent message patterns.
+ * All notifications include consistent icons for visual clarity.
  */
 
 import { Trans } from '@lingui/react/macro';
 import { notifications } from '@mantine/notifications';
+import {
+  IconAlertTriangle,
+  IconCheck,
+  IconInfoCircle,
+  IconX,
+} from '@tabler/icons-react';
+
+// -----------------------------------------------------------------------------
+// Success Notifications
+// -----------------------------------------------------------------------------
 
 /**
  * Show a generic success notification.
@@ -13,6 +24,7 @@ export function showSuccessNotification(message: React.ReactNode) {
   notifications.show({
     message,
     color: 'green',
+    icon: <IconCheck size={16} />,
   });
 }
 
@@ -24,6 +36,7 @@ export function showCreatedNotification(itemName?: string) {
     title: itemName,
     message: <Trans>Created successfully</Trans>,
     color: 'green',
+    icon: <IconCheck size={16} />,
   });
 }
 
@@ -35,6 +48,7 @@ export function showUpdatedNotification(itemName?: string) {
     title: itemName,
     message: <Trans>Updated successfully</Trans>,
     color: 'green',
+    icon: <IconCheck size={16} />,
   });
 }
 
@@ -51,8 +65,69 @@ export function showDeletedNotification(count = 1) {
         <Trans>{count} items deleted</Trans>
       ),
     color: 'green',
+    icon: <IconCheck size={16} />,
   });
 }
+
+/**
+ * Show a success notification for copying to clipboard.
+ */
+export function showCopiedNotification() {
+  notifications.show({
+    message: <Trans>Copied to clipboard</Trans>,
+    color: 'green',
+    icon: <IconCheck size={16} />,
+  });
+}
+
+/**
+ * Show a success notification for restoring/unarchiving an item.
+ */
+export function showRestoredNotification() {
+  notifications.show({
+    message: <Trans>Restored successfully</Trans>,
+    color: 'green',
+    icon: <IconCheck size={16} />,
+  });
+}
+
+/**
+ * Show a success notification for file upload.
+ */
+export function showUploadSuccessNotification() {
+  notifications.show({
+    message: <Trans>Files uploaded successfully</Trans>,
+    color: 'green',
+    icon: <IconCheck size={16} />,
+  });
+}
+
+/**
+ * Show a success notification for successful connection.
+ */
+export function showConnectionSuccessNotification(message?: React.ReactNode) {
+  notifications.show({
+    message: message ?? <Trans>Connected successfully</Trans>,
+    color: 'green',
+    icon: <IconCheck size={16} />,
+  });
+}
+
+/**
+ * Show a success notification for schedule updates.
+ */
+export function showScheduleUpdatedNotification(itemName?: string) {
+  notifications.show({
+    title: <Trans>Schedule updated</Trans>,
+    message: itemName,
+    color: 'green',
+    icon: <IconCheck size={16} />,
+  });
+}
+
+// -----------------------------------------------------------------------------
+// Error Notifications
+// -----------------------------------------------------------------------------
 
 /**
  * Show an error notification for failed creation.
@@ -62,6 +137,7 @@ export function showCreateErrorNotification(itemName?: string) {
     title: itemName,
     message: <Trans>Failed to create</Trans>,
     color: 'red',
+    icon: <IconX size={16} />,
   });
 }
 
@@ -73,6 +149,7 @@ export function showUpdateErrorNotification(itemName?: string) {
     title: itemName,
     message: <Trans>Failed to update</Trans>,
     color: 'red',
+    icon: <IconX size={16} />,
   });
 }
 
@@ -83,6 +160,7 @@ export function showDeleteErrorNotification() {
   notifications.show({
     message: <Trans>Failed to delete</Trans>,
     color: 'red',
+    icon: <IconX size={16} />,
   });
 }
 
@@ -94,6 +172,39 @@ export function showErrorNotification(message?: React.ReactNode) {
     title: <Trans>Error</Trans>,
     message: message ?? <Trans>An error occurred</Trans>,
     color: 'red',
+    icon: <IconX size={16} />,
+  });
+}
+
+/**
+ * Show an error notification with title and message.
+ * Useful for displaying API errors with status codes.
+ */
+export function showErrorWithTitleNotification(
+  title: React.ReactNode,
+  message: React.ReactNode
+) {
+  notifications.show({
+    title,
+    message,
+    color: 'red',
+    icon: <IconX size={16} />,
+  });
+}
+
+/**
+ * Show an error notification, extracting message from Error objects.
+ * Handles the common pattern of `error instanceof Error ? error.message : fallback`.
+ */
+export function showErrorWithContext(
+  error: unknown,
+  fallbackMessage: React.ReactNode
+) {
+  const message = error instanceof Error ? error.message : fallbackMessage;
+  notifications.show({
+    message,
+    color: 'red',
+    icon: <IconX size={16} />,
   });
 }
 
@@ -104,6 +215,7 @@ export function showDuplicateErrorNotification() {
   notifications.show({
     message: <Trans>Failed to duplicate</Trans>,
     color: 'red',
+    icon: <IconX size={16} />,
   });
 }
 
@@ -114,33 +226,88 @@ export function showPostErrorNotification() {
   notifications.show({
     message: <Trans>Failed to post submission</Trans>,
     color: 'red',
+    icon: <IconX size={16} />,
   });
 }
 
 /**
- * Utility to wrap an async operation with error notification.
- * Shows the provided error notification function if the operation fails.
- *
- * @param operation - The async operation to execute
- * @param onError - Error notification function to call on failure
- * @returns The result of the operation, or undefined on error
- *
- * @example
- * ```tsx
- * await withErrorNotification(
- *   () => submissionApi.duplicate(id),
- *   showDuplicateErrorNotification
- * );
- * ```
+ * Show an error notification for failed restore/unarchive.
  */
-export async function withErrorNotification<T>(
-  operation: () => Promise<T>,
-  onError: () => void
-): Promise<T | undefined> {
-  try {
-    return await operation();
-  } catch {
-    onError();
-    return undefined;
-  }
+export function showRestoreErrorNotification() {
+  notifications.show({
+    message: <Trans>Failed to restore</Trans>,
+    color: 'red',
+    icon: <IconX size={16} />,
+  });
+}
+
+/**
+ * Show an error notification for failed file upload.
+ */
+export function showUploadErrorNotification(message?: React.ReactNode) {
+  notifications.show({
+    message: message ?? <Trans>Failed to upload files</Trans>,
+    color: 'red',
+    icon: <IconX size={16} />,
+  });
+}
+
+/**
+ * Show an error notification for failed connection.
+ */
+export function showConnectionErrorNotification(
+  title: React.ReactNode,
+  message: React.ReactNode
+) {
+  notifications.show({
+    title,
+    message,
+    color: 'red',
+    icon: <IconX size={16} />,
+  });
+}
+
+/**
+ * Show an error notification for failed save operation.
+ */
+export function showSaveErrorNotification(message?: React.ReactNode) {
+  notifications.show({
+    message: message ?? <Trans>Failed to save</Trans>,
+    color: 'red',
+    icon: <IconX size={16} />,
+  });
+}
+
+// -----------------------------------------------------------------------------
+// Info & Warning Notifications
+// -----------------------------------------------------------------------------
+
+/**
+ * Show an informational notification.
+ */
+export function showInfoNotification(
+  message: React.ReactNode,
+  title?: React.ReactNode
+) {
+  notifications.show({
+    title,
+    message,
+    color: 'blue',
+    icon: <IconInfoCircle size={16} />,
+  });
+}
+
+/**
+ * Show a warning notification.
+ */
+export function showWarningNotification(
+  message: React.ReactNode,
+  title?: React.ReactNode
+) {
+  notifications.show({
+    title,
+    message,
+    color: 'orange',
+    icon: <IconAlertTriangle size={16} />,
+  });
 }

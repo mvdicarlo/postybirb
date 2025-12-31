@@ -16,7 +16,6 @@ import {
   Tooltip,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { notifications } from '@mantine/notifications';
 import {
   FileType,
   IAccountDto,
@@ -33,6 +32,7 @@ import {
 import { useMemo } from 'react';
 import fileSubmissionApi from '../../../../../api/file-submission.api';
 import { useAccountsMap } from '../../../../../stores/account-store';
+import { showErrorWithContext } from '../../../../../utils/notifications';
 import { useSubmissionEditCardContext } from '../context';
 import { FileActions } from './file-actions';
 import { FileMetadata } from './file-metadata';
@@ -62,12 +62,7 @@ export function SubmissionFileCard({
     try {
       await fileSubmissionApi.removeFile(submission.id, file.id, 'file');
     } catch (error) {
-      notifications.show({
-        message:
-          // eslint-disable-next-line lingui/no-unlocalized-strings
-          error instanceof Error ? error.message : 'Failed to delete file',
-        color: 'red',
-      });
+      showErrorWithContext(error, <Trans>Failed to delete file</Trans>);
     }
   };
 

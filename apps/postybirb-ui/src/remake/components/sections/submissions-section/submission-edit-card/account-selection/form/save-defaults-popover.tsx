@@ -14,7 +14,6 @@ import {
   Text,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { notifications } from '@mantine/notifications';
 import {
   FieldAggregateType,
   FormBuilderMetadata,
@@ -23,6 +22,10 @@ import { DynamicObject } from '@postybirb/types';
 import { IconDeviceFloppy } from '@tabler/icons-react';
 import { useCallback, useState } from 'react';
 import userSpecifiedWebsiteOptionsApi from '../../../../../../api/user-specified-website-options.api';
+import {
+  showSaveErrorNotification,
+  showSuccessNotification,
+} from '../../../../../../utils/notifications';
 import { getTranslatedLabel } from './fields/field-label';
 import { useFormFieldsContext } from './form-fields-context';
 
@@ -96,24 +99,15 @@ export function SaveDefaultsPopover() {
         options: filteredOptions,
       });
 
-      notifications.show({
-        message: <Trans>Defaults saved successfully</Trans>,
-        color: 'green',
-      });
+      showSuccessNotification(<Trans>Defaults saved successfully</Trans>);
 
       // Reset selections and close
       setSelectedFields({});
       close();
     } catch (error) {
-      notifications.show({
-        message:
-          error instanceof Error ? (
-            error.message
-          ) : (
-            <Trans>Failed to save defaults</Trans>
-          ),
-        color: 'red',
-      });
+      showSaveErrorNotification(
+        error instanceof Error ? error.message : undefined
+      );
     } finally {
       setIsSaving(false);
     }
