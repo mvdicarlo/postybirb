@@ -34,6 +34,7 @@ import {
 } from '@tabler/icons-react';
 import { uniq } from 'lodash';
 import { useMemo } from 'react';
+import { useLocale } from '../../../hooks';
 import {
     AccountRecord,
     SubmissionRecord,
@@ -258,9 +259,10 @@ function PostCard({
   post: IPostRecord;
   accountsMap: Map<EntityId, AccountRecord>;
 }) {
-  const completedAt = new Date(
-    post.completedAt ?? post.createdAt,
-  ).toLocaleString();
+  const { formatDateTime } = useLocale();
+  const completedAt = formatDateTime(
+    new Date(post.completedAt ?? post.createdAt)
+  );
 
   const isSuccess = post.state === PostRecordState.DONE;
   const isFailed = post.state === PostRecordState.FAILED;

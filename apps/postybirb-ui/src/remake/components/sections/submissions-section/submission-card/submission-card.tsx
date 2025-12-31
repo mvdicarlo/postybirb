@@ -7,8 +7,8 @@
 import { Box, Card, Group, Stack, Text } from '@mantine/core';
 import { SubmissionType } from '@postybirb/types';
 import { IconClock, IconGripVertical } from '@tabler/icons-react';
-import moment from 'moment/min/moment-with-locales';
 import { useCallback, useMemo } from 'react';
+import { useLocale } from '../../../../hooks';
 import { useSubmissionsContext } from '../context';
 import { useSubmissionActions } from '../hooks';
 import '../submissions-section.css';
@@ -32,6 +32,7 @@ export function SubmissionCard({
   className,
 }: SubmissionCardProps) {
   const { onSelect } = useSubmissionsContext();
+  const { formatRelativeTime, formatDateTime } = useLocale();
   const {
     handleDelete,
     handleDuplicate,
@@ -180,7 +181,9 @@ export function SubmissionCard({
                   c={submission.isScheduled ? 'blue.6' : 'dimmed'}
                   fw={submission.isScheduled ? 'bold' : undefined}
                 >
-                  {submission.scheduledDate?.toLocaleString()}
+                  {submission.scheduledDate
+                    ? formatDateTime(submission.scheduledDate)
+                    : null}
                 </Text>
               </Group>
             )}
@@ -200,9 +203,9 @@ export function SubmissionCard({
                 style={{
                   opacity: submission.isScheduled ? 0.7 : 1,
                 }}
-                title={submission.lastModified.toLocaleString()}
+                title={formatDateTime(submission.lastModified)}
               >
-                {moment(submission.lastModified).fromNow()}
+                {formatRelativeTime(submission.lastModified)}
               </Text>
             </Group>
           </Stack>

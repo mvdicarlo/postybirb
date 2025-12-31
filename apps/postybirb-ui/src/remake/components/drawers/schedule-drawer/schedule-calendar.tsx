@@ -9,7 +9,6 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin, { DropArg } from '@fullcalendar/interaction';
 import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
-import { useLingui } from '@lingui/react';
 import { Trans } from '@lingui/react/macro';
 import {
   Badge,
@@ -36,7 +35,7 @@ import Cron from 'croner';
 import moment from 'moment';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import submissionApi from '../../../api/submission.api';
-import { calendarLanguageMap } from '../../../i18n/languages';
+import { useLocale } from '../../../hooks';
 import { useSubmissions } from '../../../stores/submission-store';
 
 /**
@@ -44,7 +43,7 @@ import { useSubmissions } from '../../../stores/submission-store';
  * Shows all scheduled submissions (both FILE and MESSAGE types).
  */
 export function ScheduleCalendar() {
-  const { i18n } = useLingui();
+  const { calendarLocale, formatRelativeTime, formatDateTime } = useLocale();
   const submissions = useSubmissions();
   const [selectedEvent, setSelectedEvent] = useState<EventImpl | null>(null);
   const [modalOpened, setModalOpened] = useState(false);
@@ -254,7 +253,7 @@ export function ScheduleCalendar() {
         allDaySlot={false}
         weekends
         events={events}
-        locale={calendarLanguageMap[i18n.locale] || 'en-US'}
+        locale={calendarLocale}
         eventDrop={handleEventDrop}
         height="100%"
         themeSystem="standard"
@@ -282,13 +281,13 @@ export function ScheduleCalendar() {
             </ThemeIcon>
             <Text size="sm" c="dimmed">
               {selectedEvent?.start
-                ? moment(selectedEvent.start).format('lll')
+                ? formatDateTime(selectedEvent.start)
                 : ''}
             </Text>
           </Group>
           {selectedEvent?.start && (
             <Text size="xs" c="dimmed">
-              {moment(selectedEvent.start).fromNow()}
+              {formatRelativeTime(selectedEvent.start)}
             </Text>
           )}
 

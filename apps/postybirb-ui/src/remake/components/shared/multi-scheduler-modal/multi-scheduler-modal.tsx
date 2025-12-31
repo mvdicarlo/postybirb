@@ -22,6 +22,7 @@ import { IconCalendarEvent } from '@tabler/icons-react';
 import { useCallback, useMemo, useState } from 'react';
 import { useLocalStorage } from 'react-use';
 import submissionApi from '../../../api/submission.api';
+import { useLocale } from '../../../hooks';
 import type { SubmissionRecord } from '../../../stores/records';
 import {
   showErrorNotification,
@@ -72,6 +73,7 @@ export function MultiSchedulerModal({
   submissions: initialSubmissions,
 }: MultiSchedulerModalProps) {
   const { t } = useLingui();
+  const { formatDateTime } = useLocale();
 
   // Reorderable submissions state
   const [orderedSubmissions, setOrderedSubmissions] =
@@ -133,11 +135,11 @@ export function MultiSchedulerModal({
       });
       return (
         <Text size="xs" c="dimmed">
-          {scheduledDate.toLocaleString()}
+          {formatDateTime(scheduledDate)}
         </Text>
       );
     },
-    [selectedDate, days, hours, minutes],
+    [selectedDate, days, hours, minutes, formatDateTime],
   );
 
   // Handle apply

@@ -27,9 +27,9 @@ import {
     IconMailOpened,
     IconTrash,
 } from '@tabler/icons-react';
-import moment from 'moment/min/moment-with-locales';
 import { useCallback, useMemo, useState } from 'react';
 import notificationApi from '../../../api/notification.api';
+import { useLocale } from '../../../hooks';
 import {
     useNotifications,
     useUnreadNotificationCount,
@@ -337,6 +337,7 @@ function NotificationCard({
 }) {
   const color = getTypeColor(notification.type);
   const icon = getTypeIcon(notification.type);
+  const { formatRelativeTime } = useLocale();
 
   const handleToggleRead = useCallback(async () => {
     try {
@@ -381,7 +382,7 @@ function NotificationCard({
               {notification.title}
             </Text>
             <Text size="xs" c="dimmed" style={{ flexShrink: 0 }}>
-              {moment(notification.createdAt).fromNow()}
+              {formatRelativeTime(notification.createdAt)}
             </Text>
           </Group>
           <Text size="xs" c="dimmed" lineClamp={2}>

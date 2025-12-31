@@ -8,35 +8,10 @@ import { useLingui } from '@lingui/react';
 import { Trans } from '@lingui/react/macro';
 import { Box, Group, Paper, Stack, Text, ThemeIcon } from '@mantine/core';
 import { IconCalendarEvent, IconClock } from '@tabler/icons-react';
-import moment from 'moment/min/moment-with-locales';
 import { useMemo } from 'react';
+import { useLocale } from '../../../hooks';
 import { useScheduledSubmissions } from '../../../stores/submission-store';
 import { EmptyState } from '../../empty-state';
-
-/**
- * Format a date as relative time (e.g., "in 2 hours", "tomorrow").
- */
-function useFormatRelativeTime() {
-  const { i18n } = useLingui();
-
-  return (dateString: string): string => {
-    moment.locale(i18n.locale);
-    return moment(dateString).fromNow();
-  };
-}
-
-/**
- * Format a date for display.
- */
-function formatDateTime(dateString: string): string {
-  const date = new Date(dateString);
-  return date.toLocaleString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  });
-}
 
 /**
  * UpcomingPostsPanel component.
@@ -45,7 +20,7 @@ function formatDateTime(dateString: string): string {
 export function UpcomingPostsPanel() {
   const { _ } = useLingui();
   const scheduledSubmissions = useScheduledSubmissions();
-  const formatRelativeTime = useFormatRelativeTime();
+  const { formatRelativeTime, formatDateTime } = useLocale();
 
   const upcomingPosts = useMemo(() => {
     const now = new Date();

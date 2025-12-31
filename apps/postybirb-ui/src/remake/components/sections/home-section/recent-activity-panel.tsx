@@ -3,7 +3,6 @@
  * Displays the last 5 notifications with type-based icons.
  */
 
-import { useLingui } from '@lingui/react';
 import { Trans } from '@lingui/react/macro';
 import { Box, Group, Paper, Stack, Text, ThemeIcon } from '@mantine/core';
 import {
@@ -13,8 +12,8 @@ import {
   IconInfoCircle,
   IconX,
 } from '@tabler/icons-react';
-import moment from 'moment/min/moment-with-locales';
 import { useMemo } from 'react';
+import { useLocale } from '../../../hooks';
 import { useNotifications } from '../../../stores/notification-store';
 import type { NotificationRecord } from '../../../stores/records';
 import { EmptyState } from '../../empty-state';
@@ -40,24 +39,12 @@ function getNotificationIcon(type: NotificationRecord['type']): {
 }
 
 /**
- * Hook to format relative time for notifications.
- */
-function useFormatTimeAgo() {
-  const { i18n } = useLingui();
-
-  return (date: Date): string => {
-    moment.locale(i18n.locale);
-    return moment(date).fromNow();
-  };
-}
-
-/**
  * RecentActivityPanel component.
  * Shows the last 5 notifications sorted by creation date.
  */
 export function RecentActivityPanel() {
   const notifications = useNotifications();
-  const formatTimeAgo = useFormatTimeAgo();
+  const { formatRelativeTime } = useLocale();
 
   const recentActivity = useMemo(
     () =>
@@ -130,7 +117,7 @@ export function RecentActivityPanel() {
                       </Box>
                     </Group>
                     <Text size="xs" c="dimmed" style={{ flexShrink: 0 }}>
-                      {formatTimeAgo(notification.createdAt)}
+                      {formatRelativeTime(notification.createdAt)}
                     </Text>
                   </Group>
                 </Paper>

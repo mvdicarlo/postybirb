@@ -9,9 +9,9 @@ import { DateTimePicker } from '@mantine/dates';
 import { ISubmissionScheduleInfo, ScheduleType } from '@postybirb/types';
 import { IconCalendar, IconCalendarOff, IconRepeat } from '@tabler/icons-react';
 import { Cron } from 'croner';
-import moment from 'moment';
 import { useCallback, useEffect, useState } from 'react';
 import { useLocalStorage } from 'react-use';
+import { useLocale } from '../../../../../hooks';
 import { CronPicker } from '../../../../shared/schedule-popover/cron-picker';
 
 export interface ScheduleFormProps {
@@ -34,6 +34,7 @@ export function ScheduleForm({
   isScheduled,
   onChange,
 }: ScheduleFormProps) {
+  const { formatRelativeTime } = useLocale();
   const [internalSchedule, setInternalSchedule] =
     useState<ISubmissionScheduleInfo>(schedule);
   const [internalIsScheduled, setInternalIsScheduled] =
@@ -236,7 +237,7 @@ export function ScheduleForm({
               />
               {scheduledDate && !isDateInPast && (
                 <Text size="xs" c="dimmed">
-                  {moment(scheduledDate).fromNow()}
+                  {formatRelativeTime(scheduledDate)}
                 </Text>
               )}
               <Text size="sm" c={internalIsScheduled ? 'blue' : 'dimmed'}>

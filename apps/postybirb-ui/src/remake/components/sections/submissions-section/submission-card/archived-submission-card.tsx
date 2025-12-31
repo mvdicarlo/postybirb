@@ -21,9 +21,9 @@ import {
     IconHistory,
     IconTrash
 } from '@tabler/icons-react';
-import moment from 'moment/min/moment-with-locales';
 import { useCallback, useMemo } from 'react';
 import submissionApi from '../../../../api/submission.api';
+import { useLocale } from '../../../../hooks';
 import { useSubmissionsContext } from '../context';
 import { SubmissionBadges } from './submission-badges';
 import { SubmissionThumbnail } from './submission-thumbnail';
@@ -50,6 +50,7 @@ export function ArchivedSubmissionCard({
   onViewHistory,
 }: ArchivedSubmissionCardProps) {
   const { onSelect } = useSubmissionsContext();
+  const { formatRelativeTime, formatDateTime } = useLocale();
   const thumbnailUrl = getThumbnailUrl(submission);
 
   // Check if the primary file is an image that can be previewed
@@ -182,9 +183,9 @@ export function ArchivedSubmissionCard({
             <Text
               size="xs"
               c="dimmed"
-              title={submission.lastModified.toLocaleString()}
+              title={formatDateTime(submission.lastModified)}
             >
-              {moment(submission.lastModified).fromNow()}
+              {formatRelativeTime(submission.lastModified)}
             </Text>
           </Stack>
 

@@ -3,7 +3,6 @@
  * plus manual CRON input toggle for power users.
  */
 
-import { useLingui } from '@lingui/react';
 import { Trans, useLingui as useLinguiMacro } from '@lingui/react/macro';
 import {
   Anchor,
@@ -27,9 +26,8 @@ import {
 } from '@tabler/icons-react';
 import { Cron } from 'croner';
 import cronstrue from 'cronstrue';
-import moment from 'moment';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { cronstrueLocaleMap } from '../../../i18n/languages';
+import { useLocale } from '../../../hooks';
 
 export interface CronPickerProps {
   /** Current CRON expression */
@@ -165,7 +163,7 @@ function buildCron(
  */
 export function CronPicker({ value, onChange }: CronPickerProps) {
   const { t } = useLinguiMacro();
-  const { i18n } = useLingui();
+  const { cronstrueLocale, formatDateTime } = useLocale();
   const { colorScheme } = useMantineColorScheme();
   const [mode, setMode] = useState<CronMode>('builder');
 
@@ -238,12 +236,11 @@ export function CronPicker({ value, onChange }: CronPickerProps) {
   const cronDescription = useMemo(() => {
     try {
       const cronToCheck = mode === 'custom' ? manualCron : value;
-      const locale = cronstrueLocaleMap[i18n.locale] || 'en';
-      return cronstrue.toString(cronToCheck, { locale });
+      return cronstrue.toString(cronToCheck, { locale: cronstrueLocale });
     } catch {
       return null;
     }
-  }, [mode, manualCron, value, i18n.locale]);
+  }, [mode, manualCron, value, cronstrueLocale]);
 
   // Handle time input change
   const handleTimeChange = useCallback((timeStr: string) => {
@@ -389,7 +386,7 @@ export function CronPicker({ value, onChange }: CronPickerProps) {
           {nextRun && (
             <Text size="xs" c="dimmed">
               <IconAt size="1em" style={{ verticalAlign: 'middle' }} />{' '}
-              {moment(nextRun).format('lll')}
+              {formatDateTime(nextRun)}
             </Text>
           )}
         </Box>

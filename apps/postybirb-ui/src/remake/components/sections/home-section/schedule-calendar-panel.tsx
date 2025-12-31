@@ -21,7 +21,8 @@ import {
   IconChevronLeft,
   IconChevronRight,
 } from '@tabler/icons-react';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import { useLocale } from '../../../hooks';
 import { useScheduledSubmissions } from '../../../stores/submission-store';
 import { useDrawerActions } from '../../../stores/ui-store';
 
@@ -87,21 +88,28 @@ function isSameDay(date1: Date, date2: Date): boolean {
 }
 
 /**
- * Format month name.
- */
-function formatMonth(date: Date): string {
-  return date.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
-}
-
-/**
  * ScheduleCalendarPanel component.
  * Shows a mini month calendar with scheduled submission indicators.
  */
 export function ScheduleCalendarPanel() {
   const scheduledSubmissions = useScheduledSubmissions();
   const { openDrawer } = useDrawerActions();
+  const { locale } = useLocale();
   const [currentMonth, setCurrentMonth] = useState(() => new Date());
   const weekdays = useWeekdays();
+
+  /**
+   * Format month name using the current locale.
+   */
+  const formatMonth = useCallback(
+    (date: Date): string => {
+      return date.toLocaleDateString(locale, {
+        month: 'long',
+        year: 'numeric',
+      });
+    },
+    [locale],
+  );
 
   // Get scheduled dates for the current month
   const scheduledDates = useMemo(() => {

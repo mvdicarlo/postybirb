@@ -13,6 +13,7 @@ import {
     IconLoader,
     IconX,
 } from '@tabler/icons-react';
+import { useLocale } from '../../../../hooks';
 import type { SubmissionRecord } from '../../../../stores/records';
 
 interface SubmissionBadgesProps {
@@ -30,6 +31,8 @@ export function SubmissionBadges({
   submission,
   submissionType,
 }: SubmissionBadgesProps) {
+  const { formatDateTime } = useLocale();
+
   return (
     <Group gap={4}>
       {/* Scheduled badge */}
@@ -37,7 +40,7 @@ export function SubmissionBadges({
         <Tooltip
           label={
             submission.scheduledDate
-              ? submission.scheduledDate.toLocaleString()
+              ? formatDateTime(submission.scheduledDate)
               : undefined
           }
         >
