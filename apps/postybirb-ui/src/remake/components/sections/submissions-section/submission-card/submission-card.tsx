@@ -118,7 +118,13 @@ export function SubmissionCard({
     if (isCompact) classes.push('postybirb__submission__card--compact');
     if (className) classes.push(className);
     return classes.join(' ');
-  }, [isSelected, submission.isScheduled, mostRecentPostHasErrors, isCompact, className]);
+  }, [
+    isSelected,
+    submission.isScheduled,
+    mostRecentPostHasErrors,
+    isCompact,
+    className,
+  ]);
 
   const cardContent = (
     <Card
@@ -132,22 +138,20 @@ export function SubmissionCard({
       className={cardClassName}
       style={{ position: 'relative' }}
     >
-      {/* Last modified - absolute position in upper right, hidden in compact mode */}
-      {!isCompact && (
-        <Text
-          size="xs"
-          c="dimmed"
-          title={formatDateTime(submission.lastModified)}
-          style={{
-            position: 'absolute',
-            top: '0',
-            right: 'var(--mantine-spacing-xs)',
-            opacity: submission.isScheduled ? 0.7 : 1,
-          }}
-        >
-          {formatRelativeTime(submission.lastModified)}
-        </Text>
-      )}
+      {/* Last modified - absolute position in upper right */}
+      <Text
+        size="xs"
+        c="dimmed"
+        title={formatDateTime(submission.lastModified)}
+        style={{
+          position: 'absolute',
+          top: '1px',
+          right: 'var(--mantine-spacing-xs)',
+          opacity: submission.isScheduled ? 0.7 : 1,
+        }}
+      >
+        {formatRelativeTime(submission.lastModified)}
+      </Text>
       <Stack gap="xs">
         <Group gap="xs" wrap="nowrap" align="center">
           {/* Drag handle */}
