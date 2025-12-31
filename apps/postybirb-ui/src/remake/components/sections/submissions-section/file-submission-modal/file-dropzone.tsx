@@ -3,19 +3,27 @@
  */
 
 import { Trans } from '@lingui/react/macro';
-import { Box, Group, Text } from '@mantine/core';
+import { Box, Button, Group, Text, Tooltip } from '@mantine/core';
 import {
-    Dropzone,
-    FileWithPath,
-    IMAGE_MIME_TYPE,
-    MS_WORD_MIME_TYPE,
-    PDF_MIME_TYPE,
+  Dropzone,
+  FileWithPath,
+  IMAGE_MIME_TYPE,
+  MS_WORD_MIME_TYPE,
+  PDF_MIME_TYPE,
 } from '@mantine/dropzone';
 import { SubmissionType } from '@postybirb/types';
-import { IconPhoto, IconUpload, IconX } from '@tabler/icons-react';
-import { useMemo } from 'react';
+import {
+  IconClipboard,
+  IconPhoto,
+  IconUpload,
+  IconX,
+} from '@tabler/icons-react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import './file-submission-modal.css';
-import { TEXT_MIME_TYPES, VIDEO_MIME_TYPES } from './file-submission-modal.utils';
+import {
+  TEXT_MIME_TYPES,
+  VIDEO_MIME_TYPES,
+} from './file-submission-modal.utils';
 
 export interface FileDropzoneProps {
   /** Callback when files are dropped */
@@ -27,9 +35,41 @@ export interface FileDropzoneProps {
 }
 
 /**
+ * Convert clipboard items to FileWithPath array.
+ */
+async function getFilesFromClipboard(): Promise<FileWithPath[]> {
+  try {
+    const clipboardItems = await navigator.clipboard.read();
+    const files: FileWithPath[] = [];
+
+    for (const item of clipboardItems) {
+      // Check for image types
+      for (const mimeType of item.types) {
+        if (mimeType.startsWith('image/')) {
+          const blob = await item.getType(mimeType);
+          // Generate a filename based on type and timestamp
+          const extension = mimeType.split('/')[1] || 'png';
+          const filename = `clipboard-${Date.now()}.${extension}`;
+          const file = new File([blob], filename, { type: mimeType });
+          // Add path property to match FileWithPath interface
+          files.push(Object.assign(file, { path: filename }));
+        }
+      }
+    }
+
+    return files;
+  } catch {
+    // Clipboard API not available or permission denied
+    return [];
+  }
+}
+
+/**
  * File dropzone for selecting and dropping files.
  */
 export function FileDropzone({ onDrop, isUploading, type }: FileDropzoneProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+
   // Determine accepted MIME types based on submission type
   const acceptedMimeTypes = useMemo(() => {
     if (type === SubmissionType.MESSAGE) {
@@ -44,8 +84,60 @@ export function FileDropzone({ onDrop, isUploading, type }: FileDropzoneProps) {
     ];
   }, [type]);
 
+  // Handle paste from clipboard button click
+  const handlePasteFromClipboard = useCallback(async () => {
+    if (isUploading) return;
+
+    const files = await getFilesFromClipboard();
+    if (files.length > 0) {
+      onDrop(files);
+    }
+  }, [isUploading, onDrop]);
+
+  // Listen for paste events on the document when modal is open
+  useEffect(() => {
+    const handlePaste = async (e: ClipboardEvent) => {
+      if (isUploading) return;
+
+      const items = e.clipboardData?.items;
+      if (!items) return;
+
+      const files: FileWithPath[] = [];
+
+      for (const item of items) {
+        if (item.kind === 'file') {
+          const file = item.getAsFile();
+          if (file) {
+            // Check if the file type is accepted
+            const isAccepted = acceptedMimeTypes.some(
+              (mime) =>
+                file.type === mime ||
+                file.type.startsWith(mime.replace('/*', '/')),
+            );
+            if (isAccepted) {
+              files.push(Object.assign(file, { path: file.name }));
+            }
+          }
+        }
+      }
+
+      if (files.length > 0) {
+        e.preventDefault();
+        onDrop(files);
+      }
+    };
+
+    document.addEventListener('paste', handlePaste);
+    return () => document.removeEventListener('paste', handlePaste);
+  }, [isUploading, acceptedMimeTypes, onDrop]);
+
   return (
-    <Box p="md" pb={0} className="postybirb__file_submission_modal_dropzone_container">
+    <Box
+      ref={containerRef}
+      p="md"
+      pb={0}
+      className="postybirb__file_submission_modal_dropzone_container"
+    >
       <Dropzone
         onDrop={onDrop}
         accept={acceptedMimeTypes}
@@ -53,9 +145,10 @@ export function FileDropzone({ onDrop, isUploading, type }: FileDropzoneProps) {
         disabled={isUploading}
         styles={{
           root: {
-            borderStyle: 'dashed',
-            borderWidth: 2,
+            borderStyle: 'solid',
+            borderWidth: 1,
             backgroundColor: 'var(--mantine-color-default-hover)',
+            borderRadius: '4px',
           },
         }}
       >
@@ -88,6 +181,22 @@ export function FileDropzone({ onDrop, isUploading, type }: FileDropzoneProps) {
           </div>
         </Group>
       </Dropzone>
+
+      {/* Paste from clipboard button */}
+      <Group justify="center" mt="xs" w="100%">
+        <Tooltip label={<Trans>Paste image from clipboard (Ctrl+V)</Trans>}>
+          <Button
+            fullWidth
+            variant="subtle"
+            size="xs"
+            leftSection={<IconClipboard size={14} />}
+            onClick={handlePasteFromClipboard}
+            disabled={isUploading}
+          >
+            <Trans>Paste from clipboard</Trans>
+          </Button>
+        </Tooltip>
+      </Group>
     </Box>
   );
 }

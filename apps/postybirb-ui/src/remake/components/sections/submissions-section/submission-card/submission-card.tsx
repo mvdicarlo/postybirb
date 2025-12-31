@@ -130,7 +130,24 @@ export function SubmissionCard({
       tabIndex={0}
       role="button"
       className={cardClassName}
+      style={{ position: 'relative' }}
     >
+      {/* Last modified - absolute position in upper right, hidden in compact mode */}
+      {!isCompact && (
+        <Text
+          size="xs"
+          c="dimmed"
+          title={formatDateTime(submission.lastModified)}
+          style={{
+            position: 'absolute',
+            top: '0',
+            right: 'var(--mantine-spacing-xs)',
+            opacity: submission.isScheduled ? 0.7 : 1,
+          }}
+        >
+          {formatRelativeTime(submission.lastModified)}
+        </Text>
+      )}
       <Stack gap="xs">
         <Group gap="xs" wrap="nowrap" align="center">
           {/* Drag handle */}
@@ -187,29 +204,6 @@ export function SubmissionCard({
                   {submission.scheduledDate
                     ? formatDateTime(submission.scheduledDate)
                     : null}
-                </Text>
-              </Group>
-            )}
-
-            {/* Last modified - hidden in compact mode */}
-            {!isCompact && (
-              <Group gap={4}>
-                <IconClock
-                  size={12}
-                  className="postybirb__submission__timestamp_icon"
-                  style={{
-                    opacity: submission.isScheduled ? 0.5 : 1,
-                  }}
-                />
-                <Text
-                  size="xs"
-                  c="dimmed"
-                  style={{
-                    opacity: submission.isScheduled ? 0.7 : 1,
-                  }}
-                  title={formatDateTime(submission.lastModified)}
-                >
-                  {formatRelativeTime(submission.lastModified)}
                 </Text>
               </Group>
             )}
