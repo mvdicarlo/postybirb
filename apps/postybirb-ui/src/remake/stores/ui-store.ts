@@ -391,18 +391,24 @@ export const useUIStore = create<UIStore>()(
 
           let finalViewState: ViewState;
 
-          if (isNavigatingToNewSection) {
-            // Navigating to a different section: restore from cache or use provided state
+          // Check if the provided viewState has explicit selections
+          const hasExplicitSelection =
+            (viewState.type === 'file-submissions' ||
+              viewState.type === 'message-submissions') &&
+            viewState.params.selectedIds.length > 0;
+
+          if (isNavigatingToNewSection && !hasExplicitSelection) {
+            // Navigating to a different section without explicit selection: restore from cache
             const cachedState = newCache[viewState.type];
             if (cachedState && cachedState.type === viewState.type) {
               // Restore from cache and validate
               finalViewState = validateViewState(cachedState);
             } else {
-              // First visit to this section or explicit state provided
+              // First visit to this section
               finalViewState = viewState;
             }
           } else {
-            // Staying in the same section: use the provided state (updating params)
+            // Staying in the same section OR explicit selection provided: use the provided state
             finalViewState = viewState;
           }
 

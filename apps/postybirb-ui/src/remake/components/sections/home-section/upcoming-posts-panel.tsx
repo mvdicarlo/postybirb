@@ -7,10 +7,12 @@ import { t } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import { Trans } from '@lingui/react/macro';
 import { Box, Group, Paper, Stack, Text, ThemeIcon } from '@mantine/core';
+import { SubmissionType } from '@postybirb/types';
 import { IconCalendarEvent, IconClock } from '@tabler/icons-react';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useLocale } from '../../../hooks';
 import { useScheduledSubmissions } from '../../../stores/submission-store';
+import { useViewStateActions } from '../../../stores/ui-store';
 import { EmptyState } from '../../empty-state';
 
 /**
@@ -21,6 +23,32 @@ export function UpcomingPostsPanel() {
   const { _ } = useLingui();
   const scheduledSubmissions = useScheduledSubmissions();
   const { formatRelativeTime, formatDateTime } = useLocale();
+  const { setViewState } = useViewStateActions();
+
+  const handleNavigateToSubmission = useCallback(
+    (id: string, type: SubmissionType) => {
+      if (type === SubmissionType.FILE) {
+        setViewState({
+          type: 'file-submissions',
+          params: {
+            selectedIds: [id],
+            mode: 'single',
+            submissionType: SubmissionType.FILE,
+          },
+        });
+      } else {
+        setViewState({
+          type: 'message-submissions',
+          params: {
+            selectedIds: [id],
+            mode: 'single',
+            submissionType: SubmissionType.MESSAGE,
+          },
+        });
+      }
+    },
+    [setViewState]
+  );
 
   const upcomingPosts = useMemo(() => {
     const now = new Date();
@@ -70,6 +98,10 @@ export function UpcomingPostsPanel() {
                 p="xs"
                 radius="sm"
                 bg="var(--mantine-color-default)"
+                style={{ cursor: 'pointer' }}
+                onClick={() =>
+                  handleNavigateToSubmission(submission.id, submission.type)
+                }
               >
                 <Group justify="space-between" wrap="nowrap">
                   <Box style={{ minWidth: 0, flex: 1 }}>

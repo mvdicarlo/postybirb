@@ -102,12 +102,11 @@ export function ScheduleCalendarPanel() {
    * Format month name using the current locale.
    */
   const formatMonth = useCallback(
-    (date: Date): string => {
-      return date.toLocaleDateString(locale, {
+    (date: Date): string =>
+      date.toLocaleDateString(locale, {
         month: 'long',
         year: 'numeric',
-      });
-    },
+      }),
     [locale],
   );
 

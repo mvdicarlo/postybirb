@@ -4,22 +4,22 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-    Box,
-    ColorSwatch,
-    Group,
-    SegmentedControl,
-    SimpleGrid,
-    Stack,
-    Text,
-    Tooltip,
-    useMantineTheme
+  Box,
+  ColorSwatch,
+  Group,
+  SegmentedControl,
+  SimpleGrid,
+  Stack,
+  Text,
+  Tooltip,
+  useMantineTheme,
 } from '@mantine/core';
 import { IconMoon, IconSun, IconSunMoon } from '@tabler/icons-react';
 import {
-    type ColorScheme,
-    MANTINE_COLORS,
-    type MantinePrimaryColor,
-    useAppearanceActions,
+  type ColorScheme,
+  MANTINE_COLORS,
+  type MantinePrimaryColor,
+  useAppearanceActions,
 } from '../../../../stores/ui-store';
 
 /**
@@ -87,7 +87,6 @@ export function AppearanceSettingsSection() {
 
       {/* Primary Color Selection */}
       <Box>
-
         <SimpleGrid cols={6} spacing="sm">
           {MANTINE_COLORS.map((color) => {
             const isSelected = primaryColor === color;
@@ -95,13 +94,18 @@ export function AppearanceSettingsSection() {
             const colorValue = theme.colors[color][6];
 
             return (
-              <Tooltip key={color} label={capitalize(color)} withArrow>
+              <Tooltip
+                key={color}
+                label={capitalize(color)}
+                withArrow
+                zIndex={1000}
+              >
                 <Box
                   onClick={() => setPrimaryColor(color as MantinePrimaryColor)}
                   style={{
-                      borderRadius: 4,
-                      padding: 3,
-                      /* eslint-disable-next-line lingui/no-unlocalized-strings */
+                    borderRadius: 4,
+                    padding: 3,
+                    /* eslint-disable-next-line lingui/no-unlocalized-strings */
                     border: isSelected ? `2px solid ${colorValue}` : undefined,
                   }}
                 >

@@ -101,4 +101,4 @@ export function createAppTheme(
 /**
  * Default theme instance (for backwards compatibility).
  */
-export const theme = createAppTheme('red');
+export const theme = createAppTheme('teal');

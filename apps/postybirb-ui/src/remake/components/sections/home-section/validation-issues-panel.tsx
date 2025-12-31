@@ -13,9 +13,11 @@ import {
   Text,
   ThemeIcon,
 } from '@mantine/core';
+import { SubmissionType } from '@postybirb/types';
 import { IconAlertTriangle, IconExclamationCircle } from '@tabler/icons-react';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useSubmissionsWithErrors } from '../../../stores/submission-store';
+import { useViewStateActions } from '../../../stores/ui-store';
 import { EmptyState } from '../../empty-state';
 
 /**
@@ -24,6 +26,7 @@ import { EmptyState } from '../../empty-state';
  */
 export function ValidationIssuesPanel() {
   const submissionsWithErrors = useSubmissionsWithErrors();
+  const { setViewState } = useViewStateActions();
 
   const issues = useMemo(
     () =>
@@ -33,11 +36,11 @@ export function ValidationIssuesPanel() {
         .map((submission) => {
           const errorCount = submission.validations.reduce(
             (acc, v) => acc + (v.errors?.length ?? 0),
-            0
+            0,
           );
           const warningCount = submission.validations.reduce(
             (acc, v) => acc + (v.warnings?.length ?? 0),
-            0
+            0,
           );
           const title = submission.getDefaultOptions()?.data?.title;
           return {
@@ -45,9 +48,35 @@ export function ValidationIssuesPanel() {
             title,
             errorCount,
             warningCount,
+            type: submission.type,
           };
         }),
-    [submissionsWithErrors]
+    [submissionsWithErrors],
+  );
+
+  const handleNavigateToSubmission = useCallback(
+    (id: string, type: SubmissionType) => {
+      if (type === SubmissionType.FILE) {
+        setViewState({
+          type: 'file-submissions',
+          params: {
+            selectedIds: [id],
+            mode: 'single',
+            submissionType: SubmissionType.FILE,
+          },
+        });
+      } else {
+        setViewState({
+          type: 'message-submissions',
+          params: {
+            selectedIds: [id],
+            mode: 'single',
+            submissionType: SubmissionType.MESSAGE,
+          },
+        });
+      }
+    },
+    [setViewState],
   );
 
   const totalErrors = issues.reduce((acc, i) => acc + i.errorCount, 0);
@@ -99,9 +128,16 @@ export function ValidationIssuesPanel() {
                 p="xs"
                 radius="sm"
                 bg="var(--mantine-color-default)"
+                style={{ cursor: 'pointer' }}
+                onClick={() => handleNavigateToSubmission(issue.id, issue.type)}
               >
                 <Group justify="space-between" wrap="nowrap">
-                  <Text size="sm" truncate fw={500} style={{ flex: 1, minWidth: 0 }}>
+                  <Text
+                    size="sm"
+                    truncate
+                    fw={500}
+                    style={{ flex: 1, minWidth: 0 }}
+                  >
                     {issue.title || <Trans>Untitled</Trans>}
                   </Text>
                   <Group gap={4}>
