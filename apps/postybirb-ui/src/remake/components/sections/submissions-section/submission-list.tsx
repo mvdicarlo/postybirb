@@ -5,6 +5,7 @@
 
 import { Box, Loader, ScrollArea, Stack } from '@mantine/core';
 import type { SubmissionRecord } from '../../../stores/records';
+import { useIsCompactView } from '../../../stores/ui-store';
 import { EmptyState } from '../../empty-state';
 import { useSubmissionsContext } from './context';
 import { SubmissionCard } from './submission-card';
@@ -30,6 +31,7 @@ export function SubmissionList({
   containerRef,
 }: SubmissionListProps) {
   const { submissionType, selectedIds, isDragEnabled } = useSubmissionsContext();
+  const isCompact = useIsCompactView();
 
   if (isLoading) {
     return (
@@ -57,6 +59,7 @@ export function SubmissionList({
             submissionType={submissionType}
             isSelected={selectedIds.includes(submission.id)}
             draggable={isDragEnabled}
+            isCompact={isCompact}
             className={DRAGGABLE_SUBMISSION_CLASS}
           />
         ))}

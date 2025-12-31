@@ -29,6 +29,7 @@ export function SubmissionCard({
   submissionType,
   isSelected = false,
   draggable = false,
+  isCompact = false,
   className,
 }: SubmissionCardProps) {
   const { onSelect } = useSubmissionsContext();
@@ -113,9 +114,10 @@ export function SubmissionCard({
       classes.push('postybirb__submission__card--scheduled');
     if (mostRecentPostHasErrors)
       classes.push('postybirb__submission__card--has-errors');
+    if (isCompact) classes.push('postybirb__submission__card--compact');
     if (className) classes.push(className);
     return classes.join(' ');
-  }, [isSelected, submission.isScheduled, mostRecentPostHasErrors, className]);
+  }, [isSelected, submission.isScheduled, mostRecentPostHasErrors, isCompact, className]);
 
   const cardContent = (
     <Card
@@ -188,26 +190,28 @@ export function SubmissionCard({
               </Group>
             )}
 
-            {/* Last modified */}
-            <Group gap={4}>
-              <IconClock
-                size={12}
-                className="postybirb__submission__timestamp_icon"
-                style={{
-                  opacity: submission.isScheduled ? 0.5 : 1,
-                }}
-              />
-              <Text
-                size="xs"
-                c="dimmed"
-                style={{
-                  opacity: submission.isScheduled ? 0.7 : 1,
-                }}
-                title={formatDateTime(submission.lastModified)}
-              >
-                {formatRelativeTime(submission.lastModified)}
-              </Text>
-            </Group>
+            {/* Last modified - hidden in compact mode */}
+            {!isCompact && (
+              <Group gap={4}>
+                <IconClock
+                  size={12}
+                  className="postybirb__submission__timestamp_icon"
+                  style={{
+                    opacity: submission.isScheduled ? 0.5 : 1,
+                  }}
+                />
+                <Text
+                  size="xs"
+                  c="dimmed"
+                  style={{
+                    opacity: submission.isScheduled ? 0.7 : 1,
+                  }}
+                  title={formatDateTime(submission.lastModified)}
+                >
+                  {formatRelativeTime(submission.lastModified)}
+                </Text>
+              </Group>
+            )}
           </Stack>
 
           {/* Action buttons and menu */}
@@ -225,9 +229,12 @@ export function SubmissionCard({
             onDelete={handleDelete}
           />
         </Group>
-        <Box ml={showThumbnail ? 'xl' : undefined}>
-          <SubmissionQuickEditActions submission={submission} />
-        </Box>
+        {/* Quick edit actions - hidden in compact mode */}
+        {!isCompact && (
+          <Box ml={showThumbnail ? 'xl' : undefined}>
+            <SubmissionQuickEditActions submission={submission} />
+          </Box>
+        )}
       </Stack>
     </Card>
   );

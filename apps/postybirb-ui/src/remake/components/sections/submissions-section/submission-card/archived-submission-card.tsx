@@ -35,6 +35,8 @@ interface ArchivedSubmissionCardProps extends Omit<
   SubmissionCardProps,
   'draggable'
 > {
+  /** Whether to show compact view (hides last modified) */
+  isCompact?: boolean;
   /** Handler to open history drawer */
   onViewHistory?: () => void;
 }
@@ -46,6 +48,7 @@ export function ArchivedSubmissionCard({
   submission,
   submissionType,
   isSelected = false,
+  isCompact = false,
   className,
   onViewHistory,
 }: ArchivedSubmissionCardProps) {
@@ -63,9 +66,10 @@ export function ArchivedSubmissionCard({
   const cardClassName = useMemo(() => {
     const classes = ['postybirb__submission__card'];
     if (isSelected) classes.push('postybirb__submission__card--selected');
+    if (isCompact) classes.push('postybirb__submission__card--compact');
     if (className) classes.push(className);
     return classes.join(' ');
-  }, [isSelected, className]);
+  }, [isSelected, isCompact, className]);
 
   const handleClick = useCallback(
     (event: React.MouseEvent) => {
@@ -179,14 +183,16 @@ export function ArchivedSubmissionCard({
               submissionType={submissionType}
             />
 
-            {/* Last modified */}
-            <Text
-              size="xs"
-              c="dimmed"
-              title={formatDateTime(submission.lastModified)}
-            >
-              {formatRelativeTime(submission.lastModified)}
-            </Text>
+            {/* Last modified - hidden in compact mode */}
+            {!isCompact && (
+              <Text
+                size="xs"
+                c="dimmed"
+                title={formatDateTime(submission.lastModified)}
+              >
+                {formatRelativeTime(submission.lastModified)}
+              </Text>
+            )}
           </Stack>
 
           {/* Action buttons */}

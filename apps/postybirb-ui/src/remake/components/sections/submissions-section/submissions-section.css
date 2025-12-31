@@ -88,6 +88,11 @@
   background-color: color-mix(in srgb, var(--mantine-color-red-light) 50%, var(--mantine-color-primary-light) 50%);
 }
 
+/* Compact mode */
+.postybirb__submission__card--compact {
+  padding: var(--mantine-spacing-xs);
+}
+
 /* Drag handle */
 .postybirb__submission__drag_handle {
   cursor: grab;

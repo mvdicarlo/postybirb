@@ -8,7 +8,7 @@ import { useDebouncedValue } from '@mantine/hooks';
 import { SubmissionType } from '@postybirb/types';
 import { useMemo, useState } from 'react';
 import { SubmissionRecord, useArchivedSubmissions } from '../../../stores';
-import { useSubmissionsFilter } from '../../../stores/ui-store';
+import { useIsCompactView, useSubmissionsFilter } from '../../../stores/ui-store';
 import { EmptyState } from '../../empty-state';
 import { useSubmissionsContext } from './context';
 import { ArchivedSubmissionCard } from './submission-card/archived-submission-card';
@@ -30,6 +30,7 @@ export function ArchivedSubmissionList({
   const { searchQuery } = useSubmissionsFilter(submissionType);
   const [debouncedSearch] = useDebouncedValue(searchQuery, 300);
   const archivedSubmissions = useArchivedSubmissions();
+  const isCompact = useIsCompactView();
   const [historySubmission, setHistorySubmission] =
     useState<SubmissionRecord | null>(null);
 
@@ -75,6 +76,7 @@ export function ArchivedSubmissionList({
                 submission={submission}
                 submissionType={submissionType}
                 isSelected={selectedIds.includes(submission.id)}
+                isCompact={isCompact}
                 onViewHistory={() => handleViewHistory(submission)}
               />
             ))}

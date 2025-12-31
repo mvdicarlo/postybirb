@@ -20,12 +20,20 @@ import {
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { SubmissionId, SubmissionType } from '@postybirb/types';
-import { IconCalendarEvent, IconPlus, IconSend, IconTemplate, IconTrash } from '@tabler/icons-react';
+import {
+  IconCalendarEvent,
+  IconPlus,
+  IconSend,
+  IconTemplate,
+  IconTrash,
+  IconViewportShort,
+  IconViewportTall,
+} from '@tabler/icons-react';
 import { useCallback, useState } from 'react';
 import { DeleteSelectedKeybinding } from '../../../config/keybindings';
 import type { SubmissionRecord } from '../../../stores/records';
 import type { SubmissionFilter } from '../../../stores/ui-store';
-import { useSubmissionsFilter } from '../../../stores/ui-store';
+import { useSubmissionsFilter, useSubmissionViewMode } from '../../../stores/ui-store';
 import { MultiSchedulerModal, SearchInput } from '../../shared';
 import { TemplatePickerModal } from '../../shared/template-picker';
 import './submissions-section.css';
@@ -77,6 +85,7 @@ export function SubmissionSectionHeader({
 }: SubmissionSectionHeaderProps) {
   const { filter, searchQuery, setFilter, setSearchQuery } =
     useSubmissionsFilter(submissionType);
+  const { viewMode, toggleViewMode } = useSubmissionViewMode();
   const { t } = useLingui();
 
   // Popover state for message submission creation
@@ -294,18 +303,43 @@ export function SubmissionSectionHeader({
           onClear={() => setSearchQuery('')}
         />
 
-        {/* Status filter */}
-        <SegmentedControl
-          size="xs"
-          fullWidth
-          value={filter}
-          onChange={(value) => setFilter(value as SubmissionFilter)}
-          data={[
-            { value: 'all', label: t`All` },
-            { value: 'drafts', label: t`Drafts` },
-            { value: 'scheduled', label: t`Scheduled` },
-          ]}
-        />
+        {/* Status filter and view mode toggle */}
+        <Group gap="xs" wrap="nowrap">
+          <SegmentedControl
+            size="xs"
+            style={{ flex: 1 }}
+            value={filter}
+            onChange={(value) => setFilter(value as SubmissionFilter)}
+            data={[
+              { value: 'all', label: t`All` },
+              { value: 'drafts', label: t`Drafts` },
+              { value: 'scheduled', label: t`Scheduled` },
+            ]}
+          />
+          <Tooltip
+            label={
+              viewMode === 'compact' ? (
+                <Trans>Detailed view</Trans>
+              ) : (
+                <Trans>Compact view</Trans>
+              )
+            }
+          >
+            <ActionIcon
+              variant="subtle"
+              size="sm"
+              onClick={toggleViewMode}
+              // eslint-disable-next-line lingui/no-unlocalized-strings
+              aria-label="Toggle view mode"
+            >
+              {viewMode === 'compact' ? (
+                <IconViewportTall size={16} />
+              ) : (
+                <IconViewportShort size={16} />
+              )}
+            </ActionIcon>
+          </Tooltip>
+        </Group>
       </Stack>
 
       {/* Template picker modal for mass apply */}

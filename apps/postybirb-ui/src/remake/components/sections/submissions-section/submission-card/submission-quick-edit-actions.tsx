@@ -4,13 +4,9 @@
  * Uses SubmissionsContext for actions via useSubmissionActions hook.
  */
 
-import { Group, TagsInput } from '@mantine/core';
+import { Box, Group, TagsInput } from '@mantine/core';
 import { useDebouncedCallback } from '@mantine/hooks';
-import {
-    DefaultTagValue,
-    SubmissionRating,
-    TagValue,
-} from '@postybirb/types';
+import { DefaultTagValue, SubmissionRating, TagValue } from '@postybirb/types';
 import { IconTag } from '@tabler/icons-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { SubmissionRecord } from '../../../../stores';
@@ -66,16 +62,17 @@ function QuickEditTags({ tags, onChange }: QuickEditTagsProps) {
   }, [localTags, tags, onChange, debouncedSave]);
 
   return (
-    <TagsInput
-      clearable
-      size="xs"
-      className="postybirb__submission__quick_edit_tags"
-      leftSection={<IconTag size="13" />}
-      value={localTags}
-      onChange={handleChange}
-      onBlur={handleBlur}
-      onClick={(e) => e.stopPropagation()}
-    />
+    <Box onClick={(e) => e.stopPropagation()}>
+      <TagsInput
+        clearable
+        size="xs"
+        className="postybirb__submission__quick_edit_tags"
+        leftSection={<IconTag size="13" />}
+        value={localTags}
+        onChange={handleChange}
+        onBlur={handleBlur}
+      />
+    </Box>
   );
 }
 
@@ -106,7 +103,6 @@ export function SubmissionQuickEditActions({
       className="postybirb__submission__quick_edit_actions"
       gap="2"
       align="flex-end"
-      onClick={(e) => e.stopPropagation()}
     >
       <RatingInput value={rating} onChange={handleRatingChange} size="sm" />
       <QuickEditTags tags={tags} onChange={handleTagsChange} />

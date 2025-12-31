@@ -18,6 +18,8 @@ export interface SubmissionCardProps {
   isSelected?: boolean;
   /** Whether this card is draggable for reordering */
   draggable?: boolean;
+  /** Whether to show compact view (hides quick-edit actions and last modified) */
+  isCompact?: boolean;
   /** Additional class name for the card */
   className?: string;
 }

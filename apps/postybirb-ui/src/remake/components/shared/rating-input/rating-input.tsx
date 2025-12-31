@@ -7,10 +7,10 @@ import { useLingui } from '@lingui/react/macro';
 import { Group, Rating, Tooltip } from '@mantine/core';
 import { SubmissionRating } from '@postybirb/types';
 import {
-    IconCircleLetterE,
-    IconCircleLetterM,
-    IconExclamationCircle,
-    IconRating18Plus,
+  IconCircleLetterE,
+  IconCircleLetterM,
+  IconExclamationCircle,
+  IconRating18Plus,
 } from '@tabler/icons-react';
 import { useCallback } from 'react';
 
@@ -150,7 +150,7 @@ export function RatingInput({
   }
 
   return (
-    <Group gap="xs">
+    <Group gap="xs" onClick={(e) => e.stopPropagation()}>
       <Tooltip label={ratingLabel} position="top">
         {ratingComponent}
       </Tooltip>

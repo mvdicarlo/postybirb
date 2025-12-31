@@ -12,34 +12,34 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-    ActionIcon,
-    Badge,
-    Box,
-    Button,
-    Divider,
-    Flex,
-    Group,
-    Modal,
-    Paper,
-    SegmentedControl,
-    Slider,
-    Stack,
-    Text,
-    ThemeIcon,
-    Tooltip,
+  ActionIcon,
+  Badge,
+  Box,
+  Button,
+  Divider,
+  Flex,
+  Group,
+  Modal,
+  Paper,
+  SegmentedControl,
+  Slider,
+  Stack,
+  Text,
+  ThemeIcon,
+  Tooltip,
 } from '@mantine/core';
 import { FileWithPath } from '@mantine/dropzone';
 import {
-    IconCheck,
-    IconCrop,
-    IconFlipHorizontal,
-    IconFlipVertical,
-    IconRefresh,
-    IconRotate,
-    IconRotateClockwise,
-    IconX,
-    IconZoomIn,
-    IconZoomOut,
+  IconCheck,
+  IconCrop,
+  IconFlipHorizontal,
+  IconFlipVertical,
+  IconRefresh,
+  IconRotate,
+  IconRotateClockwise,
+  IconX,
+  IconZoomIn,
+  IconZoomOut,
 } from '@tabler/icons-react';
 import Cropper from 'cropperjs';
 import 'cropperjs/dist/cropper.css';
@@ -329,6 +329,7 @@ export function ImageEditor({
                 alt={file.name}
                 onLoad={handleImageLoad}
                 className="postybirb__image_editor_image"
+                loading="lazy"
               />
             )}
           </Box>

@@ -53,6 +53,11 @@ export { AccountLoginFilter } from '../types/account-filters';
 export type ColorScheme = 'light' | 'dark' | 'auto';
 
 /**
+ * Submission card view mode options.
+ */
+export type SubmissionViewMode = 'compact' | 'detailed';
+
+/**
  * Valid Mantine primary colors.
  */
 export const MANTINE_COLORS = [
@@ -111,6 +116,9 @@ interface UIState {
   colorScheme: ColorScheme;
   primaryColor: MantinePrimaryColor;
 
+  // Submission card view mode
+  submissionViewMode: SubmissionViewMode;
+
   // Accounts section
   hiddenWebsites: string[];
   accountsSearchQuery: string;
@@ -160,6 +168,10 @@ interface UIActions {
   // Appearance actions
   setColorScheme: (scheme: ColorScheme) => void;
   setPrimaryColor: (color: MantinePrimaryColor) => void;
+
+  // Submission view mode actions
+  setSubmissionViewMode: (mode: SubmissionViewMode) => void;
+  toggleSubmissionViewMode: () => void;
 
   // Accounts section actions
   setHiddenWebsites: (websiteIds: string[]) => void;
@@ -226,6 +238,7 @@ const initialState: UIState = {
   language: getDefaultLanguage(),
   colorScheme: 'auto',
   primaryColor: 'red',
+  submissionViewMode: 'detailed',
   hiddenWebsites: [],
   accountsSearchQuery: '',
   accountsLoginFilter: AccountLoginFilter.All,
@@ -492,6 +505,14 @@ export const useUIStore = create<UIStore>()(
       setColorScheme: (colorScheme) => set({ colorScheme }),
       setPrimaryColor: (primaryColor) => set({ primaryColor }),
 
+      // Submission view mode actions
+      setSubmissionViewMode: (submissionViewMode) => set({ submissionViewMode }),
+      toggleSubmissionViewMode: () =>
+        set((state) => ({
+          submissionViewMode:
+            state.submissionViewMode === 'compact' ? 'detailed' : 'compact',
+        })),
+
       // Accounts section actions
       setHiddenWebsites: (hiddenWebsites) => set({ hiddenWebsites }),
       toggleWebsiteVisibility: (websiteId) =>
@@ -530,6 +551,7 @@ export const useUIStore = create<UIStore>()(
         language: state.language,
         colorScheme: state.colorScheme,
         primaryColor: state.primaryColor,
+        submissionViewMode: state.submissionViewMode,
         hiddenWebsites: state.hiddenWebsites,
         accountsSearchQuery: state.accountsSearchQuery,
         accountsLoginFilter: state.accountsLoginFilter,
@@ -731,3 +753,21 @@ export const useCanGoForward = () =>
   useUIStore(
     (state) => state.historyIndex < state.navigationHistory.length - 1,
   );
+
+// ============================================================================
+// Submission View Mode Selectors
+// ============================================================================
+
+/** Select submission view mode state and actions */
+export const useSubmissionViewMode = () =>
+  useUIStore(
+    useShallow((state) => ({
+      viewMode: state.submissionViewMode,
+      setViewMode: state.setSubmissionViewMode,
+      toggleViewMode: state.toggleSubmissionViewMode,
+    })),
+  );
+
+/** Check if submission view is compact */
+export const useIsCompactView = () =>
+  useUIStore((state) => state.submissionViewMode === 'compact');

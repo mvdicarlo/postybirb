@@ -6,12 +6,12 @@ import { Trans } from '@lingui/react/macro';
 import { Badge, Group, Tooltip } from '@mantine/core';
 import { SubmissionType } from '@postybirb/types';
 import {
-    IconAlertTriangle,
-    IconCalendar,
-    IconCircleCheck,
-    IconGlobe,
-    IconLoader,
-    IconX,
+  IconAlertTriangle,
+  IconCalendar,
+  IconCircleCheck,
+  IconGlobe,
+  IconLoader,
+  IconX,
 } from '@tabler/icons-react';
 import { useLocale } from '../../../../hooks';
 import type { SubmissionRecord } from '../../../../stores/records';
@@ -35,26 +35,6 @@ export function SubmissionBadges({
 
   return (
     <Group gap={4}>
-      {/* Scheduled badge */}
-      {submission.isScheduled && (
-        <Tooltip
-          label={
-            submission.scheduledDate
-              ? formatDateTime(submission.scheduledDate)
-              : undefined
-          }
-        >
-          <Badge
-            size="xs"
-            variant="light"
-            color="blue"
-            leftSection={<IconCalendar size={10} />}
-          >
-            <Trans>Scheduled</Trans>
-          </Badge>
-        </Tooltip>
-      )}
-
       {/* Queued badge */}
       {submission.isQueued && (
         <Badge
