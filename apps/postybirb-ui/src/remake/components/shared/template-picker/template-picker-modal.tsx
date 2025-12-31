@@ -45,9 +45,7 @@ import {
 } from '../../../utils/notifications';
 
 interface TemplatePickerModalProps {
-  /** Current submission ID (excluded from sources list) */
-  submissionId?: SubmissionId;
-  /** Target submission IDs to apply templates to */
+  /** Target submission IDs to apply templates to (also excluded from sources) */
   targetSubmissionIds: SubmissionId[];
   /** Filter by submission type */
   type: SubmissionType;
@@ -103,7 +101,6 @@ function groupWebsiteOptions(
  * Modal for picking templates and applying their options to submissions.
  */
 export function TemplatePickerModal({
-  submissionId,
   targetSubmissionIds,
   type,
   onClose,
@@ -131,15 +128,15 @@ export function TemplatePickerModal({
     [templates, type],
   );
 
-  // Filter submissions (non-archived, not current, same type)
+  // Filter submissions (non-archived, not targets, same type)
   const filteredSubmissions = useMemo(
     () =>
       submissions
         .filter((s) => !s.isArchived)
-        .filter((s) => s.id !== submissionId)
+        .filter((s) => !targetSubmissionIds.includes(s.id))
         .filter((s) => !s.isTemplate)
         .filter((s) => !s.isMultiSubmission),
-    [submissions, submissionId],
+    [submissions, targetSubmissionIds],
   );
 
   // Build options for MultiSelect

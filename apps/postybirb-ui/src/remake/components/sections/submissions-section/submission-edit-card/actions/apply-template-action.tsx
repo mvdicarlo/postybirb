@@ -42,7 +42,6 @@ export function ApplyTemplateAction() {
 
       {isModalOpen && (
         <TemplatePickerModal
-          submissionId={submission.submissionId}
           targetSubmissionIds={targetIds}
           type={submission.type}
           onClose={() => setIsModalOpen(false)}
