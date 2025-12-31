@@ -270,6 +270,7 @@ export function ImageEditor({
         body: 'postybirb__image_editor_modal_body',
         content: 'postybirb__image_editor_modal_content',
       }}
+      zIndex={500}
     >
       <Flex direction="column" h="100vh">
         {/* Header */}
