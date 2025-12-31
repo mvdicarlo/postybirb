@@ -20,6 +20,8 @@ export interface BoundSubmissionActions {
   handleEdit: () => void;
   /** Post this submission immediately */
   handlePost: () => void;
+  /** Cancel this submission if queued/posting */
+  handleCancel?: () => void;
   /** Archive this submission (if available) */
   handleArchive?: () => void;
   /** View this submission's post history (if available) */
@@ -59,6 +61,9 @@ export function useSubmissionActions(submissionId: string): BoundSubmissionActio
       handleDuplicate: () => context.onDuplicate(submissionId),
       handleEdit: () => context.onEdit(submissionId),
       handlePost: () => context.onPost(submissionId),
+      handleCancel: context.onCancel
+        ? () => context.onCancel!(submissionId)
+        : undefined,
       handleArchive: context.onArchive
         ? () => context.onArchive!(submissionId)
         : undefined,

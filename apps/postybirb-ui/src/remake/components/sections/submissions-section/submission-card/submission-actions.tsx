@@ -8,13 +8,14 @@ import { Trans } from '@lingui/react/macro';
 import { ActionIcon, Group, Menu, Tooltip } from '@mantine/core';
 import { ISubmissionScheduleInfo } from '@postybirb/types';
 import {
-    IconArchive,
-    IconCopy,
-    IconDotsVertical,
-    IconEdit,
-    IconHistory,
-    IconSend,
-    IconTrash,
+  IconArchive,
+  IconCancel,
+  IconCopy,
+  IconDotsVertical,
+  IconEdit,
+  IconHistory,
+  IconSend,
+  IconTrash,
 } from '@tabler/icons-react';
 import { useCallback } from 'react';
 import { HoldToConfirmButton } from '../../../hold-to-confirm';
@@ -27,10 +28,14 @@ interface SubmissionActionsProps {
   schedule: ISubmissionScheduleInfo;
   /** Whether the submission is currently scheduled */
   isScheduled: boolean;
+  /** Whether the submission is currently queued/posting */
+  isQueued?: boolean;
   /** Whether the submission has post history */
   hasHistory?: boolean;
   /** Handler for posting the submission */
   onPost?: () => void;
+  /** Handler for canceling a queued submission */
+  onCancel?: () => void;
   /** Handler for schedule changes */
   onScheduleChange?: (
     schedule: ISubmissionScheduleInfo,
@@ -55,8 +60,10 @@ export function SubmissionActions({
   canPost,
   schedule,
   isScheduled,
+  isQueued,
   hasHistory,
   onPost,
+  onCancel,
   onScheduleChange,
   onEdit,
   onDuplicate,
@@ -104,6 +111,14 @@ export function SubmissionActions({
     [onArchive],
   );
 
+  const handleCancel = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      onCancel?.();
+    },
+    [onCancel],
+  );
+
   const handleScheduleChange = useCallback(
     (newSchedule: ISubmissionScheduleInfo, newIsScheduled: boolean) => {
       onScheduleChange?.(newSchedule, newIsScheduled);
@@ -128,19 +143,34 @@ export function SubmissionActions({
           />
         </span>
 
-        {/* Post button (hold to confirm) */}
-        <Tooltip label={<Trans>Hold to post</Trans>}>
-          <HoldToConfirmButton
-            onConfirm={onPost ?? (() => {})}
-            disabled={!canPost}
-            variant="subtle"
-            size="sm"
-            // eslint-disable-next-line lingui/no-unlocalized-strings
-            aria-label="Post submission"
-          >
-            <IconSend size={16} />
-          </HoldToConfirmButton>
-        </Tooltip>
+        {/* Post button or Cancel button based on queue state */}
+        {isQueued ? (
+          <Tooltip label={<Trans>Cancel posting</Trans>}>
+            <ActionIcon
+              variant="subtle"
+              size="sm"
+              color="orange"
+              onClick={handleCancel}
+              // eslint-disable-next-line lingui/no-unlocalized-strings
+              aria-label="Cancel posting"
+            >
+              <IconCancel size={16} />
+            </ActionIcon>
+          </Tooltip>
+        ) : (
+          <Tooltip label={<Trans>Hold to post</Trans>}>
+            <HoldToConfirmButton
+              onConfirm={onPost ?? (() => {})}
+              disabled={!canPost}
+              variant="subtle"
+              size="sm"
+              // eslint-disable-next-line lingui/no-unlocalized-strings
+              aria-label="Post submission"
+            >
+              <IconSend size={16} />
+            </HoldToConfirmButton>
+          </Tooltip>
+        )}
       </Group>
 
       {/* Actions menu */}

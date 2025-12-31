@@ -97,6 +97,7 @@ export function SubmissionsSection({
     handleEdit,
     handleDefaultOptionChange,
     handlePost,
+    handleCancel,
     handlePostSelected,
     handleScheduleChange,
   } = useSubmissionHandlers({
@@ -275,6 +276,7 @@ export function SubmissionsSection({
         onDuplicate={handleDuplicate}
         onEdit={handleEdit}
         onPost={handlePost}
+        onCancel={handleCancel}
         onArchive={handleArchive}
         onViewHistory={handleViewHistory}
         onDefaultOptionChange={handleDefaultOptionChange}

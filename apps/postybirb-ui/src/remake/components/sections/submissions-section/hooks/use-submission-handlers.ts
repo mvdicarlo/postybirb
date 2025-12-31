@@ -67,6 +67,8 @@ interface UseSubmissionHandlersResult {
   ) => Promise<void>;
   /** Handle posting a submission */
   handlePost: (id: string) => Promise<void>;
+  /** Handle canceling a queued/posting submission */
+  handleCancel: (id: string) => Promise<void>;
   /** Handle schedule changes */
   handleScheduleChange: (
     id: string,
@@ -101,7 +103,7 @@ export function useSubmissionHandlers({
     selectedIds,
   });
 
-  const { handlePost, handlePostSelected } = useSubmissionPost({
+  const { handlePost, handleCancel, handlePostSelected } = useSubmissionPost({
     viewState,
   });
 
@@ -131,6 +133,7 @@ export function useSubmissionHandlers({
     handleEdit,
     handleDefaultOptionChange,
     handlePost,
+    handleCancel,
     handlePostSelected,
     handleScheduleChange,
   };

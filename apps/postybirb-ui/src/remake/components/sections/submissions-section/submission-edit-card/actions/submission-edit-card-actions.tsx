@@ -9,7 +9,7 @@ import { notifications } from '@mantine/notifications';
 import {
   IconArchiveOff,
   IconHistory,
-  IconPlayerStop,
+  IconCancel,
   IconSend,
   IconTrash,
 } from '@tabler/icons-react';
@@ -161,7 +161,7 @@ export function SubmissionEditCardActions() {
             color="orange"
             onClick={handleCancel}
           >
-            <IconPlayerStop size={16} />
+            <IconCancel size={16} />
           </ActionIcon>
         </Tooltip>
         <Tooltip label={<Trans>Hold to delete</Trans>}>

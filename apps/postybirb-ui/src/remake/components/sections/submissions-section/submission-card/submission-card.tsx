@@ -39,6 +39,7 @@ export function SubmissionCard({
     handleDuplicate,
     handleEdit,
     handlePost,
+    handleCancel,
     handleArchive,
     handleViewHistory,
     handleScheduleChange,
@@ -219,8 +220,10 @@ export function SubmissionCard({
             canPost={canPost}
             schedule={submission.schedule}
             isScheduled={submission.isScheduled}
+            isQueued={submission.isQueued}
             hasHistory={submission.posts.length > 0}
             onPost={handlePost}
+            onCancel={handleCancel}
             onScheduleChange={handleScheduleChange}
             onEdit={handleEdit}
             onDuplicate={handleDuplicate}

@@ -35,6 +35,8 @@ export interface SubmissionsContextValue {
   onEdit: (id: string) => void;
   /** Post a submission immediately */
   onPost: (id: string) => void;
+  /** Cancel a queued/posting submission */
+  onCancel?: (id: string) => void;
   /** Archive a submission */
   onArchive?: (id: string) => void;
   /** View submission history (optional - only available when drawer is configured) */
@@ -94,6 +96,8 @@ export interface SubmissionsProviderProps {
   onEdit: (id: string) => void;
   /** Post handler */
   onPost: (id: string) => void;
+  /** Cancel handler (optional) */
+  onCancel?: (id: string) => void;
   /** Archive handler (optional) */
   onArchive?: (id: string) => void;
   /** View history handler (optional) */
@@ -122,6 +126,7 @@ export function SubmissionsProvider({
   onDuplicate,
   onEdit,
   onPost,
+  onCancel,
   onArchive,
   onViewHistory,
   onDefaultOptionChange,
@@ -137,6 +142,7 @@ export function SubmissionsProvider({
       onDuplicate,
       onEdit,
       onPost,
+      onCancel,
       onArchive,
       onViewHistory,
       onDefaultOptionChange,
@@ -151,6 +157,7 @@ export function SubmissionsProvider({
       onDuplicate,
       onEdit,
       onPost,
+      onCancel,
       onArchive,
       onViewHistory,
       onDefaultOptionChange,

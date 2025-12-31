@@ -3,6 +3,7 @@
  */
 
 import { useCallback } from 'react';
+import postManagerApi from '../../../../api/post-manager.api';
 import postQueueApi from '../../../../api/post-queue.api';
 import { useUIStore } from '../../../../stores/ui-store';
 import { type ViewState } from '../../../../types/view-state';
@@ -17,6 +18,8 @@ interface UseSubmissionPostProps {
 interface UseSubmissionPostResult {
   /** Handle posting a submission */
   handlePost: (id: string) => Promise<void>;
+  /** Handle canceling a queued/posting submission */
+  handleCancel: (id: string) => Promise<void>;
   /** Handle posting submissions with specified order */
   handlePostSelected: (orderedIds: string[]) => Promise<void>;
 }
@@ -35,6 +38,15 @@ export function useSubmissionPost({
       await postQueueApi.enqueue([id]);
     } catch {
       showPostErrorNotification();
+    }
+  }, []);
+
+  // Handle canceling a queued/posting submission
+  const handleCancel = useCallback(async (id: string) => {
+    try {
+      await postManagerApi.cancelIfRunning(id);
+    } catch {
+      // Silently handle if not running
     }
   }, []);
 
@@ -67,6 +79,7 @@ export function useSubmissionPost({
 
   return {
     handlePost,
+    handleCancel,
     handlePostSelected,
   };
 }
