@@ -1,23 +1,23 @@
 import { i18n } from '@lingui/core';
 import { msg } from '@lingui/core/macro';
 import {
-  DefaultDescriptionValue,
-  DefaultTagValue,
-  IAccountDto,
-  IPostQueueRecord,
-  ISubmissionDto,
-  ISubmissionFileDto,
-  ISubmissionMetadata,
-  ISubmissionScheduleInfo,
-  IWebsiteFormFields,
-  NULL_ACCOUNT_ID,
-  PostRecordDto,
-  PostRecordState,
-  ScheduleType,
-  SubmissionRating,
-  SubmissionType,
-  ValidationResult,
-  WebsiteOptionsDto,
+    DefaultDescriptionValue,
+    DefaultTagValue,
+    IAccountDto,
+    IPostQueueRecord,
+    ISubmissionDto,
+    ISubmissionFileDto,
+    ISubmissionMetadata,
+    ISubmissionScheduleInfo,
+    IWebsiteFormFields,
+    NULL_ACCOUNT_ID,
+    PostRecordDto,
+    PostRecordState,
+    ScheduleType,
+    SubmissionRating,
+    SubmissionType,
+    ValidationResult,
+    WebsiteOptionsDto,
 } from '@postybirb/types';
 import { Moment } from 'moment';
 import submissionsApi from '../../api/submission.api';
@@ -58,6 +58,8 @@ export class SubmissionDto<
   isMultiSubmission!: boolean;
 
   isArchived!: boolean;
+
+  isInitialized!: boolean;
 
   postQueueRecord?: IPostQueueRecord | undefined;
 

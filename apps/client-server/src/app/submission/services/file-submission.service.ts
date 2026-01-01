@@ -52,7 +52,7 @@ export class FileSubmissionService
       ...submission.metadata,
     };
 
-    await this.appendFile(submission, file, false);
+    await this.appendFile(submission, file);
   }
 
   private guardIsFileSubmission(submission: ISubmission) {
@@ -75,11 +75,7 @@ export class FileSubmissionService
    * @param {string} id
    * @param {MulterFileInfo} file
    */
-  async appendFile(
-    id: EntityId | FileSubmission,
-    file: MulterFileInfo,
-    persist = true,
-  ) {
+  async appendFile(id: EntityId | FileSubmission, file: MulterFileInfo) {
     const submission = (
       typeof id === 'string'
         ? await this.repository.findById(id, {
@@ -95,12 +91,10 @@ export class FileSubmissionService
       .withMetadata(submission)
       .info(`Created file ${createdFile.id} = ${submission.id}`);
 
-    if (persist) {
-      await this.repository.update(submission.id, {
-        metadata: submission.metadata,
-      });
-      this.submissionService.emit();
-    }
+    await this.repository.update(submission.id, {
+      metadata: submission.metadata,
+    });
+
     return submission;
   }
 

@@ -1,6 +1,7 @@
 import { app } from 'electron';
 import { readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
+import { isWindows } from './utils-electron';
 
 export type StartupOptions = {
   startAppOnSystemStartup: boolean;
@@ -9,10 +10,16 @@ export type StartupOptions = {
 };
 
 const FILE_PATH = join(app.getAppPath(), 'startup.json');
+const DOCUMENTS_PATH = join(app.getPath('documents'), 'PostyBirb');
+const DEFAULT_APP_DATA_PATH =
+  isWindows() && DOCUMENTS_PATH.includes('OneDrive')
+    ? join(app.getPath('home'), 'PostyBirb')
+    : DOCUMENTS_PATH;
+
 const DEFAULT_STARTUP_OPTIONS = {
   startAppOnSystemStartup: false,
   port: '9487',
-  appDataPath: join(app.getPath('documents'), 'PostyBirb'),
+  appDataPath: DEFAULT_APP_DATA_PATH,
 };
 
 function init(): StartupOptions {
