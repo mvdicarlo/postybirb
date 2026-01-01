@@ -6,7 +6,7 @@
 import { SubmissionType } from '@postybirb/types';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import { useShallow } from 'zustand/react/shallow';
+import { useShallow } from 'zustand/shallow';
 import { AccountLoginFilter } from '../types/account-filters';
 import {
     createAccountsViewState,
@@ -575,19 +575,28 @@ export const useUIStore = create<UIStore>()(
 
 /** Select sidenav collapsed state */
 export const useSidenavCollapsed = () =>
-  useUIStore((state) => state.sidenavCollapsed);
+  useUIStore((state: UIStore) => state.sidenavCollapsed);
+
+/** Select sidenav set collapsed action */
+export const useSetSidenavCollapsed = () =>
+  useUIStore((state: UIStore) => state.setSidenavCollapsed);
 
 /** Select sidenav toggle action */
 export const useToggleSidenav = () =>
-  useUIStore((state) => state.toggleSidenav);
+  useUIStore((state: UIStore) => state.toggleSidenav);
 
 /** Select active drawer */
-export const useActiveDrawer = () => useUIStore((state) => state.activeDrawer);
+export const useActiveDrawer = () =>
+  useUIStore((state: UIStore) => state.activeDrawer);
+
+/** Select toggle drawer action */
+export const useToggleDrawer = () =>
+  useUIStore((state: UIStore) => state.toggleDrawer);
 
 /** Select drawer actions */
 export const useDrawerActions = () =>
   useUIStore(
-    useShallow((state) => ({
+    useShallow((state: UIStore) => ({
       openDrawer: state.openDrawer,
       closeDrawer: state.closeDrawer,
       toggleDrawer: state.toggleDrawer,
@@ -597,7 +606,7 @@ export const useDrawerActions = () =>
 /** Select file submissions filter and search query */
 export const useFileSubmissionsFilter = () =>
   useUIStore(
-    useShallow((state) => ({
+    useShallow((state: UIStore) => ({
       filter: state.fileSubmissionsFilter,
       searchQuery: state.fileSubmissionsSearchQuery,
       setFilter: state.setFileSubmissionsFilter,
@@ -608,7 +617,7 @@ export const useFileSubmissionsFilter = () =>
 /** Select message submissions filter and search query */
 export const useMessageSubmissionsFilter = () =>
   useUIStore(
-    useShallow((state) => ({
+    useShallow((state: UIStore) => ({
       filter: state.messageSubmissionsFilter,
       searchQuery: state.messageSubmissionsSearchQuery,
       setFilter: state.setMessageSubmissionsFilter,
@@ -619,7 +628,7 @@ export const useMessageSubmissionsFilter = () =>
 /** Generic submissions filter hook - returns filter state based on submission type */
 export const useSubmissionsFilter = (type: SubmissionType) =>
   useUIStore(
-    useShallow((state) =>
+    useShallow((state: UIStore) =>
       type === SubmissionType.FILE
         ? {
             filter: state.fileSubmissionsFilter,
@@ -639,34 +648,36 @@ export const useSubmissionsFilter = (type: SubmissionType) =>
 /** Select sub-nav visibility */
 export const useSubNavVisible = () =>
   useUIStore(
-    useShallow((state) => ({
+    useShallow((state: UIStore) => ({
       visible: state.subNavVisible,
       setVisible: state.setSubNavVisible,
     })),
   );
 
 /** Select language state */
-export const useLanguage = () => useUIStore((state) => state.language);
+export const useLanguage = () => useUIStore((state: UIStore) => state.language);
 
 /** Select language actions */
 export const useLanguageActions = () =>
   useUIStore(
-    useShallow((state) => ({
+    useShallow((state: UIStore) => ({
       language: state.language,
       setLanguage: state.setLanguage,
     })),
   );
 
 /** Select color scheme */
-export const useColorScheme = () => useUIStore((state) => state.colorScheme);
+export const useColorScheme = () =>
+  useUIStore((state: UIStore) => state.colorScheme);
 
 /** Select primary color */
-export const usePrimaryColor = () => useUIStore((state) => state.primaryColor);
+export const usePrimaryColor = () =>
+  useUIStore((state: UIStore) => state.primaryColor);
 
 /** Select appearance actions */
 export const useAppearanceActions = () =>
   useUIStore(
-    useShallow((state) => ({
+    useShallow((state: UIStore) => ({
       colorScheme: state.colorScheme,
       primaryColor: state.primaryColor,
       setColorScheme: state.setColorScheme,
@@ -675,12 +686,17 @@ export const useAppearanceActions = () =>
   );
 
 /** Select view state */
-export const useViewState = () => useUIStore((state) => state.viewState);
+export const useViewState = () =>
+  useUIStore((state: UIStore) => state.viewState);
+
+/** Select setViewState action */
+export const useSetViewState = () =>
+  useUIStore((state: UIStore) => state.setViewState);
 
 /** Select view state actions */
 export const useViewStateActions = () =>
   useUIStore(
-    useShallow((state) => ({
+    useShallow((state: UIStore) => ({
       viewState: state.viewState,
       setViewState: state.setViewState,
     })),
@@ -690,12 +706,12 @@ export const useViewStateActions = () =>
  * Toggle section panel visibility hook.
  */
 export const useToggleSectionPanel = () =>
-  useUIStore((state) => state.toggleSubNavVisible);
+  useUIStore((state: UIStore) => state.toggleSubNavVisible);
 
 /** Select submissions primary content preferences */
 export const useSubmissionsContentPreferences = () =>
   useUIStore(
-    useShallow((state) => ({
+    useShallow((state: UIStore) => ({
       preferMultiEdit: state.submissionsPreferMultiEdit,
       setPreferMultiEdit: state.setSubmissionsPreferMultiEdit,
     })),
@@ -707,12 +723,12 @@ export const useSubmissionsContentPreferences = () =>
 
 /** Select hidden websites */
 export const useHiddenWebsites = () =>
-  useUIStore((state) => state.hiddenWebsites);
+  useUIStore((state: UIStore) => state.hiddenWebsites);
 
 /** Select accounts section filter state and actions */
 export const useAccountsFilter = () =>
   useUIStore(
-    useShallow((state) => ({
+    useShallow((state: UIStore) => ({
       searchQuery: state.accountsSearchQuery,
       loginFilter: state.accountsLoginFilter,
       hiddenWebsites: state.hiddenWebsites,
@@ -730,7 +746,7 @@ export const useAccountsFilter = () =>
 /** Select templates section filter state and actions */
 export const useTemplatesFilter = () =>
   useUIStore(
-    useShallow((state) => ({
+    useShallow((state: UIStore) => ({
       tabType: state.templatesTabType,
       searchQuery: state.templatesSearchQuery,
       setTabType: state.setTemplatesTabType,
@@ -745,19 +761,20 @@ export const useTemplatesFilter = () =>
 /** Select navigation history actions */
 export const useNavigationHistory = () =>
   useUIStore(
-    useShallow((state) => ({
+    useShallow((state: UIStore) => ({
       goBack: state.goBack,
       goForward: state.goForward,
     })),
   );
 
 /** Check if navigation can go back */
-export const useCanGoBack = () => useUIStore((state) => state.historyIndex > 0);
+export const useCanGoBack = () =>
+  useUIStore((state: UIStore) => state.historyIndex > 0);
 
 /** Check if navigation can go forward */
 export const useCanGoForward = () =>
   useUIStore(
-    (state) => state.historyIndex < state.navigationHistory.length - 1,
+    (state: UIStore) => state.historyIndex < state.navigationHistory.length - 1,
   );
 
 // ============================================================================
@@ -767,7 +784,7 @@ export const useCanGoForward = () =>
 /** Select submission view mode state and actions */
 export const useSubmissionViewMode = () =>
   useUIStore(
-    useShallow((state) => ({
+    useShallow((state: UIStore) => ({
       viewMode: state.submissionViewMode,
       setViewMode: state.setSubmissionViewMode,
       toggleViewMode: state.toggleSubmissionViewMode,
@@ -776,4 +793,4 @@ export const useSubmissionViewMode = () =>
 
 /** Check if submission view is compact */
 export const useIsCompactView = () =>
-  useUIStore((state) => state.submissionViewMode === 'compact');
+  useUIStore((state: UIStore) => state.submissionViewMode === 'compact');

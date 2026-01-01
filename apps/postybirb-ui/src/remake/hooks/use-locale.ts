@@ -30,7 +30,6 @@ export interface UseLocaleResult {
   blockNoteLocale: Record<string, unknown>;
   /** Format a date as relative time (e.g., "2 hours ago", "in 3 days") */
   formatRelativeTime: (date: Date | string) => string;
-  formatRelativeTime: (date: Date | string) => string;
   /** Format a date/time for display using locale-aware formatting */
   formatDateTime: (
     date: Date | string,

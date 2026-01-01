@@ -4,7 +4,7 @@
 
 import { SUBMISSION_UPDATES } from '@postybirb/socket-events';
 import type { ISubmissionDto, SubmissionId, SubmissionType } from '@postybirb/types';
-import { useShallow } from 'zustand/react/shallow';
+import { useShallow } from 'zustand/shallow';
 import submissionApi from '../api/submission.api';
 import { createEntityStore, type EntityStore } from './create-entity-store';
 import { SubmissionRecord } from './records';
@@ -33,7 +33,10 @@ export const useSubmissionStore = createEntityStore<ISubmissionDto, SubmissionRe
 /**
  * Type alias for the submission store.
  */
-export type SubmissionStore = EntityStore<SubmissionRecord>;
+export type SubmissionStoreState = EntityStore<SubmissionRecord>;
+
+/** @deprecated Use SubmissionStoreState instead */
+export type SubmissionStore = SubmissionStoreState;
 
 // ============================================================================
 // Selector Hooks
@@ -42,19 +45,21 @@ export type SubmissionStore = EntityStore<SubmissionRecord>;
 /**
  * Select all submissions.
  */
-export const useSubmissions = () => useSubmissionStore((state) => state.records);
+export const useSubmissions = (): SubmissionRecord[] =>
+  useSubmissionStore((state: SubmissionStoreState) => state.records);
 
 /**
  * Select submissions map for O(1) lookup.
  */
-export const useSubmissionsMap = () => useSubmissionStore((state) => state.recordsMap);
+export const useSubmissionsMap = () =>
+  useSubmissionStore((state: SubmissionStoreState) => state.recordsMap);
 
 /**
  * Select submission loading state.
  */
 export const useSubmissionsLoading = () =>
   useSubmissionStore(
-    useShallow((state) => ({
+    useShallow((state: SubmissionStoreState) => ({
       loadingState: state.loadingState,
       error: state.error,
       isLoading: state.loadingState === 'loading',
@@ -66,24 +71,26 @@ export const useSubmissionsLoading = () =>
  * Select a specific submission by ID.
  */
 export const useSubmission = (id: SubmissionId) =>
-  useSubmissionStore((state) => state.recordsMap.get(id));
+  useSubmissionStore((state: SubmissionStoreState) => state.recordsMap.get(id));
 
 /**
  * Select submissions by type (FILE or MESSAGE).
  * Uses useShallow for stable reference when items haven't changed.
  */
-export const useSubmissionsByType = (type: SubmissionType) =>
+export const useSubmissionsByType = (type: SubmissionType): SubmissionRecord[] =>
   useSubmissionStore(
-    useShallow((state) => state.records.filter((s) => s.type === type))
+    useShallow((state: SubmissionStoreState) =>
+      state.records.filter((s) => s.type === type)
+    )
   );
 
 /**
  * Select non-template, non-multi submissions (regular submissions).
  * Uses useShallow for stable reference when items haven't changed.
  */
-export const useRegularSubmissions = () =>
+export const useRegularSubmissions = (): SubmissionRecord[] =>
   useSubmissionStore(
-    useShallow((state) =>
+    useShallow((state: SubmissionStoreState) =>
       state.records.filter((s) => !s.isTemplate && !s.isMultiSubmission)
     )
   );
@@ -92,18 +99,20 @@ export const useRegularSubmissions = () =>
  * Select template submissions.
  * Uses useShallow for stable reference when items haven't changed.
  */
-export const useTemplateSubmissions = () =>
+export const useTemplateSubmissions = (): SubmissionRecord[] =>
   useSubmissionStore(
-    useShallow((state) => state.records.filter((s) => s.isTemplate))
+    useShallow((state: SubmissionStoreState) =>
+      state.records.filter((s) => s.isTemplate)
+    )
   );
 
 /**
  * Select scheduled submissions.
  * Uses useShallow for stable reference when items haven't changed.
  */
-export const useScheduledSubmissions = () =>
+export const useScheduledSubmissions = (): SubmissionRecord[] =>
   useSubmissionStore(
-    useShallow((state) =>
+    useShallow((state: SubmissionStoreState) =>
       state.records.filter((s) => s.isScheduled && !s.isArchived)
     )
   );
@@ -112,27 +121,33 @@ export const useScheduledSubmissions = () =>
  * Select archived submissions.
  * Uses useShallow for stable reference when items haven't changed.
  */
-export const useArchivedSubmissions = () =>
+export const useArchivedSubmissions = (): SubmissionRecord[] =>
   useSubmissionStore(
-    useShallow((state) => state.records.filter((s) => s.isArchived))
+    useShallow((state: SubmissionStoreState) =>
+      state.records.filter((s) => s.isArchived)
+    )
   );
 
 /**
  * Select queued submissions.
  * Uses useShallow for stable reference when items haven't changed.
  */
-export const useQueuedSubmissions = () =>
+export const useQueuedSubmissions = (): SubmissionRecord[] =>
   useSubmissionStore(
-    useShallow((state) => state.records.filter((s) => s.isQueued))
+    useShallow((state: SubmissionStoreState) =>
+      state.records.filter((s) => s.isQueued)
+    )
   );
 
 /**
  * Select submissions with errors.
  * Uses useShallow for stable reference when items haven't changed.
  */
-export const useSubmissionsWithErrors = () =>
+export const useSubmissionsWithErrors = (): SubmissionRecord[] =>
   useSubmissionStore(
-    useShallow((state) => state.records.filter((s) => s.hasErrors))
+    useShallow((state: SubmissionStoreState) =>
+      state.records.filter((s) => s.hasErrors)
+    )
   );
 
 /**
@@ -140,7 +155,7 @@ export const useSubmissionsWithErrors = () =>
  */
 export const useSubmissionActions = () =>
   useSubmissionStore(
-    useShallow((state) => ({
+    useShallow((state: SubmissionStoreState) => ({
       loadAll: state.loadAll,
       setRecords: state.setRecords,
       getById: state.getById,

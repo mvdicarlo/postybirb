@@ -4,7 +4,7 @@
 
 import { useCallback } from 'react';
 import submissionApi from '../../../../api/submission.api';
-import { useUIStore } from '../../../../stores/ui-store';
+import { useSetViewState } from '../../../../stores/ui-store';
 import { type ViewState } from '../../../../types/view-state';
 import {
   showDeletedNotification,
@@ -33,7 +33,7 @@ export function useSubmissionDelete({
   viewState,
   selectedIds,
 }: UseSubmissionDeleteProps): UseSubmissionDeleteResult {
-  const setViewState = useUIStore((state) => state.setViewState);
+  const setViewState = useSetViewState();
 
   // Handle deleting a submission
   const handleDelete = useCallback(

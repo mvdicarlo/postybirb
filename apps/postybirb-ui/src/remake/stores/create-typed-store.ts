@@ -3,7 +3,7 @@
  * Reduces boilerplate from ~70 lines to ~15 lines per store.
  */
 
-import { useShallow } from 'zustand/react/shallow';
+import { useShallow } from 'zustand/shallow';
 import { createEntityStore, type EntityStore } from './create-entity-store';
 import type { BaseRecord } from './records/base-record';
 
@@ -70,6 +70,8 @@ export interface TypedStoreResult<TRecord extends BaseRecord> {
 export function createTypedStore<TDto, TRecord extends BaseRecord>(
   config: TypedStoreConfig<TDto, TRecord>
 ): TypedStoreResult<TRecord> {
+  type StoreState = EntityStore<TRecord>;
+
   const useStore = createEntityStore<TDto, TRecord>(
     config.fetchFn,
     config.createRecord,
@@ -83,20 +85,22 @@ export function createTypedStore<TDto, TRecord extends BaseRecord>(
    * Hook to get all records.
    * Uses shallow comparison to prevent unnecessary re-renders.
    */
-  const useRecords = () => useStore(useShallow((state) => state.records));
+  const useRecords = () =>
+    useStore(useShallow((state: StoreState) => state.records));
 
   /**
    * Hook to get records map for O(1) lookup.
    * Uses shallow comparison to prevent unnecessary re-renders.
    */
-  const useRecordsMap = () => useStore(useShallow((state) => state.recordsMap));
+  const useRecordsMap = () =>
+    useStore(useShallow((state: StoreState) => state.recordsMap));
 
   /**
    * Hook to get loading state.
    */
   const useLoading = () =>
     useStore(
-      useShallow((state) => ({
+      useShallow((state: StoreState) => ({
         loadingState: state.loadingState,
         error: state.error,
         isLoading: state.loadingState === 'loading',
@@ -109,7 +113,7 @@ export function createTypedStore<TDto, TRecord extends BaseRecord>(
    */
   const useActions = () =>
     useStore(
-      useShallow((state) => ({
+      useShallow((state: StoreState) => ({
         loadAll: state.loadAll,
         setRecords: state.setRecords,
         getById: state.getById,

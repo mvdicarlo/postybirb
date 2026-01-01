@@ -4,7 +4,7 @@
 
 import { DIRECTORY_WATCHER_UPDATES } from '@postybirb/socket-events';
 import type { DirectoryWatcherDto } from '@postybirb/types';
-import { useShallow } from 'zustand/react/shallow';
+import { useShallow } from 'zustand/shallow';
 import directoryWatchersApi from '../api/directory-watchers.api';
 import { type EntityStore } from './create-entity-store';
 import { createTypedStore } from './create-typed-store';
@@ -42,5 +42,7 @@ export type DirectoryWatcherStore = EntityStore<DirectoryWatcherRecord>;
  */
 export const useActiveDirectoryWatchers = () =>
   useDirectoryWatcherStore(
-    useShallow((state) => state.records.filter((w) => w.hasPath))
+    useShallow((state: DirectoryWatcherStore) =>
+      state.records.filter((w) => w.hasPath)
+    )
   );

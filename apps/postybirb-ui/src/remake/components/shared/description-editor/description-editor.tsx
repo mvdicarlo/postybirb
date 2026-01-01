@@ -67,7 +67,7 @@ export type DescriptionEditorProps = {
 function DescriptionEditorInner({
   value,
   onChange,
-  isDefaultEditor,
+  isDefaultEditor = false,
   showCustomShortcuts,
   minHeight,
   blockNoteLocale,
@@ -112,7 +112,7 @@ function DescriptionEditorInner({
         emptyDocument: t`Type / for commands or \` for shortcuts`,
         default: t`Type / for commands or \` for shortcuts`,
       },
-    },
+    } as never,
   });
 
   // Get username shortcuts from websites

@@ -6,7 +6,7 @@
 import { WEBSITE_UPDATES } from '@postybirb/socket-events';
 import type { IWebsiteInfoDto, WebsiteId } from '@postybirb/types';
 import { create } from 'zustand';
-import { useShallow } from 'zustand/react/shallow';
+import { useShallow } from 'zustand/shallow';
 import websitesApi from '../api/websites.api';
 import AppSocket from '../transports/websocket';
 import type { LoadingState } from './create-entity-store';
@@ -154,20 +154,21 @@ export const useWebsiteStore = create<WebsiteStore>((set, get) => {
 /**
  * Select all websites.
  */
-export const useWebsites = () => useWebsiteStore((state) => state.websites);
+export const useWebsites = (): WebsiteRecord[] =>
+  useWebsiteStore((state: WebsiteStore) => state.websites);
 
 /**
  * Select websites map for O(1) lookup.
  */
-export const useWebsitesMap = () =>
-  useWebsiteStore((state) => state.websitesMap);
+export const useWebsitesMap = (): Map<WebsiteId, WebsiteRecord> =>
+  useWebsiteStore((state: WebsiteStore) => state.websitesMap);
 
 /**
  * Select website loading state.
  */
 export const useWebsitesLoading = () =>
   useWebsiteStore(
-    useShallow((state) => ({
+    useShallow((state: WebsiteStore) => ({
       loadingState: state.loadingState,
       error: state.error,
       isLoading: state.loadingState === 'loading',
@@ -178,16 +179,16 @@ export const useWebsitesLoading = () =>
 /**
  * Select a specific website by ID.
  */
-export const useWebsite = (id: WebsiteId) =>
-  useWebsiteStore((state) => state.websitesMap.get(id));
+export const useWebsite = (id: WebsiteId): WebsiteRecord | undefined =>
+  useWebsiteStore((state: WebsiteStore) => state.websitesMap.get(id));
 
 /**
  * Select websites that support file submissions.
  * Uses useShallow for stable reference when items haven't changed.
  */
-export const useFileWebsites = () =>
+export const useFileWebsites = (): WebsiteRecord[] =>
   useWebsiteStore(
-    useShallow((state) =>
+    useShallow((state: WebsiteStore) =>
       state.websites.filter((website) => website.supportsFile)
     )
   );
@@ -196,9 +197,9 @@ export const useFileWebsites = () =>
  * Select websites that support message submissions.
  * Uses useShallow for stable reference when items haven't changed.
  */
-export const useMessageWebsites = () =>
+export const useMessageWebsites = (): WebsiteRecord[] =>
   useWebsiteStore(
-    useShallow((state) =>
+    useShallow((state: WebsiteStore) =>
       state.websites.filter((website) => website.supportsMessage)
     )
   );
@@ -208,7 +209,7 @@ export const useMessageWebsites = () =>
  */
 export const useWebsiteActions = () =>
   useWebsiteStore(
-    useShallow((state) => ({
+    useShallow((state: WebsiteStore) => ({
       loadAll: state.loadAll,
       setWebsites: state.setWebsites,
       getById: state.getById,

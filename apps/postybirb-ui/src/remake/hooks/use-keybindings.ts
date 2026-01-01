@@ -25,7 +25,7 @@ import {
   useCanGoBack,
   useCanGoForward,
   useNavigationHistory,
-  useUIStore,
+  useToggleDrawer,
   useViewStateActions,
 } from '../stores/ui-store';
 import {
@@ -56,7 +56,7 @@ const getModifierKey = (): 'Meta' | 'Control' => {
  */
 export function useKeybindings(): void {
   const { setViewState } = useViewStateActions();
-  const toggleDrawer = useUIStore((state) => state.toggleDrawer);
+  const toggleDrawer = useToggleDrawer();
   const { goBack, goForward } = useNavigationHistory();
   const canGoBack = useCanGoBack();
   const canGoForward = useCanGoForward();

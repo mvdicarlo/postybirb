@@ -54,12 +54,12 @@ function QuickEditTags({ tags, onChange }: QuickEditTagsProps) {
 
   const handleBlur = useCallback(() => {
     // Save immediately on blur if there are pending changes
+    // The hasChanges flag prevents the debounced callback from double-saving
     if (hasChanges.current) {
-      debouncedSave.cancel();
       onChange({ ...tags, tags: localTags });
       hasChanges.current = false;
     }
-  }, [localTags, tags, onChange, debouncedSave]);
+  }, [localTags, tags, onChange]);
 
   return (
     <Box onClick={(e) => e.stopPropagation()}>

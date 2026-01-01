@@ -8,9 +8,9 @@ import { Box } from '@mantine/core';
 import { navItems } from '../../config/nav-items';
 import { useKeybindings } from '../../hooks/use-keybindings';
 import {
+    useSetSidenavCollapsed,
     useSidenavCollapsed,
     useSubNavVisible,
-    useUIStore,
     useViewState,
 } from '../../stores/ui-store';
 import '../../styles/layout.css';
@@ -35,7 +35,7 @@ import { SideNav } from './side-nav';
  */
 export function Layout() {
   const collapsed = useSidenavCollapsed();
-  const setSidenavCollapsed = useUIStore((state) => state.setSidenavCollapsed);
+  const setSidenavCollapsed = useSetSidenavCollapsed();
   const viewState = useViewState();
   const { visible: isSectionPanelVisible } = useSubNavVisible();
 
