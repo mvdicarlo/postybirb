@@ -80,7 +80,6 @@ export function PrimaryContent({
       >
         <LoadingOverlay
           visible={loading}
-          zIndex={10}
           overlayProps={{ radius: 'sm', blur: 2 }}
         />
         <ComponentErrorBoundary>

@@ -3,12 +3,28 @@ import {
   Card,
   Container,
   createTheme,
+  LoadingOverlay,
+  Modal,
+  Overlay,
   Paper,
+  Popover,
   rem,
   ScrollArea,
   Select,
+  Tooltip,
 } from '@mantine/core';
 import type { MantinePrimaryColor } from '../stores/ui-store';
+
+// ============================================================================
+// Z-Index Scale (mirrors CSS variables in layout.css)
+// ============================================================================
+const Z_INDEX = {
+  sticky: 10,
+  modalOverlay: 300,
+  modal: 301,
+  popover: 500,
+  tooltip: 600,
+} as const;
 
 const CONTAINER_SIZES: Record<string, string> = {
   xxs: rem('200px'),
@@ -89,6 +105,33 @@ export function createAppTheme(
       ScrollArea: ScrollArea.extend({
         defaultProps: {
           scrollbarSize: '6px',
+        },
+      }),
+
+      // Z-Index defaults for overlay components
+      Modal: Modal.extend({
+        defaultProps: {
+          zIndex: Z_INDEX.modal,
+        },
+      }),
+      Tooltip: Tooltip.extend({
+        defaultProps: {
+          zIndex: Z_INDEX.tooltip,
+        },
+      }),
+      Popover: Popover.extend({
+        defaultProps: {
+          zIndex: Z_INDEX.popover,
+        },
+      }),
+      Overlay: Overlay.extend({
+        defaultProps: {
+          zIndex: Z_INDEX.sticky,
+        },
+      }),
+      LoadingOverlay: LoadingOverlay.extend({
+        defaultProps: {
+          zIndex: Z_INDEX.sticky,
         },
       }),
     },

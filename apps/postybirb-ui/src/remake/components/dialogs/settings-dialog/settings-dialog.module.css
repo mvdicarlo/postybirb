@@ -6,7 +6,7 @@
   background-color: var(--mantine-color-body);
   overflow: hidden;
   padding: 0 !important;
-  z-index: 400;
+  z-index: var(--z-modal-nested);
 }
 
 .modalBody {

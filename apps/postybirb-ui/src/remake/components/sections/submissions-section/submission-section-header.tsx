@@ -33,7 +33,10 @@ import { useCallback, useState } from 'react';
 import { DeleteSelectedKeybinding } from '../../../config/keybindings';
 import type { SubmissionRecord } from '../../../stores/records';
 import type { SubmissionFilter } from '../../../stores/ui-store';
-import { useSubmissionsFilter, useSubmissionViewMode } from '../../../stores/ui-store';
+import {
+  useSubmissionsFilter,
+  useSubmissionViewMode,
+} from '../../../stores/ui-store';
 import { MultiSchedulerModal, SearchInput } from '../../shared';
 import { TemplatePickerModal } from '../../shared/template-picker';
 import './submissions-section.css';
@@ -91,7 +94,7 @@ export function SubmissionSectionHeader({
   // Popover state for message submission creation
   const [popoverOpened, popover] = useDisclosure(false);
   const [messageTitle, setMessageTitle] = useState('');
-  
+
   // Template picker modal state
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
 
@@ -251,7 +254,9 @@ export function SubmissionSectionHeader({
               // MESSAGE type: opens popover with title input
               <Popover
                 opened={popoverOpened}
-                onClose={popover.close}
+                onChange={(opened) => {
+                  if (!opened) popover.close();
+                }}
                 position="bottom-end"
                 withArrow
               >

@@ -10,7 +10,7 @@
 .postybirb__submission__header {
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: var(--z-sticky);
   padding: var(--mantine-spacing-sm);
   background-color: var(--mantine-color-body);
   border-bottom: 1px solid var(--mantine-color-default-border);

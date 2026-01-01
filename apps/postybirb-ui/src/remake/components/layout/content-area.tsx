@@ -16,7 +16,6 @@ export function ContentArea({ children, loading = false }: ContentAreaProps) {
     <Box className="postybirb__content_area" pos="relative">
       <LoadingOverlay
         visible={loading}
-        zIndex={10}
         overlayProps={{ radius: 'sm', blur: 2 }}
       />
       {children}

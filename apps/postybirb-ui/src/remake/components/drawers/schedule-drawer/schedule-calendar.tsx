@@ -256,7 +256,7 @@ export function ScheduleCalendar() {
         title={selectedEvent?.title}
         centered
         size="sm"
-        zIndex={2000}
+        zIndex="var(--z-popover)"
       >
         <Stack gap="md">
           {/* Schedule time info */}

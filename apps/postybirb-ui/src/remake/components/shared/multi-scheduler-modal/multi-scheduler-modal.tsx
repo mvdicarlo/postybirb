@@ -194,7 +194,6 @@ export function MultiSchedulerModal({
 
   return (
     <Modal
-      zIndex={300}
       opened={opened}
       onClose={onClose}
       title={

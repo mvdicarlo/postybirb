@@ -5,6 +5,36 @@
  */
 
 /* =============================================================================
+   Z-Index Scale - Centralized z-index values for consistent layering
+   ============================================================================= */
+
+:root {
+  /* Base layers */
+  --z-base: 0;
+  --z-section-panel: 1;
+  --z-sticky: 10;
+  
+  /* Navigation */
+  --z-sidenav: 100;
+  
+  /* Drawers */
+  --z-drawer-overlay: 200;
+  --z-drawer: 201;
+  
+  /* Modals */
+  --z-modal-overlay: 300;
+  --z-modal: 301;
+  --z-modal-nested: 400;
+  
+  /* Floating elements */
+  --z-popover: 500;
+  --z-tooltip: 600;
+  
+  /* Always on top */
+  --z-notification: 700;
+}
+
+/* =============================================================================
    Utility Classes - Reusable across components
    ============================================================================= */
 
@@ -92,7 +122,7 @@
   transition:
     width 200ms ease,
     min-width 200ms ease;
-  z-index: 100;
+  z-index: var(--z-sidenav);
   overflow: hidden;
 }
 
@@ -232,7 +262,7 @@
   border-right: 1px solid var(--mantine-color-default-border);
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-  z-index: 1;
+  z-index: var(--z-section-panel);
   max-height: 100vh;
 }
 
@@ -262,7 +292,7 @@
   position: absolute;
   inset: 0;
   background-color: rgba(0, 0, 0, 0.4);
-  z-index: 200;
+  z-index: var(--z-drawer-overlay);
   opacity: 0;
   pointer-events: none;
   transition: opacity 200ms ease;
@@ -281,7 +311,7 @@
   bottom: 0;
   width: 360px;
   max-width: 90%;
-  z-index: 201;
+  z-index: var(--z-drawer);
   display: flex;
   flex-direction: column;
   background-color: var(--mantine-color-body);
@@ -337,7 +367,7 @@
   align-items: center;
   justify-content: center;
   background-color: rgba(255, 255, 255, 0.8);
-  z-index: 10;
+  z-index: var(--z-sticky);
 }
 
 [data-mantine-color-scheme='dark'] .postybirb__content_area_loading {

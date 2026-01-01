@@ -32,7 +32,7 @@ export function ExternalLink(
 ) {
   const { href } = props;
   return (
-    <Tooltip label={href} position="top" withArrow zIndex={1000}>
+    <Tooltip label={href} position="top" withArrow>
       <span>
         <Anchor
           {...props}

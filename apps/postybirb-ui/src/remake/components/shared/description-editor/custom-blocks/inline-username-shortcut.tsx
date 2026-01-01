@@ -417,7 +417,9 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
             </span>
             <Popover
               opened={opened}
-              onClose={close}
+              onChange={(isOpen) => {
+                if (!isOpen) close();
+              }}
               position="bottom-start"
               width={300}
               shadow="md"

@@ -98,7 +98,6 @@ export function AppearanceSettingsSection() {
                 key={color}
                 label={capitalize(color)}
                 withArrow
-                zIndex={1000}
               >
                 <Box
                   onClick={() => setPrimaryColor(color as MantinePrimaryColor)}
