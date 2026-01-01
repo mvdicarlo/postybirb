@@ -14,7 +14,6 @@ import {
     Title,
 } from '@mantine/core';
 import {
-    IconCopy,
     IconEye,
     IconEyeOff,
     IconNetwork,
@@ -32,8 +31,8 @@ import {
 import {
   showConnectionErrorNotification,
   showConnectionSuccessNotification,
-  showCopiedNotification,
 } from '../../../../utils/notifications';
+import { CopyToClipboard } from '../../../shared/copy-to-clipboard';
 
 export function RemoteSettingsSection() {
   const [isTestingConnection, setIsTestingConnection] = useState(false);
@@ -91,11 +90,6 @@ export function RemoteSettingsSection() {
     } finally {
       setIsTestingConnection(false);
     }
-  };
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    showCopiedNotification();
   };
 
   return (
@@ -160,13 +154,7 @@ export function RemoteSettingsSection() {
                           <IconEye size={16} />
                         )}
                       </Button>
-                      <Button
-                        variant="subtle"
-                        size="compact-sm"
-                        onClick={() => copyToClipboard(lanIp)}
-                      >
-                        <IconCopy size={16} />
-                      </Button>
+                      <CopyToClipboard value={lanIp} size="xs" />
                     </Group>
                   }
                   rightSectionWidth={80}
@@ -193,13 +181,7 @@ export function RemoteSettingsSection() {
                           <IconEye size={16} />
                         )}
                       </Button>
-                      <Button
-                        variant="subtle"
-                        size="compact-sm"
-                        onClick={() => copyToClipboard(remoteConfig.password)}
-                      >
-                        <IconCopy size={16} />
-                      </Button>
+                      <CopyToClipboard value={remoteConfig.password} size="xs" />
                     </Group>
                   }
                   rightSectionWidth={80}

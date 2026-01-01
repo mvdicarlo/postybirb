@@ -203,7 +203,7 @@ export function SubmissionCard({
                 <Text
                   size="xs"
                   c={submission.isScheduled ? 'blue.6' : 'dimmed'}
-                  fw={submission.isScheduled ? 'bold' : undefined}
+                  fw={submission.isScheduled ? '500' : undefined}
                 >
                   {submission.scheduledDate
                     ? formatDateTime(submission.scheduledDate)

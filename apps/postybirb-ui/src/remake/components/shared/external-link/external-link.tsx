@@ -3,10 +3,9 @@
  * Handles both Electron and web environments.
  */
 
-import { Trans } from '@lingui/react/macro';
-import { ActionIcon, Anchor, CopyButton, Tooltip } from '@mantine/core';
-import { IconCheck, IconCopy } from '@tabler/icons-react';
+import { Anchor, Tooltip } from '@mantine/core';
 import type { AnchorHTMLAttributes, PropsWithChildren } from 'react';
+import { CopyToClipboard } from '../copy-to-clipboard';
 
 /**
  * Opens a URL in the system's default browser.
@@ -46,29 +45,7 @@ export function ExternalLink(
             openLink(href);
           }}
         />
-        <CopyButton value={href ?? ''} timeout={2000}>
-          {({ copied, copy }) => (
-            <Tooltip
-              label={copied ? <Trans>Copied!</Trans> : <Trans>Copy link</Trans>}
-              withArrow
-              position="right"
-            >
-              <ActionIcon
-                style={{ verticalAlign: 'middle' }}
-                color={copied ? 'teal' : 'blue'}
-                variant="subtle"
-                onClick={copy}
-                size="xs"
-              >
-                {copied ? (
-                  <IconCheck size=".75em" />
-                ) : (
-                  <IconCopy size=".75em" />
-                )}
-              </ActionIcon>
-            </Tooltip>
-          )}
-        </CopyButton>
+        <CopyToClipboard value={href} variant="icon" size="xs" color="blue" />
       </span>
     </Tooltip>
   );
