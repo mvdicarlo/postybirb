@@ -9,14 +9,14 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import { useShallow } from 'zustand/shallow';
 import { AccountLoginFilter } from '../types/account-filters';
 import {
-    createAccountsViewState,
-    createFileSubmissionsViewState,
-    createHomeViewState,
-    createMessageSubmissionsViewState,
-    createTemplatesViewState,
-    defaultViewState,
-    type SectionId,
-    type ViewState,
+  createAccountsViewState,
+  createFileSubmissionsViewState,
+  createHomeViewState,
+  createMessageSubmissionsViewState,
+  createTemplatesViewState,
+  defaultViewState,
+  type SectionId,
+  type ViewState,
 } from '../types/view-state';
 import { useAccountStore } from './account-store';
 import { useSubmissionStore } from './submission-store';
@@ -512,7 +512,8 @@ export const useUIStore = create<UIStore>()(
       setPrimaryColor: (primaryColor) => set({ primaryColor }),
 
       // Submission view mode actions
-      setSubmissionViewMode: (submissionViewMode) => set({ submissionViewMode }),
+      setSubmissionViewMode: (submissionViewMode) =>
+        set({ submissionViewMode }),
       toggleSubmissionViewMode: () =>
         set((state) => ({
           submissionViewMode:
