@@ -1,32 +1,32 @@
 /* eslint-disable no-param-reassign */
 import {
-    BadRequestException,
-    forwardRef,
-    Inject,
-    Injectable,
-    NotFoundException,
-    OnModuleInit,
-    Optional,
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+  OnModuleInit,
+  Optional,
 } from '@nestjs/common';
 import {
-    FileBufferSchema,
-    Insert,
-    SubmissionFileSchema,
-    SubmissionSchema,
-    WebsiteOptionsSchema,
+  FileBufferSchema,
+  Insert,
+  SubmissionFileSchema,
+  SubmissionSchema,
+  WebsiteOptionsSchema,
 } from '@postybirb/database';
 import { SUBMISSION_UPDATES } from '@postybirb/socket-events';
 import {
-    FileSubmission,
-    FileSubmissionMetadata,
-    ISubmissionDto,
-    ISubmissionMetadata,
-    MessageSubmission,
-    NULL_ACCOUNT_ID,
-    ScheduleType,
-    SubmissionId,
-    SubmissionMetadataType,
-    SubmissionType,
+  FileSubmission,
+  FileSubmissionMetadata,
+  ISubmissionDto,
+  ISubmissionMetadata,
+  MessageSubmission,
+  NULL_ACCOUNT_ID,
+  ScheduleType,
+  SubmissionId,
+  SubmissionMetadataType,
+  SubmissionType,
 } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/electron';
 import { eq } from 'drizzle-orm';
@@ -147,8 +147,7 @@ export class SubmissionService
   }
 
   public async findAllAsDto(): Promise<ISubmissionDto<ISubmissionMetadata>[]> {
-<<<<<<< HEAD
-    const all = await super.findAll();
+    const all = (await super.findAll()).filter((s) => s.isInitialized);
 
     // Separate archived from non-archived for efficient processing
     const archived = all.filter((s) => s.isArchived);
@@ -180,19 +179,6 @@ export class SubmissionService
           ...s.toDTO(),
           validations: [],
         }) as ISubmissionDto<ISubmissionMetadata>,
-=======
-    const all = await this.findAll();
-    return Promise.all(
-      all.map(
-        async (s) =>
-          ({
-            ...s.toDTO(),
-            validations: s.isArchived
-              ? []
-              : await this.websiteOptionsService.validateSubmission(s.id),
-          }) as ISubmissionDto<ISubmissionMetadata>,
-      ),
->>>>>>> main
     );
 
     return [...validatedNonArchived, ...archivedDtos];
@@ -237,7 +223,8 @@ export class SubmissionService
 
     // Templates and multi-submissions are immediately initialized since they don't need file population
     const isImmediatelyInitialized =
-      !!createSubmissionDto.isMultiSubmission || !!createSubmissionDto.isTemplate;
+      !!createSubmissionDto.isMultiSubmission ||
+      !!createSubmissionDto.isTemplate;
 
     let submission = new Submission<ISubmissionMetadata>({
       isScheduled: false,
