@@ -51,36 +51,36 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Enable Corepack before setup-node (required for cache: 'yarn' to work)
-      - name: Enable Corepack
-        shell: bash
-        run: corepack enable
-
-      # Setup Node.js without Yarn caching for Windows (causes issues)
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: ${{ runner.os != 'Windows' && 'yarn' || '' }}
 
-      # Windows: Explicitly prepare Yarn after setup-node
-      - name: Prepare Yarn (Windows)
-        if: runner.os == 'Windows'
+      # Remove conflicting global Yarn on Windows, then enable Corepack
+      - name: Setup Corepack and Yarn
         shell: bash
         run: |
-          corepack prepare yarn@stable --activate
-          yarn --version
-
-      # Verify Yarn version on all platforms
-      - name: Verify Yarn version
-        shell: bash
-        run: |
+          # On Windows, remove the global yarn that conflicts with Corepack
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            echo "Removing conflicting global Yarn on Windows..."
+            npm uninstall -g yarn || true
+            # Also remove any yarn.cmd/yarn.ps1 that might be in npm's path
+            rm -f "$(dirname "$(which node)")/yarn" || true
+            rm -f "$(dirname "$(which node)")/yarn.cmd" || true
+            rm -f "$(dirname "$(which node)")/yarn.ps1" || true
+          fi
+          
+          corepack enable
+          
+          # Verify we're using Corepack's yarn (should show path with corepack)
+          echo "Yarn location: $(which yarn || where yarn)"
           echo "Yarn version: $(yarn --version)"
-          yarn --version | grep -q '^4\.' || { echo "ERROR: Expected Yarn 4.x"; exit 1; }
+          
+          # Ensure Yarn 4.x is active
+          yarn --version | grep -q '^4\.' || { echo "ERROR: Expected Yarn 4.x but got $(yarn --version)"; exit 1; }
 
-      # Manual Yarn cache for Windows (since we can't use setup-node cache)
-      - name: Cache Yarn (Windows)
-        if: runner.os == 'Windows'
+      # Cache Yarn dependencies
+      - name: Cache Yarn
         uses: actions/cache@v4
         with:
           path: |
