@@ -51,20 +51,44 @@ jobs:
         with:
           fetch-depth: 0
 
+      # Enable Corepack before setup-node (required for cache: 'yarn' to work)
       - name: Enable Corepack
+        shell: bash
         run: corepack enable
 
+      # Setup Node.js without Yarn caching for Windows (causes issues)
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'yarn'
+          cache: ${{ runner.os != 'Windows' && 'yarn' || '' }}
 
+      # Windows: Explicitly prepare Yarn after setup-node
+      - name: Prepare Yarn (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          corepack prepare yarn@stable --activate
+          yarn --version
+
+      # Verify Yarn version on all platforms
       - name: Verify Yarn version
         shell: bash
         run: |
           echo "Yarn version: $(yarn --version)"
           yarn --version | grep -q '^4\.' || { echo "ERROR: Expected Yarn 4.x"; exit 1; }
+
+      # Manual Yarn cache for Windows (since we can't use setup-node cache)
+      - name: Cache Yarn (Windows)
+        if: runner.os == 'Windows'
+        uses: actions/cache@v4
+        with:
+          path: |
+            .yarn/cache
+            .yarn/unplugged
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
 
       - name: Cache Electron binaries
         uses: actions/cache@v4
