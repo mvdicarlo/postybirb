@@ -4,7 +4,6 @@
  * Handles view, drawer, and custom navigation items.
  */
 
-import { Trans } from '@lingui/react/macro';
 import {
   Box,
   Divider,
@@ -12,10 +11,12 @@ import {
   Kbd,
   NavLink as MantineNavLink,
   ScrollArea,
+  Text,
   Title,
   Tooltip,
 } from '@mantine/core';
 import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
+import { useEffect, useState } from 'react';
 import {
   useActiveDrawer,
   useDrawerActions,
@@ -141,6 +142,15 @@ function NavItemRenderer({
 export function SideNav({ items, collapsed, onCollapsedChange }: SideNavProps) {
   const viewState = useViewState();
   const activeDrawer = useActiveDrawer();
+  const [appVersion, setAppVersion] = useState<string>('4.x.x');
+
+  useEffect(() => {
+    if (window.electron?.getAppVersion) {
+      window.electron.getAppVersion().then((version) => {
+        setAppVersion(`v${version}`);
+      });
+    }
+  }, []);
 
   return (
     <Box
@@ -156,6 +166,9 @@ export function SideNav({ items, collapsed, onCollapsedChange }: SideNavProps) {
           // eslint-disable-next-line lingui/no-unlocalized-strings
           <Title order={4} className="postybirb__sidenav_title" ml="xs">
             PostyBirb
+            <Text size="xs" c="dimmed" span pl={4}>
+              {appVersion}
+            </Text>
           </Title>
         )}
       </Box>
