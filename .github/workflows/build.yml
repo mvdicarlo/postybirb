@@ -89,15 +89,15 @@ jobs:
       - name: Inject Application Insights connection string
         env:
           APP_INSIGHTS_KEY: ${{ secrets.APP_INSIGHTS_KEY }}
-        run: yarn inject:app-insights
+        run: corepack yarn inject:app-insights
 
       - name: Build application
-        run: yarn build:prod
+        run: corepack yarn build:prod
         env:
           NODE_ENV: production
 
       - name: Build Electron app
-        run: yarn electron-builder --${{ matrix.platform }} --${{ matrix.arch }} --publish=always
+        run: corepack yarn electron-builder --${{ matrix.platform }} --${{ matrix.arch }} --publish=always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
