@@ -9,7 +9,7 @@ export type RemoteConfig = {
 };
 
 function getRemoteConfigPath(): string {
-  return join(app.getPath('appData'), 'remote-config.json');
+  return join(app.getPath('appData'), 'PostyBirb', 'remote-config.json');
 }
 
 function createRemoteConfig(): Promise<void> {
