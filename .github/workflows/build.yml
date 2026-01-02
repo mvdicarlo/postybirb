@@ -112,5 +112,5 @@ jobs:
           CSC_IDENTITY_AUTO_DISCOVERY: true
           SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
           SNAPCRAFT_BUILD_ENVIRONMENT: host
-          # ✅ Forces electron-builder to use the system fpm you installed above (critical on ARM)
-          USE_SYSTEM_FPM: true
+          # Forces electron-builder to use the system fpm on ARM
+          USE_SYSTEM_FPM: ${{ matrix.platform == 'linux' && matrix.arch == 'arm64' && 'true' || '' }}
