@@ -44,10 +44,15 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Enable corepack to use Yarn v4
+      - name: Enable Corepack and activate Yarn
+        shell: bash
         run: |
           corepack enable
-          corepack prepare --activate
+          corepack prepare yarn@stable --activate
+          # Verify the correct Yarn version is active
+          echo "Yarn version: $(yarn --version)"
+          # Ensure Yarn Berry is being used (version should be 4.x)
+          yarn --version | grep -q '^4\.' || { echo "ERROR: Expected Yarn 4.x but got $(yarn --version)"; exit 1; }
 
       - name: Cache Electron binaries
         uses: actions/cache@v4
@@ -74,7 +79,7 @@ jobs:
           sudo apt-get install -y snapd
           sudo snap install snapcraft --classic
 
-      # ✅ Install system fpm on ALL Linux runners (x64 + arm64)
+      # Install system fpm on ALL Linux runners (x64 + arm64)
       - name: Install Ruby + fpm (system) for Linux packaging
         if: matrix.platform == 'linux'
         run: |
@@ -108,5 +113,5 @@ jobs:
           CSC_IDENTITY_AUTO_DISCOVERY: true
           SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
           SNAPCRAFT_BUILD_ENVIRONMENT: host
-          # ✅ Use system fpm for Linux only
+          # Use system fpm for Linux only
           USE_SYSTEM_FPM: ${{ matrix.platform == 'linux' && 'true' || '' }}
