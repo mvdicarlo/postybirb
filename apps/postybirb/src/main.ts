@@ -37,6 +37,11 @@ process.env.POSTYBIRB_ENV =
     ? 'production'
     : 'development';
 
+// eslint-disable-next-line no-console
+console.log(
+  `Starting PostyBirb v${environment.version} in ${process.env.POSTYBIRB_ENV} mode with app path ${app.getPath('appData')}`,
+);
+
 // Setup Metrics
 startMetrics();
 
@@ -136,7 +141,7 @@ async function start() {
     }
   } catch (e) {
     // eslint-disable-next-line no-console
-    console.error(e);
+    console.error('Error during startup:', e);
     app.quit();
   }
 }
