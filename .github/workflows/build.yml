@@ -3,10 +3,22 @@ name: Build/Release
 on:
   workflow_dispatch:
 
+# Cancel in-progress runs for the same branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '22'
+
 jobs:
   build:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+
+    permissions:
+      contents: write  # Needed for publish=always to create releases
 
     strategy:
       fail-fast: false
@@ -39,20 +51,20 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Enable Corepack
+        run: corepack enable
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'yarn'
 
-      - name: Enable Corepack and activate Yarn
+      - name: Verify Yarn version
         shell: bash
         run: |
-          corepack enable
-          corepack prepare yarn@stable --activate
-          # Verify the correct Yarn version is active
           echo "Yarn version: $(yarn --version)"
-          # Ensure Yarn Berry is being used (version should be 4.x)
-          yarn --version | grep -q '^4\.' || { echo "ERROR: Expected Yarn 4.x but got $(yarn --version)"; exit 1; }
+          yarn --version | grep -q '^4\.' || { echo "ERROR: Expected Yarn 4.x"; exit 1; }
 
       - name: Cache Electron binaries
         uses: actions/cache@v4
@@ -61,9 +73,9 @@ jobs:
             ~/.cache/electron
             ~/.cache/electron-builder
             node_modules/.cache/electron
-          key: ${{ runner.os }}-${{ matrix.arch }}-electron-cache-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-${{ matrix.arch }}-electron-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-${{ matrix.arch }}-electron-cache-
+            ${{ runner.os }}-${{ matrix.arch }}-electron-
 
       - name: Install dependencies
         run: yarn install --immutable
@@ -79,17 +91,13 @@ jobs:
           sudo apt-get install -y snapd
           sudo snap install snapcraft --classic
 
-      # Install system fpm on ALL Linux runners (x64 + arm64)
       - name: Install Ruby + fpm (system) for Linux packaging
         if: matrix.platform == 'linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y ruby ruby-dev build-essential rpm
           sudo gem install --no-document fpm
-          # Ensure gem bindir is on PATH for subsequent steps
           echo "$(ruby -e 'print Gem.bindir')" >> "$GITHUB_PATH"
-          echo "Ruby:"; ruby -v
-          echo "fpm:"; fpm --version
 
       - name: Inject Application Insights connection string
         env:
@@ -113,5 +121,14 @@ jobs:
           CSC_IDENTITY_AUTO_DISCOVERY: true
           SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
           SNAPCRAFT_BUILD_ENVIRONMENT: host
-          # Use system fpm for Linux only
           USE_SYSTEM_FPM: ${{ matrix.platform == 'linux' && 'true' || '' }}
+
+      - name: Upload artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-logs-${{ matrix.platform }}-${{ matrix.arch }}
+          path: |
+            test/logs/
+            release/*.log
+          retention-days: 5
