@@ -44,7 +44,6 @@ describe('SubmissionService', () => {
   let module: TestingModule;
 
   beforeAll(() => {
-    PostyBirbDirectories.initializeDirectories();
     testFile = readFileSync(
       join(__dirname, '../../../test-files/small_image.jpg'),
     );

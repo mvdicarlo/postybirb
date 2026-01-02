@@ -46,7 +46,6 @@ describe('PostManagerService', () => {
   let postRecordRepository: PostyBirbDatabase<'PostRecordSchema'>;
 
   beforeAll(() => {
-    PostyBirbDirectories.initializeDirectories();
     testFile = readFileSync(
       join(__dirname, '../../../../test-files/small_image.jpg'),
     );

@@ -5,7 +5,6 @@ import DailyRotateFile from 'winston-daily-rotate-file';
 import { environment } from './environments/environment';
 
 function createLogger() {
-  PostyBirbDirectories.initializeDirectories();
   // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
   const { transports } = winston;
 

@@ -7,10 +7,6 @@ describe('LegacyCustomShortcutConverter', () => {
   let repository: PostyBirbDatabase<'CustomShortcutSchema'>;
   const ts = Date.now();
 
-  //   beforeAll(() => {
-  //     PostyBirbDirectories.initializeDirectories();
-  //   });
-
   //   beforeEach(async () => {
   //     clearDatabase();
 

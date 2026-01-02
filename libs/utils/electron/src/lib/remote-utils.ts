@@ -22,10 +22,12 @@ function createRemoteConfig(): Promise<void> {
   });
 }
 
-export function ensureRemoteConfigExists(): Promise<void> {
-  return stat(getRemoteConfigPath())
-    .then(() => Promise.resolve())
-    .catch(() => createRemoteConfig());
+async function ensureRemoteConfigExists(): Promise<void> {
+  try {
+    await stat(getRemoteConfigPath());
+  } catch {
+    await createRemoteConfig();
+  }
 }
 
 export async function getRemoteConfig(): Promise<RemoteConfig> {

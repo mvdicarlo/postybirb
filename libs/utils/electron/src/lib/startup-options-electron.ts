@@ -1,6 +1,12 @@
 import { app } from 'electron';
-import { existsSync, readFileSync, writeFileSync } from 'fs';
-import { join } from 'path';
+import {
+  accessSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  writeFileSync,
+} from 'fs';
+import { dirname, join } from 'path';
 import { isWindows } from './utils-electron';
 
 export type StartupOptions = {
@@ -57,6 +63,12 @@ export const getStartupOptions = (): StartupOptions => {
   if (!startupOptions) {
     startupOptions = init();
     if (existsSync(FILE_PATH) === false) {
+      const dir = dirname(FILE_PATH);
+      try {
+        accessSync(dir);
+      } catch {
+        mkdirSync(dir, { recursive: true });
+      }
       saveStartupOptions(startupOptions);
     }
   }
