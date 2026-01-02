@@ -56,7 +56,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      # Remove conflicting global Yarn on Windows, then enable Corepack
+      # Setup Corepack and ensure it persists across all subsequent steps
       - name: Setup Corepack and Yarn
         shell: bash
         run: |
@@ -64,16 +64,19 @@ jobs:
           if [[ "$RUNNER_OS" == "Windows" ]]; then
             echo "Removing conflicting global Yarn on Windows..."
             npm uninstall -g yarn || true
-            # Also remove any yarn.cmd/yarn.ps1 that might be in npm's path
             rm -f "$(dirname "$(which node)")/yarn" || true
             rm -f "$(dirname "$(which node)")/yarn.cmd" || true
             rm -f "$(dirname "$(which node)")/yarn.ps1" || true
           fi
           
+          # Enable corepack globally (installs shims to Node's bin directory)
           corepack enable
           
-          # Verify we're using Corepack's yarn (should show path with corepack)
-          echo "Yarn location: $(which yarn || where yarn)"
+          # Pre-download the yarn version to avoid download prompts in later steps
+          corepack prepare yarn@4.9.4 --activate
+          
+          # Verify yarn is working
+          echo "Yarn location: $(which yarn)"
           echo "Yarn version: $(yarn --version)"
           
           # Ensure Yarn 4.x is active
@@ -102,7 +105,10 @@ jobs:
             ${{ runner.os }}-${{ matrix.arch }}-electron-
 
       - name: Install dependencies
-        run: yarn install --immutable
+        shell: bash
+        run: |
+          echo "Verifying Yarn before install: $(yarn --version)"
+          yarn install --immutable
         env:
           CYPRESS_INSTALL_BINARY: 0
           ELECTRON_CACHE: ~/.cache/electron
@@ -124,17 +130,26 @@ jobs:
           echo "$(ruby -e 'print Gem.bindir')" >> "$GITHUB_PATH"
 
       - name: Inject Application Insights connection string
+        shell: bash
+        run: |
+          echo "Yarn version: $(yarn --version)"
+          yarn inject:app-insights
         env:
           APP_INSIGHTS_KEY: ${{ secrets.APP_INSIGHTS_KEY }}
-        run: yarn inject:app-insights
 
       - name: Build application
-        run: yarn build:prod
+        shell: bash
+        run: |
+          echo "Yarn version: $(yarn --version)"
+          yarn build:prod
         env:
           NODE_ENV: production
 
       - name: Build Electron app
-        run: yarn electron-builder --${{ matrix.platform }} --${{ matrix.arch }} --publish=always
+        shell: bash
+        run: |
+          echo "Yarn version: $(yarn --version)"
+          yarn electron-builder --${{ matrix.platform }} --${{ matrix.arch }} --publish=always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
