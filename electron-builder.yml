@@ -1,144 +1,116 @@
-appId: com.mvdicarlo.postybirb
-copyright: Copyright (c) 2024 Michael DiCarlo
-productName: PostyBirb
-executableName: PostyBirb
-artifactName: "${productName}-${version}-${os}-${arch}.${ext}"
+name: Build/Release
 
-publish:
-  provider: github
-  owner: mvdicarlo
-  repo: postybirb
+on:
+  workflow_dispatch:
 
-directories:
-  buildResources: packaging-resources
-  output: release
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
 
-compression: maximum
-removePackageScripts: true
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macOS (x64)
+            os: macos-latest
+            platform: mac
+            arch: x64
+          - name: macOS (arm64)
+            os: macos-latest
+            platform: mac
+            arch: arm64
+          - name: Linux (x64)
+            os: ubuntu-latest
+            platform: linux
+            arch: x64
+          - name: Linux (arm64)
+            os: ubuntu-24.04-arm
+            platform: linux
+            arch: arm64
+          - name: Windows (x64)
+            os: windows-latest
+            platform: win
+            arch: x64
 
-# Specify which files should be unpacked from asar
-asarUnpack:
-  - "node_modules/sharp/**/*"
-  - "node_modules/better-sqlite3/**/*"
-  - "node_modules/sqlite3/**/*" 
-  - "node_modules/@img/**/*"
-  - "node_modules/bufferutil/**/*"
-  - "node_modules/utf-8-validate/**/*"
-  - "**/*.node"
-  - "**/*.dylib"
-  - "**/*.so"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-mac:
-  category: public.app-category.productivity
-  entitlements: packaging-resources/entitlements.mac.plist
-  entitlementsInherit: packaging-resources/entitlements.mac.plist
-  hardenedRuntime: true
-  type: distribution
-  icon: icons/icon.icns
-  gatekeeperAssess: false
-  # This ensures all binaries including native modules are signed
-  signIgnore: []
-  target:
-    - target: dmg
-  notarize:
-    teamId: "ZRKS9CNUQZ"
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
 
-linux:
-  category: Network
-  icon: icons/icon_256x256x32.png
-  synopsis: "PostyBirb is a desktop application for posting to multiple websites"
-  description: "PostyBirb helps artists post art and other multimedia to multiple websites more quickly."
-  target:
-    - target: AppImage
-    - target: snap
-    - target: deb
-    - target: rpm
+      # This must be run after node setup but before any yarn commands
+      - name: Enable corepack to use Yarn v4
+        run: |
+          corepack enable
+          corepack prepare --activate
 
-snap:
-  publish:
-    provider: github
-  summary: "PostyBirb - Multi-site posting application"
-  description: "PostyBirb helps artists post art and other multimedia to multiple websites more quickly."
-  grade: stable
-  confinement: strict
-  plugs:
-    - default
-  artifactName: "${productName}-${version}-linux-snap-${arch}.${ext}"
+      # Cache Electron binaries (include arch to avoid cross-arch cache pollution)
+      - name: Cache Electron binaries
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/electron
+            ~/.cache/electron-builder
+            node_modules/.cache/electron
+          key: ${{ runner.os }}-${{ matrix.arch }}-electron-cache-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.arch }}-electron-cache-
 
-deb:
-  priority: optional
-  depends:
-    - gconf2
-    - gconf-service
-    - libnotify4
-    - libappindicator1
-    - libxtst6
-    - libnss3
-  artifactName: "${productName}-${version}-linux-deb-${arch}.${ext}"
+      # Install dependencies with proper caching
+      - name: Install dependencies
+        run: yarn install --immutable
+        env:
+          CYPRESS_INSTALL_BINARY: 0
+          ELECTRON_CACHE: ~/.cache/electron
+          ELECTRON_BUILDER_CACHE: ~/.cache/electron-builder
 
-rpm:
-  depends:
-    - libnotify
-    - libappindicator
-    - libXtst
-    - nss
-  artifactName: "${productName}-${version}-linux-rpm-${arch}.${ext}"
+      # Linux tooling (snapcraft for snap target)
+      - name: Install snapcraft
+        if: matrix.platform == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y snapd
+          sudo snap install snapcraft --classic
 
-appImage:
-  artifactName: "${productName}-${version}-linux-${arch}.${ext}"
-    
-# Generate separate update files for different Linux formats  
+      # ✅ Fix for Linux arm64: electron-builder’s bundled fpm is x86, so install system fpm on ARM
+      - name: Install Ruby + fpm (system) for Linux arm64 packaging
+        if: matrix.platform == 'linux' && matrix.arch == 'arm64'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ruby ruby-dev build-essential rpm
+          sudo gem install --no-document fpm
+          echo "Ruby:"; ruby -v
+          echo "fpm:"; fpm --version
 
-nsis:
-  deleteAppDataOnUninstall: true
-  oneClick: false
-  allowToChangeInstallationDirectory: true
-  allowElevation: true
-  createDesktopShortcut: true
-  createStartMenuShortcut: true
-  shortcutName: PostyBirb
-  include: build/installer.nsh
-  installerLanguages:
-    - en_US
-  language: 1033
+      - name: Inject Application Insights connection string
+        env:
+          APP_INSIGHTS_KEY: ${{ secrets.APP_INSIGHTS_KEY }}
+        run: yarn inject:app-insights
 
-win:
-  icon: icons/icon.ico
-  requestedExecutionLevel: asInvoker
-  target:
-    - target: nsis
-      arch:
-        - x64
-    - target: portable
-      arch:
-        - x64
+      # Build the application
+      - name: Build application
+        run: yarn build:prod
+        env:
+          NODE_ENV: production
 
-portable:
-  artifactName: "${productName}-${version}-portable-${arch}.${ext}"
-
-files:
-  - "dist/**/*"
-  - "node_modules/**/*"
-  - "package.json"
-  - "!**/*.log"
-  - "!**/*.md"
-  - "!**/README*"
-  - "!**/CHANGELOG*"
-  - "!**/LICENSE*"
-  - "!**/*.d.ts"
-  - "!**/test/**/*"
-  - "!**/tests/**/*"
-  - "!**/.git/**/*"
-  - "!**/.DS_Store"
-  - "!.nx/**"
-  - "!apps/**/*"
-  - "!libs/**/*"
-  - "!build/**/*"
-  - "!contributing/**/*"
-  - "!scripts/**/*"
-  - "!windows-signing/**/*"
-  - "!patches/**/*"
-  - "!lang/**/*"
-  - "!release/**/*"
-  - "!*.{ts,js,yml,yaml,md}"
-  - "!{babel.config.js,commitlint.config.js,drizzle.config.ts,jest.*,lingui.config.ts,nx.json,tsconfig.*}"
+      # Build Electron app
+      - name: Build Electron app
+        run: yarn electron-builder --${{ matrix.platform }} --${{ matrix.arch }} --publish=always
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          CSC_IDENTITY_AUTO_DISCOVERY: true
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
+          SNAPCRAFT_BUILD_ENVIRONMENT: host
+          # ✅ Forces electron-builder to use the system fpm you installed above (critical on ARM)
+          USE_SYSTEM_FPM: true
