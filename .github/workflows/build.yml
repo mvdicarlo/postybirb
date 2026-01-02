@@ -50,7 +50,7 @@ jobs:
           corepack enable
           corepack prepare --activate
 
-      # Cache Electron binaries
+      # Cache Electron binaries (include arch to avoid cross-arch cache pollution)
       - name: Cache Electron binaries
         uses: actions/cache@v4
         with:
@@ -58,9 +58,9 @@ jobs:
             ~/.cache/electron
             ~/.cache/electron-builder
             node_modules/.cache/electron
-          key: ${{ runner.os }}-electron-cache-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-${{ matrix.arch }}-electron-cache-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-electron-cache-
+            ${{ runner.os }}-${{ matrix.arch }}-electron-cache-
 
       # Install dependencies with proper caching
       - name: Install dependencies
@@ -70,12 +70,24 @@ jobs:
           ELECTRON_CACHE: ~/.cache/electron
           ELECTRON_BUILDER_CACHE: ~/.cache/electron-builder
 
+      # Linux tooling (snapcraft for snap target)
       - name: Install snapcraft
         if: matrix.platform == 'linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y snapd
           sudo snap install snapcraft --classic
+
+      # ✅ Fix for Linux arm64: electron-builder’s bundled fpm is x86, so install system fpm on ARM
+      - name: Install Ruby + fpm (system) for Linux arm64 packaging
+        if: matrix.platform == 'linux' && matrix.arch == 'arm64'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ruby ruby-dev build-essential rpm
+          sudo gem install --no-document fpm
+          echo "Ruby:"; ruby -v
+          echo "fpm:"; fpm --version
+
       - name: Inject Application Insights connection string
         env:
           APP_INSIGHTS_KEY: ${{ secrets.APP_INSIGHTS_KEY }}
@@ -100,3 +112,5 @@ jobs:
           CSC_IDENTITY_AUTO_DISCOVERY: true
           SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
           SNAPCRAFT_BUILD_ENVIRONMENT: host
+          # ✅ Forces electron-builder to use the system fpm you installed above (critical on ARM)
+          USE_SYSTEM_FPM: true
