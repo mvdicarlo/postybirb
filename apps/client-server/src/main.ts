@@ -8,9 +8,7 @@ import {
 import { ClassTransformOptions } from '@nestjs/common/interfaces/external/class-transform-options.interface';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { PostyBirbDirectories } from '@postybirb/fs';
 import {
-  ensureRemoteConfigExists,
   IsTestEnvironment,
   PostyBirbEnvConfig,
 } from '@postybirb/utils/electron';
@@ -85,8 +83,6 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
-  PostyBirbDirectories.initializeDirectories();
-  ensureRemoteConfigExists();
   sharp.cache({ files: 0 });
 
   const { port } = PostyBirbEnvConfig;
@@ -99,4 +95,3 @@ async function bootstrap() {
 }
 
 export { bootstrap as bootstrapClientServer };
-

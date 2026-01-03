@@ -1,4 +1,3 @@
-import { PostyBirbDirectories } from '@postybirb/fs';
 import { LogLayer, LoggerType } from 'loglayer';
 import * as winston from 'winston';
 import { Logger as WinstonLogger } from 'winston';
@@ -37,8 +36,6 @@ export function initializeLogger(
 }
 
 function initializeTestLogger() {
-  PostyBirbDirectories.initializeDirectories();
-
   const instance = winston.createLogger({
     format: new SerializeDevLog(),
     transports: [new winston.transports.Console({ level: 'error' })],

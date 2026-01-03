@@ -1,15 +1,10 @@
 import { INestApplication } from '@nestjs/common';
-import { PostyBirbDirectories } from '@postybirb/fs';
 import {
   flushAppInsights,
   initializeAppInsights,
   trackException,
 } from '@postybirb/logger';
-import {
-  ensureRemoteConfigExists,
-  getRemoteConfig,
-  PostyBirbEnvConfig,
-} from '@postybirb/utils/electron';
+import { getRemoteConfig, PostyBirbEnvConfig } from '@postybirb/utils/electron';
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
 import { bootstrapClientServer } from 'apps/client-server/src/main';
 import { app, BrowserWindow, session } from 'electron';
@@ -106,8 +101,6 @@ app.on(
 
 export default class Main {
   static async initialize() {
-    PostyBirbDirectories.initializeDirectories();
-    ensureRemoteConfigExists();
     process.env.remote = JSON.stringify(await getRemoteConfig());
   }
 
