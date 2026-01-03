@@ -1,7 +1,7 @@
 # Postybirb
 
 <div style='flex: 1'>
-<a href="https://discord.gg/bN2rwvTs">
+<a href="https://discord.com/invite/FUdN7JCr2f">
 <img alt="Static Badge" src="https://img.shields.io/badge/discord-%2323272a?logo=discord">
 </a>
 <a href="https://github.com/mvdicarlo/postybirb/releases/latest">
