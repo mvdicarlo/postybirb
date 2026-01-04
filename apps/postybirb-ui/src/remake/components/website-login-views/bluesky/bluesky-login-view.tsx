@@ -49,9 +49,8 @@ export default function BlueskyLoginView(
   const [isSubmitting, setSubmitting] = useState<boolean>(false);
   const isUsingEmail = username.includes('@') && !username.startsWith('@');
 
-  const [isUsingCustomPds, setIsUsingCustomPds] = useState<boolean>(
-    !!data?.serviceUrl,
-  );
+  const [isUsingCustomPdsOrAppView, setIsUsingCustomPdsOrAppView] =
+    useState<boolean>(!!data?.serviceUrl || !!data?.appViewUrl);
   const [customPds, setCustomPds] = useState(data?.serviceUrl ?? '');
   const [appViewUrl, setAppViewUrl] = useState(data?.appViewUrl ?? '');
 
@@ -104,22 +103,19 @@ export default function BlueskyLoginView(
           </Alert>
 
           <Switch
-            checked={isUsingCustomPds}
-            onChange={(v) => setIsUsingCustomPds(v.target.checked)}
-            label={<Trans>Custom PDS</Trans>}
+            checked={isUsingCustomPdsOrAppView}
+            onChange={(v) => setIsUsingCustomPdsOrAppView(v.target.checked)}
+            label={<Trans>Custom PDS or AppView</Trans>}
           />
 
-          {isUsingCustomPds && (
+          {isUsingCustomPdsOrAppView && (
             <TextInput
-              label={<Trans>Server (PDS)</Trans>}
+              label={<Trans>PDS (Personal Data Server)</Trans>}
               name="pds"
               placeholder="https://bsky.social"
               description={
                 <Text size="xs" c="dimmed">
-                  <Trans>
-                    If you are using pds other then bsky.social you need to fill
-                    its url here
-                  </Trans>
+                  <Trans>If you are using pds other then bsky.social</Trans>
                 </Text>
               }
               minLength={1}
@@ -146,7 +142,7 @@ export default function BlueskyLoginView(
             />
           )}
 
-          {isUsingCustomPds && (
+          {isUsingCustomPdsOrAppView && (
             <TextInput
               label={<Trans>App view URL</Trans>}
               name="appView"
@@ -154,11 +150,8 @@ export default function BlueskyLoginView(
               description={
                 <Text size="xs" c="dimmed">
                   <Trans>
-                    Used for other sites (like e621) as source url base. You can
-                    leave it as is even if you are using custom pds because bsky
-                    will request info from custom pds by bsky itself.
-                    Recommended to change if your account is unavailable from
-                    offical pds.
+                    Used for other sites (like e621) as source url base.
+                    Independent from custom pds.
                   </Trans>
                 </Text>
               }

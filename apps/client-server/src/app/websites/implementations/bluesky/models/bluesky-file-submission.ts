@@ -15,7 +15,7 @@ import { BaseWebsiteOptions } from '../../../models/base-website-options';
 export class BlueskyFileSubmission extends BaseWebsiteOptions {
   @DescriptionField({
     descriptionType: DescriptionType.PLAINTEXT,
-    maxDescriptionLength: Infinity, // Custom length calculation is handled by validation logic,
+    maxDescriptionLength: Infinity, // Custom length calculation is handled by validation logic
   })
   description: DescriptionValue;
 
