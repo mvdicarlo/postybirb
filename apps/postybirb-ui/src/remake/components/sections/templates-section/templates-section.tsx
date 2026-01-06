@@ -25,11 +25,12 @@ import {
 } from '@tabler/icons-react';
 import { useCallback, useMemo, useState } from 'react';
 import submissionApi from '../../../api/submission.api';
+import { useNavigationStore } from '../../../stores/navigation-store';
 import {
     useSubmissionsLoading,
     useTemplateSubmissions,
 } from '../../../stores/submission-store';
-import { useTemplatesFilter, useUIStore } from '../../../stores/ui-store';
+import { useTemplatesFilter } from '../../../stores/templates-ui-store';
 import { isTemplatesViewState, type ViewState } from '../../../types/view-state';
 import {
     showErrorNotification,
@@ -52,7 +53,7 @@ export function TemplatesSection({ viewState }: TemplatesSectionProps) {
   const { isLoading } = useSubmissionsLoading();
   const { tabType, searchQuery, setTabType, setSearchQuery } =
     useTemplatesFilter();
-  const setViewState = useUIStore((state) => state.setViewState);
+  const setViewState = useNavigationStore((state) => state.setViewState);
 
   // New template name input
   const [newTemplateName, setNewTemplateName] = useState('');

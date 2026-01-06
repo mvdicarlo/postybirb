@@ -67,7 +67,7 @@ export function RecentActivityPanel() {
         </Group>
 
         {recentActivity.length === 0 ? (
-          <Box style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+          <Box style={{ alignItems: 'center' }}>
             <EmptyState
               preset="no-notifications"
               message={<Trans>No recent activity</Trans>}

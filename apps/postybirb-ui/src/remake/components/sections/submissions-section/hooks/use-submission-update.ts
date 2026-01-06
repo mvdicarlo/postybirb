@@ -6,8 +6,8 @@ import { ISubmissionScheduleInfo, IWebsiteFormFields } from '@postybirb/types';
 import { useCallback } from 'react';
 import submissionApi from '../../../../api/submission.api';
 import websiteOptionsApi from '../../../../api/website-options.api';
+import { useNavigationStore } from '../../../../stores/navigation-store';
 import { useSubmissionStore } from '../../../../stores/submission-store';
-import { useUIStore } from '../../../../stores/ui-store';
 import { type ViewState } from '../../../../types/view-state';
 import {
   showDuplicateErrorNotification,
@@ -47,7 +47,7 @@ interface UseSubmissionUpdateResult {
 export function useSubmissionUpdate({
   viewState,
 }: UseSubmissionUpdateProps): UseSubmissionUpdateResult {
-  const setViewState = useUIStore((state) => state.setViewState);
+  const setViewState = useNavigationStore((state) => state.setViewState);
 
   // Handle duplicating a submission
   const handleDuplicate = useCallback(async (id: string) => {

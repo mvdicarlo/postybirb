@@ -1,14 +1,14 @@
 import type { MantineThemeOverride } from '@mantine/core';
 import {
-  Card,
-  Container,
-  createTheme,
-  Paper,
-  rem,
-  ScrollArea,
-  Select,
+    Card,
+    Container,
+    createTheme,
+    Paper,
+    rem,
+    ScrollArea,
+    Select,
 } from '@mantine/core';
-import type { MantinePrimaryColor } from '../stores/ui-store';
+import type { MantinePrimaryColor } from '../stores/appearance-store';
 
 const CONTAINER_SIZES: Record<string, string> = {
   xxs: rem('200px'),

@@ -7,12 +7,12 @@
 import { Box } from '@mantine/core';
 import { navItems } from '../../config/nav-items';
 import { useKeybindings } from '../../hooks/use-keybindings';
+import { useViewState } from '../../stores/navigation-store';
 import {
     useSidenavCollapsed,
     useSubNavVisible,
-    useUIStore,
-    useViewState,
-} from '../../stores/ui-store';
+    useSubmissionsUIStore,
+} from '../../stores/submissions-ui-store';
 import '../../styles/layout.css';
 import { cn } from '../../utils/class-names';
 import {
@@ -35,7 +35,7 @@ import { SideNav } from './side-nav';
  */
 export function Layout() {
   const collapsed = useSidenavCollapsed();
-  const setSidenavCollapsed = useUIStore((state) => state.setSidenavCollapsed);
+  const setSidenavCollapsed = useSubmissionsUIStore((state) => state.setSidenavCollapsed);
   const viewState = useViewState();
   const { visible: isSectionPanelVisible } = useSubNavVisible();
 

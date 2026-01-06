@@ -6,7 +6,7 @@ import { SubmissionType } from '@postybirb/types';
 import { useEffect, useMemo, useState } from 'react';
 import type { SubmissionRecord } from '../../../../stores/records';
 import { useSubmissionsByType } from '../../../../stores/submission-store';
-import { useFileSubmissionsFilter } from '../../../../stores/ui-store';
+import { useFileSubmissionsFilter } from '../../../../stores/submissions-ui-store';
 
 interface UseFileSubmissionsResult {
   /** All file submissions (unfiltered) */

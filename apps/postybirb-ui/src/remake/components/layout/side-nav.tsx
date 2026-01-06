@@ -4,24 +4,19 @@
  * Handles view, drawer, and custom navigation items.
  */
 
-import { Trans } from '@lingui/react/macro';
 import {
-  Box,
-  Divider,
-  Image,
-  Kbd,
-  NavLink as MantineNavLink,
-  ScrollArea,
-  Title,
-  Tooltip,
+    Box,
+    Divider,
+    Image,
+    Kbd,
+    NavLink as MantineNavLink,
+    ScrollArea,
+    Title,
+    Tooltip,
 } from '@mantine/core';
 import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
-import {
-  useActiveDrawer,
-  useDrawerActions,
-  useViewState,
-  useViewStateActions,
-} from '../../stores/ui-store';
+import { useActiveDrawer, useDrawerActions } from '../../stores/drawer-store';
+import { useViewState, useViewStateActions } from '../../stores/navigation-store';
 import '../../styles/layout.css';
 import type { NavigationItem, SideNavProps } from '../../types/navigation';
 import { cn } from '../../utils/class-names';

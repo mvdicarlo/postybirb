@@ -17,7 +17,7 @@ import {
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { IconEye, IconEyeOff } from '@tabler/icons-react';
-import { useAccountsFilter } from '../../../stores/ui-store';
+import { useAccountsFilter } from '../../../stores/accounts-ui-store';
 import { useWebsites } from '../../../stores/website-store';
 
 /**

@@ -28,7 +28,7 @@ import { useSubmissionsMap } from '../../../stores/submission-store';
 import {
     useSubNavVisible,
     useToggleSectionPanel,
-} from '../../../stores/ui-store';
+} from '../../../stores/submissions-ui-store';
 import { isTemplatesViewState, type ViewState } from '../../../types/view-state';
 import { SubmissionEditCard } from '../submissions-section/submission-edit-card';
 

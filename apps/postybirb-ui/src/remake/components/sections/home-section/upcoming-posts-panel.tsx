@@ -11,8 +11,8 @@ import { SubmissionType } from '@postybirb/types';
 import { IconCalendarEvent, IconClock } from '@tabler/icons-react';
 import { useCallback, useMemo } from 'react';
 import { useLocale } from '../../../hooks';
+import { useViewStateActions } from '../../../stores/navigation-store';
 import { useScheduledSubmissions } from '../../../stores/submission-store';
-import { useViewStateActions } from '../../../stores/ui-store';
 import { EmptyState } from '../../empty-state';
 
 /**
@@ -47,7 +47,7 @@ export function UpcomingPostsPanel() {
         });
       }
     },
-    [setViewState]
+    [setViewState],
   );
 
   const upcomingPosts = useMemo(() => {
@@ -81,7 +81,7 @@ export function UpcomingPostsPanel() {
         </Group>
 
         {upcomingPosts.length === 0 ? (
-          <Box style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+          <Box style={{ alignItems: 'center' }}>
             <EmptyState
               preset="no-records"
               message={<Trans>No scheduled posts</Trans>}

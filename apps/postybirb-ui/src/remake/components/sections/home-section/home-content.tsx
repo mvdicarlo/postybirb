@@ -23,13 +23,14 @@ import {
   IconStack2,
 } from '@tabler/icons-react';
 import { useAccounts } from '../../../stores/account-store';
+import { useDrawerActions } from '../../../stores/drawer-store';
+import { useViewStateActions } from '../../../stores/navigation-store';
 import {
   useQueuedSubmissions,
   useRegularSubmissions,
   useScheduledSubmissions,
   useSubmissionsByType,
 } from '../../../stores/submission-store';
-import { useDrawerActions, useViewStateActions } from '../../../stores/ui-store';
 import '../../../styles/layout.css';
 import {
   createFileSubmissionsViewState,
@@ -58,7 +59,8 @@ function WelcomeEmptyState() {
         </Title>
         <Text size="md" c="dimmed" ta="center">
           <Trans>
-            Get started by adding your accounts and creating your first submission.
+            Get started by adding your accounts and creating your first
+            submission.
           </Trans>
         </Text>
         <Stack gap="xs" align="center">
@@ -70,13 +72,19 @@ function WelcomeEmptyState() {
               • <Trans>Go to Accounts to add and log into your websites</Trans>
             </Text>
             <Text size="sm" c="dimmed">
-              • <Trans>Create a File or Message submission to start posting</Trans>
+              •{' '}
+              <Trans>
+                Create a File or Message submission to start posting
+              </Trans>
             </Text>
             <Text size="sm" c="dimmed">
               • <Trans>Use templates to save time on repeated posts</Trans>
             </Text>
             <Text size="sm" c="dimmed">
-              • <Trans>Schedule posts to automatically publish at specific times</Trans>
+              •{' '}
+              <Trans>
+                Schedule posts to automatically publish at specific times
+              </Trans>
             </Text>
           </Stack>
         </Stack>
@@ -120,8 +128,9 @@ export function HomeContent() {
             <Trans>Dashboard</Trans>
           </Title>
 
+          <QueueControlCard />
           {/* Stats Row */}
-          <SimpleGrid cols={{ base: 1, xs: 2, sm: 3, md: 5 }} spacing="md">
+          <SimpleGrid cols={{ base: 4 }} spacing="md">
             <StatCard
               icon={<IconFile size={20} />}
               count={fileCount}
@@ -150,7 +159,6 @@ export function HomeContent() {
               color="violet"
               onClick={() => openDrawer('schedule')}
             />
-            <QueueControlCard />
           </SimpleGrid>
 
           {/* Panels Row */}

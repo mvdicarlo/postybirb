@@ -8,10 +8,10 @@ import { useLingui } from '@lingui/react';
 import moment from 'moment/min/moment-with-locales';
 import { useMemo } from 'react';
 import {
-  blockNoteLocaleLanguageMap,
-  calendarLanguageMap,
-  cronstrueLocaleMap,
-  dateLocaleMap,
+    blockNoteLocaleLanguageMap,
+    calendarLanguageMap,
+    cronstrueLocaleMap,
+    dateLocaleMap,
 } from '../i18n/languages';
 
 /**
@@ -29,7 +29,6 @@ export interface UseLocaleResult {
   /** Locale dictionary for BlockNote editor */
   blockNoteLocale: Record<string, unknown>;
   /** Format a date as relative time (e.g., "2 hours ago", "in 3 days") */
-  formatRelativeTime: (date: Date | string) => string;
   formatRelativeTime: (date: Date | string) => string;
   /** Format a date/time for display using locale-aware formatting */
   formatDateTime: (

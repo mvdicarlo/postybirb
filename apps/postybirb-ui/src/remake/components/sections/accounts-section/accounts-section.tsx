@@ -8,18 +8,19 @@ import { Box, Divider, Loader, ScrollArea, Stack } from '@mantine/core';
 import { useMemo } from 'react';
 import accountApi from '../../../api/account.api';
 import { useAccounts, useAccountsLoading } from '../../../stores/account-store';
-import { useAccountsFilter, useUIStore } from '../../../stores/ui-store';
+import { useAccountsFilter } from '../../../stores/accounts-ui-store';
+import { useNavigationStore } from '../../../stores/navigation-store';
 import { useWebsites, useWebsitesLoading } from '../../../stores/website-store';
 import { AccountLoginFilter } from '../../../types/account-filters';
 import {
-  isAccountsViewState,
-  type ViewState,
+    isAccountsViewState,
+    type ViewState,
 } from '../../../types/view-state';
 import {
-  showDeletedNotification,
-  showDeleteErrorNotification,
-  showErrorNotification,
-  showSuccessNotification,
+    showDeletedNotification,
+    showDeleteErrorNotification,
+    showErrorNotification,
+    showSuccessNotification,
 } from '../../../utils/notifications';
 import { EmptyState } from '../../empty-state';
 import { AccountSectionHeader } from './account-section-header';
@@ -41,7 +42,7 @@ export function AccountsSection({ viewState }: AccountsSectionProps) {
   const { isLoading: websitesLoading } = useWebsitesLoading();
   const { isLoading: accountsLoading } = useAccountsLoading();
   const { searchQuery, loginFilter, hiddenWebsites } = useAccountsFilter();
-  const setViewState = useUIStore((state) => state.setViewState);
+  const setViewState = useNavigationStore((state) => state.setViewState);
 
   // Get selected account ID from view state
   const selectedAccountId = isAccountsViewState(viewState)

@@ -36,7 +36,7 @@ import {
   useSubNavVisible,
   useSubmissionsContentPreferences,
   useToggleSectionPanel,
-} from '../../../stores/ui-store';
+} from '../../../stores/submissions-ui-store';
 import {
   isFileSubmissionsViewState,
   isMessageSubmissionsViewState,

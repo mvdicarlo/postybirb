@@ -5,6 +5,7 @@ import {
   defaultBlockSpecs,
   defaultInlineContentSpecs,
   defaultStyleSpecs,
+  Dictionary,
 } from '@blocknote/core';
 import { BlockNoteView } from '@blocknote/mantine';
 import { SuggestionMenuController, useCreateBlockNote } from '@blocknote/react';
@@ -112,7 +113,7 @@ function DescriptionEditorInner({
         emptyDocument: t`Type / for commands or \` for shortcuts`,
         default: t`Type / for commands or \` for shortcuts`,
       },
-    },
+    } as unknown as Dictionary,
   });
 
   // Get username shortcuts from websites
@@ -145,7 +146,7 @@ function DescriptionEditorInner({
           triggerCharacter="/"
           getItems={async (query) =>
             filterSuggestionItems(
-              getCustomSlashMenuItems(editor, isDefaultEditor),
+              getCustomSlashMenuItems(editor, !!isDefaultEditor),
               query,
             )
           }

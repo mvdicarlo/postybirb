@@ -31,9 +31,9 @@ import {
 } from '@tabler/icons-react';
 import { useCallback, useState } from 'react';
 import { DeleteSelectedKeybinding } from '../../../config/keybindings';
+import { useSubmissionViewMode } from '../../../stores/appearance-store';
 import type { SubmissionRecord } from '../../../stores/records';
-import type { SubmissionFilter } from '../../../stores/ui-store';
-import { useSubmissionsFilter, useSubmissionViewMode } from '../../../stores/ui-store';
+import { type SubmissionFilter, useSubmissionsFilter } from '../../../stores/submissions-ui-store';
 import { MultiSchedulerModal, SearchInput } from '../../shared';
 import { TemplatePickerModal } from '../../shared/template-picker';
 import './submissions-section.css';

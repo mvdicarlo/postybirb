@@ -18,7 +18,7 @@ import { useDisclosure } from '@mantine/hooks';
 import { IconCheck, IconLanguage, IconWorld } from '@tabler/icons-react';
 import { useState } from 'react';
 import { languages } from '../../i18n/languages';
-import { useLanguageActions } from '../../stores/ui-store';
+import { useLanguageActions } from '../../stores/locale-store';
 import '../../styles/layout.css';
 import { cn } from '../../utils/class-names';
 import './language-picker.css';
