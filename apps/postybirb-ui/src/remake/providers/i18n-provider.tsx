@@ -10,7 +10,7 @@ import { Group, Loader } from '@mantine/core';
 import { DatesProvider } from '@mantine/dates';
 import moment from 'moment/min/moment-with-locales';
 import { useCallback, useEffect, useState } from 'react';
-import { useLanguage } from '../stores/locale-store';
+import { useLanguage } from '../stores/ui/locale-store';
 
 /**
  * Provides Lingui i18n context and Mantine DatesProvider for the app.

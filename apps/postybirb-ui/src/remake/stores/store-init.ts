@@ -4,16 +4,16 @@
  */
 
 import { useEffect, useState } from 'react';
-import { useAccountStore } from './account-store';
-import { useCustomShortcutStore } from './custom-shortcut-store';
-import { useDirectoryWatcherStore } from './directory-watcher-store';
-import { useNotificationStore } from './notification-store';
-import { useSettingsStore } from './settings-store';
-import { useSubmissionStore } from './submission-store';
-import { useTagConverterStore } from './tag-converter-store';
-import { useTagGroupStore } from './tag-group-store';
-import { useUserConverterStore } from './user-converter-store';
-import { useWebsiteStore } from './website-store';
+import { useAccountStore } from './entity/account-store';
+import { useCustomShortcutStore } from './entity/custom-shortcut-store';
+import { useDirectoryWatcherStore } from './entity/directory-watcher-store';
+import { useNotificationStore } from './entity/notification-store';
+import { useSettingsStore } from './entity/settings-store';
+import { useSubmissionStore } from './entity/submission-store';
+import { useTagConverterStore } from './entity/tag-converter-store';
+import { useTagGroupStore } from './entity/tag-group-store';
+import { useUserConverterStore } from './entity/user-converter-store';
+import { useWebsiteStore } from './entity/website-store';
 
 /**
  * Load all entity stores in parallel.

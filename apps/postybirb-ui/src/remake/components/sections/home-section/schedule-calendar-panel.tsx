@@ -23,8 +23,8 @@ import {
 } from '@tabler/icons-react';
 import { useCallback, useMemo, useState } from 'react';
 import { useLocale } from '../../../hooks';
-import { useDrawerActions } from '../../../stores/drawer-store';
-import { useScheduledSubmissions } from '../../../stores/submission-store';
+import { useScheduledSubmissions } from '../../../stores/entity/submission-store';
+import { useDrawerActions } from '../../../stores/ui/drawer-store';
 
 /**
  * Get weekday abbreviations for calendar header.

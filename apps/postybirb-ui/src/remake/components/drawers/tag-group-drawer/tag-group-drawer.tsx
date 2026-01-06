@@ -22,8 +22,8 @@ import { IconPlus, IconTrash } from '@tabler/icons-react';
 import { useCallback, useMemo, useState } from 'react';
 import tagGroupsApi from '../../../api/tag-groups.api';
 import { useTagGroups } from '../../../stores';
-import { useActiveDrawer, useDrawerActions } from '../../../stores/drawer-store';
 import type { TagGroupRecord } from '../../../stores/records';
+import { useActiveDrawer, useDrawerActions } from '../../../stores/ui/drawer-store';
 import {
     showCreatedNotification,
     showCreateErrorNotification,

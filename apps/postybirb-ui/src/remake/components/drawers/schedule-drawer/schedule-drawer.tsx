@@ -5,7 +5,7 @@
 
 import { Trans } from '@lingui/react/macro';
 import { Box, Group } from '@mantine/core';
-import { useActiveDrawer, useDrawerActions } from '../../../stores/drawer-store';
+import { useActiveDrawer, useDrawerActions } from '../../../stores/ui/drawer-store';
 import { SectionDrawer } from '../section-drawer';
 import { ScheduleCalendar } from './schedule-calendar';
 import './schedule-drawer.css';

@@ -11,9 +11,9 @@ import type {
 } from '@postybirb/types';
 import { useMemo } from 'react';
 import tagConvertersApi from '../../../api/tag-converters.api';
-import { useActiveDrawer, useDrawerActions } from '../../../stores/drawer-store';
+import { useTagConverters } from '../../../stores/entity/tag-converter-store';
 import type { TagConverterRecord } from '../../../stores/records';
-import { useTagConverters } from '../../../stores/tag-converter-store';
+import { useActiveDrawer, useDrawerActions } from '../../../stores/ui/drawer-store';
 import {
   ConverterDrawer,
   type ConverterDrawerConfig,

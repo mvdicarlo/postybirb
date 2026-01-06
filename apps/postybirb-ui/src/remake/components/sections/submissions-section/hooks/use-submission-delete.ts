@@ -4,7 +4,7 @@
 
 import { useCallback } from 'react';
 import submissionApi from '../../../../api/submission.api';
-import { useNavigationStore } from '../../../../stores/navigation-store';
+import { useNavigationStore } from '../../../../stores/ui/navigation-store';
 import { type ViewState } from '../../../../types/view-state';
 import {
   showDeletedNotification,

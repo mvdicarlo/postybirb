@@ -5,11 +5,11 @@
 import { TAG_GROUP_UPDATES } from '@postybirb/socket-events';
 import type { TagGroupDto } from '@postybirb/types';
 import { useShallow } from 'zustand/react/shallow';
-import tagGroupsApi from '../api/tag-groups.api';
-import AppSocket from '../transports/websocket';
-import { type EntityStore } from './create-entity-store';
-import { createTypedStore } from './create-typed-store';
-import { TagGroupRecord } from './records';
+import tagGroupsApi from '../../api/tag-groups.api';
+import AppSocket from '../../transports/websocket';
+import { type EntityStore } from '../create-entity-store';
+import { createTypedStore } from '../create-typed-store';
+import { TagGroupRecord } from '../records';
 
 /**
  * Tag group store with all standard selector hooks.

@@ -14,8 +14,8 @@ import { Box, useMantineColorScheme } from '@mantine/core';
 import type { Description } from '@postybirb/types';
 import { useMemo } from 'react';
 import { useLocale } from '../../../hooks';
-import { useCustomShortcuts } from '../../../stores/custom-shortcut-store';
-import { useWebsites } from '../../../stores/website-store';
+import { useCustomShortcuts } from '../../../stores/entity/custom-shortcut-store';
+import { useWebsites } from '../../../stores/entity/website-store';
 import {
   DefaultShortcut,
   filterShortcutMenuItems,

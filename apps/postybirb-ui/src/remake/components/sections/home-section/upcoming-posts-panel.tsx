@@ -11,8 +11,8 @@ import { SubmissionType } from '@postybirb/types';
 import { IconCalendarEvent, IconClock } from '@tabler/icons-react';
 import { useCallback, useMemo } from 'react';
 import { useLocale } from '../../../hooks';
-import { useViewStateActions } from '../../../stores/navigation-store';
-import { useScheduledSubmissions } from '../../../stores/submission-store';
+import { useScheduledSubmissions } from '../../../stores/entity/submission-store';
+import { useViewStateActions } from '../../../stores/ui/navigation-store';
 import { EmptyState } from '../../empty-state';
 
 /**

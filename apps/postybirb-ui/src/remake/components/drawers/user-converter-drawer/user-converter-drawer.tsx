@@ -11,9 +11,9 @@ import type {
 } from '@postybirb/types';
 import { useMemo } from 'react';
 import userConvertersApi from '../../../api/user-converters.api';
-import { useActiveDrawer, useDrawerActions } from '../../../stores/drawer-store';
+import { useUserConverters } from '../../../stores/entity/user-converter-store';
 import type { UserConverterRecord } from '../../../stores/records';
-import { useUserConverters } from '../../../stores/user-converter-store';
+import { useActiveDrawer, useDrawerActions } from '../../../stores/ui/drawer-store';
 import {
     ConverterDrawer,
     type ConverterDrawerConfig,

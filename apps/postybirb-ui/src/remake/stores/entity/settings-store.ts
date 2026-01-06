@@ -7,9 +7,9 @@
 
 import { SETTINGS_UPDATES } from '@postybirb/socket-events';
 import type { SettingsDto } from '@postybirb/types';
-import settingsApi from '../api/settings.api';
-import { createEntityStore, type EntityStore } from './create-entity-store';
-import { SettingsRecord } from './records/settings-record';
+import settingsApi from '../../api/settings.api';
+import { createEntityStore, type EntityStore } from '../create-entity-store';
+import { SettingsRecord } from '../records/settings-record';
 
 /**
  * Fetch all settings from the API.

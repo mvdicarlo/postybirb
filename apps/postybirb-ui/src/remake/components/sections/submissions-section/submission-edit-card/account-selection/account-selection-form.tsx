@@ -6,39 +6,39 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-  Badge,
-  Box,
-  Button,
-  Collapse,
-  Group,
-  Paper,
-  Stack,
-  Text,
-  UnstyledButton,
+    Badge,
+    Box,
+    Button,
+    Collapse,
+    Group,
+    Paper,
+    Stack,
+    Text,
+    UnstyledButton,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import {
-  SubmissionRating,
-  SubmissionType,
-  type WebsiteOptionsDto,
+    SubmissionRating,
+    SubmissionType,
+    type WebsiteOptionsDto,
 } from '@postybirb/types';
 import {
-  IconChevronDown,
-  IconChevronRight,
-  IconSquare,
-  IconSquareCheck,
+    IconChevronDown,
+    IconChevronRight,
+    IconSquare,
+    IconSquareCheck,
 } from '@tabler/icons-react';
 import { useCallback, useMemo, useState } from 'react';
 import websiteOptionsApi from '../../../../../api/website-options.api';
-import { useAccounts } from '../../../../../stores/account-store';
-import type {
-  AccountRecord,
-  WebsiteRecord,
-} from '../../../../../stores/records';
+import { useAccounts } from '../../../../../stores/entity/account-store';
 import {
-  useFileWebsites,
-  useMessageWebsites,
-} from '../../../../../stores/website-store';
+    useFileWebsites,
+    useMessageWebsites,
+} from '../../../../../stores/entity/website-store';
+import type {
+    AccountRecord,
+    WebsiteRecord,
+} from '../../../../../stores/records';
 import { useSubmissionEditCardContext } from '../context';
 import { AccountOptionRow } from './account-option-row';
 import './account-selection.css';

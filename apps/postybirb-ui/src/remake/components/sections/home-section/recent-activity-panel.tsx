@@ -14,7 +14,7 @@ import {
 } from '@tabler/icons-react';
 import { useMemo } from 'react';
 import { useLocale } from '../../../hooks';
-import { useNotifications } from '../../../stores/notification-store';
+import { useNotifications } from '../../../stores/entity/notification-store';
 import type { NotificationRecord } from '../../../stores/records';
 import { EmptyState } from '../../empty-state';
 

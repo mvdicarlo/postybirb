@@ -15,8 +15,8 @@ import {
     Tooltip,
 } from '@mantine/core';
 import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
-import { useActiveDrawer, useDrawerActions } from '../../stores/drawer-store';
-import { useViewState, useViewStateActions } from '../../stores/navigation-store';
+import { useActiveDrawer, useDrawerActions } from '../../stores/ui/drawer-store';
+import { useViewState, useViewStateActions } from '../../stores/ui/navigation-store';
 import '../../styles/layout.css';
 import type { NavigationItem, SideNavProps } from '../../types/navigation';
 import { cn } from '../../utils/class-names';

@@ -5,9 +5,9 @@
 import { ACCOUNT_UPDATES } from '@postybirb/socket-events';
 import type { AccountId, IAccountDto } from '@postybirb/types';
 import { useShallow } from 'zustand/react/shallow';
-import accountApi from '../api/account.api';
-import { createEntityStore, type EntityStore } from './create-entity-store';
-import { AccountRecord } from './records';
+import accountApi from '../../api/account.api';
+import { createEntityStore, type EntityStore } from '../create-entity-store';
+import { AccountRecord } from '../records';
 
 /**
  * Fetch all accounts from the API.

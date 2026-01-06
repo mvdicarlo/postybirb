@@ -30,12 +30,12 @@ import {
 import { useCallback, useMemo, useState } from 'react';
 import notificationApi from '../../../api/notification.api';
 import { useLocale } from '../../../hooks';
-import { useActiveDrawer, useDrawerActions } from '../../../stores/drawer-store';
 import {
   useNotifications,
   useUnreadNotificationCount,
-} from '../../../stores/notification-store';
+} from '../../../stores/entity/notification-store';
 import type { NotificationRecord } from '../../../stores/records';
+import { useActiveDrawer, useDrawerActions } from '../../../stores/ui/drawer-store';
 import {
   showDeletedNotification,
   showDeleteErrorNotification,

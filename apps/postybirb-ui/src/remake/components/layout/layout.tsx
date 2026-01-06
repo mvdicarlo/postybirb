@@ -7,12 +7,12 @@
 import { Box } from '@mantine/core';
 import { navItems } from '../../config/nav-items';
 import { useKeybindings } from '../../hooks/use-keybindings';
-import { useViewState } from '../../stores/navigation-store';
+import { useViewState } from '../../stores/ui/navigation-store';
 import {
     useSidenavCollapsed,
     useSubNavVisible,
     useSubmissionsUIStore,
-} from '../../stores/submissions-ui-store';
+} from '../../stores/ui/submissions-ui-store';
 import '../../styles/layout.css';
 import { cn } from '../../utils/class-names';
 import {

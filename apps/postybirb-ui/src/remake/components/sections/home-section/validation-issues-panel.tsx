@@ -16,8 +16,8 @@ import {
 import { SubmissionType } from '@postybirb/types';
 import { IconAlertTriangle, IconExclamationCircle } from '@tabler/icons-react';
 import { useCallback, useMemo } from 'react';
-import { useViewStateActions } from '../../../stores/navigation-store';
-import { useSubmissionsWithErrors } from '../../../stores/submission-store';
+import { useSubmissionsWithErrors } from '../../../stores/entity/submission-store';
+import { useViewStateActions } from '../../../stores/ui/navigation-store';
 import { EmptyState } from '../../empty-state';
 
 /**

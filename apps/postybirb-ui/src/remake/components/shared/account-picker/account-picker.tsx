@@ -20,12 +20,12 @@ import type { AccountId } from '@postybirb/types';
 import { SubmissionType } from '@postybirb/types';
 import { IconChevronDown, IconChevronRight } from '@tabler/icons-react';
 import { useCallback, useMemo } from 'react';
-import { useAccounts } from '../../../stores/account-store';
-import type { AccountRecord, WebsiteRecord } from '../../../stores/records';
+import { useAccounts } from '../../../stores/entity/account-store';
 import {
     useFileWebsites,
     useMessageWebsites,
-} from '../../../stores/website-store';
+} from '../../../stores/entity/website-store';
+import type { AccountRecord, WebsiteRecord } from '../../../stores/records';
 import './account-picker.css';
 
 export interface AccountPickerProps {

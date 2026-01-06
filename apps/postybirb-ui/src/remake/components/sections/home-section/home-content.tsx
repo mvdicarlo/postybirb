@@ -22,15 +22,15 @@ import {
   IconMessage,
   IconStack2,
 } from '@tabler/icons-react';
-import { useAccounts } from '../../../stores/account-store';
-import { useDrawerActions } from '../../../stores/drawer-store';
-import { useViewStateActions } from '../../../stores/navigation-store';
+import { useAccounts } from '../../../stores/entity/account-store';
 import {
   useQueuedSubmissions,
   useRegularSubmissions,
   useScheduledSubmissions,
   useSubmissionsByType,
-} from '../../../stores/submission-store';
+} from '../../../stores/entity/submission-store';
+import { useDrawerActions } from '../../../stores/ui/drawer-store';
+import { useViewStateActions } from '../../../stores/ui/navigation-store';
 import '../../../styles/layout.css';
 import {
   createFileSubmissionsViewState,

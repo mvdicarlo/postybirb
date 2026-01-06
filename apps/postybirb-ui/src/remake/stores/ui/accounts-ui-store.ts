@@ -6,10 +6,10 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { useShallow } from 'zustand/react/shallow';
-import { AccountLoginFilter } from '../types/account-filters';
+import { AccountLoginFilter } from '../../types/account-filters';
 
 // Re-export AccountLoginFilter enum from types
-export { AccountLoginFilter } from '../types/account-filters';
+export { AccountLoginFilter } from '../../types/account-filters';
 
 // ============================================================================
 // Types

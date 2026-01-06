@@ -3,8 +3,8 @@
  */
 
 import { useCallback, useMemo, useRef } from 'react';
-import { useNavigationStore } from '../../../../stores/navigation-store';
 import type { SubmissionRecord } from '../../../../stores/records';
+import { useNavigationStore } from '../../../../stores/ui/navigation-store';
 import { type ViewState } from '../../../../types/view-state';
 import type { SelectionState } from '../submission-section-header';
 import { isSubmissionsViewState } from '../types';

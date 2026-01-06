@@ -2,7 +2,10 @@
  * Barrel exports for all stores.
  */
 
-// Base utilities
+// =============================================================================
+// Base Utilities
+// =============================================================================
+
 export {
     createEntityStore,
     useLoadingStateSelector,
@@ -22,6 +25,10 @@ export {
     useInitializeStores
 } from './store-init';
 
+// =============================================================================
+// UI Stores (localStorage-persisted)
+// =============================================================================
+
 // Navigation Store
 export {
     useCanGoBack,
@@ -31,7 +38,7 @@ export {
     useViewState,
     useViewStateActions,
     type NavigationStore
-} from './navigation-store';
+} from './ui/navigation-store';
 
 // Appearance Store
 export {
@@ -46,7 +53,7 @@ export {
     type ColorScheme,
     type MantinePrimaryColor,
     type SubmissionViewMode
-} from './appearance-store';
+} from './ui/appearance-store';
 
 // Drawer Store
 export {
@@ -56,19 +63,19 @@ export {
     useIsDrawerOpen,
     type DrawerKey,
     type DrawerStore
-} from './drawer-store';
+} from './ui/drawer-store';
 
 // Submissions UI Store
 export {
     useFileSubmissionsFilter,
     useMessageSubmissionsFilter,
-    useSidenavCollapsed, useSubNavVisible, useSubmissionsContentPreferences,
+    useSidenavCollapsed, useSubmissionsContentPreferences,
     useSubmissionsFilter,
-    useSubmissionsUIStore, useToggleSectionPanel,
+    useSubmissionsUIStore, useSubNavVisible, useToggleSectionPanel,
     useToggleSidenav,
     type SubmissionFilter,
     type SubmissionsUIStore
-} from './submissions-ui-store';
+} from './ui/submissions-ui-store';
 
 // Accounts UI Store
 export {
@@ -77,72 +84,101 @@ export {
     useAccountsUIStore,
     useHiddenWebsites as useUIHiddenWebsites,
     type AccountsUIStore
-} from './accounts-ui-store';
+} from './ui/accounts-ui-store';
 
 // Templates UI Store
 export {
     useTemplatesFilter,
     useTemplatesUIStore,
     type TemplatesUIStore
-} from './templates-ui-store';
+} from './ui/templates-ui-store';
 
 // Locale Store
 export {
-    SUPPORTED_LOCALES, useLanguageActions,
-    useLocaleStore, useLanguage as useUILanguage, type LocaleStore
-} from './locale-store';
+    SUPPORTED_LOCALES,
+    useLanguageActions,
+    useLocaleStore,
+    useLanguage as useUILanguage,
+    type LocaleStore
+} from './ui/locale-store';
+
+// =============================================================================
+// Entity Stores (API-backed)
+// =============================================================================
 
 // Account Store
 export {
-    groupAccountsByWebsite, useAccount, useAccountActions, useAccountStore,
-    useAccounts, useAccountsLoading, useAccountsMap, useLoggedInAccounts, type AccountStore
-} from './account-store';
+    groupAccountsByWebsite,
+    useAccount,
+    useAccountActions, useAccounts,
+    useAccountsLoading,
+    useAccountsMap, useAccountStore, useLoggedInAccounts,
+    type AccountStore
+} from './entity/account-store';
 
 // Submission Store
 export {
     useArchivedSubmissions,
-    useQueuedSubmissions, useRegularSubmissions, useScheduledSubmissions, useSubmission, useSubmissionActions, useSubmissionStore,
-    useSubmissions, useSubmissionsByType, useSubmissionsLoading, useSubmissionsMap, useSubmissionsWithErrors, useTemplateSubmissions, type SubmissionStore
-} from './submission-store';
+    useQueuedSubmissions,
+    useRegularSubmissions,
+    useScheduledSubmissions,
+    useSubmission,
+    useSubmissionActions, useSubmissions,
+    useSubmissionsByType,
+    useSubmissionsLoading,
+    useSubmissionsMap, useSubmissionStore, useSubmissionsWithErrors,
+    useTemplateSubmissions,
+    type SubmissionStore
+} from './entity/submission-store';
 
 // Custom Shortcut Store
 export {
     customShortcutStoreRef,
-    useCustomShortcutActions, useCustomShortcutStore,
-    useCustomShortcuts, useCustomShortcutsLoading, useCustomShortcutsMap, type CustomShortcutStore
-} from './custom-shortcut-store';
+    useCustomShortcutActions, useCustomShortcuts,
+    useCustomShortcutsLoading,
+    useCustomShortcutsMap, useCustomShortcutStore, type CustomShortcutStore
+} from './entity/custom-shortcut-store';
 
 // Directory Watcher Store
 export {
     useActiveDirectoryWatchers,
-    useDirectoryWatcherActions, useDirectoryWatcherStore,
-    useDirectoryWatchers, useDirectoryWatchersLoading, useDirectoryWatchersMap, type DirectoryWatcherStore
-} from './directory-watcher-store';
+    useDirectoryWatcherActions, useDirectoryWatchers,
+    useDirectoryWatchersLoading,
+    useDirectoryWatchersMap, useDirectoryWatcherStore, type DirectoryWatcherStore
+} from './entity/directory-watcher-store';
 
 // Notification Store
 export {
-    useErrorNotifications, useNotificationActions, useNotificationStore,
-    useNotifications, useNotificationsLoading, useNotificationsMap, useUnreadNotificationCount, useUnreadNotifications, useWarningNotifications, type NotificationStore
-} from './notification-store';
+    useErrorNotifications,
+    useNotificationActions, useNotifications,
+    useNotificationsLoading,
+    useNotificationsMap, useNotificationStore, useUnreadNotificationCount,
+    useUnreadNotifications,
+    useWarningNotifications,
+    type NotificationStore
+} from './entity/notification-store';
 
 // Tag Converter Store
 export {
-    useTagConverterActions, useTagConverterStore,
-    useTagConverters, useTagConvertersLoading, useTagConvertersMap, type TagConverterStore
-} from './tag-converter-store';
+    useTagConverterActions, useTagConverters,
+    useTagConvertersLoading,
+    useTagConvertersMap, useTagConverterStore, type TagConverterStore
+} from './entity/tag-converter-store';
 
 // Tag Group Store
 export {
     useNonEmptyTagGroups,
-    useTagGroupActions, useTagGroupStore,
-    useTagGroups, useTagGroupsLoading, useTagGroupsMap, type TagGroupStore
-} from './tag-group-store';
+    useTagGroupActions, useTagGroups,
+    useTagGroupsLoading,
+    useTagGroupsMap, useTagGroupStore, type TagGroupStore
+} from './entity/tag-group-store';
 
 // User Converter Store
 export {
-    useUserConverterActions, useUserConverterStore,
-    useUserConverters, useUserConvertersLoading, useUserConvertersMap, type UserConverterStore
-} from './user-converter-store';
+    useUserConverterActions, useUserConverters,
+    useUserConvertersLoading,
+    useUserConvertersMap, useUserConverterStore, type UserConverterStore
+} from './entity/user-converter-store';
 
 // Settings Store
 export {
@@ -158,20 +194,21 @@ export {
     useSettingsStore,
     useTagSearchProvider,
     type SettingsStore
-} from './settings-store';
+} from './entity/settings-store';
 
 // Website Store
 export {
     useFileWebsites,
     useMessageWebsites,
     useWebsite,
-    useWebsiteActions,
-    useWebsiteStore,
-    useWebsites,
+    useWebsiteActions, useWebsites,
     useWebsitesLoading,
-    useWebsitesMap,
-    type WebsiteStore
-} from './website-store';
+    useWebsitesMap, useWebsiteStore, type WebsiteStore
+} from './entity/website-store';
 
-// Record classes
+// =============================================================================
+// Record Classes
+// =============================================================================
+
 export * from './records';
+

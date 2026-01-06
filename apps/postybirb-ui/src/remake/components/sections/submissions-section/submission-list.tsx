@@ -4,8 +4,8 @@
  */
 
 import { Box, Loader, ScrollArea, Stack } from '@mantine/core';
-import { useIsCompactView } from '../../../stores/appearance-store';
 import type { SubmissionRecord } from '../../../stores/records';
+import { useIsCompactView } from '../../../stores/ui/appearance-store';
 import { EmptyState } from '../../empty-state';
 import { useSubmissionsContext } from './context';
 import { SubmissionCard } from './submission-card';

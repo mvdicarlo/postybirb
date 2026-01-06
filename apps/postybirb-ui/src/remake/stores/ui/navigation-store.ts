@@ -15,9 +15,9 @@ import {
     defaultViewState,
     type SectionId,
     type ViewState,
-} from '../types/view-state';
-import { useAccountStore } from './account-store';
-import { useSubmissionStore } from './submission-store';
+} from '../../types/view-state';
+import { useAccountStore } from '../entity/account-store';
+import { useSubmissionStore } from '../entity/submission-store';
 
 // ============================================================================
 // Types

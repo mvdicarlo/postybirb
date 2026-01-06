@@ -23,12 +23,12 @@ import {
     IconLayoutSidebarLeftExpand,
 } from '@tabler/icons-react';
 import { useMemo } from 'react';
+import { useSubmissionsMap } from '../../../stores/entity/submission-store';
 import type { SubmissionRecord } from '../../../stores/records';
-import { useSubmissionsMap } from '../../../stores/submission-store';
 import {
     useSubNavVisible,
     useToggleSectionPanel,
-} from '../../../stores/submissions-ui-store';
+} from '../../../stores/ui/submissions-ui-store';
 import { isTemplatesViewState, type ViewState } from '../../../types/view-state';
 import { SubmissionEditCard } from '../submissions-section/submission-edit-card';
 

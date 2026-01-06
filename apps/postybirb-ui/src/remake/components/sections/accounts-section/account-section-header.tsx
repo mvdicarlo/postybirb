@@ -5,7 +5,7 @@
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import { Box, Group, SegmentedControl, Stack, Text } from '@mantine/core';
-import { AccountLoginFilter, useAccountsFilter } from '../../../stores/accounts-ui-store';
+import { AccountLoginFilter, useAccountsFilter } from '../../../stores/ui/accounts-ui-store';
 import { SearchInput } from '../../shared';
 import { WebsiteVisibilityPicker } from './website-visibility-picker';
 

@@ -8,7 +8,7 @@ import {
     ScrollArea,
     Select,
 } from '@mantine/core';
-import type { MantinePrimaryColor } from '../stores/appearance-store';
+import type { MantinePrimaryColor } from '../stores/ui/appearance-store';
 
 const CONTAINER_SIZES: Record<string, string> = {
   xxs: rem('200px'),

@@ -20,8 +20,8 @@ import {
   IconCircleCheck,
   IconUsers,
 } from '@tabler/icons-react';
-import { useAccounts } from '../../../stores/account-store';
-import { useViewStateActions } from '../../../stores/navigation-store';
+import { useAccounts } from '../../../stores/entity/account-store';
+import { useViewStateActions } from '../../../stores/ui/navigation-store';
 import { createAccountsViewState } from '../../../types/view-state';
 import { EmptyState } from '../../empty-state';
 

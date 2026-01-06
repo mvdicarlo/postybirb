@@ -20,7 +20,7 @@ import {
   MANTINE_COLORS,
   type MantinePrimaryColor,
   useAppearanceActions,
-} from '../../../../stores/appearance-store';
+} from '../../../../stores/ui/appearance-store';
 
 /**
  * Color scheme options for the segmented control.

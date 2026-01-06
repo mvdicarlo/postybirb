@@ -21,13 +21,13 @@ import {
     toTinykeysFormat,
     UserConvertersKeybinding,
 } from '../config/keybindings';
-import { useDrawerStore } from '../stores/drawer-store';
+import { useDrawerStore } from '../stores/ui/drawer-store';
 import {
     useCanGoBack,
     useCanGoForward,
     useNavigationHistory,
     useViewStateActions,
-} from '../stores/navigation-store';
+} from '../stores/ui/navigation-store';
 import {
     createAccountsViewState,
     createFileSubmissionsViewState,
