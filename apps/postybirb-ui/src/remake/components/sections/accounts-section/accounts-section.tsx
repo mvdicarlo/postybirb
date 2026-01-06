@@ -13,14 +13,14 @@ import { useAccountsFilter } from '../../../stores/ui/accounts-ui-store';
 import { useNavigationStore } from '../../../stores/ui/navigation-store';
 import { AccountLoginFilter } from '../../../types/account-filters';
 import {
-    isAccountsViewState,
-    type ViewState,
+  isAccountsViewState,
+  type ViewState,
 } from '../../../types/view-state';
 import {
-    showDeletedNotification,
-    showDeleteErrorNotification,
-    showErrorNotification,
-    showSuccessNotification,
+  showDeletedNotification,
+  showDeleteErrorNotification,
+  showErrorNotification,
+  showSuccessNotification,
 } from '../../../utils/notifications';
 import { EmptyState } from '../../empty-state';
 import { AccountSectionHeader } from './account-section-header';
@@ -67,6 +67,16 @@ export function AccountsSection({ viewState }: AccountsSectionProps) {
     try {
       await accountApi.remove([accountId]);
       showDeletedNotification(1);
+      // Clear selection if the deleted account was selected
+      if (selectedAccountId === accountId && isAccountsViewState(viewState)) {
+        setViewState({
+          ...viewState,
+          params: {
+            ...viewState.params,
+            selectedId: null,
+          },
+        });
+      }
     } catch {
       showDeleteErrorNotification();
     }
@@ -200,6 +210,7 @@ export function AccountsSection({ viewState }: AccountsSectionProps) {
             onDeleteAccount={handleDeleteAccount}
             onResetAccount={handleResetAccount}
             onLoginRequest={handleSelectAccount}
+            onAccountCreated={handleSelectAccount}
           >
             <Stack gap="xs" p="xs">
               {sortedWebsites.map((website) => (
