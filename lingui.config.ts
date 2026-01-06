@@ -9,6 +9,7 @@ const config: LinguiConfig = {
       path: 'lang/{locale}',
     },
   ],
+  fallbackLocales: { default: 'en' },
 };
 
 export default config;
