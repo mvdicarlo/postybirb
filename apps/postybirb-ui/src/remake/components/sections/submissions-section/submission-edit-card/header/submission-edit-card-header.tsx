@@ -44,6 +44,11 @@ export function SubmissionEditCardHeader({
           <Trans>Archived</Trans>
         </Badge>
       )}
+      {submission.isMultiSubmission && (
+        <Badge color="grape" size="sm" variant="light">
+          <Trans>Multi Edit</Trans>
+        </Badge>
+      )}
     </Group>
   );
 }
