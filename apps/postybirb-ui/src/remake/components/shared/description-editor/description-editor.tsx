@@ -68,7 +68,7 @@ export type DescriptionEditorProps = {
 function DescriptionEditorInner({
   value,
   onChange,
-  isDefaultEditor,
+  isDefaultEditor = false,
   showCustomShortcuts,
   minHeight,
   blockNoteLocale,

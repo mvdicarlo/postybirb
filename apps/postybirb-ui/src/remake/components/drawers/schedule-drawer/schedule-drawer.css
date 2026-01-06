@@ -194,7 +194,7 @@
 .schedule-drawer-calendar .fc-event:hover {
   transform: scale(1.02);
   box-shadow: var(--mantine-shadow-md);
-  z-index: 5 !important;
+  z-index: var(--z-section-panel) !important;
   opacity: 0.95;
 }
 

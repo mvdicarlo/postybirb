@@ -1,32 +1,32 @@
 /* eslint-disable no-param-reassign */
 import {
-    BadRequestException,
-    forwardRef,
-    Inject,
-    Injectable,
-    NotFoundException,
-    OnModuleInit,
-    Optional,
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+  OnModuleInit,
+  Optional,
 } from '@nestjs/common';
 import {
-    FileBufferSchema,
-    Insert,
-    SubmissionFileSchema,
-    SubmissionSchema,
-    WebsiteOptionsSchema,
+  FileBufferSchema,
+  Insert,
+  SubmissionFileSchema,
+  SubmissionSchema,
+  WebsiteOptionsSchema,
 } from '@postybirb/database';
 import { SUBMISSION_UPDATES } from '@postybirb/socket-events';
 import {
-    FileSubmission,
-    FileSubmissionMetadata,
-    ISubmissionDto,
-    ISubmissionMetadata,
-    MessageSubmission,
-    NULL_ACCOUNT_ID,
-    ScheduleType,
-    SubmissionId,
-    SubmissionMetadataType,
-    SubmissionType,
+  FileSubmission,
+  FileSubmissionMetadata,
+  ISubmissionDto,
+  ISubmissionMetadata,
+  MessageSubmission,
+  NULL_ACCOUNT_ID,
+  ScheduleType,
+  SubmissionId,
+  SubmissionMetadataType,
+  SubmissionType,
 } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/electron';
 import { eq } from 'drizzle-orm';
@@ -107,9 +107,28 @@ export class SubmissionService
   }
 
   onModuleInit() {
+    this.cleanupUninitializedSubmissions();
     Object.values(SubmissionType).forEach((type) => {
       this.populateMultiSubmission(type);
     });
+  }
+
+  /**
+   * Cleans up any submissions that were left in an uninitialized state
+   * (e.g., from a crash during creation).
+   */
+  private async cleanupUninitializedSubmissions() {
+    const all = await super.findAll();
+    const uninitialized = all.filter((s) => !s.isInitialized);
+    if (uninitialized.length > 0) {
+      const ids = uninitialized.map((s) => s.id);
+      this.logger
+        .withMetadata({ submissionIds: ids })
+        .info(
+          `Cleaning up ${uninitialized.length} uninitialized submission(s) from previous session`,
+        );
+      await this.repository.deleteById(ids);
+    }
   }
 
   /**
@@ -128,7 +147,7 @@ export class SubmissionService
   }
 
   public async findAllAsDto(): Promise<ISubmissionDto<ISubmissionMetadata>[]> {
-    const all = await super.findAll();
+    const all = (await super.findAll()).filter((s) => s.isInitialized);
 
     // Separate archived from non-archived for efficient processing
     const archived = all.filter((s) => s.isArchived);
@@ -165,6 +184,15 @@ export class SubmissionService
     return [...validatedNonArchived, ...archivedDtos];
   }
 
+  /**
+   * Returns all initialized submissions.
+   * Overrides base class to filter out submissions still being created.
+   */
+  public async findAll() {
+    const all = await super.findAll();
+    return all.filter((s) => s.isInitialized);
+  }
+
   private async populateMultiSubmission(type: SubmissionType) {
     const existing = await this.repository.findOne({
       where: (submission, { eq: equals, and }) =>
@@ -193,10 +221,16 @@ export class SubmissionService
   ): Promise<SubmissionEntity> {
     this.logger.withMetadata(createSubmissionDto).info('Creating Submission');
 
+    // Templates and multi-submissions are immediately initialized since they don't need file population
+    const isImmediatelyInitialized =
+      !!createSubmissionDto.isMultiSubmission ||
+      !!createSubmissionDto.isTemplate;
+
     let submission = new Submission<ISubmissionMetadata>({
       isScheduled: false,
       isMultiSubmission: !!createSubmissionDto.isMultiSubmission,
       isTemplate: !!createSubmissionDto.isTemplate,
+      isInitialized: isImmediatelyInitialized,
       ...createSubmissionDto,
       schedule: {
         scheduledFor: undefined,
@@ -296,8 +330,11 @@ export class SubmissionService
         }
       }
 
-      // Re-save to capture any mutations during population
-      await this.repository.update(submission.id, submission.toObject());
+      // Re-save to capture any mutations during population and mark as initialized
+      await this.repository.update(submission.id, {
+        ...submission.toObject(),
+        isInitialized: true,
+      });
       this.emit();
       return await this.findById(submission.id);
     } catch (err) {
@@ -644,6 +681,7 @@ export class SubmissionService
             schedule: entityToDuplicate.schedule,
             isMultiSubmission: entityToDuplicate.isMultiSubmission,
             isTemplate: entityToDuplicate.isTemplate,
+            isInitialized: false, // Will be set to true at the end of the transaction
             order: entityToDuplicate.order,
           })
           .returning()
@@ -744,11 +782,11 @@ export class SubmissionService
           newSubmission.metadata as FileSubmissionMetadata;
       }
 
-      // Save updated metadata
+      // Save updated metadata and mark as initialized
       await ctx
         .getDb()
         .update(SubmissionSchema)
-        .set({ metadata: newSubmission.metadata })
+        .set({ metadata: newSubmission.metadata, isInitialized: true })
         .where(eq(SubmissionSchema.id, newSubmission.id));
     });
 

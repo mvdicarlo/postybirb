@@ -1,6 +1,8 @@
 export { AccountPicker } from './account-picker';
 export type { AccountPickerProps } from './account-picker';
 export { BasicWebsiteSelect } from './basic-website-select/basic-website-select';
+export { CopyToClipboard } from './copy-to-clipboard';
+export type { CopyToClipboardProps } from './copy-to-clipboard';
 export { DescriptionEditor } from './description-editor';
 export type { DescriptionEditorProps } from './description-editor';
 export { MultiSchedulerModal } from './multi-scheduler-modal';

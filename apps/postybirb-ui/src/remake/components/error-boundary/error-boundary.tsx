@@ -11,14 +11,14 @@ import {
     Button,
     Code,
     Container,
-    CopyButton,
     ScrollArea,
     Stack,
     Text,
     Title,
 } from '@mantine/core';
-import { IconAlertTriangle, IconCopy, IconRefresh } from '@tabler/icons-react';
+import { IconAlertTriangle, IconRefresh } from '@tabler/icons-react';
 import { Component, ReactNode } from 'react';
+import { CopyToClipboard } from '../shared/copy-to-clipboard';
 
 /**
  * Copyable error details component
@@ -69,19 +69,7 @@ function CopyableErrorDetails({
           <Text size="xs" fw={500}>
             <Trans>Error</Trans>:
           </Text>
-          <CopyButton value={errorDetails} timeout={2000}>
-            {({ copied, copy }) => (
-              <Button
-                color={copied ? 'teal' : 'gray'}
-                onClick={copy}
-                leftSection={<IconCopy size={12} />}
-                size="xs"
-                variant="subtle"
-              >
-                {copied ? <Trans>Copied</Trans> : <Trans>Copy</Trans>}
-              </Button>
-            )}
-          </CopyButton>
+          <CopyToClipboard value={errorDetails} variant="button" size="xs" color="gray" />
         </Box>
 
         <ScrollArea.Autosize mah={120}>

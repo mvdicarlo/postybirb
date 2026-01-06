@@ -4,39 +4,66 @@ import { Trans } from '@lingui/react/macro';
 /* eslint-disable react-hooks/rules-of-hooks */
 import { BlockNoteEditor } from '@blocknote/core';
 import {
-    DefaultReactSuggestionItem,
-    createReactInlineContentSpec,
-    useBlockNoteEditor,
+  DefaultReactSuggestionItem,
+  createReactInlineContentSpec,
+  useBlockNoteEditor,
 } from '@blocknote/react';
 import {
-    Badge,
-    Box,
-    Button,
-    Checkbox,
-    Divider,
-    Group,
-    Popover,
-    Stack,
-    Text,
-    TextInput,
-    ThemeIcon,
-    Tooltip,
-    UnstyledButton,
+  Badge,
+  Box,
+  Button,
+  Checkbox,
+  Divider,
+  Group,
+  Popover,
+  Stack,
+  Text,
+  TextInput,
+  ThemeIcon,
+  Tooltip,
+  UnstyledButton,
 } from '@mantine/core';
 import { useDebouncedValue, useDisclosure } from '@mantine/hooks';
 import { UsernameShortcut } from '@postybirb/types';
 import {
-    IconChevronDown,
-    IconSearch,
-    IconUser,
-    IconWorld,
-    IconX,
+  IconChevronDown,
+  IconSearch,
+  IconUser,
+  IconWorld,
+  IconX,
 } from '@tabler/icons-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useWebsites } from '../../../../stores';
 import './shortcut.css';
 
 function getMyInlineNode(editor: BlockNoteEditor, id: string) {
+  // Search through all blocks to find the one containing our inline content
+  // (cursor position may not be reliable after clicking in popover)
+  const allBlocks = editor.document;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function findInBlocks(blocks: any[]): { inline: any; block: any } | null {
+    for (const block of blocks) {
+      if (Array.isArray(block?.content)) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const inline = block.content.find((i: any) => i?.props?.id === id);
+        if (inline) {
+          return { inline, block };
+        }
+      }
+      // Check nested children
+      if (Array.isArray(block?.children)) {
+        const found = findInBlocks(block.children);
+        if (found) return found;
+      }
+    }
+    return null;
+  }
+
+  const found = findInBlocks(allBlocks);
+  if (found) return found;
+
+  // Fallback to cursor position (for backwards compatibility)
   const currentBlock = editor.getTextCursorPosition().block;
   if (Array.isArray(currentBlock?.content)) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -281,24 +308,53 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
         );
       }, [websiteOptions, debouncedSearchTerm]);
 
-      // Selected website IDs
-      const selectedWebsiteIds = useMemo(() => {
+      // Local state for selected website IDs (synced with props)
+      const [selectedWebsiteIds, setSelectedWebsiteIds] = useState<string[]>(
+        () => {
+          const onlyProp = props.inlineContent.props.only as string;
+          return onlyProp ? onlyProp.split(',').filter(Boolean) : [];
+        },
+      );
+
+      // Sync local state when props change (e.g., from external updates)
+      useEffect(() => {
         const onlyProp = props.inlineContent.props.only as string;
-        return onlyProp ? onlyProp.split(',').filter(Boolean) : [];
+        const propsIds = onlyProp ? onlyProp.split(',').filter(Boolean) : [];
+        setSelectedWebsiteIds(propsIds);
       }, [props.inlineContent.props.only]);
 
       // Update selection helper
       const updateSelection = useCallback(
         (newOnlyValue: string) => {
+          // Update local state immediately for responsive UI
+          const newIds = newOnlyValue
+            ? newOnlyValue.split(',').filter(Boolean)
+            : [];
+          setSelectedWebsiteIds(newIds);
+
+          // Update the editor block
           const { inline, block } = getMyInlineNode(
             editor,
             props.inlineContent.props.id,
           );
 
-          if (inline) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (inline as Record<string, any>).props.only = newOnlyValue;
-            editor.updateBlock(block.id, { content: block.content });
+          if (inline && Array.isArray(block.content)) {
+            // Create a new content array with updated inline props to trigger onChange
+            const newContent = block.content.map((item: unknown) => {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const contentItem = item as Record<string, any>;
+              if (contentItem?.props?.id === props.inlineContent.props.id) {
+                return {
+                  ...contentItem,
+                  props: {
+                    ...contentItem.props,
+                    only: newOnlyValue,
+                  },
+                };
+              }
+              return item;
+            });
+            editor.updateBlock(block.id, { content: newContent });
           }
         },
         [editor, props.inlineContent.props.id],
@@ -417,7 +473,9 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
             </span>
             <Popover
               opened={opened}
-              onClose={close}
+              onChange={(isOpen) => {
+                if (!isOpen) close();
+              }}
               position="bottom-start"
               width={300}
               shadow="md"
@@ -488,7 +546,7 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
                         {selectedWebsiteIds.length === 0 ? (
                           <Trans>All</Trans>
                         ) : (
-                          `${selectedWebsiteIds.length}/${websites.length}`
+                          `${selectedWebsiteIds.length} / ${websites.length}`
                         )}
                       </Badge>
                     </Group>

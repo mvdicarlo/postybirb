@@ -142,7 +142,7 @@ export function SettingsDialog() {
         content: classes.modalContent,
         body: classes.modalBody,
       }}
-      zIndex={400}
+      zIndex="var(--z-modal-nested)"
     >
       <div className={classes.container}>
         {/* Sidebar Navigation */}

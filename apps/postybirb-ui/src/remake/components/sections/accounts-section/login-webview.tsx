@@ -134,7 +134,6 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
             backgroundOpacity={0.7}
             blur={2}
             center
-            zIndex={10}
           >
             <Loader size="lg" />
           </Overlay>

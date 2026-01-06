@@ -106,7 +106,7 @@ export function SaveDefaultsPopover() {
       close();
     } catch (error) {
       showSaveErrorNotification(
-        error instanceof Error ? error.message : undefined
+        error instanceof Error ? error.message : undefined,
       );
     } finally {
       setIsSaving(false);
@@ -137,8 +137,12 @@ export function SaveDefaultsPopover() {
 
   return (
     <Popover
+      trapFocus
+      returnFocus
       opened={opened}
-      onClose={close}
+      onChange={(isOpen) => {
+        if (!isOpen) close();
+      }}
       position="bottom-end"
       withArrow
       shadow="md"

@@ -24,7 +24,7 @@ export function AccountSectionHeader() {
       style={{
         position: 'sticky',
         top: 0,
-        zIndex: 10,
+        zIndex: 'var(--z-sticky)',
         backgroundColor: 'var(--mantine-color-body)',
         // eslint-disable-next-line lingui/no-unlocalized-strings
         borderBottom: '1px solid var(--mantine-color-default-border)',

@@ -5,15 +5,15 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-    ActionIcon,
-    Badge,
-    Box,
-    Checkbox,
-    Popover,
-    ScrollArea,
-    Stack,
-    Text,
-    Tooltip,
+  ActionIcon,
+  Badge,
+  Box,
+  Checkbox,
+  Popover,
+  ScrollArea,
+  Stack,
+  Text,
+  Tooltip,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { IconEye, IconEyeOff } from '@tabler/icons-react';
@@ -24,7 +24,6 @@ import { useAccountsFilter } from '../../../stores/ui/accounts-ui-store';
  * Popover component for toggling website visibility in the accounts list.
  */
 export function WebsiteVisibilityPicker() {
-  const [opened, { toggle, close }] = useDisclosure(false);
   const websites = useWebsites();
   const { hiddenWebsites, toggleWebsiteVisibility } = useAccountsFilter();
 
@@ -33,11 +32,11 @@ export function WebsiteVisibilityPicker() {
 
   return (
     <Popover
-      opened={opened}
-      onClose={close}
       position="bottom-end"
       width={250}
       shadow="md"
+      closeOnEscape
+      closeOnClickOutside
     >
       <Popover.Target>
         <Tooltip label={<Trans>Toggle website visibility</Trans>}>
@@ -46,7 +45,6 @@ export function WebsiteVisibilityPicker() {
               variant={hasHidden ? 'light' : 'subtle'}
               color={hasHidden ? 'yellow' : 'gray'}
               size="sm"
-              onClick={toggle}
               // eslint-disable-next-line lingui/no-unlocalized-strings
               aria-label="Toggle website visibility"
             >

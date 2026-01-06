@@ -5,7 +5,8 @@
 
 import type { EntityId } from '@postybirb/types';
 import { create } from 'zustand';
-import { useShallow } from 'zustand/react/shallow';
+import type { StoreApi } from 'zustand';
+import { useShallow } from 'zustand/shallow';
 import AppSocket from '../transports/websocket';
 import type { BaseRecord } from './records/base-record';
 
@@ -81,7 +82,11 @@ export function createEntityStore<TDto, TRecord extends BaseRecord>(
     lastLoadedAt: null,
   };
 
-  const store = create<EntityStore<TRecord>>((set, get) => ({
+  type StoreType = EntityStore<TRecord>;
+  type SetState = StoreApi<StoreType>['setState'];
+  type GetState = StoreApi<StoreType>['getState'];
+
+  const storeCreator = (set: SetState, get: GetState): StoreType => ({
     ...initialState,
 
     loadAll: async () => {
@@ -140,7 +145,9 @@ export function createEntityStore<TDto, TRecord extends BaseRecord>(
     clear: () => {
       set(initialState);
     },
-  }));
+  });
+
+  const store = create<StoreType>(storeCreator);
 
   // Subscribe to websocket events if event name is provided
   if (websocketEvent) {
@@ -171,8 +178,9 @@ export function createEntityStore<TDto, TRecord extends BaseRecord>(
  */
 export function useRecordsSelector<T extends BaseRecord>(
   store: ReturnType<typeof createEntityStore<unknown, T>>
-) {
-  return store((state) => state.records);
+): T[] {
+  type StoreState = EntityStore<T>;
+  return store((state: StoreState) => state.records);
 }
 
 /**
@@ -181,8 +189,9 @@ export function useRecordsSelector<T extends BaseRecord>(
 export function useLoadingStateSelector<T extends BaseRecord>(
   store: ReturnType<typeof createEntityStore<unknown, T>>
 ) {
+  type StoreState = EntityStore<T>;
   return store(
-    useShallow((state) => ({
+    useShallow((state: StoreState) => ({
       loadingState: state.loadingState,
       error: state.error,
       isLoading: state.loadingState === 'loading',

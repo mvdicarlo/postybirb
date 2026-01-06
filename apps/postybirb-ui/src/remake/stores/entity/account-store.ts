@@ -33,7 +33,10 @@ export const useAccountStore = createEntityStore<IAccountDto, AccountRecord>(
 /**
  * Type alias for the account store.
  */
-export type AccountStore = EntityStore<AccountRecord>;
+export type AccountStoreState = EntityStore<AccountRecord>;
+
+/** @deprecated Use AccountStoreState instead */
+export type AccountStore = AccountStoreState;
 
 // ============================================================================
 // Selector Hooks
@@ -43,21 +46,22 @@ export type AccountStore = EntityStore<AccountRecord>;
  * Select all accounts.
  * Uses useShallow for stable reference when items haven't changed.
  */
-export const useAccounts = () =>
-  useAccountStore(useShallow((state) => state.records));
+export const useAccounts = (): AccountRecord[] =>
+  useAccountStore(useShallow((state: AccountStoreState) => state.records));
 
 /**
  * Select accounts map for O(1) lookup.
  * Note: Map reference is stable from store, but consumers should use useShallow if deriving values.
  */
-export const useAccountsMap = () => useAccountStore((state) => state.recordsMap);
+export const useAccountsMap = () =>
+  useAccountStore((state: AccountStoreState) => state.recordsMap);
 
 /**
  * Select account loading state.
  */
 export const useAccountsLoading = () =>
   useAccountStore(
-    useShallow((state) => ({
+    useShallow((state: AccountStoreState) => ({
       loadingState: state.loadingState,
       error: state.error,
       isLoading: state.loadingState === 'loading',
@@ -69,15 +73,17 @@ export const useAccountsLoading = () =>
  * Select a specific account by ID.
  */
 export const useAccount = (id: AccountId) =>
-  useAccountStore((state) => state.recordsMap.get(id));
+  useAccountStore((state: AccountStoreState) => state.recordsMap.get(id));
 
 /**
  * Select only logged-in accounts.
  * Uses useShallow for stable reference when items haven't changed.
  */
-export const useLoggedInAccounts = () =>
+export const useLoggedInAccounts = (): AccountRecord[] =>
   useAccountStore(
-    useShallow((state) => state.records.filter((acc) => acc.isLoggedIn))
+    useShallow((state: AccountStoreState) =>
+      state.records.filter((acc) => acc.isLoggedIn)
+    )
   );
 
 /**
@@ -101,7 +107,7 @@ export const groupAccountsByWebsite = (
  */
 export const useAccountActions = () =>
   useAccountStore(
-    useShallow((state) => ({
+    useShallow((state: AccountStoreState) => ({
       loadAll: state.loadAll,
       setRecords: state.setRecords,
       getById: state.getById,

@@ -46,41 +46,41 @@ export type SettingsStore = EntityStore<SettingsRecord>;
  * Returns undefined if settings haven't been loaded yet.
  */
 export const useSettings = (): SettingsRecord | undefined =>
-  useSettingsStore((state) => state.records[0]);
+  useSettingsStore((state: SettingsStore) => state.records[0]);
 
 /**
  * Select the settings options directly.
  * Useful when you only need the settings values without the record wrapper.
  */
 export const useSettingsOptions = () =>
-  useSettingsStore((state) => state.records[0]?.settings);
+  useSettingsStore((state: SettingsStore) => state.records[0]?.settings);
 
 /**
  * Select specific settings values.
  */
 export const useLanguage = () =>
-  useSettingsStore((state) => state.records[0]?.language);
+  useSettingsStore((state: SettingsStore) => state.records[0]?.language);
 
 export const useQueuePaused = () =>
-  useSettingsStore((state) => state.records[0]?.queuePaused ?? false);
+  useSettingsStore((state: SettingsStore) => state.records[0]?.queuePaused ?? false);
 
 export const useHiddenWebsites = () =>
-  useSettingsStore((state) => state.records[0]?.hiddenWebsites ?? []);
+  useSettingsStore((state: SettingsStore) => state.records[0]?.hiddenWebsites ?? []);
 
 export const useAllowAd = () =>
-  useSettingsStore((state) => state.records[0]?.allowAd ?? true);
+  useSettingsStore((state: SettingsStore) => state.records[0]?.allowAd ?? true);
 
 export const useDesktopNotifications = () =>
-  useSettingsStore((state) => state.records[0]?.desktopNotifications);
+  useSettingsStore((state: SettingsStore) => state.records[0]?.desktopNotifications);
 
 export const useTagSearchProvider = () =>
-  useSettingsStore((state) => state.records[0]?.tagSearchProvider);
+  useSettingsStore((state: SettingsStore) => state.records[0]?.tagSearchProvider);
 
 /**
  * Select settings loading state.
  */
 export const useSettingsLoading = () =>
-  useSettingsStore((state) => ({
+  useSettingsStore((state: SettingsStore) => ({
     loadingState: state.loadingState,
     error: state.error,
     isLoading: state.loadingState === 'loading',
@@ -91,7 +91,7 @@ export const useSettingsLoading = () =>
  * Select settings actions.
  */
 export const useSettingsActions = () =>
-  useSettingsStore((state) => ({
+  useSettingsStore((state: SettingsStore) => ({
     loadAll: state.loadAll,
     clear: state.clear,
   }));

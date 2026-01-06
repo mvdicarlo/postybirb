@@ -5,7 +5,7 @@
 
 import { Trans } from '@lingui/react/macro';
 import { Group, Paper, Stack, Switch, Tabs, Text, Title } from '@mantine/core';
-import { DateTimePicker } from '@mantine/dates';
+import { DateTimePicker, DateValue } from '@mantine/dates';
 import { ISubmissionScheduleInfo, ScheduleType } from '@postybirb/types';
 import { IconCalendar, IconCalendarOff, IconRepeat } from '@tabler/icons-react';
 import { Cron } from 'croner';
@@ -109,9 +109,10 @@ export function ScheduleForm({
 
   // Handle date/time change for single schedule
   const handleDateTimeChange = useCallback(
-    (date: string | null) => {
+    (date: DateValue) => {
       if (!date) return;
-      const scheduledFor = new Date(date).toISOString();
+      // DateValue can be Date or string, convert to ISO string
+      const scheduledFor = date instanceof Date ? date.toISOString() : new Date(date).toISOString();
       const newSchedule: ISubmissionScheduleInfo = {
         ...internalSchedule,
         scheduledFor,
@@ -232,9 +233,6 @@ export function ScheduleForm({
                 value={scheduledDate}
                 onChange={handleDateTimeChange}
                 error={isDateInPast ? <Trans>Date is in the past</Trans> : null}
-                timePickerProps={{
-                  format: '12h',
-                }}
               />
               {scheduledDate && !isDateInPast && (
                 <Text size="xs" c="dimmed">

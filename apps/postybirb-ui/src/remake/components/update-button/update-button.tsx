@@ -5,15 +5,15 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-    Alert,
-    Box,
-    Kbd,
-    NavLink as MantineNavLink,
-    Popover,
-    Stack,
-    Text,
-    Title,
-    Tooltip,
+  Alert,
+  Box,
+  Kbd,
+  NavLink as MantineNavLink,
+  Popover,
+  Stack,
+  Text,
+  Title,
+  Tooltip,
 } from '@mantine/core';
 import { IconDeviceDesktopUp, IconDownload } from '@tabler/icons-react';
 import { useQuery } from 'react-query';

@@ -5,38 +5,38 @@
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
-    ActionIcon,
-    Badge,
-    Box,
-    Button,
-    Collapse,
-    Group,
-    Paper,
-    Popover,
-    Stack,
-    Text,
-    TextInput,
-    Tooltip,
-    UnstyledButton,
+  ActionIcon,
+  Badge,
+  Box,
+  Button,
+  Collapse,
+  Group,
+  Paper,
+  Popover,
+  Stack,
+  Text,
+  TextInput,
+  Tooltip,
+  UnstyledButton,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import {
-    IconChevronDown,
-    IconChevronRight,
-    IconLogin,
-    IconPlus,
-    IconRefresh,
-    IconTrash,
-    IconUser,
+  IconChevronDown,
+  IconChevronRight,
+  IconLogin,
+  IconPlus,
+  IconRefresh,
+  IconTrash,
+  IconUser,
 } from '@tabler/icons-react';
 import { useState } from 'react';
 import accountApi from '../../../api/account.api';
 import type { AccountRecord } from '../../../stores/records';
 import type { WebsiteRecord } from '../../../stores/records/website-record';
 import {
-    showCreateErrorNotification,
-    showCreatedNotification,
-    showUpdateErrorNotification,
+  showCreateErrorNotification,
+  showCreatedNotification,
+  showUpdateErrorNotification,
 } from '../../../utils/notifications';
 import { HoldToConfirmButton } from '../../hold-to-confirm';
 import { useAccountActions } from './hooks';
@@ -55,11 +55,7 @@ const MAX_ACCOUNT_NAME_LENGTH = 24;
  * Single account row within a website card.
  * Uses AccountsContext via useAccountActions hook.
  */
-function AccountRow({
-  account,
-}: {
-  account: AccountRecord;
-}) {
+function AccountRow({ account }: { account: AccountRecord }) {
   const {
     isSelected,
     handleSelect,
@@ -209,10 +205,14 @@ function AccountRow({
 
         {/* Reset button with confirmation popover */}
         <Popover
-          opened={resetPopoverOpened}
-          onClose={closeResetPopover}
-          position="left"
+          trapFocus
+          returnFocus
           withArrow
+          opened={resetPopoverOpened}
+          onChange={(opened) => {
+            if (!opened) closeResetPopover();
+          }}
+          position="right"
           shadow="md"
         >
           <Popover.Target>
@@ -331,11 +331,7 @@ export function WebsiteAccountCard({
             {website.displayName}
           </Text>
 
-          <Badge
-            size="xs"
-            variant="light"
-
-          >
+          <Badge size="xs" variant="light">
             {loggedInCount}/{totalCount}
           </Badge>
         </Group>
@@ -347,10 +343,7 @@ export function WebsiteAccountCard({
           {accounts.length === 0
             ? null
             : accounts.map((account) => (
-                <AccountRow
-                  key={account.id}
-                  account={account}
-                />
+                <AccountRow key={account.id} account={account} />
               ))}
 
           {/* Add account button with popover form */}

@@ -1,10 +1,10 @@
 import {
-  ISubmission,
-  ISubmissionDto,
-  ISubmissionMetadata,
-  ISubmissionScheduleInfo,
-  ScheduleType,
-  SubmissionType,
+    ISubmission,
+    ISubmissionDto,
+    ISubmissionMetadata,
+    ISubmissionScheduleInfo,
+    ScheduleType,
+    SubmissionType,
 } from '@postybirb/types';
 import { instanceToPlain, Type } from 'class-transformer';
 import { DatabaseEntity } from './database-entity';
@@ -32,6 +32,8 @@ export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
   isMultiSubmission = false;
 
   isArchived = false;
+
+  isInitialized = false;
 
   schedule: ISubmissionScheduleInfo = {
     scheduleType: ScheduleType.NONE,

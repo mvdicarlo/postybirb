@@ -85,7 +85,7 @@ export function PostyBirb() {
       defaultColorScheme="auto"
     >
       <I18nProvider>
-        <Notifications zIndex={5000} />
+        <Notifications zIndex="var(--z-notification)" />
         <Disclaimer>
           <AppContent />
         </Disclaimer>

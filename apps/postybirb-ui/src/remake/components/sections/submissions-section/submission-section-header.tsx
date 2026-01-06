@@ -91,7 +91,7 @@ export function SubmissionSectionHeader({
   // Popover state for message submission creation
   const [popoverOpened, popover] = useDisclosure(false);
   const [messageTitle, setMessageTitle] = useState('');
-  
+
   // Template picker modal state
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
 
@@ -251,7 +251,9 @@ export function SubmissionSectionHeader({
               // MESSAGE type: opens popover with title input
               <Popover
                 opened={popoverOpened}
-                onClose={popover.close}
+                onChange={(opened) => {
+                  if (!opened) popover.close();
+                }}
                 position="bottom-end"
                 withArrow
               >

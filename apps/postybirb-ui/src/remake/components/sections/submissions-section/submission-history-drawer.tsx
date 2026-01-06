@@ -8,7 +8,6 @@ import {
     Accordion,
     Badge,
     Button,
-    CopyButton,
     Drawer,
     Group,
     ScrollArea,
@@ -25,7 +24,6 @@ import {
 } from '@postybirb/types';
 import {
     IconCheck,
-    IconCopy,
     IconDeviceFloppy,
     IconExternalLink,
     IconHistory,
@@ -40,6 +38,7 @@ import {
     SubmissionRecord,
     useAccountsMap,
 } from '../../../stores';
+import { CopyToClipboard } from '../../shared/copy-to-clipboard';
 import { ExternalLink } from '../../shared/external-link';
 
 interface SubmissionHistoryDrawerProps {
@@ -210,18 +209,7 @@ function PostDetailsPanel({
           <Accordion.Panel>
             <Stack>
               <Group justify="flex-end">
-                <CopyButton value={formattedJson} timeout={2000}>
-                  {({ copied, copy }) => (
-                    <Button
-                      color={copied ? 'teal' : 'blue'}
-                      onClick={copy}
-                      leftSection={<IconCopy size={16} />}
-                      size="xs"
-                    >
-                      {copied ? <Trans>Copied!</Trans> : <Trans>Copy</Trans>}
-                    </Button>
-                  )}
-                </CopyButton>
+                <CopyToClipboard value={formattedJson} variant="button" size="xs" color="blue" />
                 <Button
                   onClick={handleSaveToFile}
                   leftSection={<IconDeviceFloppy size={16} />}

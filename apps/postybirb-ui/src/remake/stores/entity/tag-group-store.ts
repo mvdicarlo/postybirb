@@ -48,5 +48,7 @@ export type TagGroupStore = EntityStore<TagGroupRecord>;
  * Select non-empty tag groups.
  * Uses shallow comparison to prevent unnecessary re-renders.
  */
-export const useNonEmptyTagGroups = () =>
-  useTagGroupStore(useShallow((state) => state.records.filter((g) => !g.isEmpty)));
+export const useNonEmptyTagGroups = (): TagGroupRecord[] =>
+  useTagGroupStore(
+    useShallow((state: TagGroupStore) => state.records.filter((g) => !g.isEmpty))
+  );
