@@ -12,10 +12,6 @@ describe('LegacyTagGroupConverter', () => {
   let repository: PostyBirbDatabase<'TagGroupSchema'>;
   const ts = Date.now();
 
-  beforeAll(() => {
-    PostyBirbDirectories.initializeDirectories();
-  });
-
   beforeEach(async () => {
     clearDatabase();
 

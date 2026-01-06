@@ -25,7 +25,6 @@ export function getDatabase() {
           PostyBirbDirectories.DATA_DIRECTORY,
           `database-${process.env.POSTYBIRB_ENV}.sqlite`,
         );
-    PostyBirbDirectories.initializeDirectories();
     db = drizzle(path, { schema });
     migrate(db, { migrationsFolder });
   }

@@ -1,6 +1,6 @@
 import { rmSync } from 'fs';
 import { join } from 'path';
-import { initializeDirectories, POSTYBIRB_DIRECTORY } from './directories';
+import { POSTYBIRB_DIRECTORY } from './directories';
 import {
   readJsonSync,
   readSync,
@@ -10,8 +10,6 @@ import {
 } from './fs';
 
 let filepath: string;
-
-initializeDirectories();
 
 beforeEach(() => {
   filepath = join(POSTYBIRB_DIRECTORY, `${Date.now()}.test.txt`);

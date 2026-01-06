@@ -12,10 +12,6 @@ describe('LegacyTagConverterConverter', () => {
   let repository: PostyBirbDatabase<'TagConverterSchema'>;
   const ts = Date.now();
 
-  beforeAll(() => {
-    PostyBirbDirectories.initializeDirectories();
-  });
-
   beforeEach(async () => {
     clearDatabase();
 

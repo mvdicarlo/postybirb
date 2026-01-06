@@ -1,18 +1,16 @@
 import {
-    ClassSerializerInterceptor,
-    INestApplication,
-    Logger,
-    PlainLiteralObject,
-    ValidationPipe,
+  ClassSerializerInterceptor,
+  INestApplication,
+  Logger,
+  PlainLiteralObject,
+  ValidationPipe,
 } from '@nestjs/common';
 import { ClassTransformOptions } from '@nestjs/common/interfaces/external/class-transform-options.interface';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { PostyBirbDirectories } from '@postybirb/fs';
 import {
-    ensureRemoteConfigExists,
-    IsTestEnvironment,
-    PostyBirbEnvConfig,
+  IsTestEnvironment,
+  PostyBirbEnvConfig
 } from '@postybirb/utils/electron';
 import compression from 'compression';
 import sharp from 'sharp';
@@ -86,8 +84,6 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
-  PostyBirbDirectories.initializeDirectories();
-  ensureRemoteConfigExists();
   sharp.cache({ files: 0 });
 
   const { port } = PostyBirbEnvConfig;
