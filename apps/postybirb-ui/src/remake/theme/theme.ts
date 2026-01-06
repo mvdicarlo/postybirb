@@ -1,17 +1,17 @@
 import type { MantineThemeOverride } from '@mantine/core';
 import {
-    Card,
-    Container,
-    createTheme,
-    LoadingOverlay,
-    Modal,
-    Overlay,
-    Paper,
-    Popover,
-    rem,
-    ScrollArea,
-    Select,
-    Tooltip,
+  Card,
+  Container,
+  createTheme,
+  LoadingOverlay,
+  Modal,
+  Overlay,
+  Paper,
+  Popover,
+  rem,
+  ScrollArea,
+  Select,
+  Tooltip,
 } from '@mantine/core';
 import type { MantinePrimaryColor } from '../stores/ui/appearance-store';
 
