@@ -62,7 +62,7 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
     debounce(() => {
       accountApi.refreshLogin(accountId);
     }, 500),
-    [accountId, isLoggedIn],
+    [accountId],
   );
 
   // Manual login check handler
