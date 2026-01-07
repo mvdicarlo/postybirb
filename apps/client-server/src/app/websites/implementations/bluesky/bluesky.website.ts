@@ -45,15 +45,9 @@ import { Website } from '../../website';
 import { BlueskyFileSubmission } from './models/bluesky-file-submission';
 import { BlueskyMessageSubmission } from './models/bluesky-message-submission';
 
-@WebsiteMetadata({
-  name: 'bluesky',
-  displayName: 'BlueSky',
-})
+@WebsiteMetadata({ name: 'bluesky', displayName: 'BlueSky' })
 @CustomLoginFlow()
-@SupportsUsernameShortcut({
-  id: 'bluesky',
-  url: 'https://bsly.app/profile/$1',
-})
+@SupportsUsernameShortcut({ id: 'bluesky', url: 'https://bsly.app/profile/$1' })
 @SupportsFiles({
   acceptedMimeTypes: [
     'image/png',
@@ -87,12 +81,9 @@ export default class Bluesky
   readonly MAX_CHARS = 300;
 
   public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<BlueskyAccountData> =
-    {
-      username: true,
-      password: true,
-    };
+    { username: true, password: true };
 
-  private agent = new AtpAgent({ service: 'https://bsky.social' });
+  private agent?: AtpAgent;
 
   private getLoggedInAgent(): AtpAgent {
     if (!this.agent.hasSession) throw new Error('Not logged in');
@@ -100,7 +91,11 @@ export default class Bluesky
   }
 
   public async onLogin(): Promise<ILoginState> {
-    const { username, password } = this.websiteDataStore.getData();
+    const { username, password, serviceUrl } = this.websiteDataStore.getData();
+
+    if (!username || !password) return this.loginState.logout();
+
+    this.agent = new AtpAgent({ service: serviceUrl ?? 'https://bsky.social' });
 
     return this.agent
       .login({ identifier: username, password })
@@ -201,9 +196,8 @@ export default class Bluesky
       // Generate a friendly URL
       const { handle } = profile.data;
 
-      // Can't use the agent because it does not allows going to the bsky.social
-      // urls in browser, but this might change later: agent.serviceUrl.hostname;
-      const hostname = 'bsky.app';
+      const hostname = this.getWebsiteData().appViewUrl ?? 'https://bsky.app';
+
       const postId = postResult.uri.slice(postResult.uri.lastIndexOf('/') + 1);
 
       const friendlyUrl = `https://${hostname}/profile/${handle}/post/${postId}`;
@@ -314,10 +308,7 @@ export default class Bluesky
     if (rt.graphemeLength > this.MAX_CHARS) {
       validator.error(
         'validation.description.max-length',
-        {
-          maxLength: this.MAX_CHARS,
-          currentLength: rt.graphemeLength,
-        },
+        { maxLength: this.MAX_CHARS, currentLength: rt.graphemeLength },
         'description',
       );
     }
@@ -453,10 +444,7 @@ export default class Bluesky
         });
       }
 
-      return {
-        images: uploadedImages,
-        $type: 'app.bsky.embed.images',
-      };
+      return { images: uploadedImages, $type: 'app.bsky.embed.images' };
     }
 
     for (const file of files) {
@@ -470,11 +458,7 @@ export default class Bluesky
         const altText = file.metadata.altText || '';
         this.checkVideoUploadLimits(agent);
         const ref = await this.uploadVideo(agent, file);
-        return {
-          video: ref,
-          alt: altText,
-          $type: 'app.bsky.embed.video',
-        };
+        return { video: ref, alt: altText, $type: 'app.bsky.embed.video' };
       }
     }
 
@@ -496,6 +480,11 @@ export default class Bluesky
 
     throw new Error('Failed to upload image');
   }
+
+  // EDIT: https://docs.bsky.app/docs/tutorials/video#recommended-method
+  // Its recommeneded by bsky to go this way
+  // The way it works is simple, you get token from pds and then pass it to 3th party service
+  // That compresses video and uploads it to said pds for you while you are quering status
 
   // There's video methods in the API, but they are utterly non-functional in
   // many ways: wrong lexicon entries and overeager validation thereof that
@@ -548,7 +537,7 @@ export default class Bluesky
     const url = `https://video.bsky.app/xrpc/app.bsky.video.uploadVideo?did=${did}&name=${name}`;
     const req: RequestInit = {
       method: 'POST',
-      body: file.buffer,
+      body: file.buffer as BodyInit,
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': file.mimeType,
@@ -653,7 +642,11 @@ export default class Bluesky
   ): Promise<string> {
     this.logger.debug(`Get auth token for ${aud}::${lxm}`);
     const auth = await agent.com.atproto.server
-      .getServiceAuth({ aud, lxm })
+      .getServiceAuth({
+        aud,
+        lxm,
+        exp: Date.now() / 1000 + 60 * 5, // 5 minutes
+      })
       .catch((err) => {
         this.logger.error(err);
         throw new Error(`Auth for ${aud}::${lxm} failed`, { cause: err });

@@ -54,11 +54,14 @@ jobs:
       - name: Install Node.js and Yarn
         uses: actions/setup-node@v4
         with:
+          node-version: '22'
           cache: yarn
 
         # These flags needed to speed up ci
       - name: Install dependencies
         run: yarn install --immutable
+        env:
+          CYPRESS_INSTALL_BINARY: 0  # Skip downloading Cypress binary (not needed for CI)
 
         # Used to calculate affected
       - name: Setup SHAs

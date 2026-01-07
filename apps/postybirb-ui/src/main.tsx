@@ -1,18 +1,18 @@
 import { RemoteConfig } from '@postybirb/utils/electron';
 import { createRoot } from 'react-dom/client';
-import { RouterProvider } from 'react-router-dom';
-import App from './app/app';
-import { CreateRouter } from './pages/routes';
+import { initializeAppInsightsUI } from './app-insights-ui';
+import { PostyBirb } from './remake';
 import './styles.css';
 
+// Initialize Application Insights for UI error tracking
+initializeAppInsightsUI();
+
 function Root() {
-  return <App />;
+  return <PostyBirb />;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-createRoot(document.getElementById('root')!).render(
-  <RouterProvider router={CreateRouter(<Root />)} />,
-);
+createRoot(document.getElementById('root')!).render(<Root />);
 
 declare global {
   interface Window {

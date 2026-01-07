@@ -67,29 +67,18 @@ type CustomInlineContentSchema = DefaultInlineContentSchema & {
 };
 
 type DefaultBlock = BlockSpec<
+  'defaultShortcut',
   {
-    type: 'default';
-    content: 'inline';
-    propSchema: never;
+    default: {
+      default: undefined;
+      type: 'string';
+    };
   },
-  any,
-  any,
-  any
->;
-
-type HrBlock = BlockSpec<
-  {
-    type: 'hr';
-    content: 'inline';
-    propSchema: never;
-  },
-  any,
-  any,
-  any
+  'none'
 >;
 
 type CustomBlockContentSchema = DefaultBlockSchema &
-  BlockSchemaFromSpecs<{ default: DefaultBlock; hr: HrBlock }>;
+  BlockSchemaFromSpecs<{ defaultShortcut: DefaultBlock }>;
 
 export type Description = Block<
   CustomBlockContentSchema,

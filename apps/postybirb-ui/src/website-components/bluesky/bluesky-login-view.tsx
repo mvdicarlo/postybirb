@@ -1,12 +1,23 @@
-import { Trans } from "@lingui/react/macro";
-import { Box, Button, Stack, Text, TextInput } from '@mantine/core';
+import { Trans } from '@lingui/react/macro';
+import {
+  Alert,
+  Box,
+  Button,
+  Group,
+  Stack,
+  Switch,
+  Text,
+  TextInput,
+} from '@mantine/core';
 import { BlueskyAccountData, BlueskyOAuthRoutes } from '@postybirb/types';
+import { IconAlertCircle, IconInfoCircle } from '@tabler/icons-react';
 import { useState } from 'react';
 import websitesApi from '../../api/websites.api';
 import { ExternalLink } from '../../components/external-link/external-link';
 import { LoginComponentProps } from '../../models/login-component-props';
+import { CommonTranslations } from '../../translations/common-translations';
 import {
-  createLoginHttpErrorHander,
+  createLoginHttpErrorHandler,
   notifyLoginFailed,
   notifyLoginSuccess,
 } from '../website-login-helpers';
@@ -16,6 +27,16 @@ const formId = 'bluesky-login-form';
 // Source: https://atproto.com/specs/handle
 const usernameRegexp =
   /^([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$/;
+
+function safeUrlParse(url: string) {
+  try {
+    return new URL(url);
+  } catch (e) {
+    // eslint-disable-next-line lingui/no-unlocalized-strings, no-console
+    console.error('bsky login page custom url parse error', e);
+    return undefined;
+  }
+}
 
 export default function BlueskyLoginView(
   props: LoginComponentProps<BlueskyAccountData>,
@@ -27,6 +48,10 @@ export default function BlueskyLoginView(
   const [isSubmitting, setSubmitting] = useState<boolean>(false);
   const isUsingEmail = username.includes('@') && !username.startsWith('@');
 
+  const [isUsingCustomOrAppViewPds, setIsUsingCustomPdsOrAppView] =
+    useState<boolean>(!!data?.serviceUrl || !!data?.appViewUrl);
+  const [customPds, setCustomPds] = useState(data?.serviceUrl ?? '');
+  const [appViewUrl, setAppViewUrl] = useState(data?.appViewUrl ?? '');
   return (
     <form
       id={formId}
@@ -35,8 +60,10 @@ export default function BlueskyLoginView(
         setSubmitting(true);
         websitesApi
           .performOAuthStep<BlueskyOAuthRoutes>(id, 'login', {
-            username,
-            password,
+            username: username.trim().replace(/^@/, ''),
+            password: password.trim(),
+            serviceUrl: customPds || undefined, // Don't pass empty string
+            appViewUrl: appViewUrl || undefined,
           })
           .then(({ result }) => {
             if (result) {
@@ -51,87 +78,178 @@ export default function BlueskyLoginView(
               );
             }
           })
-          .catch(createLoginHttpErrorHander())
+          .catch(createLoginHttpErrorHandler())
           .finally(() => {
             setSubmitting(false);
           });
       }}
     >
-      <Stack>
-        <TextInput
-          label={<Trans>Username or email</Trans>}
-          name="username"
-          description={
-            <>
-              <Text inherit>
+      <Stack gap="md">
+        <Alert icon={<IconInfoCircle size={16} />} color="blue" variant="light">
+          <Text size="sm">
+            <Trans>
+              Use your Bluesky handle or email along with an app password. App
+              passwords are more secure than your main password and can be
+              revoked at any time.
+            </Trans>
+          </Text>
+        </Alert>
+
+        <Switch
+          checked={isUsingCustomOrAppViewPds}
+          onChange={(v) => setIsUsingCustomPdsOrAppView(v.target.checked)}
+          label={<Trans>Custom PDS or AppView</Trans>}
+        />
+
+        {isUsingCustomOrAppViewPds && (
+          <TextInput
+            label={<Trans>PDS (Personal Data Server)</Trans>}
+            name="pds"
+            placeholder="https://bsky.social"
+            description={
+              <Text size="xs" c="dimmed">
+                <Trans>If you are using pds other then bsky.social</Trans>
+              </Text>
+            }
+            minLength={1}
+            value={customPds}
+            error={
+              customPds &&
+              !safeUrlParse(customPds) && (
+                <Group gap="xs">
+                  <IconAlertCircle size={14} />
+                  <Text size="xs">
+                    <Trans comment="Bluesky login form">
+                      Invalid url. Format should be{' '}
+                      <code>https://bsky.social/</code>
+                    </Trans>
+                  </Text>
+                </Group>
+              )
+            }
+            onChange={(event) => {
+              let url = event.currentTarget.value;
+              if (!customPds && !url.includes(':')) url = `https://${url}`;
+              setCustomPds(url === 'https://bsky.social/' ? '' : url);
+            }}
+          />
+        )}
+
+        {isUsingCustomOrAppViewPds && (
+          <TextInput
+            label={<Trans>App view URL</Trans>}
+            name="appView"
+            placeholder="https://bsky.app"
+            description={
+              <Text size="xs" c="dimmed">
                 <Trans>
-                  Your handle - for example yourname.bsky.social or username.ext
+                  Used for other sites (like e621) as source url base.
+                  Independent from custom pds.
                 </Trans>
               </Text>
-              <strong>
+            }
+            minLength={1}
+            value={appViewUrl}
+            error={
+              appViewUrl &&
+              !safeUrlParse(appViewUrl) && (
+                <Group gap="xs">
+                  <IconAlertCircle size={14} />
+                  <Text size="xs">
+                    <Trans comment="Bluesky login form">
+                      Invalid url. Format should be{' '}
+                      <code>https://bsky.app/</code>
+                    </Trans>
+                  </Text>
+                </Group>
+              )
+            }
+            onChange={(event) => {
+              let url = event.currentTarget.value;
+              if (!appViewUrl && !url.includes(':')) url = `https://${url}`;
+              setAppViewUrl(url === 'https://bsky.app/' ? '' : url);
+            }}
+          />
+        )}
+
+        <TextInput
+          label={<Trans>Username or Email</Trans>}
+          name="username"
+          placeholder="yourname.bsky.social"
+          description={
+            <>
+              <Text size="xs" c="dimmed">
                 <Trans>
-                  If handle does not work, try using email linked to your
-                  account instead
+                  Your handle (e.g. <code>yourname.bsky.social</code>) or custom
+                  domain (e.g. <code>username.ext</code>)
                 </Trans>
-              </strong>
+              </Text>
+              <Text size="xs" c="dimmed" mt={4}>
+                <Trans>
+                  <strong>Tip:</strong> If your handle doesn't work, try using
+                  the email linked to your account
+                </Trans>
+              </Text>
             </>
           }
           required
           minLength={1}
-          defaultValue={username}
+          value={username}
           error={
             username &&
             !isUsingEmail &&
             !usernameRegexp.test(username) && (
-              <Trans comment="Bluesky login form">
-                Be sure that the username is in the format handle.bsky.social.
-                If you are using custom domain, make sure to include full
-                username, e.g. domain.ext, handle.domain.ext
-              </Trans>
+              <Group gap="xs">
+                <IconAlertCircle size={14} />
+                <Text size="xs">
+                  <Trans comment="Bluesky login form">
+                    Format should be <code>handle.bsky.social</code> or{' '}
+                    <code>domain.ext</code> for custom domains
+                  </Trans>
+                </Text>
+              </Group>
             )
           }
-          onBlur={(event) => {
-            // Remove spaces and leading @
-            setUsername(event.currentTarget.value.trim().replace(/^@/, ''));
+          onChange={(event) => {
+            setUsername(event.currentTarget.value);
           }}
         />
+
         <TextInput
-          label={<Trans>Password</Trans>}
+          label={<Trans>App Password</Trans>}
           name="password"
+          type="password"
+          placeholder="xxxx-xxxx-xxxx-xxxx"
           description={
-            <Trans comment="Bluesky login form">
-              An <strong>app</strong> password - you can get one of these in{' '}
+            <>
+              <Text size="xs" c="dimmed">
+                <Trans comment="Bluesky login form">
+                  An <strong>app password</strong> (not your main password)
+                </Trans>
+              </Text>
               <ExternalLink href="https://bsky.app/settings/app-passwords">
-                Settings
+                <Trans>Create an app password in Bluesky Settings</Trans>
               </ExternalLink>
-            </Trans>
+            </>
           }
           required
           minLength={1}
-          defaultValue={password}
-          error={
-            password &&
-            !/^([a-z0-9]{4}-){3}[a-z0-9]{4}$/.test(password) && (
-              <Trans comment="Bluesky login form">
-                This doesn't look like an app password. You need to use an{' '}
-                <em>app</em> password, <strong>not</strong> your account
-                password! You can generate an app password in the Bluesky
-                settings under the Advanced section.
-              </Trans>
-            )
-          }
-          onBlur={(event) => {
-            setPassword(event.currentTarget.value.trim());
+          value={password}
+          error={password && !/^([a-z0-9]{4}-){3}[a-z0-9]{4}$/.test(password)}
+          onChange={(event) => {
+            setPassword(event.currentTarget.value);
           }}
         />
-        <Box>
+
+        <Box mt="md">
           <Button
             type="submit"
             form={formId}
             loading={isSubmitting}
             disabled={!username || !password}
+            fullWidth
           >
-            <Trans>Save</Trans>
+            <CommonTranslations.Save />
           </Button>
         </Box>
       </Stack>

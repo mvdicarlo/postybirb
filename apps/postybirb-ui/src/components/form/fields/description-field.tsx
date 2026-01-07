@@ -1,4 +1,4 @@
-import { Trans } from "@lingui/react/macro";
+import { Trans } from '@lingui/react/macro';
 import { Box, Checkbox } from '@mantine/core';
 import { DescriptionFieldType } from '@postybirb/form-builder';
 import { DefaultDescriptionValue, DescriptionValue } from '@postybirb/types';

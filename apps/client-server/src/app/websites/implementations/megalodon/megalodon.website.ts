@@ -1,15 +1,15 @@
 import {
-    FileType,
-    ILoginState,
-    ImageResizeProps,
-    ISubmissionFile,
-    MegalodonAccountData,
-    MegalodonOAuthRoutes,
-    OAuthRouteHandlers,
-    PostData,
-    PostResponse,
-    SimpleValidationResult,
-    SubmissionRating,
+  FileType,
+  ILoginState,
+  ImageResizeProps,
+  ISubmissionFile,
+  MegalodonAccountData,
+  MegalodonOAuthRoutes,
+  OAuthRouteHandlers,
+  PostData,
+  PostResponse,
+  SimpleValidationResult,
+  SubmissionRating,
 } from '@postybirb/types';
 import { detector, Entity } from 'megalodon';
 import { Readable } from 'stream';
@@ -21,8 +21,8 @@ import { MessageWebsite } from '../../models/website-modifiers/message-website';
 import { OAuthWebsite } from '../../models/website-modifiers/oauth-website';
 import { Website } from '../../website';
 import {
-    FediverseInstanceTypes,
-    MegalodonApiService,
+  FediverseInstanceTypes,
+  MegalodonApiService,
 } from './megalodon-api-service';
 import { MegalodonFileSubmission } from './models/megalodon-file-submission';
 import { MegalodonMessageSubmission } from './models/megalodon-message-submission';
@@ -134,7 +134,9 @@ export abstract class MegalodonWebsite
         const normalizedUrl = this.normalizeInstanceUrl(instanceUrl);
 
         // Register app with the instance
-        const instanceType = await this.getInstanceType(instanceUrl);
+        const instanceType = await this.getInstanceType(
+          `https://${instanceUrl}`,
+        );
         const appData = await MegalodonApiService.registerApp(
           normalizedUrl,
           instanceType,
@@ -325,10 +327,7 @@ export abstract class MegalodonWebsite
       // Mastodon-specific media attachment limits (if available)
       // Type assertion needed as not all platforms include media_attachments
       const config = instance.configuration as {
-        statuses?: {
-          max_characters?: number;
-          max_media_attachments?: number;
-        };
+        statuses?: { max_characters?: number; max_media_attachments?: number };
         media_attachments?: {
           image_size_limit?: number;
           video_size_limit?: number;
@@ -523,7 +522,7 @@ export abstract class MegalodonWebsite
         // combined-stream checks for stream-like objects using isStreamLike
         // Create a Readable stream from the buffer
         const stream = Readable.from(file.buffer);
-        
+
         // Add metadata properties that form-data looks for when creating the Content-Disposition header
         // These properties are checked by form-data to set filename and content-type
         Object.assign(stream, {
@@ -651,10 +650,7 @@ export abstract class MegalodonWebsite
     if (descLength > maxLength) {
       validator.error(
         'validation.description.max-length',
-        {
-          currentLength: descLength,
-          maxLength,
-        },
+        { currentLength: descLength, maxLength },
         'description',
       );
     }
@@ -673,10 +669,7 @@ export abstract class MegalodonWebsite
     if (descLength > maxLength) {
       validator.error(
         'validation.description.max-length',
-        {
-          currentLength: descLength,
-          maxLength,
-        },
+        { currentLength: descLength, maxLength },
         'description',
       );
     }

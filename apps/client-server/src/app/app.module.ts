@@ -4,6 +4,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { AccountModule } from './account/account.module';
+import { AppInsightsModule } from './app-insights/app-insights.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CustomShortcutsModule } from './custom-shortcuts/custom-shortcuts.module';
@@ -11,6 +12,7 @@ import { DirectoryWatchersModule } from './directory-watchers/directory-watchers
 import { FileConverterModule } from './file-converter/file-converter.module';
 import { FileModule } from './file/file.module';
 import { FormGeneratorModule } from './form-generator/form-generator.module';
+import { LegacyDatabaseImporterModule } from './legacy-database-importer/legacy-database-importer.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { PostParsersModule } from './post-parsers/post-parsers.module';
 import { PostModule } from './post/post.module';
@@ -30,6 +32,7 @@ import { WebsitesModule } from './websites/websites.module';
 
 @Module({
   imports: [
+    AppInsightsModule,
     ScheduleModule.forRoot(),
     AccountModule,
     WebSocketModule,
@@ -56,6 +59,7 @@ import { WebsitesModule } from './websites/websites.module';
     NotificationsModule,
     RemoteModule,
     CustomShortcutsModule,
+    LegacyDatabaseImporterModule,
   ],
   controllers: [AppController],
   providers: [AppService],

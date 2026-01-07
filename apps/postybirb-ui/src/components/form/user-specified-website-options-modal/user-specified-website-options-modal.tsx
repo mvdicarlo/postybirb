@@ -5,6 +5,7 @@ import { FormBuilderMetadata } from '@postybirb/form-builder';
 import { AccountId, DynamicObject, SubmissionType } from '@postybirb/types';
 import { useState } from 'react';
 import userSpecifiedWebsiteOptionsApi from '../../../api/user-specified-website-options.api';
+import { CommonTranslations } from '../../../translations/common-translations';
 import { getTranslatedLabel } from '../fields/field-label';
 
 type UserSpecifiedWebsiteOptionsSaveModalProps = {
@@ -67,34 +68,20 @@ export function UserSpecifiedWebsiteOptionsSaveModal(
             });
 
             userSpecifiedWebsiteOptionsApi
-              .create({
-                accountId,
-                type,
-                options: copy,
-              })
+              .create({ accountId, type, options: copy })
               .then(() => {
-                notifications.show({
-                  message: (
-                    <Trans context="default-options-saved">
-                      Defaults saved
-                    </Trans>
-                  ),
-                });
+                notifications.show({ message: <Trans>Success</Trans> });
                 onClose();
               })
               .catch((err) => {
-                notifications.show({
-                  title: <Trans>Failed to save defaults</Trans>,
-                  message: err.message,
-                  color: 'red',
-                });
+                notifications.show({ message: err.message, color: 'red' });
               })
               .finally(() => {
                 setIsSaving(false);
               });
           }}
         >
-          <Trans>Save</Trans>
+          <CommonTranslations.Save />
         </Button>
       </Stack>
     </Modal>

@@ -1,4 +1,3 @@
-import { Trans } from "@lingui/react/macro";
 import {
   Box,
   CloseButton,
@@ -29,7 +28,9 @@ type WebsiteLoginPanelProps = {
 function LoginPanel(props: Omit<WebsiteLoginPanelProps, 'onClose'>) {
   const { account, website } = props;
 
-  let loginMethod: JSX.Element = <Trans>No login component found.</Trans>;
+  // Fine to be untranslated, this is a bug if it appears
+  // eslint-disable-next-line lingui/no-unlocalized-strings
+  let loginMethod: JSX.Element = <span>No login component found.</span>;
 
   if (website.loginType.type === 'user') {
     loginMethod = (
@@ -72,15 +73,9 @@ export function WebsiteLoginPanel(props: WebsiteLoginPanelProps) {
   useEffect(
     () => () => {
       if (localStorage.getItem(REMOTE_HOST_KEY)?.length) {
-        remoteApi
-          .setCookies(account.id)
-          .then(() => {
-            accountApi.refreshLogin(account.id);
-          })
-          .catch((error) => {
-            // eslint-disable-next-line lingui/no-unlocalized-strings, no-console
-            console.error('Failed to set cookies for remote:', error);
-          });
+        remoteApi.setCookies(account.id).then(() => {
+          accountApi.refreshLogin(account.id);
+        });
       } else {
         accountApi.refreshLogin(account.id);
       }

@@ -1,0 +1,21 @@
+.postybirb__language_picker_header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.postybirb__language_picker_badge {
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.postybirb__language_picker_code {
+  font-size: var(--mantine-font-size-xs);
+  color: var(--mantine-color-dimmed);
+  font-family: var(--mantine-font-family-monospace);
+}
+
+.postybirb__language_picker_item--selected {
+  background-color: var(--mantine-color-blue-light);
+}

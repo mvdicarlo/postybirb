@@ -1,35 +1,35 @@
 import { Trans } from "@lingui/react/macro";
 import {
-  Alert,
-  Button,
-  Group,
-  Paper,
-  PasswordInput,
-  Stack,
-  Stepper,
-  Text,
-  TextInput,
-  Title,
+    Alert,
+    Button,
+    Group,
+    Paper,
+    PasswordInput,
+    Stack,
+    Stepper,
+    Text,
+    TextInput,
+    Title,
 } from '@mantine/core';
 import { TwitterAccountData, TwitterOAuthRoutes } from '@postybirb/types';
 import {
-  IconArrowLeft,
-  IconCheck,
-  IconExternalLink,
-  IconKey,
-  IconRefresh,
+    IconArrowLeft,
+    IconCheck,
+    IconExternalLink,
+    IconKey,
+    IconRefresh,
 } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 import websitesApi from '../../api/websites.api';
 import {
-  ExternalLink,
-  openLink,
+    ExternalLink,
+    openLink,
 } from '../../components/external-link/external-link';
 import { LoginComponentProps } from '../../models/login-component-props';
 import {
-  createLoginHttpErrorHander,
-  notifyLoginFailed,
-  notifyLoginSuccess,
+    createLoginHttpErrorHandler,
+    notifyLoginFailed,
+    notifyLoginSuccess,
 } from '../website-login-helpers';
 
 const formId = 'twitter-login-form';
@@ -202,7 +202,7 @@ export default function TwitterLoginView(
                         );
                       })
                       .catch(
-                        createLoginHttpErrorHander(
+                        createLoginHttpErrorHandler(
                           <Trans>Failed to store API keys</Trans>,
                         ),
                       )
@@ -269,7 +269,7 @@ export default function TwitterLoginView(
                         }
                       })
                       .catch(
-                        createLoginHttpErrorHander(
+                        createLoginHttpErrorHandler(
                           <Trans>Failed to generate authorization URL</Trans>,
                         ),
                       )
@@ -351,7 +351,7 @@ export default function TwitterLoginView(
                         }
                       })
                       .catch(
-                        createLoginHttpErrorHander(
+                        createLoginHttpErrorHandler(
                           <Trans>Failed to complete authorization</Trans>,
                         ),
                       )

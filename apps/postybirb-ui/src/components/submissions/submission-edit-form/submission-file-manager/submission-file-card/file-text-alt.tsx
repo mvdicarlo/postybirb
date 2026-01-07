@@ -1,11 +1,18 @@
-import { Trans } from "@lingui/react/macro";
-import { BlockNoteEditor, filterSuggestionItems } from '@blocknote/core';
+import {
+  BlockNoteEditor,
+  BlockNoteSchema,
+  defaultBlockSpecs,
+  defaultInlineContentSpecs,
+  defaultStyleSpecs,
+} from '@blocknote/core';
 import { BlockNoteView } from '@blocknote/mantine';
 import {
+  DefaultReactSuggestionItem,
   SuggestionMenuController,
   getDefaultReactSlashMenuItems,
   useCreateBlockNote,
 } from '@blocknote/react';
+import { Trans } from '@lingui/react/macro';
 import {
   Input,
   Loader,
@@ -17,7 +24,20 @@ import { debounce } from 'lodash';
 import { useCallback, useEffect } from 'react';
 import { useQuery } from 'react-query';
 import fileSubmissionApi from '../../../../../api/file-submission.api';
-import { altFileSchema } from '../../../../shared/postybirb-editor/schema';
+import { filterSuggestionItems } from '../../../../shared/postybirb-editor/filter-suggestion-item';
+
+const getCustomSlashMenuItems = (
+  editor: BlockNoteEditor,
+): DefaultReactSuggestionItem[] =>
+  getDefaultReactSlashMenuItems(editor).filter((item) => {
+    if (item.key === 'table') {
+      return false;
+    }
+    if (item.key === 'emoji') {
+      return false;
+    }
+    return true;
+  });
 
 type FileTextFileAltProps = {
   file: ISubmissionFileDto;
@@ -34,10 +54,29 @@ export function FileTextAlt(props: FileTextFileAltProps) {
     fileSubmissionApi.getAltText(file.altFileId!).then((res) => res.body),
   );
   const theme = useMantineColorScheme();
+
+  const schema = BlockNoteSchema.create({
+    blockSpecs: {
+      paragraph: defaultBlockSpecs.paragraph,
+      heading: defaultBlockSpecs.heading,
+      divider: defaultBlockSpecs.divider,
+      audio: defaultBlockSpecs.audio,
+      video: defaultBlockSpecs.video,
+      image: defaultBlockSpecs.image,
+      table: defaultBlockSpecs.table,
+    },
+    inlineContentSpecs: {
+      ...defaultInlineContentSpecs,
+    },
+    styleSpecs: {
+      ...defaultStyleSpecs,
+    },
+  });
+
   // Creates a new editor instance.
   const editor = useCreateBlockNote({
     initialContent: undefined,
-    schema: altFileSchema,
+    schema,
   }) as unknown as BlockNoteEditor;
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -82,11 +121,7 @@ export function FileTextAlt(props: FileTextFileAltProps) {
           <SuggestionMenuController
             triggerCharacter="/"
             getItems={async (query) =>
-              // Gets all default slash menu items and `insertAlert` item.
-              filterSuggestionItems(
-                [...getDefaultReactSlashMenuItems(editor)],
-                query,
-              )
+              filterSuggestionItems(getCustomSlashMenuItems(editor), query)
             }
           />
         </BlockNoteView>

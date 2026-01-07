@@ -1,24 +1,21 @@
-import { Trans } from "@lingui/react/macro";
 import { EventClickArg, EventDropArg } from '@fullcalendar/core';
 import { EventImpl } from '@fullcalendar/core/internal';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin, { DropArg } from '@fullcalendar/interaction';
 import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
+import { Trans } from '@lingui/react/macro';
 import {
   ActionIcon,
   Badge,
   Button,
   Divider,
   Group,
-  Modal,
   Popover,
   Stack,
   Text,
   ThemeIcon,
-  Tooltip,
 } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { ScheduleType, SubmissionType } from '@postybirb/types';
 import {
@@ -36,24 +33,20 @@ import { calendarLanguageMap } from '../../../app/languages';
 import { use18n } from '../../../hooks/use-i18n';
 import { SubmissionStore } from '../../../stores/submission.store';
 import { useStore } from '../../../stores/use-store';
+import { CommonTranslations } from '../../../translations/common-translations';
 import './fullcalendar.css';
 
-type SubmissionCalendarProps = {
-  type: SubmissionType;
-};
+type SubmissionCalendarProps = { type: SubmissionType };
 
 const DATE_FORMAT = 'YYYY-MM-DD HH:mm';
 
 export function SubmissionCalendar(props: SubmissionCalendarProps) {
   const [lang] = use18n();
   const { type } = props;
-  const { state: submissions } = useStore(SubmissionStore);const [selectedEvent, setSelectedEvent] = useState<EventImpl | null>(null);
+  const { state: submissions } = useStore(SubmissionStore);
+  const [selectedEvent, setSelectedEvent] = useState<EventImpl | null>(null);
   const [popoverOpened, setPopoverOpened] = useState(false);
   const [popoverTarget, setPopoverTarget] = useState<HTMLElement | null>(null);
-  const [
-    confirmModalOpened,
-    { open: openConfirmModal, close: closeConfirmModal },
-  ] = useDisclosure(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const calendarRef = useRef<any>(null);
 
@@ -154,12 +147,6 @@ export function SubmissionCalendar(props: SubmissionCalendarProps) {
 
   const handleUnschedule = () => {
     if (!selectedEvent) return;
-    openConfirmModal();
-  };
-
-  // Confirm unscheduling
-  const confirmUnschedule = () => {
-    if (!selectedEvent) return;
 
     submissionApi
       .update(selectedEvent.id, {
@@ -169,7 +156,11 @@ export function SubmissionCalendar(props: SubmissionCalendarProps) {
       })
       .then(() => {
         notifications.show({
-          title: <Trans>Submission Unscheduled</Trans>,
+          title: (
+            <CommonTranslations.NounUpdated>
+              <Trans>Submission</Trans>
+            </CommonTranslations.NounUpdated>
+          ),
           message: selectedEvent.title,
           color: 'blue',
           icon: <IconCheck size={16} />,
@@ -177,14 +168,17 @@ export function SubmissionCalendar(props: SubmissionCalendarProps) {
       })
       .catch((error) => {
         notifications.show({
-          title: <Trans>Failed to Unschedule</Trans>,
+          title: (
+            <CommonTranslations.NounUpdateFailed>
+              <Trans>Submission</Trans>
+            </CommonTranslations.NounUpdateFailed>
+          ),
           message: error.message,
           color: 'red',
           icon: <IconX size={16} />,
         });
       });
 
-    closeConfirmModal();
     setPopoverOpened(false);
   };
 
@@ -196,15 +190,13 @@ export function SubmissionCalendar(props: SubmissionCalendarProps) {
       selectedEvent.extendedProps?.isScheduled || false;
 
     submissionApi
-      .update(selectedEvent.id, {
-        isScheduled: !currentScheduledState,
-      })
+      .update(selectedEvent.id, { isScheduled: !currentScheduledState })
       .then(() => {
         notifications.show({
-          title: currentScheduledState ? (
-            <Trans>Submission Scheduling Disabled</Trans>
-          ) : (
-            <Trans>Submission Scheduling Enabled</Trans>
+          title: (
+            <CommonTranslations.NounUpdated>
+              <Trans>Submission</Trans>
+            </CommonTranslations.NounUpdated>
           ),
           message: selectedEvent.title,
           color: 'green',
@@ -213,7 +205,7 @@ export function SubmissionCalendar(props: SubmissionCalendarProps) {
       })
       .catch((error) => {
         notifications.show({
-          title: <Trans>Failed to Update</Trans>,
+          title: <CommonTranslations.NounUpdateFailed />,
           message: error.message,
           color: 'red',
           icon: <IconX size={16} />,
@@ -267,16 +259,16 @@ export function SubmissionCalendar(props: SubmissionCalendarProps) {
           withinPortal
         >
           <Popover.Target>
-            <div 
-              style={{ 
+            <div
+              style={{
                 position: 'fixed',
                 top: popoverTarget.getBoundingClientRect().top,
                 left: popoverTarget.getBoundingClientRect().left,
                 width: popoverTarget.getBoundingClientRect().width,
                 height: popoverTarget.getBoundingClientRect().height,
                 pointerEvents: 'none',
-                zIndex: 1000
-              }} 
+                zIndex: 1000,
+              }}
             />
           </Popover.Target>
           <Popover.Dropdown p="md">
@@ -290,7 +282,8 @@ export function SubmissionCalendar(props: SubmissionCalendarProps) {
                   <Group gap="xs" align="center">
                     <ThemeIcon size="sm" variant="light" color="blue">
                       <IconClock size={14} />
-                    </ThemeIcon>                    <Text size="sm" c="dimmed">
+                    </ThemeIcon>{' '}
+                    <Text size="sm" c="dimmed">
                       {selectedEvent?.start
                         ? moment(selectedEvent.start).format('lll')
                         : ''}
@@ -302,18 +295,15 @@ export function SubmissionCalendar(props: SubmissionCalendarProps) {
                     </Text>
                   )}
                 </div>
-                <Tooltip label={<Trans>Close</Trans>} position="left">
-                  <ActionIcon
-                    variant="subtle"
-                    color="gray"
-                    size="sm"
-                    onClick={() => setPopoverOpened(false)}
-                  >
-                    <IconX size={16} />
-                  </ActionIcon>
-                </Tooltip>
+                <ActionIcon
+                  variant="subtle"
+                  color="gray"
+                  size="sm"
+                  onClick={() => setPopoverOpened(false)}
+                >
+                  <IconX size={16} />
+                </ActionIcon>
               </Group>
-
               {/* Status badges */}
               <Group gap="xs">
                 {selectedEvent?.extendedProps?.type === 'recurring' && (
@@ -322,10 +312,14 @@ export function SubmissionCalendar(props: SubmissionCalendarProps) {
                   </Badge>
                 )}
                 {selectedEvent?.extendedProps?.isScheduled !== undefined && (
-                  <Badge 
-                    size="sm" 
-                    variant="light" 
-                    color={selectedEvent.extendedProps.isScheduled ? 'green' : 'orange'}
+                  <Badge
+                    size="sm"
+                    variant="light"
+                    color={
+                      selectedEvent.extendedProps.isScheduled
+                        ? 'green'
+                        : 'orange'
+                    }
                   >
                     {selectedEvent.extendedProps.isScheduled ? (
                       <Trans>Active</Trans>
@@ -335,8 +329,7 @@ export function SubmissionCalendar(props: SubmissionCalendarProps) {
                   </Badge>
                 )}
               </Group>
-
-              <Divider />              {/* Action buttons */}
+              <Divider /> {/* Action buttons */}
               <Group gap="xs">
                 <Button
                   variant="light"
@@ -356,7 +349,9 @@ export function SubmissionCalendar(props: SubmissionCalendarProps) {
                       : 'filled'
                   }
                   color={
-                    selectedEvent?.extendedProps?.isScheduled ? 'orange' : 'green'
+                    selectedEvent?.extendedProps?.isScheduled
+                      ? 'orange'
+                      : 'green'
                   }
                   size="xs"
                   leftSection={<IconCalendarTime size={16} />}
@@ -369,34 +364,11 @@ export function SubmissionCalendar(props: SubmissionCalendarProps) {
                     <Trans>Activate</Trans>
                   )}
                 </Button>
-              </Group>            </Stack>
+              </Group>{' '}
+            </Stack>
           </Popover.Dropdown>
         </Popover>
       )}
-
-      {/* Confirmation Modal */}
-      <Modal
-        opened={confirmModalOpened}
-        onClose={closeConfirmModal}
-        title={<Trans>Confirm Unschedule</Trans>}
-        size="sm"
-      >
-        <Stack>
-          <Text>
-            <Trans>Are you sure you want to unschedule this submission?</Trans>
-          </Text>
-          <Text fw={500}>{selectedEvent?.title}</Text>
-
-          <Group p="right" mt="md">
-            <Button variant="outline" onClick={closeConfirmModal}>
-              <Trans>Cancel</Trans>
-            </Button>
-            <Button color="red" onClick={confirmUnschedule}>
-              <Trans>Unschedule</Trans>
-            </Button>
-          </Group>
-        </Stack>
-      </Modal>
     </div>
   );
 }

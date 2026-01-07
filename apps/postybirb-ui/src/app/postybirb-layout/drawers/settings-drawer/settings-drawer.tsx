@@ -10,6 +10,7 @@ import {
 } from '@mantine/core';
 import {
   IconBell,
+  IconDatabase,
   IconDeviceDesktop,
   IconFileDescription,
   IconLanguage,
@@ -26,6 +27,7 @@ import {
 import { useDrawerToggle } from '../use-drawer-toggle';
 import { AppSettings } from './app-settings';
 import { DescriptionSettings } from './description-settings';
+import { LegacyImportSettings } from './legacy-import-settings';
 import { NotificationsSettings } from './notifications-settings';
 import { RemoteSettings } from './remote-settings';
 import { SpellcheckerSettings } from './spellchecker-settings';
@@ -126,6 +128,14 @@ export function SettingsDrawer() {
                 >
                   <Trans>Spellchecker</Trans>
                 </Tabs.Tab>
+
+                <Tabs.Tab
+                  value="legacy-import"
+                  leftSection={<IconDatabase size={16} />}
+                  fw={activeTab === 'legacy-import' ? 'bold' : 'normal'}
+                >
+                  <Trans>Import</Trans>
+                </Tabs.Tab>
               </Tabs.List>
 
               <ScrollArea h="100%" offsetScrollbars>
@@ -136,6 +146,7 @@ export function SettingsDrawer() {
                   {activeTab === 'remote' && <RemoteSettings />}
                   {activeTab === 'tags' && <TagsSettings />}
                   {activeTab === 'spellchecker' && <SpellcheckerSettings />}
+                  {activeTab === 'legacy-import' && <LegacyImportSettings />}
                 </Box>
               </ScrollArea>
             </Group>

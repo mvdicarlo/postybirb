@@ -8,6 +8,50 @@
  */
 export const DescriptionSchema = Object.freeze({
   blockSpecs: {
+    divider: {
+      config: {
+        type: 'divider',
+        propSchema: {},
+        content: 'none',
+      },
+      implementation: {
+        meta: {
+          isolating: false,
+        },
+        node: {
+          type: 'node',
+          parent: null,
+          child: {
+            type: 'node',
+            parent: null,
+            child: null,
+            name: 'divider',
+            config: {
+              name: 'divider',
+              content: '',
+              group: 'blockContent',
+              selectable: true,
+              isolating: false,
+              code: false,
+              defining: true,
+              priority: 101,
+            },
+          },
+          name: 'divider',
+          config: {
+            name: 'divider',
+            content: '',
+            group: 'blockContent',
+            selectable: true,
+            isolating: false,
+            code: false,
+            defining: true,
+            priority: 101,
+          },
+        },
+      },
+      extensions: [null],
+    },
     audio: {
       config: {
         type: 'audio',
@@ -246,30 +290,6 @@ export const DescriptionSchema = Object.freeze({
             defaultOptions: {},
             content: 'inline*',
             group: 'blockContent',
-          },
-          options: {},
-          storage: {},
-        },
-      },
-    },
-    hr: {
-      config: {
-        type: 'hr',
-        propSchema: {},
-        content: 'none',
-      },
-      implementation: {
-        node: {
-          type: 'node',
-          name: 'hr',
-          parent: null,
-          child: null,
-          config: {
-            name: 'hr',
-            defaultOptions: {},
-            content: '',
-            group: 'blockContent',
-            selectable: true,
           },
           options: {},
           storage: {},
@@ -620,8 +640,16 @@ export const DescriptionSchema = Object.freeze({
       isFileBlock: true,
       fileBlockAccept: ['audio/*'],
     },
-    hr: { type: 'hr', propSchema: {}, content: 'none' },
-    default: { type: 'default', propSchema: {}, content: 'none' },
+    defaultShortcut: {
+      type: 'defaultShortcut',
+      propSchema: {},
+      content: 'none',
+    },
+    divider: {
+      type: 'divider',
+      propSchema: {},
+      content: 'none',
+    }
   },
   inlineContentSchema: {
     text: 'text',

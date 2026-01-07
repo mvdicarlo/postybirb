@@ -1,4 +1,5 @@
-import { Trans } from "@lingui/react/macro";
+/* eslint-disable lingui/no-unlocalized-strings */
+// Do not care to translate this file
 import {
   ActionIcon,
   Alert,
@@ -9,7 +10,6 @@ import {
   Stack,
   Text,
   TextInput,
-  useMantineTheme,
 } from '@mantine/core';
 import { CustomAccountData } from '@postybirb/types';
 import { IconPlus, IconTrash } from '@tabler/icons-react';
@@ -36,7 +36,6 @@ export default function CustomLoginView(
 ): JSX.Element {
   const { account } = props;
   const { data, id } = account;
-  const theme = useMantineTheme();
 
   const [headersWithIds, setHeadersWithIds] = useState<HeaderWithId[]>([]);
   const [formData, setFormData] = useState<Omit<CustomAccountData, 'headers'>>({
@@ -86,10 +85,7 @@ export default function CustomLoginView(
         .filter((header) => header.name.trim() && header.value.trim())
         .map(({ name, value }) => ({ name, value }));
 
-      const cleanedData: CustomAccountData = {
-        ...formData,
-        headers,
-      };
+      const cleanedData: CustomAccountData = { ...formData, headers };
 
       await accountApi.setWebsiteData<CustomAccountData>({
         id,
@@ -148,25 +144,25 @@ export default function CustomLoginView(
         <Box style={{ flex: 1, overflowY: 'auto', paddingBottom: '80px' }}>
           <Stack>
             <Alert color="blue">
-              <Trans>
+              <Text>
                 Configure custom webhook URLs and field mappings for your custom
                 integration. You need at least one URL (File URL for file
                 submissions or Notification URL for text-only posts).
-              </Trans>
+              </Text>
               <br />
               <br />
-              <Trans>
+              <Text>
                 Custom website is for websites that you own and understand the
                 actual backend of.
-              </Trans>
+              </Text>
             </Alert>
 
             <TextInput
-              label={<Trans>File URL</Trans>}
+              label={<Text>File URL</Text>}
               description={
-                <Trans>
+                <Text>
                   The URL that will be posted to when submitting files
-                </Trans>
+                </Text>
               }
               value={formData.fileUrl || ''}
               onChange={(event) =>
@@ -176,11 +172,11 @@ export default function CustomLoginView(
             />
 
             <TextInput
-              label={<Trans>Notification URL</Trans>}
+              label={<Text>Notification URL</Text>}
               description={
-                <Trans>
+                <Text>
                   The URL that will be posted to when submitting text-only posts
-                </Trans>
+                </Text>
               }
               value={formData.notificationUrl || ''}
               onChange={(event) =>
@@ -191,14 +187,14 @@ export default function CustomLoginView(
 
             <Group grow>
               <TextInput
-                label={<Trans>Title Field</Trans>}
+                label={<Text>Title Field</Text>}
                 value={formData.titleField || ''}
                 onChange={(event) =>
                   updateFormData('titleField', event.currentTarget.value)
                 }
               />
               <TextInput
-                label={<Trans>Description Field</Trans>}
+                label={<Text>Description Field</Text>}
                 value={formData.descriptionField || ''}
                 onChange={(event) =>
                   updateFormData('descriptionField', event.currentTarget.value)
@@ -208,7 +204,7 @@ export default function CustomLoginView(
 
             <Group>
               <Text size="sm" fw={500}>
-                <Trans>Description Type</Trans>
+                <Text>Description Type</Text>
               </Text>
               <Radio.Group
                 value={formData.descriptionType || 'html'}
@@ -218,23 +214,23 @@ export default function CustomLoginView(
               >
                 <Group>
                   <Radio value="html" label="HTML" />
-                  <Radio value="text" label={<Trans>Plain Text</Trans>} />
-                  <Radio value="md" label={<Trans>Markdown</Trans>} />
-                  <Radio value="bbcode" label={<Trans>BBCode</Trans>} />
+                  <Radio value="text" label={<Text>Plain Text</Text>} />
+                  <Radio value="md" label={<Text>Markdown</Text>} />
+                  <Radio value="bbcode" label={<Text>BBCode</Text>} />
                 </Group>
               </Radio.Group>
             </Group>
 
             <Group grow>
               <TextInput
-                label={<Trans>Tag Field</Trans>}
+                label={<Text>Tag Field</Text>}
                 value={formData.tagField || ''}
                 onChange={(event) =>
                   updateFormData('tagField', event.currentTarget.value)
                 }
               />
               <TextInput
-                label={<Trans>Rating Field</Trans>}
+                label={<Text>Rating Field</Text>}
                 value={formData.ratingField || ''}
                 onChange={(event) =>
                   updateFormData('ratingField', event.currentTarget.value)
@@ -244,14 +240,14 @@ export default function CustomLoginView(
 
             <Group grow>
               <TextInput
-                label={<Trans>File Field</Trans>}
+                label={<Text>File Field</Text>}
                 value={formData.fileField || ''}
                 onChange={(event) =>
                   updateFormData('fileField', event.currentTarget.value)
                 }
               />
               <TextInput
-                label={<Trans>Thumbnail Field</Trans>}
+                label={<Text>Thumbnail Field</Text>}
                 value={formData.thumbnailField || ''}
                 onChange={(event) =>
                   updateFormData('thumbnailField', event.currentTarget.value)
@@ -260,7 +256,7 @@ export default function CustomLoginView(
             </Group>
 
             <TextInput
-              label={<Trans>Alt Text Field</Trans>}
+              label={<Text>Alt Text Field</Text>}
               value={formData.altTextField || ''}
               onChange={(event) =>
                 updateFormData('altTextField', event.currentTarget.value)
@@ -270,16 +266,14 @@ export default function CustomLoginView(
             <Box>
               <Group justify="space-between" mb="sm">
                 <Text size="sm" fw={500}>
-                  <Trans>Headers</Trans>
+                  <Text>Headers</Text>
                 </Text>
                 <ActionIcon variant="light" onClick={addHeader} size="sm">
                   <IconPlus size={16} />
                 </ActionIcon>
               </Group>
               <Text size="xs" c="dimmed" mb="md">
-                <Trans>
-                  Custom headers for authentication or other purposes
-                </Trans>
+                <Text>Custom headers for authentication or other purposes</Text>
               </Text>
 
               <Stack gap="xs">
@@ -330,9 +324,7 @@ export default function CustomLoginView(
           bottom={0}
           left={0}
           right={0}
-          style={{
-            backgroundColor: 'inherit',
-          }}
+          style={{ backgroundColor: 'inherit' }}
         >
           <Button
             type="submit"
@@ -341,7 +333,7 @@ export default function CustomLoginView(
             disabled={!isFormValid}
             fullWidth
           >
-            <Trans>Save</Trans>
+            <Text>Save</Text>
           </Button>
         </Box>
       </form>

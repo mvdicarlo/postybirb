@@ -44,7 +44,6 @@ describe('SubmissionService', () => {
   let module: TestingModule;
 
   beforeAll(() => {
-    PostyBirbDirectories.initializeDirectories();
     testFile = readFileSync(
       join(__dirname, '../../../test-files/small_image.jpg'),
     );
@@ -150,6 +149,7 @@ describe('SubmissionService', () => {
       isScheduled: false,
       isTemplate: false,
       isArchived: false,
+      isInitialized: true,
       isMultiSubmission: false,
       schedule: {
         scheduleType: ScheduleType.NONE,
@@ -210,6 +210,7 @@ describe('SubmissionService', () => {
       isTemplate: false,
       isMultiSubmission: false,
       isArchived: false,
+      isInitialized: true,
       schedule: {
         scheduleType: ScheduleType.NONE,
       },

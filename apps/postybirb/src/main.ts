@@ -1,10 +1,10 @@
 import { INestApplication } from '@nestjs/common';
-import { PostyBirbDirectories } from '@postybirb/fs';
 import {
-  ensureRemoteConfigExists,
-  getRemoteConfig,
-  PostyBirbEnvConfig,
-} from '@postybirb/utils/electron';
+  flushAppInsights,
+  initializeAppInsights,
+  trackException,
+} from '@postybirb/logger';
+import { getRemoteConfig, PostyBirbEnvConfig } from '@postybirb/utils/electron';
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
 import { bootstrapClientServer } from 'apps/client-server/src/main';
 import { app, BrowserWindow, session } from 'electron';
@@ -32,8 +32,47 @@ process.env.POSTYBIRB_ENV =
     ? 'production'
     : 'development';
 
+// eslint-disable-next-line no-console
+console.log(
+  `Starting PostyBirb v${environment.version} in ${process.env.POSTYBIRB_ENV} mode with app path ${app.getPath('appData')}`,
+);
+
 // Setup Metrics
 startMetrics();
+
+initializeAppInsights({
+  // enabled: environment.production || process.env.ENABLE_APP_INSIGHTS === 'true',
+  enabled: true,
+  appVersion: environment.version,
+});
+
+// Handle uncaught exceptions in main process
+process.on('uncaughtException', (error: Error) => {
+  // eslint-disable-next-line no-console
+  console.error('Uncaught Exception in Main Process:', error);
+  trackException(error, {
+    source: 'electron-main',
+    type: 'uncaughtException',
+  });
+  // Give time for telemetry to be sent before exiting
+  flushAppInsights().then(() => {
+    if (!environment.production) {
+      process.exit(1);
+    }
+  });
+});
+
+// Handle unhandled promise rejections in main process
+process.on('unhandledRejection', (reason: unknown) => {
+  const error = reason instanceof Error ? reason : new Error(String(reason));
+  // eslint-disable-next-line no-console
+  console.error('Unhandled Rejection in Main Process:', error);
+  trackException(error, {
+    source: 'electron-main',
+    type: 'unhandledRejection',
+  });
+  flushAppInsights();
+});
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 // const psbId = powerSaveBlocker.start('prevent-app-suspension');
@@ -62,8 +101,6 @@ app.on(
 
 export default class Main {
   static async initialize() {
-    PostyBirbDirectories.initializeDirectories();
-    ensureRemoteConfigExists();
     process.env.remote = JSON.stringify(await getRemoteConfig());
   }
 
@@ -97,7 +134,7 @@ async function start() {
     }
   } catch (e) {
     // eslint-disable-next-line no-console
-    console.error(e);
+    console.error('Error during startup:', e);
     app.quit();
   }
 }

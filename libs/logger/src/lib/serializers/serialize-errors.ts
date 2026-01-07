@@ -11,11 +11,11 @@ import errorConstructors from '../error-constructors';
 export class NonError extends Error {
   name = 'NonError';
 
-  constructor(message) {
+  constructor(message: string) {
     super(NonError._prepareSuperMessage(message));
   }
 
-  static _prepareSuperMessage(message) {
+  static _prepareSuperMessage(message: any) {
     try {
       return JSON.stringify(message);
     } catch {
@@ -49,14 +49,15 @@ const commonProperties = [
 
 const toJsonWasCalled = new WeakSet();
 
-const toJSON = (from) => {
+const toJSON = (from: any) => {
   toJsonWasCalled.add(from);
   const json = from.toJSON();
   toJsonWasCalled.delete(from);
   return json;
 };
 
-const getErrorConstructor = (name) => errorConstructors.get(name) ?? Error;
+const getErrorConstructor = (name: string) =>
+  errorConstructors.get(name) ?? Error;
 
 // eslint-disable-next-line complexity
 const destroyCircular = ({
@@ -94,7 +95,7 @@ const destroyCircular = ({
     return toJSON(from);
   }
 
-  const continueDestroyCircular = (value) =>
+  const continueDestroyCircular = (value: any) =>
     destroyCircular({
       from: value,
       seen: [...seen],
@@ -160,7 +161,7 @@ const destroyCircular = ({
   return to;
 };
 
-export function serializeError(value, options: any = {}) {
+export function serializeError(value: any, options: any = {}) {
   const { maxDepth = Number.POSITIVE_INFINITY, useToJSON = true } = options;
 
   if (typeof value === 'object' && value !== null) {
@@ -185,7 +186,7 @@ export function serializeError(value, options: any = {}) {
   return value;
 }
 
-export function isErrorLike(value) {
+export function isErrorLike(value: any) {
   return (
     Boolean(value) &&
     typeof value === 'object' &&

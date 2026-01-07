@@ -1,0 +1,2 @@
+{"_id":"cs123456-1234-1234-1234-123456789abc","created":"2023-10-01T12:00:00Z","lastUpdated":"2023-10-01T12:00:00Z","shortcut":"myshortcut","content":"This is my custom shortcut content","isDynamic":false}
+{"_id":"cs234567-2345-2345-2345-234567890bcd","created":"2023-10-01T13:00:00Z","lastUpdated":"2023-10-01T13:00:00Z","shortcut":"dynamicshortcut","content":"<b>Dynamic content</b>","isDynamic":true}

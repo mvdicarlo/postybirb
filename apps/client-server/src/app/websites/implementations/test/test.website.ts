@@ -8,10 +8,11 @@ import {
   OAuthRoutes,
   PostData,
   PostResponse,
-  SimpleValidationResult
+  SimpleValidationResult,
 } from '@postybirb/types';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
+import { wait } from '../../../utils/wait.util';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
@@ -48,6 +49,7 @@ export default class TestWebsite
       this.loginState.logout();
     }
 
+    await wait(5_000);
     await this.websiteDataStore.setData({ test: 'test-mode' });
     return this.loginState.setLogin(true, 'TestUser');
   }
@@ -90,6 +92,21 @@ export default class TestWebsite
     cancellationToken: CancellableToken,
   ): Promise<IPostResponse> {
     cancellationToken.throwIfCancelled();
+    if (this.account.name === 'FAIL') {
+      return PostResponse.fromWebsite(this)
+        .atStage('validation')
+        .withMessage('Forced failure for testing purposes.')
+        .withException(new Error('Forced failure'));
+    }
+
+    if (this.account.name === 'SUCCESS') {
+      await wait(15_000);
+      return PostResponse.fromWebsite(this)
+        .atStage('validation')
+        .withMessage('Forced success for testing purposes.')
+        .withSourceUrl('http://example.com/success');
+    }
+
     return PostResponse.fromWebsite(this)
       .atStage('test')
       .withMessage('test message');

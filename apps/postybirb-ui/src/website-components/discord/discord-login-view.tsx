@@ -1,39 +1,42 @@
-import { Trans } from "@lingui/react/macro";
+import { Trans } from '@lingui/react/macro';
 import {
+  Alert,
   Box,
   Button,
   Checkbox,
+  Group,
   NumberInput,
   Stack,
+  Text,
   TextInput,
 } from '@mantine/core';
 import { DiscordAccountData } from '@postybirb/types';
+import { IconInfoCircle } from '@tabler/icons-react';
 import { useState } from 'react';
 import accountApi from '../../api/account.api';
 import { ExternalLink } from '../../components/external-link/external-link';
 import { LoginComponentProps } from '../../models/login-component-props';
+import { CommonTranslations } from '../../translations/common-translations';
 import {
-  createLoginHttpErrorHander,
+  createLoginHttpErrorHandler,
   notifyLoginSuccess,
 } from '../website-login-helpers';
 
 const formId = 'discord-login-form';
 
-const isStringValid = (str: string): boolean | undefined => {
+const isWebhookValid = (str: string): boolean | undefined => {
   if (str === '') {
     return undefined;
   }
 
-  // Account name must be provided and greater than 0 characters (trimmed)
   try {
-    // eslint-disable-next-line no-new
-    new URL(str);
-    if (str && str.length) {
-      if (str.trim().length > 0) {
-        return true;
-      }
-    }
-    return false;
+    const url = new URL(str);
+    // Discord webhook URLs follow pattern: https://discord.com/api/webhooks/{id}/{token}
+    const isDiscordWebhook =
+      (url.hostname === 'discord.com' || url.hostname === 'discordapp.com') &&
+      url.pathname.startsWith('/api/webhooks/');
+
+    return isDiscordWebhook && str.trim().length > 0;
   } catch {
     return false;
   }
@@ -51,7 +54,7 @@ export default function DiscordLoginView(
   const [isForum, setIsForum] = useState<boolean>(data?.isForum ?? false);
   const [isSubmitting, setSubmitting] = useState<boolean>(false);
 
-  const isWebhookValid = isStringValid(webhook);
+  const webhookValid = isWebhookValid(webhook);
 
   return (
     <form
@@ -62,32 +65,37 @@ export default function DiscordLoginView(
         accountApi
           .setWebsiteData<DiscordAccountData>({
             id,
-            data: {
-              webhook,
-              serverLevel,
-              isForum,
-            },
+            data: { webhook: webhook.trim(), serverLevel, isForum },
           })
           .then(() => {
             notifyLoginSuccess();
           })
-          .catch(createLoginHttpErrorHander())
+          .catch(createLoginHttpErrorHandler())
           .finally(() => {
             setSubmitting(false);
           });
       }}
     >
-      <Stack>
+      <Stack gap="md">
+        <Alert icon={<IconInfoCircle size={16} />} color="blue" variant="light">
+          <Text size="sm">
+            <Trans>
+              PostyBirb uses Discord webhooks to post content to your server.
+              Make sure you have the necessary permissions to create webhooks in
+              your target channel.
+            </Trans>
+          </Text>
+        </Alert>
+
         <TextInput
           // eslint-disable-next-line lingui/no-unlocalized-strings
-          label="Webhook"
+          label="Webhook URL"
           name="webhook"
+          placeholder="https://discord.com/api/webhooks/..."
           required
           minLength={1}
-          defaultValue={webhook}
-          error={
-            isWebhookValid === false ? <Trans>Webhook is required</Trans> : null
-          }
+          value={webhook}
+          error={webhookValid === false}
           description={
             <ExternalLink href="https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks">
               <Trans context="discord.webhook-help">
@@ -95,39 +103,48 @@ export default function DiscordLoginView(
               </Trans>
             </ExternalLink>
           }
-          onBlur={(event) => {
-            setWebhook(event.currentTarget.value.trim());
+          onChange={(event) => {
+            setWebhook(event.currentTarget.value);
           }}
         />
+
         <NumberInput
-          label={<Trans>Server Level</Trans>}
-          defaultValue={serverLevel}
+          label={<Trans>Server Boost Level</Trans>}
+          value={serverLevel}
           min={0}
           max={3}
-          description={
-            <ExternalLink href="https://support.discord.com/hc/en-us/articles/360028038352-Server-Boosting-FAQ#h_419c3bd5-addd-4989-b7cf-c7957ef92583">
-              <Trans>Server level perks</Trans>
-            </ExternalLink>
-          }
-          onBlur={(event) => {
-            setServerLevel(event.currentTarget.valueAsNumber);
+          stepHoldDelay={500}
+          stepHoldInterval={100}
+          allowDecimal={false}
+          clampBehavior="strict"
+          onChange={(value) => {
+            setServerLevel(Number(value) || 0);
           }}
         />
+
         <Checkbox
-          label={<Trans>Is a forum</Trans>}
+          label={
+            <Group gap="xs">
+              <Text size="sm">
+                <Trans>This is a forum channel</Trans>
+              </Text>
+            </Group>
+          }
           checked={isForum}
           onChange={(event) => {
             setIsForum(event.currentTarget.checked);
           }}
         />
-        <Box>
+
+        <Box mt="md">
           <Button
             type="submit"
             form={formId}
             loading={isSubmitting}
-            disabled={!isWebhookValid}
+            disabled={!webhookValid}
+            fullWidth
           >
-            <Trans>Save</Trans>
+            <CommonTranslations.Save />
           </Button>
         </Box>
       </Stack>

@@ -24,6 +24,7 @@ import { SubmissionScheduleView } from '../../components/submissions/submission-
 import { SubmissionView } from '../../components/submissions/submission-view/submission-view';
 import { SubmissionStore } from '../../stores/submission.store';
 import { useStore } from '../../stores/use-store';
+import { CommonTranslations } from '../../translations/common-translations';
 
 function isValidName(name: string): boolean {
   if (name && name.trim().length) {
@@ -102,28 +103,24 @@ export default function MessageSubmissionManagementPage() {
     <>
       <PageHeader
         icon={<IconMessage />}
-        title={<Trans>Message Submissions</Trans>}
+        title={<CommonTranslations.MessageSubmission />}
         tabs={[
           {
-            label: <Trans>Submissions</Trans>,
+            label: <CommonTranslations.MessageSubmission />,
             key: 'submissions',
             icon: <IconMessage />,
           },
           {
-            label: <Trans>Schedule</Trans>,
+            label: <CommonTranslations.Schedule />,
             key: 'schedule',
             icon: <IconCalendar />,
           },
           {
-            label: <Trans>Templates</Trans>,
+            label: <CommonTranslations.Template />,
             key: 'templates',
             icon: <IconTemplate />,
           },
-          {
-            label: <Trans>History</Trans>,
-            key: 'history',
-            icon: <IconLogs />,
-          },
+          { label: <Trans>History</Trans>, key: 'history', icon: <IconLogs /> },
         ]}
         onTabChange={setActiveTab}
       />

@@ -1,34 +1,34 @@
-import { Trans } from "@lingui/react/macro";
+import { Trans } from '@lingui/react/macro';
 import {
-  ActionIcon,
-  Badge,
-  Box,
-  Divider,
-  FileButton,
-  Group,
-  Image,
-  Stack,
-  Text,
-  Tooltip,
+    ActionIcon,
+    Badge,
+    Box,
+    Divider,
+    FileButton,
+    Group,
+    Image,
+    Text,
+    Tooltip,
 } from '@mantine/core';
 import { FileWithPath } from '@mantine/dropzone';
 import { notifications } from '@mantine/notifications';
 import { FileType, ISubmissionFileDto, SubmissionId } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import {
-  IconCrop,
-  IconFileText,
-  IconFileUpload,
-  IconReplace,
+    IconCrop,
+    IconFileText,
+    IconFileUpload,
+    IconReplace,
 } from '@tabler/icons-react';
 import { useState } from 'react';
 import fileSubmissionApi, {
-  FileUpdateTarget,
+    FileUpdateTarget,
 } from '../../../../../api/file-submission.api';
+import { CommonTranslations } from '../../../../../translations/common-translations';
 import { defaultTargetProvider } from '../../../../../transports/http-client';
 import {
-  EditImageFromSource,
-  EditImageModal,
+    EditImageFromSource,
+    EditImageModal,
 } from '../../../submission-uploader/edit-image-modal';
 
 function CardImageProvider(file: ISubmissionFileDto) {
@@ -39,26 +39,31 @@ function CardImageProvider(file: ISubmissionFileDto) {
     case FileType.AUDIO:
       return (
         // eslint-disable-next-line jsx-a11y/media-has-caption
-        <audio controls style={{ height: '100px', width: '100px' }}>
+        <audio controls style={{ height: 60, width: 70 }}>
           <source src={src} type="audio/ogg" />
           <source src={src} type="audio/mpeg" />
           <source src={src} type="audio/mp3" />
           <source src={src} type="audio/mpeg3" />
           <source src={src} type="audio/wav" />
-          <Trans>Your browser does not support the audio tag.</Trans>
+          <source src={src} type="audio/webm" />
+          <source src={src} type="audio/aac" />
+          <source src={src} type="audio/flac" />
+          <source src={src} type="audio/x-m4a" />
         </audio>
       );
     case FileType.TEXT:
       return (
-        <IconFileText style={{ display: 'block' }} height={100} width={50} />
+        <IconFileText style={{ display: 'block' }} height={50} width={30} />
       );
     case FileType.VIDEO:
       return (
         // eslint-disable-next-line jsx-a11y/media-has-caption
-        <video width="150" height="100" controls>
+        <video width={70} height={60} controls>
           <source src={src} type="video/mp4" />
           <source src={src} type="video/ogg" />
-          <Trans>Your browser does not support the video tag.</Trans>
+          <source src={src} type="video/webm" />
+          <source src={src} type="video/x-matroska" />
+          <source src={src} type="video/quicktime" />
         </video>
       );
     case FileType.UNKNOWN:
@@ -68,7 +73,8 @@ function CardImageProvider(file: ISubmissionFileDto) {
         <Image
           radius={4}
           loading="lazy"
-          h={100}
+          h={60}
+          w={70}
           fit="contain"
           alt={fileName}
           src={src}
@@ -150,27 +156,28 @@ export function FileCardFileActions(props: FileCardFileActionsProps) {
           }}
         />
       ) : null}
-      <Stack gap={8} align="center">
-        <Box ta="center" key="primary" w={180}>
+      <Group gap="sm" align="flex-start" wrap="nowrap">
+        <Box ta="center" key="primary" w={90}>
           <Badge
             variant="filled"
             color="blue"
             radius="sm"
-            mb={6}
+            mb={4}
+            size="xs"
             fullWidth
             style={{ textTransform: 'none' }}
           >
-            <Trans comment="Main file data">Primary File</Trans>
+            <Trans comment="Main file data">Primary</Trans>
           </Badge>
 
           <Box
             style={{
-              borderRadius: '8px',
+              borderRadius: '6px',
               overflow: 'hidden',
               // eslint-disable-next-line lingui/no-unlocalized-strings
               border: '1px solid var(--mantine-color-dark-4)',
               background: 'var(--mantine-color-dark-7)',
-              height: 140,
+              height: 70,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -179,7 +186,7 @@ export function FileCardFileActions(props: FileCardFileActionsProps) {
             <CardImageProvider {...file} />
           </Box>
 
-          <Group p="center" mt={8} gap={6}>
+          <Group justify="center" mt={4} gap={4}>
             <FileButton
               onChange={(payload) => {
                 if (payload) {
@@ -187,7 +194,7 @@ export function FileCardFileActions(props: FileCardFileActionsProps) {
                   // Only allow replacing files with the same type
                   if (fileType !== newFileType) {
                     notifications.show({
-                      title: <Trans>Invalid file type</Trans>,
+                      title: <CommonTranslations.NounUpdateFailed />,
                       message: (
                         <Trans>
                           File types do not match. Please upload a file of the
@@ -215,9 +222,9 @@ export function FileCardFileActions(props: FileCardFileActionsProps) {
               }}
             >
               {(p) => (
-                <Tooltip label={<Trans>Replace file</Trans>} withArrow>
-                  <ActionIcon {...p} variant="light" color="blue" size="md">
-                    <IconReplace size={16} />
+                <Tooltip label={<Trans>Replace</Trans>} withArrow>
+                  <ActionIcon {...p} variant="light" color="blue" size="xs">
+                    <IconReplace size={12} />
                   </ActionIcon>
                 </Tooltip>
               )}
@@ -225,28 +232,29 @@ export function FileCardFileActions(props: FileCardFileActionsProps) {
           </Group>
         </Box>
 
-        <Divider w="80%" />
+        <Divider orientation="vertical" />
 
-        <Box ta="center" key="thumbnail" w={180}>
+        <Box ta="center" key="thumbnail" w={90}>
           <Badge
             variant="outline"
             color="gray"
             radius="sm"
-            mb={6}
+            mb={4}
+            size="xs"
             fullWidth
             style={{ textTransform: 'none' }}
           >
-            <Trans>Thumbnail</Trans>
+            <Trans>Thumb</Trans>
           </Badge>
 
           <Box
             style={{
-              borderRadius: '8px',
+              borderRadius: '6px',
               overflow: 'hidden',
               // eslint-disable-next-line lingui/no-unlocalized-strings
               border: '1px solid var(--mantine-color-dark-4)',
               background: 'var(--mantine-color-dark-7)',
-              height: 100,
+              height: 70,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -255,8 +263,8 @@ export function FileCardFileActions(props: FileCardFileActionsProps) {
             {file.hasThumbnail ? (
               <Image
                 radius={0}
-                height={100}
-                width={180}
+                height={60}
+                width={70}
                 fit="contain"
                 loading="lazy"
                 alt={file.fileName}
@@ -265,24 +273,24 @@ export function FileCardFileActions(props: FileCardFileActionsProps) {
                 }?${Date.now()}`}
               />
             ) : (
-              <Text size="xs" color="dimmed">
-                <Trans>No thumbnail</Trans>
+              <Text size="xs" c="dimmed">
+                <Trans>None</Trans>
               </Text>
             )}
           </Box>
 
-          <Group p="center" mt={8} gap={6}>
+          <Group justify="center" mt={4} gap={4}>
             {fileType === FileType.IMAGE ? (
-              <Tooltip label={<Trans>Generate from primary</Trans>} withArrow>
+              <Tooltip label={<Trans>Crop from primary</Trans>} withArrow>
                 <ActionIcon
                   variant="light"
                   color="teal"
-                  size="md"
+                  size="xs"
                   onClick={() => {
                     setCropFromPrimary(true);
                   }}
                 >
-                  <IconCrop size={16} />
+                  <IconCrop size={12} />
                 </ActionIcon>
               </Tooltip>
             ) : null}
@@ -295,19 +303,16 @@ export function FileCardFileActions(props: FileCardFileActionsProps) {
               }}
             >
               {(p) => (
-                <Tooltip
-                  label={<Trans>Upload custom thumbnail</Trans>}
-                  withArrow
-                >
-                  <ActionIcon {...p} variant="light" color="indigo" size="md">
-                    <IconFileUpload size={16} />
+                <Tooltip label={<Trans>Upload thumbnail</Trans>} withArrow>
+                  <ActionIcon {...p} variant="light" color="indigo" size="xs">
+                    <IconFileUpload size={12} />
                   </ActionIcon>
                 </Tooltip>
               )}
             </FileButton>
           </Group>
         </Box>
-      </Stack>
+      </Group>
     </>
   );
 }

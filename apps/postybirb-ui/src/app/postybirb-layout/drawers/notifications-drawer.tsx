@@ -35,6 +35,7 @@ import notificationApi from '../../../api/notification.api';
 import { ComponentErrorBoundary } from '../../../components/error-boundary/specialized-error-boundaries';
 import { NotificationStore } from '../../../stores/notification.store';
 import { useStore } from '../../../stores/use-store';
+import { CommonTranslations } from '../../../translations/common-translations';
 import { getOverlayOffset, getPortalTarget, marginOffset } from './drawer.util';
 import { useDrawerToggle } from './use-drawer-toggle';
 
@@ -83,22 +84,14 @@ const getNotificationType = (type: string) => {
 
 function NotificationCard({ notification }: { notification: INotification }) {
   const toggleReadStatus = () => {
-    notificationApi
-      .update(notification.id, {
-        ...notification,
-        isRead: !notification.isRead,
-      })
-      .catch((error) => {
-        // eslint-disable-next-line lingui/no-unlocalized-strings, no-console
-        console.error('Failed to update notification read status', error);
-      });
+    notificationApi.update(notification.id, {
+      ...notification,
+      isRead: !notification.isRead,
+    });
   };
 
   const deleteNotification = () => {
-    notificationApi.remove([notification.id]).catch((error) => {
-      // eslint-disable-next-line lingui/no-unlocalized-strings, no-console
-      console.error('Failed to delete notification', error);
-    });
+    notificationApi.remove([notification.id]);
   };
 
   const formattedDate = moment(notification.createdAt).fromNow();
@@ -164,7 +157,11 @@ function NotificationCard({ notification }: { notification: INotification }) {
               <IconCheck size={16} />
             </ActionIcon>
           </Tooltip>
-          <Tooltip label={<Trans>Delete</Trans>} position="top" withArrow>
+          <Tooltip
+            label={<CommonTranslations.Delete />}
+            position="top"
+            withArrow
+          >
             <ActionIcon
               color="red"
               variant="light"
@@ -223,14 +220,7 @@ export function NotificationsDrawer() {
     const warning = notifications.filter((n) => n.type === 'warning').length;
     const error = notifications.filter((n) => n.type === 'error').length;
 
-    return {
-      unread,
-      info,
-      success,
-      warning,
-      error,
-      all: notifications.length,
-    };
+    return { unread, info, success, warning, error, all: notifications.length };
   }, [notifications]);
 
   const handleMarkAllAsRead = () => {
@@ -244,19 +234,13 @@ export function NotificationsDrawer() {
           isRead: true,
         }),
       ),
-    ).catch((error) => {
-      // eslint-disable-next-line lingui/no-unlocalized-strings, no-console
-      console.error('Failed to mark all notifications as read', error);
-    });
+    );
   };
 
   const handleClearAll = () => {
     const notificationIds = notifications.map((n) => n.id);
     if (notificationIds.length > 0) {
-      notificationApi.remove(notificationIds).catch((error) => {
-        // eslint-disable-next-line lingui/no-unlocalized-strings, no-console
-        console.error('Failed to clear notifications', error);
-      });
+      notificationApi.remove(notificationIds);
     }
     setClearPopoverOpened(false);
   };
@@ -266,10 +250,7 @@ export function NotificationsDrawer() {
 
     const notificationIds = filteredNotifications.map((n) => n.id);
     if (notificationIds.length > 0) {
-      notificationApi.remove(notificationIds).catch((error) => {
-        // eslint-disable-next-line no-console, lingui/no-unlocalized-strings
-        console.error('Failed to clear notifications', error);
-      });
+      notificationApi.remove(notificationIds);
     }
     setClearPopoverOpened(false);
   };
@@ -279,13 +260,8 @@ export function NotificationsDrawer() {
         closeOnClickOutside
         ml={-marginOffset}
         size="xl"
-        portalProps={{
-          target: getPortalTarget(),
-        }}
-        overlayProps={{
-          left: getOverlayOffset(),
-          zIndex: 100,
-        }}
+        portalProps={{ target: getPortalTarget() }}
+        overlayProps={{ left: getOverlayOffset(), zIndex: 100 }}
         trapFocus
         opened={visible}
         onClose={() => toggle()}
@@ -294,16 +270,10 @@ export function NotificationsDrawer() {
             <Trans>Notifications</Trans>
           </Text>
         }
-        styles={{
-          body: {
-            padding: '16px',
-            height: 'calc(100% - 60px)',
-          },
-        }}
+        styles={{ body: { padding: '16px', height: 'calc(100% - 60px)' } }}
       >
         <Stack gap="md" h="100%">
           <Input
-            placeholder={t`Search notifications...`}
             leftSection={<IconSearch size={16} />}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.currentTarget.value)}
@@ -425,10 +395,6 @@ export function NotificationsDrawer() {
               </Popover.Target>
               <Popover.Dropdown>
                 <Stack>
-                  <Text c="orange" size="sm">
-                    <Trans>Select which notifications to delete:</Trans>
-                  </Text>
-
                   <Button
                     size="compact-sm"
                     variant="light"
@@ -456,7 +422,7 @@ export function NotificationsDrawer() {
                     size="compact-sm"
                     onClick={() => setClearPopoverOpened(false)}
                   >
-                    <Trans>Cancel</Trans>
+                    <CommonTranslations.Cancel />
                   </Button>
                 </Stack>
               </Popover.Dropdown>
@@ -474,7 +440,7 @@ export function NotificationsDrawer() {
                 <Stack align="center">
                   <IconBellOff size={48} opacity={0.5} />
                   <Text c="dimmed">
-                    <Trans>No notifications found</Trans>
+                    <CommonTranslations.NoItemsFound />
                   </Text>
                 </Stack>
               </Center>

@@ -9,7 +9,7 @@ export type RemoteConfig = {
 };
 
 function getRemoteConfigPath(): string {
-  return join(app.getPath('appData'), 'remote-config.json');
+  return join(app.getPath('appData'), 'PostyBirb', 'remote-config.json');
 }
 
 function createRemoteConfig(): Promise<void> {
@@ -22,10 +22,12 @@ function createRemoteConfig(): Promise<void> {
   });
 }
 
-export function ensureRemoteConfigExists(): Promise<void> {
-  return stat(getRemoteConfigPath())
-    .then(() => Promise.resolve())
-    .catch(() => createRemoteConfig());
+async function ensureRemoteConfigExists(): Promise<void> {
+  try {
+    await stat(getRemoteConfigPath());
+  } catch {
+    await createRemoteConfig();
+  }
 }
 
 export async function getRemoteConfig(): Promise<RemoteConfig> {

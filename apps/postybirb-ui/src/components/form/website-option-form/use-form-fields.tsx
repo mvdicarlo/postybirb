@@ -1,4 +1,4 @@
-import { Trans } from "@lingui/react/macro";
+import { Trans } from '@lingui/react/macro';
 import { Box, Loader } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { FormBuilderMetadata } from '@postybirb/form-builder';
@@ -16,6 +16,7 @@ import { useQuery } from 'react-query';
 import formGeneratorApi from '../../../api/form-generator.api';
 import websiteOptionsApi from '../../../api/website-options.api';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
+import { CommonTranslations } from '../../../translations/common-translations';
 
 type FormFieldsContextType = {
   values: Record<string, unknown>;
@@ -63,19 +64,16 @@ export function FormFieldsProvider({
     debounce(
       (updatedValues) =>
         websiteOptionsApi
-          .update(option.id, {
-            data: updatedValues as IWebsiteFormFields,
-          })
+          .update(option.id, { data: updatedValues as IWebsiteFormFields })
           .catch((err) => {
             notifications.show({
               id: option.id,
-              title: <Trans>Error</Trans>,
-              message: (
-                <>
-                  <Trans>Failed to update submission</Trans>
-                  <Box mt="xs">{err?.message || String(err)}</Box>
-                </>
+              title: (
+                <CommonTranslations.NounUpdateFailed>
+                  <Trans>Submission</Trans>
+                </CommonTranslations.NounUpdateFailed>
               ),
+              message: <Box mt="xs">{err?.message || String(err)}</Box>,
               color: 'red',
             });
           }),
@@ -112,11 +110,7 @@ export function FormFieldsProvider({
   );
 
   const contextValue = useMemo(
-    () => ({
-      formFields: formFields ?? {},
-      values,
-      setFieldValue,
-    }),
+    () => ({ formFields: formFields ?? {}, values, setFieldValue }),
     [formFields, values, setFieldValue],
   );
 
@@ -125,11 +119,9 @@ export function FormFieldsProvider({
   }
 
   if (!formFields) {
-    return (
-      <Box option-id={option.id}>
-        <Trans>Unable to display form</Trans>
-      </Box>
-    );
+    // Not worth translating this error
+    // eslint-disable-next-line lingui/no-unlocalized-strings
+    return <Box option-id={option.id}>Unable to display form</Box>;
   }
 
   return (

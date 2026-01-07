@@ -63,6 +63,13 @@ export interface ISubmission<
   isArchived: boolean;
 
   /**
+   * Indicates whether the submission has completed initialization
+   * (all files, options, and metadata have been set up).
+   * @type {boolean}
+   */
+  isInitialized: boolean;
+
+  /**
    * Information about the schedule for the submission.
    * @type {ISubmissionScheduleInfo}
    */

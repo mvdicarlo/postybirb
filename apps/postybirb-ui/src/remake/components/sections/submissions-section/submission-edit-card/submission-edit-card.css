@@ -1,0 +1,26 @@
+/**
+ * SubmissionEditCard styles.
+ */
+
+.postybirb__edit_card {
+  overflow: hidden;
+}
+
+.postybirb__edit_card_header {
+  width: 100%;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.postybirb__edit_card_header:hover {
+  background-color: var(--mantine-color-gray-light-hover);
+}
+
+.postybirb__edit_card_header_static {
+  width: 100%;
+}
+
+.postybirb__edit_card_chevron {
+  color: var(--mantine-color-dimmed);
+  transition: transform 150ms ease;
+}

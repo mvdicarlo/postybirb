@@ -1,7 +1,8 @@
 /* eslint-disable react-hooks/rules-of-hooks */
+import { BlockNoteEditor } from '@blocknote/core';
 import {
-    DefaultReactSuggestionItem,
-    createReactInlineContentSpec,
+  DefaultReactSuggestionItem,
+  createReactInlineContentSpec,
 } from '@blocknote/react';
 import { Badge } from '@mantine/core';
 import { ICustomShortcutDto } from '@postybirb/types';
@@ -9,7 +10,6 @@ import { IconBlockquote } from '@tabler/icons-react';
 import { useMemo } from 'react';
 import { CustomShortcutStore } from '../../../../stores/custom-shortcut.store';
 import { useStore } from '../../../../stores/use-store';
-import { schema } from '../schema';
 
 export const InlineCustomShortcut = createReactInlineContentSpec(
   {
@@ -47,7 +47,7 @@ export const InlineCustomShortcut = createReactInlineContentSpec(
 );
 
 export const getCustomShortcutsMenuItems = (
-  editor: typeof schema.BlockNoteEditor,
+  editor: BlockNoteEditor,
   shortcuts: ICustomShortcutDto[] = [],
 ): DefaultReactSuggestionItem[] =>
   shortcuts.map((sc) => ({
@@ -58,7 +58,7 @@ export const getCustomShortcutsMenuItems = (
         {
           type: 'customShortcut',
           props: { id: sc.id },
-        },
+        } as never,
         ' ',
       ]);
     },

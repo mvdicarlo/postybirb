@@ -12,8 +12,8 @@ const list = [
 
   // Node-specific errors
   // https://nodejs.org/api/errors.html
-  globalThis.AssertionError,
-  globalThis.SystemError,
+  (globalThis as any).AssertionError,
+  (globalThis as any).SystemError,
 ]
   // Non-native Errors are used with `globalThis` because they might be missing. This filter drops them when undefined.
   .filter(Boolean)

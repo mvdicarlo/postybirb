@@ -21,12 +21,8 @@ import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-datab
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { validateWebsiteDecoratorProps } from './decorators/website-decorator-props';
 import { OAuthWebsiteRequestDto } from './dtos/oauth-website-request.dto';
-import {
-  FileWebsiteKey
-} from './models/website-modifiers/file-website';
-import {
-  MessageWebsiteKey
-} from './models/website-modifiers/message-website';
+import { FileWebsiteKey } from './models/website-modifiers/file-website';
+import { MessageWebsiteKey } from './models/website-modifiers/message-website';
 import { OAuthWebsite } from './models/website-modifiers/oauth-website';
 import { UnknownWebsite } from './website';
 

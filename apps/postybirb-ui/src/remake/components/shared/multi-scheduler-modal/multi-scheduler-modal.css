@@ -1,0 +1,48 @@
+/**
+ * Styles for MultiSchedulerModal component.
+ */
+
+.postybirb__multi-scheduler-body {
+  padding: 0;
+}
+
+.postybirb__multi-scheduler-content {
+  display: flex;
+  gap: var(--mantine-spacing-md);
+  padding: var(--mantine-spacing-md);
+  min-height: 400px;
+}
+
+.postybirb__multi-scheduler-list {
+  flex: 1;
+  min-width: 0;
+  max-width: calc(100% - 300px - var(--mantine-spacing-md) * 2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.postybirb__multi-scheduler-divider {
+  flex-shrink: 0;
+}
+
+.postybirb__multi-scheduler-form {
+  flex: 0 0 300px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 768px) {
+  .postybirb__multi-scheduler-content {
+    flex-direction: column;
+  }
+
+  .postybirb__multi-scheduler-divider {
+    display: none;
+  }
+
+  .postybirb__multi-scheduler-form {
+    flex: none;
+  }
+}

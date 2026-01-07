@@ -1,7 +1,8 @@
-import { Trans } from "@lingui/react/macro";
+import { Trans } from '@lingui/react/macro';
 import { Button, Group, Modal, Stack, Title } from '@mantine/core';
 import { SubmissionId, SubmissionType } from '@postybirb/types';
 import { PropsWithChildren, useState } from 'react';
+import { CommonTranslations } from '../../../translations/common-translations';
 import { SubmissionPicker } from './submission-picker';
 
 type SubmissionPickerModalProps = {
@@ -40,7 +41,7 @@ export function SubmissionPickerModal(
             c="var(--mantine-color-text)"
             onClick={onClose}
           >
-            <Trans>Cancel</Trans>
+            <CommonTranslations.Cancel />
           </Button>
           <Button
             disabled={selectedSubmissions.length === 0}
@@ -48,7 +49,7 @@ export function SubmissionPickerModal(
               onApply(selectedSubmissions);
             }}
           >
-            <Trans>Apply</Trans>
+            <CommonTranslations.Save />
           </Button>
         </Group>
       </Stack>

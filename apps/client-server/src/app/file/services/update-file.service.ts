@@ -5,7 +5,6 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { PostyBirbTransaction } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import { EntityId, FileType } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
@@ -17,6 +16,10 @@ import { parse } from 'path';
 import { promisify } from 'util';
 import { SubmissionFile } from '../../drizzle/models';
 import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
+import {
+  TransactionContext,
+  withTransactionContext,
+} from '../../drizzle/transaction-context';
 import { MulterFileInfo } from '../models/multer-file-info';
 import { ImageUtil } from '../utils/image.util';
 import { CreateFileService } from './create-file.service';
@@ -54,30 +57,32 @@ export class UpdateFileService {
     target?: 'thumbnail',
   ): Promise<SubmissionFile> {
     const submissionFile = await this.findFile(submissionFileId);
-    await this.fileRepository.db.transaction(
-      async (tx: PostyBirbTransaction) => {
-        if (target === 'thumbnail') {
-          await this.replaceFileThumbnail(tx, submissionFile, file, buf);
-        }
-        await this.replacePrimaryFile(tx, submissionFile, file, buf);
-      },
-    );
+
+    await withTransactionContext(this.fileRepository.db, async (ctx) => {
+      if (target === 'thumbnail') {
+        await this.replaceFileThumbnail(ctx, submissionFile, file, buf);
+      } else {
+        await this.replacePrimaryFile(ctx, submissionFile, file, buf);
+      }
+    });
 
     // return the latest
     return this.findFile(submissionFileId);
   }
 
   private async replaceFileThumbnail(
-    tx: PostyBirbTransaction,
+    ctx: TransactionContext,
     submissionFile: SubmissionFile,
     file: MulterFileInfo,
     buf: Buffer,
   ) {
     const thumbnailDetails = await this.getImageDetails(file, buf);
-    let { thumbnail } = submissionFile;
-    if (!submissionFile.thumbnailId) {
-      thumbnail = await this.createFileService.createFileBufferEntity(
-        tx,
+    let { thumbnailId } = submissionFile;
+
+    if (!thumbnailId) {
+      // Create a new thumbnail buffer entity
+      const thumbnail = await this.createFileService.createFileBufferEntity(
+        ctx,
         submissionFile,
         thumbnailDetails.buffer,
         {
@@ -86,20 +91,27 @@ export class UpdateFileService {
           mimeType: file.mimetype,
         },
       );
+      thumbnailId = thumbnail.id;
     } else {
-      await tx.update(this.fileBufferRepository.schemaEntity).set({
-        buffer: thumbnailDetails.buffer,
-        size: thumbnailDetails.buffer.length,
-        mimeType: file.mimetype,
-        width: thumbnailDetails.width,
-        height: thumbnailDetails.height,
-      });
+      // Update existing thumbnail buffer
+      await ctx
+        .getDb()
+        .update(this.fileBufferRepository.schemaEntity)
+        .set({
+          buffer: thumbnailDetails.buffer,
+          size: thumbnailDetails.buffer.length,
+          mimeType: file.mimetype,
+          width: thumbnailDetails.width,
+          height: thumbnailDetails.height,
+        })
+        .where(eq(this.fileBufferRepository.schemaEntity.id, thumbnailId));
     }
 
-    await tx
+    await ctx
+      .getDb()
       .update(this.fileRepository.schemaEntity)
       .set({
-        thumbnailId: thumbnail.id,
+        thumbnailId,
         hasCustomThumbnail: true,
         hasThumbnail: true,
       })
@@ -107,16 +119,16 @@ export class UpdateFileService {
   }
 
   async replacePrimaryFile(
-    tx: PostyBirbTransaction,
+    ctx: TransactionContext,
     submissionFile: SubmissionFile,
     file: MulterFileInfo,
     buf: Buffer,
   ) {
-    return this.updateFileEntity(tx, submissionFile, file, buf);
+    return this.updateFileEntity(ctx, submissionFile, file, buf);
   }
 
   private async updateFileEntity(
-    tx: PostyBirbTransaction,
+    ctx: TransactionContext,
     submissionFile: SubmissionFile,
     file: MulterFileInfo,
     buf: Buffer,
@@ -127,11 +139,12 @@ export class UpdateFileService {
     if (submissionFile.hash !== fileHash) {
       const fileType = getFileType(file.filename);
       if (fileType === FileType.IMAGE) {
-        await this.updateImageFileProps(tx, submissionFile, file, buf);
+        await this.updateImageFileProps(ctx, submissionFile, file, buf);
       }
 
       // Update submission file entity
-      await tx
+      await ctx
+        .getDb()
         .update(this.fileRepository.schemaEntity)
         .set({
           hash: fileHash,
@@ -144,7 +157,8 @@ export class UpdateFileService {
       // Just to get the latest data
 
       // Duplicate props to primary file
-      await tx
+      await ctx
+        .getDb()
         .update(this.fileBufferRepository.schemaEntity)
         .set({
           buffer: buf,
@@ -167,7 +181,8 @@ export class UpdateFileService {
           (await this.repopulateTextFile(file, buf)) ||
           submissionFile?.altFile?.buffer;
         if (altFileText) {
-          await tx
+          await ctx
+            .getDb()
             .update(this.fileBufferRepository.schemaEntity)
             .set({
               buffer: altFileText,
@@ -179,7 +194,8 @@ export class UpdateFileService {
                 submissionFile.altFile.id,
               ),
             );
-          await tx
+          await ctx
+            .getDb()
             .update(this.fileRepository.schemaEntity)
             .set({
               hasAltFile: true,
@@ -228,7 +244,7 @@ export class UpdateFileService {
   }
 
   private async updateImageFileProps(
-    tx: PostyBirbTransaction,
+    ctx: TransactionContext,
     submissionFile: SubmissionFile,
     file: MulterFileInfo,
     buf: Buffer,
@@ -237,7 +253,8 @@ export class UpdateFileService {
       file,
       buf,
     );
-    await tx
+    await ctx
+      .getDb()
       .update(this.fileRepository.schemaEntity)
       .set({
         width,
@@ -245,7 +262,8 @@ export class UpdateFileService {
       })
       .where(eq(this.fileRepository.schemaEntity.id, submissionFile.id));
 
-    await tx
+    await ctx
+      .getDb()
       .update(this.fileBufferRepository.schemaEntity)
       .set({
         width,
@@ -275,7 +293,8 @@ export class UpdateFileService {
       const fileNameWithoutExt = parse(file.filename).name;
       const thumbnailExt = thumbnailMimeType === 'image/jpeg' ? 'jpg' : 'png';
 
-      await tx
+      await ctx
+        .getDb()
         .update(this.fileBufferRepository.schemaEntity)
         .set({
           buffer: thumbnailBuf,
