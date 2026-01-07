@@ -1,11 +1,13 @@
 /**
  * LoginWebview - A polished webview component for website login.
- * Displays a webview with a toolbar containing refresh button and URL display.
+ * Displays a webview with a toolbar containing refresh button, URL display,
+ * login status indicator, and manual login check button.
  */
 
 import { Trans } from '@lingui/react/macro';
 import {
   ActionIcon,
+  Badge,
   Box,
   Group,
   Loader,
@@ -15,10 +17,12 @@ import {
   Tooltip,
 } from '@mantine/core';
 import type { AccountId } from '@postybirb/types';
-import { IconRefresh } from '@tabler/icons-react';
+import { IconRefresh, IconUserCheck } from '@tabler/icons-react';
 import { debounce } from 'lodash';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import accountApi from '../../../api/account.api';
+import { useAccount } from '../../../stores';
+import { showSuccessNotification } from '../../../utils';
 import type { WebviewTag } from './webview-tag';
 
 interface LoginWebviewProps {
@@ -30,22 +34,49 @@ interface LoginWebviewProps {
 
 /**
  * A polished webview component for website login.
- * Features a toolbar with refresh button and URL display,
- * plus a loading overlay while the page loads.
+ * Features a toolbar with refresh button, login check button, URL display,
+ * login status indicator, plus a loading overlay while the page loads.
  */
 export function LoginWebview({ src, accountId }: LoginWebviewProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [currentUrl, setCurrentUrl] = useState(src);
   const webviewRef = useRef<WebviewTag | null>(null);
 
+  // Subscribe to account state for real-time login status updates
+  const account = useAccount(accountId);
+  const isPending = account?.isPending ?? false;
+  const isLoggedIn = account?.isLoggedIn ?? false;
+  const username = account?.username;
+
+  // Track if we've shown the success notification to avoid duplicates
+  const hasShownSuccessNotification = useRef(false);
+
   // Debounced refresh login to avoid excessive API calls
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedRefreshLogin = useCallback(
     debounce(() => {
       accountApi.refreshLogin(accountId);
-    }, 2000),
+    }, 500),
     [accountId],
   );
+
+  // Manual login check handler
+  const handleCheckLogin = useCallback(() => {
+    if (!isPending) {
+      accountApi.refreshLogin(accountId);
+    }
+  }, [accountId, isPending]);
+
+  // Show notification on first successful login
+  useEffect(() => {
+    if (isLoggedIn && !hasShownSuccessNotification.current) {
+      hasShownSuccessNotification.current = true;
+      const displayName = username || account?.name;
+      showSuccessNotification(
+        <Trans>Logged in{displayName ? ` as ${displayName}` : ''}</Trans>,
+      );
+    }
+  }, [isLoggedIn, username, account?.name]);
 
   // Handle webview events
   useEffect(() => {
@@ -77,8 +108,10 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
       webview.removeEventListener('did-start-loading', handleStartLoading);
       webview.removeEventListener('did-stop-loading', handleStopLoading);
       debouncedRefreshLogin.cancel();
+      // Trigger final login check when webview closes
+      accountApi.refreshLogin(accountId);
     };
-  }, [debouncedRefreshLogin]);
+  }, [debouncedRefreshLogin, accountId]);
 
   // Handle refresh button click
   const handleRefresh = () => {
@@ -98,14 +131,45 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
       {/* Toolbar */}
       <Paper p="xs" withBorder radius={0} style={{ flexShrink: 0 }}>
         <Group gap="sm">
-          <Tooltip label={<Trans>Refresh</Trans>}>
-            <ActionIcon variant="subtle" size="sm" onClick={handleRefresh}>
+          <Tooltip label={<Trans>Refresh page</Trans>}>
+            <ActionIcon
+              variant="subtle"
+              size="sm"
+              onClick={handleRefresh}
+              loading={isLoading}
+            >
               {isLoading ? <Loader size={16} /> : <IconRefresh size={16} />}
+            </ActionIcon>
+          </Tooltip>
+          <Tooltip label={<Trans>Check login status</Trans>}>
+            <ActionIcon
+              variant="subtle"
+              size="sm"
+              onClick={handleCheckLogin}
+              loading={isPending}
+              disabled={isPending}
+              color="blue"
+            >
+              <IconUserCheck size={16} />
             </ActionIcon>
           </Tooltip>
           <Text size="xs" c="dimmed" truncate style={{ flex: 1, minWidth: 0 }}>
             {currentUrl}
           </Text>
+          {/* Login status badge */}
+          {isPending ? (
+            <Badge size="xs" color="yellow" variant="light">
+              <Trans>Checking...</Trans>
+            </Badge>
+          ) : isLoggedIn ? (
+            <Badge size="xs" color="green" variant="light">
+              <Trans>Logged in{username ? ` as ${username}` : ''}</Trans>
+            </Badge>
+          ) : (
+            <Badge size="xs" color="gray" variant="light">
+              <Trans>Not logged in</Trans>
+            </Badge>
+          )}
         </Group>
       </Paper>
 

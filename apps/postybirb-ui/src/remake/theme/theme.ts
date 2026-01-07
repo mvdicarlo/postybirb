@@ -13,7 +13,7 @@ import {
   Select,
   Tooltip,
 } from '@mantine/core';
-import type { MantinePrimaryColor } from '../stores/ui-store';
+import type { MantinePrimaryColor } from '../stores/ui/appearance-store';
 
 // ============================================================================
 // Z-Index Scale (mirrors CSS variables in layout.css)

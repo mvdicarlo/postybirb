@@ -44,13 +44,11 @@ jobs:
         with:
           node-version: '22'
 
-      # This must be run after node setup but before any yarn commands
       - name: Enable corepack to use Yarn v4
         run: |
           corepack enable
           corepack prepare --activate
 
-      # Cache Electron binaries
       - name: Cache Electron binaries
         uses: actions/cache@v4
         with:
@@ -58,11 +56,10 @@ jobs:
             ~/.cache/electron
             ~/.cache/electron-builder
             node_modules/.cache/electron
-          key: ${{ runner.os }}-electron-cache-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-${{ matrix.arch }}-electron-cache-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-electron-cache-
+            ${{ runner.os }}-${{ matrix.arch }}-electron-cache-
 
-      # Install dependencies with proper caching
       - name: Install dependencies
         run: yarn install --immutable
         env:
@@ -76,20 +73,31 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y snapd
           sudo snap install snapcraft --classic
+
+      # ✅ Install system fpm on ALL Linux runners (x64 + arm64)
+      - name: Install Ruby + fpm (system) for Linux packaging
+        if: matrix.platform == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ruby ruby-dev build-essential rpm
+          sudo gem install --no-document fpm
+          # Ensure gem bindir is on PATH for subsequent steps
+          echo "$(ruby -e 'print Gem.bindir')" >> "$GITHUB_PATH"
+          echo "Ruby:"; ruby -v
+          echo "fpm:"; fpm --version
+
       - name: Inject Application Insights connection string
         env:
           APP_INSIGHTS_KEY: ${{ secrets.APP_INSIGHTS_KEY }}
-        run: yarn inject:app-insights
+        run: corepack yarn inject:app-insights
 
-      # Build the application
       - name: Build application
-        run: yarn build:prod
+        run: corepack yarn build:prod
         env:
           NODE_ENV: production
 
-      # Build Electron app
       - name: Build Electron app
-        run: yarn electron-builder --${{ matrix.platform }} --${{ matrix.arch }} --publish=always
+        run: corepack yarn electron-builder --${{ matrix.platform }} --${{ matrix.arch }} --publish=always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
@@ -100,3 +108,5 @@ jobs:
           CSC_IDENTITY_AUTO_DISCOVERY: true
           SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
           SNAPCRAFT_BUILD_ENVIRONMENT: host
+          # ✅ Use system fpm for Linux only
+          USE_SYSTEM_FPM: ${{ matrix.platform == 'linux' && 'true' || '' }}

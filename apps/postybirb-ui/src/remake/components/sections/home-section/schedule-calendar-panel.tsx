@@ -5,26 +5,26 @@
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
-  ActionIcon,
-  Box,
-  Group,
-  Paper,
-  SimpleGrid,
-  Stack,
-  Text,
-  ThemeIcon,
-  Tooltip,
-  UnstyledButton,
+    ActionIcon,
+    Box,
+    Group,
+    Paper,
+    SimpleGrid,
+    Stack,
+    Text,
+    ThemeIcon,
+    Tooltip,
+    UnstyledButton,
 } from '@mantine/core';
 import {
-  IconCalendarEvent,
-  IconChevronLeft,
-  IconChevronRight,
+    IconCalendarEvent,
+    IconChevronLeft,
+    IconChevronRight,
 } from '@tabler/icons-react';
 import { useCallback, useMemo, useState } from 'react';
 import { useLocale } from '../../../hooks';
-import { useScheduledSubmissions } from '../../../stores/submission-store';
-import { useDrawerActions } from '../../../stores/ui-store';
+import { useScheduledSubmissions } from '../../../stores/entity/submission-store';
+import { useDrawerActions } from '../../../stores/ui/drawer-store';
 
 /**
  * Get weekday abbreviations for calendar header.

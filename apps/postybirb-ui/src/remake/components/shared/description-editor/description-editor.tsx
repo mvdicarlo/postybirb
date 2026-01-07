@@ -5,6 +5,7 @@ import {
   defaultBlockSpecs,
   defaultInlineContentSpecs,
   defaultStyleSpecs,
+  Dictionary,
 } from '@blocknote/core';
 import { BlockNoteView } from '@blocknote/mantine';
 import { SuggestionMenuController, useCreateBlockNote } from '@blocknote/react';
@@ -13,8 +14,8 @@ import { Box, useMantineColorScheme } from '@mantine/core';
 import type { Description } from '@postybirb/types';
 import { useMemo } from 'react';
 import { useLocale } from '../../../hooks';
-import { useCustomShortcuts } from '../../../stores/custom-shortcut-store';
-import { useWebsites } from '../../../stores/website-store';
+import { useCustomShortcuts } from '../../../stores/entity/custom-shortcut-store';
+import { useWebsites } from '../../../stores/entity/website-store';
 import {
   DefaultShortcut,
   filterShortcutMenuItems,
@@ -112,7 +113,7 @@ function DescriptionEditorInner({
         emptyDocument: t`Type / for commands or \` for shortcuts`,
         default: t`Type / for commands or \` for shortcuts`,
       },
-    } as never,
+    } as unknown as Dictionary,
   });
 
   // Get username shortcuts from websites
@@ -145,7 +146,7 @@ function DescriptionEditorInner({
           triggerCharacter="/"
           getItems={async (query) =>
             filterSuggestionItems(
-              getCustomSlashMenuItems(editor, isDefaultEditor),
+              getCustomSlashMenuItems(editor, !!isDefaultEditor),
               query,
             )
           }

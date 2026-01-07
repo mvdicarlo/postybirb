@@ -14,7 +14,7 @@ import {
 } from '@tabler/icons-react';
 import { useMemo } from 'react';
 import { useLocale } from '../../../hooks';
-import { useNotifications } from '../../../stores/notification-store';
+import { useNotifications } from '../../../stores/entity/notification-store';
 import type { NotificationRecord } from '../../../stores/records';
 import { EmptyState } from '../../empty-state';
 
@@ -67,7 +67,7 @@ export function RecentActivityPanel() {
         </Group>
 
         {recentActivity.length === 0 ? (
-          <Box style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+          <Box style={{ alignItems: 'center' }}>
             <EmptyState
               preset="no-notifications"
               message={<Trans>No recent activity</Trans>}

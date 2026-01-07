@@ -16,8 +16,8 @@ import {
 import { SubmissionType } from '@postybirb/types';
 import { IconAlertTriangle, IconExclamationCircle } from '@tabler/icons-react';
 import { useCallback, useMemo } from 'react';
-import { useSubmissionsWithErrors } from '../../../stores/submission-store';
-import { useViewStateActions } from '../../../stores/ui-store';
+import { useSubmissionsWithErrors } from '../../../stores/entity/submission-store';
+import { useViewStateActions } from '../../../stores/ui/navigation-store';
 import { EmptyState } from '../../empty-state';
 
 /**
@@ -111,7 +111,7 @@ export function ValidationIssuesPanel() {
         </Group>
 
         {issues.length === 0 ? (
-          <Box style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+          <Box style={{ alignItems: 'center' }}>
             <EmptyState
               icon={<IconExclamationCircle size={32} />}
               message={<Trans>No validation issues</Trans>}

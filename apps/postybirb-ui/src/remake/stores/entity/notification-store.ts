@@ -7,11 +7,11 @@ import type { MantineColor } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { NOTIFICATION_UPDATES } from '@postybirb/socket-events';
 import type { INotification } from '@postybirb/types';
-import { useShallow } from 'zustand/shallow';
-import notificationApi from '../api/notification.api';
-import AppSocket from '../transports/websocket';
-import { createEntityStore, type EntityStore } from './create-entity-store';
-import { NotificationRecord } from './records';
+import { useShallow } from 'zustand/react/shallow';
+import notificationApi from '../../api/notification.api';
+import AppSocket from '../../transports/websocket';
+import { createEntityStore, type EntityStore } from '../create-entity-store';
+import { NotificationRecord } from '../records';
 
 /**
  * Fetch all notifications from the API.

@@ -17,8 +17,8 @@ import {
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { IconEye, IconEyeOff } from '@tabler/icons-react';
-import { useAccountsFilter } from '../../../stores/ui-store';
-import { useWebsites } from '../../../stores/website-store';
+import { useWebsites } from '../../../stores/entity/website-store';
+import { useAccountsFilter } from '../../../stores/ui/accounts-ui-store';
 
 /**
  * Popover component for toggling website visibility in the accounts list.

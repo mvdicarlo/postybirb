@@ -4,10 +4,10 @@
 
 import { SUBMISSION_UPDATES } from '@postybirb/socket-events';
 import type { ISubmissionDto, SubmissionId, SubmissionType } from '@postybirb/types';
-import { useShallow } from 'zustand/shallow';
-import submissionApi from '../api/submission.api';
-import { createEntityStore, type EntityStore } from './create-entity-store';
-import { SubmissionRecord } from './records';
+import { useShallow } from 'zustand/react/shallow';
+import submissionApi from '../../api/submission.api';
+import { createEntityStore, type EntityStore } from '../create-entity-store';
+import { SubmissionRecord } from '../records';
 
 /**
  * Fetch all submissions from the API.

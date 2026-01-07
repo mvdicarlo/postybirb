@@ -19,6 +19,8 @@ export interface AccountsContextValue {
   onResetAccount: (accountId: string) => void;
   /** Handle login request for an account */
   onLoginRequest: (accountId: string) => void;
+  /** Handle account creation - selects the new account */
+  onAccountCreated: (accountId: string) => void;
 }
 
 const AccountsContext = createContext<AccountsContextValue | null>(null);
@@ -61,6 +63,8 @@ export interface AccountsProviderProps {
   onLoginRequest: (accountId: string) => void;
   /** Unselects account and shows empty menu */
   onClearSelection: () => void;
+  /** Account created handler - typically selects the new account */
+  onAccountCreated: (accountId: string) => void;
 }
 
 /**
@@ -75,6 +79,7 @@ export function AccountsProvider({
   onResetAccount,
   onLoginRequest,
   onClearSelection,
+  onAccountCreated,
 }: AccountsProviderProps) {
   const value = useMemo<AccountsContextValue>(
     () => ({
@@ -84,6 +89,7 @@ export function AccountsProvider({
       onResetAccount,
       onLoginRequest,
       onClearSelection,
+      onAccountCreated,
     }),
     [
       selectedAccountId,
@@ -91,6 +97,7 @@ export function AccountsProvider({
       onDeleteAccount,
       onResetAccount,
       onLoginRequest,
+      onAccountCreated,
       onClearSelection,
     ],
   );

@@ -8,7 +8,7 @@ import { Button, Loader, Paper, Stack } from '@mantine/core';
 import { IconPlayerPause, IconPlayerPlay } from '@tabler/icons-react';
 import { useState } from 'react';
 import postQueueApi from '../../../api/post-queue.api';
-import { useQueuePaused } from '../../../stores/settings-store';
+import { useQueuePaused } from '../../../stores/entity/settings-store';
 
 /**
  * QueueControlCard component for the home dashboard.

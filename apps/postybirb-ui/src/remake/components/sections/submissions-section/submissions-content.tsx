@@ -27,16 +27,16 @@ import {
   IconLayoutSidebarLeftExpand,
 } from '@tabler/icons-react';
 import { useMemo } from 'react';
-import type { SubmissionRecord } from '../../../stores/records';
 import {
   useSubmissionsByType,
   useSubmissionsMap,
-} from '../../../stores/submission-store';
+} from '../../../stores/entity/submission-store';
+import type { SubmissionRecord } from '../../../stores/records';
 import {
   useSubNavVisible,
   useSubmissionsContentPreferences,
   useToggleSectionPanel,
-} from '../../../stores/ui-store';
+} from '../../../stores/ui/submissions-ui-store';
 import {
   isFileSubmissionsViewState,
   isMessageSubmissionsViewState,

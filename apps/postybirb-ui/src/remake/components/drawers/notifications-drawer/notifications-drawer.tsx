@@ -6,41 +6,41 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-    ActionIcon,
-    Badge,
-    Box,
-    Card,
-    Checkbox,
-    Group,
-    SegmentedControl,
-    Stack,
-    Text,
-    Tooltip,
+  ActionIcon,
+  Badge,
+  Box,
+  Card,
+  Checkbox,
+  Group,
+  SegmentedControl,
+  Stack,
+  Text,
+  Tooltip,
 } from '@mantine/core';
 import {
-    IconAlertTriangle,
-    IconBell,
-    IconCheck,
-    IconCircleCheck,
-    IconExclamationCircle,
-    IconMail,
-    IconMailOpened,
-    IconTrash,
+  IconAlertTriangle,
+  IconBell,
+  IconCheck,
+  IconCircleCheck,
+  IconExclamationCircle,
+  IconMail,
+  IconMailOpened,
+  IconTrash,
 } from '@tabler/icons-react';
 import { useCallback, useMemo, useState } from 'react';
 import notificationApi from '../../../api/notification.api';
 import { useLocale } from '../../../hooks';
 import {
-    useNotifications,
-    useUnreadNotificationCount,
-} from '../../../stores/notification-store';
+  useNotifications,
+  useUnreadNotificationCount,
+} from '../../../stores/entity/notification-store';
 import type { NotificationRecord } from '../../../stores/records';
-import { useActiveDrawer, useDrawerActions } from '../../../stores/ui-store';
+import { useActiveDrawer, useDrawerActions } from '../../../stores/ui/drawer-store';
 import {
-    showDeletedNotification,
-    showDeleteErrorNotification,
-    showSuccessNotification,
-    showUpdateErrorNotification,
+  showDeletedNotification,
+  showDeleteErrorNotification,
+  showSuccessNotification,
+  showUpdateErrorNotification,
 } from '../../../utils/notifications';
 import { EmptyState } from '../../empty-state';
 import { HoldToConfirmButton } from '../../hold-to-confirm';

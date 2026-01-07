@@ -4,7 +4,7 @@
  */
 
 import type { ReactNode } from 'react';
-import type { DrawerKey } from '../stores/ui-store';
+import type { DrawerKey } from '../stores/ui/drawer-store';
 import type { ViewState } from './view-state';
 
 // =============================================================================

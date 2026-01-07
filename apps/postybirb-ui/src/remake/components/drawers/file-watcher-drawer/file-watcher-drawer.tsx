@@ -27,7 +27,7 @@ import { useCallback, useMemo, useState } from 'react';
 import directoryWatchersApi from '../../../api/directory-watchers.api';
 import { useDirectoryWatchers } from '../../../stores';
 import type { DirectoryWatcherRecord } from '../../../stores/records';
-import { useActiveDrawer, useDrawerActions } from '../../../stores/ui-store';
+import { useActiveDrawer, useDrawerActions } from '../../../stores/ui/drawer-store';
 import {
   showCreatedNotification,
   showCreateErrorNotification,

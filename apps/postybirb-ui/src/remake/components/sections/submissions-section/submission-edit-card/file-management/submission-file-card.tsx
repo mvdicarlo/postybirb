@@ -4,34 +4,34 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-  ActionIcon,
-  Badge,
-  Box,
-  Collapse,
-  Divider,
-  Flex,
-  Group,
-  Paper,
-  Text,
-  Tooltip,
+    ActionIcon,
+    Badge,
+    Box,
+    Collapse,
+    Divider,
+    Flex,
+    Group,
+    Paper,
+    Text,
+    Tooltip,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import {
-  FileType,
-  IAccountDto,
-  ISubmissionFileDto,
-  NULL_ACCOUNT_ID,
+    FileType,
+    IAccountDto,
+    ISubmissionFileDto,
+    NULL_ACCOUNT_ID,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import {
-  IconChevronDown,
-  IconChevronRight,
-  IconGripVertical,
-  IconTrash,
+    IconChevronDown,
+    IconChevronRight,
+    IconGripVertical,
+    IconTrash,
 } from '@tabler/icons-react';
 import { useMemo } from 'react';
 import fileSubmissionApi from '../../../../../api/file-submission.api';
-import { useAccountsMap } from '../../../../../stores/account-store';
+import { useAccountsMap } from '../../../../../stores/entity/account-store';
 import { showErrorWithContext } from '../../../../../utils/notifications';
 import { useSubmissionEditCardContext } from '../context';
 import { FileActions } from './file-actions';

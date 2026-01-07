@@ -12,10 +12,6 @@ describe('LegacyUserAccountConverter', () => {
   let repository: PostyBirbDatabase<'AccountSchema'>;
   const ts = Date.now();
 
-  beforeAll(() => {
-    PostyBirbDirectories.initializeDirectories();
-  });
-
   beforeEach(async () => {
     clearDatabase();
 

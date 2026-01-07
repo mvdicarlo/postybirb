@@ -5,11 +5,11 @@
 
 import { Trans } from '@lingui/react/macro';
 import { Box, Group } from '@mantine/core';
-import { useActiveDrawer, useDrawerActions } from '../../../stores/ui-store';
+import { useActiveDrawer, useDrawerActions } from '../../../stores/ui/drawer-store';
 import { SectionDrawer } from '../section-drawer';
 import { ScheduleCalendar } from './schedule-calendar';
-import { SubmissionList } from './submission-list';
 import './schedule-drawer.css';
+import { SubmissionList } from './submission-list';
 
 /**
  * Schedule drawer with calendar and draggable submission list.

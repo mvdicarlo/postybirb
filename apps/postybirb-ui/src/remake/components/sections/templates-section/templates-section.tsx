@@ -28,8 +28,9 @@ import submissionApi from '../../../api/submission.api';
 import {
     useSubmissionsLoading,
     useTemplateSubmissions,
-} from '../../../stores/submission-store';
-import { useSetViewState, useTemplatesFilter } from '../../../stores/ui-store';
+} from '../../../stores/entity/submission-store';
+import { useNavigationStore } from '../../../stores/ui/navigation-store';
+import { useTemplatesFilter } from '../../../stores/ui/templates-ui-store';
 import { isTemplatesViewState, type ViewState } from '../../../types/view-state';
 import {
     showErrorNotification,
@@ -52,7 +53,7 @@ export function TemplatesSection({ viewState }: TemplatesSectionProps) {
   const { isLoading } = useSubmissionsLoading();
   const { tabType, searchQuery, setTabType, setSearchQuery } =
     useTemplatesFilter();
-  const setViewState = useSetViewState();
+  const setViewState = useNavigationStore((state) => state.setViewState);
 
   // New template name input
   const [newTemplateName, setNewTemplateName] = useState('');

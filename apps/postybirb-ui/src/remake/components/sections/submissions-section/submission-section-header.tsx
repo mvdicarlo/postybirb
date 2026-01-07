@@ -32,11 +32,8 @@ import {
 import { useCallback, useState } from 'react';
 import { DeleteSelectedKeybinding } from '../../../config/keybindings';
 import type { SubmissionRecord } from '../../../stores/records';
-import type { SubmissionFilter } from '../../../stores/ui-store';
-import {
-  useSubmissionsFilter,
-  useSubmissionViewMode,
-} from '../../../stores/ui-store';
+import { useSubmissionViewMode } from '../../../stores/ui/appearance-store';
+import { type SubmissionFilter, useSubmissionsFilter } from '../../../stores/ui/submissions-ui-store';
 import { MultiSchedulerModal, SearchInput } from '../../shared';
 import { TemplatePickerModal } from '../../shared/template-picker';
 import './submissions-section.css';

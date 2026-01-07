@@ -4,10 +4,10 @@
 
 import { CUSTOM_SHORTCUT_UPDATES } from '@postybirb/socket-events';
 import type { ICustomShortcutDto } from '@postybirb/types';
-import customShortcutApi from '../api/custom-shortcut.api';
-import { type EntityStore } from './create-entity-store';
-import { createTypedStore } from './create-typed-store';
-import { CustomShortcutRecord } from './records';
+import customShortcutApi from '../../api/custom-shortcut.api';
+import { type EntityStore } from '../create-entity-store';
+import { createTypedStore } from '../create-typed-store';
+import { CustomShortcutRecord } from '../records';
 
 /**
  * Custom shortcut store with all standard selector hooks.

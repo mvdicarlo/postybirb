@@ -5,11 +5,11 @@
 
 import { USER_CONVERTER_UPDATES } from '@postybirb/socket-events';
 import type { UserConverterDto } from '@postybirb/types';
-import userConvertersApi from '../api/user-converters.api';
-import AppSocket from '../transports/websocket';
-import { type EntityStore } from './create-entity-store';
-import { createTypedStore } from './create-typed-store';
-import { UserConverterRecord } from './records';
+import userConvertersApi from '../../api/user-converters.api';
+import AppSocket from '../../transports/websocket';
+import { type EntityStore } from '../create-entity-store';
+import { createTypedStore } from '../create-typed-store';
+import { UserConverterRecord } from '../records';
 
 /**
  * User converter store with all standard hooks.

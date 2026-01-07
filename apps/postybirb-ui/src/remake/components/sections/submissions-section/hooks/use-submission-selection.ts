@@ -4,7 +4,7 @@
 
 import { useCallback, useMemo, useRef } from 'react';
 import type { SubmissionRecord } from '../../../../stores/records';
-import { useSetViewState } from '../../../../stores/ui-store';
+import { useNavigationStore } from '../../../../stores/ui/navigation-store';
 import { type ViewState } from '../../../../types/view-state';
 import type { SelectionState } from '../submission-section-header';
 import { isSubmissionsViewState } from '../types';
@@ -40,7 +40,7 @@ export function useSubmissionSelection({
   viewState,
   orderedSubmissions,
 }: UseSubmissionSelectionProps): UseSubmissionSelectionResult {
-  const setViewState = useSetViewState();
+  const setViewState = useNavigationStore((state) => state.setViewState);
 
   // Get selected IDs from view state (memoized to prevent unnecessary rerenders)
   const selectedIds = useMemo(() => {

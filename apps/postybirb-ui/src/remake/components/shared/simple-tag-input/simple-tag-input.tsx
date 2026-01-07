@@ -14,8 +14,8 @@ import { IconTag } from '@tabler/icons-react';
 import { flatten, uniq } from 'lodash';
 import { useCallback, useMemo } from 'react';
 import { useTagSearch } from '../../../hooks/tag-search';
-import { useTagSearchProvider } from '../../../stores/settings-store';
-import { useTagGroups } from '../../../stores/tag-group-store';
+import { useTagSearchProvider } from '../../../stores/entity/settings-store';
+import { useTagGroups } from '../../../stores/entity/tag-group-store';
 
 /**
  * Special prefix used to identify tag group options in the dropdown.

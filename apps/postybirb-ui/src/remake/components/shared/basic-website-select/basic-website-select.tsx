@@ -2,9 +2,9 @@ import { ComboboxItemGroup, MultiSelect } from '@mantine/core';
 import { AccountId, IAccountDto } from '@postybirb/types';
 import { useEffect, useMemo, useState } from 'react';
 import {
-    groupAccountsByWebsite,
-    useAccounts,
-} from '../../../stores/account-store';
+  groupAccountsByWebsite,
+  useAccounts,
+} from '../../../stores/entity/account-store';
 import { AccountRecord } from '../../../stores/records';
 
 type WebsiteSelectProps = {

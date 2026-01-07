@@ -7,15 +7,15 @@
 import { t } from '@lingui/core/macro';
 import { Trans } from '@lingui/react/macro';
 import {
-  ActionIcon,
-  Box,
-  Checkbox,
-  Group,
-  Stack,
-  Table,
-  TagsInput,
-  TextInput,
-  Tooltip,
+    ActionIcon,
+    Box,
+    Checkbox,
+    Group,
+    Stack,
+    Table,
+    TagsInput,
+    TextInput,
+    Tooltip,
 } from '@mantine/core';
 import { useDebouncedCallback, useDebouncedValue } from '@mantine/hooks';
 import { IconPlus, IconTrash } from '@tabler/icons-react';
@@ -23,13 +23,13 @@ import { useCallback, useMemo, useState } from 'react';
 import tagGroupsApi from '../../../api/tag-groups.api';
 import { useTagGroups } from '../../../stores';
 import type { TagGroupRecord } from '../../../stores/records';
-import { useActiveDrawer, useDrawerActions } from '../../../stores/ui-store';
+import { useActiveDrawer, useDrawerActions } from '../../../stores/ui/drawer-store';
 import {
-  showCreatedNotification,
-  showCreateErrorNotification,
-  showDeletedNotification,
-  showDeleteErrorNotification,
-  showUpdateErrorNotification,
+    showCreatedNotification,
+    showCreateErrorNotification,
+    showDeletedNotification,
+    showDeleteErrorNotification,
+    showUpdateErrorNotification,
 } from '../../../utils/notifications';
 import { EmptyState } from '../../empty-state';
 import { HoldToConfirmButton } from '../../hold-to-confirm';

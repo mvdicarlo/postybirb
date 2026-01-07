@@ -15,9 +15,13 @@ import {
   ThemeIcon,
   UnstyledButton,
 } from '@mantine/core';
-import { IconUsers, IconAlertCircle, IconCircleCheck } from '@tabler/icons-react';
-import { useAccounts } from '../../../stores/account-store';
-import { useViewStateActions } from '../../../stores/ui-store';
+import {
+  IconAlertCircle,
+  IconCircleCheck,
+  IconUsers,
+} from '@tabler/icons-react';
+import { useAccounts } from '../../../stores/entity/account-store';
+import { useViewStateActions } from '../../../stores/ui/navigation-store';
 import { createAccountsViewState } from '../../../types/view-state';
 import { EmptyState } from '../../empty-state';
 
@@ -36,7 +40,8 @@ export function AccountHealthPanel() {
   const totalAccounts = accounts.length;
   const loggedInAccounts = accounts.filter((a) => a.isLoggedIn).length;
   const loggedOutAccounts = totalAccounts - loggedInAccounts;
-  const healthPercentage = totalAccounts > 0 ? (loggedInAccounts / totalAccounts) * 100 : 0;
+  const healthPercentage =
+    totalAccounts > 0 ? (loggedInAccounts / totalAccounts) * 100 : 0;
 
   const allHealthy = loggedOutAccounts === 0 && totalAccounts > 0;
   const hasIssues = loggedOutAccounts > 0;
@@ -66,7 +71,7 @@ export function AccountHealthPanel() {
         </Group>
 
         {totalAccounts === 0 ? (
-          <Box style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+          <Box style={{ alignItems: 'center' }}>
             <EmptyState
               preset="no-records"
               message={<Trans>No accounts added</Trans>}
@@ -82,15 +87,26 @@ export function AccountHealthPanel() {
                   {loggedInAccounts}
                 </Text>
                 <Text component="span" c="dimmed">
-                  {' '}/ {totalAccounts} <Trans>logged in</Trans>
+                  {' '}
+                  / {totalAccounts} <Trans>logged in</Trans>
                 </Text>
               </Text>
               {allHealthy ? (
-                <Badge color="green" variant="light" size="sm" leftSection={<IconCircleCheck size={12} />}>
+                <Badge
+                  color="green"
+                  variant="light"
+                  size="sm"
+                  leftSection={<IconCircleCheck size={12} />}
+                >
                   <Trans>All healthy</Trans>
                 </Badge>
               ) : hasIssues ? (
-                <Badge color="orange" variant="light" size="sm" leftSection={<IconAlertCircle size={12} />}>
+                <Badge
+                  color="orange"
+                  variant="light"
+                  size="sm"
+                  leftSection={<IconAlertCircle size={12} />}
+                >
                   {loggedOutAccounts} <Trans>need attention</Trans>
                 </Badge>
               ) : null}
@@ -105,7 +121,10 @@ export function AccountHealthPanel() {
 
             {hasIssues && (
               <Text size="xs" c="dimmed">
-                <Trans>Some accounts need to be logged in before you can post to them.</Trans>
+                <Trans>
+                  Some accounts need to be logged in before you can post to
+                  them.
+                </Trans>
               </Text>
             )}
           </Stack>

@@ -49,6 +49,7 @@ export default class TestWebsite
       this.loginState.logout();
     }
 
+    await wait(5_000);
     await this.websiteDataStore.setData({ test: 'test-mode' });
     return this.loginState.setLogin(true, 'TestUser');
   }

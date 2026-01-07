@@ -7,7 +7,7 @@
 import {
   useActiveDrawer,
   useDrawerActions
-} from '../../stores/ui-store';
+} from '../../stores/ui/drawer-store';
 
 // Import the CustomShortcutsDrawer implementation for wrapping
 import { CustomShortcutsDrawer as CustomShortcutsDrawerComponent } from './custom-shortcuts-drawer';

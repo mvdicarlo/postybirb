@@ -5,19 +5,19 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-  Avatar,
-  Checkbox,
-  Group,
-  Image,
-  MultiSelect,
-  type MultiSelectProps,
-  Stack,
-  Text,
+    Avatar,
+    Checkbox,
+    Group,
+    Image,
+    MultiSelect,
+    type MultiSelectProps,
+    Stack,
+    Text,
 } from '@mantine/core';
 import { SubmissionType } from '@postybirb/types';
 import { IconFile, IconMessage } from '@tabler/icons-react';
 import { useMemo } from 'react';
-import { useSubmissionsByType } from '../../../stores/submission-store';
+import { useSubmissionsByType } from '../../../stores/entity/submission-store';
 import { getThumbnailUrl } from '../../sections/submissions-section/submission-card/utils';
 
 export interface SubmissionPickerProps extends Omit<

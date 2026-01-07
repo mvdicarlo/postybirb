@@ -7,9 +7,16 @@ import { Trans } from '@lingui/react/macro';
 import { Box, Divider, Loader, ScrollArea, Stack } from '@mantine/core';
 import { useMemo } from 'react';
 import accountApi from '../../../api/account.api';
-import { useAccounts, useAccountsLoading } from '../../../stores/account-store';
-import { useAccountsFilter, useSetViewState } from '../../../stores/ui-store';
-import { useWebsites, useWebsitesLoading } from '../../../stores/website-store';
+import {
+  useAccounts,
+  useAccountsLoading,
+} from '../../../stores/entity/account-store';
+import {
+  useWebsites,
+  useWebsitesLoading,
+} from '../../../stores/entity/website-store';
+import { useAccountsFilter } from '../../../stores/ui/accounts-ui-store';
+import { useNavigationStore } from '../../../stores/ui/navigation-store';
 import { AccountLoginFilter } from '../../../types/account-filters';
 import { isAccountsViewState, type ViewState } from '../../../types/view-state';
 import {
@@ -38,7 +45,7 @@ export function AccountsSection({ viewState }: AccountsSectionProps) {
   const { isLoading: websitesLoading } = useWebsitesLoading();
   const { isLoading: accountsLoading } = useAccountsLoading();
   const { searchQuery, loginFilter, hiddenWebsites } = useAccountsFilter();
-  const setViewState = useSetViewState();
+  const setViewState = useNavigationStore((state) => state.setViewState);
 
   // Get selected account ID from view state
   const selectedAccountId = isAccountsViewState(viewState)
@@ -204,6 +211,7 @@ export function AccountsSection({ viewState }: AccountsSectionProps) {
             onResetAccount={handleResetAccount}
             onLoginRequest={handleSelectAccount}
             onClearSelection={handleClearSelection}
+            onAccountCreated={handleSelectAccount}
           >
             <Stack gap="xs" p="xs">
               {sortedWebsites.map((website) => (

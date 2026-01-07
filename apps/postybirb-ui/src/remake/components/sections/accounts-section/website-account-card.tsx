@@ -277,7 +277,7 @@ export function WebsiteAccountCard({
   accounts,
 }: WebsiteAccountCardProps) {
   const { t } = useLingui();
-  const accountContext = useAccountsContext();
+  const { onAccountCreated } = useAccountsContext();
   // Default to collapsed if no accounts, expanded otherwise
   const [expanded, { toggle }] = useDisclosure(accounts.length > 0);
   const [addPopoverOpened, { open: openAddPopover, close: closeAddPopover }] =
@@ -294,7 +294,7 @@ export function WebsiteAccountCard({
 
     setIsCreating(true);
     try {
-      const account = await accountApi.create({
+      const response = await accountApi.create({
         name: trimmedName,
         website: website.id,
         groups: [],
@@ -302,7 +302,8 @@ export function WebsiteAccountCard({
       showCreatedNotification(trimmedName);
       setNewAccountName('');
       closeAddPopover();
-      accountContext.onSelectAccount(account.body.id);
+      // Select the newly created account
+      onAccountCreated(response.body.id);
     } catch {
       showCreateErrorNotification(trimmedName);
     } finally {

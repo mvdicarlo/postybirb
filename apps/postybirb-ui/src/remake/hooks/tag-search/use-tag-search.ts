@@ -5,7 +5,7 @@
 
 import { useDebouncedCallback } from '@mantine/hooks';
 import { useEffect, useRef, useState } from 'react';
-import { useSettings, useTagSearchProvider } from '../../stores/settings-store';
+import { useSettings, useTagSearchProvider } from '../../stores/entity/settings-store';
 import { TagSearchProvider } from './tag-search-provider';
 import { TagSearchProviders } from './tag-search-providers';
 

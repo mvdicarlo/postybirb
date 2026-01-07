@@ -4,11 +4,11 @@
 
 import { DIRECTORY_WATCHER_UPDATES } from '@postybirb/socket-events';
 import type { DirectoryWatcherDto } from '@postybirb/types';
-import { useShallow } from 'zustand/shallow';
-import directoryWatchersApi from '../api/directory-watchers.api';
-import { type EntityStore } from './create-entity-store';
-import { createTypedStore } from './create-typed-store';
-import { DirectoryWatcherRecord } from './records';
+import { useShallow } from 'zustand/react/shallow';
+import directoryWatchersApi from '../../api/directory-watchers.api';
+import { type EntityStore } from '../create-entity-store';
+import { createTypedStore } from '../create-typed-store';
+import { DirectoryWatcherRecord } from '../records';
 
 /**
  * Directory watcher store with all standard selector hooks.

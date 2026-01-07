@@ -16,7 +16,7 @@ import { PageErrorBoundary } from './components/error-boundary';
 import { Layout } from './components/layout/layout';
 import { I18nProvider } from './providers/i18n-provider';
 import { loadAllStores } from './stores';
-import { useColorScheme, usePrimaryColor } from './stores/ui-store';
+import { useColorScheme, usePrimaryColor } from './stores/ui/appearance-store';
 import './styles/layout.css';
 import { cssVariableResolver } from './theme/css-variable-resolver';
 import { createAppTheme } from './theme/theme';

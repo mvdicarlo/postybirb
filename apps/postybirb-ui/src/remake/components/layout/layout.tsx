@@ -7,23 +7,23 @@
 import { Box } from '@mantine/core';
 import { navItems } from '../../config/nav-items';
 import { useKeybindings } from '../../hooks/use-keybindings';
+import { useViewState } from '../../stores/ui/navigation-store';
 import {
-    useSetSidenavCollapsed,
-    useSidenavCollapsed,
-    useSubNavVisible,
-    useViewState,
-} from '../../stores/ui-store';
+  useSidenavCollapsed,
+  useSubNavVisible,
+  useSubmissionsUIStore,
+} from '../../stores/ui/submissions-ui-store';
 import '../../styles/layout.css';
 import { cn } from '../../utils/class-names';
 import {
-    CustomShortcutsDrawer,
-    FileWatcherDrawer,
-    NotificationsDrawer,
-    ScheduleDrawer,
-    SettingsDialog,
-    TagConverterDrawer,
-    TagGroupDrawer,
-    UserConverterDrawer,
+  CustomShortcutsDrawer,
+  FileWatcherDrawer,
+  NotificationsDrawer,
+  ScheduleDrawer,
+  SettingsDialog,
+  TagConverterDrawer,
+  TagGroupDrawer,
+  UserConverterDrawer,
 } from '../drawers/drawers';
 import { PrimaryContent } from './primary-content';
 import { SectionPanel } from './section-panel';
@@ -35,7 +35,7 @@ import { SideNav } from './side-nav';
  */
 export function Layout() {
   const collapsed = useSidenavCollapsed();
-  const setSidenavCollapsed = useSetSidenavCollapsed();
+  const setSidenavCollapsed = useSubmissionsUIStore((state) => state.setSidenavCollapsed);
   const viewState = useViewState();
   const { visible: isSectionPanelVisible } = useSubNavVisible();
 

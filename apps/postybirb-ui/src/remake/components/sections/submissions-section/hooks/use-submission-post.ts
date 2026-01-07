@@ -5,7 +5,7 @@
 import { useCallback } from 'react';
 import postManagerApi from '../../../../api/post-manager.api';
 import postQueueApi from '../../../../api/post-queue.api';
-import { useSetViewState } from '../../../../stores/ui-store';
+import { useNavigationStore } from '../../../../stores/ui/navigation-store';
 import { type ViewState } from '../../../../types/view-state';
 import { showPostErrorNotification } from '../../../../utils/notifications';
 import { isSubmissionsViewState } from '../types';
@@ -30,7 +30,7 @@ interface UseSubmissionPostResult {
 export function useSubmissionPost({
   viewState,
 }: UseSubmissionPostProps): UseSubmissionPostResult {
-  const setViewState = useSetViewState();
+  const setViewState = useNavigationStore((state) => state.setViewState);
 
   // Handle posting a submission
   const handlePost = useCallback(async (id: string) => {

@@ -6,11 +6,11 @@
 import { WEBSITE_UPDATES } from '@postybirb/socket-events';
 import type { IWebsiteInfoDto, WebsiteId } from '@postybirb/types';
 import { create } from 'zustand';
-import { useShallow } from 'zustand/shallow';
-import websitesApi from '../api/websites.api';
-import AppSocket from '../transports/websocket';
-import type { LoadingState } from './create-entity-store';
-import { WebsiteRecord } from './records';
+import { useShallow } from 'zustand/react/shallow';
+import websitesApi from '../../api/websites.api';
+import AppSocket from '../../transports/websocket';
+import type { LoadingState } from '../create-entity-store';
+import { WebsiteRecord } from '../records';
 
 /**
  * Website store state interface.

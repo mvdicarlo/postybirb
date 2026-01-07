@@ -41,6 +41,7 @@ export function StatCard({
 }: StatCardProps) {
   const content = (
     <Paper
+      h="100%"
       withBorder
       p="md"
       radius="md"
@@ -48,7 +49,7 @@ export function StatCard({
         'postybirb__stat-card--clickable': !!onClick,
       })}
     >
-      <Group justify="space-between" align="flex-start">
+      <Group justify="space-between" align="flex-start" wrap="nowrap">
         <Stack gap={4}>
           <Text size="xl" fw={700} lh={1}>
             {count}

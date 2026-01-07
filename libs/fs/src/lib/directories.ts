@@ -1,9 +1,7 @@
 import {
   getStartupOptions,
   IsTestEnvironment,
-  isWindows,
 } from '@postybirb/utils/electron';
-import { app } from 'electron';
 import { join } from 'path';
 import { deleteDirSync, ensureDirSync } from './fs';
 
@@ -12,21 +10,7 @@ function getPostyBirbDirectory() {
     return join(__dirname.split('libs')[0], 'test');
   }
 
-  const startupOptions = getStartupOptions();
-  const userDefinedPath = startupOptions.appDataPath;
-  if (userDefinedPath) {
-    return userDefinedPath;
-  }
-
-  let documents = app.getPath('documents');
-  // Handle OneDrive redirection on Windows
-  // OneDrive in general causes issues with network access and file permissions
-  if (isWindows() && documents.includes('OneDrive')) {
-    const home = app.getPath('home');
-    documents = join(home, 'Documents');
-  }
-
-  return join(documents, 'PostyBirb');
+  return getStartupOptions().appDataPath;
 }
 
 /**
@@ -43,32 +27,19 @@ const LOGS_DIRECTORY = join(POSTYBIRB_DIRECTORY, 'logs');
 /** Directory used for storing uploaded files. */
 const TEMP_DIRECTORY = join(POSTYBIRB_DIRECTORY, 'temp');
 
-/** Flag to prevent redundant initialization */
-let directoriesInitialized = false;
-
 function clearTempDirectory() {
   deleteDirSync(TEMP_DIRECTORY);
   ensureDirSync(TEMP_DIRECTORY);
 }
 
-function initializeDirectories() {
-  if (directoriesInitialized) {
-    return;
-  }
-
-  ensureDirSync(DATA_DIRECTORY);
-  ensureDirSync(LOGS_DIRECTORY);
-  clearTempDirectory();
-
-  directoriesInitialized = true;
-}
+ensureDirSync(DATA_DIRECTORY);
+ensureDirSync(LOGS_DIRECTORY);
+clearTempDirectory();
 
 export {
   clearTempDirectory,
   DATA_DIRECTORY,
-  initializeDirectories,
   LOGS_DIRECTORY,
   POSTYBIRB_DIRECTORY,
-  TEMP_DIRECTORY
+  TEMP_DIRECTORY,
 };
-
