@@ -11,33 +11,33 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-  Box,
-  Button,
-  CloseButton,
-  Flex,
-  Group,
-  Overlay,
-  Paper,
-  Portal,
-  Progress,
-  Text,
-  Transition,
+    Box,
+    Button,
+    CloseButton,
+    Flex,
+    Group,
+    Overlay,
+    Paper,
+    Portal,
+    Progress,
+    Text,
+    Transition,
 } from '@mantine/core';
 import { FileWithPath } from '@mantine/dropzone';
 import {
-  DefaultDescription,
-  Description,
-  IFileMetadata,
-  SubmissionId,
-  SubmissionRating,
-  SubmissionType,
-  Tag,
+    DefaultDescription,
+    Description,
+    IFileMetadata,
+    SubmissionId,
+    SubmissionRating,
+    SubmissionType,
+    Tag,
 } from '@postybirb/types';
 import { IconFileUpload } from '@tabler/icons-react';
 import { useCallback, useEffect, useState } from 'react';
 import {
-  showUploadErrorNotification,
-  showUploadSuccessNotification,
+    showUploadErrorNotification,
+    showUploadSuccessNotification,
 } from '../../../../utils/notifications';
 import { FileDropzone } from './file-dropzone';
 import { FileList } from './file-list';
@@ -64,6 +64,8 @@ export interface FileSubmissionModalProps {
   }) => Promise<void>;
   /** Submission type (FILE or MESSAGE) */
   type?: SubmissionType;
+  /** Initial files to pre-populate (e.g., from header dropzone) */
+  initialFiles?: FileWithPath[];
 }
 
 /**
@@ -74,9 +76,33 @@ export function FileSubmissionModal({
   onClose,
   onUpload,
   type = SubmissionType.FILE,
+  initialFiles,
 }: FileSubmissionModalProps) {
   // File state
   const [fileItems, setFileItems] = useState<FileItem[]>([]);
+
+  // Handle initial files when modal opens
+  useEffect(() => {
+    if (opened && initialFiles && initialFiles.length > 0) {
+      const newItems: FileItem[] = initialFiles.map((file) => ({
+        file,
+        title: getDefaultTitle(file.name),
+      }));
+      setFileItems((prev) => [...prev, ...newItems]);
+    }
+  }, [opened, initialFiles]);
+
+  // Clear files when modal is closed
+  useEffect(() => {
+    if (!opened) {
+      setFileItems([]);
+      setTags([]);
+      setDescription(DefaultDescription());
+      setRating(SubmissionRating.GENERAL);
+      setSelectedTemplateId(undefined);
+      setProgress(0);
+    }
+  }, [opened]);
 
   // Default options state
   const [tags, setTags] = useState<Tag[]>([]);

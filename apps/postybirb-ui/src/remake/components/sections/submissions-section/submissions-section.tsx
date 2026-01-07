@@ -6,6 +6,7 @@
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import { Box, Tabs } from '@mantine/core';
+import { FileWithPath } from '@mantine/dropzone';
 import { useDisclosure } from '@mantine/hooks';
 import { SubmissionType } from '@postybirb/types';
 import { IconArchive, IconFiles, IconMessage } from '@tabler/icons-react';
@@ -118,6 +119,9 @@ export function SubmissionsSection({
   // Delete confirmation modal
   const [deleteModalOpened, deleteModal] = useDisclosure(false);
 
+  // Initial files for the modal (from header dropzone)
+  const [initialFiles, setInitialFiles] = useState<FileWithPath[]>([]);
+
   // Post confirmation modal
   const [postModalOpened, postModal] = useDisclosure(false);
 
@@ -214,9 +218,13 @@ export function SubmissionsSection({
       {submissionType === SubmissionType.FILE && (
         <FileSubmissionModal
           opened={isFileModalOpen}
-          onClose={closeFileModal}
+          onClose={() => {
+            closeFileModal();
+            setInitialFiles([]);
+          }}
           onUpload={handleFileUpload}
           type={submissionType}
+          initialFiles={initialFiles}
         />
       )}
 
@@ -245,6 +253,10 @@ export function SubmissionsSection({
         totalCount={orderedSubmissions.length}
         onDeleteSelected={handleDeleteWithConfirm}
         onPostSelected={handlePostWithConfirm}
+        onFileDrop={(files) => {
+          setInitialFiles(files);
+          openFileModal();
+        }}
       />
 
       {/* Tabs for Submissions / Archived */}

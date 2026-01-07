@@ -18,6 +18,7 @@ import {
   TextInput,
   Tooltip,
 } from '@mantine/core';
+import { Dropzone, FileWithPath, IMAGE_MIME_TYPE, MS_WORD_MIME_TYPE, PDF_MIME_TYPE } from '@mantine/dropzone';
 import { useDisclosure } from '@mantine/hooks';
 import { SubmissionId, SubmissionType } from '@postybirb/types';
 import {
@@ -26,6 +27,7 @@ import {
   IconSend,
   IconTemplate,
   IconTrash,
+  IconUpload,
   IconViewportShort,
   IconViewportTall,
 } from '@tabler/icons-react';
@@ -64,6 +66,8 @@ interface SubmissionSectionHeaderProps {
   onDeleteSelected?: () => void;
   /** Handler for posting selected submissions */
   onPostSelected?: () => void;
+  /** Handler for files dropped into the dropzone (FILE type only) */
+  onFileDrop?: (files: FileWithPath[]) => void;
 }
 
 /**
@@ -82,6 +86,7 @@ export function SubmissionSectionHeader({
   totalCount = 0,
   onDeleteSelected,
   onPostSelected,
+  onFileDrop,
 }: SubmissionSectionHeaderProps) {
   const { filter, searchQuery, setFilter, setSearchQuery } =
     useSubmissionsFilter(submissionType);
@@ -296,6 +301,31 @@ export function SubmissionSectionHeader({
             )}
           </Group>
         </Group>
+
+        {/* Compact dropzone for file submissions */}
+        {isFileType && onFileDrop && (
+          <Dropzone
+            onDrop={onFileDrop}
+            accept={[
+              ...IMAGE_MIME_TYPE,
+              'video/*',
+              'audio/*',
+              ...PDF_MIME_TYPE,
+              ...MS_WORD_MIME_TYPE,
+            ]}
+            py={6}
+            style={{ cursor: 'pointer' }}
+          >
+            <Group gap="xs" justify="center">
+              <Dropzone.Idle>
+                <IconUpload size={14} style={{ opacity: 0.5 }} />
+              </Dropzone.Idle>
+              <Text size="xs" c="dimmed">
+                <Trans>Drop files here or click to browse</Trans>
+              </Text>
+            </Group>
+          </Dropzone>
+        )}
 
         {/* Search input */}
         <SearchInput
