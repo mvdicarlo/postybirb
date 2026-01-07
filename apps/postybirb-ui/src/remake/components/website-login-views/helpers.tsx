@@ -4,7 +4,7 @@
 
 import { Trans } from '@lingui/react/macro';
 import { notifications } from '@mantine/notifications';
-import { IconCheck, IconInfoCircle, IconX } from '@tabler/icons-react';
+import { IconInfoCircle, IconX } from '@tabler/icons-react';
 import type HttpErrorResponse from '../../models/http-error-response';
 
 /**
@@ -20,24 +20,14 @@ export function notifyInfo(title: React.ReactNode, message: React.ReactNode) {
 }
 
 /**
- * Show a success notification for successful login.
- */
-export function notifyLoginSuccess(message?: React.ReactNode) {
-  notifications.show({
-    message: message ?? <Trans>Login successful</Trans>,
-    color: 'green',
-    icon: <IconCheck size={16} />,
-  });
-}
-
-/**
  * Show an error notification for failed login.
  */
 export function notifyLoginFailed(message?: React.ReactNode) {
   notifications.show({
     title: <Trans>Login failed</Trans>,
-    message:
-      message ?? <Trans>Please check your credentials and try again</Trans>,
+    message: message ?? (
+      <Trans>Please check your credentials and try again</Trans>
+    ),
     color: 'red',
     icon: <IconX size={16} />,
   });

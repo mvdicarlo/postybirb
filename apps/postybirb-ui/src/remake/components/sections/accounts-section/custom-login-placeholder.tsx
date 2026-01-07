@@ -9,8 +9,9 @@ import type { AccountRecord } from '../../../stores/records/account-record';
 import type { WebsiteRecord } from '../../../stores/records/website-record';
 import { EmptyState } from '../../empty-state';
 import { getLoginViewComponent } from '../../website-login-views';
+import { WithNotifyLoginSuccessProp } from './accounts-content';
 
-interface CustomLoginPlaceholderProps {
+interface CustomLoginPlaceholderProps extends WithNotifyLoginSuccessProp {
   /** The account being logged into */
   account: AccountRecord;
   /** The website configuration */
@@ -27,6 +28,7 @@ export function CustomLoginPlaceholder({
   account,
   website,
   loginComponentName,
+  notifyLoginSuccess,
 }: CustomLoginPlaceholderProps) {
   const LoginComponent = getLoginViewComponent(loginComponentName);
 
@@ -37,6 +39,7 @@ export function CustomLoginPlaceholder({
         account={account}
         website={website}
         data={account.data}
+        notifyLoginSuccess={notifyLoginSuccess}
       />
     );
   }

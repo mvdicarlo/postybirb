@@ -52,8 +52,6 @@ export function AccountsSection({ viewState }: AccountsSectionProps) {
     ? viewState.params.selectedId
     : null;
 
-  console.log({ viewState });
-
   // Handle selecting an account (updates view state)
   const handleSelectAccount = (accountId: string | null) => {
     if (isAccountsViewState(viewState)) {
@@ -84,6 +82,7 @@ export function AccountsSection({ viewState }: AccountsSectionProps) {
   const handleResetAccount = async (accountId: string) => {
     try {
       await accountApi.clear(accountId);
+      handleClearSelection();
       showSuccessNotification(<Trans>Account data cleared</Trans>);
     } catch {
       showErrorNotification(<Trans>Failed to clear account data</Trans>);
@@ -210,7 +209,6 @@ export function AccountsSection({ viewState }: AccountsSectionProps) {
             onDeleteAccount={handleDeleteAccount}
             onResetAccount={handleResetAccount}
             onLoginRequest={handleSelectAccount}
-            onClearSelection={handleClearSelection}
             onAccountCreated={handleSelectAccount}
           >
             <Stack gap="xs" p="xs">

@@ -49,22 +49,8 @@ export function useAccountsContextOptional(): AccountsContextValue | null {
   return useContext(AccountsContext);
 }
 
-export interface AccountsProviderProps {
+export interface AccountsProviderProps extends AccountsContextValue {
   children: ReactNode;
-  /** Currently selected account ID */
-  selectedAccountId: string | null;
-  /** Selection handler */
-  onSelectAccount: (accountId: string) => void;
-  /** Delete handler */
-  onDeleteAccount: (accountId: string) => void;
-  /** Reset handler */
-  onResetAccount: (accountId: string) => void;
-  /** Login request handler */
-  onLoginRequest: (accountId: string) => void;
-  /** Unselects account and shows empty menu */
-  onClearSelection: () => void;
-  /** Account created handler - typically selects the new account */
-  onAccountCreated: (accountId: string) => void;
 }
 
 /**
@@ -78,7 +64,6 @@ export function AccountsProvider({
   onDeleteAccount,
   onResetAccount,
   onLoginRequest,
-  onClearSelection,
   onAccountCreated,
 }: AccountsProviderProps) {
   const value = useMemo<AccountsContextValue>(
@@ -88,7 +73,6 @@ export function AccountsProvider({
       onDeleteAccount,
       onResetAccount,
       onLoginRequest,
-      onClearSelection,
       onAccountCreated,
     }),
     [
@@ -98,7 +82,6 @@ export function AccountsProvider({
       onResetAccount,
       onLoginRequest,
       onAccountCreated,
-      onClearSelection,
     ],
   );
 

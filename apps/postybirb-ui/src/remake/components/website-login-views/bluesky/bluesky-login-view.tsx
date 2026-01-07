@@ -15,11 +15,7 @@ import { useState } from 'react';
 import { CommonTranslations } from '../../../../translations/common-translations';
 import websitesApi from '../../../api/websites.api';
 import { ExternalLink } from '../../shared/external-link';
-import {
-  createLoginHttpErrorHandler,
-  notifyLoginFailed,
-  notifyLoginSuccess,
-} from '../helpers';
+import { createLoginHttpErrorHandler, notifyLoginFailed } from '../helpers';
 import { LoginViewContainer } from '../login-view-container';
 import type { LoginViewProps } from '../types';
 
@@ -42,7 +38,7 @@ function safeUrlParse(url: string) {
 export default function BlueskyLoginView(
   props: LoginViewProps<BlueskyAccountData>,
 ): JSX.Element {
-  const { account, data } = props;
+  const { account, data, notifyLoginSuccess } = props;
   const { id } = account;
   const [username, setUsername] = useState(data?.username ?? '');
   const [password, setPassword] = useState(data?.password ?? '');

@@ -17,15 +17,20 @@ import {
   Tooltip,
 } from '@mantine/core';
 import type { AccountId } from '@postybirb/types';
-import { IconRefresh, IconUserCheck } from '@tabler/icons-react';
+import {
+  IconArrowLeft,
+  IconArrowRight,
+  IconRefresh,
+  IconUserCheck,
+} from '@tabler/icons-react';
 import { debounce } from 'lodash';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import accountApi from '../../../api/account.api';
 import { useAccount } from '../../../stores';
-import { showSuccessNotification } from '../../../utils';
+import { WithNotifyLoginSuccessProp } from './accounts-content';
 import type { WebviewTag } from './webview-tag';
 
-interface LoginWebviewProps {
+interface LoginWebviewProps extends WithNotifyLoginSuccessProp {
   /** The URL to load in the webview */
   src: string;
   /** The account ID for session partitioning */
@@ -37,7 +42,11 @@ interface LoginWebviewProps {
  * Features a toolbar with refresh button, login check button, URL display,
  * login status indicator, plus a loading overlay while the page loads.
  */
-export function LoginWebview({ src, accountId }: LoginWebviewProps) {
+export function LoginWebview({
+  src,
+  accountId,
+  notifyLoginSuccess,
+}: LoginWebviewProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [currentUrl, setCurrentUrl] = useState(src);
   const webviewRef = useRef<WebviewTag | null>(null);
@@ -48,16 +57,18 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
   const isLoggedIn = account?.isLoggedIn ?? false;
   const username = account?.username;
 
-  // Track if we've shown the success notification to avoid duplicates
-  const hasShownSuccessNotification = useRef(false);
+  // Track to wich account we've shown the success notification to avoid duplicates
+  const hasShownSuccessNotification = useRef<string | null>(null);
+
+  const wasLoggedIn = useRef(isLoggedIn);
 
   // Debounced refresh login to avoid excessive API calls
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedRefreshLogin = useCallback(
     debounce(() => {
-      accountApi.refreshLogin(accountId);
+      if (!isLoggedIn) accountApi.refreshLogin(accountId);
     }, 500),
-    [accountId],
+    [accountId, isLoggedIn],
   );
 
   // Manual login check handler
@@ -69,14 +80,15 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
 
   // Show notification on first successful login
   useEffect(() => {
-    if (isLoggedIn && !hasShownSuccessNotification.current) {
-      hasShownSuccessNotification.current = true;
-      const displayName = username || account?.name;
-      showSuccessNotification(
-        <Trans>Logged in{displayName ? ` as ${displayName}` : ''}</Trans>,
-      );
+    if (
+      !wasLoggedIn.current &&
+      isLoggedIn &&
+      hasShownSuccessNotification.current !== accountId
+    ) {
+      hasShownSuccessNotification.current = accountId;
+      notifyLoginSuccess(username || account?.name || '');
     }
-  }, [isLoggedIn, username, account?.name]);
+  }, [isLoggedIn, username, account?.name, notifyLoginSuccess, accountId]);
 
   // Handle webview events
   useEffect(() => {
@@ -120,6 +132,27 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
     }
   };
 
+  const handleGoBack = () => webviewRef.current?.goBack();
+
+  const handleGoForward = () => webviewRef.current?.goForward();
+
+  // If user had navigated in webview and tries to change account (partition) to another webview
+  // it throws 'The object has already navigated, so its partition cannot be changed.'
+  // so we must recreate webview
+  const lastAccount = useRef(accountId);
+  const [resetWebview, setResetWebview] = useState(false);
+
+  useEffect(() => {
+    if (lastAccount.current !== accountId) {
+      lastAccount.current = accountId;
+      setResetWebview(true);
+    } else {
+      setResetWebview(false);
+    }
+  }, [lastAccount, accountId, resetWebview]);
+
+  if (resetWebview) return null;
+
   return (
     <Box
       h="100%"
@@ -131,23 +164,27 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
       {/* Toolbar */}
       <Paper p="xs" withBorder radius={0} style={{ flexShrink: 0 }}>
         <Group gap="sm">
+          <Tooltip label={<Trans>Go back</Trans>}>
+            <ActionIcon variant="subtle" size="sm" onClick={handleGoBack}>
+              <IconArrowLeft size={16} />
+            </ActionIcon>
+          </Tooltip>
+          <Tooltip label={<Trans>Go forward</Trans>}>
+            <ActionIcon variant="subtle" size="sm" onClick={handleGoForward}>
+              <IconArrowRight size={16} />
+            </ActionIcon>
+          </Tooltip>
           <Tooltip label={<Trans>Refresh page</Trans>}>
-            <ActionIcon
-              variant="subtle"
-              size="sm"
-              onClick={handleRefresh}
-              loading={isLoading}
-            >
+            <ActionIcon variant="subtle" size="sm" onClick={handleRefresh}>
               {isLoading ? <Loader size={16} /> : <IconRefresh size={16} />}
             </ActionIcon>
           </Tooltip>
+
           <Tooltip label={<Trans>Check login status</Trans>}>
             <ActionIcon
               variant="subtle"
               size="sm"
               onClick={handleCheckLogin}
-              loading={isPending}
-              disabled={isPending}
               color="blue"
             >
               <IconUserCheck size={16} />

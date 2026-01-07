@@ -5,20 +5,20 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-    Alert,
-    Box,
-    Button,
-    PasswordInput,
-    Stack,
-    Text,
-    TextInput,
+  Alert,
+  Box,
+  Button,
+  PasswordInput,
+  Stack,
+  Text,
+  TextInput,
 } from '@mantine/core';
 import type { InkbunnyAccountData } from '@postybirb/types';
 import { IconInfoCircle } from '@tabler/icons-react';
 import { useState } from 'react';
 import accountApi from '../../../api/account.api';
 import { ExternalLink } from '../../shared/external-link';
-import { notifyLoginFailed, notifyLoginSuccess } from '../helpers';
+import { notifyLoginFailed } from '../helpers';
 import { LoginViewContainer } from '../login-view-container';
 import type { LoginViewProps } from '../types';
 
@@ -27,6 +27,7 @@ const formId = 'inkbunny-login-form';
 export function InkbunnyLoginView({
   account,
   data,
+  notifyLoginSuccess,
 }: LoginViewProps<InkbunnyAccountData>) {
   const [username, setUsername] = useState<string>(data?.username ?? '');
   const [password, setPassword] = useState<string>('');
