@@ -5,14 +5,14 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-    ActionIcon,
-    Box,
-    Group,
-    Loader,
-    Overlay,
-    Paper,
-    Text,
-    Tooltip,
+  ActionIcon,
+  Box,
+  Group,
+  Loader,
+  Overlay,
+  Paper,
+  Text,
+  Tooltip,
 } from '@mantine/core';
 import type { AccountId } from '@postybirb/types';
 import { IconRefresh } from '@tabler/icons-react';
@@ -44,7 +44,7 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
     debounce(() => {
       accountApi.refreshLogin(accountId);
     }, 2000),
-    [accountId]
+    [accountId],
   );
 
   // Handle webview events
@@ -99,21 +99,11 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
       <Paper p="xs" withBorder radius={0} style={{ flexShrink: 0 }}>
         <Group gap="sm">
           <Tooltip label={<Trans>Refresh</Trans>}>
-            <ActionIcon
-              variant="subtle"
-              size="sm"
-              onClick={handleRefresh}
-              loading={isLoading}
-            >
-              <IconRefresh size={16} />
+            <ActionIcon variant="subtle" size="sm" onClick={handleRefresh}>
+              {isLoading ? <Loader size={16} /> : <IconRefresh size={16} />}
             </ActionIcon>
           </Tooltip>
-          <Text
-            size="xs"
-            c="dimmed"
-            truncate
-            style={{ flex: 1, minWidth: 0 }}
-          >
+          <Text size="xs" c="dimmed" truncate style={{ flex: 1, minWidth: 0 }}>
             {currentUrl}
           </Text>
         </Group>

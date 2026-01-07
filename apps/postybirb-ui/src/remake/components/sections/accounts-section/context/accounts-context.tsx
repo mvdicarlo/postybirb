@@ -33,7 +33,7 @@ export function useAccountsContext(): AccountsContextValue {
   if (!context) {
     throw new Error(
       // eslint-disable-next-line lingui/no-unlocalized-strings
-      'useAccountsContext must be used within an AccountsProvider'
+      'useAccountsContext must be used within an AccountsProvider',
     );
   }
   return context;
@@ -59,6 +59,8 @@ export interface AccountsProviderProps {
   onResetAccount: (accountId: string) => void;
   /** Login request handler */
   onLoginRequest: (accountId: string) => void;
+  /** Unselects account and shows empty menu */
+  onClearSelection: () => void;
 }
 
 /**
@@ -72,6 +74,7 @@ export function AccountsProvider({
   onDeleteAccount,
   onResetAccount,
   onLoginRequest,
+  onClearSelection,
 }: AccountsProviderProps) {
   const value = useMemo<AccountsContextValue>(
     () => ({
@@ -80,6 +83,7 @@ export function AccountsProvider({
       onDeleteAccount,
       onResetAccount,
       onLoginRequest,
+      onClearSelection,
     }),
     [
       selectedAccountId,
@@ -87,7 +91,8 @@ export function AccountsProvider({
       onDeleteAccount,
       onResetAccount,
       onLoginRequest,
-    ]
+      onClearSelection,
+    ],
   );
 
   return (

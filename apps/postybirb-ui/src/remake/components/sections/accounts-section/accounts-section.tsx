@@ -11,10 +11,7 @@ import { useAccounts, useAccountsLoading } from '../../../stores/account-store';
 import { useAccountsFilter, useSetViewState } from '../../../stores/ui-store';
 import { useWebsites, useWebsitesLoading } from '../../../stores/website-store';
 import { AccountLoginFilter } from '../../../types/account-filters';
-import {
-  isAccountsViewState,
-  type ViewState,
-} from '../../../types/view-state';
+import { isAccountsViewState, type ViewState } from '../../../types/view-state';
 import {
   showDeletedNotification,
   showDeleteErrorNotification,
@@ -48,8 +45,10 @@ export function AccountsSection({ viewState }: AccountsSectionProps) {
     ? viewState.params.selectedId
     : null;
 
+  console.log({ viewState });
+
   // Handle selecting an account (updates view state)
-  const handleSelectAccount = (accountId: string) => {
+  const handleSelectAccount = (accountId: string | null) => {
     if (isAccountsViewState(viewState)) {
       setViewState({
         ...viewState,
@@ -61,11 +60,14 @@ export function AccountsSection({ viewState }: AccountsSectionProps) {
     }
   };
 
+  const handleClearSelection = () => handleSelectAccount(null);
+
   // Handle deleting an account
   const handleDeleteAccount = async (accountId: string) => {
     try {
       await accountApi.remove([accountId]);
       showDeletedNotification(1);
+      if (selectedAccountId === accountId) handleClearSelection();
     } catch {
       showDeleteErrorNotification();
     }
@@ -107,11 +109,13 @@ export function AccountsSection({ viewState }: AccountsSectionProps) {
       // Filter by search query (website name or account name)
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
-        const matchesWebsite = website.displayName.toLowerCase().includes(query);
+        const matchesWebsite = website.displayName
+          .toLowerCase()
+          .includes(query);
         const matchesAccount = websiteAccounts.some(
           (acc) =>
             acc.name.toLowerCase().includes(query) ||
-            acc.username?.toLowerCase().includes(query)
+            acc.username?.toLowerCase().includes(query),
         );
         if (!matchesWebsite && !matchesAccount) {
           return false;
@@ -162,7 +166,7 @@ export function AccountsSection({ viewState }: AccountsSectionProps) {
   // Filter accounts within each website based on search
   const getFilteredAccounts = (websiteId: string) => {
     const websiteAccounts = accountsByWebsite.get(websiteId) ?? [];
-    
+
     if (!searchQuery) {
       return websiteAccounts;
     }
@@ -171,7 +175,7 @@ export function AccountsSection({ viewState }: AccountsSectionProps) {
     return websiteAccounts.filter(
       (acc) =>
         acc.name.toLowerCase().includes(query) ||
-        acc.username?.toLowerCase().includes(query)
+        acc.username?.toLowerCase().includes(query),
     );
   };
 
@@ -199,6 +203,7 @@ export function AccountsSection({ viewState }: AccountsSectionProps) {
             onDeleteAccount={handleDeleteAccount}
             onResetAccount={handleResetAccount}
             onLoginRequest={handleSelectAccount}
+            onClearSelection={handleClearSelection}
           >
             <Stack gap="xs" p="xs">
               {sortedWebsites.map((website) => (
@@ -215,4 +220,3 @@ export function AccountsSection({ viewState }: AccountsSectionProps) {
     </Box>
   );
 }
-
