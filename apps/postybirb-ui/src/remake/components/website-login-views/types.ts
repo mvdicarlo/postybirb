@@ -4,15 +4,12 @@
 
 import type { AccountRecord } from '../../stores/records/account-record';
 import type { WebsiteRecord } from '../../stores/records/website-record';
-import { WithNotifyLoginSuccessProp } from '../sections/accounts-section/accounts-content';
 
 /**
  * Props passed to custom login view components.
  * @template T - Type of website-specific account data
  */
-export interface LoginViewProps<
-  T = unknown,
-> extends WithNotifyLoginSuccessProp {
+export interface LoginViewProps<T = unknown> {
   /** The account being logged into */
   account: AccountRecord;
   /** The website configuration */

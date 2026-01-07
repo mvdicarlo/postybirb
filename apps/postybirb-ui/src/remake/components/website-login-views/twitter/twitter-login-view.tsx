@@ -23,7 +23,11 @@ import { useEffect, useState } from 'react';
 import websitesApi from '../../../api/websites.api';
 import { showSuccessNotification } from '../../../utils';
 import { ExternalLink, openLink } from '../../shared/external-link';
-import { createLoginHttpErrorHandler, notifyLoginFailed } from '../helpers';
+import {
+  createLoginHttpErrorHandler,
+  notifyLoginFailed,
+  notifyLoginSuccess,
+} from '../helpers';
 import { LoginViewContainer } from '../login-view-container';
 import type { LoginViewProps } from '../types';
 
@@ -32,7 +36,7 @@ const formId = 'twitter-login-form';
 export default function TwitterLoginView(
   props: LoginViewProps<TwitterAccountData>,
 ): JSX.Element {
-  const { account, data, notifyLoginSuccess } = props;
+  const { account, data } = props;
   const { id } = account;
 
   const [apiKey, setApiKey] = useState(data?.apiKey ?? '');

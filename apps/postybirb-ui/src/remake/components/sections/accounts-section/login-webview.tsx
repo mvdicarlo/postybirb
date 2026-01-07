@@ -27,10 +27,10 @@ import { debounce } from 'lodash';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import accountApi from '../../../api/account.api';
 import { useAccount } from '../../../stores';
-import { WithNotifyLoginSuccessProp } from './accounts-content';
+import { notifyLoginSuccess } from '../../website-login-views/helpers';
 import type { WebviewTag } from './webview-tag';
 
-interface LoginWebviewProps extends WithNotifyLoginSuccessProp {
+interface LoginWebviewProps {
   /** The URL to load in the webview */
   src: string;
   /** The account ID for session partitioning */
@@ -42,11 +42,7 @@ interface LoginWebviewProps extends WithNotifyLoginSuccessProp {
  * Features a toolbar with refresh button, login check button, URL display,
  * login status indicator, plus a loading overlay while the page loads.
  */
-export function LoginWebview({
-  src,
-  accountId,
-  notifyLoginSuccess,
-}: LoginWebviewProps) {
+export function LoginWebview({ src, accountId }: LoginWebviewProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [currentUrl, setCurrentUrl] = useState(src);
   const webviewRef = useRef<WebviewTag | null>(null);
@@ -57,16 +53,14 @@ export function LoginWebview({
   const isLoggedIn = account?.isLoggedIn ?? false;
   const username = account?.username;
 
-  // Track to wich account we've shown the success notification to avoid duplicates
+  // Track to which account we've shown the success notification to avoid duplicates
   const hasShownSuccessNotification = useRef<string | null>(null);
-
-  const wasLoggedIn = useRef(isLoggedIn);
 
   // Debounced refresh login to avoid excessive API calls
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedRefreshLogin = useCallback(
     debounce(() => {
-      if (!isLoggedIn) accountApi.refreshLogin(accountId);
+      accountApi.refreshLogin(accountId);
     }, 500),
     [accountId, isLoggedIn],
   );
@@ -80,15 +74,11 @@ export function LoginWebview({
 
   // Show notification on first successful login
   useEffect(() => {
-    if (
-      !wasLoggedIn.current &&
-      isLoggedIn &&
-      hasShownSuccessNotification.current !== accountId
-    ) {
+    if (isLoggedIn && hasShownSuccessNotification.current !== accountId) {
       hasShownSuccessNotification.current = accountId;
       notifyLoginSuccess(username || account?.name || '');
     }
-  }, [isLoggedIn, username, account?.name, notifyLoginSuccess, accountId]);
+  }, [isLoggedIn, username, account?.name, accountId]);
 
   // Handle webview events
   useEffect(() => {

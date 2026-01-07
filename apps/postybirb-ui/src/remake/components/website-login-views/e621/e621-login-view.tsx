@@ -5,7 +5,11 @@ import { IconInfoCircle } from '@tabler/icons-react';
 import { useState } from 'react';
 import websitesApi from '../../../api/websites.api';
 import { ExternalLink } from '../../shared/external-link';
-import { createLoginHttpErrorHandler, notifyLoginFailed } from '../helpers';
+import {
+  createLoginHttpErrorHandler,
+  notifyLoginFailed,
+  notifyLoginSuccess,
+} from '../helpers';
 import { LoginViewContainer } from '../login-view-container';
 import type { LoginViewProps } from '../types';
 
@@ -14,7 +18,7 @@ const formId = 'e621-login-form';
 export default function E621LoginView(
   props: LoginViewProps<E621AccountData>,
 ): JSX.Element {
-  const { account, data, notifyLoginSuccess } = props;
+  const { account, data } = props;
   const { id } = account;
   const [username, setUsername] = useState(data?.username ?? '');
   const [key, setKey] = useState(data?.key ?? '');

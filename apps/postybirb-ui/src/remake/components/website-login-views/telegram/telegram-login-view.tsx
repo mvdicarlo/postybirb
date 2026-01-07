@@ -17,6 +17,7 @@ import {
   createLoginHttpErrorHandler,
   notifyInfo,
   notifyLoginFailed,
+  notifyLoginSuccess,
 } from '../helpers';
 import { LoginViewContainer } from '../login-view-container';
 import type { LoginViewProps } from '../types';
@@ -24,7 +25,7 @@ import type { LoginViewProps } from '../types';
 export default function TelegramLoginView(
   props: LoginViewProps<TelegramAccountData>,
 ): JSX.Element {
-  const { account, data, notifyLoginSuccess } = props;
+  const { account, data } = props;
   const { id } = account;
   const [phoneNumber, setPhoneNumber] = useState(data?.phoneNumber ?? '');
   const [appHash, setAppHash] = useState(data?.appHash ?? '');

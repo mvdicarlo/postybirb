@@ -5,7 +5,11 @@ import { IconInfoCircle } from '@tabler/icons-react';
 import { useState } from 'react';
 import accountApi from '../../../api/account.api';
 import { ExternalLink } from '../../shared/external-link';
-import { createLoginHttpErrorHandler, notifyLoginFailed } from '../helpers';
+import {
+  createLoginHttpErrorHandler,
+  notifyLoginFailed,
+  notifyLoginSuccess,
+} from '../helpers';
 import { LoginViewContainer } from '../login-view-container';
 import type { LoginViewProps } from '../types';
 
@@ -33,7 +37,7 @@ async function testApiKey(
 export default function FurtasticLoginView(
   props: LoginViewProps<FurtasticAccountLoginData>,
 ): JSX.Element {
-  const { account, data, notifyLoginSuccess } = props;
+  const { account, data } = props;
   const { id } = account;
   const [username, setUsername] = useState<string>(data?.username ?? '');
   const [apiKey, setApiKey] = useState<string>(data?.key ?? '');

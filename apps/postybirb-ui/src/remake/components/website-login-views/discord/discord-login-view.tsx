@@ -15,7 +15,7 @@ import { IconInfoCircle } from '@tabler/icons-react';
 import { useState } from 'react';
 import accountApi from '../../../api/account.api';
 import { ExternalLink } from '../../shared/external-link';
-import { createLoginHttpErrorHandler } from '../helpers';
+import { createLoginHttpErrorHandler, notifyLoginSuccess } from '../helpers';
 import { LoginViewContainer } from '../login-view-container';
 import type { LoginViewProps } from '../types';
 
@@ -42,7 +42,7 @@ const isWebhookValid = (str: string): boolean | undefined => {
 export default function DiscordLoginView(
   props: LoginViewProps<DiscordAccountData>,
 ): JSX.Element {
-  const { account, data, notifyLoginSuccess } = props;
+  const { account, data } = props;
   const { id } = account;
   const [webhook, setWebhook] = useState<string>(data?.webhook ?? '');
   const [serverLevel, setServerLevel] = useState<number>(

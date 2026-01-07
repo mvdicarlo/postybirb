@@ -4,7 +4,7 @@
 
 import { Trans } from '@lingui/react/macro';
 import { notifications } from '@mantine/notifications';
-import { IconInfoCircle, IconX } from '@tabler/icons-react';
+import { IconCheck, IconInfoCircle, IconX } from '@tabler/icons-react';
 import type HttpErrorResponse from '../../models/http-error-response';
 
 /**
@@ -16,6 +16,18 @@ export function notifyInfo(title: React.ReactNode, message: React.ReactNode) {
     message,
     color: 'blue',
     icon: <IconInfoCircle size={16} />,
+  });
+}
+
+/**
+ * Show a success notification for successful login and close login form for current website.
+ */
+export function notifyLoginSuccess(message?: React.ReactNode) {
+  notifications.show({
+    title: <Trans>Login successful</Trans>,
+    color: 'green',
+    message,
+    icon: <IconCheck size={16} />,
   });
 }
 

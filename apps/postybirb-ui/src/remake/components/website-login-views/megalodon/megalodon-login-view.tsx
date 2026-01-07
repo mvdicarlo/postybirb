@@ -15,7 +15,7 @@ import { useState } from 'react';
 import websitesApi from '../../../api/websites.api';
 import { showSuccessNotification } from '../../../utils';
 import { ExternalLink } from '../../shared/external-link';
-import { createLoginHttpErrorHandler } from '../helpers';
+import { createLoginHttpErrorHandler, notifyLoginSuccess } from '../helpers';
 import { LoginViewContainer } from '../login-view-container';
 import type { LoginViewProps } from '../types';
 
@@ -24,7 +24,7 @@ const AUTH_CODE_PLACEHOLDER = 'Authorization code';
 export default function MegalodonLoginView(
   props: LoginViewProps<MegalodonAccountData>,
 ): JSX.Element {
-  const { account, data, notifyLoginSuccess } = props;
+  const { account, data } = props;
   const { id } = account;
 
   const [instanceUrl, setInstanceUrl] = useState(data?.instanceUrl ?? '');

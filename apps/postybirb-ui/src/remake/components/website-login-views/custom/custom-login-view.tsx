@@ -15,7 +15,7 @@ import { CustomAccountData } from '@postybirb/types';
 import { IconPlus, IconTrash } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 import accountApi from '../../../api/account.api';
-import { notifyLoginFailed } from '../helpers';
+import { notifyLoginFailed, notifyLoginSuccess } from '../helpers';
 import { LoginViewContainer } from '../login-view-container';
 import type { LoginViewProps } from '../types';
 
@@ -32,7 +32,7 @@ const HEADER_VALUE_PLACEHOLDER = 'Header value';
 export default function CustomLoginView(
   props: LoginViewProps<CustomAccountData>,
 ): JSX.Element {
-  const { account, data, notifyLoginSuccess } = props;
+  const { account, data } = props;
   const { id } = account;
 
   const [headersWithIds, setHeadersWithIds] = useState<HeaderWithId[]>([]);

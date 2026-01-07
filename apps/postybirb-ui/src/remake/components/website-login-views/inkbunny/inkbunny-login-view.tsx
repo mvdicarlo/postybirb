@@ -18,7 +18,7 @@ import { IconInfoCircle } from '@tabler/icons-react';
 import { useState } from 'react';
 import accountApi from '../../../api/account.api';
 import { ExternalLink } from '../../shared/external-link';
-import { notifyLoginFailed } from '../helpers';
+import { notifyLoginFailed, notifyLoginSuccess } from '../helpers';
 import { LoginViewContainer } from '../login-view-container';
 import type { LoginViewProps } from '../types';
 
@@ -27,7 +27,6 @@ const formId = 'inkbunny-login-form';
 export function InkbunnyLoginView({
   account,
   data,
-  notifyLoginSuccess,
 }: LoginViewProps<InkbunnyAccountData>) {
   const [username, setUsername] = useState<string>(data?.username ?? '');
   const [password, setPassword] = useState<string>('');
