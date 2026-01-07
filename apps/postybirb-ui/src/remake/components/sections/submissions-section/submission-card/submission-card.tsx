@@ -4,7 +4,7 @@
  * Uses SubmissionsContext for actions.
  */
 
-import { Box, Card, Group, Stack, Text } from '@mantine/core';
+import { Box, Card, Checkbox, Group, Stack, Text } from '@mantine/core';
 import { SubmissionType } from '@postybirb/types';
 import { IconClock, IconGripVertical } from '@tabler/icons-react';
 import { useCallback, useMemo } from 'react';
@@ -47,13 +47,6 @@ export function SubmissionCard({
   } = useSubmissionActions(submission.id);
 
   const thumbnailUrl = getThumbnailUrl(submission);
-
-  const handleClick = useCallback(
-    (event: React.MouseEvent) => {
-      onSelect(submission.id, event);
-    },
-    [onSelect, submission.id],
-  );
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent) => {
@@ -126,15 +119,23 @@ export function SubmissionCard({
     className,
   ]);
 
+  const handleCheckboxClick = useCallback(
+    (event: React.MouseEvent) => {
+      event.stopPropagation();
+      onSelect(submission.id, event);
+    },
+    [onSelect, submission.id],
+  );
+
   const cardContent = (
     <Card
       p="xs"
       radius="0"
       withBorder
-      onClick={handleClick}
+      onClick={handleEdit}
       onKeyDown={handleKeyDown}
       tabIndex={0}
-      role="button"
+      role="listitem"
       className={cardClassName}
       style={{ position: 'relative' }}
     >
@@ -152,9 +153,21 @@ export function SubmissionCard({
       >
         {formatRelativeTime(submission.lastModified)}
       </Text>
-      <Stack gap="xs">
-        <Group gap="xs" wrap="nowrap" align="center">
-          {/* Drag handle */}
+      <Group gap="xs" wrap="nowrap" align="stretch">
+        {/* Card actions column: checkbox + drag handle - full height */}
+        <Stack
+          gap="md"
+          align="center"
+          justify="center"
+          className="postybirb__submission__card_actions_column"
+        >
+          <Checkbox
+            size="xs"
+            checked={isSelected}
+            onChange={() => {}}
+            onClick={handleCheckboxClick}
+            aria-label={`Select ${submission.title}`}
+          />
           {draggable && (
             <Box
               className="sort-handle postybirb__submission__drag_handle"
@@ -163,80 +176,81 @@ export function SubmissionCard({
               <IconGripVertical size={16} />
             </Box>
           )}
+        </Stack>
 
-          {/* Thumbnail with optional HoverCard preview - only for FILE type */}
-          {showThumbnail && (
-            <SubmissionThumbnail
-              thumbnailUrl={thumbnailUrl}
-              alt={submission.title}
-              canPreview={canPreviewImage}
-              fileCount={submission.files.length}
-            />
-          )}
-
-          {/* Content */}
-          <Stack gap={4} className="postybirb__submission__card_content">
-            {/* Editable Title */}
-            <SubmissionTitle
-              title={submission.title}
-              name={submission.title}
-              onTitleChange={(title) => handleDefaultOptionChange({ title })}
-            />
-
-            {/* Status badges */}
-            <SubmissionBadges
-              submission={submission}
-              submissionType={submissionType}
-            />
-
-            {/* Scheduled date - prominent when active, dimmed when inactive */}
-            {(submission.scheduledDate || submission.schedule.cron) && (
-              <Group gap={4}>
-                <IconClock
-                  size={12}
-                  style={{
-                    color: submission.isScheduled
-                      ? 'var(--mantine-color-blue-6)'
-                      : 'var(--mantine-color-dimmed)',
-                  }}
-                />
-                <Text
-                  size="xs"
-                  c={submission.isScheduled ? 'blue.6' : 'dimmed'}
-                  fw={submission.isScheduled ? '500' : undefined}
-                >
-                  {submission.scheduledDate
-                    ? formatDateTime(submission.scheduledDate)
-                    : null}
-                </Text>
-              </Group>
+        {/* Card details column */}
+        <Stack gap="xs" style={{ flex: 1, minWidth: 0 }}>
+          <Group gap="xs" wrap="nowrap" align="center">
+            {/* Thumbnail with optional HoverCard preview - only for FILE type */}
+            {showThumbnail && (
+              <SubmissionThumbnail
+                thumbnailUrl={thumbnailUrl}
+                alt={submission.title}
+                canPreview={canPreviewImage}
+                fileCount={submission.files.length}
+              />
             )}
-          </Stack>
 
-          {/* Action buttons and menu */}
-          <SubmissionActions
-            canPost={canPost}
-            schedule={submission.schedule}
-            isScheduled={submission.isScheduled}
-            isQueued={submission.isQueued}
-            hasHistory={submission.posts.length > 0}
-            onPost={handlePost}
-            onCancel={handleCancel}
-            onScheduleChange={handleScheduleChange}
-            onEdit={handleEdit}
-            onDuplicate={handleDuplicate}
-            onViewHistory={handleViewHistory}
-            onArchive={handleArchive}
-            onDelete={handleDelete}
-          />
-        </Group>
-        {/* Quick edit actions - hidden in compact mode */}
-        {!isCompact && (
-          <Box ml={showThumbnail ? 'xl' : undefined}>
-            <SubmissionQuickEditActions submission={submission} />
-          </Box>
-        )}
-      </Stack>
+            {/* Content */}
+            <Stack gap={4} className="postybirb__submission__card_content">
+              {/* Editable Title */}
+              <SubmissionTitle
+                title={submission.title}
+                name={submission.title}
+                onTitleChange={(title) => handleDefaultOptionChange({ title })}
+              />
+
+              {/* Status badges */}
+              <SubmissionBadges
+                submission={submission}
+                submissionType={submissionType}
+              />
+
+              {/* Scheduled date - prominent when active, dimmed when inactive */}
+              {(submission.scheduledDate || submission.schedule.cron) && (
+                <Group gap={4}>
+                  <IconClock
+                    size={12}
+                    style={{
+                      color: submission.isScheduled
+                        ? 'var(--mantine-color-blue-6)'
+                        : 'var(--mantine-color-dimmed)',
+                    }}
+                  />
+                  <Text
+                    size="xs"
+                    c={submission.isScheduled ? 'blue.6' : 'dimmed'}
+                    fw={submission.isScheduled ? '500' : undefined}
+                  >
+                    {submission.scheduledDate
+                      ? formatDateTime(submission.scheduledDate)
+                      : null}
+                  </Text>
+                </Group>
+              )}
+            </Stack>
+
+            {/* Action buttons and menu */}
+            <SubmissionActions
+              canPost={canPost}
+              schedule={submission.schedule}
+              isScheduled={submission.isScheduled}
+              isQueued={submission.isQueued}
+              hasHistory={submission.posts.length > 0}
+              onPost={handlePost}
+              onCancel={handleCancel}
+              onScheduleChange={handleScheduleChange}
+              onEdit={handleEdit}
+              onDuplicate={handleDuplicate}
+              onViewHistory={handleViewHistory}
+              onArchive={handleArchive}
+              onDelete={handleDelete}
+            />
+          </Group>
+          {/* Quick edit actions - hidden in compact mode */}
+          {!isCompact && <SubmissionQuickEditActions submission={submission} />}
+        </Stack>
+      </Group>
     </Card>
   );
 

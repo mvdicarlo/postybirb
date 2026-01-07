@@ -70,6 +70,7 @@
 .postybirb__submission__card--selected {
   background-color: var(--mantine-color-primary-light);
   border-color: var(--mantine-color-primary-filled);
+  border-left: 3px solid var(--mantine-color-primary-filled) !important;
 }
 
 .postybirb__submission__card--scheduled {
@@ -91,6 +92,13 @@
 /* Compact mode */
 .postybirb__submission__card--compact {
   padding: var(--mantine-spacing-xs);
+}
+
+/* Card actions column - checkbox + drag handle */
+.postybirb__submission__card_actions_column {
+  padding: var(--mantine-spacing-xs) 0;
+  border-right: 1px solid var(--mantine-color-default-border);
+  padding-right: var(--mantine-spacing-xs);
 }
 
 /* Drag handle */
