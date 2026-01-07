@@ -11,7 +11,6 @@ import {
   Box,
   Group,
   Loader,
-  Overlay,
   Paper,
   Text,
   Tooltip,
@@ -210,7 +209,7 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
         }}
       >
         {/* Loading overlay */}
-        {isLoading && (
+        {/* {isLoading && (
           <Overlay
             color="var(--mantine-color-body)"
             backgroundOpacity={0.7}
@@ -219,7 +218,7 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
           >
             <Loader size="lg" />
           </Overlay>
-        )}
+        )} */}
 
         {/* Webview element */}
         <webview
