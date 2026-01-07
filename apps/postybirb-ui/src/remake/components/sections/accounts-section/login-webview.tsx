@@ -135,11 +135,12 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
   useEffect(() => {
     if (lastAccount.current !== accountId) {
       lastAccount.current = accountId;
+      setCurrentUrl(src);
       setResetWebview(true);
     } else {
       setResetWebview(false);
     }
-  }, [lastAccount, accountId, resetWebview]);
+  }, [lastAccount, accountId, resetWebview, src]);
 
   if (resetWebview) return null;
 

@@ -5,6 +5,7 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
+  ActionIcon,
   Box,
   Divider,
   Group,
@@ -13,10 +14,9 @@ import {
   Text,
   Title,
 } from '@mantine/core';
-import { notifications } from '@mantine/notifications';
 import type { CustomLoginType, UserLoginType } from '@postybirb/types';
-import { IconCheck, IconWorld } from '@tabler/icons-react';
-import React from 'react';
+import { IconWorld, IconX } from '@tabler/icons-react';
+import { useCallback } from 'react';
 import { useNavigationStore } from '../../../stores';
 import { useAccount } from '../../../stores/entity/account-store';
 import { useWebsite } from '../../../stores/entity/website-store';
@@ -36,9 +36,14 @@ interface AccountsContentProps {
 interface AccountHeaderProps {
   websiteName: string;
   accountName: string;
+  onClose: () => void;
 }
 
-function AccountHeader({ websiteName, accountName }: AccountHeaderProps) {
+function AccountHeader({
+  websiteName,
+  accountName,
+  onClose,
+}: AccountHeaderProps) {
   return (
     <Box
       p="md"
@@ -47,16 +52,26 @@ function AccountHeader({ websiteName, accountName }: AccountHeaderProps) {
         backgroundColor: 'var(--mantine-color-body)',
       }}
     >
-      <Group gap="sm">
-        <IconWorld size={24} stroke={1.5} />
-        <Box>
-          <Title order={4} lh={1.2}>
-            {websiteName}
-          </Title>
-          <Text size="sm" c="dimmed">
-            {accountName}
-          </Text>
-        </Box>
+      <Group
+        gap="sm"
+        style={{
+          justifyContent: 'space-between',
+        }}
+      >
+        <Group>
+          <IconWorld size={24} stroke={1.5} />
+          <Box>
+            <Title order={4} lh={1.2}>
+              {websiteName}
+            </Title>
+            <Text size="sm" c="dimmed">
+              {accountName}
+            </Text>
+          </Box>
+        </Group>
+        <ActionIcon variant="subtle" size="sm" onClick={onClose} color="gray">
+          <IconX size={16} />
+        </ActionIcon>
       </Group>
     </Box>
   );
@@ -70,6 +85,7 @@ interface UserLoginContentProps {
   accountId: string;
   websiteName: string;
   accountName: string;
+  onClose: () => void;
 }
 
 function UserLoginContent({
@@ -77,10 +93,15 @@ function UserLoginContent({
   accountId,
   websiteName,
   accountName,
+  onClose,
 }: UserLoginContentProps) {
   return (
     <Box h="100%" style={{ display: 'flex', flexDirection: 'column' }}>
-      <AccountHeader websiteName={websiteName} accountName={accountName} />
+      <AccountHeader
+        websiteName={websiteName}
+        accountName={accountName}
+        onClose={onClose}
+      />
       <Divider />
       <Box style={{ flex: 1, minHeight: 0 }}>
         <LoginWebview src={loginType.url} accountId={accountId} />
@@ -96,18 +117,21 @@ interface CustomLoginContentProps {
   loginType: CustomLoginType;
   account: NonNullable<ReturnType<typeof useAccount>>;
   website: NonNullable<ReturnType<typeof useWebsite>>;
+  onClose: () => void;
 }
 
 function CustomLoginContent({
   loginType,
   account,
   website,
+  onClose,
 }: CustomLoginContentProps) {
   return (
     <Box h="100%" style={{ display: 'flex', flexDirection: 'column' }}>
       <AccountHeader
         websiteName={website.displayName}
         accountName={account.name}
+        onClose={onClose}
       />
       <Divider />
       <ScrollArea style={{ flex: 1 }} type="hover" scrollbarSize={6}>
@@ -137,6 +161,18 @@ export function AccountsContent({ viewState }: AccountsContentProps) {
   const website = useWebsite(account?.website ?? '');
 
   const { setViewState } = useNavigationStore();
+
+  const onClose = useCallback(() => {
+    if (!isAccountsViewState(viewState)) return;
+
+    setViewState({
+      ...viewState,
+      params: {
+        ...viewState.params,
+        selectedId: null,
+      },
+    });
+  }, [viewState, setViewState]);
 
   // Not an accounts view state
   if (!isAccountsViewState(viewState)) return null;
@@ -169,22 +205,6 @@ export function AccountsContent({ viewState }: AccountsContentProps) {
     );
   }
 
-  const notifyLoginSuccess = (message?: React.ReactNode) => {
-    notifications.show({
-      title: <Trans>Login successful</Trans>,
-      color: 'green',
-      message,
-      icon: <IconCheck size={16} />,
-    });
-    setViewState({
-      ...viewState,
-      params: {
-        ...viewState.params,
-        selectedId: null,
-      },
-    });
-  };
-
   // Render based on login type
   if (website.loginType.type === 'user') {
     return (
@@ -193,6 +213,7 @@ export function AccountsContent({ viewState }: AccountsContentProps) {
         accountId={account.id}
         websiteName={website.displayName}
         accountName={account.name}
+        onClose={onClose}
       />
     );
   }
@@ -203,6 +224,7 @@ export function AccountsContent({ viewState }: AccountsContentProps) {
         loginType={website.loginType}
         account={account}
         website={website}
+        onClose={onClose}
       />
     );
   }
