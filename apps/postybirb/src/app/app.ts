@@ -224,18 +224,10 @@ export default class PostyBirb {
           PostyBirb.mainWindow.reload();
         }
       });
-      if (this.isDevelopmentMode()) {
-        globalShortcut.register('f12', () => {
-          if (PostyBirb.mainWindow && PostyBirb.mainWindow.isFocused()) {
-            PostyBirb.mainWindow.webContents.openDevTools();
-          }
-        });
-      }
     });
     PostyBirb.application.on('browser-window-blur', () => {
       globalShortcut.unregister('f5');
       globalShortcut.unregister('CommandOrControl+R');
-      if (this.isDevelopmentMode()) globalShortcut.unregister('f12');
     });
     PostyBirb.application.on('window-all-closed', PostyBirb.onWindowAllClosed); // Quit when all windows are closed.
     PostyBirb.application.on('ready', PostyBirb.onReady); // App is ready to load data
