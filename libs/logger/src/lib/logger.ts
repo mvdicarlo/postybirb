@@ -38,7 +38,9 @@ export function initializeLogger(
 function initializeTestLogger() {
   const instance = winston.createLogger({
     format: new SerializeDevLog(),
-    transports: [new winston.transports.Console({ level: 'error' })],
+    transports: [
+      new winston.transports.Console({ level: 'error', forceConsole: true }),
+    ],
   });
   initializeLogger(instance, false, false);
 }
