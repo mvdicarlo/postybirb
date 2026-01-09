@@ -7,15 +7,18 @@ import { Trans } from '@lingui/react/macro';
 import { Box, Divider, Loader, ScrollArea, Stack } from '@mantine/core';
 import { useMemo } from 'react';
 import accountApi from '../../../api/account.api';
-import { useAccounts, useAccountsLoading } from '../../../stores/entity/account-store';
-import { useWebsites, useWebsitesLoading } from '../../../stores/entity/website-store';
+import {
+  useAccounts,
+  useAccountsLoading,
+} from '../../../stores/entity/account-store';
+import {
+  useWebsites,
+  useWebsitesLoading,
+} from '../../../stores/entity/website-store';
 import { useAccountsFilter } from '../../../stores/ui/accounts-ui-store';
 import { useNavigationStore } from '../../../stores/ui/navigation-store';
 import { AccountLoginFilter } from '../../../types/account-filters';
-import {
-  isAccountsViewState,
-  type ViewState,
-} from '../../../types/view-state';
+import { isAccountsViewState, type ViewState } from '../../../types/view-state';
 import {
   showDeletedNotification,
   showDeleteErrorNotification,
@@ -50,7 +53,7 @@ export function AccountsSection({ viewState }: AccountsSectionProps) {
     : null;
 
   // Handle selecting an account (updates view state)
-  const handleSelectAccount = (accountId: string) => {
+  const handleSelectAccount = (accountId: string | null) => {
     if (isAccountsViewState(viewState)) {
       setViewState({
         ...viewState,
@@ -62,21 +65,14 @@ export function AccountsSection({ viewState }: AccountsSectionProps) {
     }
   };
 
+  const handleClearSelection = () => handleSelectAccount(null);
+
   // Handle deleting an account
   const handleDeleteAccount = async (accountId: string) => {
     try {
       await accountApi.remove([accountId]);
       showDeletedNotification(1);
-      // Clear selection if the deleted account was selected
-      if (selectedAccountId === accountId && isAccountsViewState(viewState)) {
-        setViewState({
-          ...viewState,
-          params: {
-            ...viewState.params,
-            selectedId: null,
-          },
-        });
-      }
+      if (selectedAccountId === accountId) handleClearSelection();
     } catch {
       showDeleteErrorNotification();
     }
@@ -86,6 +82,7 @@ export function AccountsSection({ viewState }: AccountsSectionProps) {
   const handleResetAccount = async (accountId: string) => {
     try {
       await accountApi.clear(accountId);
+      handleClearSelection();
       showSuccessNotification(<Trans>Account data cleared</Trans>);
     } catch {
       showErrorNotification(<Trans>Failed to clear account data</Trans>);
@@ -118,11 +115,13 @@ export function AccountsSection({ viewState }: AccountsSectionProps) {
       // Filter by search query (website name or account name)
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
-        const matchesWebsite = website.displayName.toLowerCase().includes(query);
+        const matchesWebsite = website.displayName
+          .toLowerCase()
+          .includes(query);
         const matchesAccount = websiteAccounts.some(
           (acc) =>
             acc.name.toLowerCase().includes(query) ||
-            acc.username?.toLowerCase().includes(query)
+            acc.username?.toLowerCase().includes(query),
         );
         if (!matchesWebsite && !matchesAccount) {
           return false;
@@ -173,7 +172,7 @@ export function AccountsSection({ viewState }: AccountsSectionProps) {
   // Filter accounts within each website based on search
   const getFilteredAccounts = (websiteId: string) => {
     const websiteAccounts = accountsByWebsite.get(websiteId) ?? [];
-    
+
     if (!searchQuery) {
       return websiteAccounts;
     }
@@ -182,7 +181,7 @@ export function AccountsSection({ viewState }: AccountsSectionProps) {
     return websiteAccounts.filter(
       (acc) =>
         acc.name.toLowerCase().includes(query) ||
-        acc.username?.toLowerCase().includes(query)
+        acc.username?.toLowerCase().includes(query),
     );
   };
 
@@ -227,4 +226,3 @@ export function AccountsSection({ viewState }: AccountsSectionProps) {
     </Box>
   );
 }
-

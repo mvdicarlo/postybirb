@@ -16,11 +16,10 @@ import type { LoginViewComponent } from './types';
 
 // Re-export types and helpers
 export {
-    createLoginHttpErrorHandler,
-    notifyInfo,
-    notifyLoginError,
-    notifyLoginFailed,
-    notifyLoginSuccess
+  createLoginHttpErrorHandler,
+  notifyInfo,
+  notifyLoginError,
+  notifyLoginFailed,
 } from './helpers';
 export { LoginViewContainer } from './login-view-container';
 export type { LoginViewComponent, LoginViewProps } from './types';

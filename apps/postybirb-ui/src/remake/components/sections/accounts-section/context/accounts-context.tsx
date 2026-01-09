@@ -35,7 +35,7 @@ export function useAccountsContext(): AccountsContextValue {
   if (!context) {
     throw new Error(
       // eslint-disable-next-line lingui/no-unlocalized-strings
-      'useAccountsContext must be used within an AccountsProvider'
+      'useAccountsContext must be used within an AccountsProvider',
     );
   }
   return context;
@@ -49,20 +49,8 @@ export function useAccountsContextOptional(): AccountsContextValue | null {
   return useContext(AccountsContext);
 }
 
-export interface AccountsProviderProps {
+export interface AccountsProviderProps extends AccountsContextValue {
   children: ReactNode;
-  /** Currently selected account ID */
-  selectedAccountId: string | null;
-  /** Selection handler */
-  onSelectAccount: (accountId: string) => void;
-  /** Delete handler */
-  onDeleteAccount: (accountId: string) => void;
-  /** Reset handler */
-  onResetAccount: (accountId: string) => void;
-  /** Login request handler */
-  onLoginRequest: (accountId: string) => void;
-  /** Account created handler - typically selects the new account */
-  onAccountCreated: (accountId: string) => void;
 }
 
 /**
@@ -94,7 +82,7 @@ export function AccountsProvider({
       onResetAccount,
       onLoginRequest,
       onAccountCreated,
-    ]
+    ],
   );
 
   return (

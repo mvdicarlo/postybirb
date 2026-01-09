@@ -1,15 +1,15 @@
 /* eslint-disable lingui/no-unlocalized-strings */
 // Do not care to translate this file
 import {
-    ActionIcon,
-    Alert,
-    Box,
-    Button,
-    Group,
-    Radio,
-    Stack,
-    Text,
-    TextInput,
+  ActionIcon,
+  Alert,
+  Box,
+  Button,
+  Group,
+  Radio,
+  Stack,
+  Text,
+  TextInput,
 } from '@mantine/core';
 import { CustomAccountData } from '@postybirb/types';
 import { IconPlus, IconTrash } from '@tabler/icons-react';
@@ -135,192 +135,186 @@ export default function CustomLoginView(
   return (
     <LoginViewContainer>
       <form id={formId} onSubmit={handleSubmit}>
-          <Stack>
-            <Alert color="blue">
+        <Stack>
+          <Alert color="blue">
+            <Text>
+              Configure custom webhook URLs and field mappings for your custom
+              integration. You need at least one URL (File URL for file
+              submissions or Notification URL for text-only posts).
+            </Text>
+            <br />
+            <br />
+            <Text>
+              Custom website is for websites that you own and understand the
+              actual backend of.
+            </Text>
+          </Alert>
+
+          <TextInput
+            label={<Text>File URL</Text>}
+            description={
+              <Text>The URL that will be posted to when submitting files</Text>
+            }
+            value={formData.fileUrl || ''}
+            onChange={(event) =>
+              updateFormData('fileUrl', event.currentTarget.value)
+            }
+            placeholder="https://your-server.com/api/files"
+          />
+
+          <TextInput
+            label={<Text>Notification URL</Text>}
+            description={
               <Text>
-                Configure custom webhook URLs and field mappings for your custom
-                integration. You need at least one URL (File URL for file
-                submissions or Notification URL for text-only posts).
+                The URL that will be posted to when submitting text-only posts
               </Text>
-              <br />
-              <br />
-              <Text>
-                Custom website is for websites that you own and understand the
-                actual backend of.
-              </Text>
-            </Alert>
+            }
+            value={formData.notificationUrl || ''}
+            onChange={(event) =>
+              updateFormData('notificationUrl', event.currentTarget.value)
+            }
+            placeholder="https://your-server.com/api/notifications"
+          />
 
+          <Group grow>
             <TextInput
-              label={<Text>File URL</Text>}
-              description={
-                <Text>
-                  The URL that will be posted to when submitting files
-                </Text>
-              }
-              value={formData.fileUrl || ''}
+              label={<Text>Title Field</Text>}
+              value={formData.titleField || ''}
               onChange={(event) =>
-                updateFormData('fileUrl', event.currentTarget.value)
-              }
-              placeholder="https://your-server.com/api/files"
-            />
-
-            <TextInput
-              label={<Text>Notification URL</Text>}
-              description={
-                <Text>
-                  The URL that will be posted to when submitting text-only posts
-                </Text>
-              }
-              value={formData.notificationUrl || ''}
-              onChange={(event) =>
-                updateFormData('notificationUrl', event.currentTarget.value)
-              }
-              placeholder="https://your-server.com/api/notifications"
-            />
-
-            <Group grow>
-              <TextInput
-                label={<Text>Title Field</Text>}
-                value={formData.titleField || ''}
-                onChange={(event) =>
-                  updateFormData('titleField', event.currentTarget.value)
-                }
-              />
-              <TextInput
-                label={<Text>Description Field</Text>}
-                value={formData.descriptionField || ''}
-                onChange={(event) =>
-                  updateFormData('descriptionField', event.currentTarget.value)
-                }
-              />
-            </Group>
-
-            <Group>
-              <Text size="sm" fw={500}>
-                <Text>Description Type</Text>
-              </Text>
-              <Radio.Group
-                value={formData.descriptionType || 'html'}
-                onChange={(value) =>
-                  updateFormData('descriptionType', value || 'html')
-                }
-              >
-                <Group>
-                  <Radio value="html" label="HTML" />
-                  <Radio value="text" label={<Text>Plain Text</Text>} />
-                  <Radio value="md" label={<Text>Markdown</Text>} />
-                  <Radio value="bbcode" label={<Text>BBCode</Text>} />
-                </Group>
-              </Radio.Group>
-            </Group>
-
-            <Group grow>
-              <TextInput
-                label={<Text>Tag Field</Text>}
-                value={formData.tagField || ''}
-                onChange={(event) =>
-                  updateFormData('tagField', event.currentTarget.value)
-                }
-              />
-              <TextInput
-                label={<Text>Rating Field</Text>}
-                value={formData.ratingField || ''}
-                onChange={(event) =>
-                  updateFormData('ratingField', event.currentTarget.value)
-                }
-              />
-            </Group>
-
-            <Group grow>
-              <TextInput
-                label={<Text>File Field</Text>}
-                value={formData.fileField || ''}
-                onChange={(event) =>
-                  updateFormData('fileField', event.currentTarget.value)
-                }
-              />
-              <TextInput
-                label={<Text>Thumbnail Field</Text>}
-                value={formData.thumbnailField || ''}
-                onChange={(event) =>
-                  updateFormData('thumbnailField', event.currentTarget.value)
-                }
-              />
-            </Group>
-
-            <TextInput
-              label={<Text>Alt Text Field</Text>}
-              value={formData.altTextField || ''}
-              onChange={(event) =>
-                updateFormData('altTextField', event.currentTarget.value)
+                updateFormData('titleField', event.currentTarget.value)
               }
             />
+            <TextInput
+              label={<Text>Description Field</Text>}
+              value={formData.descriptionField || ''}
+              onChange={(event) =>
+                updateFormData('descriptionField', event.currentTarget.value)
+              }
+            />
+          </Group>
 
-            <Box>
-              <Group justify="space-between" mb="sm">
-                <Text size="sm" fw={500}>
-                  <Text>Headers</Text>
-                </Text>
-                <ActionIcon variant="light" onClick={addHeader} size="sm">
-                  <IconPlus size={16} />
-                </ActionIcon>
-              </Group>
-              <Text size="xs" c="dimmed" mb="md">
-                <Text>Custom headers for authentication or other purposes</Text>
-              </Text>
-
-              <Stack gap="xs">
-                {headersWithIds.map((header) => (
-                  <Group key={header.id} align="end">
-                    <TextInput
-                      placeholder={HEADER_NAME_PLACEHOLDER}
-                      value={header.name}
-                      onChange={(event) =>
-                        updateHeader(
-                          header.id,
-                          'name',
-                          event.currentTarget.value,
-                        )
-                      }
-                      style={{ flex: 1 }}
-                    />
-                    <TextInput
-                      placeholder={HEADER_VALUE_PLACEHOLDER}
-                      value={header.value}
-                      onChange={(event) =>
-                        updateHeader(
-                          header.id,
-                          'value',
-                          event.currentTarget.value,
-                        )
-                      }
-                      style={{ flex: 1 }}
-                    />
-                    <ActionIcon
-                      variant="light"
-                      color="red"
-                      onClick={() => removeHeader(header.id)}
-                      size="sm"
-                    >
-                      <IconTrash size={16} />
-                    </ActionIcon>
-                  </Group>
-                ))}
-              </Stack>
-            </Box>
-          </Stack>
-
-          <Box mt="md">
-            <Button
-              type="submit"
-              form={formId}
-              loading={isSubmitting}
-              disabled={!isFormValid}
-              fullWidth
+          <Group>
+            <Text size="sm" fw={500}>
+              <Text>Description Type</Text>
+            </Text>
+            <Radio.Group
+              value={formData.descriptionType || 'html'}
+              onChange={(value) =>
+                updateFormData('descriptionType', value || 'html')
+              }
             >
-              <Text>Save</Text>
-            </Button>
+              <Group>
+                <Radio value="html" label="HTML" />
+                <Radio value="text" label={<Text>Plain Text</Text>} />
+                <Radio value="md" label={<Text>Markdown</Text>} />
+                <Radio value="bbcode" label={<Text>BBCode</Text>} />
+              </Group>
+            </Radio.Group>
+          </Group>
+
+          <Group grow>
+            <TextInput
+              label={<Text>Tag Field</Text>}
+              value={formData.tagField || ''}
+              onChange={(event) =>
+                updateFormData('tagField', event.currentTarget.value)
+              }
+            />
+            <TextInput
+              label={<Text>Rating Field</Text>}
+              value={formData.ratingField || ''}
+              onChange={(event) =>
+                updateFormData('ratingField', event.currentTarget.value)
+              }
+            />
+          </Group>
+
+          <Group grow>
+            <TextInput
+              label={<Text>File Field</Text>}
+              value={formData.fileField || ''}
+              onChange={(event) =>
+                updateFormData('fileField', event.currentTarget.value)
+              }
+            />
+            <TextInput
+              label={<Text>Thumbnail Field</Text>}
+              value={formData.thumbnailField || ''}
+              onChange={(event) =>
+                updateFormData('thumbnailField', event.currentTarget.value)
+              }
+            />
+          </Group>
+
+          <TextInput
+            label={<Text>Alt Text Field</Text>}
+            value={formData.altTextField || ''}
+            onChange={(event) =>
+              updateFormData('altTextField', event.currentTarget.value)
+            }
+          />
+
+          <Box>
+            <Group justify="space-between" mb="sm">
+              <Text size="sm" fw={500}>
+                <Text>Headers</Text>
+              </Text>
+              <ActionIcon variant="light" onClick={addHeader} size="sm">
+                <IconPlus size={16} />
+              </ActionIcon>
+            </Group>
+            <Text size="xs" c="dimmed" mb="md">
+              <Text>Custom headers for authentication or other purposes</Text>
+            </Text>
+
+            <Stack gap="xs">
+              {headersWithIds.map((header) => (
+                <Group key={header.id} align="end">
+                  <TextInput
+                    placeholder={HEADER_NAME_PLACEHOLDER}
+                    value={header.name}
+                    onChange={(event) =>
+                      updateHeader(header.id, 'name', event.currentTarget.value)
+                    }
+                    style={{ flex: 1 }}
+                  />
+                  <TextInput
+                    placeholder={HEADER_VALUE_PLACEHOLDER}
+                    value={header.value}
+                    onChange={(event) =>
+                      updateHeader(
+                        header.id,
+                        'value',
+                        event.currentTarget.value,
+                      )
+                    }
+                    style={{ flex: 1 }}
+                  />
+                  <ActionIcon
+                    variant="light"
+                    color="red"
+                    onClick={() => removeHeader(header.id)}
+                    size="sm"
+                  >
+                    <IconTrash size={16} />
+                  </ActionIcon>
+                </Group>
+              ))}
+            </Stack>
           </Box>
+        </Stack>
+
+        <Box mt="md">
+          <Button
+            type="submit"
+            form={formId}
+            loading={isSubmitting}
+            disabled={!isFormValid}
+            fullWidth
+          >
+            <Text>Save</Text>
+          </Button>
+        </Box>
       </form>
     </LoginViewContainer>
   );

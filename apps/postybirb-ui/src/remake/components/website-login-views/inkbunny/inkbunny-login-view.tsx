@@ -5,13 +5,13 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-    Alert,
-    Box,
-    Button,
-    PasswordInput,
-    Stack,
-    Text,
-    TextInput,
+  Alert,
+  Box,
+  Button,
+  PasswordInput,
+  Stack,
+  Text,
+  TextInput,
 } from '@mantine/core';
 import type { InkbunnyAccountData } from '@postybirb/types';
 import { IconInfoCircle } from '@tabler/icons-react';
