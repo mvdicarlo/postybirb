@@ -1,7 +1,7 @@
 import { UsernameShortcut } from '@postybirb/types';
 import {
-  IDescriptionBlockNode,
-  IDescriptionNode,
+    IDescriptionBlockNode,
+    IDescriptionNode,
 } from './description-node.types';
 
 // Forward declarations to avoid circular dependencies
@@ -10,6 +10,7 @@ export interface IDescriptionBlockNodeClass {
   props: Record<string, string>;
   id: string;
   content: unknown[];
+  children: IDescriptionBlockNodeClass[];
 }
 
 export interface IDescriptionInlineNodeClass {
