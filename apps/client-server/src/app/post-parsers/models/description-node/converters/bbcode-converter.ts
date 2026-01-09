@@ -1,14 +1,25 @@
 import {
-  ConversionContext,
-  IDescriptionBlockNodeClass,
-  IDescriptionInlineNodeClass,
-  IDescriptionTextNodeClass,
+    ConversionContext,
+    IDescriptionBlockNodeClass,
+    IDescriptionInlineNodeClass,
+    IDescriptionTextNodeClass,
 } from '../description-node.base';
 import { BaseConverter } from './base-converter';
 
 export class BBCodeConverter extends BaseConverter {
+  /** Number of spaces per indentation level */
+  private static readonly INDENT_SPACES = 4;
+
   protected getBlockSeparator(): string {
     return '\n';
+  }
+
+  /**
+   * Gets the current indentation prefix based on depth.
+   */
+  private getIndentPrefix(): string {
+    if (this.currentDepth === 0) return '';
+    return ' '.repeat(this.currentDepth * BBCodeConverter.INDENT_SPACES);
   }
 
   convertBlockNode(
@@ -29,6 +40,9 @@ export class BBCodeConverter extends BaseConverter {
     ) {
       return '';
     }
+
+    const indent = this.getIndentPrefix();
+    let result = '';
 
     if (node.type === 'paragraph') {
       let text = (
@@ -53,10 +67,8 @@ export class BBCodeConverter extends BaseConverter {
       if (node.props.textColor && node.props.textColor !== 'default') {
         text = `[color=${node.props.textColor}]${text}[/color]`;
       }
-      return text;
-    }
-
-    if (node.type === 'heading') {
+      result = indent + text;
+    } else if (node.type === 'heading') {
       const { level } = node.props;
       let text = `[h${level}]${(
         node.content as Array<
@@ -80,27 +92,39 @@ export class BBCodeConverter extends BaseConverter {
       if (node.props.textColor && node.props.textColor !== 'default') {
         text = `[color=${node.props.textColor}]${text}[/color]`;
       }
-      return text;
+      result = indent + text;
+    } else {
+      result =
+        indent +
+        (
+          node.content as Array<
+            IDescriptionInlineNodeClass | IDescriptionTextNodeClass
+          >
+        )
+          .map((child) => {
+            if (child.type === 'text') {
+              return this.convertTextNode(
+                child as IDescriptionTextNodeClass,
+                context,
+              );
+            }
+            return this.convertInlineNode(
+              child as IDescriptionInlineNodeClass,
+              context,
+            );
+          })
+          .join('');
     }
 
-    return (
-      node.content as Array<
-        IDescriptionInlineNodeClass | IDescriptionTextNodeClass
-      >
-    )
-      .map((child) => {
-        if (child.type === 'text') {
-          return this.convertTextNode(
-            child as IDescriptionTextNodeClass,
-            context,
-          );
-        }
-        return this.convertInlineNode(
-          child as IDescriptionInlineNodeClass,
-          context,
-        );
-      })
-      .join('');
+    // Process children with increased depth
+    if (node.children && node.children.length > 0) {
+      const childrenBBCode = this.convertChildren(node.children, context);
+      if (childrenBBCode) {
+        result += '\n' + childrenBBCode;
+      }
+    }
+
+    return result;
   }
 
   convertInlineNode(

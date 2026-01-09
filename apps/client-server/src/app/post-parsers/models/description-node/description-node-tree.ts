@@ -5,8 +5,8 @@ import { DescriptionBlockNode } from './block-description-node';
 import { BaseConverter } from './converters/base-converter';
 import { BBCodeConverter } from './converters/bbcode-converter';
 import {
-    CustomConverter,
-    CustomNodeHandler,
+  CustomConverter,
+  CustomNodeHandler,
 } from './converters/custom-converter';
 import { HtmlConverter } from './converters/html-converter';
 import { PlainTextConverter } from './converters/plaintext-converter';
@@ -94,6 +94,15 @@ export class DescriptionNodeTree {
 
   toMarkdown(turndownService?: TurndownService): string {
     const converter = turndownService ?? new TurndownService();
+
+    // Add custom rule to convert margin-left divs to blockquotes
+    converter.addRule('nestedIndent', {
+      filter: (node) =>
+        node.nodeName === 'DIV' &&
+        node.getAttribute('style')?.includes('margin-left'),
+      replacement: (content) => `\n\n> ${content.trim().replace(/\n/g, '\n> ')}\n\n`,
+    });
+
     const html = this.toHtml();
     return converter.turndown(html);
   }
@@ -121,12 +130,12 @@ export class DescriptionNodeTree {
   }
 
   /**
-   * Finds all inline nodes of a specific type in the tree.
+   * Finds all inline nodes of a specific type in the tree, including nested children.
    */
   public findInlineNodesByType(type: string): Array<DescriptionInlineNode> {
     const found: Array<DescriptionInlineNode> = [];
 
-    const traverse = (
+    const traverseContent = (
       content: Array<DescriptionInlineNode | DescriptionTextNode>,
     ) => {
       for (const node of content) {
@@ -135,14 +144,22 @@ export class DescriptionNodeTree {
         }
         // Only DescriptionInlineNode has content, DescriptionTextNode has text
         if (node instanceof DescriptionInlineNode) {
-          traverse(node.content);
+          traverseContent(node.content);
         }
       }
     };
 
-    for (const block of this.nodes) {
-      traverse(block.content);
-    }
+    const traverseBlocks = (blocks: Array<DescriptionBlockNode>) => {
+      for (const block of blocks) {
+        traverseContent(block.content);
+        // Recursively traverse children
+        if (block.children && block.children.length > 0) {
+          traverseBlocks(block.children);
+        }
+      }
+    };
+
+    traverseBlocks(this.nodes);
 
     return found;
   }

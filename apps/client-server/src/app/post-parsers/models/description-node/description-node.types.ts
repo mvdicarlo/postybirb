@@ -9,6 +9,7 @@ export type BlockType = keyof typeof DescriptionSchema.blockSchema;
 export interface IDescriptionBlockNode extends IDescriptionNode<BlockType> {
   id: string;
   content: Array<IDescriptionInlineNode | IDescriptionTextNode>;
+  children?: Array<IDescriptionBlockNode>;
 }
 
 export type InlineType = keyof typeof DescriptionSchema.inlineContentSchema;

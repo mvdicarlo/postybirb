@@ -1,14 +1,22 @@
 import {
-  ConversionContext,
-  IDescriptionBlockNodeClass,
-  IDescriptionInlineNodeClass,
-  IDescriptionTextNodeClass,
+    ConversionContext,
+    IDescriptionBlockNodeClass,
+    IDescriptionInlineNodeClass,
+    IDescriptionTextNodeClass,
 } from '../description-node.base';
 import { BaseConverter } from './base-converter';
 
 export class PlainTextConverter extends BaseConverter {
   protected getBlockSeparator(): string {
     return '\r\n';
+  }
+
+  /**
+   * Gets the current tab indentation prefix based on depth.
+   */
+  private getIndentPrefix(): string {
+    if (this.currentDepth === 0) return '';
+    return '\t'.repeat(this.currentDepth);
   }
 
   convertBlockNode(
@@ -30,7 +38,8 @@ export class PlainTextConverter extends BaseConverter {
       return '';
     }
 
-    return (
+    const indent = this.getIndentPrefix();
+    const content = (
       node.content as Array<
         IDescriptionInlineNodeClass | IDescriptionTextNodeClass
       >
@@ -48,6 +57,18 @@ export class PlainTextConverter extends BaseConverter {
         );
       })
       .join('');
+
+    let result = indent + content;
+
+    // Process children with increased depth (tab indentation)
+    if (node.children && node.children.length > 0) {
+      const childrenText = this.convertChildren(node.children, context);
+      if (childrenText) {
+        result += this.getBlockSeparator() + childrenText;
+      }
+    }
+
+    return result;
   }
 
   convertInlineNode(

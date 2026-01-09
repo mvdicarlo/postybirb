@@ -1,13 +1,16 @@
 import { encode } from 'html-entities';
 import {
-  ConversionContext,
-  IDescriptionBlockNodeClass,
-  IDescriptionInlineNodeClass,
-  IDescriptionTextNodeClass,
+    ConversionContext,
+    IDescriptionBlockNodeClass,
+    IDescriptionInlineNodeClass,
+    IDescriptionTextNodeClass,
 } from '../description-node.base';
 import { BaseConverter } from './base-converter';
 
 export class HtmlConverter extends BaseConverter {
+  /** Pixels of margin-left per nesting level */
+  private static readonly INDENT_PX = 20;
+
   protected getBlockSeparator(): string {
     return '';
   }
@@ -48,7 +51,19 @@ export class HtmlConverter extends BaseConverter {
       })
       .join('');
 
-    return `<${tag}${styles ? ` style="${styles}"` : ''}>${content}</${tag}>`;
+    let result = `<${tag}${styles ? ` style="${styles}"` : ''}>${content}</${tag}>`;
+
+    // Process children with indentation
+    if (node.children && node.children.length > 0) {
+      // Calculate indent based on the depth level the children will be at (current + 1)
+      const indentPx = (this.currentDepth + 1) * HtmlConverter.INDENT_PX;
+      const childrenHtml = this.convertChildren(node.children, context);
+      if (childrenHtml) {
+        result += `<div style="margin-left: ${indentPx}px">${childrenHtml}</div>`;
+      }
+    }
+
+    return result;
   }
 
   convertInlineNode(
