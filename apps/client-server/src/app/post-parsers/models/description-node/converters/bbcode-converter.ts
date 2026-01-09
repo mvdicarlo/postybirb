@@ -1,8 +1,8 @@
 import {
-    ConversionContext,
-    IDescriptionBlockNodeClass,
-    IDescriptionInlineNodeClass,
-    IDescriptionTextNodeClass,
+  ConversionContext,
+  IDescriptionBlockNodeClass,
+  IDescriptionInlineNodeClass,
+  IDescriptionTextNodeClass,
 } from '../description-node.base';
 import { BaseConverter } from './base-converter';
 
@@ -120,7 +120,7 @@ export class BBCodeConverter extends BaseConverter {
     if (node.children && node.children.length > 0) {
       const childrenBBCode = this.convertChildren(node.children, context);
       if (childrenBBCode) {
-        result += '\n' + childrenBBCode;
+        result += `\n${childrenBBCode}`;
       }
     }
 

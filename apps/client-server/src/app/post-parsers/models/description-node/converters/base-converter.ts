@@ -1,10 +1,10 @@
 import { UsernameShortcut } from '@postybirb/types';
 import {
-    ConversionContext,
-    IDescriptionBlockNodeClass,
-    IDescriptionInlineNodeClass,
-    IDescriptionTextNodeClass,
-    NodeConverter,
+  ConversionContext,
+  IDescriptionBlockNodeClass,
+  IDescriptionInlineNodeClass,
+  IDescriptionTextNodeClass,
+  NodeConverter,
 } from '../description-node.base';
 import { IDescriptionBlockNode } from '../description-node.types';
 
@@ -18,7 +18,7 @@ export type AcceptableBlockNode = IDescriptionBlockNodeClass & {
  */
 export abstract class BaseConverter implements NodeConverter<string> {
   /** Current depth for nested block rendering */
-  protected currentDepth: number = 0;
+  protected currentDepth = 0;
 
   abstract convertBlockNode(
     node: IDescriptionBlockNodeClass,
