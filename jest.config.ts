@@ -6,7 +6,6 @@ const config: Config = {
   collectCoverage: true,
   coverageDirectory: '<rootDir>/coverage',
   coverageReporters: ['html', 'text', 'lcov'],
-  reporters: ['./jest.reporter.js'],
 };
 
 export default config;
