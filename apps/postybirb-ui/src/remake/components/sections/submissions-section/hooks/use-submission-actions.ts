@@ -29,7 +29,7 @@ export interface BoundSubmissionActions {
   /** Update this submission's schedule */
   handleScheduleChange: (
     schedule: ISubmissionScheduleInfo,
-    isScheduled: boolean
+    isScheduled: boolean,
   ) => void;
   /** Update this submission's default option fields */
   handleDefaultOptionChange: (update: Partial<IWebsiteFormFields>) => void;
@@ -52,7 +52,9 @@ export interface BoundSubmissionActions {
  * }
  * ```
  */
-export function useSubmissionActions(submissionId: string): BoundSubmissionActions {
+export function useSubmissionActions(
+  submissionId: string,
+): BoundSubmissionActions {
   const context = useSubmissionsContext();
 
   return useMemo<BoundSubmissionActions>(
@@ -62,21 +64,39 @@ export function useSubmissionActions(submissionId: string): BoundSubmissionActio
       handleEdit: () => context.onEdit(submissionId),
       handlePost: () => context.onPost(submissionId),
       handleCancel: context.onCancel
-        ? () => context.onCancel!(submissionId)
+        ? () =>
+            context.onCancel
+              ? context.onCancel(submissionId)
+              : () => {
+                  // eslint-disable-next-line lingui/no-unlocalized-strings, no-console
+                  console.warn('Cancel function not available');
+                }
         : undefined,
       handleArchive: context.onArchive
-        ? () => context.onArchive!(submissionId)
+        ? () =>
+            context.onArchive
+              ? context.onArchive(submissionId)
+              : () => {
+                  // eslint-disable-next-line lingui/no-unlocalized-strings, no-console
+                  console.warn('Archive function not available');
+                }
         : undefined,
       handleViewHistory: context.onViewHistory
-        ? () => context.onViewHistory!(submissionId)
+        ? () =>
+            context.onViewHistory
+              ? context.onViewHistory(submissionId)
+              : () => {
+                  // eslint-disable-next-line lingui/no-unlocalized-strings, no-console
+                  console.warn('View history function not available');
+                }
         : undefined,
       handleScheduleChange: (
         schedule: ISubmissionScheduleInfo,
-        isScheduled: boolean
+        isScheduled: boolean,
       ) => context.onScheduleChange(submissionId, schedule, isScheduled),
       handleDefaultOptionChange: (update: Partial<IWebsiteFormFields>) =>
         context.onDefaultOptionChange(submissionId, update),
     }),
-    [context, submissionId]
+    [context, submissionId],
   );
 }
