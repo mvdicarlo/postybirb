@@ -11,6 +11,7 @@ import { isWindows } from './utils-electron';
 
 export type StartupOptions = {
   startAppOnSystemStartup: boolean;
+  spellchecker: boolean;
   appDataPath: string;
   port: string;
 };
@@ -22,8 +23,9 @@ const DEFAULT_APP_DATA_PATH =
     ? join(app.getPath('home'), 'Documents', 'PostyBirb')
     : DOCUMENTS_PATH;
 
-const DEFAULT_STARTUP_OPTIONS = {
+const DEFAULT_STARTUP_OPTIONS: StartupOptions = {
   startAppOnSystemStartup: false,
+  spellchecker: true,
   port: '9487',
   appDataPath: DEFAULT_APP_DATA_PATH,
 };

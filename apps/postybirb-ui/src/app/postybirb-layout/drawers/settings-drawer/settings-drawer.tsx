@@ -13,6 +13,7 @@ import {
   IconDatabase,
   IconDeviceDesktop,
   IconFileDescription,
+  IconLanguage,
   IconRouter,
   IconTags,
 } from '@tabler/icons-react';
@@ -29,6 +30,7 @@ import { DescriptionSettings } from './description-settings';
 import { LegacyImportSettings } from './legacy-import-settings';
 import { NotificationsSettings } from './notifications-settings';
 import { RemoteSettings } from './remote-settings';
+import { SpellcheckerSettings } from './spellchecker-settings';
 import { TagsSettings } from './tags-settings';
 
 export function SettingsDrawer() {
@@ -120,6 +122,14 @@ export function SettingsDrawer() {
                 </Tabs.Tab>
 
                 <Tabs.Tab
+                  value="spellchecker"
+                  leftSection={<IconLanguage size={16} />}
+                  fw={activeTab === 'spellchecker' ? 'bold' : 'normal'}
+                >
+                  <Trans>Spellchecker</Trans>
+                </Tabs.Tab>
+
+                <Tabs.Tab
                   value="legacy-import"
                   leftSection={<IconDatabase size={16} />}
                   fw={activeTab === 'legacy-import' ? 'bold' : 'normal'}
@@ -135,6 +145,7 @@ export function SettingsDrawer() {
                   {activeTab === 'notifications' && <NotificationsSettings />}
                   {activeTab === 'remote' && <RemoteSettings />}
                   {activeTab === 'tags' && <TagsSettings />}
+                  {activeTab === 'spellchecker' && <SpellcheckerSettings />}
                   {activeTab === 'legacy-import' && <LegacyImportSettings />}
                 </Box>
               </ScrollArea>

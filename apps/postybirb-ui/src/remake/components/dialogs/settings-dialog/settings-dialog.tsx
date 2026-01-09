@@ -20,6 +20,7 @@ import {
   IconDatabase,
   IconDeviceDesktop,
   IconFileDescription,
+  IconLanguage,
   IconPalette,
   IconRouter,
   IconTags,
@@ -35,6 +36,7 @@ import {
   RemoteSettingsSection,
   TagsSettingsSection,
 } from './sections';
+import { SpellcheckerSettings } from './sections/spellchecker-settings-section';
 import classes from './settings-dialog.module.css';
 
 // ============================================================================
@@ -48,6 +50,7 @@ type SettingsSection =
   | 'notifications'
   | 'remote'
   | 'tags'
+  | 'spellchecker'
   | 'import';
 
 interface NavItem {
@@ -92,6 +95,11 @@ const NAV_ITEMS: NavItem[] = [
     icon: <IconTags size={18} />,
   },
   {
+    id: 'spellchecker',
+    label: <Trans>Spellchecker</Trans>,
+    icon: <IconLanguage size={18} />,
+  },
+  {
     id: 'import',
     label: <Trans>Import</Trans>,
     icon: <IconDatabase size={18} />,
@@ -124,6 +132,8 @@ export function SettingsDialog() {
         return <RemoteSettingsSection />;
       case 'tags':
         return <TagsSettingsSection />;
+      case 'spellchecker':
+        return <SpellcheckerSettings />;
       case 'import':
         return <ImportSettingsSection />;
       default:
