@@ -20,12 +20,13 @@ export function notifyInfo(title: React.ReactNode, message: React.ReactNode) {
 }
 
 /**
- * Show a success notification for successful login.
+ * Show a success notification for successful login and close login form for current website.
  */
 export function notifyLoginSuccess(message?: React.ReactNode) {
   notifications.show({
-    message: message ?? <Trans>Login successful</Trans>,
+    title: <Trans>Login successful</Trans>,
     color: 'green',
+    message,
     icon: <IconCheck size={16} />,
   });
 }
@@ -36,8 +37,9 @@ export function notifyLoginSuccess(message?: React.ReactNode) {
 export function notifyLoginFailed(message?: React.ReactNode) {
   notifications.show({
     title: <Trans>Login failed</Trans>,
-    message:
-      message ?? <Trans>Please check your credentials and try again</Trans>,
+    message: message ?? (
+      <Trans>Please check your credentials and try again</Trans>
+    ),
     color: 'red',
     icon: <IconX size={16} />,
   });

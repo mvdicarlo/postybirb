@@ -1,12 +1,12 @@
 import { Trans } from '@lingui/react/macro';
 import {
-    Alert,
-    Box,
-    Button,
-    NumberInput,
-    Stack,
-    Text,
-    TextInput,
+  Alert,
+  Box,
+  Button,
+  NumberInput,
+  Stack,
+  Text,
+  TextInput,
 } from '@mantine/core';
 import { TelegramAccountData, TelegramOAuthRoutes } from '@postybirb/types';
 import { IconInfoCircle } from '@tabler/icons-react';
@@ -14,10 +14,10 @@ import { useState } from 'react';
 import websitesApi from '../../../api/websites.api';
 import { ExternalLink } from '../../shared/external-link';
 import {
-    createLoginHttpErrorHandler,
-    notifyInfo,
-    notifyLoginFailed,
-    notifyLoginSuccess,
+  createLoginHttpErrorHandler,
+  notifyInfo,
+  notifyLoginFailed,
+  notifyLoginSuccess,
 } from '../helpers';
 import { LoginViewContainer } from '../login-view-container';
 import type { LoginViewProps } from '../types';

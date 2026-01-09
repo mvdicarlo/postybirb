@@ -8,9 +8,9 @@ export default defineConfig({
   cacheDir: '../../node_modules/.vite/postybirb-ui',
   server: {
     port: 4200,
-    host: 'localhost',
+    host: '127.0.0.1',
     fs: {
-      // blocknote loads fonts from node_modules folder which 
+      // blocknote loads fonts from node_modules folder which
       // is at the ../../ because for vite cwd is postybitb-ui workspace
       allow: ['../../node_modules/'],
     },

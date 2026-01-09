@@ -4,9 +4,20 @@
  */
 
 import { Trans } from '@lingui/react/macro';
-import { Box, Divider, Group, Loader, ScrollArea, Text, Title } from '@mantine/core';
+import {
+  ActionIcon,
+  Box,
+  Divider,
+  Group,
+  Loader,
+  ScrollArea,
+  Text,
+  Title,
+} from '@mantine/core';
 import type { CustomLoginType, UserLoginType } from '@postybirb/types';
-import { IconWorld } from '@tabler/icons-react';
+import { IconWorld, IconX } from '@tabler/icons-react';
+import { useCallback } from 'react';
+import { useNavigationStore } from '../../../stores';
 import { useAccount } from '../../../stores/entity/account-store';
 import { useWebsite } from '../../../stores/entity/website-store';
 import { isAccountsViewState, type ViewState } from '../../../types/view-state';
@@ -25,9 +36,14 @@ interface AccountsContentProps {
 interface AccountHeaderProps {
   websiteName: string;
   accountName: string;
+  onClose: () => void;
 }
 
-function AccountHeader({ websiteName, accountName }: AccountHeaderProps) {
+function AccountHeader({
+  websiteName,
+  accountName,
+  onClose,
+}: AccountHeaderProps) {
   return (
     <Box
       p="md"
@@ -36,16 +52,26 @@ function AccountHeader({ websiteName, accountName }: AccountHeaderProps) {
         backgroundColor: 'var(--mantine-color-body)',
       }}
     >
-      <Group gap="sm">
-        <IconWorld size={24} stroke={1.5} />
-        <Box>
-          <Title order={4} lh={1.2}>
-            {websiteName}
-          </Title>
-          <Text size="sm" c="dimmed">
-            {accountName}
-          </Text>
-        </Box>
+      <Group
+        gap="sm"
+        style={{
+          justifyContent: 'space-between',
+        }}
+      >
+        <Group>
+          <IconWorld size={24} stroke={1.5} />
+          <Box>
+            <Title order={4} lh={1.2}>
+              {websiteName}
+            </Title>
+            <Text size="sm" c="dimmed">
+              {accountName}
+            </Text>
+          </Box>
+        </Group>
+        <ActionIcon variant="subtle" size="sm" onClick={onClose} color="gray">
+          <IconX size={16} />
+        </ActionIcon>
       </Group>
     </Box>
   );
@@ -59,6 +85,7 @@ interface UserLoginContentProps {
   accountId: string;
   websiteName: string;
   accountName: string;
+  onClose: () => void;
 }
 
 function UserLoginContent({
@@ -66,10 +93,15 @@ function UserLoginContent({
   accountId,
   websiteName,
   accountName,
+  onClose,
 }: UserLoginContentProps) {
   return (
     <Box h="100%" style={{ display: 'flex', flexDirection: 'column' }}>
-      <AccountHeader websiteName={websiteName} accountName={accountName} />
+      <AccountHeader
+        websiteName={websiteName}
+        accountName={accountName}
+        onClose={onClose}
+      />
       <Divider />
       <Box style={{ flex: 1, minHeight: 0 }}>
         <LoginWebview src={loginType.url} accountId={accountId} />
@@ -85,16 +117,22 @@ interface CustomLoginContentProps {
   loginType: CustomLoginType;
   account: NonNullable<ReturnType<typeof useAccount>>;
   website: NonNullable<ReturnType<typeof useWebsite>>;
+  onClose: () => void;
 }
 
 function CustomLoginContent({
   loginType,
   account,
   website,
+  onClose,
 }: CustomLoginContentProps) {
   return (
     <Box h="100%" style={{ display: 'flex', flexDirection: 'column' }}>
-      <AccountHeader websiteName={website.displayName} accountName={account.name} />
+      <AccountHeader
+        websiteName={website.displayName}
+        accountName={account.name}
+        onClose={onClose}
+      />
       <Divider />
       <ScrollArea style={{ flex: 1 }} type="hover" scrollbarSize={6}>
         <Box p="md">
@@ -122,6 +160,20 @@ export function AccountsContent({ viewState }: AccountsContentProps) {
   const account = useAccount(selectedId ?? '');
   const website = useWebsite(account?.website ?? '');
 
+  const { setViewState } = useNavigationStore();
+
+  const onClose = useCallback(() => {
+    if (!isAccountsViewState(viewState)) return;
+
+    setViewState({
+      ...viewState,
+      params: {
+        ...viewState.params,
+        selectedId: null,
+      },
+    });
+  }, [viewState, setViewState]);
+
   // Not an accounts view state
   if (!isAccountsViewState(viewState)) return null;
 
@@ -140,7 +192,14 @@ export function AccountsContent({ viewState }: AccountsContentProps) {
   // Loading state (account or website not yet loaded)
   if (!account || !website) {
     return (
-      <Box h="100%" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Box
+        h="100%"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
         <Loader size="lg" />
       </Box>
     );
@@ -154,6 +213,7 @@ export function AccountsContent({ viewState }: AccountsContentProps) {
         accountId={account.id}
         websiteName={website.displayName}
         accountName={account.name}
+        onClose={onClose}
       />
     );
   }
@@ -164,6 +224,7 @@ export function AccountsContent({ viewState }: AccountsContentProps) {
         loginType={website.loginType}
         account={account}
         website={website}
+        onClose={onClose}
       />
     );
   }
@@ -173,7 +234,9 @@ export function AccountsContent({ viewState }: AccountsContentProps) {
     <EmptyState
       preset="no-records"
       message={<Trans>Unknown login type</Trans>}
-      description={<Trans>This website has an unsupported login configuration</Trans>}
+      description={
+        <Trans>This website has an unsupported login configuration</Trans>
+      }
       size="lg"
     />
   );
