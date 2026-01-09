@@ -17,6 +17,9 @@ export type AcceptableBlockNode = IDescriptionBlockNodeClass & {
  * Base converter with common utilities.
  */
 export abstract class BaseConverter implements NodeConverter<string> {
+  /** Current depth for nested block rendering */
+  protected currentDepth = 0;
+
   abstract convertBlockNode(
     node: IDescriptionBlockNodeClass,
     context: ConversionContext,
@@ -79,6 +82,30 @@ export abstract class BaseConverter implements NodeConverter<string> {
    * Returns the separator to use between blocks.
    */
   protected abstract getBlockSeparator(): string;
+
+  /**
+   * Converts children blocks with increased depth.
+   * Override in subclasses to provide format-specific indentation.
+   */
+  protected convertChildren(
+    children: IDescriptionBlockNodeClass[],
+    context: ConversionContext,
+  ): string {
+    if (!children || children.length === 0) return '';
+
+    this.currentDepth += 1;
+    try {
+      const result = children
+        .map((child) =>
+          (child as AcceptableBlockNode).accept(this, context),
+        )
+        .filter((r) => r !== '')
+        .join(this.getBlockSeparator());
+      return result;
+    } finally {
+      this.currentDepth -= 1;
+    }
+  }
 
   /**
    * Helper to check if username shortcut should be rendered for this website.

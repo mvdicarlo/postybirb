@@ -206,6 +206,7 @@ export class DescriptionParserService {
   /**
    * Merges block into the same type if they are adjacent and have the same type.
    * Merge occurs on block level if all the props in the block are the same.
+   * Blocks with non-empty children are not eligible for merging.
    *
    * @param {Array<IDescriptionBlockNode>} blocks
    * @return {*}  {Array<IDescriptionBlockNode>}
@@ -221,14 +222,24 @@ export class DescriptionParserService {
     for (let i = 0; i < blockCopy.length; i++) {
       const currentBlock = blockCopy[i];
       const previousBlock = mergedBlocks[mergedBlocks.length - 1];
+
+      // Check if either block has children - if so, skip merge
+      const currentHasChildren =
+        currentBlock.children && currentBlock.children.length > 0;
+      const previousHasChildren =
+        previousBlock?.children && previousBlock.children.length > 0;
+
       if (!previousBlock) {
         mergedBlocks.push(currentBlock);
       } else if (
         // Check if the current block is of the same type as the previous block
         // Filter out content length of 0 because those are assumed to be padding blocks.
+        // Skip merge if either block has children
         currentBlock.type === previousBlock.type &&
         currentBlock.content.length !== 0 &&
         previousBlock.content.length !== 0 &&
+        !currentHasChildren &&
+        !previousHasChildren &&
         isEqual(currentBlock.props, previousBlock.props)
       ) {
         // Insert a \n content then merge together the content of the two blocks

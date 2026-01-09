@@ -1,8 +1,8 @@
 import {
-  ConversionContext,
-  IDescriptionBlockNodeClass,
-  IDescriptionInlineNodeClass,
-  IDescriptionTextNodeClass,
+    ConversionContext,
+    IDescriptionBlockNodeClass,
+    IDescriptionInlineNodeClass,
+    IDescriptionTextNodeClass,
 } from '../description-node.base';
 import { BaseConverter } from './base-converter';
 
@@ -153,10 +153,46 @@ export class NpfConverter extends BaseConverter {
   ): string {
     this.blocks = [];
     for (const node of nodes) {
-      const block = this.convertBlockNodeToNpf(node, context);
-      this.blocks.push(block);
+      this.convertBlockNodeRecursive(node, context, 0);
     }
     return JSON.stringify(this.blocks);
+  }
+
+  /**
+   * Recursively converts a block node and its children to NPF blocks.
+   */
+  private convertBlockNodeRecursive(
+    node: IDescriptionBlockNodeClass,
+    context: ConversionContext,
+    indentLevel: number,
+  ): void {
+    const block = this.convertBlockNodeToNpf(node, context);
+
+    // Apply indent_level for nested blocks (NPF supports 0-7)
+    if (
+      indentLevel > 0 &&
+      block.type === 'text' &&
+      indentLevel <= 7
+    ) {
+      block.indent_level = indentLevel;
+      // Set subtype to indented if not already set
+      if (!block.subtype) {
+        block.subtype = 'indented';
+      }
+    }
+
+    this.blocks.push(block);
+
+    // Recursively process children with increased indent level
+    if (node.children && node.children.length > 0) {
+      for (const child of node.children) {
+        this.convertBlockNodeRecursive(
+          child as IDescriptionBlockNodeClass,
+          context,
+          indentLevel + 1,
+        );
+      }
+    }
   }
 
   /**

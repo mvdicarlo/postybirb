@@ -681,4 +681,423 @@ describe('DescriptionNode', () => {
       expect(usernames.has('TestUser')).toBe(true);
     });
   });
+
+  describe('nested children blocks', () => {
+    it('should render nested children with proper indentation in HTML', () => {
+      const nestedDescription: Description = [
+        {
+          id: 'parent-1',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [{ type: 'text', text: 'Para 1', styles: {} }],
+          children: [
+            {
+              id: 'child-1',
+              type: 'paragraph',
+              props: {
+                textColor: 'default',
+                backgroundColor: 'default',
+                textAlignment: 'left',
+              },
+              content: [{ type: 'text', text: 'Para 1 nested', styles: {} }],
+              children: [],
+            },
+          ],
+        },
+        {
+          id: 'parent-2',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [{ type: 'text', text: 'Para 2', styles: {} }],
+          children: [],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'test',
+        shortcuts: {},
+        customShortcuts: new Map(),
+        defaultDescription: [],
+      };
+
+      const tree = new DescriptionNodeTree(
+        context,
+        nestedDescription as unknown as Array<IDescriptionBlockNode>,
+        { insertAd: false },
+      );
+
+      // HTML should wrap children in a div with margin-left
+      expect(tree.toHtml()).toBe(
+        '<div>Para 1</div><div style="margin-left: 20px"><div>Para 1 nested</div></div><div>Para 2</div>',
+      );
+    });
+
+    it('should render nested children with tab indentation in plain text', () => {
+      const nestedDescription: Description = [
+        {
+          id: 'parent-1',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [{ type: 'text', text: 'Para 1', styles: {} }],
+          children: [
+            {
+              id: 'child-1',
+              type: 'paragraph',
+              props: {
+                textColor: 'default',
+                backgroundColor: 'default',
+                textAlignment: 'left',
+              },
+              content: [{ type: 'text', text: 'Para 1 nested', styles: {} }],
+              children: [],
+            },
+          ],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'test',
+        shortcuts: {},
+        customShortcuts: new Map(),
+        defaultDescription: [],
+      };
+
+      const tree = new DescriptionNodeTree(
+        context,
+        nestedDescription as unknown as Array<IDescriptionBlockNode>,
+        { insertAd: false },
+      );
+
+      // Plain text should use tab indentation
+      expect(tree.toPlainText()).toBe('Para 1\r\n\tPara 1 nested');
+    });
+
+    it('should render nested children with space indentation in BBCode', () => {
+      const nestedDescription: Description = [
+        {
+          id: 'parent-1',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [{ type: 'text', text: 'Para 1', styles: {} }],
+          children: [
+            {
+              id: 'child-1',
+              type: 'paragraph',
+              props: {
+                textColor: 'default',
+                backgroundColor: 'default',
+                textAlignment: 'left',
+              },
+              content: [{ type: 'text', text: 'Para 1 nested', styles: {} }],
+              children: [],
+            },
+          ],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'test',
+        shortcuts: {},
+        customShortcuts: new Map(),
+        defaultDescription: [],
+      };
+
+      const tree = new DescriptionNodeTree(
+        context,
+        nestedDescription as unknown as Array<IDescriptionBlockNode>,
+        { insertAd: false },
+      );
+
+      // BBCode should use 4 spaces per level
+      expect(tree.toBBCode()).toBe('Para 1\n    Para 1 nested');
+    });
+
+    it('should handle deeply nested children (multi-level)', () => {
+      const nestedDescription: Description = [
+        {
+          id: 'parent-1',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [{ type: 'text', text: 'Level 0', styles: {} }],
+          children: [
+            {
+              id: 'child-1',
+              type: 'paragraph',
+              props: {
+                textColor: 'default',
+                backgroundColor: 'default',
+                textAlignment: 'left',
+              },
+              content: [{ type: 'text', text: 'Level 1', styles: {} }],
+              children: [
+                {
+                  id: 'grandchild-1',
+                  type: 'paragraph',
+                  props: {
+                    textColor: 'default',
+                    backgroundColor: 'default',
+                    textAlignment: 'left',
+                  },
+                  content: [{ type: 'text', text: 'Level 2', styles: {} }],
+                  children: [],
+                },
+              ],
+            },
+          ],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'test',
+        shortcuts: {},
+        customShortcuts: new Map(),
+        defaultDescription: [],
+      };
+
+      const tree = new DescriptionNodeTree(
+        context,
+        nestedDescription as unknown as Array<IDescriptionBlockNode>,
+        { insertAd: false },
+      );
+
+      // Plain text should show increasing tab indentation
+      expect(tree.toPlainText()).toBe('Level 0\r\n\tLevel 1\r\n\t\tLevel 2');
+
+      // BBCode should show increasing space indentation
+      expect(tree.toBBCode()).toBe('Level 0\n    Level 1\n        Level 2');
+    });
+
+    it('should handle multiple children at same level', () => {
+      const nestedDescription: Description = [
+        {
+          id: 'parent-1',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [{ type: 'text', text: 'Para 1', styles: {} }],
+          children: [
+            {
+              id: 'child-1',
+              type: 'paragraph',
+              props: {
+                textColor: 'default',
+                backgroundColor: 'default',
+                textAlignment: 'left',
+              },
+              content: [{ type: 'text', text: 'Para 1 nested', styles: {} }],
+              children: [],
+            },
+            {
+              id: 'child-2',
+              type: 'paragraph',
+              props: {
+                textColor: 'default',
+                backgroundColor: 'default',
+                textAlignment: 'left',
+              },
+              content: [{ type: 'text', text: 'Para 1 nested 2', styles: {} }],
+              children: [],
+            },
+          ],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'test',
+        shortcuts: {},
+        customShortcuts: new Map(),
+        defaultDescription: [],
+      };
+
+      const tree = new DescriptionNodeTree(
+        context,
+        nestedDescription as unknown as Array<IDescriptionBlockNode>,
+        { insertAd: false },
+      );
+
+      expect(tree.toPlainText()).toBe(
+        'Para 1\r\n\tPara 1 nested\r\n\tPara 1 nested 2',
+      );
+    });
+
+    it('should find usernames in nested children', () => {
+      const nestedDescription: Description = [
+        {
+          id: 'parent-1',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [{ type: 'text', text: 'Para 1 ', styles: {} }],
+          children: [
+            {
+              id: 'child-1',
+              type: 'paragraph',
+              props: {
+                textColor: 'default',
+                backgroundColor: 'default',
+                textAlignment: 'left',
+              },
+              content: [
+                { type: 'text', text: 'Nested ', styles: {} },
+                {
+                  type: 'username',
+                  props: { id: '1', shortcut: 'test', only: '' },
+                  content: [{ type: 'text', text: 'NestedUser', styles: {} }],
+                },
+              ],
+              children: [],
+            },
+          ],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'test',
+        shortcuts: {
+          test: {
+            id: 'test',
+            url: 'https://test.postybirb.com/$1',
+          },
+        },
+        customShortcuts: new Map(),
+        defaultDescription: [],
+      };
+
+      const tree = new DescriptionNodeTree(
+        context,
+        nestedDescription as unknown as Array<IDescriptionBlockNode>,
+        { insertAd: false },
+      );
+
+      // Should find username in nested block
+      const usernames = tree.findUsernames();
+      expect(usernames.has('NestedUser')).toBe(true);
+    });
+
+    it('should render nested children as blockquotes in Markdown', () => {
+      const nestedDescription: Description = [
+        {
+          id: 'parent-1',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [{ type: 'text', text: 'Para 1', styles: {} }],
+          children: [
+            {
+              id: 'child-1',
+              type: 'paragraph',
+              props: {
+                textColor: 'default',
+                backgroundColor: 'default',
+                textAlignment: 'left',
+              },
+              content: [{ type: 'text', text: 'Para 1 nested', styles: {} }],
+              children: [],
+            },
+          ],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'test',
+        shortcuts: {},
+        customShortcuts: new Map(),
+        defaultDescription: [],
+      };
+
+      const tree = new DescriptionNodeTree(
+        context,
+        nestedDescription as unknown as Array<IDescriptionBlockNode>,
+        { insertAd: false },
+      );
+
+      // Markdown should convert nested children to blockquotes
+      expect(tree.toMarkdown()).toBe('Para 1\n\n> Para 1 nested');
+    });
+
+    it('should render deeply nested children as nested blockquotes in Markdown', () => {
+      const nestedDescription: Description = [
+        {
+          id: 'parent-1',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [{ type: 'text', text: 'Level 0', styles: {} }],
+          children: [
+            {
+              id: 'child-1',
+              type: 'paragraph',
+              props: {
+                textColor: 'default',
+                backgroundColor: 'default',
+                textAlignment: 'left',
+              },
+              content: [{ type: 'text', text: 'Level 1', styles: {} }],
+              children: [
+                {
+                  id: 'grandchild-1',
+                  type: 'paragraph',
+                  props: {
+                    textColor: 'default',
+                    backgroundColor: 'default',
+                    textAlignment: 'left',
+                  },
+                  content: [{ type: 'text', text: 'Level 2', styles: {} }],
+                  children: [],
+                },
+              ],
+            },
+          ],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'test',
+        shortcuts: {},
+        customShortcuts: new Map(),
+        defaultDescription: [],
+      };
+
+      const tree = new DescriptionNodeTree(
+        context,
+        nestedDescription as unknown as Array<IDescriptionBlockNode>,
+        { insertAd: false },
+      );
+
+      // Markdown should convert deeply nested children to nested blockquotes
+      expect(tree.toMarkdown()).toBe('Level 0\n\n> Level 1\n> \n> > Level 2');
+    });
+  });
 });
