@@ -166,6 +166,7 @@ export function SubmissionCard({
             checked={isSelected}
             onChange={() => {}}
             onClick={handleCheckboxClick}
+            // eslint-disable-next-line lingui/no-unlocalized-strings
             aria-label={`Select ${submission.title}`}
           />
           {draggable && (
