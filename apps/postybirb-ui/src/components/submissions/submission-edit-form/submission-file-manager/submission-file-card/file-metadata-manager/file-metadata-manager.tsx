@@ -1,5 +1,5 @@
 import { Trans } from '@lingui/react/macro';
-import { Badge, Box, Grid, Group, Text, TextInput } from '@mantine/core';
+import { Box, Grid, TextInput } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import {
   FileType,
@@ -9,7 +9,6 @@ import {
   SubmissionId,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
-import { filesize } from 'filesize';
 import fileSubmissionApi from '../../../../../../api/file-submission.api';
 import { CommonTranslations } from '../../../../../../translations/common-translations';
 import { ComponentErrorBoundary } from '../../../../../error-boundary';
@@ -31,64 +30,11 @@ type FileDetailProps = Pick<FileMetadataManagerProps, 'file' | 'accounts'> & {
   save: () => void;
 };
 
-function FileDetails(props: FileDetailProps) {
-  const { file } = props;
-  return (
-    <Group gap="lg">
-      <Box>
-        <Text size="xs" fw={500} c="dimmed">
-          <CommonTranslations.Name />
-        </Text>
-        <Text size="sm" fw={600}>
-          {file.fileName}
-        </Text>
-      </Box>
-
-      <Box>
-        <Text size="xs" fw={500} c="dimmed">
-          <Trans context="submission.file-size">Size</Trans>
-        </Text>
-        <Text size="sm" fw={600}>
-          {filesize(file.size, { base: 2 }) as string}
-        </Text>
-      </Box>
-
-      <Box>
-        <Text size="xs" fw={500} c="dimmed">
-          <Trans>Type</Trans>
-        </Text>
-        <Badge
-          variant="outline"
-          c="dimmed"
-          color={getFileTypeColor(getFileType(file.fileName))}
-        >
-          {getFileType(file.fileName)}
-        </Badge>
-      </Box>
-    </Group>
-  );
-}
-
-function getFileTypeColor(fileType: FileType): string {
-  switch (fileType) {
-    case FileType.IMAGE:
-      return 'blue';
-    case FileType.TEXT:
-      return 'green';
-    case FileType.VIDEO:
-      return 'purple';
-    case FileType.AUDIO:
-      return 'orange';
-    default:
-      return 'gray';
-  }
-}
-
 function FileMetadata(props: FileDetailProps) {
   const { metadata, save } = props;
 
   return (
-    <Box mt="md">
+    <Box>
       <Grid gutter="xs">
         <Grid.Col span={12}>
           <BasicWebsiteSelect
@@ -144,7 +90,6 @@ export function FileMetadataManager(props: FileMetadataManagerProps) {
   const detailProps: FileDetailProps = { file, metadata: meta, accounts, save };
   return (
     <ComponentErrorBoundary>
-      <FileDetails {...detailProps} />
       <FileMetadata {...detailProps} />
       {fileType === FileType.IMAGE ? <FileDimensions {...detailProps} /> : null}
       {fileType !== FileType.TEXT ? <FileSourceUrls {...detailProps} /> : null}

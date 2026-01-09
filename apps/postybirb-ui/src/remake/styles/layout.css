@@ -1,0 +1,458 @@
+/**
+ * Layout-specific styles for the PostyBirb UI.
+ * Custom flexbox layout (no AppShell) with transitions.
+ * Naming convention: postybirb__snake_case
+ */
+
+/* =============================================================================
+   Z-Index Scale - Centralized z-index values for consistent layering
+   ============================================================================= */
+
+:root {
+  /* Base layers */
+  --z-base: 0;
+  --z-section-panel: 1;
+  --z-sticky: 10;
+  
+  /* Navigation */
+  --z-sidenav: 100;
+  
+  /* Drawers */
+  --z-drawer-overlay: 200;
+  --z-drawer: 201;
+  
+  /* Modals */
+  --z-modal-overlay: 300;
+  --z-modal: 301;
+  --z-modal-nested: 400;
+  
+  /* Floating elements */
+  --z-popover: 500;
+  --z-tooltip: 600;
+  
+  /* Always on top */
+  --z-notification: 700;
+}
+
+/* =============================================================================
+   Utility Classes - Reusable across components
+   ============================================================================= */
+
+/* Flexbox utilities */
+.postybirb__flex_row {
+  display: flex;
+  flex-direction: row;
+}
+
+.postybirb__flex_center {
+  display: flex;
+  align-items: center;
+}
+
+.postybirb__flex_between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+/* Gap utilities */
+.postybirb__gap_xs {
+  gap: 4px;
+}
+
+.postybirb__gap_sm {
+  gap: 8px;
+}
+
+.postybirb__gap_md {
+  gap: 12px;
+}
+
+/* Nav item label - used in sidenav, theme picker, language picker */
+.postybirb__nav_item_label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+/* Tooltip content with kbd shortcut */
+.postybirb__tooltip_content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Kbd element alignment fix */
+.postybirb__kbd_aligned {
+  display: flex;
+  align-items: center;
+}
+
+/* NavLink border radius - applied via CSS instead of inline */
+.postybirb__sidenav_nav .mantine-NavLink-root {
+  border-radius: var(--mantine-radius-sm);
+}
+
+/* =============================================================================
+   Layout Container
+   ============================================================================= */
+
+/* Layout container - full viewport height */
+.postybirb__layout {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Side navigation */
+.postybirb__sidenav {
+  display: flex;
+  flex-direction: column;
+  width: 280px;
+  min-width: 280px;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  background-color: var(--mantine-color-body);
+  border-right: 1px solid var(--mantine-color-default-border);
+  transition:
+    width 200ms ease,
+    min-width 200ms ease;
+  z-index: var(--z-sidenav);
+  overflow: hidden;
+}
+
+.postybirb__sidenav--collapsed {
+  width: 60px;
+  min-width: 60px;
+}
+
+/* Sidenav header (contains collapse button) */
+.postybirb__sidenav_header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  border-bottom: 1px solid var(--mantine-color-default-border);
+  min-height: var(--postybirb-header-height);
+}
+
+.postybirb__sidenav--collapsed .postybirb__sidenav_header {
+  justify-content: center;
+  padding: 12px 8px;
+}
+
+/* Sidenav scroll area - fills remaining space */
+.postybirb__sidenav_scroll {
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Sidenav scroll area - primary color scrollbar */
+.mantine-ScrollArea-scrollbar {
+  --scrollbar-color: color-mix(
+    in srgb,
+    var(--mantine-primary-color-filled) 40%,
+    transparent
+  );
+}
+
+.mantine-ScrollArea-scrollbar:hover {
+  --scrollbar-color: color-mix(
+    in srgb,
+    var(--mantine-primary-color-filled) 65%,
+    transparent
+  );
+}
+
+.mantine-ScrollArea-thumb {
+  background-color: var(--scrollbar-color);
+}
+
+/* Sidenav navigation items container */
+.postybirb__sidenav_nav {
+  padding: 8px;
+}
+
+/* Center nav link icons when sidenav is collapsed */
+.postybirb__sidenav--collapsed .postybirb__sidenav_nav .mantine-NavLink-root {
+  justify-content: center;
+}
+
+.postybirb__sidenav--collapsed
+  .postybirb__sidenav_nav
+  .mantine-NavLink-section {
+  margin: 0;
+}
+
+/* Nav item label visibility */
+.postybirb__nav_label {
+  display: block;
+}
+
+.postybirb__sidenav--collapsed .postybirb__nav_label {
+  display: none;
+}
+
+/* Main content wrapper - adjusts for sidenav */
+.postybirb__main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  margin-left: 280px;
+  min-height: 100vh;
+  transition: margin-left 200ms ease;
+}
+
+.postybirb__main--sidenav_collapsed {
+  margin-left: 60px;
+}
+
+/* Content navbar (with pagination) */
+.postybirb__content_navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+  min-height: 60px;
+  padding: 0 16px;
+  background-color: var(--mantine-color-body);
+  border-bottom: 1px solid var(--mantine-color-default-border);
+}
+
+.postybirb__content_navbar_title {
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.postybirb__content_navbar_center {
+  display: flex;
+  justify-content: center;
+  flex: 1;
+}
+
+.postybirb__content_navbar_actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* =============================================================================
+   Split Content Layout - Master/Detail Pattern
+   ============================================================================= */
+
+/* Container for split content (section panel + primary content) */
+.postybirb__content_split {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  position: relative; /* Positioning context for section drawer */
+}
+
+/* Section Panel (Master) - left side list */
+.postybirb__section_panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: var(--mantine-color-body);
+  border-right: 1px solid var(--mantine-color-default-border);
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  z-index: var(--z-section-panel);
+  max-height: 100vh;
+}
+
+/* Primary Content (Detail) - right side detail view */
+.postybirb__primary_content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  background-color: var(--mantine-color-body);
+  max-height: 100vh;
+}
+
+/* Primary content scrollable area (below navbar) */
+.postybirb__primary_content_area {
+  flex: 1;
+  overflow: hidden; /* Children manage their own scrolling */
+  position: relative;
+}
+
+/* =============================================================================
+   Section Drawer - Custom drawer that slides from section panel area
+   ============================================================================= */
+
+/* Drawer overlay - covers content_split area */
+.postybirb__section_drawer_overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: var(--z-drawer-overlay);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+
+.postybirb__section_drawer_overlay--visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Drawer panel container */
+.postybirb__section_drawer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 360px;
+  max-width: 90%;
+  z-index: var(--z-drawer);
+  display: flex;
+  flex-direction: column;
+  background-color: var(--mantine-color-body);
+  border-right: 1px solid var(--mantine-color-default-border);
+  transform: translateX(-100%);
+  transition: transform 200ms ease;
+}
+
+.postybirb__section_drawer--open {
+  transform: translateX(0);
+}
+
+/* Drawer header */
+.postybirb__section_drawer_header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--mantine-color-default-border);
+  height: var(--postybirb-header-height);
+  min-height: var(--postybirb-header-height);
+}
+
+/* Drawer body - scrollable content area */
+.postybirb__section_drawer_body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+/* Section drawer scroll area - primary color scrollbar */
+.postybirb__section_drawer_body::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb-color);
+}
+
+.postybirb__section_drawer_body::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover-color);
+}
+
+/* Primary content area - scrollable (legacy, may be removed) */
+.postybirb__content_area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  position: relative;
+}
+
+/* Loading overlay for content area */
+.postybirb__content_area_loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.8);
+  z-index: var(--z-sticky);
+}
+
+[data-mantine-color-scheme='dark'] .postybirb__content_area_loading {
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+/* =============================================================================
+   Custom Scrollbars - Elegant, slim design using Mantine's primary color
+   ============================================================================= */
+
+:root {
+  --scrollbar-width: 6px;
+  --scrollbar-track-color: transparent;
+  /* Uses primary color with transparency for subtle, cohesive look */
+  --scrollbar-thumb-color: color-mix(
+    in srgb,
+    var(--mantine-primary-color-filled) 40%,
+    transparent
+  );
+  --scrollbar-thumb-hover-color: color-mix(
+    in srgb,
+    var(--mantine-primary-color-filled) 65%,
+    transparent
+  );
+  --scrollbar-thumb-active-color: var(--mantine-primary-color-filled);
+}
+
+/* WebKit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: var(--scrollbar-width);
+  height: var(--scrollbar-width);
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track-color);
+  border-radius: var(--mantine-radius-sm);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb-color);
+  border-radius: var(--mantine-radius-sm);
+  transition: background 150ms ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover-color);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: var(--scrollbar-thumb-active-color);
+}
+
+/* Hide scrollbar corner (where vertical and horizontal scrollbars meet) */
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb-color) var(--scrollbar-track-color);
+}
+
+/* =============================================================================
+    CSS Variables - Global layout measurements
+    ============================================================================= */
+
+:root {
+  --postybirb-header-height: 60px;
+}
+
+/* =============================================================================
+    Stat Card - Dashboard stat card styles
+    ============================================================================= */
+
+.postybirb__stat-card--clickable {
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.postybirb__stat-card--clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--mantine-shadow-sm);
+}
+
+.postybirb__stat-card--clickable:active {
+  transform: translateY(0);
+}

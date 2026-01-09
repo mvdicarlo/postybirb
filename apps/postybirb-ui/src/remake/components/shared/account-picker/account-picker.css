@@ -1,0 +1,22 @@
+/**
+ * AccountPicker styles.
+ */
+
+.postybirb__account_picker_group_header {
+  width: 100%;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.postybirb__account_picker_group_header:hover {
+  background-color: var(--mantine-color-gray-light-hover);
+}
+
+.postybirb__account_picker_account_row {
+  border-radius: var(--mantine-radius-xs);
+  transition: background-color 150ms ease;
+}
+
+.postybirb__account_picker_account_row:hover {
+  background-color: var(--mantine-color-gray-light-hover);
+}

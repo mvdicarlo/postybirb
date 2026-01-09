@@ -1,26 +1,27 @@
 import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Patch,
-  Post,
-  UploadedFiles,
-  UseInterceptors,
+    Body,
+    Controller,
+    Get,
+    Param,
+    Patch,
+    Post,
+    UploadedFiles,
+    UseInterceptors,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import {
-  ApiBadRequestResponse,
-  ApiConsumes,
-  ApiNotFoundResponse,
-  ApiOkResponse,
-  ApiTags,
+    ApiBadRequestResponse,
+    ApiConsumes,
+    ApiNotFoundResponse,
+    ApiOkResponse,
+    ApiTags,
 } from '@nestjs/swagger';
 import { ISubmissionDto, SubmissionId, SubmissionType } from '@postybirb/types';
 import { parse } from 'path';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
 import { MulterFileInfo } from '../file/models/multer-file-info';
 import { ApplyMultiSubmissionDto } from './dtos/apply-multi-submission.dto';
+import { ApplyTemplateOptionsDto } from './dtos/apply-template-options.dto';
 import { CreateSubmissionDto } from './dtos/create-submission.dto';
 import { UpdateSubmissionTemplateNameDto } from './dtos/update-submission-template-name.dto';
 import { UpdateSubmissionDto } from './dtos/update-submission.dto';
@@ -92,6 +93,13 @@ export class SubmissionController extends PostyBirbController<'SubmissionSchema'
     return this.service.unarchive(id);
   }
 
+  @Post('archive/:id')
+  @ApiOkResponse({ description: 'Submission archived.' })
+  @ApiNotFoundResponse({ description: 'Submission Id not found.' })
+  async archive(@Param('id') id: SubmissionId) {
+    return this.service.archive(id);
+  }
+
   @Patch(':id')
   @ApiOkResponse({ description: 'Submission updated.' })
   @ApiNotFoundResponse({ description: 'Submission Id not found.' })
@@ -128,6 +136,15 @@ export class SubmissionController extends PostyBirbController<'SubmissionSchema'
   @ApiNotFoundResponse({ description: 'Submission Id not found.' })
   async applyMulti(@Body() applyMultiSubmissionDto: ApplyMultiSubmissionDto) {
     return this.service.applyMultiSubmission(applyMultiSubmissionDto);
+  }
+
+  @Patch('apply/template/options')
+  @ApiOkResponse({ description: 'Template options applied to submissions.' })
+  @ApiBadRequestResponse({ description: 'Invalid request.' })
+  async applyTemplateOptions(
+    @Body() applyTemplateOptionsDto: ApplyTemplateOptionsDto,
+  ) {
+    return this.service.applyTemplateOptions(applyTemplateOptionsDto);
   }
 
   @Patch('apply/template/:id/:templateId')

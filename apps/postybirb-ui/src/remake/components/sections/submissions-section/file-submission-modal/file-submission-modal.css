@@ -1,0 +1,165 @@
+/**
+ * FileSubmissionModal styles.
+ * Following postybirb__snake_case naming convention.
+ */
+
+/* Modal overlay */
+.postybirb__file_submission_modal_overlay {
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+  z-index: var(--z-modal-overlay);
+}
+
+/* Modal container */
+.postybirb__file_submission_modal {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+/* Header section */
+.postybirb__file_submission_modal_header {
+  border-bottom: 1px solid var(--mantine-color-default-border);
+  flex-shrink: 0;
+}
+
+/* Dropzone container */
+.postybirb__file_submission_modal_dropzone_container {
+  flex-shrink: 0;
+}
+
+/* Dropzone inner content - prevents pointer events on children */
+.postybirb__file_submission_modal_dropzone_content {
+  pointer-events: none;
+}
+
+/* Main content area */
+.postybirb__file_submission_modal_content {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Column layout for file list and options */
+.postybirb__file_submission_modal_column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Empty state card */
+.postybirb__file_submission_modal_empty {
+  flex: 1;
+}
+
+/* File list container */
+.postybirb__file_submission_modal_file_list {
+  flex: 1;
+}
+
+/* Footer section */
+.postybirb__file_submission_modal_footer {
+  border-top: 1px solid var(--mantine-color-default-border);
+  flex-shrink: 0;
+}
+
+/* File preview card - additional styling if needed */
+
+/* File preview content container */
+.postybirb__file_preview_content {
+  flex: 1;
+  min-width: 0;
+}
+
+/* File preview thumbnail */
+.postybirb__file_preview_thumbnail {
+  flex-shrink: 0;
+}
+
+/* ===== Image Editor Styles ===== */
+
+/* Modal body */
+.postybirb__image_editor_modal_body {
+  height: 100vh;
+  padding: 0;
+}
+
+.postybirb__image_editor_modal_content {
+  height: 100vh;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+}
+
+/* Header */
+.postybirb__image_editor_header {
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--mantine-color-default-border);
+}
+
+/* Canvas container */
+.postybirb__image_editor_canvas {
+  background: var(--mantine-color-dark-8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Image element - cropper.js will transform this */
+.postybirb__image_editor_image {
+  display: block;
+  max-width: 100%;
+  max-height: calc(100vh - 100px);
+}
+
+/* Sidebar */
+.postybirb__image_editor_sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  overflow-y: auto;
+  border-left: 1px solid var(--mantine-color-default-border);
+}
+
+/* Cropper.js overrides for better styling */
+.cropper-view-box,
+.cropper-face {
+  border-radius: 0;
+}
+
+.cropper-view-box {
+  outline: 2px solid var(--mantine-color-blue-5);
+  outline-offset: -2px;
+}
+
+.cropper-point {
+  background-color: var(--mantine-color-blue-5);
+  opacity: 1;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.cropper-point.point-se {
+  width: 10px;
+  height: 10px;
+}
+
+.cropper-line {
+  background-color: var(--mantine-color-blue-5);
+  opacity: 0.5;
+}
+
+.cropper-dashed {
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.cropper-modal {
+  background-color: rgba(0, 0, 0, 0.6);
+}

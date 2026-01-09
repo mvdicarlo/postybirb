@@ -1,0 +1,21 @@
+/**
+ * File management section styles.
+ */
+
+.postybirb-sortable-file {
+  transition:
+    box-shadow 150ms ease,
+    transform 150ms ease;
+}
+
+.postybirb-sortable-file:hover {
+  box-shadow: var(--mantine-shadow-sm);
+}
+
+.postybirb-sortable-file.sortable-ghost {
+  opacity: 0.5;
+}
+
+.postybirb-sortable-file.sortable-chosen {
+  box-shadow: var(--mantine-shadow-md);
+}

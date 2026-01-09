@@ -105,6 +105,7 @@ export class FileSubmissionService
     this.guardIsFileSubmission(submission);
 
     await this.fileService.update(file, fileId, false);
+    this.submissionService.emit();
   }
 
   /**

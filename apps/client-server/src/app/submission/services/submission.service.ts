@@ -1,32 +1,32 @@
 /* eslint-disable no-param-reassign */
 import {
-    BadRequestException,
-    forwardRef,
-    Inject,
-    Injectable,
-    NotFoundException,
-    OnModuleInit,
-    Optional,
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+  OnModuleInit,
+  Optional,
 } from '@nestjs/common';
 import {
-    FileBufferSchema,
-    Insert,
-    SubmissionFileSchema,
-    SubmissionSchema,
-    WebsiteOptionsSchema,
+  FileBufferSchema,
+  Insert,
+  SubmissionFileSchema,
+  SubmissionSchema,
+  WebsiteOptionsSchema,
 } from '@postybirb/database';
 import { SUBMISSION_UPDATES } from '@postybirb/socket-events';
 import {
-    FileSubmission,
-    FileSubmissionMetadata,
-    ISubmissionDto,
-    ISubmissionMetadata,
-    MessageSubmission,
-    NULL_ACCOUNT_ID,
-    ScheduleType,
-    SubmissionId,
-    SubmissionMetadataType,
-    SubmissionType,
+  FileSubmission,
+  FileSubmissionMetadata,
+  ISubmissionDto,
+  ISubmissionMetadata,
+  MessageSubmission,
+  NULL_ACCOUNT_ID,
+  ScheduleType,
+  SubmissionId,
+  SubmissionMetadataType,
+  SubmissionType,
 } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/electron';
 import { eq } from 'drizzle-orm';
@@ -39,6 +39,7 @@ import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { WSGateway } from '../../web-socket/web-socket-gateway';
 import { WebsiteOptionsService } from '../../website-options/website-options.service';
 import { ApplyMultiSubmissionDto } from '../dtos/apply-multi-submission.dto';
+import { ApplyTemplateOptionsDto } from '../dtos/apply-template-options.dto';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
 import { UpdateSubmissionTemplateNameDto } from '../dtos/update-submission-template-name.dto';
 import { UpdateSubmissionDto } from '../dtos/update-submission.dto';
@@ -137,25 +138,50 @@ export class SubmissionService
     if (IsTestEnvironment()) {
       return;
     }
+    const now = Date.now();
     super.emit({
       event: SUBMISSION_UPDATES,
       data: await this.findAllAsDto(),
     });
+    this.logger.info(`Emitted submission updates in ${Date.now() - now}ms`);
   }
 
   public async findAllAsDto(): Promise<ISubmissionDto<ISubmissionMetadata>[]> {
-    const all = await this.findAll();
-    return Promise.all(
-      all.map(
-        async (s) =>
-          ({
-            ...s.toDTO(),
-            validations: s.isArchived
-              ? []
-              : await this.websiteOptionsService.validateSubmission(s.id),
-          }) as ISubmissionDto<ISubmissionMetadata>,
-      ),
+    const all = (await super.findAll()).filter((s) => s.isInitialized);
+
+    // Separate archived from non-archived for efficient processing
+    const archived = all.filter((s) => s.isArchived);
+    const nonArchived = all.filter((s) => !s.isArchived);
+
+    // Validate non-archived submissions in parallel batches to avoid overwhelming the system
+    const BATCH_SIZE = 10;
+    const validatedNonArchived: ISubmissionDto<ISubmissionMetadata>[] = [];
+
+    for (let i = 0; i < nonArchived.length; i += BATCH_SIZE) {
+      const batch = nonArchived.slice(i, i + BATCH_SIZE);
+      const batchResults = await Promise.all(
+        batch.map(
+          async (s) =>
+            ({
+              ...s.toDTO(),
+              validations:
+                await this.websiteOptionsService.validateSubmission(s),
+            }) as ISubmissionDto<ISubmissionMetadata>,
+        ),
+      );
+      validatedNonArchived.push(...batchResults);
+    }
+
+    // Archived submissions don't need validation
+    const archivedDtos = archived.map(
+      (s) =>
+        ({
+          ...s.toDTO(),
+          validations: [],
+        }) as ISubmissionDto<ISubmissionMetadata>,
     );
+
+    return [...validatedNonArchived, ...archivedDtos];
   }
 
   /**
@@ -197,7 +223,8 @@ export class SubmissionService
 
     // Templates and multi-submissions are immediately initialized since they don't need file population
     const isImmediatelyInitialized =
-      !!createSubmissionDto.isMultiSubmission || !!createSubmissionDto.isTemplate;
+      !!createSubmissionDto.isMultiSubmission ||
+      !!createSubmissionDto.isTemplate;
 
     let submission = new Submission<ISubmissionMetadata>({
       isScheduled: false,
@@ -220,17 +247,41 @@ export class SubmissionService
 
     submission = await this.repository.insert(submission);
 
+    // Determine the submission name/title
     let name = 'New submission';
     if (createSubmissionDto.name) {
       name = createSubmissionDto.name;
     } else if (file) {
-      name = path.parse(file.filename).name;
+      // Check for per-file title override from fileMetadata
+      const fileMetadata = createSubmissionDto.fileMetadata?.find(
+        (meta) => meta.filename === file.originalname,
+      );
+      if (fileMetadata?.title) {
+        name = fileMetadata.title;
+      } else {
+        name = path.parse(file.filename).name;
+      }
     }
+
+    // Convert defaultOptions from DTO format to IWebsiteFormFields format
+    const defaultOptions = createSubmissionDto.defaultOptions
+      ? {
+          tags: createSubmissionDto.defaultOptions.tags
+            ? {
+                overrideDefault: false,
+                tags: createSubmissionDto.defaultOptions.tags,
+              }
+            : undefined,
+          description: createSubmissionDto.defaultOptions.description,
+          rating: createSubmissionDto.defaultOptions.rating,
+        }
+      : undefined;
 
     try {
       await this.websiteOptionsService.createDefaultSubmissionOptions(
         submission,
         name,
+        defaultOptions,
       );
 
       switch (createSubmissionDto.type) {
@@ -512,6 +563,96 @@ export class SubmissionService
   }
 
   /**
+   * Applies selected template options to multiple submissions.
+   * Upserts options (update if exists, create if new) with merge behavior.
+   *
+   * @param dto - The apply template options DTO
+   * @returns Object with success/failure counts
+   */
+  async applyTemplateOptions(dto: ApplyTemplateOptionsDto): Promise<{
+    success: number;
+    failed: number;
+    errors: Array<{ submissionId: SubmissionId; error: string }>;
+  }> {
+    const { targetSubmissionIds, options, overrideTitle, overrideDescription } =
+      dto;
+
+    this.logger
+      .withMetadata({
+        targetCount: targetSubmissionIds.length,
+        optionCount: options.length,
+      })
+      .info('Applying template options to submissions');
+
+    const results = {
+      success: 0,
+      failed: 0,
+      errors: [] as Array<{ submissionId: SubmissionId; error: string }>,
+    };
+
+    for (const submissionId of targetSubmissionIds) {
+      try {
+        const submission = await this.findById(submissionId, {
+          failOnMissing: true,
+        });
+
+        for (const templateOption of options) {
+          // Find existing option for this account
+          const existingOption = submission.options.find(
+            (o) => o.accountId === templateOption.accountId,
+          );
+
+          // Prepare the data to apply
+          const dataToApply = { ...templateOption.data };
+
+          // Handle title override: only replace if overrideTitle is true AND template has non-empty title
+          if (!overrideTitle || !dataToApply.title?.trim()) {
+            delete dataToApply.title;
+          }
+
+          // Handle description override: only replace if overrideDescription is true AND template has description
+          if (!overrideDescription || !dataToApply.description?.description) {
+            delete dataToApply.description;
+          }
+
+          if (existingOption) {
+            // Upsert: merge existing data with template data
+            const mergedData = {
+              ...existingOption.data,
+              ...dataToApply,
+            };
+            await this.websiteOptionsService.update(existingOption.id, {
+              data: mergedData,
+            });
+          } else {
+            // Create new option
+            await this.websiteOptionsService.createOption(
+              submission,
+              templateOption.accountId,
+              dataToApply,
+              dataToApply.title,
+            );
+          }
+        }
+
+        results.success++;
+      } catch (error) {
+        results.failed++;
+        results.errors.push({
+          submissionId,
+          error: error instanceof Error ? error.message : String(error),
+        });
+        this.logger
+          .withMetadata({ submissionId, error })
+          .error('Failed to apply template options to submission');
+      }
+    }
+
+    this.emit();
+    return results;
+  }
+
+  /**
    * Duplicates a submission.
    * @param {string} id
    */
@@ -672,7 +813,11 @@ export class SubmissionService
     if (entity.metadata.template) {
       entity.metadata.template.name = name;
     }
-    return this.repository.update(id, { metadata: entity.metadata });
+    const result = await this.repository.update(id, {
+      metadata: entity.metadata,
+    });
+    this.emit();
+    return result;
   }
 
   async reorder(id: SubmissionId, index: number) {
@@ -720,6 +865,17 @@ export class SubmissionService
     }
     await this.repository.update(id, {
       isArchived: false,
+    });
+    this.emit();
+  }
+
+  async archive(id: SubmissionId) {
+    const submission = await this.findById(id, { failOnMissing: true });
+    if (submission.isArchived) {
+      throw new BadRequestException(`Submission '${id}' is already archived`);
+    }
+    await this.repository.update(id, {
+      isArchived: true,
     });
     this.emit();
   }

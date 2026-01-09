@@ -1,0 +1,13 @@
+/**
+ * Defaults form section styles.
+ */
+
+.postybirb__defaults_form_header {
+  width: 100%;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.postybirb__defaults_form_header:hover {
+  background-color: var(--mantine-color-default-hover);
+}

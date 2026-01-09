@@ -1,0 +1,9 @@
+.postybirb-field-error {
+  background-color: rgba(200, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+.postybirb-field-warning {
+  background-color: rgba(200, 153, 0, 0.1);
+  border-radius: 4px;
+}

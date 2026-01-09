@@ -37,7 +37,7 @@ const config = {
         depConstraints: [{ sourceTag: '*', onlyDependOnLibsWithTags: ['*'] }],
       },
     ],
-
+    '@typescript-eslint/lines-between-class-members': 'off',
     'no-plusplus': 'off',
     'no-nested-ternary': 'off',
     'no-continue': 'off',

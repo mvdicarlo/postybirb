@@ -1,0 +1,25 @@
+/**
+ * TemplatesSection styles.
+ */
+
+.postybirb__templates__section {
+  display: flex;
+  flex-direction: column;
+}
+
+.postybirb__templates__header {
+  flex-shrink: 0;
+}
+
+.postybirb__templates__card {
+  transition: background-color 0.15s ease;
+}
+
+.postybirb__templates__card:hover {
+  background-color: var(--mantine-color-dark-5);
+}
+
+.postybirb__templates__card--selected {
+  border-color: var(--mantine-primary-color-filled);
+  background-color: var(--mantine-color-dark-6);
+}

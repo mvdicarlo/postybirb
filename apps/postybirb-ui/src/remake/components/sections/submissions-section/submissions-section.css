@@ -1,0 +1,174 @@
+/**
+ * Submissions Section styles.
+ * Naming convention: postybirb__submission__element_modifier
+ */
+
+/* =============================================================================
+   Section Header
+   ============================================================================= */
+
+.postybirb__submission__header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  padding: var(--mantine-spacing-sm);
+  background-color: var(--mantine-color-body);
+  border-bottom: 1px solid var(--mantine-color-default-border);
+}
+
+/* =============================================================================
+   Section Container
+   ============================================================================= */
+
+.postybirb__submission__section {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Hidden file input for creating submissions */
+.postybirb__submission__file_input {
+  display: none;
+}
+
+/* =============================================================================
+   Submission List
+   ============================================================================= */
+
+.postybirb__submission__list_scroll {
+  flex: 1;
+}
+
+.postybirb__submission__list_loading {
+  padding: var(--mantine-spacing-md);
+  text-align: center;
+}
+
+.postybirb__submission__list_empty {
+  padding: var(--mantine-spacing-md);
+  text-align: center;
+}
+
+/* =============================================================================
+   Submission Card
+   ============================================================================= */
+
+.postybirb__submission__card {
+  cursor: pointer;
+  user-select: none;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+}
+
+.postybirb__submission__card:focus-visible {
+  outline: 2px solid var(--mantine-color-blue-6);
+  outline-offset: -2px;
+  background-color: var(--mantine-color-blue-light);
+}
+
+.postybirb__submission__card--selected {
+  background-color: var(--mantine-color-primary-light);
+  border-color: var(--mantine-color-primary-filled);
+  border-left: 3px solid var(--mantine-color-primary-filled) !important;
+}
+
+.postybirb__submission__card--scheduled {
+  background-color: var(--mantine-color-blue-light);
+}
+
+.postybirb__submission__card--scheduled.postybirb__submission__card--selected {
+  background-color: color-mix(in srgb, var(--mantine-color-blue-light) 50%, var(--mantine-color-primary-light) 50%);
+}
+
+.postybirb__submission__card--has-errors {
+  background-color: var(--mantine-color-red-light);
+}
+
+.postybirb__submission__card--has-errors.postybirb__submission__card--selected {
+  background-color: color-mix(in srgb, var(--mantine-color-red-light) 50%, var(--mantine-color-primary-light) 50%);
+}
+
+/* Compact mode */
+.postybirb__submission__card--compact {
+  padding: var(--mantine-spacing-xs);
+}
+
+/* Card actions column - checkbox + drag handle */
+.postybirb__submission__card_actions_column {
+  padding: var(--mantine-spacing-xs) 0;
+  border-right: 1px solid var(--mantine-color-default-border);
+  padding-right: var(--mantine-spacing-xs);
+}
+
+/* Drag handle */
+.postybirb__submission__drag_handle {
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  opacity: 0.5;
+}
+
+.postybirb__submission__drag_handle:active {
+  cursor: grabbing;
+}
+
+/* Card content wrapper - fills remaining space */
+.postybirb__submission__card_content {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Last modified timestamp row */
+.postybirb__submission__timestamp_icon {
+  opacity: 0.5;
+}
+
+/* =============================================================================
+   Thumbnail
+   ============================================================================= */
+
+.postybirb__submission__thumbnail {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--mantine-radius-sm);
+  overflow: hidden;
+  background-color: var(--mantine-color-default);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.postybirb__submission__thumbnail_placeholder {
+  opacity: 0.5;
+}
+
+/* =============================================================================
+   Tabs
+   ============================================================================= */
+
+.postybirb__submission__tabs {
+  flex-shrink: 0;
+}
+
+.postybirb__submission__tabs_panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* =============================================================================
+   Archived List Placeholder
+   ============================================================================= */
+
+.postybirb__submission__archived_placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--mantine-spacing-md);
+  padding: var(--mantine-spacing-xl);
+  flex: 1;
+}

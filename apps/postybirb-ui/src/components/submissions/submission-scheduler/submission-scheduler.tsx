@@ -297,10 +297,10 @@ export function SubmissionScheduler(props: SubmissionSchedulerProps) {
                 }
                 submitButtonProps={{ display: 'none' }}
                 onChange={(newDate) => {
-                  const dateStr = newDate?.toISOString();
+                  const dateStr = (moment(newDate).toDate() || new Date())?.toISOString();
                   onUpdate({ ...schedule, scheduledFor: dateStr });
                   if (newDate) {
-                    setLastUsedSchedule(newDate);
+                    setLastUsedSchedule(moment(newDate).toDate());
                     setLastKnownSetDate(dateStr);
                   }
                 }}

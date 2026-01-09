@@ -13,6 +13,7 @@ import {
   Title,
 } from '@mantine/core';
 import { DateTimePicker } from '@mantine/dates';
+import moment from 'moment';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocalStorage } from 'react-use';
 import Sortable from 'sortablejs';
@@ -219,9 +220,9 @@ export function SubmissionViewMultiSchedulerModal(
             label={<Trans>Date</Trans>}
             value={selectedDate}
             onChange={(date) => {
-              setSelectedDate(date);
+              setSelectedDate(moment(date).toDate() || new Date());
               if (date) {
-                setLastUsedSchedule(date);
+                setLastUsedSchedule(moment(date).toDate() || new Date());
               }
             }}
           />

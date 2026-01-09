@@ -1,0 +1,187 @@
+/* eslint-disable lingui/text-restrictions */
+/* eslint-disable lingui/no-unlocalized-strings */
+import {
+  BlockNoteSchema,
+  defaultBlockSpecs,
+  defaultInlineContentSpecs,
+  defaultStyleSpecs,
+  Dictionary,
+} from '@blocknote/core';
+import { BlockNoteView } from '@blocknote/mantine';
+import { SuggestionMenuController, useCreateBlockNote } from '@blocknote/react';
+import { useLingui } from '@lingui/react/macro';
+import { Box, useMantineColorScheme } from '@mantine/core';
+import type { Description } from '@postybirb/types';
+import { useMemo } from 'react';
+import { useLocale } from '../../../hooks';
+import { useCustomShortcuts } from '../../../stores/entity/custom-shortcut-store';
+import { useWebsites } from '../../../stores/entity/website-store';
+import {
+  DefaultShortcut,
+  filterShortcutMenuItems,
+  filterSuggestionItems,
+  getCustomShortcutsMenuItems,
+  getCustomSlashMenuItems,
+  getUsernameShortcutsMenuItems,
+  InlineCustomShortcut,
+  InlineUsernameShortcut,
+} from './custom-blocks';
+
+import '@blocknote/core/fonts/inter.css';
+import '@blocknote/mantine/style.css';
+import './description-editor.css';
+
+// Shortcut trigger character for username and custom shortcuts
+const shortcutTrigger = '`'; // Backtick character
+
+export type DescriptionEditorProps = {
+  /**
+   * Initial content for the editor.
+   */
+  value?: Description;
+
+  /**
+   * Callback when the editor content changes.
+   */
+  onChange: (value: Description) => void;
+
+  /**
+   * Whether this is the default editor (hides certain options).
+   */
+  isDefaultEditor?: boolean;
+
+  /**
+   * Whether to show the custom shortcuts menu.
+   */
+  showCustomShortcuts?: boolean;
+
+  /**
+   * Minimum height of the editor.
+   */
+  minHeight?: number;
+};
+
+/**
+ * Inner editor component that creates the BlockNote instance.
+ * Separated to allow remounting when locale changes.
+ */
+function DescriptionEditorInner({
+  value,
+  onChange,
+  isDefaultEditor = false,
+  showCustomShortcuts,
+  minHeight,
+  blockNoteLocale,
+}: DescriptionEditorProps & { blockNoteLocale: Record<string, unknown> }) {
+  const { colorScheme } = useMantineColorScheme();
+  const { t } = useLingui();
+  const customShortcuts = useCustomShortcuts();
+  const websites = useWebsites();
+
+  // Create the schema with custom blocks
+  const schema = useMemo(
+    () =>
+      BlockNoteSchema.create({
+        blockSpecs: {
+          paragraph: defaultBlockSpecs.paragraph,
+          heading: defaultBlockSpecs.heading,
+          divider: defaultBlockSpecs.divider,
+          audio: defaultBlockSpecs.audio,
+          video: defaultBlockSpecs.video,
+          image: defaultBlockSpecs.image,
+          table: defaultBlockSpecs.table,
+          defaultShortcut: DefaultShortcut(),
+        },
+        inlineContentSpecs: {
+          ...defaultInlineContentSpecs,
+          customShortcut: InlineCustomShortcut,
+          username: InlineUsernameShortcut,
+        },
+        styleSpecs: defaultStyleSpecs,
+      }),
+    [],
+  );
+
+  // Create the editor instance
+  const editor = useCreateBlockNote({
+    schema,
+    initialContent: value && value.length > 0 ? (value as never) : undefined,
+    dictionary: {
+      ...blockNoteLocale,
+      placeholders: {
+        ...(blockNoteLocale.placeholders as Record<string, string>),
+        emptyDocument: t`Type / for commands or \` for shortcuts`,
+        default: t`Type / for commands or \` for shortcuts`,
+      },
+    } as unknown as Dictionary,
+  });
+
+  // Get username shortcuts from websites
+  const usernameShortcuts = useMemo(
+    () =>
+      websites
+        .map((w) => w.usernameShortcut)
+        .filter((shortcut): shortcut is NonNullable<typeof shortcut> =>
+          Boolean(shortcut),
+        ),
+    [websites],
+  );
+
+  return (
+    <Box
+      style={{ minHeight, height: '100%' }}
+      className="description-editor-container"
+    >
+      <BlockNoteView
+        theme={colorScheme === 'light' ? 'light' : 'dark'}
+        editor={editor}
+        tableHandles={false}
+        slashMenu={false}
+        onChange={() => {
+          onChange(editor.document as Description);
+        }}
+      >
+        {/* Slash menu for block insertion */}
+        <SuggestionMenuController
+          triggerCharacter="/"
+          getItems={async (query) =>
+            filterSuggestionItems(
+              getCustomSlashMenuItems(editor, !!isDefaultEditor),
+              query,
+            )
+          }
+        />
+
+        {/* Shortcut menu for username and custom shortcuts */}
+        <SuggestionMenuController
+          triggerCharacter={shortcutTrigger}
+          getItems={async (query) => {
+            const items = [
+              ...(showCustomShortcuts
+                ? getCustomShortcutsMenuItems(editor, customShortcuts)
+                : []),
+              ...getUsernameShortcutsMenuItems(editor, usernameShortcuts),
+            ];
+            return filterShortcutMenuItems(items, query);
+          }}
+        />
+      </BlockNoteView>
+    </Box>
+  );
+}
+
+/**
+ * BlockNote-based description editor with custom shortcuts support.
+ * Wraps the inner editor with a key to force remount on locale change.
+ */
+export function DescriptionEditor(props: DescriptionEditorProps) {
+  const { locale, blockNoteLocale } = useLocale();
+
+  return (
+    <DescriptionEditorInner
+      key={locale}
+      {...props}
+      blockNoteLocale={blockNoteLocale}
+    />
+  );
+}

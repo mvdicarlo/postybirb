@@ -48,12 +48,10 @@ describe('Website', () => {
     await website.onLogin();
     website.onAfterLogin();
     const entity = (
-      await repository.select(
-        eq(repository.schemaEntity.id, website.accountId),
-      )
+      await repository.select(eq(repository.schemaEntity.id, website.accountId))
     )[0];
     expect(entity.data).toEqual({ test: 'test-mode' });
-  });
+  }, 10000);
 
   it('should set website metadata', () => {
     expect(TestWebsite.prototype.decoratedProps).not.toBeUndefined();

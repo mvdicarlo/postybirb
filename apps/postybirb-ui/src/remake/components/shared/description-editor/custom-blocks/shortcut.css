@@ -1,0 +1,26 @@
+/* Styling for empty shortcut content */
+.ce > span:empty {
+  font-style: italic;
+  border-bottom: 1px dashed lightsalmon;
+  width: 6px;
+  height: 1rem;
+  vertical-align: text-bottom;
+  display: inline-block;
+}
+
+/* Improve visibility of the cursor inside the shortcut */
+.ce:focus-within {
+  outline: 1px dotted rgba(128, 128, 128, 0.4);
+  background-color: rgba(128, 128, 128, 0.1);
+}
+
+/* Ensure proper cursor behavior for contenteditable */
+.ce {
+  position: relative;
+  min-width: 1px;
+  display: inline-block;
+}
+
+.only-website-toggle-btn:hover {
+  background-color: rgba(128, 128, 128, 0.1);
+}
