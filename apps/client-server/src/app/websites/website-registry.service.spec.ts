@@ -62,6 +62,10 @@ describe('WebsiteRegistryService', () => {
     const instance = await service.create(account);
     await instance.onLogin();
     expect(instance instanceof TestWebsite).toBe(true);
+
+    // Mock clearLoginStateAndData to avoid Electron session API issues in tests
+    jest.spyOn(instance, 'clearLoginStateAndData').mockResolvedValue(undefined);
+
     await service.remove(account);
     expect(service.getInstancesOf(TestWebsite)).toHaveLength(0);
   }, 30_000);
