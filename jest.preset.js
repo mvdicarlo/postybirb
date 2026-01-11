@@ -12,9 +12,7 @@ const config = {
   reporters: ['summary', join(basePath, 'jest.reporter.js')],
   slowTestThreshold: 7000,
   cacheDirectory: join(process.cwd(), '.jest'),
-  transformIgnorePatterns: [
-    'node_modules/(?!(.*prosemirror.*)|(.*blocknote.*)/)',
-  ],
+  transformIgnorePatterns: [], // There is a lot of esm packages and swc is fast enough to transform everything
   transform: {
     '^.+\\.(ts|tsx|jsx|js|html)$': [
       '@swc/jest',
