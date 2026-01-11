@@ -4308,6 +4308,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@handlewithcare/prosemirror-inputrules@patch:@handlewithcare/prosemirror-inputrules@npm%3A0.1.3#~/.yarn/patches/@handlewithcare-prosemirror-inputrules-npm-0.1.3-897e37b56f.patch":
+  version: 0.1.3
+  resolution: "@handlewithcare/prosemirror-inputrules@patch:@handlewithcare/prosemirror-inputrules@npm%3A0.1.3#~/.yarn/patches/@handlewithcare-prosemirror-inputrules-npm-0.1.3-897e37b56f.patch::version=0.1.3&hash=685dcb"
+  dependencies:
+    prosemirror-history: "npm:^1.4.1"
+    prosemirror-transform: "npm:^1.0.0"
+  peerDependencies:
+    prosemirror-model: ^1.0.0
+    prosemirror-state: ^1.0.0
+    prosemirror-view: ^1.0.0
+  checksum: 10c0/f495cf80426dbba698cdfe89f6399b7194e7a9845597ac561d1207dce6c57176f2bbb1c572b02847b297f5bde7afe6d6007c4f908d5c7c0a0df9e49082d02d94
+  languageName: node
+  linkType: hard
+
 "@humanwhocodes/config-array@npm:^0.13.0":
   version: 0.13.0
   resolution: "@humanwhocodes/config-array@npm:0.13.0"
