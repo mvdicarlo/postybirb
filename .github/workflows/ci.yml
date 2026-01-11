@@ -29,7 +29,7 @@ jobs:
           # so to run tests on electron runner we need to add this command
           # log-level=2 is electron arg that disables useless spam in console about not able to access display.
           - name: Test
-            command: 'xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" -- yarn nx affected -t test --log-level=2'
+            command: 'xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" -- yarn nx affected -t test --log-level=3'
 
     steps:
       - name: Check out Git repository
