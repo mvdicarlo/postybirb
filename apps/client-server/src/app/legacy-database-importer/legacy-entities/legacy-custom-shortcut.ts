@@ -1,13 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { ServerBlockNoteEditor } from '@blocknote/server-util';
 import { Description, ICustomShortcut } from '@postybirb/types';
 import {
-    LegacyConverterEntity,
-    MinimalEntity,
+  LegacyConverterEntity,
+  MinimalEntity,
 } from './legacy-converter-entity';
 
-export class LegacyCustomShortcut
-  implements LegacyConverterEntity<ICustomShortcut>
-{
+export class LegacyCustomShortcut implements LegacyConverterEntity<ICustomShortcut> {
   _id: string;
 
   created: string;
@@ -34,7 +33,6 @@ export class LegacyCustomShortcut
 
     // Step 2: Parse HTML with wrapped shortcuts to BlockNote format
     // Lazy-load BlockNote to avoid ESM compatibility issues in Electron
-    const { ServerBlockNoteEditor } = await import('@blocknote/server-util');
     const editor = ServerBlockNoteEditor.create();
     let shortcut = (await editor.tryParseHTMLToBlocks(
       contentWithWrappedShortcuts,
