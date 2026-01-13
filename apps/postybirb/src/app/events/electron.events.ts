@@ -73,3 +73,44 @@ ipcMain.on('open-external-link', (event, url) => {
 ipcMain.on('quit', (event, code) => {
   app.exit(code);
 });
+
+ipcMain.handle('set-spellchecker-enabled', (event, value) =>
+  event.sender.session.setSpellCheckerEnabled(value),
+);
+
+ipcMain.handle('set-spellchecker-languages', (event, languages) => {
+  event.sender.session.setSpellCheckerLanguages(languages);
+});
+
+ipcMain.handle('get-spellchecker-languages', (event) =>
+  event.sender.session.getSpellCheckerLanguages(),
+);
+
+ipcMain.handle(
+  'get-all-spellchecker-languages',
+  (event) => event.sender.session.availableSpellCheckerLanguages,
+);
+
+ipcMain.handle('get-spellchecker-words', (event) =>
+  event.sender.session.listWordsInSpellCheckerDictionary(),
+);
+
+ipcMain.handle('set-spellchecker-words', async (event, words) => {
+  if (!Array.isArray(words) || !words.every((e) => typeof e === 'string')) {
+    throw new Error('Expected words to be a string array');
+  }
+
+  const current =
+    await event.sender.session.listWordsInSpellCheckerDictionary();
+
+  for (const word of words) {
+    if (!current.includes(word)) {
+      event.sender.session.addWordToSpellCheckerDictionary(word);
+    }
+  }
+  for (const word of current) {
+    if (!words.includes(word)) {
+      event.sender.session.removeWordFromSpellCheckerDictionary(word);
+    }
+  }
+});

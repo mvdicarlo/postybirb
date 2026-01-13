@@ -74,9 +74,16 @@ declare global {
       openExternalLink(url: string): void;
       getCookiesForAccount(accountId: string): Promise<string>;
       quit(code?: number): void;
-      platform: string;
+      platform: NodeJS.Platform;
       app_port: string;
       app_version: string;
+
+      setSpellCheckerEnabled(value: boolean): void;
+      setSpellcheckerLanguages: (languages: string[]) => Promise<void>;
+      getSpellcheckerLanguages: () => Promise<string[]>;
+      getAllSpellcheckerLanguages: () => Promise<string[]>;
+      getSpellcheckerWords: () => Promise<string[]>;
+      setSpellcheckerWords: (words: string[]) => Promise<void>;
     };
   }
 }
