@@ -7,12 +7,15 @@ import '@mantine/notifications/styles.css';
 import '@mantine/spotlight/styles.css';
 import { useEffect, useMemo, useState } from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
+import { RouterProvider } from 'react-router-dom';
 import { PageErrorBoundary } from '../components/error-boundary';
+import { isElectronEnvironment } from '../helpers/electron.helper';
+import { CreateRouter } from '../pages/routes';
+import '../styles.css'; // Tailwind base styles - only loaded with legacy UI
 import { AppI18nProvider } from './app-i18n-provider';
 import './app.css';
-import { PostyBirbLayout } from './postybirb-layout/postybirb-layout';
 import { Disclaimer } from './disclaimer/disclaimer';
-import { isElectronEnvironment } from '../helpers/electron.helper';
+import { PostyBirbLayout } from './postybirb-layout/postybirb-layout';
 
 const mantineTheme = createTheme({
   primaryColor: 'indigo',
@@ -137,7 +140,7 @@ export default function App() {
     }, 300);
   };
 
-  return (
+  const AppContent = () => (
     <div className="postybirb">
       <MantineProvider theme={mantineTheme} defaultColorScheme="dark">
         <AppI18nProvider>
@@ -160,4 +163,6 @@ export default function App() {
       </MantineProvider>
     </div>
   );
+
+  return <RouterProvider router={CreateRouter(<AppContent />)} />;
 }
