@@ -1,8 +1,8 @@
 import { ITagConverter } from '@postybirb/types';
 import { WebsiteNameMapper } from '../utils/website-name-mapper';
 import {
-    LegacyConverterEntity,
-    MinimalEntity,
+  LegacyConversionResult,
+  LegacyConverterEntity,
 } from './legacy-converter-entity';
 
 /**
@@ -26,7 +26,7 @@ export class LegacyTagConverter
     Object.assign(this, data);
   }
 
-  async convert(): Promise<MinimalEntity<ITagConverter>> {
+  async convert(): Promise<LegacyConversionResult<ITagConverter>> {
     const conversionsMap: Record<string, string> = {};
     for (const [legacyWebsiteId, convertedTag] of Object.entries(
       this.conversions,
@@ -38,10 +38,12 @@ export class LegacyTagConverter
     }
 
     return {
-      // eslint-disable-next-line no-underscore-dangle
-      id: this._id,
-      tag: this.tag,
-      convertTo: conversionsMap,
+      entity: {
+        // eslint-disable-next-line no-underscore-dangle
+        id: this._id,
+        tag: this.tag,
+        convertTo: conversionsMap,
+      },
     };
   }
 }

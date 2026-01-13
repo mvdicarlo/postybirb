@@ -8,4 +8,11 @@ export class LegacyUserAccountConverter extends LegacyConverter {
   LegacyEntityConstructor = LegacyUserAccount;
 
   legacyFileName = 'accounts';
+
+  /**
+   * Enable WebsiteData support for account imports.
+   * This allows importing OAuth tokens, API keys, and other credentials
+   * stored in the legacy account.data field.
+   */
+  protected readonly supportsWebsiteData: boolean = true;
 }
