@@ -7,12 +7,15 @@ import '@mantine/notifications/styles.css';
 import '@mantine/spotlight/styles.css';
 import { useEffect, useMemo, useState } from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
+import { RouterProvider } from 'react-router-dom';
 import { PageErrorBoundary } from '../components/error-boundary';
+import { isElectronEnvironment } from '../helpers/electron.helper';
+import { CreateRouter } from '../pages/routes';
+import '../styles.css'; // Tailwind base styles - only loaded with legacy UI
 import { AppI18nProvider } from './app-i18n-provider';
 import './app.css';
-import { PostyBirbLayout } from './postybirb-layout/postybirb-layout';
 import { Disclaimer } from './disclaimer/disclaimer';
-import { isElectronEnvironment } from '../helpers/electron.helper';
+import { PostyBirbLayout } from './postybirb-layout/postybirb-layout';
 
 const mantineTheme = createTheme({
   primaryColor: 'indigo',
@@ -103,6 +106,40 @@ export default function App() {
     }
   }, []);
 
+  // Resolve color scheme for legacy UI - convert 'auto' to explicit light/dark
+  const initialColorScheme = useMemo(() => {
+    try {
+      const stored = localStorage.getItem('mantine-color-scheme');
+
+      // If stored value is 'auto' or not set, detect system preference
+      if (!stored || stored === 'auto') {
+        const prefersDark = window.matchMedia(
+          // eslint-disable-next-line lingui/no-unlocalized-strings
+          '(prefers-color-scheme: dark)',
+        ).matches;
+        return prefersDark ? 'dark' : 'light';
+      }
+
+      // Return stored value if it's explicitly 'light' or 'dark'
+      if (stored === 'light' || stored === 'dark') {
+        return stored;
+      }
+    } catch {
+      // localStorage not available
+    }
+
+    // Fallback: check system preference
+    try {
+      const prefersDark = window.matchMedia(
+        // eslint-disable-next-line lingui/no-unlocalized-strings
+        '(prefers-color-scheme: dark)',
+      ).matches;
+      return prefersDark ? 'dark' : 'light';
+    } catch {
+      return 'dark'; // Final fallback
+    }
+  }, []);
+
   const [accepted, setAccepted] = useState<boolean>(initialAccepted);
 
   useEffect(() => {
@@ -137,27 +174,35 @@ export default function App() {
     }, 300);
   };
 
-  return (
-    <div className="postybirb">
-      <MantineProvider theme={mantineTheme} defaultColorScheme="dark">
-        <AppI18nProvider>
-          {/* Make notifications visible above modals */}
-          <Notifications zIndex={5000} />
+  // eslint-disable-next-line react/no-unstable-nested-components
+  function AppContent() {
+    return (
+      <div className="postybirb">
+        <MantineProvider
+          theme={mantineTheme}
+          defaultColorScheme={initialColorScheme}
+        >
+          <AppI18nProvider>
+            {/* Make notifications visible above modals */}
+            <Notifications zIndex={5000} />
 
-          <QueryClientProvider client={queryClient}>
-            <PageErrorBoundary>
-              {accepted ? (
-                <PostyBirbLayout />
-              ) : (
-                <Disclaimer
-                  onAccepted={() => setAccepted(true)}
-                  onDeclined={handleDecline}
-                />
-              )}
-            </PageErrorBoundary>
-          </QueryClientProvider>
-        </AppI18nProvider>
-      </MantineProvider>
-    </div>
-  );
+            <QueryClientProvider client={queryClient}>
+              <PageErrorBoundary>
+                {accepted ? (
+                  <PostyBirbLayout />
+                ) : (
+                  <Disclaimer
+                    onAccepted={() => setAccepted(true)}
+                    onDeclined={handleDecline}
+                  />
+                )}
+              </PageErrorBoundary>
+            </QueryClientProvider>
+          </AppI18nProvider>
+        </MantineProvider>
+      </div>
+    );
+  }
+
+  return <RouterProvider router={CreateRouter(<AppContent />)} />;
 }

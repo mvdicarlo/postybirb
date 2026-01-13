@@ -93,3 +93,5 @@ export function PostyBirb() {
     </MantineProvider>
   );
 }
+
+export default PostyBirb;
