@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Description, ICustomShortcut } from '@postybirb/types';
 import {
-    LegacyConverterEntity,
-    MinimalEntity,
+  LegacyConversionResult,
+  LegacyConverterEntity,
 } from './legacy-converter-entity';
 
 export class LegacyCustomShortcut
@@ -24,7 +24,7 @@ export class LegacyCustomShortcut
     Object.assign(this, data);
   }
 
-  async convert(): Promise<MinimalEntity<ICustomShortcut>> {
+  async convert(): Promise<LegacyConversionResult<ICustomShortcut>> {
     // Convert legacy format to new format
     // Legacy: { shortcut: string, content: string, isDynamic: boolean }
     // New: { name: string, shortcut: Description (BlockNote format) }
@@ -47,10 +47,12 @@ export class LegacyCustomShortcut
     shortcut = this.convertDefaultToBlock(shortcut);
 
     return {
-      // eslint-disable-next-line no-underscore-dangle
-      id: this._id,
-      name: this.shortcut, // Legacy shortcut name becomes the name
-      shortcut,
+      entity: {
+        // eslint-disable-next-line no-underscore-dangle
+        id: this._id,
+        name: this.shortcut, // Legacy shortcut name becomes the name
+        shortcut,
+      },
     };
   }
 

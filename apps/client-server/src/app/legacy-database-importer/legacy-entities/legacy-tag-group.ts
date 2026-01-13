@@ -1,7 +1,7 @@
 import { ITagGroup } from '@postybirb/types';
 import {
+    LegacyConversionResult,
     LegacyConverterEntity,
-    MinimalEntity,
 } from './legacy-converter-entity';
 
 /**
@@ -23,12 +23,14 @@ export class LegacyTagGroup implements LegacyConverterEntity<ITagGroup> {
     Object.assign(this, data);
   }
 
-  async convert(): Promise<MinimalEntity<ITagGroup>> {
+  async convert(): Promise<LegacyConversionResult<ITagGroup>> {
     return {
-      // eslint-disable-next-line no-underscore-dangle
-      id: this._id,
-      name: this.alias,
-      tags: this.tags,
+      entity: {
+        // eslint-disable-next-line no-underscore-dangle
+        id: this._id,
+        name: this.alias,
+        tags: this.tags,
+      },
     };
   }
 }
