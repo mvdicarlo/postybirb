@@ -106,6 +106,36 @@ export default function App() {
     }
   }, []);
 
+  // Resolve color scheme for legacy UI - convert 'auto' to explicit light/dark
+  const initialColorScheme = useMemo(() => {
+    try {
+      const stored = localStorage.getItem('mantine-color-scheme');
+
+      // If stored value is 'auto' or not set, detect system preference
+      if (!stored || stored === 'auto') {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)')
+          .matches;
+        return prefersDark ? 'dark' : 'light';
+      }
+
+      // Return stored value if it's explicitly 'light' or 'dark'
+      if (stored === 'light' || stored === 'dark') {
+        return stored;
+      }
+    } catch {
+      // localStorage not available
+    }
+
+    // Fallback: check system preference
+    try {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)')
+        .matches;
+      return prefersDark ? 'dark' : 'light';
+    } catch {
+      return 'dark'; // Final fallback
+    }
+  }, []);
+
   const [accepted, setAccepted] = useState<boolean>(initialAccepted);
 
   useEffect(() => {
@@ -142,7 +172,7 @@ export default function App() {
 
   const AppContent = () => (
     <div className="postybirb">
-      <MantineProvider theme={mantineTheme} defaultColorScheme="dark">
+      <MantineProvider theme={mantineTheme} defaultColorScheme={initialColorScheme}>
         <AppI18nProvider>
           {/* Make notifications visible above modals */}
           <Notifications zIndex={5000} />

@@ -21,12 +21,15 @@ function LoadingFallback() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        height: '100vh',
-        width: '100vw',
+        height: 'calc(100vh - 16px)',
+        width: 'calc(100vw - 25px)',
         backgroundColor: '#1a1b1e',
         color: '#c1c2c5',
         fontFamily: 'system-ui, -apple-system, sans-serif',
         overflow: 'hidden',
+        margin: -8,
+        paddingRight: 25,
+        paddingBottom: 16,
       }}
     >
       <div style={{ textAlign: 'center' }}>
