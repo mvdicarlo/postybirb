@@ -113,8 +113,10 @@ export default function App() {
 
       // If stored value is 'auto' or not set, detect system preference
       if (!stored || stored === 'auto') {
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)')
-          .matches;
+        const prefersDark = window.matchMedia(
+          // eslint-disable-next-line lingui/no-unlocalized-strings
+          '(prefers-color-scheme: dark)',
+        ).matches;
         return prefersDark ? 'dark' : 'light';
       }
 
@@ -128,8 +130,10 @@ export default function App() {
 
     // Fallback: check system preference
     try {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)')
-        .matches;
+      const prefersDark = window.matchMedia(
+        // eslint-disable-next-line lingui/no-unlocalized-strings
+        '(prefers-color-scheme: dark)',
+      ).matches;
       return prefersDark ? 'dark' : 'light';
     } catch {
       return 'dark'; // Final fallback
@@ -170,29 +174,35 @@ export default function App() {
     }, 300);
   };
 
-  const AppContent = () => (
-    <div className="postybirb">
-      <MantineProvider theme={mantineTheme} defaultColorScheme={initialColorScheme}>
-        <AppI18nProvider>
-          {/* Make notifications visible above modals */}
-          <Notifications zIndex={5000} />
+  // eslint-disable-next-line react/no-unstable-nested-components
+  function AppContent() {
+    return (
+      <div className="postybirb">
+        <MantineProvider
+          theme={mantineTheme}
+          defaultColorScheme={initialColorScheme}
+        >
+          <AppI18nProvider>
+            {/* Make notifications visible above modals */}
+            <Notifications zIndex={5000} />
 
-          <QueryClientProvider client={queryClient}>
-            <PageErrorBoundary>
-              {accepted ? (
-                <PostyBirbLayout />
-              ) : (
-                <Disclaimer
-                  onAccepted={() => setAccepted(true)}
-                  onDeclined={handleDecline}
-                />
-              )}
-            </PageErrorBoundary>
-          </QueryClientProvider>
-        </AppI18nProvider>
-      </MantineProvider>
-    </div>
-  );
+            <QueryClientProvider client={queryClient}>
+              <PageErrorBoundary>
+                {accepted ? (
+                  <PostyBirbLayout />
+                ) : (
+                  <Disclaimer
+                    onAccepted={() => setAccepted(true)}
+                    onDeclined={handleDecline}
+                  />
+                )}
+              </PageErrorBoundary>
+            </QueryClientProvider>
+          </AppI18nProvider>
+        </MantineProvider>
+      </div>
+    );
+  }
 
   return <RouterProvider router={CreateRouter(<AppContent />)} />;
 }
