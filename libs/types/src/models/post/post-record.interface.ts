@@ -1,6 +1,7 @@
 import { PostRecordResumeMode, PostRecordState } from '../../enums';
 import { EntityId, IEntity } from '../database/entity.interface';
 import { ISubmission, SubmissionId } from '../submission/submission.interface';
+import { IPostEvent } from './post-event.interface';
 import { IPostQueueRecord } from './post-queue-record.interface';
 import { IWebsitePostRecord } from './website-post-record.interface';
 
@@ -42,6 +43,13 @@ export interface IPostRecord extends IEntity {
    * @type {IWebsitePostRecord[]}
    */
   children: IWebsitePostRecord[];
+
+  /**
+   * The event ledger for this post record.
+   * Each event represents an immutable posting action or state change.
+   * @type {IPostEvent[]}
+   */
+  events?: IPostEvent[];
 
   postQueueRecordId: EntityId;
 

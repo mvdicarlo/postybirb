@@ -11,13 +11,18 @@ import { WebsitesModule } from '../websites/websites.module';
 import { PostController } from './post.controller';
 import { PostService } from './post.service';
 import { PostFileResizerService } from './services/post-file-resizer/post-file-resizer.service';
+import {
+  FileSubmissionPostManager,
+  MessageSubmissionPostManager,
+  PostManagerRegistry,
+} from './services/post-manager-v2';
 import { PostManagerController } from './services/post-manager/post-manager.controller';
 import { PostManagerService } from './services/post-manager/post-manager.service';
 import { PostQueueController } from './services/post-queue/post-queue.controller';
 import { PostQueueService } from './services/post-queue/post-queue.service';
 import {
-    PostEventRepository,
-    PostRecordFactory,
+  PostEventRepository,
+  PostRecordFactory,
 } from './services/post-record-factory';
 
 @Module({
@@ -40,7 +45,14 @@ import {
     PostQueueService,
     PostEventRepository,
     PostRecordFactory,
+    FileSubmissionPostManager,
+    MessageSubmissionPostManager,
+    PostManagerRegistry,
   ],
-  exports: [PostEventRepository, PostRecordFactory],
+  exports: [
+    PostEventRepository,
+    PostRecordFactory,
+    PostManagerRegistry,
+  ],
 })
 export class PostModule {}

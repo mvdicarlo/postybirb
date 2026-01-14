@@ -51,6 +51,7 @@ export class PostRecord extends DatabaseEntity implements IPostRecord {
     const dto: PostRecordDto = {
       ...this.toObject(),
       children: this.children?.map((child) => child.toDTO()),
+      events: this.events?.map((event) => event.toDTO()),
       postQueueRecord: this.postQueueRecord?.toDTO(),
     };
     return dto;

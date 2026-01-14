@@ -1,6 +1,7 @@
 import {
   Injectable,
   InternalServerErrorException,
+  OnModuleInit,
   Optional,
 } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
@@ -8,17 +9,18 @@ import {
   EntityId,
   PostRecordResumeMode,
   PostRecordState,
-  SubmissionId,
+  SubmissionId
 } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/electron';
 import { Mutex } from 'async-mutex';
 import { Cron as CronGenerator } from 'croner';
 import { PostyBirbService } from '../../../common/service/postybirb-service';
-import { PostQueueRecord, PostRecord } from '../../../drizzle/models';
+import { PostQueueRecord } from '../../../drizzle/models';
 import { PostyBirbDatabase } from '../../../drizzle/postybirb-database/postybirb-database';
 import { SettingsService } from '../../../settings/settings.service';
 import { WSGateway } from '../../../web-socket/web-socket-gateway';
-import { PostManagerService } from '../post-manager/post-manager.service';
+import { PostManagerRegistry } from '../post-manager-v2';
+import { PostRecordFactory } from '../post-record-factory';
 
 /**
  * Handles the queue of posts to be posted.
@@ -27,7 +29,10 @@ import { PostManagerService } from '../post-manager/post-manager.service';
  * @class PostQueueService
  */
 @Injectable()
-export class PostQueueService extends PostyBirbService<'PostQueueRecordSchema'> {
+export class PostQueueService
+  extends PostyBirbService<'PostQueueRecordSchema'>
+  implements OnModuleInit
+{
   private readonly queueModificationMutex = new Mutex();
 
   private readonly queueMutex = new Mutex();
@@ -43,11 +48,64 @@ export class PostQueueService extends PostyBirbService<'PostQueueRecordSchema'> 
   );
 
   constructor(
-    private readonly postManager: PostManagerService,
+    private readonly postManagerRegistry: PostManagerRegistry,
+    private readonly postRecordFactory: PostRecordFactory,
     private readonly settingsService: SettingsService,
     @Optional() webSocket?: WSGateway,
   ) {
     super('PostQueueRecordSchema', webSocket);
+  }
+
+  /**
+   * Crash recovery: Resume any PostRecords that were left in RUNNING state.
+   * This handles cases where the application was forcefully shut down or crashed
+   * while a post was in progress.
+   */
+  async onModuleInit() {
+    if (IsTestEnvironment()) {
+      return;
+    }
+
+    try {
+      // Find all RUNNING post records
+      const runningRecords = await this.postRecordRepository.find({
+        where: (record, { eq }) =>
+          eq(record.state, PostRecordState.RUNNING as any),
+        with: {
+          submission: {
+            with: {
+              files: true,
+              options: {
+                with: {
+                  account: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (runningRecords.length > 0) {
+        this.logger
+          .withMetadata({ count: runningRecords.length })
+          .info('Detected interrupted PostRecords from crash/shutdown, resuming');
+
+        for (const record of runningRecords) {
+          this.logger
+            .withMetadata({ recordId: record.id, resumeMode: record.resumeMode })
+            .info('Resuming interrupted PostRecord');
+
+          // Resume the post using the record's existing resumeMode and passing its own ID
+          // so the manager can build resume context from the events that already completed
+          await this.postManagerRegistry.startPost(record, record.id);
+        }
+      }
+    } catch (error) {
+      this.logger
+        .withMetadata({ error })
+        .error('Failed to recover interrupted posts on startup');
+      // Don't throw - allow the app to start even if crash recovery fails
+    }
   }
 
   public async isPaused(): Promise<boolean> {
@@ -75,25 +133,65 @@ export class PostQueueService extends PostyBirbService<'PostQueueRecordSchema'> 
     return this.dequeue([id]);
   }
 
-  public async enqueue(submissionIds: SubmissionId[]) {
+  /**
+   * Enqueue submissions for posting.
+   * If resumeMode is provided and the submission has a terminal PostRecord,
+   * a new PostRecord will be created using the specified resume mode.
+   *
+   * @param {SubmissionId[]} submissionIds - The submissions to enqueue
+   * @param {PostRecordResumeMode} resumeMode - Optional resume mode for re-queuing terminal records
+   */
+  public async enqueue(
+    submissionIds: SubmissionId[],
+    resumeMode?: PostRecordResumeMode,
+  ) {
     if (!submissionIds.length) {
       return;
     }
     const release = await this.queueModificationMutex.acquire();
-    this.logger.withMetadata({ submissionIds }).info('Enqueueing posts');
+    this.logger
+      .withMetadata({ submissionIds, resumeMode })
+      .info('Enqueueing posts');
 
     try {
       for (const submissionId of submissionIds) {
-        if (
-          !(await this.repository.findOne({
-            where: (queueRecord, { eq }) =>
-              eq(queueRecord.submissionId, submissionId),
-          }))
-        ) {
+        const existing = await this.repository.findOne({
+          where: (queueRecord, { eq }) =>
+            eq(queueRecord.submissionId, submissionId),
+          with: {
+            postRecord: true,
+          },
+        });
+
+        if (!existing) {
+          // No queue entry exists - create a fresh one
           await this.repository.insert({
             submissionId,
           });
+        } else if (
+          resumeMode &&
+          existing.postRecord &&
+          (existing.postRecord.state === PostRecordState.DONE ||
+            existing.postRecord.state === PostRecordState.FAILED)
+        ) {
+          // Re-queuing a terminal record with a specific resume mode
+          const newRecord = await this.postRecordFactory.createFromPrior(
+            existing.postRecord.id,
+            resumeMode,
+          );
+          await this.repository.update(existing.id, {
+            postRecordId: newRecord.id,
+          });
+          this.logger
+            .withMetadata({
+              submissionId,
+              priorRecordId: existing.postRecord.id,
+              newRecordId: newRecord.id,
+              resumeMode,
+            })
+            .info('Re-queuing terminal record with resume mode');
         }
+        // If existing but not terminal, or no resumeMode provided, do nothing
       }
     } catch (error) {
       this.logger.withMetadata({ error }).error('Failed to enqueue posts');
@@ -113,7 +211,7 @@ export class PostQueueService extends PostyBirbService<'PostQueueRecordSchema'> 
           inArray(queueRecord.submissionId, submissionIds),
       });
 
-      submissionIds.forEach((id) => this.postManager.cancelIfRunning(id));
+      submissionIds.forEach((id) => this.postManagerRegistry.cancelIfRunning(id));
 
       return await this.repository.deleteById(records.map((r) => r.id));
     } catch (error) {
@@ -213,10 +311,11 @@ export class PostQueueService extends PostyBirbService<'PostQueueRecordSchema'> 
 
       if (!record) {
         // No record present, create one and start the post manager (if not paused)
-        if (this.postManager.isPosting()) {
-          // !NOTE - Not sure this could actually happen, but it's here just in case since it would be bad.
-          this.logger.warn(
-            'The post manager is already posting, but no record is present in the top of the queue',
+        const submissionType = submission.type;
+        if (this.postManagerRegistry.isPostingType(submissionType)) {
+          // Manager for this submission type is already posting
+          this.logger.info(
+            `PostManager for ${submissionType} is already posting, skipping`,
           );
           return;
         }
@@ -224,39 +323,33 @@ export class PostQueueService extends PostyBirbService<'PostQueueRecordSchema'> 
         if (isPaused) {
           return;
         }
-        const insertedRecord = await this.postRecordRepository.insert({
+        const insertedRecord = await this.postRecordFactory.createFresh(
           submissionId,
-          resumeMode: PostRecordResumeMode.CONTINUE,
-          state: PostRecordState.PENDING,
-        });
+        );
         await this.repository.update(top.id, {
           postRecordId: insertedRecord.id,
         });
-        const fullyLoadedRecord = await this.repository.findOne({
-          where: (r, { eq }) => eq(r.id, top.id),
-          with: {
-            postRecord: {
+        const fullyLoadedRecord = await this.postRecordRepository.findById(
+          insertedRecord.id,
+          undefined,
+          {
+            submission: {
               with: {
-                children: true,
-                submission: {
+                files: true,
+                options: {
                   with: {
-                    files: true,
-                    options: {
-                      with: {
-                        account: true,
-                      },
-                    },
+                    account: true,
                   },
                 },
               },
             },
           },
-        });
+        );
         this.logger
           .withMetadata({ postRecord: insertedRecord.toObject() })
           .info('Creating PostRecord and starting PostManager');
 
-        this.postManager.startPost(fullyLoadedRecord.postRecord);
+        await this.postManagerRegistry.startPost(fullyLoadedRecord);
       } else if (
         record.state === PostRecordState.DONE ||
         record.state === PostRecordState.FAILED
@@ -266,8 +359,8 @@ export class PostQueueService extends PostyBirbService<'PostQueueRecordSchema'> 
           .withMetadata({ record })
           .info('Post is in a terminal state, removing from queue');
         await this.dequeue([submissionId]);
-      } else if (!this.postManager.isPosting()) {
-        // Post is not in a terminal state, but the post manager is not posting, so restart it.
+      } else if (!this.postManagerRegistry.isPostingType(submission.type)) {
+        // Post is not in a terminal state, but the manager for this type is not posting, so restart it.
         if (isPaused) {
           return;
         }
@@ -277,7 +370,10 @@ export class PostQueueService extends PostyBirbService<'PostQueueRecordSchema'> 
           .info(
             'PostManager is not posting, but record is not in terminal state. Resuming record.',
           );
-        this.postManager.startPost(record as unknown as PostRecord);
+
+        // For resumed posts, pass the current record ID as the prior record
+        // so the factory can build resume context
+        await this.postManagerRegistry.startPost(record, record.id);
       }
     } catch (error) {
       this.logger.withMetadata({ error }).error('Failed to run queue');
