@@ -3,10 +3,11 @@ import { Logger } from '@postybirb/logger';
 import {
     AccountId,
     EntityId,
+    PostEventType,
     PostRecordResumeMode,
     PostRecordState,
 } from '@postybirb/types';
-import { PostRecord } from '../../../drizzle/models';
+import { PostEvent, PostRecord } from '../../../drizzle/models';
 import { PostyBirbDatabase } from '../../../drizzle/postybirb-database/postybirb-database';
 import { PostEventRepository } from './post-event.repository';
 
@@ -100,9 +101,8 @@ export class PostRecordFactory {
       .info('Creating post record from prior attempt');
 
     // Get the prior post record to copy submission reference
-    const priorRecord = await this.postRecordRepository.findById(
-      priorPostRecordId,
-    );
+    const priorRecord =
+      await this.postRecordRepository.findById(priorPostRecordId);
 
     if (!priorRecord) {
       throw new Error(`Prior post record not found: ${priorPostRecordId}`);
@@ -116,25 +116,33 @@ export class PostRecordFactory {
     });
   }
 
+  // ========================================================================
+  // Resume Context Building
+  // ========================================================================
+
   /**
-   * Build resume context from a prior post record's event ledger.
-   * This context is used during posting to determine what to skip or retry.
+   * Build resume context from prior post records for the same submission.
    *
-   * @param {EntityId} priorPostRecordId - The prior post record ID
+   * This method handles the chain of posting attempts correctly:
+   * - DONE records represent complete "posting sessions" - they act as stop points
+   * - FAILED records represent incomplete attempts that should be aggregated
+   *
+   * Logic:
+   * 1. Find all terminal records ordered by creation date (newest first)
+   * 2. If the most recent is DONE → return empty context (nothing to continue, start fresh)
+   * 3. If the most recent is FAILED → aggregate from FAILED records until we hit a DONE
+   *
+   * @param {EntityId} submissionId - The submission ID
+   * @param {EntityId} priorPostRecordId - The immediate prior post record ID
    * @param {PostRecordResumeMode} resumeMode - The resume mode
    * @returns {Promise<ResumeContext>} The resume context
    */
   async buildResumeContext(
+    submissionId: EntityId,
     priorPostRecordId: EntityId,
     resumeMode: PostRecordResumeMode,
   ): Promise<ResumeContext> {
-    const context: ResumeContext = {
-      priorPostRecordId,
-      resumeMode,
-      completedAccountIds: new Set<AccountId>(),
-      postedFilesByAccount: new Map<AccountId, Set<EntityId>>(),
-      sourceUrlsByAccount: new Map<AccountId, string[]>(),
-    };
+    const context = this.createEmptyContext(priorPostRecordId, resumeMode);
 
     // For RESTART mode, return empty context - start fresh
     if (resumeMode === PostRecordResumeMode.RESTART) {
@@ -142,80 +150,259 @@ export class PostRecordFactory {
       return context;
     }
 
-    // Get source URLs for cross-website propagation (needed for all non-RESTART modes)
-    const sourceUrls = await this.postEventRepository.getSourceUrlsByAccount(
-      priorPostRecordId,
-    );
-    context.sourceUrlsByAccount = sourceUrls;
+    // Get records to aggregate based on the chain logic
+    const recordsToAggregate = await this.getRecordsToAggregate(submissionId);
 
-    // For CONTINUE_RETRY mode: skip only completed accounts, retry all files
-    if (resumeMode === PostRecordResumeMode.CONTINUE_RETRY) {
-      this.logger.debug('CONTINUE_RETRY mode - querying completed accounts');
-
-      const completedAccountIds =
-        await this.postEventRepository.getSuccessfullyCompletedAccountIds(
-          priorPostRecordId,
-        );
-
-      context.completedAccountIds = new Set(completedAccountIds);
-
-      this.logger
-        .withMetadata({
-          completedAccountCount: completedAccountIds.length,
-        })
-        .debug('Built CONTINUE_RETRY resume context');
-
+    if (recordsToAggregate.length === 0) {
+      this.logger.debug(
+        'No records to aggregate (fresh start or most recent was DONE)',
+      );
       return context;
     }
 
-    // For CONTINUE mode: skip completed accounts AND already-posted files
-    if (resumeMode === PostRecordResumeMode.CONTINUE) {
-      this.logger.debug('CONTINUE mode - querying completed accounts and posted files');
+    // Aggregate events based on resume mode
+    this.aggregateSourceUrls(recordsToAggregate, context);
 
-      // Get completed accounts
-      const completedAccountIds =
-        await this.postEventRepository.getSuccessfullyCompletedAccountIds(
-          priorPostRecordId,
-        );
-      context.completedAccountIds = new Set(completedAccountIds);
+    this.aggregateCompletedAccounts(recordsToAggregate, context);
+    if (resumeMode === PostRecordResumeMode.CONTINUE_RETRY) {
+      // No file aggregation needed - all files will be retried for non-completed accounts
+    } else if (resumeMode === PostRecordResumeMode.CONTINUE) {
+      this.aggregatePostedFiles(recordsToAggregate, context);
+    }
 
-      // Get all posted files grouped by account
-      const allEvents = await this.postEventRepository.findByPostRecordId(
-        priorPostRecordId,
-      );
+    this.logger
+      .withMetadata({
+        completedAccountCount: context.completedAccountIds.size,
+        accountsWithPostedFiles: context.postedFilesByAccount.size,
+        aggregatedRecordCount: recordsToAggregate.length,
+        resumeMode,
+      })
+      .debug('Built resume context');
 
-      // Build map of account -> posted file IDs
-      for (const event of allEvents) {
+    return context;
+  }
+
+  /**
+   * Create an empty resume context with default values.
+   */
+  private createEmptyContext(
+    priorPostRecordId: EntityId,
+    resumeMode: PostRecordResumeMode,
+  ): ResumeContext {
+    return {
+      priorPostRecordId,
+      resumeMode,
+      completedAccountIds: new Set<AccountId>(),
+      postedFilesByAccount: new Map<AccountId, Set<EntityId>>(),
+      sourceUrlsByAccount: new Map<AccountId, string[]>(),
+    };
+  }
+
+  /**
+   * Get the list of PostRecords whose events should be aggregated.
+   *
+   * Note: This method assumes we're in a resume scenario (not a fresh start).
+   * The PostQueueService checks if the most recent record is DONE and calls
+   * createFresh() instead of createFromPrior() in that case.
+   *
+   * Rules:
+   * - Aggregate all consecutive FAILED records (newest to oldest)
+   * - Stop when hitting a DONE record (completed session is a stop point)
+   * - Stop when hitting a record with resumeMode=RESTART (user-initiated fresh start)
+   *
+   * @param {EntityId} submissionId - The submission ID
+   * @returns {Promise<PostRecord[]>} Records to aggregate (may be empty)
+   */
+  private async getRecordsToAggregate(
+    submissionId: EntityId,
+  ): Promise<PostRecord[]> {
+    // Get ALL terminal records for this submission, ordered by creation date (newest first)
+    const allTerminalRecords = await this.postRecordRepository.find({
+      where: (record, { eq, and, inArray }) =>
+        and(
+          eq(record.submissionId, submissionId),
+          inArray(record.state, [PostRecordState.DONE, PostRecordState.FAILED]),
+        ),
+      orderBy: (record, { desc }) => desc(record.createdAt),
+      with: {
+        events: true,
+      },
+    });
+
+    if (allTerminalRecords.length === 0) {
+      this.logger.debug('No prior terminal records found');
+      return [];
+    }
+
+    // Aggregate FAILED records until we hit a stop point
+    const recordsToAggregate: PostRecord[] = [];
+    for (const record of allTerminalRecords) {
+      const { isStopPoint, reason } = this.isAggregationStopPoint(record);
+
+      if (isStopPoint) {
+        this.logger
+          .withMetadata({ stopAtRecordId: record.id, reason })
+          .debug('Hit stop point - stopping aggregation chain');
+
+        // RESTART is a stop point BUT we include its events first
+        if (record.resumeMode === PostRecordResumeMode.RESTART) {
+          recordsToAggregate.push(record);
+        }
+        // DONE is a complete stop - don't include it
+        break;
+      }
+
+      recordsToAggregate.push(record);
+    }
+
+    this.logger
+      .withMetadata({
+        submissionId,
+        totalTerminalRecords: allTerminalRecords.length,
+        aggregatedRecordCount: recordsToAggregate.length,
+        aggregatedRecordIds: recordsToAggregate.map((r) => r.id),
+      })
+      .debug('Determined records to aggregate');
+
+    return recordsToAggregate;
+  }
+
+  /**
+   * Check if a PostRecord is a stop point in the aggregation chain.
+   * Stop points represent boundaries where we should not read prior events.
+   *
+   * @param {PostRecord} record - The record to check
+   * @returns {{ isStopPoint: boolean; reason?: string }} Whether it's a stop point and why
+   */
+  private isAggregationStopPoint(record: PostRecord): {
+    isStopPoint: boolean;
+    reason?: string;
+  } {
+    if (record.state === PostRecordState.DONE) {
+      return { isStopPoint: true, reason: 'DONE state (completed session)' };
+    }
+
+    if (record.resumeMode === PostRecordResumeMode.RESTART) {
+      return {
+        isStopPoint: true,
+        reason: 'RESTART resumeMode (user-initiated fresh start)',
+      };
+    }
+
+    return { isStopPoint: false };
+  }
+
+  /**
+   * Aggregate source URLs from events into the context.
+   * Source URLs are used for cross-website propagation.
+   */
+  private aggregateSourceUrls(
+    records: PostRecord[],
+    context: ResumeContext,
+  ): void {
+    for (const record of records) {
+      if (!record.events) continue;
+
+      for (const event of record.events) {
         if (
-          event.eventType === 'FILE_POSTED' &&
+          this.isSourceUrlEvent(event) &&
+          event.accountId &&
+          event.sourceUrl
+        ) {
+          this.addSourceUrl(context, event.accountId, event.sourceUrl);
+        }
+      }
+    }
+  }
+
+  /**
+   * Aggregate completed account IDs from events into the context.
+   */
+  private aggregateCompletedAccounts(
+    records: PostRecord[],
+    context: ResumeContext,
+  ): void {
+    for (const record of records) {
+      if (!record.events) continue;
+
+      for (const event of record.events) {
+        if (
+          event.eventType === PostEventType.POST_ATTEMPT_COMPLETED &&
+          event.accountId
+        ) {
+          context.completedAccountIds.add(event.accountId);
+        }
+      }
+    }
+  }
+
+  /**
+   * Aggregate posted file IDs (per account) from events into the context.
+   */
+  private aggregatePostedFiles(
+    records: PostRecord[],
+    context: ResumeContext,
+  ): void {
+    for (const record of records) {
+      if (!record.events) continue;
+
+      for (const event of record.events) {
+        if (
+          event.eventType === PostEventType.FILE_POSTED &&
           event.accountId &&
           event.fileId
         ) {
-          const existing = context.postedFilesByAccount.get(event.accountId);
-          if (existing) {
-            existing.add(event.fileId);
-          } else {
-            context.postedFilesByAccount.set(
-              event.accountId,
-              new Set([event.fileId]),
-            );
-          }
+          this.addPostedFile(context, event.accountId, event.fileId);
         }
       }
-
-      this.logger
-        .withMetadata({
-          completedAccountCount: completedAccountIds.length,
-          accountsWithPostedFiles: context.postedFilesByAccount.size,
-        })
-        .debug('Built CONTINUE resume context');
-
-      return context;
     }
-
-    // Fallback (shouldn't reach here)
-    return context;
   }
+
+  /**
+   * Check if an event contains a source URL (FILE_POSTED or MESSAGE_POSTED).
+   */
+  private isSourceUrlEvent(event: PostEvent): boolean {
+    return (
+      event.eventType === PostEventType.FILE_POSTED ||
+      event.eventType === PostEventType.MESSAGE_POSTED
+    );
+  }
+
+  /**
+   * Add a source URL to the context for an account.
+   */
+  private addSourceUrl(
+    context: ResumeContext,
+    accountId: AccountId,
+    sourceUrl: string,
+  ): void {
+    const existing = context.sourceUrlsByAccount.get(accountId);
+    if (existing) {
+      existing.push(sourceUrl);
+    } else {
+      context.sourceUrlsByAccount.set(accountId, [sourceUrl]);
+    }
+  }
+
+  /**
+   * Add a posted file to the context for an account.
+   */
+  private addPostedFile(
+    context: ResumeContext,
+    accountId: AccountId,
+    fileId: EntityId,
+  ): void {
+    const existing = context.postedFilesByAccount.get(accountId);
+    if (existing) {
+      existing.add(fileId);
+    } else {
+      context.postedFilesByAccount.set(accountId, new Set([fileId]));
+    }
+  }
+
+  // ========================================================================
+  // Resume Context Helpers
+  // ========================================================================
 
   /**
    * Check if an account should be skipped based on resume context.

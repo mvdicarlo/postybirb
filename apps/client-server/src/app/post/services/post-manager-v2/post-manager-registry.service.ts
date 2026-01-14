@@ -67,6 +67,7 @@ export class PostManagerRegistry {
     let resumeContext: ResumeContext | undefined;
     if (priorPostRecordId) {
       resumeContext = await this.postRecordFactory.buildResumeContext(
+        postRecord.submissionId,
         priorPostRecordId,
         postRecord.resumeMode,
       );

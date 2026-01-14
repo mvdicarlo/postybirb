@@ -15,7 +15,7 @@ import { IsTestEnvironment } from '@postybirb/utils/electron';
 import { Mutex } from 'async-mutex';
 import { Cron as CronGenerator } from 'croner';
 import { PostyBirbService } from '../../../common/service/postybirb-service';
-import { PostQueueRecord } from '../../../drizzle/models';
+import { PostQueueRecord, PostRecord } from '../../../drizzle/models';
 import { PostyBirbDatabase } from '../../../drizzle/postybirb-database/postybirb-database';
 import { SettingsService } from '../../../settings/settings.service';
 import { WSGateway } from '../../../web-socket/web-socket-gateway';
@@ -134,9 +134,46 @@ export class PostQueueService
   }
 
   /**
+   * Check if we should restart from fresh based on the most recent PostRecord state.
+   * Returns true if the most recent terminal PostRecord is DONE (successful completion).
+   *
+   * @param {SubmissionId} submissionId - The submission ID
+   * @returns {Promise<boolean>} True if should restart fresh, false if should continue
+   */
+  private async shouldRestartFromFresh(
+    submissionId: SubmissionId,
+  ): Promise<boolean> {
+    // Get the most recent terminal record for this submission
+    const mostRecentRecords = await this.postRecordRepository.find({
+      where: (record, { eq, and, inArray }) =>
+        and(
+          eq(record.submissionId, submissionId),
+          inArray(record.state, [
+            PostRecordState.DONE,
+            PostRecordState.FAILED,
+          ] as any[]),
+        ),
+      orderBy: (record, { desc }) => desc(record.createdAt),
+      limit: 1,
+    });
+
+    if (mostRecentRecords.length === 0) {
+      // No terminal records found - shouldn't happen but treat as fresh
+      return true;
+    }
+
+    const mostRecent = mostRecentRecords[0];
+    return mostRecent.state === PostRecordState.DONE;
+  }
+
+  /**
    * Enqueue submissions for posting.
    * If resumeMode is provided and the submission has a terminal PostRecord,
    * a new PostRecord will be created using the specified resume mode.
+   *
+   * Smart handling: If the most recent PostRecord is DONE (successful completion),
+   * we always create a fresh record (restart) regardless of the provided resumeMode,
+   * since the user is starting a new posting session.
    *
    * @param {SubmissionId[]} submissionIds - The submissions to enqueue
    * @param {PostRecordResumeMode} resumeMode - Optional resume mode for re-queuing terminal records
@@ -174,22 +211,38 @@ export class PostQueueService
           (existing.postRecord.state === PostRecordState.DONE ||
             existing.postRecord.state === PostRecordState.FAILED)
         ) {
-          // Re-queuing a terminal record with a specific resume mode
-          const newRecord = await this.postRecordFactory.createFromPrior(
-            existing.postRecord.id,
-            resumeMode,
+          // Re-queuing a terminal record - check if we should restart or continue
+          const shouldRestart = await this.shouldRestartFromFresh(
+            submissionId,
           );
+
+          let newRecord: PostRecord;
+          if (shouldRestart) {
+            // Most recent PostRecord was DONE - user is starting a new posting session
+            this.logger
+              .withMetadata({ submissionId })
+              .info(
+                'Most recent PostRecord is DONE - creating fresh record (restart)',
+              );
+            newRecord = await this.postRecordFactory.createFresh(submissionId);
+          } else {
+            // Most recent was FAILED - continue with provided resumeMode
+            this.logger
+              .withMetadata({
+                submissionId,
+                priorRecordId: existing.postRecord.id,
+                resumeMode,
+              })
+              .info('Re-queuing FAILED record with resume mode');
+            newRecord = await this.postRecordFactory.createFromPrior(
+              existing.postRecord.id,
+              resumeMode,
+            );
+          }
+
           await this.repository.update(existing.id, {
             postRecordId: newRecord.id,
           });
-          this.logger
-            .withMetadata({
-              submissionId,
-              priorRecordId: existing.postRecord.id,
-              newRecordId: newRecord.id,
-              resumeMode,
-            })
-            .info('Re-queuing terminal record with resume mode');
         }
         // If existing but not terminal, or no resumeMode provided, do nothing
       }
