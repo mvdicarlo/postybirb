@@ -3,6 +3,7 @@ export * from './custom-shortcut.schema';
 export * from './directory-watcher.schema';
 export * from './file-buffer.schema';
 export * from './notification.schema';
+export * from './post-event.schema';
 export * from './post-queue-record.schema';
 export * from './post-record.schema';
 export * from './settings.schema';
@@ -15,3 +16,4 @@ export * from './user-specified-website-options.schema';
 export * from './website-data.schema';
 export * from './website-options.schema';
 export * from './website-post-record.schema';
+

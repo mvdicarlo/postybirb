@@ -10,6 +10,7 @@ export * from './directory-watcher/directory-watcher.dto';
 export * from './directory-watcher/update-directory-watcher.dto';
 export * from './notification/create-notification.dto';
 export * from './notification/update-notification.dto';
+export * from './post/post-event.dto';
 export * from './post/post-queue-action.dto';
 export * from './post/post-queue-record.dto';
 export * from './post/post-record.dto';
@@ -49,3 +50,4 @@ export * from './website/oauth-website-request.dto';
 export * from './website/set-website-data-request.dto';
 export * from './website/website-data.dto';
 export * from './website/website-info.dto';
+

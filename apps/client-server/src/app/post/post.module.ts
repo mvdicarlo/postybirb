@@ -15,6 +15,10 @@ import { PostManagerController } from './services/post-manager/post-manager.cont
 import { PostManagerService } from './services/post-manager/post-manager.service';
 import { PostQueueController } from './services/post-queue/post-queue.controller';
 import { PostQueueService } from './services/post-queue/post-queue.service';
+import {
+    PostEventRepository,
+    PostRecordFactory,
+} from './services/post-record-factory';
 
 @Module({
   imports: [
@@ -34,6 +38,9 @@ import { PostQueueService } from './services/post-queue/post-queue.service';
     PostFileResizerService,
     WebsiteImplProvider,
     PostQueueService,
+    PostEventRepository,
+    PostRecordFactory,
   ],
+  exports: [PostEventRepository, PostRecordFactory],
 })
 export class PostModule {}

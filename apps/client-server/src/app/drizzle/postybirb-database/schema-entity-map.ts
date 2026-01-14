@@ -3,6 +3,7 @@ import {
   Account,
   DirectoryWatcher,
   FileBuffer,
+  PostEvent,
   PostQueueRecord,
   PostRecord,
   Settings,
@@ -23,6 +24,7 @@ export type DatabaseSchemaEntityMap = {
   AccountSchema: InstanceType<typeof Account>;
   DirectoryWatcherSchema: InstanceType<typeof DirectoryWatcher>;
   FileBufferSchema: InstanceType<typeof FileBuffer>;
+  PostEventSchema: InstanceType<typeof PostEvent>;
   PostQueueRecordSchema: InstanceType<typeof PostQueueRecord>;
   PostRecordSchema: InstanceType<typeof PostRecord>;
   SettingsSchema: InstanceType<typeof Settings>;
@@ -49,6 +51,7 @@ export const DatabaseSchemaEntityMapConst: Record<
   AccountSchema: Account,
   DirectoryWatcherSchema: DirectoryWatcher,
   FileBufferSchema: FileBuffer,
+  PostEventSchema: PostEvent,
   PostQueueRecordSchema: PostQueueRecord,
   PostRecordSchema: PostRecord,
   SettingsSchema: Settings,

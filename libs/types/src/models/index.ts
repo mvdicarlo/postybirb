@@ -7,6 +7,7 @@ export * from './directory-watcher/directory-watcher.interface';
 export * from './file/file-buffer.interface';
 export * from './file/file-dimensions.interface';
 export * from './notification/notification.interface';
+export * from './post/post-event.interface';
 export * from './post/post-queue-record.interface';
 export * from './post/post-record.interface';
 export * from './post/post-response.type';

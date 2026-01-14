@@ -6,6 +6,7 @@ import {
   PostRecordState,
 } from '../../../../types/src/index';
 import { CommonSchema, id } from './common.schema';
+import { PostEventSchema } from './post-event.schema';
 import { SubmissionSchema } from './submission.schema';
 import { WebsitePostRecordSchema } from './website-post-record.schema';
 
@@ -45,5 +46,6 @@ export const PostRecordRelations = relations(
       references: [SubmissionSchema.id],
     }),
     children: many(WebsitePostRecordSchema),
+    events: many(PostEventSchema),
   }),
 );

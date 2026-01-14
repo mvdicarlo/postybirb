@@ -43,6 +43,7 @@ export class PostyBirbDatabase<
     AccountSchema: [],
     DirectoryWatcherSchema: [],
     FileBufferSchema: [],
+    PostEventSchema: [],
     PostQueueRecordSchema: [],
     PostRecordSchema: [],
     SettingsSchema: [],
