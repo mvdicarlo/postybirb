@@ -274,13 +274,13 @@ export class PostManagerService {
     websitePostRecord: WebsitePostRecord,
     instance: Website<unknown>,
   ) {
-    if (!instance.getLoginState().isLoggedIn) {
-      throw new Error('Not logged in');
-    }
-
     const { submission } = entity;
     let data: PostData | undefined;
     try {
+      if (!instance.getLoginState().isLoggedIn) {
+        throw new Error('Not logged in');
+      }
+
       const supportedTypes = instance.getSupportedTypes();
       if (!supportedTypes.includes(submission.type)) {
         throw new Error(

@@ -17,4 +17,9 @@ export class UpdateStartupSettingsDto implements StartupOptions {
   @IsOptional()
   @IsBoolean()
   startAppOnSystemStartup: boolean;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsBoolean()
+  spellchecker: boolean;
 }

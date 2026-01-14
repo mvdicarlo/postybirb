@@ -8,9 +8,12 @@ const basePath = __dirname.split(/(app|lib)/)[0];
 const config = {
   ...nxPreset,
   setupFiles: [join(basePath, 'jest.setup.ts')],
-  silent: true,
   prettierPath: require.resolve('prettier-2'),
-  cacheDirectory: join(process.cwd(), '.jest'),  transform: {
+  reporters: ['summary', join(basePath, 'jest.reporter.js')],
+  slowTestThreshold: 7000,
+  cacheDirectory: join(process.cwd(), '.jest'),
+  transformIgnorePatterns: [], // There is a lot of esm packages and swc is fast enough to transform everything
+  transform: {
     '^.+\\.(ts|tsx|jsx|js|html)$': [
       '@swc/jest',
       {

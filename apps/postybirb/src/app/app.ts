@@ -110,7 +110,7 @@ export default class PostyBirb {
         backgroundThrottling: false,
         preload: join(__dirname, 'preload.js'),
         webviewTag: true,
-        spellcheck: true,
+        spellcheck: getStartupOptions().spellchecker,
         devTools: true,
       },
     });
