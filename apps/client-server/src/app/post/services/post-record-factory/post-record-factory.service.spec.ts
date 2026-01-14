@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
 import {
-    EntityId,
-    PostEventType,
-    PostRecordResumeMode,
-    PostRecordState,
-    SubmissionType,
+  EntityId,
+  PostEventType,
+  PostRecordResumeMode,
+  PostRecordState,
+  SubmissionType,
 } from '@postybirb/types';
 import { AccountModule } from '../../../account/account.module';
 import { AccountService } from '../../../account/account.service';
@@ -715,6 +715,215 @@ describe('PostRecordFactory', () => {
 
       const urls = factory.getAllSourceUrls(context);
       expect(urls).toHaveLength(0);
+    });
+  });
+
+  describe('crash recovery', () => {
+    /**
+     * These tests verify the crash recovery behavior:
+     * When PostyBirb crashes mid-post, a PostRecord is left in RUNNING state.
+     * On restart, onModuleInit() finds these RUNNING records and resumes them.
+     * The key behavior is that events from the RUNNING record must be preserved,
+     * EVEN if the user originally requested RESTART mode (fresh start).
+     */
+
+    async function createPostRecordWithState(
+      submissionId: EntityId,
+      state: PostRecordState,
+      resumeMode: PostRecordResumeMode,
+    ): Promise<PostRecord> {
+      const record = await postRecordRepository.insert({
+        submissionId,
+        state,
+        resumeMode,
+      });
+      return record;
+    }
+
+    async function addEvent(
+      postRecordId: EntityId,
+      eventType: PostEventType,
+      accountId?: string,
+      additionalData?: Partial<PostEvent>,
+    ): Promise<PostEvent> {
+      const eventData: any = {
+        postRecordId,
+        eventType,
+        ...additionalData,
+      };
+      if (accountId) {
+        eventData.accountId = accountId as EntityId;
+      }
+      return postEventRepository.insert(eventData);
+    }
+
+    it('should aggregate events from RUNNING record even with RESTART mode (crash recovery)', async () => {
+      // Scenario: User started a RESTART post, posted to 2 accounts, then crashed.
+      // On restart, we must preserve those 2 completed accounts.
+      const submissionId = await createSubmission();
+      const account1 = await createAccount('crash-account-1');
+      const account2 = await createAccount('crash-account-2');
+
+      // Create a RUNNING record with RESTART mode (simulates mid-post crash)
+      const runningRecord = await createPostRecordWithState(
+        submissionId,
+        PostRecordState.RUNNING,
+        PostRecordResumeMode.RESTART,
+      );
+
+      // Add events that occurred before crash
+      await addEvent(runningRecord.id, PostEventType.POST_ATTEMPT_COMPLETED, account1);
+      await addEvent(runningRecord.id, PostEventType.POST_ATTEMPT_COMPLETED, account2);
+      await addEvent(runningRecord.id, PostEventType.FILE_POSTED, account1, {
+        fileId: 'crash-file-1' as EntityId,
+        sourceUrl: 'https://example.com/crash-1',
+      });
+
+      // Simulate crash recovery: buildResumeContext is called with RESTART mode
+      // but the record is still RUNNING (not terminal)
+      const context = await factory.buildResumeContext(
+        submissionId,
+        runningRecord.id,
+        PostRecordResumeMode.RESTART,
+      );
+
+      // Despite RESTART mode, crash recovery should preserve completed accounts
+      expect(context.completedAccountIds.size).toBe(2);
+      expect(context.completedAccountIds.has(account1)).toBe(true);
+      expect(context.completedAccountIds.has(account2)).toBe(true);
+
+      // For RESTART mode, we always include posted files (fresh start logic, so aggregate all)
+      // Actually for crash recovery with RESTART, we DO want to include posted files to avoid re-uploading
+      expect(context.postedFilesByAccount.size).toBe(1);
+      const postedFiles = context.postedFilesByAccount.get(account1);
+      expect(postedFiles?.has('crash-file-1' as EntityId)).toBe(true);
+    });
+
+    it('should return empty context for RESTART mode with terminal (FAILED/DONE) record', async () => {
+      // Normal RESTART behavior: if the prior record is terminal, start fresh
+      const submissionId = await createSubmission();
+      const account1 = await createAccount('terminal-account-1');
+
+      const failedRecord = await createPostRecordWithState(
+        submissionId,
+        PostRecordState.FAILED,
+        PostRecordResumeMode.CONTINUE,
+      );
+
+      await addEvent(failedRecord.id, PostEventType.POST_ATTEMPT_COMPLETED, account1);
+
+      // RESTART mode with a FAILED record should return empty context
+      const context = await factory.buildResumeContext(
+        submissionId,
+        failedRecord.id,
+        PostRecordResumeMode.RESTART,
+      );
+
+      expect(context.completedAccountIds.size).toBe(0);
+      expect(context.postedFilesByAccount.size).toBe(0);
+    });
+
+    it('should aggregate events from RUNNING record with CONTINUE mode (crash recovery)', async () => {
+      // CONTINUE mode crash recovery should also work
+      const submissionId = await createSubmission();
+      const account1 = await createAccount('continue-crash-account-1');
+
+      const runningRecord = await createPostRecordWithState(
+        submissionId,
+        PostRecordState.RUNNING,
+        PostRecordResumeMode.CONTINUE,
+      );
+
+      await addEvent(runningRecord.id, PostEventType.POST_ATTEMPT_COMPLETED, account1);
+      await addEvent(runningRecord.id, PostEventType.FILE_POSTED, account1, {
+        fileId: 'continue-crash-file-1' as EntityId,
+      });
+
+      const context = await factory.buildResumeContext(
+        submissionId,
+        runningRecord.id,
+        PostRecordResumeMode.CONTINUE,
+      );
+
+      // CONTINUE mode crash recovery should include both completed accounts and posted files
+      expect(context.completedAccountIds.size).toBe(1);
+      expect(context.completedAccountIds.has(account1)).toBe(true);
+      expect(context.postedFilesByAccount.size).toBe(1);
+      const postedFiles = context.postedFilesByAccount.get(account1);
+      expect(postedFiles?.has('continue-crash-file-1' as EntityId)).toBe(true);
+    });
+
+    it('should combine RUNNING record with prior FAILED records in CONTINUE mode', async () => {
+      // Scenario: Previous attempt failed, user chose CONTINUE, then crashed mid-post.
+      // We need to aggregate from both the RUNNING record AND the prior FAILED record.
+      const submissionId = await createSubmission();
+      const account1 = await createAccount('prior-account-1');
+      const account2 = await createAccount('current-account-2');
+
+      // First attempt: posted to account1, then failed
+      const failedRecord = await createPostRecordWithState(
+        submissionId,
+        PostRecordState.FAILED,
+        PostRecordResumeMode.CONTINUE,
+      );
+      await addEvent(failedRecord.id, PostEventType.POST_ATTEMPT_COMPLETED, account1);
+      await addEvent(failedRecord.id, PostEventType.FILE_POSTED, account1, {
+        fileId: 'prior-file-1' as EntityId,
+      });
+
+      // Second attempt: CONTINUE from prior, posted to account2, then crashed
+      const runningRecord = await createPostRecordWithState(
+        submissionId,
+        PostRecordState.RUNNING,
+        PostRecordResumeMode.CONTINUE,
+      );
+      await addEvent(runningRecord.id, PostEventType.POST_ATTEMPT_COMPLETED, account2);
+      await addEvent(runningRecord.id, PostEventType.FILE_POSTED, account2, {
+        fileId: 'current-file-1' as EntityId,
+      });
+
+      const context = await factory.buildResumeContext(
+        submissionId,
+        runningRecord.id,
+        PostRecordResumeMode.CONTINUE,
+      );
+
+      // Should include completed accounts from both records
+      expect(context.completedAccountIds.size).toBe(2);
+      expect(context.completedAccountIds.has(account1)).toBe(true);
+      expect(context.completedAccountIds.has(account2)).toBe(true);
+
+      // Should include posted files from both records
+      expect(context.postedFilesByAccount.size).toBe(2);
+      expect(context.postedFilesByAccount.get(account1)?.has('prior-file-1' as EntityId)).toBe(true);
+      expect(context.postedFilesByAccount.get(account2)?.has('current-file-1' as EntityId)).toBe(true);
+    });
+
+    it('should preserve source URLs from RUNNING record in crash recovery', async () => {
+      const submissionId = await createSubmission();
+      const account1 = await createAccount('url-crash-account-1');
+
+      const runningRecord = await createPostRecordWithState(
+        submissionId,
+        PostRecordState.RUNNING,
+        PostRecordResumeMode.RESTART,
+      );
+
+      await addEvent(runningRecord.id, PostEventType.FILE_POSTED, account1, {
+        fileId: 'url-file-1' as EntityId,
+        sourceUrl: 'https://example.com/posted-before-crash',
+      });
+
+      const context = await factory.buildResumeContext(
+        submissionId,
+        runningRecord.id,
+        PostRecordResumeMode.RESTART,
+      );
+
+      // Source URLs should be preserved for RESTART mode crash recovery
+      expect(context.sourceUrlsByAccount.size).toBe(1);
+      const urls = context.sourceUrlsByAccount.get(account1);
+      expect(urls).toContain('https://example.com/posted-before-crash');
     });
   });
 });

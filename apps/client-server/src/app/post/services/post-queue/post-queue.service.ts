@@ -9,7 +9,7 @@ import {
   EntityId,
   PostRecordResumeMode,
   PostRecordState,
-  SubmissionId
+  SubmissionId,
 } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/electron';
 import { Mutex } from 'async-mutex';
@@ -69,8 +69,7 @@ export class PostQueueService
     try {
       // Find all RUNNING post records
       const runningRecords = await this.postRecordRepository.find({
-        where: (record, { eq }) =>
-          eq(record.state, PostRecordState.RUNNING as any),
+        where: (record, { eq }) => eq(record.state, PostRecordState.RUNNING),
         with: {
           submission: {
             with: {
@@ -88,11 +87,16 @@ export class PostQueueService
       if (runningRecords.length > 0) {
         this.logger
           .withMetadata({ count: runningRecords.length })
-          .info('Detected interrupted PostRecords from crash/shutdown, resuming');
+          .info(
+            'Detected interrupted PostRecords from crash/shutdown, resuming',
+          );
 
         for (const record of runningRecords) {
           this.logger
-            .withMetadata({ recordId: record.id, resumeMode: record.resumeMode })
+            .withMetadata({
+              recordId: record.id,
+              resumeMode: record.resumeMode,
+            })
             .info('Resuming interrupted PostRecord');
 
           // Resume the post using the record's existing resumeMode and passing its own ID
@@ -148,10 +152,7 @@ export class PostQueueService
       where: (record, { eq, and, inArray }) =>
         and(
           eq(record.submissionId, submissionId),
-          inArray(record.state, [
-            PostRecordState.DONE,
-            PostRecordState.FAILED,
-          ] as any[]),
+          inArray(record.state, [PostRecordState.DONE, PostRecordState.FAILED]),
         ),
       orderBy: (record, { desc }) => desc(record.createdAt),
       limit: 1,
@@ -212,9 +213,7 @@ export class PostQueueService
             existing.postRecord.state === PostRecordState.FAILED)
         ) {
           // Re-queuing a terminal record - check if we should restart or continue
-          const shouldRestart = await this.shouldRestartFromFresh(
-            submissionId,
-          );
+          const shouldRestart = await this.shouldRestartFromFresh(submissionId);
 
           let newRecord: PostRecord;
           if (shouldRestart) {
@@ -264,7 +263,9 @@ export class PostQueueService
           inArray(queueRecord.submissionId, submissionIds),
       });
 
-      submissionIds.forEach((id) => this.postManagerRegistry.cancelIfRunning(id));
+      submissionIds.forEach((id) =>
+        this.postManagerRegistry.cancelIfRunning(id),
+      );
 
       return await this.repository.deleteById(records.map((r) => r.id));
     } catch (error) {
@@ -344,15 +345,19 @@ export class PostQueueService
     const release = await this.queueMutex.acquire();
 
     try {
+      const isPaused = await this.isPaused();
+      if (isPaused) {
+        this.logger.info('Queue is paused, skipping execution cycle');
+        return;
+      }
+
       const top = await this.peek();
       // Queue Empty
       if (!top) {
         return;
       }
 
-      const isPaused = await this.isPaused();
       const { postRecord: record, submissionId, submission } = top;
-
       if (submission.isArchived) {
         // Submission is archived, remove from queue
         this.logger
@@ -373,12 +378,8 @@ export class PostQueueService
           return;
         }
 
-        if (isPaused) {
-          return;
-        }
-        const insertedRecord = await this.postRecordFactory.createFresh(
-          submissionId,
-        );
+        const insertedRecord =
+          await this.postRecordFactory.createFresh(submissionId);
         await this.repository.update(top.id, {
           postRecordId: insertedRecord.id,
         });

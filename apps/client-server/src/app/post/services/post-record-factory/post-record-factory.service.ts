@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import {
-    AccountId,
-    EntityId,
-    PostEventType,
-    PostRecordResumeMode,
-    PostRecordState,
+  AccountId,
+  EntityId,
+  PostEventType,
+  PostRecordResumeMode,
+  PostRecordState,
 } from '@postybirb/types';
 import { PostEvent, PostRecord } from '../../../drizzle/models';
 import { PostyBirbDatabase } from '../../../drizzle/postybirb-database/postybirb-database';
@@ -126,9 +126,10 @@ export class PostRecordFactory {
    * This method handles the chain of posting attempts correctly:
    * - DONE records represent complete "posting sessions" - they act as stop points
    * - FAILED records represent incomplete attempts that should be aggregated
+   * - RUNNING records (crash recovery) should aggregate their own events
    *
    * Logic:
-   * 1. Find all terminal records ordered by creation date (newest first)
+   * 1. Always include events from the specific record being resumed (handles crash recovery)
    * 2. If the most recent is DONE → return empty context (nothing to continue, start fresh)
    * 3. If the most recent is FAILED → aggregate from FAILED records until we hit a DONE
    *
@@ -144,14 +145,35 @@ export class PostRecordFactory {
   ): Promise<ResumeContext> {
     const context = this.createEmptyContext(priorPostRecordId, resumeMode);
 
-    // For RESTART mode, return empty context - start fresh
+    // First, always fetch the specific record we're resuming from.
+    // This handles crash recovery where the record is RUNNING (not terminal).
+    const currentRecord = await this.postRecordRepository.findById(
+      priorPostRecordId,
+      undefined,
+      { events: true },
+    );
+
+    // For RESTART mode on a fresh record, return empty context
+    // But for crash recovery (RUNNING state), we still need to aggregate our own events
     if (resumeMode === PostRecordResumeMode.RESTART) {
-      this.logger.debug('RESTART mode - returning empty resume context');
+      if (currentRecord?.state === PostRecordState.RUNNING) {
+        // Crash recovery: aggregate events from this record regardless of resumeMode
+        this.logger.debug('RESTART mode but RUNNING state (crash recovery) - aggregating own events');
+        this.aggregateFromRecords([currentRecord], context, true);
+      } else {
+        this.logger.debug('RESTART mode - returning empty resume context');
+      }
       return context;
     }
 
-    // Get records to aggregate based on the chain logic
-    const recordsToAggregate = await this.getRecordsToAggregate(submissionId);
+    // Get terminal records to aggregate based on the chain logic
+    const terminalRecords = await this.getRecordsToAggregate(submissionId);
+
+    // Combine: current record (if RUNNING) + terminal records (excluding duplicates)
+    const recordsToAggregate = this.combineRecordsForAggregation(
+      currentRecord,
+      terminalRecords,
+    );
 
     if (recordsToAggregate.length === 0) {
       this.logger.debug(
@@ -161,14 +183,8 @@ export class PostRecordFactory {
     }
 
     // Aggregate events based on resume mode
-    this.aggregateSourceUrls(recordsToAggregate, context);
-
-    this.aggregateCompletedAccounts(recordsToAggregate, context);
-    if (resumeMode === PostRecordResumeMode.CONTINUE_RETRY) {
-      // No file aggregation needed - all files will be retried for non-completed accounts
-    } else if (resumeMode === PostRecordResumeMode.CONTINUE) {
-      this.aggregatePostedFiles(recordsToAggregate, context);
-    }
+    const includePostedFiles = resumeMode === PostRecordResumeMode.CONTINUE;
+    this.aggregateFromRecords(recordsToAggregate, context, includePostedFiles);
 
     this.logger
       .withMetadata({
@@ -180,6 +196,50 @@ export class PostRecordFactory {
       .debug('Built resume context');
 
     return context;
+  }
+
+  /**
+   * Combine the current record (if RUNNING) with terminal records, avoiding duplicates.
+   * This ensures crash recovery includes the RUNNING record's events.
+   */
+  private combineRecordsForAggregation(
+    currentRecord: PostRecord | null | undefined,
+    terminalRecords: PostRecord[],
+  ): PostRecord[] {
+    const result: PostRecord[] = [];
+    const seenIds = new Set<EntityId>();
+
+    // Add current record first if it's RUNNING (crash recovery case)
+    if (currentRecord?.state === PostRecordState.RUNNING) {
+      result.push(currentRecord);
+      seenIds.add(currentRecord.id);
+    }
+
+    // Add terminal records that weren't already added
+    for (const record of terminalRecords) {
+      if (!seenIds.has(record.id)) {
+        result.push(record);
+        seenIds.add(record.id);
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Aggregate events from a list of records into the context.
+   */
+  private aggregateFromRecords(
+    records: PostRecord[],
+    context: ResumeContext,
+    includePostedFiles: boolean,
+  ): void {
+    this.aggregateSourceUrls(records, context);
+    this.aggregateCompletedAccounts(records, context);
+
+    if (includePostedFiles) {
+      this.aggregatePostedFiles(records, context);
+    }
   }
 
   /**
