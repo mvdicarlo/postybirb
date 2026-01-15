@@ -26764,7 +26764,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"strong-log-transformer@npm:^2.1.0":
+"strong-log-transformer@npm:2.1.0":
   version: 2.1.0
   resolution: "strong-log-transformer@npm:2.1.0"
   dependencies:
@@ -26774,6 +26774,19 @@ __metadata:
   bin:
     sl-log-transformer: bin/sl-log-transformer.js
   checksum: 10c0/3c3b8aa8f34d661910563ff996412e2f527fc814e699a376854b554d4a4294ab7e285b4e2c08a080a7b19c5600a9b93a98798d3ac600fe3de545ca6605c07829
+  languageName: node
+  linkType: hard
+
+"strong-log-transformer@patch:strong-log-transformer@npm%3A2.1.0#~/.yarn/patches/strong-log-transformer-npm-2.1.0-45addd9278.patch":
+  version: 2.1.0
+  resolution: "strong-log-transformer@patch:strong-log-transformer@npm%3A2.1.0#~/.yarn/patches/strong-log-transformer-npm-2.1.0-45addd9278.patch::version=2.1.0&hash=584790"
+  dependencies:
+    duplexer: "npm:^0.1.1"
+    minimist: "npm:^1.2.0"
+    through: "npm:^2.3.4"
+  bin:
+    sl-log-transformer: bin/sl-log-transformer.js
+  checksum: 10c0/42e71d0ff551ead627e76509497f3d59e4a6c7e92394c0f0eff54a438ad8e1fc95ae3c560cf7c5cd6018d2861b56cc6714222528562373d83b7dd159deb85c44
   languageName: node
   linkType: hard
 
