@@ -44,11 +44,11 @@ flowchart TD
 flowchart TD
     A[enqueue called with submissionId] --> B{Any Prior<br/>PostRecord?}
 
-    B -->|No| C[Create Fresh PostRecord<br/>resumeMode = RESTART]
+    B -->|No| C[Create Fresh PostRecord<br/>resumeMode = NEW]
 
     B -->|Yes| D{Most Recent<br/>PostRecord State?}
 
-    D -->|DONE| E[Create Fresh PostRecord<br/>resumeMode = RESTART<br/>Previous was successful]
+    D -->|DONE| E[Create Fresh PostRecord<br/>resumeMode = NEW<br/>Previous was successful]
 
     D -->|FAILED| F{resumeMode<br/>provided?}
 
@@ -56,7 +56,7 @@ flowchart TD
     F -->|No| H[Default to CONTINUE]
 
     subgraph Resume Modes
-        I[RESTART]
+        I[NEW]
         J[CONTINUE]
         K[CONTINUE_RETRY]
     end
@@ -271,7 +271,7 @@ flowchart TD
 
     I --> J{Resume Mode?}
 
-    J -->|RESTART + RUNNING| K[Aggregate own events<br/>for crash recovery]
+    J -->|NEW + RUNNING| K[Aggregate own events<br/>for crash recovery]
     J -->|CONTINUE| L[Skip completed accounts<br/>& posted files]
     J -->|CONTINUE_RETRY| M[Skip completed accounts<br/>Retry failed]
 

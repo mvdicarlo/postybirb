@@ -204,13 +204,13 @@ export class PostQueueService
             this.logger
               .withMetadata({ submissionId })
               .info('No prior PostRecord - creating fresh');
-            effectiveResumeMode = PostRecordResumeMode.RESTART;
+            effectiveResumeMode = PostRecordResumeMode.NEW;
           } else if (mostRecentRecord.state === PostRecordState.DONE) {
             // Prior was successful - always restart fresh regardless of provided mode
             this.logger
               .withMetadata({ submissionId })
               .info('Prior PostRecord was DONE - creating fresh (restart)');
-            effectiveResumeMode = PostRecordResumeMode.RESTART;
+            effectiveResumeMode = PostRecordResumeMode.NEW;
           } else {
             // Prior was FAILED - use provided mode or default to CONTINUE
             effectiveResumeMode = resumeMode ?? PostRecordResumeMode.CONTINUE;

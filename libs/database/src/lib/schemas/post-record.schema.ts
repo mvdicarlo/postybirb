@@ -2,8 +2,8 @@ import { relations } from 'drizzle-orm';
 import { sqliteTable, text } from 'drizzle-orm/sqlite-core';
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
 import {
-  PostRecordResumeMode,
-  PostRecordState,
+    PostRecordResumeMode,
+    PostRecordState,
 } from '../../../../types/src/index';
 import { CommonSchema, id } from './common.schema';
 import { PostEventSchema } from './post-event.schema';
@@ -20,7 +20,7 @@ export const PostRecordSchema = sqliteTable('post-record', {
   resumeMode: text({
     enum: [
       PostRecordResumeMode.CONTINUE,
-      PostRecordResumeMode.RESTART,
+      PostRecordResumeMode.NEW,
       PostRecordResumeMode.CONTINUE_RETRY,
     ],
   })

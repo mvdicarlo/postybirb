@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
 import {
-  EntityId,
-  PostEventType,
-  PostRecordResumeMode,
-  PostRecordState,
-  SubmissionType,
+    EntityId,
+    PostEventType,
+    PostRecordResumeMode,
+    PostRecordState,
+    SubmissionType,
 } from '@postybirb/types';
 import { AccountModule } from '../../../account/account.module';
 import { AccountService } from '../../../account/account.service';
@@ -74,14 +74,14 @@ describe('PostRecordFactory', () => {
   }
 
   describe('create', () => {
-    it('should create a PostRecord with default RESTART mode', async () => {
+    it('should create a PostRecord with default NEW mode', async () => {
       const submissionId = await createSubmission();
       const record = await factory.create(submissionId);
 
       expect(record).toBeDefined();
       expect(record.submissionId).toBe(submissionId);
       expect(record.state).toBe(PostRecordState.PENDING);
-      expect(record.resumeMode).toBe(PostRecordResumeMode.RESTART);
+      expect(record.resumeMode).toBe(PostRecordResumeMode.NEW);
       expect(record.id).toBeDefined();
       expect(record.createdAt).toBeDefined();
     });
@@ -103,7 +103,7 @@ describe('PostRecordFactory', () => {
 
       const restartRecord = await factory.create(
         submissionId,
-        PostRecordResumeMode.RESTART,
+        PostRecordResumeMode.NEW,
       );
       const continueRecord = await factory.create(
         submissionId,
@@ -114,7 +114,7 @@ describe('PostRecordFactory', () => {
         PostRecordResumeMode.CONTINUE_RETRY,
       );
 
-      expect(restartRecord.resumeMode).toBe(PostRecordResumeMode.RESTART);
+      expect(restartRecord.resumeMode).toBe(PostRecordResumeMode.NEW);
       expect(continueRecord.resumeMode).toBe(PostRecordResumeMode.CONTINUE);
       expect(retryRecord.resumeMode).toBe(PostRecordResumeMode.CONTINUE_RETRY);
     });
@@ -154,7 +154,7 @@ describe('PostRecordFactory', () => {
       return postEventRepository.insert(eventData);
     }
 
-    it('should return empty context for RESTART mode', async () => {
+    it('should return empty context for NEW mode', async () => {
       const submissionId = await createSubmission();
       const priorRecord = await createPostRecordWithState(
         submissionId,
@@ -165,7 +165,7 @@ describe('PostRecordFactory', () => {
       const context = await factory.buildResumeContext(
         submissionId,
         priorRecord.id,
-        PostRecordResumeMode.RESTART,
+        PostRecordResumeMode.NEW,
       );
 
       expect(context.completedAccountIds.size).toBe(0);
@@ -399,7 +399,7 @@ describe('PostRecordFactory', () => {
       expect(context.completedAccountIds.has(accountOld)).toBe(false);
     });
 
-    it('should stop at RESTART record but include its events', async () => {
+    it('should stop at NEW record but include its events', async () => {
       const submissionId = await createSubmission();
       const accountOld = await createAccount('account-old');
       const accountRestart = await createAccount('account-restart');
@@ -417,11 +417,11 @@ describe('PostRecordFactory', () => {
         accountOld,
       );
 
-      // Create RESTART record (stop point but include it)
+      // Create NEW record (stop point but include it)
       const restartRecord = await createPostRecordWithState(
         submissionId,
         PostRecordState.FAILED,
-        PostRecordResumeMode.RESTART,
+        PostRecordResumeMode.NEW,
       );
       await addEvent(
         restartRecord.id,
@@ -535,9 +535,9 @@ describe('PostRecordFactory', () => {
   });
 
   describe('shouldSkipFile', () => {
-    it('should return false in RESTART mode', () => {
+    it('should return false in NEW mode', () => {
       const context: ResumeContext = {
-        resumeMode: PostRecordResumeMode.RESTART,
+        resumeMode: PostRecordResumeMode.NEW,
         completedAccountIds: new Set(),
         postedFilesByAccount: new Map(),
         sourceUrlsByAccount: new Map(),
@@ -686,7 +686,7 @@ describe('PostRecordFactory', () => {
      * When PostyBirb crashes mid-post, a PostRecord is left in RUNNING state.
      * On restart, onModuleInit() finds these RUNNING records and resumes them.
      * The key behavior is that events from the RUNNING record must be preserved,
-     * EVEN if the user originally requested RESTART mode (fresh start).
+     * EVEN if the user originally requested NEW mode (fresh start).
      */
 
     async function createPostRecordWithState(
@@ -719,18 +719,18 @@ describe('PostRecordFactory', () => {
       return postEventRepository.insert(eventData);
     }
 
-    it('should aggregate events from RUNNING record even with RESTART mode (crash recovery)', async () => {
-      // Scenario: User started a RESTART post, posted to 2 accounts, then crashed.
+    it('should aggregate events from RUNNING record even with NEW mode (crash recovery)', async () => {
+      // Scenario: User started a NEW post, posted to 2 accounts, then crashed.
       // On restart, we must preserve those 2 completed accounts.
       const submissionId = await createSubmission();
       const account1 = await createAccount('crash-account-1');
       const account2 = await createAccount('crash-account-2');
 
-      // Create a RUNNING record with RESTART mode (simulates mid-post crash)
+      // Create a RUNNING record with NEW mode (simulates mid-post crash)
       const runningRecord = await createPostRecordWithState(
         submissionId,
         PostRecordState.RUNNING,
-        PostRecordResumeMode.RESTART,
+        PostRecordResumeMode.NEW,
       );
 
       // Add events that occurred before crash
@@ -741,27 +741,27 @@ describe('PostRecordFactory', () => {
         sourceUrl: 'https://example.com/crash-1',
       });
 
-      // Simulate crash recovery: buildResumeContext is called with RESTART mode
+      // Simulate crash recovery: buildResumeContext is called with NEW mode
       // but the record is still RUNNING (not terminal)
       const context = await factory.buildResumeContext(
         submissionId,
         runningRecord.id,
-        PostRecordResumeMode.RESTART,
+        PostRecordResumeMode.NEW,
       );
 
-      // Despite RESTART mode, crash recovery should preserve completed accounts
+      // Despite NEW mode, crash recovery should preserve completed accounts
       expect(context.completedAccountIds.size).toBe(2);
       expect(context.completedAccountIds.has(account1)).toBe(true);
       expect(context.completedAccountIds.has(account2)).toBe(true);
 
-      // Crash recovery with RESTART mode should include posted files to avoid re-uploading
+      // Crash recovery with NEW mode should include posted files to avoid re-uploading
       expect(context.postedFilesByAccount.size).toBe(1);
       const postedFiles = context.postedFilesByAccount.get(account1);
       expect(postedFiles?.has('crash-file-1' as EntityId)).toBe(true);
     });
 
-    it('should return empty context for RESTART mode with terminal (FAILED/DONE) record', async () => {
-      // Normal RESTART behavior: if the prior record is terminal, start fresh
+    it('should return empty context for NEW mode with terminal (FAILED/DONE) record', async () => {
+      // Normal NEW behavior: if the prior record is terminal, start fresh
       const submissionId = await createSubmission();
       const account1 = await createAccount('terminal-account-1');
 
@@ -773,11 +773,11 @@ describe('PostRecordFactory', () => {
 
       await addEvent(failedRecord.id, PostEventType.POST_ATTEMPT_COMPLETED, account1);
 
-      // RESTART mode with a FAILED record should return empty context
+      // NEW mode with a FAILED record should return empty context
       const context = await factory.buildResumeContext(
         submissionId,
         failedRecord.id,
-        PostRecordResumeMode.RESTART,
+        PostRecordResumeMode.NEW,
       );
 
       expect(context.completedAccountIds.size).toBe(0);
@@ -867,7 +867,7 @@ describe('PostRecordFactory', () => {
       const runningRecord = await createPostRecordWithState(
         submissionId,
         PostRecordState.RUNNING,
-        PostRecordResumeMode.RESTART,
+        PostRecordResumeMode.NEW,
       );
 
       await addEvent(runningRecord.id, PostEventType.FILE_POSTED, account1, {
@@ -878,10 +878,10 @@ describe('PostRecordFactory', () => {
       const context = await factory.buildResumeContext(
         submissionId,
         runningRecord.id,
-        PostRecordResumeMode.RESTART,
+        PostRecordResumeMode.NEW,
       );
 
-      // Source URLs should be preserved for RESTART mode crash recovery
+      // Source URLs should be preserved for NEW mode crash recovery
       expect(context.sourceUrlsByAccount.size).toBe(1);
       const urls = context.sourceUrlsByAccount.get(account1);
       expect(urls).toContain('https://example.com/posted-before-crash');

@@ -86,7 +86,7 @@ import { PostFileResizerService } from '../post-file-resizer/post-file-resizer.s
  * Resume modes:
  * - CONTINUE: Picks up where it left off, posting only files that weren't previously posted
  * - CONTINUE_RETRY: Retries failed websites but remembers successfully posted files
- * - RESTART: Completely starts over, ignoring any previous posting progress
+ * - NEW: Completely starts over, ignoring any previous posting progress
  */
 export class PostManagerService {
   private readonly logger = Logger(this.constructor.name);
@@ -909,7 +909,7 @@ export class PostManagerService {
     entity: PostRecord,
   ): Promise<void> {
     switch (entity.resumeMode) {
-      case PostRecordResumeMode.RESTART:
+      case PostRecordResumeMode.NEW:
         await this.websitePostRecordRepository.deleteById(
           entity.children.map((c) => c.id),
         );

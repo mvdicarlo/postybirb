@@ -63,12 +63,12 @@ export class PostRecordFactory {
   /**
    * Create a new PostRecord for a submission.
    * @param {EntityId} submissionId - The submission ID
-   * @param {PostRecordResumeMode} resumeMode - The resume mode (defaults to RESTART)
+   * @param {PostRecordResumeMode} resumeMode - The resume mode (defaults to NEW)
    * @returns {Promise<PostRecord>} The created post record
    */
   async create(
     submissionId: EntityId,
-    resumeMode: PostRecordResumeMode = PostRecordResumeMode.RESTART,
+    resumeMode: PostRecordResumeMode = PostRecordResumeMode.NEW,
   ): Promise<PostRecord> {
     this.logger
       .withMetadata({ submissionId, resumeMode })
@@ -118,17 +118,17 @@ export class PostRecordFactory {
       { events: true },
     );
 
-    // For RESTART mode on a fresh record, return empty context
+    // For NEW mode on a fresh record, return empty context
     // But for crash recovery (RUNNING state), we still need to aggregate our own events
-    if (resumeMode === PostRecordResumeMode.RESTART) {
+    if (resumeMode === PostRecordResumeMode.NEW) {
       if (currentRecord?.state === PostRecordState.RUNNING) {
         // Crash recovery: aggregate events from this record regardless of resumeMode
         this.logger.debug(
-          'RESTART mode but RUNNING state (crash recovery) - aggregating own events',
+          'NEW mode but RUNNING state (crash recovery) - aggregating own events',
         );
         this.aggregateFromRecords([currentRecord], context, true);
       } else {
-        this.logger.debug('RESTART mode - returning empty resume context');
+        this.logger.debug('NEW mode - returning empty resume context');
       }
       return context;
     }
@@ -231,7 +231,7 @@ export class PostRecordFactory {
    * Rules:
    * - Aggregate all consecutive FAILED records (newest to oldest)
    * - Stop when hitting a DONE record (completed session is a stop point)
-   * - Stop when hitting a record with resumeMode=RESTART (user-initiated fresh start)
+   * - Stop when hitting a record with resumeMode=NEW (user-initiated fresh start)
    *
    * @param {EntityId} submissionId - The submission ID
    * @returns {Promise<PostRecord[]>} Records to aggregate (may be empty)
@@ -267,8 +267,8 @@ export class PostRecordFactory {
           .withMetadata({ stopAtRecordId: record.id, reason })
           .debug('Hit stop point - stopping aggregation chain');
 
-        // RESTART is a stop point BUT we include its events first
-        if (record.resumeMode === PostRecordResumeMode.RESTART) {
+        // NEW is a stop point BUT we include its events first
+        if (record.resumeMode === PostRecordResumeMode.NEW) {
           recordsToAggregate.push(record);
         }
         // DONE is a complete stop - don't include it
@@ -305,10 +305,10 @@ export class PostRecordFactory {
       return { isStopPoint: true, reason: 'DONE state (completed session)' };
     }
 
-    if (record.resumeMode === PostRecordResumeMode.RESTART) {
+    if (record.resumeMode === PostRecordResumeMode.NEW) {
       return {
         isStopPoint: true,
-        reason: 'RESTART resumeMode (user-initiated fresh start)',
+        reason: 'NEW resumeMode (user-initiated fresh start)',
       };
     }
 
@@ -452,7 +452,7 @@ export class PostRecordFactory {
     // If account is completed, all files should be skipped (handled by shouldSkipAccount)
     // This method is for checking individual files within a non-completed account
 
-    if (context.resumeMode === PostRecordResumeMode.RESTART) {
+    if (context.resumeMode === PostRecordResumeMode.NEW) {
       return false;
     }
 
