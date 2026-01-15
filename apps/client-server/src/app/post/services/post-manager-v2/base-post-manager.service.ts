@@ -11,7 +11,7 @@ import {
     PostEventType,
     PostRecordState,
     PostResponse,
-    SubmissionType
+    SubmissionType,
 } from '@postybirb/types';
 import {
     PostRecord,

@@ -792,8 +792,7 @@ describe('PostRecordFactory', () => {
       expect(context.completedAccountIds.has(account1)).toBe(true);
       expect(context.completedAccountIds.has(account2)).toBe(true);
 
-      // For RESTART mode, we always include posted files (fresh start logic, so aggregate all)
-      // Actually for crash recovery with RESTART, we DO want to include posted files to avoid re-uploading
+      // Crash recovery with RESTART mode should include posted files to avoid re-uploading
       expect(context.postedFilesByAccount.size).toBe(1);
       const postedFiles = context.postedFilesByAccount.get(account1);
       expect(postedFiles?.has('crash-file-1' as EntityId)).toBe(true);

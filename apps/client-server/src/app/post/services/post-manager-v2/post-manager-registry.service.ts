@@ -92,22 +92,6 @@ export class PostManagerRegistry {
   }
 
   /**
-   * Check if any manager is currently posting a specific submission.
-   * @param {EntityId} submissionId - The submission ID to check
-   * @returns {boolean} True if posting
-   */
-  public isPosting(submissionId: EntityId): boolean {
-    for (const manager of this.managers.values()) {
-      // This would require exposing currentPost.submissionId, 
-      // for now we'll just check if any manager is posting
-      if (manager.isPosting()) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  /**
    * Check if a specific submission type's manager is posting.
    * @param {SubmissionType} type - The submission type
    * @returns {boolean} True if posting

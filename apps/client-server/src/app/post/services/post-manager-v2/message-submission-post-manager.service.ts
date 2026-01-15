@@ -25,6 +25,7 @@ import { BasePostManager } from './base-post-manager.service';
 export class MessageSubmissionPostManager extends BasePostManager {
   protected readonly logger = Logger(this.constructor.name);
 
+  // eslint-disable-next-line @typescript-eslint/no-useless-constructor
   constructor(
     postEventRepository: PostEventRepository,
     websiteRegistry: WebsiteRegistryService,

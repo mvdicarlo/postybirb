@@ -9,7 +9,7 @@ import {
     PostData,
     PostEventType,
     SubmissionFileMetadata,
-    SubmissionType
+    SubmissionType,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { chunk } from 'lodash';
@@ -313,6 +313,7 @@ export class FileSubmissionPostManager extends BasePostManager {
           allowedMimeTypes,
         )
       ) {
+        // eslint-disable-next-line no-param-reassign
         file.file = new FileBuffer(
           await this.fileConverterService.convert(file.file, allowedMimeTypes),
         );
@@ -362,6 +363,7 @@ export class FileSubmissionPostManager extends BasePostManager {
           allowedMimeTypes,
         )
       ) {
+        // eslint-disable-next-line no-param-reassign
         file.file = new FileBuffer(
           await this.fileConverterService.convert(
             file.altFile,
