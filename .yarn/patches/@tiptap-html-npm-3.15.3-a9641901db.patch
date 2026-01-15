@@ -1,22 +1,11 @@
 diff --git a/package.json b/package.json
-index 1d1aa65a70e7f3e898be608610693a9b98152b8c..1b4dfd6d1292a1da3062f4546c2d7ec0e6ec07a7 100644
+index 1d1aa65a70e7f3e898be608610693a9b98152b8c..e27af24e756e7c6b76651d504304f28e7de4e084 100644
 --- a/package.json
 +++ b/package.json
-@@ -1,64 +1,42 @@
- {
--  "name": "@tiptap/html",
--  "description": "utility package to render tiptap JSON as HTML",
--  "version": "3.15.3",
--  "homepage": "https://tiptap.dev",
--  "keywords": [
--    "tiptap",
--    "tiptap utility"
--  ],
--  "license": "MIT",
--  "funding": {
--    "type": "github",
--    "url": "https://github.com/sponsors/ueberdosis"
--  },
+@@ -12,28 +12,6 @@
+     "type": "github",
+     "url": "https://github.com/sponsors/ueberdosis"
+   },
 -  "exports": {
 -    ".": {
 -      "types": {
@@ -39,71 +28,6 @@ index 1d1aa65a70e7f3e898be608610693a9b98152b8c..1b4dfd6d1292a1da3062f4546c2d7ec0
 -      "require": "./dist/server/index.cjs"
 -    }
 -  },
--  "main": "dist/index.cjs",
--  "module": "dist/index.js",
--  "types": "dist/index.d.ts",
--  "type": "module",
--  "files": [
--    "src",
--    "dist"
--  ],
--  "devDependencies": {
--    "happy-dom": "^20.0.2",
--    "@tiptap/core": "^3.15.3",
--    "@tiptap/pm": "^3.15.3"
--  },
--  "peerDependencies": {
--    "happy-dom": "^20.0.2",
--    "@tiptap/core": "^3.15.3",
--    "@tiptap/pm": "^3.15.3"
--  },
--  "repository": {
--    "type": "git",
--    "url": "https://github.com/ueberdosis/tiptap",
--    "directory": "packages/html"
--  },
--  "scripts": {
--    "build": "tsup",
--    "lint": "prettier ./src/ --check && eslint --cache --quiet --no-error-on-unmatched-pattern ./src/"
--  }
-+	"name": "@tiptap/html",
-+	"description": "utility package to render tiptap JSON as HTML",
-+	"version": "3.15.3",
-+	"homepage": "https://tiptap.dev",
-+	"keywords": [
-+		"tiptap",
-+		"tiptap utility"
-+	],
-+	"license": "MIT",
-+	"funding": {
-+		"type": "github",
-+		"url": "https://github.com/sponsors/ueberdosis"
-+	},
-+	"main": "dist/index.cjs",
-+	"module": "dist/index.js",
-+	"types": "dist/index.d.ts",
-+	"type": "module",
-+	"files": [
-+		"src",
-+		"dist"
-+	],
-+	"devDependencies": {
-+		"happy-dom": "^20.0.2",
-+		"@tiptap/core": "^3.15.3",
-+		"@tiptap/pm": "^3.15.3"
-+	},
-+	"peerDependencies": {
-+		"happy-dom": "^20.0.2",
-+		"@tiptap/core": "^3.15.3",
-+		"@tiptap/pm": "^3.15.3"
-+	},
-+	"repository": {
-+		"type": "git",
-+		"url": "https://github.com/ueberdosis/tiptap",
-+		"directory": "packages/html"
-+	},
-+	"scripts": {
-+		"build": "tsup",
-+		"lint": "prettier ./src/ --check && eslint --cache --quiet --no-error-on-unmatched-pattern ./src/"
-+	}
- }
+   "main": "dist/index.cjs",
+   "module": "dist/index.js",
+   "types": "dist/index.d.ts",
