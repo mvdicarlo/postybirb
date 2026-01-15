@@ -537,7 +537,7 @@ export default class Bluesky
     const url = `https://video.bsky.app/xrpc/app.bsky.video.uploadVideo?did=${did}&name=${name}`;
     const req: RequestInit = {
       method: 'POST',
-      body: file.buffer as BodyInit,
+      body: file.buffer as RequestInit['body'],
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': file.mimeType,

@@ -4308,6 +4308,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@handlewithcare/prosemirror-inputrules@patch:@handlewithcare/prosemirror-inputrules@npm%3A0.1.3#~/.yarn/patches/@handlewithcare-prosemirror-inputrules-npm-0.1.3-897e37b56f.patch":
+  version: 0.1.3
+  resolution: "@handlewithcare/prosemirror-inputrules@patch:@handlewithcare/prosemirror-inputrules@npm%3A0.1.3#~/.yarn/patches/@handlewithcare-prosemirror-inputrules-npm-0.1.3-897e37b56f.patch::version=0.1.3&hash=740c17"
+  dependencies:
+    prosemirror-history: "npm:^1.4.1"
+    prosemirror-transform: "npm:^1.0.0"
+  peerDependencies:
+    prosemirror-model: ^1.0.0
+    prosemirror-state: ^1.0.0
+    prosemirror-view: ^1.0.0
+  checksum: 10c0/fff44b79e4927b03bd07f83a086e849740ca78cda997d7e24c116931dc530df7d6884b1a79106411c70872fbd0b0a0986ce53ae826dfb41722d0d5e60860f317
+  languageName: node
+  linkType: hard
+
 "@humanwhocodes/config-array@npm:^0.13.0":
   version: 0.13.0
   resolution: "@humanwhocodes/config-array@npm:0.13.0"
@@ -9079,7 +9093,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tiptap/html@npm:^3.12.1":
+"@tiptap/html@npm:3.15.3":
   version: 3.15.3
   resolution: "@tiptap/html@npm:3.15.3"
   peerDependencies:
@@ -9087,6 +9101,17 @@ __metadata:
     "@tiptap/pm": ^3.15.3
     happy-dom: ^20.0.2
   checksum: 10c0/7f51e7dc5f67a210378f20bd7dd8d240e778e47efb97e3798f23521d409d3fe6bb119c6b572f52e62278dfc5e273269e7f447d8b79a5b0c1c82cc383f0515754
+  languageName: node
+  linkType: hard
+
+"@tiptap/html@patch:@tiptap/html@npm%3A3.15.3#~/.yarn/patches/@tiptap-html-npm-3.15.3-a9641901db.patch":
+  version: 3.15.3
+  resolution: "@tiptap/html@patch:@tiptap/html@npm%3A3.15.3#~/.yarn/patches/@tiptap-html-npm-3.15.3-a9641901db.patch::version=3.15.3&hash=437109"
+  peerDependencies:
+    "@tiptap/core": ^3.15.3
+    "@tiptap/pm": ^3.15.3
+    happy-dom: ^20.0.2
+  checksum: 10c0/e992093167be3e042feadc4b48a63136d2679352b0ab62b64cc999999dedc83420150d4656f78157a8eb739a27fa881b13f89feaf42c6e9a44c8e5a6bc2915c8
   languageName: node
   linkType: hard
 
@@ -9643,7 +9668,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^20.0.0, @types/node@npm:^20.16.10, @types/node@npm:^20.9.0":
+"@types/node@npm:^20.0.0, @types/node@npm:^20.16.10":
   version: 20.19.29
   resolution: "@types/node@npm:20.19.29"
   dependencies:
@@ -14572,19 +14597,6 @@ __metadata:
     semver: "npm:^7.6.3"
     tiny-typed-emitter: "npm:^2.1.0"
   checksum: 10c0/2b9ae5583b95f6772c4a2515ddba7ba52b65460ab81f09ae4f0b97c7e3d7b7e3d9426775eb9a53d3193bd4c3d5466bf30827c1a6ee75e4aca739c647f6ac46ff
-  languageName: node
-  linkType: hard
-
-"electron@npm:^33.0.1":
-  version: 33.4.11
-  resolution: "electron@npm:33.4.11"
-  dependencies:
-    "@electron/get": "npm:^2.0.0"
-    "@types/node": "npm:^20.9.0"
-    extract-zip: "npm:^2.0.1"
-  bin:
-    electron: cli.js
-  checksum: 10c0/fbc8104454eec5c4693792b236eda028ff4d0025654be972a055ae9314a8b9ac801f28bf9847233eeae584874f633fd7794627d01cd2367a304b133bfee879f5
   languageName: node
   linkType: hard
 
@@ -23607,7 +23619,7 @@ __metadata:
     "@tiptap/extension-text-style": "npm:^3.12.1"
     "@tiptap/extension-underline": "npm:^3.12.1"
     "@tiptap/extensions": "npm:^3.12.1"
-    "@tiptap/html": "npm:^3.12.1"
+    "@tiptap/html": "patch:@tiptap/html@npm%3A3.15.3#~/.yarn/patches/@tiptap-html-npm-3.15.3-a9641901db.patch"
     "@tiptap/pm": "npm:^3.12.1"
     "@types/better-sqlite3": "npm:^7.6.13"
     "@types/cron": "npm:^2.4.0"
