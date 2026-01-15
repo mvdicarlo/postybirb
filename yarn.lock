@@ -9093,7 +9093,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tiptap/html@npm:^3.12.1":
+"@tiptap/html@npm:3.15.3":
   version: 3.15.3
   resolution: "@tiptap/html@npm:3.15.3"
   peerDependencies:
@@ -9101,6 +9101,17 @@ __metadata:
     "@tiptap/pm": ^3.15.3
     happy-dom: ^20.0.2
   checksum: 10c0/7f51e7dc5f67a210378f20bd7dd8d240e778e47efb97e3798f23521d409d3fe6bb119c6b572f52e62278dfc5e273269e7f447d8b79a5b0c1c82cc383f0515754
+  languageName: node
+  linkType: hard
+
+"@tiptap/html@patch:@tiptap/html@npm%3A3.15.3#~/.yarn/patches/@tiptap-html-npm-3.15.3-a9641901db.patch":
+  version: 3.15.3
+  resolution: "@tiptap/html@patch:@tiptap/html@npm%3A3.15.3#~/.yarn/patches/@tiptap-html-npm-3.15.3-a9641901db.patch::version=3.15.3&hash=8d1ed8"
+  peerDependencies:
+    "@tiptap/core": ^3.15.3
+    "@tiptap/pm": ^3.15.3
+    happy-dom: ^20.0.2
+  checksum: 10c0/ccaaa32cd1a3154e102215a73dc3d59c45060c4929feafd8810318af4fb92acd999317f6389be79cd2f957e1ee263f25c926a7fe677cc697758ad16f0687e455
   languageName: node
   linkType: hard
 
@@ -23608,7 +23619,7 @@ __metadata:
     "@tiptap/extension-text-style": "npm:^3.12.1"
     "@tiptap/extension-underline": "npm:^3.12.1"
     "@tiptap/extensions": "npm:^3.12.1"
-    "@tiptap/html": "npm:^3.12.1"
+    "@tiptap/html": "patch:@tiptap/html@npm%3A3.15.3#~/.yarn/patches/@tiptap-html-npm-3.15.3-a9641901db.patch"
     "@tiptap/pm": "npm:^3.12.1"
     "@types/better-sqlite3": "npm:^7.6.13"
     "@types/cron": "npm:^2.4.0"
