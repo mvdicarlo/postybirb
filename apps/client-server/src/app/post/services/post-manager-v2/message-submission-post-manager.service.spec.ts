@@ -258,33 +258,6 @@ describe('MessageSubmissionPostManager', () => {
       );
     });
 
-    it('should wait for posting interval before posting', async () => {
-      (
-        mockWebsite as unknown as MessageWebsite
-      ).onPostMessageSubmission = jest.fn().mockResolvedValue({
-        instanceId: 'test-website',
-        sourceUrl: 'https://example.com/message/123',
-      });
-
-      // Set last time posted to 2 seconds ago
-      const now = new Date();
-      const lastTime = new Date(now.getTime() - 2000);
-      (manager as any).lastTimePostedToWebsite[accountId] = lastTime;
-
-      const startTime = Date.now();
-      await (manager as any).attemptToPost(
-        postRecord,
-        accountId,
-        mockWebsite,
-        postData,
-      );
-      const elapsed = Date.now() - startTime;
-
-      // Should have waited approximately 3 seconds (5 seconds min interval - 2 seconds elapsed)
-      expect(elapsed).toBeGreaterThanOrEqual(2900);
-      expect(elapsed).toBeLessThan(4000);
-    });
-
     it('should not wait if no previous post to account', async () => {
       (
         mockWebsite as unknown as MessageWebsite
@@ -350,62 +323,6 @@ describe('MessageSubmissionPostManager', () => {
         (mockWebsite as unknown as MessageWebsite).onPostMessageSubmission,
       ).not.toHaveBeenCalled();
     });
-  });
-
-  describe('rate limiting behavior', () => {
-    it('should enforce 5 second minimum interval between posts to same account', async () => {
-      const accountId = 'rate-limit-account' as AccountId;
-      const submission = createSubmission();
-      const postRecord = createPostRecord(submission);
-      const mockWebsite = createMockWebsite(accountId);
-
-      (
-        mockWebsite as unknown as MessageWebsite
-      ).onPostMessageSubmission = jest.fn().mockResolvedValue({
-        instanceId: 'test-website',
-        sourceUrl: 'https://example.com/message/123',
-      });
-
-      const cancelToken = new CancellableToken();
-      (manager as any).cancelToken = cancelToken;
-      (manager as any).lastTimePostedToWebsite = {};
-
-      const postData = {
-        submission,
-        options: {
-          title: 'Test',
-          description: 'Test',
-          rating: SubmissionRating.GENERAL,
-          tags: [],
-        },
-      } as PostData;
-
-      // First post - should not wait
-      const start1 = Date.now();
-      await (manager as any).attemptToPost(
-        postRecord,
-        accountId,
-        mockWebsite,
-        postData,
-      );
-      const elapsed1 = Date.now() - start1;
-      expect(elapsed1).toBeLessThan(1000);
-
-      // Record the time of first post
-      (manager as any).lastTimePostedToWebsite[accountId] = new Date();
-
-      // Immediate second post - should wait ~5 seconds
-      const start2 = Date.now();
-      await (manager as any).attemptToPost(
-        postRecord,
-        accountId,
-        mockWebsite,
-        postData,
-      );
-      const elapsed2 = Date.now() - start2;
-      expect(elapsed2).toBeGreaterThanOrEqual(4900);
-      expect(elapsed2).toBeLessThan(6000);
-    }, 10000);
   });
 
   describe('event metadata structure', () => {

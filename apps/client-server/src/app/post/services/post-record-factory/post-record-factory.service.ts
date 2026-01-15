@@ -528,4 +528,24 @@ export class PostRecordFactory {
     }
     return allUrls;
   }
+
+  /**
+   * Get all source URLs from the resume context, excluding a specific account.
+   * Used for cross-website source URL propagation to avoid self-referential URLs.
+   * @param {ResumeContext} context - The resume context
+   * @param {AccountId} excludeAccountId - The account ID to exclude
+   * @returns {string[]} Source URLs from all accounts except the excluded one
+   */
+  getSourceUrlsExcludingAccount(
+    context: ResumeContext,
+    excludeAccountId: AccountId,
+  ): string[] {
+    const allUrls: string[] = [];
+    for (const [accountId, urls] of context.sourceUrlsByAccount.entries()) {
+      if (accountId !== excludeAccountId) {
+        allUrls.push(...urls);
+      }
+    }
+    return allUrls;
+  }
 }

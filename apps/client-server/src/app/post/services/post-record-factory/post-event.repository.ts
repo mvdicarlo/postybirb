@@ -210,6 +210,38 @@ export class PostEventRepository {
   }
 
   /**
+   * Get all source URLs from a post record, excluding a specific account.
+   * Used for cross-website source URL propagation within the current post.
+   * @param {EntityId} postRecordId - The post record ID
+   * @param {AccountId} excludeAccountId - The account ID to exclude (to avoid self-referential URLs)
+   * @returns {Promise<string[]>} Array of source URLs from other accounts
+   */
+  async getSourceUrlsFromPost(
+    postRecordId: EntityId,
+    excludeAccountId: AccountId,
+  ): Promise<string[]> {
+    const events = await this.repository.find({
+      where: (event, { eq, and, inArray }) =>
+        and(
+          eq(event.postRecordId, postRecordId),
+          inArray(event.eventType, [
+            PostEventType.FILE_POSTED,
+            PostEventType.MESSAGE_POSTED,
+          ]),
+        ),
+    });
+
+    return events
+      .filter(
+        (event) =>
+          event.sourceUrl &&
+          event.accountId &&
+          event.accountId !== excludeAccountId,
+      )
+      .map((event) => event.sourceUrl as string);
+  }
+
+  /**
    * Get all error events for a post record.
    * @param {EntityId} postRecordId - The post record ID
    * @returns {Promise<PostEvent[]>} All failed events

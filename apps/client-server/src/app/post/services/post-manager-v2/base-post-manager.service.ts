@@ -25,6 +25,7 @@ import { ValidationService } from '../../../validation/validation.service';
 import { UnknownWebsite, Website } from '../../../websites/website';
 import { WebsiteRegistryService } from '../../../websites/website-registry.service';
 import { CancellableToken } from '../../models/cancellable-token';
+import { CancellationError } from '../../models/cancellation-error';
 import { PostEventRepository, ResumeContext } from '../post-record-factory';
 
 /**
@@ -207,10 +208,21 @@ export abstract class BasePostManager {
 
       this.lastTimePostedToWebsite[accountId] = new Date();
 
-      // Track successful post in App Insights
-      trackEvent('Post Completed', {
-        website: instance.decoratedProps.metadata.name,
+      // Track successful post in App Insights (detailed)
+      const websiteName = instance.decoratedProps.metadata.name;
+      trackEvent('PostSuccess', {
+        website: websiteName,
         accountId,
+        submissionId: entity.submissionId,
+        submissionType: submission.type,
+        hasSourceUrl: 'unknown', // Individual managers track this
+        fileCount: '0',
+        options: this.redactPostDataForLogging(data),
+      });
+
+      // Track success metric per website
+      trackMetric(`post.success.${websiteName}`, 1, {
+        website: websiteName,
         submissionType: submission.type,
       });
     } catch (error) {
@@ -238,12 +250,40 @@ export abstract class BasePostManager {
         data,
       );
 
-      // Track failure in App Insights
-      trackException(error, {
-        website: instance.decoratedProps.metadata.name,
-        accountId,
-        submissionType: submission.type,
-      });
+      // Track failure in App Insights (detailed)
+      const websiteName = instance.decoratedProps.metadata.name;
+
+      // Only track non-cancellation failures
+      if (!(error instanceof CancellationError)) {
+        trackEvent('PostFailure', {
+          website: websiteName,
+          accountId,
+          submissionId: entity.submissionId,
+          submissionType: submission.type,
+          errorMessage: errorResponse.message ?? 'unknown',
+          stage: errorResponse.stage ?? 'unknown',
+          hasException: errorResponse.exception ? 'true' : 'false',
+          fileCount: '0',
+          options: data ? this.redactPostDataForLogging(data) : '',
+        });
+
+        // Track failure metric per website
+        trackMetric(`post.failure.${websiteName}`, 1, {
+          website: websiteName,
+          submissionType: submission.type,
+        });
+
+        // Track the exception if present
+        if (errorResponse.exception) {
+          trackException(errorResponse.exception, {
+            website: websiteName,
+            accountId,
+            submissionId: entity.submissionId,
+            stage: errorResponse.stage ?? 'unknown',
+            errorMessage: errorResponse.message ?? 'unknown',
+          });
+        }
+      }
     }
   }
 
@@ -462,5 +502,52 @@ export abstract class BasePostManager {
     );
 
     this.logger.info(`Post ${entity.id} finished with state: ${state}`);
+  }
+
+  /**
+   * Wait for posting wait interval to avoid rate limiting.
+   * Uses the website's configured minimumPostWaitInterval.
+   * @protected
+   * @param {AccountId} accountId - The account ID
+   * @param {Website<unknown>} instance - The website instance
+   */
+  protected async waitForPostingWaitInterval(
+    accountId: AccountId,
+    instance: Website<unknown>,
+  ): Promise<void> {
+    const lastTime = this.lastTimePostedToWebsite[accountId];
+    if (!lastTime) return;
+
+    const waitInterval =
+      instance.decoratedProps.metadata.minimumPostWaitInterval ?? 0;
+    if (!waitInterval) return;
+
+    const now = new Date();
+    const timeSinceLastPost = now.getTime() - lastTime.getTime();
+
+    if (timeSinceLastPost < waitInterval) {
+      const waitTime = waitInterval - timeSinceLastPost;
+      this.logger.info(
+        `Waiting ${waitTime}ms before posting to ${instance.id}`,
+      );
+      await new Promise((resolve) => {
+        setTimeout(resolve, waitTime);
+      });
+    }
+  }
+
+  /**
+   * Redact sensitive information from post data for logging.
+   * @protected
+   * @param {PostData} postData - The post data
+   * @returns {string} Redacted post data as JSON string
+   */
+  protected redactPostDataForLogging(postData: PostData): string {
+    const opts = { ...postData.options };
+    // Redact sensitive information
+    if (opts.description) {
+      opts.description = `[REDACTED ${opts.description.length}]`;
+    }
+    return JSON.stringify({ options: opts });
   }
 }

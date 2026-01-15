@@ -54,7 +54,7 @@ export class MessageSubmissionPostManager extends BasePostManager {
   ): Promise<void> {
     this.logger.info(`Posting message to ${instance.id}`);
 
-    await this.waitForPostingWaitInterval(accountId);
+    await this.waitForPostingWaitInterval(accountId, instance);
     this.cancelToken.throwIfCancelled();
 
     const result = await (
@@ -101,29 +101,5 @@ export class MessageSubmissionPostManager extends BasePostManager {
     });
 
     this.logger.withMetadata(result).info(`Message posted to ${instance.id}`);
-  }
-
-  /**
-   * Wait for posting wait interval to avoid rate limiting.
-   * @private
-   * @param {AccountId} accountId - The account ID
-   */
-  private async waitForPostingWaitInterval(
-    accountId: AccountId,
-  ): Promise<void> {
-    const lastTime = this.lastTimePostedToWebsite[accountId];
-    if (!lastTime) return;
-
-    const now = new Date();
-    const diff = now.getTime() - lastTime.getTime();
-    const minInterval = 5000; // 5 seconds between posts
-
-    if (diff < minInterval) {
-      const waitTime = minInterval - diff;
-      this.logger.info(`Waiting ${waitTime}ms before posting to ${accountId}`);
-      await new Promise((resolve) => {
-        setTimeout(resolve, waitTime);
-      });
-    }
   }
 }

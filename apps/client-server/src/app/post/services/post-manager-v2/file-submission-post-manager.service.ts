@@ -101,6 +101,30 @@ export class FileSubmissionPostManager extends BasePostManager {
       batchIndex += 1;
       this.cancelToken.throwIfCancelled();
 
+      // Get source URLs from other accounts for cross-website propagation
+      // 1. From current post attempt (other accounts that have already posted)
+      const currentPostUrls =
+        await this.postEventRepository.getSourceUrlsFromPost(
+          entity.id,
+          accountId,
+        );
+
+      // 2. From prior attempts (resume context, excluding self)
+      const priorUrls: string[] = [];
+      if (this.resumeContext) {
+        for (const [
+          priorAccountId,
+          urls,
+        ] of this.resumeContext.sourceUrlsByAccount.entries()) {
+          if (priorAccountId !== accountId) {
+            priorUrls.push(...urls);
+          }
+        }
+      }
+
+      // Merge and deduplicate
+      const allSourceUrls = [...new Set([...currentPostUrls, ...priorUrls])];
+
       // Resize files if necessary
       const processedFiles: PostingFile[] = (
         await Promise.all(
@@ -109,19 +133,10 @@ export class FileSubmissionPostManager extends BasePostManager {
           ),
         )
       ).map((f) => {
-        // Find all source urls from prior attempts and add them to file metadata
-        const sourceUrlsForFile: string[] = [];
-
-        if (this.resumeContext) {
-          const priorUrls =
-            this.resumeContext.sourceUrlsByAccount.get(accountId) ?? [];
-          sourceUrlsForFile.push(...priorUrls);
-        }
-
         const fileWithMetadata = f.withMetadata(f.metadata);
         fileWithMetadata.metadata.sourceUrls = [
           ...(fileWithMetadata.metadata.sourceUrls ?? []),
-          ...sourceUrlsForFile,
+          ...allSourceUrls,
         ].filter((s) => !!s?.trim());
 
         return fileWithMetadata;
@@ -143,7 +158,7 @@ export class FileSubmissionPostManager extends BasePostManager {
         })
         .info(`Posting file batch to ${instance.id}`);
 
-      await this.waitForPostingWaitInterval(accountId);
+      await this.waitForPostingWaitInterval(accountId, instance);
       this.cancelToken.throwIfCancelled();
 
       const result = await instance.onPostFileSubmission(
@@ -431,29 +446,5 @@ export class FileSubmissionPostManager extends BasePostManager {
     }
 
     return resizeParams;
-  }
-
-  /**
-   * Wait for posting wait interval to avoid rate limiting.
-   * @private
-   * @param {AccountId} accountId - The account ID
-   */
-  private async waitForPostingWaitInterval(
-    accountId: AccountId,
-  ): Promise<void> {
-    const lastTime = this.lastTimePostedToWebsite[accountId];
-    if (!lastTime) return;
-
-    const now = new Date();
-    const diff = now.getTime() - lastTime.getTime();
-    const minInterval = 5000; // 5 seconds between posts
-
-    if (diff < minInterval) {
-      const waitTime = minInterval - diff;
-      this.logger.info(`Waiting ${waitTime}ms before posting to ${accountId}`);
-      await new Promise((resolve) => {
-        setTimeout(resolve, waitTime);
-      });
-    }
   }
 }
