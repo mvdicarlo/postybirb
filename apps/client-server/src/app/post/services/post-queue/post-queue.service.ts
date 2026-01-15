@@ -99,9 +99,9 @@ export class PostQueueService
             })
             .info('Resuming interrupted PostRecord');
 
-          // Resume the post using the record's existing resumeMode and passing its own ID
-          // so the manager can build resume context from the events that already completed
-          await this.postManagerRegistry.startPost(record, record.id);
+          // Resume the post - the manager will build resume context
+          // from the record's events that already completed
+          await this.postManagerRegistry.startPost(record);
         }
       }
     } catch (error) {
@@ -138,17 +138,14 @@ export class PostQueueService
   }
 
   /**
-   * Check if we should restart from fresh based on the most recent PostRecord state.
-   * Returns true if the most recent terminal PostRecord is DONE (successful completion).
-   *
+   * Get the most recent terminal PostRecord for a submission.
    * @param {SubmissionId} submissionId - The submission ID
-   * @returns {Promise<boolean>} True if should restart fresh, false if should continue
+   * @returns {Promise<PostRecord | null>} The most recent terminal record, or null if none
    */
-  private async shouldRestartFromFresh(
+  private async getMostRecentTerminalPostRecord(
     submissionId: SubmissionId,
-  ): Promise<boolean> {
-    // Get the most recent terminal record for this submission
-    const mostRecentRecords = await this.postRecordRepository.find({
+  ): Promise<PostRecord | null> {
+    const records = await this.postRecordRepository.find({
       where: (record, { eq, and, inArray }) =>
         and(
           eq(record.submissionId, submissionId),
@@ -158,13 +155,7 @@ export class PostQueueService
       limit: 1,
     });
 
-    if (mostRecentRecords.length === 0) {
-      // No terminal records found - shouldn't happen but treat as fresh
-      return true;
-    }
-
-    const mostRecent = mostRecentRecords[0];
-    return mostRecent.state === PostRecordState.DONE;
+    return records.length > 0 ? records[0] : null;
   }
 
   /**
@@ -202,48 +193,47 @@ export class PostQueueService
         });
 
         if (!existing) {
-          // No queue entry exists - create a fresh one
-          await this.repository.insert({
-            submissionId,
-          });
-        } else if (
-          resumeMode &&
-          existing.postRecord &&
-          (existing.postRecord.state === PostRecordState.DONE ||
-            existing.postRecord.state === PostRecordState.FAILED)
-        ) {
-          // Re-queuing a terminal record - check if we should restart or continue
-          const shouldRestart = await this.shouldRestartFromFresh(submissionId);
+          // No queue entry exists - determine resume mode based on most recent PostRecord
+          const mostRecentRecord =
+            await this.getMostRecentTerminalPostRecord(submissionId);
 
-          let newRecord: PostRecord;
-          if (shouldRestart) {
-            // Most recent PostRecord was DONE - user is starting a new posting session
+          let effectiveResumeMode: PostRecordResumeMode;
+
+          if (!mostRecentRecord) {
+            // No prior post record - fresh start
             this.logger
               .withMetadata({ submissionId })
-              .info(
-                'Most recent PostRecord is DONE - creating fresh record (restart)',
-              );
-            newRecord = await this.postRecordFactory.createFresh(submissionId);
+              .info('No prior PostRecord - creating fresh');
+            effectiveResumeMode = PostRecordResumeMode.RESTART;
+          } else if (mostRecentRecord.state === PostRecordState.DONE) {
+            // Prior was successful - always restart fresh regardless of provided mode
+            this.logger
+              .withMetadata({ submissionId })
+              .info('Prior PostRecord was DONE - creating fresh (restart)');
+            effectiveResumeMode = PostRecordResumeMode.RESTART;
           } else {
-            // Most recent was FAILED - continue with provided resumeMode
+            // Prior was FAILED - use provided mode or default to CONTINUE
+            effectiveResumeMode = resumeMode ?? PostRecordResumeMode.CONTINUE;
             this.logger
               .withMetadata({
                 submissionId,
-                priorRecordId: existing.postRecord.id,
-                resumeMode,
+                priorRecordId: mostRecentRecord.id,
+                resumeMode: effectiveResumeMode,
               })
-              .info('Re-queuing FAILED record with resume mode');
-            newRecord = await this.postRecordFactory.createFromPrior(
-              existing.postRecord.id,
-              resumeMode,
-            );
+              .info('Prior PostRecord was FAILED - using resume mode');
           }
 
-          await this.repository.update(existing.id, {
+          const newRecord = await this.postRecordFactory.create(
+            submissionId,
+            effectiveResumeMode,
+          );
+
+          await this.repository.insert({
+            submissionId,
             postRecordId: newRecord.id,
           });
         }
-        // If existing but not terminal, or no resumeMode provided, do nothing
+        // If existing, do nothing (first-in-wins)
       }
     } catch (error) {
       this.logger.withMetadata({ error }).error('Failed to enqueue posts');
@@ -368,43 +358,16 @@ export class PostQueueService
       }
 
       if (!record) {
-        // No record present, create one and start the post manager (if not paused)
-        const submissionType = submission.type;
-        if (this.postManagerRegistry.isPostingType(submissionType)) {
-          // Manager for this submission type is already posting
-          this.logger.info(
-            `PostManager for ${submissionType} is already posting, skipping`,
-          );
-          return;
-        }
-
-        const insertedRecord =
-          await this.postRecordFactory.createFresh(submissionId);
-        await this.repository.update(top.id, {
-          postRecordId: insertedRecord.id,
-        });
-        const fullyLoadedRecord = await this.postRecordRepository.findById(
-          insertedRecord.id,
-          undefined,
-          {
-            submission: {
-              with: {
-                files: true,
-                options: {
-                  with: {
-                    account: true,
-                  },
-                },
-              },
-            },
-          },
-        );
+        // PostRecord should always exist since enqueue() creates it
+        // If missing, something is wrong - log error and remove from queue
         this.logger
-          .withMetadata({ postRecord: insertedRecord.toObject() })
-          .info('Creating PostRecord and starting PostManager');
+          .withMetadata({ submissionId })
+          .error('Queue entry has no PostRecord - removing invalid entry');
+        await this.dequeue([submissionId]);
+        return;
+      }
 
-        await this.postManagerRegistry.startPost(fullyLoadedRecord);
-      } else if (
+      if (
         record.state === PostRecordState.DONE ||
         record.state === PostRecordState.FAILED
       ) {
@@ -425,9 +388,8 @@ export class PostQueueService
             'PostManager is not posting, but record is not in terminal state. Resuming record.',
           );
 
-        // For resumed posts, pass the current record ID as the prior record
-        // so the factory can build resume context
-        await this.postManagerRegistry.startPost(record, record.id);
+        // Start the post - the manager will build resume context from the record
+        await this.postManagerRegistry.startPost(record);
       }
     } catch (error) {
       this.logger.withMetadata({ error }).error('Failed to run queue');

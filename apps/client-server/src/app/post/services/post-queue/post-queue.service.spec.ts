@@ -160,18 +160,22 @@ describe('PostQueueService', () => {
       createWebsiteOptionsDto(submission.id, account.id),
     );
 
+    // Enqueue now creates the PostRecord immediately
     await service.enqueue([submission.id]);
     expect((await service.findAll()).length).toBe(1);
 
-    // Initially, no manager is posting (so the post record will be created)
-    mockPostManagerRegistry.isPostingType.mockReturnValue(false);
-
-    // We expect the creation of a record and a start of the post manager
-    await service.execute();
+    // PostRecord should already exist after enqueue
     let postRecord = (await postService.findAll())[0];
-    let queueRecord = await service.peek();
     expect(postRecord).toBeDefined();
     expect(postRecord.submissionId).toBe(submission.id);
+    expect(postRecord.state).toBe(PostRecordState.PENDING);
+
+    // Initially, no manager is posting (so execute will start the post)
+    mockPostManagerRegistry.isPostingType.mockReturnValue(false);
+
+    // Execute should start the post manager
+    await service.execute();
+    let queueRecord = await service.peek();
     expect(mockPostManagerRegistry.startPost).toHaveBeenCalledWith(
       expect.objectContaining({
         id: postRecord.id,

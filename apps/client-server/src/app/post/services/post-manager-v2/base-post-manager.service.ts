@@ -471,21 +471,13 @@ export abstract class BasePostManager {
     }
 
     // Query events to determine if post was successful
-    const completedEvents = await this.postEventRepository.getCompletedAccounts(
-      entity.id,
-    );
     const failedEvents = await this.postEventRepository.getFailedEvents(
       entity.id,
     );
 
-    let state = PostRecordState.DONE;
-    if (failedEvents.length > 0 && completedEvents.length === 0) {
-      // All attempts failed
-      state = PostRecordState.FAILED;
-    } else if (failedEvents.length > 0) {
-      // Some succeeded, some failed
-      state = PostRecordState.DONE; // Consider partial success as done
-    }
+    // DONE only if there are zero failures; any failure (including partial) means FAILED
+    const state =
+      failedEvents.length > 0 ? PostRecordState.FAILED : PostRecordState.DONE;
 
     await this.postRepository.update(entity.id, {
       state,

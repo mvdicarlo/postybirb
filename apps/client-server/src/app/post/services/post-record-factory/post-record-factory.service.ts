@@ -18,12 +18,6 @@ import { PostEventRepository } from './post-event.repository';
  */
 export interface ResumeContext {
   /**
-   * The prior post record ID this context was derived from.
-   * @type {EntityId}
-   */
-  priorPostRecordId: EntityId;
-
-  /**
    * The resume mode used to create this context.
    * @type {PostRecordResumeMode}
    */
@@ -67,50 +61,21 @@ export class PostRecordFactory {
   }
 
   /**
-   * Create a new PostRecord for a submission that is being posted for the first time.
+   * Create a new PostRecord for a submission.
    * @param {EntityId} submissionId - The submission ID
+   * @param {PostRecordResumeMode} resumeMode - The resume mode (defaults to RESTART)
    * @returns {Promise<PostRecord>} The created post record
    */
-  async createFresh(submissionId: EntityId): Promise<PostRecord> {
+  async create(
+    submissionId: EntityId,
+    resumeMode: PostRecordResumeMode = PostRecordResumeMode.RESTART,
+  ): Promise<PostRecord> {
     this.logger
-      .withMetadata({ submissionId })
-      .info('Creating fresh post record');
+      .withMetadata({ submissionId, resumeMode })
+      .info('Creating post record');
 
     return this.postRecordRepository.insert({
       submissionId,
-      state: PostRecordState.PENDING,
-      resumeMode: PostRecordResumeMode.RESTART,
-    });
-  }
-
-  /**
-   * Create a new PostRecord based on a prior attempt, using the specified resume mode.
-   * The prior post record remains immutable; this creates a new record with context
-   * from the event ledger.
-   *
-   * @param {EntityId} priorPostRecordId - The prior post record to resume from
-   * @param {PostRecordResumeMode} resumeMode - How to resume (CONTINUE, CONTINUE_RETRY, RESTART)
-   * @returns {Promise<PostRecord>} The new post record
-   */
-  async createFromPrior(
-    priorPostRecordId: EntityId,
-    resumeMode: PostRecordResumeMode,
-  ): Promise<PostRecord> {
-    this.logger
-      .withMetadata({ priorPostRecordId, resumeMode })
-      .info('Creating post record from prior attempt');
-
-    // Get the prior post record to copy submission reference
-    const priorRecord =
-      await this.postRecordRepository.findById(priorPostRecordId);
-
-    if (!priorRecord) {
-      throw new Error(`Prior post record not found: ${priorPostRecordId}`);
-    }
-
-    // Create the new post record with the specified resume mode
-    return this.postRecordRepository.insert({
-      submissionId: priorRecord.submissionId,
       state: PostRecordState.PENDING,
       resumeMode,
     });
@@ -129,26 +94,26 @@ export class PostRecordFactory {
    * - RUNNING records (crash recovery) should aggregate their own events
    *
    * Logic:
-   * 1. Always include events from the specific record being resumed (handles crash recovery)
-   * 2. If the most recent is DONE → return empty context (nothing to continue, start fresh)
-   * 3. If the most recent is FAILED → aggregate from FAILED records until we hit a DONE
+   * 1. Always include events from the current record being started (handles crash recovery)
+   * 2. If the most recent terminal is DONE → return empty context (nothing to continue, start fresh)
+   * 3. If the most recent terminal is FAILED → aggregate from FAILED records until we hit a DONE
    *
    * @param {EntityId} submissionId - The submission ID
-   * @param {EntityId} priorPostRecordId - The immediate prior post record ID
+   * @param {EntityId} currentRecordId - The ID of the record being started
    * @param {PostRecordResumeMode} resumeMode - The resume mode
    * @returns {Promise<ResumeContext>} The resume context
    */
   async buildResumeContext(
     submissionId: EntityId,
-    priorPostRecordId: EntityId,
+    currentRecordId: EntityId,
     resumeMode: PostRecordResumeMode,
   ): Promise<ResumeContext> {
-    const context = this.createEmptyContext(priorPostRecordId, resumeMode);
+    const context = this.createEmptyContext(resumeMode);
 
-    // First, always fetch the specific record we're resuming from.
+    // First, always fetch the specific record we're starting.
     // This handles crash recovery where the record is RUNNING (not terminal).
     const currentRecord = await this.postRecordRepository.findById(
-      priorPostRecordId,
+      currentRecordId,
       undefined,
       { events: true },
     );
@@ -158,7 +123,9 @@ export class PostRecordFactory {
     if (resumeMode === PostRecordResumeMode.RESTART) {
       if (currentRecord?.state === PostRecordState.RUNNING) {
         // Crash recovery: aggregate events from this record regardless of resumeMode
-        this.logger.debug('RESTART mode but RUNNING state (crash recovery) - aggregating own events');
+        this.logger.debug(
+          'RESTART mode but RUNNING state (crash recovery) - aggregating own events',
+        );
         this.aggregateFromRecords([currentRecord], context, true);
       } else {
         this.logger.debug('RESTART mode - returning empty resume context');
@@ -245,12 +212,8 @@ export class PostRecordFactory {
   /**
    * Create an empty resume context with default values.
    */
-  private createEmptyContext(
-    priorPostRecordId: EntityId,
-    resumeMode: PostRecordResumeMode,
-  ): ResumeContext {
+  private createEmptyContext(resumeMode: PostRecordResumeMode): ResumeContext {
     return {
-      priorPostRecordId,
       resumeMode,
       completedAccountIds: new Set<AccountId>(),
       postedFilesByAccount: new Map<AccountId, Set<EntityId>>(),
@@ -262,8 +225,8 @@ export class PostRecordFactory {
    * Get the list of PostRecords whose events should be aggregated.
    *
    * Note: This method assumes we're in a resume scenario (not a fresh start).
-   * The PostQueueService checks if the most recent record is DONE and calls
-   * createFresh() instead of createFromPrior() in that case.
+   * The PostQueueService determines the resume mode based on the most recent
+   * terminal record before calling create().
    *
    * Rules:
    * - Aggregate all consecutive FAILED records (newest to oldest)

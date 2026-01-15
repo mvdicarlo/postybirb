@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import { EntityId, SubmissionType } from '@postybirb/types';
 import { PostRecord } from '../../../drizzle/models';
-import { PostRecordFactory, ResumeContext } from '../post-record-factory';
+import { PostRecordFactory } from '../post-record-factory';
 import { BasePostManager } from './base-post-manager.service';
 import { FileSubmissionPostManager } from './file-submission-post-manager.service';
 import { MessageSubmissionPostManager } from './message-submission-post-manager.service';
@@ -42,12 +42,8 @@ export class PostManagerRegistry {
    * Start posting for a post record.
    * Determines the appropriate PostManager and starts posting.
    * @param {PostRecord} postRecord - The post record to start
-   * @param {EntityId} [priorPostRecordId] - Optional prior post record ID for resume
    */
-  public async startPost(
-    postRecord: PostRecord,
-    priorPostRecordId?: EntityId,
-  ): Promise<void> {
+  public async startPost(postRecord: PostRecord): Promise<void> {
     const submissionType = postRecord.submission.type;
     const manager = this.getManager(submissionType);
 
@@ -63,15 +59,12 @@ export class PostManagerRegistry {
       return;
     }
 
-    // Build resume context if this is a resumed post
-    let resumeContext: ResumeContext | undefined;
-    if (priorPostRecordId) {
-      resumeContext = await this.postRecordFactory.buildResumeContext(
-        postRecord.submissionId,
-        priorPostRecordId,
-        postRecord.resumeMode,
-      );
-    }
+    // Build resume context for this post record
+    const resumeContext = await this.postRecordFactory.buildResumeContext(
+      postRecord.submissionId,
+      postRecord.id,
+      postRecord.resumeMode,
+    );
 
     await manager.startPost(postRecord, resumeContext);
   }

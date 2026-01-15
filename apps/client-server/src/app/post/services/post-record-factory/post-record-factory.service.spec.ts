@@ -73,10 +73,10 @@ describe('PostRecordFactory', () => {
     return account.id;
   }
 
-  describe('createFresh', () => {
-    it('should create a fresh PostRecord with RESTART mode', async () => {
+  describe('create', () => {
+    it('should create a PostRecord with default RESTART mode', async () => {
       const submissionId = await createSubmission();
-      const record = await factory.createFresh(submissionId);
+      const record = await factory.create(submissionId);
 
       expect(record).toBeDefined();
       expect(record.submissionId).toBe(submissionId);
@@ -86,65 +86,37 @@ describe('PostRecordFactory', () => {
       expect(record.createdAt).toBeDefined();
     });
 
-    it('should create multiple fresh records for different submissions', async () => {
+    it('should create multiple records for different submissions', async () => {
       const submission1 = await createSubmission();
       const submission2 = await createSubmission();
 
-      const record1 = await factory.createFresh(submission1);
-      const record2 = await factory.createFresh(submission2);
+      const record1 = await factory.create(submission1);
+      const record2 = await factory.create(submission2);
 
       expect(record1.submissionId).toBe(submission1);
       expect(record2.submissionId).toBe(submission2);
       expect(record1.id).not.toBe(record2.id);
     });
-  });
-
-  describe('createFromPrior', () => {
-    it('should create a PostRecord from a prior record', async () => {
-      const submissionId = await createSubmission();
-      const priorRecord = await factory.createFresh(submissionId);
-
-      const newRecord = await factory.createFromPrior(
-        priorRecord.id,
-        PostRecordResumeMode.CONTINUE,
-      );
-
-      expect(newRecord).toBeDefined();
-      expect(newRecord.submissionId).toBe(submissionId);
-      expect(newRecord.state).toBe(PostRecordState.PENDING);
-      expect(newRecord.resumeMode).toBe(PostRecordResumeMode.CONTINUE);
-      expect(newRecord.id).not.toBe(priorRecord.id);
-    });
-
-    it('should throw error if prior record not found', async () => {
-      await expect(
-        factory.createFromPrior(
-          'non-existent-id' as EntityId,
-          PostRecordResumeMode.CONTINUE,
-        ),
-      ).rejects.toThrow('Prior post record not found');
-    });
 
     it('should create records with different resume modes', async () => {
       const submissionId = await createSubmission();
-      const priorRecord = await factory.createFresh(submissionId);
 
-      const continueRecord = await factory.createFromPrior(
-        priorRecord.id,
-        PostRecordResumeMode.CONTINUE,
-      );
-      const retryRecord = await factory.createFromPrior(
-        priorRecord.id,
-        PostRecordResumeMode.CONTINUE_RETRY,
-      );
-      const restartRecord = await factory.createFromPrior(
-        priorRecord.id,
+      const restartRecord = await factory.create(
+        submissionId,
         PostRecordResumeMode.RESTART,
       );
+      const continueRecord = await factory.create(
+        submissionId,
+        PostRecordResumeMode.CONTINUE,
+      );
+      const retryRecord = await factory.create(
+        submissionId,
+        PostRecordResumeMode.CONTINUE_RETRY,
+      );
 
+      expect(restartRecord.resumeMode).toBe(PostRecordResumeMode.RESTART);
       expect(continueRecord.resumeMode).toBe(PostRecordResumeMode.CONTINUE);
       expect(retryRecord.resumeMode).toBe(PostRecordResumeMode.CONTINUE_RETRY);
-      expect(restartRecord.resumeMode).toBe(PostRecordResumeMode.RESTART);
     });
   });
 
@@ -537,7 +509,6 @@ describe('PostRecordFactory', () => {
   describe('shouldSkipAccount', () => {
     it('should return true for completed accounts', () => {
       const context: ResumeContext = {
-        priorPostRecordId: 'prior-1' as EntityId,
         resumeMode: PostRecordResumeMode.CONTINUE_RETRY,
         completedAccountIds: new Set(['account-1' as EntityId]),
         postedFilesByAccount: new Map(),
@@ -551,7 +522,6 @@ describe('PostRecordFactory', () => {
 
     it('should return false for non-completed accounts', () => {
       const context: ResumeContext = {
-        priorPostRecordId: 'prior-1' as EntityId,
         resumeMode: PostRecordResumeMode.CONTINUE_RETRY,
         completedAccountIds: new Set(['account-1' as EntityId]),
         postedFilesByAccount: new Map(),
@@ -567,7 +537,6 @@ describe('PostRecordFactory', () => {
   describe('shouldSkipFile', () => {
     it('should return false in RESTART mode', () => {
       const context: ResumeContext = {
-        priorPostRecordId: 'prior-1' as EntityId,
         resumeMode: PostRecordResumeMode.RESTART,
         completedAccountIds: new Set(),
         postedFilesByAccount: new Map(),
@@ -585,7 +554,6 @@ describe('PostRecordFactory', () => {
 
     it('should return false in CONTINUE_RETRY mode', () => {
       const context: ResumeContext = {
-        priorPostRecordId: 'prior-1' as EntityId,
         resumeMode: PostRecordResumeMode.CONTINUE_RETRY,
         completedAccountIds: new Set(),
         postedFilesByAccount: new Map([
@@ -605,7 +573,6 @@ describe('PostRecordFactory', () => {
 
     it('should return true for posted files in CONTINUE mode', () => {
       const context: ResumeContext = {
-        priorPostRecordId: 'prior-1' as EntityId,
         resumeMode: PostRecordResumeMode.CONTINUE,
         completedAccountIds: new Set(),
         postedFilesByAccount: new Map([
@@ -625,7 +592,6 @@ describe('PostRecordFactory', () => {
 
     it('should return false for non-posted files in CONTINUE mode', () => {
       const context: ResumeContext = {
-        priorPostRecordId: 'prior-1' as EntityId,
         resumeMode: PostRecordResumeMode.CONTINUE,
         completedAccountIds: new Set(),
         postedFilesByAccount: new Map([
@@ -647,7 +613,6 @@ describe('PostRecordFactory', () => {
   describe('getSourceUrlsForAccount', () => {
     it('should return source URLs for an account', () => {
       const context: ResumeContext = {
-        priorPostRecordId: 'prior-1' as EntityId,
         resumeMode: PostRecordResumeMode.CONTINUE,
         completedAccountIds: new Set(),
         postedFilesByAccount: new Map(),
@@ -670,7 +635,6 @@ describe('PostRecordFactory', () => {
 
     it('should return empty array for account with no URLs', () => {
       const context: ResumeContext = {
-        priorPostRecordId: 'prior-1' as EntityId,
         resumeMode: PostRecordResumeMode.CONTINUE,
         completedAccountIds: new Set(),
         postedFilesByAccount: new Map(),
@@ -688,7 +652,6 @@ describe('PostRecordFactory', () => {
   describe('getAllSourceUrls', () => {
     it('should return all source URLs from all accounts', () => {
       const context: ResumeContext = {
-        priorPostRecordId: 'prior-1' as EntityId,
         resumeMode: PostRecordResumeMode.CONTINUE,
         completedAccountIds: new Set(),
         postedFilesByAccount: new Map(),
@@ -706,7 +669,6 @@ describe('PostRecordFactory', () => {
 
     it('should return empty array when no URLs exist', () => {
       const context: ResumeContext = {
-        priorPostRecordId: 'prior-1' as EntityId,
         resumeMode: PostRecordResumeMode.CONTINUE,
         completedAccountIds: new Set(),
         postedFilesByAccount: new Map(),
