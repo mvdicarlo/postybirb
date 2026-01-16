@@ -24,6 +24,7 @@ export class InvalidPostChainError extends Error {
     reason: 'no_origin' | 'origin_done' | 'in_progress',
   ) {
     let message: string;
+    // eslint-disable-next-line default-case
     switch (reason) {
       case 'no_origin':
         message = `Cannot create ${requestedResumeMode} PostRecord for submission ${submissionId}: no prior NEW PostRecord found to chain from`;
