@@ -2,9 +2,9 @@ import { relations } from 'drizzle-orm';
 import { index, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
 import {
-    IPostEventError,
-    IPostEventMetadata,
-    PostEventType,
+  IPostEventError,
+  IPostEventMetadata,
+  PostEventType,
 } from '../../../../types/src/index';
 import { AccountSchema } from './account.schema';
 import { id } from './common.schema';
@@ -60,14 +60,14 @@ export const PostEventSchema = sqliteTable(
     metadata: text({ mode: 'json' }).$type<IPostEventMetadata>(),
   },
   (table) => [
-    // Composite index for resume queries: "what events exist for this record + account?"
-    index('idx_post_event_lookup').on(
+    // Composite index for queries by postRecordId + eventType (most common pattern)
+    index('idx_post_event_type').on(table.postRecordId, table.eventType),
+    // Composite index for queries that also filter by accountId
+    index('idx_post_event_account').on(
       table.postRecordId,
       table.accountId,
       table.eventType
     ),
-    // Index for cross-website source URL lookups by file
-    index('idx_post_event_file').on(table.postRecordId, table.fileId),
   ]
 );
 
