@@ -17,7 +17,6 @@ import {
   PostManagerRegistry,
 } from './services/post-manager-v2';
 import { PostManagerController } from './services/post-manager/post-manager.controller';
-import { PostManagerService } from './services/post-manager/post-manager.service';
 import { PostQueueController } from './services/post-queue/post-queue.controller';
 import { PostQueueService } from './services/post-queue/post-queue.service';
 import {
@@ -39,7 +38,6 @@ import {
   controllers: [PostController, PostQueueController, PostManagerController],
   providers: [
     PostService,
-    PostManagerService,
     PostFileResizerService,
     WebsiteImplProvider,
     PostQueueService,
@@ -49,10 +47,6 @@ import {
     MessageSubmissionPostManager,
     PostManagerRegistry,
   ],
-  exports: [
-    PostEventRepository,
-    PostRecordFactory,
-    PostManagerRegistry,
-  ],
+  exports: [PostEventRepository, PostRecordFactory, PostManagerRegistry],
 })
 export class PostModule {}

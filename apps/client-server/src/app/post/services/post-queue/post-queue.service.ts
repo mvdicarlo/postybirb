@@ -410,7 +410,7 @@ export class PostQueueService
         submission: true,
         postRecord: {
           with: {
-            children: true,
+            events: true,
             submission: {
               with: {
                 files: true,

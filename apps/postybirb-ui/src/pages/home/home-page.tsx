@@ -94,7 +94,7 @@ export default function HomePage() {
         />
       </Stack>
     ) : (
-      <RecentPosts posts={postRecords} submissions={submissions} />
+      <RecentPosts submissions={submissions} />
     );
 
   return (

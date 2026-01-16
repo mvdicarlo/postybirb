@@ -1,14 +1,14 @@
 import { Controller, Get, Param, Post } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { SubmissionId } from '@postybirb/types';
+import { SubmissionId, SubmissionType } from '@postybirb/types';
+import { PostManagerRegistry } from '../post-manager-v2';
 import { PostQueueService } from '../post-queue/post-queue.service';
-import { PostManagerService } from './post-manager.service';
 
 @ApiTags('post-manager')
 @Controller('post-manager')
 export class PostManagerController {
   constructor(
-    readonly service: PostManagerService,
+    readonly service: PostManagerRegistry,
     private readonly postQueueService: PostQueueService,
   ) {}
 
@@ -20,9 +20,9 @@ export class PostManagerController {
     return true;
   }
 
-  @Get('is-posting')
+  @Get('is-posting/:submissionType')
   @ApiOkResponse({ description: 'Check if a post is in progress.' })
-  async isPosting() {
-    return { isPosting: this.service.isPosting() };
+  async isPosting(@Param('submissionType') submissionType: SubmissionType) {
+    return { isPosting: this.service.getManager(submissionType).isPosting() };
   }
 }
