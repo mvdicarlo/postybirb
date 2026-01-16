@@ -15,7 +15,7 @@ export enum PostRecordResumeMode {
   CONTINUE_RETRY = 'RETRY',
 
   /**
-   * Will restart the entire post record.
+   * New record will restart the entire post record if necessary.
    */
-  RESTART = 'RESTART',
+  NEW = 'NEW',
 }

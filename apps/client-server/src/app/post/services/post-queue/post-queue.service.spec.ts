@@ -11,17 +11,11 @@ import {
 import { AccountModule } from '../../../account/account.module';
 import { AccountService } from '../../../account/account.service';
 import { CreateAccountDto } from '../../../account/dtos/create-account.dto';
-import { FileConverterModule } from '../../../file-converter/file-converter.module';
-import { FileConverterService } from '../../../file-converter/file-converter.service';
-import { NotificationsModule } from '../../../notifications/notifications.module';
-import { PostParsersModule } from '../../../post-parsers/post-parsers.module';
-import { SettingsModule } from '../../../settings/settings.module';
+import { PostyBirbDatabase } from '../../../drizzle/postybirb-database/postybirb-database';
 import { SettingsService } from '../../../settings/settings.service';
 import { CreateSubmissionDto } from '../../../submission/dtos/create-submission.dto';
 import { SubmissionService } from '../../../submission/services/submission.service';
 import { SubmissionModule } from '../../../submission/submission.module';
-import { UserSpecifiedWebsiteOptionsModule } from '../../../user-specified-website-options/user-specified-website-options.module';
-import { ValidationService } from '../../../validation/validation.service';
 import { CreateWebsiteOptionsDto } from '../../../website-options/dtos/create-website-options.dto';
 import { WebsiteOptionsModule } from '../../../website-options/website-options.module';
 import { WebsiteOptionsService } from '../../../website-options/website-options.service';
@@ -29,8 +23,7 @@ import { WebsiteRegistryService } from '../../../websites/website-registry.servi
 import { WebsitesModule } from '../../../websites/websites.module';
 import { PostModule } from '../../post.module';
 import { PostService } from '../../post.service';
-import { PostFileResizerService } from '../post-file-resizer/post-file-resizer.service';
-import { PostManagerService } from '../post-manager/post-manager.service';
+import { PostManagerRegistry } from '../post-manager-v2';
 import { PostQueueService } from './post-queue.service';
 
 describe('PostQueueService', () => {
@@ -41,10 +34,19 @@ describe('PostQueueService', () => {
   let websiteOptionsService: WebsiteOptionsService;
   let registryService: WebsiteRegistryService;
   let postService: PostService;
-  let postManager: PostManagerService;
+  let mockPostManagerRegistry: jest.Mocked<PostManagerRegistry>;
 
   beforeEach(async () => {
     clearDatabase();
+
+    // Create mock PostManagerRegistry
+    mockPostManagerRegistry = {
+      startPost: jest.fn().mockResolvedValue(undefined),
+      cancelIfRunning: jest.fn().mockResolvedValue(true),
+      isPostingType: jest.fn().mockReturnValue(false),
+      getManager: jest.fn(),
+    } as any;
+
     try {
       module = await Test.createTestingModule({
         imports: [
@@ -52,23 +54,12 @@ describe('PostQueueService', () => {
           AccountModule,
           WebsiteOptionsModule,
           WebsitesModule,
-          UserSpecifiedWebsiteOptionsModule,
-          PostParsersModule,
           PostModule,
-          FileConverterModule,
-          SettingsModule,
-          NotificationsModule,
         ],
-        providers: [
-          PostQueueService,
-          PostManagerService,
-          PostService,
-          PostFileResizerService,
-          ValidationService,
-          FileConverterService,
-          SettingsService,
-        ],
-      }).compile();
+      })
+        .overrideProvider(PostManagerRegistry)
+        .useValue(mockPostManagerRegistry)
+        .compile();
 
       service = module.get<PostQueueService>(PostQueueService);
       submissionService = module.get<SubmissionService>(SubmissionService);
@@ -81,7 +72,6 @@ describe('PostQueueService', () => {
         WebsiteRegistryService,
       );
       postService = module.get<PostService>(PostService);
-      postManager = module.get<PostManagerService>(PostManagerService);
       await accountService.onModuleInit();
       await settingsService.onModuleInit();
     } catch (err) {
@@ -161,14 +151,6 @@ describe('PostQueueService', () => {
     expect(await service.peek()).toBeNull();
   });
 
-  async function waitForPostManager(): Promise<void> {
-    while (postManager.isPosting()) {
-      await new Promise((resolve) => {
-        setTimeout(resolve, 100);
-      });
-    }
-  }
-
   it('should insert posts into the post manager', async () => {
     const submission = await submissionService.create(createSubmissionDto());
     const account = await accountService.create(createAccountDto());
@@ -178,22 +160,49 @@ describe('PostQueueService', () => {
       createWebsiteOptionsDto(submission.id, account.id),
     );
 
+    // Enqueue now creates the PostRecord immediately
     await service.enqueue([submission.id]);
     expect((await service.findAll()).length).toBe(1);
 
-    // We expect the creation of a record and a start of the post manager
-    await service.execute();
+    // PostRecord should already exist after enqueue
     let postRecord = (await postService.findAll())[0];
-    let queueRecord = await service.peek();
     expect(postRecord).toBeDefined();
     expect(postRecord.submissionId).toBe(submission.id);
-    expect(postManager.isPosting()).toBe(true);
+    expect(postRecord.state).toBe(PostRecordState.PENDING);
+
+    // Initially, no manager is posting (so execute will start the post)
+    mockPostManagerRegistry.isPostingType.mockReturnValue(false);
+
+    // Execute should start the post manager
+    await service.execute();
+    let queueRecord = await service.peek();
+    expect(mockPostManagerRegistry.startPost).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: postRecord.id,
+        submissionId: submission.id,
+      }),
+    );
     expect(queueRecord).toBeDefined();
     expect(queueRecord.postRecord).toBeDefined();
 
-    expect(await postManager.cancelIfRunning(submission.id)).toBeTruthy();
-    await waitForPostManager();
-    expect(postManager.isPosting()).toBe(false);
+    // Now simulate that the manager is posting
+    mockPostManagerRegistry.isPostingType.mockReturnValue(true);
+
+    // Simulate cancellation
+    await mockPostManagerRegistry.cancelIfRunning(submission.id);
+    expect(mockPostManagerRegistry.cancelIfRunning).toHaveBeenCalledWith(
+      submission.id,
+    );
+
+    // Simulate the post completing (with failure) - manually update the record
+    const database = new PostyBirbDatabase('PostRecordSchema');
+    await database.update(postRecord.id, {
+      state: PostRecordState.FAILED,
+      completedAt: new Date().toISOString(),
+    });
+
+    // Simulate posting finished
+    mockPostManagerRegistry.isPostingType.mockReturnValue(false);
 
     queueRecord = await service.peek();
     expect(queueRecord).toBeDefined();

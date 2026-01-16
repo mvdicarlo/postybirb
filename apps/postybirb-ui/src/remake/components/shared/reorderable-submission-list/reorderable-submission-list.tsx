@@ -5,10 +5,12 @@
 
 import { Trans } from '@lingui/react/macro';
 import { Box, Paper, ScrollArea, Stack, Text } from '@mantine/core';
+import { PostRecordState } from '@postybirb/types';
 import { IconGripVertical } from '@tabler/icons-react';
 import { useCallback, useEffect, useRef } from 'react';
 import Sortable from 'sortablejs';
 import type { SubmissionRecord } from '../../../stores/records';
+import { cn } from '../../../utils/class-names';
 import './reorderable-submission-list.css';
 
 export interface ReorderableSubmissionListProps {
@@ -134,6 +136,10 @@ export function ReorderableSubmissionList({
           <Stack gap="xs" ref={containerRef}>
             {submissions.map((submission, index) => {
               const title = submission.getDefaultOptions()?.data?.title;
+              const lastPost = submission.latestPost;
+              const hasFailedPost =
+                lastPost && lastPost.state === PostRecordState.FAILED;
+
               return (
                 <Paper
                   key={submission.id}
@@ -141,7 +147,9 @@ export function ReorderableSubmissionList({
                   p="xs"
                   radius="sm"
                   tabIndex={0}
-                  className="postybirb__reorderable-item"
+                  className={cn(['postybirb__reorderable-item'], {
+                    'postybirb__reorderable-item--failed': hasFailedPost,
+                  })}
                   onKeyDown={(e) => handleKeyDown(e, index)}
                 >
                   <Box className="postybirb__reorderable-item-content">

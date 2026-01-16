@@ -57,6 +57,8 @@ export class SubmissionService
   extends PostyBirbService<'SubmissionSchema'>
   implements OnModuleInit
 {
+  private emitDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+
   constructor(
     @Inject(forwardRef(() => WebsiteOptionsService))
     private readonly websiteOptionsService: WebsiteOptionsService,
@@ -74,10 +76,8 @@ export class SubmissionService
         },
         posts: {
           with: {
-            children: {
-              with: {
-                account: true,
-              },
+            events: {
+              account: true,
             },
           },
         },
@@ -89,7 +89,6 @@ export class SubmissionService
     this.repository.subscribe(
       [
         'PostRecordSchema',
-        'WebsitePostRecordSchema',
         'PostQueueRecordSchema',
         'SubmissionFileSchema',
         'FileBufferSchema',
@@ -133,11 +132,25 @@ export class SubmissionService
 
   /**
    * Emits submissions onto websocket.
+   * Debounced by 50ms to avoid rapid consecutive emits.
+   * Overrides base class emit to provide submission-specific behavior.
    */
   public async emit() {
     if (IsTestEnvironment()) {
       return;
     }
+
+    if (this.emitDebounceTimer) {
+      clearTimeout(this.emitDebounceTimer);
+    }
+
+    this.emitDebounceTimer = setTimeout(() => {
+      this.emitDebounceTimer = null;
+      this.performEmit();
+    }, 50);
+  }
+
+  private async performEmit() {
     const now = Date.now();
     super.emit({
       event: SUBMISSION_UPDATES,

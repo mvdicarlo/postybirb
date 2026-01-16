@@ -10,7 +10,6 @@ import {
     UserSpecifiedWebsiteOptionsSchema,
     WebsiteDataSchema,
     WebsiteOptionsSchema,
-    WebsitePostRecordSchema,
 } from '../schemas';
 
 export const AccountRelations = relations(AccountSchema, ({ one, many }) => ({
@@ -52,7 +51,6 @@ export const PostRecordRelations = relations(
       fields: [PostRecordSchema.submissionId],
       references: [SubmissionSchema.id],
     }),
-    children: many(WebsitePostRecordSchema),
   }),
 );
 
@@ -115,20 +113,6 @@ export const WebsiteOptionsRelations = relations(
     submission: one(SubmissionSchema, {
       fields: [WebsiteOptionsSchema.submissionId],
       references: [SubmissionSchema.id],
-    }),
-  }),
-);
-
-export const WebsitepostRecordRelations = relations(
-  WebsitePostRecordSchema,
-  ({ one }) => ({
-    parent: one(PostRecordSchema, {
-      fields: [WebsitePostRecordSchema.postRecordId],
-      references: [PostRecordSchema.id],
-    }),
-    account: one(AccountSchema, {
-      fields: [WebsitePostRecordSchema.accountId],
-      references: [AccountSchema.id],
     }),
   }),
 );

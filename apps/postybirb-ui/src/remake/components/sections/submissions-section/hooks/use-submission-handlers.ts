@@ -6,6 +6,7 @@
 import {
   ISubmissionScheduleInfo,
   IWebsiteFormFields,
+  PostRecordResumeMode,
   SubmissionType,
 } from '@postybirb/types';
 import { type ViewState } from '../../../../types/view-state';
@@ -75,6 +76,12 @@ interface UseSubmissionHandlersResult {
     schedule: ISubmissionScheduleInfo,
     isScheduled: boolean,
   ) => Promise<void>;
+  /** ID of submission waiting for resume mode selection */
+  pendingResumeSubmissionId: string | null;
+  /** Close the resume mode modal without posting */
+  cancelResume: () => void;
+  /** Post with the selected resume mode */
+  confirmResume: (resumeMode: PostRecordResumeMode) => Promise<void>;
 }
 
 /**
@@ -103,7 +110,14 @@ export function useSubmissionHandlers({
     selectedIds,
   });
 
-  const { handlePost, handleCancel, handlePostSelected } = useSubmissionPost({
+  const {
+    handlePost,
+    handleCancel,
+    handlePostSelected,
+    pendingResumeSubmissionId,
+    cancelResume,
+    confirmResume,
+  } = useSubmissionPost({
     viewState,
   });
 
@@ -136,6 +150,8 @@ export function useSubmissionHandlers({
     handleCancel,
     handlePostSelected,
     handleScheduleChange,
+    pendingResumeSubmissionId,
+    cancelResume,
+    confirmResume,
   };
 }
-
