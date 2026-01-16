@@ -9,6 +9,7 @@ import { PostRecordState, SubmissionType } from '@postybirb/types';
 import { IconClock, IconGripVertical } from '@tabler/icons-react';
 import { useCallback, useMemo } from 'react';
 import { useLocale } from '../../../../hooks';
+import { cn } from '../../../../utils/class-names';
 import { useSubmissionsContext } from '../context';
 import { useSubmissionActions } from '../hooks';
 import '../submissions-section.css';
@@ -99,23 +100,22 @@ export function SubmissionCard({
   }, [submission.posts]);
 
   // Build className list
-  const cardClassName = useMemo(() => {
-    const classes = ['postybirb__submission__card'];
-    if (isSelected) classes.push('postybirb__submission__card--selected');
-    if (submission.isScheduled)
-      classes.push('postybirb__submission__card--scheduled');
-    if (mostRecentPostHasErrors)
-      classes.push('postybirb__submission__card--has-errors');
-    if (isCompact) classes.push('postybirb__submission__card--compact');
-    if (className) classes.push(className);
-    return classes.join(' ');
-  }, [
-    isSelected,
-    submission.isScheduled,
-    mostRecentPostHasErrors,
-    isCompact,
-    className,
-  ]);
+  const cardClassName = useMemo(
+    () =>
+      cn(['postybirb__submission__card', className], {
+        'postybirb__submission__card--selected': isSelected,
+        'postybirb__submission__card--scheduled': submission.isScheduled,
+        'postybirb__submission__card--has-errors': mostRecentPostHasErrors,
+        'postybirb__submission__card--compact': isCompact,
+      }),
+    [
+      isSelected,
+      submission.isScheduled,
+      mostRecentPostHasErrors,
+      isCompact,
+      className,
+    ],
+  );
 
   const handleCheckboxClick = useCallback(
     (event: React.MouseEvent) => {
