@@ -14,7 +14,7 @@ import { Text } from '@tiptap/extension-text';
 import { TextAlign } from '@tiptap/extension-text-align';
 import { TextStyle } from '@tiptap/extension-text-style';
 import { Underline } from '@tiptap/extension-underline';
-import { generateJSON } from '@tiptap/html';
+import { generateJSON } from '@tiptap/html/dist/server';
 
 const extensions = [
   Text,
