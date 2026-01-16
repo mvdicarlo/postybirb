@@ -83,10 +83,12 @@
 
 .postybirb__submission__card--has-errors {
   background-color: var(--mantine-color-red-light);
+  border-left: 3px solid var(--mantine-color-red-6) !important;
 }
 
 .postybirb__submission__card--has-errors.postybirb__submission__card--selected {
-  background-color: color-mix(in srgb, var(--mantine-color-red-light) 50%, var(--mantine-color-primary-light) 50%);
+  background-color: color-mix(in srgb, var(--mantine-color-red-light) 60%, var(--mantine-color-primary-light) 40%);
+  border-left: 3px solid var(--mantine-color-red-6) !important;
 }
 
 /* Compact mode */

@@ -74,6 +74,9 @@ export class SubmissionService
         },
         posts: {
           with: {
+            events: {
+              account: true,
+            },
             children: {
               with: {
                 account: true,

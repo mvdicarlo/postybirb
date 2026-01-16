@@ -5,7 +5,7 @@
  */
 
 import { Box, Card, Checkbox, Group, Stack, Text } from '@mantine/core';
-import { SubmissionType } from '@postybirb/types';
+import { PostRecordState, SubmissionType } from '@postybirb/types';
 import { IconClock, IconGripVertical } from '@tabler/icons-react';
 import { useCallback, useMemo } from 'react';
 import { useLocale } from '../../../../hooks';
@@ -85,7 +85,7 @@ export function SubmissionCard({
   // Only show thumbnail for FILE type submissions
   const showThumbnail = submissionType === SubmissionType.FILE;
 
-  // Check if the most recent post record has any errors
+  // Check if the most recent post record failed
   const mostRecentPostHasErrors = useMemo(() => {
     if (submission.posts.length === 0) return false;
     // Get the most recent post record (last in the array or sort by date)
@@ -94,10 +94,8 @@ export function SubmissionCard({
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     );
     const mostRecentPost = sortedPosts[0];
-    // Check if any child website post has errors
-    return mostRecentPost.children.some(
-      (child) => child.errors && child.errors.length > 0,
-    );
+    // Check if the state is FAILED
+    return mostRecentPost.state === PostRecordState.FAILED;
   }, [submission.posts]);
 
   // Build className list

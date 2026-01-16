@@ -2,18 +2,19 @@
  * SubmissionRecord - Concrete class for submission data.
  */
 
-import type {
-  ISubmissionDto,
-  ISubmissionFileDto,
-  ISubmissionMetadata,
-  ISubmissionScheduleInfo,
-  IWebsiteFormFields,
-  PostQueueRecordDto,
-  PostRecordDto,
-  SubmissionId,
-  SubmissionType,
-  ValidationResult,
-  WebsiteOptionsDto,
+import {
+  type ISubmissionDto,
+  type ISubmissionFileDto,
+  type ISubmissionMetadata,
+  type ISubmissionScheduleInfo,
+  type IWebsiteFormFields,
+  type PostQueueRecordDto,
+  type PostRecordDto,
+  PostRecordState,
+  type SubmissionId,
+  type SubmissionType,
+  type ValidationResult,
+  type WebsiteOptionsDto
 } from '@postybirb/types';
 import { BaseRecord } from './base-record';
 
@@ -175,5 +176,90 @@ export class SubmissionRecord extends BaseRecord {
    */
   get hasScheduleTime(): boolean {
     return Boolean(this.schedule.scheduledFor || this.schedule.cron);
+  }
+
+  // =============================================================================
+  // Post Record Methods
+  // =============================================================================
+
+  /**
+   * Get all post records sorted by creation date (oldest first).
+   * This provides a chronological view of posting attempts.
+   */
+  get sortedPosts(): PostRecordDto[] {
+    return [...this.posts].sort(
+      (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+    );
+  }
+
+  /**
+   * Get all post records sorted by creation date (newest first).
+   * This provides a reverse chronological view for display.
+   */
+  get sortedPostsDescending(): PostRecordDto[] {
+    return [...this.posts].sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  }
+
+  /**
+   * Get the most recent post record.
+   */
+  get latestPost(): PostRecordDto | undefined {
+    if (this.posts.length === 0) return undefined;
+    return this.sortedPosts[this.sortedPosts.length - 1];
+  }
+
+  /**
+   * Get the most recent completed post record (DONE or FAILED).
+   */
+  get latestCompletedPost(): PostRecordDto | undefined {
+    const completed = this.sortedPosts.filter(
+      (post) => post.state === PostRecordState.DONE || post.state === PostRecordState.FAILED
+    );
+    return completed[completed.length - 1];
+  }
+
+  /**
+   * Get posting statistics for this submission.
+   * Counts are based on individual post records.
+   */
+  get postingStats(): {
+    totalAttempts: number;
+    successfulAttempts: number;
+    failedAttempts: number;
+    runningAttempts: number;
+  } {
+    const successful = this.posts.filter((p) => p.state === PostRecordState.DONE);
+    const failed = this.posts.filter((p) => p.state === PostRecordState.FAILED);
+    const running = this.posts.filter((p) => p.state === PostRecordState.RUNNING);
+
+    return {
+      totalAttempts: this.posts.length,
+      successfulAttempts: successful.length,
+      failedAttempts: failed.length,
+      runningAttempts: running.length,
+    };
+  }
+
+  /**
+   * Check if this submission has ever been successfully posted.
+   */
+  get hasBeenPostedSuccessfully(): boolean {
+    return this.posts.some((p) => p.state === PostRecordState.DONE);
+  }
+
+  /**
+   * Check if this submission has any failed posting attempts.
+   */
+  get hasFailedPostingAttempts(): boolean {
+    return this.posts.some((p) => p.state === PostRecordState.FAILED);
+  }
+
+  /**
+   * Check if this submission is currently being posted.
+   */
+  get isCurrentlyPosting(): boolean {
+    return this.posts.some((p) => p.state === PostRecordState.RUNNING);
   }
 }
