@@ -1,3 +1,5 @@
+DROP TABLE IF EXISTS `website-post-record`;
+--> statement-breakpoint
 CREATE TABLE `post-event` (
 	`id` text PRIMARY KEY NOT NULL,
 	`createdAt` text NOT NULL,

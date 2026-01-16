@@ -1,17 +1,16 @@
 import {
-  EntityId,
-  IPostRecord,
-  PostRecordDto,
-  PostRecordResumeMode,
-  PostRecordState,
-  SubmissionId,
+    EntityId,
+    IPostRecord,
+    PostRecordDto,
+    PostRecordResumeMode,
+    PostRecordState,
+    SubmissionId,
 } from '@postybirb/types';
 import { instanceToPlain, Type } from 'class-transformer';
 import { DatabaseEntity } from './database-entity';
 import { PostEvent } from './post-event.entity';
 import { PostQueueRecord } from './post-queue-record.entity';
 import { Submission } from './submission.entity';
-import { WebsitePostRecord } from './website-post-record.entity';
 
 export class PostRecord extends DatabaseEntity implements IPostRecord {
   postQueueRecordId: EntityId;
@@ -32,9 +31,6 @@ export class PostRecord extends DatabaseEntity implements IPostRecord {
     super(entity);
   }
 
-  @Type(() => WebsitePostRecord)
-  children: WebsitePostRecord[];
-
   @Type(() => PostEvent)
   events: PostEvent[];
 
@@ -50,7 +46,6 @@ export class PostRecord extends DatabaseEntity implements IPostRecord {
   toDTO(): PostRecordDto {
     const dto: PostRecordDto = {
       ...this.toObject(),
-      children: this.children?.map((child) => child.toDTO()),
       events: this.events?.map((event) => event.toDTO()),
       postQueueRecord: this.postQueueRecord?.toDTO(),
     };

@@ -15,7 +15,6 @@ export * from './post/post-queue-action.dto';
 export * from './post/post-queue-record.dto';
 export * from './post/post-record.dto';
 export * from './post/queue-post-record-request.dto';
-export * from './post/website-post-record.dto';
 export * from './settings/settings.dto';
 export * from './settings/update-settings.dto';
 export * from './submission/apply-multi-submission.dto';

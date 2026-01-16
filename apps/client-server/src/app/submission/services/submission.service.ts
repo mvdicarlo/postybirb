@@ -1,32 +1,32 @@
 /* eslint-disable no-param-reassign */
 import {
-  BadRequestException,
-  forwardRef,
-  Inject,
-  Injectable,
-  NotFoundException,
-  OnModuleInit,
-  Optional,
+    BadRequestException,
+    forwardRef,
+    Inject,
+    Injectable,
+    NotFoundException,
+    OnModuleInit,
+    Optional,
 } from '@nestjs/common';
 import {
-  FileBufferSchema,
-  Insert,
-  SubmissionFileSchema,
-  SubmissionSchema,
-  WebsiteOptionsSchema,
+    FileBufferSchema,
+    Insert,
+    SubmissionFileSchema,
+    SubmissionSchema,
+    WebsiteOptionsSchema,
 } from '@postybirb/database';
 import { SUBMISSION_UPDATES } from '@postybirb/socket-events';
 import {
-  FileSubmission,
-  FileSubmissionMetadata,
-  ISubmissionDto,
-  ISubmissionMetadata,
-  MessageSubmission,
-  NULL_ACCOUNT_ID,
-  ScheduleType,
-  SubmissionId,
-  SubmissionMetadataType,
-  SubmissionType,
+    FileSubmission,
+    FileSubmissionMetadata,
+    ISubmissionDto,
+    ISubmissionMetadata,
+    MessageSubmission,
+    NULL_ACCOUNT_ID,
+    ScheduleType,
+    SubmissionId,
+    SubmissionMetadataType,
+    SubmissionType,
 } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/electron';
 import { eq } from 'drizzle-orm';
@@ -77,11 +77,6 @@ export class SubmissionService
             events: {
               account: true,
             },
-            children: {
-              with: {
-                account: true,
-              },
-            },
           },
         },
         postQueueRecord: true,
@@ -92,7 +87,6 @@ export class SubmissionService
     this.repository.subscribe(
       [
         'PostRecordSchema',
-        'WebsitePostRecordSchema',
         'PostQueueRecordSchema',
         'SubmissionFileSchema',
         'FileBufferSchema',

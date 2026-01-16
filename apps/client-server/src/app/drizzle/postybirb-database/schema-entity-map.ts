@@ -1,21 +1,20 @@
 import { SchemaKey } from '@postybirb/database';
 import {
-  Account,
-  DirectoryWatcher,
-  FileBuffer,
-  PostEvent,
-  PostQueueRecord,
-  PostRecord,
-  Settings,
-  Submission,
-  SubmissionFile,
-  TagConverter,
-  TagGroup,
-  UserConverter,
-  UserSpecifiedWebsiteOptions,
-  WebsiteData,
-  WebsiteOptions,
-  WebsitePostRecord,
+    Account,
+    DirectoryWatcher,
+    FileBuffer,
+    PostEvent,
+    PostQueueRecord,
+    PostRecord,
+    Settings,
+    Submission,
+    SubmissionFile,
+    TagConverter,
+    TagGroup,
+    UserConverter,
+    UserSpecifiedWebsiteOptions,
+    WebsiteData,
+    WebsiteOptions,
 } from '../models';
 import { CustomShortcut } from '../models/custom-shortcut.entity';
 import { Notification } from '../models/notification.entity';
@@ -38,7 +37,6 @@ export type DatabaseSchemaEntityMap = {
   >;
   WebsiteDataSchema: InstanceType<typeof WebsiteData>;
   WebsiteOptionsSchema: InstanceType<typeof WebsiteOptions>;
-  WebsitePostRecordSchema: InstanceType<typeof WebsitePostRecord>;
   NotificationSchema: InstanceType<typeof Notification>;
   CustomShortcutSchema: InstanceType<typeof CustomShortcut>;
 };
@@ -63,7 +61,6 @@ export const DatabaseSchemaEntityMapConst: Record<
   UserSpecifiedWebsiteOptionsSchema: UserSpecifiedWebsiteOptions,
   WebsiteDataSchema: WebsiteData,
   WebsiteOptionsSchema: WebsiteOptions,
-  WebsitePostRecordSchema: WebsitePostRecord,
   NotificationSchema: Notification,
   CustomShortcutSchema: CustomShortcut,
 };

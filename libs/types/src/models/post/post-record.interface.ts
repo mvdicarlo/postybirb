@@ -3,7 +3,6 @@ import { EntityId, IEntity } from '../database/entity.interface';
 import { ISubmission, SubmissionId } from '../submission/submission.interface';
 import { IPostEvent } from './post-event.interface';
 import { IPostQueueRecord } from './post-queue-record.interface';
-import { IWebsitePostRecord } from './website-post-record.interface';
 
 /**
  * Represents a record in queue to post (or already posted).
@@ -37,12 +36,6 @@ export interface IPostRecord extends IEntity {
    * @type {PostRecordResumeMode}
    */
   resumeMode: PostRecordResumeMode;
-
-  /**
-   * The children of the post record.
-   * @type {IWebsitePostRecord[]}
-   */
-  children: IWebsitePostRecord[];
 
   /**
    * The event ledger for this post record.

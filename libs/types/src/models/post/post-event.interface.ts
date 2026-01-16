@@ -1,7 +1,26 @@
 import { PostEventType } from '../../enums';
 import { AccountId } from '../account/account.interface';
 import { EntityId, IEntity } from '../database/entity.interface';
-import { WebsitePostRecordData } from './website-post-record.interface';
+import { IWebsiteOptions } from '../website-options/website-options.interface';
+import { PostFields } from '../website/post-data.type';
+
+/**
+ * The post data captured at posting time.
+ * @interface WebsitePostRecordData
+ */
+export type WebsitePostRecordData = {
+  /**
+   * The merged parsed website options form data.
+   * @type {PostFields}
+   */
+  parsedOptions?: PostFields;
+
+  /**
+   * The website options used.
+   * @type {IWebsiteOptions}
+   */
+  websiteOptions: IWebsiteOptions[];
+};
 
 /**
  * Error information stored on failed post events.
