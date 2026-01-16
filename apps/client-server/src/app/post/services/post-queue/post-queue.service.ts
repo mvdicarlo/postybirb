@@ -9,6 +9,7 @@ import {
   EntityId,
   PostRecordResumeMode,
   PostRecordState,
+  ScheduleType,
   SubmissionId,
 } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/electron';
@@ -17,7 +18,9 @@ import { Cron as CronGenerator } from 'croner';
 import { PostyBirbService } from '../../../common/service/postybirb-service';
 import { PostQueueRecord, PostRecord } from '../../../drizzle/models';
 import { PostyBirbDatabase } from '../../../drizzle/postybirb-database/postybirb-database';
+import { NotificationsService } from '../../../notifications/notifications.service';
 import { SettingsService } from '../../../settings/settings.service';
+import { SubmissionService } from '../../../submission/services/submission.service';
 import { WSGateway } from '../../../web-socket/web-socket-gateway';
 import { PostManagerRegistry } from '../post-manager-v2';
 import { PostRecordFactory } from '../post-record-factory';
@@ -51,6 +54,8 @@ export class PostQueueService
     private readonly postManagerRegistry: PostManagerRegistry,
     private readonly postRecordFactory: PostRecordFactory,
     private readonly settingsService: SettingsService,
+    private readonly notificationService: NotificationsService,
+    private readonly submissionService: SubmissionService,
     @Optional() webSocket?: WSGateway,
   ) {
     super('PostQueueRecordSchema', webSocket);
@@ -156,6 +161,68 @@ export class PostQueueService
     });
 
     return records.length > 0 ? records[0] : null;
+  }
+
+  /**
+   * Handle terminal state for a completed post record.
+   * Archives the submission if successful and non-recurring.
+   * Emits appropriate notifications.
+   * @param {PostRecord} record - The completed post record
+   */
+  private async handleTerminalState(record: PostRecord): Promise<void> {
+    const { submission } = record;
+    const submissionName = submission.getSubmissionName() ?? 'Submission';
+
+    if (record.state === PostRecordState.DONE) {
+      this.logger
+        .withMetadata({ submissionId: record.submissionId })
+        .info('Post completed successfully');
+
+      // Archive submission if non-recurring schedule
+      if (submission.schedule.scheduleType !== ScheduleType.RECURRING) {
+        await this.submissionService.archive(record.submissionId);
+        this.logger
+          .withMetadata({ submissionId: record.submissionId })
+          .info('Submission archived after successful post');
+      }
+
+      // Emit success notification
+      await this.notificationService.create({
+        type: 'success',
+        title: 'Post Completed',
+        message: `Successfully posted "${submissionName}" to all websites`,
+        tags: ['post-success'],
+        data: {
+          submissionId: record.submissionId,
+          type: submission.type,
+        },
+      });
+    } else if (record.state === PostRecordState.FAILED) {
+      this.logger
+        .withMetadata({ submissionId: record.submissionId })
+        .error('Post failed');
+
+      // Count failed events for the message
+      const failedEventCount =
+        record.events?.filter((e) => e.eventType === 'POST_ATTEMPT_FAILED')
+          .length ?? 0;
+
+      // Emit failure notification (summary - individual failures already notified)
+      await this.notificationService.create({
+        type: 'warning',
+        title: 'Post Incomplete',
+        message:
+          failedEventCount > 0
+            ? `"${submissionName}" failed to post to ${failedEventCount} website(s)`
+            : `"${submissionName}" failed to post`,
+        tags: ['post-incomplete'],
+        data: {
+          submissionId: record.submissionId,
+          type: submission.type,
+          failedCount: failedEventCount,
+        },
+      });
+    }
   }
 
   /**
@@ -371,10 +438,8 @@ export class PostQueueService
         record.state === PostRecordState.DONE ||
         record.state === PostRecordState.FAILED
       ) {
-        // Post is in a terminal state, remove from queue
-        this.logger
-          .withMetadata({ record })
-          .info('Post is in a terminal state, removing from queue');
+        // Post is in a terminal state - handle completion actions and remove from queue
+        await this.handleTerminalState(record);
         await this.dequeue([submissionId]);
       } else if (!this.postManagerRegistry.isPostingType(submission.type)) {
         // Post is not in a terminal state, but the manager for this type is not posting, so restart it.

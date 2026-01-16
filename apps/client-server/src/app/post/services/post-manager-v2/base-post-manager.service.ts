@@ -1,22 +1,22 @@
 import {
-    Logger,
-    trackEvent,
-    trackException,
-    trackMetric,
+  Logger,
+  trackEvent,
+  trackException,
+  trackMetric,
 } from '@postybirb/logger';
 import {
-    AccountId,
-    EntityId,
-    PostData,
-    PostEventType,
-    PostRecordState,
-    PostResponse,
-    SubmissionType,
+  AccountId,
+  EntityId,
+  PostData,
+  PostEventType,
+  PostRecordState,
+  PostResponse,
+  SubmissionType,
 } from '@postybirb/types';
 import {
-    PostRecord,
-    Submission,
-    WebsiteOptions,
+  PostRecord,
+  Submission,
+  WebsiteOptions,
 } from '../../../drizzle/models';
 import { PostyBirbDatabase } from '../../../drizzle/postybirb-database/postybirb-database';
 import { NotificationsService } from '../../../notifications/notifications.service';
