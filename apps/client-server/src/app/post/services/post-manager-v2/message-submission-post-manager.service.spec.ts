@@ -1,13 +1,13 @@
 import { clearDatabase } from '@postybirb/database';
 import {
-    AccountId,
-    EntityId,
-    IPostResponse,
-    PostData,
-    PostEventType,
-    PostRecordState,
-    SubmissionRating,
-    SubmissionType,
+  AccountId,
+  EntityId,
+  IPostResponse,
+  PostData,
+  PostEventType,
+  PostRecordState,
+  SubmissionRating,
+  SubmissionType,
 } from '@postybirb/types';
 import 'reflect-metadata';
 import { PostRecord, Submission } from '../../../drizzle/models';
@@ -91,7 +91,6 @@ describe('MessageSubmissionPostManager', () => {
       state: PostRecordState.PENDING,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      children: [],
     });
   }
 
@@ -150,13 +149,13 @@ describe('MessageSubmissionPostManager', () => {
       const sourceUrl = 'https://example.com/message/123';
       const responseMessage = 'Message posted successfully';
 
-      (
-        mockWebsite as unknown as MessageWebsite
-      ).onPostMessageSubmission = jest.fn().mockResolvedValue({
-        instanceId: 'test-website',
-        sourceUrl,
-        message: responseMessage,
-      });
+      (mockWebsite as unknown as MessageWebsite).onPostMessageSubmission = jest
+        .fn()
+        .mockResolvedValue({
+          instanceId: 'test-website',
+          sourceUrl,
+          message: responseMessage,
+        });
 
       await (manager as any).attemptToPost(
         postRecord,
@@ -194,15 +193,15 @@ describe('MessageSubmissionPostManager', () => {
       const stage = 'upload';
       const additionalInfo = { code: 'ERR_API' };
 
-      (
-        mockWebsite as unknown as MessageWebsite
-      ).onPostMessageSubmission = jest.fn().mockResolvedValue({
-        instanceId: 'test-website',
-        message: errorMessage,
-        exception,
-        stage,
-        additionalInfo,
-      } as IPostResponse);
+      (mockWebsite as unknown as MessageWebsite).onPostMessageSubmission = jest
+        .fn()
+        .mockResolvedValue({
+          instanceId: 'test-website',
+          message: errorMessage,
+          exception,
+          stage,
+          additionalInfo,
+        } as IPostResponse);
 
       await expect(
         (manager as any).attemptToPost(
@@ -231,12 +230,12 @@ describe('MessageSubmissionPostManager', () => {
     it('should emit MESSAGE_FAILED event with unknown error when no message provided', async () => {
       const exception = new Error('Unknown API Error');
 
-      (
-        mockWebsite as unknown as MessageWebsite
-      ).onPostMessageSubmission = jest.fn().mockResolvedValue({
-        instanceId: 'test-website',
-        exception,
-      } as IPostResponse);
+      (mockWebsite as unknown as MessageWebsite).onPostMessageSubmission = jest
+        .fn()
+        .mockResolvedValue({
+          instanceId: 'test-website',
+          exception,
+        } as IPostResponse);
 
       await expect(
         (manager as any).attemptToPost(
@@ -259,12 +258,12 @@ describe('MessageSubmissionPostManager', () => {
     });
 
     it('should not wait if no previous post to account', async () => {
-      (
-        mockWebsite as unknown as MessageWebsite
-      ).onPostMessageSubmission = jest.fn().mockResolvedValue({
-        instanceId: 'test-website',
-        sourceUrl: 'https://example.com/message/123',
-      });
+      (mockWebsite as unknown as MessageWebsite).onPostMessageSubmission = jest
+        .fn()
+        .mockResolvedValue({
+          instanceId: 'test-website',
+          sourceUrl: 'https://example.com/message/123',
+        });
 
       const startTime = Date.now();
       await (manager as any).attemptToPost(
@@ -280,12 +279,12 @@ describe('MessageSubmissionPostManager', () => {
     });
 
     it('should not wait if enough time has passed since last post', async () => {
-      (
-        mockWebsite as unknown as MessageWebsite
-      ).onPostMessageSubmission = jest.fn().mockResolvedValue({
-        instanceId: 'test-website',
-        sourceUrl: 'https://example.com/message/123',
-      });
+      (mockWebsite as unknown as MessageWebsite).onPostMessageSubmission = jest
+        .fn()
+        .mockResolvedValue({
+          instanceId: 'test-website',
+          sourceUrl: 'https://example.com/message/123',
+        });
 
       // Set last time posted to 10 seconds ago (beyond min interval)
       const now = new Date();
@@ -332,13 +331,13 @@ describe('MessageSubmissionPostManager', () => {
       const postRecord = createPostRecord(submission);
       const mockWebsite = createMockWebsite(accountId);
 
-      (
-        mockWebsite as unknown as MessageWebsite
-      ).onPostMessageSubmission = jest.fn().mockResolvedValue({
-        instanceId: 'test-website',
-        sourceUrl: 'https://example.com/message/456',
-        message: 'Successfully posted message',
-      });
+      (mockWebsite as unknown as MessageWebsite).onPostMessageSubmission = jest
+        .fn()
+        .mockResolvedValue({
+          instanceId: 'test-website',
+          sourceUrl: 'https://example.com/message/456',
+          message: 'Successfully posted message',
+        });
 
       const cancelToken = new CancellableToken();
       (manager as any).cancelToken = cancelToken;

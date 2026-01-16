@@ -628,6 +628,13 @@
           "notNull": false,
           "autoincrement": false
         },
+        "originPostRecordId": {
+          "name": "originPostRecordId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "completedAt": {
           "name": "completedAt",
           "type": "text",
@@ -673,6 +680,19 @@
             "id"
           ],
           "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "post-record_originPostRecordId_post-record_id_fk": {
+          "name": "post-record_originPostRecordId_post-record_id_fk",
+          "tableFrom": "post-record",
+          "tableTo": "post-record",
+          "columnsFrom": [
+            "originPostRecordId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
           "onUpdate": "no action"
         }
       },

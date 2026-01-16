@@ -1,5 +1,7 @@
 DROP TABLE IF EXISTS `website-post-record`;
 --> statement-breakpoint
+ALTER TABLE `post-record` ADD `originPostRecordId` text REFERENCES `post-record`(`id`) ON DELETE set null;
+--> statement-breakpoint
 CREATE TABLE `post-event` (
     `id` text PRIMARY KEY NOT NULL,
     `createdAt` text NOT NULL,

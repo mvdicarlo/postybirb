@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
 import {
-    EntityId,
-    PostEventType,
-    PostRecordResumeMode,
-    PostRecordState,
-    SubmissionType,
+  EntityId,
+  PostEventType,
+  PostRecordResumeMode,
+  PostRecordState,
+  SubmissionType,
 } from '@postybirb/types';
 import { AccountModule } from '../../../account/account.module';
 import { AccountService } from '../../../account/account.service';
@@ -17,6 +17,7 @@ import { SubmissionService } from '../../../submission/services/submission.servi
 import { SubmissionModule } from '../../../submission/submission.module';
 import { UserSpecifiedWebsiteOptionsModule } from '../../../user-specified-website-options/user-specified-website-options.module';
 import { WebsitesModule } from '../../../websites/websites.module';
+import { InvalidPostChainError } from '../../errors';
 import { PostEventRepository } from './post-event.repository';
 import { PostRecordFactory, ResumeContext } from './post-record-factory.service';
 
@@ -74,7 +75,7 @@ describe('PostRecordFactory', () => {
   }
 
   describe('create', () => {
-    it('should create a PostRecord with default NEW mode', async () => {
+    it('should create a PostRecord with default NEW mode and null originPostRecordId', async () => {
       const submissionId = await createSubmission();
       const record = await factory.create(submissionId);
 
@@ -82,6 +83,7 @@ describe('PostRecordFactory', () => {
       expect(record.submissionId).toBe(submissionId);
       expect(record.state).toBe(PostRecordState.PENDING);
       expect(record.resumeMode).toBe(PostRecordResumeMode.NEW);
+      expect(record.originPostRecordId).toBeNull();
       expect(record.id).toBeDefined();
       expect(record.createdAt).toBeDefined();
     });
@@ -96,27 +98,178 @@ describe('PostRecordFactory', () => {
       expect(record1.submissionId).toBe(submission1);
       expect(record2.submissionId).toBe(submission2);
       expect(record1.id).not.toBe(record2.id);
+      expect(record1.originPostRecordId).toBeNull();
+      expect(record2.originPostRecordId).toBeNull();
     });
 
-    it('should create records with different resume modes', async () => {
+    it('should set originPostRecordId when creating CONTINUE record', async () => {
       const submissionId = await createSubmission();
 
-      const restartRecord = await factory.create(
-        submissionId,
-        PostRecordResumeMode.NEW,
-      );
-      const continueRecord = await factory.create(
-        submissionId,
-        PostRecordResumeMode.CONTINUE,
-      );
-      const retryRecord = await factory.create(
-        submissionId,
-        PostRecordResumeMode.CONTINUE_RETRY,
-      );
+      // Create origin NEW record first
+      const originRecord = await factory.create(submissionId, PostRecordResumeMode.NEW);
+      
+      // Mark it as FAILED so CONTINUE is valid
+      await postRecordRepository.update(originRecord.id, { state: PostRecordState.FAILED });
 
-      expect(restartRecord.resumeMode).toBe(PostRecordResumeMode.NEW);
+      const continueRecord = await factory.create(submissionId, PostRecordResumeMode.CONTINUE);
+
       expect(continueRecord.resumeMode).toBe(PostRecordResumeMode.CONTINUE);
+      expect(continueRecord.originPostRecordId).toBe(originRecord.id);
+    });
+
+    it('should set originPostRecordId when creating CONTINUE_RETRY record', async () => {
+      const submissionId = await createSubmission();
+
+      // Create origin NEW record first
+      const originRecord = await factory.create(submissionId, PostRecordResumeMode.NEW);
+      
+      // Mark it as FAILED so CONTINUE_RETRY is valid
+      await postRecordRepository.update(originRecord.id, { state: PostRecordState.FAILED });
+
+      const retryRecord = await factory.create(submissionId, PostRecordResumeMode.CONTINUE_RETRY);
+
       expect(retryRecord.resumeMode).toBe(PostRecordResumeMode.CONTINUE_RETRY);
+      expect(retryRecord.originPostRecordId).toBe(originRecord.id);
+    });
+
+    it('should throw InvalidPostChainError for CONTINUE without any origin', async () => {
+      const submissionId = await createSubmission();
+
+      await expect(
+        factory.create(submissionId, PostRecordResumeMode.CONTINUE),
+      ).rejects.toThrow(InvalidPostChainError);
+
+      try {
+        await factory.create(submissionId, PostRecordResumeMode.CONTINUE);
+      } catch (error) {
+        expect(error).toBeInstanceOf(InvalidPostChainError);
+        expect((error as InvalidPostChainError).reason).toBe('no_origin');
+      }
+    });
+
+    it('should throw InvalidPostChainError for CONTINUE_RETRY without any origin', async () => {
+      const submissionId = await createSubmission();
+
+      await expect(
+        factory.create(submissionId, PostRecordResumeMode.CONTINUE_RETRY),
+      ).rejects.toThrow(InvalidPostChainError);
+
+      try {
+        await factory.create(submissionId, PostRecordResumeMode.CONTINUE_RETRY);
+      } catch (error) {
+        expect(error).toBeInstanceOf(InvalidPostChainError);
+        expect((error as InvalidPostChainError).reason).toBe('no_origin');
+      }
+    });
+
+    it('should throw InvalidPostChainError when origin is DONE', async () => {
+      const submissionId = await createSubmission();
+
+      // Create origin NEW record and mark it DONE (closed chain)
+      const originRecord = await factory.create(submissionId, PostRecordResumeMode.NEW);
+      await postRecordRepository.update(originRecord.id, { state: PostRecordState.DONE });
+
+      await expect(
+        factory.create(submissionId, PostRecordResumeMode.CONTINUE),
+      ).rejects.toThrow(InvalidPostChainError);
+
+      try {
+        await factory.create(submissionId, PostRecordResumeMode.CONTINUE);
+      } catch (error) {
+        expect(error).toBeInstanceOf(InvalidPostChainError);
+        expect((error as InvalidPostChainError).reason).toBe('origin_done');
+      }
+    });
+
+    it('should chain to most recent NEW record, not older ones', async () => {
+      const submissionId = await createSubmission();
+
+      // Create first NEW record and mark it DONE
+      const oldOrigin = await factory.create(submissionId, PostRecordResumeMode.NEW);
+      await postRecordRepository.update(oldOrigin.id, { state: PostRecordState.DONE });
+
+      // Create second NEW record (new chain)
+      const newOrigin = await factory.create(submissionId, PostRecordResumeMode.NEW);
+      await postRecordRepository.update(newOrigin.id, { state: PostRecordState.FAILED });
+
+      // CONTINUE should chain to the newer origin
+      const continueRecord = await factory.create(submissionId, PostRecordResumeMode.CONTINUE);
+
+      expect(continueRecord.originPostRecordId).toBe(newOrigin.id);
+      expect(continueRecord.originPostRecordId).not.toBe(oldOrigin.id);
+    });
+
+    it('should throw InvalidPostChainError when PENDING record exists for submission', async () => {
+      const submissionId = await createSubmission();
+
+      // Create a PENDING record (simulating one already in the queue)
+      await postRecordRepository.insert({
+        submissionId,
+        state: PostRecordState.PENDING,
+        resumeMode: PostRecordResumeMode.NEW,
+        originPostRecordId: null,
+      });
+
+      // Attempting to create another should fail
+      await expect(
+        factory.create(submissionId, PostRecordResumeMode.NEW),
+      ).rejects.toThrow(InvalidPostChainError);
+
+      try {
+        await factory.create(submissionId, PostRecordResumeMode.NEW);
+      } catch (error) {
+        expect(error).toBeInstanceOf(InvalidPostChainError);
+        expect((error as InvalidPostChainError).reason).toBe('in_progress');
+      }
+    });
+
+    it('should throw InvalidPostChainError when RUNNING record exists for submission', async () => {
+      const submissionId = await createSubmission();
+
+      // Create a RUNNING record (simulating one currently being processed)
+      await postRecordRepository.insert({
+        submissionId,
+        state: PostRecordState.RUNNING,
+        resumeMode: PostRecordResumeMode.NEW,
+        originPostRecordId: null,
+      });
+
+      // Attempting to create another should fail
+      await expect(
+        factory.create(submissionId, PostRecordResumeMode.NEW),
+      ).rejects.toThrow(InvalidPostChainError);
+
+      try {
+        await factory.create(submissionId, PostRecordResumeMode.NEW);
+      } catch (error) {
+        expect(error).toBeInstanceOf(InvalidPostChainError);
+        expect((error as InvalidPostChainError).reason).toBe('in_progress');
+      }
+    });
+
+    it('should allow creating NEW record when prior records are FAILED or DONE', async () => {
+      const submissionId = await createSubmission();
+
+      // Create a FAILED record
+      await postRecordRepository.insert({
+        submissionId,
+        state: PostRecordState.FAILED,
+        resumeMode: PostRecordResumeMode.NEW,
+        originPostRecordId: null,
+      });
+
+      // Create a DONE record
+      await postRecordRepository.insert({
+        submissionId,
+        state: PostRecordState.DONE,
+        resumeMode: PostRecordResumeMode.NEW,
+        originPostRecordId: null,
+      });
+
+      // Creating a NEW record should succeed (no PENDING/RUNNING blocking)
+      const record = await factory.create(submissionId, PostRecordResumeMode.NEW);
+      expect(record).toBeDefined();
+      expect(record.state).toBe(PostRecordState.PENDING);
     });
   });
 
@@ -125,11 +278,13 @@ describe('PostRecordFactory', () => {
       submissionId: EntityId,
       state: PostRecordState,
       resumeMode: PostRecordResumeMode,
+      originPostRecordId?: EntityId,
     ): Promise<PostRecord> {
       const record = await postRecordRepository.insert({
         submissionId,
         state,
         resumeMode,
+        originPostRecordId: originPostRecordId ?? null,
       });
       return record;
     }
@@ -156,10 +311,18 @@ describe('PostRecordFactory', () => {
 
     it('should return empty context for NEW mode', async () => {
       const submissionId = await createSubmission();
+      // Create an origin NEW record first
+      const originRecord = await createPostRecordWithState(
+        submissionId,
+        PostRecordState.FAILED,
+        PostRecordResumeMode.NEW,
+      );
+      // Create a CONTINUE record chained to it
       const priorRecord = await createPostRecordWithState(
         submissionId,
         PostRecordState.FAILED,
         PostRecordResumeMode.CONTINUE,
+        originRecord.id,
       );
 
       const context = await factory.buildResumeContext(
@@ -175,11 +338,12 @@ describe('PostRecordFactory', () => {
 
     it('should return empty context when no prior records exist', async () => {
       const submissionId = await createSubmission();
-      const priorRecord = await postRecordRepository.insert({
+      // Create a NEW record with no chain
+      const priorRecord = await createPostRecordWithState(
         submissionId,
-        state: PostRecordState.PENDING,
-        resumeMode: PostRecordResumeMode.CONTINUE,
-      });
+        PostRecordState.PENDING,
+        PostRecordResumeMode.NEW,
+      );
 
       const context = await factory.buildResumeContext(
         submissionId,
@@ -196,26 +360,27 @@ describe('PostRecordFactory', () => {
       const account1 = await createAccount('account-1');
       const account2 = await createAccount('account-2');
       
-      const failedRecord = await createPostRecordWithState(
+      // Create origin NEW record
+      const originRecord = await createPostRecordWithState(
         submissionId,
         PostRecordState.FAILED,
-        PostRecordResumeMode.CONTINUE,
+        PostRecordResumeMode.NEW,
       );
 
       await addEvent(
-        failedRecord.id,
+        originRecord.id,
         PostEventType.POST_ATTEMPT_COMPLETED,
         account1,
       );
       await addEvent(
-        failedRecord.id,
+        originRecord.id,
         PostEventType.POST_ATTEMPT_COMPLETED,
         account2,
       );
 
       const context = await factory.buildResumeContext(
         submissionId,
-        failedRecord.id,
+        originRecord.id,
         PostRecordResumeMode.CONTINUE_RETRY,
       );
 
@@ -228,24 +393,25 @@ describe('PostRecordFactory', () => {
       const submissionId = await createSubmission();
       const account1 = await createAccount('account-1');
       
-      const failedRecord = await createPostRecordWithState(
+      // Create origin NEW record
+      const originRecord = await createPostRecordWithState(
         submissionId,
         PostRecordState.FAILED,
-        PostRecordResumeMode.CONTINUE,
+        PostRecordResumeMode.NEW,
       );
 
-      await addEvent(failedRecord.id, PostEventType.FILE_POSTED, account1, {
+      await addEvent(originRecord.id, PostEventType.FILE_POSTED, account1, {
         fileId: 'file-1' as EntityId,
         sourceUrl: 'https://example.com/1',
       });
-      await addEvent(failedRecord.id, PostEventType.FILE_POSTED, account1, {
+      await addEvent(originRecord.id, PostEventType.FILE_POSTED, account1, {
         fileId: 'file-2' as EntityId,
         sourceUrl: 'https://example.com/2',
       });
 
       const context = await factory.buildResumeContext(
         submissionId,
-        failedRecord.id,
+        originRecord.id,
         PostRecordResumeMode.CONTINUE,
       );
 
@@ -260,14 +426,15 @@ describe('PostRecordFactory', () => {
       const submissionId = await createSubmission();
       const account1 = await createAccount('account-1');
       
-      const failedRecord = await createPostRecordWithState(
+      // Create origin NEW record
+      const originRecord = await createPostRecordWithState(
         submissionId,
         PostRecordState.FAILED,
-        PostRecordResumeMode.CONTINUE,
+        PostRecordResumeMode.NEW,
       );
 
       await addEvent(
-        failedRecord.id,
+        originRecord.id,
         PostEventType.FILE_POSTED,
         account1,
         {
@@ -277,7 +444,7 @@ describe('PostRecordFactory', () => {
 
       const context = await factory.buildResumeContext(
         submissionId,
-        failedRecord.id,
+        originRecord.id,
         PostRecordResumeMode.CONTINUE_RETRY,
       );
 
@@ -288,14 +455,15 @@ describe('PostRecordFactory', () => {
       const submissionId = await createSubmission();
       const account1 = await createAccount('account-1');
       
-      const failedRecord = await createPostRecordWithState(
+      // Create origin NEW record
+      const originRecord = await createPostRecordWithState(
         submissionId,
         PostRecordState.FAILED,
-        PostRecordResumeMode.CONTINUE,
+        PostRecordResumeMode.NEW,
       );
 
       await addEvent(
-        failedRecord.id,
+        originRecord.id,
         PostEventType.FILE_POSTED,
         account1,
         {
@@ -305,7 +473,7 @@ describe('PostRecordFactory', () => {
 
       const context = await factory.buildResumeContext(
         submissionId,
-        failedRecord.id,
+        originRecord.id,
         PostRecordResumeMode.CONTINUE,
       );
 
@@ -318,14 +486,15 @@ describe('PostRecordFactory', () => {
       const submissionId = await createSubmission();
       const account1 = await createAccount('account-1');
       
-      const failedRecord = await createPostRecordWithState(
+      // Create origin NEW record
+      const originRecord = await createPostRecordWithState(
         submissionId,
         PostRecordState.FAILED,
-        PostRecordResumeMode.CONTINUE,
+        PostRecordResumeMode.NEW,
       );
 
       await addEvent(
-        failedRecord.id,
+        originRecord.id,
         PostEventType.MESSAGE_POSTED,
         account1,
         {
@@ -335,7 +504,7 @@ describe('PostRecordFactory', () => {
 
       const context = await factory.buildResumeContext(
         submissionId,
-        failedRecord.id,
+        originRecord.id,
         PostRecordResumeMode.CONTINUE,
       );
 
@@ -344,158 +513,136 @@ describe('PostRecordFactory', () => {
       expect(sourceUrls?.[0]).toBe('https://example.com/message1');
     });
 
-    it('should stop aggregation at DONE record (not include it)', async () => {
+    it('should only aggregate events from current chain (not prior DONE chain)', async () => {
       const submissionId = await createSubmission();
       const accountOld = await createAccount('account-old');
-      const accountDone = await createAccount('account-done');
       const accountNew = await createAccount('account-new');
 
-      // Create older FAILED record
-      const olderFailedRecord = await createPostRecordWithState(
-        submissionId,
-        PostRecordState.FAILED,
-        PostRecordResumeMode.CONTINUE,
-      );
-      await addEvent(
-        olderFailedRecord.id,
-        PostEventType.POST_ATTEMPT_COMPLETED,
-        accountOld,
-      );
-
-      // Create DONE record (stop point)
-      const doneRecord = await createPostRecordWithState(
+      // Create older chain that completed successfully (DONE)
+      const olderOrigin = await createPostRecordWithState(
         submissionId,
         PostRecordState.DONE,
-        PostRecordResumeMode.CONTINUE,
+        PostRecordResumeMode.NEW,
       );
       await addEvent(
-        doneRecord.id,
-        PostEventType.POST_ATTEMPT_COMPLETED,
-        accountDone,
-      );
-
-      // Create newer FAILED record
-      const newerFailedRecord = await createPostRecordWithState(
-        submissionId,
-        PostRecordState.FAILED,
-        PostRecordResumeMode.CONTINUE,
-      );
-      await addEvent(
-        newerFailedRecord.id,
-        PostEventType.POST_ATTEMPT_COMPLETED,
-        accountNew,
-      );
-
-      const context = await factory.buildResumeContext(
-        submissionId,
-        newerFailedRecord.id,
-        PostRecordResumeMode.CONTINUE_RETRY,
-      );
-
-      // Should only have account-new, not account-done or account-old
-      expect(context.completedAccountIds.size).toBe(1);
-      expect(context.completedAccountIds.has(accountNew)).toBe(true);
-      expect(context.completedAccountIds.has(accountDone)).toBe(false);
-      expect(context.completedAccountIds.has(accountOld)).toBe(false);
-    });
-
-    it('should stop at NEW record but include its events', async () => {
-      const submissionId = await createSubmission();
-      const accountOld = await createAccount('account-old');
-      const accountRestart = await createAccount('account-restart');
-      const accountNew = await createAccount('account-new');
-
-      // Create older FAILED record
-      const olderFailedRecord = await createPostRecordWithState(
-        submissionId,
-        PostRecordState.FAILED,
-        PostRecordResumeMode.CONTINUE,
-      );
-      await addEvent(
-        olderFailedRecord.id,
+        olderOrigin.id,
         PostEventType.POST_ATTEMPT_COMPLETED,
         accountOld,
       );
 
-      // Create NEW record (stop point but include it)
-      const restartRecord = await createPostRecordWithState(
+      // Create new chain origin
+      const newOrigin = await createPostRecordWithState(
         submissionId,
         PostRecordState.FAILED,
         PostRecordResumeMode.NEW,
       );
       await addEvent(
-        restartRecord.id,
-        PostEventType.POST_ATTEMPT_COMPLETED,
-        accountRestart,
-      );
-
-      // Create newer FAILED record
-      const newerFailedRecord = await createPostRecordWithState(
-        submissionId,
-        PostRecordState.FAILED,
-        PostRecordResumeMode.CONTINUE,
-      );
-      await addEvent(
-        newerFailedRecord.id,
+        newOrigin.id,
         PostEventType.POST_ATTEMPT_COMPLETED,
         accountNew,
       );
 
       const context = await factory.buildResumeContext(
         submissionId,
-        newerFailedRecord.id,
+        newOrigin.id,
         PostRecordResumeMode.CONTINUE_RETRY,
       );
 
-      // Should have account-new and account-restart, but NOT account-old
-      expect(context.completedAccountIds.size).toBe(2);
+      // Should only have account-new from the current chain
+      expect(context.completedAccountIds.size).toBe(1);
       expect(context.completedAccountIds.has(accountNew)).toBe(true);
-      expect(context.completedAccountIds.has(accountRestart)).toBe(true);
       expect(context.completedAccountIds.has(accountOld)).toBe(false);
     });
 
-    it('should aggregate events from multiple FAILED records', async () => {
+    it('should aggregate events from origin and all chained records', async () => {
+      const submissionId = await createSubmission();
+      const accountRestart = await createAccount('account-restart');
+      const accountNew = await createAccount('account-new');
+
+      // Create NEW record (origin)
+      const originRecord = await createPostRecordWithState(
+        submissionId,
+        PostRecordState.FAILED,
+        PostRecordResumeMode.NEW,
+      );
+      await addEvent(
+        originRecord.id,
+        PostEventType.POST_ATTEMPT_COMPLETED,
+        accountRestart,
+      );
+
+      // Create CONTINUE record chained to origin
+      const continueRecord = await createPostRecordWithState(
+        submissionId,
+        PostRecordState.FAILED,
+        PostRecordResumeMode.CONTINUE,
+        originRecord.id,
+      );
+      await addEvent(
+        continueRecord.id,
+        PostEventType.POST_ATTEMPT_COMPLETED,
+        accountNew,
+      );
+
+      const context = await factory.buildResumeContext(
+        submissionId,
+        continueRecord.id,
+        PostRecordResumeMode.CONTINUE_RETRY,
+      );
+
+      // Should have both accounts from the chain
+      expect(context.completedAccountIds.size).toBe(2);
+      expect(context.completedAccountIds.has(accountNew)).toBe(true);
+      expect(context.completedAccountIds.has(accountRestart)).toBe(true);
+    });
+
+    it('should aggregate events from multiple chained FAILED records', async () => {
       const submissionId = await createSubmission();
       const account1 = await createAccount('account-1');
       const account2 = await createAccount('account-2');
       const account3 = await createAccount('account-3');
 
-      const failed1 = await createPostRecordWithState(
+      // Create origin NEW record
+      const originRecord = await createPostRecordWithState(
         submissionId,
         PostRecordState.FAILED,
-        PostRecordResumeMode.CONTINUE,
+        PostRecordResumeMode.NEW,
       );
       await addEvent(
-        failed1.id,
+        originRecord.id,
         PostEventType.POST_ATTEMPT_COMPLETED,
         account1,
       );
 
-      const failed2 = await createPostRecordWithState(
+      // Create first CONTINUE chained to origin
+      const continue1 = await createPostRecordWithState(
         submissionId,
         PostRecordState.FAILED,
         PostRecordResumeMode.CONTINUE,
+        originRecord.id,
       );
       await addEvent(
-        failed2.id,
+        continue1.id,
         PostEventType.POST_ATTEMPT_COMPLETED,
         account2,
       );
 
-      const failed3 = await createPostRecordWithState(
+      // Create second CONTINUE chained to origin
+      const continue2 = await createPostRecordWithState(
         submissionId,
         PostRecordState.FAILED,
         PostRecordResumeMode.CONTINUE,
+        originRecord.id,
       );
       await addEvent(
-        failed3.id,
+        continue2.id,
         PostEventType.POST_ATTEMPT_COMPLETED,
         account3,
       );
 
       const context = await factory.buildResumeContext(
         submissionId,
-        failed3.id,
+        continue2.id,
         PostRecordResumeMode.CONTINUE_RETRY,
       );
 
@@ -693,11 +840,13 @@ describe('PostRecordFactory', () => {
       submissionId: EntityId,
       state: PostRecordState,
       resumeMode: PostRecordResumeMode,
+      originPostRecordId?: EntityId,
     ): Promise<PostRecord> {
       const record = await postRecordRepository.insert({
         submissionId,
         state,
         resumeMode,
+        originPostRecordId: originPostRecordId ?? null,
       });
       return record;
     }
@@ -727,6 +876,7 @@ describe('PostRecordFactory', () => {
       const account2 = await createAccount('crash-account-2');
 
       // Create a RUNNING record with NEW mode (simulates mid-post crash)
+      // NEW mode records are their own origin (originPostRecordId = null)
       const runningRecord = await createPostRecordWithState(
         submissionId,
         PostRecordState.RUNNING,
@@ -765,10 +915,19 @@ describe('PostRecordFactory', () => {
       const submissionId = await createSubmission();
       const account1 = await createAccount('terminal-account-1');
 
+      // Create origin NEW record that failed
+      const originRecord = await createPostRecordWithState(
+        submissionId,
+        PostRecordState.FAILED,
+        PostRecordResumeMode.NEW,
+      );
+
+      // Create a CONTINUE record chained to it
       const failedRecord = await createPostRecordWithState(
         submissionId,
         PostRecordState.FAILED,
         PostRecordResumeMode.CONTINUE,
+        originRecord.id,
       );
 
       await addEvent(failedRecord.id, PostEventType.POST_ATTEMPT_COMPLETED, account1);
@@ -789,10 +948,19 @@ describe('PostRecordFactory', () => {
       const submissionId = await createSubmission();
       const account1 = await createAccount('continue-crash-account-1');
 
+      // Create origin NEW record
+      const originRecord = await createPostRecordWithState(
+        submissionId,
+        PostRecordState.FAILED,
+        PostRecordResumeMode.NEW,
+      );
+
+      // Create RUNNING CONTINUE record chained to origin
       const runningRecord = await createPostRecordWithState(
         submissionId,
         PostRecordState.RUNNING,
         PostRecordResumeMode.CONTINUE,
+        originRecord.id,
       );
 
       await addEvent(runningRecord.id, PostEventType.POST_ATTEMPT_COMPLETED, account1);
@@ -821,14 +989,14 @@ describe('PostRecordFactory', () => {
       const account1 = await createAccount('prior-account-1');
       const account2 = await createAccount('current-account-2');
 
-      // First attempt: posted to account1, then failed
-      const failedRecord = await createPostRecordWithState(
+      // Create origin NEW record
+      const originRecord = await createPostRecordWithState(
         submissionId,
         PostRecordState.FAILED,
-        PostRecordResumeMode.CONTINUE,
+        PostRecordResumeMode.NEW,
       );
-      await addEvent(failedRecord.id, PostEventType.POST_ATTEMPT_COMPLETED, account1);
-      await addEvent(failedRecord.id, PostEventType.FILE_POSTED, account1, {
+      await addEvent(originRecord.id, PostEventType.POST_ATTEMPT_COMPLETED, account1);
+      await addEvent(originRecord.id, PostEventType.FILE_POSTED, account1, {
         fileId: 'prior-file-1' as EntityId,
       });
 
@@ -837,6 +1005,7 @@ describe('PostRecordFactory', () => {
         submissionId,
         PostRecordState.RUNNING,
         PostRecordResumeMode.CONTINUE,
+        originRecord.id,
       );
       await addEvent(runningRecord.id, PostEventType.POST_ATTEMPT_COMPLETED, account2);
       await addEvent(runningRecord.id, PostEventType.FILE_POSTED, account2, {
@@ -864,6 +1033,7 @@ describe('PostRecordFactory', () => {
       const submissionId = await createSubmission();
       const account1 = await createAccount('url-crash-account-1');
 
+      // Create RUNNING NEW record (origin with crash)
       const runningRecord = await createPostRecordWithState(
         submissionId,
         PostRecordState.RUNNING,

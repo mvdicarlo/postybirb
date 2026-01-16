@@ -19,6 +19,27 @@ export interface IPostRecord extends IEntity {
   submission: ISubmission;
 
   /**
+   * Reference to the originating NEW PostRecord for this chain.
+   * - null/undefined for NEW records (they ARE the origin)
+   * - Set to the origin's ID for CONTINUE/RETRY records
+   * @type {EntityId}
+   */
+  originPostRecordId?: EntityId;
+
+  /**
+   * The originating NEW PostRecord for this chain (resolved relation).
+   * @type {IPostRecord}
+   */
+  origin?: IPostRecord;
+
+  /**
+   * All CONTINUE/RETRY PostRecords that chain to this origin (resolved relation).
+   * Only populated when this record is the origin (resumeMode = NEW).
+   * @type {IPostRecord[]}
+   */
+  chainedRecords?: IPostRecord[];
+
+  /**
    * The date the post was completed.
    * @type {Date}
    */

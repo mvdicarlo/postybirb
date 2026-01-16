@@ -1,31 +1,31 @@
 import { clearDatabase } from '@postybirb/database';
 import {
-    AccountId,
-    DefaultSubmissionFileMetadata,
-    EntityId,
-    FileSubmissionMetadata,
-    FileType,
-    IPostResponse,
-    PostData,
-    PostEventType,
-    PostRecordState,
-    SubmissionRating,
-    SubmissionType,
+  AccountId,
+  DefaultSubmissionFileMetadata,
+  EntityId,
+  FileSubmissionMetadata,
+  FileType,
+  IPostResponse,
+  PostData,
+  PostEventType,
+  PostRecordState,
+  SubmissionRating,
+  SubmissionType,
 } from '@postybirb/types';
 import 'reflect-metadata';
 import {
-    FileBuffer,
-    PostRecord,
-    Submission,
-    SubmissionFile,
+  FileBuffer,
+  PostRecord,
+  Submission,
+  SubmissionFile,
 } from '../../../drizzle/models';
 import { FileConverterService } from '../../../file-converter/file-converter.service';
 import { NotificationsService } from '../../../notifications/notifications.service';
 import { PostParsersService } from '../../../post-parsers/post-parsers.service';
 import { ValidationService } from '../../../validation/validation.service';
 import {
-    FileWebsite,
-    ImplementedFileWebsite,
+  FileWebsite,
+  ImplementedFileWebsite,
 } from '../../../websites/models/website-modifiers/file-website';
 import { UnknownWebsite } from '../../../websites/website';
 import { WebsiteRegistryService } from '../../../websites/website-registry.service';
@@ -161,7 +161,6 @@ describe('FileSubmissionPostManager', () => {
       state: PostRecordState.PENDING,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      children: [],
     });
   }
 

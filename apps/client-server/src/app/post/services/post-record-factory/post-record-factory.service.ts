@@ -9,6 +9,7 @@ import {
 } from '@postybirb/types';
 import { PostEvent, PostRecord } from '../../../drizzle/models';
 import { PostyBirbDatabase } from '../../../drizzle/postybirb-database/postybirb-database';
+import { InvalidPostChainError } from '../../errors';
 import { PostEventRepository } from './post-event.repository';
 
 /**
@@ -62,9 +63,15 @@ export class PostRecordFactory {
 
   /**
    * Create a new PostRecord for a submission.
+   *
+   * For NEW mode: Creates a fresh record with originPostRecordId = null (it IS the origin).
+   * For CONTINUE/RETRY: Finds the most recent NEW record for this submission and chains to it.
+   *
    * @param {EntityId} submissionId - The submission ID
    * @param {PostRecordResumeMode} resumeMode - The resume mode (defaults to NEW)
    * @returns {Promise<PostRecord>} The created post record
+   * @throws {InvalidPostChainError} If CONTINUE/RETRY is requested but no valid origin exists,
+   *         or if a PostRecord is already PENDING or RUNNING for this submission
    */
   async create(
     submissionId: EntityId,
@@ -74,11 +81,89 @@ export class PostRecordFactory {
       .withMetadata({ submissionId, resumeMode })
       .info('Creating post record');
 
+    // Guard: Prevent creating a new record if one is already in progress
+    const inProgressRecord = await this.findInProgressRecord(submissionId);
+    if (inProgressRecord) {
+      this.logger
+        .withMetadata({ existingRecordId: inProgressRecord.id, existingState: inProgressRecord.state })
+        .warn('Cannot create PostRecord: submission already has an in-progress record');
+      throw new InvalidPostChainError(submissionId, resumeMode, 'in_progress');
+    }
+
+    let originPostRecordId: EntityId | null = null;
+
+    if (resumeMode !== PostRecordResumeMode.NEW) {
+      // Find the most recent NEW record for this submission (no state filter)
+      const originRecord = await this.findMostRecentOrigin(submissionId);
+
+      if (!originRecord) {
+        throw new InvalidPostChainError(submissionId, resumeMode, 'no_origin');
+      }
+
+      if (originRecord.state === PostRecordState.DONE) {
+        throw new InvalidPostChainError(submissionId, resumeMode, 'origin_done');
+      }
+
+      originPostRecordId = originRecord.id;
+      this.logger
+        .withMetadata({ originPostRecordId })
+        .debug('Chaining to origin PostRecord');
+    }
+
     return this.postRecordRepository.insert({
       submissionId,
       state: PostRecordState.PENDING,
       resumeMode,
+      originPostRecordId,
     });
+  }
+
+  /**
+   * Find the most recent NEW PostRecord for a submission.
+   * Used to determine the origin for CONTINUE/RETRY records.
+   *
+   * @param {EntityId} submissionId - The submission ID
+   * @returns {Promise<PostRecord | null>} The most recent NEW record, or null if none exists
+   */
+  private async findMostRecentOrigin(
+    submissionId: EntityId,
+  ): Promise<PostRecord | null> {
+    const records = await this.postRecordRepository.find({
+      where: (record, { eq, and }) =>
+        and(
+          eq(record.submissionId, submissionId),
+          eq(record.resumeMode, PostRecordResumeMode.NEW),
+        ),
+      orderBy: (record, { desc }) => desc(record.createdAt),
+      limit: 1,
+    });
+
+    return records.length > 0 ? records[0] : null;
+  }
+
+  /**
+   * Find any PENDING or RUNNING PostRecord for a submission.
+   * Used to prevent creating a new record when one is already in progress.
+   *
+   * @param {EntityId} submissionId - The submission ID
+   * @returns {Promise<PostRecord | null>} An in-progress record, or null if none exists
+   */
+  private async findInProgressRecord(
+    submissionId: EntityId,
+  ): Promise<PostRecord | null> {
+    const records = await this.postRecordRepository.find({
+      where: (record, { eq, and, or }) =>
+        and(
+          eq(record.submissionId, submissionId),
+          or(
+            eq(record.state, PostRecordState.PENDING),
+            eq(record.state, PostRecordState.RUNNING),
+          ),
+        ),
+      limit: 1,
+    });
+
+    return records.length > 0 ? records[0] : null;
   }
 
   // ========================================================================
@@ -224,95 +309,53 @@ export class PostRecordFactory {
   /**
    * Get the list of PostRecords whose events should be aggregated.
    *
-   * Note: This method assumes we're in a resume scenario (not a fresh start).
-   * The PostQueueService determines the resume mode based on the most recent
-   * terminal record before calling create().
-   *
-   * Rules:
-   * - Aggregate all consecutive FAILED records (newest to oldest)
-   * - Stop when hitting a DONE record (completed session is a stop point)
-   * - Stop when hitting a record with resumeMode=NEW (user-initiated fresh start)
+   * Uses the originPostRecordId field to find all records in the same chain.
+   * A chain consists of:
+   * - The origin NEW record (originPostRecordId = null, resumeMode = NEW)
+   * - All CONTINUE/RETRY records that reference that origin
    *
    * @param {EntityId} submissionId - The submission ID
+   * @param {EntityId} [originId] - Optional origin ID to query directly
    * @returns {Promise<PostRecord[]>} Records to aggregate (may be empty)
    */
   private async getRecordsToAggregate(
     submissionId: EntityId,
+    originId?: EntityId,
   ): Promise<PostRecord[]> {
-    // Get ALL terminal records for this submission, ordered by creation date (newest first)
-    const allTerminalRecords = await this.postRecordRepository.find({
-      where: (record, { eq, and, inArray }) =>
-        and(
-          eq(record.submissionId, submissionId),
-          inArray(record.state, [PostRecordState.DONE, PostRecordState.FAILED]),
+    // If no origin provided, find the most recent origin for this submission
+    let effectiveOriginId = originId;
+    if (!effectiveOriginId) {
+      const origin = await this.findMostRecentOrigin(submissionId);
+      if (!origin) {
+        this.logger.debug('No origin PostRecord found for submission');
+        return [];
+      }
+      effectiveOriginId = origin.id;
+    }
+
+    // Query all records in this chain: the origin + all records referencing it
+    const chainRecords = await this.postRecordRepository.find({
+      where: (record, { eq, or }) =>
+        or(
+          eq(record.id, effectiveOriginId),
+          eq(record.originPostRecordId, effectiveOriginId),
         ),
-      orderBy: (record, { desc }) => desc(record.createdAt),
+      orderBy: (record, { asc }) => asc(record.createdAt),
       with: {
         events: true,
       },
     });
 
-    if (allTerminalRecords.length === 0) {
-      this.logger.debug('No prior terminal records found');
-      return [];
-    }
-
-    // Aggregate FAILED records until we hit a stop point
-    const recordsToAggregate: PostRecord[] = [];
-    for (const record of allTerminalRecords) {
-      const { isStopPoint, reason } = this.isAggregationStopPoint(record);
-
-      if (isStopPoint) {
-        this.logger
-          .withMetadata({ stopAtRecordId: record.id, reason })
-          .debug('Hit stop point - stopping aggregation chain');
-
-        // NEW is a stop point BUT we include its events first
-        if (record.resumeMode === PostRecordResumeMode.NEW) {
-          recordsToAggregate.push(record);
-        }
-        // DONE is a complete stop - don't include it
-        break;
-      }
-
-      recordsToAggregate.push(record);
-    }
-
     this.logger
       .withMetadata({
         submissionId,
-        totalTerminalRecords: allTerminalRecords.length,
-        aggregatedRecordCount: recordsToAggregate.length,
-        aggregatedRecordIds: recordsToAggregate.map((r) => r.id),
+        originId: effectiveOriginId,
+        chainRecordCount: chainRecords.length,
+        chainRecordIds: chainRecords.map((r) => r.id),
       })
-      .debug('Determined records to aggregate');
+      .debug('Retrieved chain records for aggregation');
 
-    return recordsToAggregate;
-  }
-
-  /**
-   * Check if a PostRecord is a stop point in the aggregation chain.
-   * Stop points represent boundaries where we should not read prior events.
-   *
-   * @param {PostRecord} record - The record to check
-   * @returns {{ isStopPoint: boolean; reason?: string }} Whether it's a stop point and why
-   */
-  private isAggregationStopPoint(record: PostRecord): {
-    isStopPoint: boolean;
-    reason?: string;
-  } {
-    if (record.state === PostRecordState.DONE) {
-      return { isStopPoint: true, reason: 'DONE state (completed session)' };
-    }
-
-    if (record.resumeMode === PostRecordResumeMode.NEW) {
-      return {
-        isStopPoint: true,
-        reason: 'NEW resumeMode (user-initiated fresh start)',
-      };
-    }
-
-    return { isStopPoint: false };
+    return chainRecords;
   }
 
   /**

@@ -1,10 +1,10 @@
 import {
-    EntityId,
-    IPostRecord,
-    PostRecordDto,
-    PostRecordResumeMode,
-    PostRecordState,
-    SubmissionId,
+  EntityId,
+  IPostRecord,
+  PostRecordDto,
+  PostRecordResumeMode,
+  PostRecordState,
+  SubmissionId,
 } from '@postybirb/types';
 import { instanceToPlain, Type } from 'class-transformer';
 import { DatabaseEntity } from './database-entity';
@@ -19,6 +19,24 @@ export class PostRecord extends DatabaseEntity implements IPostRecord {
 
   @Type(() => Submission)
   submission: Submission;
+
+  /**
+   * Reference to the originating NEW PostRecord for this chain.
+   * null for NEW records (they ARE the origin).
+   */
+  originPostRecordId?: EntityId;
+
+  /**
+   * The originating NEW PostRecord (resolved relation).
+   */
+  @Type(() => PostRecord)
+  origin?: PostRecord;
+
+  /**
+   * All CONTINUE/RETRY PostRecords that chain to this origin.
+   */
+  @Type(() => PostRecord)
+  chainedRecords?: PostRecord[];
 
   completedAt?: string;
 

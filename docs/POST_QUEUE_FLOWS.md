@@ -42,28 +42,59 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[enqueue called with submissionId] --> B{Any Prior<br/>PostRecord?}
+    A[enqueue called with submissionId] --> AA{Any PENDING or<br/>RUNNING PostRecord?}
 
-    B -->|No| C[Create Fresh PostRecord<br/>resumeMode = NEW]
+    AA -->|Yes| AB[Throw InvalidPostChainError<br/>reason: in_progress]
+
+    AA -->|No| B{Any Prior<br/>PostRecord?}
+
+    B -->|No| C[Create Fresh PostRecord<br/>resumeMode = NEW<br/>originPostRecordId = null]
 
     B -->|Yes| D{Most Recent<br/>PostRecord State?}
 
-    D -->|DONE| E[Create Fresh PostRecord<br/>resumeMode = NEW<br/>Previous was successful]
+    D -->|DONE| E[Create Fresh PostRecord<br/>resumeMode = NEW<br/>originPostRecordId = null<br/>Previous was successful]
 
     D -->|FAILED| F{resumeMode<br/>provided?}
 
     F -->|Yes| G[Use Provided Mode]
     F -->|No| H[Default to CONTINUE]
 
+    G --> I[PostRecordFactory.create]
+    H --> I
+
+    I --> J{resumeMode = NEW?}
+    J -->|Yes| K[originPostRecordId = null<br/>This record IS the origin]
+    J -->|No| L[Find most recent NEW record]
+
+    L --> M{Origin found?}
+    M -->|No| N[Throw InvalidPostChainError<br/>reason: no_origin]
+    M -->|Yes| MA{Origin state<br/>= DONE?}
+    MA -->|Yes| MB[Throw InvalidPostChainError<br/>reason: origin_done]
+    MA -->|No| O[originPostRecordId = origin.id<br/>Chain to origin]
+
     subgraph Resume Modes
-        I[NEW]
-        J[CONTINUE]
-        K[CONTINUE_RETRY]
+        P[NEW]
+        Q[CONTINUE]
+        R[CONTINUE_RETRY]
     end
 
-    I --> L[Start completely fresh<br/>Ignore all prior progress]
-    J --> M[Continue from where it left off<br/>Skip successfully posted files/accounts]
-    K --> N[Retry failed websites<br/>but remember successful posts]
+    P --> S[Start completely fresh<br/>Ignore all prior progress]
+    Q --> T[Continue from where it left off<br/>Skip successfully posted files/accounts]
+    R --> U[Retry failed websites<br/>but remember successful posts]
+
+    subgraph InvalidPostChainError Reasons
+        ERR1[in_progress: PENDING/RUNNING record exists]
+        ERR2[no_origin: No prior NEW record for CONTINUE/RETRY]
+        ERR3[origin_done: Origin NEW record already DONE]
+    end
+
+    subgraph Chain Example
+        V["#1 NEW (origin)"]
+        W["#2 CONTINUE → origin=#1"]
+        X["#3 CONTINUE → origin=#1"]
+        Y["#4 NEW (new origin)"]
+        Z["#5 RETRY → origin=#4"]
+    end
 ```
 
 ## 3. PostManagerRegistry & Manager Selection
@@ -85,7 +116,7 @@ flowchart TD
     G -->|No| I[Build Resume Context]
 
     I --> J[postRecordFactory.buildResumeContext]
-    J --> K[Aggregate events from<br/>prior FAILED records]
+    J --> K[Query chain via originPostRecordId<br/>Aggregate events from all records]
 
     K --> L[BasePostManager.startPost<br/>with ResumeContext]
 ```
@@ -267,7 +298,7 @@ flowchart TD
     F --> G[Log: Resuming interrupted PostRecord]
     G --> H[PostManagerRegistry.startPost]
 
-    H --> I[Build resume context<br/>from record's events]
+    H --> I[Build resume context<br/>using originPostRecordId chain]
 
     I --> J{Resume Mode?}
 
@@ -337,12 +368,61 @@ flowchart TD
 
 ## Key Classes & Files Reference
 
-| Component        | File                                                                                                  |
-| ---------------- | ----------------------------------------------------------------------------------------------------- |
-| Queue Management | `apps/client-server/src/app/post/services/post-queue/post-queue.service.ts`                           |
-| Manager Registry | `apps/client-server/src/app/post/services/post-manager-v2/post-manager-registry.service.ts`           |
-| Base Manager     | `apps/client-server/src/app/post/services/post-manager-v2/base-post-manager.service.ts`               |
-| File Posting     | `apps/client-server/src/app/post/services/post-manager-v2/file-submission-post-manager.service.ts`    |
-| Message Posting  | `apps/client-server/src/app/post/services/post-manager-v2/message-submission-post-manager.service.ts` |
-| Record Factory   | `apps/client-server/src/app/post/services/post-record-factory/post-record-factory.service.ts`         |
-| Legacy Manager   | `apps/client-server/src/app/post/services/post-manager/post-manager.service.ts`                       |
+| Component           | File                                                                                                  |
+| ------------------- | ----------------------------------------------------------------------------------------------------- |
+| Queue Management    | `apps/client-server/src/app/post/services/post-queue/post-queue.service.ts`                           |
+| Manager Registry    | `apps/client-server/src/app/post/services/post-manager-v2/post-manager-registry.service.ts`           |
+| Base Manager        | `apps/client-server/src/app/post/services/post-manager-v2/base-post-manager.service.ts`               |
+| File Posting        | `apps/client-server/src/app/post/services/post-manager-v2/file-submission-post-manager.service.ts`    |
+| Message Posting     | `apps/client-server/src/app/post/services/post-manager-v2/message-submission-post-manager.service.ts` |
+| Record Factory      | `apps/client-server/src/app/post/services/post-record-factory/post-record-factory.service.ts`         |
+| Chain Error         | `apps/client-server/src/app/post/errors/invalid-post-chain.error.ts`                                  |
+| Legacy Manager      | `apps/client-server/src/app/post/services/post-manager/post-manager.service.ts`                       |
+
+## PostRecord Chain Model
+
+PostRecords are linked via `originPostRecordId` to form posting chains:
+
+```text
+Chain 1 (Group):
+┌─────────────────────────────────────────────────────────────────┐
+│  #1 NEW                    ← origin (originPostRecordId: null)  │
+│  #2 CONTINUE → origin=#1   ← chains to #1                       │
+│  #3 CONTINUE → origin=#1   ← chains to #1 (DONE closes chain)   │
+└─────────────────────────────────────────────────────────────────┘
+
+Chain 2 (Self-contained):
+┌─────────────────────────────────────────────────────────────────┐
+│  #4 NEW (DONE)             ← origin, completed in one attempt   │
+└─────────────────────────────────────────────────────────────────┘
+
+Chain 3 (Active):
+┌─────────────────────────────────────────────────────────────────┐
+│  #5 NEW                    ← origin (originPostRecordId: null)  │
+│  #6 RETRY → origin=#5      ← chains to #5                       │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Query for chain aggregation:**
+
+```sql
+SELECT * FROM post_record
+WHERE id = :originId OR originPostRecordId = :originId
+ORDER BY createdAt ASC
+```
+
+## PostRecord Creation Guards
+
+Before creating a new PostRecord, the factory performs the following validations:
+
+| Guard                 | Condition                                    | Error Reason    |
+| --------------------- | -------------------------------------------- | --------------- |
+| In-Progress Check     | PENDING or RUNNING record exists             | `in_progress`   |
+| Origin Exists         | CONTINUE/RETRY without prior NEW record      | `no_origin`     |
+| Origin Open           | CONTINUE/RETRY when origin is DONE           | `origin_done`   |
+
+These guards ensure:
+
+1. **No concurrent posting** - Only one PostRecord can be PENDING/RUNNING per submission at a time
+2. **Valid chain linkage** - CONTINUE/RETRY modes must have a valid origin to chain from
+3. **Chain closure respected** - Once an origin is DONE, a new chain (NEW mode) must be started
