@@ -8,6 +8,7 @@ import {
   SubmissionRating,
   SubmissionType,
 } from '@postybirb/types';
+import { AccountBootstrapper } from '../../../account/account.bootstrapper';
 import { AccountModule } from '../../../account/account.module';
 import { AccountService } from '../../../account/account.service';
 import { CreateAccountDto } from '../../../account/dtos/create-account.dto';
@@ -69,6 +70,9 @@ describe('PostQueueService', () => {
           SettingsService,
         ],
       }).compile();
+
+      // Mock AccountBootstrapper.emit to prevent CQRS command execution during test setup
+      const bootstrapper = module.get<AccountBootstrapper>(AccountBootstrapper);
 
       service = module.get<PostQueueService>(PostQueueService);
       submissionService = module.get<SubmissionService>(SubmissionService);

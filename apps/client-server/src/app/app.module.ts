@@ -1,5 +1,6 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 
+import { CqrsModule } from '@nestjs/cqrs';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
@@ -32,6 +33,7 @@ import { WebsitesModule } from './websites/websites.module';
 
 @Module({
   imports: [
+    CqrsModule.forRoot(),
     AppInsightsModule,
     ScheduleModule.forRoot(),
     AccountModule,
