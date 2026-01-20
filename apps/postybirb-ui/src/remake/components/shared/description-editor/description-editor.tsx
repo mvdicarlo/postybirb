@@ -29,6 +29,8 @@ import {
 
 import '@blocknote/core/fonts/inter.css';
 import '@blocknote/mantine/style.css';
+import { TagsShortcut } from './custom-blocks/tags-shortcut-block';
+import { TitleShortcut } from './custom-blocks/title-shortcut-block';
 import './description-editor.css';
 
 // Shortcut trigger character for username and custom shortcuts
@@ -91,6 +93,8 @@ function DescriptionEditorInner({
           image: defaultBlockSpecs.image,
           table: defaultBlockSpecs.table,
           defaultShortcut: DefaultShortcut(),
+          tagShortcut: TagsShortcut(),
+          titleShortcut: TitleShortcut(),
         },
         inlineContentSpecs: {
           ...defaultInlineContentSpecs,

@@ -1,20 +1,20 @@
 import { Trans } from '@lingui/react/macro';
 /* eslint-disable lingui/no-unlocalized-strings */
 import {
-  BlockNoteEditor,
-  BlockNoteSchema,
-  defaultBlockSpecs,
-  defaultInlineContentSpecs,
-  defaultStyleSpecs,
+    BlockNoteEditor,
+    BlockNoteSchema,
+    defaultBlockSpecs,
+    defaultInlineContentSpecs,
+    defaultStyleSpecs,
 } from '@blocknote/core';
 import '@blocknote/core/fonts/inter.css';
 import { BlockNoteView } from '@blocknote/mantine';
 import '@blocknote/mantine/style.css';
 import {
-  DefaultReactSuggestionItem,
-  getDefaultReactSlashMenuItems,
-  SuggestionMenuController,
-  useCreateBlockNote,
+    DefaultReactSuggestionItem,
+    getDefaultReactSlashMenuItems,
+    SuggestionMenuController,
+    useCreateBlockNote,
 } from '@blocknote/react';
 import { Tooltip, useMantineColorScheme } from '@mantine/core';
 import { Description, UsernameShortcut } from '@postybirb/types';
@@ -23,16 +23,24 @@ import { CustomShortcutStore } from '../../../stores/custom-shortcut.store';
 import { useStore } from '../../../stores/use-store';
 import { WebsiteStore } from '../../../stores/website.store';
 import {
-  getCustomShortcutsMenuItems,
-  InlineCustomShortcut,
+    getCustomShortcutsMenuItems,
+    InlineCustomShortcut,
 } from './custom/custom-shortcut';
 import {
-  DefaultShortcut,
-  insertDefaultShortcut,
+    DefaultShortcut,
+    insertDefaultShortcut,
 } from './custom/default-shortcut';
 import {
-  getUsernameShortcutsMenuItems,
-  InlineUsernameShortcut,
+    insertTagsShortcut,
+    TagsShortcut,
+} from './custom/tags-shortcut';
+import {
+    insertTitleShortcut,
+    TitleShortcut,
+} from './custom/title-shortcut';
+import {
+    getUsernameShortcutsMenuItems,
+    InlineUsernameShortcut,
 } from './custom/username-shortcut';
 import { filterSuggestionItems } from './filter-suggestion-item';
 
@@ -65,6 +73,8 @@ export const getCustomSlashMenuItems = (
   if (!isDefaultEditor) {
     // Step 3: Add DefaultShortcut item
     items.push(insertDefaultShortcut(editor));
+    items.push(insertTitleShortcut(editor));
+    items.push(insertTagsShortcut(editor));
   }
 
   return items;
@@ -89,6 +99,8 @@ export function PostyBirbEditor(props: PostyBirbEditorProps) {
       image: defaultBlockSpecs.image,
       table: defaultBlockSpecs.table,
       defaultShortcut: DefaultShortcut(),
+      tagsShortcut: TagsShortcut(),
+      titleShortcut: TitleShortcut(),
     },
     inlineContentSpecs: {
       ...defaultInlineContentSpecs,

@@ -1100,4 +1100,593 @@ describe('DescriptionNode', () => {
       expect(tree.toMarkdown()).toBe('Level 0\n\n> Level 1\n> \n> > Level 2');
     });
   });
+
+  describe('titleShortcut', () => {
+    it('should detect titleShortcut block with hasTitleShortcut()', () => {
+      const description: IDescriptionBlockNode[] = [
+        {
+          id: 'title-shortcut',
+          type: 'titleShortcut',
+          props: {},
+          content: [],
+          children: [],
+        },
+        {
+          id: 'para',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [{ type: 'text', text: 'Some text', styles: {}, props: {} }],
+          children: [],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'test',
+        shortcuts: {},
+        customShortcuts: new Map(),
+        defaultDescription: [],
+        title: 'My Title',
+        tags: [],
+      };
+
+      const tree = new DescriptionNodeTree(context, description, {
+        insertAd: false,
+      });
+
+      expect(tree.hasTitleShortcut()).toBe(true);
+      expect(tree.hasTagsShortcut()).toBe(false);
+    });
+
+    it('should render titleShortcut as heading in HTML', () => {
+      const description: IDescriptionBlockNode[] = [
+        {
+          id: 'title-shortcut',
+          type: 'titleShortcut',
+          props: {},
+          content: [],
+          children: [],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'test',
+        shortcuts: {},
+        customShortcuts: new Map(),
+        defaultDescription: [],
+        title: 'My Title',
+        tags: [],
+      };
+
+      const tree = new DescriptionNodeTree(context, description, {
+        insertAd: false,
+      });
+
+      expect(tree.toHtml()).toBe('<h2>My Title</h2>');
+    });
+
+    it('should render titleShortcut as heading in BBCode', () => {
+      const description: IDescriptionBlockNode[] = [
+        {
+          id: 'title-shortcut',
+          type: 'titleShortcut',
+          props: {},
+          content: [],
+          children: [],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'test',
+        shortcuts: {},
+        customShortcuts: new Map(),
+        defaultDescription: [],
+        title: 'My Title',
+        tags: [],
+      };
+
+      const tree = new DescriptionNodeTree(context, description, {
+        insertAd: false,
+      });
+
+      expect(tree.toBBCode()).toBe('[h2]My Title[/h2]');
+    });
+
+    it('should render titleShortcut as plain text', () => {
+      const description: IDescriptionBlockNode[] = [
+        {
+          id: 'title-shortcut',
+          type: 'titleShortcut',
+          props: {},
+          content: [],
+          children: [],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'test',
+        shortcuts: {},
+        customShortcuts: new Map(),
+        defaultDescription: [],
+        title: 'My Title',
+        tags: [],
+      };
+
+      const tree = new DescriptionNodeTree(context, description, {
+        insertAd: false,
+      });
+
+      expect(tree.toPlainText()).toBe('My Title');
+    });
+
+    it('should skip titleShortcut when title is empty', () => {
+      const description: IDescriptionBlockNode[] = [
+        {
+          id: 'title-shortcut',
+          type: 'titleShortcut',
+          props: {},
+          content: [],
+          children: [],
+        },
+        {
+          id: 'para',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [{ type: 'text', text: 'Some text', styles: {}, props: {} }],
+          children: [],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'test',
+        shortcuts: {},
+        customShortcuts: new Map(),
+        defaultDescription: [],
+        title: '',
+        tags: [],
+      };
+
+      const tree = new DescriptionNodeTree(context, description, {
+        insertAd: false,
+      });
+
+      expect(tree.toHtml()).toBe('<div>Some text</div>');
+      expect(tree.toBBCode()).toBe('Some text');
+      expect(tree.toPlainText()).toBe('Some text');
+    });
+
+    it('should skip titleShortcut when title is undefined', () => {
+      const description: IDescriptionBlockNode[] = [
+        {
+          id: 'title-shortcut',
+          type: 'titleShortcut',
+          props: {},
+          content: [],
+          children: [],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'test',
+        shortcuts: {},
+        customShortcuts: new Map(),
+        defaultDescription: [],
+        title: undefined,
+        tags: [],
+      };
+
+      const tree = new DescriptionNodeTree(context, description, {
+        insertAd: false,
+      });
+
+      expect(tree.toHtml()).toBe('');
+      expect(tree.toBBCode()).toBe('');
+      expect(tree.toPlainText()).toBe('');
+    });
+
+    it('should escape HTML entities in title', () => {
+      const description: IDescriptionBlockNode[] = [
+        {
+          id: 'title-shortcut',
+          type: 'titleShortcut',
+          props: {},
+          content: [],
+          children: [],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'test',
+        shortcuts: {},
+        customShortcuts: new Map(),
+        defaultDescription: [],
+        title: '<script>alert("xss")</script>',
+        tags: [],
+      };
+
+      const tree = new DescriptionNodeTree(context, description, {
+        insertAd: false,
+      });
+
+      expect(tree.toHtml()).toBe(
+        '<h2>&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;</h2>',
+      );
+    });
+  });
+
+  describe('tagsShortcut', () => {
+    it('should detect tagsShortcut block with hasTagsShortcut()', () => {
+      const description: IDescriptionBlockNode[] = [
+        {
+          id: 'para',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [{ type: 'text', text: 'Some text', styles: {}, props: {} }],
+          children: [],
+        },
+        {
+          id: 'tags-shortcut',
+          type: 'tagsShortcut',
+          props: {},
+          content: [],
+          children: [],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'test',
+        shortcuts: {},
+        customShortcuts: new Map(),
+        defaultDescription: [],
+        title: '',
+        tags: ['tag1', 'tag2'],
+      };
+
+      const tree = new DescriptionNodeTree(context, description, {
+        insertAd: false,
+      });
+
+      expect(tree.hasTagsShortcut()).toBe(true);
+      expect(tree.hasTitleShortcut()).toBe(false);
+    });
+
+    it('should render tagsShortcut as space-separated tags in HTML', () => {
+      const description: IDescriptionBlockNode[] = [
+        {
+          id: 'tags-shortcut',
+          type: 'tagsShortcut',
+          props: {},
+          content: [],
+          children: [],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'test',
+        shortcuts: {},
+        customShortcuts: new Map(),
+        defaultDescription: [],
+        title: '',
+        tags: ['tag1', 'tag2', 'tag3'],
+      };
+
+      const tree = new DescriptionNodeTree(context, description, {
+        insertAd: false,
+      });
+
+      expect(tree.toHtml()).toBe('<div>tag1 tag2 tag3</div>');
+    });
+
+    it('should render tagsShortcut as space-separated tags in BBCode', () => {
+      const description: IDescriptionBlockNode[] = [
+        {
+          id: 'tags-shortcut',
+          type: 'tagsShortcut',
+          props: {},
+          content: [],
+          children: [],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'test',
+        shortcuts: {},
+        customShortcuts: new Map(),
+        defaultDescription: [],
+        title: '',
+        tags: ['tag1', 'tag2', 'tag3'],
+      };
+
+      const tree = new DescriptionNodeTree(context, description, {
+        insertAd: false,
+      });
+
+      expect(tree.toBBCode()).toBe('tag1 tag2 tag3');
+    });
+
+    it('should render tagsShortcut as space-separated tags in plain text', () => {
+      const description: IDescriptionBlockNode[] = [
+        {
+          id: 'tags-shortcut',
+          type: 'tagsShortcut',
+          props: {},
+          content: [],
+          children: [],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'test',
+        shortcuts: {},
+        customShortcuts: new Map(),
+        defaultDescription: [],
+        title: '',
+        tags: ['tag1', 'tag2', 'tag3'],
+      };
+
+      const tree = new DescriptionNodeTree(context, description, {
+        insertAd: false,
+      });
+
+      expect(tree.toPlainText()).toBe('tag1 tag2 tag3');
+    });
+
+    it('should skip tagsShortcut when tags is empty array', () => {
+      const description: IDescriptionBlockNode[] = [
+        {
+          id: 'tags-shortcut',
+          type: 'tagsShortcut',
+          props: {},
+          content: [],
+          children: [],
+        },
+        {
+          id: 'para',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [{ type: 'text', text: 'Some text', styles: {}, props: {} }],
+          children: [],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'test',
+        shortcuts: {},
+        customShortcuts: new Map(),
+        defaultDescription: [],
+        title: '',
+        tags: [],
+      };
+
+      const tree = new DescriptionNodeTree(context, description, {
+        insertAd: false,
+      });
+
+      expect(tree.toHtml()).toBe('<div>Some text</div>');
+      expect(tree.toBBCode()).toBe('Some text');
+      expect(tree.toPlainText()).toBe('Some text');
+    });
+
+    it('should skip tagsShortcut when tags is undefined', () => {
+      const description: IDescriptionBlockNode[] = [
+        {
+          id: 'tags-shortcut',
+          type: 'tagsShortcut',
+          props: {},
+          content: [],
+          children: [],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'test',
+        shortcuts: {},
+        customShortcuts: new Map(),
+        defaultDescription: [],
+        title: '',
+        tags: undefined,
+      };
+
+      const tree = new DescriptionNodeTree(context, description, {
+        insertAd: false,
+      });
+
+      expect(tree.toHtml()).toBe('');
+      expect(tree.toBBCode()).toBe('');
+      expect(tree.toPlainText()).toBe('');
+    });
+  });
+
+  describe('findBlockNodesByType', () => {
+    it('should find all block nodes of a specific type', () => {
+      const description: IDescriptionBlockNode[] = [
+        {
+          id: 'title-1',
+          type: 'titleShortcut',
+          props: {},
+          content: [],
+          children: [],
+        },
+        {
+          id: 'para',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [{ type: 'text', text: 'Text', styles: {}, props: {} }],
+          children: [],
+        },
+        {
+          id: 'tags-1',
+          type: 'tagsShortcut',
+          props: {},
+          content: [],
+          children: [],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'test',
+        shortcuts: {},
+        customShortcuts: new Map(),
+        defaultDescription: [],
+      };
+
+      const tree = new DescriptionNodeTree(context, description, {
+        insertAd: false,
+      });
+
+      expect(tree.findBlockNodesByType('titleShortcut').length).toBe(1);
+      expect(tree.findBlockNodesByType('tagsShortcut').length).toBe(1);
+      expect(tree.findBlockNodesByType('paragraph').length).toBe(1);
+      expect(tree.findBlockNodesByType('heading').length).toBe(0);
+    });
+
+    it('should find block nodes in nested children', () => {
+      const description: IDescriptionBlockNode[] = [
+        {
+          id: 'parent',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [{ type: 'text', text: 'Parent', styles: {}, props: {} }],
+          children: [
+            {
+              id: 'nested-title',
+              type: 'titleShortcut',
+              props: {},
+              content: [],
+              children: [],
+            },
+          ],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'test',
+        shortcuts: {},
+        customShortcuts: new Map(),
+        defaultDescription: [],
+      };
+
+      const tree = new DescriptionNodeTree(context, description, {
+        insertAd: false,
+      });
+
+      expect(tree.findBlockNodesByType('titleShortcut').length).toBe(1);
+      expect(tree.hasTitleShortcut()).toBe(true);
+    });
+  });
+
+  describe('combined title and tags shortcuts', () => {
+    it('should render both titleShortcut and tagsShortcut in correct positions', () => {
+      const description: IDescriptionBlockNode[] = [
+        {
+          id: 'title-shortcut',
+          type: 'titleShortcut',
+          props: {},
+          content: [],
+          children: [],
+        },
+        {
+          id: 'para',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [
+            { type: 'text', text: 'Description body', styles: {}, props: {} },
+          ],
+          children: [],
+        },
+        {
+          id: 'tags-shortcut',
+          type: 'tagsShortcut',
+          props: {},
+          content: [],
+          children: [],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'test',
+        shortcuts: {},
+        customShortcuts: new Map(),
+        defaultDescription: [],
+        title: 'My Title',
+        tags: ['tag1', 'tag2'],
+      };
+
+      const tree = new DescriptionNodeTree(context, description, {
+        insertAd: false,
+      });
+
+      expect(tree.toHtml()).toBe(
+        '<h2>My Title</h2><div>Description body</div><div>tag1 tag2</div>',
+      );
+      expect(tree.toBBCode()).toBe(
+        '[h2]My Title[/h2]\nDescription body\ntag1 tag2',
+      );
+      expect(tree.toPlainText()).toBe(
+        'My Title\r\nDescription body\r\ntag1 tag2',
+      );
+    });
+
+    it('should detect both shortcuts present', () => {
+      const description: IDescriptionBlockNode[] = [
+        {
+          id: 'title-shortcut',
+          type: 'titleShortcut',
+          props: {},
+          content: [],
+          children: [],
+        },
+        {
+          id: 'tags-shortcut',
+          type: 'tagsShortcut',
+          props: {},
+          content: [],
+          children: [],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'test',
+        shortcuts: {},
+        customShortcuts: new Map(),
+        defaultDescription: [],
+        title: 'Title',
+        tags: ['tag'],
+      };
+
+      const tree = new DescriptionNodeTree(context, description, {
+        insertAd: false,
+      });
+
+      expect(tree.hasTitleShortcut()).toBe(true);
+      expect(tree.hasTagsShortcut()).toBe(true);
+    });
+  });
 });

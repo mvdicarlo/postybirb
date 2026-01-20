@@ -1,8 +1,8 @@
 /* eslint-disable lingui/no-unlocalized-strings */
 import type { BlockNoteEditor } from '@blocknote/core';
 import {
-    DefaultReactSuggestionItem,
-    getDefaultReactSlashMenuItems,
+  DefaultReactSuggestionItem,
+  getDefaultReactSlashMenuItems,
 } from '@blocknote/react';
 import { IconTextPlus } from '@tabler/icons-react';
 
@@ -34,6 +34,34 @@ export function getCustomSlashMenuItems(
       onItemClick: () => {
         editor.insertBlocks(
           [{ type: 'defaultShortcut' }],
+          editor.getTextCursorPosition().block,
+          'after'
+        );
+      },
+    });
+
+    filteredItems.push({
+      title: 'Title',
+      aliases: ['title'],
+      group: 'Shortcuts',
+      icon: <IconTextPlus size={18} />,
+      onItemClick: () => {
+        editor.insertBlocks(
+          [{ type: 'titleShortcut' }],
+          editor.getTextCursorPosition().block,
+          'after'
+        );
+      },
+    });
+
+    filteredItems.push({
+      title: 'Tags',
+      aliases: ['tags'],
+      group: 'Shortcuts',
+      icon: <IconTextPlus size={18} />,
+      onItemClick: () => {
+        editor.insertBlocks(
+          [{ type: 'tagsShortcut' }],
           editor.getTextCursorPosition().block,
           'after'
         );
