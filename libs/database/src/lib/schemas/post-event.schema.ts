@@ -1,5 +1,6 @@
 import { relations } from 'drizzle-orm';
 import { index, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { v4 } from 'uuid';
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
 import {
   IPostEventError,
@@ -21,7 +22,7 @@ export const PostEventSchema = sqliteTable(
       .primaryKey()
       .unique()
       .notNull()
-      .$default(() => crypto.randomUUID()),
+      .$default(() => v4()),
     createdAt: text()
       .notNull()
       .$default(() => new Date().toISOString()),
@@ -32,7 +33,9 @@ export const PostEventSchema = sqliteTable(
       .references(() => PostRecordSchema.id, { onDelete: 'cascade' }),
 
     // Account this event relates to
-    accountId: id().references(() => AccountSchema.id, { onDelete: 'set null' }),
+    accountId: id().references(() => AccountSchema.id, {
+      onDelete: 'set null',
+    }),
 
     // Event classification
     eventType: text({
@@ -66,9 +69,9 @@ export const PostEventSchema = sqliteTable(
     index('idx_post_event_account').on(
       table.postRecordId,
       table.accountId,
-      table.eventType
+      table.eventType,
     ),
-  ]
+  ],
 );
 
 export const PostEventRelations = relations(PostEventSchema, ({ one }) => ({
