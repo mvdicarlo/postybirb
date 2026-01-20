@@ -1,7 +1,7 @@
 import { IPostRecord } from '../../models';
 import { IEntityDto } from '../database/entity.dto';
-import { WebsitePostRecordDto } from './website-post-record.dto';
+import { PostEventDto } from './post-event.dto';
 
-export type PostRecordDto = Omit<IEntityDto<IPostRecord>, 'children'> & {
-  children: WebsitePostRecordDto[];
+export type PostRecordDto = Omit<IEntityDto<IPostRecord>, 'events'> & {
+  events?: PostEventDto[];
 };

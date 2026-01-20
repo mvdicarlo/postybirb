@@ -11,13 +11,14 @@ import {
   ScrollArea,
   Stack,
   Text,
-  Textarea,
   ThemeIcon,
   Title,
-  Tooltip,
+  Tooltip
 } from '@mantine/core';
 import {
-  PostRecordDto,
+  EntityId,
+  PostEventDto,
+  PostEventType,
   PostRecordState,
   SubmissionType,
 } from '@postybirb/types';
@@ -31,7 +32,6 @@ import {
   IconMessage,
   IconX,
 } from '@tabler/icons-react';
-import { uniq } from 'lodash';
 import moment from 'moment';
 import { useMemo } from 'react';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
@@ -41,23 +41,99 @@ import { SubmissionFilePreview } from '../../submissions/submission-file-preview
 import './recent-posts.css';
 
 interface RecentPostsProps {
-  posts: PostRecordDto[];
   submissions: SubmissionDto[];
 }
 
-export function RecentPosts({ posts, submissions }: RecentPostsProps) {
+/**
+ * Derived website post information from events.
+ */
+interface DerivedWebsitePost {
+  accountId: EntityId;
+  accountName: string;
+  websiteName: string;
+  isSuccess: boolean;
+  sourceUrls: string[];
+  errors: string[];
+}
+
+/**
+ * Extract website post results from post events.
+ * Aggregates events per account to determine success/failure and source URLs.
+ */
+function extractWebsitePostsFromEvents(
+  events: PostEventDto[] | undefined,
+): DerivedWebsitePost[] {
+  if (!events || events.length === 0) return [];
+
+  const postsByAccount = new Map<EntityId, DerivedWebsitePost>();
+
+  for (const event of events) {
+    if (!event.accountId) continue;
+
+    let post = postsByAccount.get(event.accountId);
+    if (!post) {
+      const accountSnapshot = event.metadata?.accountSnapshot;
+      post = {
+        accountId: event.accountId,
+        // eslint-disable-next-line lingui/no-unlocalized-strings
+        accountName: accountSnapshot?.name ?? 'Unknown',
+        // eslint-disable-next-line lingui/no-unlocalized-strings
+        websiteName: accountSnapshot?.website ?? '?',
+        isSuccess: false,
+        sourceUrls: [],
+        errors: [],
+      };
+      postsByAccount.set(event.accountId, post);
+    }
+
+    switch (event.eventType) {
+      case PostEventType.POST_ATTEMPT_COMPLETED:
+        post.isSuccess = true;
+        break;
+
+      case PostEventType.POST_ATTEMPT_FAILED:
+        post.isSuccess = false;
+        if (event.error?.message) {
+          post.errors.push(event.error.message);
+        }
+        break;
+
+      case PostEventType.MESSAGE_POSTED:
+      case PostEventType.FILE_POSTED:
+        if (event.sourceUrl) {
+          post.sourceUrls.push(event.sourceUrl);
+        }
+        break;
+
+      case PostEventType.MESSAGE_FAILED:
+      case PostEventType.FILE_FAILED:
+        if (event.error?.message) {
+          post.errors.push(event.error.message);
+        }
+        break;
+
+      default:
+        break;
+    }
+  }
+
+  return Array.from(postsByAccount.values());
+}
+
+export function RecentPosts({ submissions }: RecentPostsProps) {
   const recentPosts = useMemo(
     () =>
-      posts
-        .filter(
-          (post) =>
-            post.state === PostRecordState.DONE ||
-            post.state === PostRecordState.FAILED,
+      submissions
+        .flatMap((submission) =>
+          submission.posts
+            .filter(
+              (post) =>
+                post.state === PostRecordState.DONE ||
+                post.state === PostRecordState.FAILED,
+            )
+            .map((post) => ({ post, submission })),
         )
-        .map((post) => {
-          const submission = submissions.find(
-            (s) => s.id === post.submissionId,
-          );
+        .map(({ post, submission }) => {
           const title = submission?.getDefaultOptions()?.data?.title || (
             <CommonTranslations.Unknown />
           );
@@ -70,38 +146,16 @@ export function RecentPosts({ posts, submissions }: RecentPostsProps) {
           const isSuccess = post.state === PostRecordState.DONE;
           const submissionType = submission?.type || SubmissionType.FILE;
 
-          // Get errors from failed website posts
-          const errors =
-            post.children
-              ?.filter((child) => child.errors && child.errors.length > 0)
-              .map((child) => ({
-                account: child.account?.name || <CommonTranslations.Unknown />,
-                website: child.account?.website,
-                errors: child.errors,
-              })) || [];
+          // Extract website posts from events
+          const websitePosts = extractWebsitePostsFromEvents(post.events);
 
-          // Get successful posts with source URLs
-          const successfulPosts =
-            post.children
-              ?.filter(
-                (child) => child.errors.length === 0 && child.completedAt,
-              )
-              .map((child) => {
-                const sourceUrls = child.metadata.source
-                  ? [child.metadata.source]
-                  : uniq(Object.values(child.metadata.sourceMap)).filter(
-                      Boolean,
-                    );
-                return {
-                  account: child.account?.name || (
-                    <CommonTranslations.Unknown />
-                  ),
-                  website:
-                    child.account?.website ||
-                    child.account?.websiteInfo?.websiteDisplayName,
-                  sourceUrls,
-                };
-              }) || [];
+          // Get failed and successful posts
+          const failedPosts = websitePosts.filter(
+            (wp) => !wp.isSuccess && wp.errors.length > 0,
+          );
+          const successfulPosts = websitePosts.filter(
+            (wp) => wp.isSuccess && wp.sourceUrls.length > 0,
+          );
 
           return {
             id: post.id,
@@ -111,7 +165,7 @@ export function RecentPosts({ posts, submissions }: RecentPostsProps) {
             completedAt,
             submission,
             submissionType,
-            errors,
+            failedPosts,
             successfulPosts,
             post,
           };
@@ -124,7 +178,7 @@ export function RecentPosts({ posts, submissions }: RecentPostsProps) {
             new Date(a.completedAt).getTime()
           );
         }),
-    [posts, submissions],
+    [submissions],
   );
 
   if (recentPosts.length === 0) {
@@ -236,7 +290,7 @@ export function RecentPosts({ posts, submissions }: RecentPostsProps) {
                         </Tooltip>
                       </Group>
 
-                      <Group gap="sm" mb={post.errors.length > 0 ? 8 : 0}>
+                      <Group gap="sm" mb={post.failedPosts.length > 0 ? 8 : 0}>
                         <Badge
                           color={post.isSuccess ? 'green' : 'red'}
                           variant="filled"
@@ -261,7 +315,7 @@ export function RecentPosts({ posts, submissions }: RecentPostsProps) {
                             {post.completedAt}
                           </Text>
                         )}
-                        {!post.isSuccess && post.errors.length > 0 && (
+                        {!post.isSuccess && post.failedPosts.length > 0 && (
                           <Badge
                             color="red"
                             variant="light"
@@ -269,8 +323,8 @@ export function RecentPosts({ posts, submissions }: RecentPostsProps) {
                             size="sm"
                             leftSection={<IconAlertCircle size={12} />}
                           >
-                            {post.errors.length}{' '}
-                            {post.errors.length === 1 ? (
+                            {post.failedPosts.length}{' '}
+                            {post.failedPosts.length === 1 ? (
                               <Trans>Error</Trans>
                             ) : (
                               <Trans>Errors</Trans>
@@ -290,39 +344,32 @@ export function RecentPosts({ posts, submissions }: RecentPostsProps) {
                             </Accordion.Control>
                             <Accordion.Panel>
                               <Stack gap="xs">
-                                {post.successfulPosts.map(
-                                  (successPost, idx) => (
-                                    <Box
-                                      // eslint-disable-next-line react/no-array-index-key
-                                      key={idx}
-                                    >
-                                      <Text size="xs" fw={500} mb={4}>
-                                        {successPost.account}{' '}
-                                        {successPost.website && (
-                                          <Text span c="dimmed">
-                                            ({successPost.website})
-                                          </Text>
-                                        )}
+                                {post.successfulPosts.map((successPost) => (
+                                  <Box key={successPost.accountId}>
+                                    <Text size="xs" fw={500} mb={4}>
+                                      {successPost.accountName}{' '}
+                                      <Text span c="dimmed">
+                                        ({successPost.websiteName})
                                       </Text>
-                                      {successPost.sourceUrls.length > 0 ? (
-                                        <Stack gap={4}>
-                                          {successPost.sourceUrls.map((url) => (
-                                            <ExternalLink key={url} href={url}>
-                                              <Group gap={4}>
-                                                <Text size="xs">{url}</Text>
-                                                <IconExternalLink size={12} />
-                                              </Group>
-                                            </ExternalLink>
-                                          ))}
-                                        </Stack>
-                                      ) : (
-                                        <Text size="xs" c="dimmed">
-                                          <CommonTranslations.NoItemsFound />
-                                        </Text>
-                                      )}
-                                    </Box>
-                                  ),
-                                )}
+                                    </Text>
+                                    {successPost.sourceUrls.length > 0 ? (
+                                      <Stack gap={4}>
+                                        {successPost.sourceUrls.map((url) => (
+                                          <ExternalLink key={url} href={url}>
+                                            <Group gap={4}>
+                                              <Text size="xs">{url}</Text>
+                                              <IconExternalLink size={12} />
+                                            </Group>
+                                          </ExternalLink>
+                                        ))}
+                                      </Stack>
+                                    ) : (
+                                      <Text size="xs" c="dimmed">
+                                        <CommonTranslations.NoItemsFound />
+                                      </Text>
+                                    )}
+                                  </Box>
+                                ))}
                               </Stack>
                             </Accordion.Panel>
                           </Accordion.Item>
@@ -330,7 +377,7 @@ export function RecentPosts({ posts, submissions }: RecentPostsProps) {
                       )}
 
                       {/* Error Details */}
-                      {!post.isSuccess && post.errors.length > 0 && (
+                      {!post.isSuccess && post.failedPosts.length > 0 && (
                         <Accordion variant="contained" radius="md">
                           <Accordion.Item value="errors">
                             <Accordion.Control>
@@ -340,110 +387,65 @@ export function RecentPosts({ posts, submissions }: RecentPostsProps) {
                             </Accordion.Control>
                             <Accordion.Panel>
                               <Stack gap="md">
-                                {post.errors.map((errorGroup, idx) => {
+                                {post.failedPosts.map((failedPost) => {
                                   const errorJson = JSON.stringify(
-                                    errorGroup.errors,
+                                    failedPost.errors,
                                     null,
                                     2,
                                   );
                                   return (
                                     <Alert
-                                      // eslint-disable-next-line react/no-array-index-key
-                                      key={idx}
+                                      key={failedPost.accountId}
                                       variant="light"
                                       color="red"
                                       title={
-                                        <Group justify="space-between">
-                                          <Text size="sm">
-                                            {errorGroup.account}{' '}
-                                            {errorGroup.website && (
-                                              <Text span c="dimmed">
-                                                ({errorGroup.website})
-                                              </Text>
-                                            )}
+                                        <Text size="sm">
+                                          {failedPost.accountName}{' '}
+                                          <Text span c="dimmed">
+                                            ({failedPost.websiteName})
                                           </Text>
-                                        </Group>
+                                        </Text>
                                       }
                                       icon={<IconAlertCircle size={16} />}
                                     >
                                       <Stack gap="xs">
-                                        {errorGroup.errors.map(
+                                        {failedPost.errors.map(
                                           (error, errIdx) => (
-                                            <Box
+                                            <Text
                                               // eslint-disable-next-line react/no-array-index-key
                                               key={errIdx}
+                                              size="xs"
+                                              c="dimmed"
                                             >
-                                              <Text size="xs" fw={500}>
-                                                {error.stage}
-                                              </Text>
-                                              <Text size="xs" c="dimmed">
-                                                {error.message}
-                                              </Text>
-                                              {error.timestamp && (
-                                                <Text
-                                                  size="xs"
-                                                  c="dimmed"
-                                                  mt={2}
-                                                >
-                                                  {moment(
-                                                    error.timestamp,
-                                                  ).format(
-                                                    // eslint-disable-next-line lingui/no-unlocalized-strings
-                                                    'LTS',
-                                                  )}
-                                                </Text>
-                                              )}
-                                            </Box>
+                                              {error}
+                                            </Text>
                                           ),
                                         )}
 
-                                        {/* JSON Details */}
+                                        {/* Copy JSON */}
                                         <Box mt="xs">
-                                          <Group
-                                            justify="space-between"
-                                            mb="xs"
-                                          >
-                                            <Text size="xs" fw={500}>
-                                              <Trans>Error</Trans>
-                                            </Text>
-                                            <CopyButton
-                                              value={errorJson}
-                                              timeout={2000}
-                                            >
-                                              {({ copied, copy }) => (
-                                                <Button
-                                                  color={
-                                                    copied ? 'teal' : 'gray'
-                                                  }
-                                                  onClick={copy}
-                                                  leftSection={
-                                                    <IconCopy size={12} />
-                                                  }
-                                                  size="xs"
-                                                  variant="subtle"
-                                                >
-                                                  {copied ? (
-                                                    <CommonTranslations.CopiedToClipboard />
-                                                  ) : (
-                                                    <CommonTranslations.CopyToClipboard />
-                                                  )}
-                                                </Button>
-                                              )}
-                                            </CopyButton>
-                                          </Group>
-                                          <Textarea
-                                            readOnly
-                                            autosize
-                                            minRows={3}
-                                            maxRows={8}
+                                          <CopyButton
                                             value={errorJson}
-                                            styles={{
-                                              input: {
-                                                fontFamily: 'monospace',
-                                                fontSize: '0.75rem',
-                                              },
-                                            }}
-                                          />
+                                            timeout={2000}
+                                          >
+                                            {({ copied, copy }) => (
+                                              <Button
+                                                color={copied ? 'teal' : 'gray'}
+                                                onClick={copy}
+                                                leftSection={
+                                                  <IconCopy size={12} />
+                                                }
+                                                size="xs"
+                                                variant="subtle"
+                                              >
+                                                {copied ? (
+                                                  <CommonTranslations.CopiedToClipboard />
+                                                ) : (
+                                                  <CommonTranslations.CopyToClipboard />
+                                                )}
+                                              </Button>
+                                            )}
+                                          </CopyButton>
                                         </Box>
                                       </Stack>
                                     </Alert>
