@@ -50,6 +50,11 @@ export class PostQueueService
     'SubmissionSchema',
   );
 
+  /**
+   * Maximum time (in ms) a post can be RUNNING without any activity before being considered stuck.
+   */
+  private readonly maxPostIdleTime = 30 * 60 * 1000; // 30 minutes
+
   constructor(
     private readonly postManagerRegistry: PostManagerRegistry,
     private readonly postRecordFactory: PostRecordFactory,
@@ -389,6 +394,29 @@ export class PostQueueService
   }
 
   /**
+   * Check if a RUNNING post record appears to be stuck (no activity for too long).
+   * Uses both record update time and last event time to determine activity.
+   *
+   * @param {PostRecord} record - The post record to check
+   * @returns {boolean} True if the record appears to be stuck
+   */
+  private isStuck(record: PostRecord): boolean {
+    if (record.state !== PostRecordState.RUNNING) {
+      return false;
+    }
+
+    // Find the most recent activity: either record update or last event
+    const recordUpdatedAt = new Date(record.updatedAt).getTime();
+    const lastEventAt = record.events?.length
+      ? Math.max(...record.events.map((e) => new Date(e.createdAt).getTime()))
+      : 0;
+    const lastActivityAt = Math.max(recordUpdatedAt, lastEventAt);
+    const idleTime = Date.now() - lastActivityAt;
+
+    return idleTime > this.maxPostIdleTime;
+  }
+
+  /**
    * Manages the queue by peeking at the top of the queue and deciding what to do based on the
    * state of the queue.
    *
@@ -443,10 +471,6 @@ export class PostQueueService
         await this.dequeue([submissionId]);
       } else if (!this.postManagerRegistry.isPostingType(submission.type)) {
         // Post is not in a terminal state, but the manager for this type is not posting, so restart it.
-        if (isPaused) {
-          return;
-        }
-
         this.logger
           .withMetadata({ record })
           .info(
@@ -455,7 +479,31 @@ export class PostQueueService
 
         // Start the post - the manager will build resume context from the record
         await this.postManagerRegistry.startPost(record);
+      } else if (this.isStuck(record)) {
+        // Manager is posting but record shows no activity - it's stuck
+        const recordUpdatedAt = new Date(record.updatedAt).getTime();
+        const lastEventAt = record.events?.length
+          ? Math.max(...record.events.map((e) => new Date(e.createdAt).getTime()))
+          : 0;
+        const lastActivityAt = Math.max(recordUpdatedAt, lastEventAt);
+
+        this.logger
+          .withMetadata({
+            submissionId,
+            recordId: record.id,
+            idleTime: Date.now() - lastActivityAt,
+            lastActivityAt: new Date(lastActivityAt).toISOString(),
+            eventCount: record.events?.length ?? 0,
+          })
+          .warn('PostRecord has been RUNNING without activity - marking as failed');
+
+        await this.postRecordRepository.update(record.id, {
+          state: PostRecordState.FAILED,
+          completedAt: new Date().toISOString(),
+        });
+        // Next cycle will handle terminal state
       }
+      // else: manager is actively posting and making progress - do nothing
     } catch (error) {
       this.logger.withMetadata({ error }).error('Failed to run queue');
       throw error;
