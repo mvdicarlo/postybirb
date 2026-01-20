@@ -437,3 +437,231 @@ describe('LegacyCustomShortcutConverter', () => {
   //     ]);
   //   });
 });
+
+describe('LegacyCustomShortcut unit tests', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { LegacyCustomShortcut } = require('../legacy-entities/legacy-custom-shortcut');
+
+  it('should convert {title} alone in a paragraph to titleShortcut block', async () => {
+    const legacy = new LegacyCustomShortcut({
+      _id: 'test-title-alone',
+      created: '2023-10-01T12:00:00Z',
+      lastUpdated: '2023-10-01T12:00:00Z',
+      shortcut: 'titlealone',
+      content: '<p>{title}</p>',
+      isDynamic: false,
+    });
+
+    const result = await legacy.convert();
+
+    // Should have a single titleShortcut block
+    expect(result.shortcut).toMatchObject([
+      {
+        type: 'titleShortcut',
+        props: {},
+        content: undefined,
+        children: [],
+      },
+    ]);
+  });
+
+  it('should convert {tags} alone in a paragraph to tagsShortcut block', async () => {
+    const legacy = new LegacyCustomShortcut({
+      _id: 'test-tags-alone',
+      created: '2023-10-01T12:00:00Z',
+      lastUpdated: '2023-10-01T12:00:00Z',
+      shortcut: 'tagsalone',
+      content: '<p>{tags}</p>',
+      isDynamic: false,
+    });
+
+    const result = await legacy.convert();
+
+    // Should have a single tagsShortcut block
+    expect(result.shortcut).toMatchObject([
+      {
+        type: 'tagsShortcut',
+        props: {},
+        content: undefined,
+        children: [],
+      },
+    ]);
+  });
+
+  it('should insert titleShortcut block before paragraph when {title} is with other content', async () => {
+    const legacy = new LegacyCustomShortcut({
+      _id: 'test-title-with-content',
+      created: '2023-10-01T12:00:00Z',
+      lastUpdated: '2023-10-01T12:00:00Z',
+      shortcut: 'titlewithcontent',
+      content: '<p>Hello {title} World</p>',
+      isDynamic: false,
+    });
+
+    const result = await legacy.convert();
+
+    // Should have 2 blocks: titleShortcut block + paragraph with remaining text
+    expect(result.shortcut).toHaveLength(2);
+    expect(result.shortcut[0]).toMatchObject({
+      type: 'titleShortcut',
+      props: {},
+      content: undefined,
+      children: [],
+    });
+    expect(result.shortcut[1]).toMatchObject({
+      type: 'paragraph',
+      props: expect.objectContaining({
+        textColor: 'default',
+        backgroundColor: 'default',
+        textAlignment: 'left',
+      }),
+      content: [
+        { type: 'text', text: 'Hello ', styles: {} },
+        { type: 'text', text: ' World', styles: {} },
+      ],
+      children: [],
+    });
+  });
+
+  it('should insert tagsShortcut block before paragraph when {tags} is with other content', async () => {
+    const legacy = new LegacyCustomShortcut({
+      _id: 'test-tags-with-content',
+      created: '2023-10-01T12:00:00Z',
+      lastUpdated: '2023-10-01T12:00:00Z',
+      shortcut: 'tagswithcontent',
+      content: '<p>See my {tags} here</p>',
+      isDynamic: false,
+    });
+
+    const result = await legacy.convert();
+
+    // Should have 2 blocks: tagsShortcut block + paragraph with remaining text
+    expect(result.shortcut).toHaveLength(2);
+    expect(result.shortcut[0]).toMatchObject({
+      type: 'tagsShortcut',
+      props: {},
+      content: undefined,
+      children: [],
+    });
+    expect(result.shortcut[1]).toMatchObject({
+      type: 'paragraph',
+      props: expect.objectContaining({
+        textColor: 'default',
+        backgroundColor: 'default',
+        textAlignment: 'left',
+      }),
+      content: [
+        { type: 'text', text: 'See my ', styles: {} },
+        { type: 'text', text: ' here', styles: {} },
+      ],
+      children: [],
+    });
+  });
+
+  it('should handle both {title} and {tags} in the same content', async () => {
+    const legacy = new LegacyCustomShortcut({
+      _id: 'test-title-and-tags',
+      created: '2023-10-01T12:00:00Z',
+      lastUpdated: '2023-10-01T12:00:00Z',
+      shortcut: 'titleandtags',
+      content: '<p>{title}</p><p>{tags}</p>',
+      isDynamic: false,
+    });
+
+    const result = await legacy.convert();
+
+    // Should have 2 blocks: titleShortcut + tagsShortcut
+    expect(result.shortcut).toHaveLength(2);
+    expect(result.shortcut[0]).toMatchObject({
+      type: 'titleShortcut',
+      props: {},
+      content: undefined,
+    });
+    expect(result.shortcut[1]).toMatchObject({
+      type: 'tagsShortcut',
+      props: {},
+      content: undefined,
+    });
+  });
+
+  it('should handle {title}, {tags}, and {default} together', async () => {
+    const legacy = new LegacyCustomShortcut({
+      _id: 'test-all-shortcuts',
+      created: '2023-10-01T12:00:00Z',
+      lastUpdated: '2023-10-01T12:00:00Z',
+      shortcut: 'allshortcuts',
+      content: '<p>{title}</p><p>{default}</p><p>{tags}</p>',
+      isDynamic: false,
+    });
+
+    const result = await legacy.convert();
+
+    // Should have 3 blocks: titleShortcut + defaultShortcut + tagsShortcut
+    expect(result.shortcut).toHaveLength(3);
+    expect(result.shortcut[0]).toMatchObject({
+      type: 'titleShortcut',
+      props: {},
+      content: undefined,
+    });
+    expect(result.shortcut[1]).toMatchObject({
+      type: 'defaultShortcut',
+      props: {},
+      content: [],
+    });
+    expect(result.shortcut[2]).toMatchObject({
+      type: 'tagsShortcut',
+      props: {},
+      content: undefined,
+    });
+  });
+
+  it('should handle {title} with {default} and text content', async () => {
+    const legacy = new LegacyCustomShortcut({
+      _id: 'test-mixed-content',
+      created: '2023-10-01T12:00:00Z',
+      lastUpdated: '2023-10-01T12:00:00Z',
+      shortcut: 'mixedcontent',
+      content: '<p>{title}</p><p>{default}</p><p>Some footer text with {tags}</p>',
+      isDynamic: false,
+    });
+
+    const result = await legacy.convert();
+
+    // Should have 4 blocks: titleShortcut + defaultShortcut + tagsShortcut + paragraph
+    expect(result.shortcut).toHaveLength(4);
+    expect(result.shortcut[0]).toMatchObject({
+      type: 'titleShortcut',
+      props: {},
+    });
+    expect(result.shortcut[1]).toMatchObject({
+      type: 'defaultShortcut',
+      props: {},
+    });
+    expect(result.shortcut[2]).toMatchObject({
+      type: 'tagsShortcut',
+      props: {},
+    });
+    expect(result.shortcut[3]).toMatchObject({
+      type: 'paragraph',
+      content: [
+        { type: 'text', text: 'Some footer text with ', styles: {} },
+      ],
+    });
+  });
+
+  it('should preserve id and name in converted result', async () => {
+    const legacy = new LegacyCustomShortcut({
+      _id: 'unique-id-123',
+      created: '2023-10-01T12:00:00Z',
+      lastUpdated: '2023-10-01T12:00:00Z',
+      shortcut: 'myshortcutname',
+      content: '<p>{title}</p>',
+      isDynamic: false,
+    });
+
+    const result = await legacy.convert();
+
+    expect(result.id).toBe('unique-id-123');
+    expect(result.name).toBe('myshortcutname');
+  });
+});
