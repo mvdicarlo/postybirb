@@ -36,6 +36,49 @@ import './description-editor.css';
 // Shortcut trigger character for username and custom shortcuts
 const shortcutTrigger = '`'; // Backtick character
 
+export type SlashMenuShortcutsConfig = {
+  /**
+   * Show Default shortcut in slash menu.
+   * @default true
+   */
+  default?: boolean;
+
+  /**
+   * Show Title shortcut in slash menu.
+   * @default true
+   */
+  title?: boolean;
+
+  /**
+   * Show Tags shortcut in slash menu.
+   * @default true
+   */
+  tags?: boolean;
+};
+
+export type ShortcutVisibilityConfig = {
+  /**
+   * Show user-defined custom shortcuts in the backtick menu.
+   * @default true
+   */
+  customShortcuts?: boolean;
+
+  /**
+   * Show username shortcuts in the backtick menu.
+   * @default true
+   */
+  usernameShortcuts?: boolean;
+
+  /**
+   * Controls which slash menu shortcuts are shown.
+   * - `true`: Show all slash menu shortcuts
+   * - `false`: Hide all slash menu shortcuts
+   * - `object`: Fine-grained control over each slash menu shortcut
+   * @default true
+   */
+  slashMenuShortcuts?: boolean | SlashMenuShortcutsConfig;
+};
+
 export type DescriptionEditorProps = {
   /**
    * Initial content for the editor.
@@ -53,9 +96,12 @@ export type DescriptionEditorProps = {
   isDefaultEditor?: boolean;
 
   /**
-   * Whether to show the custom shortcuts menu.
+   * Controls which shortcuts are shown in the backtick menu.
+   * - `true`: Show all shortcuts
+   * - `false`: Hide all shortcuts
+   * - `object`: Fine-grained control over each shortcut type
    */
-  showCustomShortcuts?: boolean;
+  showCustomShortcuts?: boolean | ShortcutVisibilityConfig;
 
   /**
    * Minimum height of the editor.
@@ -93,7 +139,7 @@ function DescriptionEditorInner({
           image: defaultBlockSpecs.image,
           table: defaultBlockSpecs.table,
           defaultShortcut: DefaultShortcut(),
-          tagShortcut: TagsShortcut(),
+          tagsShortcut: TagsShortcut(),
           titleShortcut: TitleShortcut(),
         },
         inlineContentSpecs: {
@@ -148,23 +194,65 @@ function DescriptionEditorInner({
         {/* Slash menu for block insertion */}
         <SuggestionMenuController
           triggerCharacter="/"
-          getItems={async (query) =>
-            filterSuggestionItems(
-              getCustomSlashMenuItems(editor, !!isDefaultEditor),
+          getItems={async (query) => {
+            // Resolve slash menu shortcuts config
+            // When isDefaultEditor is true, only hide the default shortcut
+            let slashMenuConfig: boolean | SlashMenuShortcutsConfig;
+
+            if (typeof showCustomShortcuts === 'boolean') {
+              if (!showCustomShortcuts) {
+                slashMenuConfig = false;
+              } else if (isDefaultEditor) {
+                slashMenuConfig = { default: false, title: true, tags: true };
+              } else {
+                slashMenuConfig = true;
+              }
+            } else if (isDefaultEditor) {
+              // Merge with user config, but always disable default for default editor
+              const userConfig = showCustomShortcuts?.slashMenuShortcuts;
+              if (typeof userConfig === 'boolean') {
+                slashMenuConfig = userConfig
+                  ? { default: false, title: true, tags: true }
+                  : false;
+              } else {
+                slashMenuConfig = {
+                  default: false,
+                  title: userConfig?.title ?? true,
+                  tags: userConfig?.tags ?? true,
+                };
+              }
+            } else {
+              slashMenuConfig = showCustomShortcuts?.slashMenuShortcuts ?? true;
+            }
+
+            return filterSuggestionItems(
+              getCustomSlashMenuItems(editor, slashMenuConfig),
               query,
-            )
-          }
+            );
+          }}
         />
 
         {/* Shortcut menu for username and custom shortcuts */}
         <SuggestionMenuController
           triggerCharacter={shortcutTrigger}
           getItems={async (query) => {
+            // Resolve shortcut visibility config
+            const showCustom =
+              typeof showCustomShortcuts === 'boolean'
+                ? showCustomShortcuts
+                : showCustomShortcuts?.customShortcuts ?? true;
+            const showUsername =
+              typeof showCustomShortcuts === 'boolean'
+                ? showCustomShortcuts
+                : showCustomShortcuts?.usernameShortcuts ?? true;
+
             const items = [
-              ...(showCustomShortcuts
+              ...(showCustom
                 ? getCustomShortcutsMenuItems(editor, customShortcuts)
                 : []),
-              ...getUsernameShortcutsMenuItems(editor, usernameShortcuts),
+              ...(showUsername
+                ? getUsernameShortcutsMenuItems(editor, usernameShortcuts)
+                : []),
             ];
             return filterShortcutMenuItems(items, query);
           }}

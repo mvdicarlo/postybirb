@@ -31,15 +31,8 @@ export const TagsShortcut = createReactBlockSpec(
 export const insertTagsShortcut = (editor: BlockNoteEditor) => ({
   title: 'Tags',
   onItemClick: () => {
-    editor.insertBlocks(
-      [
-        {
-          type: 'tagsShortcut',
-        },
-      ] as never,
-      editor.getTextCursorPosition().block,
-      'before',
-    );
+    const currentBlock = editor.getTextCursorPosition().block;
+    editor.replaceBlocks([currentBlock], [{ type: 'tagsShortcut' }] as never);
   },
   aliases: ['tags'],
   group: 'Shortcuts',

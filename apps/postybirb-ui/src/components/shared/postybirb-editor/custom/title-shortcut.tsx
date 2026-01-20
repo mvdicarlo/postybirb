@@ -31,15 +31,8 @@ export const TitleShortcut = createReactBlockSpec(
 export const insertTitleShortcut = (editor: BlockNoteEditor) => ({
   title: 'Title',
   onItemClick: () => {
-    editor.insertBlocks(
-      [
-        {
-          type: 'titleShortcut',
-        },
-      ] as never,
-      editor.getTextCursorPosition().block,
-      'before',
-    );
+    const currentBlock = editor.getTextCursorPosition().block;
+    editor.replaceBlocks([currentBlock], [{ type: 'titleShortcut' }] as never);
   },
   aliases: ['title'],
   group: 'Shortcuts',

@@ -442,7 +442,7 @@ describe('LegacyCustomShortcut unit tests', () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { LegacyCustomShortcut } = require('../legacy-entities/legacy-custom-shortcut');
 
-  it('should convert {title} alone in a paragraph to titleShortcut block', async () => {
+  it('should ignore {title} shortcut as it is deprecated in custom shortcuts', async () => {
     const legacy = new LegacyCustomShortcut({
       _id: 'test-title-alone',
       created: '2023-10-01T12:00:00Z',
@@ -454,18 +454,17 @@ describe('LegacyCustomShortcut unit tests', () => {
 
     const result = await legacy.convert();
 
-    // Should have a single titleShortcut block
-    expect(result.shortcut).toMatchObject([
-      {
-        type: 'titleShortcut',
-        props: {},
-        content: undefined,
-        children: [],
-      },
-    ]);
+    // {title} is deprecated, so it should remain as plain text
+    expect(result.shortcut).toHaveLength(1);
+    expect(result.shortcut[0].type).toBe('paragraph');
+    expect(result.shortcut[0].content).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ type: 'text', text: '{title}' }),
+      ]),
+    );
   });
 
-  it('should convert {tags} alone in a paragraph to tagsShortcut block', async () => {
+  it('should ignore {tags} shortcut as it is deprecated in custom shortcuts', async () => {
     const legacy = new LegacyCustomShortcut({
       _id: 'test-tags-alone',
       created: '2023-10-01T12:00:00Z',
@@ -477,176 +476,115 @@ describe('LegacyCustomShortcut unit tests', () => {
 
     const result = await legacy.convert();
 
-    // Should have a single tagsShortcut block
-    expect(result.shortcut).toMatchObject([
-      {
-        type: 'tagsShortcut',
-        props: {},
-        content: undefined,
-        children: [],
-      },
-    ]);
+    // {tags} is deprecated, so it should remain as plain text
+    expect(result.shortcut).toHaveLength(1);
+    expect(result.shortcut[0].type).toBe('paragraph');
+    expect(result.shortcut[0].content).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ type: 'text', text: '{tags}' }),
+      ]),
+    );
   });
 
-  it('should insert titleShortcut block before paragraph when {title} is with other content', async () => {
+  it('should ignore {default} shortcut as it is deprecated in custom shortcuts', async () => {
     const legacy = new LegacyCustomShortcut({
-      _id: 'test-title-with-content',
+      _id: 'test-default-alone',
       created: '2023-10-01T12:00:00Z',
       lastUpdated: '2023-10-01T12:00:00Z',
-      shortcut: 'titlewithcontent',
-      content: '<p>Hello {title} World</p>',
+      shortcut: 'defaultalone',
+      content: '<p>{default}</p>',
       isDynamic: false,
     });
 
     const result = await legacy.convert();
 
-    // Should have 2 blocks: titleShortcut block + paragraph with remaining text
-    expect(result.shortcut).toHaveLength(2);
-    expect(result.shortcut[0]).toMatchObject({
-      type: 'titleShortcut',
-      props: {},
-      content: undefined,
-      children: [],
-    });
-    expect(result.shortcut[1]).toMatchObject({
-      type: 'paragraph',
-      props: expect.objectContaining({
-        textColor: 'default',
-        backgroundColor: 'default',
-        textAlignment: 'left',
-      }),
-      content: [
-        { type: 'text', text: 'Hello ', styles: {} },
-        { type: 'text', text: ' World', styles: {} },
-      ],
-      children: [],
-    });
+    // {default} is deprecated, so it should remain as plain text
+    expect(result.shortcut).toHaveLength(1);
+    expect(result.shortcut[0].type).toBe('paragraph');
+    expect(result.shortcut[0].content).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ type: 'text', text: '{default}' }),
+      ]),
+    );
   });
 
-  it('should insert tagsShortcut block before paragraph when {tags} is with other content', async () => {
+  it('should keep {title}, {tags}, and {default} as plain text when mixed with other content', async () => {
     const legacy = new LegacyCustomShortcut({
-      _id: 'test-tags-with-content',
+      _id: 'test-mixed-deprecated',
       created: '2023-10-01T12:00:00Z',
       lastUpdated: '2023-10-01T12:00:00Z',
-      shortcut: 'tagswithcontent',
-      content: '<p>See my {tags} here</p>',
+      shortcut: 'mixeddeprecated',
+      content: '<p>Hello {title} and {tags} with {default} text</p>',
       isDynamic: false,
     });
 
     const result = await legacy.convert();
 
-    // Should have 2 blocks: tagsShortcut block + paragraph with remaining text
-    expect(result.shortcut).toHaveLength(2);
-    expect(result.shortcut[0]).toMatchObject({
-      type: 'tagsShortcut',
-      props: {},
-      content: undefined,
-      children: [],
-    });
-    expect(result.shortcut[1]).toMatchObject({
-      type: 'paragraph',
-      props: expect.objectContaining({
-        textColor: 'default',
-        backgroundColor: 'default',
-        textAlignment: 'left',
-      }),
-      content: [
-        { type: 'text', text: 'See my ', styles: {} },
-        { type: 'text', text: ' here', styles: {} },
-      ],
-      children: [],
-    });
+    // All deprecated shortcuts should remain as plain text
+    expect(result.shortcut).toHaveLength(1);
+    expect(result.shortcut[0].type).toBe('paragraph');
+    const textContent = JSON.stringify(result.shortcut[0].content);
+    expect(textContent).toContain('Hello');
+    expect(textContent).toContain('{title}');
+    expect(textContent).toContain('{tags}');
+    expect(textContent).toContain('{default}');
+    expect(textContent).toContain('text');
   });
 
-  it('should handle both {title} and {tags} in the same content', async () => {
+  it('should still convert username shortcuts while ignoring deprecated ones', async () => {
     const legacy = new LegacyCustomShortcut({
-      _id: 'test-title-and-tags',
+      _id: 'test-username-with-deprecated',
       created: '2023-10-01T12:00:00Z',
       lastUpdated: '2023-10-01T12:00:00Z',
-      shortcut: 'titleandtags',
-      content: '<p>{title}</p><p>{tags}</p>',
+      shortcut: 'usernamedeprecated',
+      content: '<p>{fa:myuser} and {title}</p>',
       isDynamic: false,
     });
 
     const result = await legacy.convert();
 
-    // Should have 2 blocks: titleShortcut + tagsShortcut
-    expect(result.shortcut).toHaveLength(2);
-    expect(result.shortcut[0]).toMatchObject({
-      type: 'titleShortcut',
-      props: {},
-      content: undefined,
-    });
-    expect(result.shortcut[1]).toMatchObject({
-      type: 'tagsShortcut',
-      props: {},
-      content: undefined,
-    });
+    // Username shortcut should be converted, but {title} should be plain text
+    expect(result.shortcut).toHaveLength(1);
+    expect(result.shortcut[0].type).toBe('paragraph');
+    
+    const content = result.shortcut[0].content;
+    // Should contain a username shortcut
+    const hasUsernameShortcut = content.some(
+      (item: any) => item.type === 'username' && item.props?.shortcut === 'furaffinity',
+    );
+    expect(hasUsernameShortcut).toBe(true);
+    
+    // {title} should be plain text
+    const textContent = JSON.stringify(content);
+    expect(textContent).toContain('{title}');
   });
 
-  it('should handle {title}, {tags}, and {default} together', async () => {
+  it('should still convert custom shortcuts while ignoring deprecated ones', async () => {
     const legacy = new LegacyCustomShortcut({
-      _id: 'test-all-shortcuts',
+      _id: 'test-custom-with-deprecated',
       created: '2023-10-01T12:00:00Z',
       lastUpdated: '2023-10-01T12:00:00Z',
-      shortcut: 'allshortcuts',
-      content: '<p>{title}</p><p>{default}</p><p>{tags}</p>',
+      shortcut: 'customdeprecated',
+      content: '<p>{myshortcut} and {tags}</p>',
       isDynamic: false,
     });
 
     const result = await legacy.convert();
 
-    // Should have 3 blocks: titleShortcut + defaultShortcut + tagsShortcut
-    expect(result.shortcut).toHaveLength(3);
-    expect(result.shortcut[0]).toMatchObject({
-      type: 'titleShortcut',
-      props: {},
-      content: undefined,
-    });
-    expect(result.shortcut[1]).toMatchObject({
-      type: 'defaultShortcut',
-      props: {},
-      content: [],
-    });
-    expect(result.shortcut[2]).toMatchObject({
-      type: 'tagsShortcut',
-      props: {},
-      content: undefined,
-    });
-  });
-
-  it('should handle {title} with {default} and text content', async () => {
-    const legacy = new LegacyCustomShortcut({
-      _id: 'test-mixed-content',
-      created: '2023-10-01T12:00:00Z',
-      lastUpdated: '2023-10-01T12:00:00Z',
-      shortcut: 'mixedcontent',
-      content: '<p>{title}</p><p>{default}</p><p>Some footer text with {tags}</p>',
-      isDynamic: false,
-    });
-
-    const result = await legacy.convert();
-
-    // Should have 4 blocks: titleShortcut + defaultShortcut + tagsShortcut + paragraph
-    expect(result.shortcut).toHaveLength(4);
-    expect(result.shortcut[0]).toMatchObject({
-      type: 'titleShortcut',
-      props: {},
-    });
-    expect(result.shortcut[1]).toMatchObject({
-      type: 'defaultShortcut',
-      props: {},
-    });
-    expect(result.shortcut[2]).toMatchObject({
-      type: 'tagsShortcut',
-      props: {},
-    });
-    expect(result.shortcut[3]).toMatchObject({
-      type: 'paragraph',
-      content: [
-        { type: 'text', text: 'Some footer text with ', styles: {} },
-      ],
-    });
+    // Custom shortcut should be converted, but {tags} should be plain text
+    expect(result.shortcut).toHaveLength(1);
+    expect(result.shortcut[0].type).toBe('paragraph');
+    
+    const content = result.shortcut[0].content;
+    // Should contain a customShortcut
+    const hasCustomShortcut = content.some(
+      (item: any) => item.type === 'customShortcut' && item.props?.id === 'myshortcut',
+    );
+    expect(hasCustomShortcut).toBe(true);
+    
+    // {tags} should be plain text
+    const textContent = JSON.stringify(content);
+    expect(textContent).toContain('{tags}');
   });
 
   it('should preserve id and name in converted result', async () => {
@@ -655,7 +593,7 @@ describe('LegacyCustomShortcut unit tests', () => {
       created: '2023-10-01T12:00:00Z',
       lastUpdated: '2023-10-01T12:00:00Z',
       shortcut: 'myshortcutname',
-      content: '<p>{title}</p>',
+      content: '<p>Some content</p>',
       isDynamic: false,
     });
 

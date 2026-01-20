@@ -31,15 +31,8 @@ export const DefaultShortcut = createReactBlockSpec(
 export const insertDefaultShortcut = (editor: BlockNoteEditor) => ({
   title: 'Default Description',
   onItemClick: () => {
-    editor.insertBlocks(
-      [
-        {
-          type: 'defaultShortcut',
-        },
-      ] as never,
-      editor.getTextCursorPosition().block,
-      'before',
-    );
+    const currentBlock = editor.getTextCursorPosition().block;
+    editor.replaceBlocks([currentBlock], [{ type: 'defaultShortcut' }] as never);
   },
   aliases: ['default'],
   group: 'Shortcuts',

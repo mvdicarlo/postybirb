@@ -41,13 +41,6 @@ export class LegacyCustomShortcut implements LegacyConverterEntity<ICustomShortc
     // Step 3: Convert legacy shortcuts to modern format
     shortcut = this.convertLegacyToModernShortcut(shortcut);
 
-    // Step 4: Convert default shortcuts to block-level elements
-    shortcut = this.convertDefaultToBlock(shortcut);
-
-    // Step 5: Convert title and tags shortcuts to block-level elements
-    shortcut = this.convertTitleToBlock(shortcut);
-    shortcut = this.convertTagsToBlock(shortcut);
-
     return {
       // eslint-disable-next-line no-underscore-dangle
       id: this._id,
@@ -66,7 +59,7 @@ export class LegacyCustomShortcut implements LegacyConverterEntity<ICustomShortc
     // Captures: (1) shortcut key, (2) optional modifier (ignored), (3) optional value
     const shortcutPattern =
       /^\{([a-zA-Z0-9]+)(?:\[([^\]]+)\])?(?::([^}]+))?\}$/;
-    const deprecatedShortcuts = ['cw'];
+    const deprecatedShortcuts = ['cw', 'default', 'title', 'tags'];
 
     // Mapping of legacy username shortcut keys to modern IDs
     const usernameShortcutMapping: Record<string, string> = {
@@ -181,7 +174,9 @@ export class LegacyCustomShortcut implements LegacyConverterEntity<ICustomShortc
    * Converts {default} shortcuts to block-level elements.
    * - If default is alone in a block, convert the block to type: 'defaultShortcut'
    * - If default is with other content, remove it and insert a defaultShortcut block before
+   * @deprecated No longer used for custom shortcuts - kept for future use
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private convertDefaultToBlock(blocks: Description): Description {
     const result: any[] = [];
 
@@ -250,7 +245,9 @@ export class LegacyCustomShortcut implements LegacyConverterEntity<ICustomShortc
    * Converts {title} shortcuts to block-level titleShortcut elements.
    * - If title is alone in a block, convert the block to type: 'titleShortcut'
    * - If title is with other content, remove it and insert a titleShortcut block before
+   * @deprecated No longer used for custom shortcuts - kept for future use
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private convertTitleToBlock(blocks: Description): Description {
     const result: any[] = [];
 
@@ -319,7 +316,9 @@ export class LegacyCustomShortcut implements LegacyConverterEntity<ICustomShortc
    * Converts {tags} shortcuts to block-level tagsShortcut elements.
    * - If tags is alone in a block, convert the block to type: 'tagsShortcut'
    * - If tags is with other content, remove it and insert a tagsShortcut block before
+   * @deprecated No longer used for custom shortcuts - kept for future use
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private convertTagsToBlock(blocks: Description): Description {
     const result: any[] = [];
 
@@ -403,7 +402,7 @@ export class LegacyCustomShortcut implements LegacyConverterEntity<ICustomShortc
     // where word is alphanumeric, modifier is anything except ], and text can contain anything except }
     const shortcutPattern = /\{([a-zA-Z0-9]+)(?:\[([^\]]+)\])?(?::([^}]+))?\}/g;
 
-    const deprecatedShortcuts = ['cw'];
+    const deprecatedShortcuts = ['cw', 'default', 'title', 'tags'];
 
     return content.replace(
       shortcutPattern,
