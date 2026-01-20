@@ -1,8 +1,8 @@
 import { PostRecordResumeMode, PostRecordState } from '../../enums';
 import { EntityId, IEntity } from '../database/entity.interface';
 import { ISubmission, SubmissionId } from '../submission/submission.interface';
+import { IPostEvent } from './post-event.interface';
 import { IPostQueueRecord } from './post-queue-record.interface';
-import { IWebsitePostRecord } from './website-post-record.interface';
 
 /**
  * Represents a record in queue to post (or already posted).
@@ -17,6 +17,27 @@ export interface IPostRecord extends IEntity {
    * @type {SubmissionId}
    */
   submission: ISubmission;
+
+  /**
+   * Reference to the originating NEW PostRecord for this chain.
+   * - null/undefined for NEW records (they ARE the origin)
+   * - Set to the origin's ID for CONTINUE/RETRY records
+   * @type {EntityId}
+   */
+  originPostRecordId?: EntityId;
+
+  /**
+   * The originating NEW PostRecord for this chain (resolved relation).
+   * @type {IPostRecord}
+   */
+  origin?: IPostRecord;
+
+  /**
+   * All CONTINUE/RETRY PostRecords that chain to this origin (resolved relation).
+   * Only populated when this record is the origin (resumeMode = NEW).
+   * @type {IPostRecord[]}
+   */
+  chainedRecords?: IPostRecord[];
 
   /**
    * The date the post was completed.
@@ -38,10 +59,11 @@ export interface IPostRecord extends IEntity {
   resumeMode: PostRecordResumeMode;
 
   /**
-   * The children of the post record.
-   * @type {IWebsitePostRecord[]}
+   * The event ledger for this post record.
+   * Each event represents an immutable posting action or state change.
+   * @type {IPostEvent[]}
    */
-  children: IWebsitePostRecord[];
+  events?: IPostEvent[];
 
   postQueueRecordId: EntityId;
 

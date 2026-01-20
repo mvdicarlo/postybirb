@@ -1,4 +1,4 @@
-import { SubmissionId } from '@postybirb/types';
+import { SubmissionId, SubmissionType } from '@postybirb/types';
 import { HttpClient } from '../transports/http-client';
 
 class PostManagerApi {
@@ -12,8 +12,10 @@ class PostManagerApi {
     return this.client.post<boolean>(`cancel/${submissionId}`, {});
   }
 
-  isPosting() {
-    return this.client.get<{ isPosting: boolean }>('is-posting');
+  isPosting(submissionType: SubmissionType) {
+    return this.client.get<{ isPosting: boolean }>(
+      `is-posting/${submissionType}`,
+    );
   }
 }
 

@@ -25,6 +25,23 @@
   box-shadow: var(--mantine-shadow-sm);
 }
 
+.postybirb__reorderable-item--failed {
+  background-color: color-mix(
+    in srgb,
+    var(--mantine-color-red-light) 15%,
+    transparent
+  );
+  border-color: var(--mantine-color-red-6);
+}
+
+.postybirb__reorderable-item--failed:hover {
+  background-color: color-mix(
+    in srgb,
+    var(--mantine-color-red-light) 20%,
+    transparent
+  );
+}
+
 .postybirb__reorderable-item-content {
   display: flex;
   align-items: center;

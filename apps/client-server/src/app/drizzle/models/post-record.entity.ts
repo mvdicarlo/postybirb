@@ -8,9 +8,9 @@ import {
 } from '@postybirb/types';
 import { instanceToPlain, Type } from 'class-transformer';
 import { DatabaseEntity } from './database-entity';
+import { PostEvent } from './post-event.entity';
 import { PostQueueRecord } from './post-queue-record.entity';
 import { Submission } from './submission.entity';
-import { WebsitePostRecord } from './website-post-record.entity';
 
 export class PostRecord extends DatabaseEntity implements IPostRecord {
   postQueueRecordId: EntityId;
@@ -19,6 +19,24 @@ export class PostRecord extends DatabaseEntity implements IPostRecord {
 
   @Type(() => Submission)
   submission: Submission;
+
+  /**
+   * Reference to the originating NEW PostRecord for this chain.
+   * null for NEW records (they ARE the origin).
+   */
+  originPostRecordId?: EntityId;
+
+  /**
+   * The originating NEW PostRecord (resolved relation).
+   */
+  @Type(() => PostRecord)
+  origin?: PostRecord;
+
+  /**
+   * All CONTINUE/RETRY PostRecords that chain to this origin.
+   */
+  @Type(() => PostRecord)
+  chainedRecords?: PostRecord[];
 
   completedAt?: string;
 
@@ -31,8 +49,8 @@ export class PostRecord extends DatabaseEntity implements IPostRecord {
     super(entity);
   }
 
-  @Type(() => WebsitePostRecord)
-  children: WebsitePostRecord[];
+  @Type(() => PostEvent)
+  events: PostEvent[];
 
   @Type(() => PostQueueRecord)
   postQueueRecord: PostQueueRecord;
@@ -46,7 +64,7 @@ export class PostRecord extends DatabaseEntity implements IPostRecord {
   toDTO(): PostRecordDto {
     const dto: PostRecordDto = {
       ...this.toObject(),
-      children: this.children?.map((child) => child.toDTO()),
+      events: this.events?.map((event) => event.toDTO()),
       postQueueRecord: this.postQueueRecord?.toDTO(),
     };
     return dto;

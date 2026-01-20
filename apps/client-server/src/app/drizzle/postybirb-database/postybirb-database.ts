@@ -1,24 +1,24 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NotFoundException } from '@nestjs/common';
 import {
-  getDatabase,
-  Insert,
-  PostyBirbDatabaseType,
-  SchemaKey,
-  Schemas,
-  Select,
+    getDatabase,
+    Insert,
+    PostyBirbDatabaseType,
+    SchemaKey,
+    Schemas,
+    Select,
 } from '@postybirb/database';
 import { EntityId, NULL_ACCOUNT_ID } from '@postybirb/types';
 import { eq, inArray, KnownKeysOnly, SQL } from 'drizzle-orm';
 import {
-  DBQueryConfig,
-  ExtractTablesWithRelations,
+    DBQueryConfig,
+    ExtractTablesWithRelations,
 } from 'drizzle-orm/relations';
 import { fromDatabaseRecord } from '../models';
 import { FindOptions } from './find-options.type';
 import {
-  DatabaseSchemaEntityMap,
-  DatabaseSchemaEntityMapConst,
+    DatabaseSchemaEntityMap,
+    DatabaseSchemaEntityMapConst,
 } from './schema-entity-map';
 
 type ExtractedRelations = ExtractTablesWithRelations<typeof Schemas>;
@@ -43,6 +43,7 @@ export class PostyBirbDatabase<
     AccountSchema: [],
     DirectoryWatcherSchema: [],
     FileBufferSchema: [],
+    PostEventSchema: [],
     PostQueueRecordSchema: [],
     PostRecordSchema: [],
     SettingsSchema: [],
@@ -54,7 +55,6 @@ export class PostyBirbDatabase<
     UserSpecifiedWebsiteOptionsSchema: [],
     WebsiteDataSchema: [],
     WebsiteOptionsSchema: [],
-    WebsitePostRecordSchema: [],
     NotificationSchema: [],
     CustomShortcutSchema: [],
   };
