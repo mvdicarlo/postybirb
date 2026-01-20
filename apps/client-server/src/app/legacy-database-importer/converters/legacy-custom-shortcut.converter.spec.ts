@@ -437,3 +437,169 @@ describe('LegacyCustomShortcutConverter', () => {
   //     ]);
   //   });
 });
+
+describe('LegacyCustomShortcut unit tests', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { LegacyCustomShortcut } = require('../legacy-entities/legacy-custom-shortcut');
+
+  it('should ignore {title} shortcut as it is deprecated in custom shortcuts', async () => {
+    const legacy = new LegacyCustomShortcut({
+      _id: 'test-title-alone',
+      created: '2023-10-01T12:00:00Z',
+      lastUpdated: '2023-10-01T12:00:00Z',
+      shortcut: 'titlealone',
+      content: '<p>{title}</p>',
+      isDynamic: false,
+    });
+
+    const result = await legacy.convert();
+
+    // {title} is deprecated, so it should remain as plain text
+    expect(result.shortcut).toHaveLength(1);
+    expect(result.shortcut[0].type).toBe('paragraph');
+    expect(result.shortcut[0].content).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ type: 'text', text: '{title}' }),
+      ]),
+    );
+  });
+
+  it('should ignore {tags} shortcut as it is deprecated in custom shortcuts', async () => {
+    const legacy = new LegacyCustomShortcut({
+      _id: 'test-tags-alone',
+      created: '2023-10-01T12:00:00Z',
+      lastUpdated: '2023-10-01T12:00:00Z',
+      shortcut: 'tagsalone',
+      content: '<p>{tags}</p>',
+      isDynamic: false,
+    });
+
+    const result = await legacy.convert();
+
+    // {tags} is deprecated, so it should remain as plain text
+    expect(result.shortcut).toHaveLength(1);
+    expect(result.shortcut[0].type).toBe('paragraph');
+    expect(result.shortcut[0].content).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ type: 'text', text: '{tags}' }),
+      ]),
+    );
+  });
+
+  it('should ignore {default} shortcut as it is deprecated in custom shortcuts', async () => {
+    const legacy = new LegacyCustomShortcut({
+      _id: 'test-default-alone',
+      created: '2023-10-01T12:00:00Z',
+      lastUpdated: '2023-10-01T12:00:00Z',
+      shortcut: 'defaultalone',
+      content: '<p>{default}</p>',
+      isDynamic: false,
+    });
+
+    const result = await legacy.convert();
+
+    // {default} is deprecated, so it should remain as plain text
+    expect(result.shortcut).toHaveLength(1);
+    expect(result.shortcut[0].type).toBe('paragraph');
+    expect(result.shortcut[0].content).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ type: 'text', text: '{default}' }),
+      ]),
+    );
+  });
+
+  it('should keep {title}, {tags}, and {default} as plain text when mixed with other content', async () => {
+    const legacy = new LegacyCustomShortcut({
+      _id: 'test-mixed-deprecated',
+      created: '2023-10-01T12:00:00Z',
+      lastUpdated: '2023-10-01T12:00:00Z',
+      shortcut: 'mixeddeprecated',
+      content: '<p>Hello {title} and {tags} with {default} text</p>',
+      isDynamic: false,
+    });
+
+    const result = await legacy.convert();
+
+    // All deprecated shortcuts should remain as plain text
+    expect(result.shortcut).toHaveLength(1);
+    expect(result.shortcut[0].type).toBe('paragraph');
+    const textContent = JSON.stringify(result.shortcut[0].content);
+    expect(textContent).toContain('Hello');
+    expect(textContent).toContain('{title}');
+    expect(textContent).toContain('{tags}');
+    expect(textContent).toContain('{default}');
+    expect(textContent).toContain('text');
+  });
+
+  it('should still convert username shortcuts while ignoring deprecated ones', async () => {
+    const legacy = new LegacyCustomShortcut({
+      _id: 'test-username-with-deprecated',
+      created: '2023-10-01T12:00:00Z',
+      lastUpdated: '2023-10-01T12:00:00Z',
+      shortcut: 'usernamedeprecated',
+      content: '<p>{fa:myuser} and {title}</p>',
+      isDynamic: false,
+    });
+
+    const result = await legacy.convert();
+
+    // Username shortcut should be converted, but {title} should be plain text
+    expect(result.shortcut).toHaveLength(1);
+    expect(result.shortcut[0].type).toBe('paragraph');
+    
+    const content = result.shortcut[0].content;
+    // Should contain a username shortcut
+    const hasUsernameShortcut = content.some(
+      (item: any) => item.type === 'username' && item.props?.shortcut === 'furaffinity',
+    );
+    expect(hasUsernameShortcut).toBe(true);
+    
+    // {title} should be plain text
+    const textContent = JSON.stringify(content);
+    expect(textContent).toContain('{title}');
+  });
+
+  it('should still convert custom shortcuts while ignoring deprecated ones', async () => {
+    const legacy = new LegacyCustomShortcut({
+      _id: 'test-custom-with-deprecated',
+      created: '2023-10-01T12:00:00Z',
+      lastUpdated: '2023-10-01T12:00:00Z',
+      shortcut: 'customdeprecated',
+      content: '<p>{myshortcut} and {tags}</p>',
+      isDynamic: false,
+    });
+
+    const result = await legacy.convert();
+
+    // Custom shortcut should be converted, but {tags} should be plain text
+    expect(result.shortcut).toHaveLength(1);
+    expect(result.shortcut[0].type).toBe('paragraph');
+    
+    const content = result.shortcut[0].content;
+    // Should contain a customShortcut
+    const hasCustomShortcut = content.some(
+      (item: any) => item.type === 'customShortcut' && item.props?.id === 'myshortcut',
+    );
+    expect(hasCustomShortcut).toBe(true);
+    
+    // {tags} should be plain text
+    const textContent = JSON.stringify(content);
+    expect(textContent).toContain('{tags}');
+  });
+
+  it('should preserve id and name in converted result', async () => {
+    const legacy = new LegacyCustomShortcut({
+      _id: 'unique-id-123',
+      created: '2023-10-01T12:00:00Z',
+      lastUpdated: '2023-10-01T12:00:00Z',
+      shortcut: 'myshortcutname',
+      content: '<p>Some content</p>',
+      isDynamic: false,
+    });
+
+    const result = await legacy.convert();
+
+    expect(result.id).toBe('unique-id-123');
+    expect(result.name).toBe('myshortcutname');
+  });
+});

@@ -30,6 +30,16 @@ export class BBCodeConverter extends BaseConverter {
       return this.convertRawBlocks(context.defaultDescription, context);
     }
 
+    if (node.type === 'titleShortcut') {
+      if (!context.title) return '';
+      return `[h2]${context.title}[/h2]`;
+    }
+
+    if (node.type === 'tagsShortcut') {
+      if (!context.tags || context.tags.length === 0) return '';
+      return context.tags.join(' ');
+    }
+
     if (node.type === 'divider') return '[hr]';
 
     // Media blocks not supported in BBCode

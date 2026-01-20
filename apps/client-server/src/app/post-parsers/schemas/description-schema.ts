@@ -645,11 +645,21 @@ export const DescriptionSchema = Object.freeze({
       propSchema: {},
       content: 'none',
     },
+    titleShortcut: {
+      type: 'titleShortcut',
+      propSchema: {},
+      content: 'none',
+    },
+    tagsShortcut: {
+      type: 'tagsShortcut',
+      propSchema: {},
+      content: 'none',
+    },
     divider: {
       type: 'divider',
       propSchema: {},
       content: 'none',
-    }
+    },
   },
   inlineContentSchema: {
     text: 'text',
