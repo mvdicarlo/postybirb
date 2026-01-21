@@ -6,12 +6,38 @@ import { Trans } from '@lingui/react/macro';
 import { Box, Checkbox } from '@mantine/core';
 import { DescriptionFieldType } from '@postybirb/form-builder';
 import { DefaultDescriptionValue, DescriptionValue } from '@postybirb/types';
+import { useMemo } from 'react';
 import { DescriptionEditor } from '../../../../../../shared';
 import { useFormFieldsContext } from '../form-fields-context';
 import { useDefaultOption } from '../hooks/use-default-option';
 import { useValidations } from '../hooks/use-validations';
 import { FieldLabel } from './field-label';
 import { FormFieldProps } from './form-field.type';
+
+/**
+ * Recursively checks if a description contains a specific inline content type.
+ */
+function hasInlineContentType(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  blocks: any[],
+  type: string,
+): boolean {
+  for (const block of blocks) {
+    if (Array.isArray(block?.content)) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if (block.content.some((inline: any) => inline?.type === type)) {
+        return true;
+      }
+    }
+    if (
+      Array.isArray(block?.children) &&
+      hasInlineContentType(block.children, type)
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
 
 export function DescriptionField({
   fieldName,
@@ -28,7 +54,20 @@ export function DescriptionField({
   const overrideDefault = fieldValue.overrideDefault || false;
   const insertTags = fieldValue.insertTags || false;
   const insertTitle = fieldValue.insertTitle || false;
-  const description = fieldValue.description || [];
+  const description = useMemo(
+    () => fieldValue.description || [],
+    [fieldValue.description],
+  );
+
+  const hasTagsShortcut = useMemo(
+    () => hasInlineContentType(description, 'tagsShortcut'),
+    [description],
+  );
+
+  const hasTitleShortcut = useMemo(
+    () => hasInlineContentType(description, 'titleShortcut'),
+    [description],
+  );
 
   return (
     <Box>
@@ -52,6 +91,7 @@ export function DescriptionField({
         )}
         <Checkbox
           mb="4"
+          disabled={hasTitleShortcut}
           checked={insertTitle}
           onChange={(e) => {
             setValue(fieldName, {
@@ -63,6 +103,7 @@ export function DescriptionField({
         />
         <Checkbox
           mb="4"
+          disabled={hasTagsShortcut}
           checked={insertTags}
           onChange={(e) => {
             setValue(fieldName, {

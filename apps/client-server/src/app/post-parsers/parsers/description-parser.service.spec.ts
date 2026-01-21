@@ -803,6 +803,293 @@ describe('DescriptionParserService', () => {
     });
   });
 
+  describe('System Inline Shortcuts', () => {
+    it('should render titleShortcut with submission title', async () => {
+      const instance = {
+        decoratedProps: {
+          allowAd: false,
+          metadata: {
+            name: 'Test',
+          },
+        },
+      };
+
+      const descriptionWithTitle = [
+        {
+          id: 'test-title',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [
+            { type: 'text', text: 'Artwork: ', styles: {} },
+            { type: 'titleShortcut', props: {} },
+          ],
+          children: [],
+        },
+      ] as Description;
+
+      const defaultOptions = createWebsiteOptions(descriptionWithTitle);
+      const websiteOptions = createWebsiteOptions(undefined);
+      const description = await service.parse(
+        instance as unknown as UnknownWebsite,
+        new DefaultWebsiteOptions(defaultOptions.data),
+        new BaseWebsiteOptions(websiteOptions.data),
+        [],
+        'My Amazing Art',
+      );
+
+      expect(description).toMatchInlineSnapshot(
+        `"<div>Artwork: <span>My Amazing Art</span></div>"`,
+      );
+    });
+
+    it('should render tagsShortcut with submission tags', async () => {
+      const instance = {
+        decoratedProps: {
+          allowAd: false,
+          metadata: {
+            name: 'Test',
+          },
+        },
+      };
+
+      const descriptionWithTags = [
+        {
+          id: 'test-tags',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [
+            { type: 'text', text: 'Tags: ', styles: {} },
+            { type: 'tagsShortcut', props: {} },
+          ],
+          children: [],
+        },
+      ] as Description;
+
+      const defaultOptions = createWebsiteOptions(descriptionWithTags);
+      const websiteOptions = createWebsiteOptions(undefined);
+      const description = await service.parse(
+        instance as unknown as UnknownWebsite,
+        new DefaultWebsiteOptions(defaultOptions.data),
+        new BaseWebsiteOptions(websiteOptions.data),
+        ['art', 'digital', 'fantasy'],
+        '',
+      );
+
+      expect(description).toMatchInlineSnapshot(
+        `"<div>Tags: <span>art digital fantasy</span></div>"`,
+      );
+    });
+
+    it('should render contentWarningShortcut with content warning', async () => {
+      const instance = {
+        decoratedProps: {
+          allowAd: false,
+          metadata: {
+            name: 'Test',
+          },
+        },
+      };
+
+      const descriptionWithCW = [
+        {
+          id: 'test-cw',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [
+            { type: 'text', text: 'Content Warning: ', styles: {} },
+            { type: 'contentWarningShortcut', props: {} },
+          ],
+          children: [],
+        },
+      ] as Description;
+
+      const defaultOptions = new DefaultWebsiteOptions({
+        description: { description: descriptionWithCW, overrideDefault: false },
+        contentWarning: 'Mild Violence',
+      });
+      const websiteOptions = new BaseWebsiteOptions({});
+      const description = await service.parse(
+        instance as unknown as UnknownWebsite,
+        defaultOptions,
+        websiteOptions,
+        [],
+        '',
+      );
+
+      expect(description).toMatchInlineSnapshot(
+        `"<div>Content Warning: <span>Mild Violence</span></div>"`,
+      );
+    });
+
+    it('should not double-insert title when titleShortcut is present and insertTitle is true', async () => {
+      const instance = {
+        decoratedProps: {
+          allowAd: false,
+          metadata: {
+            name: 'Test',
+          },
+        },
+      };
+
+      const descriptionWithTitle = [
+        {
+          id: 'test-title-no-double',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [
+            { type: 'text', text: 'Title: ', styles: {} },
+            { type: 'titleShortcut', props: {} },
+          ],
+          children: [],
+        },
+      ] as Description;
+
+      const defaultOptions = createWebsiteOptions(descriptionWithTitle);
+      defaultOptions.data.description.insertTitle = true;
+      const websiteOptions = createWebsiteOptions(undefined);
+      const description = await service.parse(
+        instance as unknown as UnknownWebsite,
+        new DefaultWebsiteOptions(defaultOptions.data),
+        new BaseWebsiteOptions(websiteOptions.data),
+        [],
+        'My Title',
+      );
+
+      // Title should only appear once (from the shortcut), not twice
+      expect(description).toMatchInlineSnapshot(
+        `"<div>Title: <span>My Title</span></div>"`,
+      );
+      expect((description.match(/My Title/g) || []).length).toBe(1);
+    });
+
+    it('should not double-insert tags when tagsShortcut is present and insertTags is true', async () => {
+      const instance = {
+        decoratedProps: {
+          allowAd: false,
+          metadata: {
+            name: 'Test',
+          },
+        },
+      };
+
+      const descriptionWithTags = [
+        {
+          id: 'test-tags-no-double',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [
+            { type: 'text', text: 'Tags: ', styles: {} },
+            { type: 'tagsShortcut', props: {} },
+          ],
+          children: [],
+        },
+      ] as Description;
+
+      const defaultOptions = createWebsiteOptions(descriptionWithTags);
+      defaultOptions.data.description.insertTags = true;
+      const websiteOptions = createWebsiteOptions(undefined);
+      const description = await service.parse(
+        instance as unknown as UnknownWebsite,
+        new DefaultWebsiteOptions(defaultOptions.data),
+        new BaseWebsiteOptions(websiteOptions.data),
+        ['tag1', 'tag2'],
+        '',
+      );
+
+      // Tags should only appear once (from the shortcut), not twice
+      expect(description).toMatchInlineSnapshot(
+        `"<div>Tags: <span>tag1 tag2</span></div>"`,
+      );
+      expect((description.match(/tag1 tag2/g) || []).length).toBe(1);
+    });
+
+    it('should render all system shortcuts together in plaintext', async () => {
+      const instance = {
+        decoratedProps: {
+          allowAd: false,
+          metadata: {
+            name: 'Test',
+          },
+        },
+      };
+
+      class PlaintextBaseWebsiteOptions extends BaseWebsiteOptions {
+        @DescriptionField({ descriptionType: DescriptionType.PLAINTEXT })
+        description: DescriptionValue;
+      }
+
+      const descriptionWithAll = [
+        {
+          id: 'test-all-shortcuts',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [
+            { type: 'titleShortcut', props: {} },
+            { type: 'text', text: ' (', styles: {} },
+            { type: 'contentWarningShortcut', props: {} },
+            { type: 'text', text: ')', styles: {} },
+          ],
+          children: [],
+        },
+        {
+          id: 'test-tags-line',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [{ type: 'tagsShortcut', props: {} }],
+          children: [],
+        },
+      ] as Description;
+
+      const defaultOptions = new DefaultWebsiteOptions({
+        description: {
+          description: descriptionWithAll,
+          overrideDefault: false,
+        },
+        contentWarning: 'NSFW',
+      });
+      const websiteOptions = new PlaintextBaseWebsiteOptions({});
+      const description = await service.parse(
+        instance as unknown as UnknownWebsite,
+        defaultOptions,
+        websiteOptions,
+        ['art', 'digital'],
+        'My Art',
+      );
+
+      expect(description).toMatchInlineSnapshot(`
+        "My Art (NSFW)
+        art digital"
+      `);
+    });
+  });
+
   // TODO: Add test for description type CUSTOM
-  // TODO: Add test for title and tag insertion
 });

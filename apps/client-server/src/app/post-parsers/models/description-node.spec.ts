@@ -1100,4 +1100,283 @@ describe('DescriptionNode', () => {
       expect(tree.toMarkdown()).toBe('Level 0\n\n> Level 1\n> \n> > Level 2');
     });
   });
+
+  describe('system inline shortcuts', () => {
+    it('should render titleShortcut with title from context', () => {
+      const description = [
+        {
+          id: 'test-title-shortcut',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [
+            { type: 'text', text: 'Title: ', styles: {} },
+            { type: 'titleShortcut', props: {} },
+          ],
+          children: [],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'test',
+        shortcuts: {},
+        customShortcuts: new Map(),
+        defaultDescription: [],
+        title: 'My Amazing Artwork',
+        tags: [],
+      };
+
+      const tree = new DescriptionNodeTree(
+        context,
+        description as unknown as Array<IDescriptionBlockNode>,
+        { insertAd: false },
+      );
+
+      expect(tree.toPlainText()).toBe('Title: My Amazing Artwork');
+      expect(tree.toHtml()).toBe(
+        '<div>Title: <span>My Amazing Artwork</span></div>',
+      );
+      expect(tree.toBBCode()).toBe('Title: My Amazing Artwork');
+    });
+
+    it('should render tagsShortcut with tags from context', () => {
+      const description = [
+        {
+          id: 'test-tags-shortcut',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [
+            { type: 'text', text: 'Tags: ', styles: {} },
+            { type: 'tagsShortcut', props: {} },
+          ],
+          children: [],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'test',
+        shortcuts: {},
+        customShortcuts: new Map(),
+        defaultDescription: [],
+        title: '',
+        tags: ['art', 'digital', 'fantasy'],
+      };
+
+      const tree = new DescriptionNodeTree(
+        context,
+        description as unknown as Array<IDescriptionBlockNode>,
+        { insertAd: false },
+      );
+
+      expect(tree.toPlainText()).toBe('Tags: art digital fantasy');
+      expect(tree.toHtml()).toBe(
+        '<div>Tags: <span>art digital fantasy</span></div>',
+      );
+      expect(tree.toBBCode()).toBe('Tags: art digital fantasy');
+    });
+
+    it('should render contentWarningShortcut with content warning from context', () => {
+      const description = [
+        {
+          id: 'test-cw-shortcut',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [
+            { type: 'text', text: 'CW: ', styles: {} },
+            { type: 'contentWarningShortcut', props: {} },
+          ],
+          children: [],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'test',
+        shortcuts: {},
+        customShortcuts: new Map(),
+        defaultDescription: [],
+        title: '',
+        tags: [],
+        contentWarningText: 'Mild Violence',
+      };
+
+      const tree = new DescriptionNodeTree(
+        context,
+        description as unknown as Array<IDescriptionBlockNode>,
+        { insertAd: false },
+      );
+
+      expect(tree.toPlainText()).toBe('CW: Mild Violence');
+      expect(tree.toHtml()).toBe('<div>CW: <span>Mild Violence</span></div>');
+      expect(tree.toBBCode()).toBe('CW: Mild Violence');
+    });
+
+    it('should render empty string when title is not in context', () => {
+      const description = [
+        {
+          id: 'test-empty-title',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [
+            { type: 'text', text: 'Title: ', styles: {} },
+            { type: 'titleShortcut', props: {} },
+            { type: 'text', text: ' end', styles: {} },
+          ],
+          children: [],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'test',
+        shortcuts: {},
+        customShortcuts: new Map(),
+        defaultDescription: [],
+      };
+
+      const tree = new DescriptionNodeTree(
+        context,
+        description as unknown as Array<IDescriptionBlockNode>,
+        { insertAd: false },
+      );
+
+      expect(tree.toPlainText()).toBe('Title:  end');
+    });
+
+    it('should render empty string when tags array is empty', () => {
+      const description = [
+        {
+          id: 'test-empty-tags',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [
+            { type: 'text', text: 'Tags: ', styles: {} },
+            { type: 'tagsShortcut', props: {} },
+            { type: 'text', text: ' end', styles: {} },
+          ],
+          children: [],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'test',
+        shortcuts: {},
+        customShortcuts: new Map(),
+        defaultDescription: [],
+        tags: [],
+      };
+
+      const tree = new DescriptionNodeTree(
+        context,
+        description as unknown as Array<IDescriptionBlockNode>,
+        { insertAd: false },
+      );
+
+      expect(tree.toPlainText()).toBe('Tags:  end');
+    });
+
+    it('should render all system shortcuts together', () => {
+      const description = [
+        {
+          id: 'test-all-shortcuts',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [
+            { type: 'titleShortcut', props: {} },
+            { type: 'text', text: ' - ', styles: {} },
+            { type: 'contentWarningShortcut', props: {} },
+          ],
+          children: [],
+        },
+        {
+          id: 'test-tags-line',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [{ type: 'tagsShortcut', props: {} }],
+          children: [],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'test',
+        shortcuts: {},
+        customShortcuts: new Map(),
+        defaultDescription: [],
+        title: 'My Art',
+        tags: ['tag1', 'tag2'],
+        contentWarningText: 'NSFW',
+      };
+
+      const tree = new DescriptionNodeTree(
+        context,
+        description as unknown as Array<IDescriptionBlockNode>,
+        { insertAd: false },
+      );
+
+      expect(tree.toPlainText()).toBe('My Art - NSFW\r\ntag1 tag2');
+      expect(tree.toHtml()).toBe(
+        '<div><span>My Art</span> - <span>NSFW</span></div><div><span>tag1 tag2</span></div>',
+      );
+    });
+
+    it('should HTML encode special characters in title', () => {
+      const description = [
+        {
+          id: 'test-encode-title',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [{ type: 'titleShortcut', props: {} }],
+          children: [],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'test',
+        shortcuts: {},
+        customShortcuts: new Map(),
+        defaultDescription: [],
+        title: '<script>alert("xss")</script>',
+        tags: [],
+      };
+
+      const tree = new DescriptionNodeTree(
+        context,
+        description as unknown as Array<IDescriptionBlockNode>,
+        { insertAd: false },
+      );
+
+      expect(tree.toHtml()).toBe(
+        '<div><span>&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;</span></div>',
+      );
+    });
+  });
 });

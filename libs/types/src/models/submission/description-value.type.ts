@@ -64,6 +64,21 @@ type CustomInlineContentSchema = DefaultInlineContentSchema & {
     };
     content: 'styled';
   };
+  titleShortcut: {
+    type: 'titleShortcut';
+    propSchema: Record<string, never>;
+    content: 'none';
+  };
+  tagsShortcut: {
+    type: 'tagsShortcut';
+    propSchema: Record<string, never>;
+    content: 'none';
+  };
+  contentWarningShortcut: {
+    type: 'contentWarningShortcut';
+    propSchema: Record<string, never>;
+    content: 'none';
+  };
 };
 
 type DefaultBlock = BlockSpec<

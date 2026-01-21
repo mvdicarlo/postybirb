@@ -1,7 +1,7 @@
 import { UsernameShortcut } from '@postybirb/types';
 import {
-    IDescriptionBlockNode,
-    IDescriptionNode,
+  IDescriptionBlockNode,
+  IDescriptionNode,
 } from './description-node.types';
 
 // Forward declarations to avoid circular dependencies
@@ -38,6 +38,7 @@ export interface ConversionContext {
   title?: string;
   tags?: string[];
   usernameConversions?: Map<string, string>;
+  contentWarningText?: string;
 }
 
 /**
@@ -61,9 +62,9 @@ export interface NodeConverter<TOutput> {
 /**
  * Base class for description nodes - pure data structure.
  */
-export abstract class DescriptionNode<Type = string>
-  implements IDescriptionNode<Type>
-{
+export abstract class DescriptionNode<
+  Type = string,
+> implements IDescriptionNode<Type> {
   type: Type;
 
   props: Record<string, string>;
