@@ -41,6 +41,9 @@ export class LegacyCustomShortcut implements LegacyConverterEntity<ICustomShortc
     // Step 3: Convert legacy shortcuts to modern format
     shortcut = this.convertLegacyToModernShortcut(shortcut);
 
+    // Step 4: Convert default shortcuts to block-level elements
+    shortcut = this.convertDefaultToBlock(shortcut);
+
     return {
       // eslint-disable-next-line no-underscore-dangle
       id: this._id,
@@ -59,7 +62,7 @@ export class LegacyCustomShortcut implements LegacyConverterEntity<ICustomShortc
     // Captures: (1) shortcut key, (2) optional modifier (ignored), (3) optional value
     const shortcutPattern =
       /^\{([a-zA-Z0-9]+)(?:\[([^\]]+)\])?(?::([^}]+))?\}$/;
-    const deprecatedShortcuts = ['cw', 'default', 'title', 'tags'];
+    const deprecatedShortcuts = ['cw', 'title', 'tags'];
 
     // Mapping of legacy username shortcut keys to modern IDs
     const usernameShortcutMapping: Record<string, string> = {
@@ -174,9 +177,7 @@ export class LegacyCustomShortcut implements LegacyConverterEntity<ICustomShortc
    * Converts {default} shortcuts to block-level elements.
    * - If default is alone in a block, convert the block to type: 'defaultShortcut'
    * - If default is with other content, remove it and insert a defaultShortcut block before
-   * @deprecated No longer used for custom shortcuts - kept for future use
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private convertDefaultToBlock(blocks: Description): Description {
     const result: any[] = [];
 
@@ -242,148 +243,6 @@ export class LegacyCustomShortcut implements LegacyConverterEntity<ICustomShortc
   }
 
   /**
-   * Converts {title} shortcuts to block-level titleShortcut elements.
-   * - If title is alone in a block, convert the block to type: 'titleShortcut'
-   * - If title is with other content, remove it and insert a titleShortcut block before
-   * @deprecated No longer used for custom shortcuts - kept for future use
-   */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private convertTitleToBlock(blocks: Description): Description {
-    const result: any[] = [];
-
-    blocks.forEach((block: any) => {
-      // First, recursively process children
-      if (Array.isArray(block.children) && block.children.length > 0) {
-        // eslint-disable-next-line no-param-reassign
-        block.children = this.convertTitleToBlock(block.children);
-      }
-
-      // Check if this block has content with a title customShortcut
-      if (Array.isArray(block.content)) {
-        const titleShortcutIndex = block.content.findIndex(
-          (item: any) =>
-            item.type === 'customShortcut' && item.props?.id === 'title',
-        );
-
-        if (titleShortcutIndex !== -1) {
-          // Found a title shortcut in this block's content
-          const otherContent = block.content.filter(
-            (item: any, idx: number) => idx !== titleShortcutIndex,
-          );
-
-          // Check if there are other content items (text, links, etc.)
-          const hasOtherContent = otherContent.some((item: any) =>
-            item.type === 'text'
-              ? item.text.trim().length > 0
-              : item.type !== 'customShortcut' || item.props?.id !== 'title',
-          );
-
-          if (hasOtherContent) {
-            // Title was with other content - insert titleShortcut block before this one
-            result.push({
-              type: 'titleShortcut',
-              props: {},
-              content: undefined,
-              children: [],
-            });
-
-            // Add the current block without the title shortcut
-            result.push({
-              ...block,
-              content: otherContent,
-            });
-          } else {
-            // Title was alone - convert this block to titleShortcut type
-            result.push({
-              type: 'titleShortcut',
-              props: {},
-              content: undefined,
-              children: block.children || [],
-            });
-          }
-          return;
-        }
-      }
-
-      // No title shortcut found, keep block as is
-      result.push(block);
-    });
-
-    return result as Description;
-  }
-
-  /**
-   * Converts {tags} shortcuts to block-level tagsShortcut elements.
-   * - If tags is alone in a block, convert the block to type: 'tagsShortcut'
-   * - If tags is with other content, remove it and insert a tagsShortcut block before
-   * @deprecated No longer used for custom shortcuts - kept for future use
-   */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private convertTagsToBlock(blocks: Description): Description {
-    const result: any[] = [];
-
-    blocks.forEach((block: any) => {
-      // First, recursively process children
-      if (Array.isArray(block.children) && block.children.length > 0) {
-        // eslint-disable-next-line no-param-reassign
-        block.children = this.convertTagsToBlock(block.children);
-      }
-
-      // Check if this block has content with a tags customShortcut
-      if (Array.isArray(block.content)) {
-        const tagsShortcutIndex = block.content.findIndex(
-          (item: any) =>
-            item.type === 'customShortcut' && item.props?.id === 'tags',
-        );
-
-        if (tagsShortcutIndex !== -1) {
-          // Found a tags shortcut in this block's content
-          const otherContent = block.content.filter(
-            (item: any, idx: number) => idx !== tagsShortcutIndex,
-          );
-
-          // Check if there are other content items (text, links, etc.)
-          const hasOtherContent = otherContent.some((item: any) =>
-            item.type === 'text'
-              ? item.text.trim().length > 0
-              : item.type !== 'customShortcut' || item.props?.id !== 'tags',
-          );
-
-          if (hasOtherContent) {
-            // Tags was with other content - insert tagsShortcut block before this one
-            result.push({
-              type: 'tagsShortcut',
-              props: {},
-              content: undefined,
-              children: [],
-            });
-
-            // Add the current block without the tags shortcut
-            result.push({
-              ...block,
-              content: otherContent,
-            });
-          } else {
-            // Tags was alone - convert this block to tagsShortcut type
-            result.push({
-              type: 'tagsShortcut',
-              props: {},
-              content: undefined,
-              children: block.children || [],
-            });
-          }
-          return;
-        }
-      }
-
-      // No tags shortcut found, keep block as is
-      result.push(block);
-    });
-
-    return result as Description;
-  }
-
-  /**
    * Wraps legacy shortcuts in span tags to preserve them during HTML parsing.
    * Supports:
    * - Simple shortcuts: {default}, {customshortcut}
@@ -391,7 +250,7 @@ export class LegacyCustomShortcut implements LegacyConverterEntity<ICustomShortc
    * - Dynamic shortcuts: {myshortcut:text}
    * - Modifiers (stripped): {fa[only=furaffinity]:username}, {shortcut[modifier]}
    *
-   * Ignores deprecated shortcuts: {cw}
+   * Ignores deprecated shortcuts: {cw}, {title}, {tags}
    *
    * Uses a special marker format that BlockNote will preserve in text content.
    * We use Unicode zero-width characters as markers that won't be visible but can be detected.
@@ -402,7 +261,7 @@ export class LegacyCustomShortcut implements LegacyConverterEntity<ICustomShortc
     // where word is alphanumeric, modifier is anything except ], and text can contain anything except }
     const shortcutPattern = /\{([a-zA-Z0-9]+)(?:\[([^\]]+)\])?(?::([^}]+))?\}/g;
 
-    const deprecatedShortcuts = ['cw', 'default', 'title', 'tags'];
+    const deprecatedShortcuts = ['cw', 'title', 'tags'];
 
     return content.replace(
       shortcutPattern,

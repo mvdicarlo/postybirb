@@ -1,9 +1,9 @@
 import { encode } from 'html-entities';
 import {
-  ConversionContext,
-  IDescriptionBlockNodeClass,
-  IDescriptionInlineNodeClass,
-  IDescriptionTextNodeClass,
+    ConversionContext,
+    IDescriptionBlockNodeClass,
+    IDescriptionInlineNodeClass,
+    IDescriptionTextNodeClass,
 } from '../description-node.base';
 import { BaseConverter } from './base-converter';
 
@@ -22,16 +22,6 @@ export class HtmlConverter extends BaseConverter {
     // Handle special block types
     if (node.type === 'defaultShortcut') {
       return this.convertRawBlocks(context.defaultDescription, context);
-    }
-
-    if (node.type === 'titleShortcut') {
-      if (!context.title) return '';
-      return `<h2>${encode(context.title, { level: 'html5' })}</h2>`;
-    }
-
-    if (node.type === 'tagsShortcut') {
-      if (!context.tags || context.tags.length === 0) return '';
-      return `<div>${encode(context.tags.join(' '), { level: 'html5' })}</div>`;
     }
 
     if (node.type === 'divider') return '<hr>';
