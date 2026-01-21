@@ -372,6 +372,84 @@ export const DescriptionSchema = Object.freeze({
         },
       },
     },
+    titleShortcut: {
+      config: {
+        type: 'titleShortcut',
+        propSchema: {},
+        content: 'none',
+      },
+      implementation: {
+        node: {
+          type: 'node',
+          name: 'titleShortcut',
+          parent: null,
+          child: null,
+          config: {
+            name: 'titleShortcut',
+            defaultOptions: {},
+            inline: true,
+            group: 'inline',
+            selectable: true,
+            atom: true,
+            content: '',
+          },
+          options: {},
+          storage: {},
+        },
+      },
+    },
+    tagsShortcut: {
+      config: {
+        type: 'tagsShortcut',
+        propSchema: {},
+        content: 'none',
+      },
+      implementation: {
+        node: {
+          type: 'node',
+          name: 'tagsShortcut',
+          parent: null,
+          child: null,
+          config: {
+            name: 'tagsShortcut',
+            defaultOptions: {},
+            inline: true,
+            group: 'inline',
+            selectable: true,
+            atom: true,
+            content: '',
+          },
+          options: {},
+          storage: {},
+        },
+      },
+    },
+    contentWarningShortcut: {
+      config: {
+        type: 'contentWarningShortcut',
+        propSchema: {},
+        content: 'none',
+      },
+      implementation: {
+        node: {
+          type: 'node',
+          name: 'contentWarningShortcut',
+          parent: null,
+          child: null,
+          config: {
+            name: 'contentWarningShortcut',
+            defaultOptions: {},
+            inline: true,
+            group: 'inline',
+            selectable: true,
+            atom: true,
+            content: '',
+          },
+          options: {},
+          storage: {},
+        },
+      },
+    },
   },
   styleSpecs: {
     bold: {
@@ -677,6 +755,21 @@ export const DescriptionSchema = Object.freeze({
         },
       },
       content: 'styled',
+    },
+    titleShortcut: {
+      type: 'titleShortcut',
+      propSchema: {},
+      content: 'none',
+    },
+    tagsShortcut: {
+      type: 'tagsShortcut',
+      propSchema: {},
+      content: 'none',
+    },
+    contentWarningShortcut: {
+      type: 'contentWarningShortcut',
+      propSchema: {},
+      content: 'none',
     },
   },
   styleSchema: {

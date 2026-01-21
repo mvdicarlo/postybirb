@@ -1,9 +1,9 @@
 import { encode } from 'html-entities';
 import {
-    ConversionContext,
-    IDescriptionBlockNodeClass,
-    IDescriptionInlineNodeClass,
-    IDescriptionTextNodeClass,
+  ConversionContext,
+  IDescriptionBlockNodeClass,
+  IDescriptionInlineNodeClass,
+  IDescriptionTextNodeClass,
 } from '../description-node.base';
 import { BaseConverter } from './base-converter';
 
@@ -70,7 +70,9 @@ export class HtmlConverter extends BaseConverter {
     node: IDescriptionInlineNodeClass,
     context: ConversionContext,
   ): string {
-    if (!node.content.length && node.type !== 'customShortcut') return '';
+    // System shortcuts are atomic nodes with no content
+    const atomicTypes = ['customShortcut', 'titleShortcut', 'tagsShortcut', 'contentWarningShortcut'];
+    if (!node.content.length && !atomicTypes.includes(node.type)) return '';
 
     if (node.type === 'link') {
       const content = (node.content as IDescriptionTextNodeClass[])
@@ -97,6 +99,18 @@ export class HtmlConverter extends BaseConverter {
         return this.convertRawBlocks(shortcutBlocks, context);
       }
       return '';
+    }
+
+    if (node.type === 'titleShortcut') {
+      return context.title ? `<span>${encode(context.title, { level: 'html5' })}</span>` : '';
+    }
+
+    if (node.type === 'tagsShortcut') {
+      return context.tags?.length ? `<span>${context.tags.map(t => encode(t, { level: 'html5' })).join(' ')}</span>` : '';
+    }
+
+    if (node.type === 'contentWarningShortcut') {
+      return context.contentWarningText ? `<span>${encode(context.contentWarningText, { level: 'html5' })}</span>` : '';
     }
 
     const content = (node.content as IDescriptionTextNodeClass[])

@@ -61,10 +61,26 @@ export class DescriptionParserService {
     }
 
     const descriptionValue = mergedOptions.description;
+    const descriptionBlocks =
+      descriptionValue.description as unknown as Array<IDescriptionBlockNode>;
+
+    const { contentWarning } = mergedOptions;
+
+    // Detect presence of shortcut tags to prevent double insertion
+    const hasTitleShortcut = this.hasInlineContentType(
+      descriptionBlocks,
+      'titleShortcut',
+    );
+    const hasTagsShortcut = this.hasInlineContentType(
+      descriptionBlocks,
+      'tagsShortcut',
+    );
 
     const insertionOptions: InsertionOptions = {
-      insertTitle: descriptionValue.insertTitle ? title : undefined,
-      insertTags: descriptionValue.insertTags ? tags : undefined,
+      insertTitle:
+        descriptionValue.insertTitle && !hasTitleShortcut ? title : undefined,
+      insertTags:
+        descriptionValue.insertTags && !hasTagsShortcut ? tags : undefined,
       insertAd: allowAd,
     };
 
@@ -75,9 +91,7 @@ export class DescriptionParserService {
      * see the description on a line-by-line basis. So we choose to merge similar
      * blocks together to avoid confusion.
      */
-    const mergedDescriptionBlocks = this.mergeBlocks(
-      descriptionValue.description as unknown as Array<IDescriptionBlockNode>,
-    );
+    const mergedDescriptionBlocks = this.mergeBlocks(descriptionBlocks);
 
     // Pre-resolve default description
     const defaultDescription = this.mergeBlocks(
@@ -94,6 +108,7 @@ export class DescriptionParserService {
       title,
       tags,
       usernameConversions: new Map(),
+      contentWarningText: contentWarning,
     };
 
     const tree = new DescriptionNodeTree(
@@ -257,5 +272,30 @@ export class DescriptionParserService {
     }
 
     return mergedBlocks;
+  }
+
+  /**
+   * Recursively checks if description blocks contain a specific inline content type.
+   * Used to detect presence of title/tags shortcuts to prevent double insertion.
+   */
+  private hasInlineContentType(
+    blocks: Array<IDescriptionBlockNode>,
+    type: string,
+  ): boolean {
+    for (const block of blocks) {
+      if (Array.isArray(block?.content)) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if (block.content.some((inline: any) => inline?.type === type)) {
+          return true;
+        }
+      }
+      if (
+        Array.isArray(block?.children) &&
+        this.hasInlineContentType(block.children, type)
+      ) {
+        return true;
+      }
+    }
+    return false;
   }
 }

@@ -22,8 +22,12 @@ import {
   filterSuggestionItems,
   getCustomShortcutsMenuItems,
   getCustomSlashMenuItems,
+  getSystemShortcutsMenuItems,
   getUsernameShortcutsMenuItems,
+  InlineContentWarningShortcut,
   InlineCustomShortcut,
+  InlineTagsShortcut,
+  InlineTitleShortcut,
   InlineUsernameShortcut,
 } from './custom-blocks';
 
@@ -96,6 +100,9 @@ function DescriptionEditorInner({
           ...defaultInlineContentSpecs,
           customShortcut: InlineCustomShortcut,
           username: InlineUsernameShortcut,
+          titleShortcut: InlineTitleShortcut,
+          tagsShortcut: InlineTagsShortcut,
+          contentWarningShortcut: InlineContentWarningShortcut,
         },
         styleSpecs: defaultStyleSpecs,
       }),
@@ -157,6 +164,7 @@ function DescriptionEditorInner({
           triggerCharacter={shortcutTrigger}
           getItems={async (query) => {
             const items = [
+              ...getSystemShortcutsMenuItems(editor),
               ...(showCustomShortcuts
                 ? getCustomShortcutsMenuItems(editor, customShortcuts)
                 : []),
