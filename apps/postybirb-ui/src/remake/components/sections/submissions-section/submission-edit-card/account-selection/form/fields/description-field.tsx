@@ -5,37 +5,13 @@
 import { Trans } from '@lingui/react/macro';
 import { Box, Checkbox } from '@mantine/core';
 import { DescriptionFieldType } from '@postybirb/form-builder';
-import {
-  DefaultDescriptionValue,
-  Description,
-  DescriptionValue,
-} from '@postybirb/types';
-import { useMemo } from 'react';
+import { DefaultDescriptionValue, DescriptionValue } from '@postybirb/types';
 import { DescriptionEditor } from '../../../../../../shared';
 import { useFormFieldsContext } from '../form-fields-context';
 import { useDefaultOption } from '../hooks/use-default-option';
 import { useValidations } from '../hooks/use-validations';
 import { FieldLabel } from './field-label';
 import { FormFieldProps } from './form-field.type';
-
-type DescriptionBlock = Description[number];
-
-/**
- * Recursively checks if a description contains a block of a specific type.
- */
-function hasBlockType(blocks: DescriptionBlock[], blockType: string): boolean {
-  for (const block of blocks) {
-    if (block.type === blockType) {
-      return true;
-    }
-    if (block.children && block.children.length > 0) {
-      if (hasBlockType(block.children as DescriptionBlock[], blockType)) {
-        return true;
-      }
-    }
-  }
-  return false;
-}
 
 export function DescriptionField({
   fieldName,
@@ -52,22 +28,7 @@ export function DescriptionField({
   const overrideDefault = fieldValue.overrideDefault || false;
   const insertTags = fieldValue.insertTags || false;
   const insertTitle = fieldValue.insertTitle || false;
-
-  // Memoize description to avoid dependency issues
-  const description = useMemo(
-    () => fieldValue.description || [],
-    [fieldValue.description],
-  );
-
-  // Check if the description contains title or tags shortcut blocks
-  const hasTitleShortcut = useMemo(
-    () => hasBlockType(description, 'titleShortcut'),
-    [description],
-  );
-  const hasTagsShortcut = useMemo(
-    () => hasBlockType(description, 'tagsShortcut'),
-    [description],
-  );
+  const description = fieldValue.description || [];
 
   return (
     <Box>
@@ -92,7 +53,6 @@ export function DescriptionField({
         <Checkbox
           mb="4"
           checked={insertTitle}
-          disabled={hasTitleShortcut}
           onChange={(e) => {
             setValue(fieldName, {
               ...fieldValue,
@@ -104,7 +64,6 @@ export function DescriptionField({
         <Checkbox
           mb="4"
           checked={insertTags}
-          disabled={hasTagsShortcut}
           onChange={(e) => {
             setValue(fieldName, {
               ...fieldValue,

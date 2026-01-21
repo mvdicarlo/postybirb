@@ -68,28 +68,17 @@ type CustomInlineContentSchema = DefaultInlineContentSchema & {
 
 type DefaultBlock = BlockSpec<
   'defaultShortcut',
-  Record<string, never>,
-  'none'
->;
-
-type TagsBlock = BlockSpec<
-  'tagsShortcut',
-  Record<string, never>,
-  'none'
->;
-
-type TitleBlock = BlockSpec<
-  'titleShortcut',
-  Record<string, never>,
+  {
+    default: {
+      default: undefined;
+      type: 'string';
+    };
+  },
   'none'
 >;
 
 type CustomBlockContentSchema = DefaultBlockSchema &
-  BlockSchemaFromSpecs<{
-    defaultShortcut: DefaultBlock;
-    tagsShortcut: TagsBlock;
-    titleShortcut: TitleBlock;
-  }>;
+  BlockSchemaFromSpecs<{ defaultShortcut: DefaultBlock }>;
 
 export type Description = Block<
   CustomBlockContentSchema,

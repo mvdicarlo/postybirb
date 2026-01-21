@@ -1,8 +1,8 @@
 import {
-  ConversionContext,
-  IDescriptionBlockNodeClass,
-  IDescriptionInlineNodeClass,
-  IDescriptionTextNodeClass,
+    ConversionContext,
+    IDescriptionBlockNodeClass,
+    IDescriptionInlineNodeClass,
+    IDescriptionTextNodeClass,
 } from '../description-node.base';
 import { BaseConverter } from './base-converter';
 
@@ -25,16 +25,6 @@ export class PlainTextConverter extends BaseConverter {
   ): string {
     if (node.type === 'defaultShortcut') {
       return this.convertRawBlocks(context.defaultDescription, context);
-    }
-
-    if (node.type === 'titleShortcut') {
-      if (!context.title) return '';
-      return context.title;
-    }
-
-    if (node.type === 'tagsShortcut') {
-      if (!context.tags || context.tags.length === 0) return '';
-      return context.tags.join(' ');
     }
 
     if (node.type === 'divider') return '----------';

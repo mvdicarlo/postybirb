@@ -1,8 +1,8 @@
 import {
-  ConversionContext,
-  IDescriptionBlockNodeClass,
-  IDescriptionInlineNodeClass,
-  IDescriptionTextNodeClass,
+    ConversionContext,
+    IDescriptionBlockNodeClass,
+    IDescriptionInlineNodeClass,
+    IDescriptionTextNodeClass,
 } from '../description-node.base';
 import { BaseConverter } from './base-converter';
 
@@ -235,15 +235,6 @@ export class NpfConverter extends BaseConverter {
       case 'defaultShortcut':
         // Default markers become empty text blocks
         return { type: 'text', text: '' };
-      case 'titleShortcut':
-        // Title shortcut becomes a heading2 text block
-        if (!context.title) return { type: 'text', text: '' };
-        return { type: 'text', text: context.title, subtype: 'heading2' };
-      case 'tagsShortcut':
-        // Tags shortcut becomes a plain text block with tags joined by space
-        if (!context.tags || context.tags.length === 0)
-          return { type: 'text', text: '' };
-        return { type: 'text', text: context.tags.join(' ') };
       default:
         // Fallback to paragraph for unknown types
         return this.convertParagraph(node, context);

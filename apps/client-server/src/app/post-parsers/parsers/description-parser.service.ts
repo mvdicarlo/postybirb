@@ -62,6 +62,12 @@ export class DescriptionParserService {
 
     const descriptionValue = mergedOptions.description;
 
+    const insertionOptions: InsertionOptions = {
+      insertTitle: descriptionValue.insertTitle ? title : undefined,
+      insertTags: descriptionValue.insertTags ? tags : undefined,
+      insertAd: allowAd,
+    };
+
     /*
      * We choose to merge blocks here to avoid confusing user expectations.
      * Most editors want you to use Shift + Enter to insert a new line. But in
@@ -79,7 +85,7 @@ export class DescriptionParserService {
         .description as unknown as Array<IDescriptionBlockNode>,
     );
 
-    // Build tree once with minimal context (no insertionOptions yet)
+    // Build tree once with minimal context
     const context: ConversionContext = {
       website: instance.decoratedProps.metadata.name,
       shortcuts: this.websiteShortcuts,
@@ -90,34 +96,11 @@ export class DescriptionParserService {
       usernameConversions: new Map(),
     };
 
-    // Create temporary tree to detect shortcut blocks
-    const tempInsertionOptions: InsertionOptions = {
-      insertTitle: undefined,
-      insertTags: undefined,
-      insertAd: allowAd,
-    };
-
     const tree = new DescriptionNodeTree(
       context,
       mergedDescriptionBlocks,
-      tempInsertionOptions,
+      insertionOptions,
     );
-
-    // Check for titleShortcut and tagsShortcut blocks
-    // If present, disable the corresponding insertionOptions to avoid duplicates
-    const hasTitleShortcut = tree.hasTitleShortcut();
-    const hasTagsShortcut = tree.hasTagsShortcut();
-
-    const insertionOptions: InsertionOptions = {
-      insertTitle:
-        !hasTitleShortcut && descriptionValue.insertTitle ? title : undefined,
-      insertTags:
-        !hasTagsShortcut && descriptionValue.insertTags ? tags : undefined,
-      insertAd: allowAd,
-    };
-
-    // Update tree with final insertion options
-    tree.updateInsertionOptions(insertionOptions);
 
     // Resolve and inject into the same tree
     const customShortcuts = await this.resolveCustomShortcutsFromTree(tree);

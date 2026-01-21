@@ -1,16 +1,10 @@
 /* eslint-disable lingui/no-unlocalized-strings */
 import type { BlockNoteEditor } from '@blocknote/core';
 import {
-  DefaultReactSuggestionItem,
-  getDefaultReactSlashMenuItems,
+    DefaultReactSuggestionItem,
+    getDefaultReactSlashMenuItems,
 } from '@blocknote/react';
 import { IconTextPlus } from '@tabler/icons-react';
-
-export type SlashMenuShortcutsConfig = {
-  default?: boolean;
-  title?: boolean;
-  tags?: boolean;
-};
 
 /**
  * Get custom slash menu items for the editor.
@@ -19,7 +13,7 @@ export type SlashMenuShortcutsConfig = {
 export function getCustomSlashMenuItems(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   editor: BlockNoteEditor<any, any, any>,
-  slashMenuShortcuts: boolean | SlashMenuShortcutsConfig = true
+  isDefaultEditor: boolean
 ): DefaultReactSuggestionItem[] {
   const defaultItems = getDefaultReactSlashMenuItems(editor);
   
@@ -30,56 +24,19 @@ export function getCustomSlashMenuItems(
     return true;
   });
 
-  // Resolve shortcut visibility
-  const showDefault =
-    typeof slashMenuShortcuts === 'boolean'
-      ? slashMenuShortcuts
-      : slashMenuShortcuts?.default ?? true;
-  const showTitle =
-    typeof slashMenuShortcuts === 'boolean'
-      ? slashMenuShortcuts
-      : slashMenuShortcuts?.title ?? true;
-  const showTags =
-    typeof slashMenuShortcuts === 'boolean'
-      ? slashMenuShortcuts
-      : slashMenuShortcuts?.tags ?? true;
-
-  // Add default shortcut item
-  if (showDefault) {
+  // Add default shortcut item only for non-default editors
+  if (!isDefaultEditor) {
     filteredItems.push({
       title: 'Default',
       aliases: ['default', 'placeholder'],
       group: 'Shortcuts',
       icon: <IconTextPlus size={18} />,
       onItemClick: () => {
-        const currentBlock = editor.getTextCursorPosition().block;
-        editor.replaceBlocks([currentBlock], [{ type: 'defaultShortcut' }]);
-      },
-    });
-  }
-
-  if (showTitle) {
-    filteredItems.push({
-      title: 'Title',
-      aliases: ['title'],
-      group: 'Shortcuts',
-      icon: <IconTextPlus size={18} />,
-      onItemClick: () => {
-        const currentBlock = editor.getTextCursorPosition().block;
-        editor.replaceBlocks([currentBlock], [{ type: 'titleShortcut' }]);
-      },
-    });
-  }
-
-  if (showTags) {
-    filteredItems.push({
-      title: 'Tags',
-      aliases: ['tags'],
-      group: 'Shortcuts',
-      icon: <IconTextPlus size={18} />,
-      onItemClick: () => {
-        const currentBlock = editor.getTextCursorPosition().block;
-        editor.replaceBlocks([currentBlock], [{ type: 'tagsShortcut' }]);
+        editor.insertBlocks(
+          [{ type: 'defaultShortcut' }],
+          editor.getTextCursorPosition().block,
+          'after'
+        );
       },
     });
   }

@@ -24,7 +24,7 @@ export type InsertionOptions = {
 export class DescriptionNodeTree {
   private readonly nodes: Array<DescriptionBlockNode>;
 
-  private insertionOptions: InsertionOptions;
+  private readonly insertionOptions: InsertionOptions;
 
   private context: ConversionContext;
 
@@ -130,13 +130,6 @@ export class DescriptionNodeTree {
   }
 
   /**
-   * Updates the insertion options.
-   */
-  public updateInsertionOptions(options: InsertionOptions): void {
-    this.insertionOptions = options;
-  }
-
-  /**
    * Finds all inline nodes of a specific type in the tree, including nested children.
    */
   public findInlineNodesByType(type: string): Array<DescriptionInlineNode> {
@@ -206,43 +199,6 @@ export class DescriptionNodeTree {
     }
 
     return usernames;
-  }
-
-  /**
-   * Finds all block nodes of a specific type in the tree, including nested children.
-   */
-  public findBlockNodesByType(type: string): Array<DescriptionBlockNode> {
-    const found: Array<DescriptionBlockNode> = [];
-
-    const traverseBlocks = (blocks: Array<DescriptionBlockNode>) => {
-      for (const block of blocks) {
-        if (block.type === type) {
-          found.push(block);
-        }
-        // Recursively traverse children
-        if (block.children && block.children.length > 0) {
-          traverseBlocks(block.children);
-        }
-      }
-    };
-
-    traverseBlocks(this.nodes);
-
-    return found;
-  }
-
-  /**
-   * Checks if the tree contains a titleShortcut block.
-   */
-  public hasTitleShortcut(): boolean {
-    return this.findBlockNodesByType('titleShortcut').length > 0;
-  }
-
-  /**
-   * Checks if the tree contains a tagsShortcut block.
-   */
-  public hasTagsShortcut(): boolean {
-    return this.findBlockNodesByType('tagsShortcut').length > 0;
   }
 
   private withInsertions(): Array<DescriptionBlockNode> {
