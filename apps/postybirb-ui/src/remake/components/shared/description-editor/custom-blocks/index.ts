@@ -9,6 +9,7 @@ export { getUsernameShortcutsMenuItems, InlineUsernameShortcut } from './inline-
 export {
     filterShortcutMenuItems,
     filterSuggestionItems,
-    getCustomSlashMenuItems
+    getCustomSlashMenuItems,
+    getDefaultShortcutMenuItem
 } from './menu-items';
 
