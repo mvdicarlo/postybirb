@@ -1,9 +1,8 @@
 import { IAccount } from '@postybirb/types';
-import { WebsiteDataTransformerRegistry } from '../transformers';
 import { WebsiteNameMapper } from '../utils/website-name-mapper';
 import {
-  LegacyConversionResult,
   LegacyConverterEntity,
+  MinimalEntity,
 } from './legacy-converter-entity';
 
 /**
@@ -21,41 +20,26 @@ export class LegacyUserAccount implements LegacyConverterEntity<IAccount> {
 
   website: string;
 
-  data: unknown; // Website-specific data (stored separately in V4)
+  data: unknown; // Website-specific data (handled by LegacyWebsiteData converter)
 
   constructor(data: Partial<LegacyUserAccount>) {
     Object.assign(this, data);
   }
 
-  async convert(): Promise<LegacyConversionResult<IAccount>> {
+  async convert(): Promise<MinimalEntity<IAccount> | null> {
     const newWebsiteId = WebsiteNameMapper.map(this.website);
 
     // Skip accounts for deprecated websites
     if (!newWebsiteId) {
-      return { entity: null };
-    }
-
-    // Transform website-specific data if a transformer exists
-    let websiteData: Record<string, unknown> | undefined;
-    const transformer = WebsiteDataTransformerRegistry.getTransformer(
-      this.website,
-    );
-    if (transformer && this.data) {
-      const transformed = transformer.transform(this.data);
-      if (transformed) {
-        websiteData = transformed as Record<string, unknown>;
-      }
+      return null;
     }
 
     return {
-      entity: {
-        // eslint-disable-next-line no-underscore-dangle
-        id: this._id,
-        name: this.alias,
-        website: newWebsiteId,
-        groups: [], // Groups weren't part of legacy accounts
-      },
-      websiteData,
+      // eslint-disable-next-line no-underscore-dangle
+      id: this._id,
+      name: this.alias,
+      website: newWebsiteId,
+      groups: [], // Groups weren't part of legacy accounts
     };
   }
 }

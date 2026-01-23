@@ -2,8 +2,8 @@
 import { ServerBlockNoteEditor } from '@blocknote/server-util';
 import { Description, ICustomShortcut } from '@postybirb/types';
 import {
-  LegacyConversionResult,
   LegacyConverterEntity,
+  MinimalEntity,
 } from './legacy-converter-entity';
 
 export class LegacyCustomShortcut implements LegacyConverterEntity<ICustomShortcut> {
@@ -23,7 +23,7 @@ export class LegacyCustomShortcut implements LegacyConverterEntity<ICustomShortc
     Object.assign(this, data);
   }
 
-  async convert(): Promise<LegacyConversionResult<ICustomShortcut>> {
+  async convert(): Promise<MinimalEntity<ICustomShortcut>> {
     // Convert legacy format to new format
     // Legacy: { shortcut: string, content: string, isDynamic: boolean }
     // New: { name: string, shortcut: Description (BlockNote format) }
@@ -45,12 +45,10 @@ export class LegacyCustomShortcut implements LegacyConverterEntity<ICustomShortc
     shortcut = this.convertDefaultToBlock(shortcut);
 
     return {
-      entity: {
-        // eslint-disable-next-line no-underscore-dangle
-        id: this._id,
-        name: this.shortcut, // Legacy shortcut name becomes the name
-        shortcut,
-      },
+      // eslint-disable-next-line no-underscore-dangle
+      id: this._id,
+      name: this.shortcut, // Legacy shortcut name becomes the name
+      shortcut,
     };
   }
 
@@ -64,13 +62,7 @@ export class LegacyCustomShortcut implements LegacyConverterEntity<ICustomShortc
     // Captures: (1) shortcut key, (2) optional modifier (ignored), (3) optional value
     const shortcutPattern =
       /^\{([a-zA-Z0-9]+)(?:\[([^\]]+)\])?(?::([^}]+))?\}$/;
-
-    // Mapping of legacy system shortcuts to new inline shortcut types
-    const systemShortcutMapping: Record<string, string> = {
-      cw: 'contentWarningShortcut',
-      title: 'titleShortcut',
-      tags: 'tagsShortcut',
-    };
+    const deprecatedShortcuts = ['cw', 'title', 'tags'];
 
     // Mapping of legacy username shortcut keys to modern IDs
     const usernameShortcutMapping: Record<string, string> = {
@@ -110,18 +102,9 @@ export class LegacyCustomShortcut implements LegacyConverterEntity<ICustomShortc
         ) {
           const match = item.text.match(shortcutPattern);
 
-          if (match) {
+          // If it matches the shortcut pattern and isn't deprecated
+          if (match && !deprecatedShortcuts.includes(match[1].toLowerCase())) {
             const shortcutKey = match[1];
-            const shortcutKeyLower = shortcutKey.toLowerCase();
-
-            // Check if this is a system shortcut (cw, title, tags)
-            if (systemShortcutMapping[shortcutKeyLower]) {
-              result.push({
-                type: systemShortcutMapping[shortcutKeyLower],
-                props: {},
-              });
-              return;
-            }
             // match[2] is the modifier block - we ignore it
             const shortcutValue = match[3]; // Value is now in capture group 3
 
@@ -278,12 +261,20 @@ export class LegacyCustomShortcut implements LegacyConverterEntity<ICustomShortc
     // where word is alphanumeric, modifier is anything except ], and text can contain anything except }
     const shortcutPattern = /\{([a-zA-Z0-9]+)(?:\[([^\]]+)\])?(?::([^}]+))?\}/g;
 
+    const deprecatedShortcuts = ['cw', 'title', 'tags'];
+
     return content.replace(
       shortcutPattern,
-      (match, key, modifier, additionalText) =>
+      (match, key, modifier, additionalText) => {
+        // Skip deprecated shortcuts
+        if (deprecatedShortcuts.includes(key.toLowerCase())) {
+          return match;
+        }
+
         // Use <code> tag which BlockNote preserves as inline code
         // This will create a separate text node with code styling that we can identify
-        `<code data-shortcut="true">${match}</code>`,
+        return `<code data-shortcut="true">${match}</code>`;
+      },
     );
   }
 }
