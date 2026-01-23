@@ -50,7 +50,7 @@ describe('LegacyCustomShortcutConverter', () => {
 
       const result = await legacyShortcut.convert();
 
-      expect(result.shortcut).toMatchObject([
+      expect(result.entity).toMatchObject([
         {
           type: 'paragraph',
           props: expect.objectContaining({
@@ -79,7 +79,7 @@ describe('LegacyCustomShortcutConverter', () => {
 
       const result = await legacyShortcut.convert();
 
-      expect(result.shortcut).toMatchObject([
+      expect(result.entity).toMatchObject([
         {
           type: 'paragraph',
           props: expect.objectContaining({
@@ -108,7 +108,7 @@ describe('LegacyCustomShortcutConverter', () => {
 
       const result = await legacyShortcut.convert();
 
-      expect(result.shortcut).toMatchObject([
+      expect(result.entity).toMatchObject([
         {
           type: 'paragraph',
           props: expect.objectContaining({
@@ -137,7 +137,7 @@ describe('LegacyCustomShortcutConverter', () => {
 
       const result = await legacyShortcut.convert();
 
-      expect(result.shortcut).toMatchObject([
+      expect(result.entity).toMatchObject([
         {
           type: 'paragraph',
           props: expect.objectContaining({
@@ -178,7 +178,7 @@ describe('LegacyCustomShortcutConverter', () => {
 
       const result = await legacyShortcut.convert();
 
-      expect(result.shortcut).toMatchObject([
+      expect(result.entity).toMatchObject([
         {
           type: 'paragraph',
           props: expect.objectContaining({
@@ -235,7 +235,7 @@ describe('LegacyCustomShortcutConverter', () => {
 
       const result = await legacyShortcut.convert();
 
-      expect(result.shortcut).toMatchObject([
+      expect(result.entity).toMatchObject([
         {
           type: 'paragraph',
           props: expect.objectContaining({
