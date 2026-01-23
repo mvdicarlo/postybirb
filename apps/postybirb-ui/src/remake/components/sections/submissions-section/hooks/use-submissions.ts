@@ -52,8 +52,15 @@ export function useSubmissions({
 
     // Apply status filter
     switch (filter) {
-      case 'drafts':
-        result = result.filter((s) => !s.isScheduled && !s.isQueued);
+      case 'queued':
+        result = result
+          .filter((s) => s.isQueued)
+          .sort((a, b) => {
+            // Sort by postQueueRecord.createdAt ascending (oldest first = top of queue)
+            const aCreatedAt = a.postQueueRecord?.createdAt ?? '';
+            const bCreatedAt = b.postQueueRecord?.createdAt ?? '';
+            return aCreatedAt.localeCompare(bCreatedAt);
+          });
         break;
       case 'scheduled':
         result = result.filter((s) => s.isScheduled);
