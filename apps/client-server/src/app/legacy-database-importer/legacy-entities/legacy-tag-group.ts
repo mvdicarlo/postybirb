@@ -1,7 +1,7 @@
 import { ITagGroup } from '@postybirb/types';
 import {
-  LegacyConverterEntity,
-  MinimalEntity,
+    LegacyConverterEntity,
+    MinimalEntity,
 } from './legacy-converter-entity';
 
 /**
