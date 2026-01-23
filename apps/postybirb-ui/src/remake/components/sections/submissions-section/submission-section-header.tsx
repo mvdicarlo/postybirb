@@ -344,7 +344,7 @@ export function SubmissionSectionHeader({
             onChange={(value) => setFilter(value as SubmissionFilter)}
             data={[
               { value: 'all', label: t`All` },
-              { value: 'drafts', label: t`Drafts` },
+              { value: 'queued', label: t`Queued` },
               { value: 'scheduled', label: t`Scheduled` },
             ]}
           />

@@ -17,7 +17,7 @@ import { useShallow } from 'zustand/react/shallow';
  */
 export type SubmissionFilter =
   | 'all'
-  | 'drafts'
+  | 'queued'
   | 'scheduled'
   | 'posted'
   | 'failed';
