@@ -278,11 +278,10 @@ export class LegacyCustomShortcut implements LegacyConverterEntity<ICustomShortc
 
     return content.replace(
       shortcutPattern,
-      (match, key, modifier, additionalText) => 
+      (match, key, modifier, additionalText) =>
         // Use <code> tag which BlockNote preserves as inline code
         // This will create a separate text node with code styling that we can identify
-         `<code data-shortcut="true">${match}</code>`
-      ,
+        `<code data-shortcut="true">${match}</code>`,
     );
   }
 }

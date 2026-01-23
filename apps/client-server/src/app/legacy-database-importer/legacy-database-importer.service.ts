@@ -7,6 +7,7 @@ import { LegacyCustomShortcutConverter } from './converters/legacy-custom-shortc
 import { LegacyTagConverterConverter } from './converters/legacy-tag-converter.converter';
 import { LegacyTagGroupConverter } from './converters/legacy-tag-group.converter';
 import { LegacyUserAccountConverter } from './converters/legacy-user-account.converter';
+import { LegacyWebsiteDataConverter } from './converters/legacy-website-data.converter';
 import { LegacyImportDto } from './dtos/legacy-import.dto';
 
 @Injectable()
@@ -29,6 +30,16 @@ export class LegacyDatabaseImporterService {
       );
       if (result.error) {
         errors.push(result.error);
+      }
+
+      // IMPORTANT: WebsiteData must be imported AFTER accounts because
+      // WebsiteData records have a foreign key reference to Account records.
+      // The Account must exist before its associated WebsiteData can be created.
+      const websiteDataResult = await this.processImport(
+        new LegacyWebsiteDataConverter(path),
+      );
+      if (websiteDataResult.error) {
+        errors.push(websiteDataResult.error);
       }
     }
 

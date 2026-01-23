@@ -20,7 +20,7 @@ export class LegacyUserAccount implements LegacyConverterEntity<IAccount> {
 
   website: string;
 
-  data: unknown; // Website-specific data (stored separately in V4)
+  data: unknown; // Website-specific data (handled by LegacyWebsiteData converter)
 
   constructor(data: Partial<LegacyUserAccount>) {
     Object.assign(this, data);
