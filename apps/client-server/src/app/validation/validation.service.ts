@@ -148,9 +148,11 @@ export class ValidationService {
       ) {
         return cachedValidation.results[websiteOption.id].validationResult;
       }
+
       const website = websiteOption.isDefault
         ? new DefaultWebsite(new Account(websiteOption.account))
         : this.websiteRegistry.findInstance(websiteOption.account);
+      
       if (!website) {
         this.logger.error(
           `Failed to find website instance for account ${websiteOption.accountId}`,
@@ -192,6 +194,7 @@ export class ValidationService {
         fileConverterService: this.fileConverterService,
         mergedWebsiteOptions,
       };
+
       // eslint-disable-next-line no-restricted-syntax
       for (const validation of this.validations) {
         await validation(params);

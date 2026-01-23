@@ -61,8 +61,9 @@ export class UpdateFileService {
     await withTransactionContext(this.fileRepository.db, async (ctx) => {
       if (target === 'thumbnail') {
         await this.replaceFileThumbnail(ctx, submissionFile, file, buf);
+      } else {
+        await this.replacePrimaryFile(ctx, submissionFile, file, buf);
       }
-      await this.replacePrimaryFile(ctx, submissionFile, file, buf);
     });
 
     // return the latest
@@ -76,9 +77,11 @@ export class UpdateFileService {
     buf: Buffer,
   ) {
     const thumbnailDetails = await this.getImageDetails(file, buf);
-    let { thumbnail } = submissionFile;
-    if (!submissionFile.thumbnailId) {
-      thumbnail = await this.createFileService.createFileBufferEntity(
+    let { thumbnailId } = submissionFile;
+
+    if (!thumbnailId) {
+      // Create a new thumbnail buffer entity
+      const thumbnail = await this.createFileService.createFileBufferEntity(
         ctx,
         submissionFile,
         thumbnailDetails.buffer,
@@ -88,21 +91,27 @@ export class UpdateFileService {
           mimeType: file.mimetype,
         },
       );
+      thumbnailId = thumbnail.id;
     } else {
-      await ctx.getDb().update(this.fileBufferRepository.schemaEntity).set({
-        buffer: thumbnailDetails.buffer,
-        size: thumbnailDetails.buffer.length,
-        mimeType: file.mimetype,
-        width: thumbnailDetails.width,
-        height: thumbnailDetails.height,
-      });
+      // Update existing thumbnail buffer
+      await ctx
+        .getDb()
+        .update(this.fileBufferRepository.schemaEntity)
+        .set({
+          buffer: thumbnailDetails.buffer,
+          size: thumbnailDetails.buffer.length,
+          mimeType: file.mimetype,
+          width: thumbnailDetails.width,
+          height: thumbnailDetails.height,
+        })
+        .where(eq(this.fileBufferRepository.schemaEntity.id, thumbnailId));
     }
 
     await ctx
       .getDb()
       .update(this.fileRepository.schemaEntity)
       .set({
-        thumbnailId: thumbnail.id,
+        thumbnailId,
         hasCustomThumbnail: true,
         hasThumbnail: true,
       })

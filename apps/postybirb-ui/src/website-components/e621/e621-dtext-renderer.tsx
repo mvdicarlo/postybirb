@@ -1,4 +1,4 @@
-import { Trans } from "@lingui/react/macro";
+import { Trans } from '@lingui/react/macro';
 import React from 'react';
 
 // May be used for preview feature, still needs to have actual
@@ -9,14 +9,18 @@ export function E621Dtext({ dtext }: { dtext: string }) {
 
   const elements: React.ReactNode[] = [];
 
-  for (const line of text.split('\n')) {
-    if (line) elements.push(<E621DtextLine line={line} />);
-    elements.push(<br />);
+  const lines = text.split('\n');
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (line) elements.push(<E621DtextLine key={`line-${i}`} line={line} />);
+    elements.push(<br key={`br-${i}`} />);
   }
 
   if (dtext.length > text.length) {
-    elements.push('...');
-    elements.push(<Trans>and {dtext.length - text.length} more</Trans>);
+    elements.push(<React.Fragment key="ellipsis">...</React.Fragment>);
+    elements.push(
+      <Trans key="more">and {dtext.length - text.length} more</Trans>,
+    );
   }
 
   return elements;
@@ -34,10 +38,11 @@ function E621DtextLine({ line }: { line: string }) {
     const text = tokens[i + 1];
     const next = tokens[i + 2];
     if (next === `/${token}`) {
-      if (token === 'b') elements.push(<strong>{text}</strong>);
-      if (token === 'i') elements.push(<i>{text}</i>);
+      if (token === 'b') elements.push(<strong key={`b-${i}`}>{text}</strong>);
+      if (token === 'i') elements.push(<i key={`i-${i}`}>{text}</i>);
       i += 2;
-    } else elements.push(token);
+    } else
+      elements.push(<React.Fragment key={`t-${i}`}>{token}</React.Fragment>);
   }
 
   return elements;

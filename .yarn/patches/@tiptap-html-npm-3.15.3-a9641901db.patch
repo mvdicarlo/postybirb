@@ -1,0 +1,33 @@
+diff --git a/package.json b/package.json
+index 1d1aa65a70e7f3e898be608610693a9b98152b8c..e27af24e756e7c6b76651d504304f28e7de4e084 100644
+--- a/package.json
++++ b/package.json
+@@ -12,28 +12,6 @@
+     "type": "github",
+     "url": "https://github.com/sponsors/ueberdosis"
+   },
+-  "exports": {
+-    ".": {
+-      "types": {
+-        "import": "./dist/index.d.ts",
+-        "require": "./dist/index.d.cts"
+-      },
+-      "import": {
+-        "browser": "./dist/index.js",
+-        "node": "./dist/server/index.js",
+-        "default": "./dist/index.js"
+-      },
+-      "require": "./dist/index.cjs"
+-    },
+-    "./server": {
+-      "types": {
+-        "import": "./dist/server/index.d.ts",
+-        "require": "./dist/server/index.d.cts"
+-      },
+-      "import": "./dist/server/index.js",
+-      "require": "./dist/server/index.cjs"
+-    }
+-  },
+   "main": "dist/index.cjs",
+   "module": "dist/index.js",
+   "types": "dist/index.d.ts",

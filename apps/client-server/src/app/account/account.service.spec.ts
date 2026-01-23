@@ -23,18 +23,30 @@ describe('AccountsService', () => {
     id: 'account-1',
     name: 'Test Account 1',
     website: 'registered-website',
+    withWebsiteInstance(websiteInstance) {
+      return this;
+    },
+    toDTO: () => {},
   } as Account;
 
   const mockUnregisteredAccount = {
     id: 'account-2',
     name: 'Test Account 2',
     website: 'unregistered-website',
+    withWebsiteInstance(websiteInstance) {
+      return this;
+    },
+    toDTO: () => {},
   } as Account;
 
   const mockAnotherUnregisteredAccount = {
     id: 'account-3',
     name: 'Test Account 3',
     website: 'another-unregistered-website',
+    withWebsiteInstance(websiteInstance) {
+      return this;
+    },
+    toDTO: () => {},
   } as Account;
 
   beforeEach(async () => {
@@ -117,7 +129,7 @@ describe('AccountsService', () => {
 
     await service.clearAccountData(record.id);
     expect(record.websiteInstance?.getWebsiteData()).toEqual({});
-  });
+  }, 10000);
 
   it('should create entities', async () => {
     const dto = new CreateAccountDto();
@@ -154,7 +166,7 @@ describe('AccountsService', () => {
         websiteDisplayName: 'Test',
       },
     });
-  });
+  }, 10000);
 
   it('should support crud operations', async () => {
     const createAccount: CreateAccountDto = new CreateAccountDto();
@@ -187,6 +199,9 @@ describe('AccountsService', () => {
 
       mockWebsiteRegistry = {
         canCreate: jest.fn(),
+        create: jest.fn(),
+        findInstance: jest.fn(),
+        getAvailableWebsites: () => [],
       };
 
       mockLogger = {

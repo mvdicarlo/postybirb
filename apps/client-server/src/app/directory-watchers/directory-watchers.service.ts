@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, Optional } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { DIRECTORY_WATCHER_UPDATES } from '@postybirb/socket-events';
 import {
   DirectoryWatcherImportAction,
   EntityId,
@@ -55,6 +56,16 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
     @Optional() webSocket?: WSGateway,
   ) {
     super('DirectoryWatcherSchema', webSocket);
+    this.repository.subscribe('DirectoryWatcherSchema', () =>
+      this.emitUpdates(),
+    );
+  }
+
+  protected async emitUpdates() {
+    super.emit({
+      event: DIRECTORY_WATCHER_UPDATES,
+      data: (await this.repository.findAll()).map((entity) => entity.toDTO()),
+    });
   }
 
   /**

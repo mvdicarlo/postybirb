@@ -10,7 +10,7 @@ import { NestFactory, Reflector } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import {
   IsTestEnvironment,
-  PostyBirbEnvConfig,
+  PostyBirbEnvConfig
 } from '@postybirb/utils/electron';
 import compression from 'compression';
 import sharp from 'sharp';
@@ -55,6 +55,7 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       forbidUnknownValues: true,
+      transform: true,
     }),
   );
   app.use(compression());
@@ -95,3 +96,4 @@ async function bootstrap() {
 }
 
 export { bootstrap as bootstrapClientServer };
+

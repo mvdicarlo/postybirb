@@ -24,8 +24,9 @@ import {
   EntityId,
   IAccountDto,
   IPostRecord,
-  IWebsitePostRecord,
   NullAccount,
+  PostEventDto,
+  PostEventType,
   PostRecordState,
   SubmissionId,
   SubmissionType,
@@ -41,7 +42,6 @@ import {
   IconSend,
   IconX,
 } from '@tabler/icons-react';
-import { uniq } from 'lodash';
 import { useMemo, useState } from 'react';
 import submissionApi from '../../../api/submission.api';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
@@ -122,30 +122,104 @@ function exportPostRecordToFile(post: IPostRecord) {
 }
 
 /**
+ * Derived website post information from events.
+ */
+interface DerivedWebsitePost {
+  accountId: EntityId;
+  accountName: string;
+  websiteName: string;
+  isSuccess: boolean;
+  sourceUrls: string[];
+  errors: string[];
+}
+
+/**
+ * Extract website post results from post events.
+ * Aggregates events per account to determine success/failure and source URLs.
+ */
+function extractWebsitePostsFromEvents(
+  events: PostEventDto[] | undefined,
+): DerivedWebsitePost[] {
+  if (!events || events.length === 0) return [];
+
+  const postsByAccount = new Map<EntityId, DerivedWebsitePost>();
+
+  for (const event of events) {
+    if (!event.accountId) continue;
+
+    // Get or create post entry for this account
+    let post = postsByAccount.get(event.accountId);
+    if (!post) {
+      const accountSnapshot = event.metadata?.accountSnapshot;
+      post = {
+        accountId: event.accountId,
+        // eslint-disable-next-line lingui/no-unlocalized-strings
+        accountName: accountSnapshot?.name ?? 'Unknown',
+        // eslint-disable-next-line lingui/no-unlocalized-strings
+        websiteName: accountSnapshot?.website ?? '?',
+        isSuccess: false,
+        sourceUrls: [],
+        errors: [],
+      };
+      postsByAccount.set(event.accountId, post);
+    }
+
+    // Process event based on type
+    switch (event.eventType) {
+      case PostEventType.POST_ATTEMPT_COMPLETED:
+        post.isSuccess = true;
+        break;
+
+      case PostEventType.POST_ATTEMPT_FAILED:
+        post.isSuccess = false;
+        if (event.error?.message) {
+          post.errors.push(event.error.message);
+        }
+        break;
+
+      case PostEventType.MESSAGE_POSTED:
+      case PostEventType.FILE_POSTED:
+        if (event.sourceUrl) {
+          post.sourceUrls.push(event.sourceUrl);
+        }
+        break;
+
+      case PostEventType.MESSAGE_FAILED:
+      case PostEventType.FILE_FAILED:
+        if (event.error?.message) {
+          post.errors.push(event.error.message);
+        }
+        break;
+
+      default:
+        break;
+    }
+  }
+
+  return Array.from(postsByAccount.values());
+}
+
+/**
  * Renders a website post entry row
  */
 function WebsitePostRow({
   post,
   accountsMap,
 }: {
-  post: IWebsitePostRecord;
+  post: DerivedWebsitePost;
   accountsMap: Map<EntityId, IAccountDto>;
 }) {
-  const isSuccess = post.errors.length === 0 && post.completedAt;
-  const sourceUrls = post.metadata.source
-    ? [post.metadata.source]
-    : uniq(Object.values(post.metadata.sourceMap)).filter(Boolean);
   const account = getAccount(post.accountId, accountsMap);
 
   return (
-    <Table.Tr key={post.id}>
+    <Table.Tr key={post.accountId}>
       <Table.Td>
         <strong>
           {account.name} ({account.website})
         </strong>
       </Table.Td>
       <Table.Td>
-        {isSuccess ? (
+        {post.isSuccess ? (
           <Badge color="green" variant="outline" size="sm">
             <Trans>Success</Trans>
           </Badge>
@@ -156,9 +230,9 @@ function WebsitePostRow({
         )}
       </Table.Td>
       <Table.Td>
-        {sourceUrls.length ? (
+        {post.sourceUrls.length ? (
           <Group>
-            {sourceUrls.map((sourceUrl) => (
+            {post.sourceUrls.map((sourceUrl) => (
               <ExternalLink href={sourceUrl} key={sourceUrl}>
                 {sourceUrl}
                 <IconExternalLink
@@ -169,11 +243,8 @@ function WebsitePostRow({
             ))}
           </Group>
         ) : null}
-        {!isSuccess && post.errors.length > 0 && (
-          <Badge
-            color="red"
-            title={post.errors.map((err) => err.message).join('\n')}
-          >
+        {!post.isSuccess && post.errors.length > 0 && (
+          <Badge color="red" title={post.errors.join('\n')}>
             <Trans>Error</Trans>
           </Badge>
         )}
@@ -208,6 +279,9 @@ function PostDetailsView({ post }: { post: IPostRecord | null }) {
     });
   };
 
+  // Extract website posts from events
+  const websitePosts = extractWebsitePostsFromEvents(post.events);
+
   return (
     <Stack>
       <ScrollArea>
@@ -226,14 +300,14 @@ function PostDetailsView({ post }: { post: IPostRecord | null }) {
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
-            {post.children.map((child) => (
+            {websitePosts.map((child) => (
               <WebsitePostRow
-                key={child.id}
+                key={child.accountId}
                 post={child}
                 accountsMap={accountsMap}
               />
             ))}
-            {post.children.length === 0 && (
+            {websitePosts.length === 0 && (
               <Table.Tr>
                 <Table.Td colSpan={3} style={{ textAlign: 'center' }}>
                   <Text c="dimmed">
@@ -345,15 +419,15 @@ function PostTimelineItem({
       bullet={bullet}
     >
       <Group gap="xs">
-        {post.children.map((child) => {
-          const account = getAccount(child.accountId, accountsMap);
+        {extractWebsitePostsFromEvents(post.events).map((derivedPost) => {
+          const account = getAccount(derivedPost.accountId, accountsMap);
           const displayName = account?.websiteInfo?.websiteDisplayName;
           return (
             <Badge
               size="xs"
               variant="outline"
-              color={child.errors.length ? 'red' : 'green'}
-              key={child.id}
+              color={derivedPost.isSuccess ? 'green' : 'red'}
+              key={derivedPost.accountId}
             >
               {displayName ?? <CommonTranslations.Unknown />} ({account?.name})
             </Badge>

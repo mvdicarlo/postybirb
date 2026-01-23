@@ -131,7 +131,9 @@ export class BBCodeConverter extends BaseConverter {
     node: IDescriptionInlineNodeClass,
     context: ConversionContext,
   ): string {
-    if (!node.content.length && node.type !== 'customShortcut') return '';
+    // System shortcuts are atomic nodes with no content
+    const atomicTypes = ['customShortcut', 'titleShortcut', 'tagsShortcut', 'contentWarningShortcut'];
+    if (!node.content.length && !atomicTypes.includes(node.type)) return '';
 
     if (node.type === 'link') {
       const content = (node.content as IDescriptionTextNodeClass[])
@@ -156,6 +158,18 @@ export class BBCodeConverter extends BaseConverter {
         return this.convertRawBlocks(shortcutBlocks, context);
       }
       return '';
+    }
+
+    if (node.type === 'titleShortcut') {
+      return context.title ?? '';
+    }
+
+    if (node.type === 'tagsShortcut') {
+      return context.tags?.join(' ') ?? '';
+    }
+
+    if (node.type === 'contentWarningShortcut') {
+      return context.contentWarningText ?? '';
     }
 
     return (node.content as IDescriptionTextNodeClass[])

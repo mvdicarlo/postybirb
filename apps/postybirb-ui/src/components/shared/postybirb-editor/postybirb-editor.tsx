@@ -31,6 +31,11 @@ import {
   insertDefaultShortcut,
 } from './custom/default-shortcut';
 import {
+  InlineContentWarningShortcut,
+  InlineTagsShortcut,
+  InlineTitleShortcut,
+} from './custom/inline-system-shortcuts';
+import {
   getUsernameShortcutsMenuItems,
   InlineUsernameShortcut,
 } from './custom/username-shortcut';
@@ -94,6 +99,9 @@ export function PostyBirbEditor(props: PostyBirbEditorProps) {
       ...defaultInlineContentSpecs,
       customShortcut: InlineCustomShortcut,
       username: InlineUsernameShortcut,
+      titleShortcut: InlineTitleShortcut,
+      tagsShortcut: InlineTagsShortcut,
+      contentWarningShortcut: InlineContentWarningShortcut,
     },
     styleSpecs: {
       ...defaultStyleSpecs,

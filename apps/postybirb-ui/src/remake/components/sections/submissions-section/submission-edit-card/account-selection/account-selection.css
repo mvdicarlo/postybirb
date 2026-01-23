@@ -1,0 +1,20 @@
+/**
+ * CSS for AccountSelectionForm components.
+ */
+
+.postybirb__account_option_row:hover {
+  background-color: var(--mantine-color-gray-light-hover);
+}
+
+.postybirb__account_option_form {
+  background-color: var(--mantine-color-gray-light);
+}
+
+.postybirb__website_group_header {
+  width: 100%;
+  display: block;
+}
+
+.postybirb__website_group_header:hover {
+  background-color: var(--mantine-color-gray-light-hover);
+}

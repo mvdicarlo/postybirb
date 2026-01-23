@@ -1,13 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { ServerBlockNoteEditor } from '@blocknote/server-util';
 import { Description, ICustomShortcut } from '@postybirb/types';
 import {
   LegacyConversionResult,
   LegacyConverterEntity,
 } from './legacy-converter-entity';
 
-export class LegacyCustomShortcut
-  implements LegacyConverterEntity<ICustomShortcut>
-{
+export class LegacyCustomShortcut implements LegacyConverterEntity<ICustomShortcut> {
   _id: string;
 
   created: string;
@@ -34,7 +33,6 @@ export class LegacyCustomShortcut
 
     // Step 2: Parse HTML with wrapped shortcuts to BlockNote format
     // Lazy-load BlockNote to avoid ESM compatibility issues in Electron
-    const { ServerBlockNoteEditor } = await import('@blocknote/server-util');
     const editor = ServerBlockNoteEditor.create();
     let shortcut = (await editor.tryParseHTMLToBlocks(
       contentWithWrappedShortcuts,
@@ -66,7 +64,13 @@ export class LegacyCustomShortcut
     // Captures: (1) shortcut key, (2) optional modifier (ignored), (3) optional value
     const shortcutPattern =
       /^\{([a-zA-Z0-9]+)(?:\[([^\]]+)\])?(?::([^}]+))?\}$/;
-    const deprecatedShortcuts = ['cw', 'title', 'tags'];
+
+    // Mapping of legacy system shortcuts to new inline shortcut types
+    const systemShortcutMapping: Record<string, string> = {
+      cw: 'contentWarningShortcut',
+      title: 'titleShortcut',
+      tags: 'tagsShortcut',
+    };
 
     // Mapping of legacy username shortcut keys to modern IDs
     const usernameShortcutMapping: Record<string, string> = {
@@ -106,9 +110,18 @@ export class LegacyCustomShortcut
         ) {
           const match = item.text.match(shortcutPattern);
 
-          // If it matches the shortcut pattern and isn't deprecated
-          if (match && !deprecatedShortcuts.includes(match[1].toLowerCase())) {
+          if (match) {
             const shortcutKey = match[1];
+            const shortcutKeyLower = shortcutKey.toLowerCase();
+
+            // Check if this is a system shortcut (cw, title, tags)
+            if (systemShortcutMapping[shortcutKeyLower]) {
+              result.push({
+                type: systemShortcutMapping[shortcutKeyLower],
+                props: {},
+              });
+              return;
+            }
             // match[2] is the modifier block - we ignore it
             const shortcutValue = match[3]; // Value is now in capture group 3
 
@@ -265,20 +278,12 @@ export class LegacyCustomShortcut
     // where word is alphanumeric, modifier is anything except ], and text can contain anything except }
     const shortcutPattern = /\{([a-zA-Z0-9]+)(?:\[([^\]]+)\])?(?::([^}]+))?\}/g;
 
-    const deprecatedShortcuts = ['cw', 'title', 'tags'];
-
     return content.replace(
       shortcutPattern,
-      (match, key, modifier, additionalText) => {
-        // Skip deprecated shortcuts
-        if (deprecatedShortcuts.includes(key.toLowerCase())) {
-          return match;
-        }
-
+      (match, key, modifier, additionalText) =>
         // Use <code> tag which BlockNote preserves as inline code
         // This will create a separate text node with code styling that we can identify
-        return `<code data-shortcut="true">${match}</code>`;
-      },
+        `<code data-shortcut="true">${match}</code>`,
     );
   }
 }

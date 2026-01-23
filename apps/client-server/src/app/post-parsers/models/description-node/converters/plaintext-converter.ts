@@ -1,8 +1,8 @@
 import {
-    ConversionContext,
-    IDescriptionBlockNodeClass,
-    IDescriptionInlineNodeClass,
-    IDescriptionTextNodeClass,
+  ConversionContext,
+  IDescriptionBlockNodeClass,
+  IDescriptionInlineNodeClass,
+  IDescriptionTextNodeClass,
 } from '../description-node.base';
 import { BaseConverter } from './base-converter';
 
@@ -95,6 +95,18 @@ export class PlainTextConverter extends BaseConverter {
         return this.convertRawBlocks(shortcutBlocks, context);
       }
       return '';
+    }
+
+    if (node.type === 'titleShortcut') {
+      return context.title ?? '';
+    }
+
+    if (node.type === 'tagsShortcut') {
+      return context.tags?.join(' ') ?? '';
+    }
+
+    if (node.type === 'contentWarningShortcut') {
+      return context.contentWarningText ?? '';
     }
 
     return (node.content as IDescriptionTextNodeClass[])

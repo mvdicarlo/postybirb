@@ -1,0 +1,13 @@
+diff --git a/lib/logger.js b/lib/logger.js
+index 69218a870e6022289a73c27cb2d4f166bf1691d9..8d6554bce9dd8892c945ef0740b0e9d6ba56798c 100644
+--- a/lib/logger.js
++++ b/lib/logger.js
+@@ -29,7 +29,7 @@ var formatters = {
+ 
+ function Logger(options) {
+   var defaults = JSON.parse(JSON.stringify(Logger.DEFAULTS));
+-  options = util._extend(defaults, options || {});
++  options = Object.assign(defaults, options || {});
+   var catcher = deLiner();
+   var emitter = catcher;
+   var transforms = [
