@@ -1,4 +1,4 @@
-import { Trans } from '@lingui/react/macro';
+/* eslint-disable lingui/text-restrictions */
 /* eslint-disable lingui/no-unlocalized-strings */
 import {
   BlockNoteEditor,
@@ -16,6 +16,7 @@ import {
   SuggestionMenuController,
   useCreateBlockNote,
 } from '@blocknote/react';
+import { Trans } from '@lingui/react/macro';
 import { Tooltip, useMantineColorScheme } from '@mantine/core';
 import { Description, UsernameShortcut } from '@postybirb/types';
 import { IconKeyboard } from '@tabler/icons-react';
@@ -28,9 +29,10 @@ import {
 } from './custom/custom-shortcut';
 import {
   DefaultShortcut,
-  insertDefaultShortcut,
+  getDefaultShortcutMenuItem,
 } from './custom/default-shortcut';
 import {
+  getSystemShortcutsMenuItems,
   InlineContentWarningShortcut,
   InlineTagsShortcut,
   InlineTitleShortcut,
@@ -48,31 +50,21 @@ type PostyBirbEditorProps = {
   onChange: (newValue: Description) => void;
 };
 
-// eslint-disable-next-line lingui/text-restrictions
-const shortcutTrigger = '`'; // Backtick character for shortcuts
+// Shortcut trigger characters for username and custom shortcuts
+const shortcutTriggers = ['@', '`', '{'];
 
 export const getCustomSlashMenuItems = (
   editor: BlockNoteEditor,
-  isDefaultEditor: boolean,
 ): DefaultReactSuggestionItem[] => {
   // Step 1: Default items
   const defaultItems = getDefaultReactSlashMenuItems(editor);
 
   // Step 2: Filter out unwanted items
-  const filtered = defaultItems.filter((item) => {
+  return defaultItems.filter((item) => {
     if (item.key === 'table') return false;
     if (item.key === 'emoji') return false;
     return true;
   });
-
-  const items = [...filtered];
-
-  if (!isDefaultEditor) {
-    // Step 3: Add DefaultShortcut item
-    items.push(insertDefaultShortcut(editor));
-  }
-
-  return items;
 };
 
 export function PostyBirbEditor(props: PostyBirbEditorProps) {
@@ -135,7 +127,7 @@ export function PostyBirbEditor(props: PostyBirbEditorProps) {
     >
       <Tooltip
         label={
-          <Trans>Type {shortcutTrigger} to insert username shortcuts</Trans>
+          <Trans>Type @, `, or {'{'} to insert shortcuts</Trans>
         }
         position="top-start"
         withArrow
@@ -159,8 +151,7 @@ export function PostyBirbEditor(props: PostyBirbEditorProps) {
           }}
         >
           <IconKeyboard size={16} />
-          <code style={{ fontWeight: 'bold' }}>{shortcutTrigger}</code> for
-          shortcuts
+          <code style={{ fontWeight: 'bold' }}>@ ` {'{'}</code> for shortcuts
         </div>
       </Tooltip>
       <BlockNoteView
@@ -175,37 +166,44 @@ export function PostyBirbEditor(props: PostyBirbEditorProps) {
         <SuggestionMenuController
           triggerCharacter="/"
           getItems={async (query) =>
-            filterSuggestionItems(
-              getCustomSlashMenuItems(editor, isDefaultEditor),
-              query,
-            )
+            filterSuggestionItems(getCustomSlashMenuItems(editor), query)
           }
         />
-        <SuggestionMenuController
-          triggerCharacter={shortcutTrigger}
-          getItems={async (query) => {
-            const items = [
-              ...(showCustomShortcuts
-                ? getCustomShortcutsMenuItems(
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    editor as any,
-                    customShortcuts || [],
-                  )
-                : []),
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              ...getUsernameShortcutsMenuItems(editor as any, shortcuts),
-            ];
-            const lowerQuery = query.toLowerCase();
-            return items.filter(
-              (item) =>
-                item.title.toLowerCase().includes(lowerQuery) ||
-                (item.aliases &&
-                  item.aliases.some((alias: string) =>
-                    alias.toLowerCase().includes(lowerQuery),
-                  )),
-            );
-          }}
-        />
+        {shortcutTriggers.map((trigger) => (
+          <SuggestionMenuController
+            key={trigger}
+            triggerCharacter={trigger}
+            getItems={async (query) => {
+              const items = [
+                ...getDefaultShortcutMenuItem(
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  editor as any,
+                  isDefaultEditor,
+                ),
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                ...getSystemShortcutsMenuItems(editor as any),
+                ...(showCustomShortcuts
+                  ? getCustomShortcutsMenuItems(
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      editor as any,
+                      customShortcuts || [],
+                    )
+                  : []),
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                ...getUsernameShortcutsMenuItems(editor as any, shortcuts),
+              ];
+              const lowerQuery = query.toLowerCase();
+              return items.filter(
+                (item) =>
+                  item.title.toLowerCase().includes(lowerQuery) ||
+                  (item.aliases &&
+                    item.aliases.some((alias: string) =>
+                      alias.toLowerCase().includes(lowerQuery),
+                    )),
+              );
+            }}
+          />
+        ))}
       </BlockNoteView>
     </div>
   );

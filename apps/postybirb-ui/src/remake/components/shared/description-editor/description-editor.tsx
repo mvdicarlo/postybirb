@@ -22,6 +22,7 @@ import {
   filterSuggestionItems,
   getCustomShortcutsMenuItems,
   getCustomSlashMenuItems,
+  getDefaultShortcutMenuItem,
   getSystemShortcutsMenuItems,
   getUsernameShortcutsMenuItems,
   InlineContentWarningShortcut,
@@ -35,8 +36,8 @@ import '@blocknote/core/fonts/inter.css';
 import '@blocknote/mantine/style.css';
 import './description-editor.css';
 
-// Shortcut trigger character for username and custom shortcuts
-const shortcutTrigger = '`'; // Backtick character
+// Shortcut trigger characters for username and custom shortcuts
+const shortcutTriggers = ['@', '`', '{'];
 
 export type DescriptionEditorProps = {
   /**
@@ -117,8 +118,8 @@ function DescriptionEditorInner({
       ...blockNoteLocale,
       placeholders: {
         ...(blockNoteLocale.placeholders as Record<string, string>),
-        emptyDocument: t`Type / for commands or \` for shortcuts`,
-        default: t`Type / for commands or \` for shortcuts`,
+        emptyDocument: t`Type / for commands or @, \` or { for shortcuts`,
+        default: t`Type / for commands or @, \` or { for shortcuts`,
       },
     } as unknown as Dictionary,
   });
@@ -152,27 +153,27 @@ function DescriptionEditorInner({
         <SuggestionMenuController
           triggerCharacter="/"
           getItems={async (query) =>
-            filterSuggestionItems(
-              getCustomSlashMenuItems(editor, !!isDefaultEditor),
-              query,
-            )
+            filterSuggestionItems(getCustomSlashMenuItems(editor), query)
           }
         />
 
         {/* Shortcut menu for username and custom shortcuts */}
-        <SuggestionMenuController
-          triggerCharacter={shortcutTrigger}
-          getItems={async (query) => {
-            const items = [
-              ...getSystemShortcutsMenuItems(editor),
-              ...(showCustomShortcuts
-                ? getCustomShortcutsMenuItems(editor, customShortcuts)
-                : []),
-              ...getUsernameShortcutsMenuItems(editor, usernameShortcuts),
-            ];
-            return filterShortcutMenuItems(items, query);
-          }}
-        />
+        {shortcutTriggers.map((shortcutTrigger) => (
+          <SuggestionMenuController
+            triggerCharacter={shortcutTrigger}
+            getItems={async (query) => {
+              const items = [
+                ...getDefaultShortcutMenuItem(editor, !!isDefaultEditor),
+                ...getSystemShortcutsMenuItems(editor),
+                ...(showCustomShortcuts
+                  ? getCustomShortcutsMenuItems(editor, customShortcuts)
+                  : []),
+                ...getUsernameShortcutsMenuItems(editor, usernameShortcuts),
+              ];
+              return filterShortcutMenuItems(items, query);
+            }}
+          />
+        ))}
       </BlockNoteView>
     </Box>
   );

@@ -1,11 +1,13 @@
+/* eslint-disable lingui/text-restrictions */
 /**
  * DescriptionField - Rich text editor for descriptions.
  */
 
 import { Trans } from '@lingui/react/macro';
-import { Box, Checkbox } from '@mantine/core';
+import { Alert, Box, Checkbox } from '@mantine/core';
 import { DescriptionFieldType } from '@postybirb/form-builder';
 import { DefaultDescriptionValue, DescriptionValue } from '@postybirb/types';
+import { IconAlertTriangle } from '@tabler/icons-react';
 import { useMemo } from 'react';
 import { DescriptionEditor } from '../../../../../../shared';
 import { useFormFieldsContext } from '../form-fields-context';
@@ -33,6 +35,37 @@ function hasInlineContentType(
       Array.isArray(block?.children) &&
       hasInlineContentType(block.children, type)
     ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Pattern to detect legacy shortcuts like {title}, {tags}, {cw}, {fa:username}, etc.
+ */
+const LEGACY_SHORTCUT_PATTERN = /\{[a-zA-Z0-9]+(?:\[[^\]]+\])?(?::[^}]+)?\}/;
+
+/**
+ * Recursively checks if a description contains legacy shortcut syntax in text nodes.
+ */
+function hasLegacyShortcuts(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  blocks: any[],
+): boolean {
+  for (const block of blocks) {
+    if (Array.isArray(block?.content)) {
+      for (const inline of block.content) {
+        if (
+          inline?.type === 'text' &&
+          typeof inline?.text === 'string' &&
+          LEGACY_SHORTCUT_PATTERN.test(inline.text)
+        ) {
+          return true;
+        }
+      }
+    }
+    if (Array.isArray(block?.children) && hasLegacyShortcuts(block.children)) {
       return true;
     }
   }
@@ -69,8 +102,28 @@ export function DescriptionField({
     [description],
   );
 
+  const containsLegacyShortcuts = useMemo(
+    () => hasLegacyShortcuts(description),
+    [description],
+  );
+
   return (
     <Box>
+      {containsLegacyShortcuts && (
+        <Alert
+          icon={<IconAlertTriangle size={16} />}
+          title={<Trans>Legacy Shortcuts Detected</Trans>}
+          color="yellow"
+          mb="sm"
+        >
+          <Trans>
+            Your description contains legacy shortcut syntax (e.g., {'{title}'},{' '}
+            {'{tags}'}, {'{cw}'}, {'{shortcut:username}'}). These are no longer
+            supported. Please use the new shortcut menu (type @, {'{'} or &#96;)
+            to insert shortcuts.
+          </Trans>
+        </Alert>
+      )}
       <FieldLabel
         field={field}
         fieldName={fieldName}
