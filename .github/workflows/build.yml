@@ -12,26 +12,14 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: macOS (x64)
-            os: macos-latest
-            platform: mac
-            arch: x64
-          - name: macOS (arm64)
-            os: macos-latest
-            platform: mac
-            arch: arm64
           - name: Linux (x64)
             os: ubuntu-latest
             platform: linux
             arch: x64
-          - name: Linux (arm64)
-            os: ubuntu-24.04-arm
-            platform: linux
-            arch: arm64
-          - name: Windows (x64)
-            os: windows-latest
-            platform: win
-            arch: x64
+          # - name: Windows (x64)
+          #   os: windows-latest
+          #   platform: win
+          #   arch: x64
 
     steps:
       - name: Checkout repository
@@ -42,7 +30,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: "22"
 
       - name: Enable corepack to use Yarn v4
         run: |
@@ -86,27 +74,37 @@ jobs:
           echo "Ruby:"; ruby -v
           echo "fpm:"; fpm --version
 
-      - name: Inject Application Insights connection string
-        env:
-          APP_INSIGHTS_KEY: ${{ secrets.APP_INSIGHTS_KEY }}
-        run: corepack yarn inject:app-insights
-
       - name: Build application
         run: corepack yarn build:prod
         env:
           NODE_ENV: production
 
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        if: matrix.platform == 'linux'
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Set up QEMU
+        if: matrix.platform == 'linux'
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        if: matrix.platform == 'linux'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        if: matrix.platform == 'linux'
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          tags: leaftail/postybirb-v4-alpha-headless:latest
+
       - name: Build Electron app
         run: corepack yarn electron-builder --${{ matrix.platform }} --${{ matrix.arch }} --publish=always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          CSC_LINK: ${{ secrets.CSC_LINK }}
-          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-          CSC_IDENTITY_AUTO_DISCOVERY: true
-          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
           SNAPCRAFT_BUILD_ENVIRONMENT: host
           # ✅ Use system fpm for Linux only
           USE_SYSTEM_FPM: ${{ matrix.platform == 'linux' && 'true' || '' }}

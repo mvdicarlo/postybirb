@@ -1,0 +1,8 @@
+services:
+  postybirb:
+    image: postybirb
+    ports:
+      - 8080:8080
+    tty: true
+    attach: true
+    entrypoint: ./PostyBirb --no-sandbox
