@@ -1,8 +1,8 @@
 services:
   postybirb:
-    image: postybirb
+    image: leaftail/postybirb-v4-alpha-headless:latest
     ports:
       - 8080:8080
     tty: true
     attach: true
-    entrypoint: ./PostyBirb --no-sandbox
+    entrypoint: ./node_modules/.bin/electron . --headless --port=8080

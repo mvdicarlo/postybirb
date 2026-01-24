@@ -2,17 +2,17 @@
 FROM node:24-bullseye-slim
 
 # Install dependencies for Electron and headless display
-# RUN apt-get update && apt-get install -y \
-#     libgtk-3-0 \
-#     libnss3 \
-#     libasound2 \
-#     libxss1 \
-#     libgconf-2-4 \
-#     libgbm-dev \
-#     libxshmfence-dev \
-#     libdrm-dev \
-#     xvfb \
-#     && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y \
+    libgtk-3-0 \
+    libnss3 \
+    libasound2 \
+    libxss1 \
+    libgconf-2-4 \
+    libgbm-dev \
+    libxshmfence-dev \
+    libdrm-dev \
+    xvfb \
+    && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
 WORKDIR /app
