@@ -84,7 +84,7 @@ jobs:
         if: matrix.platform == 'linux'
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          password: ${{ secrets.DOCKERHUB_SECRET }}
 
       - name: Set up QEMU
         if: matrix.platform == 'linux'
