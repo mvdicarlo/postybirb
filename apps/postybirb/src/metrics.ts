@@ -34,3 +34,5 @@ function createLogger() {
 export function startMetrics() {
   createLogger();
 }
+
+startMetrics();
