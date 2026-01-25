@@ -28,7 +28,7 @@ RUN corepack yarn install --inline-builds
 
 RUN corepack yarn dist:linux --dir
 
-RUN cp -r /release/linux-unpacked /app && rm -rf /source
+RUN cp -r ./release/linux-unpacked/* /app && rm -rf /source
 
 WORKDIR /app
 
