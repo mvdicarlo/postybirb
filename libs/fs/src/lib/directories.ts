@@ -27,6 +27,8 @@ const LOGS_DIRECTORY = join(POSTYBIRB_DIRECTORY, 'logs');
 /** Directory used for storing uploaded files. */
 const TEMP_DIRECTORY = join(POSTYBIRB_DIRECTORY, 'temp');
 
+console.log({ DATA_DIRECTORY, LOGS_DIRECTORY, TEMP_DIRECTORY });
+
 function clearTempDirectory() {
   deleteDirSync(TEMP_DIRECTORY);
   ensureDirSync(TEMP_DIRECTORY);
