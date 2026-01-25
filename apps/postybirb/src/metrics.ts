@@ -2,7 +2,6 @@ import { PostyBirbDirectories } from '@postybirb/fs';
 import { initializeLogger, SerializeDevLog } from '@postybirb/logger';
 import * as winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
-import { environment } from './environments/environment';
 
 function createLogger() {
   // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
@@ -17,18 +16,15 @@ function createLogger() {
     dirname: PostyBirbDirectories.LOGS_DIRECTORY,
   });
 
-  const { combine, timestamp, prettyPrint } = winston.format;
   const consoleTransport = new transports.Console();
   const w = winston.createLogger({
-    level: environment.production ? 'info' : 'debug',
-    format: environment.production
-      ? combine(timestamp(), prettyPrint({ colorize: true }))
-      : new SerializeDevLog(),
+    level: 'debug',
+    format: new SerializeDevLog(),
     transports: [consoleTransport, transport],
     rejectionHandlers: [consoleTransport, transport],
     exceptionHandlers: [consoleTransport, transport],
   });
-  initializeLogger(w, environment.production);
+  initializeLogger(w, false);
 }
 
 export function startMetrics() {
