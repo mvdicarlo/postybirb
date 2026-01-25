@@ -51,6 +51,7 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://127.0.0.1:8080 || [ $? -eq 52 ] && exit 0 || exit 1
 
-ENTRYPOINT [ "/bin/bash" ]
+# ENTRYPOINT [ "/bin/bash" ]
 
-CMD set -o pipefail && xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" ./PostyBirb --headless --port=8080 | grep -v -E "ERROR:viz_main_impl\.cc\(183\)|ERROR:object_proxy\.cc\(576\)|ERROR:bus\.cc\(408\)"
+# CMD set -o pipefail && xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" ./PostyBirb --headless --port=8080 |& grep -v -E "ERROR:viz_main_impl\.cc\(183\)|ERROR:object_proxy\.cc\(576\)|ERROR:bus\.cc\(408\)"
+CMD ./PostyBirb --no-sandbox --headless --port=8080

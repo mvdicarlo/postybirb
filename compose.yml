@@ -5,4 +5,4 @@ services:
       - 8080:8080
     tty: true
     attach: true
-    entrypoint: ./PostyBirb --no-sandbox --headless --port=8080 | grep -v -E "ERROR:viz_main_impl\.cc\(183\)|ERROR:object_proxy\.cc\(576\)|ERROR:bus\.cc\(408\)"
+    entrypoint: ./PostyBirb --no-sandbox --headless --port=8080
