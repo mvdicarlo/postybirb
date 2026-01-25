@@ -9,7 +9,7 @@ export type RemoteConfig = {
 };
 
 function getRemoteConfigPath(): string {
-  return join(app.getPath('appData'), 'PostyBirb', 'remote-config.json');
+  return join(app.getPath('appData'), 'postybirb', 'remote-config.json');
 }
 
 function createRemoteConfig(): Promise<void> {
@@ -34,5 +34,6 @@ export async function getRemoteConfig(): Promise<RemoteConfig> {
   await ensureRemoteConfigExists();
   const configPath = getRemoteConfigPath();
   const configContent = await readFile(configPath, 'utf-8');
+  console.log({ REMOTE_CONFIG: configContent });
   return JSON.parse(configContent) as RemoteConfig;
 }

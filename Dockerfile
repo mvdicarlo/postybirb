@@ -41,12 +41,15 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
+VOLUME [ "/root/PostyBirb" ]
+VOLUME [ "/.config/postybirb" ]
+
 ENV DISPLAY=:99
 
 EXPOSE 8080
 
-# HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-#     CMD curl -f http://localhost:8080/ || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://127.0.0.1:8080 || [ $? -eq 52 ] && exit 0 || exit 1
 
 ENTRYPOINT [ "/bin/bash" ]
 
