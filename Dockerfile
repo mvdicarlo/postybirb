@@ -10,6 +10,8 @@ RUN apt-get update && apt-get install -y \
     libgbm-dev \
     libxshmfence-dev \
     libdrm-dev \
+    # For ca-certificates
+    curl \ 
     xvfb \
     && rm -rf /var/lib/apt/lists/*
 
