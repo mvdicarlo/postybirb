@@ -1,4 +1,24 @@
+# Multi stage build to make image smaller
+FROM node:24-bookworm-slim AS builder
+
+WORKDIR /source
+
+COPY . .
+
+# Cache does not match fix
+RUN rm -rf .nx 
+
+RUN corepack install
+
+RUN corepack yarn install --inline-builds
+
+RUN corepack yarn dist:linux --dir
+
+RUN cp -r ./release/linux-unpacked/ /app
+
 FROM node:24-bookworm-slim
+
+COPY --from=builder /app /app
 
 # Install dependencies for Electron and headless display
 RUN apt-get update && apt-get install -y \
@@ -15,20 +35,6 @@ RUN apt-get update && apt-get install -y \
     xvfb \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /source
-
-COPY . .
-
-# Cache does not match fix
-RUN rm -rf .nx 
-
-RUN corepack install
-
-RUN corepack yarn install --inline-builds
-
-RUN corepack yarn dist:linux --dir
-
-RUN mkdir /app && cp -r ./release/linux-unpacked/* /app && rm -rf /source
 
 WORKDIR /app
 
@@ -38,5 +44,7 @@ EXPOSE 8080
 
 # HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 #     CMD curl -f http://localhost:8080/ || exit 1
+
+ENTRYPOINT [ "/bin/bash" ]
 
 CMD set -o pipefail && xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" ./PostyBirb --headless --port=8080 | grep -v -E "ERROR:viz_main_impl\.cc\(183\)|ERROR:object_proxy\.cc\(576\)|ERROR:bus\.cc\(408\)"

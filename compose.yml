@@ -1,8 +1,8 @@
 services:
   postybirb:
-    image: leaftail/postybirb-v4-alpha-headless:latest
+    image: ghcr.io/leaftail1880/postybirb-4-alpha-headless:latest
     ports:
       - 8080:8080
     tty: true
     attach: true
-    entrypoint: ./node_modules/.bin/electron . --headless --port=8080
+    entrypoint: ./PostyBirb --no-sandbox --headless --port=8080 | grep -v -E "ERROR:viz_main_impl\.cc\(183\)|ERROR:object_proxy\.cc\(576\)|ERROR:bus\.cc\(408\)"

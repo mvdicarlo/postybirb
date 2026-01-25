@@ -20,10 +20,10 @@ jobs:
             os: ubuntu-latest
             platform: linux
             arch: x64
-          # - name: Windows (x64)
-          #   os: windows-latest
-          #   platform: win
-          #   arch: x64
+          - name: Windows (x64)
+            os: windows-latest
+            platform: win
+            arch: x64
 
     steps:
       - name: Checkout repository
@@ -91,10 +91,10 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           dockerfile: "./Dockerfile"
 
-      # - name: Build Electron app
-      #   run: corepack yarn electron-builder --${{ matrix.platform }} --${{ matrix.arch }} --publish=always
-      #   env:
-      #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #     SNAPCRAFT_BUILD_ENVIRONMENT: host
-      #     # ✅ Use system fpm for Linux only
-      #     USE_SYSTEM_FPM: ${{ matrix.platform == 'linux' && 'true' || '' }}
+      - name: Build Electron app
+        run: corepack yarn electron-builder --${{ matrix.platform }} --${{ matrix.arch }} --publish=always
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SNAPCRAFT_BUILD_ENVIRONMENT: host
+          # ✅ Use system fpm for Linux only
+          USE_SYSTEM_FPM: ${{ matrix.platform == 'linux' && 'true' || '' }}

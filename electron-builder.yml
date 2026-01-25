@@ -2,11 +2,11 @@ appId: com.mvdicarlo.postybirb
 copyright: Copyright (c) 2024 Michael DiCarlo
 productName: PostyBirb
 executableName: PostyBirb
-artifactName: "${productName}-${version}-${os}-${arch}.${ext}"
+artifactName: '${productName}-${version}-${os}-${arch}.${ext}'
 
 publish:
   provider: github
-  owner: mvdicarlo
+  owner: leaftail1880
   repo: postybirb
 
 directories:
@@ -18,15 +18,15 @@ removePackageScripts: true
 
 # Specify which files should be unpacked from asar
 asarUnpack:
-  - "node_modules/sharp/**/*"
-  - "node_modules/better-sqlite3/**/*"
-  - "node_modules/sqlite3/**/*" 
-  - "node_modules/@img/**/*"
-  - "node_modules/bufferutil/**/*"
-  - "node_modules/utf-8-validate/**/*"
-  - "**/*.node"
-  - "**/*.dylib"
-  - "**/*.so"
+  - 'node_modules/sharp/**/*'
+  - 'node_modules/better-sqlite3/**/*'
+  - 'node_modules/sqlite3/**/*'
+  - 'node_modules/@img/**/*'
+  - 'node_modules/bufferutil/**/*'
+  - 'node_modules/utf-8-validate/**/*'
+  - '**/*.node'
+  - '**/*.dylib'
+  - '**/*.so'
 
 mac:
   category: public.app-category.productivity
@@ -41,13 +41,13 @@ mac:
   target:
     - target: dmg
   notarize:
-    teamId: "ZRKS9CNUQZ"
+    teamId: 'ZRKS9CNUQZ'
 
 linux:
   category: Network
   icon: icons/icon_256x256x32.png
-  synopsis: "PostyBirb is a desktop application for posting to multiple websites"
-  description: "PostyBirb helps artists post art and other multimedia to multiple websites more quickly."
+  synopsis: 'PostyBirb is a desktop application for posting to multiple websites'
+  description: 'PostyBirb helps artists post art and other multimedia to multiple websites more quickly.'
   target:
     - target: AppImage
     - target: snap
@@ -57,13 +57,13 @@ linux:
 snap:
   publish:
     provider: github
-  summary: "PostyBirb - Multi-site posting application"
-  description: "PostyBirb helps artists post art and other multimedia to multiple websites more quickly."
+  summary: 'PostyBirb - Multi-site posting application'
+  description: 'PostyBirb helps artists post art and other multimedia to multiple websites more quickly.'
   grade: stable
   confinement: strict
   plugs:
     - default
-  artifactName: "${productName}-${version}-linux-snap-${arch}.${ext}"
+  artifactName: '${productName}-${version}-linux-snap-${arch}.${ext}'
 
 deb:
   priority: optional
@@ -74,7 +74,7 @@ deb:
     - libappindicator1
     - libxtst6
     - libnss3
-  artifactName: "${productName}-${version}-linux-deb-${arch}.${ext}"
+  artifactName: '${productName}-${version}-linux-deb-${arch}.${ext}'
 
 rpm:
   depends:
@@ -82,12 +82,12 @@ rpm:
     - libappindicator
     - libXtst
     - nss
-  artifactName: "${productName}-${version}-linux-rpm-${arch}.${ext}"
+  artifactName: '${productName}-${version}-linux-rpm-${arch}.${ext}'
 
 appImage:
-  artifactName: "${productName}-${version}-linux-${arch}.${ext}"
-    
-# Generate separate update files for different Linux formats  
+  artifactName: '${productName}-${version}-linux-${arch}.${ext}'
+
+# Generate separate update files for different Linux formats
 
 nsis:
   deleteAppDataOnUninstall: true
@@ -114,31 +114,31 @@ win:
         - x64
 
 portable:
-  artifactName: "${productName}-${version}-portable-${arch}.${ext}"
+  artifactName: '${productName}-${version}-portable-${arch}.${ext}'
 
 files:
-  - "dist/**/*"
-  - "node_modules/**/*"
-  - "package.json"
-  - "!**/*.log"
-  - "!**/*.md"
-  - "!**/README*"
-  - "!**/CHANGELOG*"
-  - "!**/LICENSE*"
-  - "!**/*.d.ts"
-  - "!**/test/**/*"
-  - "!**/tests/**/*"
-  - "!**/.git/**/*"
-  - "!**/.DS_Store"
-  - "!.nx/**"
-  - "!apps/**/*"
-  - "!libs/**/*"
-  - "!build/**/*"
-  - "!contributing/**/*"
-  - "!scripts/**/*"
-  - "!windows-signing/**/*"
-  - "!patches/**/*"
-  - "!lang/**/*"
-  - "!release/**/*"
-  - "!*.{ts,js,yml,yaml,md}"
-  - "!{babel.config.js,commitlint.config.js,drizzle.config.ts,jest.*,lingui.config.ts,nx.json,tsconfig.*}"
+  - 'dist/**/*'
+  - 'node_modules/**/*'
+  - 'package.json'
+  - '!**/*.log'
+  - '!**/*.md'
+  - '!**/README*'
+  - '!**/CHANGELOG*'
+  - '!**/LICENSE*'
+  - '!**/*.d.ts'
+  - '!**/test/**/*'
+  - '!**/tests/**/*'
+  - '!**/.git/**/*'
+  - '!**/.DS_Store'
+  - '!.nx/**'
+  - '!apps/**/*'
+  - '!libs/**/*'
+  - '!build/**/*'
+  - '!contributing/**/*'
+  - '!scripts/**/*'
+  - '!windows-signing/**/*'
+  - '!patches/**/*'
+  - '!lang/**/*'
+  - '!release/**/*'
+  - '!*.{ts,js,yml,yaml,md}'
+  - '!{babel.config.js,commitlint.config.js,drizzle.config.ts,jest.*,lingui.config.ts,nx.json,tsconfig.*}'
