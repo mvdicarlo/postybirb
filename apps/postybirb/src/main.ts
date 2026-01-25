@@ -5,6 +5,10 @@ import {
   trackException,
 } from '@postybirb/logger';
 import { getRemoteConfig, PostyBirbEnvConfig } from '@postybirb/utils/electron';
+
+// eslint-disable-next-line import/order
+import { startMetrics } from './metrics';
+
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
 import { bootstrapClientServer } from 'apps/client-server/src/main';
 import { app, BrowserWindow, session } from 'electron';
@@ -12,7 +16,6 @@ import contextMenu from 'electron-context-menu';
 import PostyBirb from './app/app';
 import ElectronEvents from './app/events/electron.events';
 import { environment } from './environments/environment';
-import { startMetrics } from './metrics';
 
 const isOnlyInstance = app.requestSingleInstanceLock();
 if (!isOnlyInstance) {

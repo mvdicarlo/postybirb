@@ -1,4 +1,3 @@
-# Use a base image with Node.js and required dependencies for Electron
 FROM node:24-bullseye-slim
 
 # Install dependencies for Electron and headless display
@@ -14,33 +13,25 @@ RUN apt-get update && apt-get install -y \
     xvfb \
     && rm -rf /var/lib/apt/lists/*
 
-# Set working directory
-WORKDIR /app
+WORKDIR /source
 
-# Copy the AppImage
 COPY . .
 
 RUN corepack install
 
 RUN corepack yarn install --inline-builds
 
-RUN corepack yarn build:prod
+RUN corepack yarn dist:linux --dir
 
-# # Switch to non-root user
-# USER appuser
+RUN cp -r /release/linux-unpacked/* /app && rm -rf /source
 
-# Set display for headless operation
+WORKDIR /app
+
 ENV DISPLAY=:99
 
-# Expose the port (default from your app)
 EXPOSE 8080
 
-# Health check (adjust port as needed)
 # HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 #     CMD curl -f http://localhost:8080/ || exit 1
 
-# Command to run with xvfb for headless execution
-CMD set -o pipefail \
-    && xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" \
-    electron . --headless --port=${PORT:-8080} \
-    | grep -v -E "ERROR:viz_main_impl\.cc\(183\)|ERROR:object_proxy\.cc\(576\)|ERROR:bus\.cc\(408\)"'
+CMD set -o pipefail && xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" ./PostyBirb --headless --port=8080 | grep -v -E "ERROR:viz_main_impl\.cc\(183\)|ERROR:object_proxy\.cc\(576\)|ERROR:bus\.cc\(408\)"
