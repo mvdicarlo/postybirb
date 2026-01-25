@@ -1,6 +1,9 @@
 # Multi stage build to make image smaller
 FROM node:24-bookworm-slim AS builder
 
+# For ca-certificates
+RUN apt-get update && apt-get install -y curl 
+
 WORKDIR /source
 
 COPY . .
