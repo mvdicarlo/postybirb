@@ -87,6 +87,7 @@ jobs:
 
             console.log('✅ Patched electron-builder.yml for fork repository');
             console.log(`📦 Publish target: ${context.repo.owner}/${context.repo.repo}`);
+            console.log(yaml.dump(config))
 
       - name: Cache Electron binaries
         uses: actions/cache@v4
