@@ -127,7 +127,9 @@ export class CreateFileService {
     file: MulterFileInfo,
     buf: Buffer,
   ) {
-    let altText: string;
+    // Default to empty string - all TEXT files get an alt file
+    let altText = '';
+
     if (
       file.mimetype ===
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
@@ -137,9 +139,7 @@ export class CreateFileService {
     ) {
       this.logger.info('[Mutation] Creating Alt File for Text Document: DOCX');
       altText = (await mammoth.convertToHtml({ buffer: buf })).value;
-    }
-
-    if (
+    } else if (
       file.mimetype === 'application/rtf' ||
       file.originalname.endsWith('.rtf')
     ) {
@@ -150,38 +150,39 @@ export class CreateFileService {
           return content;
         },
       });
-    }
-
-    if (file.mimetype === 'text/plain' || file.originalname.endsWith('.txt')) {
+    } else if (
+      file.mimetype === 'text/plain' ||
+      file.originalname.endsWith('.txt')
+    ) {
       this.logger.info('[Mutation] Creating Alt File for Text Document: TXT');
       altText = buf.toString();
+    } else {
+      this.logger.info(
+        `[Mutation] Creating empty Alt File for unsupported text format: ${file.mimetype}`,
+      );
     }
 
-    if (altText) {
-      const prettifiedBuf = Buffer.from(
-        htmlBeautify(altText, { wrap_line_length: 120 }),
-      );
-      const altFile = await this.createFileBufferEntity(
-        ctx,
-        entity,
-        prettifiedBuf,
-        {
-          mimeType: 'text/html',
-          fileName: `${entity.fileName}.html`,
-        },
-      );
-      await ctx
-        .getDb()
-        .update(this.fileRepository.schemaEntity)
-        .set({
-          altFileId: altFile.id,
-          hasAltFile: true,
-        })
-        .where(eq(this.fileRepository.schemaEntity.id, entity.id));
-      this.logger.withMetadata({ id: altFile.id }).info('Alt File Created');
-    } else {
-      this.logger.info('No Alt File Created');
-    }
+    const prettifiedBuf = Buffer.from(
+      altText ? htmlBeautify(altText, { wrap_line_length: 120 }) : '',
+    );
+    const altFile = await this.createFileBufferEntity(
+      ctx,
+      entity,
+      prettifiedBuf,
+      {
+        mimeType: 'text/html',
+        fileName: `${entity.fileName}.html`,
+      },
+    );
+    await ctx
+      .getDb()
+      .update(this.fileRepository.schemaEntity)
+      .set({
+        altFileId: altFile.id,
+        hasAltFile: true,
+      })
+      .where(eq(this.fileRepository.schemaEntity.id, entity.id));
+    this.logger.withMetadata({ id: altFile.id }).info('Alt File Created');
   }
 
   /**

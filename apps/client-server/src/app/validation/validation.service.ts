@@ -12,6 +12,7 @@ import {
 } from '@postybirb/types';
 import { Account, Submission, WebsiteOptions } from '../drizzle/models';
 import { FileConverterService } from '../file-converter/file-converter.service';
+import { FileService } from '../file/file.service';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
 import DefaultWebsite from '../websites/implementations/default/default.website';
 import { DefaultWebsiteOptions } from '../websites/models/default-website-options';
@@ -48,6 +49,7 @@ export class ValidationService {
     private readonly websiteRegistry: WebsiteRegistryService,
     private readonly postParserService: PostParsersService,
     private readonly fileConverterService: FileConverterService,
+    private readonly fileService: FileService,
   ) {}
 
   private getCachedValidation(
@@ -192,6 +194,7 @@ export class ValidationService {
         data,
         submission,
         fileConverterService: this.fileConverterService,
+        fileService: this.fileService,
         mergedWebsiteOptions,
       };
 
