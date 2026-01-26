@@ -6,7 +6,7 @@ artifactName: '${productName}-${version}-${os}-${arch}.${ext}'
 
 publish:
   provider: github
-  owner: leaftail1880
+  owner: mvdicarlo
   repo: postybirb
 
 directories:
@@ -16,11 +16,9 @@ directories:
 compression: maximum
 removePackageScripts: true
 
-# Specify which files should be unpacked from asar
+# Unpack native dependencies
 asarUnpack:
-  - 'node_modules/sharp/**/*'
   - 'node_modules/better-sqlite3/**/*'
-  - 'node_modules/sqlite3/**/*'
   - 'node_modules/@img/**/*'
   - 'node_modules/bufferutil/**/*'
   - 'node_modules/utf-8-validate/**/*'
@@ -97,7 +95,7 @@ nsis:
   createDesktopShortcut: true
   createStartMenuShortcut: true
   shortcutName: PostyBirb
-  include: build/installer.nsh
+  include: packaging-resources/installer.nsh
   installerLanguages:
     - en_US
   language: 1033
@@ -130,15 +128,5 @@ files:
   - '!**/tests/**/*'
   - '!**/.git/**/*'
   - '!**/.DS_Store'
-  - '!.nx/**'
-  - '!apps/**/*'
-  - '!libs/**/*'
-  - '!build/**/*'
-  - '!contributing/**/*'
-  - '!scripts/**/*'
-  - '!windows-signing/**/*'
-  - '!patches/**/*'
-  - '!lang/**/*'
-  - '!release/**/*'
   - '!*.{ts,js,yml,yaml,md}'
   - '!{babel.config.js,commitlint.config.js,drizzle.config.ts,jest.*,lingui.config.ts,nx.json,tsconfig.*}'

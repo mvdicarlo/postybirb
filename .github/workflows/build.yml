@@ -3,10 +3,6 @@ name: Build/Release
 on:
   workflow_dispatch:
 
-permissions:
-  contents: write
-  packages: write
-
 jobs:
   build:
     name: ${{ matrix.name }}
@@ -16,10 +12,22 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - name: macOS (x64)
+            os: macos-latest
+            platform: mac
+            arch: x64
+          - name: macOS (arm64)
+            os: macos-latest
+            platform: mac
+            arch: arm64
           - name: Linux (x64)
             os: ubuntu-latest
             platform: linux
             arch: x64
+          - name: Linux (arm64)
+            os: ubuntu-24.04-arm
+            platform: linux
+            arch: arm64
           - name: Windows (x64)
             os: windows-latest
             platform: win
@@ -41,6 +49,45 @@ jobs:
           corepack enable
           corepack prepare --activate
 
+      # ✅ Patch electron-builder.yml for forks - modify publish settings
+      - name: Patch electron-builder.yml for fork repositories
+        if: github.event.repository.fork
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const yaml = require('js-yaml');
+
+            // Read the original electron-builder.yml
+            const configPath = './electron-builder.yml';
+            const configContent = fs.readFileSync(configPath, 'utf8');
+            let config = yaml.load(configContent);
+
+            // Update publish configuration for fork
+            config.publish = {
+              provider: 'github',
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            };
+
+            // Remove snap target for forks since we don't have credentials
+            if (config.linux && config.linux.target) {
+              config.linux.target = ["AppImage"]
+            }
+
+            // Remove snap configuration entirely for forks
+            delete config.snap;
+
+            // Remove deb and rpm configurations for forks
+            delete config.deb;
+            delete config.rpm;
+
+            // Write the modified config back
+            fs.writeFileSync(configPath, yaml.dump(config));
+
+            console.log('✅ Patched electron-builder.yml for fork repository');
+            console.log(`📦 Publish target: ${context.repo.owner}/${context.repo.repo}`);
+
       - name: Cache Electron binaries
         uses: actions/cache@v4
         with:
@@ -59,16 +106,17 @@ jobs:
           ELECTRON_CACHE: ~/.cache/electron
           ELECTRON_BUILDER_CACHE: ~/.cache/electron-builder
 
+      # ✅ Only install snapcraft on non-fork repositories
       - name: Install snapcraft
-        if: matrix.platform == 'linux'
+        if: matrix.platform == 'linux' && !github.event.repository.fork
         run: |
           sudo apt-get update
           sudo apt-get install -y snapd
           sudo snap install snapcraft --classic
 
-      # ✅ Install system fpm on ALL Linux runners (x64 + arm64)
+      # ✅ Only install fpm on non-fork repositories
       - name: Install Ruby + fpm (system) for Linux packaging
-        if: matrix.platform == 'linux'
+        if: matrix.platform == 'linux' && !github.event.repository.fork
         run: |
           sudo apt-get update
           sudo apt-get install -y ruby ruby-dev build-essential rpm
@@ -78,23 +126,45 @@ jobs:
           echo "Ruby:"; ruby -v
           echo "fpm:"; fpm --version
 
+      - name: Inject Application Insights connection string
+        env:
+          APP_INSIGHTS_KEY: ${{ secrets.APP_INSIGHTS_KEY }}
+        run: corepack yarn inject:app-insights
+
       - name: Build application
         run: corepack yarn build:prod
         env:
           NODE_ENV: production
 
+      - name: Build Electron app
+        run: |
+          # For forks, build without publishing to external services
+          if [ "${{ github.event.repository.fork }}" = "true" ]; then
+            echo "🔧 Fork detected - Building without external publishing services"
+            corepack yarn electron-builder --${{ matrix.platform }} --${{ matrix.arch }} --publish=always
+          else
+            echo "🏢 Main repository - Building with full publishing"
+            corepack yarn electron-builder --${{ matrix.platform }} --${{ matrix.arch }} --publish=always
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # ✅ Only set signing secrets for main repository
+          APPLE_ID: ${{ !github.event.repository.fork && secrets.APPLE_ID || '' }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ !github.event.repository.fork && secrets.APPLE_APP_SPECIFIC_PASSWORD || '' }}
+          APPLE_TEAM_ID: ${{ !github.event.repository.fork && secrets.APPLE_TEAM_ID || '' }}
+          CSC_LINK: ${{ !github.event.repository.fork && secrets.CSC_LINK || '' }}
+          CSC_KEY_PASSWORD: ${{ !github.event.repository.fork && secrets.CSC_KEY_PASSWORD || '' }}
+          CSC_IDENTITY_AUTO_DISCOVERY: ${{ !github.event.repository.fork && 'true' || 'false' }}
+          # ✅ Only set snapcraft credentials for main repository
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ !github.event.repository.fork && secrets.SNAPCRAFT_STORE_CREDENTIALS || '' }}
+          SNAPCRAFT_BUILD_ENVIRONMENT: host
+          # ✅ Use system fpm for Linux only (non-fork)
+          USE_SYSTEM_FPM: ${{ matrix.platform == 'linux' && !github.event.repository.fork && 'true' || '' }}
+
       - name: Build and publish a Docker image for 'leaftail1880/postybirb-4-alpha-headless'
         uses: macbre/push-to-ghcr@master
-        if: matrix.platform == 'linux'
+        if: matrix.platform == 'linux' && matrix.arch == 'x64'
         with:
           image_name: "leaftail1880/postybirb-4-alpha-headless"
           github_token: ${{ secrets.GITHUB_TOKEN }}
           dockerfile: "./Dockerfile"
-
-      - name: Build Electron app
-        run: corepack yarn electron-builder --${{ matrix.platform }} --${{ matrix.arch }} --publish=always
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SNAPCRAFT_BUILD_ENVIRONMENT: host
-          # ✅ Use system fpm for Linux only
-          USE_SYSTEM_FPM: ${{ matrix.platform == 'linux' && 'true' || '' }}

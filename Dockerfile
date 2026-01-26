@@ -8,16 +8,18 @@ WORKDIR /source
 
 COPY . .
 
-# Cache does not match fix
-RUN rm -rf .nx 
-
-RUN corepack install
-
-RUN corepack yarn install --inline-builds
-
-RUN corepack yarn dist:linux --dir
-
-RUN cp -r ./release/linux-unpacked/ /app
+# Conditional build - only build if release/linux-unpacked doesn't exist
+RUN if [ -d "./release/linux-unpacked" ]; then \
+        echo "Found existing build, copying..."; \
+    else \
+        echo "Building from source..."; \
+        # nx cache expects machine_id to be the same \
+        rm -rf .nx && \
+        EXPORT \
+        CYPRESS_INSTALL_BINARY=0 corepack yarn install --inline-builds && \
+        corepack yarn dist:linux --dir && \
+    fi \
+    cp -r ./release/linux-unpacked/ /app;
 
 FROM node:24-bookworm-slim
 
@@ -33,7 +35,7 @@ RUN apt-get update && apt-get install -y \
     libgbm-dev \
     libxshmfence-dev \
     libdrm-dev \
-    # For ca-certificates
+    # For ca-certificates and healthcheck
     curl \ 
     xvfb \
     && rm -rf /var/lib/apt/lists/*
@@ -48,10 +50,9 @@ ENV DISPLAY=:99
 
 EXPOSE 8080
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://127.0.0.1:8080 || [ $? -eq 52 ] && exit 0 || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=5 \
+    CMD curl http://127.0.0.1:8080 || [ $? -eq 52 ] && exit 0 || exit 1
 
-# ENTRYPOINT [ "/bin/bash" ]
+COPY ./entrypoint.sh .
 
-# CMD set -o pipefail && xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" ./PostyBirb --headless --port=8080 |& grep -v -E "ERROR:viz_main_impl\.cc\(183\)|ERROR:object_proxy\.cc\(576\)|ERROR:bus\.cc\(408\)"
-CMD ./PostyBirb --no-sandbox --headless --port=8080
+CMD [ "entrypoint.sh" ]

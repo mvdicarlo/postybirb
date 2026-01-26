@@ -5,4 +5,4 @@ services:
       - 8080:8080
     tty: true
     attach: true
-    entrypoint: ./PostyBirb --no-sandbox --headless --port=8080
+    entrypoint: bash
