@@ -49,10 +49,28 @@ jobs:
           corepack enable
           corepack prepare --activate
 
+      - name: Cache Electron binaries
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/electron
+            ~/.cache/electron-builder
+            node_modules/.cache/electron
+          key: ${{ runner.os }}-${{ matrix.arch }}-electron-cache-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.arch }}-electron-cache-
+
+      - name: Install dependencies
+        run: yarn install --immutable
+        env:
+          CYPRESS_INSTALL_BINARY: 0
+          ELECTRON_CACHE: ~/.cache/electron
+          ELECTRON_BUILDER_CACHE: ~/.cache/electron-builder
+
       # ✅ Patch electron-builder.yml for forks - modify publish settings
       - name: Patch electron-builder.yml for fork repositories
         if: github.event.repository.fork
-        uses: actions/github-script@v6
+        uses: actions/github-script@v8
         with:
           script: |
             const fs = require('fs');
@@ -88,24 +106,6 @@ jobs:
             console.log('✅ Patched electron-builder.yml for fork repository');
             console.log(`📦 Publish target: ${context.repo.owner}/${context.repo.repo}`);
             console.log(yaml.dump(config))
-
-      - name: Cache Electron binaries
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cache/electron
-            ~/.cache/electron-builder
-            node_modules/.cache/electron
-          key: ${{ runner.os }}-${{ matrix.arch }}-electron-cache-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ matrix.arch }}-electron-cache-
-
-      - name: Install dependencies
-        run: yarn install --immutable
-        env:
-          CYPRESS_INSTALL_BINARY: 0
-          ELECTRON_CACHE: ~/.cache/electron
-          ELECTRON_BUILDER_CACHE: ~/.cache/electron-builder
 
       # ✅ Only install snapcraft on non-fork repositories
       - name: Install snapcraft
