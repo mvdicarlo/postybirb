@@ -40,10 +40,11 @@ function isFileFiltered(
   return false;
 }
 
-function validateTextFileRequiresFallback({
+async function validateTextFileRequiresFallback({
   result,
   websiteInstance,
   submission,
+  fileService,
 }: ValidatorParams & { file: ISubmissionFile }) {
   if (
     !isFileHandlingWebsite(websiteInstance) ||
@@ -53,19 +54,25 @@ function validateTextFileRequiresFallback({
     return;
   }
 
-  submission.files.forEach((file) => {
+  for (const file of submission.files) {
     if (isFileFiltered(file, submission, websiteInstance)) {
-      return;
+      continue;
     }
     if (getFileType(file.fileName) === FileType.TEXT) {
       const supportedMimeTypes =
         websiteInstance.decoratedProps.fileOptions?.acceptedMimeTypes ?? [];
       if (supportedMimeTypes.length === 0) {
         // Assume empty to accept all file types if no accepted mime types are specified
-        return;
+        continue;
       }
-      // Fail validation if the file is not supported and no alt file is provided
-      if (!supportedMimeTypes.includes(file.mimeType) && !file.hasAltFile) {
+      // Check if the alt file has content by querying its size
+      let altFileHasContent = false;
+      if (file.altFileId) {
+        const altFileSize = await fileService.getAltFileSize(file.altFileId);
+        altFileHasContent = altFileSize > 0;
+      }
+      // Fail validation if the file is not supported and alt file is empty or missing
+      if (!supportedMimeTypes.includes(file.mimeType) && !altFileHasContent) {
         result.errors.push({
           id: 'validation.file.text-file-no-fallback',
           field: 'files',
@@ -77,7 +84,7 @@ function validateTextFileRequiresFallback({
         });
       }
     }
-  });
+  }
 }
 
 export async function validateNotAllFilesIgnored({

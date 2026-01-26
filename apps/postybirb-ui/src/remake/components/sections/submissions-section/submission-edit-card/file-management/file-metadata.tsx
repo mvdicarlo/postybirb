@@ -6,31 +6,31 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-    ActionIcon,
-    Badge,
-    Box,
-    Button,
-    Divider,
-    Grid,
-    Group,
-    NumberInput,
-    Select,
-    Text,
-    TextInput,
-    Tooltip,
+  ActionIcon,
+  Badge,
+  Box,
+  Button,
+  Divider,
+  Grid,
+  Group,
+  NumberInput,
+  Select,
+  Text,
+  TextInput,
+  Tooltip,
 } from '@mantine/core';
 import {
-    FileType,
-    IAccountDto,
-    ISubmissionFileDto,
-    ModifiedFileDimension,
+  FileType,
+  IAccountDto,
+  ISubmissionFileDto,
+  ModifiedFileDimension,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import {
-    IconInfoCircle,
-    IconPlus,
-    IconRestore,
-    IconTrash,
+  IconInfoCircle,
+  IconPlus,
+  IconRestore,
+  IconTrash,
 } from '@tabler/icons-react';
 import { debounce } from 'lodash';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -108,8 +108,8 @@ export function FileMetadata({ file, accounts }: FileMetadataProps) {
         <FileSourceUrls metadata={metadata} save={save} />
       )}
 
-      {/* Fallback Text Editor (for TEXT files only) */}
-      {fileType === FileType.TEXT && file.hasAltFile && file.altFileId && (
+      {/* Fallback Text Editor (for TEXT files only - excludes PDF) */}
+      {fileType === FileType.TEXT && (
         <>
           <Divider my="sm" variant="dashed" />
           <FileAltTextEditor file={file} />
