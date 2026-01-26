@@ -87,9 +87,13 @@ export function RemoteSettings() {
         color: 'green',
       });
     } catch (error) {
-      const err = error as { error: string; status: number; message: string };
+      const err = error as {
+        error: string;
+        statusCode: number;
+        message: string;
+      };
       notifications.show({
-        title: `${err.error} (${err.status})`,
+        title: `${err.error} (${err.statusCode})`,
         message: err.message,
         color: 'red',
       });

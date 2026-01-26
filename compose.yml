@@ -1,0 +1,10 @@
+services:
+  postybirb:
+    image: ghcr.io/mvdicarlo/postybirb:latest
+    ports:
+      - 8080:8080
+    volumes:
+      # Contains database, submissions, tags etc
+      - ./my-path/storage:/root/PostyBirb
+      # Contains startup options, remote config, partitions etc
+      - ./my-path/appData:/root/.config/postybirb

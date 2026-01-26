@@ -4,29 +4,29 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-    Box,
-    Button,
-    Divider,
-    Group,
-    Stack,
-    Text,
-    TextInput,
-    Title,
+  Box,
+  Button,
+  Divider,
+  Group,
+  Stack,
+  Text,
+  TextInput,
+  Title,
 } from '@mantine/core';
 import {
-    IconEye,
-    IconEyeOff,
-    IconNetwork,
-    IconPlug,
-    IconRouter,
-    IconServer,
+  IconEye,
+  IconEyeOff,
+  IconNetwork,
+  IconPlug,
+  IconRouter,
+  IconServer,
 } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 import remoteApi from '../../../../api/remote.api';
 import {
-    REMOTE_HOST_KEY,
-    REMOTE_MODE_KEY,
-    REMOTE_PASSWORD_KEY,
+  REMOTE_HOST_KEY,
+  REMOTE_MODE_KEY,
+  REMOTE_PASSWORD_KEY,
 } from '../../../../transports/http-client';
 import {
   showConnectionErrorNotification,
@@ -46,7 +46,8 @@ export function RemoteSettingsSection() {
 
   // Local storage state
   const [remoteMode, setRemoteMode] = useState<'host' | 'client'>(
-    () => (localStorage.getItem(REMOTE_MODE_KEY) as 'host' | 'client') || 'host',
+    () =>
+      (localStorage.getItem(REMOTE_MODE_KEY) as 'host' | 'client') || 'host',
   );
   const [remotePassword, setRemotePassword] = useState<string>(
     () => localStorage.getItem(REMOTE_PASSWORD_KEY) || '',
@@ -79,13 +80,17 @@ export function RemoteSettingsSection() {
     try {
       await remoteApi.testPing();
       showConnectionSuccessNotification(
-        <Trans>Successfully connected to the remote host</Trans>
+        <Trans>Successfully connected to the remote host</Trans>,
       );
     } catch (error) {
-      const err = error as { error: string; status: number; message: string };
+      const err = error as {
+        error: string;
+        statusCode: number;
+        message: string;
+      };
       showConnectionErrorNotification(
-        `${err.error} (${err.status})`,
-        err.message
+        `${err.error} (${err.statusCode})`,
+        err.message,
       );
     } finally {
       setIsTestingConnection(false);
@@ -181,7 +186,10 @@ export function RemoteSettingsSection() {
                           <IconEye size={16} />
                         )}
                       </Button>
-                      <CopyToClipboard value={remoteConfig.password} size="xs" />
+                      <CopyToClipboard
+                        value={remoteConfig.password}
+                        size="xs"
+                      />
                     </Group>
                   }
                   rightSectionWidth={80}
