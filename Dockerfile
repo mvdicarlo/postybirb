@@ -44,7 +44,7 @@ WORKDIR /app
 # Contains database, submissions, tags etc
 VOLUME [ "/root/PostyBirb" ]
 # Contains startup options, remote config, partitions etc
-VOLUME [ "/.config/postybirb" ]
+VOLUME [ "/root/.config/postybirb" ]
 
 ENV DISPLAY=:99
 
