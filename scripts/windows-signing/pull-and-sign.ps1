@@ -1,3 +1,5 @@
+# This script is used by the mvdicarlo to manually sign the artifacts because of the certs limitations.
+
 function Print-Banner {
     $banner = '
 ********************************************************************************************************
@@ -78,7 +80,7 @@ $fullSigningDirPath = Join-Path -Path (Get-Location) -ChildPath $signingDir
 try {
     $latestYmlPath = Join-Path -Path $fullSigningDirPath -ChildPath "latest.yml"
     $latestYmlHash = Get-FileHash -Path $latestYmlPath -Algorithm SHA256
-    node hasher.js --path $fullSigningDirPath
+    node hasher.cjs --path $fullSigningDirPath
 
     $updatedYmlHash = Get-FileHash -Path $latestYmlPath -Algorithm SHA256
     if ($latestYmlHash.Hash -eq $updatedYmlHash.Hash) {

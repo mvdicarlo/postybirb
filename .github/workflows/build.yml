@@ -42,7 +42,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: "22"
 
       - name: Enable corepack to use Yarn v4
         run: |
@@ -67,16 +67,55 @@ jobs:
           ELECTRON_CACHE: ~/.cache/electron
           ELECTRON_BUILDER_CACHE: ~/.cache/electron-builder
 
+      # This is needed to prevent ids showing instead of non translated i18n texts in production builds
+      - name: Extract messages
+        run: yarn lingui:extract
+
+      - name: Patch electron-builder.yml for fork repositories
+        if: github.event.repository.fork
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const fs = require('fs');
+            const yaml = require('js-yaml');
+
+            const configPath = './electron-builder.yml';
+            const configContent = fs.readFileSync(configPath, 'utf8');
+            let config = yaml.load(configContent);
+
+            config.publish = {
+              provider: 'github',
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            };
+
+            if (config.linux && config.linux.target) {
+              config.linux.target = [{ target:"AppImage" }]
+            }
+
+            // Remove snap configuration entirely for forks
+            delete config.snap;
+
+            // Remove deb and rpm configurations for forks
+            delete config.deb;
+            delete config.rpm;
+
+            // Write the modified config back
+            fs.writeFileSync(configPath, yaml.dump(config));
+
+            console.log('✅ Patched electron-builder.yml for fork repository');
+            console.log(`📦 Publish target: ${context.repo.owner}/${context.repo.repo}`);
+            console.log(yaml.dump(config))
+
       - name: Install snapcraft
-        if: matrix.platform == 'linux'
+        if: matrix.platform == 'linux' && !github.event.repository.fork
         run: |
           sudo apt-get update
           sudo apt-get install -y snapd
           sudo snap install snapcraft --classic
 
-      # ✅ Install system fpm on ALL Linux runners (x64 + arm64)
       - name: Install Ruby + fpm (system) for Linux packaging
-        if: matrix.platform == 'linux'
+        if: matrix.platform == 'linux' && !github.event.repository.fork
         run: |
           sudo apt-get update
           sudo apt-get install -y ruby ruby-dev build-essential rpm
@@ -96,7 +135,14 @@ jobs:
         env:
           NODE_ENV: production
 
+      - name: Build Electron app (fork)
+        if: github.event.repository.fork
+        run: corepack yarn electron-builder --${{ matrix.platform }} --${{ matrix.arch }} --publish=always
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build Electron app
+        if: (!github.event.repository.fork)
         run: corepack yarn electron-builder --${{ matrix.platform }} --${{ matrix.arch }} --publish=always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -110,3 +156,11 @@ jobs:
           SNAPCRAFT_BUILD_ENVIRONMENT: host
           # ✅ Use system fpm for Linux only
           USE_SYSTEM_FPM: ${{ matrix.platform == 'linux' && 'true' || '' }}
+
+      - name: Build and publish a Docker image for '${{github.repository}}'
+        uses: macbre/push-to-ghcr@master
+        if: matrix.platform == 'linux' && matrix.arch == 'x64'
+        with:
+          image_name: "${{github.repository}}"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          dockerfile: "./Dockerfile"

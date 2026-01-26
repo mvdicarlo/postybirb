@@ -19,6 +19,12 @@ export class RemotePasswordMiddleware implements NestMiddleware {
         return;
       }
 
+      if (req.baseUrl.startsWith('/api/remote/ping')) {
+        // Skip authentication for ping API routes to let user check the password
+        next();
+        return;
+      }
+
       const remotePassword = req.headers['x-remote-password'] as string;
 
       if (!remotePassword) {
