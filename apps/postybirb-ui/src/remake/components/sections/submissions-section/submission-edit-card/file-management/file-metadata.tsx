@@ -37,6 +37,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import fileSubmissionApi from '../../../../../api/file-submission.api';
 import { showErrorWithContext } from '../../../../../utils/notifications';
 import { BasicWebsiteSelect } from '../../../../shared';
+import { FileAltTextEditor } from './file-alt-text-editor';
 
 interface FileMetadataProps {
   file: ISubmissionFileDto;
@@ -107,7 +108,13 @@ export function FileMetadata({ file, accounts }: FileMetadataProps) {
         <FileSourceUrls metadata={metadata} save={save} />
       )}
 
-      {/* TODO: Add BlockNote rich text editor for TEXT file alt content */}
+      {/* Fallback Text Editor (for TEXT files only) */}
+      {fileType === FileType.TEXT && file.hasAltFile && file.altFileId && (
+        <>
+          <Divider my="sm" variant="dashed" />
+          <FileAltTextEditor file={file} />
+        </>
+      )}
     </Box>
   );
 }
