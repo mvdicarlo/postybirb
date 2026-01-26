@@ -179,7 +179,7 @@ export default function MegalodonLoginView(
                         if (res.success && res.username) {
                           setLoggedInAs(res.username);
                           setActiveStep(2);
-                          notifyLoginSuccess();
+                          notifyLoginSuccess(undefined, account);
                         } else if (!res.success && res.message) {
                           throw new Error(res.message);
                         }

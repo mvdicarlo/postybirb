@@ -75,9 +75,9 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
   useEffect(() => {
     if (isLoggedIn && hasShownSuccessNotification.current !== accountId) {
       hasShownSuccessNotification.current = accountId;
-      notifyLoginSuccess(username || account?.name || '');
+      notifyLoginSuccess(username || account?.name || '', account);
     }
-  }, [isLoggedIn, username, account?.name, accountId]);
+  }, [isLoggedIn, username, account?.name, accountId, account]);
 
   // Handle webview events
   useEffect(() => {

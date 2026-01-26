@@ -70,7 +70,7 @@ export default function FurtasticLoginView(
           accountApi
             .setWebsiteData<FurtasticAccountLoginData>({ id, data: loginData })
             .then(() => {
-              notifyLoginSuccess();
+              notifyLoginSuccess(undefined, account);
             })
             .catch(createLoginHttpErrorHandler())
             .finally(() => {
