@@ -118,8 +118,8 @@ function DescriptionEditorInner({
       ...blockNoteLocale,
       placeholders: {
         ...(blockNoteLocale.placeholders as Record<string, string>),
-        emptyDocument: t`Type / for commands or @, \` or { for shortcuts`,
-        default: t`Type / for commands or @, \` or { for shortcuts`,
+        emptyDocument: t`Type / for commands or @, \` or '{' for shortcuts`,
+        default: t`Type / for commands or @, \` or '{' for shortcuts`,
       },
     } as unknown as Dictionary,
   });
