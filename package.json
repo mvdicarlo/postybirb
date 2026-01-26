@@ -5,7 +5,7 @@
   },
   "description": "PostyBirb is a desktop application used for posting to multiple websites from one simple form.",
   "name": "postybirb",
-  "version": "4.0.12-leaftail",
+  "version": "4.0.13-leaftail",
   "repository": {
     "type": "git",
     "url": "git+https://mvdicarlo@github.com/mvdicarlo/postybirb.git"
