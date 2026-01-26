@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { Interval } from '@nestjs/schedule';
 import { Logger } from '@postybirb/logger';
 import { ProgressInfo, UpdateInfo, autoUpdater } from 'electron-updater';
-import winston from 'winston';
 
 interface ReleaseNoteInfo {
   /**
@@ -31,7 +30,7 @@ export type UpdateState = {
  */
 @Injectable()
 export class UpdateService {
-  private readonly logger = Logger();
+  private readonly logger = Logger('Updates');
 
   private updateState: UpdateState = {
     updateAvailable: false,
@@ -43,9 +42,7 @@ export class UpdateService {
   };
 
   constructor() {
-    autoUpdater.logger = winston.createLogger({
-      transports: [new winston.transports.Console()],
-    });
+    autoUpdater.logger = this.logger;
     autoUpdater.autoDownload = false;
     autoUpdater.fullChangelog = true;
     autoUpdater.allowPrerelease = true;

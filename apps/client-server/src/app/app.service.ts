@@ -7,7 +7,7 @@ export class AppService {
     return {
       message: 'pong',
       version: app.getVersion(),
-      location: app.getPath('appData'),
+      location: app.getAppPath(),
     };
   }
 }

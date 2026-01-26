@@ -9,7 +9,7 @@ export type RemoteConfig = {
 };
 
 function getRemoteConfigPath(): string {
-  return join(app.getPath('appData'), 'postybirb', 'remote-config.json');
+  return join(app.getAppPath(), 'remote-config.json');
 }
 
 function createRemoteConfig(): Promise<void> {
@@ -34,6 +34,18 @@ export async function getRemoteConfig(): Promise<RemoteConfig> {
   await ensureRemoteConfigExists();
   const configPath = getRemoteConfigPath();
   const configContent = await readFile(configPath, 'utf-8');
-  console.log({ REMOTE_CONFIG: configContent });
-  return JSON.parse(configContent) as RemoteConfig;
+  const remoteConfig = JSON.parse(configContent) as RemoteConfig;
+  if (remoteConfig.enabled) {
+    // eslint-disable-next-line no-console
+    console.log(
+      'Remote password',
+      remoteConfig.password,
+      'config is at',
+      configPath,
+    );
+  } else {
+    // eslint-disable-next-line no-console
+    console.log('Remote access is disabled. Config is at', configPath);
+  }
+  return remoteConfig;
 }

@@ -142,17 +142,17 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # ✅ Only set signing secrets for main repository
-          APPLE_ID: ${{ !github.event.repository.fork && secrets.APPLE_ID || '' }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ !github.event.repository.fork && secrets.APPLE_APP_SPECIFIC_PASSWORD || '' }}
-          APPLE_TEAM_ID: ${{ !github.event.repository.fork && secrets.APPLE_TEAM_ID || '' }}
-          CSC_LINK: ${{ !github.event.repository.fork && secrets.CSC_LINK || '' }}
-          CSC_KEY_PASSWORD: ${{ !github.event.repository.fork && secrets.CSC_KEY_PASSWORD || '' }}
-          CSC_IDENTITY_AUTO_DISCOVERY: ${{ !github.event.repository.fork && 'true' || 'false' }}
-          # ✅ Only set snapcraft credentials for main repository
-          SNAPCRAFT_STORE_CREDENTIALS: ${{ !github.event.repository.fork && secrets.SNAPCRAFT_STORE_CREDENTIALS || '' }}
-          SNAPCRAFT_BUILD_ENVIRONMENT: host
-          # ✅ Use system fpm for Linux only (non-fork)
-          USE_SYSTEM_FPM: ${{ matrix.platform == 'linux' && !github.event.repository.fork && 'true' || '' }}
+          # APPLE_ID: ${{ !github.event.repository.fork && secrets.APPLE_ID || '' }}
+          # APPLE_APP_SPECIFIC_PASSWORD: ${{ !github.event.repository.fork && secrets.APPLE_APP_SPECIFIC_PASSWORD || '' }}
+          # APPLE_TEAM_ID: ${{ !github.event.repository.fork && secrets.APPLE_TEAM_ID || '' }}
+          # CSC_LINK: ${{ !github.event.repository.fork && secrets.CSC_LINK || '' }}
+          # CSC_KEY_PASSWORD: ${{ !github.event.repository.fork && secrets.CSC_KEY_PASSWORD || '' }}
+          # CSC_IDENTITY_AUTO_DISCOVERY: ${{ !github.event.repository.fork && 'true' || 'false' }}
+          # # ✅ Only set snapcraft credentials for main repository
+          # SNAPCRAFT_STORE_CREDENTIALS: ${{ !github.event.repository.fork && secrets.SNAPCRAFT_STORE_CREDENTIALS || '' }}
+          # SNAPCRAFT_BUILD_ENVIRONMENT: host
+          # # ✅ Use system fpm for Linux only (non-fork)
+          # USE_SYSTEM_FPM: ${{ matrix.platform == 'linux' && !github.event.repository.fork && 'true' || '' }}
 
       - name: Build and publish a Docker image for 'leaftail1880/postybirb-4-alpha-headless'
         uses: macbre/push-to-ghcr@master

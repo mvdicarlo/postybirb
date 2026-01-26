@@ -13,9 +13,7 @@ RUN if [ -d "./release/linux-unpacked" ]; then \
         echo "Found existing build, copying..."; \
         cp -r ./release/linux-unpacked/ /app;\
     else \
-        echo "Building from source..."; \
-        # nx cache expects machine_id to be the same \
-        rm -rf .nx && \
+        echo "Building from source..."; rm -rf .nx && \
         CYPRESS_INSTALL_BINARY=0 corepack yarn install --inline-builds && \
         corepack yarn dist:linux --dir && \
         cp -r ./release/linux-unpacked/ /app;\

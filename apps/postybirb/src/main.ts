@@ -1,16 +1,12 @@
 import { INestApplication } from '@nestjs/common';
+import { PostyBirbDirectories } from '@postybirb/fs';
 import {
   flushAppInsights,
   initializeAppInsights,
+  Logger,
   trackException,
 } from '@postybirb/logger';
 import { getRemoteConfig, PostyBirbEnvConfig } from '@postybirb/utils/electron';
-
-// eslint-disable-next-line import/order
-import { startMetrics } from './metrics';
-
-// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
-import { bootstrapClientServer } from 'apps/client-server/src/main';
 import { app, BrowserWindow, session } from 'electron';
 import contextMenu from 'electron-context-menu';
 import PostyBirb from './app/app';
@@ -37,11 +33,12 @@ process.env.POSTYBIRB_ENV =
 
 // eslint-disable-next-line no-console
 console.log(
-  `Starting PostyBirb v${environment.version} in ${process.env.POSTYBIRB_ENV} mode with app path ${app.getPath('appData')}`,
+  `Starting PostyBirb v${environment.version} in ${process.env.POSTYBIRB_ENV} mode with port ${PostyBirbEnvConfig.port}`,
 );
-
-// Setup Metrics
-startMetrics();
+// eslint-disable-next-line no-console
+console.log('Storage', PostyBirbDirectories.POSTYBIRB_DIRECTORY);
+// eslint-disable-next-line no-console
+console.log('App data', app.getAppPath());
 
 initializeAppInsights({
   // enabled: environment.production || process.env.ENABLE_APP_INSIGHTS === 'true',
@@ -49,10 +46,12 @@ initializeAppInsights({
   appVersion: environment.version,
 });
 
+const logger = Logger('MainProcess');
+
 // Handle uncaught exceptions in main process
 process.on('uncaughtException', (error: Error) => {
   // eslint-disable-next-line no-console
-  console.error('Uncaught Exception in Main Process:', error);
+  logger.withError(error).error('Uncaught Exception in Main Process:');
   trackException(error, {
     source: 'electron-main',
     type: 'uncaughtException',
@@ -69,7 +68,7 @@ process.on('uncaughtException', (error: Error) => {
 process.on('unhandledRejection', (reason: unknown) => {
   const error = reason instanceof Error ? reason : new Error(String(reason));
   // eslint-disable-next-line no-console
-  console.error('Unhandled Rejection in Main Process:', error);
+  logger.withError(error).error('Unhandled Rejection in Main Process:');
   trackException(error, {
     source: 'electron-main',
     type: 'unhandledRejection',
@@ -107,8 +106,11 @@ export default class Main {
     process.env.remote = JSON.stringify(await getRemoteConfig());
   }
 
-  static bootstrapClientServer(): Promise<INestApplication> {
-    return bootstrapClientServer();
+  static async bootstrapClientServer(): Promise<INestApplication> {
+    return (
+      // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
+      (await import('apps/client-server/src/main')).bootstrapClientServer()
+    );
   }
 
   static bootstrapApp(nestApp: INestApplication) {
