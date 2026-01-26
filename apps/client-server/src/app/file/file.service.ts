@@ -149,6 +149,17 @@ export class FileService {
   }
 
   /**
+   * Gets the size of an alt text file without loading the buffer.
+   * @param {EntityId} id
+   */
+  async getAltFileSize(id: EntityId): Promise<number> {
+    const altFile = await this.fileBufferRepository.findById(id, {
+      failOnMissing: false,
+    });
+    return altFile?.size ?? 0;
+  }
+
+  /**
    * Gets the raw text of an alt text file.
    * @param {EntityId} id
    */
@@ -169,8 +180,10 @@ export class FileService {
    * @param {UpdateAltFileDto} update
    */
   async updateAltText(id: EntityId, update: UpdateAltFileDto) {
+    const buffer = Buffer.from(update.html ?? '');
     return this.fileBufferRepository.update(id, {
-      buffer: Buffer.from(update.html ?? ''),
+      buffer,
+      size: buffer.length,
     });
   }
 

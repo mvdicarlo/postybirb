@@ -30,7 +30,7 @@ export const TestMetadata: IWebsiteMetadata = {
 
 @WebsiteMetadata(TestMetadata)
 @UserLoginFlow('https://patreon.com')
-@SupportsFiles(['image/png', 'image/jpeg'])
+@SupportsFiles(['image/png', 'image/jpeg', 'text/plain'])
 export default class TestWebsite
   extends Website<{ test: string }>
   implements

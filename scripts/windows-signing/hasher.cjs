@@ -1,3 +1,4 @@
+// @ts-nocheck
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
@@ -7,10 +8,14 @@ const argv = require('yargs/yargs')(process.argv.slice(2))
   .demandOption(['path']).argv;
 
 const filePath = path.normalize(argv.path);
-console.log(`\x1b[32m[INFO]\x1b[0m Processing file at path: \x1b[33m${filePath}\x1b[0m`);
+console.log(
+  `\x1b[32m[INFO]\x1b[0m Processing file at path: \x1b[33m${filePath}\x1b[0m`,
+);
 
 const yamlPath = path.join(filePath, `latest.yml`);
-console.log(`\x1b[32m[INFO]\x1b[0m Reading YAML file from: \x1b[33m${yamlPath}\x1b[0m`);
+console.log(
+  `\x1b[32m[INFO]\x1b[0m Reading YAML file from: \x1b[33m${yamlPath}\x1b[0m`,
+);
 const yaml = parse(fs.readFileSync(yamlPath, 'utf8'));
 const version = yaml.version;
 const existingHash = yaml.sha512;
@@ -33,10 +38,14 @@ function hashFile(file, algorithm = 'sha512', encoding = 'base64', options) {
     )
       .on('error', reject)
       .on('open', () =>
-        console.log(`\x1b[32m[INFO]\x1b[0m Started reading file: \x1b[33m${file}\x1b[0m`),
+        console.log(
+          `\x1b[32m[INFO]\x1b[0m Started reading file: \x1b[33m${file}\x1b[0m`,
+        ),
       )
       .on('end', () => {
-        console.log(`\x1b[32m[INFO]\x1b[0m Finished reading file: \x1b[33m${file}\x1b[0m`);
+        console.log(
+          `\x1b[32m[INFO]\x1b[0m Finished reading file: \x1b[33m${file}\x1b[0m`,
+        );
         hash.end();
         resolve(hash.read());
       })
@@ -47,7 +56,7 @@ function hashFile(file, algorithm = 'sha512', encoding = 'base64', options) {
 }
 
 hashFile(path.join(filePath, target))
-  .then(hash => {
+  .then((hash) => {
     console.log(`\x1b[32m[INFO]\x1b[0m Computed hash: \x1b[33m${hash}\x1b[0m`);
     if (existingHash === hash) {
       throw new Error('Hashes are the same');
@@ -59,7 +68,7 @@ hashFile(path.join(filePath, target))
     fs.writeFileSync(yamlPath, stringify(yaml));
     console.log(`\x1b[32m[INFO]\x1b[0m YAML file updated successfully.`);
   })
-  .catch(err => {
+  .catch((err) => {
     console.error('\x1b[31m[ERROR]\x1b[0m', err);
     throw err;
   });
