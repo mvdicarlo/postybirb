@@ -157,10 +157,10 @@ jobs:
           # ✅ Use system fpm for Linux only
           USE_SYSTEM_FPM: ${{ matrix.platform == 'linux' && 'true' || '' }}
 
-      - name: Build and publish a Docker image for 'leaftail1880/postybirb-4-alpha-headless'
+      - name: Build and publish a Docker image for '${{github.repository}}'
         uses: macbre/push-to-ghcr@master
         if: matrix.platform == 'linux' && matrix.arch == 'x64'
         with:
-          image_name: "leaftail1880/postybirb-4-alpha-headless"
+          image_name: "${{github.repository}}"
           github_token: ${{ secrets.GITHUB_TOKEN }}
           dockerfile: "./Dockerfile"

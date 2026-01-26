@@ -1,8 +1,10 @@
 services:
   postybirb:
-    image: ghcr.io/leaftail1880/postybirb-4-alpha-headless:latest
+    image: ghcr.io/mvdicarlo/postybirb:latest
     ports:
       - 8080:8080
-    tty: true
-    attach: true
-    entrypoint: bash
+    volumes:
+      # Contains database, submissions, tags etc
+      - ./my-path/storage:/root/PostyBirb
+      # Contains startup options, remote config, partitions etc
+      - ./my-path/appData:/root/.config/postybirb
