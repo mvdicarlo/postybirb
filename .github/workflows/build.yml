@@ -67,6 +67,10 @@ jobs:
           ELECTRON_CACHE: ~/.cache/electron
           ELECTRON_BUILDER_CACHE: ~/.cache/electron-builder
 
+      # This is needed to prevent ids showing instead of non translated i18n texts in production builds
+      - name: Extract messages
+        run: yarn lingui:extract
+
       - name: Patch electron-builder.yml for fork repositories
         if: github.event.repository.fork
         uses: actions/github-script@v8
