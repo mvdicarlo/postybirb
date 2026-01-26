@@ -90,7 +90,7 @@ jobs:
 
             // Remove snap target for forks since we don't have credentials
             if (config.linux && config.linux.target) {
-              config.linux.target = ["AppImage"]
+              config.linux.target = [{target:"AppImage"}]
             }
 
             // Remove snap configuration entirely for forks
@@ -138,15 +138,7 @@ jobs:
           NODE_ENV: production
 
       - name: Build Electron app
-        run: |
-          # For forks, build without publishing to external services
-          if [ "${{ github.event.repository.fork }}" = "true" ]; then
-            echo "🔧 Fork detected - Building without external publishing services"
-            corepack yarn electron-builder --${{ matrix.platform }} --${{ matrix.arch }} --publish=always
-          else
-            echo "🏢 Main repository - Building with full publishing"
-            corepack yarn electron-builder --${{ matrix.platform }} --${{ matrix.arch }} --publish=always
-          fi
+        run: corepack yarn electron-builder --${{ matrix.platform }} --${{ matrix.arch }} --publish=always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # ✅ Only set signing secrets for main repository
