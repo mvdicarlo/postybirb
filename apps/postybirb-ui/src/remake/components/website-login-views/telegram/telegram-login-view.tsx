@@ -202,7 +202,7 @@ export default function TelegramLoginView(
                       if (!res) return;
 
                       if (res.success) {
-                        notifyLoginSuccess();
+                        notifyLoginSuccess(undefined, account);
                         setPassword('');
                         setIsAuthenticating(false);
                       } else {

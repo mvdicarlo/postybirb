@@ -5,7 +5,9 @@
 import { Trans } from '@lingui/react/macro';
 import { notifications } from '@mantine/notifications';
 import { IconCheck, IconInfoCircle, IconX } from '@tabler/icons-react';
+import accountApi from '../../api/account.api';
 import type HttpErrorResponse from '../../models/http-error-response';
+import { AccountRecord } from '../../stores';
 
 /**
  * Show an info notification.
@@ -22,9 +24,13 @@ export function notifyInfo(title: React.ReactNode, message: React.ReactNode) {
 /**
  * Show a success notification for successful login and close login form for current website.
  */
-export function notifyLoginSuccess(message?: React.ReactNode) {
+export function notifyLoginSuccess(
+  message: React.ReactNode | undefined,
+  account: AccountRecord | undefined,
+) {
+  if (account) accountApi.refreshLogin(account.accountId);
   notifications.show({
-    title: <Trans>Login successful</Trans>,
+    title: <Trans>{account?.websiteDisplayName}: Login successful</Trans>,
     color: 'green',
     message,
     icon: <IconCheck size={16} />,
