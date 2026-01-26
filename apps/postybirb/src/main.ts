@@ -38,7 +38,7 @@ console.log(
 // eslint-disable-next-line no-console
 console.log('Storage', PostyBirbDirectories.POSTYBIRB_DIRECTORY);
 // eslint-disable-next-line no-console
-console.log('App data', app.getAppPath());
+console.log('App data', app.getPath('userData'));
 
 initializeAppInsights({
   // enabled: environment.production || process.env.ENABLE_APP_INSIGHTS === 'true',

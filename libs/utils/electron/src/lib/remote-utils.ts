@@ -9,7 +9,7 @@ export type RemoteConfig = {
 };
 
 function getRemoteConfigPath(): string {
-  return join(app.getAppPath(), 'remote-config.json');
+  return join(app.getPath('userData'), 'remote-config.json');
 }
 
 function createRemoteConfig(): Promise<void> {
@@ -38,7 +38,7 @@ export async function getRemoteConfig(): Promise<RemoteConfig> {
   if (remoteConfig.enabled) {
     // eslint-disable-next-line no-console
     console.log(
-      'Remote password',
+      'Remote password is',
       remoteConfig.password,
       'config is at',
       configPath,

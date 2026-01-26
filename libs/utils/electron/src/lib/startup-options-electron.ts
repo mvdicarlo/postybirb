@@ -16,7 +16,7 @@ export type StartupOptions = {
   port: string;
 };
 
-const FILE_PATH = join(app.getPath('appData'), 'postybirb', 'startup.json');
+const FILE_PATH = join(app.getPath('userData'), 'startup.json');
 const DOCUMENTS_PATH = join(app.getPath('documents'), 'PostyBirb');
 const DEFAULT_APP_DATA_PATH =
   isWindows() && DOCUMENTS_PATH.includes('OneDrive')
