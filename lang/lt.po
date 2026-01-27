@@ -31,6 +31,11 @@ msgstr "{0, plural, one {svetainė} few {svetainės} many {svetaines} other {sve
 msgid "{0} submissions selected"
 msgstr ""
 
+#. placeholder {0}: account?.websiteDisplayName
+#: apps/postybirb-ui/src/remake/components/website-login-views/helpers.tsx
+msgid "{0}: Login successful"
+msgstr ""
+
 #: apps/postybirb-ui/src/translations/common-translations.tsx
 msgid "{children} created"
 msgstr ""
@@ -445,6 +450,10 @@ msgstr ""
 msgid "Are you sure you want to post all selected submissions?"
 msgstr "Ar tikrai norite paskelbti visus pasirinktus pateikimus?"
 
+#: apps/postybirb-ui/src/remake/components/dialogs/settings-dialog/sections/remote-settings-section.tsx
+msgid "Are you sure you want to reset all remote connection settings to their defaults? This will clear the saved host URL and password."
+msgstr ""
+
 #: libs/translations/src/lib/field-translations.ts
 msgid "Artist name"
 msgstr ""
@@ -564,6 +573,7 @@ msgstr ""
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/app-settings.tsx
 #: apps/postybirb-ui/src/remake/components/confirm-action-modal/confirm-action-modal.tsx
 #: apps/postybirb-ui/src/remake/components/dialogs/settings-dialog/sections/app-settings-section.tsx
+#: apps/postybirb-ui/src/remake/components/dialogs/settings-dialog/sections/remote-settings-section.tsx
 #: apps/postybirb-ui/src/remake/components/drawers/custom-shortcuts-drawer/custom-shortcuts-drawer.tsx
 #: apps/postybirb-ui/src/remake/components/sections/accounts-section/website-account-card.tsx
 #: apps/postybirb-ui/src/remake/components/sections/accounts-section/website-account-card.tsx
@@ -1474,6 +1484,10 @@ msgstr ""
 msgid "Failed to save changes"
 msgstr ""
 
+#: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-edit-card/file-management/file-alt-text-editor.tsx
+msgid "Failed to save fallback text"
+msgstr ""
+
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-edit-card/file-management/file-metadata.tsx
 msgid "Failed to save metadata"
 msgstr ""
@@ -1520,6 +1534,7 @@ msgid "Failed to validate tags. Please check them manually"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-text-alt.tsx
+#: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-edit-card/file-management/file-alt-text-editor.tsx
 msgid "Fallback Text"
 msgstr ""
 
@@ -2097,10 +2112,6 @@ msgstr ""
 
 #: apps/postybirb-ui/src/website-components/website-login-helpers.tsx
 msgid "Login success"
-msgstr ""
-
-#: apps/postybirb-ui/src/remake/components/website-login-views/helpers.tsx
-msgid "Login successful"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx
@@ -2980,6 +2991,8 @@ msgstr ""
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager/custom-account-dimensions.tsx
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager/file-dimensions.tsx
+#: apps/postybirb-ui/src/remake/components/dialogs/settings-dialog/sections/remote-settings-section.tsx
+#: apps/postybirb-ui/src/remake/components/dialogs/settings-dialog/sections/remote-settings-section.tsx
 #: apps/postybirb-ui/src/remake/components/sections/accounts-section/website-account-card.tsx
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/file-submission-modal/image-editor.tsx
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-edit-card/file-management/file-metadata.tsx
@@ -2992,6 +3005,10 @@ msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/sections/accounts-section/website-account-card.tsx
 msgid "Reset account?"
+msgstr ""
+
+#: apps/postybirb-ui/src/remake/components/dialogs/settings-dialog/sections/remote-settings-section.tsx
+msgid "Reset Remote Settings"
 msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/update-button/update-button.tsx
@@ -3088,6 +3105,7 @@ msgstr ""
 msgid "Saturday"
 msgstr ""
 
+#: apps/postybirb-ui/src/remake/components/dialogs/settings-dialog/sections/remote-settings-section.tsx
 #: apps/postybirb-ui/src/remake/components/drawers/custom-shortcuts-drawer/custom-shortcuts-drawer.tsx
 #: apps/postybirb-ui/src/remake/components/sections/templates-section/template-card.tsx
 #: apps/postybirb-ui/src/remake/components/website-login-views/discord/discord-login-view.tsx
@@ -4361,9 +4379,12 @@ msgstr ""
 msgid "You'll get this PIN after authorizing on Twitter"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/form/fields/description-field.tsx
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-edit-card/account-selection/form/fields/description-field.tsx
 msgid "Your description contains legacy shortcut syntax (e.g., {title}, {tags}, {cw}, {shortcut:username}). These are no longer supported. Please use the new shortcut menu (type @, { or `) to insert shortcuts."
+msgstr ""
+
+#: apps/postybirb-ui/src/components/form/fields/description-field.tsx
+msgid "Your description contains legacy shortcut syntax. These are no longer supported. Please use the new shortcut menu (type @, { or `) to insert shortcuts."
 msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/website-login-views/bluesky/bluesky-login-view.tsx
