@@ -5,12 +5,12 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-    Button,
-    Group,
-    Modal,
-    Stack,
-    Text,
-    type MantineColor,
+  Button,
+  Group,
+  Modal,
+  Stack,
+  Text,
+  type MantineColor,
 } from '@mantine/core';
 
 export interface ConfirmActionModalProps {
@@ -61,6 +61,7 @@ export function ConfirmActionModal({
       title={title}
       centered
       radius="md"
+      zIndex={1000}
     >
       <Stack>
         <Text>{message}</Text>
