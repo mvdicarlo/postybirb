@@ -90,7 +90,7 @@ export default function CustomLoginView(
         data: cleanedData,
       });
 
-      notifyLoginSuccess();
+      notifyLoginSuccess(undefined, account);
     } catch (error) {
       notifyLoginFailed((error as Error).message);
     } finally {

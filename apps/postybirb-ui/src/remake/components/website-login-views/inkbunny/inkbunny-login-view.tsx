@@ -58,7 +58,7 @@ export function InkbunnyLoginView({
           data: { username: username.trim(), sid: authData.sid },
         });
 
-        notifyLoginSuccess();
+        notifyLoginSuccess(undefined, account);
       } else {
         throw new Error(authData.error_message);
       }

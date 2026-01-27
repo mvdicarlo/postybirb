@@ -338,7 +338,7 @@ export default function TwitterLoginView(
                         )
                         .then((res) => {
                           if (res.success) {
-                            notifyLoginSuccess();
+                            notifyLoginSuccess(undefined, account);
                             setPin('');
                             setAuthorizationUrl('');
                             setRequestToken(undefined);
