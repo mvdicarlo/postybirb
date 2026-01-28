@@ -47,7 +47,17 @@ import { BlueskyMessageSubmission } from './models/bluesky-message-submission';
 
 @WebsiteMetadata({ name: 'bluesky', displayName: 'BlueSky' })
 @CustomLoginFlow()
-@SupportsUsernameShortcut({ id: 'bluesky', url: 'https://bsly.app/profile/$1' })
+@SupportsUsernameShortcut({
+  id: 'bluesky',
+  url: 'https://bsky.app/profile/$1',
+  convert: (websiteName, shortcut) => {
+    if (websiteName === 'bluesky' && shortcut === 'bluesky') {
+      return '@$1';
+    }
+
+    return undefined;
+  },
+})
 @SupportsFiles({
   acceptedMimeTypes: [
     'image/png',

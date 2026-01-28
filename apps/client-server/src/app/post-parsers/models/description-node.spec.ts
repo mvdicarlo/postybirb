@@ -680,6 +680,171 @@ describe('DescriptionNode', () => {
       const usernames = tree.findUsernames();
       expect(usernames.has('TestUser')).toBe(true);
     });
+
+    it('should convert cross-platform username tags to target website', () => {
+      // This test covers the use case where a Twitter username should be
+      // converted to a Bluesky username when posting to Bluesky
+      const description: Description = [
+        {
+          id: 'test-cross-platform',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [
+            {
+              type: 'username',
+              props: { id: '1', shortcut: 'twitter', only: '' },
+              content: [{ type: 'text', text: 'abcd', styles: {} }],
+            },
+          ],
+          children: [],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'bluesky',
+        shortcuts: {
+          twitter: {
+            id: 'twitter',
+            url: 'https://x.com/$1',
+          },
+          bluesky: {
+            id: 'bluesky',
+            url: 'https://bsky.app/profile/$1',
+          },
+        },
+        customShortcuts: new Map(),
+        defaultDescription: [],
+        // User has configured: twitter="abcd" -> bluesky="abcd.bsky.app"
+        usernameConversions: new Map([['abcd', 'abcd.bsky.app']]),
+      };
+
+      const tree = new DescriptionNodeTree(
+        context,
+        description as unknown as Array<IDescriptionBlockNode>,
+        {
+          insertAd: false,
+        },
+      );
+
+      // Should convert to Bluesky username and use Bluesky URL
+      expect(tree.toPlainText()).toBe('https://bsky.app/profile/abcd.bsky.app');
+      expect(tree.toHtml()).toBe(
+        '<div><a target="_blank" href="https://bsky.app/profile/abcd.bsky.app">abcd.bsky.app</a></div>',
+      );
+    });
+
+    it('should keep original username when no conversion exists', () => {
+      const description: Description = [
+        {
+          id: 'test-no-conversion',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [
+            {
+              type: 'username',
+              props: { id: '1', shortcut: 'twitter', only: '' },
+              content: [{ type: 'text', text: 'someuser', styles: {} }],
+            },
+          ],
+          children: [],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'bluesky',
+        shortcuts: {
+          twitter: {
+            id: 'twitter',
+            url: 'https://x.com/$1',
+          },
+          bluesky: {
+            id: 'bluesky',
+            url: 'https://bsky.app/profile/$1',
+          },
+        },
+        customShortcuts: new Map(),
+        defaultDescription: [],
+        usernameConversions: new Map(), // No conversion defined
+      };
+
+      const tree = new DescriptionNodeTree(
+        context,
+        description as unknown as Array<IDescriptionBlockNode>,
+        {
+          insertAd: false,
+        },
+      );
+
+      // Should keep original Twitter link since no conversion exists
+      expect(tree.toPlainText()).toBe('https://x.com/someuser');
+      expect(tree.toHtml()).toBe(
+        '<div><a target="_blank" href="https://x.com/someuser">someuser</a></div>',
+      );
+    });
+
+    it('should convert usernames when shortcut ID matches target website', () => {
+      const description: Description = [
+        {
+          id: 'test-matching-platform',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [
+            {
+              type: 'username',
+              props: { id: '1', shortcut: 'bluesky', only: '' },
+              content: [{ type: 'text', text: 'x', styles: {} }],
+            },
+          ],
+          children: [],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'bluesky',
+        shortcuts: {
+          twitter: {
+            id: 'twitter',
+            url: 'https://x.com/$1',
+          },
+          bluesky: {
+            id: 'bluesky',
+            url: 'https://bsky.app/profile/$1',
+          },
+        },
+        customShortcuts: new Map(),
+        defaultDescription: [],
+        // User has configured a converter for "x" to "bluesky_user" for bluesky
+        usernameConversions: new Map([['x', 'bluesky_user']]),
+      };
+
+      const tree = new DescriptionNodeTree(
+        context,
+        description as unknown as Array<IDescriptionBlockNode>,
+        {
+          insertAd: false,
+        },
+      );
+
+      // Should use converted username "bluesky_user" since shortcut matches website
+      expect(tree.toPlainText()).toBe(
+        'https://bsky.app/profile/bluesky_user',
+      );
+      expect(tree.toHtml()).toBe(
+        '<div><a target="_blank" href="https://bsky.app/profile/bluesky_user">bluesky_user</a></div>',
+      );
+    });
   });
 
   describe('nested children blocks', () => {
