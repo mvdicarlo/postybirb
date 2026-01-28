@@ -32,7 +32,7 @@ import {
   IconViewportTall,
 } from '@tabler/icons-react';
 import { useCallback, useState } from 'react';
-import { DeleteSelectedKeybinding } from '../../../config/keybindings';
+import { DeleteSelectedKeybinding, formatKeybindingDisplay } from '../../../config/keybindings';
 import type { SubmissionRecord } from '../../../stores/records';
 import { useSubmissionViewMode } from '../../../stores/ui/appearance-store';
 import { type SubmissionFilter, useSubmissionsFilter } from '../../../stores/ui/submissions-ui-store';
@@ -219,7 +219,7 @@ export function SubmissionSectionHeader({
                 label={
                   <Group gap="xs">
                     <Trans>Delete</Trans>
-                    <Kbd size="xs">{DeleteSelectedKeybinding}</Kbd>
+                    <Kbd size="xs">{formatKeybindingDisplay(DeleteSelectedKeybinding)}</Kbd>
                   </Group>
                 }
               >

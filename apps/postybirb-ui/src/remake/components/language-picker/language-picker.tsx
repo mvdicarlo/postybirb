@@ -17,6 +17,7 @@ import {
 import { useDisclosure } from '@mantine/hooks';
 import { IconCheck, IconLanguage, IconWorld } from '@tabler/icons-react';
 import { useState } from 'react';
+import { formatKeybindingDisplay } from '../../../shared/platform-utils';
 import { languages } from '../../i18n/languages';
 import { useLanguageActions } from '../../stores/ui/locale-store';
 import '../../styles/layout.css';
@@ -46,7 +47,7 @@ export function LanguagePicker({ collapsed = false, kbd }: LanguagePickerProps) 
   const labelContent = collapsed ? undefined : (
     <Box className="postybirb__nav_item_label">
       <span>{currentLanguageName}</span>
-      {kbd && <Kbd size="xs">{kbd}</Kbd>}
+      {kbd && <Kbd size="xs">{formatKeybindingDisplay(kbd)}</Kbd>}
     </Box>
   );
 
@@ -77,7 +78,7 @@ export function LanguagePicker({ collapsed = false, kbd }: LanguagePickerProps) 
                 <span><Trans>Language</Trans></span>
                 {kbd && (
                   <Kbd size="xs" className="postybirb__kbd_aligned">
-                    {kbd}
+                    {formatKeybindingDisplay(kbd)}
                   </Kbd>
                 )}
               </Box>

@@ -5,18 +5,19 @@
  */
 
 import {
-    Box,
-    Divider,
-    Image,
-    Kbd,
-    NavLink as MantineNavLink,
-    ScrollArea,
-    Text,
-    Title,
-    Tooltip,
+  Box,
+  Divider,
+  Image,
+  Kbd,
+  NavLink as MantineNavLink,
+  ScrollArea,
+  Text,
+  Title,
+  Tooltip,
 } from '@mantine/core';
 import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
+import { formatKeybindingDisplay } from '../../../shared/platform-utils';
 import { useActiveDrawer, useDrawerActions } from '../../stores/ui/drawer-store';
 import { useViewState, useViewStateActions } from '../../stores/ui/navigation-store';
 import '../../styles/layout.css';
@@ -63,7 +64,7 @@ function NavItemRenderer({
   const labelContent = collapsed ? undefined : (
     <Box className="postybirb__nav_item_label">
       <span>{item.label}</span>
-      {item.kbd && <Kbd size="xs">{item.kbd}</Kbd>}
+      {item.kbd && <Kbd size="xs">{formatKeybindingDisplay(item.kbd)}</Kbd>}
     </Box>
   );
 
@@ -115,7 +116,7 @@ function NavItemRenderer({
             <span>{item.label}</span>
             {item.kbd && (
               <Kbd size="xs" className="postybirb__kbd_aligned">
-                {item.kbd}
+                {formatKeybindingDisplay(item.kbd)}
               </Kbd>
             )}
           </Box>

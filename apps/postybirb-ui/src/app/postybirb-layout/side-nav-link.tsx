@@ -2,6 +2,7 @@ import { Kbd, NavLink, Tooltip } from '@mantine/core';
 import { useCallback, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { tinykeys } from 'tinykeys';
+import { formatKeybindingDisplay } from '../../shared/platform-utils';
 import { DrawerGlobalState } from './drawers/drawer-global-state';
 import { useDrawerToggle } from './drawers/use-drawer-toggle';
 import './side-nav-link.css';
@@ -46,15 +47,25 @@ function BaseNavLink(
 ) {
   const { kbd, active, icon, label, collapsed, onClick } = props;
 
+  // Convert keybinding to tinykeys format (lowercase last character)
+  const tinykeysBind = kbd
+    ? kbd
+        .split('+')
+        .map((part, index, arr) =>
+          index === arr.length - 1 ? part.toLowerCase() : part,
+        )
+        .join('+')
+    : undefined;
+
   useEffect(() => {
-    const unsubscribe = !kbd
+    const unsubscribe = !tinykeysBind
       ? () => {}
       : tinykeys(window, {
-          [kbd]: onClick,
+          [tinykeysBind]: onClick,
         });
 
     return () => unsubscribe();
-  }, [kbd, onClick]);
+  }, [tinykeysBind, onClick]);
 
   const onClickCapture = useCallback(
     (
@@ -73,9 +84,10 @@ function BaseNavLink(
     [onClick],
   );
 
-  const kbdEl = kbd ? (
+  const kbdDisplay = kbd ? formatKeybindingDisplay(kbd) : null;
+  const kbdEl = kbdDisplay ? (
     <Kbd className="nav-link-kbd" size="xs">
-      {kbd}
+      {kbdDisplay}
     </Kbd>
   ) : null;
 
@@ -87,7 +99,7 @@ function BaseNavLink(
       label={
         <span className="nav-link-tooltip">
           {label}
-          {kbdEl && <span className="nav-link-tooltip-kbd">{kbd}</span>}
+          {kbdEl && <span className="nav-link-tooltip-kbd">{kbdDisplay}</span>}
         </span>
       }
     >

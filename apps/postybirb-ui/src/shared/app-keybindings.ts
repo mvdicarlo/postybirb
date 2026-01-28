@@ -1,14 +1,28 @@
 /* eslint-disable lingui/no-unlocalized-strings */
-export const SettingsKeybinding = 'Alt+S';
-export const AccountKeybinding = 'Alt+A';
-export const HomeKeybinding = 'Alt+H';
-export const TagGroupsKeybinding = 'Alt+T';
-export const TagConvertersKeybinding = 'Alt+C';
-export const UserConvertersKeybinding = 'Alt+U';
-export const MessageSubmissionsKeybinding = 'Alt+M';
-export const NotificationsKeybinding = 'Alt+N';
-export const FileSubmissionsKeybinding = 'Alt+F';
-export const CustomShortcutsKeybinding = 'Alt+D';
-export const UndoKeybinding = 'Control+Z';
-export const RedoKeybinding = 'Control+Y';
-export const SpotlightKeybinding = 'Control+K';
+import {
+    formatKeybindingDisplay,
+    getActionModifier,
+    getNavigationModifier,
+} from './platform-utils';
+
+const navMod = getNavigationModifier();
+const actionMod = getActionModifier();
+
+export const SettingsKeybinding = `${navMod}+S`;
+export const AccountKeybinding = `${navMod}+A`;
+export const HomeKeybinding = `${navMod}+H`;
+export const TagGroupsKeybinding = `${navMod}+T`;
+export const TagConvertersKeybinding = `${navMod}+C`;
+export const UserConvertersKeybinding = `${navMod}+U`;
+export const MessageSubmissionsKeybinding = `${navMod}+M`;
+export const NotificationsKeybinding = `${navMod}+N`;
+export const FileSubmissionsKeybinding = `${navMod}+F`;
+export const CustomShortcutsKeybinding = `${navMod}+D`;
+export const SpotlightKeybinding = `${actionMod}+K`;
+
+/**
+ * Format a keybinding for display in the UI.
+ * Converts to platform-appropriate symbols.
+ */
+export { formatKeybindingDisplay };
+
