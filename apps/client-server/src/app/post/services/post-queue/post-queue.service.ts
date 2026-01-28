@@ -381,7 +381,7 @@ export class PostQueueService
    */
   @Cron(CronExpression.EVERY_SECOND)
   public async run() {
-    if (!(this.initTime + 15_000 <= Date.now())) {
+    if (!(this.initTime + 60_000 <= Date.now())) {
       // Only run after 1 minute to allow the application to start up.
       return;
     }
@@ -483,7 +483,9 @@ export class PostQueueService
         // Manager is posting but record shows no activity - it's stuck
         const recordUpdatedAt = new Date(record.updatedAt).getTime();
         const lastEventAt = record.events?.length
-          ? Math.max(...record.events.map((e) => new Date(e.createdAt).getTime()))
+          ? Math.max(
+              ...record.events.map((e) => new Date(e.createdAt).getTime()),
+            )
           : 0;
         const lastActivityAt = Math.max(recordUpdatedAt, lastEventAt);
 
@@ -495,7 +497,9 @@ export class PostQueueService
             lastActivityAt: new Date(lastActivityAt).toISOString(),
             eventCount: record.events?.length ?? 0,
           })
-          .warn('PostRecord has been RUNNING without activity - marking as failed');
+          .warn(
+            'PostRecord has been RUNNING without activity - marking as failed',
+          );
 
         await this.postRecordRepository.update(record.id, {
           state: PostRecordState.FAILED,
