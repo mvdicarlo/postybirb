@@ -1,7 +1,10 @@
 import * as appInsights from 'applicationinsights';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { diag, DiagConsoleLogger, DiagLogLevel } from '@opentelemetry/api';
 
 let client: appInsights.TelemetryClient | null = null;
 let isInitialized = false;
+let diagInitialized = false;
 
 export interface AppInsightsConfig {
   connectionString?: string;
@@ -37,6 +40,18 @@ export function initializeAppInsights(config: AppInsightsConfig): void {
   }
 
   try {
+    // Enable OpenTelemetry diagnostic logging to capture SDK initialization errors
+    // This helps debug silent failures in the Application Insights SDK v3
+    if (!diagInitialized) {
+      diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.WARN);
+      diagInitialized = true;
+    }
+
+    // Disable metrics to avoid AzureMonitorMetricExporter initialization issues
+    // This is a workaround for a bug in applicationinsights v3.x where the
+    // metrics exporter fails to initialize due to version incompatibilities
+    // process.env.APPLICATION_INSIGHTS_NO_STANDARD_METRICS = 'true';
+
     // For Application Insights SDK v3 (OpenTelemetry-based), we need to set
     // OTEL_RESOURCE_ATTRIBUTES to properly configure cloud role name and instance
     // This must be set BEFORE calling setup()
@@ -75,6 +90,38 @@ export function initializeAppInsights(config: AppInsightsConfig): void {
     // Start the Application Insights client
     appInsights.start();
     client = appInsights.defaultClient;
+
+    // Verify the client is properly initialized
+    // The SDK v3 has a bug where _logApi can be undefined if internal init fails
+    if (client) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-underscore-dangle
+      const clientAny = client as any;
+      // eslint-disable-next-line no-underscore-dangle
+      if (!clientAny._logApi) {
+        // eslint-disable-next-line no-console
+        console.error(
+          'Application Insights client exists but _logApi is undefined - SDK initialization failed silently',
+        );
+        /* eslint-disable no-console, no-underscore-dangle */
+        console.error('Client internal state:', {
+          _isInitialized: clientAny._isInitialized,
+          _options: clientAny._options ? 'present' : 'missing',
+          hasConfig: !!clientAny.config,
+          configConnectionString: clientAny.config?.connectionString
+            ? 'present'
+            : 'missing',
+        });
+        /* eslint-enable no-console, no-underscore-dangle */
+        // Don't set isInitialized - the client is broken
+        client = null;
+        return;
+      }
+    } else {
+      // eslint-disable-next-line no-console
+      console.error('Application Insights defaultClient is null after start()');
+      return;
+    }
+
     isInitialized = true;
 
     // eslint-disable-next-line no-console
@@ -110,11 +157,17 @@ export function trackEvent(
   measurements?: { [key: string]: number },
 ): void {
   if (client) {
-    client.trackEvent({
-      name,
-      properties,
-      measurements,
-    });
+    try {
+      client.trackEvent({
+        name,
+        properties,
+        measurements,
+      });
+    } catch (error) {
+      // Telemetry should never break the application
+      // eslint-disable-next-line no-console
+      console.warn('Failed to track event:', error);
+    }
   }
 }
 
@@ -126,10 +179,16 @@ export function trackException(
   properties?: { [key: string]: string },
 ): void {
   if (client) {
-    client.trackException({
-      exception: error,
-      properties,
-    });
+    try {
+      client.trackException({
+        exception: error,
+        properties,
+      });
+    } catch (err) {
+      // Telemetry should never break the application
+      // eslint-disable-next-line no-console
+      console.warn('Failed to track exception:', err);
+    }
   }
 }
 
@@ -142,11 +201,17 @@ export function trackMetric(
   properties?: { [key: string]: string },
 ): void {
   if (client) {
-    client.trackMetric({
-      name,
-      value,
-      properties,
-    });
+    try {
+      client.trackMetric({
+        name,
+        value,
+        properties,
+      });
+    } catch (error) {
+      // Telemetry should never break the application
+      // eslint-disable-next-line no-console
+      console.warn('Failed to track metric:', error);
+    }
   }
 }
 
@@ -158,10 +223,16 @@ export function trackTrace(
   properties?: { [key: string]: string },
 ): void {
   if (client) {
-    client.trackTrace({
-      message,
-      properties,
-    });
+    try {
+      client.trackTrace({
+        message,
+        properties,
+      });
+    } catch (error) {
+      // Telemetry should never break the application
+      // eslint-disable-next-line no-console
+      console.warn('Failed to track trace:', error);
+    }
   }
 }
 
@@ -180,16 +251,22 @@ export function trackDependency(
   properties?: { [key: string]: string },
 ): void {
   if (client) {
-    client.trackDependency({
-      name,
-      dependencyTypeName,
-      target,
-      data,
-      duration,
-      success,
-      resultCode,
-      properties,
-    });
+    try {
+      client.trackDependency({
+        name,
+        dependencyTypeName,
+        target,
+        data,
+        duration,
+        success,
+        resultCode,
+        properties,
+      });
+    } catch (error) {
+      // Telemetry should never break the application
+      // eslint-disable-next-line no-console
+      console.warn('Failed to track dependency:', error);
+    }
   }
 }
 
@@ -199,7 +276,13 @@ export function trackDependency(
 export function flushAppInsights(): Promise<void> {
   return new Promise((resolve) => {
     if (client) {
-      client.flush();
+      try {
+        client.flush();
+      } catch (error) {
+        // Telemetry should never break the application
+        // eslint-disable-next-line no-console
+        console.warn('Failed to flush telemetry:', error);
+      }
       // Give it a moment to flush
       setTimeout(() => resolve(), 100);
     } else {

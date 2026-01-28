@@ -40,7 +40,7 @@ export class PostQueueService
 
   private readonly queueMutex = new Mutex();
 
-  private readonly initTime = Date.now();
+  private initTime = Date.now();
 
   private readonly postRecordRepository = new PostyBirbDatabase(
     'PostRecordSchema',
@@ -70,6 +70,9 @@ export class PostQueueService
    * Crash recovery: Resume any PostRecords that were left in RUNNING state.
    * This handles cases where the application was forcefully shut down or crashed
    * while a post was in progress.
+   *
+   * Also handles orphaned records - PENDING/RUNNING records that have no queue record
+   * (can happen if queue record was deleted but post record state wasn't updated).
    */
   async onModuleInit() {
     if (IsTestEnvironment()) {
@@ -77,6 +80,9 @@ export class PostQueueService
     }
 
     try {
+      // First, handle orphaned post records (PENDING/RUNNING without a queue record)
+      await this.failOrphanedPostRecords();
+
       // Find all RUNNING post records
       const runningRecords = await this.postRecordRepository.find({
         where: (record, { eq }) => eq(record.state, PostRecordState.RUNNING),
@@ -119,6 +125,61 @@ export class PostQueueService
         .withMetadata({ error })
         .error('Failed to recover interrupted posts on startup');
       // Don't throw - allow the app to start even if crash recovery fails
+    }
+  }
+
+  /**
+   * Find and fail orphaned post records.
+   * An orphaned record is one in PENDING or RUNNING state that has no corresponding queue record.
+   * This can happen if the queue record was deleted (dequeue/cancel) but the post record
+   * state wasn't properly updated to FAILED.
+   */
+  private async failOrphanedPostRecords(): Promise<void> {
+    // Find all PENDING or RUNNING post records
+    const inProgressRecords = await this.postRecordRepository.find({
+      where: (record, { or, eq }) =>
+        or(
+          eq(record.state, PostRecordState.PENDING),
+          eq(record.state, PostRecordState.RUNNING),
+        ),
+    });
+
+    if (inProgressRecords.length === 0) {
+      return;
+    }
+
+    // Get all queue records to check which post records have a corresponding queue entry
+    const allQueueRecords = await this.repository.findAll();
+    const queuedPostRecordIds = new Set(
+      allQueueRecords
+        .map((qr) => qr.postRecordId)
+        .filter((id): id is string => id != null),
+    );
+
+    // Find orphaned records (in-progress but not in queue)
+    const orphanedRecords = inProgressRecords.filter(
+      (record) => !queuedPostRecordIds.has(record.id),
+    );
+
+    if (orphanedRecords.length > 0) {
+      this.logger
+        .withMetadata({ count: orphanedRecords.length })
+        .warn('Found orphaned PostRecords (PENDING/RUNNING with no queue record), marking as FAILED');
+
+      for (const record of orphanedRecords) {
+        this.logger
+          .withMetadata({
+            recordId: record.id,
+            submissionId: record.submissionId,
+            state: record.state,
+          })
+          .warn('Marking orphaned PostRecord as FAILED');
+
+        await this.postRecordRepository.update(record.id, {
+          state: PostRecordState.FAILED,
+          completedAt: new Date().toISOString(),
+        });
+      }
     }
   }
 
@@ -312,6 +373,7 @@ export class PostQueueService
       throw new InternalServerErrorException(error.message);
     } finally {
       release();
+      this.initTime -= 61_000; // Ensure queue processing starts after next cycle
     }
   }
 
