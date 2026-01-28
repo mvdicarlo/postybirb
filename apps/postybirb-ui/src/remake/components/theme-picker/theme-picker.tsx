@@ -6,6 +6,7 @@
 import { Trans } from '@lingui/react/macro';
 import { Box, Kbd, NavLink as MantineNavLink, Tooltip, useMantineColorScheme } from '@mantine/core';
 import { IconMoon, IconSun } from '@tabler/icons-react';
+import { formatKeybindingDisplay } from '../../../shared/platform-utils';
 import { useAppearanceActions } from '../../stores/ui/appearance-store';
 import '../../styles/layout.css';
 
@@ -36,7 +37,7 @@ export function ThemePicker({ collapsed = false, kbd }: ThemePickerProps) {
   const themeLabel = collapsed ? undefined : (
     <Box className="postybirb__nav_item_label">
       <span>{isDark ? <Trans>Light Mode</Trans> : <Trans>Dark Mode</Trans>}</span>
-      {kbd && <Kbd size="xs">{kbd}</Kbd>}
+      {kbd && <Kbd size="xs">{formatKeybindingDisplay(kbd)}</Kbd>}
     </Box>
   );
 
@@ -56,7 +57,7 @@ export function ThemePicker({ collapsed = false, kbd }: ThemePickerProps) {
             <span>{isDark ? <Trans>Light Mode</Trans> : <Trans>Dark Mode</Trans>}</span>
             {kbd && (
               <Kbd size="xs" className="postybirb__kbd_aligned">
-                {kbd}
+                {formatKeybindingDisplay(kbd)}
               </Kbd>
             )}
           </Box>

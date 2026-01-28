@@ -5,50 +5,37 @@
 
 import { useEffect } from 'react';
 import { tinykeys } from 'tinykeys';
+import { getActionModifier } from '../../shared/platform-utils';
 import {
-    AccountKeybinding,
-    CustomShortcutsKeybinding,
-    FileSubmissionsKeybinding,
-    FileWatchersKeybinding,
-    HomeKeybinding,
-    MessageSubmissionsKeybinding,
-    NotificationsKeybinding,
-    ScheduleKeybinding,
-    SettingsKeybinding,
-    TagConvertersKeybinding,
-    TagGroupsKeybinding,
-    TemplatesKeybinding,
-    toTinykeysFormat,
-    UserConvertersKeybinding,
+  AccountKeybinding,
+  CustomShortcutsKeybinding,
+  FileSubmissionsKeybinding,
+  FileWatchersKeybinding,
+  HomeKeybinding,
+  MessageSubmissionsKeybinding,
+  NotificationsKeybinding,
+  ScheduleKeybinding,
+  SettingsKeybinding,
+  TagConvertersKeybinding,
+  TagGroupsKeybinding,
+  TemplatesKeybinding,
+  toTinykeysFormat,
+  UserConvertersKeybinding,
 } from '../config/keybindings';
 import { useDrawerStore } from '../stores/ui/drawer-store';
 import {
-    useCanGoBack,
-    useCanGoForward,
-    useNavigationHistory,
-    useViewStateActions,
+  useCanGoBack,
+  useCanGoForward,
+  useNavigationHistory,
+  useViewStateActions,
 } from '../stores/ui/navigation-store';
 import {
-    createAccountsViewState,
-    createFileSubmissionsViewState,
-    createHomeViewState,
-    createMessageSubmissionsViewState,
-    createTemplatesViewState,
+  createAccountsViewState,
+  createFileSubmissionsViewState,
+  createHomeViewState,
+  createMessageSubmissionsViewState,
+  createTemplatesViewState,
 } from '../types/view-state';
-
-/**
- * Get the current platform's modifier key format for tinykeys.
- * Returns 'Meta' for macOS, 'Control' for Windows/Linux.
- */
-const getModifierKey = (): 'Meta' | 'Control' => {
-  if (typeof navigator !== 'undefined') {
-    const platform = navigator.platform.toLowerCase();
-    // eslint-disable-next-line lingui/no-unlocalized-strings
-    return platform.includes('mac') ? 'Meta' : 'Control';
-  }
-  // eslint-disable-next-line lingui/no-unlocalized-strings
-  return 'Control';
-};
 
 /**
  * Hook to set up global keybindings using tinykeys.
@@ -62,7 +49,7 @@ export function useKeybindings(): void {
   const canGoForward = useCanGoForward();
 
   useEffect(() => {
-    const mod = getModifierKey();
+    const mod = getActionModifier();
 
     // Mouse button handler for back/forward navigation
     const handleMouseButton = (event: MouseEvent) => {
