@@ -32,6 +32,27 @@ type ConversionWeights = {
  * @implements {IFileConverter}
  */
 export class TextFileConverter implements IFileConverter {
+  private passThrough = async (file: IFileBuffer): Promise<IFileBuffer> => ({
+    ...file,
+  });
+
+  private convertHtmlToPlaintext = async (
+    file: IFileBuffer,
+  ): Promise<IFileBuffer> => {
+    const text = htmlToText(file.buffer.toString(), {
+      wordwrap: 120,
+    });
+    return this.toMergedBuffer(file, text, 'text/plain');
+  };
+
+  private convertHtmlToMarkdown = async (
+    file: IFileBuffer,
+  ): Promise<IFileBuffer> => {
+    const turndownService = new TurndownService();
+    const markdown = turndownService.turndown(file.buffer.toString());
+    return this.toMergedBuffer(file, markdown, 'text/markdown');
+  };
+
   private readonly supportConversionMappers: ConversionMap = {
     'text/html': {
       'text/html': this.passThrough,
@@ -84,25 +105,6 @@ export class TextFileConverter implements IFileConverter {
     throw new Error(
       `Cannot convert file ${file.fileName} with mime type: ${file.mimeType}`,
     );
-  }
-
-  private async passThrough(file: IFileBuffer): Promise<IFileBuffer> {
-    return { ...file };
-  }
-
-  private async convertHtmlToPlaintext(
-    file: IFileBuffer,
-  ): Promise<IFileBuffer> {
-    const text = htmlToText(file.buffer.toString(), {
-      wordwrap: 120,
-    });
-    return this.toMergedBuffer(file, text, 'text/plain');
-  }
-
-  private async convertHtmlToMarkdown(file: IFileBuffer): Promise<IFileBuffer> {
-    const turndownService = new TurndownService();
-    const markdown = turndownService.turndown(file.buffer.toString());
-    return this.toMergedBuffer(file, markdown, 'text/markdown');
   }
 
   private toMergedBuffer(
