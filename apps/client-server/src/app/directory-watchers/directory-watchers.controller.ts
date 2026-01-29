@@ -1,13 +1,14 @@
 import { Body, Controller, Param, Patch, Post } from '@nestjs/common';
 import {
-  ApiBadRequestResponse,
-  ApiNotFoundResponse,
-  ApiOkResponse,
-  ApiTags,
+    ApiBadRequestResponse,
+    ApiNotFoundResponse,
+    ApiOkResponse,
+    ApiTags,
 } from '@nestjs/swagger';
 import { EntityId } from '@postybirb/types';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
 import { DirectoryWatchersService } from './directory-watchers.service';
+import { CheckPathDto } from './dtos/check-path.dto';
 import { CreateDirectoryWatcherDto } from './dtos/create-directory-watcher.dto';
 import { UpdateDirectoryWatcherDto } from './dtos/update-directory-watcher.dto';
 
@@ -37,5 +38,12 @@ export class DirectoryWatchersController extends PostyBirbController<'DirectoryW
     @Param('id') id: EntityId,
   ) {
     return this.service.update(id, updateDto).then((entity) => entity.toDTO());
+  }
+
+  @Post('check-path')
+  @ApiOkResponse({ description: 'Path check result.' })
+  @ApiBadRequestResponse({ description: 'Bad request made.' })
+  checkPath(@Body() checkPathDto: CheckPathDto) {
+    return this.service.checkPath(checkPathDto.path);
   }
 }
