@@ -29,6 +29,7 @@ import {
   IconWorld,
   IconX,
 } from '@tabler/icons-react';
+import { Selection } from '@tiptap/pm/state';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useWebsites } from '../../../../stores';
 import './shortcut.css';
@@ -208,17 +209,62 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
           // Prevent BlockNote from handling these keys while in input
           e.stopPropagation();
 
+          const input = e.target as HTMLInputElement;
+          const { selectionStart, selectionEnd, value } = input;
+          const isAtStart = selectionStart === 0 && selectionEnd === 0;
+          const isAtEnd = selectionStart === value.length && selectionEnd === value.length;
+
           if (e.key === 'Enter') {
             e.preventDefault();
-            (e.target as HTMLInputElement).blur();
+            input.blur();
           } else if (e.key === 'Escape') {
             e.preventDefault();
             setUsernameValue(usernameProp);
             commitUsername(usernameProp);
-            (e.target as HTMLInputElement).blur();
+            input.blur();
+          } else if (e.key === 'ArrowLeft' && isAtStart) {
+            // Move cursor to before this node in the editor
+            e.preventDefault();
+            input.blur();
+            const pmView = editor.prosemirrorView;
+            if (pmView) {
+              const { state } = pmView;
+              // Find our node and position cursor before it
+              state.doc.descendants((node, pos) => {
+                if (node.type.name === 'username' && node.attrs.id === inlineId) {
+                  const tr = state.tr.setSelection(
+                    Selection.near(state.doc.resolve(pos))
+                  );
+                  pmView.dispatch(tr);
+                  pmView.focus();
+                  return false;
+                }
+                return true;
+              });
+            }
+          } else if (e.key === 'ArrowRight' && isAtEnd) {
+            // Move cursor to after this node in the editor
+            e.preventDefault();
+            input.blur();
+            const pmView = editor.prosemirrorView;
+            if (pmView) {
+              const { state } = pmView;
+              // Find our node and position cursor after it
+              state.doc.descendants((node, pos) => {
+                if (node.type.name === 'username' && node.attrs.id === inlineId) {
+                  const tr = state.tr.setSelection(
+                    Selection.near(state.doc.resolve(pos + node.nodeSize))
+                  );
+                  pmView.dispatch(tr);
+                  pmView.focus();
+                  return false;
+                }
+                return true;
+              });
+            }
           }
         },
-        [usernameProp, commitUsername]
+        [usernameProp, commitUsername, editor, inlineId]
       );
 
       // Handle click on the input to focus it

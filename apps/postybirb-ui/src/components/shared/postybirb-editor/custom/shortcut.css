@@ -1,24 +1,23 @@
-/* Styling for empty shortcut content */
-.ce > span:empty {
+/* Styling for username shortcut input */
+.username-shortcut-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: inherit;
+  font-family: inherit;
+  padding: 0 6px;
+  width: 80px;
+  height: 18px;
+  color: inherit;
+}
+
+.username-shortcut-input::placeholder {
+  color: var(--mantine-color-dimmed);
   font-style: italic;
-  border-bottom: 1px dashed lightsalmon;
-  width: 6px;
-  height: 1rem;
-  vertical-align: text-bottom;
-  display: inline-block;
 }
 
-/* Improve visibility of the cursor inside the shortcut */
-.ce:focus-within {
-  outline: 1px dotted rgba(128, 128, 128, 0.4);
+.username-shortcut-input:focus {
   background-color: rgba(128, 128, 128, 0.1);
-}
-
-/* Ensure proper cursor behavior for contenteditable */
-.ce {
-  position: relative;
-  min-width: 1px;
-  display: inline-block;
 }
 
 .only-website-toggle-btn:hover {
