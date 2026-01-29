@@ -126,9 +126,7 @@ export function PostyBirbEditor(props: PostyBirbEditorProps) {
       }}
     >
       <Tooltip
-        label={
-          <Trans>Type @, `, or {'{'} to insert shortcuts</Trans>
-        }
+        label={<Trans>Type @, `, or &lbrace; to insert shortcuts</Trans>}
         position="top-start"
         withArrow
       >
@@ -151,7 +149,7 @@ export function PostyBirbEditor(props: PostyBirbEditorProps) {
           }}
         >
           <IconKeyboard size={16} />
-          <code style={{ fontWeight: 'bold' }}>@ ` {'{'}</code> for shortcuts
+          <code style={{ fontWeight: 'bold' }}>@ ` &lbrace;</code> for shortcuts
         </div>
       </Tooltip>
       <BlockNoteView

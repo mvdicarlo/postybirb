@@ -78,8 +78,8 @@ export function DescriptionField(props: FormFieldProps<DescriptionFieldType>) {
         >
           <Trans>
             Your description contains legacy shortcut syntax. These are no
-            longer supported. Please use the new shortcut menu (type @, {'{'} or
-            &#96;) to insert shortcuts.
+            longer supported. Please use the new shortcut menu (type @, &lbrace;
+            or &#96;) to insert shortcuts.
           </Trans>
         </Alert>
       )}
