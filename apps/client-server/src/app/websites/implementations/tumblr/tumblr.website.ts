@@ -118,7 +118,7 @@ export default class Tumblr
       query.queryHash.includes('user-info'),
     );
 
-    if (!userInfo) {
+    if (!userInfo || userInfo?.state?.data?.isLoggedIn === false) {
       this.loginState.logout();
       return this.loginState;
     }
