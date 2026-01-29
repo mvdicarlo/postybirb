@@ -188,11 +188,15 @@ export class DescriptionNodeTree {
     const usernameNodes = this.findInlineNodesByType('username');
 
     for (const node of usernameNodes) {
-      const username = node.content
-        .filter((c) => c instanceof DescriptionTextNode)
-        .map((c) => c.text)
-        .join('')
-        .trim();
+      // Get username from props (new format) or content (old format for backwards compatibility)
+      const username = node.props.username
+        ? (node.props.username as string).trim()
+        : node.content
+            .filter((c) => c instanceof DescriptionTextNode)
+            .map((c) => c.text)
+            .join('')
+            .trim();
+      
       if (username) {
         usernames.add(username);
       }
