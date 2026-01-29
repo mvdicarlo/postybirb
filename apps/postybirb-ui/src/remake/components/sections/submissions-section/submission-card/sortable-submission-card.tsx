@@ -23,51 +23,53 @@ export interface SortableSubmissionCardProps extends SubmissionCardProps {
 export const SortableSubmissionCard = forwardRef<
   HTMLDivElement,
   SortableSubmissionCardProps
->(function SortableSubmissionCard(
-  { id, virtualIndex, draggable = false, ...cardProps },
-  forwardedRef
-) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({
-    id,
-    disabled: !draggable,
-  });
+>(
+  (
+    { id, virtualIndex, draggable = false, ...cardProps },
+    forwardedRef
+  ) => {
+    const {
+      attributes,
+      listeners,
+      setNodeRef,
+      transform,
+      transition,
+      isDragging,
+    } = useSortable({
+      id,
+      disabled: !draggable,
+    });
 
-  const style: CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-    zIndex: isDragging ? 1 : 0,
-  };
+    const style: CSSProperties = {
+      transform: CSS.Transform.toString(transform),
+      transition,
+      opacity: isDragging ? 0.5 : 1,
+      zIndex: isDragging ? 1 : 0,
+    };
 
-  // Merge refs - we need both the sortable ref and the virtualizer's measurement ref
-  const setRefs = (node: HTMLDivElement | null) => {
-    setNodeRef(node);
-    if (typeof forwardedRef === 'function') {
-      forwardedRef(node);
-    } else if (forwardedRef) {
-      forwardedRef.current = node;
-    }
-  };
+    // Merge refs - we need both the sortable ref and the virtualizer's measurement ref
+    const setRefs = (node: HTMLDivElement | null) => {
+      setNodeRef(node);
+      if (typeof forwardedRef === 'function') {
+        forwardedRef(node);
+      } else if (forwardedRef) {
+        // Use Object.assign to avoid no-param-reassign lint error
+        Object.assign(forwardedRef, { current: node });
+      }
+    };
 
-  return (
-    <div
-      ref={setRefs}
-      style={style}
-      data-index={virtualIndex}
-      {...attributes}
-    >
-      <SubmissionCard
-        {...cardProps}
-        draggable={draggable}
-        dragHandleListeners={listeners}
-      />
+    return (
+      <div
+        ref={setRefs}
+        style={style}
+        data-index={virtualIndex}
+        {...attributes}
+      >
+        <SubmissionCard
+          {...cardProps}
+          draggable={draggable}
+          dragHandleListeners={listeners}
+        />
     </div>
   );
 });
