@@ -1,24 +1,24 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NotFoundException } from '@nestjs/common';
 import {
-    getDatabase,
-    Insert,
-    PostyBirbDatabaseType,
-    SchemaKey,
-    Schemas,
-    Select,
+  getDatabase,
+  Insert,
+  PostyBirbDatabaseType,
+  SchemaKey,
+  Schemas,
+  Select,
 } from '@postybirb/database';
 import { EntityId, NULL_ACCOUNT_ID } from '@postybirb/types';
 import { eq, inArray, KnownKeysOnly, SQL } from 'drizzle-orm';
 import {
-    DBQueryConfig,
-    ExtractTablesWithRelations,
+  DBQueryConfig,
+  ExtractTablesWithRelations,
 } from 'drizzle-orm/relations';
 import { fromDatabaseRecord } from '../models';
 import { FindOptions } from './find-options.type';
 import {
-    DatabaseSchemaEntityMap,
-    DatabaseSchemaEntityMapConst,
+  DatabaseSchemaEntityMap,
+  DatabaseSchemaEntityMapConst,
 } from './schema-entity-map';
 
 type ExtractedRelations = ExtractTablesWithRelations<typeof Schemas>;
@@ -104,6 +104,24 @@ export class PostyBirbDatabase<
    */
   public forceNotify(ids: EntityId[], action: Action) {
     this.notify(ids, action);
+  }
+
+  /**
+   * Static method to notify subscribers for a given schema.
+   * Used by TransactionContext to trigger notifications after commit.
+   *
+   * @param {SchemaKey} schemaKey - The schema key to notify subscribers for
+   * @param {EntityId[]} ids - The entity IDs that were affected
+   * @param {Action} action - The action that occurred (insert, update, delete)
+   */
+  public static notifySubscribers(
+    schemaKey: SchemaKey,
+    ids: EntityId[],
+    action: Action,
+  ) {
+    PostyBirbDatabase.subscribers[schemaKey]?.forEach((callback) =>
+      callback(ids, action),
+    );
   }
 
   public get EntityClass() {
