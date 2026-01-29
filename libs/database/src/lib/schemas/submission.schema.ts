@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm';
-import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { integer, real, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
 import {
     ISubmissionMetadata,
@@ -20,7 +20,7 @@ export const SubmissionSchema = sqliteTable('submission', {
   isScheduled: integer({ mode: 'boolean' }).notNull(),
   isTemplate: integer({ mode: 'boolean' }).notNull(),
   metadata: text({ mode: 'json' }).notNull().$type<ISubmissionMetadata>(),
-  order: integer().notNull(),
+  order: real().notNull(),
   schedule: text({ mode: 'json' }).notNull().$type<ISubmissionScheduleInfo>(),
 });
 

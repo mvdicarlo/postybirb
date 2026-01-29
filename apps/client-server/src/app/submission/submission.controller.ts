@@ -25,6 +25,7 @@ import { ApplyTemplateOptionsDto } from './dtos/apply-template-options.dto';
 import { CreateSubmissionDto } from './dtos/create-submission.dto';
 import { UpdateSubmissionTemplateNameDto } from './dtos/update-submission-template-name.dto';
 import { UpdateSubmissionDto } from './dtos/update-submission.dto';
+import { ReorderSubmissionDto } from './dtos/reorder-submission.dto';
 import { SubmissionService } from './services/submission.service';
 
 /**
@@ -100,6 +101,19 @@ export class SubmissionController extends PostyBirbController<'SubmissionSchema'
     return this.service.archive(id);
   }
 
+  // IMPORTANT: This route MUST be defined BEFORE @Patch(':id') to prevent
+  // Express from matching 'reorder' as an :id parameter
+  @Patch('reorder')
+  @ApiOkResponse({ description: 'Submission reordered.' })
+  @ApiNotFoundResponse({ description: 'Submission Id not found.' })
+  async reorder(@Body() reorderDto: ReorderSubmissionDto) {
+    return this.service.reorder(
+      reorderDto.id,
+      reorderDto.targetId,
+      reorderDto.position,
+    );
+  }
+
   @Patch(':id')
   @ApiOkResponse({ description: 'Submission updated.' })
   @ApiNotFoundResponse({ description: 'Submission Id not found.' })
@@ -110,13 +124,6 @@ export class SubmissionController extends PostyBirbController<'SubmissionSchema'
     return this.service
       .update(id, updateSubmissionDto)
       .then((entity) => entity.toDTO());
-  }
-
-  @Patch('reorder/:id/:index')
-  @ApiOkResponse({ description: 'Submission reordered.' })
-  @ApiNotFoundResponse({ description: 'Submission Id not found.' })
-  async reorder(@Param('id') id: SubmissionId, @Param('index') index: number) {
-    return this.service.reorder(id, index);
   }
 
   @Patch('template/:id')

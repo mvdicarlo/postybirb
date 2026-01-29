@@ -116,8 +116,8 @@ class SubmissionsApi extends BaseApi<
     return this.client.post('', formData);
   }
 
-  reorder(id: SubmissionId, index: number) {
-    return this.client.patch(`reorder/${id}/${index}`);
+  reorder(id: SubmissionId, targetId: SubmissionId, position: 'before' | 'after') {
+    return this.client.patch('reorder', { id, targetId, position });
   }
 
   applyToMultipleSubmissions(dto: IApplyMultiSubmissionDto) {
