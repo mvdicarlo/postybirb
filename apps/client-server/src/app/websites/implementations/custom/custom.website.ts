@@ -16,7 +16,10 @@ import { CustomLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
-import { FileWebsite } from '../../models/website-modifiers/file-website';
+import {
+  FileWebsite,
+  PostBatchData,
+} from '../../models/website-modifiers/file-website';
 import { MessageWebsite } from '../../models/website-modifiers/message-website';
 import { WithRuntimeDescriptionParser } from '../../models/website-modifiers/with-runtime-description-parser';
 import { Website } from '../../website';
@@ -77,6 +80,7 @@ export default class Custom
     postData: PostData<CustomFileSubmission>,
     files: PostingFile[],
     cancellationToken: CancellableToken,
+    batch: PostBatchData,
   ): Promise<IPostResponse> {
     try {
       cancellationToken.throwIfCancelled();
@@ -159,7 +163,7 @@ export default class Custom
         .withException(
           error instanceof Error ? error : new Error(String(error)),
         )
-        .withAdditionalInfo({ postData, files, batchIndex });
+        .withAdditionalInfo({ postData, files, batch });
     }
   }
 

@@ -44,7 +44,6 @@ export default class Furbooru extends PhilomenaWebsite<FurbooruFileSubmission> {
       const result = await super.onPostFileSubmission(
         postData,
         files,
-        batchIndex,
         cancellationToken,
       );
       return result;
@@ -54,7 +53,6 @@ export default class Furbooru extends PhilomenaWebsite<FurbooruFileSubmission> {
       const retry = await super.onPostFileSubmission(
         postData,
         files,
-        batchIndex,
         cancellationToken,
       );
       return retry;

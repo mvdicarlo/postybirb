@@ -16,7 +16,10 @@ import { CustomLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
-import { FileWebsite } from '../../models/website-modifiers/file-website';
+import {
+  FileWebsite,
+  PostBatchData,
+} from '../../models/website-modifiers/file-website';
 import { MessageWebsite } from '../../models/website-modifiers/message-website';
 import {
   DynamicFileSizeLimits,
@@ -104,11 +107,12 @@ export default class Discord
     postData: PostData<DiscordFileSubmission>,
     files: PostingFile[],
     cancellationToken: CancellableToken,
+    batch: PostBatchData,
   ): Promise<IPostResponse> {
     cancellationToken.throwIfCancelled();
     const { webhook } = this.websiteDataStore.getData();
     const payload = {
-      ...(batchIndex === 1
+      ...(batch.index === 0
         ? {
             ...this.buildDescription(
               postData.options.title,
