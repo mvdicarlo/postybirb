@@ -31,6 +31,7 @@ import {
 import { getFileTypeFromMimeType } from '@postybirb/utils/file-type';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
+import FileSize from '../../../utils/filesize.util';
 import { SubmissionValidator } from '../../commons/validator';
 import { DisableAds } from '../../decorators/disable-ads.decorator';
 import { CustomLoginFlow } from '../../decorators/login-flow.decorator';
@@ -67,7 +68,10 @@ import { BlueskyMessageSubmission } from './models/bluesky-message-submission';
     'video/mov',
     'video/webm',
   ],
-  acceptedFileSizes: { '*': 1_000_000 },
+  acceptedFileSizes: {
+    '*': 1_000_000,
+    [FileType.VIDEO]: FileSize.megabytes(50),
+  },
   fileBatchSize: 4,
 })
 @DisableAds()
