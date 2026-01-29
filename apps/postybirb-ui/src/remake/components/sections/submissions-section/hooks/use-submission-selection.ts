@@ -21,8 +21,8 @@ interface UseSubmissionSelectionResult {
   selectedIds: string[];
   /** Selection state for checkbox (none/partial/all) */
   selectionState: SelectionState;
-  /** Handle selecting a submission (supports shift+click, ctrl+click, and keyboard) */
-  handleSelect: (id: string, event: React.MouseEvent | React.KeyboardEvent) => void;
+  /** Handle selecting a submission (supports shift+click, ctrl+click, checkbox toggle, and keyboard) */
+  handleSelect: (id: string, event: React.MouseEvent | React.KeyboardEvent, isCheckbox?: boolean) => void;
   /** Toggle select all/none */
   handleToggleSelectAll: () => void;
   /** Update selection programmatically */
@@ -69,13 +69,15 @@ export function useSubmissionSelection({
     (newSelectedIds: string[]) => {
       if (!isSubmissionsViewState(viewState)) return;
 
+      const newParams = {
+        ...viewState.params,
+        selectedIds: newSelectedIds,
+        mode: newSelectedIds.length > 1 ? 'multi' : 'single',
+      };
+
       setViewState({
         ...viewState,
-        params: {
-          ...viewState.params,
-          selectedIds: newSelectedIds,
-          mode: newSelectedIds.length > 1 ? 'multi' : 'single',
-        },
+        params: newParams,
       } as ViewState);
     },
     [viewState, setViewState],
@@ -83,21 +85,26 @@ export function useSubmissionSelection({
 
   // Handle selecting a submission
   const handleSelect = useCallback(
-    (id: string, event: React.MouseEvent | React.KeyboardEvent) => {
+    (id: string, event: React.MouseEvent | React.KeyboardEvent, isCheckbox = false) => {
       if (!isSubmissionsViewState(viewState)) return;
 
       let newSelectedIds: string[];
 
-      if (event.shiftKey && lastSelectedIdRef.current) {
-        // Shift+click: select range from last selected to current
-        const lastIndex = orderedSubmissions.findIndex(
+      // If no anchor exists yet, set it to the clicked item
+      if (!lastSelectedIdRef.current) {
+        lastSelectedIdRef.current = id;
+      }
+
+      if (event.shiftKey) {
+        // Shift+click: select range from anchor to current
+        const anchorIndex = orderedSubmissions.findIndex(
           (s) => s.id === lastSelectedIdRef.current,
         );
         const currentIndex = orderedSubmissions.findIndex((s) => s.id === id);
 
-        if (lastIndex !== -1 && currentIndex !== -1) {
-          const startIndex = Math.min(lastIndex, currentIndex);
-          const endIndex = Math.max(lastIndex, currentIndex);
+        if (anchorIndex !== -1 && currentIndex !== -1) {
+          const startIndex = Math.min(anchorIndex, currentIndex);
+          const endIndex = Math.max(anchorIndex, currentIndex);
           const rangeIds = orderedSubmissions
             .slice(startIndex, endIndex + 1)
             .map((s) => s.id);
@@ -109,21 +116,24 @@ export function useSubmissionSelection({
           } else {
             newSelectedIds = rangeIds;
           }
+          // Note: Don't update anchor on shift-click - keep it stable for range extension
         } else {
           // Fallback to single selection if indices not found
           newSelectedIds = [id];
           lastSelectedIdRef.current = id;
         }
-      } else if (event.ctrlKey || event.metaKey) {
-        // Toggle selection with Ctrl/Cmd click
+      } else if (event.ctrlKey || event.metaKey || isCheckbox) {
+        // Toggle selection with Ctrl/Cmd click OR checkbox click
+        // Checkbox clicks should always toggle, not replace selection
         if (selectedIds.includes(id)) {
           newSelectedIds = selectedIds.filter((sid: string) => sid !== id);
         } else {
           newSelectedIds = [...selectedIds, id];
         }
+        // Update anchor on ctrl-click/checkbox to enable shift-extending from this item
         lastSelectedIdRef.current = id;
       } else {
-        // Single selection
+        // Single selection (card click without modifiers)
         newSelectedIds = [id];
         lastSelectedIdRef.current = id;
       }

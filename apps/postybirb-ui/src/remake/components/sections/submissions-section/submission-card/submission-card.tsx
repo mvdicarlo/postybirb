@@ -118,12 +118,35 @@ export function SubmissionCard({
     ],
   );
 
-  const handleCheckboxClick = useCallback(
-    (event: React.MouseEvent) => {
-      event.stopPropagation();
-      onSelect(submission.id, event);
+  const handleCheckboxChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      // Use the native event to get modifier keys for shift-click support
+      const nativeEvent = event.nativeEvent as MouseEvent;
+      // Pass isCheckbox=true so the selection hook knows to toggle rather than single-select
+      onSelect(
+        submission.id,
+        {
+          shiftKey: nativeEvent.shiftKey,
+          ctrlKey: nativeEvent.ctrlKey,
+          metaKey: nativeEvent.metaKey,
+        } as React.MouseEvent,
+        true, // isCheckbox - enables toggle behavior
+      );
     },
     [onSelect, submission.id],
+  );
+
+  const handleCardClick = useCallback(
+    (event: React.MouseEvent) => {
+      // If Ctrl/Cmd or Shift is held, treat as selection instead of edit
+      if (event.ctrlKey || event.metaKey || event.shiftKey) {
+        onSelect(submission.id, event);
+      } else {
+        onSelect(submission.id, event);
+        handleEdit();
+      }
+    },
+    [onSelect, submission.id, handleEdit],
   );
 
   const cardContent = (
@@ -131,7 +154,7 @@ export function SubmissionCard({
       p="xs"
       radius="0"
       withBorder
-      onClick={handleEdit}
+      onClick={handleCardClick}
       onKeyDown={handleKeyDown}
       tabIndex={0}
       role="listitem"
@@ -163,8 +186,8 @@ export function SubmissionCard({
           <Checkbox
             size="xs"
             checked={isSelected}
-            onChange={() => {}}
-            onClick={handleCheckboxClick}
+            onChange={handleCheckboxChange}
+            onClick={(e) => e.stopPropagation()}
             // eslint-disable-next-line lingui/no-unlocalized-strings
             aria-label={`Select ${submission.title}`}
           />

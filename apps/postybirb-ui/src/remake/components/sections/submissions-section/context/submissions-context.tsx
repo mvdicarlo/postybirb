@@ -4,9 +4,9 @@
  */
 
 import {
-  ISubmissionScheduleInfo,
-  IWebsiteFormFields,
-  SubmissionType,
+    ISubmissionScheduleInfo,
+    IWebsiteFormFields,
+    SubmissionType,
 } from '@postybirb/types';
 import { createContext, ReactNode, useContext, useMemo } from 'react';
 
@@ -23,8 +23,8 @@ export interface SubmissionsContextValue {
   isDragEnabled: boolean;
 
   // Selection
-  /** Handle selection of a submission (supports shift+click for range) */
-  onSelect: (id: string, event: React.MouseEvent | React.KeyboardEvent) => void;
+  /** Handle selection of a submission (supports shift+click for range, ctrl+click toggle, checkbox toggle) */
+  onSelect: (id: string, event: React.MouseEvent | React.KeyboardEvent, isCheckbox?: boolean) => void;
 
   // Actions
   /** Delete a submission */
@@ -87,7 +87,7 @@ export interface SubmissionsProviderProps {
   /** Whether drag-to-reorder is enabled */
   isDragEnabled: boolean;
   /** Selection handler */
-  onSelect: (id: string, event: React.MouseEvent | React.KeyboardEvent) => void;
+  onSelect: (id: string, event: React.MouseEvent | React.KeyboardEvent, isCheckbox?: boolean) => void;
   /** Delete handler */
   onDelete: (id: string) => void;
   /** Duplicate handler */
