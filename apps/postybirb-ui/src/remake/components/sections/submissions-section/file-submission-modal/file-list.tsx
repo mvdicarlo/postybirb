@@ -1,25 +1,22 @@
 /**
- * FileList - Paginated file list with previews.
+ * FileList - Virtualized scrollable file list with previews.
+ * Uses TanStack Virtual for performance with large file sets.
  */
 
 import { Trans } from '@lingui/react/macro';
-import {
-    Box,
-    Card,
-    Flex,
-    Pagination,
-    Stack,
-    Text,
-    ThemeIcon,
-} from '@mantine/core';
+import { Box, Card, Stack, Text, ThemeIcon } from '@mantine/core';
 import { FileWithPath } from '@mantine/dropzone';
 import { IconFileUpload } from '@tabler/icons-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
+import { useRef } from 'react';
 import { FilePreview } from './file-preview';
 import './file-submission-modal.css';
 import { FileItem } from './file-submission-modal.utils';
 
-const FILES_PER_PAGE = 5;
+/** Estimated height of each file preview card */
+const ESTIMATED_ITEM_HEIGHT = 72;
+/** Number of items to render outside visible area */
+const OVERSCAN_COUNT = 3;
 
 export interface FileListProps {
   /** List of files with metadata */
@@ -33,7 +30,7 @@ export interface FileListProps {
 }
 
 /**
- * Paginated file list with file previews.
+ * Virtualized file list with file previews.
  */
 export function FileList({
   fileItems,
@@ -41,21 +38,16 @@ export function FileList({
   onTitleChange,
   onEdit,
 }: FileListProps) {
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = Math.ceil(fileItems.length / FILES_PER_PAGE);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const paginatedFiles = useMemo(() => {
-    const start = (currentPage - 1) * FILES_PER_PAGE;
-    return fileItems.slice(start, start + FILES_PER_PAGE);
-  }, [fileItems, currentPage]);
+  const virtualizer = useVirtualizer({
+    count: fileItems.length,
+    getScrollElement: () => scrollContainerRef.current,
+    estimateSize: () => ESTIMATED_ITEM_HEIGHT,
+    overscan: OVERSCAN_COUNT,
+  });
 
-  // Reset to last page if current page becomes invalid
-  useEffect(() => {
-    if (currentPage > totalPages && totalPages > 0) {
-      setCurrentPage(totalPages);
-    }
-  }, [currentPage, totalPages]);
+  const virtualItems = virtualizer.getVirtualItems();
 
   return (
     <Box className="postybirb__file_submission_modal_column">
@@ -88,27 +80,49 @@ export function FileList({
           </Stack>
         </Card>
       ) : (
-        <Stack gap="xs" className="postybirb__file_submission_modal_file_list">
-          {paginatedFiles.map((item) => (
-            <FilePreview
-              key={item.file.name}
-              item={item}
-              onDelete={onDelete}
-              onTitleChange={onTitleChange}
-              onEdit={onEdit}
-            />
-          ))}
-          {totalPages > 1 && (
-            <Flex justify="center" mt="xs">
-              <Pagination
-                total={totalPages}
-                value={currentPage}
-                onChange={setCurrentPage}
-                size="sm"
-              />
-            </Flex>
-          )}
-        </Stack>
+        <div
+          ref={scrollContainerRef}
+          className="postybirb__file_submission_modal_file_list"
+          style={{
+            flex: 1,
+            overflow: 'auto',
+            minHeight: 0,
+          }}
+        >
+          <div
+            style={{
+              height: `${virtualizer.getTotalSize()}px`,
+              width: '100%',
+              position: 'relative',
+            }}
+          >
+            {virtualItems.map((virtualRow) => {
+              const item = fileItems[virtualRow.index];
+              return (
+                <div
+                  key={item.file.name}
+                  data-index={virtualRow.index}
+                  ref={virtualizer.measureElement}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    transform: `translateY(${virtualRow.start}px)`,
+                    paddingBottom: '8px',
+                  }}
+                >
+                  <FilePreview
+                    item={item}
+                    onDelete={onDelete}
+                    onTitleChange={onTitleChange}
+                    onEdit={onEdit}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </div>
       )}
     </Box>
   );
