@@ -5,13 +5,14 @@
 
 import { Box, Collapse, Group, Paper, UnstyledButton } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
+import { useEffect, useState } from 'react';
 import type { SubmissionRecord } from '../../../../stores/records';
 import { ComponentErrorBoundary } from '../../../error-boundary';
 import { SubmissionEditCardActions } from './actions';
 import { SubmissionEditCardBody } from './body';
 import {
-    SubmissionEditCardProvider,
-    useSubmissionEditCardContext,
+  SubmissionEditCardProvider,
+  useSubmissionEditCardContext,
 } from './context';
 import { SubmissionEditCardHeader } from './header';
 import './submission-edit-card.css';
@@ -36,6 +37,20 @@ function SubmissionEditCardInner() {
 
   // If not collapsible, always show expanded
   const isExpanded = isCollapsible ? expanded : true;
+
+  const [renderBody, setRenderBody] = useState(isExpanded);
+
+  useEffect(() => {
+    if (isExpanded) {
+      setRenderBody(true);
+    }
+  }, [isExpanded]);
+
+  const onTransitionEnd = () => {
+    if (!isExpanded) {
+      setRenderBody(false);
+    }
+  };
 
   return (
     <Paper withBorder radius="sm" p={0} className="postybirb__edit_card">
@@ -62,9 +77,9 @@ function SubmissionEditCardInner() {
       )}
 
       {/* Collapsible Body */}
-      <Collapse in={isExpanded}>
+      <Collapse in={isExpanded} onTransitionEnd={onTransitionEnd}>
         <ComponentErrorBoundary>
-          <SubmissionEditCardBody />
+          {renderBody && <SubmissionEditCardBody />}
         </ComponentErrorBoundary>
       </Collapse>
     </Paper>
