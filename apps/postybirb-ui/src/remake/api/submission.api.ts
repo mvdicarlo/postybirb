@@ -1,15 +1,15 @@
 import {
-    AccountId,
-    IApplyMultiSubmissionDto,
-    ICreateSubmissionDefaultOptions,
-    ICreateSubmissionDto,
-    IFileMetadata,
-    ISubmissionDto,
-    IUpdateSubmissionDto,
-    IUpdateSubmissionTemplateNameDto,
-    IWebsiteFormFields,
-    SubmissionId,
-    SubmissionType,
+  AccountId,
+  IApplyMultiSubmissionDto,
+  ICreateSubmissionDefaultOptions,
+  ICreateSubmissionDto,
+  IFileMetadata,
+  ISubmissionDto,
+  IUpdateSubmissionDto,
+  IUpdateSubmissionTemplateNameDto,
+  IWebsiteFormFields,
+  SubmissionId,
+  SubmissionType,
 } from '@postybirb/types';
 import { BaseApi } from './base.api';
 
