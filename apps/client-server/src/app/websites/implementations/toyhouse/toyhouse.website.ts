@@ -55,9 +55,10 @@ export default class Toyhouse extends Website<ToyhouseAccountData> implements
       }
 
       const $ = parse(res.body);
-
-      const characters = this.getCharacters($);
       const username = $.querySelector('.navbar .display-user-tiny > span.display-user-username').text.trim();
+
+
+      const characters = await this.loadAllCharacters($);
 
       this.setWebsiteData({ characters });
 
@@ -66,6 +67,32 @@ export default class Toyhouse extends Website<ToyhouseAccountData> implements
       this.logger.error('Failed to login', e);
       return this.loginState.setLogin(false, null);
     }
+  }
+
+  private async loadAllCharacters(firstPage: HTMLElement) {
+    const allCharacters = this.getCharacters(firstPage);
+
+    // Check if there are more pages
+    let hasNextPage = !!firstPage.querySelector('.pagination-wrapper a[rel="next"]');
+    let pageNumber = 2;
+
+    while (hasNextPage) {
+      const url = `${this.BASE_URL}/~characters/manage/folder:all?page=${pageNumber}`;
+      
+      const res = await Http.get<string>(url, {
+        partition: this.accountId,
+      });
+
+      const $ = parse(res.body);
+      const pageCharacters = this.getCharacters($);
+      allCharacters.push(...pageCharacters);
+
+      // Check if there's a next page
+      hasNextPage = !!$.querySelector('.pagination-wrapper a[rel="next"]');
+      pageNumber++;
+    }
+
+    return allCharacters;
   }
 
   createFileModel(): ToyhouseFileSubmission {
@@ -165,7 +192,9 @@ export default class Toyhouse extends Website<ToyhouseAccountData> implements
 
   private getCharacters($: HTMLElement) {
     const getCharId = (href: string) => {
-      const match = href.match(/^\/(\d+)/);
+      // Extract the rightmost ID from paths like /6669686.name or /6669686.name/6669743.other-name
+      const parts = href.split('/').filter(Boolean);
+      const match = parts[parts.length - 1]?.match(/^(\d+)\./);
       return match ? match[1] : null;
     };
 
