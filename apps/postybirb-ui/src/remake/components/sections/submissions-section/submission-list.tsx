@@ -22,7 +22,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { Box, Loader } from '@mantine/core';
+import { Box, Loader, ScrollArea } from '@mantine/core';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import submissionApi from '../../../api/submission.api';
@@ -34,8 +34,10 @@ import { SortableSubmissionCard, SubmissionCard } from './submission-card';
 import './submissions-section.css';
 import { DRAGGABLE_SUBMISSION_CLASS } from './types';
 
-/** Estimated card height for virtualization (compact ~60px, normal ~102px) */
-const ESTIMATED_CARD_HEIGHT = 102;
+/** Card height for virtualization in normal mode */
+const NORMAL_CARD_HEIGHT = 102;
+/** Card height for virtualization in compact mode */
+const COMPACT_CARD_HEIGHT = 89;
 /** Number of items to render outside visible area */
 const OVERSCAN_COUNT = 5;
 
@@ -60,8 +62,8 @@ export function SubmissionList({
   const { submissionType, selectedIds, isDragEnabled } = useSubmissionsContext();
   const isCompact = useIsCompactView();
 
-  // Ref for the scroll container - used for virtualization and IntersectionObserver
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  // Ref for the Mantine ScrollArea viewport - used for virtualization
+  const viewportRef = useRef<HTMLDivElement>(null);
 
   // Track active drag item for DragOverlay
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -81,11 +83,11 @@ export function SubmissionList({
     })
   );
 
-  // TanStack Virtual virtualizer
+  // TanStack Virtual virtualizer - uses the ScrollArea viewport as scroll element
   const virtualizer = useVirtualizer({
     count: submissions.length,
-    getScrollElement: () => scrollContainerRef.current,
-    estimateSize: () => ESTIMATED_CARD_HEIGHT,
+    getScrollElement: () => viewportRef.current,
+    estimateSize: () => (isCompact ? COMPACT_CARD_HEIGHT : NORMAL_CARD_HEIGHT),
     overscan: OVERSCAN_COUNT,
   });
 
@@ -159,53 +161,53 @@ export function SubmissionList({
         items={submissionIds}
         strategy={verticalListSortingStrategy}
       >
-        <div
-          ref={scrollContainerRef}
+        <ScrollArea
+          viewportRef={viewportRef}
           className="postybirb__submission__list_scroll"
+          style={{ flex: 1 }}
+          type="hover"
+          scrollbarSize={8}
+          offsetScrollbars
+        >
+          <div
+            className="postybirb__submission__list"
             style={{
-              flex: 1,
-              overflow: 'auto',
+              height: `${virtualizer.getTotalSize()}px`,
+              width: '100%',
+              position: 'relative',
             }}
           >
-            <div
-              className="postybirb__submission__list"
-              style={{
-                height: `${virtualizer.getTotalSize()}px`,
-                width: '100%',
-                position: 'relative',
-              }}
-            >
-              {virtualItems.map((virtualRow) => {
-                const submission = submissions[virtualRow.index];
-                return (
-                  <div
-                    key={submission.id}
-                    data-index={virtualRow.index}
-                    ref={virtualizer.measureElement}
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: '100%',
-                      transform: `translateY(${virtualRow.start}px)`,
-                    }}
-                  >
-                    <SortableSubmissionCard
-                      id={submission.id}
-                      virtualIndex={virtualRow.index}
-                      submission={submission}
-                      submissionType={submissionType}
-                      isSelected={selectedIds.includes(submission.id)}
-                      draggable={isDragEnabled}
-                      isCompact={isCompact}
-                      className={DRAGGABLE_SUBMISSION_CLASS}
-                    />
-                  </div>
-                );
-              })}
-            </div>
+            {virtualItems.map((virtualRow) => {
+              const submission = submissions[virtualRow.index];
+              return (
+                <div
+                  key={submission.id}
+                  data-index={virtualRow.index}
+                  ref={virtualizer.measureElement}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    transform: `translateY(${virtualRow.start}px)`,
+                  }}
+                >
+                  <SortableSubmissionCard
+                    id={submission.id}
+                    virtualIndex={virtualRow.index}
+                    submission={submission}
+                    submissionType={submissionType}
+                    isSelected={selectedIds.includes(submission.id)}
+                    draggable={isDragEnabled}
+                    isCompact={isCompact}
+                    className={DRAGGABLE_SUBMISSION_CLASS}
+                  />
+                </div>
+              );
+            })}
           </div>
-        </SortableContext>
+        </ScrollArea>
+      </SortableContext>
 
         {/* DragOverlay renders the dragged item in a portal - critical for virtualization */}
         <DragOverlay>
