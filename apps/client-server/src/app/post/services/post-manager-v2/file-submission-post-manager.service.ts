@@ -95,10 +95,8 @@ export class FileSubmissionPostManager extends BasePostManager {
 
     // Split files into batches based on instance file batch size
     const batches = chunk(files, fileBatchSize);
-    let batchIndex = 0;
 
-    for (const batch of batches) {
-      batchIndex += 1;
+    for (const [batchIndex, batch] of batches.entries()) {
       this.cancelToken.throwIfCancelled();
 
       // Get source URLs from other accounts for cross-website propagation
