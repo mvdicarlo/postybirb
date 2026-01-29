@@ -26,7 +26,7 @@ import {
 } from '@tabler/icons-react';
 import { Cron } from 'croner';
 import cronstrue from 'cronstrue';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useLocale } from '../../../hooks';
 
 export interface CronPickerProps {
@@ -166,43 +166,71 @@ export function CronPicker({ value, onChange }: CronPickerProps) {
   const { cronstrueLocale, formatDateTime } = useLocale();
   const { colorScheme } = useMantineColorScheme();
   const [mode, setMode] = useState<CronMode>('builder');
-
-  // Parse initial value
-  const parsed = useMemo(() => parseCron(value), [value]);
-  const [frequency, setFrequency] = useState<Frequency>(parsed.frequency);
-  const [selectedDays, setSelectedDays] = useState<string[]>(
-    parsed.selectedDays,
-  );
-  const [dayOfMonth, setDayOfMonth] = useState(parsed.dayOfMonth);
-  const [hour, setHour] = useState(parsed.hour);
-  const [minute, setMinute] = useState(parsed.minute);
   const [manualCron, setManualCron] = useState(value);
 
-  // Sync internal state when value changes externally
-  useEffect(() => {
-    const newParsed = parseCron(value);
-    setFrequency(newParsed.frequency);
-    setSelectedDays(newParsed.selectedDays);
-    setDayOfMonth(newParsed.dayOfMonth);
-    setHour(newParsed.hour);
-    setMinute(newParsed.minute);
-    setManualCron(value);
-  }, [value]);
+  // Parse current value for display - derived state, no local copies
+  const parsed = useMemo(() => parseCron(value), [value]);
 
-  // Build and emit CRON when builder values change
-  const emitBuilderCron = useCallback(() => {
-    const cron = buildCron(frequency, selectedDays, dayOfMonth, hour, minute);
-    if (cron !== value) {
-      onChange(cron);
-    }
-  }, [frequency, selectedDays, dayOfMonth, hour, minute, value, onChange]);
+  // Helper to emit new cron from builder with updated field
+  const emitBuilderChange = useCallback(
+    (updates: Partial<{
+      frequency: Frequency;
+      selectedDays: string[];
+      dayOfMonth: string;
+      hour: number;
+      minute: number;
+    }>) => {
+      const newFrequency = updates.frequency ?? parsed.frequency;
+      const newSelectedDays = updates.selectedDays ?? parsed.selectedDays;
+      const newDayOfMonth = updates.dayOfMonth ?? parsed.dayOfMonth;
+      const newHour = updates.hour ?? parsed.hour;
+      const newMinute = updates.minute ?? parsed.minute;
 
-  // Emit on builder changes
-  useEffect(() => {
-    if (mode === 'builder') {
-      emitBuilderCron();
-    }
-  }, [mode, emitBuilderCron]);
+      const cron = buildCron(
+        newFrequency,
+        newSelectedDays,
+        newDayOfMonth,
+        newHour,
+        newMinute,
+      );
+      if (cron !== value) {
+        onChange(cron);
+      }
+    },
+    [parsed, value, onChange],
+  );
+
+  // User interaction handlers - each explicitly calls onChange
+  const handleFrequencyChange = useCallback(
+    (newFrequency: Frequency) => {
+      emitBuilderChange({ frequency: newFrequency });
+    },
+    [emitBuilderChange],
+  );
+
+  const handleDaysChange = useCallback(
+    (newDays: string[]) => {
+      emitBuilderChange({ selectedDays: newDays });
+    },
+    [emitBuilderChange],
+  );
+
+  const handleDayOfMonthChange = useCallback(
+    (newDay: string) => {
+      emitBuilderChange({ dayOfMonth: newDay });
+    },
+    [emitBuilderChange],
+  );
+
+  const handleTimeChange = useCallback(
+    (timeStr: string) => {
+      if (!timeStr) return;
+      const [h, m] = timeStr.split(':').map((s) => parseInt(s, 10));
+      if (Number.isNaN(h) || Number.isNaN(m)) return;
+      emitBuilderChange({ hour: h, minute: m });
+    },
+    [emitBuilderChange],
+  );
 
   // Handle manual CRON change
   const handleManualChange = useCallback(
@@ -213,56 +241,58 @@ export function CronPicker({ value, onChange }: CronPickerProps) {
     [onChange],
   );
 
+  // Sync manual input when switching modes or value changes externally
+  const handleModeChange = useCallback(
+    (newMode: CronMode) => {
+      setMode(newMode);
+      if (newMode === 'custom') {
+        setManualCron(value);
+      }
+    },
+    [value],
+  );
+
   // Validate CRON
+  const cronToValidate = mode === 'custom' ? manualCron : value;
   const isValidCron = useMemo(() => {
     try {
-      return !!Cron(mode === 'custom' ? manualCron : value);
+      return !!Cron(cronToValidate);
     } catch {
       return false;
     }
-  }, [mode, manualCron, value]);
+  }, [cronToValidate]);
 
   // Get next run time
   const nextRun = useMemo(() => {
     try {
-      const cronToCheck = mode === 'custom' ? manualCron : value;
-      return Cron(cronToCheck)?.nextRun();
+      return Cron(cronToValidate)?.nextRun();
     } catch {
       return null;
     }
-  }, [mode, manualCron, value]);
+  }, [cronToValidate]);
 
   // Get human-readable description
   const cronDescription = useMemo(() => {
     try {
-      const cronToCheck = mode === 'custom' ? manualCron : value;
-      return cronstrue.toString(cronToCheck, { locale: cronstrueLocale });
+      return cronstrue.toString(cronToValidate, { locale: cronstrueLocale });
     } catch {
       return null;
     }
-  }, [mode, manualCron, value, cronstrueLocale]);
+  }, [cronToValidate, cronstrueLocale]);
 
-  // Handle time input change
-  const handleTimeChange = useCallback((timeStr: string) => {
-    if (!timeStr) return;
-    const [h, m] = timeStr.split(':').map((s) => parseInt(s, 10));
-    if (!Number.isNaN(h)) setHour(h);
-    if (!Number.isNaN(m)) setMinute(m);
-  }, []);
-
-  // Format time for TimeInput
+  // Format time for TimeInput - derived from parsed value
   const timeValue = useMemo(() => {
-    const h = String(hour).padStart(2, '0');
-    const m = String(minute).padStart(2, '0');
+    const h = String(parsed.hour).padStart(2, '0');
+    const m = String(parsed.minute).padStart(2, '0');
     return `${h}:${m}`;
-  }, [hour, minute]);
+  }, [parsed.hour, parsed.minute]);
 
   return (
     <Stack gap="sm">
       {/* Mode toggle */}
       <SegmentedControl
         value={mode}
-        onChange={(v) => setMode(v as CronMode)}
+        onChange={(v) => handleModeChange(v as CronMode)}
         size="xs"
         data={[
           {
@@ -292,8 +322,8 @@ export function CronPicker({ value, onChange }: CronPickerProps) {
           <Select
             label={<Trans>Frequency</Trans>}
             size="xs"
-            value={frequency}
-            onChange={(v) => v && setFrequency(v as Frequency)}
+            value={parsed.frequency}
+            onChange={(v) => v && handleFrequencyChange(v as Frequency)}
             data={[
               { value: 'daily', label: t`Daily` },
               { value: 'weekly', label: t`Weekly` },
@@ -302,15 +332,15 @@ export function CronPicker({ value, onChange }: CronPickerProps) {
           />
 
           {/* Day picker for weekly */}
-          {frequency === 'weekly' && (
+          {parsed.frequency === 'weekly' && (
             <Box>
               <Text size="xs" fw={500} mb={4}>
                 <Trans>Days</Trans>
               </Text>
               <Chip.Group
                 multiple
-                value={selectedDays}
-                onChange={setSelectedDays}
+                value={parsed.selectedDays}
+                onChange={handleDaysChange}
               >
                 <Group gap={4}>
                   {DAYS_OF_WEEK.map((day) => (
@@ -324,12 +354,12 @@ export function CronPicker({ value, onChange }: CronPickerProps) {
           )}
 
           {/* Day of month for monthly */}
-          {frequency === 'monthly' && (
+          {parsed.frequency === 'monthly' && (
             <Select
               label={<Trans>Day of Month</Trans>}
               size="xs"
-              value={dayOfMonth}
-              onChange={(v) => v && setDayOfMonth(v)}
+              value={parsed.dayOfMonth}
+              onChange={(v) => v && handleDayOfMonthChange(v)}
               data={DAYS_OF_MONTH}
               searchable
             />
