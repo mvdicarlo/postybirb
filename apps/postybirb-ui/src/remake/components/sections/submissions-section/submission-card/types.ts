@@ -2,6 +2,7 @@
  * Shared types for SubmissionCard components.
  */
 
+import type { SyntheticListenerMap } from '@dnd-kit/core/dist/hooks/utilities';
 import { SubmissionType } from '@postybirb/types';
 import type { SubmissionRecord } from '../../../../stores/records';
 
@@ -22,4 +23,6 @@ export interface SubmissionCardProps {
   isCompact?: boolean;
   /** Additional class name for the card */
   className?: string;
+  /** dnd-kit drag handle listeners - passed from SortableSubmissionCard */
+  dragHandleListeners?: SyntheticListenerMap;
 }
