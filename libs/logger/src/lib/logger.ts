@@ -40,8 +40,8 @@ export function initializeLogger(): void {
       maxSize: '20m',
       maxFiles: '14d',
       format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.prettyPrint({ colorize: false }),
+        new SerializeLog(),
+        winston.format.uncolorize(),
       ),
       dirname: PostyBirbDirectories.LOGS_DIRECTORY,
     });
