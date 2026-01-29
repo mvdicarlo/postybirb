@@ -3,6 +3,7 @@ import { Schemas } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import { EntityId } from '@postybirb/types';
 import { eq } from 'drizzle-orm';
+import { PostyBirbDatabase } from './postybirb-database/postybirb-database';
 
 interface TrackedEntity {
   schemaKey: SchemaKey;
@@ -74,9 +75,28 @@ export class TransactionContext {
   }
 
   /**
-   * Clear tracked entities (called on successful completion).
+   * Clear tracked entities and notify subscribers (called on successful completion).
+   *
+   * NOTE: Currently only tracks inserts. If update/delete tracking is needed in the future,
+   * add trackUpdate() and trackDelete() methods that store the action type alongside the entity.
    */
   commit(): void {
+    // Group tracked entities by schemaKey
+    const bySchema = new Map<SchemaKey, EntityId[]>();
+    for (const { schemaKey, id } of this.createdEntities) {
+      const existing = bySchema.get(schemaKey);
+      if (existing) {
+        existing.push(id);
+      } else {
+        bySchema.set(schemaKey, [id]);
+      }
+    }
+
+    // Notify subscribers for each schema
+    for (const [schemaKey, ids] of bySchema) {
+      PostyBirbDatabase.notifySubscribers(schemaKey, ids, 'insert');
+    }
+
     this.createdEntities.length = 0;
   }
 }

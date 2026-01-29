@@ -443,7 +443,6 @@ export class SubmissionService
     });
 
     try {
-      this.emit();
       return await this.findById(id);
     } catch (err) {
       throw new BadRequestException(err);
@@ -827,8 +826,6 @@ export class SubmissionService
         .set({ metadata: newSubmission.metadata, isInitialized: true })
         .where(eq(SubmissionSchema.id, newSubmission.id));
     });
-
-    this.emit();
   }
 
   async updateTemplateName(

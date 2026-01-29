@@ -117,10 +117,9 @@ export function DescriptionField({
           mb="sm"
         >
           <Trans>
-            Your description contains legacy shortcut syntax (e.g., {'{title}'},{' '}
-            {'{tags}'}, {'{cw}'}, {'{shortcut:username}'}). These are no longer
-            supported. Please use the new shortcut menu (type @, {'{'} or &#96;)
-            to insert shortcuts.
+            Your description contains legacy shortcut syntax. These are no
+            longer supported. Please use the new shortcut menu (type @, &lbrace;
+            or &#96;) to insert shortcuts.
           </Trans>
         </Alert>
       )}

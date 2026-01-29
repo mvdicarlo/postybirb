@@ -321,6 +321,11 @@ msgstr ""
 msgid "and {0} more"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx
+#: apps/postybirb-ui/src/remake/components/drawers/file-watcher-drawer/file-watcher-drawer.tsx
+msgid "and {remainingCount} more"
+msgstr ""
+
 #: apps/postybirb-ui/src/remake/components/website-login-views/furtastic/furtastic-login-view.tsx
 #: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx
 msgid "API Key"
@@ -454,6 +459,11 @@ msgstr "¿Está seguro de que desea subir todas las publicaciones seleccionadas 
 msgid "Are you sure you want to reset all remote connection settings to their defaults? This will clear the saved host URL and password."
 msgstr ""
 
+#: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx
+#: apps/postybirb-ui/src/remake/components/drawers/file-watcher-drawer/file-watcher-drawer.tsx
+msgid "Are you sure you want to watch this folder?"
+msgstr ""
+
 #: libs/translations/src/lib/field-translations.ts
 msgid "Artist name"
 msgstr ""
@@ -571,9 +581,9 @@ msgid "By using this application, you acknowledge that you are solely responsibl
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/app-settings.tsx
+#: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx
 #: apps/postybirb-ui/src/remake/components/confirm-action-modal/confirm-action-modal.tsx
 #: apps/postybirb-ui/src/remake/components/dialogs/settings-dialog/sections/app-settings-section.tsx
-#: apps/postybirb-ui/src/remake/components/dialogs/settings-dialog/sections/remote-settings-section.tsx
 #: apps/postybirb-ui/src/remake/components/drawers/custom-shortcuts-drawer/custom-shortcuts-drawer.tsx
 #: apps/postybirb-ui/src/remake/components/sections/accounts-section/website-account-card.tsx
 #: apps/postybirb-ui/src/remake/components/sections/accounts-section/website-account-card.tsx
@@ -770,12 +780,19 @@ msgstr ""
 msgid "Complete Login"
 msgstr ""
 
+#: apps/postybirb-ui/src/remake/components/dialogs/settings-dialog/sections/remote-settings-section.tsx
+#: apps/postybirb-ui/src/remake/components/dialogs/settings-dialog/sections/remote-settings-section.tsx
+msgid "Configuration Error"
+msgstr ""
+
 #: apps/postybirb-ui/src/remake/components/website-login-views/twitter/twitter-login-view.tsx
 #: apps/postybirb-ui/src/website-components/twitter/twitter-login-view.tsx
 msgid "Configure API Keys"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx
 #: apps/postybirb-ui/src/remake/components/confirm-action-modal/confirm-action-modal.tsx
+#: apps/postybirb-ui/src/remake/components/drawers/file-watcher-drawer/file-watcher-drawer.tsx
 msgid "Confirm"
 msgstr ""
 
@@ -793,6 +810,10 @@ msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/website-login-views/helpers.tsx
 msgid "Connection error"
+msgstr ""
+
+#: apps/postybirb-ui/src/remake/components/dialogs/settings-dialog/sections/remote-settings-section.tsx
+msgid "Connection Failed"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/remote-settings.tsx
@@ -1179,13 +1200,24 @@ msgstr ""
 msgid "Double-click to toggle crop/move mode"
 msgstr ""
 
-#. placeholder {0}: update.updateProgress
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-update-button.tsx
+#: apps/postybirb-ui/src/remake/components/update-button/update-button.tsx
+msgid "Download Update"
+msgstr ""
+
+#. placeholder {0}: update.updateProgress?.toFixed(0)
 #: apps/postybirb-ui/src/remake/components/update-button/update-button.tsx
 msgid "Downloading update... {0}%"
 msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/update-button/update-button.tsx
 msgid "Downloading..."
+msgstr ""
+
+#. placeholder {0}: update.updateProgress?.toFixed(0)
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-update-button.tsx
+#: apps/postybirb-ui/src/remake/components/update-button/update-button.tsx
+msgid "Downloading... {0}%"
 msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/file-submission-modal/file-dropzone.tsx
@@ -1295,6 +1327,10 @@ msgstr ""
 #: apps/postybirb-ui/src/remake/i18n/languages.tsx
 msgid "English"
 msgstr "Inglés"
+
+#: apps/postybirb-ui/src/remake/components/dialogs/settings-dialog/sections/remote-settings-section.tsx
+msgid "Ensure the IP is correct"
+msgstr ""
 
 #: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx
 msgid "Enter a name for the new message submission"
@@ -1415,6 +1451,10 @@ msgstr ""
 #: apps/postybirb-ui/src/remake/components/website-login-views/twitter/twitter-login-view.tsx
 #: apps/postybirb-ui/src/website-components/twitter/twitter-login-view.tsx
 msgid "Failed to complete authorization"
+msgstr ""
+
+#: apps/postybirb-ui/src/remake/components/dialogs/settings-dialog/sections/remote-settings-section.tsx
+msgid "Failed to connect to remote host"
 msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/website-login-views/helpers.tsx
@@ -1626,6 +1666,11 @@ msgstr ""
 #: libs/translations/src/lib/field-translations.ts
 msgid "Folder"
 msgstr "Carpeta"
+
+#: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx
+#: apps/postybirb-ui/src/remake/components/drawers/file-watcher-drawer/file-watcher-drawer.tsx
+msgid "Folder Contains Files"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx
 #: apps/postybirb-ui/src/remake/components/drawers/file-watcher-drawer/file-watcher-drawer.tsx
@@ -1971,6 +2016,10 @@ msgstr ""
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx
 #: apps/postybirb-ui/src/remake/i18n/validation-translation.tsx
 msgid "Invalid date format: {value}. Expected ISO date string."
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx
+msgid "Invalid folder"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx
@@ -2910,8 +2959,16 @@ msgstr ""
 msgid "Remote Connection"
 msgstr ""
 
+#: apps/postybirb-ui/src/remake/components/dialogs/settings-dialog/sections/remote-settings-section.tsx
+msgid "Remote host URL is not configured"
+msgstr ""
+
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/remote-settings.tsx
 msgid "Remote Mode"
+msgstr ""
+
+#: apps/postybirb-ui/src/remake/components/dialogs/settings-dialog/sections/remote-settings-section.tsx
+msgid "Remote password is not configured"
 msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/drawers/converter-drawer/converter-drawer.tsx
@@ -3011,12 +3068,14 @@ msgstr ""
 msgid "Reset Remote Settings"
 msgstr ""
 
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-update-button.tsx
 #: apps/postybirb-ui/src/remake/components/update-button/update-button.tsx
-msgid "Restart to apply update"
+#: apps/postybirb-ui/src/remake/components/update-button/update-button.tsx
+msgid "Restarting to apply update..."
 msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/update-button/update-button.tsx
-msgid "Restart to Update"
+msgid "Restarting..."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx
@@ -3370,6 +3429,10 @@ msgstr ""
 #: apps/postybirb-ui/src/remake/components/website-login-views/discord/discord-login-view.tsx
 #: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx
 msgid "Server Boost Level"
+msgstr ""
+
+#: apps/postybirb-ui/src/remake/components/dialogs/settings-dialog/sections/remote-settings-section.tsx
+msgid "Server unreachable"
 msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/shared/multi-scheduler-modal/multi-scheduler-modal.tsx
@@ -3864,6 +3927,11 @@ msgstr "Texto"
 msgid "Th"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx
+#: apps/postybirb-ui/src/remake/components/drawers/file-watcher-drawer/file-watcher-drawer.tsx
+msgid "The folder \"{folderName}\" contains {fileCount} files."
+msgstr ""
+
 #: apps/postybirb-ui/src/components/error-boundary/specialized-error-boundaries.tsx
 #: apps/postybirb-ui/src/remake/components/error-boundary/specialized-error-boundaries.tsx
 msgid "The form encountered an error and couldn't be displayed properly."
@@ -4011,7 +4079,7 @@ msgid "Twitter / X Authentication"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/shared/postybirb-editor/postybirb-editor.tsx
-msgid "Type @, `, or { to insert shortcuts"
+msgid "Type @, `, or &lbrace; to insert shortcuts"
 msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/shared/description-editor/description-editor.tsx
@@ -4118,10 +4186,6 @@ msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/update-button/update-button.tsx
 msgid "Update Available"
-msgstr ""
-
-#: apps/postybirb-ui/src/remake/components/update-button/update-button.tsx
-msgid "Update downloaded. Restart the app to apply."
 msgstr ""
 
 #: apps/postybirb-ui/src/translations/common-translations.tsx
@@ -4379,12 +4443,9 @@ msgstr ""
 msgid "You'll get this PIN after authorizing on Twitter"
 msgstr ""
 
-#: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-edit-card/account-selection/form/fields/description-field.tsx
-msgid "Your description contains legacy shortcut syntax (e.g., {title}, {tags}, {cw}, {shortcut:username}). These are no longer supported. Please use the new shortcut menu (type @, { or `) to insert shortcuts."
-msgstr ""
-
 #: apps/postybirb-ui/src/components/form/fields/description-field.tsx
-msgid "Your description contains legacy shortcut syntax. These are no longer supported. Please use the new shortcut menu (type @, { or `) to insert shortcuts."
+#: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-edit-card/account-selection/form/fields/description-field.tsx
+msgid "Your description contains legacy shortcut syntax. These are no longer supported. Please use the new shortcut menu (type @, &lbrace; or `) to insert shortcuts."
 msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/website-login-views/bluesky/bluesky-login-view.tsx
