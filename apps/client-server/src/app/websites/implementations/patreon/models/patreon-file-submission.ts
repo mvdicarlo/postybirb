@@ -3,9 +3,10 @@ import {
   DateTimeField,
   DescriptionField,
   SelectField,
+  TagField,
   TextField,
 } from '@postybirb/form-builder';
-import { DescriptionType, DescriptionValue } from '@postybirb/types';
+import { DefaultTagValue, DescriptionType, DescriptionValue, TagValue } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
 export class PatreonFileSubmission extends BaseWebsiteOptions {
@@ -13,6 +14,11 @@ export class PatreonFileSubmission extends BaseWebsiteOptions {
     descriptionType: DescriptionType.HTML,
   })
   description: DescriptionValue;
+
+  @TagField({
+    maxTagLength: 25
+  })
+  tags: TagValue = DefaultTagValue();
 
   @SelectField({
     required: true,

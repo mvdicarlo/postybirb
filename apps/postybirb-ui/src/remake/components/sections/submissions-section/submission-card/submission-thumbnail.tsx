@@ -1,10 +1,13 @@
 /**
  * SubmissionThumbnail - Thumbnail component with optional HoverCard preview.
+ * Uses IntersectionObserver to only load images when the card is near the viewport,
+ * reducing memory usage when displaying hundreds of submissions.
  */
 
 import { Box, HoverCard, Image, Indicator } from '@mantine/core';
 import { IconFile } from '@tabler/icons-react';
 import '../submissions-section.css';
+import { useVisibility } from './use-visibility';
 
 interface SubmissionThumbnailProps {
   /** URL of the thumbnail image */
@@ -21,6 +24,7 @@ interface SubmissionThumbnailProps {
  * Thumbnail component for submissions.
  * Shows the thumbnail image or a placeholder icon.
  * Optionally wraps in a HoverCard for image preview on hover.
+ * Uses IntersectionObserver to defer image loading until card is near viewport.
  */
 export function SubmissionThumbnail({
   thumbnailUrl,
@@ -28,8 +32,17 @@ export function SubmissionThumbnail({
   canPreview = false,
   fileCount = 1,
 }: SubmissionThumbnailProps) {
+  // Use custom visibility hook for stable intersection detection
+  // Starts visible, then tracks when element scrolls in/out of view
+  const { ref, isVisible } = useVisibility<HTMLDivElement>({
+    rootMargin: '300px',
+  });
+
   // Calculate additional files (total - 1 for the primary file shown)
   const additionalFiles = fileCount > 1 ? fileCount - 1 : 0;
+
+  // Only render the actual image when visible, otherwise show placeholder
+  const shouldShowImage = isVisible && thumbnailUrl;
 
   const thumbnailBox = (
     <Indicator
@@ -39,8 +52,8 @@ export function SubmissionThumbnail({
       offset={4}
       disabled={additionalFiles === 0}
     >
-      <Box className="postybirb__submission__thumbnail">
-        {thumbnailUrl ? (
+      <Box ref={ref} className="postybirb__submission__thumbnail">
+        {shouldShowImage ? (
           <Image src={thumbnailUrl} alt={alt} w={40} h={40} fit="cover" />
         ) : (
           <IconFile
@@ -53,8 +66,9 @@ export function SubmissionThumbnail({
     </Indicator>
   );
 
-  // Wrap in HoverCard if image can be previewed
-  if (canPreview && thumbnailUrl) {
+  // Wrap in HoverCard only if visible, can preview, and has thumbnail URL
+  // No point adding HoverCard DOM overhead for off-screen items
+  if (isVisible && canPreview && thumbnailUrl) {
     return (
       <HoverCard width={280} position="right" openDelay={400} shadow="md">
         <HoverCard.Target>{thumbnailBox}</HoverCard.Target>
