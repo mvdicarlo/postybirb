@@ -188,7 +188,7 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
           </Tooltip>
           <Text size="xs" c="dimmed" truncate style={{ flex: 1, minWidth: 0 }}>
             {/** THIS IS CRITICAL, without the slice webview will turn blank on accounts.google.com. This is really strange bug in electron or maybe security defense mechanism but its just better to keep it like this */}
-            {currentUrl.slice(0, 500)}
+            {currentUrl.slice(0, 100)}
           </Text>
           {/* Login status badge */}
           {isPending ? (
