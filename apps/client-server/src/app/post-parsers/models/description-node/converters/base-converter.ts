@@ -137,10 +137,13 @@ export abstract class BaseConverter implements NodeConverter<string> {
       username: string;
     }
     | undefined {
-    const username = (node.content as IDescriptionTextNodeClass[])
-      .map((child) => child.text)
-      .join('')
-      .trim();
+    // Get username from props (new format) or content (old format for backwards compatibility)
+    const username = node.props.username 
+      ? (node.props.username as string).trim()
+      : (node.content as IDescriptionTextNodeClass[])
+          .map((child) => child.text)
+          .join('')
+          .trim();
 
     // Check if we have a conversion for this username to the target website
     let convertedUsername = username;

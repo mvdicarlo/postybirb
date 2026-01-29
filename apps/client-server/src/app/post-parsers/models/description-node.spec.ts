@@ -1544,4 +1544,279 @@ describe('DescriptionNode', () => {
       );
     });
   });
+
+  describe('Username shortcuts with new prop format', () => {
+    it('should support username prop format (content: none)', () => {
+      const shortcutDescription: Description = [
+        {
+          id: 'test-username-prop',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [
+            { type: 'text', text: 'Hello, ', styles: { bold: true } },
+            {
+              type: 'username',
+              props: {
+                id: '1740142676292',
+                shortcut: 'test',
+                only: '',
+                username: 'TestUser',
+              },
+            },
+          ],
+          children: [],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'test',
+        shortcuts: {
+          test: {
+            id: 'test',
+            url: 'https://test.postybirb.com/$1',
+          },
+        },
+        customShortcuts: new Map(),
+        defaultDescription: [],
+      };
+
+      const tree = new DescriptionNodeTree(
+        context,
+        shortcutDescription as unknown as Array<IDescriptionBlockNode>,
+        {
+          insertAd: false,
+        },
+      );
+
+      expect(tree.toPlainText()).toBe('Hello, https://test.postybirb.com/TestUser');
+      expect(tree.toHtml()).toBe(
+        '<div><span><b>Hello, </b></span><a target="_blank" href="https://test.postybirb.com/TestUser">TestUser</a></div>',
+      );
+      expect(tree.toBBCode()).toBe(
+        '[b]Hello, [/b][url=https://test.postybirb.com/TestUser]TestUser[/url]',
+      );
+    });
+
+    it('should find usernames from new prop format', () => {
+      const description: Description = [
+        {
+          id: 'test-find-username',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [
+            {
+              type: 'username',
+              props: {
+                id: '1',
+                shortcut: 'twitter',
+                only: '',
+                username: 'alice',
+              },
+            },
+            { type: 'text', text: ' and ', styles: {} },
+            {
+              type: 'username',
+              props: {
+                id: '2',
+                shortcut: 'twitter',
+                only: '',
+                username: 'bob',
+              },
+            },
+          ],
+          children: [],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'test',
+        shortcuts: {},
+        customShortcuts: new Map(),
+        defaultDescription: [],
+      };
+
+      const tree = new DescriptionNodeTree(
+        context,
+        description as unknown as Array<IDescriptionBlockNode>,
+        {
+          insertAd: false,
+        },
+      );
+
+      const usernames = tree.findUsernames();
+      expect(usernames.size).toBe(2);
+      expect(usernames.has('alice')).toBe(true);
+      expect(usernames.has('bob')).toBe(true);
+    });
+
+    it('should support username conversion with new prop format', () => {
+      const shortcutDescription: Description = [
+        {
+          id: 'test-username-conversion',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [
+            { type: 'text', text: 'Follow me: ', styles: {} },
+            {
+              type: 'username',
+              props: {
+                id: '1740142676292',
+                shortcut: 'twitter',
+                only: '',
+                username: 'myusername',
+              },
+            },
+          ],
+          children: [],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'test',
+        shortcuts: {
+          twitter: {
+            id: 'twitter',
+            url: 'https://twitter.com/$1',
+          },
+          test: {
+            id: 'test',
+            url: 'https://test.postybirb.com/$1',
+          },
+        },
+        customShortcuts: new Map(),
+        defaultDescription: [],
+        usernameConversions: new Map([['myusername', 'converted_username']]),
+      };
+
+      const tree = new DescriptionNodeTree(
+        context,
+        shortcutDescription as unknown as Array<IDescriptionBlockNode>,
+        {
+          insertAd: false,
+        },
+      );
+
+      expect(tree.toPlainText()).toBe('Follow me: https://test.postybirb.com/converted_username');
+      expect(tree.toHtml()).toBe(
+        '<div>Follow me: <a target="_blank" href="https://test.postybirb.com/converted_username">converted_username</a></div>',
+      );
+    });
+
+    it('should handle backward compatibility with old content format', () => {
+      const oldFormatDescription: Description = [
+        {
+          id: 'test-old-format',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [
+            { type: 'text', text: 'Hello, ', styles: {} },
+            {
+              type: 'username',
+              props: {
+                id: '1',
+                shortcut: 'test',
+                only: '',
+              },
+              content: [
+                {
+                  type: 'text',
+                  text: 'OldFormatUser',
+                  styles: {},
+                },
+              ],
+            },
+          ],
+          children: [],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'test',
+        shortcuts: {
+          test: {
+            id: 'test',
+            url: 'https://test.postybirb.com/$1',
+          },
+        },
+        customShortcuts: new Map(),
+        defaultDescription: [],
+      };
+
+      const tree = new DescriptionNodeTree(
+        context,
+        oldFormatDescription as unknown as Array<IDescriptionBlockNode>,
+        {
+          insertAd: false,
+        },
+      );
+
+      expect(tree.toPlainText()).toBe('Hello, https://test.postybirb.com/OldFormatUser');
+      expect(tree.findUsernames().has('OldFormatUser')).toBe(true);
+    });
+
+    it('should handle empty username prop gracefully', () => {
+      const emptyUsernameDescription: Description = [
+        {
+          id: 'test-empty-username',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [
+            {
+              type: 'username',
+              props: {
+                id: '1',
+                shortcut: 'test',
+                only: '',
+                username: '',
+              },
+            },
+          ],
+          children: [],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'test',
+        shortcuts: {
+          test: {
+            id: 'test',
+            url: 'https://test.postybirb.com/$1',
+          },
+        },
+        customShortcuts: new Map(),
+        defaultDescription: [],
+      };
+
+      const tree = new DescriptionNodeTree(
+        context,
+        emptyUsernameDescription as unknown as Array<IDescriptionBlockNode>,
+        {
+          insertAd: false,
+        },
+      );
+
+      expect(tree.toPlainText()).toBe('');
+      expect(tree.findUsernames().size).toBe(0);
+    });
+  });
 });
