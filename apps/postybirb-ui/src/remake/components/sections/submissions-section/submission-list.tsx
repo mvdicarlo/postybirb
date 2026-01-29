@@ -29,7 +29,7 @@ import submissionApi from '../../../api/submission.api';
 import type { SubmissionRecord } from '../../../stores/records';
 import { useIsCompactView } from '../../../stores/ui/appearance-store';
 import { EmptyState } from '../../empty-state';
-import { ScrollContainerProvider, useSubmissionsContext } from './context';
+import { useSubmissionsContext } from './context';
 import { SortableSubmissionCard, SubmissionCard } from './submission-card';
 import './submissions-section.css';
 import { DRAGGABLE_SUBMISSION_CLASS } from './types';
@@ -143,21 +143,20 @@ export function SubmissionList({
   const virtualItems = virtualizer.getVirtualItems();
 
   return (
-    <ScrollContainerProvider scrollContainerRef={scrollContainerRef}>
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
-        onDragCancel={handleDragCancel}
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      onDragCancel={handleDragCancel}
+    >
+      <SortableContext
+        items={submissionIds}
+        strategy={verticalListSortingStrategy}
       >
-        <SortableContext
-          items={submissionIds}
-          strategy={verticalListSortingStrategy}
-        >
-          <div
-            ref={scrollContainerRef}
-            className="postybirb__submission__list_scroll"
+        <div
+          ref={scrollContainerRef}
+          className="postybirb__submission__list_scroll"
             style={{
               flex: 1,
               overflow: 'auto',
@@ -176,6 +175,8 @@ export function SubmissionList({
                 return (
                   <div
                     key={submission.id}
+                    data-index={virtualRow.index}
+                    ref={virtualizer.measureElement}
                     style={{
                       position: 'absolute',
                       top: 0,
@@ -185,7 +186,6 @@ export function SubmissionList({
                     }}
                   >
                     <SortableSubmissionCard
-                      ref={virtualizer.measureElement}
                       id={submission.id}
                       virtualIndex={virtualRow.index}
                       submission={submission}
@@ -216,6 +216,5 @@ export function SubmissionList({
           ) : null}
         </DragOverlay>
       </DndContext>
-    </ScrollContainerProvider>
   );
 }
