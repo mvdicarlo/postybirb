@@ -91,23 +91,29 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
     const handleStopLoading = () => {
       setIsLoading(false);
       debouncedRefreshLogin();
-      // Update current URL after navigation
-      try {
-        const url = webview.getURL();
-        if (url) {
-          setCurrentUrl(url);
-        }
-      } catch {
-        // Webview may not be ready
-      }
+    };
+
+    const handleConsoleMessage = (
+      event: Electron.ConsoleMessageEvent,
+    ): void => {
+      // eslint-disable-next-line no-console
+      console.log(`WEBVIEW: ${event.message}`);
+    };
+
+    const handleDidNavigate = (event: Electron.DidNavigateEvent) => {
+      setCurrentUrl(event.url);
     };
 
     webview.addEventListener('did-start-loading', handleStartLoading);
     webview.addEventListener('did-stop-loading', handleStopLoading);
+    webview.addEventListener('console-message', handleConsoleMessage);
+    webview.addEventListener('did-navigate', handleDidNavigate);
 
     return () => {
       webview.removeEventListener('did-start-loading', handleStartLoading);
       webview.removeEventListener('did-stop-loading', handleStopLoading);
+      webview.removeEventListener('console-message', handleConsoleMessage);
+      webview.removeEventListener('did-navigate', handleDidNavigate);
       debouncedRefreshLogin.cancel();
       // Trigger final login check when webview closes
       accountApi.refreshLogin(accountId);
@@ -181,7 +187,8 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
             </ActionIcon>
           </Tooltip>
           <Text size="xs" c="dimmed" truncate style={{ flex: 1, minWidth: 0 }}>
-            {currentUrl}
+            {/** THIS IS CRITICAL, without the slice webview will turn blank on accounts.google.com. This is really strange bug in electron or maybe security defense mechanism but its just better to keep it like this */}
+            {currentUrl.slice(0, 500)}
           </Text>
           {/* Login status badge */}
           {isPending ? (
@@ -208,19 +215,6 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
           minHeight: 0,
         }}
       >
-        {/* Loading overlay */}
-        {/* {isLoading && (
-          <Overlay
-            color="var(--mantine-color-body)"
-            backgroundOpacity={0.7}
-            blur={2}
-            center
-          >
-            <Loader size="lg" />
-          </Overlay>
-        )} */}
-
-        {/* Webview element */}
         <webview
           src={src}
           ref={(ref) => {
