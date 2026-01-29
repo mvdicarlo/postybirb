@@ -6,38 +6,38 @@
 import { t } from '@lingui/core/macro';
 import { Trans } from '@lingui/react/macro';
 import {
-    ActionIcon,
-    Box,
-    Card,
-    Group,
-    Input,
-    Select,
-    Stack,
-    Text,
-    Tooltip
+  ActionIcon,
+  Box,
+  Card,
+  Group,
+  Input,
+  Select,
+  Stack,
+  Text,
+  Tooltip
 } from '@mantine/core';
 import { DirectoryWatcherImportAction, SubmissionType } from '@postybirb/types';
 import {
-    IconDeviceFloppy,
-    IconFolder,
-    IconPlus,
-    IconTrash,
+  IconDeviceFloppy,
+  IconFolder,
+  IconPlus,
+  IconTrash,
 } from '@tabler/icons-react';
 import { useCallback, useMemo, useState } from 'react';
 import directoryWatchersApi, {
-    CheckPathResult,
-    FILE_COUNT_WARNING_THRESHOLD,
+  CheckPathResult,
+  FILE_COUNT_WARNING_THRESHOLD,
 } from '../../../api/directory-watchers.api';
 import { useDirectoryWatchers } from '../../../stores';
 import type { DirectoryWatcherRecord } from '../../../stores/records';
 import { useActiveDrawer, useDrawerActions } from '../../../stores/ui/drawer-store';
 import {
-    showCreatedNotification,
-    showCreateErrorNotification,
-    showDeletedNotification,
-    showDeleteErrorNotification,
-    showUpdatedNotification,
-    showUpdateErrorNotification,
+  showCreatedNotification,
+  showCreateErrorNotification,
+  showDeletedNotification,
+  showDeleteErrorNotification,
+  showUpdatedNotification,
+  showUpdateErrorNotification,
 } from '../../../utils/notifications';
 import { ConfirmActionModal } from '../../confirm-action-modal';
 import { EmptyState } from '../../empty-state';
@@ -244,32 +244,39 @@ function FileWatcherCard({ watcher }: FileWatcherCardProps) {
       </ComponentErrorBoundary>
 
       {/* Confirmation modal for folders with many files */}
-      <ConfirmActionModal
-        opened={confirmModalOpened}
-        onClose={handleCancelPath}
-        onConfirm={handleConfirmPath}
-        title={<Trans>Folder Contains Files</Trans>}
-        message={
-          <Stack gap="xs">
-            <Text>
-              <Trans>
-                The folder "{pendingPath?.split('/').pop() ?? pendingPath}" contains {pathCheckResult?.count ?? 0} files.
-              </Trans>
-            </Text>
-            {pathCheckResult && pathCheckResult.files.length > 0 && (
-              <Text size="sm" c="dimmed">
-                {pathCheckResult.files.slice(0, 5).join(', ')}
-                {pathCheckResult.files.length > 5 && `, ... ${t`and ${pathCheckResult.files.length - 5} more`}`}
-              </Text>
-            )}
-            <Text>
-              <Trans>Are you sure you want to watch this folder?</Trans>
-            </Text>
-          </Stack>
-        }
-        confirmLabel={<Trans>Confirm</Trans>}
-        confirmColor="blue"
-      />
+      {(() => {
+        const folderName = pendingPath?.split('/').pop() ?? pendingPath ?? '';
+        const fileCount = pathCheckResult?.count ?? 0;
+        const remainingCount = pathCheckResult ? pathCheckResult.files.length - 5 : 0;
+        return (
+          <ConfirmActionModal
+            opened={confirmModalOpened}
+            onClose={handleCancelPath}
+            onConfirm={handleConfirmPath}
+            title={<Trans>Folder Contains Files</Trans>}
+            message={
+              <Stack gap="xs">
+                <Text>
+                  <Trans>
+                    The folder "{folderName}" contains {fileCount} files.
+                  </Trans>
+                </Text>
+                {pathCheckResult && pathCheckResult.files.length > 0 && (
+                  <Text size="sm" c="dimmed">
+                    {pathCheckResult.files.slice(0, 5).join(', ')}
+                    {pathCheckResult.files.length > 5 && `, ... ${t`and ${remainingCount} more`}`}
+                  </Text>
+                )}
+                <Text>
+                  <Trans>Are you sure you want to watch this folder?</Trans>
+                </Text>
+              </Stack>
+            }
+            confirmLabel={<Trans>Confirm</Trans>}
+            confirmColor="blue"
+          />
+        );
+      })()}
     </Card>
   );
 }

@@ -179,18 +179,23 @@ function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
           title={<Trans>Folder Contains Files</Trans>}
           centered
         >
-          <Stack>
-            <Text>
-              <Trans>
-                The folder "{pendingPath?.split('/').pop() ?? pendingPath}" contains {pathCheckResult?.count ?? 0} files.
-              </Trans>
-            </Text>
-            {pathCheckResult && pathCheckResult.files.length > 0 && (
-              <Text size="sm" c="dimmed">
-                {pathCheckResult.files.slice(0, 5).join(', ')}
-                {pathCheckResult.files.length > 5 && `, ... ${t`and ${pathCheckResult.files.length - 5} more`}`}
-              </Text>
-            )}
+          {(() => {
+            const folderName = pendingPath?.split('/').pop() ?? pendingPath ?? '';
+            const fileCount = pathCheckResult?.count ?? 0;
+            const remainingCount = pathCheckResult ? pathCheckResult.files.length - 5 : 0;
+            return (
+              <Stack>
+                <Text>
+                  <Trans>
+                    The folder "{folderName}" contains {fileCount} files.
+                  </Trans>
+                </Text>
+                {pathCheckResult && pathCheckResult.files.length > 0 && (
+                  <Text size="sm" c="dimmed">
+                    {pathCheckResult.files.slice(0, 5).join(', ')}
+                    {pathCheckResult.files.length > 5 && `, ... ${t`and ${remainingCount} more`}`}
+                  </Text>
+                )}
             <Text>
               <Trans>Are you sure you want to watch this folder?</Trans>
             </Text>
@@ -202,7 +207,9 @@ function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
                 <Trans>Confirm</Trans>
               </Button>
             </Group>
-          </Stack>
+              </Stack>
+            );
+          })()}
         </Modal>
 
         <Select
