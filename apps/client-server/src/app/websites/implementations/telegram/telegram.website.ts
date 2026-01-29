@@ -148,7 +148,7 @@ export default class Telegram
 
     for await (const dialog of telegram.iterDialogs()) {
       total++;
-      if (!dialog.id || dialog.archived) continue;
+      if (!dialog.id) continue;
       if (!this.canSendMediaInChat(dialog.entity)) continue;
 
       const id = dialog.entity.id.toString();
