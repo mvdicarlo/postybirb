@@ -93,12 +93,12 @@ export function useVisibility<T extends HTMLElement = HTMLDivElement>(
   useEffect(() => {
     const root = scrollContainerRef?.current;
     
-    // If we have an element but the observer was created with wrong/no root, recreate it
+    // If we have an element and root, ensure observer is set up
     if (elementRef.current && root) {
       setupObserver();
     }
 
-    // Poll for scroll container if not available
+    // Poll briefly for scroll container if not available yet
     if (!root) {
       const interval = setInterval(() => {
         if (scrollContainerRef?.current) {
@@ -107,7 +107,8 @@ export function useVisibility<T extends HTMLElement = HTMLDivElement>(
         }
       }, 50);
       
-      const timeout = setTimeout(() => clearInterval(interval), 2000);
+      // Stop polling after 500ms - scroll container should be available by then
+      const timeout = setTimeout(() => clearInterval(interval), 500);
       
       return () => {
         clearInterval(interval);
@@ -115,7 +116,6 @@ export function useVisibility<T extends HTMLElement = HTMLDivElement>(
       };
     }
 
-    // Cleanup on unmount
     return () => {
       if (observerRef.current) {
         observerRef.current.disconnect();

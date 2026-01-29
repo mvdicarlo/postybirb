@@ -3,7 +3,7 @@
  * Used by SubmissionThumbnail to detect visibility within the ScrollArea, not the browser viewport.
  */
 
-import { createContext, ReactNode, RefObject, useContext } from 'react';
+import { createContext, ReactNode, RefObject, useContext, useMemo } from 'react';
 
 /**
  * Context value containing the scroll container element ref.
@@ -41,8 +41,13 @@ export function ScrollContainerProvider({
   scrollContainerRef,
   children,
 }: ScrollContainerProviderProps) {
+  const value = useMemo(
+    () => ({ scrollContainerRef }),
+    [scrollContainerRef]
+  );
+
   return (
-    <ScrollContainerContext.Provider value={{ scrollContainerRef }}>
+    <ScrollContainerContext.Provider value={value}>
       {children}
     </ScrollContainerContext.Provider>
   );

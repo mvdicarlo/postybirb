@@ -32,11 +32,9 @@ export function SubmissionThumbnail({
   canPreview = false,
   fileCount = 1,
 }: SubmissionThumbnailProps) {
-  // Use custom visibility hook for stable intersection detection
-  // Starts visible, then tracks when element scrolls in/out of view
-  const { ref, isVisible } = useVisibility<HTMLDivElement>({
-    rootMargin: '300px',
-  });
+  // Use custom visibility hook for lazy-loading
+  // Starts invisible, loads image only when scrolled into view (with 300px buffer)
+  const { ref, isVisible } = useVisibility<HTMLDivElement>();
 
   // Calculate additional files (total - 1 for the primary file shown)
   const additionalFiles = fileCount > 1 ? fileCount - 1 : 0;
