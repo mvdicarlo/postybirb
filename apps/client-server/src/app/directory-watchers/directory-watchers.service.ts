@@ -38,6 +38,26 @@ import { UpdateDirectoryWatcherDto } from './dtos/update-directory-watcher.dto';
  * @class DirectoryWatchersService
  * @extends {PostyBirbService<DirectoryWatcher>}
  */
+/**
+ * Threshold for warning users about folders with many files.
+ * If a folder contains more than this number of files, a confirmation will be required.
+ */
+export const FILE_COUNT_WARNING_THRESHOLD = 10;
+
+/**
+ * Result of checking a directory path for file watcher usage.
+ */
+export interface CheckPathResult {
+  /** Whether the path is valid and accessible */
+  valid: boolean;
+  /** Number of files in the directory (excluding subfolders) */
+  count: number;
+  /** List of file names in the directory */
+  files: string[];
+  /** Error message if the path is invalid */
+  error?: string;
+}
+
 @Injectable()
 export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcherSchema'> {
   private runningWatchers = new Set<EntityId>();
@@ -401,5 +421,37 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
     }
 
     return updatedEntity;
+  }
+
+  /**
+   * Checks a directory path for validity and returns file count information.
+   * Used to warn users before selecting folders with many files.
+   *
+   * @param {string} path - The directory path to check
+   * @returns {Promise<CheckPathResult>} Information about the directory
+   */
+  async checkPath(path: string): Promise<CheckPathResult> {
+    try {
+      const allFiles = await readdir(path);
+      const files = allFiles.filter(
+        (file) =>
+          file !== this.SUBFOLDER_PROCESSING &&
+          file !== this.SUBFOLDER_COMPLETED &&
+          file !== this.SUBFOLDER_FAILED,
+      );
+
+      return {
+        valid: true,
+        count: files.length,
+        files,
+      };
+    } catch (err) {
+      return {
+        valid: false,
+        count: 0,
+        files: [],
+        error: `Path '${path}' does not exist or is not accessible`,
+      };
+    }
   }
 }
