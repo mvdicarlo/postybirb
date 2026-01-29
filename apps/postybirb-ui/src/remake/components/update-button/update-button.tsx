@@ -7,7 +7,7 @@ import { Trans } from '@lingui/react/macro';
 import {
   Alert,
   Box,
-  Kbd,
+  Button,
   NavLink as MantineNavLink,
   Popover,
   Stack,
@@ -16,7 +16,7 @@ import {
   Tooltip,
 } from '@mantine/core';
 import { IconDeviceDesktopUp, IconDownload } from '@tabler/icons-react';
-import { useQuery } from 'react-query';
+import { useQuery, useQueryClient } from 'react-query';
 import updateApi from '../../api/update.api';
 
 interface UpdateButtonProps {
@@ -29,11 +29,12 @@ interface UpdateButtonProps {
  * Shows update notes and progress in a popover.
  */
 export function UpdateButton({ collapsed }: UpdateButtonProps) {
+  const queryClient = useQueryClient();
   const { data: update } = useQuery(
     'update',
     () => updateApi.checkForUpdates().then((res) => res.body),
     {
-      refetchInterval: 60_000 * 30, // Check every 30 minutes
+      refetchInterval: 5 * 60_000, // Check every 5 minutes
     },
   );
 
@@ -45,6 +46,12 @@ export function UpdateButton({ collapsed }: UpdateButtonProps) {
   const isDownloading = update.updateDownloading;
   const isDownloaded = update.updateDownloaded;
 
+  const handleStartUpdate = async () => {
+    await updateApi.startUpdate();
+    // Refetch to get the downloading state
+    queryClient.invalidateQueries('update');
+  };
+
   // Determine icon and label based on state
   const icon = isDownloaded ? (
     <IconDeviceDesktopUp size={20} color="var(--mantine-color-green-6)" />
@@ -55,15 +62,14 @@ export function UpdateButton({ collapsed }: UpdateButtonProps) {
   const label = isDownloading ? (
     <Box className="postybirb__nav_item_label">
       <span>
-        <Trans>Downloading...</Trans> {update.updateProgress}%
+        <Trans>Downloading...</Trans> {update.updateProgress?.toFixed(0)}%
       </span>
     </Box>
   ) : isDownloaded ? (
     <Box className="postybirb__nav_item_label">
       <span>
-        <Trans>Restart to Update</Trans>
+        <Trans>Restarting...</Trans>
       </span>
-      <Kbd size="xs">!</Kbd>
     </Box>
   ) : (
     <Box className="postybirb__nav_item_label">
@@ -74,9 +80,9 @@ export function UpdateButton({ collapsed }: UpdateButtonProps) {
   );
 
   const tooltipLabel = isDownloading ? (
-    <Trans>Downloading update... {update.updateProgress}%</Trans>
+    <Trans>Downloading update... {update.updateProgress?.toFixed(0)}%</Trans>
   ) : isDownloaded ? (
-    <Trans>Restart to apply update</Trans>
+    <Trans>Restarting to apply update...</Trans>
   ) : (
     <Trans>Update available</Trans>
   );
@@ -124,10 +130,26 @@ export function UpdateButton({ collapsed }: UpdateButtonProps) {
           </Stack>
         )}
 
-        {isDownloaded && (
+        {isDownloaded ? (
           <Text size="sm" c="green" mt="sm">
-            <Trans>Update downloaded. Restart the app to apply.</Trans>
+            <Trans>Restarting to apply update...</Trans>
           </Text>
+        ) : (
+          <Button
+            mt="sm"
+            fullWidth
+            color="green"
+            leftSection={<IconDownload size={16} />}
+            loading={isDownloading}
+            onClick={handleStartUpdate}
+            disabled={isDownloading}
+          >
+            {isDownloading ? (
+              <Trans>Downloading... {update.updateProgress?.toFixed(0)}%</Trans>
+            ) : (
+              <Trans>Download Update</Trans>
+            )}
+          </Button>
         )}
       </Popover.Dropdown>
     </Popover>
