@@ -141,7 +141,6 @@ export default class KoFi
   async onPostFileSubmission(
     postData: PostData<KoFiFileSubmission>,
     files: PostingFile[],
-    batchIndex: number,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     // Upload each file and collect image upload IDs

@@ -69,7 +69,6 @@ export default class TestWebsite
   async onPostFileSubmission(
     postData: PostData<IWebsiteFormFields>,
     files: PostingFile[],
-    batchIndex: number,
     cancellationToken: CancellableToken,
   ): Promise<IPostResponse> {
     cancellationToken.throwIfCancelled();

@@ -1,11 +1,11 @@
 import { Http } from '@postybirb/http';
 import {
-    ILoginState,
-    ImageResizeProps,
-    ISubmissionFile,
-    PostData,
-    PostResponse,
-    SubmissionRating,
+  ILoginState,
+  ImageResizeProps,
+  ISubmissionFile,
+  PostData,
+  PostResponse,
+  SubmissionRating,
 } from '@postybirb/types';
 import parse from 'node-html-parser';
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -24,8 +24,8 @@ import { PhilomenaFileSubmission } from './models/philomena-file-submission';
  * Derpibooru, Furbooru, and others.
  */
 export abstract class PhilomenaWebsite<
-    TFileSubmission extends PhilomenaFileSubmission = PhilomenaFileSubmission,
-  >
+  TFileSubmission extends PhilomenaFileSubmission = PhilomenaFileSubmission,
+>
   extends Website<PhilomenaAccountData>
   implements FileWebsite<TFileSubmission>
 {
@@ -151,7 +151,6 @@ export abstract class PhilomenaWebsite<
   async onPostFileSubmission(
     postData: PostData<TFileSubmission>,
     files: PostingFile[],
-    batchIndex: number,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     const fields = await this.getUploadFormFields();

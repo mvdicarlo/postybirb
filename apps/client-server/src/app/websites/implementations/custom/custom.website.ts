@@ -76,7 +76,6 @@ export default class Custom
   async onPostFileSubmission(
     postData: PostData<CustomFileSubmission>,
     files: PostingFile[],
-    batchIndex: number,
     cancellationToken: CancellableToken,
   ): Promise<IPostResponse> {
     try {

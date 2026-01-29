@@ -1,14 +1,14 @@
 import { SelectOption } from '@postybirb/form-builder';
 import { Http } from '@postybirb/http';
 import {
-    FileType,
-    ILoginState,
-    ImageResizeProps,
-    IPostResponse,
-    PostData,
-    PostResponse,
-    SimpleValidationResult,
-    SubmissionRating,
+  FileType,
+  ILoginState,
+  ImageResizeProps,
+  IPostResponse,
+  PostData,
+  PostResponse,
+  SimpleValidationResult,
+  SubmissionRating,
 } from '@postybirb/types';
 import { HTMLElement, parse } from 'node-html-parser';
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -171,7 +171,6 @@ export default class FurAffinity
   async onPostFileSubmission(
     postData: PostData<FurAffinityFileSubmission>,
     files: PostingFile[],
-    batchIndex: number,
     cancellationToken: CancellableToken,
   ): Promise<IPostResponse> {
     const part1 = await Http.get<string>(`${this.BASE_URL}/submit/`, {

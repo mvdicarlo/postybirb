@@ -135,7 +135,6 @@ export default class Bluesky
   async onPostFileSubmission(
     postData: PostData<BlueskyFileSubmission>,
     files: PostingFile[],
-    batchIndex: number,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfCancelled();

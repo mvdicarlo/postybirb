@@ -122,7 +122,6 @@ export default class Inkbunny
   async onPostFileSubmission(
     postData: PostData<InkbunnyFileSubmission>,
     files: PostingFile[],
-    batchIndex: number,
     cancellationToken: CancellableToken,
   ): Promise<IPostResponse> {
     try {

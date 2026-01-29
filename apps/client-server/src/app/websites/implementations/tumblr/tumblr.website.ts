@@ -146,7 +146,6 @@ export default class Tumblr
   async onPostFileSubmission(
     postData: PostData<TumblrFileSubmission>,
     files: PostingFile[],
-    batchIndex: number,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     // Description is a JSON string of NPF blocks from the NpfConverter

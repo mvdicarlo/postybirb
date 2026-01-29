@@ -91,7 +91,6 @@ export default class Furtastic
   async onPostFileSubmission(
     postData: PostData<FurtasticFileSubmission>,
     files: PostingFile[],
-    batchIndex: number,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     const accountData = this.getWebsiteData();

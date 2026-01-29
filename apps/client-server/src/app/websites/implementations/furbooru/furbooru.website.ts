@@ -38,7 +38,6 @@ export default class Furbooru extends PhilomenaWebsite<FurbooruFileSubmission> {
   async onPostFileSubmission(
     postData: PostData<FurbooruFileSubmission>,
     files: PostingFile[],
-    batchIndex: number,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     try {

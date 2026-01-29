@@ -180,7 +180,6 @@ export default class DeviantArt
   async onPostFileSubmission(
     postData: PostData<DeviantArtFileSubmission>,
     files: PostingFile[],
-    batchIndex: number,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfCancelled();

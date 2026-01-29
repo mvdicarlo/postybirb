@@ -33,8 +33,10 @@ import { ToyhouseFileSubmission } from './models/toyhouse-file-submission';
     '*': FileSize.megabytes(4),
   },
 })
-export default class Toyhouse extends Website<ToyhouseAccountData> implements
-  FileWebsite<ToyhouseFileSubmission> {
+export default class Toyhouse
+  extends Website<ToyhouseAccountData>
+  implements FileWebsite<ToyhouseFileSubmission>
+{
   protected BASE_URL = 'https://toyhou.se';
 
   public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<ToyhouseAccountData> =
@@ -55,8 +57,9 @@ export default class Toyhouse extends Website<ToyhouseAccountData> implements
       }
 
       const $ = parse(res.body);
-      const username = $.querySelector('.navbar .display-user-tiny > span.display-user-username').text.trim();
-
+      const username = $.querySelector(
+        '.navbar .display-user-tiny > span.display-user-username',
+      ).text.trim();
 
       const characters = await this.loadAllCharacters($);
 
@@ -73,12 +76,14 @@ export default class Toyhouse extends Website<ToyhouseAccountData> implements
     const allCharacters = this.getCharacters(firstPage);
 
     // Check if there are more pages
-    let hasNextPage = !!firstPage.querySelector('.pagination-wrapper a[rel="next"]');
+    let hasNextPage = !!firstPage.querySelector(
+      '.pagination-wrapper a[rel="next"]',
+    );
     let pageNumber = 2;
 
     while (hasNextPage) {
       const url = `${this.BASE_URL}/~characters/manage/folder:all?page=${pageNumber}`;
-      
+
       const res = await Http.get<string>(url, {
         partition: this.accountId,
       });
@@ -106,7 +111,6 @@ export default class Toyhouse extends Website<ToyhouseAccountData> implements
   async onPostFileSubmission(
     postData: PostData<ToyhouseFileSubmission>,
     files: PostingFile[],
-    batchIndex: number,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfCancelled();
@@ -116,12 +120,15 @@ export default class Toyhouse extends Website<ToyhouseAccountData> implements
     });
 
     if (!isLoggedIn(page)) {
-      return PostResponse.fromWebsite(this).withException(new Error('Not logged in'));
+      return PostResponse.fromWebsite(this).withException(
+        new Error('Not logged in'),
+      );
     }
 
     const $ = parse(page.body);
-    const token = $.querySelector('head > meta[name="csrf-token"]').getAttribute('content');
-
+    const token = $.querySelector(
+      'head > meta[name="csrf-token"]',
+    ).getAttribute('content');
 
     // This form data is very finnicky on what does and does not work.
     // Having some fields as empty strings is actually required. Be wary about changing anything about this payload.
@@ -129,7 +136,7 @@ export default class Toyhouse extends Website<ToyhouseAccountData> implements
       // Tech stuff
       _token: token,
       referer_url: `${this.BASE_URL}/~images/upload`,
-      
+
       // Image
       image: files[0].toPostFormat(),
       image_zoom: '',
@@ -137,7 +144,10 @@ export default class Toyhouse extends Website<ToyhouseAccountData> implements
       image_y: '',
 
       // Thumbnail (custom thumbnails are not supported at this time)
-      thumbnail: new FormFile(Buffer.alloc(0), { filename: '', contentType: 'application/octet-stream' }),
+      thumbnail: new FormFile(Buffer.alloc(0), {
+        filename: '',
+        contentType: 'application/octet-stream',
+      }),
       thumbnail_options: 'onsite',
       thumbnail_custom: 'offsite',
 
@@ -153,7 +163,10 @@ export default class Toyhouse extends Website<ToyhouseAccountData> implements
       is_sexual: parseIsSexual(postData.options.rating),
       is_nudity: postData.options.nudity ? '1' : undefined,
       is_gore: postData.options.gore ? '1' : undefined,
-      is_sensitive: postData.options.sensitiveContent || postData.options.contentWarning ? '1' : undefined,
+      is_sensitive:
+        postData.options.sensitiveContent || postData.options.contentWarning
+          ? '1'
+          : undefined,
       warning: postData.options.contentWarning || '',
 
       // Artist Credits
@@ -175,7 +188,9 @@ export default class Toyhouse extends Website<ToyhouseAccountData> implements
         .withSourceUrl(result.responseUrl);
     }
 
-    const err = parse(result.body).querySelector('.alert-danger').textContent.trim();
+    const err = parse(result.body)
+      .querySelector('.alert-danger')
+      .textContent.trim();
 
     return PostResponse.fromWebsite(this)
       .withAdditionalInfo(result.body)
@@ -198,14 +213,23 @@ export default class Toyhouse extends Website<ToyhouseAccountData> implements
       return match ? match[1] : null;
     };
 
-    return Array.from($
-      .querySelectorAll('.characters-gallery .gallery-thumb .character-name-badge'))
-      .map(e => ({ label: e.textContent.trim(), value: getCharId(e.getAttribute('href')) }));
+    return Array.from(
+      $.querySelectorAll(
+        '.characters-gallery .gallery-thumb .character-name-badge',
+      ),
+    ).map((e) => ({
+      label: e.textContent.trim(),
+      value: getCharId(e.getAttribute('href')),
+    }));
   }
 }
 
 function isLoggedIn(res: HttpResponse<string>) {
-  return res.statusCode === 200 && (!res.responseUrl || new URL(res.responseUrl).pathname !== '/~account/login');
+  return (
+    res.statusCode === 200 &&
+    (!res.responseUrl ||
+      new URL(res.responseUrl).pathname !== '/~account/login')
+  );
 }
 
 function parseIsSexual(rating: SubmissionRating) {

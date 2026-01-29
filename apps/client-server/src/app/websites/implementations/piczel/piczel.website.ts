@@ -132,7 +132,6 @@ export default class Piczel
   async onPostFileSubmission(
     postData: PostData<PiczelFileSubmission>,
     files: PostingFile[],
-    batchIndex: number,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfCancelled();

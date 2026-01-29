@@ -364,14 +364,13 @@ export default class SubscribeStar
     const uploadedItem = allUploads.find(
       (item) => item.original_filename === file.fileName,
     );
-    
+
     return uploadedItem ? String(uploadedItem.id) : undefined;
   }
 
   async onPostFileSubmission(
     postData: PostData<SubscribeStarFileSubmission>,
     files: PostingFile[],
-    batchIndex: number,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     const uploadData = await this.getPostData();

@@ -103,7 +103,6 @@ export default class Discord
   onPostFileSubmission(
     postData: PostData<DiscordFileSubmission>,
     files: PostingFile[],
-    batchIndex: number,
     cancellationToken: CancellableToken,
   ): Promise<IPostResponse> {
     cancellationToken.throwIfCancelled();
