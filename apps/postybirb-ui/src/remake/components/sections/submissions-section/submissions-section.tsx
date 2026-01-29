@@ -13,8 +13,8 @@ import { IconArchive, IconFiles, IconMessage } from '@tabler/icons-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { tinykeys } from 'tinykeys';
 import {
-  DeleteSelectedKeybinding,
-  toTinykeysFormat,
+    DeleteSelectedKeybinding,
+    toTinykeysFormat,
 } from '../../../config/keybindings';
 import { SubmissionRecord } from '../../../stores';
 import { useSubmissionsLoading } from '../../../stores/entity/submission-store';
@@ -23,11 +23,10 @@ import { ArchivedSubmissionList } from './archived-submission-list';
 import { SubmissionsProvider } from './context';
 import { FileSubmissionModal } from './file-submission-modal';
 import {
-  useGlobalDropzone,
-  useSubmissionHandlers,
-  useSubmissions,
-  useSubmissionSelection,
-  useSubmissionSortable,
+    useGlobalDropzone,
+    useSubmissionHandlers,
+    useSubmissions,
+    useSubmissionSelection,
 } from './hooks';
 import { PostConfirmModal } from './post-confirm-modal';
 import { ResumeModeModal } from './resume-mode-modal';
@@ -74,13 +73,6 @@ export function SubmissionsSection({
     () => orderedSubmissions.filter((s) => selectedIds.includes(s.id)),
     [orderedSubmissions, selectedIds]
   );
-
-  // Sortable drag-and-drop
-  const { containerRef } = useSubmissionSortable({
-    isDragEnabled,
-    orderedSubmissions,
-    setOrderedSubmissions,
-  });
 
   // Action handlers
   const {
@@ -302,7 +294,7 @@ export function SubmissionsSection({
           <SubmissionList
             isLoading={isLoading}
             submissions={orderedSubmissions}
-            containerRef={containerRef}
+            onReorder={setOrderedSubmissions}
           />
         ) : (
           <ArchivedSubmissionList submissionType={submissionType} />

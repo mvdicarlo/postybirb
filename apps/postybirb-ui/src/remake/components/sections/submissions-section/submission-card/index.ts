@@ -3,6 +3,8 @@
  */
 
 export { ArchivedSubmissionCard } from './archived-submission-card';
+export { SortableSubmissionCard } from './sortable-submission-card';
+export type { SortableSubmissionCardProps } from './sortable-submission-card';
 export { SubmissionActions } from './submission-actions';
 export { SubmissionBadges } from './submission-badges';
 export { SubmissionCard } from './submission-card';

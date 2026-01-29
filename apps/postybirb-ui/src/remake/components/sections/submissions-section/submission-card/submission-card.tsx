@@ -32,6 +32,7 @@ export function SubmissionCard({
   draggable = false,
   isCompact = false,
   className,
+  dragHandleListeners,
 }: SubmissionCardProps) {
   const { onSelect } = useSubmissionsContext();
   const { formatRelativeTime, formatDateTime } = useLocale();
@@ -171,6 +172,7 @@ export function SubmissionCard({
             <Box
               className="sort-handle postybirb__submission__drag_handle"
               onClick={(e) => e.stopPropagation()}
+              {...dragHandleListeners}
             >
               <IconGripVertical size={16} />
             </Box>
