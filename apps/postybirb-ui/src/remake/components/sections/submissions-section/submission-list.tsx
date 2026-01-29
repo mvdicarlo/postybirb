@@ -112,8 +112,13 @@ export function SubmissionList({
         if (oldIndex !== -1 && newIndex !== -1) {
           const newOrder = arrayMove(submissions, oldIndex, newIndex);
           onReorder(newOrder);
+          
+          // Determine position relative to target
+          const position = newIndex > oldIndex ? 'after' : 'before';
+          const targetId = over.id as string;
+          
           // Persist the new order to the server
-          submissionApi.reorder(active.id as string, newIndex);
+          submissionApi.reorder(active.id as string, targetId, position);
         }
       }
     },

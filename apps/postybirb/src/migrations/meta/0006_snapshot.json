@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "c4b2f2a9-3a4c-4e3f-a185-9b2023c630bd",
-  "prevId": "141755e7-aab5-4c52-b76c-f5aecc76273c",
+  "id": "e3d07928-f97f-408f-8c4c-25795f984ac3",
+  "prevId": "c4b2f2a9-3a4c-4e3f-a185-9b2023c630bd",
   "tables": {
     "account": {
       "name": "account",
@@ -467,20 +467,20 @@
           ],
           "isUnique": true
         },
-        "idx_post_event_lookup": {
-          "name": "idx_post_event_lookup",
+        "idx_post_event_type": {
+          "name": "idx_post_event_type",
           "columns": [
             "postRecordId",
-            "accountId",
             "eventType"
           ],
           "isUnique": false
         },
-        "idx_post_event_file": {
-          "name": "idx_post_event_file",
+        "idx_post_event_account": {
+          "name": "idx_post_event_account",
           "columns": [
             "postRecordId",
-            "fileId"
+            "accountId",
+            "eventType"
           ],
           "isUnique": false
         }
@@ -1040,7 +1040,7 @@
         },
         "order": {
           "name": "order",
-          "type": "integer",
+          "type": "real",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -1464,121 +1464,6 @@
           "tableTo": "submission",
           "columnsFrom": [
             "submissionId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "website-post-record": {
-      "name": "website-post-record",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "updatedAt": {
-          "name": "updatedAt",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "accountId": {
-          "name": "accountId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "postRecordId": {
-          "name": "postRecordId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "completedAt": {
-          "name": "completedAt",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "errors": {
-          "name": "errors",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "metadata": {
-          "name": "metadata",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "postData": {
-          "name": "postData",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "postResponse": {
-          "name": "postResponse",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        }
-      },
-      "indexes": {
-        "website-post-record_id_unique": {
-          "name": "website-post-record_id_unique",
-          "columns": [
-            "id"
-          ],
-          "isUnique": true
-        }
-      },
-      "foreignKeys": {
-        "website-post-record_accountId_account_id_fk": {
-          "name": "website-post-record_accountId_account_id_fk",
-          "tableFrom": "website-post-record",
-          "tableTo": "account",
-          "columnsFrom": [
-            "accountId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        },
-        "website-post-record_postRecordId_post-record_id_fk": {
-          "name": "website-post-record_postRecordId_post-record_id_fk",
-          "tableFrom": "website-post-record",
-          "tableTo": "post-record",
-          "columnsFrom": [
-            "postRecordId"
           ],
           "columnsTo": [
             "id"
