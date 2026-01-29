@@ -1,3 +1,5 @@
+/* eslint-disable consistent-return */
+/* eslint-disable react-hooks/rules-of-hooks */
 import { BlockNoteEditor } from '@blocknote/core';
 import {
   DefaultReactSuggestionItem,
