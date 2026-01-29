@@ -14,7 +14,7 @@ import {
   Select,
   Stack,
   Text,
-  Tooltip,
+  Tooltip
 } from '@mantine/core';
 import { DirectoryWatcherImportAction, SubmissionType } from '@postybirb/types';
 import {
@@ -24,7 +24,10 @@ import {
   IconTrash,
 } from '@tabler/icons-react';
 import { useCallback, useMemo, useState } from 'react';
-import directoryWatchersApi from '../../../api/directory-watchers.api';
+import directoryWatchersApi, {
+  CheckPathResult,
+  FILE_COUNT_WARNING_THRESHOLD,
+} from '../../../api/directory-watchers.api';
 import { useDirectoryWatchers } from '../../../stores';
 import type { DirectoryWatcherRecord } from '../../../stores/records';
 import { useActiveDrawer, useDrawerActions } from '../../../stores/ui/drawer-store';
@@ -36,6 +39,7 @@ import {
   showUpdatedNotification,
   showUpdateErrorNotification,
 } from '../../../utils/notifications';
+import { ConfirmActionModal } from '../../confirm-action-modal';
 import { EmptyState } from '../../empty-state';
 import { ComponentErrorBoundary } from '../../error-boundary';
 import { HoldToConfirmButton } from '../../hold-to-confirm';
@@ -63,6 +67,9 @@ function FileWatcherCard({ watcher }: FileWatcherCardProps) {
   );
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [confirmModalOpened, setConfirmModalOpened] = useState(false);
+  const [pendingPath, setPendingPath] = useState<string | null>(null);
+  const [pathCheckResult, setPathCheckResult] = useState<CheckPathResult | null>(null);
 
   // Memoize import action options to avoid re-renders
   const importActionOptions = useMemo(
@@ -85,9 +92,42 @@ function FileWatcherCard({ watcher }: FileWatcherCardProps) {
     if (window?.electron?.pickDirectory) {
       const folder = await window.electron.pickDirectory();
       if (folder) {
-        setPath(folder);
+        try {
+          const result = await directoryWatchersApi.checkPath(folder);
+          if (!result.body.valid) {
+            // Show error notification for invalid path
+            showUpdateErrorNotification();
+            return;
+          }
+
+          if (result.body.count > FILE_COUNT_WARNING_THRESHOLD) {
+            setPendingPath(folder);
+            setPathCheckResult(result.body);
+            setConfirmModalOpened(true);
+          } else {
+            setPath(folder);
+          }
+        } catch {
+          // If check fails, still allow selecting the folder
+          setPath(folder);
+        }
       }
     }
+  }, []);
+
+  const handleConfirmPath = useCallback(() => {
+    if (pendingPath) {
+      setPath(pendingPath);
+      setPendingPath(null);
+      setPathCheckResult(null);
+      setConfirmModalOpened(false);
+    }
+  }, [pendingPath]);
+
+  const handleCancelPath = useCallback(() => {
+    setPendingPath(null);
+    setPathCheckResult(null);
+    setConfirmModalOpened(false);
   }, []);
 
   const handleSave = useCallback(async () => {
@@ -202,6 +242,41 @@ function FileWatcherCard({ watcher }: FileWatcherCardProps) {
         </Group>
       </Stack>
       </ComponentErrorBoundary>
+
+      {/* Confirmation modal for folders with many files */}
+      {(() => {
+        const folderName = pendingPath?.split('/').pop() ?? pendingPath ?? '';
+        const fileCount = pathCheckResult?.count ?? 0;
+        const remainingCount = pathCheckResult ? pathCheckResult.files.length - 5 : 0;
+        return (
+          <ConfirmActionModal
+            opened={confirmModalOpened}
+            onClose={handleCancelPath}
+            onConfirm={handleConfirmPath}
+            title={<Trans>Folder Contains Files</Trans>}
+            message={
+              <Stack gap="xs">
+                <Text>
+                  <Trans>
+                    The folder "{folderName}" contains {fileCount} files.
+                  </Trans>
+                </Text>
+                {pathCheckResult && pathCheckResult.files.length > 0 && (
+                  <Text size="sm" c="dimmed">
+                    {pathCheckResult.files.slice(0, 5).join(', ')}
+                    {pathCheckResult.files.length > 5 && `, ... ${t`and ${remainingCount} more`}`}
+                  </Text>
+                )}
+                <Text>
+                  <Trans>Are you sure you want to watch this folder?</Trans>
+                </Text>
+              </Stack>
+            }
+            confirmLabel={<Trans>Confirm</Trans>}
+            confirmColor="blue"
+          />
+        );
+      })()}
     </Card>
   );
 }

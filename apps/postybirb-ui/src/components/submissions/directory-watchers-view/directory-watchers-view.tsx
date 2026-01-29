@@ -7,12 +7,14 @@ import {
   Group,
   Input,
   Loader,
+  Modal,
   Paper,
   Select,
   Stack,
   Text,
   Title,
 } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import {
   DirectoryWatcherDto,
@@ -22,7 +24,10 @@ import {
 import { IconDeviceFloppy, IconFolder, IconPlus } from '@tabler/icons-react';
 import { useMemo, useState } from 'react';
 import { useQuery } from 'react-query';
-import directoryWatchersApi from '../../../api/directory-watchers.api';
+import directoryWatchersApi, {
+  CheckPathResult,
+  FILE_COUNT_WARNING_THRESHOLD,
+} from '../../../api/directory-watchers.api';
 import { CommonTranslations } from '../../../translations/common-translations';
 import { DeleteActionPopover } from '../../shared/delete-action-popover/delete-action-popover';
 import TemplatePicker from '../../submission-templates/template-picker/template-picker';
@@ -51,6 +56,9 @@ function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
   const { directoryWatcher, refetch } = props;
   const [state, setState] = useState({ ...directoryWatcher });
   const [isSaving, setIsSaving] = useState(false);
+  const [confirmModalOpened, { open: openConfirmModal, close: closeConfirmModal }] = useDisclosure(false);
+  const [pendingPath, setPendingPath] = useState<string | null>(null);
+  const [pathCheckResult, setPathCheckResult] = useState<CheckPathResult | null>(null);
   const { t } = useLingui();
   const changed = hasChanged(directoryWatcher, state);
 
@@ -60,6 +68,51 @@ function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
       value: DirectoryWatcherImportAction.NEW_SUBMISSION,
     },
   ];
+
+  const handlePickFolder = async () => {
+    if (window?.electron?.pickDirectory) {
+      const folder = await window.electron.pickDirectory();
+      if (folder) {
+        try {
+          const result = await directoryWatchersApi.checkPath(folder);
+          if (!result.body.valid) {
+            notifications.show({
+              title: t`Invalid folder`,
+              message: result.body.error,
+              color: 'red',
+            });
+            return;
+          }
+
+          if (result.body.count > FILE_COUNT_WARNING_THRESHOLD) {
+            setPendingPath(folder);
+            setPathCheckResult(result.body);
+            openConfirmModal();
+          } else {
+            setState({ ...state, path: folder });
+          }
+        } catch {
+          // If check fails, still allow selecting the folder
+          setState({ ...state, path: folder });
+        }
+      }
+    }
+  };
+
+  const handleConfirmPath = () => {
+    if (pendingPath) {
+      setState({ ...state, path: pendingPath });
+      setPendingPath(null);
+      setPathCheckResult(null);
+      closeConfirmModal();
+    }
+  };
+
+  const handleCancelPath = () => {
+    setPendingPath(null);
+    setPathCheckResult(null);
+    closeConfirmModal();
+  };
 
   const handleSave = () => {
     setIsSaving(true);
@@ -116,17 +169,48 @@ function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
                 fontFamily: 'monospace',
               },
             }}
-            onClick={() => {
-              if (window?.electron?.pickDirectory) {
-                window.electron.pickDirectory().then((folder) => {
-                  if (folder) {
-                    setState({ ...state, path: folder ?? state.path });
-                  }
-                });
-              }
-            }}
+            onClick={handlePickFolder}
           />
         </Input.Wrapper>
+
+        <Modal
+          opened={confirmModalOpened}
+          onClose={handleCancelPath}
+          title={<Trans>Folder Contains Files</Trans>}
+          centered
+        >
+          {(() => {
+            const folderName = pendingPath?.split('/').pop() ?? pendingPath ?? '';
+            const fileCount = pathCheckResult?.count ?? 0;
+            const remainingCount = pathCheckResult ? pathCheckResult.files.length - 5 : 0;
+            return (
+              <Stack>
+                <Text>
+                  <Trans>
+                    The folder "{folderName}" contains {fileCount} files.
+                  </Trans>
+                </Text>
+                {pathCheckResult && pathCheckResult.files.length > 0 && (
+                  <Text size="sm" c="dimmed">
+                    {pathCheckResult.files.slice(0, 5).join(', ')}
+                    {pathCheckResult.files.length > 5 && `, ... ${t`and ${remainingCount} more`}`}
+                  </Text>
+                )}
+            <Text>
+              <Trans>Are you sure you want to watch this folder?</Trans>
+            </Text>
+            <Group justify="flex-end">
+              <Button variant="default" onClick={handleCancelPath}>
+                <Trans>Cancel</Trans>
+              </Button>
+              <Button color="blue" onClick={handleConfirmPath}>
+                <Trans>Confirm</Trans>
+              </Button>
+            </Group>
+              </Stack>
+            );
+          })()}
+        </Modal>
 
         <Select
           size="md"

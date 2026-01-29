@@ -11,7 +11,7 @@ import {
   PostEventType,
   PostRecordState,
   PostResponse,
-  SubmissionType,
+  SubmissionType
 } from '@postybirb/types';
 import {
   PostRecord,
@@ -162,11 +162,9 @@ export abstract class BasePostManager {
     const { submission } = entity;
     const { accountId, instance } = websiteInfo;
     let data: PostData | undefined;
+    const option = submission.options.find((o) => o.accountId === accountId);
 
     try {
-      // Emit POST_ATTEMPT_STARTED event
-      await this.emitPostAttemptStarted(entity.id, accountId, instance);
-
       if (!instance.getLoginState().isLoggedIn) {
         throw new Error('Not logged in');
       }
@@ -178,11 +176,18 @@ export abstract class BasePostManager {
         );
       }
 
-      const option = submission.options.find((o) => o.accountId === accountId);
-
       this.logger.info('Preparing post data');
       data = await this.preparePostData(submission, instance, option);
       this.logger.withMetadata(data).info('Post data prepared');
+
+      // Emit POST_ATTEMPT_STARTED event with post data
+      await this.emitPostAttemptStarted(
+        entity.id,
+        accountId,
+        instance,
+        data,
+        option,
+      );
 
       this.logger.info('Validating submission');
       const validationResult =
@@ -293,11 +298,15 @@ export abstract class BasePostManager {
    * @param {EntityId} postRecordId - The post record ID
    * @param {AccountId} accountId - The account ID
    * @param {Website<unknown>} instance - The website instance
+   * @param {PostData} [data] - The post data
+   * @param {WebsiteOptions} [option] - The website options
    */
   protected async emitPostAttemptStarted(
     postRecordId: EntityId,
     accountId: AccountId,
     instance: Website<unknown>,
+    data?: PostData,
+    option?: WebsiteOptions,
   ): Promise<void> {
     await this.postEventRepository.insert({
       postRecordId,
@@ -308,6 +317,12 @@ export abstract class BasePostManager {
           name: instance.account.name,
           website: instance.decoratedProps.metadata.name,
         },
+        postData: data
+          ? {
+              parsedOptions: data.options,
+              websiteOptions: option ? [] : [], // Blank for now; populate if needed later
+            }
+          : undefined,
       },
     });
   }
