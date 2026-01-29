@@ -26,6 +26,7 @@ import { ValidationService } from '../../../validation/validation.service';
 import {
   FileWebsite,
   ImplementedFileWebsite,
+  PostBatchData,
 } from '../../../websites/models/website-modifiers/file-website';
 import { UnknownWebsite } from '../../../websites/website';
 import { WebsiteRegistryService } from '../../../websites/website-registry.service';
@@ -265,13 +266,13 @@ describe('FileSubmissionPostManager', () => {
       const sourceUrl = 'https://example.com/file/123';
       const responseMessage = 'File posted successfully';
 
-      (
-        mockWebsite as unknown as FileWebsite
-      ).onPostFileSubmission = jest.fn().mockResolvedValue({
-        instanceId: 'test-website',
-        sourceUrl,
-        message: responseMessage,
-      });
+      (mockWebsite as unknown as FileWebsite).onPostFileSubmission = jest
+        .fn()
+        .mockResolvedValue({
+          instanceId: 'test-website',
+          sourceUrl,
+          message: responseMessage,
+        });
 
       await (manager as any).attemptToPost(
         postRecord,
@@ -283,12 +284,10 @@ describe('FileSubmissionPostManager', () => {
       // Verify website method was called
       expect(
         (mockWebsite as unknown as FileWebsite).onPostFileSubmission,
-      ).toHaveBeenCalledWith(
-        postData,
-        expect.any(Array),
-        1,
-        cancelToken,
-      );
+      ).toHaveBeenCalledWith(postData, expect.any(Array), cancelToken, {
+        index: 0,
+        totalBatches: 1,
+      } satisfies PostBatchData);
 
       // Verify FILE_POSTED event was emitted
       expect(postEventRepositoryMock.insert).toHaveBeenCalledWith(
@@ -299,7 +298,7 @@ describe('FileSubmissionPostManager', () => {
           fileId: submissionFile.id,
           sourceUrl,
           metadata: expect.objectContaining({
-            batchNumber: 1,
+            batchNumber: 0,
             accountSnapshot: {
               name: 'test-account',
               website: 'Test Website',
@@ -319,15 +318,15 @@ describe('FileSubmissionPostManager', () => {
       const stage = 'upload';
       const additionalInfo = { code: 'ERR_API' };
 
-      (
-        mockWebsite as unknown as FileWebsite
-      ).onPostFileSubmission = jest.fn().mockResolvedValue({
-        instanceId: 'test-website',
-        message: errorMessage,
-        exception,
-        stage,
-        additionalInfo,
-      } as IPostResponse);
+      (mockWebsite as unknown as FileWebsite).onPostFileSubmission = jest
+        .fn()
+        .mockResolvedValue({
+          instanceId: 'test-website',
+          message: errorMessage,
+          exception,
+          stage,
+          additionalInfo,
+        } as IPostResponse);
 
       await expect(
         (manager as any).attemptToPost(
@@ -357,12 +356,12 @@ describe('FileSubmissionPostManager', () => {
     it('should emit FILE_FAILED with unknown error when no message provided', async () => {
       const exception = new Error('Unknown API Error');
 
-      (
-        mockWebsite as unknown as FileWebsite
-      ).onPostFileSubmission = jest.fn().mockResolvedValue({
-        instanceId: 'test-website',
-        exception,
-      } as IPostResponse);
+      (mockWebsite as unknown as FileWebsite).onPostFileSubmission = jest
+        .fn()
+        .mockResolvedValue({
+          instanceId: 'test-website',
+          exception,
+        } as IPostResponse);
 
       await expect(
         (manager as any).attemptToPost(
@@ -434,12 +433,12 @@ describe('FileSubmissionPostManager', () => {
       const postRecordWithIgnored = createPostRecord(submission);
       postData.submission = submission;
 
-      (
-        mockWebsite as unknown as FileWebsite
-      ).onPostFileSubmission = jest.fn().mockResolvedValue({
-        instanceId: 'test-website',
-        sourceUrl: 'https://example.com/file/456',
-      });
+      (mockWebsite as unknown as FileWebsite).onPostFileSubmission = jest
+        .fn()
+        .mockResolvedValue({
+          instanceId: 'test-website',
+          sourceUrl: 'https://example.com/file/456',
+        });
 
       await (manager as any).attemptToPost(
         postRecordWithIgnored,
@@ -472,18 +471,20 @@ describe('FileSubmissionPostManager', () => {
       postData.submission = submission;
 
       // Set batch size to 3 to get all files in one batch
-      (mockWebsite as unknown as ImplementedFileWebsite).decoratedProps.fileOptions.fileBatchSize = 3;
+      (
+        mockWebsite as unknown as ImplementedFileWebsite
+      ).decoratedProps.fileOptions.fileBatchSize = 3;
 
       let capturedFiles: PostingFile[] = [];
-      (
-        mockWebsite as unknown as FileWebsite
-      ).onPostFileSubmission = jest.fn().mockImplementation((data, files) => {
-        capturedFiles = files;
-        return {
-          instanceId: 'test-website',
-          sourceUrl: 'https://example.com/file/all',
-        };
-      });
+      (mockWebsite as unknown as FileWebsite).onPostFileSubmission = jest
+        .fn()
+        .mockImplementation((data, files) => {
+          capturedFiles = files;
+          return {
+            instanceId: 'test-website',
+            sourceUrl: 'https://example.com/file/all',
+          };
+        });
 
       await (manager as any).attemptToPost(
         postRecordWithMultiple,
@@ -541,20 +542,20 @@ describe('FileSubmissionPostManager', () => {
       } as PostData;
 
       // Set batch size to 2
-      (mockWebsite as unknown as ImplementedFileWebsite).decoratedProps.fileOptions.fileBatchSize = 2;
+      (
+        mockWebsite as unknown as ImplementedFileWebsite
+      ).decoratedProps.fileOptions.fileBatchSize = 2;
 
       const batchIndices: number[] = [];
-      (
-        mockWebsite as unknown as FileWebsite
-      ).onPostFileSubmission = jest.fn().mockImplementation(
-        (data, files, batchIndex) => {
-          batchIndices.push(batchIndex);
+      (mockWebsite as unknown as FileWebsite).onPostFileSubmission = jest
+        .fn()
+        .mockImplementation((data, files, token, { index }) => {
+          batchIndices.push(index);
           return {
             instanceId: 'test-website',
-            sourceUrl: `https://example.com/batch/${batchIndex}`,
+            sourceUrl: `https://example.com/batch/${index}`,
           };
-        },
-      );
+        });
 
       await (manager as any).attemptToPost(
         postRecord,
@@ -567,7 +568,7 @@ describe('FileSubmissionPostManager', () => {
       expect(
         (mockWebsite as unknown as FileWebsite).onPostFileSubmission,
       ).toHaveBeenCalledTimes(2);
-      expect(batchIndices).toEqual([1, 2]);
+      expect(batchIndices).toEqual([0, 1]);
     });
 
     it('should use minimum batch size of 1', async () => {
@@ -586,14 +587,16 @@ describe('FileSubmissionPostManager', () => {
       } as PostData;
 
       // Set invalid batch size
-      (mockWebsite as unknown as ImplementedFileWebsite).decoratedProps.fileOptions.fileBatchSize = 0;
-
       (
-        mockWebsite as unknown as FileWebsite
-      ).onPostFileSubmission = jest.fn().mockResolvedValue({
-        instanceId: 'test-website',
-        sourceUrl: 'https://example.com/file',
-      });
+        mockWebsite as unknown as ImplementedFileWebsite
+      ).decoratedProps.fileOptions.fileBatchSize = 0;
+
+      (mockWebsite as unknown as FileWebsite).onPostFileSubmission = jest
+        .fn()
+        .mockResolvedValue({
+          instanceId: 'test-website',
+          sourceUrl: 'https://example.com/file',
+        });
 
       await (manager as any).attemptToPost(
         postRecord,
@@ -629,25 +632,27 @@ describe('FileSubmissionPostManager', () => {
       } as PostData;
 
       // Set batch size to 1 to have 3 separate batches
-      (mockWebsite as unknown as ImplementedFileWebsite).decoratedProps.fileOptions.fileBatchSize = 1;
+      (
+        mockWebsite as unknown as ImplementedFileWebsite
+      ).decoratedProps.fileOptions.fileBatchSize = 1;
 
       let callCount = 0;
-      (
-        mockWebsite as unknown as FileWebsite
-      ).onPostFileSubmission = jest.fn().mockImplementation(() => {
-        callCount++;
-        if (callCount === 2) {
+      (mockWebsite as unknown as FileWebsite).onPostFileSubmission = jest
+        .fn()
+        .mockImplementation(() => {
+          callCount++;
+          if (callCount === 2) {
+            return {
+              instanceId: 'test-website',
+              exception: new Error('Batch 2 failed'),
+              message: 'Failed on second batch',
+            };
+          }
           return {
             instanceId: 'test-website',
-            exception: new Error('Batch 2 failed'),
-            message: 'Failed on second batch',
+            sourceUrl: `https://example.com/file/${callCount}`,
           };
-        }
-        return {
-          instanceId: 'test-website',
-          sourceUrl: `https://example.com/file/${callCount}`,
-        };
-      });
+        });
 
       await expect(
         (manager as any).attemptToPost(
@@ -720,15 +725,15 @@ describe('FileSubmissionPostManager', () => {
       ]);
 
       let capturedFiles: PostingFile[] = [];
-      (
-        mockWebsite as unknown as FileWebsite
-      ).onPostFileSubmission = jest.fn().mockImplementation((data, files) => {
-        capturedFiles = files;
-        return {
-          instanceId: 'test-website',
-          sourceUrl: 'https://example.com/file',
-        };
-      });
+      (mockWebsite as unknown as FileWebsite).onPostFileSubmission = jest
+        .fn()
+        .mockImplementation((data, files) => {
+          capturedFiles = files;
+          return {
+            instanceId: 'test-website',
+            sourceUrl: 'https://example.com/file',
+          };
+        });
 
       await (manager as any).attemptToPost(
         postRecord,
@@ -772,15 +777,15 @@ describe('FileSubmissionPostManager', () => {
       (manager as any).resumeContext = resumeContext;
 
       let capturedFiles: PostingFile[] = [];
-      (
-        mockWebsite as unknown as FileWebsite
-      ).onPostFileSubmission = jest.fn().mockImplementation((data, files) => {
-        capturedFiles = files;
-        return {
-          instanceId: 'test-website',
-          sourceUrl: 'https://example.com/file',
-        };
-      });
+      (mockWebsite as unknown as FileWebsite).onPostFileSubmission = jest
+        .fn()
+        .mockImplementation((data, files) => {
+          capturedFiles = files;
+          return {
+            instanceId: 'test-website',
+            sourceUrl: 'https://example.com/file',
+          };
+        });
 
       await (manager as any).attemptToPost(
         postRecord,
@@ -827,15 +832,15 @@ describe('FileSubmissionPostManager', () => {
       (manager as any).resumeContext = resumeContext;
 
       let capturedFiles: PostingFile[] = [];
-      (
-        mockWebsite as unknown as FileWebsite
-      ).onPostFileSubmission = jest.fn().mockImplementation((data, files) => {
-        capturedFiles = files;
-        return {
-          instanceId: 'test-website',
-          sourceUrl: 'https://example.com/file',
-        };
-      });
+      (mockWebsite as unknown as FileWebsite).onPostFileSubmission = jest
+        .fn()
+        .mockImplementation((data, files) => {
+          capturedFiles = files;
+          return {
+            instanceId: 'test-website',
+            sourceUrl: 'https://example.com/file',
+          };
+        });
 
       await (manager as any).attemptToPost(
         postRecord,
@@ -898,15 +903,15 @@ describe('FileSubmissionPostManager', () => {
       (manager as any).resumeContext = resumeContext;
 
       let capturedFiles: PostingFile[] = [];
-      (
-        mockWebsite as unknown as FileWebsite
-      ).onPostFileSubmission = jest.fn().mockImplementation((data, files) => {
-        capturedFiles = files;
-        return {
-          instanceId: 'test-website',
-          sourceUrl: 'https://example.com/file',
-        };
-      });
+      (mockWebsite as unknown as FileWebsite).onPostFileSubmission = jest
+        .fn()
+        .mockImplementation((data, files) => {
+          capturedFiles = files;
+          return {
+            instanceId: 'test-website',
+            sourceUrl: 'https://example.com/file',
+          };
+        });
 
       await (manager as any).attemptToPost(
         postRecord,
@@ -952,9 +957,9 @@ describe('FileSubmissionPostManager', () => {
       } as PostData;
 
       // Website only accepts JPEG
-      (mockWebsite as unknown as ImplementedFileWebsite).decoratedProps.fileOptions.acceptedMimeTypes = [
-        'image/jpeg',
-      ];
+      (
+        mockWebsite as unknown as ImplementedFileWebsite
+      ).decoratedProps.fileOptions.acceptedMimeTypes = ['image/jpeg'];
 
       // Resizer returns PNG (which website doesn't accept)
       resizerServiceMock.resize.mockImplementation(async (request) => {
@@ -988,19 +993,21 @@ describe('FileSubmissionPostManager', () => {
       } as PostData;
 
       // Website accepts all file types
-      (mockWebsite as unknown as ImplementedFileWebsite).decoratedProps.fileOptions.acceptedMimeTypes = [];
+      (
+        mockWebsite as unknown as ImplementedFileWebsite
+      ).decoratedProps.fileOptions.acceptedMimeTypes = [];
 
       resizerServiceMock.resize.mockImplementation(async (request) => {
         const f = request.file as SubmissionFile;
         return createPostingFile(f);
       });
 
-      (
-        mockWebsite as unknown as FileWebsite
-      ).onPostFileSubmission = jest.fn().mockResolvedValue({
-        instanceId: 'test-website',
-        sourceUrl: 'https://example.com/file',
-      });
+      (mockWebsite as unknown as FileWebsite).onPostFileSubmission = jest
+        .fn()
+        .mockResolvedValue({
+          instanceId: 'test-website',
+          sourceUrl: 'https://example.com/file',
+        });
 
       await expect(
         (manager as any).attemptToPost(
@@ -1023,13 +1030,13 @@ describe('FileSubmissionPostManager', () => {
       const postRecord = createPostRecord(submission);
       const mockWebsite = createMockFileWebsite(accountId);
 
-      (
-        mockWebsite as unknown as FileWebsite
-      ).onPostFileSubmission = jest.fn().mockResolvedValue({
-        instanceId: 'test-website',
-        sourceUrl: 'https://example.com/file/456',
-        message: 'Successfully posted file',
-      });
+      (mockWebsite as unknown as FileWebsite).onPostFileSubmission = jest
+        .fn()
+        .mockResolvedValue({
+          instanceId: 'test-website',
+          sourceUrl: 'https://example.com/file/456',
+          message: 'Successfully posted file',
+        });
 
       resizerServiceMock.resize.mockImplementation(async (request) => {
         const file = request.file as SubmissionFile;
@@ -1064,7 +1071,7 @@ describe('FileSubmissionPostManager', () => {
         fileId: submissionFile.id,
         sourceUrl: 'https://example.com/file/456',
         metadata: {
-          batchNumber: 1,
+          batchNumber: 0,
           accountSnapshot: {
             name: 'test-account',
             website: 'Test Website',

@@ -4,16 +4,13 @@ import {
   ILoginState,
   ImageResizeProps,
   IPostResponse,
-  ISubmissionFile,
   PostData,
   PostResponse,
-  SimpleValidationResult,
   SubmissionRating,
 } from '@postybirb/types';
 import { HTMLElement, parse } from 'node-html-parser';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
-import HtmlParserUtil from '../../../utils/html-parser.util';
 import FileSize from '../../../utils/filesize.util';
 import { PostBuilder } from '../../commons/post-builder';
 import { validatorPassthru } from '../../commons/validator-passthru';
@@ -149,7 +146,6 @@ export default class Sofurry
   async onPostFileSubmission(
     postData: PostData<SofurryFileSubmission>,
     files: PostingFile[],
-    batchIndex: number,
     cancellationToken: CancellableToken,
   ): Promise<IPostResponse> {
     const url = `${this.BASE_URL}/upload/details?contentType=${this.getSubmissionType(

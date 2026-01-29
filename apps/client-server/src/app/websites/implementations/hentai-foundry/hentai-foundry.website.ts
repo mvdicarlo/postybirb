@@ -106,7 +106,6 @@ export default class HentaiFoundry
   async onPostFileSubmission(
     postData: PostData<HentaiFoundryFileSubmission>,
     files: PostingFile[],
-    batchIndex: number,
     cancellationToken: CancellableToken,
   ): Promise<IPostResponse> {
     // Get the form page first

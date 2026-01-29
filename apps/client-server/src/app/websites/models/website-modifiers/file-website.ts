@@ -1,10 +1,10 @@
 import {
-    ImageResizeProps,
-    IPostResponse,
-    ISubmissionFile,
-    IWebsiteFormFields,
-    PostData,
-    SimpleValidationResult,
+  ImageResizeProps,
+  IPostResponse,
+  ISubmissionFile,
+  IWebsiteFormFields,
+  PostData,
+  SimpleValidationResult,
 } from '@postybirb/types';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
@@ -14,6 +14,11 @@ import { BaseWebsiteOptions } from '../base-website-options';
 export const FileWebsiteKey = 'createFileModel';
 
 export type ImplementedFileWebsite = FileWebsite & UnknownWebsite;
+
+export interface PostBatchData {
+  index: number;
+  totalBatches: number;
+}
 
 /**
  * Defines methods for allowing file based posting.
@@ -39,8 +44,8 @@ export interface FileWebsite<
   onPostFileSubmission(
     postData: PostData<T>,
     files: PostingFile[],
-    batchIndex: number,
     cancellationToken: CancellableToken,
+    batch: PostBatchData,
   ): Promise<IPostResponse>;
 
   onValidateFileSubmission(

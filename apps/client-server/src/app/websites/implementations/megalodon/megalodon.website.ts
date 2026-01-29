@@ -491,7 +491,6 @@ export abstract class MegalodonWebsite
   async onPostFileSubmission(
     postData: PostData<MegalodonFileSubmission>,
     files: PostingFile[],
-    batchIndex: number,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfCancelled();

@@ -123,7 +123,6 @@ export default class E621
   async onPostFileSubmission(
     postData: PostData<E621FileSubmission>,
     files: PostingFile[],
-    batchIndex: number,
     cancellableToken: CancellableToken,
   ): Promise<PostResponse> {
     cancellableToken.throwIfCancelled();

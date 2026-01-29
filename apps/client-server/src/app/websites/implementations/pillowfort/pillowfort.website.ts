@@ -87,7 +87,6 @@ export default class Pillowfort
   async onPostFileSubmission(
     postData: PostData<PillowfortFileSubmission>,
     files: PostingFile[],
-    batchIndex: number,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     try {

@@ -67,7 +67,6 @@ export default class Pixiv
   async onPostFileSubmission(
     postData: PostData<PixivFileSubmission>,
     files: PostingFile[],
-    batchIndex: number,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfCancelled();

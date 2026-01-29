@@ -101,7 +101,6 @@ export default class Picarto
   async onPostFileSubmission(
     postData: PostData<PicartoFileSubmission>,
     files: PostingFile[],
-    batchIndex: number,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfCancelled();

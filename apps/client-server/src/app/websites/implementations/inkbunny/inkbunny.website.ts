@@ -18,7 +18,10 @@ import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { SupportsUsernameShortcut } from '../../decorators/supports-username-shortcut.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
-import { FileWebsite } from '../../models/website-modifiers/file-website';
+import {
+  FileWebsite,
+  PostBatchData,
+} from '../../models/website-modifiers/file-website';
 import { Website } from '../../website';
 import { InkbunnyFileSubmission } from './models/inkbunny-file-submission';
 
@@ -122,8 +125,8 @@ export default class Inkbunny
   async onPostFileSubmission(
     postData: PostData<InkbunnyFileSubmission>,
     files: PostingFile[],
-    batchIndex: number,
     cancellationToken: CancellableToken,
+    batch: PostBatchData,
   ): Promise<IPostResponse> {
     try {
       cancellationToken.throwIfCancelled();
@@ -207,7 +210,7 @@ export default class Inkbunny
         .withException(
           error instanceof Error ? error : new Error(String(error)),
         )
-        .withAdditionalInfo({ postData, files, batchIndex });
+        .withAdditionalInfo({ postData, files, batch });
     }
   }
 
