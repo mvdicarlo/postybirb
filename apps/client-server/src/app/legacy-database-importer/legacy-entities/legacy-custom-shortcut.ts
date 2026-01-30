@@ -78,7 +78,6 @@ export class LegacyCustomShortcut implements LegacyConverterEntity<ICustomShortc
       db: 'derpibooru',
       e6: 'e621',
       fa: 'furaffinity',
-      ft: 'furtastic',
       furb: 'furbooru',
       hf: 'h-foundry',
       ib: 'inkbunny',
