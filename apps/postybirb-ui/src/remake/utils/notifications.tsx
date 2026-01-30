@@ -81,6 +81,18 @@ export function showCopiedNotification() {
 }
 
 /**
+ * Show a success notification for item duplication.
+ */
+export function showDuplicatedNotification(itemName?: string) {
+  notifications.show({
+    title: itemName,
+    message: <Trans>Duplicated successfully</Trans>,
+    color: 'green',
+    icon: <IconCheck size={16} />,
+  });
+}
+
+/**
  * Show a success notification for restoring/unarchiving an item.
  */
 export function showRestoredNotification() {
