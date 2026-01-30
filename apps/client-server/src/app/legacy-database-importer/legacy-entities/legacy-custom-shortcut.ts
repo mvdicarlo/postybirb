@@ -136,8 +136,9 @@ export class LegacyCustomShortcut implements LegacyConverterEntity<ICustomShortc
                     id: new Date().getTime().toString(),
                     shortcut: modernId,
                     only: '',
+                    username: shortcutValue,
                   },
-                  content: [{ type: 'text', text: shortcutValue, styles: {} }],
+                  content: undefined,
                 });
                 return;
               }
