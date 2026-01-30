@@ -3,7 +3,9 @@ import {
   ILoginState,
   ImageResizeProps,
   InkbunnyAccountData,
+  InkbunnyOAuthRoutes,
   IPostResponse,
+  OAuthRouteHandlers,
   PostData,
   PostResponse,
   SubmissionRating,
@@ -22,6 +24,7 @@ import {
   FileWebsite,
   PostBatchData,
 } from '../../models/website-modifiers/file-website';
+import { OAuthWebsite } from '../../models/website-modifiers/oauth-website';
 import { Website } from '../../website';
 import { InkbunnyFileSubmission } from './models/inkbunny-file-submission';
 
@@ -74,7 +77,9 @@ import { InkbunnyFileSubmission } from './models/inkbunny-file-submission';
 })
 export default class Inkbunny
   extends Website<InkbunnyAccountData>
-  implements FileWebsite<InkbunnyFileSubmission>
+  implements
+    FileWebsite<InkbunnyFileSubmission>,
+    OAuthWebsite<InkbunnyOAuthRoutes>
 {
   protected BASE_URL = 'https://inkbunny.net';
 
@@ -82,6 +87,37 @@ export default class Inkbunny
     {
       folders: true,
     };
+
+  /**
+   * OAuth route handlers for Inkbunny login.
+   * Password is only sent to Inkbunny API and never stored.
+   */
+  public onAuthRoute: OAuthRouteHandlers<InkbunnyOAuthRoutes> = {
+    login: async (request) => {
+      this.logger.info(`Attempting Inkbunny login for ${request.username}`);
+
+      const authResponse = await Http.get<{
+        sid?: string;
+        error_message?: string;
+      }>(
+        `${this.BASE_URL}/api_login.php?username=${encodeURIComponent(
+          request.username,
+        )}&password=${encodeURIComponent(request.password)}`,
+        { partition: this.accountId },
+      );
+
+      if (authResponse.body.sid) {
+        // Only store username and session ID, never the password
+        await this.setWebsiteData({
+          username: request.username,
+          sid: authResponse.body.sid,
+        });
+        this.logger.info(`Inkbunny login successful for ${request.username}`);
+      } else {
+        throw new Error(authResponse.body.error_message || 'Login failed');
+      }
+    },
+  };
 
   public async onLogin(): Promise<ILoginState> {
     const data = this.websiteDataStore.getData();
