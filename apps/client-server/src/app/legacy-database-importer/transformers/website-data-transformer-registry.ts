@@ -2,7 +2,6 @@ import { BlueskyDataTransformer } from './implementations/bluesky-data-transform
 import { CustomDataTransformer } from './implementations/custom-data-transformer';
 import { DiscordDataTransformer } from './implementations/discord-data-transformer';
 import { E621DataTransformer } from './implementations/e621-data-transformer';
-import { FurtasticDataTransformer } from './implementations/furtastic-data-transformer';
 import { InkbunnyDataTransformer } from './implementations/inkbunny-data-transformer';
 import { MegalodonDataTransformer } from './implementations/megalodon-data-transformer';
 import { TelegramDataTransformer } from './implementations/telegram-data-transformer';
@@ -33,7 +32,6 @@ export class WebsiteDataTransformerRegistry {
     Bluesky: new BlueskyDataTransformer(),
     Inkbunny: new InkbunnyDataTransformer(),
     e621: new E621DataTransformer(),
-    Furtastic: new FurtasticDataTransformer(),
 
     // Custom webhook website
     Custom: new CustomDataTransformer(),

@@ -15,7 +15,6 @@ export class WebsiteNameMapper {
     Discord: 'discord',
     FurAffinity: 'fur-affinity',
     Furbooru: 'furbooru',
-    Furtastic: 'furtastic',
     FurryNetwork: null, // Deprecated - no longer exists in V4
     HentaiFoundry: 'hentai-foundry',
     Inkbunny: 'inkbunny',
@@ -40,7 +39,7 @@ export class WebsiteNameMapper {
     Twitter: 'twitter',
     Weasyl: 'weasyl',
     e621: 'e621',
-    
+
     // New websites in V4 that didn't exist in Plus:
     // cara: 'cara',
     // firefish: 'firefish',
@@ -59,7 +58,9 @@ export class WebsiteNameMapper {
   /**
    * Map multiple legacy website names
    */
-  static mapMany(legacyNames: string[]): Array<{ legacy: string; new: string | null }> {
+  static mapMany(
+    legacyNames: string[],
+  ): Array<{ legacy: string; new: string | null }> {
     return legacyNames.map((legacy) => ({
       legacy,
       new: this.map(legacy),
