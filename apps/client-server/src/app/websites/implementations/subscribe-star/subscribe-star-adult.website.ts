@@ -4,49 +4,7 @@ import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { SupportsUsernameShortcut } from '../../decorators/supports-username-shortcut.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
-import SubscribeStar from './subscribe-star.website';
-
-type SubscribeStarSession = {
-  userId: string;
-  csrfToken?: string;
-};
-
-type SubscribeStarUploadData = {
-  s3Url: string;
-  s3UploadPath: string;
-  authenticityToken: string;
-};
-
-type SubscribeStarPostResponse = {
-  error: unknown;
-  html: string;
-  notice: string;
-  page_title: unknown;
-  push_state: boolean;
-  return: boolean;
-};
-
-type SubscribeStarUploadItem = {
-  id: number;
-  original_filename: string;
-  remove_path: string;
-  pinned: boolean;
-  group: string;
-  created_at: string;
-  gallery_preview_url?: string;
-  preview_url?: string;
-  url: string;
-  width?: string;
-  height?: string;
-  type: string;
-};
-
-type SubscribeStarProcessFileResponse = {
-  imgs_and_videos: SubscribeStarUploadItem[];
-  audios: SubscribeStarUploadItem[];
-  docs: SubscribeStarUploadItem[];
-  processed: boolean;
-};
+import BaseSubscribeStar from './base-subscribe-star.website';
 
 @WebsiteMetadata({
   name: 'subscribe-star-adult',
@@ -126,6 +84,6 @@ type SubscribeStarProcessFileResponse = {
   },
 })
 @DisableAds()
-export default class SubscribeStarAdult extends SubscribeStar {
+export default class SubscribeStarAdult extends BaseSubscribeStar {
   protected BASE_URL = 'https://www.subscribestar.adult';
 }

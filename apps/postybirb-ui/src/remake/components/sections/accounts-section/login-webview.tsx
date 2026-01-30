@@ -60,7 +60,7 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
   const debouncedRefreshLogin = useCallback(
     debounce(() => {
       accountApi.refreshLogin(accountId);
-    }, 1_000),
+    }, 500),
     [accountId],
   );
 

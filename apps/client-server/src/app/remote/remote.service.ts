@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
-import { getRemoteConfig, RemoteConfig } from '@postybirb/utils/electron';
+import { getRemoteConfig } from '@postybirb/utils/electron';
 import { session } from 'electron';
 import { UpdateCookiesRemoteDto } from './models/update-cookies-remote.dto';
 
@@ -8,10 +8,8 @@ import { UpdateCookiesRemoteDto } from './models/update-cookies-remote.dto';
 export class RemoteService {
   protected readonly logger = Logger(this.constructor.name);
 
-  private cachedRemoteSettings: RemoteConfig | null = null;
-
   async validate(password: string): Promise<boolean> {
-    const remoteConfig = await this.getRemoteConfig();
+    const remoteConfig = await getRemoteConfig();
     // if (!remoteConfig.enabled) {
     //   this.logger.error('Remote access is not enabled');
     //   throw new UnauthorizedException('Remote access is not enabled');
@@ -76,16 +74,5 @@ export class RemoteService {
     }
 
     return details;
-  }
-
-  private async getRemoteConfig(): Promise<RemoteConfig> {
-    if (this.cachedRemoteSettings) {
-      return this.cachedRemoteSettings;
-    }
-
-    const remoteSettings = await getRemoteConfig();
-
-    this.cachedRemoteSettings = remoteSettings;
-    return this.cachedRemoteSettings;
   }
 }
