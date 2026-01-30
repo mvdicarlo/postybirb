@@ -4,31 +4,34 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-    ActionIcon,
-    Card,
-    Group,
-    Text,
-    TextInput,
-    ThemeIcon,
-    Tooltip,
+  ActionIcon,
+  Card,
+  Group,
+  Text,
+  TextInput,
+  ThemeIcon,
+  Tooltip,
 } from '@mantine/core';
 import { SubmissionType } from '@postybirb/types';
 import {
-    IconCheck,
-    IconFile,
-    IconMessage,
-    IconPencil,
-    IconTrash,
-    IconX,
+  IconCheck,
+  IconCopy,
+  IconFile,
+  IconMessage,
+  IconPencil,
+  IconTrash,
+  IconX,
 } from '@tabler/icons-react';
 import { useCallback, useEffect, useState } from 'react';
 import submissionApi from '../../../api/submission.api';
 import type { SubmissionRecord } from '../../../stores/records';
 import {
-    showDeletedNotification,
-    showDeleteErrorNotification,
-    showErrorNotification,
-    showUpdatedNotification,
+  showDeletedNotification,
+  showDeleteErrorNotification,
+  showDuplicatedNotification,
+  showDuplicateErrorNotification,
+  showErrorNotification,
+  showUpdatedNotification,
 } from '../../../utils/notifications';
 import { HoldToConfirmButton } from '../../hold-to-confirm';
 import './templates-section.css';
@@ -88,6 +91,20 @@ export function TemplateCard({
       showDeleteErrorNotification();
     }
   }, [template.id]);
+
+  const [isDuplicating, setIsDuplicating] = useState(false);
+
+  const handleDuplicate = useCallback(async () => {
+    setIsDuplicating(true);
+    try {
+      await submissionApi.duplicate(template.id);
+      showDuplicatedNotification(template.title);
+    } catch {
+      showDuplicateErrorNotification();
+    } finally {
+      setIsDuplicating(false);
+    }
+  }, [template.id, template.title]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -183,6 +200,20 @@ export function TemplateCard({
                   }}
                 >
                   <IconPencil size={12} />
+                </ActionIcon>
+              </Tooltip>
+              <Tooltip label={<Trans>Duplicate</Trans>}>
+                <ActionIcon
+                  size="xs"
+                  variant="subtle"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDuplicate();
+                  }}
+                  loading={isDuplicating}
+                  disabled={isDuplicating}
+                >
+                  <IconCopy size={12} />
                 </ActionIcon>
               </Tooltip>
               <Tooltip label={<Trans>Hold to Delete</Trans>}>
