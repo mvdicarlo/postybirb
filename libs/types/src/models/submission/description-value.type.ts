@@ -52,8 +52,11 @@ type CustomInlineContentSchema = DefaultInlineContentSchema & {
       only: {
         default: string;
       };
+      username: {
+        default: string;
+      };
     };
-    content: 'styled';
+    content: 'none';
   };
   customShortcut: {
     type: 'customShortcut';

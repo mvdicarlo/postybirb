@@ -194,8 +194,9 @@ describe('LegacyCustomShortcutConverter', () => {
               props: expect.objectContaining({
                 shortcut: 'furaffinity',
                 only: '',
+                username: 'myusername',
               }),
-              content: [{ type: 'text', text: 'myusername', styles: {} }],
+              content: undefined,
             },
           ],
           children: [],
@@ -399,8 +400,8 @@ describe('LegacyCustomShortcutConverter', () => {
           props: expect.objectContaining({
             shortcut: 'furaffinity',
             only: '',
+            username: 'myusername',
           }),
-          content: [{ type: 'text', text: 'myusername', styles: {} }],
         },
         { type: 'text', text: ' with ', styles: {} },
         {
@@ -453,8 +454,8 @@ describe('LegacyCustomShortcutConverter', () => {
             props: expect.objectContaining({
               shortcut: 'furaffinity',
               only: '',
+              username: 'furuser',
             }),
-            content: [{ type: 'text', text: 'furuser', styles: {} }],
           },
           { type: 'text', text: ', ', styles: {} },
           {
@@ -462,8 +463,8 @@ describe('LegacyCustomShortcutConverter', () => {
             props: expect.objectContaining({
               shortcut: 'twitter',
               only: '',
+              username: 'twitterhandle',
             }),
-            content: [{ type: 'text', text: 'twitterhandle', styles: {} }],
           },
           { type: 'text', text: ', and ', styles: {} },
           {
@@ -471,8 +472,8 @@ describe('LegacyCustomShortcutConverter', () => {
             props: expect.objectContaining({
               shortcut: 'deviantart',
               only: '',
+              username: 'deviantartist',
             }),
-            content: [{ type: 'text', text: 'deviantartist', styles: {} }],
           },
         ],
         children: [],
@@ -646,8 +647,8 @@ describe('LegacyCustomShortcutConverter', () => {
             props: expect.objectContaining({
               shortcut: 'furaffinity',
               only: '',
+              username: 'testuser',
             }),
-            content: [{ type: 'text', text: 'testuser', styles: {} }],
           },
           { type: 'text', text: ' and ', styles: {} },
           {

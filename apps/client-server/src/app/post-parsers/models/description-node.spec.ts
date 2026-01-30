@@ -22,14 +22,9 @@ describe('DescriptionNode', () => {
               id: '1740142676292',
               shortcut: 'test',
               only: '',
+              username: 'User',
             },
-            content: [
-              {
-                type: 'text',
-                text: 'User',
-                styles: {},
-              },
-            ],
+            content: undefined,
           },
         ],
         children: [],
@@ -83,14 +78,9 @@ describe('DescriptionNode', () => {
               id: '1740142676292',
               shortcut: 'test',
               only: '',
+              username: 'User',
             },
-            content: [
-              {
-                type: 'text',
-                text: 'User',
-                styles: {},
-              },
-            ],
+            content: undefined,
           },
         ],
         children: [],
@@ -197,14 +187,9 @@ describe('DescriptionNode', () => {
                 id: '1740142676292',
                 shortcut: 'test',
                 only: '',
+                username: 'User1',
               },
-              content: [
-                {
-                  type: 'text',
-                  text: 'User1',
-                  styles: {},
-                },
-              ],
+              content: undefined,
             },
             { type: 'text', text: ' and ', styles: {} },
             {
@@ -213,14 +198,9 @@ describe('DescriptionNode', () => {
                 id: '1740142676293',
                 shortcut: 'test',
                 only: '',
+                username: 'User2',
               },
-              content: [
-                {
-                  type: 'text',
-                  text: 'User2',
-                  styles: {},
-                },
-              ],
+              content: undefined,
             },
           ],
           children: [],
@@ -261,8 +241,8 @@ describe('DescriptionNode', () => {
           content: [
             {
               type: 'username',
-              props: { id: '1', shortcut: 'test', only: '' },
-              content: [{ type: 'text', text: 'Alice', styles: {} }],
+              props: { id: '1', shortcut: 'test', only: '', username: 'Alice' },
+              content: undefined,
             },
           ],
           children: [],
@@ -278,8 +258,8 @@ describe('DescriptionNode', () => {
           content: [
             {
               type: 'username',
-              props: { id: '2', shortcut: 'test', only: '' },
-              content: [{ type: 'text', text: 'Bob', styles: {} }],
+              props: { id: '2', shortcut: 'test', only: '', username: 'Bob' },
+              content: undefined,
             },
           ],
           children: [],
@@ -354,14 +334,14 @@ describe('DescriptionNode', () => {
           content: [
             {
               type: 'username',
-              props: { id: '1', shortcut: 'test', only: '' },
-              content: [{ type: 'text', text: 'SameUser', styles: {} }],
+              props: { id: '1', shortcut: 'test', only: '', username: 'SameUser' },
+              content: undefined,
             },
             { type: 'text', text: ' and ', styles: {} },
             {
               type: 'username',
-              props: { id: '2', shortcut: 'test', only: '' },
-              content: [{ type: 'text', text: 'SameUser', styles: {} }],
+              props: { id: '2', shortcut: 'test', only: '', username: 'SameUser' },
+              content: undefined,
             },
           ],
           children: [],
@@ -634,8 +614,8 @@ describe('DescriptionNode', () => {
           content: [
             {
               type: 'username',
-              props: { id: '1', shortcut: 'test', only: '' },
-              content: [{ type: 'text', text: 'TestUser', styles: {} }],
+              props: { id: '1', shortcut: 'test', only: '', username: 'TestUser' },
+              content: undefined,
             },
           ],
           children: [],
@@ -696,8 +676,8 @@ describe('DescriptionNode', () => {
           content: [
             {
               type: 'username',
-              props: { id: '1', shortcut: 'twitter', only: '' },
-              content: [{ type: 'text', text: 'abcd', styles: {} }],
+              props: { id: '1', shortcut: 'twitter', only: '', username: 'abcd' },
+              content: undefined,
             },
           ],
           children: [],
@@ -750,8 +730,8 @@ describe('DescriptionNode', () => {
           content: [
             {
               type: 'username',
-              props: { id: '1', shortcut: 'twitter', only: '' },
-              content: [{ type: 'text', text: 'someuser', styles: {} }],
+              props: { id: '1', shortcut: 'twitter', only: '', username: 'someuser' },
+              content: undefined,
             },
           ],
           children: [],
@@ -803,8 +783,8 @@ describe('DescriptionNode', () => {
           content: [
             {
               type: 'username',
-              props: { id: '1', shortcut: 'bluesky', only: '' },
-              content: [{ type: 'text', text: 'x', styles: {} }],
+              props: { id: '1', shortcut: 'bluesky', only: '', username: 'x' },
+              content: undefined,
             },
           ],
           children: [],
@@ -1132,8 +1112,8 @@ describe('DescriptionNode', () => {
                 { type: 'text', text: 'Nested ', styles: {} },
                 {
                   type: 'username',
-                  props: { id: '1', shortcut: 'test', only: '' },
-                  content: [{ type: 'text', text: 'NestedUser', styles: {} }],
+                  props: { id: '1', shortcut: 'test', only: '', username: 'NestedUser' },
+                  content: undefined,
                 },
               ],
               children: [],
@@ -1566,6 +1546,7 @@ describe('DescriptionNode', () => {
                 only: '',
                 username: 'TestUser',
               },
+              content: undefined,
             },
           ],
           children: [],
@@ -1620,6 +1601,7 @@ describe('DescriptionNode', () => {
                 only: '',
                 username: 'alice',
               },
+              content: undefined,
             },
             { type: 'text', text: ' and ', styles: {} },
             {
@@ -1630,6 +1612,7 @@ describe('DescriptionNode', () => {
                 only: '',
                 username: 'bob',
               },
+              content: undefined,
             },
           ],
           children: [],
@@ -1677,6 +1660,7 @@ describe('DescriptionNode', () => {
                 only: '',
                 username: 'myusername',
               },
+              content: undefined,
             },
           ],
           children: [],
@@ -1715,7 +1699,9 @@ describe('DescriptionNode', () => {
     });
 
     it('should handle backward compatibility with old content format', () => {
-      const oldFormatDescription: Description = [
+      // Old format used content: 'styled' with text in content array
+      // This test verifies that old data can still be parsed
+      const oldFormatDescription = [
         {
           id: 'test-old-format',
           type: 'paragraph',
@@ -1732,6 +1718,7 @@ describe('DescriptionNode', () => {
                 id: '1',
                 shortcut: 'test',
                 only: '',
+                username: '',
               },
               content: [
                 {
@@ -1789,6 +1776,7 @@ describe('DescriptionNode', () => {
                 only: '',
                 username: '',
               },
+              content: undefined
             },
           ],
           children: [],

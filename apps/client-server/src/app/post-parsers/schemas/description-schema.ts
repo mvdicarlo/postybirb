@@ -747,8 +747,11 @@ export const DescriptionSchema = Object.freeze({
         only: {
           default: '',
         },
+        username: {
+          default: '',
+        },
       },
-      content: 'styled',
+      content: 'none',
     },
     customShortcut: {
       type: 'customShortcut',
