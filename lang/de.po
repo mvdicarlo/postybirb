@@ -1,5 +1,5 @@
 msgid ""
-msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: \nPOT-Creation-Date: \nPO-Revision-Date: 2026-01-31 08:30+0000\nLast-Translator: Anonymous <noreply@weblate.org>\nLanguage-Team: German <https://hosted.weblate.org/projects/postybirb/postybirb/de/>\nLanguage: de\nContent-Type: \nContent-Transfer-Encoding: \nPlural-Forms: nplurals=2; plural=n != 1;\nX-Generator: Weblate 5.16-dev\n"
+msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: \nPOT-Creation-Date: \nPO-Revision-Date: 2026-01-31 08:30+0000\nLast-Translator: Ettore Atalan <atalanttore@googlemail.com>\nLanguage-Team: German <https://hosted.weblate.org/projects/postybirb/postybirb/de/>\nLanguage: de\nContent-Type: \nContent-Transfer-Encoding: \nPlural-Forms: nplurals=2; plural=n != 1;\nX-Generator: Weblate 5.16-dev\n"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx
 #: apps/postybirb-ui/src/remake/i18n/validation-translation.tsx
@@ -398,7 +398,7 @@ msgstr ""
 #: apps/postybirb-ui/src/remake/components/shared/submission-picker/submission-picker-modal.tsx
 #: apps/postybirb-ui/src/remake/components/shared/template-picker/template-picker-modal.tsx
 msgid "Apply"
-msgstr ""
+msgstr "Anwenden"
 
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-edit-card/actions/apply-template-action.tsx
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-section-header.tsx
@@ -838,7 +838,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/shared/copy-to-clipboard/copy-to-clipboard.tsx
 msgid "Copied"
-msgstr ""
+msgstr "Kopiert"
 
 #: apps/postybirb-ui/src/remake/utils/notifications.tsx
 #: apps/postybirb-ui/src/translations/common-translations.tsx
@@ -848,7 +848,7 @@ msgstr ""
 #: apps/postybirb-ui/src/remake/components/shared/copy-to-clipboard/copy-to-clipboard.tsx
 #: apps/postybirb-ui/src/remake/components/shared/copy-to-clipboard/copy-to-clipboard.tsx
 msgid "Copy"
-msgstr ""
+msgstr "Kopieren"
 
 #: apps/postybirb-ui/src/translations/common-translations.tsx
 msgid "Copy to clipboard"
