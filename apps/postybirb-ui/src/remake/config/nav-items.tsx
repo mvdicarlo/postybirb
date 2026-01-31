@@ -4,6 +4,7 @@
  */
 
 import { Trans } from '@lingui/react/macro';
+import { Badge } from '@mantine/core';
 import {
   IconBell,
   IconBlockquote,
@@ -19,8 +20,9 @@ import {
   IconTemplate,
   IconTransform,
   IconUser,
-  IconUsers
+  IconUsers,
 } from '@tabler/icons-react';
+import { useUnreadNotificationCount } from '../stores';
 import type { NavigationItem } from '../types/navigation';
 import {
   createAccountsViewState,
@@ -43,7 +45,7 @@ import {
   TagConvertersKeybinding,
   TagGroupsKeybinding,
   TemplatesKeybinding,
-  UserConvertersKeybinding
+  UserConvertersKeybinding,
 } from './keybindings';
 
 /**
@@ -123,7 +125,12 @@ export const navItems: NavigationItem[] = [
     type: 'drawer',
     id: 'notifications',
     icon: <IconBell size={20} />,
-    label: <Trans>Notifications</Trans>,
+    label: (
+      <span style={{ alignItems: 'center', display: 'flex' }}>
+        <Trans>Notifications</Trans>
+        <UnreadNotificationsBadge />
+      </span>
+    ),
     drawerKey: 'notifications',
     kbd: NotificationsKeybinding,
   },
@@ -216,3 +223,15 @@ export const navItems: NavigationItem[] = [
     },
   },
 ];
+
+function UnreadNotificationsBadge() {
+  const unreadCount = useUnreadNotificationCount();
+
+  return (
+    unreadCount > 0 && (
+      <Badge size="xs" ml={4} variant="filled" color="red">
+        {unreadCount}
+      </Badge>
+    )
+  );
+}
