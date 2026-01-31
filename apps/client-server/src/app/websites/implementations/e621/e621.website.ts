@@ -233,7 +233,7 @@ export default class E621
         }
       }
     } catch (error) {
-      this.logger.error(error);
+      this.logger.withError(error).error('Failed to get user feedback');
       validator.warning('validation.file.e621.user-feedback.network-error', {});
     }
   }
@@ -277,7 +277,7 @@ export default class E621
           );
         }
       } catch (error) {
-        this.logger.error(error);
+        this.logger.withError(error).error('Failed to validate tags');
         validator.warning(
           'validation.file.e621.tags.network-error',
           {},
