@@ -1,5 +1,5 @@
 msgid ""
-msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: \nPOT-Creation-Date: \nPO-Revision-Date: 2026-01-31 08:27+0000\nLast-Translator: Vaclovas Intas <Gateway_31@protonmail.com>\nLanguage-Team: Lithuanian <https://hosted.weblate.org/projects/postybirb/postybirb/lt/>\nLanguage: lt\nContent-Type: \nContent-Transfer-Encoding: \nPlural-Forms: nplurals=3; plural=(n % 10 == 1 && (n % 100 < 11 || n % 100 > 19)) ? 0 : ((n % 10 >= 2 && n % 10 <= 9 && (n % 100 < 11 || n % 100 > 19)) ? 1 : 2);\nX-Generator: Weblate 5.16-dev\n"
+msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: \nPOT-Creation-Date: \nPO-Revision-Date: 2026-01-31 08:27+0000\nLast-Translator: Anonymous <noreply@weblate.org>\nLanguage-Team: Lithuanian <https://hosted.weblate.org/projects/postybirb/postybirb/lt/>\nLanguage: lt\nContent-Type: \nContent-Transfer-Encoding: \nPlural-Forms: nplurals=3; plural=(n % 10 == 1 && (n % 100 < 11 || n % 100 > 19)) ? 0 : ((n % 10 >= 2 && n % 10 <= 9 && (n % 100 < 11 || n % 100 > 19)) ? 1 : 2);\nX-Generator: Weblate 5.16-dev\n"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx
 #: apps/postybirb-ui/src/remake/i18n/validation-translation.tsx
