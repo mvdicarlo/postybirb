@@ -1,15 +1,5 @@
 msgid ""
-msgstr ""
-"Project-Id-Version: \n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: \n"
-"PO-Revision-Date: \n"
-"Last-Translator: \n"
-"Language: \n"
-"Language-Team: \n"
-"Content-Type: \n"
-"Content-Transfer-Encoding: \n"
-"Plural-Forms: \n"
+msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: \nPOT-Creation-Date: \nPO-Revision-Date: 2026-01-31 08:31+0000\nLast-Translator: தமிழ்நேரம் <tamilneram247@gmail.com>\nLanguage-Team: Tamil <https://hosted.weblate.org/projects/postybirb/postybirb/ta/>\nLanguage: ta\nContent-Type: \nContent-Transfer-Encoding: \nPlural-Forms: nplurals=2; plural=n != 1;\nX-Generator: Weblate 5.16-dev\n"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx
 #: apps/postybirb-ui/src/remake/i18n/validation-translation.tsx
@@ -408,7 +398,7 @@ msgstr ""
 #: apps/postybirb-ui/src/remake/components/shared/submission-picker/submission-picker-modal.tsx
 #: apps/postybirb-ui/src/remake/components/shared/template-picker/template-picker-modal.tsx
 msgid "Apply"
-msgstr ""
+msgstr "இடு"
 
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-edit-card/actions/apply-template-action.tsx
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-section-header.tsx
@@ -848,7 +838,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/shared/copy-to-clipboard/copy-to-clipboard.tsx
 msgid "Copied"
-msgstr ""
+msgstr "நகலெடுக்கப்பட்டது"
 
 #: apps/postybirb-ui/src/remake/utils/notifications.tsx
 #: apps/postybirb-ui/src/translations/common-translations.tsx
@@ -858,7 +848,7 @@ msgstr ""
 #: apps/postybirb-ui/src/remake/components/shared/copy-to-clipboard/copy-to-clipboard.tsx
 #: apps/postybirb-ui/src/remake/components/shared/copy-to-clipboard/copy-to-clipboard.tsx
 msgid "Copy"
-msgstr ""
+msgstr "நகலெடு"
 
 #: apps/postybirb-ui/src/translations/common-translations.tsx
 msgid "Copy to clipboard"
@@ -1467,7 +1457,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/sections/templates-section/templates-section.tsx
 msgid "Failed to create template"
-msgstr ""
+msgstr "வார்ப்புருவை உருவாக்குவதில் தோல்வி"
 
 #: apps/postybirb-ui/src/remake/utils/notifications.tsx
 msgid "Failed to delete"
@@ -1479,7 +1469,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/remake/utils/notifications.tsx
 msgid "Failed to duplicate"
-msgstr ""
+msgstr "நகல் எடுக்கத் தவறிவிட்டது"
 
 #: apps/postybirb-ui/src/remake/components/website-login-views/twitter/twitter-login-view.tsx
 #: apps/postybirb-ui/src/website-components/twitter/twitter-login-view.tsx
@@ -3899,7 +3889,7 @@ msgstr "வார்ப்புரு பயன்படுத்தப்ப�
 
 #: apps/postybirb-ui/src/remake/components/sections/templates-section/templates-section.tsx
 msgid "Template created"
-msgstr ""
+msgstr "வார்ப்புரு உருவாக்கப்பட்டது"
 
 #: apps/postybirb-ui/src/remake/components/sections/templates-section/templates-content.tsx
 msgid "Template Editor"
