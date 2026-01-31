@@ -37,6 +37,31 @@ export class UserSpecifiedWebsiteOptionsService extends PostyBirbService<'UserSp
     return this.repository.update(id, { options: update.options });
   }
 
+  /**
+   * Creates or updates user-specified website options.
+   * If options already exist for this account+type combination, updates them.
+   * Otherwise, creates new options.
+   */
+  async upsert(
+    dto: CreateUserSpecifiedWebsiteOptionsDto,
+  ): Promise<UserSpecifiedWebsiteOptions> {
+    const existing = await this.findByAccountAndSubmissionType(
+      dto.accountId,
+      dto.type,
+    );
+
+    if (existing) {
+      this.logger
+        .withMetadata(dto)
+        .info(
+          `Updating existing UserSpecifiedWebsiteOptions for '${dto.accountId}'`,
+        );
+      return this.repository.update(existing.id, { options: dto.options });
+    }
+
+    return this.create(dto);
+  }
+
   public findByAccountAndSubmissionType(
     accountId: AccountId,
     type: SubmissionType,
