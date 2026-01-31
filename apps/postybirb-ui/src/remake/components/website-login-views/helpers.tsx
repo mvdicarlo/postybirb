@@ -5,6 +5,7 @@
 import { Trans } from '@lingui/react/macro';
 import { notifications } from '@mantine/notifications';
 import { IconCheck, IconInfoCircle, IconX } from '@tabler/icons-react';
+import accountApi from '../../api/account.api';
 import type HttpErrorResponse from '../../models/http-error-response';
 import { AccountRecord } from '../../stores';
 
@@ -27,6 +28,7 @@ export function notifyLoginSuccess(
   message: React.ReactNode | undefined,
   account: AccountRecord | undefined,
 ) {
+  if (account) accountApi.refreshLogin(account?.id);
   notifications.show({
     title: <Trans>{account?.websiteDisplayName}: Login successful</Trans>,
     color: 'green',
