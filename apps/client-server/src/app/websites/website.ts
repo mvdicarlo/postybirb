@@ -141,10 +141,7 @@ export abstract class Website<
 
   constructor(userAccount: Account) {
     this.account = userAccount;
-    this.logger = Logger(
-      userAccount.websiteInstance.decoratedProps.metadata.name ??
-        userAccount.website,
-    );
+    this.logger = Logger(this.decoratedProps.metadata.displayName);
     this.websiteDataStore = new WebsiteDataManager(userAccount);
     this.loginState = new LoginState();
   }
