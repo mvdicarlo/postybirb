@@ -16,7 +16,8 @@ export class PatreonFileSubmission extends BaseWebsiteOptions {
   description: DescriptionValue;
 
   @TagField({
-    maxTagLength: 25
+    maxTagLength: 25,
+    spaceReplacer: " ",
   })
   tags: TagValue = DefaultTagValue();
 
