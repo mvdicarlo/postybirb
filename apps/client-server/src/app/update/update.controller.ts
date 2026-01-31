@@ -1,5 +1,6 @@
 import { Controller, Get, Post } from '@nestjs/common';
-import { UpdateService, UpdateState } from './update.service';
+import { UpdateState } from '@postybirb/types';
+import { UpdateService } from './update.service';
 
 @Controller('update')
 export class UpdateController {
@@ -18,5 +19,13 @@ export class UpdateController {
   @Post('start')
   update() {
     return this.service.update();
+  }
+
+  /**
+   * Quit and install the downloaded update.
+   */
+  @Post('install')
+  install() {
+    return this.service.install();
   }
 }

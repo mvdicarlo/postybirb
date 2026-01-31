@@ -1,23 +1,20 @@
 /**
  * UpdateButton - Shows app update availability and handles the update process.
  * Displays in the side navigation when an update is available.
+ * Opens a modal for update details and actions.
  */
 
 import { Trans } from '@lingui/react/macro';
-import {
-  Alert,
-  Box,
-  Button,
-  NavLink as MantineNavLink,
-  Popover,
-  Stack,
-  Text,
-  Title,
-  Tooltip,
-} from '@mantine/core';
+import { Box, NavLink as MantineNavLink, Text, Tooltip } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
+import { UPDATE_UPDATES } from '@postybirb/socket-events';
+import { UpdateState } from '@postybirb/types';
 import { IconDeviceDesktopUp, IconDownload } from '@tabler/icons-react';
-import { useQuery, useQueryClient } from 'react-query';
+import { useCallback, useEffect, useState } from 'react';
+import { useQuery } from 'react-query';
 import updateApi from '../../api/update.api';
+import AppSocket from '../../transports/websocket';
+import { UpdateModal } from './update-modal';
 
 interface UpdateButtonProps {
   /** Whether the sidenav is collapsed */
@@ -25,18 +22,122 @@ interface UpdateButtonProps {
 }
 
 /**
+ * Check if running in development mode for testing.
+ */
+const isDevelopment = process.env.NODE_ENV === 'development';
+
+/**
+ * Mock update state for testing in development environment.
+ * Simulates an available update with release notes.
+ */
+/* eslint-disable lingui/no-unlocalized-strings */
+const MOCK_UPDATE_STATE: UpdateState = {
+  updateAvailable: true,
+  updateDownloaded: false,
+  updateDownloading: false,
+  updateError: undefined,
+  updateProgress: 0,
+  updateNotes: [
+    {
+      version: '4.2.0',
+      note: '<ul><li>New feature: Improved update UI with modal</li><li>Bug fix: Fixed submission ordering</li><li>Enhancement: Better error handling</li></ul>',
+    },
+    {
+      version: '4.1.5',
+      note: '<ul><li>Performance improvements</li><li>Fixed memory leak in file uploads</li></ul>',
+    },
+    {
+      version: '4.1.4',
+      note: '<ul><li>Minor bug fixes</li><li>Updated translations</li></ul>',
+    },
+  ],
+};
+/* eslint-enable lingui/no-unlocalized-strings */
+
+/**
  * Update button component that displays when an app update is available.
- * Shows update notes and progress in a popover.
+ * Opens a modal with update details and action buttons.
+ * In development mode, shows mock data for testing.
  */
 export function UpdateButton({ collapsed }: UpdateButtonProps) {
-  const queryClient = useQueryClient();
-  const { data: update } = useQuery(
+  const [modalOpened, modal] = useDisclosure(false);
+  const [updateState, setUpdateState] = useState<UpdateState>(
+    isDevelopment ? MOCK_UPDATE_STATE : {},
+  );
+  const [mockDownloading, setMockDownloading] = useState(false);
+  const [mockProgress, setMockProgress] = useState(0);
+  const [mockDownloaded, setMockDownloaded] = useState(false);
+
+  // Initial fetch of update state (disabled in dev mode)
+  const { data: initialUpdate } = useQuery(
     'update',
     () => updateApi.checkForUpdates().then((res) => res.body),
     {
-      refetchInterval: 5 * 60_000, // Check every 5 minutes
+      refetchInterval: 5 * 60_000, // Fallback polling every 5 minutes
+      enabled: !isDevelopment, // Disable in dev mode to use mock data
+      onSuccess: (data) => {
+        if (data) {
+          setUpdateState(data);
+        }
+      },
     },
   );
+
+  // Subscribe to real-time update events
+  useEffect(() => {
+    const handleUpdateEvent = (data: UpdateState) => {
+      setUpdateState(data);
+    };
+
+    AppSocket.on(UPDATE_UPDATES, handleUpdateEvent);
+
+    return () => {
+      AppSocket.off(UPDATE_UPDATES, handleUpdateEvent);
+    };
+  }, []);
+
+  // Simulate download progress in development mode
+  useEffect(() => {
+    if (!isDevelopment || !mockDownloading) return undefined;
+
+    const interval = setInterval(() => {
+      setMockProgress((prev) => {
+        const next = prev + Math.random() * 15;
+        if (next >= 100) {
+          setMockDownloading(false);
+          setMockDownloaded(true);
+          clearInterval(interval);
+          return 100;
+        }
+        return next;
+      });
+    }, 300);
+
+    return () => clearInterval(interval);
+  }, [mockDownloading]);
+
+  // Update mock state when simulating download
+  useEffect(() => {
+    if (!isDevelopment) return;
+
+    setUpdateState((prev) => ({
+      ...prev,
+      updateDownloading: mockDownloading,
+      updateDownloaded: mockDownloaded,
+      updateProgress: mockProgress,
+    }));
+  }, [mockDownloading, mockDownloaded, mockProgress]);
+
+  // Handler for mock download in development
+  const handleMockStartDownload = useCallback(() => {
+    if (isDevelopment && !mockDownloading && !mockDownloaded) {
+      setMockDownloading(true);
+      setMockProgress(0);
+    }
+  }, [mockDownloading, mockDownloaded]);
+
+  // Use WebSocket state if available, fallback to query data
+  const update = updateState.updateAvailable ? updateState : initialUpdate;
 
   // Don't render if no update available
   if (!update || !update.updateAvailable) {
@@ -46,29 +147,22 @@ export function UpdateButton({ collapsed }: UpdateButtonProps) {
   const isDownloading = update.updateDownloading;
   const isDownloaded = update.updateDownloaded;
 
-  const handleStartUpdate = async () => {
-    await updateApi.startUpdate();
-    // Refetch to get the downloading state
-    queryClient.invalidateQueries('update');
-  };
-
-  // Determine icon and label based on state
+  // Determine icon based on state
   const icon = isDownloaded ? (
     <IconDeviceDesktopUp size={20} color="var(--mantine-color-green-6)" />
   ) : (
     <IconDownload size={20} color="var(--mantine-color-green-6)" />
   );
 
+  // Determine label based on state
   const label = isDownloading ? (
     <Box className="postybirb__nav_item_label">
-      <span>
-        <Trans>Downloading...</Trans> {update.updateProgress?.toFixed(0)}%
-      </span>
+      <Text>{update.updateProgress?.toFixed(0)}%</Text>
     </Box>
   ) : isDownloaded ? (
     <Box className="postybirb__nav_item_label">
       <span>
-        <Trans>Restarting...</Trans>
+        <Trans>Ready to Install</Trans>
       </span>
     </Box>
   ) : (
@@ -80,88 +174,42 @@ export function UpdateButton({ collapsed }: UpdateButtonProps) {
   );
 
   const tooltipLabel = isDownloading ? (
-    <Trans>Downloading update... {update.updateProgress?.toFixed(0)}%</Trans>
+    <Text>{update.updateProgress?.toFixed(0)}%</Text>
   ) : isDownloaded ? (
-    <Trans>Restarting to apply update...</Trans>
+    <Trans>Update ready</Trans>
   ) : (
     <Trans>Update available</Trans>
   );
 
-  const navContent = (
-    <Popover position="right" withArrow width={400} disabled={collapsed}>
-      <Popover.Target>
-        <MantineNavLink
-          label={collapsed ? undefined : label}
-          leftSection={icon}
-          active
-          color="green"
-          variant="light"
-        />
-      </Popover.Target>
-      <Popover.Dropdown>
-        <Title order={5} mb="sm">
-          <Trans>Update PostyBirb</Trans>
-        </Title>
-
-        {update.updateError && (
-          <Alert color="red" mb="sm">
-            {update.updateError}
-          </Alert>
-        )}
-
-        {update.updateNotes && update.updateNotes.length > 0 && (
-          <Stack gap="xs">
-            {update.updateNotes.map((note) => (
-              <Box key={note.version}>
-                <Text fw={600} size="sm">
-                  {note.version}
-                </Text>
-                {note.note && (
-                  <Text
-                    size="xs"
-                    c="dimmed"
-                    style={{ marginLeft: 8 }}
-                    // eslint-disable-next-line react/no-danger
-                    dangerouslySetInnerHTML={{ __html: note.note }}
-                  />
-                )}
-              </Box>
-            ))}
-          </Stack>
-        )}
-
-        {isDownloaded ? (
-          <Text size="sm" c="green" mt="sm">
-            <Trans>Restarting to apply update...</Trans>
-          </Text>
-        ) : (
-          <Button
-            mt="sm"
-            fullWidth
-            color="green"
-            leftSection={<IconDownload size={16} />}
-            loading={isDownloading}
-            onClick={handleStartUpdate}
-            disabled={isDownloading}
-          >
-            {isDownloading ? (
-              <Trans>Downloading... {update.updateProgress?.toFixed(0)}%</Trans>
-            ) : (
-              <Trans>Download Update</Trans>
-            )}
-          </Button>
-        )}
-      </Popover.Dropdown>
-    </Popover>
+  const navLink = (
+    <MantineNavLink
+      label={collapsed ? undefined : label}
+      leftSection={icon}
+      active
+      color="green"
+      variant="light"
+      onClick={modal.open}
+    />
   );
 
-  if (collapsed) {
-    return (
-      <Tooltip label={tooltipLabel} position="right" withArrow>
-        {navContent}
-      </Tooltip>
-    );
-  }
+  return (
+    <>
+      {collapsed ? (
+        <Tooltip label={tooltipLabel} position="right" withArrow>
+          {navLink}
+        </Tooltip>
+      ) : (
+        navLink
+      )}
 
-  return navContent;
+      <UpdateModal
+        opened={modalOpened}
+        onClose={modal.close}
+        updateState={update}
+        onMockStartDownload={
+          isDevelopment ? handleMockStartDownload : undefined
+        }
+      />
+    </>
+  );
 }

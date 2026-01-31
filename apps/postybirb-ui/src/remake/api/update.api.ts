@@ -1,24 +1,5 @@
+import { UpdateState } from '@postybirb/types';
 import { HttpClient } from '../transports/http-client';
-
-interface ReleaseNoteInfo {
-  /**
-   * The version.
-   */
-  readonly version: string;
-  /**
-   * The note.
-   */
-  readonly note: string | null;
-}
-
-type UpdateState = {
-  updateAvailable?: boolean;
-  updateDownloaded?: boolean;
-  updateDownloading?: boolean;
-  updateError?: string;
-  updateProgress?: number;
-  updateNotes?: ReleaseNoteInfo[];
-};
 
 class UpdateApi {
   private client = new HttpClient('update');
@@ -29,6 +10,10 @@ class UpdateApi {
 
   startUpdate() {
     return this.client.post<undefined>('start');
+  }
+
+  installUpdate() {
+    return this.client.post<undefined>('install');
   }
 }
 
