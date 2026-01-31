@@ -163,7 +163,11 @@ export default class Custom
         .withException(
           error instanceof Error ? error : new Error(String(error)),
         )
-        .withAdditionalInfo({ postData, files, batch });
+        .withAdditionalInfo({
+          fileCount: files.length,
+          batchIndex: batch.index,
+          totalBatches: batch.totalBatches,
+        });
     }
   }
 
@@ -227,8 +231,7 @@ export default class Custom
       return PostResponse.fromWebsite(this)
         .withException(
           error instanceof Error ? error : new Error(String(error)),
-        )
-        .withAdditionalInfo({ postData });
+        );
     }
   }
 

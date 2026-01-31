@@ -115,10 +115,18 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
 
   /**
    * Ensures all required subdirectories exist.
+   * Skips if the base path doesn't exist.
    *
    * @param {string} basePath
    */
   private async ensureDirectoryStructure(basePath: string): Promise<void> {
+    // Check if base path exists, skip if it doesn't
+    try {
+      await readdir(basePath);
+    } catch {
+      return;
+    }
+
     const subfolders = [
       this.SUBFOLDER_PROCESSING,
       this.SUBFOLDER_COMPLETED,

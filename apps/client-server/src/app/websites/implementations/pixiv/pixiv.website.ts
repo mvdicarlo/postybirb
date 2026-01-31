@@ -142,8 +142,8 @@ export default class Pixiv
       })
       .whenTrue(contentRating !== 'general', (b) => {
         b.removeField('sexual');
-        b.forEach(options.matureContent, (c) => {
-          b.setField(`attributes[${c}]`, 'true');
+        b.forEach(options.matureContent, (c, _, innerBuilder) => {
+          innerBuilder.setField(`attributes[${c}]`, 'true');
         });
       });
 

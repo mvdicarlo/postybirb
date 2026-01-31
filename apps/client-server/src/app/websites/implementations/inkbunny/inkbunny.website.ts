@@ -246,7 +246,11 @@ export default class Inkbunny
         .withException(
           error instanceof Error ? error : new Error(String(error)),
         )
-        .withAdditionalInfo({ postData, files, batch });
+        .withAdditionalInfo({ 
+          fileCount: files.length,
+          batchIndex: batch.index,
+          totalBatches: batch.totalBatches,
+        });
     }
   }
 
