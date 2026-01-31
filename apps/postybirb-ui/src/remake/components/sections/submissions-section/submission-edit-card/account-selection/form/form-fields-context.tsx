@@ -21,8 +21,8 @@ import {
 import { useQuery } from 'react-query';
 import formGeneratorApi from '../../../../../../api/form-generator.api';
 import websiteOptionsApi from '../../../../../../api/website-options.api';
-import { showErrorWithContext } from '../../../../../../utils/notifications';
 import type { SubmissionRecord } from '../../../../../../stores/records';
+import { showErrorWithContext } from '../../../../../../utils/notifications';
 
 interface FormFieldsContextValue {
   /** Form field metadata from API */
@@ -96,13 +96,13 @@ export function FormFieldsProvider({
       'form-fields',
       option.accountId,
       submission.type,
-      submission.files.length > 1,
+      submission.isMultiSubmission,
     ],
     queryFn: async () => {
       const response = await formGeneratorApi.getForm({
         accountId: option.accountId,
         type: submission.type as SubmissionType,
-        isMultiSubmission: submission.files.length > 1,
+        isMultiSubmission: submission.isMultiSubmission,
       });
       return response.body;
     },

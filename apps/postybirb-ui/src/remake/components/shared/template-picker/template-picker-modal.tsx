@@ -5,43 +5,43 @@
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
-    Box,
-    Button,
-    Checkbox,
-    ComboboxItem,
-    ComboboxItemGroup,
-    Divider,
-    Fieldset,
-    Group,
-    Modal,
-    MultiSelect,
-    ScrollArea,
-    Stack,
-    Text,
-    Title,
-    Tooltip,
+  Box,
+  Button,
+  Checkbox,
+  ComboboxItem,
+  ComboboxItemGroup,
+  Divider,
+  Fieldset,
+  Group,
+  Modal,
+  MultiSelect,
+  ScrollArea,
+  Stack,
+  Text,
+  Title,
+  Tooltip,
 } from '@mantine/core';
 import {
-    AccountId,
-    IWebsiteFormFields,
-    NULL_ACCOUNT_ID,
-    SubmissionId,
-    SubmissionType,
-    WebsiteOptionsDto,
+  AccountId,
+  IWebsiteFormFields,
+  NULL_ACCOUNT_ID,
+  SubmissionId,
+  SubmissionType,
+  WebsiteOptionsDto,
 } from '@postybirb/types';
 import { IconInfoCircle } from '@tabler/icons-react';
 import { useCallback, useMemo, useState } from 'react';
 import submissionApi from '../../../api/submission.api';
 import {
-    AccountRecord,
-    SubmissionRecord,
-    useAccounts,
-    useSubmissionsByType,
-    useTemplateSubmissions,
+  AccountRecord,
+  SubmissionRecord,
+  useAccounts,
+  useSubmissionsByType,
+  useTemplateSubmissions,
 } from '../../../stores';
 import {
-    showErrorNotification,
-    showSuccessNotification,
+  showErrorNotification,
+  showSuccessNotification,
 } from '../../../utils/notifications';
 
 interface TemplatePickerModalProps {
@@ -213,8 +213,8 @@ export function TemplatePickerModal({
       .map((opt) => {
         const data = { ...opt.data };
 
-        // Strip description if not overriding or if empty
-        if (!overrideDescription || !data.description?.description) {
+        // Strip description if not overriding or if empty (check array length)
+        if (!overrideDescription || !data.description?.description?.length) {
           delete data.description;
         }
 

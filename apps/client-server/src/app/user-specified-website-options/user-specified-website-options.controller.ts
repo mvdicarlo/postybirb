@@ -23,16 +23,11 @@ export class UserSpecifiedWebsiteOptionsController extends PostyBirbController<'
   }
 
   @Post()
-  @ApiOkResponse({ description: 'Entity created.' })
+  @ApiOkResponse({ description: 'Entity created or updated.' })
   @ApiBadRequestResponse({ description: 'Bad request made.' })
   async create(@Body() createDto: CreateUserSpecifiedWebsiteOptionsDto) {
-    if (await this.service.findById(createDto.accountId)) {
-      return this.update(createDto.accountId, {
-        type: createDto.type,
-        options: createDto.options,
-      });
-    }
-    return this.service.create(createDto).then((entity) => entity.toDTO());
+    // Use upsert to handle both create and update based on accountId+type
+    return this.service.upsert(createDto).then((entity) => entity.toDTO());
   }
 
   @Patch(':id')

@@ -65,6 +65,53 @@ describe('UserSpecifiedWebsiteOptionsService', () => {
     await expect(service.create(dto)).rejects.toThrow(BadRequestException);
   });
 
+  it('should upsert - create when not exists', async () => {
+    const dto = new CreateUserSpecifiedWebsiteOptionsDto();
+    dto.accountId = NULL_ACCOUNT_ID;
+    dto.options = { test: 'test' };
+    dto.type = SubmissionType.MESSAGE;
+
+    const record = await service.upsert(dto);
+    expect(await service.findAll()).toHaveLength(1);
+    expect(record.options).toEqual(dto.options);
+  });
+
+  it('should upsert - update when exists', async () => {
+    const dto = new CreateUserSpecifiedWebsiteOptionsDto();
+    dto.accountId = NULL_ACCOUNT_ID;
+    dto.options = { test: 'original' };
+    dto.type = SubmissionType.MESSAGE;
+
+    // First create
+    const created = await service.upsert(dto);
+    expect(created.options).toEqual({ test: 'original' });
+
+    // Second upsert should update, not throw
+    dto.options = { test: 'updated' };
+    const updated = await service.upsert(dto);
+
+    expect(await service.findAll()).toHaveLength(1); // Still only one record
+    expect(updated.id).toEqual(created.id); // Same record
+    expect(updated.options).toEqual({ test: 'updated' }); // Updated options
+  });
+
+  it('should upsert different account+type combinations independently', async () => {
+    const dto1 = new CreateUserSpecifiedWebsiteOptionsDto();
+    dto1.accountId = NULL_ACCOUNT_ID;
+    dto1.options = { test: 'message' };
+    dto1.type = SubmissionType.MESSAGE;
+
+    const dto2 = new CreateUserSpecifiedWebsiteOptionsDto();
+    dto2.accountId = NULL_ACCOUNT_ID;
+    dto2.options = { test: 'file' };
+    dto2.type = SubmissionType.FILE;
+
+    await service.upsert(dto1);
+    await service.upsert(dto2);
+
+    expect(await service.findAll()).toHaveLength(2);
+  });
+
   it('should update entities', async () => {
     const dto = new CreateUserSpecifiedWebsiteOptionsDto();
     dto.accountId = NULL_ACCOUNT_ID;

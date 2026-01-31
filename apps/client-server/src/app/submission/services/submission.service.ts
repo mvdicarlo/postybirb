@@ -647,8 +647,11 @@ export class SubmissionService
             delete dataToApply.title;
           }
 
-          // Handle description override: only replace if overrideDescription is true AND template has description
-          if (!overrideDescription || !dataToApply.description?.description) {
+          // Handle description override: only replace if overrideDescription is true AND template has non-empty description
+          if (
+            !overrideDescription ||
+            !dataToApply.description?.description?.length
+          ) {
             delete dataToApply.description;
           }
 
@@ -662,12 +665,12 @@ export class SubmissionService
               data: mergedData,
             });
           } else {
-            // Create new option
+            // Create new option - only pass title if it exists in dataToApply
             await this.websiteOptionsService.createOption(
               submission,
               templateOption.accountId,
               dataToApply,
-              dataToApply.title,
+              'title' in dataToApply ? dataToApply.title : undefined,
             );
           }
         }
