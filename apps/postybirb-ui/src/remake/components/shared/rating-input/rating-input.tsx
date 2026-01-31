@@ -12,7 +12,7 @@ import {
   IconExclamationCircle,
   IconRating18Plus,
 } from '@tabler/icons-react';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 
 export interface RatingInputProps {
   /** Current rating value */
@@ -99,6 +99,7 @@ export function RatingInput({
 }: RatingInputProps) {
   const { t } = useLingui();
   const numericValue = ratingToValue[value] ?? 1;
+  const [hoveredValue, setHoveredValue] = useState<number | null>(null);
 
   // Rating labels for tooltips
   const ratingLabels: Record<number, string> = {
@@ -108,7 +109,9 @@ export function RatingInput({
     4: t`Extreme`,
   };
 
-  const ratingLabel = ratingLabels[numericValue];
+  // Show tooltip for hovered value, or current value if not hovering
+  const displayValue = hoveredValue ?? numericValue;
+  const ratingLabel = ratingLabels[displayValue];
 
   const handleChange = useCallback(
     (newValue: number) => {
@@ -139,6 +142,7 @@ export function RatingInput({
       value={numericValue}
       count={4}
       onChange={handleChange}
+      onHover={setHoveredValue}
       emptySymbol={getSymbol}
       fullSymbol={getSymbol}
       highlightSelectedOnly
