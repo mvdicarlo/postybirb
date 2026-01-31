@@ -41,7 +41,7 @@ export class SerializeLog {
       ) ?? [];
 
     // Colorize label
-    label = this.colorizer.colorize(level, label);
+    label = this.colorizer.colorize(level || 'info', label);
 
     // Mix all
     info[MESSAGE] =
