@@ -173,8 +173,8 @@ export default class Inkbunny
       const builder = new PostBuilder(this, cancellationToken)
         .asMultipart()
         .setField('sid', data.sid)
-        .forEach(files, (file, index) => {
-          builder.addFile(`uploadedfile[${index}]`, file);
+        .forEach(files, (file, index, b) => {
+          b.addFile(`uploadedfile[${index}]`, file);
         })
         .setConditional(
           'uploadedthumbnail[]',
@@ -212,9 +212,9 @@ export default class Inkbunny
         .setConditional('visibility', options.notify, 'yes', 'yes_nowatch')
         .setConditional('guest_block', options.blockGuests, 'yes')
         .setConditional('friends_only', options.friendsOnly, 'yes')
-        .forEach(ratings.split(','), (rating) => {
+        .forEach(ratings.split(','), (rating, _index, b) => {
           if (rating !== '0') {
-            editBuilder.setField(`tag[${rating}]`, 'yes');
+            b.setField(`tag[${rating}]`, 'yes');
           }
         });
 
@@ -246,7 +246,11 @@ export default class Inkbunny
         .withException(
           error instanceof Error ? error : new Error(String(error)),
         )
-        .withAdditionalInfo({ postData, files, batch });
+        .withAdditionalInfo({ 
+          fileCount: files.length,
+          batchIndex: batch.index,
+          totalBatches: batch.totalBatches,
+        });
     }
   }
 
