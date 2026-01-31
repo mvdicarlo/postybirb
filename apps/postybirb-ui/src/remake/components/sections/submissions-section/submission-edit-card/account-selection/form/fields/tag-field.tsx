@@ -29,6 +29,7 @@ import {
 import { useFormFieldsContext } from '../form-fields-context';
 import { useDefaultOption } from '../hooks/use-default-option';
 import { useValidations } from '../hooks/use-validations';
+import { FieldCopyButton } from './field-copy-button';
 import { FieldLabel } from './field-label';
 import { FormFieldProps } from './form-field.type';
 
@@ -230,6 +231,7 @@ export function TagField({
 
             return <Text inherit>{value}</Text>;
           }}
+          rightSection={<FieldCopyButton value={tagValue.join(', ')} />}
         />
       </FieldLabel>
     </Box>
