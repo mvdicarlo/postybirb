@@ -1,5 +1,5 @@
 msgid ""
-msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: \nPOT-Creation-Date: \nPO-Revision-Date: 2026-01-31 08:31+0000\nLast-Translator: தமிழ்நேரம் <tamilneram247@gmail.com>\nLanguage-Team: Tamil <https://hosted.weblate.org/projects/postybirb/postybirb/ta/>\nLanguage: ta\nContent-Type: \nContent-Transfer-Encoding: \nPlural-Forms: nplurals=2; plural=n != 1;\nX-Generator: Weblate 5.16-dev\n"
+msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: \nPOT-Creation-Date: \nPO-Revision-Date: 2026-01-31 08:31+0000\nLast-Translator: Anonymous <noreply@weblate.org>\nLanguage-Team: Tamil <https://hosted.weblate.org/projects/postybirb/postybirb/ta/>\nLanguage: ta\nContent-Type: \nContent-Transfer-Encoding: \nPlural-Forms: nplurals=2; plural=n != 1;\nX-Generator: Weblate 5.16-dev\n"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx
 #: apps/postybirb-ui/src/remake/i18n/validation-translation.tsx
