@@ -212,7 +212,7 @@ export default class Inkbunny
         .setConditional('visibility', options.notify, 'yes', 'yes_nowatch')
         .setConditional('guest_block', options.blockGuests, 'yes')
         .setConditional('friends_only', options.friendsOnly, 'yes')
-        .forEach(ratings.split(','), (rating, _index, b) => {
+        .forEach(ratings.split(','), (rating, _, b) => {
           if (rating !== '0') {
             b.setField(`tag[${rating}]`, 'yes');
           }
