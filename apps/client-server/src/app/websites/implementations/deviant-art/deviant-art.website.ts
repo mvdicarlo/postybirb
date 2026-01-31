@@ -165,7 +165,7 @@ export default class DeviantArt
         folders,
       });
     } catch (e) {
-      this.logger.error('Failed to get folders', e);
+      this.logger.withError(e).error('Failed to get folders');
     }
   }
 
