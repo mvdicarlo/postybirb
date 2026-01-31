@@ -62,7 +62,9 @@ function startCacheInvalidationCheck(): void {
         // eslint-disable-next-line no-console
         console.log('Remote config file changed, cache invalidated');
       }
-    } catch {
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error('Remote config cache invalidation', e);
       // File might have been deleted, clear cache
       cachedConfig = null;
       cachedMtime = null;
