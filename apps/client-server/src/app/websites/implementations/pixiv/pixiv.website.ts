@@ -50,7 +50,17 @@ export default class Pixiv
 
     const isLoggedIn = !res.body.includes('signup-form');
     if (isLoggedIn) {
-      return this.loginState.setLogin(true, 'Logged In');
+      const $ = parse(res.body);
+      let username = '';
+      try {
+        const data = $.querySelector('#__NEXT_DATA__').textContent;
+        username = JSON.parse(
+          JSON.parse(data).props.pageProps.serverSerializedPreloadedState,
+        ).userData.self.pixivId;
+      } catch (error) {
+        this.logger.warn('Failed to parse username from login response');
+      }
+      return this.loginState.setLogin(true, username || 'Logged In');
     }
 
     return this.loginState.logout();
@@ -67,7 +77,6 @@ export default class Pixiv
   async onPostFileSubmission(
     postData: PostData<PixivFileSubmission>,
     files: PostingFile[],
-    batchIndex: number,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfCancelled();

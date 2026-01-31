@@ -183,7 +183,6 @@ export default class Weasyl
   async onPostFileSubmission(
     postData: PostData<WeasylFileSubmission>,
     files: PostingFile[],
-    batchIndex: number,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     const fileType = getFileTypeFromMimeType(files[0].mimeType);

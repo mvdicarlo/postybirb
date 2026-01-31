@@ -352,7 +352,8 @@ describe('SubmissionService', () => {
     const record2 = await service.create(createDto);
     const record3 = await service.create(createDto);
 
-    await service.reorder(record1.id, 1);
+    // Move record1 after record2 (from position 0 to after position 1)
+    await service.reorder(record1.id, record2.id, 'after');
     const records = (await service.findAll()).sort((a, b) => a.order - b.order);
     expect(records[0].id).toEqual(record2.id);
     expect(records[1].id).toEqual(record1.id);

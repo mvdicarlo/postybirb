@@ -150,7 +150,6 @@ export default class Newgrounds
   async onPostFileSubmission(
     postData: PostData<NewgroundsFileSubmission>,
     files: PostingFile[],
-    batchIndex: number,
     cancellationToken: CancellableToken,
   ): Promise<IPostResponse> {
     // Step 1: Get the user key from the page

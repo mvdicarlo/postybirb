@@ -118,7 +118,7 @@ export default class Tumblr
       query.queryHash.includes('user-info'),
     );
 
-    if (!userInfo) {
+    if (!userInfo || userInfo?.state?.data?.isLoggedIn === false) {
       this.loginState.logout();
       return this.loginState;
     }
@@ -146,7 +146,6 @@ export default class Tumblr
   async onPostFileSubmission(
     postData: PostData<TumblrFileSubmission>,
     files: PostingFile[],
-    batchIndex: number,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     // Description is a JSON string of NPF blocks from the NpfConverter

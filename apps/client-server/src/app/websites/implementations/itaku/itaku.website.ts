@@ -264,7 +264,6 @@ export default class Itaku
   async onPostFileSubmission(
     postData: PostData<ItakuFileSubmission>,
     files: PostingFile[],
-    batchIndex: number,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfCancelled();

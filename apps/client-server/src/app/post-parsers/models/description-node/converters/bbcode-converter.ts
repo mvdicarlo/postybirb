@@ -132,7 +132,7 @@ export class BBCodeConverter extends BaseConverter {
     context: ConversionContext,
   ): string {
     // System shortcuts are atomic nodes with no content
-    const atomicTypes = ['customShortcut', 'titleShortcut', 'tagsShortcut', 'contentWarningShortcut'];
+    const atomicTypes = ['customShortcut', 'titleShortcut', 'tagsShortcut', 'contentWarningShortcut', 'username'];
     if (!node.content.length && !atomicTypes.includes(node.type)) return '';
 
     if (node.type === 'link') {

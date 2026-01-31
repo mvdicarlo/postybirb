@@ -154,7 +154,6 @@ export default class Aryion
   async onPostFileSubmission(
     postData: PostData<AryionFileSubmission>,
     files: PostingFile[],
-    batchIndex: number,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfCancelled();

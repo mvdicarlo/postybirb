@@ -6,6 +6,7 @@ import {
   PostResponse,
   SubmissionRating,
 } from '@postybirb/types';
+import parse from 'node-html-parser';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
@@ -42,14 +43,10 @@ export default class Piczel
     PiczelAccountData,
     {
       preloadedData?: {
-        currentUser?: {
-          auth?: {
-            client: string;
-            expiry: string;
-            'token-type': string;
-            uid: string;
-            'access-token': string;
-          };
+        auth?: {
+          client: string;
+          uid: string;
+          'access-token': string;
         };
       };
     }
@@ -73,16 +70,13 @@ export default class Piczel
     }
 
     try {
-      const match = res.body.match(
-        /<script type="text\/javascript">window\.__PRELOADED_STATE__ = (.*?)<\/script>/gim,
+      const $ = parse(res.body);
+      const preloadedData = JSON.parse(
+        $.getElementById('_R_').textContent.split(
+          'window.__PRELOADED_STATE__ = ',
+        )[1],
       );
-
-      if (!match || !match[1]) {
-        return this.loginState.logout();
-      }
-      const preloadedData = JSON.parse(match[1]);
-      const username = preloadedData?.currentUser?.data?.username;
-
+      const { username } = preloadedData.currentUser.data;
       if (!username) {
         return this.loginState.logout();
       }
@@ -132,16 +126,15 @@ export default class Piczel
   async onPostFileSubmission(
     postData: PostData<PiczelFileSubmission>,
     files: PostingFile[],
-    batchIndex: number,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfCancelled();
     const { preloadedData } = this.sessionData;
-    if (!preloadedData?.currentUser?.auth) {
+    if (!preloadedData?.auth) {
       throw new Error('No authentication data found');
     }
 
-    const { auth } = preloadedData.currentUser;
+    const { auth } = preloadedData;
     const { options } = postData;
     const builder = new PostBuilder(this, cancellationToken)
       .asJson()
@@ -166,10 +159,7 @@ export default class Piczel
       .withHeaders({
         Accept: '*/*',
         client: auth.client,
-        expiry: auth.expiry,
-        'token-type': auth['token-type'],
         uid: auth.uid,
-        Authorization: `${auth['token-type']} ${auth['access-token']}`,
         'access-token': auth['access-token'],
       });
 

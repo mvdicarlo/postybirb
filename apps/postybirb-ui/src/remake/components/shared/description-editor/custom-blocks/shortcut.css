@@ -1,26 +1,36 @@
-/* Styling for empty shortcut content */
-.ce > span:empty {
-  font-style: italic;
-  border-bottom: 1px dashed lightsalmon;
-  width: 6px;
-  height: 1rem;
-  vertical-align: text-bottom;
-  display: inline-block;
+/* Styling for username shortcut input */
+.username-shortcut-input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: inherit;
+  font-size: 12px;
+  color: inherit;
+  min-width: 80px;
+  width: 80px;
+  padding: 0 8px;
+  height: 18px;
+  line-height: 18px;
+  box-sizing: border-box;
 }
 
-/* Improve visibility of the cursor inside the shortcut */
-.ce:focus-within {
-  outline: 1px dotted rgba(128, 128, 128, 0.4);
+.username-shortcut-input::placeholder {
+  color: var(--mantine-color-dimmed);
+  font-style: italic;
+}
+
+.username-shortcut-input:focus {
   background-color: rgba(128, 128, 128, 0.1);
 }
 
-/* Ensure proper cursor behavior for contenteditable */
-.ce {
-  position: relative;
-  min-width: 1px;
-  display: inline-block;
+/* Badge containing the editable content */
+.username-shortcut-content-badge {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  min-width: 70px;
 }
 
 .only-website-toggle-btn:hover {
   background-color: rgba(128, 128, 128, 0.1);
 }
+

@@ -104,7 +104,6 @@ export default class Artconomy
   async onPostFileSubmission(
     postData: PostData<ArtconomyFileSubmission>,
     files: PostingFile[],
-    batchIndex: number,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     const { id, username, csrfToken } = this.getWebsiteData();

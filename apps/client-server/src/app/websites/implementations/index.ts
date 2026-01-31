@@ -11,7 +11,6 @@ export { default as Firefish } from './firefish/firefish.website';
 export { default as Friendica } from './friendica/friendica.website';
 export { default as FurAffinity } from './fur-affinity/fur-affinity.website';
 export { default as Furbooru } from './furbooru/furbooru.website';
-export { default as Furtastic } from './furtastic/furtastic.website';
 export { default as GoToSocial } from './gotosocial/gotosocial.website';
 export { default as HentaiFoundry } from './hentai-foundry/hentai-foundry.website';
 export { default as Inkbunny } from './inkbunny/inkbunny.website';
@@ -35,3 +34,4 @@ export { default as Toyhouse } from './toyhouse/toyhouse.website';
 export { default as Tumblr } from './tumblr/tumblr.website';
 export { default as Twitter } from './twitter/twitter.website';
 export { default as Weasyl } from './weasyl/weasyl.website';
+

@@ -71,7 +71,7 @@ export class HtmlConverter extends BaseConverter {
     context: ConversionContext,
   ): string {
     // System shortcuts are atomic nodes with no content
-    const atomicTypes = ['customShortcut', 'titleShortcut', 'tagsShortcut', 'contentWarningShortcut'];
+    const atomicTypes = ['customShortcut', 'titleShortcut', 'tagsShortcut', 'contentWarningShortcut', 'username'];
     if (!node.content.length && !atomicTypes.includes(node.type)) return '';
 
     if (node.type === 'link') {
@@ -84,7 +84,6 @@ export class HtmlConverter extends BaseConverter {
     }
 
     if (node.type === 'username') {
-      if (!node.content.length) return '';
       if (!this.shouldRenderUsernameShortcut(node, context)) return '';
 
       const sc = this.getUsernameShortcutLink(node, context);

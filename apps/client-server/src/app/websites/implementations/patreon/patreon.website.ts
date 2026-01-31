@@ -416,7 +416,6 @@ export default class Patreon
   async onPostFileSubmission(
     postData: PostData<PatreonFileSubmission>,
     files: PostingFile[],
-    batchIndex: number,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfCancelled();

@@ -1,13 +1,13 @@
 import { SelectOption } from '@postybirb/form-builder';
 import {
-    ILoginState,
-    ImageResizeProps,
-    ISubmissionFile,
-    OAuthRouteHandlers,
-    PostData,
-    PostResponse,
-    TelegramAccountData,
-    TelegramOAuthRoutes,
+  ILoginState,
+  ImageResizeProps,
+  ISubmissionFile,
+  OAuthRouteHandlers,
+  PostData,
+  PostResponse,
+  TelegramAccountData,
+  TelegramOAuthRoutes,
 } from '@postybirb/types';
 import { supportsImage } from '@postybirb/utils/file-type';
 import { Api, TelegramClient } from 'telegram';
@@ -25,7 +25,10 @@ import { CustomLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
-import { FileWebsite } from '../../models/website-modifiers/file-website';
+import {
+  FileWebsite,
+  PostBatchData,
+} from '../../models/website-modifiers/file-website';
 import { MessageWebsite } from '../../models/website-modifiers/message-website';
 import { OAuthWebsite } from '../../models/website-modifiers/oauth-website';
 import { Website } from '../../website';
@@ -82,7 +85,7 @@ export default class Telegram
         account.appHash,
         {},
       );
-      client.setLogLevel(LogLevel.ERROR);
+      client.setLogLevel(LogLevel.INFO);
       this.clients.set(account.appId, client);
     }
 
@@ -228,8 +231,8 @@ export default class Telegram
   async onPostFileSubmission(
     postData: PostData<TelegramFileSubmission>,
     files: PostingFile[],
-    batchIndex: number,
     cancellationToken: CancellableToken,
+    batch: PostBatchData,
   ): Promise<PostResponse> {
     cancellationToken.throwIfCancelled();
     const telegram = await this.getTelegramClient();
@@ -268,12 +271,7 @@ export default class Telegram
       medias.push(media);
     }
 
-    // Hack to not add another argument to the onPostFileSubmission like totalBatches
-    // This will not work when there is 20 files for example
-    // Note: maybe make it either property of the post data or BatchInfo interface?
-    const lastBatch =
-      batchIndex !== 0 &&
-      this.decoratedProps.fileOptions.fileBatchSize < files.length;
+    const lastBatch = batch.index === batch.totalBatches - 1;
 
     const [description, entities] = this.htmlToDescriptionEntities(
       postData.options.description,
@@ -298,7 +296,7 @@ export default class Telegram
       cancellationToken.throwIfCancelled();
 
       // Only add description to the media in first batch
-      const firstInBatch = batchIndex === 0;
+      const firstInBatch = batch.index === 0;
       const peer = this.getPeer(channel);
 
       if (medias.length === 1) {

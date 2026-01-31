@@ -22,14 +22,9 @@ describe('DescriptionNode', () => {
               id: '1740142676292',
               shortcut: 'test',
               only: '',
+              username: 'User',
             },
-            content: [
-              {
-                type: 'text',
-                text: 'User',
-                styles: {},
-              },
-            ],
+            content: undefined,
           },
         ],
         children: [],
@@ -83,14 +78,9 @@ describe('DescriptionNode', () => {
               id: '1740142676292',
               shortcut: 'test',
               only: '',
+              username: 'User',
             },
-            content: [
-              {
-                type: 'text',
-                text: 'User',
-                styles: {},
-              },
-            ],
+            content: undefined,
           },
         ],
         children: [],
@@ -197,14 +187,9 @@ describe('DescriptionNode', () => {
                 id: '1740142676292',
                 shortcut: 'test',
                 only: '',
+                username: 'User1',
               },
-              content: [
-                {
-                  type: 'text',
-                  text: 'User1',
-                  styles: {},
-                },
-              ],
+              content: undefined,
             },
             { type: 'text', text: ' and ', styles: {} },
             {
@@ -213,14 +198,9 @@ describe('DescriptionNode', () => {
                 id: '1740142676293',
                 shortcut: 'test',
                 only: '',
+                username: 'User2',
               },
-              content: [
-                {
-                  type: 'text',
-                  text: 'User2',
-                  styles: {},
-                },
-              ],
+              content: undefined,
             },
           ],
           children: [],
@@ -261,8 +241,8 @@ describe('DescriptionNode', () => {
           content: [
             {
               type: 'username',
-              props: { id: '1', shortcut: 'test', only: '' },
-              content: [{ type: 'text', text: 'Alice', styles: {} }],
+              props: { id: '1', shortcut: 'test', only: '', username: 'Alice' },
+              content: undefined,
             },
           ],
           children: [],
@@ -278,8 +258,8 @@ describe('DescriptionNode', () => {
           content: [
             {
               type: 'username',
-              props: { id: '2', shortcut: 'test', only: '' },
-              content: [{ type: 'text', text: 'Bob', styles: {} }],
+              props: { id: '2', shortcut: 'test', only: '', username: 'Bob' },
+              content: undefined,
             },
           ],
           children: [],
@@ -354,14 +334,14 @@ describe('DescriptionNode', () => {
           content: [
             {
               type: 'username',
-              props: { id: '1', shortcut: 'test', only: '' },
-              content: [{ type: 'text', text: 'SameUser', styles: {} }],
+              props: { id: '1', shortcut: 'test', only: '', username: 'SameUser' },
+              content: undefined,
             },
             { type: 'text', text: ' and ', styles: {} },
             {
               type: 'username',
-              props: { id: '2', shortcut: 'test', only: '' },
-              content: [{ type: 'text', text: 'SameUser', styles: {} }],
+              props: { id: '2', shortcut: 'test', only: '', username: 'SameUser' },
+              content: undefined,
             },
           ],
           children: [],
@@ -634,8 +614,8 @@ describe('DescriptionNode', () => {
           content: [
             {
               type: 'username',
-              props: { id: '1', shortcut: 'test', only: '' },
-              content: [{ type: 'text', text: 'TestUser', styles: {} }],
+              props: { id: '1', shortcut: 'test', only: '', username: 'TestUser' },
+              content: undefined,
             },
           ],
           children: [],
@@ -696,8 +676,8 @@ describe('DescriptionNode', () => {
           content: [
             {
               type: 'username',
-              props: { id: '1', shortcut: 'twitter', only: '' },
-              content: [{ type: 'text', text: 'abcd', styles: {} }],
+              props: { id: '1', shortcut: 'twitter', only: '', username: 'abcd' },
+              content: undefined,
             },
           ],
           children: [],
@@ -750,8 +730,8 @@ describe('DescriptionNode', () => {
           content: [
             {
               type: 'username',
-              props: { id: '1', shortcut: 'twitter', only: '' },
-              content: [{ type: 'text', text: 'someuser', styles: {} }],
+              props: { id: '1', shortcut: 'twitter', only: '', username: 'someuser' },
+              content: undefined,
             },
           ],
           children: [],
@@ -803,8 +783,8 @@ describe('DescriptionNode', () => {
           content: [
             {
               type: 'username',
-              props: { id: '1', shortcut: 'bluesky', only: '' },
-              content: [{ type: 'text', text: 'x', styles: {} }],
+              props: { id: '1', shortcut: 'bluesky', only: '', username: 'x' },
+              content: undefined,
             },
           ],
           children: [],
@@ -1132,8 +1112,8 @@ describe('DescriptionNode', () => {
                 { type: 'text', text: 'Nested ', styles: {} },
                 {
                   type: 'username',
-                  props: { id: '1', shortcut: 'test', only: '' },
-                  content: [{ type: 'text', text: 'NestedUser', styles: {} }],
+                  props: { id: '1', shortcut: 'test', only: '', username: 'NestedUser' },
+                  content: undefined,
                 },
               ],
               children: [],
@@ -1542,6 +1522,289 @@ describe('DescriptionNode', () => {
       expect(tree.toHtml()).toBe(
         '<div><span>&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;</span></div>',
       );
+    });
+  });
+
+  describe('Username shortcuts with new prop format', () => {
+    it('should support username prop format (content: none)', () => {
+      const shortcutDescription: Description = [
+        {
+          id: 'test-username-prop',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [
+            { type: 'text', text: 'Hello, ', styles: { bold: true } },
+            {
+              type: 'username',
+              props: {
+                id: '1740142676292',
+                shortcut: 'test',
+                only: '',
+                username: 'TestUser',
+              },
+              content: undefined,
+            },
+          ],
+          children: [],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'test',
+        shortcuts: {
+          test: {
+            id: 'test',
+            url: 'https://test.postybirb.com/$1',
+          },
+        },
+        customShortcuts: new Map(),
+        defaultDescription: [],
+      };
+
+      const tree = new DescriptionNodeTree(
+        context,
+        shortcutDescription as unknown as Array<IDescriptionBlockNode>,
+        {
+          insertAd: false,
+        },
+      );
+
+      expect(tree.toPlainText()).toBe('Hello, https://test.postybirb.com/TestUser');
+      expect(tree.toHtml()).toBe(
+        '<div><span><b>Hello, </b></span><a target="_blank" href="https://test.postybirb.com/TestUser">TestUser</a></div>',
+      );
+      expect(tree.toBBCode()).toBe(
+        '[b]Hello, [/b][url=https://test.postybirb.com/TestUser]TestUser[/url]',
+      );
+    });
+
+    it('should find usernames from new prop format', () => {
+      const description: Description = [
+        {
+          id: 'test-find-username',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [
+            {
+              type: 'username',
+              props: {
+                id: '1',
+                shortcut: 'twitter',
+                only: '',
+                username: 'alice',
+              },
+              content: undefined,
+            },
+            { type: 'text', text: ' and ', styles: {} },
+            {
+              type: 'username',
+              props: {
+                id: '2',
+                shortcut: 'twitter',
+                only: '',
+                username: 'bob',
+              },
+              content: undefined,
+            },
+          ],
+          children: [],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'test',
+        shortcuts: {},
+        customShortcuts: new Map(),
+        defaultDescription: [],
+      };
+
+      const tree = new DescriptionNodeTree(
+        context,
+        description as unknown as Array<IDescriptionBlockNode>,
+        {
+          insertAd: false,
+        },
+      );
+
+      const usernames = tree.findUsernames();
+      expect(usernames.size).toBe(2);
+      expect(usernames.has('alice')).toBe(true);
+      expect(usernames.has('bob')).toBe(true);
+    });
+
+    it('should support username conversion with new prop format', () => {
+      const shortcutDescription: Description = [
+        {
+          id: 'test-username-conversion',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [
+            { type: 'text', text: 'Follow me: ', styles: {} },
+            {
+              type: 'username',
+              props: {
+                id: '1740142676292',
+                shortcut: 'twitter',
+                only: '',
+                username: 'myusername',
+              },
+              content: undefined,
+            },
+          ],
+          children: [],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'test',
+        shortcuts: {
+          twitter: {
+            id: 'twitter',
+            url: 'https://twitter.com/$1',
+          },
+          test: {
+            id: 'test',
+            url: 'https://test.postybirb.com/$1',
+          },
+        },
+        customShortcuts: new Map(),
+        defaultDescription: [],
+        usernameConversions: new Map([['myusername', 'converted_username']]),
+      };
+
+      const tree = new DescriptionNodeTree(
+        context,
+        shortcutDescription as unknown as Array<IDescriptionBlockNode>,
+        {
+          insertAd: false,
+        },
+      );
+
+      expect(tree.toPlainText()).toBe('Follow me: https://test.postybirb.com/converted_username');
+      expect(tree.toHtml()).toBe(
+        '<div>Follow me: <a target="_blank" href="https://test.postybirb.com/converted_username">converted_username</a></div>',
+      );
+    });
+
+    it('should handle backward compatibility with old content format', () => {
+      // Old format used content: 'styled' with text in content array
+      // This test verifies that old data can still be parsed
+      const oldFormatDescription = [
+        {
+          id: 'test-old-format',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [
+            { type: 'text', text: 'Hello, ', styles: {} },
+            {
+              type: 'username',
+              props: {
+                id: '1',
+                shortcut: 'test',
+                only: '',
+                username: '',
+              },
+              content: [
+                {
+                  type: 'text',
+                  text: 'OldFormatUser',
+                  styles: {},
+                },
+              ],
+            },
+          ],
+          children: [],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'test',
+        shortcuts: {
+          test: {
+            id: 'test',
+            url: 'https://test.postybirb.com/$1',
+          },
+        },
+        customShortcuts: new Map(),
+        defaultDescription: [],
+      };
+
+      const tree = new DescriptionNodeTree(
+        context,
+        oldFormatDescription as unknown as Array<IDescriptionBlockNode>,
+        {
+          insertAd: false,
+        },
+      );
+
+      expect(tree.toPlainText()).toBe('Hello, https://test.postybirb.com/OldFormatUser');
+      expect(tree.findUsernames().has('OldFormatUser')).toBe(true);
+    });
+
+    it('should handle empty username prop gracefully', () => {
+      const emptyUsernameDescription: Description = [
+        {
+          id: 'test-empty-username',
+          type: 'paragraph',
+          props: {
+            textColor: 'default',
+            backgroundColor: 'default',
+            textAlignment: 'left',
+          },
+          content: [
+            {
+              type: 'username',
+              props: {
+                id: '1',
+                shortcut: 'test',
+                only: '',
+                username: '',
+              },
+              content: undefined
+            },
+          ],
+          children: [],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'test',
+        shortcuts: {
+          test: {
+            id: 'test',
+            url: 'https://test.postybirb.com/$1',
+          },
+        },
+        customShortcuts: new Map(),
+        defaultDescription: [],
+      };
+
+      const tree = new DescriptionNodeTree(
+        context,
+        emptyUsernameDescription as unknown as Array<IDescriptionBlockNode>,
+        {
+          insertAd: false,
+        },
+      );
+
+      expect(tree.toPlainText()).toBe('');
+      expect(tree.findUsernames().size).toBe(0);
     });
   });
 });

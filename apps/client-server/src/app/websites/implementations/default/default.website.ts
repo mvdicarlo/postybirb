@@ -1,11 +1,11 @@
 import {
-    DynamicObject,
-    ILoginState,
-    ImageResizeProps,
-    IPostResponse,
-    ISubmissionFile,
-    PostData,
-    SimpleValidationResult,
+  DynamicObject,
+  ILoginState,
+  ImageResizeProps,
+  IPostResponse,
+  ISubmissionFile,
+  PostData,
+  SimpleValidationResult,
 } from '@postybirb/types';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
@@ -53,7 +53,6 @@ export default class DefaultWebsite
   onPostFileSubmission(
     postData: PostData<DefaultWebsiteOptions>,
     files: PostingFile[],
-    batchIndex: number,
     cancellationToken: CancellableToken,
   ): Promise<IPostResponse> {
     throw new Error('Method not implemented.');

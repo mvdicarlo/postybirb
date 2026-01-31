@@ -13,12 +13,15 @@ import {
   Text,
   TextInput,
 } from '@mantine/core';
-import type { InkbunnyAccountData } from '@postybirb/types';
+import type { InkbunnyAccountData, InkbunnyOAuthRoutes } from '@postybirb/types';
 import { IconInfoCircle } from '@tabler/icons-react';
 import { useState } from 'react';
-import accountApi from '../../../api/account.api';
+import websitesApi from '../../../api/websites.api';
 import { ExternalLink } from '../../shared/external-link';
-import { notifyLoginFailed, notifyLoginSuccess } from '../helpers';
+import {
+  createLoginHttpErrorHandler,
+  notifyLoginSuccess,
+} from '../helpers';
 import { LoginViewContainer } from '../login-view-container';
 import type { LoginViewProps } from '../types';
 
@@ -40,34 +43,21 @@ export function InkbunnyLoginView({
 
     setSubmitting(true);
 
-    try {
-      // Authenticate with Inkbunny API
-      const authResponse = await fetch(
-        `https://inkbunny.net/api_login.php?username=${encodeURIComponent(
-          username.trim(),
-        )}&password=${encodeURIComponent(password)}`,
-        { method: 'GET' },
-      );
-
-      const authData = await authResponse.json();
-
-      if (authData.sid) {
-        // Save the authentication data
-        await accountApi.setWebsiteData<InkbunnyAccountData>({
-          id: account.id,
-          data: { username: username.trim(), sid: authData.sid },
-        });
-
+    // Authenticate via backend to avoid CORS issues
+    // Password is only sent to Inkbunny API, never stored
+    websitesApi
+      .performOAuthStep<InkbunnyOAuthRoutes>(account.id, 'login', {
+        username: username.trim(),
+        password,
+      })
+      .then(() => {
         notifyLoginSuccess(undefined, account);
-      } else {
-        throw new Error(authData.error_message);
-      }
-    } catch (error) {
-      notifyLoginFailed((error as Error).message);
-    } finally {
-      setSubmitting(false);
-      setPassword(''); // Clear password for security
-    }
+      })
+      .catch(createLoginHttpErrorHandler())
+      .finally(() => {
+        setSubmitting(false);
+        setPassword(''); // Clear password for security
+      });
   };
 
   return (

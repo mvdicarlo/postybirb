@@ -1,4 +1,5 @@
 import { Provider } from '@nestjs/common';
+import { IsTestEnvironment } from '@postybirb/utils/electron';
 import { Class } from 'type-fest';
 import { WEBSITE_IMPLEMENTATIONS } from '../../constants';
 import { UnknownWebsite } from '../website';
@@ -7,9 +8,9 @@ import TestWebsite from './test/test.website';
 
 const websiteArray = Object.values(Websites);
 
-// if (IsTestEnvironment()) {
-(websiteArray as unknown as unknown[]).push(TestWebsite);
-// }
+if (IsTestEnvironment()) {
+  (websiteArray as unknown as unknown[]).push(TestWebsite);
+}
 
 export const WebsiteImplProvider: Provider<Class<UnknownWebsite>[]> = {
   provide: WEBSITE_IMPLEMENTATIONS,

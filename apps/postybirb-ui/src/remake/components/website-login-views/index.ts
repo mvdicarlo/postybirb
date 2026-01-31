@@ -7,7 +7,6 @@ import { BlueskyLoginView } from './bluesky';
 import { CustomLoginView } from './custom';
 import { DiscordLoginView } from './discord';
 import { E621LoginView } from './e621';
-import { FurtasticLoginView } from './furtastic';
 import { InkbunnyLoginView } from './inkbunny';
 import { MegalodonLoginView } from './megalodon';
 import { TelegramLoginView } from './telegram';
@@ -19,7 +18,7 @@ export {
   createLoginHttpErrorHandler,
   notifyInfo,
   notifyLoginError,
-  notifyLoginFailed,
+  notifyLoginFailed
 } from './helpers';
 export { LoginViewContainer } from './login-view-container';
 export type { LoginViewComponent, LoginViewProps } from './types';
@@ -34,7 +33,6 @@ const loginViewRegistry: Record<string, LoginViewComponent<any>> = {
   Custom: CustomLoginView,
   Discord: DiscordLoginView,
   Friendica: MegalodonLoginView,
-  Furtastic: FurtasticLoginView,
   GoToSocial: MegalodonLoginView,
   Inkbunny: InkbunnyLoginView,
   Mastodon: MegalodonLoginView,

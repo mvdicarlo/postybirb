@@ -78,7 +78,6 @@ export class LegacyCustomShortcut implements LegacyConverterEntity<ICustomShortc
       db: 'derpibooru',
       e6: 'e621',
       fa: 'furaffinity',
-      ft: 'furtastic',
       furb: 'furbooru',
       hf: 'h-foundry',
       ib: 'inkbunny',
@@ -136,8 +135,9 @@ export class LegacyCustomShortcut implements LegacyConverterEntity<ICustomShortc
                     id: new Date().getTime().toString(),
                     shortcut: modernId,
                     only: '',
+                    username: shortcutValue,
                   },
-                  content: [{ type: 'text', text: shortcutValue, styles: {} }],
+                  content: undefined,
                 });
                 return;
               }

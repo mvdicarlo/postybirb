@@ -326,7 +326,6 @@ export default class Cara
   async onPostFileSubmission(
     postData: PostData<CaraFileSubmission>,
     files: PostingFile[],
-    batchIndex: number,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     const hasImage = files.some((f) => f.fileType === FileType.IMAGE);

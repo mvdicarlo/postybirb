@@ -21,6 +21,7 @@ import { FileWebsite } from '../../models/website-modifiers/file-website';
 {{#if hasMessage}}
 import { MessageWebsite } from '../../models/website-modifiers/message-website';
 {{/if}}
+import { PostBatchData } from '../../models/website-modifiers/file-website';
 import { Website } from '../../website';
 import { {{pascalWebsiteName}}AccountData } from './models/{{website}}-account-data';
 {{#if hasFile}}
@@ -71,8 +72,8 @@ export default class {{pascalWebsiteName}} extends Website<{{pascalWebsiteName}}
   async onPostFileSubmission(
     postData: PostData<{{pascalWebsiteName}}FileSubmission>,
     files: PostingFile[],
-    batchIndex: number,
     cancellationToken: CancellableToken,
+    batch: PostBatchData
   ): Promise<PostResponse> {
     cancellationToken.throwIfCancelled();
     const formData = {

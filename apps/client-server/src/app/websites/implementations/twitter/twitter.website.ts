@@ -182,7 +182,6 @@ export default class Twitter
   async onPostFileSubmission(
     postData: PostData<TwitterFileSubmission>,
     files: PostingFile[],
-    batchIndex: number,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfCancelled();

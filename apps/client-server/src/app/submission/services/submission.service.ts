@@ -105,11 +105,36 @@ export class SubmissionService
     });
   }
 
-  onModuleInit() {
-    this.cleanupUninitializedSubmissions();
-    Object.values(SubmissionType).forEach((type) => {
-      this.populateMultiSubmission(type);
-    });
+  async onModuleInit() {
+    await this.cleanupUninitializedSubmissions();
+    await this.normalizeOrders();
+    for (const type of Object.values(SubmissionType)) {
+      // eslint-disable-next-line no-await-in-loop
+      await this.populateMultiSubmission(type);
+    }
+  }
+
+  /**
+   * Normalizes order values to sequential integers on startup.
+   * This cleans up fractional values that accumulate from reordering operations.
+   */
+  private async normalizeOrders() {
+    this.logger.info('Normalizing submission orders');
+
+    for (const type of [SubmissionType.FILE, SubmissionType.MESSAGE]) {
+      const submissions = (await this.repository.findAll())
+        .filter((s) => s.type === type && !s.isTemplate && !s.isMultiSubmission)
+        .sort((a, b) => a.order - b.order);
+
+      for (let i = 0; i < submissions.length; i++) {
+        if (submissions[i].order !== i) {
+          // eslint-disable-next-line no-await-in-loop
+          await this.repository.update(submissions[i].id, { order: i });
+        }
+      }
+    }
+
+    this.logger.info('Order normalization complete');
   }
 
   /**
@@ -801,6 +826,7 @@ export class SubmissionService
         .set({ metadata: newSubmission.metadata, isInitialized: true })
         .where(eq(SubmissionSchema.id, newSubmission.id));
     });
+    this.emit();
   }
 
   async updateTemplateName(
@@ -830,41 +856,56 @@ export class SubmissionService
     return result;
   }
 
-  async reorder(id: SubmissionId, index: number) {
-    const allSubmissions = (await this.repository.findAll()).sort(
-      (a, b) => a.order - b.order,
-    );
-    const movedSubmissionIndex = allSubmissions.findIndex((s) => s.id === id);
-    if (movedSubmissionIndex === -1) {
-      throw new NotFoundException(`Submission '${id}' not found`);
+  async reorder(
+    id: SubmissionId,
+    targetId: SubmissionId,
+    position: 'before' | 'after',
+  ) {
+    const moving = await this.findById(id, { failOnMissing: true });
+    const target = await this.findById(targetId, { failOnMissing: true });
+
+    // Ensure same type (FILE or MESSAGE)
+    if (moving.type !== target.type) {
+      throw new BadRequestException(
+        'Cannot reorder across different submission types',
+      );
     }
 
-    if (index === movedSubmissionIndex) {
-      return;
+    // Get all submissions of the same type, sorted by order
+    // Exclude templates and multi-submissions from ordering
+    const allOfType = (await this.repository.findAll())
+      .filter(
+        (s) =>
+          s.type === moving.type && !s.isTemplate && !s.isMultiSubmission,
+      )
+      .sort((a, b) => a.order - b.order);
+
+    const targetIndex = allOfType.findIndex((s) => s.id === targetId);
+    if (targetIndex === -1) {
+      throw new NotFoundException(`Target submission '${targetId}' not found`);
     }
 
-    // Remove the submission from its current position
-    const [movedSubmission] = allSubmissions.splice(movedSubmissionIndex, 1);
+    let newOrder: number;
 
-    // Adjust index if necessary
-    if (index > allSubmissions.length) {
-      index = allSubmissions.length;
+    if (position === 'before') {
+      if (targetIndex === 0) {
+        // Insert at the very beginning
+        newOrder = target.order - 1;
+      } else {
+        // Insert between previous and target
+        const prevOrder = allOfType[targetIndex - 1].order;
+        newOrder = (prevOrder + target.order) / 2;
+      }
+    } else if (targetIndex === allOfType.length - 1) {
+      // position === 'after', Insert at the very end
+      newOrder = target.order + 1;
+    } else {
+      // position === 'after', Insert between target and next
+      const nextOrder = allOfType[targetIndex + 1].order;
+      newOrder = (target.order + nextOrder) / 2;
     }
 
-    // Insert the submission at the new index
-    allSubmissions.splice(index, 0, movedSubmission);
-
-    // Update the order property for all submissions
-    allSubmissions.forEach((submission, i) => {
-      submission.order = i;
-    });
-
-    // Save changes
-    await Promise.all(
-      allSubmissions.map((s) =>
-        this.repository.update(s.id, { order: s.order }),
-      ),
-    );
+    await this.repository.update(id, { order: newOrder });
     this.emit();
   }
 

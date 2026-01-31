@@ -1,6 +1,4 @@
-import { Trans } from '@lingui/react/macro';
-/* eslint-disable jsx-a11y/no-static-element-interactions */
-/* eslint-disable jsx-a11y/click-events-have-key-events */
+/* eslint-disable consistent-return */
 /* eslint-disable react-hooks/rules-of-hooks */
 import { BlockNoteEditor } from '@blocknote/core';
 import {
@@ -8,6 +6,7 @@ import {
   createReactInlineContentSpec,
   useBlockNoteEditor,
 } from '@blocknote/react';
+import { Trans } from '@lingui/react/macro';
 import {
   Badge,
   Box,
@@ -32,364 +31,301 @@ import {
   IconWorld,
   IconX,
 } from '@tabler/icons-react';
+import { Selection } from '@tiptap/pm/state';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useStore } from '../../../../stores/use-store';
 import { WebsiteStore } from '../../../../stores/website.store';
-import { CommonTranslations } from '../../../../translations/common-translations';
 import './shortcut.css';
-
-function getMyInlineNode(editor: BlockNoteEditor, id: string) {
-  // Search through all blocks to find the one containing our inline content
-  // (cursor position may not be reliable after clicking in popover)
-  const allBlocks = editor.document;
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  function findInBlocks(blocks: any[]): { inline: any; block: any } | null {
-    for (const block of blocks) {
-      if (Array.isArray(block?.content)) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const inline = block.content.find((i: any) => i?.props?.id === id);
-        if (inline) {
-          return { inline, block };
-        }
-      }
-      // Check nested children
-      if (Array.isArray(block?.children)) {
-        const found = findInBlocks(block.children);
-        if (found) return found;
-      }
-    }
-    return null;
-  }
-
-  const found = findInBlocks(allBlocks);
-  if (found) return found;
-
-  // Fallback to cursor position (for backwards compatibility)
-  const currentBlock = editor.getTextCursorPosition().block;
-  if (Array.isArray(currentBlock?.content)) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const inline = currentBlock?.content.find((i: any) => i?.props?.id === id);
-    return { inline, block: currentBlock };
-  }
-  return { inline: null, block: currentBlock };
-}
-
-function findTextNode(node: HTMLElement | null): HTMLElement | undefined {
-  if (!node) return undefined;
-
-  if (node.nodeType === Node.TEXT_NODE) {
-    return node;
-  }
-
-  for (const child of Array.from(node.childNodes)) {
-    const text = findTextNode(child as HTMLElement);
-    if (text) return text;
-  }
-
-  return undefined;
-}
-
-function Shortcut(props: {
-  onStale: () => void;
-  item: (node: HTMLElement | null) => void;
-}) {
-  const { item, onStale } = props;
-  const ref = useRef<HTMLSpanElement>(null);
-  // Handler for keyboard events to improve navigation
-  const handleKeyDown = useCallback((event: KeyboardEvent) => {
-    if (!ref.current) return;
-
-    const ceEl = ref.current.querySelector('.ce') as HTMLSpanElement | null;
-    if (!ceEl) return;
-
-    const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0) return;
-
-    const range = selection.getRangeAt(0);
-
-    // Check if cursor is inside our shortcut element
-    const isInsideShortcut =
-      ref.current.contains(range.startContainer) ||
-      ref.current.contains(range.endContainer);
-
-    if (!isInsideShortcut) return; // Handle special cases for better editing experience
-    if (event.key === 'Backspace') {
-      // Check if we're at the beginning of the editable content
-      const isAtBeginning =
-        range.collapsed &&
-        range.startOffset === 0 &&
-        (range.startContainer === ceEl ||
-          ((range.startContainer.nodeType === Node.TEXT_NODE ||
-            range.startContainer.nodeType === Node.ELEMENT_NODE) &&
-            ceEl.contains(range.startContainer) &&
-            range.startContainer.textContent === ''));
-
-      const isRemovingLast =
-        range.collapsed &&
-        range.startOffset === 1 &&
-        (range.startContainer === ceEl ||
-          ((range.startContainer.nodeType === Node.TEXT_NODE ||
-            range.startContainer.nodeType === Node.ELEMENT_NODE) &&
-            ceEl.contains(range.startContainer) &&
-            range.startContainer.textContent !== ''));
-      if (isRemovingLast) {
-        // If we're removing the last character, delete it manually and prevent escape
-        event.preventDefault();
-
-        // Manually remove the character
-        if (range.startContainer.nodeType === Node.TEXT_NODE) {
-          const textNode = range.startContainer as Text;
-          const currentText = textNode.textContent || '';
-          const newText =
-            currentText.slice(0, range.startOffset - 1) +
-            currentText.slice(range.startOffset);
-          textNode.textContent = newText;
-
-          // Keep cursor at the same position (now at the end of remaining text)
-          const newRange = document.createRange();
-          newRange.setStart(textNode, Math.max(0, range.startOffset - 1));
-          newRange.collapse(true);
-          selection.removeAllRanges();
-          selection.addRange(newRange);
-        }
-        return; // Early return to prevent other logic from running
-      }
-
-      if (isAtBeginning) {
-        event.preventDefault();
-        // Move cursor to before the shortcut element
-        const newRange = document.createRange();
-        newRange.setStartBefore(ref.current);
-        newRange.collapse(true);
-        selection.removeAllRanges();
-        selection.addRange(newRange);
-      }
-    } else if (event.key === 'ArrowLeft') {
-      // Check if we're at the very beginning of the editable content
-      const isAtBeginning =
-        range.collapsed &&
-        range.startOffset === 0 &&
-        (range.startContainer === ceEl ||
-          (range.startContainer.nodeType === Node.TEXT_NODE &&
-            ceEl.contains(range.startContainer) &&
-            !range.startContainer.previousSibling));
-
-      if (isAtBeginning) {
-        event.preventDefault();
-        // Move cursor to before the shortcut element
-        const newRange = document.createRange();
-        newRange.setStartBefore(ref.current);
-        newRange.collapse(true);
-        selection.removeAllRanges();
-        selection.addRange(newRange);
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    const cPerm: HTMLSpanElement | null | undefined =
-      ref.current?.querySelector('.ce');
-    const cPermParent = cPerm?.parentElement;
-
-    // Add keyboard event listener for better navigation
-    document.addEventListener('keydown', handleKeyDown, true);
-
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.type === 'childList' && mutation.removedNodes.length > 0) {
-          const ceNode: HTMLSpanElement | undefined = Array.from(
-            mutation.removedNodes,
-          ).find(
-            (node) =>
-              node.nodeName === 'SPAN' &&
-              (node as HTMLSpanElement).classList.contains('ce'),
-          ) as HTMLSpanElement;
-          if (ceNode) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const c = ceNode.querySelector('span') as HTMLSpanElement;
-            if (c) {
-              c.innerText = '';
-              cPermParent?.replaceChildren(ceNode);
-              const selection = window.getSelection();
-              onStale();
-              if (selection) {
-                selection.modify('move', 'forward', 'character');
-              }
-            }
-          }
-        }
-      });
-
-      const current = ref.current as HTMLSpanElement;
-      const ceEl: HTMLSpanElement | null = current.querySelector('.ce');
-      if (ceEl && ceEl.innerText.trim() !== current.innerText.trim()) {
-        const textNode = findTextNode(current);
-        if (textNode && ceEl.children[0]) {
-          ceEl.children[0].appendChild(textNode);
-        }
-      }
-    });
-
-    if (ref.current) {
-      observer.observe(ref.current, {
-        childList: true,
-        subtree: true,
-        attributes: true,
-      });
-    }
-
-    return () => {
-      observer.disconnect();
-      document.removeEventListener('keydown', handleKeyDown, true);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [handleKeyDown, onStale]);
-
-  const el = <span ref={item} className="ce" />;
-
-  return (
-    <span ref={ref}>
-      <Badge
-        variant="outline"
-        radius="xs"
-        tt="none"
-        style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
-      >
-        {el}
-      </Badge>
-    </span>
-  );
-}
 
 export const InlineUsernameShortcut = createReactInlineContentSpec(
   {
     type: 'username',
     propSchema: {
-      id: { default: Date.now().toString() },
+      id: { default: '' },
       shortcut: { default: '' },
       only: { default: '' },
+      username: { default: '' },
     },
-    content: 'styled',
+    // Using 'none' with updateInlineContent for reliable updates via ProseMirror transactions
+    content: 'none',
   },
   {
     render: (props) => {
       const editor = useBlockNoteEditor();
       const { state: websites } = useStore(WebsiteStore);
 
-      // Popover state management
-      const [opened, { open, close, toggle }] = useDisclosure(false);
+      const inlineId = props.inlineContent.props.id as string;
+      const shortcutName = props.inlineContent.props.shortcut as string;
+      const onlyProp = props.inlineContent.props.only as string;
+      const usernameProp = props.inlineContent.props.username as string;
 
-      // Search state with debouncing for better performance
+      // Ref for the input element
+      const inputRef = useRef<HTMLInputElement>(null);
+      // Ref to track if we're adjacent to this node (for arrow key navigation)
+      const isAdjacentRef = useRef<'before' | 'after' | null>(null);
+
+      // Local state for the username input (controlled)
+      const [usernameValue, setUsernameValue] = useState(usernameProp);
+
+      // Sync local username state when props change (e.g., undo/redo)
+      useEffect(() => {
+        setUsernameValue(usernameProp);
+      }, [usernameProp]);
+
+      // Hack: Listen for arrow keys when cursor is adjacent to this node
+      useEffect(() => {
+        const pmView = editor.prosemirrorView;
+        if (!pmView) return;
+
+        // Check if selection is adjacent to our node
+        const checkAdjacency = () => {
+          const { state } = pmView;
+          const { selection } = state;
+
+          if (!selection.empty) {
+            isAdjacentRef.current = null;
+            return;
+          }
+
+          const pos = selection.from;
+
+          // Check node before cursor
+          if (pos > 0) {
+            const nodeBefore = state.doc.nodeAt(pos - 1);
+            if (
+              nodeBefore?.type.name === 'username' &&
+              nodeBefore.attrs.id === inlineId
+            ) {
+              isAdjacentRef.current = 'after';
+              return;
+            }
+          }
+
+          // Check node after cursor
+          const nodeAfter = state.doc.nodeAt(pos);
+          if (
+            nodeAfter?.type.name === 'username' &&
+            nodeAfter.attrs.id === inlineId
+          ) {
+            isAdjacentRef.current = 'before';
+            return;
+          }
+
+          isAdjacentRef.current = null;
+        };
+
+        // Handle keydown for arrow key navigation into the input
+        const handleKeyDown = (e: KeyboardEvent) => {
+          // If input is focused, let arrow keys work naturally within it
+          if (document.activeElement === inputRef.current) {
+            return;
+          }
+
+          if (e.key === 'ArrowRight' && isAdjacentRef.current === 'before') {
+            e.preventDefault();
+            e.stopPropagation();
+            inputRef.current?.focus();
+            // Place cursor at start
+            inputRef.current?.setSelectionRange(0, 0);
+          } else if (
+            e.key === 'ArrowLeft' &&
+            isAdjacentRef.current === 'after'
+          ) {
+            e.preventDefault();
+            e.stopPropagation();
+            inputRef.current?.focus();
+            // Place cursor at end
+            const len = inputRef.current?.value.length || 0;
+            inputRef.current?.setSelectionRange(len, len);
+          }
+        };
+
+        // Subscribe to selection changes
+        const unsubscribe = editor.onSelectionChange(() => {
+          checkAdjacency();
+        });
+
+        // Initial check
+        checkAdjacency();
+
+        document.addEventListener('keydown', handleKeyDown, true);
+
+        return () => {
+          unsubscribe();
+          document.removeEventListener('keydown', handleKeyDown, true);
+        };
+      }, [editor, inlineId]);
+
+      // Popover state management for website selection
+      const [opened, { close, toggle }] = useDisclosure(false);
+
+      // Search state with debouncing for website filter
       const [searchTerm, setSearchTerm] = useState('');
       const [debouncedSearchTerm] = useDebouncedValue(searchTerm, 300);
+
+      // Local state for selected website IDs
+      const [selectedWebsiteIds, setSelectedWebsiteIds] = useState<string[]>(
+        () => (onlyProp ? onlyProp.split(',').filter(Boolean) : [])
+      );
+
+      // Sync local website selection state when props change
+      useEffect(() => {
+        const propsIds = onlyProp ? onlyProp.split(',').filter(Boolean) : [];
+        setSelectedWebsiteIds(propsIds);
+      }, [onlyProp]);
 
       // Available website options
       const websiteOptions = useMemo(
         () => websites.map((w) => ({ value: w.id, label: w.displayName })),
-        [websites],
+        [websites]
       );
 
-      // Filtered website options
+      // Filtered website options based on search
       const filteredWebsiteOptions = useMemo(() => {
         if (!debouncedSearchTerm) return websiteOptions;
         return websiteOptions.filter((option) =>
-          option.label
-            .toLowerCase()
-            .includes(debouncedSearchTerm.toLowerCase()),
+          option.label.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
         );
       }, [websiteOptions, debouncedSearchTerm]);
 
-      // Local state for selected website IDs (synced with props)
-      const [selectedWebsiteIds, setSelectedWebsiteIds] = useState<string[]>(
-        () => {
-          const onlyProp = props.inlineContent.props.only as string;
-          return onlyProp ? onlyProp.split(',').filter(Boolean) : [];
+      // Commit username changes using BlockNote's updateInlineContent (proper ProseMirror transactions)
+      const commitUsername = useCallback(
+        (value: string) => {
+          if (value !== usernameProp) {
+            props.updateInlineContent({
+              ...props.inlineContent,
+              props: {
+                ...props.inlineContent.props,
+                username: value,
+              },
+            });
+          }
         },
+        [usernameProp, props]
       );
 
-      // Sync local state when props change (e.g., from external updates)
-      useEffect(() => {
-        const onlyProp = props.inlineContent.props.only as string;
-        const propsIds = onlyProp ? onlyProp.split(',').filter(Boolean) : [];
-        setSelectedWebsiteIds(propsIds);
-      }, [props.inlineContent.props.only]);
+      // Handle username input change - update local state and commit immediately
+      const handleUsernameChange = useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+          const newValue = e.target.value;
+          setUsernameValue(newValue);
+          commitUsername(newValue);
+        },
+        [commitUsername]
+      );
 
-      // Update selection helper
-      const updateSelection = useCallback(
+      // Handle username input keydown
+      const handleUsernameKeyDown = useCallback(
+        (e: React.KeyboardEvent<HTMLInputElement>) => {
+          // Prevent BlockNote from handling these keys while in input
+          e.stopPropagation();
+
+          const input = e.target as HTMLInputElement;
+          const { selectionStart, selectionEnd, value } = input;
+          const isAtStart = selectionStart === 0 && selectionEnd === 0;
+          const isAtEnd =
+            selectionStart === value.length && selectionEnd === value.length;
+
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            input.blur();
+          } else if (e.key === 'Escape') {
+            e.preventDefault();
+            setUsernameValue(usernameProp);
+            commitUsername(usernameProp);
+            input.blur();
+          } else if (e.key === 'ArrowLeft' && isAtStart) {
+            // Move cursor to before this node in the editor
+            e.preventDefault();
+            input.blur();
+            const pmView = editor.prosemirrorView;
+            if (pmView) {
+              const { state } = pmView;
+              // Find our node and position cursor before it
+              state.doc.descendants((node, pos) => {
+                if (
+                  node.type.name === 'username' &&
+                  node.attrs.id === inlineId
+                ) {
+                  const tr = state.tr.setSelection(
+                    Selection.near(state.doc.resolve(pos))
+                  );
+                  pmView.dispatch(tr);
+                  pmView.focus();
+                  return false;
+                }
+                return true;
+              });
+            }
+          } else if (e.key === 'ArrowRight' && isAtEnd) {
+            // Move cursor to after this node in the editor
+            e.preventDefault();
+            input.blur();
+            const pmView = editor.prosemirrorView;
+            if (pmView) {
+              const { state } = pmView;
+              // Find our node and position cursor after it
+              state.doc.descendants((node, pos) => {
+                if (
+                  node.type.name === 'username' &&
+                  node.attrs.id === inlineId
+                ) {
+                  const tr = state.tr.setSelection(
+                    Selection.near(state.doc.resolve(pos + node.nodeSize))
+                  );
+                  pmView.dispatch(tr);
+                  pmView.focus();
+                  return false;
+                }
+                return true;
+              });
+            }
+          }
+        },
+        [usernameProp, commitUsername, editor, inlineId]
+      );
+
+      // Handle click on the input to focus it
+      const handleInputClick = useCallback((e: React.MouseEvent) => {
+        e.stopPropagation();
+        inputRef.current?.focus();
+      }, []);
+
+      // Update website selection using updateInlineContent
+      const updateWebsiteSelection = useCallback(
         (newOnlyValue: string) => {
-          // Update local state immediately for responsive UI
           const newIds = newOnlyValue
             ? newOnlyValue.split(',').filter(Boolean)
             : [];
           setSelectedWebsiteIds(newIds);
-
-          // Update the editor block
-          const { inline, block } = getMyInlineNode(
-            editor,
-            props.inlineContent.props.id,
-          );
-
-          if (inline && Array.isArray(block.content)) {
-            // Create a new content array with updated inline props to trigger onChange
-            const newContent = block.content.map((item: unknown) => {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const contentItem = item as Record<string, any>;
-              if (contentItem?.props?.id === props.inlineContent.props.id) {
-                return {
-                  ...contentItem,
-                  props: {
-                    ...contentItem.props,
-                    only: newOnlyValue,
-                  },
-                };
-              }
-              return item;
-            });
-            editor.updateBlock(block.id, { content: newContent });
-          }
+          props.updateInlineContent({
+            ...props.inlineContent,
+            props: {
+              ...props.inlineContent.props,
+              only: newOnlyValue,
+            },
+          });
         },
-        [editor, props.inlineContent.props.id],
+        [props]
       );
 
-      // Handle individual website selection
+      // Handle individual website toggle
       const handleWebsiteToggle = useCallback(
         (websiteId: string) => {
           const newSelected = selectedWebsiteIds.includes(websiteId)
             ? selectedWebsiteIds.filter((id) => id !== websiteId)
             : [...selectedWebsiteIds, websiteId];
-
-          updateSelection(newSelected.join(','));
+          updateWebsiteSelection(newSelected.join(','));
         },
-        [selectedWebsiteIds, updateSelection],
+        [selectedWebsiteIds, updateWebsiteSelection]
       );
 
-      // Handle select all/none
+      // Handle select all / deselect all
       const handleSelectAll = useCallback(() => {
         const allIds = websiteOptions.map((opt) => opt.value);
         const isAllSelected = selectedWebsiteIds.length === allIds.length;
-        updateSelection(isAllSelected ? '' : allIds.join(','));
-      }, [websiteOptions, selectedWebsiteIds, updateSelection]); // Clear all selections
-      const handleClearAll = useCallback(() => {
-        updateSelection('');
-      }, [updateSelection]);
-
-      // Handle escape key to close popover
-      useEffect(() => {
-        const handleEscapeKey = (event: KeyboardEvent) => {
-          if (event.key === 'Escape' && opened) {
-            close();
-          }
-        };
-
-        if (opened) {
-          document.addEventListener('keydown', handleEscapeKey);
-        }
-
-        return () => {
-          document.removeEventListener('keydown', handleEscapeKey);
-        };
-      }, [opened, close]);
+        updateWebsiteSelection(isAllSelected ? '' : allIds.join(','));
+      }, [websiteOptions, selectedWebsiteIds, updateWebsiteSelection]);
 
       // Display text for selected websites
       const selectedDisplayText = useMemo(() => {
@@ -399,13 +335,13 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
 
         if (selectedWebsiteIds.length === 1) {
           const website = websites.find((w) => w.id === selectedWebsiteIds[0]);
-          return website?.displayName || <CommonTranslations.Unknown />;
+          return website?.displayName || <Trans>Unknown</Trans>;
         }
 
         const names = selectedWebsiteIds
           .map((id) => websites.find((w) => w.id === id)?.displayName)
           .filter(Boolean)
-          .slice(0, 3); // Limit to 3 names for display
+          .slice(0, 3);
         if (selectedWebsiteIds.length <= 3) {
           return names.join(', ');
         }
@@ -413,24 +349,12 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
         return `${names.join(', ')} + ${selectedWebsiteIds.length - 3}`;
       }, [selectedWebsiteIds, websites]);
 
-      // Color logic for the badge
+      // Color logic for the website badge
       const badgeColor = useMemo(() => {
         if (selectedWebsiteIds.length === 0) return 'gray';
         if (selectedWebsiteIds.length === websites.length) return 'green';
         return 'blue';
       }, [selectedWebsiteIds.length, websites.length]);
-
-      const onStale = useCallback(() => {
-        const { inline, block } = getMyInlineNode(
-          editor,
-          props.inlineContent.props.id,
-        );
-        if (inline) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (inline as any).content = [{ type: 'text', text: '', styles: {} }];
-          editor.updateBlock(block.id, { content: block.content });
-        }
-      }, [editor, props.inlineContent.props.id]);
 
       return (
         <span
@@ -451,7 +375,7 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
               borderBottomRightRadius: 0,
             }}
           >
-            {props.inlineContent.props.shortcut}
+            {shortcutName}
             <span
               style={{
                 paddingLeft: '6px',
@@ -588,7 +512,7 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
                       <Stack gap={0} p="xs">
                         {filteredWebsiteOptions.map((option) => {
                           const isSelected = selectedWebsiteIds.includes(
-                            option.value,
+                            option.value
                           );
                           return (
                             <UnstyledButton
@@ -632,7 +556,7 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
                     ) : (
                       <Box p="md">
                         <Text ta="center" c="dimmed" size="sm">
-                          <CommonTranslations.NoItemsFound />
+                          <Trans>No items found</Trans>
                         </Text>
                       </Box>
                     )}
@@ -642,16 +566,41 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
             </Popover>
           </Badge>
 
-          <Shortcut item={props.contentRef} onStale={onStale} />
+          {/* Username input - using controlled input with updateInlineContent */}
+          <Badge
+            variant="outline"
+            radius="xs"
+            tt="none"
+            size="sm"
+            h="fit-content"
+            className="username-shortcut-content-badge"
+            px={0}
+            style={{
+              borderTopLeftRadius: 0,
+              borderBottomLeftRadius: 0,
+            }}
+          >
+            <input
+              ref={inputRef}
+              type="text"
+              className="username-shortcut-input"
+              value={usernameValue}
+              onChange={handleUsernameChange}
+              onKeyDown={handleUsernameKeyDown}
+              onClick={handleInputClick}
+              placeholder="username"
+            />
+          </Badge>
         </span>
       );
     },
-  },
+  }
 );
 
 export const getUsernameShortcutsMenuItems = (
-  editor: BlockNoteEditor,
-  shortcuts: UsernameShortcut[],
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  editor: BlockNoteEditor<any, any, any>,
+  shortcuts: UsernameShortcut[]
 ): DefaultReactSuggestionItem[] =>
   shortcuts.map((sc) => ({
     title: sc.id,
@@ -660,10 +609,14 @@ export const getUsernameShortcutsMenuItems = (
       editor.insertInlineContent([
         {
           type: 'username',
-          props: { id: Date.now().toString(), shortcut: sc.id, only: '' },
-          content: 'username',
+          props: {
+            id: Date.now().toString(),
+            shortcut: sc.id,
+            only: '',
+            username: '',
+          },
         } as never,
-        ' ', // add a space after the shortcut
+        ' ',
       ]);
     },
     // eslint-disable-next-line lingui/no-unlocalized-strings
