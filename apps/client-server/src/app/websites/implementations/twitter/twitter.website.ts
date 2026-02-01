@@ -1,14 +1,14 @@
 import {
-  FileType,
-  ILoginState,
-  ImageResizeProps,
-  ISubmissionFile,
-  OAuthRouteHandlers,
-  PostData,
-  PostResponse,
-  SimpleValidationResult,
-  TwitterAccountData,
-  TwitterOAuthRoutes,
+    FileType,
+    ILoginState,
+    ImageResizeProps,
+    ISubmissionFile,
+    OAuthRouteHandlers,
+    PostData,
+    PostResponse,
+    SimpleValidationResult,
+    TwitterAccountData,
+    TwitterOAuthRoutes,
 } from '@postybirb/types';
 import { chunk } from 'lodash';
 import { parseTweet } from 'twitter-text';
@@ -27,8 +27,8 @@ import { Website } from '../../website';
 import { TwitterFileSubmission } from './models/twitter-file-submission';
 import { TwitterMessageSubmission } from './models/twitter-message-submission';
 import {
-  TweetResultMeta,
-  TwitterApiServiceV2,
+    TweetResultMeta,
+    TwitterApiServiceV2,
 } from './twitter-api-service/twitter-api-service';
 
 @WebsiteMetadata({
@@ -63,6 +63,7 @@ import {
     [FileType.VIDEO]: FileSize.megabytes(15),
   },
 })
+@DisableAds()
 @DisableAds()
 export default class Twitter
   extends Website<TwitterAccountData>

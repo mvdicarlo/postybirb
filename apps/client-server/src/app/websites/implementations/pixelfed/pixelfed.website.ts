@@ -26,6 +26,7 @@ import { MegalodonWebsite } from '../megalodon/megalodon.website';
   },
   fileBatchSize: 4,
 })
+@DisableAds()
 export default class Pixelfed extends MegalodonWebsite {
   protected getMegalodonInstanceType(): 'pixelfed' {
     return 'pixelfed';

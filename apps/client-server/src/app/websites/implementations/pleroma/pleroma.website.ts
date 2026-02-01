@@ -30,6 +30,7 @@ import { MegalodonWebsite } from '../megalodon/megalodon.website';
   },
   fileBatchSize: 4,
 })
+@DisableAds()
 export default class Pleroma extends MegalodonWebsite {
   protected getMegalodonInstanceType(): 'pleroma' {
     return 'pleroma';

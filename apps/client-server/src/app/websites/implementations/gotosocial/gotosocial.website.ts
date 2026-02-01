@@ -42,6 +42,7 @@ import { MegalodonWebsite } from '../megalodon/megalodon.website';
   },
   fileBatchSize: 4,
 })
+@DisableAds()
 export default class GoToSocial extends MegalodonWebsite {
   protected getMegalodonInstanceType(): 'gotosocial' {
     return 'gotosocial';

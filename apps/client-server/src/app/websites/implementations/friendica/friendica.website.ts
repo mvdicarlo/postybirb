@@ -42,6 +42,7 @@ import { MegalodonWebsite } from '../megalodon/megalodon.website';
   },
   fileBatchSize: 4,
 })
+@DisableAds()
 export default class Friendica extends MegalodonWebsite {
   protected getMegalodonInstanceType(): 'friendica' {
     return 'friendica';

@@ -1,14 +1,14 @@
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { Http } from '@postybirb/http';
 import {
-  FileType,
-  ILoginState,
-  ImageResizeProps,
-  ISubmissionFile,
-  PostData,
-  PostResponse,
-  SimpleValidationResult,
-  SubmissionRating,
+    FileType,
+    ILoginState,
+    ImageResizeProps,
+    ISubmissionFile,
+    PostData,
+    PostResponse,
+    SimpleValidationResult,
+    SubmissionRating,
 } from '@postybirb/types';
 import parse from 'node-html-parser';
 import { v4 as uuid } from 'uuid';
@@ -136,6 +136,7 @@ type CaraUploadResult = CaraMediaItem[];
     return undefined;
   },
 })
+@DisableAds()
 export default class Cara
   extends Website<CaraAccountData>
   implements
