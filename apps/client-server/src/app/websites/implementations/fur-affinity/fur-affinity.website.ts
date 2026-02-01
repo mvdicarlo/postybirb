@@ -93,7 +93,7 @@ export default class FurAffinity
 
       if (res.body.includes('logout-link')) {
         const $ = parse(res.body);
-        await this.getFolders($);
+        this.getFolders($);
         return this.loginState.setLogin(
           true,
           $.querySelector('.loggedin_user_avatar').getAttribute('alt'),
@@ -112,7 +112,7 @@ export default class FurAffinity
     const flatFolders: SelectOption[] = [];
 
     $.querySelector('select[name=assign_folder_id]').children.forEach((el) => {
-      if (el.tagName === 'option') {
+      if (el.tagName === 'OPTION') {
         if (el.getAttribute('value') === '0') {
           return;
         }
