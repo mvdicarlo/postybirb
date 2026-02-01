@@ -6,38 +6,38 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-    Badge,
-    Box,
-    Button,
-    Collapse,
-    Group,
-    Paper,
-    Stack,
-    Text,
-    UnstyledButton,
+  Badge,
+  Box,
+  Button,
+  Collapse,
+  Group,
+  Paper,
+  Stack,
+  Text,
+  UnstyledButton,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import {
-    SubmissionRating,
-    SubmissionType,
-    type WebsiteOptionsDto,
+  SubmissionRating,
+  SubmissionType,
+  type WebsiteOptionsDto,
 } from '@postybirb/types';
 import {
-    IconChevronDown,
-    IconChevronRight,
-    IconSquare,
-    IconSquareCheck,
+  IconChevronDown,
+  IconChevronRight,
+  IconSquare,
+  IconSquareCheck,
 } from '@tabler/icons-react';
 import { useCallback, useMemo, useState } from 'react';
 import websiteOptionsApi from '../../../../../api/website-options.api';
 import { useAccounts } from '../../../../../stores/entity/account-store';
 import {
-    useFileWebsites,
-    useMessageWebsites,
+  useFileWebsites,
+  useMessageWebsites,
 } from '../../../../../stores/entity/website-store';
 import type {
-    AccountRecord,
-    WebsiteRecord,
+  AccountRecord,
+  WebsiteRecord,
 } from '../../../../../stores/records';
 import { useSubmissionEditCardContext } from '../context';
 import { AccountOptionRow } from './account-option-row';
@@ -99,7 +99,16 @@ function WebsiteAccountGroup({
         onClick={toggle}
         className="postybirb__website_group_header"
       >
-        <Group gap="xs" px="sm" py="xs" wrap="nowrap">
+        <Group
+          gap="xs"
+          px="sm"
+          py="xs"
+          wrap="nowrap"
+          style={{
+            backgroundColor:
+              selectedCount > 0 ? 'var(--mantine-primary-color-light)' : '',
+          }}
+        >
           {expanded ? (
             <IconChevronDown size={14} style={{ flexShrink: 0 }} />
           ) : (
@@ -212,7 +221,8 @@ export function AccountSelectionForm() {
 
   // Accounts that are not yet selected
   const unselectedAccounts = useMemo(
-    () => eligibleAccounts.filter((acc) => !optionsByAccount.has(acc.accountId)),
+    () =>
+      eligibleAccounts.filter((acc) => !optionsByAccount.has(acc.accountId)),
     [eligibleAccounts, optionsByAccount],
   );
 
