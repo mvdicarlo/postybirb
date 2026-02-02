@@ -1,20 +1,21 @@
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { Http } from '@postybirb/http';
 import {
-    FileType,
-    ILoginState,
-    ImageResizeProps,
-    ISubmissionFile,
-    PostData,
-    PostResponse,
-    SimpleValidationResult,
-    SubmissionRating,
+  FileType,
+  ILoginState,
+  ImageResizeProps,
+  ISubmissionFile,
+  PostData,
+  PostResponse,
+  SimpleValidationResult,
+  SubmissionRating,
 } from '@postybirb/types';
 import parse from 'node-html-parser';
 import { v4 as uuid } from 'uuid';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import { PostBuilder } from '../../commons/post-builder';
+import { DisableAds } from '../../decorators/disable-ads.decorator';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { SupportsUsernameShortcut } from '../../decorators/supports-username-shortcut.decorator';
