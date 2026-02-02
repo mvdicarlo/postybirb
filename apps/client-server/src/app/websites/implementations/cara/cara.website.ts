@@ -15,6 +15,7 @@ import { v4 as uuid } from 'uuid';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import { PostBuilder } from '../../commons/post-builder';
+import { DisableAds } from '../../decorators/disable-ads.decorator';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { SupportsUsernameShortcut } from '../../decorators/supports-username-shortcut.decorator';
@@ -136,6 +137,7 @@ type CaraUploadResult = CaraMediaItem[];
     return undefined;
   },
 })
+@DisableAds()
 export default class Cara
   extends Website<CaraAccountData>
   implements

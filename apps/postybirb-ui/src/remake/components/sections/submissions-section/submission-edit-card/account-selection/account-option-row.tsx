@@ -140,14 +140,13 @@ export function AccountOptionRow({
         {/* Expandable inline form section - shown when selected */}
         <Collapse
           in={expanded && isSelected}
-          ml="lg"
           key={`${account.accountId}-${websiteOption?.id ?? 'none'}`}
         >
           <Paper
             withBorder
             radius="sm"
             p="sm"
-            ml="xl"
+            ml="xs"
             mr="sm"
             mb="xs"
             className="postybirb__account_option_form"

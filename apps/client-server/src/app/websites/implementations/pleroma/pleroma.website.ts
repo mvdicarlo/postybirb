@@ -1,5 +1,6 @@
 import { FileType } from '@postybirb/types';
 import FileSize from '../../../utils/filesize.util';
+import { DisableAds } from '../../decorators/disable-ads.decorator';
 import { CustomLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
@@ -30,6 +31,7 @@ import { MegalodonWebsite } from '../megalodon/megalodon.website';
   },
   fileBatchSize: 4,
 })
+@DisableAds()
 export default class Pleroma extends MegalodonWebsite {
   protected getMegalodonInstanceType(): 'pleroma' {
     return 'pleroma';

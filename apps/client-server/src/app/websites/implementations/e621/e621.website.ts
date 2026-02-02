@@ -309,7 +309,7 @@ export default class E621
     }
 
     if (tag.post_count < 2) {
-      context.validator.error(
+      context.validator.warning(
         'validation.file.e621.tags.low-use',
         { tag: tag.name, postCount: tag.post_count },
         'tags',
