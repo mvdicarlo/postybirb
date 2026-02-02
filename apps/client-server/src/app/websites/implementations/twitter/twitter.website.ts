@@ -64,7 +64,6 @@ import {
   },
 })
 @DisableAds()
-@DisableAds()
 export default class Twitter
   extends Website<TwitterAccountData>
   implements
