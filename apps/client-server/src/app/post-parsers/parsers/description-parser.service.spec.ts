@@ -884,7 +884,7 @@ describe('DescriptionParserService', () => {
       );
 
       expect(description).toMatchInlineSnapshot(
-        `"<div>Tags: <span>art digital fantasy</span></div>"`,
+        `"<div>Tags: <span>#art #digital #fantasy</span></div>"`,
       );
     });
 
@@ -1018,9 +1018,9 @@ describe('DescriptionParserService', () => {
 
       // Tags should only appear once (from the shortcut), not twice
       expect(description).toMatchInlineSnapshot(
-        `"<div>Tags: <span>tag1 tag2</span></div>"`,
+        `"<div>Tags: <span>#tag1 #tag2</span></div>"`,
       );
-      expect((description.match(/tag1 tag2/g) || []).length).toBe(1);
+      expect((description.match(/#tag1 #tag2/g) || []).length).toBe(1);
     });
 
     it('should render all system shortcuts together in plaintext', async () => {
@@ -1086,7 +1086,7 @@ describe('DescriptionParserService', () => {
 
       expect(description).toMatchInlineSnapshot(`
         "My Art (NSFW)
-        art digital"
+        #art #digital"
       `);
     });
   });
