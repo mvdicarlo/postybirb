@@ -100,6 +100,16 @@ export function SubmissionCard({
     return mostRecentPost.state === PostRecordState.FAILED;
   }, [submission.posts]);
 
+  // Get the most recent post record state for history button coloring
+  const mostRecentPostState = useMemo(() => {
+    if (submission.posts.length === 0) return null;
+    const sortedPosts = [...submission.posts].sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
+    return sortedPosts[0].state;
+  }, [submission.posts]);
+
   // Build className list
   const cardClassName = useMemo(
     () =>
@@ -261,6 +271,7 @@ export function SubmissionCard({
               isScheduled={submission.isScheduled}
               isQueued={submission.isQueued}
               hasHistory={submission.posts.length > 0}
+              mostRecentPostState={mostRecentPostState}
               onPost={handlePost}
               onCancel={handleCancel}
               onScheduleChange={handleScheduleChange}

@@ -6,16 +6,16 @@
 
 import { Trans } from '@lingui/react/macro';
 import { ActionIcon, Group, Menu, Tooltip } from '@mantine/core';
-import { ISubmissionScheduleInfo } from '@postybirb/types';
+import { ISubmissionScheduleInfo, PostRecordState } from '@postybirb/types';
 import {
-  IconArchive,
-  IconCancel,
-  IconCopy,
-  IconDotsVertical,
-  IconEdit,
-  IconHistory,
-  IconSend,
-  IconTrash,
+    IconArchive,
+    IconCancel,
+    IconCopy,
+    IconDotsVertical,
+    IconEdit,
+    IconHistory,
+    IconSend,
+    IconTrash,
 } from '@tabler/icons-react';
 import { useCallback } from 'react';
 import { HoldToConfirmButton } from '../../../hold-to-confirm';
@@ -32,6 +32,8 @@ interface SubmissionActionsProps {
   isQueued?: boolean;
   /** Whether the submission has post history */
   hasHistory?: boolean;
+  /** The state of the most recent post record for history button coloring */
+  mostRecentPostState?: PostRecordState | null;
   /** Handler for posting the submission */
   onPost?: () => void;
   /** Handler for canceling a queued submission */
@@ -62,6 +64,7 @@ export function SubmissionActions({
   isScheduled,
   isQueued,
   hasHistory,
+  mostRecentPostState,
   onPost,
   onCancel,
   onScheduleChange,
@@ -142,6 +145,27 @@ export function SubmissionActions({
             size="sm"
           />
         </span>
+
+        {/* History button - always visible, color-coded by most recent post state */}
+        <Tooltip label={<Trans>View history</Trans>}>
+          <ActionIcon
+            variant="subtle"
+            size="sm"
+            color={
+              mostRecentPostState === PostRecordState.DONE
+                ? 'green'
+                : mostRecentPostState === PostRecordState.FAILED
+                ? 'red'
+                : 'gray'
+            }
+            disabled={!onViewHistory}
+            onClick={handleViewHistory}
+            // eslint-disable-next-line lingui/no-unlocalized-strings
+            aria-label="View history"
+          >
+            <IconHistory size={16} />
+          </ActionIcon>
+        </Tooltip>
 
         {/* Post button or Cancel button based on queue state */}
         {isQueued ? (
