@@ -10,6 +10,7 @@ import {
   TelegramOAuthRoutes,
 } from '@postybirb/types';
 import { supportsImage } from '@postybirb/utils/file-type';
+import parse from 'node-html-parser';
 import { Api, TelegramClient } from 'telegram';
 import { CustomFile } from 'telegram/client/uploads';
 import { Entity } from 'telegram/define';
@@ -222,10 +223,20 @@ export default class Telegram
   }
 
   htmlToDescriptionEntities(html: string) {
-    return HTMLToTelegram.parse(
-      // Add newlines. All blocknote lines are wrapped using <div> without \n between them.
-      html.replaceAll('</div><div>', '</div>\n<div>'),
-    );
+    // eslint-disable-next-line no-param-reassign
+    const withHr = html.replaceAll('<hr>', '<span>————————</span>');
+
+    // All blocknote paragraphs are wrapped using <div> or <span> without \n between them at the top level
+    // By default HTMLToTelegram will concatente them, so add newlines manually
+    // eslint-disable-next-line no-param-reassign
+    const withNewlines = parse(withHr)
+      .childNodes.filter((node) => node.nodeType === 1) // Filter only element nodes
+      .map((el) => el.toString())
+      .join('\n');
+
+    const normalized = withNewlines.replaceAll('<br>', '\n');
+
+    return HTMLToTelegram.parse(normalized);
   }
 
   async onPostFileSubmission(
@@ -300,7 +311,7 @@ export default class Telegram
       const peer = this.getPeer(channel);
 
       if (medias.length === 1) {
-        telegram.invoke(
+        await telegram.invoke(
           new Api.messages.SendMedia({
             media: medias[0],
             message: firstInBatch ? mediaDescription : '',
