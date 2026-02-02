@@ -68,9 +68,9 @@
 }
 
 .postybirb__submission__card--selected {
-  background-color: var(--mantine-color-primary-light);
-  border-color: var(--mantine-color-primary-filled);
-  border-left: 3px solid var(--mantine-color-primary-filled) !important;
+  background-color: var(--mantine-primary-color-light);
+  border-color: var(--mantine-primary-color-filled);
+  border-left: 3px solid var(--mantine-primary-color-filled) !important;
 }
 
 .postybirb__submission__card--scheduled {
@@ -78,7 +78,11 @@
 }
 
 .postybirb__submission__card--scheduled.postybirb__submission__card--selected {
-  background-color: color-mix(in srgb, var(--mantine-color-blue-light) 50%, var(--mantine-color-primary-light) 50%);
+  background-color: color-mix(
+    in srgb,
+    var(--mantine-color-blue-light) 50%,
+    var(--mantine-primary-color-light) 50%
+  );
 }
 
 .postybirb__submission__card--has-errors {
@@ -87,7 +91,11 @@
 }
 
 .postybirb__submission__card--has-errors.postybirb__submission__card--selected {
-  background-color: color-mix(in srgb, var(--mantine-color-red-light) 60%, var(--mantine-color-primary-light) 40%);
+  background-color: color-mix(
+    in srgb,
+    var(--mantine-color-red-light) 60%,
+    var(--mantine-primary-color-light) 40%
+  );
   border-left: 3px solid var(--mantine-color-red-6) !important;
 }
 

@@ -6,6 +6,8 @@
 import '@mantine/core/styles.css';
 import '@mantine/dates/styles.css';
 import '@mantine/notifications/styles.css';
+import './styles/layout.css';
+import './theme/theme-styles.css';
 
 import { MantineProvider, useMantineColorScheme } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
@@ -17,10 +19,8 @@ import { Layout } from './components/layout/layout';
 import { I18nProvider } from './providers/i18n-provider';
 import { loadAllStores } from './stores';
 import { useColorScheme, usePrimaryColor } from './stores/ui/appearance-store';
-import './styles/layout.css';
 import { cssVariableResolver } from './theme/css-variable-resolver';
 import { createAppTheme } from './theme/theme';
-import './theme/theme-styles.css';
 
 const queryClient = new QueryClient({
   defaultOptions: {

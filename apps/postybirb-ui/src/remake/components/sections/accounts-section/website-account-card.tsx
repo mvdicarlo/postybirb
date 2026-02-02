@@ -124,7 +124,7 @@ function AccountRow({ account }: { account: AccountRecord }) {
       style={{
         borderRadius: 'var(--mantine-radius-sm)',
         backgroundColor: isSelected
-          ? 'var(--mantine-color-primary-light)'
+          ? 'var(--mantine-primary-color-light)'
           : undefined,
       }}
     >

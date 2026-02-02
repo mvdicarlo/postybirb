@@ -57,6 +57,8 @@ export function ValidationAlerts() {
           key={`error-${error.id}-${index}`}
           variant="light"
           color="red"
+          p="xs"
+          styles={{ title: { fontSize: 'sm' }, message: { fontSize: 'sm' } }}
           icon={<IconAlertCircle size={16} />}
         >
           <ValidationTranslation id={error.id} values={error.values} />
@@ -68,6 +70,8 @@ export function ValidationAlerts() {
           key={`warning-${warning.id}-${index}`}
           variant="light"
           color="yellow"
+          p="xs"
+          styles={{ title: { fontSize: 'sm' }, message: { fontSize: 'sm' } }}
           icon={<IconAlertTriangle size={16} />}
         >
           <ValidationTranslation id={warning.id} values={warning.values} />
