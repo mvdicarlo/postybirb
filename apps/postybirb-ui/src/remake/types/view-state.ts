@@ -148,8 +148,8 @@ export interface SectionPanelConfig {
 export const sectionPanelConfigs: Record<SectionId, SectionPanelConfig> = {
   home: { hasPanel: false },
   accounts: { hasPanel: true, defaultWidth: 320 },
-  'file-submissions': { hasPanel: true, defaultWidth: 320 },
-  'message-submissions': { hasPanel: true, defaultWidth: 320 },
+  'file-submissions': { hasPanel: true, defaultWidth: 345 },
+  'message-submissions': { hasPanel: true, defaultWidth: 345 },
   templates: { hasPanel: true, defaultWidth: 320 },
 };
 
