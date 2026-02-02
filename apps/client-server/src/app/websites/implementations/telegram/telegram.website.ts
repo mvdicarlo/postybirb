@@ -86,7 +86,7 @@ export default class Telegram
         account.appHash,
         {},
       );
-      client.setLogLevel(LogLevel.INFO);
+      client.setLogLevel(LogLevel.ERROR);
       this.clients.set(account.appId, client);
     }
 
