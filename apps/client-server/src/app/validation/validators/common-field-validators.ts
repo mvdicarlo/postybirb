@@ -1,4 +1,3 @@
-import { DescriptionValue, TagValue } from '@postybirb/types';
 import { ValidatorParams } from './validator.type';
 
 /**
@@ -150,9 +149,10 @@ export async function validateRequiredDescriptionField({
     if (field.formField !== 'description') continue;
 
     // Description field value structure
-    const value = fields.description as unknown as DescriptionValue;
+    let value: string = data.options[fieldName] || '';
+    value = value.replaceAll('<div></div>', '').trim();
 
-    if (!value || !value.description || value.description.length === 0) {
+    if (!value || value.length === 0) {
       result.errors.push({
         id: 'validation.field.required',
         field: fieldName,

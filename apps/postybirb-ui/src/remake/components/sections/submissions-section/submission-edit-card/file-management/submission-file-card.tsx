@@ -4,30 +4,30 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-    ActionIcon,
-    Badge,
-    Box,
-    Collapse,
-    Divider,
-    Flex,
-    Group,
-    Paper,
-    Text,
-    Tooltip,
+  ActionIcon,
+  Badge,
+  Box,
+  Collapse,
+  Divider,
+  Flex,
+  Group,
+  Paper,
+  Text,
+  Tooltip,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import {
-    FileType,
-    IAccountDto,
-    ISubmissionFileDto,
-    NULL_ACCOUNT_ID,
+  FileType,
+  IAccountDto,
+  ISubmissionFileDto,
+  NULL_ACCOUNT_ID,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import {
-    IconChevronDown,
-    IconChevronRight,
-    IconGripVertical,
-    IconTrash,
+  IconChevronDown,
+  IconGripVertical,
+  IconPencil,
+  IconTrash
 } from '@tabler/icons-react';
 import { useMemo } from 'react';
 import fileSubmissionApi from '../../../../../api/file-submission.api';
@@ -150,21 +150,18 @@ export function SubmissionFileCard({
             </Group>
 
             <Group gap="xs">
-              {/* Expand/Collapse toggle */}
-              <Tooltip
-                label={
-                  expanded ? (
-                    <Trans>Collapse</Trans>
-                  ) : (
-                    <Trans>Edit metadata</Trans>
-                  )
-                }
-              >
-                <ActionIcon size="sm" variant="subtle" onClick={toggle}>
+              {/* Edit metadata button - more discoverable */}
+              <Tooltip label={expanded ? <Trans>Collapse</Trans> : <Trans>Edit metadata</Trans>}>
+                <ActionIcon 
+                  size="sm" 
+                  variant={expanded ? "filled" : "light"}
+                  color="blue"
+                  onClick={toggle}
+                >
                   {expanded ? (
                     <IconChevronDown size={14} />
                   ) : (
-                    <IconChevronRight size={14} />
+                    <IconPencil size={14} />
                   )}
                 </ActionIcon>
               </Tooltip>

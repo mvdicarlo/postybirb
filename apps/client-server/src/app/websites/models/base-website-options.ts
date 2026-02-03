@@ -53,6 +53,7 @@ export class BaseWebsiteOptions implements IWebsiteFormFields {
     section: 'common',
     order: 4,
     span: 12,
+    required: true,
   })
   description: DescriptionValue = DefaultDescriptionValue();
 

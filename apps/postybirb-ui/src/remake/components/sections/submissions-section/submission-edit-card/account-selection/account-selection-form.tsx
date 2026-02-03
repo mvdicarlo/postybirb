@@ -9,6 +9,7 @@ import {
   Badge,
   Box,
   Button,
+  Checkbox,
   Collapse,
   Group,
   Paper,
@@ -169,6 +170,7 @@ export function AccountSelectionForm() {
   const messageWebsites = useMessageWebsites();
   const [isSelectingAll, setIsSelectingAll] = useState(false);
   const [isDeselectingAll, setIsDeselectingAll] = useState(false);
+  const [hideUnselected, setHideUnselected] = useState(false);
 
   // Build a map of accountId -> WebsiteOptionsDto for quick lookup
   const optionsByAccount = useMemo(() => {
@@ -282,6 +284,12 @@ export function AccountSelectionForm() {
           <Trans>Websites</Trans>
         </Text>
         <Group gap="xs">
+          <Checkbox
+            size="xs"
+            label={<Trans>Hide unselected</Trans>}
+            checked={hideUnselected}
+            onChange={(e) => setHideUnselected(e.currentTarget.checked)}
+          />
           {hasUnselectedAccounts && (
             <Button
               size="xs"
@@ -311,6 +319,14 @@ export function AccountSelectionForm() {
       {websites.map((website) => {
         const websiteAccounts = accountsByWebsite.get(website.id) ?? [];
         if (websiteAccounts.length === 0) return null;
+
+        // Check if any account in this website group is selected
+        const hasSelectedInGroup = websiteAccounts.some((acc) =>
+          optionsByAccount.has(acc.accountId)
+        );
+
+        // Hide this website group if hideUnselected is enabled and no accounts are selected
+        if (hideUnselected && !hasSelectedInGroup) return null;
 
         return (
           <WebsiteAccountGroup

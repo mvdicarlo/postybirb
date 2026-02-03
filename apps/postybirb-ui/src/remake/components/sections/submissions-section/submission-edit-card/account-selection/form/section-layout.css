@@ -31,21 +31,30 @@
 .grid-item {
   box-sizing: border-box;
   padding: 4px;
+  flex-shrink: 0; /* Prevent shrinking - forces wrap instead */
+  overflow: hidden; /* Contain children that exceed width */
+  max-width: 100%; /* Prevent blowout */
+}
+
+/* Ensure Mantine SegmentedControl respects container width */
+.grid-item .mantine-SegmentedControl-root {
+  flex-wrap: wrap;
+  max-width: 100%;
 }
 
 /* Column spans (12-column grid) */
-.grid-item.span-1 { width: 8.333%; }
-.grid-item.span-2 { width: 16.666%; }
-.grid-item.span-3 { width: 25%; }
-.grid-item.span-4 { width: 33.333%; }
-.grid-item.span-5 { width: 41.666%; }
-.grid-item.span-6 { width: 50%; }
-.grid-item.span-7 { width: 58.333%; }
-.grid-item.span-8 { width: 66.666%; }
-.grid-item.span-9 { width: 75%; }
-.grid-item.span-10 { width: 83.333%; }
-.grid-item.span-11 { width: 91.666%; }
-.grid-item.span-12 { width: 100%; }
+.grid-item.span-1 { width: 8.333%; min-width: 80px; }
+.grid-item.span-2 { width: 16.666%; min-width: 100px; }
+.grid-item.span-3 { width: 25%; min-width: 120px; }
+.grid-item.span-4 { width: 33.333%; min-width: 140px; }
+.grid-item.span-5 { width: 41.666%; min-width: 160px; }
+.grid-item.span-6 { width: 50%; min-width: 180px; }
+.grid-item.span-7 { width: 58.333%; min-width: 200px; }
+.grid-item.span-8 { width: 66.666%; min-width: 220px; }
+.grid-item.span-9 { width: 75%; min-width: 240px; }
+.grid-item.span-10 { width: 83.333%; min-width: 260px; }
+.grid-item.span-11 { width: 91.666%; min-width: 280px; }
+.grid-item.span-12 { width: 100%; min-width: 200px; }
 
 /* Column offsets */
 .grid-item.offset-1 { margin-left: 8.333%; }
@@ -64,6 +73,7 @@
 @media (max-width: 768px) {
   .grid-item {
     width: 100% !important;
+    min-width: 0 !important;
     margin-left: 0 !important;
   }
 }
