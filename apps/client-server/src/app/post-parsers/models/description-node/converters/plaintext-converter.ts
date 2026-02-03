@@ -102,7 +102,7 @@ export class PlainTextConverter extends BaseConverter {
     }
 
     if (node.type === 'tagsShortcut') {
-      return context.tags?.join(' ') ?? '';
+      return context.tags?.map((e) => `#${e}`).join(' ') ?? '';
     }
 
     if (node.type === 'contentWarningShortcut') {

@@ -100,7 +100,8 @@ export class DescriptionNodeTree {
       filter: (node) =>
         node.nodeName === 'DIV' &&
         node.getAttribute('style')?.includes('margin-left'),
-      replacement: (content) => `\n\n> ${content.trim().replace(/\n/g, '\n> ')}\n\n`,
+      replacement: (content) =>
+        `\n\n> ${content.trim().replace(/\n/g, '\n> ')}\n\n`,
     });
 
     const html = this.toHtml();
@@ -196,7 +197,7 @@ export class DescriptionNodeTree {
             .map((c) => c.text)
             .join('')
             .trim();
-      
+
       if (username) {
         usernames.add(username);
       }
@@ -235,7 +236,7 @@ export class DescriptionNodeTree {
           content: [
             {
               type: 'text',
-              text: insertTags.join(' '),
+              text: insertTags.map((e) => `#${e}`).join(' '),
               styles: {},
               props: {},
             },

@@ -131,8 +131,9 @@ export default class E621
 
     // Spec: https://e621.net/help/dtext
     const description = postData.options.description
-      .replaceAll('\n', '')
-      .replace(/\[url=([^\]]*)\]([^[]*)\[\/url\]/, '"$2":[$1]');
+      .replace(/\[url=([^\]]*)\]([^[]*)\[\/url\]/g, '"$2":[$1]')
+      .replace(/\[h(\d)](.+)\[\/h\d]/g, 'h$1. $2');
+
     const formData = {
       login: accountData.username,
       api_key: accountData.key,

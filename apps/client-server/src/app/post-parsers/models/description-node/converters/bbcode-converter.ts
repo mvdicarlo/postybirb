@@ -30,7 +30,10 @@ export class BBCodeConverter extends BaseConverter {
       return this.convertRawBlocks(context.defaultDescription, context);
     }
 
-    if (node.type === 'divider') return '[hr]';
+    // For FA: More then 5 dashes in a line are replaced with a horizontal divider.
+    // For e621: Not supported, use dashes
+    // For hentai foundry: dashes will work
+    if (node.type === 'divider') return '--------';
 
     // Media blocks not supported in BBCode
     if (
@@ -132,7 +135,13 @@ export class BBCodeConverter extends BaseConverter {
     context: ConversionContext,
   ): string {
     // System shortcuts are atomic nodes with no content
-    const atomicTypes = ['customShortcut', 'titleShortcut', 'tagsShortcut', 'contentWarningShortcut', 'username'];
+    const atomicTypes = [
+      'customShortcut',
+      'titleShortcut',
+      'tagsShortcut',
+      'contentWarningShortcut',
+      'username',
+    ];
     if (!node.content.length && !atomicTypes.includes(node.type)) return '';
 
     if (node.type === 'link') {
@@ -165,7 +174,7 @@ export class BBCodeConverter extends BaseConverter {
     }
 
     if (node.type === 'tagsShortcut') {
-      return context.tags?.join(' ') ?? '';
+      return context.tags?.map((e) => `#${e}`).join(' ') ?? '';
     }
 
     if (node.type === 'contentWarningShortcut') {
@@ -185,7 +194,7 @@ export class BBCodeConverter extends BaseConverter {
 
     // Handle line breaks from merged blocks
     if (node.text === '\n' || node.text === '\r\n') {
-      return '[br]';
+      return '\n';
     }
 
     const segments: string[] = [];
@@ -199,10 +208,11 @@ export class BBCodeConverter extends BaseConverter {
       return node.text;
     }
 
-    const text = node.text.replace(/\n/g, '[br]');
-    let segmentedText = `[${segments.join('')}]${text}[/${segments
+    const text = node.text.replace(/\n/g, '\n');
+    let segmentedText = `${segments.map((e) => `[${e}]`).join('')}${text}${segments
       .reverse()
-      .join('')}]`;
+      .map((e) => `[/${e}]`)
+      .join('')}`;
 
     if (node.styles.textColor && node.styles.textColor !== 'default') {
       segmentedText = `[color=${node.styles.textColor}]${segmentedText}[/color]`;

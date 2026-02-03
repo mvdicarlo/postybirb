@@ -71,7 +71,13 @@ export class HtmlConverter extends BaseConverter {
     context: ConversionContext,
   ): string {
     // System shortcuts are atomic nodes with no content
-    const atomicTypes = ['customShortcut', 'titleShortcut', 'tagsShortcut', 'contentWarningShortcut', 'username'];
+    const atomicTypes = [
+      'customShortcut',
+      'titleShortcut',
+      'tagsShortcut',
+      'contentWarningShortcut',
+      'username',
+    ];
     if (!node.content.length && !atomicTypes.includes(node.type)) return '';
 
     if (node.type === 'link') {
@@ -101,15 +107,21 @@ export class HtmlConverter extends BaseConverter {
     }
 
     if (node.type === 'titleShortcut') {
-      return context.title ? `<span>${encode(context.title, { level: 'html5' })}</span>` : '';
+      return context.title
+        ? `<span>${encode(context.title, { level: 'html5' })}</span>`
+        : '';
     }
 
     if (node.type === 'tagsShortcut') {
-      return context.tags?.length ? `<span>${context.tags.map(t => encode(t, { level: 'html5' })).join(' ')}</span>` : '';
+      return context.tags?.length
+        ? `<span>${context.tags.map((t) => encode(`#${t}`, { level: 'html5' })).join(' ')}</span>`
+        : '';
     }
 
     if (node.type === 'contentWarningShortcut') {
-      return context.contentWarningText ? `<span>${encode(context.contentWarningText, { level: 'html5' })}</span>` : '';
+      return context.contentWarningText
+        ? `<span>${encode(context.contentWarningText, { level: 'html5' })}</span>`
+        : '';
     }
 
     const content = (node.content as IDescriptionTextNodeClass[])

@@ -334,13 +334,23 @@ describe('DescriptionNode', () => {
           content: [
             {
               type: 'username',
-              props: { id: '1', shortcut: 'test', only: '', username: 'SameUser' },
+              props: {
+                id: '1',
+                shortcut: 'test',
+                only: '',
+                username: 'SameUser',
+              },
               content: undefined,
             },
             { type: 'text', text: ' and ', styles: {} },
             {
               type: 'username',
-              props: { id: '2', shortcut: 'test', only: '', username: 'SameUser' },
+              props: {
+                id: '2',
+                shortcut: 'test',
+                only: '',
+                username: 'SameUser',
+              },
               content: undefined,
             },
           ],
@@ -614,7 +624,12 @@ describe('DescriptionNode', () => {
           content: [
             {
               type: 'username',
-              props: { id: '1', shortcut: 'test', only: '', username: 'TestUser' },
+              props: {
+                id: '1',
+                shortcut: 'test',
+                only: '',
+                username: 'TestUser',
+              },
               content: undefined,
             },
           ],
@@ -676,7 +691,12 @@ describe('DescriptionNode', () => {
           content: [
             {
               type: 'username',
-              props: { id: '1', shortcut: 'twitter', only: '', username: 'abcd' },
+              props: {
+                id: '1',
+                shortcut: 'twitter',
+                only: '',
+                username: 'abcd',
+              },
               content: undefined,
             },
           ],
@@ -730,7 +750,12 @@ describe('DescriptionNode', () => {
           content: [
             {
               type: 'username',
-              props: { id: '1', shortcut: 'twitter', only: '', username: 'someuser' },
+              props: {
+                id: '1',
+                shortcut: 'twitter',
+                only: '',
+                username: 'someuser',
+              },
               content: undefined,
             },
           ],
@@ -818,9 +843,7 @@ describe('DescriptionNode', () => {
       );
 
       // Should use converted username "bluesky_user" since shortcut matches website
-      expect(tree.toPlainText()).toBe(
-        'https://bsky.app/profile/bluesky_user',
-      );
+      expect(tree.toPlainText()).toBe('https://bsky.app/profile/bluesky_user');
       expect(tree.toHtml()).toBe(
         '<div><a target="_blank" href="https://bsky.app/profile/bluesky_user">bluesky_user</a></div>',
       );
@@ -1112,7 +1135,12 @@ describe('DescriptionNode', () => {
                 { type: 'text', text: 'Nested ', styles: {} },
                 {
                   type: 'username',
-                  props: { id: '1', shortcut: 'test', only: '', username: 'NestedUser' },
+                  props: {
+                    id: '1',
+                    shortcut: 'test',
+                    only: '',
+                    username: 'NestedUser',
+                  },
                   content: undefined,
                 },
               ],
@@ -1320,11 +1348,11 @@ describe('DescriptionNode', () => {
         { insertAd: false },
       );
 
-      expect(tree.toPlainText()).toBe('Tags: art digital fantasy');
+      expect(tree.toPlainText()).toBe('Tags: #art #digital #fantasy');
       expect(tree.toHtml()).toBe(
-        '<div>Tags: <span>art digital fantasy</span></div>',
+        '<div>Tags: <span>#art #digital #fantasy</span></div>',
       );
-      expect(tree.toBBCode()).toBe('Tags: art digital fantasy');
+      expect(tree.toBBCode()).toBe('Tags: #art #digital #fantasy');
     });
 
     it('should render contentWarningShortcut with content warning from context', () => {
@@ -1483,9 +1511,9 @@ describe('DescriptionNode', () => {
         { insertAd: false },
       );
 
-      expect(tree.toPlainText()).toBe('My Art - NSFW\r\ntag1 tag2');
+      expect(tree.toPlainText()).toBe('My Art - NSFW\r\n#tag1 #tag2');
       expect(tree.toHtml()).toBe(
-        '<div><span>My Art</span> - <span>NSFW</span></div><div><span>tag1 tag2</span></div>',
+        '<div><span>My Art</span> - <span>NSFW</span></div><div><span>#tag1 #tag2</span></div>',
       );
     });
 
@@ -1573,7 +1601,9 @@ describe('DescriptionNode', () => {
         },
       );
 
-      expect(tree.toPlainText()).toBe('Hello, https://test.postybirb.com/TestUser');
+      expect(tree.toPlainText()).toBe(
+        'Hello, https://test.postybirb.com/TestUser',
+      );
       expect(tree.toHtml()).toBe(
         '<div><span><b>Hello, </b></span><a target="_blank" href="https://test.postybirb.com/TestUser">TestUser</a></div>',
       );
@@ -1692,7 +1722,9 @@ describe('DescriptionNode', () => {
         },
       );
 
-      expect(tree.toPlainText()).toBe('Follow me: https://test.postybirb.com/converted_username');
+      expect(tree.toPlainText()).toBe(
+        'Follow me: https://test.postybirb.com/converted_username',
+      );
       expect(tree.toHtml()).toBe(
         '<div>Follow me: <a target="_blank" href="https://test.postybirb.com/converted_username">converted_username</a></div>',
       );
@@ -1753,7 +1785,9 @@ describe('DescriptionNode', () => {
         },
       );
 
-      expect(tree.toPlainText()).toBe('Hello, https://test.postybirb.com/OldFormatUser');
+      expect(tree.toPlainText()).toBe(
+        'Hello, https://test.postybirb.com/OldFormatUser',
+      );
       expect(tree.findUsernames().has('OldFormatUser')).toBe(true);
     });
 
@@ -1776,7 +1810,7 @@ describe('DescriptionNode', () => {
                 only: '',
                 username: '',
               },
-              content: undefined
+              content: undefined,
             },
           ],
           children: [],
