@@ -1,15 +1,5 @@
 msgid ""
-msgstr ""
-"Project-Id-Version: \n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: \n"
-"PO-Revision-Date: \n"
-"Last-Translator: \n"
-"Language: \n"
-"Language-Team: \n"
-"Content-Type: \n"
-"Content-Transfer-Encoding: \n"
-"Plural-Forms: \n"
+msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: \nPOT-Creation-Date: \nPO-Revision-Date: 2026-01-31 08:29+0000\nLast-Translator: Leaftail <minec118@outlook.com>\nLanguage-Team: Russian <https://hosted.weblate.org/projects/postybirb/postybirb/ru/>\nLanguage: ru\nContent-Type: \nContent-Transfer-Encoding: \nPlural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\nX-Generator: Weblate 5.16-dev\n"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx
 #: apps/postybirb-ui/src/remake/i18n/validation-translation.tsx
@@ -408,7 +398,7 @@ msgstr ""
 #: apps/postybirb-ui/src/remake/components/shared/submission-picker/submission-picker-modal.tsx
 #: apps/postybirb-ui/src/remake/components/shared/template-picker/template-picker-modal.tsx
 msgid "Apply"
-msgstr ""
+msgstr "Применить"
 
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-edit-card/actions/apply-template-action.tsx
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-section-header.tsx
@@ -848,7 +838,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/shared/copy-to-clipboard/copy-to-clipboard.tsx
 msgid "Copied"
-msgstr ""
+msgstr "Скопированно"
 
 #: apps/postybirb-ui/src/remake/utils/notifications.tsx
 #: apps/postybirb-ui/src/translations/common-translations.tsx
@@ -858,7 +848,7 @@ msgstr ""
 #: apps/postybirb-ui/src/remake/components/shared/copy-to-clipboard/copy-to-clipboard.tsx
 #: apps/postybirb-ui/src/remake/components/shared/copy-to-clipboard/copy-to-clipboard.tsx
 msgid "Copy"
-msgstr ""
+msgstr "Копировать"
 
 #: apps/postybirb-ui/src/translations/common-translations.tsx
 msgid "Copy to clipboard"
@@ -1467,11 +1457,11 @@ msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/sections/templates-section/templates-section.tsx
 msgid "Failed to create template"
-msgstr ""
+msgstr "Не удалось создать шаблон"
 
 #: apps/postybirb-ui/src/remake/utils/notifications.tsx
 msgid "Failed to delete"
-msgstr ""
+msgstr "Не удалось удалить"
 
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-edit-card/file-management/submission-file-card.tsx
 msgid "Failed to delete file"
@@ -1479,7 +1469,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/remake/utils/notifications.tsx
 msgid "Failed to duplicate"
-msgstr ""
+msgstr "Не удалось дублировать"
 
 #: apps/postybirb-ui/src/remake/components/website-login-views/twitter/twitter-login-view.tsx
 #: apps/postybirb-ui/src/website-components/twitter/twitter-login-view.tsx
@@ -1637,7 +1627,7 @@ msgstr "Файл будет изменен для поддержки требо�
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/file-submission-modal/file-list.tsx
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-edit-card/file-management/submission-file-manager.tsx
 msgid "Files"
-msgstr ""
+msgstr "Файлы"
 
 #: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
 msgid "Files have been uploaded successfully"
@@ -2462,7 +2452,7 @@ msgstr ""
 #: apps/postybirb-ui/src/remake/components/sections/templates-section/templates-section.tsx
 #: apps/postybirb-ui/src/remake/components/shared/template-picker/template-picker.tsx
 msgid "No templates found"
-msgstr ""
+msgstr "Нет шаблонов"
 
 #: apps/postybirb-ui/src/remake/components/shared/template-picker/template-picker-modal.tsx
 msgid "No templates or submissions found"
@@ -2491,7 +2481,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/drawers/converter-drawer/converter-drawer.tsx
 msgid "No websites found"
-msgstr ""
+msgstr "Сайты не найдены"
 
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-card/submission-badges.tsx
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-edit-card/actions/submission-edit-card-actions.tsx
@@ -2683,7 +2673,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/file-submission-modal/file-dropzone.tsx
 msgid "Paste from clipboard"
-msgstr ""
+msgstr "Вставить из буфера обмена"
 
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/file-submission-modal/file-dropzone.tsx
 msgid "Paste image from clipboard (Ctrl+V)"
@@ -2973,7 +2963,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/drawers/converter-drawer/converter-drawer.tsx
 msgid "Remove"
-msgstr ""
+msgstr "Убрать"
 
 #: apps/postybirb-ui/src/remake/components/sections/templates-section/template-card.tsx
 msgid "Rename"
@@ -3279,6 +3269,7 @@ msgid "Schedule Submissions"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
+#, fuzzy
 msgid "Schedule to repeat regularly"
 msgstr "Отложить и повторять регулярно"
 
@@ -3899,7 +3890,7 @@ msgstr "Шаблон применен"
 
 #: apps/postybirb-ui/src/remake/components/sections/templates-section/templates-section.tsx
 msgid "Template created"
-msgstr ""
+msgstr "Шаблон создан"
 
 #: apps/postybirb-ui/src/remake/components/sections/templates-section/templates-content.tsx
 msgid "Template Editor"
