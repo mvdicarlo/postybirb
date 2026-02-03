@@ -1,5 +1,8 @@
 import { Provider } from '@nestjs/common';
-import { IsDevelopmentEnvironment } from '@postybirb/utils/electron';
+import {
+  IsDevelopmentEnvironment,
+  IsTestEnvironment,
+} from '@postybirb/utils/electron';
 import { Class } from 'type-fest';
 import { WEBSITE_IMPLEMENTATIONS } from '../../constants';
 import { UnknownWebsite } from '../website';
@@ -8,7 +11,7 @@ import TestWebsite from './test/test.website';
 
 const websiteArray = Object.values(Websites);
 
-if (IsDevelopmentEnvironment()) {
+if (IsDevelopmentEnvironment() || IsTestEnvironment()) {
   (websiteArray as unknown as unknown[]).push(TestWebsite);
 }
 

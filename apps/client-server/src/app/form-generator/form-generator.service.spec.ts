@@ -126,6 +126,7 @@ describe('FormGeneratorService', () => {
         },
       },
       description: {
+        required: true,
         section: 'common',
         order: 4,
         span: 12,
@@ -223,6 +224,7 @@ describe('FormGeneratorService', () => {
         },
       },
       description: {
+        required: true,
         section: 'common',
         order: 4,
         span: 12,
@@ -318,6 +320,7 @@ describe('FormGeneratorService', () => {
         },
       },
       description: {
+        required: true,
         section: 'common',
         order: 4,
         span: 12,

@@ -322,7 +322,7 @@ export function AccountSelectionForm() {
 
         // Check if any account in this website group is selected
         const hasSelectedInGroup = websiteAccounts.some((acc) =>
-          optionsByAccount.has(acc.accountId)
+          optionsByAccount.has(acc.accountId),
         );
 
         // Hide this website group if hideUnselected is enabled and no accounts are selected

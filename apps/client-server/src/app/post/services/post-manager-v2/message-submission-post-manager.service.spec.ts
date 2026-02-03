@@ -210,7 +210,10 @@ describe('MessageSubmissionPostManager', () => {
           mockWebsite,
           postData,
         ),
-      ).rejects.toThrow('API Error');
+      ).rejects.toMatchObject({
+        exception,
+        message: errorMessage,
+      });
 
       // Verify MESSAGE_FAILED event was emitted
       expect(postEventRepositoryMock.insert).toHaveBeenCalledWith(
@@ -244,7 +247,9 @@ describe('MessageSubmissionPostManager', () => {
           mockWebsite,
           postData,
         ),
-      ).rejects.toThrow('Unknown API Error');
+      ).rejects.toMatchObject({
+        exception,
+      });
 
       // Verify MESSAGE_FAILED event was emitted with default message
       expect(postEventRepositoryMock.insert).toHaveBeenCalledWith(
