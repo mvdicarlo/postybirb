@@ -59,7 +59,8 @@ export function SubmissionList({
   submissions,
   onReorder,
 }: SubmissionListProps) {
-  const { submissionType, selectedIds, isDragEnabled } = useSubmissionsContext();
+  const { submissionType, selectedIds, isDragEnabled } =
+    useSubmissionsContext();
   const isCompact = useIsCompactView();
 
   // Ref for the Mantine ScrollArea viewport - used for virtualization
@@ -80,7 +81,7 @@ export function SubmissionList({
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    })
+    }),
   );
 
   // TanStack Virtual virtualizer - uses the ScrollArea viewport as scroll element
@@ -114,17 +115,17 @@ export function SubmissionList({
         if (oldIndex !== -1 && newIndex !== -1) {
           const newOrder = arrayMove(submissions, oldIndex, newIndex);
           onReorder(newOrder);
-          
+
           // Determine position relative to target
           const position = newIndex > oldIndex ? 'after' : 'before';
           const targetId = over.id as string;
-          
+
           // Persist the new order to the server
           submissionApi.reorder(active.id as string, targetId, position);
         }
       }
     },
-    [submissions, onReorder]
+    [submissions, onReorder],
   );
 
   // Handle drag cancel
@@ -167,7 +168,6 @@ export function SubmissionList({
           style={{ flex: 1 }}
           type="hover"
           scrollbarSize={8}
-          offsetScrollbars
         >
           <div
             className="postybirb__submission__list"
@@ -209,19 +209,19 @@ export function SubmissionList({
         </ScrollArea>
       </SortableContext>
 
-        {/* DragOverlay renders the dragged item in a portal - critical for virtualization */}
-        <DragOverlay>
-          {activeSubmission ? (
-            <SubmissionCard
-              submission={activeSubmission}
-              submissionType={submissionType}
-              isSelected={selectedIds.includes(activeSubmission.id)}
-              draggable={false}
-              isCompact={isCompact}
-              className={DRAGGABLE_SUBMISSION_CLASS}
-            />
-          ) : null}
-        </DragOverlay>
-      </DndContext>
+      {/* DragOverlay renders the dragged item in a portal - critical for virtualization */}
+      <DragOverlay>
+        {activeSubmission ? (
+          <SubmissionCard
+            submission={activeSubmission}
+            submissionType={submissionType}
+            isSelected={selectedIds.includes(activeSubmission.id)}
+            draggable={false}
+            isCompact={isCompact}
+            className={DRAGGABLE_SUBMISSION_CLASS}
+          />
+        ) : null}
+      </DragOverlay>
+    </DndContext>
   );
 }

@@ -335,7 +335,10 @@ describe('FileSubmissionPostManager', () => {
           mockWebsite,
           postData,
         ),
-      ).rejects.toThrow('API Error');
+      ).rejects.toMatchObject({
+        exception,
+        message: errorMessage,
+      });
 
       // Verify FILE_FAILED event was emitted
       expect(postEventRepositoryMock.insert).toHaveBeenCalledWith(
@@ -370,7 +373,9 @@ describe('FileSubmissionPostManager', () => {
           mockWebsite,
           postData,
         ),
-      ).rejects.toThrow('Unknown API Error');
+      ).rejects.toMatchObject({
+        exception,
+      });
 
       // Verify FILE_FAILED event was emitted with default message
       expect(postEventRepositoryMock.insert).toHaveBeenCalledWith(
@@ -661,7 +666,9 @@ describe('FileSubmissionPostManager', () => {
           mockWebsite,
           postData,
         ),
-      ).rejects.toThrow('Batch 2 failed');
+      ).rejects.toMatchObject({
+        message: 'Failed on second batch',
+      });
 
       // Should have stopped at batch 2
       expect(
