@@ -1,4 +1,5 @@
 import { SelectOption } from '@postybirb/form-builder';
+import { getParsedProxiesFor } from '@postybirb/http';
 import {
   ILoginState,
   ImageResizeProps,
@@ -16,6 +17,7 @@ import { Entity } from 'telegram/define';
 import { HTMLParser as HTMLToTelegram } from 'telegram/extensions/html';
 import { LogLevel } from 'telegram/extensions/Logger';
 import { returnBigInt } from 'telegram/Helpers';
+import { SocksProxyType } from 'telegram/network/connection/TCPMTProxy';
 import { StringSession } from 'telegram/sessions';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
@@ -79,11 +81,32 @@ export default class Telegram
       this.logger.info(
         `Creating client for ${account.appId} with session present ${!!account.session}`,
       );
+
+      let telegramProxySettings: SocksProxyType;
+      const proxies = await getParsedProxiesFor('https://t.me');
+      const proxy =
+        proxies.find((e) => e.type === 'SOCKS') ??
+        proxies.find((e) => e.type === 'PROXY') ??
+        proxies[0];
+
+      if (proxy.type !== 'DIRECT') {
+        telegramProxySettings = {
+          ip: proxy.hostname,
+          port: parseInt(proxy.port, 10),
+          socksType: 5,
+        };
+        this.logger
+          .withMetadata({ proxy: telegramProxySettings, proxies })
+          .info('Using SOCKS5 proxy resolved from URL');
+      }
+
       client = new TelegramClient(
         new StringSession(account.session ?? ''),
         account.appId,
         account.appHash,
-        {},
+        {
+          proxy: telegramProxySettings,
+        },
       );
       client.setLogLevel(LogLevel.INFO);
       this.clients.set(account.appId, client);
@@ -196,9 +219,9 @@ export default class Telegram
     const client = await this.getTelegramClient(account);
     if (await client.isUserAuthorized()) {
       const me = await client.getMe();
-      const session = (client.session as StringSession).save();
+      const telegramSession = (client.session as StringSession).save();
       const username = me.username ?? me.firstName ?? me.id.toString();
-      this.setWebsiteData({ ...account, session });
+      this.setWebsiteData({ ...account, session: telegramSession });
       await this.loadChannels(client);
       return this.loginState.setLogin(true, username);
     }
