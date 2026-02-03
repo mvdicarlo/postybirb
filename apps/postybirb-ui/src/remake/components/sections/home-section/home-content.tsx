@@ -116,8 +116,12 @@ export function HomeContent() {
   }
 
   // Filter to only non-template submissions for stats
-  const fileCount = fileSubmissions.filter((s) => !s.isTemplate).length;
-  const messageCount = messageSubmissions.filter((s) => !s.isTemplate).length;
+  const fileCount = fileSubmissions
+    .filter((s) => !s.isTemplate)
+    .filter((s) => !s.isMultiSubmission).length;
+  const messageCount = messageSubmissions
+    .filter((s) => !s.isTemplate)
+    .filter((s) => !s.isMultiSubmission).length;
 
   return (
     <ScrollArea h="100%" type="hover" scrollbarSize={6}>

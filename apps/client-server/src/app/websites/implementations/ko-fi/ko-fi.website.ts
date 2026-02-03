@@ -164,14 +164,6 @@ export default class KoFi
           .withException(new Error('Failed to parse upload response'))
           .withAdditionalInfo(upload.body);
       }
-
-      if (typeof upload.body !== 'string') {
-        imageUploadIds.push(upload.body[0].ExternalId);
-      } else {
-        return PostResponse.fromWebsite(this)
-          .withException(new Error('Failed to parse upload response'))
-          .withAdditionalInfo(upload.body);
-      }
     }
 
     // Create the gallery post
@@ -180,11 +172,14 @@ export default class KoFi
       .setField('Album', postData.options.album || '')
       .setField('Audience', postData.options.audience)
       .setField('Description', postData.options.description)
+      .setField('DisableNewComments', false)
       .setField('EnableHiRes', postData.options.hiRes)
       .setField('GalleryItemId', '')
       .setField('ImageUploadIds', imageUploadIds)
       .setField('PostToTwitter', false)
       .setField('ScheduleEnabled', false)
+      .setField('ScheduledDate', '')
+      .setField('ScheduledTime', '')
       .setField('Title', postData.options.title)
       .setField('UploadAsIndividualImages', false)
       .withHeaders({

@@ -200,7 +200,8 @@ export class FileSubmissionPostManager extends BasePostManager {
         );
 
         // Behavior is to stop posting if a batch fails
-        throw result.exception;
+        // eslint-disable-next-line @typescript-eslint/no-throw-literal
+        throw result;
       }
 
       // Emit FILE_POSTED events for each file in the batch
