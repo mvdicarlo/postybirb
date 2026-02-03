@@ -101,12 +101,12 @@ export class Http {
   ): void {
     try {
       const urlObj = new URL(url);
-      const target = urlObj.hostname;
+      const target = urlObj.origin;
       const name = `${method} ${urlObj.pathname}`;
 
       // Track as HTTP dependency
-      // Using hostname as the target creates sub-dependency trees
-      // hostname -> method + pathname hierarchy in Application Map
+      // Using origin as the target creates sub-dependency trees
+      // origin -> method + pathname hierarchy in Application Map
       trackDependency(
         name,
         target,
