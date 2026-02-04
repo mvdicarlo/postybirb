@@ -38,16 +38,45 @@ export abstract class BaseConverter implements NodeConverter<string> {
   private processingDefaultDescription = false;
 
   /**
+   * Trims empty strings from the start and end of the results array,
+   * preserving empty strings in the middle (for intentional blank lines).
+   * Returns the trimmed array joined with the separator.
+   */
+  private trimAndJoinResults(results: string[], separator: string): string {
+    if (results.length === 0) return '';
+
+    let startIndex = 0;
+    let endIndex = results.length - 1;
+
+    // Find first non-empty result
+    while (startIndex < results.length && results[startIndex] === '') {
+      startIndex++;
+    }
+
+    // Find last non-empty result
+    while (endIndex >= startIndex && results[endIndex] === '') {
+      endIndex--;
+    }
+
+    // If all results are empty, return empty string
+    if (startIndex > endIndex) {
+      return '';
+    }
+
+    // Keep only the trimmed range and join
+    return results.slice(startIndex, endIndex + 1).join(separator);
+  }
+
+  /**
    * Converts an array of block nodes.
+   * Empty blocks are preserved in the middle but trimmed from start and end.
    */
   convertBlocks(
     nodes: AcceptableBlockNode[],
     context: ConversionContext,
   ): string {
-    return nodes
-      .map((node) => node.accept(this, context))
-      .filter((result) => result !== '')
-      .join(this.getBlockSeparator());
+    const results = nodes.map((node) => node.accept(this, context));
+    return this.trimAndJoinResults(results, this.getBlockSeparator());
   }
 
   /**
@@ -87,6 +116,11 @@ export abstract class BaseConverter implements NodeConverter<string> {
    * Converts children blocks with increased depth.
    * Override in subclasses to provide format-specific indentation.
    */
+  /**
+   * Converts children blocks with increased depth.
+   * Empty blocks are preserved in the middle but trimmed from start and end.
+   * Override in subclasses to provide format-specific indentation.
+   */
   protected convertChildren(
     children: IDescriptionBlockNodeClass[],
     context: ConversionContext,
@@ -95,13 +129,10 @@ export abstract class BaseConverter implements NodeConverter<string> {
 
     this.currentDepth += 1;
     try {
-      const result = children
-        .map((child) =>
-          (child as AcceptableBlockNode).accept(this, context),
-        )
-        .filter((r) => r !== '')
-        .join(this.getBlockSeparator());
-      return result;
+      const results = children.map((child) =>
+        (child as AcceptableBlockNode).accept(this, context),
+      );
+      return this.trimAndJoinResults(results, this.getBlockSeparator());
     } finally {
       this.currentDepth -= 1;
     }
