@@ -34,3 +34,34 @@
   background-color: rgba(128, 128, 128, 0.1);
 }
 
+/* Shortcut container styling */
+.default-shortcut-container,
+.custom-shortcut-container,
+.system-shortcut-container {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: text-bottom;
+}
+
+/* Website only selector badge styling */
+.only-website-badge {
+  vertical-align: middle;
+}
+
+/* Fix vertical alignment for shortcut badges with embedded selectors */
+.default-shortcut-container .mantine-Badge-root,
+.custom-shortcut-container .mantine-Badge-root,
+.system-shortcut-container .mantine-Badge-root {
+  display: inline-flex;
+  align-items: center;
+  height: fit-content;
+}
+
+/* Ensure the arrow separator aligns properly */
+.default-shortcut-container .mantine-Badge-root > span,
+.custom-shortcut-container .mantine-Badge-root > span,
+.system-shortcut-container .mantine-Badge-root > span {
+  display: inline-flex;
+  align-items: center;
+}
+

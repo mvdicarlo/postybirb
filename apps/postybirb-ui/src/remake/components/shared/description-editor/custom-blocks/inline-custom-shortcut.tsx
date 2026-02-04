@@ -7,8 +7,10 @@ import {
 } from '@blocknote/react';
 import { Badge } from '@mantine/core';
 import { IconBlockquote } from '@tabler/icons-react';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { CustomShortcutRecord, useCustomShortcuts } from '../../../../stores';
+import './shortcut.css';
+import { WebsiteOnlySelector } from './website-only-selector';
 
 /**
  * Inline content spec for custom shortcuts.
@@ -19,6 +21,7 @@ export const InlineCustomShortcut = createReactInlineContentSpec(
     type: 'customShortcut',
     propSchema: {
       id: { default: '' },
+      only: { default: '' },
     },
     content: 'none',
   },
@@ -32,21 +35,39 @@ export const InlineCustomShortcut = createReactInlineContentSpec(
       }, [shortcuts, props.inlineContent.props.id]);
 
       const name = shortcut?.name ?? (props.inlineContent.props.id as string);
+      const onlyProp = props.inlineContent.props.only as string;
+
+      const handleOnlyChange = useCallback(
+        (newOnly: string) => {
+          props.updateInlineContent({
+            ...props.inlineContent,
+            props: {
+              ...props.inlineContent.props,
+              only: newOnly,
+            },
+          });
+        },
+        [props]
+      );
 
       return (
-        <Badge
-          variant="outline"
-          radius="xs"
-          size="sm"
-          tt="none"
-          color="grape"
-          contentEditable={false}
-        >
-          {name}
-        </Badge>
+        <span className="custom-shortcut-container" style={{ verticalAlign: 'text-bottom' }}>
+          <Badge
+            variant="outline"
+            radius="xs"
+            size="sm"
+            tt="none"
+            color="grape"
+            contentEditable={false}
+          >
+            {name}
+            <span style={{ paddingLeft: '6px', fontWeight: 'bold', fontSize: '14px' }}>→</span>
+            <WebsiteOnlySelector only={onlyProp} onOnlyChange={handleOnlyChange} />
+          </Badge>
+        </span>
       );
     },
-  },
+  }
 );
 
 /**
@@ -55,7 +76,7 @@ export const InlineCustomShortcut = createReactInlineContentSpec(
 export function getCustomShortcutsMenuItems(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   editor: BlockNoteEditor<any, any, any>,
-  shortcuts: CustomShortcutRecord[] = [],
+  shortcuts: CustomShortcutRecord[] = []
 ): DefaultReactSuggestionItem[] {
   return shortcuts.map((sc) => ({
     title: sc.name,
@@ -64,7 +85,7 @@ export function getCustomShortcutsMenuItems(
       editor.insertInlineContent([
         {
           type: 'customShortcut',
-          props: { id: sc.id },
+          props: { id: sc.id, only: '' },
         } as never,
         ' ',
       ]);

@@ -1,9 +1,9 @@
 import { encode } from 'html-entities';
 import {
-  ConversionContext,
-  IDescriptionBlockNodeClass,
-  IDescriptionInlineNodeClass,
-  IDescriptionTextNodeClass,
+    ConversionContext,
+    IDescriptionBlockNodeClass,
+    IDescriptionInlineNodeClass,
+    IDescriptionTextNodeClass,
 } from '../description-node.base';
 import { BaseConverter } from './base-converter';
 
@@ -21,6 +21,7 @@ export class HtmlConverter extends BaseConverter {
   ): string {
     // Handle special block types
     if (node.type === 'defaultShortcut') {
+      if (!this.shouldRenderShortcut(node, context)) return '';
       return this.convertRawBlocks(context.defaultDescription, context);
     }
 
@@ -90,7 +91,7 @@ export class HtmlConverter extends BaseConverter {
     }
 
     if (node.type === 'username') {
-      if (!this.shouldRenderUsernameShortcut(node, context)) return '';
+      if (!this.shouldRenderShortcut(node, context)) return '';
 
       const sc = this.getUsernameShortcutLink(node, context);
       if (!sc) return '';
@@ -99,6 +100,7 @@ export class HtmlConverter extends BaseConverter {
     }
 
     if (node.type === 'customShortcut') {
+      if (!this.shouldRenderShortcut(node, context)) return '';
       const shortcutBlocks = context.customShortcuts.get(node.props.id);
       if (shortcutBlocks) {
         return this.convertRawBlocks(shortcutBlocks, context);
@@ -107,18 +109,21 @@ export class HtmlConverter extends BaseConverter {
     }
 
     if (node.type === 'titleShortcut') {
+      if (!this.shouldRenderShortcut(node, context)) return '';
       return context.title
         ? `<span>${encode(context.title, { level: 'html5' })}</span>`
         : '';
     }
 
     if (node.type === 'tagsShortcut') {
+      if (!this.shouldRenderShortcut(node, context)) return '';
       return context.tags?.length
         ? `<span>${context.tags.map((t) => encode(`#${t}`, { level: 'html5' })).join(' ')}</span>`
         : '';
     }
 
     if (node.type === 'contentWarningShortcut') {
+      if (!this.shouldRenderShortcut(node, context)) return '';
       return context.contentWarningText
         ? `<span>${encode(context.contentWarningText, { level: 'html5' })}</span>`
         : '';
