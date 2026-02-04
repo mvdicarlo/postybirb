@@ -1,15 +1,23 @@
 /**
- * SelectField - Select/multi-select dropdown field.
+ * SelectField - Hybrid select/multi-select dropdown field.
+ * Uses Mantine Select for flat options, TreeSelect for hierarchical groups.
  */
 
 import { Select as MantineSelect, MultiSelect } from '@mantine/core';
 import { SelectFieldType, SelectOption } from '@postybirb/form-builder';
 import { getFileType } from '@postybirb/utils/file-type';
 import { uniqBy } from 'lodash';
+import { useCallback, useMemo } from 'react';
 import { useFormFieldsContext } from '../form-fields-context';
 import { useValidations } from '../hooks/use-validations';
 import { FieldLabel } from './field-label';
 import { FormFieldProps } from './form-field.type';
+import {
+  flattenSelectableOptions,
+  handleMutuallyExclusiveSelection,
+  hasNestedGroups,
+} from './select-utils';
+import { TreeSelect } from './tree-select';
 
 function getSelectOptions(
   options: SelectFieldType['options'],
@@ -41,15 +49,25 @@ function getSelectOptions(
   return [];
 }
 
-function flattenOptions(
+/**
+ * Flattens options for Mantine's native Select/MultiSelect
+ * (loses hierarchy but works for flat option lists)
+ */
+function flattenForMantine(
   options: SelectOption[],
 ): { value: string; label: string }[] {
   const result: { value: string; label: string }[] = [];
 
   for (const option of options) {
     if ('items' in option) {
-      // Group - flatten children
-      result.push(...flattenOptions(option.items));
+      // Group - include group if selectable, then flatten children
+      if (option.value !== undefined) {
+        result.push({
+          value: option.value,
+          label: option.label,
+        });
+      }
+      result.push(...flattenForMantine(option.items));
     } else {
       result.push({
         value:
@@ -74,7 +92,63 @@ export function SelectField({
   const value =
     getValue<string | string[]>(fieldName) ?? field.defaultValue ?? '';
   const selectOptions = getSelectOptions(field.options, submission);
-  const flatOptions = uniqBy(flattenOptions(selectOptions), 'value');
+
+  // Detect if we need the tree select (hierarchical structure)
+  const useTreeSelect = useMemo(
+    () => hasNestedGroups(selectOptions),
+    [selectOptions],
+  );
+
+  // Handle multi-select with mutually exclusive logic
+  const handleMultiChange = useCallback(
+    (newValues: string[]) => {
+      const currentValues = Array.isArray(value) ? value : [];
+      const addedValues = newValues.filter((v) => !currentValues.includes(v));
+
+      if (addedValues.length > 0) {
+        // Find the added option and apply mutually exclusive logic
+        const flatOptions = flattenSelectableOptions(selectOptions);
+        const addedOption = flatOptions.find((o) => o.value === addedValues[0]);
+        const processedValues = handleMutuallyExclusiveSelection(
+          currentValues,
+          addedOption ?? null,
+          selectOptions,
+        );
+        setValue(fieldName, processedValues);
+      } else {
+        // Removal - just set the new values
+        setValue(fieldName, newValues);
+      }
+    },
+    [value, selectOptions, fieldName, setValue],
+  );
+
+  // Use TreeSelect for hierarchical options
+  if (useTreeSelect) {
+    const treeValue = field.allowMultiple
+      ? (Array.isArray(value) ? value : [])
+      : (typeof value === 'string' ? value : '');
+
+    return (
+      <FieldLabel
+        field={field}
+        fieldName={fieldName}
+        validationState={validations}
+      >
+        <TreeSelect
+          options={selectOptions}
+          value={treeValue}
+          onChange={(newValue) => setValue(fieldName, newValue)}
+          multiple={field.allowMultiple}
+          error={validations.isInvalid}
+        />
+      </FieldLabel>
+    );
+  }
+
+  // Use Mantine native select for flat options
+  const flatOptions = uniqBy(flattenForMantine(selectOptions), 'value');
+
   if (field.allowMultiple) {
     const multiValue = Array.isArray(value) ? value : [];
 
@@ -87,7 +161,7 @@ export function SelectField({
         <MultiSelect
           data={flatOptions}
           value={multiValue}
-          onChange={(values) => setValue(fieldName, values)}
+          onChange={handleMultiChange}
           clearable
           searchable
         />
