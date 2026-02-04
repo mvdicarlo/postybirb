@@ -166,6 +166,22 @@ export class NpfConverter extends BaseConverter {
     context: ConversionContext,
     indentLevel: number,
   ): void {
+    // Handle defaultShortcut expansion with 'only' filtering
+    if (node.type === 'defaultShortcut') {
+      if (!this.shouldRenderShortcut(node, context)) return;
+      // Expand the default description blocks
+      if (context.defaultDescription && context.defaultDescription.length > 0) {
+        for (const defaultBlock of context.defaultDescription) {
+          this.convertBlockNodeRecursive(
+            defaultBlock as IDescriptionBlockNodeClass,
+            context,
+            indentLevel,
+          );
+        }
+      }
+      return;
+    }
+
     const block = this.convertBlockNodeToNpf(node, context);
 
     // Apply indent_level for nested blocks (NPF supports 0-7)
@@ -233,7 +249,8 @@ export class NpfConverter extends BaseConverter {
         // Tumblr NPF doesn't have a horizontal rule, use empty text block
         return { type: 'text', text: '' };
       case 'defaultShortcut':
-        // Default markers become empty text blocks
+        // Default shortcut filtered by 'only' - becomes empty if not applicable
+        // The actual expansion happens in convertBlockNodeRecursive
         return { type: 'text', text: '' };
       default:
         // Fallback to paragraph for unknown types
@@ -368,6 +385,7 @@ export class NpfConverter extends BaseConverter {
     let text = '';
 
     if (node.type === 'customShortcut') {
+      if (!this.shouldRenderShortcut(node, context)) return '';
       const shortcutBlocks = context.customShortcuts.get(node.props.id);
       if (shortcutBlocks) {
         // For NPF, we need to extract just the text from shortcut blocks
@@ -383,6 +401,7 @@ export class NpfConverter extends BaseConverter {
     }
 
     if (node.type === 'username') {
+      if (!this.shouldRenderShortcut(node, context)) return '';
       // Username shortcuts become plain text or links in NPF
       const sc = this.getUsernameShortcutLink(node, context);
       if (!sc) {
@@ -404,6 +423,27 @@ export class NpfConverter extends BaseConverter {
         }
       }
 
+      this.currentPosition += text.length;
+      return text;
+    }
+
+    if (node.type === 'titleShortcut') {
+      if (!this.shouldRenderShortcut(node, context)) return '';
+      text = context.title ?? '';
+      this.currentPosition += text.length;
+      return text;
+    }
+
+    if (node.type === 'tagsShortcut') {
+      if (!this.shouldRenderShortcut(node, context)) return '';
+      text = context.tags?.map((e) => `#${e}`).join(' ') ?? '';
+      this.currentPosition += text.length;
+      return text;
+    }
+
+    if (node.type === 'contentWarningShortcut') {
+      if (!this.shouldRenderShortcut(node, context)) return '';
+      text = context.contentWarningText ?? '';
       this.currentPosition += text.length;
       return text;
     }

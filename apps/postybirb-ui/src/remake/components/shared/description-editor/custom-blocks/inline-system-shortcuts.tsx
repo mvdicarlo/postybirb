@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 /* eslint-disable lingui/no-unlocalized-strings */
 import { BlockNoteEditor } from '@blocknote/core';
 import {
@@ -7,6 +8,9 @@ import {
 import { Trans } from '@lingui/react/macro';
 import { Badge } from '@mantine/core';
 import { IconAlertTriangle, IconH1, IconTags } from '@tabler/icons-react';
+import { useCallback } from 'react';
+import './shortcut.css';
+import { WebsiteOnlySelector } from './website-only-selector';
 
 /**
  * Inline content spec for Title shortcut.
@@ -15,23 +19,46 @@ import { IconAlertTriangle, IconH1, IconTags } from '@tabler/icons-react';
 export const InlineTitleShortcut = createReactInlineContentSpec(
   {
     type: 'titleShortcut',
-    propSchema: {},
+    propSchema: {
+      only: { default: '' },
+    },
     content: 'none',
   },
   {
-    render: () => (
-      <Badge
-        variant="outline"
-        radius="xs"
-        size="sm"
-        tt="none"
-        color="blue"
-        contentEditable={false}
-      >
-        <Trans>Title</Trans>
-      </Badge>
-    ),
-  },
+    render: (props) => {
+      const onlyProp = props.inlineContent.props.only as string;
+
+      const handleOnlyChange = useCallback(
+        (newOnly: string) => {
+          props.updateInlineContent({
+            ...props.inlineContent,
+            props: {
+              ...props.inlineContent.props,
+              only: newOnly,
+            },
+          });
+        },
+        [props]
+      );
+
+      return (
+        <span className="system-shortcut-container" style={{ verticalAlign: 'text-bottom' }}>
+          <Badge
+            variant="outline"
+            radius="xs"
+            size="sm"
+            tt="none"
+            color="blue"
+            contentEditable={false}
+          >
+            <Trans>Title</Trans>
+            <span style={{ paddingLeft: '6px', fontWeight: 'bold', fontSize: '14px' }}>→</span>
+            <WebsiteOnlySelector only={onlyProp} onOnlyChange={handleOnlyChange} />
+          </Badge>
+        </span>
+      );
+    },
+  }
 );
 
 /**
@@ -41,23 +68,46 @@ export const InlineTitleShortcut = createReactInlineContentSpec(
 export const InlineTagsShortcut = createReactInlineContentSpec(
   {
     type: 'tagsShortcut',
-    propSchema: {},
+    propSchema: {
+      only: { default: '' },
+    },
     content: 'none',
   },
   {
-    render: () => (
-      <Badge
-        variant="outline"
-        radius="xs"
-        size="sm"
-        tt="none"
-        color="teal"
-        contentEditable={false}
-      >
-        <Trans>Tags</Trans>
-      </Badge>
-    ),
-  },
+    render: (props) => {
+      const onlyProp = props.inlineContent.props.only as string;
+
+      const handleOnlyChange = useCallback(
+        (newOnly: string) => {
+          props.updateInlineContent({
+            ...props.inlineContent,
+            props: {
+              ...props.inlineContent.props,
+              only: newOnly,
+            },
+          });
+        },
+        [props]
+      );
+
+      return (
+        <span className="system-shortcut-container" style={{ verticalAlign: 'text-bottom' }}>
+          <Badge
+            variant="outline"
+            radius="xs"
+            size="sm"
+            tt="none"
+            color="teal"
+            contentEditable={false}
+          >
+            <Trans>Tags</Trans>
+            <span style={{ paddingLeft: '6px', fontWeight: 'bold', fontSize: '14px' }}>→</span>
+            <WebsiteOnlySelector only={onlyProp} onOnlyChange={handleOnlyChange} />
+          </Badge>
+        </span>
+      );
+    },
+  }
 );
 
 /**
@@ -67,23 +117,46 @@ export const InlineTagsShortcut = createReactInlineContentSpec(
 export const InlineContentWarningShortcut = createReactInlineContentSpec(
   {
     type: 'contentWarningShortcut',
-    propSchema: {},
+    propSchema: {
+      only: { default: '' },
+    },
     content: 'none',
   },
   {
-    render: () => (
-      <Badge
-        variant="outline"
-        radius="xs"
-        size="sm"
-        tt="none"
-        color="orange"
-        contentEditable={false}
-      >
-        <Trans>Content Warning</Trans>
-      </Badge>
-    ),
-  },
+    render: (props) => {
+      const onlyProp = props.inlineContent.props.only as string;
+
+      const handleOnlyChange = useCallback(
+        (newOnly: string) => {
+          props.updateInlineContent({
+            ...props.inlineContent,
+            props: {
+              ...props.inlineContent.props,
+              only: newOnly,
+            },
+          });
+        },
+        [props]
+      );
+
+      return (
+        <span className="system-shortcut-container" style={{ verticalAlign: 'text-bottom' }}>
+          <Badge
+            variant="outline"
+            radius="xs"
+            size="sm"
+            tt="none"
+            color="orange"
+            contentEditable={false}
+          >
+            <Trans>Content Warning</Trans>
+            <span style={{ paddingLeft: '6px', fontWeight: 'bold', fontSize: '14px' }}>→</span>
+            <WebsiteOnlySelector only={onlyProp} onOnlyChange={handleOnlyChange} />
+          </Badge>
+        </span>
+      );
+    },
+  }
 );
 
 /**
@@ -91,7 +164,7 @@ export const InlineContentWarningShortcut = createReactInlineContentSpec(
  */
 export function getSystemShortcutsMenuItems(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  editor: BlockNoteEditor<any, any, any>,
+  editor: BlockNoteEditor<any, any, any>
 ): DefaultReactSuggestionItem[] {
   return [
     {
@@ -102,6 +175,7 @@ export function getSystemShortcutsMenuItems(
         editor.insertInlineContent([
           {
             type: 'titleShortcut',
+            props: { only: '' },
           } as never,
           ' ',
         ]);
@@ -116,6 +190,7 @@ export function getSystemShortcutsMenuItems(
         editor.insertInlineContent([
           {
             type: 'tagsShortcut',
+            props: { only: '' },
           } as never,
           ' ',
         ]);
@@ -130,6 +205,7 @@ export function getSystemShortcutsMenuItems(
         editor.insertInlineContent([
           {
             type: 'contentWarningShortcut',
+            props: { only: '' },
           } as never,
           ' ',
         ]);

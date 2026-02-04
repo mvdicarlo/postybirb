@@ -1,8 +1,8 @@
 import {
-  ConversionContext,
-  IDescriptionBlockNodeClass,
-  IDescriptionInlineNodeClass,
-  IDescriptionTextNodeClass,
+    ConversionContext,
+    IDescriptionBlockNodeClass,
+    IDescriptionInlineNodeClass,
+    IDescriptionTextNodeClass,
 } from '../description-node.base';
 import { BaseConverter } from './base-converter';
 
@@ -24,6 +24,7 @@ export class PlainTextConverter extends BaseConverter {
     context: ConversionContext,
   ): string {
     if (node.type === 'defaultShortcut') {
+      if (!this.shouldRenderShortcut(node, context)) return '';
       return this.convertRawBlocks(context.defaultDescription, context);
     }
 
@@ -83,13 +84,14 @@ export class PlainTextConverter extends BaseConverter {
     }
 
     if (node.type === 'username') {
-      if (!this.shouldRenderUsernameShortcut(node, context)) return '';
+      if (!this.shouldRenderShortcut(node, context)) return '';
 
       const sc = this.getUsernameShortcutLink(node, context);
       return sc ? sc.url : '';
     }
 
     if (node.type === 'customShortcut') {
+      if (!this.shouldRenderShortcut(node, context)) return '';
       const shortcutBlocks = context.customShortcuts.get(node.props.id);
       if (shortcutBlocks) {
         return this.convertRawBlocks(shortcutBlocks, context);
@@ -98,14 +100,17 @@ export class PlainTextConverter extends BaseConverter {
     }
 
     if (node.type === 'titleShortcut') {
+      if (!this.shouldRenderShortcut(node, context)) return '';
       return context.title ?? '';
     }
 
     if (node.type === 'tagsShortcut') {
+      if (!this.shouldRenderShortcut(node, context)) return '';
       return context.tags?.map((e) => `#${e}`).join(' ') ?? '';
     }
 
     if (node.type === 'contentWarningShortcut') {
+      if (!this.shouldRenderShortcut(node, context)) return '';
       return context.contentWarningText ?? '';
     }
 

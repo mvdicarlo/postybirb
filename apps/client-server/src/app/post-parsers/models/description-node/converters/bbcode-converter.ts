@@ -27,6 +27,7 @@ export class BBCodeConverter extends BaseConverter {
     context: ConversionContext,
   ): string {
     if (node.type === 'defaultShortcut') {
+      if (!this.shouldRenderShortcut(node, context)) return '';
       return this.convertRawBlocks(context.defaultDescription, context);
     }
 
@@ -152,7 +153,7 @@ export class BBCodeConverter extends BaseConverter {
     }
 
     if (node.type === 'username') {
-      if (!this.shouldRenderUsernameShortcut(node, context)) return '';
+      if (!this.shouldRenderShortcut(node, context)) return '';
 
       const sc = this.getUsernameShortcutLink(node, context);
       if (sc?.url.startsWith('http')) {
@@ -162,6 +163,7 @@ export class BBCodeConverter extends BaseConverter {
     }
 
     if (node.type === 'customShortcut') {
+      if (!this.shouldRenderShortcut(node, context)) return '';
       const shortcutBlocks = context.customShortcuts.get(node.props.id);
       if (shortcutBlocks) {
         return this.convertRawBlocks(shortcutBlocks, context);
@@ -170,14 +172,17 @@ export class BBCodeConverter extends BaseConverter {
     }
 
     if (node.type === 'titleShortcut') {
+      if (!this.shouldRenderShortcut(node, context)) return '';
       return context.title ?? '';
     }
 
     if (node.type === 'tagsShortcut') {
+      if (!this.shouldRenderShortcut(node, context)) return '';
       return context.tags?.map((e) => `#${e}`).join(' ') ?? '';
     }
 
     if (node.type === 'contentWarningShortcut') {
+      if (!this.shouldRenderShortcut(node, context)) return '';
       return context.contentWarningText ?? '';
     }
 

@@ -108,14 +108,13 @@ export abstract class BaseConverter implements NodeConverter<string> {
   }
 
   /**
-   * Helper to check if username shortcut should be rendered for this website.
+   * Helper to check if a shortcut should be rendered for this website.
+   * Works for all shortcut types that have the 'only' prop.
    */
-  protected shouldRenderUsernameShortcut(
-    node: IDescriptionInlineNodeClass,
+  protected shouldRenderShortcut(
+    node: IDescriptionInlineNodeClass | IDescriptionBlockNodeClass,
     context: ConversionContext,
   ): boolean {
-    if (node.type !== 'username') return true;
-
     const onlyTo = (node.props.only?.split(',') ?? [])
       .map((s) => s.trim().toLowerCase())
       .filter((s) => s.length > 0);
@@ -123,6 +122,17 @@ export abstract class BaseConverter implements NodeConverter<string> {
     if (onlyTo.length === 0) return true;
 
     return onlyTo.includes(context.website.toLowerCase());
+  }
+
+  /**
+   * @deprecated Use shouldRenderShortcut instead
+   * Helper to check if username shortcut should be rendered for this website.
+   */
+  protected shouldRenderUsernameShortcut(
+    node: IDescriptionInlineNodeClass,
+    context: ConversionContext,
+  ): boolean {
+    return this.shouldRenderShortcut(node, context);
   }
 
   /**
