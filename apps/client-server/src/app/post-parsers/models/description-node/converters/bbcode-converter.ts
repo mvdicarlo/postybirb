@@ -70,6 +70,12 @@ export class BBCodeConverter extends BaseConverter {
       if (node.props.textColor && node.props.textColor !== 'default') {
         text = `[color=${node.props.textColor}]${text}[/color]`;
       }
+
+      // Apply text alignment if not default
+      if (node.props.textAlignment && node.props.textAlignment !== 'left') {
+        text = `[${node.props.textAlignment}]${text}[/${node.props.textAlignment}]`;
+      }
+
       result = indent + text;
     } else if (node.type === 'heading') {
       const { level } = node.props;
@@ -95,6 +101,12 @@ export class BBCodeConverter extends BaseConverter {
       if (node.props.textColor && node.props.textColor !== 'default') {
         text = `[color=${node.props.textColor}]${text}[/color]`;
       }
+
+      // Apply text alignment if not default
+      if (node.props.textAlignment && node.props.textAlignment !== 'left') {
+        text = `[${node.props.textAlignment}]${text}[/${node.props.textAlignment}]`;
+      }
+
       result = indent + text;
     } else {
       result =
@@ -208,7 +220,7 @@ export class BBCodeConverter extends BaseConverter {
       return node.text;
     }
 
-    const text = node.text.replace(/\n/g, '\n');
+    const { text } = node;
     let segmentedText = `${segments.map((e) => `[${e}]`).join('')}${text}${segments
       .reverse()
       .map((e) => `[/${e}]`)
