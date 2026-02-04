@@ -93,8 +93,8 @@ export default class DeviantArt
       const userInfo = JSON.parse(
         decodeURIComponent(userInfoCookie.value).split(';')[1],
       );
-      await this.getFolders();
       if (userInfo && userInfo.username) {
+        await this.getFolders(userInfo.username);
         return this.loginState.setLogin(true, userInfo.username);
       }
     }
@@ -109,14 +109,14 @@ export default class DeviantArt
     return url.body.match(/window.__CSRF_TOKEN__ = '(.*)'/)?.[1];
   }
 
-  private async getFolders() {
+  private async getFolders(username: string) {
     try {
       const csrf = await this.getCSRF();
       const { body } = await Http.get<{ results: DeviantArtFolder[] }>(
         `${
           this.BASE_URL
         }/_puppy/dashared/gallection/folders?offset=0&limit=250&type=gallery&with_all_folder=true&with_permissions=true&username=${encodeURIComponent(
-          this.loginState.username,
+          username,
         )}&da_minor_version=20230710&csrf_token=${csrf}`,
         { partition: this.accountId },
       );
@@ -301,8 +301,8 @@ export default class DeviantArt
     const selectedFolders = options.folders ?? [];
     const validFolders = this.websiteDataStore.getData().folders ?? [];
     if (selectedFolders.length) {
-      const hasMissingFolders = selectedFolders.some((folder) =>
-        SelectOptionUtil.findOptionById(validFolders, folder),
+      const hasMissingFolders = selectedFolders.some(
+        (folder) => !SelectOptionUtil.findOptionById(validFolders, folder),
       );
 
       if (hasMissingFolders) {
@@ -385,7 +385,7 @@ export default class DeviantArt
   onValidateMessageSubmission = validatorPassthru;
 
   private stripInvalidCharacters(title: string) {
-    const validRegex = /^[A-Za-z0-9\s_$!?:.,'+\-=~`@#%^*[\]()/{}\\|]*$/g;
+    const validRegex = /^[A-Za-z0-9\s_$!?:.,'+\-=~`@#%^*[\]()/{}\\|]$/;
     if (!title) return '';
     let sanitized = '';
     for (let i = 0; i < title.length; i++) {
