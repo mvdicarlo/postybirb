@@ -55,8 +55,12 @@ export function DescriptionField(props: FormFieldProps<DescriptionFieldType>) {
     field.defaultValue ||
     DefaultDescriptionValue();
   const overrideDefault = fieldValue.overrideDefault || false;
-  const insertTags = fieldValue.insertTags || false;
-  const insertTitle = fieldValue.insertTitle || false;
+
+  // Derive effective values - if default has it enabled, it's always enabled (locked)
+  const defaultInsertTitle = defaultOption?.insertTitle || false;
+  const defaultInsertTags = defaultOption?.insertTags || false;
+  const insertTags = fieldValue.insertTags || defaultInsertTags;
+  const insertTitle = fieldValue.insertTitle || defaultInsertTitle;
   const description = useMemo(
     () => fieldValue.description || [],
     [fieldValue.description],
@@ -99,6 +103,7 @@ export function DescriptionField(props: FormFieldProps<DescriptionFieldType>) {
         )}
         <Checkbox
           mb="4"
+          disabled={defaultInsertTitle}
           checked={insertTitle}
           onChange={(e) => {
             setFieldValue(propKey, {
@@ -110,6 +115,7 @@ export function DescriptionField(props: FormFieldProps<DescriptionFieldType>) {
         />
         <Checkbox
           mb="4"
+          disabled={defaultInsertTags}
           checked={insertTags}
           onChange={(e) => {
             setFieldValue(propKey, {
