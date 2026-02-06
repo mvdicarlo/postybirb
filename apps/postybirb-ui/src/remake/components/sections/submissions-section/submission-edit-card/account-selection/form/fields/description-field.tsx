@@ -85,8 +85,12 @@ export function DescriptionField({
     field.defaultValue ??
     DefaultDescriptionValue();
   const overrideDefault = fieldValue.overrideDefault || false;
-  const insertTags = fieldValue.insertTags || false;
-  const insertTitle = fieldValue.insertTitle || false;
+
+  // Derive effective values - if default has it enabled, it's always enabled (locked)
+  const defaultInsertTitle = defaultOption?.insertTitle || false;
+  const defaultInsertTags = defaultOption?.insertTags || false;
+  const insertTags = fieldValue.insertTags || defaultInsertTags;
+  const insertTitle = fieldValue.insertTitle || defaultInsertTitle;
   const description = useMemo(
     () => fieldValue.description || [],
     [fieldValue.description],
@@ -143,7 +147,7 @@ export function DescriptionField({
         )}
         <Checkbox
           mb="4"
-          disabled={hasTitleShortcut}
+          disabled={hasTitleShortcut || defaultInsertTitle}
           checked={insertTitle}
           onChange={(e) => {
             setValue(fieldName, {
@@ -155,7 +159,7 @@ export function DescriptionField({
         />
         <Checkbox
           mb="4"
-          disabled={hasTagsShortcut}
+          disabled={hasTagsShortcut || defaultInsertTags}
           checked={insertTags}
           onChange={(e) => {
             setValue(fieldName, {

@@ -96,9 +96,9 @@ export class BaseWebsiteOptions implements IWebsiteFormFields {
             overrideDefault: false,
             description: options.description.description,
             insertTitle:
-              this.description.insertTitle ?? options.description.insertTitle,
+              this.description.insertTitle || options.description.insertTitle,
             insertTags:
-              this.description.insertTags ?? options.description.insertTags,
+              this.description.insertTags || options.description.insertTags,
           },
       contentWarning: (!isNullOrWhiteSpace(this.contentWarning)
         ? this.contentWarning
