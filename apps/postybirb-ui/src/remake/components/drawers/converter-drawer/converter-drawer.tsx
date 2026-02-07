@@ -401,11 +401,7 @@ function WebsiteConversionsEditor({
  * Memoized to prevent re-rendering unchanged cards when parent state changes
  * (e.g., search query, selection of other cards).
  */
-const ConverterCard = memo(function ConverterCard<
-  TRecord extends ConverterRecord,
-  TCreateDto,
-  TUpdateDto,
->({
+const ConverterCard = memo(({
   converter,
   isSelected,
   onSelect,
@@ -423,7 +419,7 @@ const ConverterCard = memo(function ConverterCard<
   config: ConverterDrawerConfig<TRecord, TCreateDto, TUpdateDto>;
   websites: WebsiteRecord[];
   websiteMap: Map<string, string>;
-}) {
+}) => {
   const primaryValue = config.getPrimaryValue(converter);
   const [localValue, setLocalValue] = useState(primaryValue);
 

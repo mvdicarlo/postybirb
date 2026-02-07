@@ -25,7 +25,7 @@ import { getThumbnailUrl } from './utils';
  * Card component for displaying a submission in the section list.
  * Actions are provided via SubmissionsContext.
  */
-export const SubmissionCard = memo(function SubmissionCard({
+export const SubmissionCard = memo(({
   submission,
   submissionType,
   isSelected = false,
@@ -33,7 +33,7 @@ export const SubmissionCard = memo(function SubmissionCard({
   isCompact = false,
   className,
   dragHandleListeners,
-}: SubmissionCardProps) {
+}: SubmissionCardProps) => {
   const { onSelect } = useSubmissionsActions();
   const { formatRelativeTime, formatDateTime } = useLocale();
   const {

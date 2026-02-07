@@ -44,11 +44,11 @@ interface SubmissionFileCardProps {
   totalFiles: number;
 }
 
-export const SubmissionFileCard = memo(function SubmissionFileCard({
+export const SubmissionFileCard = memo(({
   file,
   draggable,
   totalFiles,
-}: SubmissionFileCardProps) {
+}: SubmissionFileCardProps) => {
   const { submission } = useSubmissionEditCardContext();
   const accountsMap = useAccountsMap();
   const [expanded, { toggle }] = useDisclosure(false);

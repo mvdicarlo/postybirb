@@ -10,7 +10,7 @@ import type { BaseRecord } from './records/base-record';
 /**
  * Configuration for creating a typed store.
  */
-export interface TypedStoreConfig<TDto, TRecord extends BaseRecord> {
+export interface TypedStoreConfig<TDto extends { id: string; updatedAt: string }, TRecord extends BaseRecord> {
   /** Async function that fetches DTOs from the API */
   fetchFn: () => Promise<TDto[]>;
   /** Function that converts a DTO to a Record class */
@@ -33,7 +33,8 @@ export interface TypedStoreConfig<TDto, TRecord extends BaseRecord> {
  */
 export interface TypedStoreResult<TRecord extends BaseRecord> {
   /** The underlying Zustand store */
-  useStore: ReturnType<typeof createEntityStore<unknown, TRecord>>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  useStore: ReturnType<typeof createEntityStore<any, TRecord>>;
   /** Hook to get all records */
   useRecords: () => TRecord[];
   /** Hook to get records map for O(1) lookup */
@@ -74,7 +75,7 @@ export interface TypedStoreResult<TRecord extends BaseRecord> {
  * });
  * ```
  */
-export function createTypedStore<TDto, TRecord extends BaseRecord>(
+export function createTypedStore<TDto extends { id: string; updatedAt: string }, TRecord extends BaseRecord>(
   config: TypedStoreConfig<TDto, TRecord>
 ): TypedStoreResult<TRecord> {
   type StoreState = EntityStore<TRecord>;

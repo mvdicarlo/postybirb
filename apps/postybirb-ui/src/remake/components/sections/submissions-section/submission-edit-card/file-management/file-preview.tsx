@@ -14,7 +14,7 @@ interface FilePreviewProps {
   size?: number;
 }
 
-export const FilePreview = memo(function FilePreview({ file, size = 80 }: FilePreviewProps) {
+export const FilePreview = memo(({ file, size = 80 }: FilePreviewProps) => {
   const { fileName, id, hash } = file;
   const fileType = getFileType(fileName);
   const src = `${defaultTargetProvider()}/api/file/file/${id}?${hash}`;
@@ -91,7 +91,7 @@ interface ThumbnailPreviewProps {
   size?: number;
 }
 
-export const ThumbnailPreview = memo(function ThumbnailPreview({ file, size = 60 }: ThumbnailPreviewProps) {
+export const ThumbnailPreview = memo(({ file, size = 60 }: ThumbnailPreviewProps) => {
   if (!file.hasThumbnail || !file.thumbnailId) {
     return null;
   }

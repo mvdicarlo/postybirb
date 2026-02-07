@@ -24,12 +24,12 @@ interface SubmissionThumbnailProps {
  * Shows the thumbnail image or a placeholder icon.
  * Optionally wraps in a HoverCard for image preview on hover.
  */
-export const SubmissionThumbnail = memo(function SubmissionThumbnail({
+export const SubmissionThumbnail = memo(({
   thumbnailUrl,
   alt,
   canPreview = false,
   fileCount = 1,
-}: SubmissionThumbnailProps) {
+}: SubmissionThumbnailProps) => {
   // Calculate additional files (total - 1 for the primary file shown)
   const additionalFiles = fileCount > 1 ? fileCount - 1 : 0;
 

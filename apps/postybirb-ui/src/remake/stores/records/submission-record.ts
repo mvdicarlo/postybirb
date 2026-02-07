@@ -37,10 +37,10 @@ export class SubmissionRecord extends BaseRecord {
   readonly order: number;
 
   // Cached computed values — safe because all data is immutable after construction
-  private readonly _primaryFile: ISubmissionFileDto | undefined;
-  private readonly _lastModified: Date;
-  private readonly _sortedPosts: PostRecordDto[];
-  private readonly _sortedPostsDescending: PostRecordDto[];
+  private readonly cachedPrimaryFile: ISubmissionFileDto | undefined;
+  private readonly cachedLastModified: Date;
+  private readonly cachedSortedPosts: PostRecordDto[];
+  private readonly cachedSortedPostsDescending: PostRecordDto[];
 
   constructor(dto: ISubmissionDto) {
     super(dto);
@@ -59,20 +59,20 @@ export class SubmissionRecord extends BaseRecord {
     this.order = dto.order;
 
     // Pre-compute expensive derived values
-    this._primaryFile = this.files.length > 0
+    this.cachedPrimaryFile = this.files.length > 0
       ? [...this.files].sort((a, b) => a.order - b.order)[0]
       : undefined;
-    this._sortedPosts = this.posts.length > 0
+    this.cachedSortedPosts = this.posts.length > 0
       ? [...this.posts].sort(
           (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
         )
       : [];
-    this._sortedPostsDescending = this.posts.length > 0
+    this.cachedSortedPostsDescending = this.posts.length > 0
       ? [...this.posts].sort(
           (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         )
       : [];
-    this._lastModified = this.computeLastModified();
+    this.cachedLastModified = this.computeLastModified();
   }
 
   /**
@@ -93,7 +93,7 @@ export class SubmissionRecord extends BaseRecord {
    * Get the primary/first file if available.
    */
   get primaryFile(): ISubmissionFileDto | undefined {
-    return this._primaryFile;
+    return this.cachedPrimaryFile;
   }
 
   /**
@@ -172,7 +172,7 @@ export class SubmissionRecord extends BaseRecord {
    * its files, and its website options.
    */
   get lastModified(): Date {
-    return this._lastModified;
+    return this.cachedLastModified;
   }
 
   private computeLastModified(): Date {
@@ -211,7 +211,7 @@ export class SubmissionRecord extends BaseRecord {
    * This provides a chronological view of posting attempts.
    */
   get sortedPosts(): PostRecordDto[] {
-    return this._sortedPosts;
+    return this.cachedSortedPosts;
   }
 
   /**
@@ -219,7 +219,7 @@ export class SubmissionRecord extends BaseRecord {
    * This provides a reverse chronological view for display.
    */
   get sortedPostsDescending(): PostRecordDto[] {
-    return this._sortedPostsDescending;
+    return this.cachedSortedPostsDescending;
   }
 
   /**

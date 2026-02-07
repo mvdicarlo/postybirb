@@ -1,9 +1,9 @@
 /* eslint-disable no-param-reassign */
 import * as rtf from '@iarna/rtf-to-html';
 import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
+    BadRequestException,
+    Injectable,
+    NotFoundException,
 } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import { EntityId, FileType } from '@postybirb/types';
@@ -17,8 +17,8 @@ import { promisify } from 'util';
 import { SubmissionFile } from '../../drizzle/models';
 import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
 import {
-  TransactionContext,
-  withTransactionContext,
+    TransactionContext,
+    withTransactionContext,
 } from '../../drizzle/transaction-context';
 import { MulterFileInfo } from '../models/multer-file-info';
 import { ImageUtil } from '../utils/image.util';

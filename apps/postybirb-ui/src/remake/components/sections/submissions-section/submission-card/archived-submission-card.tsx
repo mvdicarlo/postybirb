@@ -49,14 +49,14 @@ interface ArchivedSubmissionCardProps extends Omit<
 /**
  * Card component for archived submissions with limited actions.
  */
-export const ArchivedSubmissionCard = memo(function ArchivedSubmissionCard({
+export const ArchivedSubmissionCard = memo(({
   submission,
   submissionType,
   isSelected = false,
   isCompact = false,
   className,
   onViewHistory,
-}: ArchivedSubmissionCardProps) {
+}: ArchivedSubmissionCardProps) => {
   const { onSelect } = useSubmissionsActions();
   const { formatRelativeTime, formatDateTime } = useLocale();
   const thumbnailUrl = getThumbnailUrl(submission);

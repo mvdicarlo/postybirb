@@ -326,7 +326,7 @@ function BulkActions({
 /**
  * Individual notification card.
  */
-const NotificationCard = React.memo(function NotificationCard({
+const NotificationCard = React.memo(({
   notification,
   isSelected,
   onSelect,
@@ -336,7 +336,7 @@ const NotificationCard = React.memo(function NotificationCard({
   isSelected: boolean;
   onSelect: (id: string, selected: boolean) => void;
   formatRelativeTime: (date: Date | string) => string;
-}) {
+}) => {
   const color = getTypeColor(notification.type);
   const icon = getTypeIcon(notification.type);
 

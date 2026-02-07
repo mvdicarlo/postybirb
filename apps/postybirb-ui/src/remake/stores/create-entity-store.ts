@@ -245,7 +245,8 @@ export function createEntityStore<TDto extends { id: string; updatedAt: string }
  * Hook factory to create a selector for records array.
  */
 export function useRecordsSelector<T extends BaseRecord>(
-  store: ReturnType<typeof createEntityStore<unknown, T>>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  store: ReturnType<typeof createEntityStore<any, T>>
 ): T[] {
   type StoreState = EntityStore<T>;
   return store((state: StoreState) => state.records);
@@ -255,7 +256,8 @@ export function useRecordsSelector<T extends BaseRecord>(
  * Hook factory to create a selector for loading state.
  */
 export function useLoadingStateSelector<T extends BaseRecord>(
-  store: ReturnType<typeof createEntityStore<unknown, T>>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  store: ReturnType<typeof createEntityStore<any, T>>
 ) {
   type StoreState = EntityStore<T>;
   return store(

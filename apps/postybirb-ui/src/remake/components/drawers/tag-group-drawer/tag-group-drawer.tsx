@@ -286,7 +286,7 @@ function CreateTagGroupForm() {
 /**
  * Tag group table row component.
  */
-const TagGroupRow = React.memo(function TagGroupRow({
+const TagGroupRow = React.memo(({
   group,
   isSelected,
   onToggleSelect,
@@ -294,8 +294,7 @@ const TagGroupRow = React.memo(function TagGroupRow({
   group: TagGroupRecord;
   isSelected: boolean;
   onToggleSelect: (id: string) => void;
-}) {
-  return (
+}) => (
     <Table.Tr>
       <Table.Td w={40}>
         <Checkbox
@@ -318,8 +317,7 @@ const TagGroupRow = React.memo(function TagGroupRow({
         />
       </Table.Td>
     </Table.Tr>
-  );
-});
+  ));
 
 /**
  * Tag groups table component.

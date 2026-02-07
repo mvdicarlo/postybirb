@@ -28,7 +28,7 @@ export class WebsiteRecord {
   readonly supportsMessage: boolean;
 
   // Cached computed value — safe because record data is immutable after construction
-  private readonly _loggedInAccounts: IAccountDto[];
+  private readonly cachedLoggedInAccounts: IAccountDto[];
 
   constructor(dto: IWebsiteInfoDto) {
     this.id = dto.id;
@@ -42,7 +42,7 @@ export class WebsiteRecord {
     this.supportsMessage = dto.supportsMessage;
 
     // Pre-compute filtered accounts
-    this._loggedInAccounts = this.accounts.filter(
+    this.cachedLoggedInAccounts = this.accounts.filter(
       (account) => account.state.isLoggedIn
     );
   }
@@ -65,14 +65,14 @@ export class WebsiteRecord {
    * Get logged-in accounts for this website.
    */
   get loggedInAccounts(): IAccountDto[] {
-    return this._loggedInAccounts;
+    return this.cachedLoggedInAccounts;
   }
 
   /**
    * Get the number of logged-in accounts.
    */
   get loggedInCount(): number {
-    return this._loggedInAccounts.length;
+    return this.cachedLoggedInAccounts.length;
   }
 
   /**

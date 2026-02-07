@@ -57,7 +57,7 @@ const MAX_ACCOUNT_NAME_LENGTH = 24;
  * Uses AccountsContext via useAccountActions hook.
  * Memoized to prevent re-renders when sibling rows or parent card re-renders.
  */
-const AccountRow = memo(function AccountRow({ account }: { account: AccountRecord }) {
+const AccountRow = memo(({ account }: { account: AccountRecord }) => {
   const {
     isSelected,
     handleSelect,
@@ -274,10 +274,10 @@ const AccountRow = memo(function AccountRow({ account }: { account: AccountRecor
  * Compact card for a website showing its accounts.
  * Memoized to prevent re-renders when sibling cards haven't changed.
  */
-export const WebsiteAccountCard = memo(function WebsiteAccountCard({
+export const WebsiteAccountCard = memo(({
   website,
   accounts,
-}: WebsiteAccountCardProps) {
+}: WebsiteAccountCardProps) => {
   const { t } = useLingui();
   const { onAccountCreated } = useAccountsContext();
   // Default to collapsed if no accounts, expanded otherwise

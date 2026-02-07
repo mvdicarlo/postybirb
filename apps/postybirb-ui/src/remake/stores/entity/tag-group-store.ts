@@ -50,5 +50,5 @@ export type TagGroupStore = EntityStore<TagGroupRecord>;
  */
 export const useNonEmptyTagGroups = (): TagGroupRecord[] =>
   useTagGroupStore(
-    useShallow((state: TagGroupStore) => state.records.filter((g) => !g.isEmpty))
+    useShallow((state) => (state as TagGroupStore).records.filter((g) => !g.isEmpty))
   );

@@ -125,7 +125,7 @@ export function useLocale(): UseLocaleResult {
     };
 
     return { formatRelativeTime, formatDateTime, formatDate, formatTime };
-  }, [locale, dateLocale]);
+  }, [locale]);
 
   return {
     locale,

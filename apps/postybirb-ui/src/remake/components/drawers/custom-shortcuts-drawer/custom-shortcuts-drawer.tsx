@@ -102,12 +102,12 @@ interface ShortcutCardProps {
   onDelete: (id: string) => void;
 }
 
-const ShortcutCard = React.memo(function ShortcutCard({
+const ShortcutCard = React.memo(({
   shortcut,
   isExpanded,
   onToggleExpand,
   onDelete,
-}: ShortcutCardProps) {
+}: ShortcutCardProps) => {
   const [name, setName] = useState(shortcut.name);
   const [isEditingName, setIsEditingName] = useState(false);
   const [localDescription, setLocalDescription] = useState<Description>(
