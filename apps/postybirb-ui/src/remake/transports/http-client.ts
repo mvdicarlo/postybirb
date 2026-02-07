@@ -9,8 +9,43 @@ export const REMOTE_MODE_KEY = 'remote_mode';
 
 export const defaultTargetPath = `https://localhost:${window.electron.app_port}`;
 
+// ---------------------------------------------------------------------------
+// Cached localStorage config
+// Values are read once on module load and refreshed on `storage` events or
+// explicit calls to `refreshRemoteConfig()`. This avoids synchronous
+// `localStorage.getItem` calls on every HTTP request.
+// ---------------------------------------------------------------------------
+interface RemoteConfig {
+  host: string | null;
+  password: string | null;
+}
+
+let cachedConfig: RemoteConfig = {
+  host: localStorage.getItem(REMOTE_HOST_KEY),
+  password: localStorage.getItem(REMOTE_PASSWORD_KEY),
+};
+
+/**
+ * Re-read remote host / password from localStorage.
+ * Call this after programmatically writing to localStorage so the cached
+ * values stay in sync (the `storage` event only fires for *other* tabs).
+ */
+export const refreshRemoteConfig = () => {
+  cachedConfig = {
+    host: localStorage.getItem(REMOTE_HOST_KEY),
+    password: localStorage.getItem(REMOTE_PASSWORD_KEY),
+  };
+};
+
+// Keep the cache in sync when another tab/window changes the values.
+window.addEventListener('storage', (e) => {
+  if (e.key === REMOTE_HOST_KEY || e.key === REMOTE_PASSWORD_KEY) {
+    refreshRemoteConfig();
+  }
+});
+
 export const defaultTargetProvider = () => {
-  const remoteUrl = localStorage.getItem(REMOTE_HOST_KEY);
+  const remoteUrl = cachedConfig.host;
   if (remoteUrl?.trim()) {
     return `https://${remoteUrl}`;
   }
@@ -19,7 +54,7 @@ export const defaultTargetProvider = () => {
 };
 
 export const getRemotePassword = () => {
-  const remotePassword = localStorage.getItem(REMOTE_PASSWORD_KEY);
+  const remotePassword = cachedConfig.password;
   const electronRemotePassword = window.electron?.getRemoteConfig()?.password;
   return remotePassword?.trim() || electronRemotePassword?.trim();
 };

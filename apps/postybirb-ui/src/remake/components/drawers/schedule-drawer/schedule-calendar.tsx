@@ -11,33 +11,33 @@ import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import { Trans } from '@lingui/react/macro';
 import {
-    Badge,
-    Button,
-    Divider,
-    Group,
-    Modal,
-    Stack,
-    Text,
-    ThemeIcon,
+  Badge,
+  Button,
+  Divider,
+  Group,
+  Modal,
+  Stack,
+  Text,
+  ThemeIcon,
 } from '@mantine/core';
 import { ScheduleType, SubmissionType } from '@postybirb/types';
 import {
-    IconCalendarOff,
-    IconCalendarTime,
-    IconClock,
-    IconFile,
-    IconMessage,
+  IconCalendarOff,
+  IconCalendarTime,
+  IconClock,
+  IconFile,
+  IconMessage,
 } from '@tabler/icons-react';
 import Cron from 'croner';
 import moment from 'moment';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import submissionApi from '../../../api/submission.api';
 import { useLocale } from '../../../hooks';
-import { useSubmissions } from '../../../stores/entity/submission-store';
+import { useSubmissionsWithSchedule } from '../../../stores/entity/submission-store';
 import {
-    showInfoNotification,
-    showScheduleUpdatedNotification,
-    showUpdateErrorNotification,
+  showInfoNotification,
+  showScheduleUpdatedNotification,
+  showUpdateErrorNotification,
 } from '../../../utils/notifications';
 
 /**
@@ -46,23 +46,11 @@ import {
  */
 export function ScheduleCalendar() {
   const { calendarLocale, formatRelativeTime, formatDateTime } = useLocale();
-  const submissions = useSubmissions();
+  const scheduledSubmissions = useSubmissionsWithSchedule();
   const [selectedEvent, setSelectedEvent] = useState<EventImpl | null>(null);
   const [modalOpened, setModalOpened] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const calendarRef = useRef<any>(null);
-
-  // Filter to submissions with a schedule (not archived, not templates)
-  const scheduledSubmissions = useMemo(
-    () =>
-      submissions.filter(
-        (s) =>
-          !s.isArchived &&
-          !s.isTemplate &&
-          (s.schedule.scheduledFor || s.schedule.cron),
-      ),
-    [submissions],
-  );
 
   // Format events for FullCalendar
   const events = useMemo(

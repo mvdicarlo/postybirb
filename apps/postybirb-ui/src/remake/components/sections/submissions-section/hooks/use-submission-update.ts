@@ -10,16 +10,11 @@ import { useSubmissionStore } from '../../../../stores/entity/submission-store';
 import { useNavigationStore } from '../../../../stores/ui/navigation-store';
 import { type ViewState } from '../../../../types/view-state';
 import {
-  showDuplicateErrorNotification,
-  showErrorNotification,
-  showUpdateErrorNotification,
+    showDuplicateErrorNotification,
+    showErrorNotification,
+    showUpdateErrorNotification,
 } from '../../../../utils/notifications';
 import { isSubmissionsViewState } from '../types';
-
-interface UseSubmissionUpdateProps {
-  /** Current view state */
-  viewState: ViewState;
-}
 
 interface UseSubmissionUpdateResult {
   /** Handle duplicating a submission */
@@ -43,10 +38,9 @@ interface UseSubmissionUpdateResult {
 
 /**
  * Hook for handling submission updates.
+ * Reads viewState at call time via getState() for stable callbacks.
  */
-export function useSubmissionUpdate({
-  viewState,
-}: UseSubmissionUpdateProps): UseSubmissionUpdateResult {
+export function useSubmissionUpdate(): UseSubmissionUpdateResult {
   const setViewState = useNavigationStore((state) => state.setViewState);
 
   // Handle duplicating a submission
@@ -67,20 +61,21 @@ export function useSubmissionUpdate({
     }
   }, []);
 
-  // Handle editing a submission (select it)
+  // Handle editing a submission (select it) — reads viewState at call time
   const handleEdit = useCallback(
     (id: string) => {
-      if (!isSubmissionsViewState(viewState)) return;
+      const currentViewState = useNavigationStore.getState().viewState;
+      if (!isSubmissionsViewState(currentViewState)) return;
       setViewState({
-        ...viewState,
+        ...currentViewState,
         params: {
-          ...viewState.params,
+          ...currentViewState.params,
           selectedIds: [id],
           mode: 'single',
         },
       } as ViewState);
     },
-    [viewState, setViewState],
+    [setViewState],
   );
 
   // Handle changing any default option field (title, tags, rating, etc.)

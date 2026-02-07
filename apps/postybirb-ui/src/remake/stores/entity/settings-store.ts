@@ -7,6 +7,7 @@
 
 import { SETTINGS_UPDATES } from '@postybirb/socket-events';
 import type { SettingsDto } from '@postybirb/types';
+import { useShallow } from 'zustand/react/shallow';
 import settingsApi from '../../api/settings.api';
 import { createEntityStore, type EntityStore } from '../create-entity-store';
 import { SettingsRecord } from '../records/settings-record';
@@ -80,18 +81,23 @@ export const useTagSearchProvider = () =>
  * Select settings loading state.
  */
 export const useSettingsLoading = () =>
-  useSettingsStore((state: SettingsStore) => ({
-    loadingState: state.loadingState,
-    error: state.error,
-    isLoading: state.loadingState === 'loading',
-    isLoaded: state.loadingState === 'loaded',
-  }));
+  useSettingsStore(
+    useShallow((state: SettingsStore) => ({
+      loadingState: state.loadingState,
+      error: state.error,
+      isLoading: state.loadingState === 'loading',
+      isLoaded: state.loadingState === 'loaded',
+    }))
+  );
 
 /**
  * Select settings actions.
+ * No useShallow needed — action function refs are stable.
  */
 export const useSettingsActions = () =>
-  useSettingsStore((state: SettingsStore) => ({
-    loadAll: state.loadAll,
-    clear: state.clear,
-  }));
+  useSettingsStore(
+    useShallow((state: SettingsStore) => ({
+      loadAll: state.loadAll,
+      clear: state.clear,
+    }))
+  );

@@ -12,7 +12,7 @@ import { SuggestionMenuController, useCreateBlockNote } from '@blocknote/react';
 import { useLingui } from '@lingui/react/macro';
 import { Box, useMantineColorScheme } from '@mantine/core';
 import type { Description } from '@postybirb/types';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useLocale } from '../../../hooks';
 import { useCustomShortcuts } from '../../../stores/entity/custom-shortcut-store';
 import { useWebsites } from '../../../stores/entity/website-store';
@@ -135,6 +135,34 @@ function DescriptionEditorInner({
     [websites],
   );
 
+  // Memoize onChange to avoid creating a new function reference every render
+  const handleChange = useCallback(() => {
+    onChange(editor.document as Description);
+  }, [editor, onChange]);
+
+  // Memoize slash menu getItems to avoid unnecessary re-initialization
+  const getSlashMenuItems = useCallback(
+    async (query: string) =>
+      filterSuggestionItems(getCustomSlashMenuItems(editor), query),
+    [editor],
+  );
+
+  // Memoize shortcut menu getItems to avoid unnecessary re-initialization
+  const getShortcutMenuItems = useCallback(
+    async (query: string) => {
+      const items = [
+        ...getDefaultShortcutMenuItem(editor, !!isDefaultEditor),
+        ...getSystemShortcutsMenuItems(editor),
+        ...(showCustomShortcuts
+          ? getCustomShortcutsMenuItems(editor, customShortcuts)
+          : []),
+        ...getUsernameShortcutsMenuItems(editor, usernameShortcuts),
+      ];
+      return filterShortcutMenuItems(items, query);
+    },
+    [editor, isDefaultEditor, showCustomShortcuts, customShortcuts, usernameShortcuts],
+  );
+
   return (
     <Box
       style={{ minHeight, height: '100%' }}
@@ -145,33 +173,20 @@ function DescriptionEditorInner({
         editor={editor}
         tableHandles={false}
         slashMenu={false}
-        onChange={() => {
-          onChange(editor.document as Description);
-        }}
+        onChange={handleChange}
       >
         {/* Slash menu for block insertion */}
         <SuggestionMenuController
           triggerCharacter="/"
-          getItems={async (query) =>
-            filterSuggestionItems(getCustomSlashMenuItems(editor), query)
-          }
+          getItems={getSlashMenuItems}
         />
 
         {/* Shortcut menu for username and custom shortcuts */}
         {shortcutTriggers.map((shortcutTrigger) => (
           <SuggestionMenuController
+            key={shortcutTrigger}
             triggerCharacter={shortcutTrigger}
-            getItems={async (query) => {
-              const items = [
-                ...getDefaultShortcutMenuItem(editor, !!isDefaultEditor),
-                ...getSystemShortcutsMenuItems(editor),
-                ...(showCustomShortcuts
-                  ? getCustomShortcutsMenuItems(editor, customShortcuts)
-                  : []),
-                ...getUsernameShortcutsMenuItems(editor, usernameShortcuts),
-              ];
-              return filterShortcutMenuItems(items, query);
-            }}
+            getItems={getShortcutMenuItems}
           />
         ))}
       </BlockNoteView>

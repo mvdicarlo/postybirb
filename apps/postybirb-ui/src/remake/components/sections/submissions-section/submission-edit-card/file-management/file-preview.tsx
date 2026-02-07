@@ -6,6 +6,7 @@ import { Image } from '@mantine/core';
 import { FileType, ISubmissionFileDto } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { IconFileText, IconFileUnknown } from '@tabler/icons-react';
+import { memo } from 'react';
 import { defaultTargetProvider } from '../../../../../../transports/http-client';
 
 interface FilePreviewProps {
@@ -13,7 +14,7 @@ interface FilePreviewProps {
   size?: number;
 }
 
-export function FilePreview({ file, size = 80 }: FilePreviewProps) {
+export const FilePreview = memo(({ file, size = 80 }: FilePreviewProps) => {
   const { fileName, id, hash } = file;
   const fileType = getFileType(fileName);
   const src = `${defaultTargetProvider()}/api/file/file/${id}?${hash}`;
@@ -80,7 +81,7 @@ export function FilePreview({ file, size = 80 }: FilePreviewProps) {
         />
       );
   }
-}
+});
 
 /**
  * ThumbnailPreview - Preview for thumbnail image.
@@ -90,7 +91,7 @@ interface ThumbnailPreviewProps {
   size?: number;
 }
 
-export function ThumbnailPreview({ file, size = 60 }: ThumbnailPreviewProps) {
+export const ThumbnailPreview = memo(({ file, size = 60 }: ThumbnailPreviewProps) => {
   if (!file.hasThumbnail || !file.thumbnailId) {
     return null;
   }
@@ -109,4 +110,4 @@ export function ThumbnailPreview({ file, size = 60 }: ThumbnailPreviewProps) {
       src={src}
     />
   );
-}
+});

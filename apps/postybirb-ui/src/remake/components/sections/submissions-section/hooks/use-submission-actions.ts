@@ -5,7 +5,7 @@
 
 import { ISubmissionScheduleInfo, IWebsiteFormFields } from '@postybirb/types';
 import { useMemo } from 'react';
-import { useSubmissionsContext } from '../context';
+import { useSubmissionsActions } from '../context';
 
 /**
  * Bound action handlers for a single submission.
@@ -55,7 +55,7 @@ export interface BoundSubmissionActions {
 export function useSubmissionActions(
   submissionId: string,
 ): BoundSubmissionActions {
-  const context = useSubmissionsContext();
+  const context = useSubmissionsActions();
 
   return useMemo<BoundSubmissionActions>(
     () => ({

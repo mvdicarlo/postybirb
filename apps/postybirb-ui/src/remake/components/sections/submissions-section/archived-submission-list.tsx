@@ -11,7 +11,7 @@ import { SubmissionRecord, useArchivedSubmissions } from '../../../stores';
 import { useIsCompactView } from '../../../stores/ui/appearance-store';
 import { useSubmissionsFilter } from '../../../stores/ui/submissions-ui-store';
 import { EmptyState } from '../../empty-state';
-import { useSubmissionsContext } from './context';
+import { useSubmissionsData } from './context';
 import { ArchivedSubmissionCard } from './submission-card/archived-submission-card';
 import { SubmissionHistoryDrawer } from './submission-history-drawer';
 import './submissions-section.css';
@@ -27,7 +27,7 @@ interface ArchivedSubmissionListProps {
 export function ArchivedSubmissionList({
   submissionType,
 }: ArchivedSubmissionListProps) {
-  const { selectedIds } = useSubmissionsContext();
+  const { selectedIds } = useSubmissionsData();
   const { searchQuery } = useSubmissionsFilter(submissionType);
   const [debouncedSearch] = useDebouncedValue(searchQuery, 300);
   const archivedSubmissions = useArchivedSubmissions();

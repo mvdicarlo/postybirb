@@ -5,16 +5,16 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-  ActionIcon,
-  Badge,
-  Box,
-  Divider,
-  FileButton,
-  Group,
-  Image,
-  Stack,
-  Text,
-  Tooltip,
+    ActionIcon,
+    Badge,
+    Box,
+    Divider,
+    FileButton,
+    Group,
+    Image,
+    Stack,
+    Text,
+    Tooltip,
 } from '@mantine/core';
 import { FileWithPath } from '@mantine/dropzone';
 import { FileType, ISubmissionFileDto, SubmissionId } from '@postybirb/types';
@@ -22,13 +22,13 @@ import { getFileType } from '@postybirb/utils/file-type';
 import { IconCrop, IconFileUpload, IconReplace } from '@tabler/icons-react';
 import { useState } from 'react';
 import fileSubmissionApi, {
-  FileUpdateTarget,
+    FileUpdateTarget,
 } from '../../../../../api/file-submission.api';
 import { defaultTargetProvider } from '../../../../../transports/http-client';
 import {
-  showErrorNotification,
-  showErrorWithContext,
-  showErrorWithTitleNotification,
+    showErrorNotification,
+    showErrorWithContext,
+    showErrorWithTitleNotification,
 } from '../../../../../utils/notifications';
 import { ImageEditor } from '../../file-submission-modal/image-editor';
 import { FilePreview } from './file-preview';
@@ -278,8 +278,8 @@ function ThumbnailDisplay({ file }: { file: ISubmissionFileDto }) {
     );
   }
 
-  // Use thumbnail endpoint with cache-busting
-  const src = `${defaultTargetProvider()}/api/file/thumbnail/${file.id}?${Date.now()}`;
+  // Use file hash for cache-busting — stable across renders, changes when content updates
+  const src = `${defaultTargetProvider()}/api/file/thumbnail/${file.id}?${file.hash}`;
 
   return (
     <Image

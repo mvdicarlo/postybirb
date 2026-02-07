@@ -7,17 +7,10 @@ import submissionApi from '../../../../api/submission.api';
 import { useNavigationStore } from '../../../../stores/ui/navigation-store';
 import { type ViewState } from '../../../../types/view-state';
 import {
-  showDeletedNotification,
-  showDeleteErrorNotification,
+    showDeletedNotification,
+    showDeleteErrorNotification,
 } from '../../../../utils/notifications';
 import { isSubmissionsViewState } from '../types';
-
-interface UseSubmissionDeleteProps {
-  /** Current view state */
-  viewState: ViewState;
-  /** Currently selected IDs */
-  selectedIds: string[];
-}
 
 interface UseSubmissionDeleteResult {
   /** Handle deleting a submission */
@@ -28,14 +21,12 @@ interface UseSubmissionDeleteResult {
 
 /**
  * Hook for handling submission deletion.
+ * Reads viewState at call time via getState() for stable callbacks.
  */
-export function useSubmissionDelete({
-  viewState,
-  selectedIds,
-}: UseSubmissionDeleteProps): UseSubmissionDeleteResult {
+export function useSubmissionDelete(): UseSubmissionDeleteResult {
   const setViewState = useNavigationStore((state) => state.setViewState);
 
-  // Handle deleting a submission
+  // Handle deleting a submission — reads state at call time
   const handleDelete = useCallback(
     async (id: string) => {
       try {
@@ -43,45 +34,51 @@ export function useSubmissionDelete({
         showDeletedNotification(1);
 
         // Remove from selection if selected
-        if (isSubmissionsViewState(viewState) && selectedIds.includes(id)) {
-          setViewState({
-            ...viewState,
-            params: {
-              ...viewState.params,
-              selectedIds: selectedIds.filter((sid) => sid !== id),
-            },
-          } as ViewState);
+        const currentViewState = useNavigationStore.getState().viewState;
+        if (isSubmissionsViewState(currentViewState)) {
+          const currentSelectedIds = currentViewState.params.selectedIds;
+          if (currentSelectedIds.includes(id)) {
+            setViewState({
+              ...currentViewState,
+              params: {
+                ...currentViewState.params,
+                selectedIds: currentSelectedIds.filter((sid) => sid !== id),
+              },
+            } as ViewState);
+          }
         }
       } catch {
         showDeleteErrorNotification();
       }
     },
-    [viewState, selectedIds, setViewState],
+    [setViewState],
   );
 
-  // Handle deleting all selected submissions
+  // Handle deleting all selected submissions — reads state at call time
   const handleDeleteSelected = useCallback(async () => {
-    if (selectedIds.length === 0) return;
+    const currentViewState = useNavigationStore.getState().viewState;
+    if (!isSubmissionsViewState(currentViewState)) return;
+
+    const currentSelectedIds = currentViewState.params.selectedIds;
+    if (currentSelectedIds.length === 0) return;
 
     try {
-      await submissionApi.remove(selectedIds);
-      showDeletedNotification(selectedIds.length);
+      await submissionApi.remove(currentSelectedIds);
+      showDeletedNotification(currentSelectedIds.length);
 
       // Clear selection
-      if (isSubmissionsViewState(viewState)) {
-        setViewState({
-          ...viewState,
-          params: {
-            ...viewState.params,
-            selectedIds: [],
-            mode: 'single',
-          },
-        } as ViewState);
-      }
+      setViewState({
+        ...currentViewState,
+        params: {
+          ...currentViewState.params,
+          selectedIds: [],
+          mode: 'single',
+        },
+      } as ViewState);
     } catch {
       showDeleteErrorNotification();
     }
-  }, [selectedIds, viewState, setViewState]);
+  }, [setViewState]);
 
   return {
     handleDelete,

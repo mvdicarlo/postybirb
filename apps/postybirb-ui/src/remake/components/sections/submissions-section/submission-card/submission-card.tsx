@@ -7,10 +7,10 @@
 import { Box, Card, Checkbox, Group, Stack, Text } from '@mantine/core';
 import { PostRecordState, SubmissionType } from '@postybirb/types';
 import { IconClock, IconGripVertical } from '@tabler/icons-react';
-import { useCallback, useMemo } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { useLocale } from '../../../../hooks';
 import { cn } from '../../../../utils/class-names';
-import { useSubmissionsContext } from '../context';
+import { useSubmissionsActions } from '../context';
 import { useSubmissionActions } from '../hooks';
 import '../submissions-section.css';
 import { SubmissionActions } from './submission-actions';
@@ -25,7 +25,7 @@ import { getThumbnailUrl } from './utils';
  * Card component for displaying a submission in the section list.
  * Actions are provided via SubmissionsContext.
  */
-export function SubmissionCard({
+export const SubmissionCard = memo(({
   submission,
   submissionType,
   isSelected = false,
@@ -33,8 +33,8 @@ export function SubmissionCard({
   isCompact = false,
   className,
   dragHandleListeners,
-}: SubmissionCardProps) {
-  const { onSelect } = useSubmissionsContext();
+}: SubmissionCardProps) => {
+  const { onSelect } = useSubmissionsActions();
   const { formatRelativeTime, formatDateTime } = useLocale();
   const {
     handleDelete,
@@ -290,4 +290,4 @@ export function SubmissionCard({
   );
 
   return cardContent;
-}
+});

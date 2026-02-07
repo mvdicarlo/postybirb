@@ -7,14 +7,14 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { useShallow } from 'zustand/react/shallow';
 import {
-    createAccountsViewState,
-    createFileSubmissionsViewState,
-    createHomeViewState,
-    createMessageSubmissionsViewState,
-    createTemplatesViewState,
-    defaultViewState,
-    type SectionId,
-    type ViewState,
+  createAccountsViewState,
+  createFileSubmissionsViewState,
+  createHomeViewState,
+  createMessageSubmissionsViewState,
+  createTemplatesViewState,
+  defaultViewState,
+  type SectionId,
+  type ViewState,
 } from '../../types/view-state';
 import { useAccountStore } from '../entity/account-store';
 import { useSubmissionStore } from '../entity/submission-store';
@@ -342,13 +342,13 @@ export const useViewStateActions = () =>
     })),
   );
 
-/** Select navigation history actions */
+/** Select navigation history actions — useShallow required because selector returns an object literal */
 export const useNavigationHistory = () =>
   useNavigationStore(
     useShallow((state) => ({
       goBack: state.goBack,
       goForward: state.goForward,
-    })),
+    }))
   );
 
 /** Check if navigation can go back */

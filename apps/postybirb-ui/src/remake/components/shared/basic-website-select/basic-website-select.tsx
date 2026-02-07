@@ -1,11 +1,23 @@
 import { ComboboxItemGroup, MultiSelect } from '@mantine/core';
 import { AccountId, IAccountDto } from '@postybirb/types';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import {
-  groupAccountsByWebsite,
-  useAccounts,
+    groupAccountsByWebsite,
+    useAccounts,
 } from '../../../stores/entity/account-store';
 import { AccountRecord } from '../../../stores/records';
+
+const mapRecordToDto = (record: AccountRecord): IAccountDto => ({
+  id: record.id,
+  name: record.name,
+  website: record.website,
+  groups: record.groups,
+  state: record.state,
+  data: record.data,
+  websiteInfo: record.websiteInfo,
+  createdAt: record.createdAt.toISOString(),
+  updatedAt: record.updatedAt.toISOString(),
+});
 
 type WebsiteSelectProps = {
   selected: AccountId[];
@@ -17,18 +29,12 @@ type WebsiteSelectProps = {
 export function BasicWebsiteSelect(props: WebsiteSelectProps) {
   const { selected, size, label, onSelect } = props;
   const accounts = useAccounts();
-  const [value, setValue] = useState<string[]>(selected);
 
   // Memoize grouped accounts to avoid re-creating Map on every render
   const accountsByWebsite = useMemo(
     () => groupAccountsByWebsite(accounts),
     [accounts],
   );
-
-  // Sync value with selected prop when it changes externally
-  useEffect(() => {
-    setValue(selected);
-  }, [selected]);
 
   // Build options grouped by website display name
   // Format: "[WebsiteName] AccountName" for tags
@@ -59,18 +65,6 @@ export function BasicWebsiteSelect(props: WebsiteSelectProps) {
     return groups;
   }, [accountsByWebsite]);
 
-  const mapRecordToDto = (record: AccountRecord): IAccountDto => ({
-    id: record.id,
-    name: record.name,
-    website: record.website,
-    groups: record.groups,
-    state: record.state,
-    data: record.data,
-    websiteInfo: record.websiteInfo,
-    createdAt: record.createdAt.toISOString(),
-    updatedAt: record.updatedAt.toISOString(),
-  });
-
   return (
     <MultiSelect
       className="postybirb__b-website-select"
@@ -79,9 +73,8 @@ export function BasicWebsiteSelect(props: WebsiteSelectProps) {
       clearable
       searchable
       data={options}
-      value={value}
+      value={selected}
       onChange={(newValue) => {
-        setValue(newValue);
         const selectedAccounts = accounts
           .filter((a: AccountRecord) => newValue.includes(a.id))
           .map(mapRecordToDto);
