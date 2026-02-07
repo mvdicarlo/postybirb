@@ -154,6 +154,9 @@ export default class Tumblr
     // Description is a JSON string of NPF blocks from the NpfConverter
     const npfBlocks = JSON.parse(postData.options.description);
 
+    console.log({ npfBlocks });
+    throw new Error('AaA');
+
     const blogId = postData.options.blog;
 
     // Upload files and add them as NPF media blocks
