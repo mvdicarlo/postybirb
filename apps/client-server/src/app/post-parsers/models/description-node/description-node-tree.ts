@@ -251,12 +251,9 @@ export class DescriptionNodeTree {
 
     if (insertAd) {
       const lastNode = nodes[nodes.length - 1];
-      const isLastNodeSpacing =
-        lastNode &&
-        lastNode.type === 'paragraph' &&
-        lastNode.content.length === 0 &&
-        lastNode.children.length === 0;
+      const isLastNodeSpacing = DescriptionBlockNode.isSpacing(lastNode);
 
+      // Avoid duplicated spacings
       if (!isLastNodeSpacing) {
         nodes.push(new DescriptionBlockNode(this.spacing));
       }
