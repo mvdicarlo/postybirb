@@ -411,12 +411,12 @@ const ConverterCard = memo(({
   websites,
   websiteMap,
 }: {
-  converter: TRecord;
+  converter: ConverterRecord;
   isSelected: boolean;
   onSelect: (id: string, selected: boolean) => void;
   isExpanded: boolean;
   onToggleExpand: (id: string) => void;
-  config: ConverterDrawerConfig<TRecord, TCreateDto, TUpdateDto>;
+  config: ConverterDrawerConfig<ConverterRecord, unknown, unknown>;
   websites: WebsiteRecord[];
   websiteMap: Map<string, string>;
 }) => {
