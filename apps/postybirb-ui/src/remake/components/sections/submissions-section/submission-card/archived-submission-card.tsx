@@ -20,16 +20,16 @@ import {
     IconHistory,
     IconTrash
 } from '@tabler/icons-react';
-import { useCallback, useMemo } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import submissionApi from '../../../../api/submission.api';
 import { useLocale } from '../../../../hooks';
 import {
-  showDeletedNotification,
-  showDeleteErrorNotification,
-  showRestoredNotification,
-  showRestoreErrorNotification,
+    showDeletedNotification,
+    showDeleteErrorNotification,
+    showRestoredNotification,
+    showRestoreErrorNotification,
 } from '../../../../utils/notifications';
-import { useSubmissionsContext } from '../context';
+import { useSubmissionsActions } from '../context';
 import { SubmissionBadges } from './submission-badges';
 import { SubmissionThumbnail } from './submission-thumbnail';
 import { SubmissionTitle } from './submission-title';
@@ -49,7 +49,7 @@ interface ArchivedSubmissionCardProps extends Omit<
 /**
  * Card component for archived submissions with limited actions.
  */
-export function ArchivedSubmissionCard({
+export const ArchivedSubmissionCard = memo(function ArchivedSubmissionCard({
   submission,
   submissionType,
   isSelected = false,
@@ -57,7 +57,7 @@ export function ArchivedSubmissionCard({
   className,
   onViewHistory,
 }: ArchivedSubmissionCardProps) {
-  const { onSelect } = useSubmissionsContext();
+  const { onSelect } = useSubmissionsActions();
   const { formatRelativeTime, formatDateTime } = useLocale();
   const thumbnailUrl = getThumbnailUrl(submission);
 
@@ -260,4 +260,4 @@ export function ArchivedSubmissionCard({
       </Stack>
     </Card>
   );
-}
+});

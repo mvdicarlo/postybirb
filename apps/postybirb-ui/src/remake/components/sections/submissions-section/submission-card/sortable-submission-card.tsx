@@ -5,7 +5,7 @@
 
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { CSSProperties, forwardRef } from 'react';
+import { CSSProperties, forwardRef, memo } from 'react';
 import { SubmissionCard } from './submission-card';
 import type { SubmissionCardProps } from './types';
 
@@ -20,7 +20,7 @@ export interface SortableSubmissionCardProps extends SubmissionCardProps {
  * Sortable wrapper for SubmissionCard using dnd-kit.
  * When dragging is disabled, renders SubmissionCard directly without sortable overhead.
  */
-export const SortableSubmissionCard = forwardRef<
+export const SortableSubmissionCard = memo(forwardRef<
   HTMLDivElement,
   SortableSubmissionCardProps
 >(
@@ -72,4 +72,4 @@ export const SortableSubmissionCard = forwardRef<
         />
     </div>
   );
-});
+}));

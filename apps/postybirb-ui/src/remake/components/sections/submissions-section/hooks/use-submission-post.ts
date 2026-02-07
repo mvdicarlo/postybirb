@@ -12,11 +12,6 @@ import { type ViewState } from '../../../../types/view-state';
 import { showPostErrorNotification } from '../../../../utils/notifications';
 import { isSubmissionsViewState } from '../types';
 
-interface UseSubmissionPostProps {
-  /** Current view state */
-  viewState: ViewState;
-}
-
 interface UseSubmissionPostResult {
   /** Handle posting a submission */
   handlePost: (id: string) => Promise<void>;
@@ -34,22 +29,20 @@ interface UseSubmissionPostResult {
 
 /**
  * Hook for handling submission posting.
+ * Reads store state at call time via getState() for stable callbacks.
  */
-export function useSubmissionPost({
-  viewState,
-}: UseSubmissionPostProps): UseSubmissionPostResult {
+export function useSubmissionPost(): UseSubmissionPostResult {
   const setViewState = useNavigationStore((state) => state.setViewState);
-  const submissionsMap = useSubmissionStore((state) => state.recordsMap);
   const [pendingResumeSubmissionId, setPendingResumeSubmissionId] = useState<
     string | null
   >(null);
 
-  // Handle posting a submission
+  // Handle posting a submission — reads submissionsMap at call time
   const handlePost = useCallback(
     async (id: string) => {
       try {
         // Get the submission to check if last post failed
-        const submission = submissionsMap.get(id);
+        const submission = useSubmissionStore.getState().recordsMap.get(id);
 
         if (!submission) {
           showPostErrorNotification();
@@ -73,7 +66,7 @@ export function useSubmissionPost({
         showPostErrorNotification();
       }
     },
-    [submissionsMap],
+    [],
   );
 
   // Cancel resume mode selection
@@ -106,8 +99,7 @@ export function useSubmissionPost({
     }
   }, []);
 
-  // Handle posting submissions in the specified order
-  // The orderedIds are pre-filtered to only include valid submissions
+  // Handle posting submissions in the specified order — reads viewState at call time
   const handlePostSelected = useCallback(
     async (orderedIds: string[], resumeMode?: PostRecordResumeMode) => {
       if (orderedIds.length === 0) return;
@@ -116,11 +108,12 @@ export function useSubmissionPost({
         await postQueueApi.enqueue(orderedIds, resumeMode);
 
         // Clear selection after posting
-        if (isSubmissionsViewState(viewState)) {
+        const currentViewState = useNavigationStore.getState().viewState;
+        if (isSubmissionsViewState(currentViewState)) {
           setViewState({
-            ...viewState,
+            ...currentViewState,
             params: {
-              ...viewState.params,
+              ...currentViewState.params,
               selectedIds: [],
               mode: 'single',
             },
@@ -130,7 +123,7 @@ export function useSubmissionPost({
         showPostErrorNotification();
       }
     },
-    [viewState, setViewState]
+    [setViewState]
   );
 
   return {

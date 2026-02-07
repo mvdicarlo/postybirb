@@ -4,15 +4,14 @@
  */
 
 import {
-  ISubmissionScheduleInfo,
-  IWebsiteFormFields,
-  PostRecordResumeMode,
-  SubmissionType,
+    ISubmissionScheduleInfo,
+    IWebsiteFormFields,
+    PostRecordResumeMode,
+    SubmissionType,
 } from '@postybirb/types';
-import { type ViewState } from '../../../../types/view-state';
 import {
-  FileSubmissionUploadParams,
-  useSubmissionCreate,
+    FileSubmissionUploadParams,
+    useSubmissionCreate,
 } from './use-submission-create';
 import { useSubmissionDelete } from './use-submission-delete';
 import { useSubmissionPost } from './use-submission-post';
@@ -22,10 +21,6 @@ import { useSubmissionUpdate } from './use-submission-update';
 export type { FileSubmissionUploadParams };
 
 interface UseSubmissionHandlersProps {
-  /** Current view state */
-  viewState: ViewState;
-  /** Currently selected IDs */
-  selectedIds: string[];
   /** Type of submissions (FILE or MESSAGE) */
   submissionType: SubmissionType;
 }
@@ -89,8 +84,6 @@ interface UseSubmissionHandlersResult {
  * Composes useSubmissionCreate, useSubmissionDelete, useSubmissionPost, and useSubmissionUpdate.
  */
 export function useSubmissionHandlers({
-  viewState,
-  selectedIds,
   submissionType,
 }: UseSubmissionHandlersProps): UseSubmissionHandlersResult {
   // Compose smaller hooks
@@ -105,10 +98,7 @@ export function useSubmissionHandlers({
     handleFileChange,
   } = useSubmissionCreate({ submissionType });
 
-  const { handleDelete, handleDeleteSelected } = useSubmissionDelete({
-    viewState,
-    selectedIds,
-  });
+  const { handleDelete, handleDeleteSelected } = useSubmissionDelete();
 
   const {
     handlePost,
@@ -117,9 +107,7 @@ export function useSubmissionHandlers({
     pendingResumeSubmissionId,
     cancelResume,
     confirmResume,
-  } = useSubmissionPost({
-    viewState,
-  });
+  } = useSubmissionPost();
 
   const {
     handleDuplicate,
@@ -127,9 +115,7 @@ export function useSubmissionHandlers({
     handleEdit,
     handleDefaultOptionChange,
     handleScheduleChange,
-  } = useSubmissionUpdate({
-    viewState,
-  });
+  } = useSubmissionUpdate();
 
   return {
     fileInputRef,

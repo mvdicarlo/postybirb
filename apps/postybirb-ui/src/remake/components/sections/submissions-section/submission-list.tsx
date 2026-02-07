@@ -6,21 +6,21 @@
  */
 
 import {
-  closestCenter,
-  DndContext,
-  DragEndEvent,
-  DragOverlay,
-  DragStartEvent,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
+    closestCenter,
+    DndContext,
+    DragEndEvent,
+    DragOverlay,
+    DragStartEvent,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
 } from '@dnd-kit/core';
 import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { Box, Loader, ScrollArea } from '@mantine/core';
 import { useVirtualizer } from '@tanstack/react-virtual';
@@ -29,7 +29,7 @@ import submissionApi from '../../../api/submission.api';
 import type { SubmissionRecord } from '../../../stores/records';
 import { useIsCompactView } from '../../../stores/ui/appearance-store';
 import { EmptyState } from '../../empty-state';
-import { useSubmissionsContext } from './context';
+import { useSubmissionsData } from './context';
 import { SortableSubmissionCard, SubmissionCard } from './submission-card';
 import './submissions-section.css';
 import { DRAGGABLE_SUBMISSION_CLASS } from './types';
@@ -60,7 +60,7 @@ export function SubmissionList({
   onReorder,
 }: SubmissionListProps) {
   const { submissionType, selectedIds, isDragEnabled } =
-    useSubmissionsContext();
+    useSubmissionsData();
   const isCompact = useIsCompactView();
 
   // Ref for the Mantine ScrollArea viewport - used for virtualization

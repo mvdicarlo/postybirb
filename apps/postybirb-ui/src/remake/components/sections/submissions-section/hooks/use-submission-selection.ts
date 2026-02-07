@@ -2,7 +2,7 @@
  * Hook for managing submission selection with multi-select support.
  */
 
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { SubmissionRecord } from '../../../../stores/records';
 import { useNavigationStore } from '../../../../stores/ui/navigation-store';
 import { type ViewState } from '../../../../types/view-state';
@@ -53,6 +53,12 @@ export function useSubmissionSelection({
   // Track the last selected item for shift+click range selection
   const lastSelectedIdRef = useRef<string | null>(null);
 
+  // Keep a ref to orderedSubmissions so callbacks can read current value without re-creating
+  const orderedSubmissionsRef = useRef(orderedSubmissions);
+  useEffect(() => {
+    orderedSubmissionsRef.current = orderedSubmissions;
+  }, [orderedSubmissions]);
+
   // Compute selection state for the header checkbox
   const selectionState: SelectionState = useMemo(() => {
     if (selectedIds.length === 0) return 'none';
@@ -64,30 +70,34 @@ export function useSubmissionSelection({
     return 'partial';
   }, [selectedIds.length, orderedSubmissions.length]);
 
-  // Update view state with new selection
+  // Update view state with new selection — reads viewState at call time for stability
   const updateSelection = useCallback(
     (newSelectedIds: string[]) => {
-      if (!isSubmissionsViewState(viewState)) return;
+      const currentViewState = useNavigationStore.getState().viewState;
+      if (!isSubmissionsViewState(currentViewState)) return;
 
       const newParams = {
-        ...viewState.params,
+        ...currentViewState.params,
         selectedIds: newSelectedIds,
         mode: newSelectedIds.length > 1 ? 'multi' : 'single',
       };
 
       setViewState({
-        ...viewState,
+        ...currentViewState,
         params: newParams,
       } as ViewState);
     },
-    [viewState, setViewState],
+    [setViewState],
   );
 
-  // Handle selecting a submission
+  // Handle selecting a submission — reads viewState and orderedSubmissions at call time
   const handleSelect = useCallback(
     (id: string, event: React.MouseEvent | React.KeyboardEvent, isCheckbox = false) => {
-      if (!isSubmissionsViewState(viewState)) return;
+      const currentViewState = useNavigationStore.getState().viewState;
+      if (!isSubmissionsViewState(currentViewState)) return;
 
+      const currentSelectedIds = currentViewState.params.selectedIds;
+      const submissions = orderedSubmissionsRef.current;
       let newSelectedIds: string[];
 
       // If no anchor exists yet, set it to the clicked item
@@ -97,21 +107,21 @@ export function useSubmissionSelection({
 
       if (event.shiftKey) {
         // Shift+click: select range from anchor to current
-        const anchorIndex = orderedSubmissions.findIndex(
+        const anchorIndex = submissions.findIndex(
           (s) => s.id === lastSelectedIdRef.current,
         );
-        const currentIndex = orderedSubmissions.findIndex((s) => s.id === id);
+        const currentIndex = submissions.findIndex((s) => s.id === id);
 
         if (anchorIndex !== -1 && currentIndex !== -1) {
           const startIndex = Math.min(anchorIndex, currentIndex);
           const endIndex = Math.max(anchorIndex, currentIndex);
-          const rangeIds = orderedSubmissions
+          const rangeIds = submissions
             .slice(startIndex, endIndex + 1)
             .map((s) => s.id);
 
           // Merge with existing selection if Ctrl is also held
           if (event.ctrlKey || event.metaKey) {
-            const combined = new Set([...selectedIds, ...rangeIds]);
+            const combined = new Set([...currentSelectedIds, ...rangeIds]);
             newSelectedIds = [...combined];
           } else {
             newSelectedIds = rangeIds;
@@ -125,10 +135,10 @@ export function useSubmissionSelection({
       } else if (event.ctrlKey || event.metaKey || isCheckbox) {
         // Toggle selection with Ctrl/Cmd click OR checkbox click
         // Checkbox clicks should always toggle, not replace selection
-        if (selectedIds.includes(id)) {
-          newSelectedIds = selectedIds.filter((sid: string) => sid !== id);
+        if (currentSelectedIds.includes(id)) {
+          newSelectedIds = currentSelectedIds.filter((sid: string) => sid !== id);
         } else {
-          newSelectedIds = [...selectedIds, id];
+          newSelectedIds = [...currentSelectedIds, id];
         }
         // Update anchor on ctrl-click/checkbox to enable shift-extending from this item
         lastSelectedIdRef.current = id;
@@ -140,18 +150,25 @@ export function useSubmissionSelection({
 
       updateSelection(newSelectedIds);
     },
-    [viewState, orderedSubmissions, selectedIds, updateSelection],
+    [updateSelection],
   );
 
-  // Handle toggling select all/none
+  // Handle toggling select all/none — reads current state at call time
   const handleToggleSelectAll = useCallback(() => {
-    const newSelectedIds =
-      selectionState === 'all'
-        ? [] // Deselect all
-        : orderedSubmissions.map((s) => s.id); // Select all
+    const currentViewState = useNavigationStore.getState().viewState;
+    if (!isSubmissionsViewState(currentViewState)) return;
+
+    const currentSelectedIds = currentViewState.params.selectedIds;
+    const submissions = orderedSubmissionsRef.current;
+    const isAllSelected =
+      currentSelectedIds.length === submissions.length && submissions.length > 0;
+
+    const newSelectedIds = isAllSelected
+      ? [] // Deselect all
+      : submissions.map((s) => s.id); // Select all
 
     updateSelection(newSelectedIds);
-  }, [selectionState, orderedSubmissions, updateSelection]);
+  }, [updateSelection]);
 
   // Set selected IDs programmatically
   const setSelectedIds = useCallback(

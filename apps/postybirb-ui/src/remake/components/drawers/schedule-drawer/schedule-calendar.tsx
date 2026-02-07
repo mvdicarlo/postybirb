@@ -11,22 +11,22 @@ import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import { Trans } from '@lingui/react/macro';
 import {
-    Badge,
-    Button,
-    Divider,
-    Group,
-    Modal,
-    Stack,
-    Text,
-    ThemeIcon,
+  Badge,
+  Button,
+  Divider,
+  Group,
+  Modal,
+  Stack,
+  Text,
+  ThemeIcon,
 } from '@mantine/core';
 import { ScheduleType, SubmissionType } from '@postybirb/types';
 import {
-    IconCalendarOff,
-    IconCalendarTime,
-    IconClock,
-    IconFile,
-    IconMessage,
+  IconCalendarOff,
+  IconCalendarTime,
+  IconClock,
+  IconFile,
+  IconMessage,
 } from '@tabler/icons-react';
 import Cron from 'croner';
 import moment from 'moment';
@@ -35,9 +35,9 @@ import submissionApi from '../../../api/submission.api';
 import { useLocale } from '../../../hooks';
 import { useSubmissionsWithSchedule } from '../../../stores/entity/submission-store';
 import {
-    showInfoNotification,
-    showScheduleUpdatedNotification,
-    showUpdateErrorNotification,
+  showInfoNotification,
+  showScheduleUpdatedNotification,
+  showUpdateErrorNotification,
 } from '../../../utils/notifications';
 
 /**

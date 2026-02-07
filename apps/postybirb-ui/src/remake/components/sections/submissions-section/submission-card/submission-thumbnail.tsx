@@ -5,6 +5,7 @@
 
 import { Box, HoverCard, Image, Indicator } from '@mantine/core';
 import { IconFile } from '@tabler/icons-react';
+import { memo } from 'react';
 import '../submissions-section.css';
 
 interface SubmissionThumbnailProps {
@@ -23,7 +24,7 @@ interface SubmissionThumbnailProps {
  * Shows the thumbnail image or a placeholder icon.
  * Optionally wraps in a HoverCard for image preview on hover.
  */
-export function SubmissionThumbnail({
+export const SubmissionThumbnail = memo(function SubmissionThumbnail({
   thumbnailUrl,
   alt,
   canPreview = false,
@@ -72,4 +73,4 @@ export function SubmissionThumbnail({
   }
 
   return thumbnailBox;
-}
+});

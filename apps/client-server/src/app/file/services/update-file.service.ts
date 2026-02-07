@@ -66,6 +66,10 @@ export class UpdateFileService {
       }
     });
 
+    // Notify subscribers so SubmissionService emits a websocket update
+    this.fileRepository.forceNotify([submissionFileId], 'update');
+    this.fileBufferRepository.forceNotify([submissionFileId], 'update');
+
     // return the latest
     return this.findFile(submissionFileId);
   }
@@ -107,6 +111,11 @@ export class UpdateFileService {
         .where(eq(this.fileBufferRepository.schemaEntity.id, thumbnailId));
     }
 
+    // Recompute hash from thumbnail buffer so the frontend cache-buster updates
+    const thumbnailHash = await hash(thumbnailDetails.buffer, {
+      algorithm: 'sha256',
+    });
+
     await ctx
       .getDb()
       .update(this.fileRepository.schemaEntity)
@@ -114,6 +123,7 @@ export class UpdateFileService {
         thumbnailId,
         hasCustomThumbnail: true,
         hasThumbnail: true,
+        hash: thumbnailHash,
       })
       .where(eq(this.fileRepository.schemaEntity.id, submissionFile.id));
   }

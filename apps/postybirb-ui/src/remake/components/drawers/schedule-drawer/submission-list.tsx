@@ -6,13 +6,13 @@
 import { Draggable } from '@fullcalendar/interaction';
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
-    Box,
-    Group,
-    ScrollArea,
-    Stack,
-    Text,
-    TextInput,
-    ThemeIcon,
+  Box,
+  Group,
+  ScrollArea,
+  Stack,
+  Text,
+  TextInput,
+  ThemeIcon,
 } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import { SubmissionType } from '@postybirb/types';

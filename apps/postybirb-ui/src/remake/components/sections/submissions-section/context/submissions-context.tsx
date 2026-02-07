@@ -1,6 +1,7 @@
 /**
- * SubmissionsContext - Provides submission data and actions to child components.
- * Eliminates prop drilling by making handlers and state available via context.
+ * SubmissionsContext - Split into Data and Actions contexts for performance.
+ * Data context changes on selection; Actions context is stable across selections.
+ * This prevents action-only consumers (cards) from re-rendering on every selection change.
  */
 
 import {
@@ -11,22 +12,23 @@ import {
 import { createContext, ReactNode, useContext, useMemo } from 'react';
 
 /**
- * Shape of the submissions context value
+ * Data portion of submissions context — changes frequently (e.g. on selection).
  */
-export interface SubmissionsContextValue {
-  // Data
+export interface SubmissionsDataValue {
   /** The type of submissions being displayed */
   submissionType: SubmissionType;
   /** Currently selected submission IDs */
   selectedIds: string[];
   /** Whether drag-to-reorder is enabled */
   isDragEnabled: boolean;
+}
 
-  // Selection
+/**
+ * Actions portion of submissions context — stable across selection changes.
+ */
+export interface SubmissionsActionsValue {
   /** Handle selection of a submission (supports shift+click for range, ctrl+click toggle, checkbox toggle) */
   onSelect: (id: string, event: React.MouseEvent | React.KeyboardEvent, isCheckbox?: boolean) => void;
-
-  // Actions
   /** Delete a submission */
   onDelete: (id: string) => void;
   /** Duplicate a submission */
@@ -51,31 +53,39 @@ export interface SubmissionsContextValue {
   ) => void;
 }
 
-const SubmissionsContext = createContext<SubmissionsContextValue | null>(null);
+const SubmissionsDataContext = createContext<SubmissionsDataValue | null>(null);
+const SubmissionsActionsContext = createContext<SubmissionsActionsValue | null>(null);
 
 /**
- * Hook to access the submissions context.
- * Must be used within a SubmissionsProvider.
+ * Hook to access submission data (selectedIds, submissionType, isDragEnabled).
+ * Re-renders when data changes (e.g. selection).
  * @throws Error if used outside of SubmissionsProvider
  */
-export function useSubmissionsContext(): SubmissionsContextValue {
-  const context = useContext(SubmissionsContext);
+export function useSubmissionsData(): SubmissionsDataValue {
+  const context = useContext(SubmissionsDataContext);
   if (!context) {
-    // Developer error message - not shown to users
     throw new Error(
       // eslint-disable-next-line lingui/no-unlocalized-strings
-      'useSubmissionsContext must be used within a SubmissionsProvider'
+      'useSubmissionsData must be used within a SubmissionsProvider'
     );
   }
   return context;
 }
 
 /**
- * Optional hook that returns undefined if not within a provider.
- * Useful for components that can optionally use context.
+ * Hook to access submission action handlers.
+ * Does NOT re-render when selection changes.
+ * @throws Error if used outside of SubmissionsProvider
  */
-export function useSubmissionsContextOptional(): SubmissionsContextValue | null {
-  return useContext(SubmissionsContext);
+export function useSubmissionsActions(): SubmissionsActionsValue {
+  const context = useContext(SubmissionsActionsContext);
+  if (!context) {
+    throw new Error(
+      // eslint-disable-next-line lingui/no-unlocalized-strings
+      'useSubmissionsActions must be used within a SubmissionsProvider'
+    );
+  }
+  return context;
 }
 
 export interface SubmissionsProviderProps {
@@ -114,7 +124,7 @@ export interface SubmissionsProviderProps {
 
 /**
  * Provider component that supplies submission context to children.
- * Wrap submission lists and cards with this to enable context-based access.
+ * Uses two separate contexts so action-only consumers don't re-render on selection changes.
  */
 export function SubmissionsProvider({
   children,
@@ -132,11 +142,17 @@ export function SubmissionsProvider({
   onDefaultOptionChange,
   onScheduleChange,
 }: SubmissionsProviderProps) {
-  const value = useMemo<SubmissionsContextValue>(
+  const dataValue = useMemo<SubmissionsDataValue>(
     () => ({
       submissionType,
       selectedIds,
       isDragEnabled,
+    }),
+    [submissionType, selectedIds, isDragEnabled]
+  );
+
+  const actionsValue = useMemo<SubmissionsActionsValue>(
+    () => ({
       onSelect,
       onDelete,
       onDuplicate,
@@ -149,9 +165,6 @@ export function SubmissionsProvider({
       onScheduleChange,
     }),
     [
-      submissionType,
-      selectedIds,
-      isDragEnabled,
       onSelect,
       onDelete,
       onDuplicate,
@@ -166,8 +179,10 @@ export function SubmissionsProvider({
   );
 
   return (
-    <SubmissionsContext.Provider value={value}>
-      {children}
-    </SubmissionsContext.Provider>
+    <SubmissionsActionsContext.Provider value={actionsValue}>
+      <SubmissionsDataContext.Provider value={dataValue}>
+        {children}
+      </SubmissionsDataContext.Provider>
+    </SubmissionsActionsContext.Provider>
   );
 }

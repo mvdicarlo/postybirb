@@ -29,7 +29,7 @@ import {
   IconTrash,
   IconUser,
 } from '@tabler/icons-react';
-import { useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import accountApi from '../../../api/account.api';
 import type { AccountRecord } from '../../../stores/records';
 import type { WebsiteRecord } from '../../../stores/records/website-record';
@@ -55,8 +55,9 @@ const MAX_ACCOUNT_NAME_LENGTH = 24;
 /**
  * Single account row within a website card.
  * Uses AccountsContext via useAccountActions hook.
+ * Memoized to prevent re-renders when sibling rows or parent card re-renders.
  */
-function AccountRow({ account }: { account: AccountRecord }) {
+const AccountRow = memo(function AccountRow({ account }: { account: AccountRecord }) {
   const {
     isSelected,
     handleSelect,
@@ -72,12 +73,12 @@ function AccountRow({ account }: { account: AccountRecord }) {
   const [isEditingName, setIsEditingName] = useState(false);
   const [editName, setEditName] = useState(account.name);
 
-  const onReset = () => {
+  const onReset = useCallback(() => {
     handleReset();
     closeResetPopover();
-  };
+  }, [handleReset, closeResetPopover]);
 
-  const handleNameBlur = async () => {
+  const handleNameBlur = useCallback(async () => {
     const trimmedName = editName.trim();
 
     // If empty or unchanged, revert to original
@@ -99,21 +100,21 @@ function AccountRow({ account }: { account: AccountRecord }) {
       setEditName(account.name);
       setIsEditingName(false);
     }
-  };
+  }, [editName, account.id, account.name, account.groups]);
 
-  const handleNameKeyDown = (e: React.KeyboardEvent) => {
+  const handleNameKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       (e.target as HTMLInputElement).blur();
     } else if (e.key === 'Escape') {
       setEditName(account.name);
       setIsEditingName(false);
     }
-  };
+  }, [account.name]);
 
-  const handleNameClick = (e: React.MouseEvent) => {
+  const handleNameClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     setIsEditingName(true);
-  };
+  }, []);
 
   return (
     <Group
@@ -267,12 +268,13 @@ function AccountRow({ account }: { account: AccountRecord }) {
       </Group>
     </Group>
   );
-}
+});
 
 /**
  * Compact card for a website showing its accounts.
+ * Memoized to prevent re-renders when sibling cards haven't changed.
  */
-export function WebsiteAccountCard({
+export const WebsiteAccountCard = memo(function WebsiteAccountCard({
   website,
   accounts,
 }: WebsiteAccountCardProps) {
@@ -288,7 +290,7 @@ export function WebsiteAccountCard({
   const loggedInCount = accounts.filter((a) => a.isLoggedIn).length;
   const totalCount = accounts.length;
 
-  const handleCreateAccount = async () => {
+  const handleCreateAccount = useCallback(async () => {
     const trimmedName = newAccountName.trim();
     if (!trimmedName || isCreating) return;
 
@@ -309,16 +311,16 @@ export function WebsiteAccountCard({
     } finally {
       setIsCreating(false);
     }
-  };
+  }, [newAccountName, isCreating, website.id, closeAddPopover, onAccountCreated]);
 
-  const handleAddKeyDown = (e: React.KeyboardEvent) => {
+  const handleAddKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       handleCreateAccount();
     } else if (e.key === 'Escape') {
       setNewAccountName('');
       closeAddPopover();
     }
-  };
+  }, [handleCreateAccount, closeAddPopover]);
 
   return (
     <Paper withBorder radius="sm" p={0}>
@@ -414,4 +416,4 @@ export function WebsiteAccountCard({
       </Collapse>
     </Paper>
   );
-}
+});
