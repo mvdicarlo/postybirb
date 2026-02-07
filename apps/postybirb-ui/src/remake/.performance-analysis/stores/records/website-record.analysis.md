@@ -18,12 +18,12 @@ N/A — plain class.
 None.
 
 ## Potential Issues
-- **`loggedInAccounts` getter filters accounts array on every access** — could be called frequently in account-related views. O(n) per access.
-- **`loggedInCount` calls `loggedInAccounts` which re-filters** — double-filtering if both are accessed.
+- ~~**`loggedInAccounts` getter filters accounts array on every access** — could be called frequently in account-related views. O(n) per access.~~ **Fixed** — cached in constructor.
+- ~~**`loggedInCount` calls `loggedInAccounts` which re-filters** — double-filtering if both are accessed.~~ **Fixed** — reads directly from cached `_loggedInAccounts.length`.
 
 ## Recommendations
-- Cache `loggedInAccounts` in constructor since the record is immutable.
-- Derive `loggedInCount` from the cached value.
+- ~~Cache `loggedInAccounts` in constructor since the record is immutable.~~ **Done.**
+- ~~Derive `loggedInCount` from the cached value.~~ **Done.**
 
 ---
 *Status*: Analyzed

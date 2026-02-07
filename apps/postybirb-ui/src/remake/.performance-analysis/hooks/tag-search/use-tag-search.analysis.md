@@ -20,11 +20,11 @@ Hook for debounced tag searching. Uses `useDebouncedCallback` (300ms) to search 
 - Settings store (via `useSettings` and `useTagSearchProvider`)
 
 ## Potential Issues
-- **`useSettings()` subscribes to the full settings record** — this hook only needs `tagSearchProvider`, but it subscribes to `useSettings()` which re-evaluates on any settings change. The `useTagSearchProvider()` hook already provides this — `useSettings()` may be unused.
+- ~~**`useSettings()` subscribes to the full settings record** — this hook only needs `tagSearchProvider`, but it subscribes to `useSettings()` which re-evaluates on any settings change. The `useTagSearchProvider()` hook already provides this — `useSettings()` may be unused.~~ **Fixed** — removed unused `useSettings()` subscription.
 - **`useEffect` cleanup sets `requestId.current = -1`** — this correctly prevents stale updates, but note that the effect runs on every `searchValue` change, not just unmount. The cleanup of the previous effect sets requestId to -1, but the new effect immediately increments it in `debouncedSearch`. This works but is subtle.
 
 ## Recommendations
-- Remove `useSettings()` if it's not used — it causes unnecessary re-renders. Only `useTagSearchProvider()` is needed.
+- ~~Remove `useSettings()` if it's not used — it causes unnecessary re-renders. Only `useTagSearchProvider()` is needed.~~ **Done.**
 - Otherwise well-structured for a debounced search hook.
 
 ---

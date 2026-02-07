@@ -20,16 +20,16 @@ Zustand entity store for submissions — the most subscribed-to store in the app
 - Subscribes to `SUBMISSION_UPDATES` websocket events.
 
 ## Potential Issues
-- **⚠️ CRITICAL: `useSubmissions` has no `useShallow`** — every component using this (likely submission lists) re-renders on every submission store change.
-- **⚠️ HIGH: Multiple filter hooks all run independently** — if a component uses both `useRegularSubmissions()` and `useScheduledSubmissions()`, both filters + shallow comparisons run on every single store update. With 100+ submissions, that's 200+ comparisons per update per such component.
-- **⚠️ HIGH: `useSubmission(id)` instability** — components displaying individual submission cards that use this hook re-render on every store update, not just when their specific submission changes.
-- **`useSubmissionsMap` has no `useShallow`** — same issue as account store.
+- ~~**⚠️ CRITICAL: `useSubmissions` has no `useShallow`** — every component using this (likely submission lists) re-renders on every submission store change.~~ **Fixed** — `useShallow` added.
+- ~~**⚠️ HIGH: Multiple filter hooks all run independently** — if a component uses both `useRegularSubmissions()` and `useScheduledSubmissions()`, both filters + shallow comparisons run on every single store update.~~ **Mitigated** — upstream `diffRecords` with `submissionHasChanged` now preserves unchanged record references and skips `setState` when nothing changed, so filter hooks short-circuit.
+- ~~**⚠️ HIGH: `useSubmission(id)` instability** — components displaying individual submission cards that use this hook re-render on every store update, not just when their specific submission changes.~~ **Fixed** — `diffRecords` preserves per-record references, so `recordsMap.get(id)` returns the same object when unchanged.
+- ~~**`useSubmissionsMap` has no `useShallow`** — same issue as account store.~~ **Fixed** — `useShallow` added.
 
 ## Recommendations
-- **Add `useShallow` to `useSubmissions`** — immediate quick win.
-- **Implement record-level diffing upstream** — this is the single biggest performance improvement possible. If unchanged SubmissionRecord references are preserved, all `useShallow` comparisons become no-ops for unchanged data.
-- **Consider derived/computed selectors** — use Zustand's `subscribeWithSelector` middleware or a memoized selector pattern so filters only re-compute when the source array reference actually changes.
-- **For `useSubmission(id)`** — implement a per-ID selector that only re-renders when that specific record's reference changes.
+- ~~**Add `useShallow` to `useSubmissions`** — immediate quick win.~~ **Done.**
+- ~~**Implement record-level diffing upstream** — this is the single biggest performance improvement possible.~~ **Done** — `submissionHasChanged` comparator checks root updatedAt, nested file/option/post updatedAt, post states, queue record, and validation fingerprints.
+- ~~**Consider derived/computed selectors**.~~ Upstream diffing makes this less critical.
+- ~~**For `useSubmission(id)`** — implement a per-ID selector that only re-renders when that specific record's reference changes.~~ **Done** — handled by upstream diffing preserving per-record references.
 
 ---
 *Status*: Analyzed

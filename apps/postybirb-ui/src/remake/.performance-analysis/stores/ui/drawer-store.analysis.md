@@ -18,10 +18,10 @@ Drawer state store (no persistence). Manages which drawer is open (only one at a
 None.
 
 ## Potential Issues
-- **`useDrawerActions` with `useShallow` is unnecessary overhead** — the three action functions are stable references. Direct selection without `useShallow` would be more efficient.
+- ~~**`useDrawerActions` with `useShallow` is unnecessary overhead** — the three action functions are stable references. Direct selection without `useShallow` would be more efficient.~~ **Fixed** — `useShallow` removed, actions selected directly.
 
 ## Recommendations
-- Remove `useShallow` from `useDrawerActions` — select actions directly.
+- ~~Remove `useShallow` from `useDrawerActions` — select actions directly.~~ **Done.**
 - Very low priority.
 
 ---

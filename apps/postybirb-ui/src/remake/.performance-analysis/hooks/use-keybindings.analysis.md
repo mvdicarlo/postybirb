@@ -20,12 +20,12 @@ Hook that sets up global keyboard shortcuts via `tinykeys`. Handles both navigat
 - `useNavigationStore` (via `useViewStateActions`, `useCanGoBack`, `useCanGoForward`, `useNavigationHistory`)
 
 ## Potential Issues
-- **⚠️ `useEffect` re-runs on every navigation** — `canGoBack` and `canGoForward` change on every navigation event, which tears down and re-creates all keyboard listeners + the mouse listener. The `tinykeys` unsubscribe/resubscribe is lightweight but runs on every navigation.
+- ~~**⚠️ `useEffect` re-runs on every navigation** — `canGoBack` and `canGoForward` change on every navigation event, which tears down and re-creates all keyboard listeners + the mouse listener. The `tinykeys` unsubscribe/resubscribe is lightweight but runs on every navigation.~~ **Fixed** — `canGoBack`/`canGoForward` now stored in refs; effect only depends on stable action refs.
 - **Creates view state objects inline** (`createHomeViewState()`, etc.) inside the effect — these are cheap factory calls, but they run on every effect re-execution.
 
 ## Recommendations
-- Consider splitting the effect: one stable effect for keyboard shortcuts (actions are stable refs), and a separate effect that only handles the `canGoBack`/`canGoForward`-dependent mouse button logic.
-- Or use refs for `canGoBack`/`canGoForward` to avoid effect re-runs.
+- ~~Consider splitting the effect: one stable effect for keyboard shortcuts (actions are stable refs), and a separate effect that only handles the `canGoBack`/`canGoForward`-dependent mouse button logic.~~ **Done** (via refs approach instead — simpler, same result).
+- ~~Or use refs for `canGoBack`/`canGoForward` to avoid effect re-runs.~~ **Done.**
 
 ---
 *Status*: Analyzed

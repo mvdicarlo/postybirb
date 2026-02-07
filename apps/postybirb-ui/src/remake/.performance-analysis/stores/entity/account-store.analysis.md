@@ -20,14 +20,14 @@ Zustand entity store for accounts. Uses `createEntityStore` directly (not `creat
 - Subscribes to `ACCOUNT_UPDATES` websocket events via `createEntityStore`.
 
 ## Potential Issues
-- **⚠️ `useAccount(id)` re-renders on any account update** — because the Map is rebuilt on every websocket event, `recordsMap.get(id)` returns a new object reference even for unchanged accounts.
-- **`useAccountsMap` missing `useShallow`** — every subscriber re-renders on every store update.
-- **`useLoggedInAccounts` filters on every update** — the filter + `useShallow` comparison runs even when non-login data changes.
+- ~~**⚠️ `useAccount(id)` re-renders on any account update** — because the Map is rebuilt on every websocket event, `recordsMap.get(id)` returns a new object reference even for unchanged accounts.~~ **Fixed** — upstream `diffRecords` preserves per-record references.
+- ~~**`useAccountsMap` missing `useShallow`** — every subscriber re-renders on every store update.~~ **Fixed** — `useShallow` added.
+- **`useLoggedInAccounts` filters on every update** — the filter + `useShallow` comparison runs even when non-login data changes. Mitigated by upstream diffing preserving references.
 - **`groupAccountsByWebsite` creates new Map and arrays on every call** — if not wrapped in `useMemo` by consumers, it reallocates on every render.
 
 ## Recommendations
-- Fix upstream in `create-entity-store` (record-level diffing) to make `useAccount(id)` stable.
-- Add `useShallow` to `useAccountsMap` or better yet, fix Map stability upstream.
+- ~~Fix upstream in `create-entity-store` (record-level diffing) to make `useAccount(id)` stable.~~ **Done.**
+- ~~Add `useShallow` to `useAccountsMap` or better yet, fix Map stability upstream.~~ **Done** — both applied.
 - Document that `groupAccountsByWebsite` MUST be used with `useMemo`.
 
 ---

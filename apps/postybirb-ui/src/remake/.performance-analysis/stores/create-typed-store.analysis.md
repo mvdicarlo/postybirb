@@ -19,12 +19,12 @@ All generated hooks use `useShallow` which helps prevent re-renders when the sel
 Delegates to `createEntityStore`.
 
 ## Potential Issues
-- **`useShallow` on `useActions` is unnecessary** — the action functions (`loadAll`, `setRecords`, `getById`, `clear`) are stable references defined in the store creator. Using `useShallow` on them adds comparison cost with no benefit.
-- **`useRecords` with `useShallow` does a shallow array comparison** on every store update, which is O(n) where n = number of records. For large collections (hundreds of submissions), this is noticeable.
+- **`useShallow` on `useActions` is required** — although the action functions (`loadAll`, `setRecords`, `getById`, `clear`) are stable references, the selector returns an **object literal** which creates a new reference every render. Without `useShallow`, Zustand's `Object.is` check always fails → infinite re-render loop. The `useShallow` cost (4 × `Object.is` on stable refs) is negligible.
+- ~~**`useRecords` with `useShallow` does a shallow array comparison** on every store update, which is O(n) where n = number of records. For large collections (hundreds of submissions), this is noticeable.~~ **Mitigated** — upstream `diffRecords` now preserves record references, making `useShallow` comparisons near-free for unchanged data.
 
 ## Recommendations
-- Remove `useShallow` from `useActions` — use a direct selector or `useStore.getState()` for actions since they're stable.
-- For `useRecords`, consider if `useShallow` is the right tool — if the goal is to skip re-renders when data hasn't changed, the fix should be upstream (in `create-entity-store` via diffing), not downstream via expensive shallow comparisons.
+- ~~Remove `useShallow` from `useActions`~~ **Reverted** — removing `useShallow` from selectors that return object literals causes an infinite re-render loop (`getSnapshot` must be cached). `useShallow` is mandatory here.
+- ~~For `useRecords`, consider if `useShallow` is the right tool — if the goal is to skip re-renders when data hasn't changed, the fix should be upstream (in `create-entity-store` via diffing), not downstream via expensive shallow comparisons.~~ **Done** — upstream diffing implemented.
 
 ---
 *Status*: Analyzed

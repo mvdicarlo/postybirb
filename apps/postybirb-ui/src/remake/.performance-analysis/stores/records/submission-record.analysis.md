@@ -18,16 +18,16 @@ N/A — plain class. However, the getters on this class ARE called frequently fr
 None.
 
 ## Potential Issues
-- **`primaryFile` getter sorts the `files` array on every access** — `this.files.sort(...)` mutates and re-sorts each call. If a component reads `submission.primaryFile` during render, this runs per-render. With many submissions in a list, this adds up.
-- **`lastModified` getter iterates all files AND all options** — O(files + options) per access. Called frequently in sort operations and display.
-- **`sortedPosts` / `sortedPostsDescending` create new sorted arrays on every access** — `[...this.posts].sort(...)` allocates a new array each call. If used in rendering lists, this creates GC pressure.
+- ~~**`primaryFile` getter sorts the `files` array on every access** — `this.files.sort(...)` mutates and re-sorts each call. If a component reads `submission.primaryFile` during render, this runs per-render. With many submissions in a list, this adds up.~~ **Fixed** — cached in constructor; also fixed mutation bug (`this.files.sort()` → `[...this.files].sort()`).
+- ~~**`lastModified` getter iterates all files AND all options** — O(files + options) per access. Called frequently in sort operations and display.~~ **Fixed** — cached in constructor via private `computeLastModified()`.
+- ~~**`sortedPosts` / `sortedPostsDescending` create new sorted arrays on every access** — `[...this.posts].sort(...)` allocates a new array each call. If used in rendering lists, this creates GC pressure.~~ **Fixed** — cached in constructor.
 - **`hasErrors` / `hasWarnings` use `.some()` which is fine** — short-circuits early.
 - **`title` getter does a `.find()` on options array** — O(n) per access, but options arrays are typically small (<20).
 
 ## Recommendations
-- **Cache `primaryFile`**: compute once in constructor since `files` is immutable (readonly). Same for `sortedPosts` / `sortedPostsDescending`.
-- **Cache `lastModified`**: compute once in constructor since all data is immutable after construction.
-- Alternatively, use lazy getters that compute once and cache: `get primaryFile() { return this._primaryFile ??= ... }`.
+- ~~**Cache `primaryFile`**: compute once in constructor since `files` is immutable (readonly). Same for `sortedPosts` / `sortedPostsDescending`.~~ **Done.**
+- ~~**Cache `lastModified`**: compute once in constructor since all data is immutable after construction.~~ **Done.**
+- ~~Alternatively, use lazy getters that compute once and cache: `get primaryFile() { return this._primaryFile ??= ... }`.~~ Constructor caching chosen instead.
 
 ---
 *Status*: Analyzed

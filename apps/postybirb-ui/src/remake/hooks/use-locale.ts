@@ -6,7 +6,7 @@
 
 import { useLingui } from '@lingui/react';
 import moment from 'moment/min/moment-with-locales';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import {
     blockNoteLocaleLanguageMap,
     calendarLanguageMap,
@@ -90,13 +90,13 @@ export function useLocale(): UseLocaleResult {
   const cronstrueLocale = cronstrueLocaleMap[locale] || 'en';
   const blockNoteLocale = blockNoteLocaleLanguageMap[locale] || blockNoteLocaleLanguageMap.en;
 
+  // Set moment locale as a proper side effect (not inside useMemo)
+  useEffect(() => {
+    moment.locale(dateLocale);
+  }, [dateLocale]);
+
   // Memoize the formatting functions to avoid recreating on each render
   const formatters = useMemo(() => {
-    // Set moment locale for this hook's usage
-    // Note: moment.locale() is also set globally in i18n-provider,
-    // but we set it here too to ensure consistency
-    moment.locale(dateLocale);
-
     const formatRelativeTime = (date: Date | string): string =>
       moment(date).fromNow();
 

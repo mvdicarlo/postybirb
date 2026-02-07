@@ -17,11 +17,11 @@ Centralized locale-aware formatting hook. Returns current locale, mapped locale 
 None directly (uses lingui context, not Zustand).
 
 ## Potential Issues
-- **`moment.locale(dateLocale)` called inside `useMemo`** — this sets the GLOBAL moment locale as a side effect inside a memoized computation. This is generally an anti-pattern (`useMemo` should be pure), but it's necessary here for `moment.fromNow()` to use the right locale.
+- ~~**`moment.locale(dateLocale)` called inside `useMemo`** — this sets the GLOBAL moment locale as a side effect inside a memoized computation. This is generally an anti-pattern (`useMemo` should be pure), but it's necessary here for `moment.fromNow()` to use the right locale.~~ **Fixed** — moved to `useEffect`.
 - **Formatting functions create new `Date` objects** from strings on every call — minor, expected behavior.
 
 ## Recommendations
-- Move `moment.locale()` call to a `useEffect` instead of inside `useMemo` for correctness (side effects in `useMemo` can cause issues with React strict mode / concurrent features).
+- ~~Move `moment.locale()` call to a `useEffect` instead of inside `useMemo` for correctness (side effects in `useMemo` can cause issues with React strict mode / concurrent features).~~ **Done.**
 - Otherwise well-structured — `useMemo` on `[locale, dateLocale]` is appropriate since locale changes are rare.
 
 ---

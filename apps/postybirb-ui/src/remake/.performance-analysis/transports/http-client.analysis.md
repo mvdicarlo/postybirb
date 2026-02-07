@@ -20,13 +20,13 @@ N/A — not a React component or hook.
 None. Reads `localStorage` directly for remote host/password configuration on each request.
 
 ## Potential Issues
-- **`defaultTargetProvider()` reads `localStorage` on every request** — `localStorage.getItem` is synchronous and blocking the main thread. With high request frequency, this could add micro-delays.
-- **`getRemotePassword()` also reads `localStorage` per request** — same concern, amplified since both are called together.
+- ~~**`defaultTargetProvider()` reads `localStorage` on every request** — `localStorage.getItem` is synchronous and blocking the main thread. With high request frequency, this could add micro-delays.~~ **Fixed** — values are now cached on module load and refreshed via `storage` events.
+- ~~**`getRemotePassword()` also reads `localStorage` per request** — same concern, amplified since both are called together.~~ **Fixed** — reads from the same cached config.
 - **Retry with exponential backoff (default 3 retries)** — if the server is down, requests to it will take ~7+ seconds (1s + 2s + 4s) before failing, blocking UI if `await`-ed inline in handlers.
 - **`buildResponse` catches parse errors silently** — failed JSON parsing returns empty object, which could cause cryptic downstream issues.
 
 ## Recommendations
-- Cache `localStorage` values and only re-read on a storage event or explicit refresh to avoid per-request sync IO.
+- ~~Cache `localStorage` values and only re-read on a storage event or explicit refresh to avoid per-request sync IO.~~ **Done.**
 - Consider making retry count configurable per call-site (API calls from user actions should probably not retry 3 times; background refreshes can).
 - No performance concern for UI rendering — this is infrastructure code.
 

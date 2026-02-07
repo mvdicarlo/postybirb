@@ -104,15 +104,17 @@ export type NotificationStore = EntityStore<NotificationRecord>;
 
 /**
  * Select all notifications.
+ * Uses useShallow for stable reference when items haven't changed.
  */
 export const useNotifications = (): NotificationRecord[] =>
-  useNotificationStore((state: NotificationStore) => state.records);
+  useNotificationStore(useShallow((state: NotificationStore) => state.records));
 
 /**
  * Select notifications map for O(1) lookup.
+ * Uses useShallow for stable reference when items haven't changed.
  */
 export const useNotificationsMap = (): Map<string, NotificationRecord> =>
-  useNotificationStore((state: NotificationStore) => state.recordsMap);
+  useNotificationStore(useShallow((state: NotificationStore) => state.recordsMap));
 
 /**
  * Select notification loading state.
@@ -162,6 +164,7 @@ export const useWarningNotifications = (): NotificationRecord[] =>
 
 /**
  * Select notification store actions.
+ * No useShallow needed — action function refs are stable.
  */
 export const useNotificationActions = () =>
   useNotificationStore(

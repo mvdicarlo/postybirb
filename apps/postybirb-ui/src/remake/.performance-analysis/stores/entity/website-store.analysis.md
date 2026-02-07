@@ -20,12 +20,12 @@ Website entity store. Uses `create()` directly (NOT `createEntityStore` or `crea
 
 ## Potential Issues
 - **Doesn't use `createEntityStore` pattern** — uses different field names (`websites` vs `records`), different interface. The `store-init.ts` and barrel export work around this with custom integration.
-- **Same full-replacement problem** — websocket handler rebuilds all records on every event.
-- **`useWebsites` and `useWebsitesMap` missing `useShallow`** — frequent re-renders for subscribers.
+- **Same full-replacement problem** — websocket handler rebuilds all records on every event. *(Left as special case — can import `diffRecords` utility manually later.)*
+- ~~**`useWebsites` and `useWebsitesMap` missing `useShallow`** — frequent re-renders for subscribers.~~ **Fixed** — `useShallow` added to both.
 
 ## Recommendations
 - Consider refactoring to use `createEntityStore` for consistency.
-- Add `useShallow` to `useWebsites` and `useWebsitesMap`.
+- ~~Add `useShallow` to `useWebsites` and `useWebsitesMap`.~~ **Done.**
 - Website data changes infrequently (mainly login status changes), so practical impact is moderate.
 
 ---

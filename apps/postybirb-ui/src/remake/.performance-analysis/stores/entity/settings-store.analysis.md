@@ -18,12 +18,12 @@ Settings entity store. Uses `createEntityStore` directly. The API returns an arr
 - Subscribes to `SETTINGS_UPDATES`.
 
 ## Potential Issues
-- **`useSettingsLoading` missing `useShallow`** — subscribers re-render unnecessarily.
-- **`useSettingsActions` missing `useShallow`** — same issue. Since actions are stable functions, this creates new wrapper objects for no reason.
+- ~~**`useSettingsLoading` missing `useShallow`** — subscribers re-render unnecessarily.~~ **Fixed** — `useShallow` added.
+- ~~**`useSettingsActions` missing `useShallow`** — same issue. Since actions are stable functions, this creates new wrapper objects for no reason.~~ **Fixed** — action hook now uses direct selector (no `useShallow` needed since action refs are stable).
 - Settings changes are infrequent, so practical impact is low.
 
 ## Recommendations
-- Add `useShallow` to `useSettingsLoading` and `useSettingsActions`.
+- ~~Add `useShallow` to `useSettingsLoading` and `useSettingsActions`.~~ **Done.**
 - Low priority due to infrequent updates.
 
 ---

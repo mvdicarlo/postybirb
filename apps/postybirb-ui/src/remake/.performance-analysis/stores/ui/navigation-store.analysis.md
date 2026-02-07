@@ -24,6 +24,7 @@ None from websocket. Persists to localStorage.
 ## Recommendations
 - Consider debouncing localStorage persistence for rapid navigation changes.
 - The `validateViewState` cross-store read is acceptable but should have a guard for unloaded stores.
+- ~~Remove unnecessary `useShallow` from `useNavigationHistory` — both action refs are stable.~~ **Done.**
 
 ---
 *Status*: Analyzed

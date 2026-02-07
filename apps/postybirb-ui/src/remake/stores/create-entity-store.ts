@@ -4,8 +4,8 @@
  */
 
 import type { EntityId } from '@postybirb/types';
-import { create } from 'zustand';
 import type { StoreApi } from 'zustand';
+import { create } from 'zustand';
 import { useShallow } from 'zustand/shallow';
 import AppSocket from '../transports/websocket';
 import type { BaseRecord } from './records/base-record';
@@ -53,11 +53,76 @@ export type EntityStore<T extends BaseRecord> = BaseEntityState<T> & BaseEntityA
 /**
  * Options for creating an entity store.
  */
-export interface CreateEntityStoreOptions {
+export interface CreateEntityStoreOptions<TDto = unknown, TRecord extends BaseRecord = BaseRecord> {
   /** Name of the store for debugging */
   storeName: string;
   /** Websocket event name to subscribe to for real-time updates (optional) */
   websocketEvent?: string;
+  /**
+   * Custom comparator to determine whether a record has changed.
+   * Receives the existing record and the incoming DTO.
+   * Return `true` if the record has changed and should be re-created.
+   * When not provided, falls back to comparing `updatedAt` timestamps.
+   */
+  hasChanged?: (existing: TRecord, newDto: TDto) => boolean;
+}
+
+// ============================================================================
+// Record-level diffing
+// ============================================================================
+
+/**
+ * Diff incoming DTOs against existing records.
+ * Only calls `createRecord` for genuinely new or changed entities.
+ * Preserves existing record references when unchanged to prevent downstream re-renders.
+ *
+ * @returns `null` if nothing changed (callers should skip setState), or the new records + map.
+ */
+export function diffRecords<TDto extends { id: string; updatedAt: string }, TRecord extends BaseRecord>(
+  existingMap: Map<EntityId, TRecord>,
+  dtos: TDto[],
+  createRecord: (dto: TDto) => TRecord,
+  hasChanged?: (existing: TRecord, newDto: TDto) => boolean,
+): { records: TRecord[]; recordsMap: Map<EntityId, TRecord> } | null {
+  let anyChanged = false;
+
+  // Detect additions / removals by comparing size + IDs
+  if (dtos.length !== existingMap.size) {
+    anyChanged = true;
+  }
+
+  const records: TRecord[] = [];
+  const recordsMap = new Map<EntityId, TRecord>();
+
+  for (const dto of dtos) {
+    const existing = existingMap.get(dto.id);
+
+    if (existing) {
+      // Determine if the record actually changed
+      const changed = hasChanged
+        ? hasChanged(existing, dto)
+        : dto.updatedAt !== existing.updatedAt.toISOString();
+
+      if (changed) {
+        const newRecord = createRecord(dto);
+        records.push(newRecord);
+        recordsMap.set(newRecord.id, newRecord);
+        anyChanged = true;
+      } else {
+        // Reuse existing reference — this is the key optimisation
+        records.push(existing);
+        recordsMap.set(existing.id, existing);
+      }
+    } else {
+      // New record
+      const newRecord = createRecord(dto);
+      records.push(newRecord);
+      recordsMap.set(newRecord.id, newRecord);
+      anyChanged = true;
+    }
+  }
+
+  return anyChanged ? { records, recordsMap } : null;
 }
 
 /**
@@ -67,12 +132,12 @@ export interface CreateEntityStoreOptions {
  * @param createRecord - Function that converts a DTO to a Record class
  * @param options - Store configuration options
  */
-export function createEntityStore<TDto, TRecord extends BaseRecord>(
+export function createEntityStore<TDto extends { id: string; updatedAt: string }, TRecord extends BaseRecord>(
   fetchFn: () => Promise<TDto[]>,
   createRecord: (dto: TDto) => TRecord,
-  options: CreateEntityStoreOptions
+  options: CreateEntityStoreOptions<TDto, TRecord>
 ) {
-  const { storeName, websocketEvent } = options;
+  const { storeName, websocketEvent, hasChanged } = options;
 
   const initialState: BaseEntityState<TRecord> = {
     records: [],
@@ -99,21 +164,24 @@ export function createEntityStore<TDto, TRecord extends BaseRecord>(
 
       try {
         const dtos = await fetchFn();
-        const records = dtos.map(createRecord);
-        const recordsMap = new Map<EntityId, TRecord>();
-        records.forEach((record) => {
-          recordsMap.set(record.id, record);
-        });
+        const { recordsMap: existingMap } = get();
 
-        set({
-          records,
-          recordsMap,
-          loadingState: 'loaded',
-          lastLoadedAt: new Date(),
-        });
+        // Use diffing on subsequent loads; on first load existingMap is empty so all records are new
+        const diffResult = diffRecords(existingMap, dtos, createRecord, hasChanged);
+        if (diffResult) {
+          set({
+            records: diffResult.records,
+            recordsMap: diffResult.recordsMap,
+            loadingState: 'loaded',
+            lastLoadedAt: new Date(),
+          });
+        } else {
+          // No changes — just update loading state
+          set({ loadingState: 'loaded', lastLoadedAt: new Date() });
+        }
 
         // eslint-disable-next-line no-console, lingui/no-unlocalized-strings
-        console.debug(`[${storeName}] Loaded ${records.length} records`);
+        console.debug(`[${storeName}] Loaded ${dtos.length} records`);
       } catch (err) {
         // eslint-disable-next-line lingui/no-unlocalized-strings
         const errorMessage = err instanceof Error ? err.message : 'Unknown error';
@@ -155,18 +223,18 @@ export function createEntityStore<TDto, TRecord extends BaseRecord>(
       // eslint-disable-next-line no-console, lingui/no-unlocalized-strings
       console.debug(`[${storeName}] Received ${dtos.length} records via websocket`);
 
-      const records = dtos.map(createRecord);
-      const recordsMap = new Map<EntityId, TRecord>();
-      records.forEach((record) => {
-        recordsMap.set(record.id, record);
-      });
+      const { recordsMap: existingMap } = store.getState();
+      const diffResult = diffRecords(existingMap, dtos, createRecord, hasChanged);
 
-      store.setState({
-        records,
-        recordsMap,
-        loadingState: 'loaded',
-        lastLoadedAt: new Date(),
-      });
+      if (diffResult) {
+        store.setState({
+          records: diffResult.records,
+          recordsMap: diffResult.recordsMap,
+          loadingState: 'loaded',
+          lastLoadedAt: new Date(),
+        });
+      }
+      // If diffResult is null, nothing changed — skip setState entirely
     });
   }
 

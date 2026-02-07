@@ -153,15 +153,17 @@ export const useWebsiteStore = create<WebsiteStore>((set, get) => {
 
 /**
  * Select all websites.
+ * Uses useShallow for stable reference when items haven't changed.
  */
 export const useWebsites = (): WebsiteRecord[] =>
-  useWebsiteStore((state: WebsiteStore) => state.websites);
+  useWebsiteStore(useShallow((state: WebsiteStore) => state.websites));
 
 /**
  * Select websites map for O(1) lookup.
+ * Uses useShallow for stable reference when items haven't changed.
  */
 export const useWebsitesMap = (): Map<WebsiteId, WebsiteRecord> =>
-  useWebsiteStore((state: WebsiteStore) => state.websitesMap);
+  useWebsiteStore(useShallow((state: WebsiteStore) => state.websitesMap));
 
 /**
  * Select website loading state.
@@ -206,6 +208,7 @@ export const useMessageWebsites = (): WebsiteRecord[] =>
 
 /**
  * Select website store actions.
+ * No useShallow needed — action function refs are stable.
  */
 export const useWebsiteActions = () =>
   useWebsiteStore(

@@ -36,6 +36,12 @@ export class SubmissionRecord extends BaseRecord {
   readonly metadata: ISubmissionMetadata;
   readonly order: number;
 
+  // Cached computed values — safe because all data is immutable after construction
+  private readonly _primaryFile: ISubmissionFileDto | undefined;
+  private readonly _lastModified: Date;
+  private readonly _sortedPosts: PostRecordDto[];
+  private readonly _sortedPostsDescending: PostRecordDto[];
+
   constructor(dto: ISubmissionDto) {
     super(dto);
     this.type = dto.type;
@@ -51,6 +57,22 @@ export class SubmissionRecord extends BaseRecord {
     this.postQueueRecord = dto.postQueueRecord;
     this.metadata = dto.metadata;
     this.order = dto.order;
+
+    // Pre-compute expensive derived values
+    this._primaryFile = this.files.length > 0
+      ? [...this.files].sort((a, b) => a.order - b.order)[0]
+      : undefined;
+    this._sortedPosts = this.posts.length > 0
+      ? [...this.posts].sort(
+          (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        )
+      : [];
+    this._sortedPostsDescending = this.posts.length > 0
+      ? [...this.posts].sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        )
+      : [];
+    this._lastModified = this.computeLastModified();
   }
 
   /**
@@ -71,7 +93,7 @@ export class SubmissionRecord extends BaseRecord {
    * Get the primary/first file if available.
    */
   get primaryFile(): ISubmissionFileDto | undefined {
-    return this.files.sort((a, b) => a.order - b.order)[0];
+    return this._primaryFile;
   }
 
   /**
@@ -150,9 +172,12 @@ export class SubmissionRecord extends BaseRecord {
    * its files, and its website options.
    */
   get lastModified(): Date {
+    return this._lastModified;
+  }
+
+  private computeLastModified(): Date {
     let latest = this.updatedAt;
 
-    // Check files for more recent updates
     for (const file of this.files) {
       const fileDate = new Date(file.updatedAt);
       if (fileDate > latest) {
@@ -160,7 +185,6 @@ export class SubmissionRecord extends BaseRecord {
       }
     }
 
-    // Check website options for more recent updates
     for (const option of this.options) {
       const optionDate = new Date(option.updatedAt);
       if (optionDate > latest) {
@@ -187,9 +211,7 @@ export class SubmissionRecord extends BaseRecord {
    * This provides a chronological view of posting attempts.
    */
   get sortedPosts(): PostRecordDto[] {
-    return [...this.posts].sort(
-      (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-    );
+    return this._sortedPosts;
   }
 
   /**
@@ -197,9 +219,7 @@ export class SubmissionRecord extends BaseRecord {
    * This provides a reverse chronological view for display.
    */
   get sortedPostsDescending(): PostRecordDto[] {
-    return [...this.posts].sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
+    return this._sortedPostsDescending;
   }
 
   /**

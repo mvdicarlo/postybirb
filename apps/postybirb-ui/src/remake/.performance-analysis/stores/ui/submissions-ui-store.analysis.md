@@ -23,7 +23,7 @@ None from websocket. Persists to localStorage.
 - Minor: localStorage writes on every search query keystroke (debouncing would help).
 
 ## Recommendations
-- Consider not persisting `searchQuery` fields to localStorage (they should reset between sessions).
+- ~~Consider not persisting `searchQuery` fields to localStorage (they should reset between sessions).~~ **Done** — `partialize` now excludes `fileSubmissionsSearchQuery` and `messageSubmissionsSearchQuery`.
 - Low priority overall.
 
 ---

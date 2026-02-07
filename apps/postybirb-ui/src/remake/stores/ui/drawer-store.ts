@@ -5,7 +5,7 @@
  */
 
 import { create } from 'zustand';
-import { useShallow } from 'zustand/react/shallow';
+import { useShallow } from 'zustand/shallow';
 
 // ============================================================================
 // Types
@@ -91,14 +91,14 @@ export const useDrawerStore = create<DrawerStore>()((set) => ({
 export const useActiveDrawer = () =>
   useDrawerStore((state) => state.activeDrawer);
 
-/** Select drawer actions */
+/** Select drawer actions — useShallow required because selector returns an object literal */
 export const useDrawerActions = () =>
   useDrawerStore(
     useShallow((state) => ({
       openDrawer: state.openDrawer,
       closeDrawer: state.closeDrawer,
       toggleDrawer: state.toggleDrawer,
-    })),
+    }))
   );
 
 /** Check if a specific drawer is open */
