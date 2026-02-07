@@ -9,14 +9,6 @@ export class CaraFileSubmission extends BaseWebsiteOptions {
   })
   description: DescriptionValue;
 
-  override processTag(tag: string): string {
-    if (tag.startsWith('#')) {
-      return tag;
-    }
-
-    return `#${tag}`;
-  }
-
   @BooleanField({
     label: 'addToPortfolio',
   })
