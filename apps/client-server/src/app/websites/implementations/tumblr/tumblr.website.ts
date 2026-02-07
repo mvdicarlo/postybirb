@@ -148,6 +148,9 @@ export default class Tumblr
     files: PostingFile[],
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
+    // Update csrf token
+    await this.onLogin();
+
     // Description is a JSON string of NPF blocks from the NpfConverter
     const npfBlocks = JSON.parse(postData.options.description);
 
@@ -160,8 +163,11 @@ export default class Tumblr
       cancellationToken,
     );
 
+    // Update csrf token
+    await this.onLogin();
+
     // Combine description blocks with media blocks
-    const allBlocks = [...npfBlocks, ...mediaBlocks];
+    const allBlocks = [...mediaBlocks, ...npfBlocks];
 
     const builder = new PostBuilder(this, cancellationToken)
       .asJson()
@@ -199,7 +205,7 @@ export default class Tumblr
       const blogData = this.getWebsiteData().blogs.find(
         (b) => b.value === blogId,
       )!;
-      const postUrl = `${blogData.data.url}/${result.body.response.id}`;
+      const postUrl = `${blogData.data.url}${result.body.response.id}`;
       return PostResponse.fromWebsite(this)
         .withAdditionalInfo(result.body)
         .withSourceUrl(postUrl);
@@ -233,6 +239,9 @@ export default class Tumblr
     postData: PostData<TumblrMessageSubmission>,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
+    // Update csrf token
+    await this.onLogin();
+
     // Description is a JSON string of NPF blocks from the NpfConverter
     const npfBlocks = JSON.parse(postData.options.description);
 
@@ -270,7 +279,7 @@ export default class Tumblr
       const blogData = this.getWebsiteData().blogs.find(
         (b) => b.value === blogId,
       )!;
-      const postUrl = `${blogData.data.url}/${result.body.response.id}`;
+      const postUrl = `${blogData.data.url}${result.body.response.id}`;
       return PostResponse.fromWebsite(this)
         .withAdditionalInfo(result.body)
         .withSourceUrl(postUrl);
