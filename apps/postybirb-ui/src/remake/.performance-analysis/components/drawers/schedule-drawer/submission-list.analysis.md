@@ -25,8 +25,8 @@ Draggable submission list for the schedule drawer (160 lines). Shows unscheduled
 - **FullCalendar `Draggable` initialized on mount with `[]` deps** — uses a `containerRef` that won't change. ✅
 
 ## Recommendations
-- Use a more targeted submission selector (e.g., `useUnscheduledSubmissions`) to reduce re-renders.
+- ✅ **Done**: Created `useUnscheduledSubmissions()` targeted selector in submission-store. SubmissionList now subscribes only to unscheduled submissions.
 - `DraggableSubmissionItem` memoization is optional — items are lightweight.
 
 ---
-*Status*: Analyzed
+*Status*: ✅ Optimized

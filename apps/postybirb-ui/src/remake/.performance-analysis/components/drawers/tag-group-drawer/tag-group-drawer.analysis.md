@@ -29,8 +29,8 @@ Tag group management drawer (468 lines). Table-based layout with editable name c
 - **`EditableTagsCell` local state not synced with store** — if tags are updated externally (websocket), the cell shows stale tags until drawer reopens.
 
 ## Recommendations
-- **Wrap `handleToggleSelect` and `handleToggleSelectAll` in `useCallback`** and add `React.memo` to `TagGroupRow`.
+- ✅ **Done**: Wrapped `handleToggleSelect` and `handleToggleSelectAll` in `useCallback`; added `React.memo` to `TagGroupRow`.
 - Low-medium priority — drawer is user-initiated and tag groups are typically few (<20).
 
 ---
-*Status*: Analyzed
+*Status*: ✅ Optimized

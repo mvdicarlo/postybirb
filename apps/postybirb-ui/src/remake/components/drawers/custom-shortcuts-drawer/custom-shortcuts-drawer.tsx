@@ -26,7 +26,7 @@ import {
     IconPlus,
     IconX,
 } from '@tabler/icons-react';
-import { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import customShortcutApi from '../../../api/custom-shortcut.api';
 import {
     useCustomShortcuts,
@@ -98,11 +98,11 @@ function useShortcutSearch(
 interface ShortcutCardProps {
   shortcut: CustomShortcutRecord;
   isExpanded: boolean;
-  onToggleExpand: () => void;
-  onDelete: () => void;
+  onToggleExpand: (id: string) => void;
+  onDelete: (id: string) => void;
 }
 
-function ShortcutCard({
+const ShortcutCard = React.memo(function ShortcutCard({
   shortcut,
   isExpanded,
   onToggleExpand,
@@ -167,7 +167,7 @@ function ShortcutCard({
         <ActionIcon
           variant="subtle"
           size="sm"
-          onClick={onToggleExpand}
+          onClick={() => onToggleExpand(shortcut.id)}
           aria-label={isExpanded ? t`Collapse` : t`Expand`}
         >
           {isExpanded ? (
@@ -205,7 +205,7 @@ function ShortcutCard({
         {/* Delete button */}
         <Tooltip label={<Trans>Hold to delete</Trans>}>
           <HoldToConfirmButton
-            onConfirm={onDelete}
+            onConfirm={() => onDelete(shortcut.id)}
             size="xs"
             color="red"
             variant="subtle"
@@ -241,7 +241,7 @@ function ShortcutCard({
       </Collapse>
     </Card>
   );
-}
+});
 
 // ============================================================================
 // Create Shortcut Form
@@ -429,8 +429,8 @@ export function CustomShortcutsDrawer({
                 key={shortcut.id}
                 shortcut={shortcut}
                 isExpanded={expandedIds.has(shortcut.id)}
-                onToggleExpand={() => toggleExpanded(shortcut.id)}
-                onDelete={() => handleDelete(shortcut.id)}
+                onToggleExpand={toggleExpanded}
+                onDelete={handleDelete}
               />
             ))}
           </Stack>

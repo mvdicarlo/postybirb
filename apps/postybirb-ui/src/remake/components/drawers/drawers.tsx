@@ -5,8 +5,8 @@
  */
 
 import {
-  useActiveDrawer,
-  useDrawerActions
+    useActiveDrawer,
+    useDrawerActions
 } from '../../stores/ui/drawer-store';
 
 // Import the CustomShortcutsDrawer implementation for wrapping
@@ -36,13 +36,15 @@ export { ScheduleDrawer } from './schedule-drawer';
 /**
  * Custom shortcuts drawer wrapper.
  * Connects the drawer to the UI store.
+ * Returns null when closed to avoid running the inner component's hooks.
  */
 export function CustomShortcutsDrawer() {
   const activeDrawer = useActiveDrawer();
   const { closeDrawer } = useDrawerActions();
-  const opened = activeDrawer === 'customShortcuts';
+
+  if (activeDrawer !== 'customShortcuts') return null;
 
   return (
-    <CustomShortcutsDrawerComponent opened={opened} onClose={closeDrawer} />
+    <CustomShortcutsDrawerComponent opened onClose={closeDrawer} />
   );
 }

@@ -29,10 +29,10 @@ Notifications management drawer (581 lines). Features read/unread and type filte
 - **`NotificationCard` calls `useLocale()` per card** — each card creates its own locale hook subscription. Could be lifted to the list level.
 
 ## Recommendations
-- **Add `React.memo` to `NotificationCard`** — with `useCallback` handlers already on the parent, this would prevent most unnecessary re-renders.
-- **Lift `useLocale()` to `NotificationList`** and pass `formatRelativeTime` as a prop to cards.
-- **Batch the mark-as-read API calls** — use a single API endpoint instead of N parallel calls.
-- **Add `useShallow` to `useNotifications`** in the store (see notification-store analysis).
+- ✅ **Done**: Added `React.memo` to `NotificationCard`.
+- ✅ **Done**: Lifted `useLocale()` to `NotificationsDrawerContent` and passed `formatRelativeTime` as prop through `NotificationList` to cards.
+- **Batch the mark-as-read API calls** — use a single API endpoint instead of N parallel calls. *(Backend change — out of scope)*
+- ✅ **Done (prior)**: `useShallow` already added to `useNotifications` in notification-store during entity store phase.
 
 ---
-*Status*: Analyzed
+*Status*: ✅ Optimized

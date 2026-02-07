@@ -27,7 +27,7 @@ Settings dialog with sidebar navigation (208 lines). Uses Mantine `Modal` with a
 
 ## Recommendations
 - Remove `useCallback` from `renderSection` — it doesn't provide a perf benefit here since the function is called immediately, not passed as a prop to a memoized child.
-- Could conditionally render the entire dialog content only when `opened` is true, to avoid rendering the nav/content when the modal is closed.
+- ~~Could conditionally render the entire dialog content only when `opened` is true, to avoid rendering the nav/content when the modal is closed.~~ **Done** — early return with empty `<Modal opened={false} />` when not settings drawer; skips all sidebar nav, section rendering, and breadcrumb computation.
 
 ---
 *Status*: Analyzed

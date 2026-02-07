@@ -23,7 +23,7 @@ Tag converter drawer. Thin wrapper that creates a tag-specific `config` object a
 - Otherwise clean — delegates to `ConverterDrawer` (see that analysis for deeper issues).
 
 ## Recommendations
-- Consider adding locale to `useMemo` deps if hot locale switching is supported.
+- **Skipped**: Locale deps for `useMemo` — `t()` macro reads from i18n singleton at call time; drawer remounts on locale change; adding `useLocale` subscription would be unnecessary overhead.
 
 ---
-*Status*: Analyzed
+*Status*: ✅ Reviewed — no action needed

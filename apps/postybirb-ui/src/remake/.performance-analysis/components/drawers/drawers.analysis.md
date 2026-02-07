@@ -19,10 +19,10 @@ Drawer orchestration file. Re-exports all drawer components and wraps `CustomSho
 - Drawer UI store (in the `CustomShortcutsDrawer` wrapper function).
 
 ## Potential Issues
-- **`CustomShortcutsDrawer` wrapper re-renders on any drawer change** — `useActiveDrawer` returns the current active drawer key. When any drawer changes (not just customShortcuts), this wrapper re-renders to check if `opened` should be true/false.
+- ~~**`CustomShortcutsDrawer` wrapper re-renders on any drawer change** — `useActiveDrawer` returns the current active drawer key. When any drawer changes (not just customShortcuts), this wrapper re-renders to check if `opened` should be true/false.~~ **Fixed** — all drawers now use gate pattern: the gate checks `useActiveDrawer`, returns `null` when closed, and only mounts the inner content component (with its entity store subscriptions) when open.
 
 ## Recommendations
-- Could use a more targeted selector like `useIsDrawerOpen('customShortcuts')` to only re-render when that specific drawer's state changes.
+- ~~Could use a more targeted selector like `useIsDrawerOpen('customShortcuts')` to only re-render when that specific drawer's state changes.~~ **Done** (gate pattern applied to all 6 drawers: CustomShortcuts, TagGroup, Notifications, TagConverter, UserConverter, FileWatcher).
 - Low priority — drawer state changes are infrequent (user-initiated).
 
 ---

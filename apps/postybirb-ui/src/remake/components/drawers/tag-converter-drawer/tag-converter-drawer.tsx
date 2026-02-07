@@ -6,8 +6,8 @@
 import { t } from '@lingui/core/macro';
 import { Trans } from '@lingui/react/macro';
 import type {
-  ICreateTagConverterDto,
-  IUpdateTagConverterDto,
+    ICreateTagConverterDto,
+    IUpdateTagConverterDto,
 } from '@postybirb/types';
 import { useMemo } from 'react';
 import tagConvertersApi from '../../../api/tag-converters.api';
@@ -15,8 +15,8 @@ import { useTagConverters } from '../../../stores/entity/tag-converter-store';
 import type { TagConverterRecord } from '../../../stores/records';
 import { useActiveDrawer, useDrawerActions } from '../../../stores/ui/drawer-store';
 import {
-  ConverterDrawer,
-  type ConverterDrawerConfig,
+    ConverterDrawer,
+    type ConverterDrawerConfig,
 } from '../converter-drawer';
 
 // Drawer identifier
@@ -24,13 +24,22 @@ const DRAWER_KEY = 'tagConverters';
 
 /**
  * TagConverterDrawer component.
+ * Gate pattern: returns null when closed to avoid entity store subscriptions.
  */
 export function TagConverterDrawer() {
   const activeDrawer = useActiveDrawer();
   const { closeDrawer } = useDrawerActions();
-  const converters = useTagConverters();
 
-  const opened = activeDrawer === DRAWER_KEY;
+  if (activeDrawer !== DRAWER_KEY) return null;
+
+  return <TagConverterDrawerContent onClose={closeDrawer} />;
+}
+
+/**
+ * Inner content — only mounted when drawer is open.
+ */
+function TagConverterDrawerContent({ onClose }: { onClose: () => void }) {
+  const converters = useTagConverters();
 
   const config = useMemo(
     (): ConverterDrawerConfig<
@@ -63,8 +72,8 @@ export function TagConverterDrawer() {
 
   return (
     <ConverterDrawer
-      opened={opened}
-      onClose={closeDrawer}
+      opened
+      onClose={onClose}
       converters={converters}
       config={config}
     />

@@ -6,38 +6,38 @@
 import { t } from '@lingui/core/macro';
 import { Trans } from '@lingui/react/macro';
 import {
-  ActionIcon,
-  Box,
-  Card,
-  Group,
-  Input,
-  Select,
-  Stack,
-  Text,
-  Tooltip
+    ActionIcon,
+    Box,
+    Card,
+    Group,
+    Input,
+    Select,
+    Stack,
+    Text,
+    Tooltip
 } from '@mantine/core';
 import { DirectoryWatcherImportAction, SubmissionType } from '@postybirb/types';
 import {
-  IconDeviceFloppy,
-  IconFolder,
-  IconPlus,
-  IconTrash,
+    IconDeviceFloppy,
+    IconFolder,
+    IconPlus,
+    IconTrash,
 } from '@tabler/icons-react';
 import { useCallback, useMemo, useState } from 'react';
 import directoryWatchersApi, {
-  CheckPathResult,
-  FILE_COUNT_WARNING_THRESHOLD,
+    CheckPathResult,
+    FILE_COUNT_WARNING_THRESHOLD,
 } from '../../../api/directory-watchers.api';
 import { useDirectoryWatchers } from '../../../stores';
 import type { DirectoryWatcherRecord } from '../../../stores/records';
 import { useActiveDrawer, useDrawerActions } from '../../../stores/ui/drawer-store';
 import {
-  showCreatedNotification,
-  showCreateErrorNotification,
-  showDeletedNotification,
-  showDeleteErrorNotification,
-  showUpdatedNotification,
-  showUpdateErrorNotification,
+    showCreatedNotification,
+    showCreateErrorNotification,
+    showDeletedNotification,
+    showDeleteErrorNotification,
+    showUpdatedNotification,
+    showUpdateErrorNotification,
 } from '../../../utils/notifications';
 import { ConfirmActionModal } from '../../confirm-action-modal';
 import { EmptyState } from '../../empty-state';
@@ -47,6 +47,62 @@ import { TemplatePicker } from '../../shared/template-picker';
 import { SectionDrawer } from '../section-drawer';
 
 const DRAWER_KEY = 'fileWatchers' as const;
+
+// ============================================================================
+// Folder Confirm Modal Component
+// ============================================================================
+
+interface FolderConfirmModalProps {
+  opened: boolean;
+  pendingPath: string | null;
+  pathCheckResult: CheckPathResult | null;
+  onCancel: () => void;
+  onConfirm: () => void;
+}
+
+/**
+ * Extracted confirmation modal for folders with many files.
+ */
+function FolderConfirmModal({
+  opened,
+  pendingPath,
+  pathCheckResult,
+  onCancel,
+  onConfirm,
+}: FolderConfirmModalProps) {
+  const folderName = pendingPath?.split('/').pop() ?? pendingPath ?? '';
+  const fileCount = pathCheckResult?.count ?? 0;
+  const remainingCount = pathCheckResult ? pathCheckResult.files.length - 5 : 0;
+
+  return (
+    <ConfirmActionModal
+      opened={opened}
+      onClose={onCancel}
+      onConfirm={onConfirm}
+      title={<Trans>Folder Contains Files</Trans>}
+      message={
+        <Stack gap="xs">
+          <Text>
+            <Trans>
+              The folder "{folderName}" contains {fileCount} files.
+            </Trans>
+          </Text>
+          {pathCheckResult && pathCheckResult.files.length > 0 && (
+            <Text size="sm" c="dimmed">
+              {pathCheckResult.files.slice(0, 5).join(', ')}
+              {pathCheckResult.files.length > 5 && `, ... ${t`and ${remainingCount} more`}`}
+            </Text>
+          )}
+          <Text>
+            <Trans>Are you sure you want to watch this folder?</Trans>
+          </Text>
+        </Stack>
+      }
+      confirmLabel={<Trans>Confirm</Trans>}
+      confirmColor="blue"
+    />
+  );
+}
 
 // ============================================================================
 // Watcher Card Component
@@ -244,39 +300,13 @@ function FileWatcherCard({ watcher }: FileWatcherCardProps) {
       </ComponentErrorBoundary>
 
       {/* Confirmation modal for folders with many files */}
-      {(() => {
-        const folderName = pendingPath?.split('/').pop() ?? pendingPath ?? '';
-        const fileCount = pathCheckResult?.count ?? 0;
-        const remainingCount = pathCheckResult ? pathCheckResult.files.length - 5 : 0;
-        return (
-          <ConfirmActionModal
-            opened={confirmModalOpened}
-            onClose={handleCancelPath}
-            onConfirm={handleConfirmPath}
-            title={<Trans>Folder Contains Files</Trans>}
-            message={
-              <Stack gap="xs">
-                <Text>
-                  <Trans>
-                    The folder "{folderName}" contains {fileCount} files.
-                  </Trans>
-                </Text>
-                {pathCheckResult && pathCheckResult.files.length > 0 && (
-                  <Text size="sm" c="dimmed">
-                    {pathCheckResult.files.slice(0, 5).join(', ')}
-                    {pathCheckResult.files.length > 5 && `, ... ${t`and ${remainingCount} more`}`}
-                  </Text>
-                )}
-                <Text>
-                  <Trans>Are you sure you want to watch this folder?</Trans>
-                </Text>
-              </Stack>
-            }
-            confirmLabel={<Trans>Confirm</Trans>}
-            confirmColor="blue"
-          />
-        );
-      })()}
+      <FolderConfirmModal
+        opened={confirmModalOpened}
+        pendingPath={pendingPath}
+        pathCheckResult={pathCheckResult}
+        onCancel={handleCancelPath}
+        onConfirm={handleConfirmPath}
+      />
     </Card>
   );
 }
@@ -361,18 +391,27 @@ function WatcherList({ watchers }: WatcherListProps) {
 
 /**
  * File Watcher Drawer - manages directory watchers for auto-importing files.
+ * Gate pattern: returns null when closed to avoid entity store subscriptions.
  */
 export function FileWatcherDrawer() {
   const activeDrawer = useActiveDrawer();
   const { closeDrawer } = useDrawerActions();
-  const opened = activeDrawer === DRAWER_KEY;
 
+  if (activeDrawer !== DRAWER_KEY) return null;
+
+  return <FileWatcherDrawerContent onClose={closeDrawer} />;
+}
+
+/**
+ * Inner content — only mounted when drawer is open.
+ */
+function FileWatcherDrawerContent({ onClose }: { onClose: () => void }) {
   const watchers = useDirectoryWatchers();
 
   return (
     <SectionDrawer
-      opened={opened}
-      onClose={closeDrawer}
+      opened
+      onClose={onClose}
       title={<Trans>File Watchers</Trans>}
       width={400}
     >

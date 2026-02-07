@@ -24,13 +24,22 @@ const DRAWER_KEY = 'userConverters';
 
 /**
  * UserConverterDrawer component.
+ * Gate pattern: returns null when closed to avoid entity store subscriptions.
  */
 export function UserConverterDrawer() {
   const activeDrawer = useActiveDrawer();
   const { closeDrawer } = useDrawerActions();
-  const converters = useUserConverters();
 
-  const opened = activeDrawer === DRAWER_KEY;
+  if (activeDrawer !== DRAWER_KEY) return null;
+
+  return <UserConverterDrawerContent onClose={closeDrawer} />;
+}
+
+/**
+ * Inner content — only mounted when drawer is open.
+ */
+function UserConverterDrawerContent({ onClose }: { onClose: () => void }) {
+  const converters = useUserConverters();
 
   const config = useMemo(
     (): ConverterDrawerConfig<
@@ -63,8 +72,8 @@ export function UserConverterDrawer() {
 
   return (
     <ConverterDrawer
-      opened={opened}
-      onClose={closeDrawer}
+      opened
+      onClose={onClose}
       converters={converters}
       config={config}
     />

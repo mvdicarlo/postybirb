@@ -19,7 +19,7 @@ import {
 } from '@mantine/core';
 import { useDebouncedCallback, useDebouncedValue } from '@mantine/hooks';
 import { IconPlus, IconTrash } from '@tabler/icons-react';
-import { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import tagGroupsApi from '../../../api/tag-groups.api';
 import { useTagGroups } from '../../../stores';
 import type { TagGroupRecord } from '../../../stores/records';
@@ -286,7 +286,7 @@ function CreateTagGroupForm() {
 /**
  * Tag group table row component.
  */
-function TagGroupRow({
+const TagGroupRow = React.memo(function TagGroupRow({
   group,
   isSelected,
   onToggleSelect,
@@ -319,7 +319,7 @@ function TagGroupRow({
       </Table.Td>
     </Table.Tr>
   );
-}
+});
 
 /**
  * Tag groups table component.
@@ -381,18 +381,27 @@ function TagGroupsTable({
 
 /**
  * Main Tag Group Drawer component.
+ * Gate pattern: returns null when closed to avoid entity store subscriptions.
  */
 export function TagGroupDrawer() {
   const activeDrawer = useActiveDrawer();
   const { closeDrawer } = useDrawerActions();
-  const opened = activeDrawer === 'tagGroups';
 
+  if (activeDrawer !== 'tagGroups') return null;
+
+  return <TagGroupDrawerContent onClose={closeDrawer} />;
+}
+
+/**
+ * Inner content — only mounted when drawer is open.
+ */
+function TagGroupDrawerContent({ onClose }: { onClose: () => void }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const { filteredGroups } = useTagGroupSearch(searchQuery);
 
-  const handleToggleSelect = (id: string) => {
+  const handleToggleSelect = useCallback((id: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) {
@@ -402,9 +411,9 @@ export function TagGroupDrawer() {
       }
       return next;
     });
-  };
+  }, []);
 
-  const handleToggleSelectAll = () => {
+  const handleToggleSelectAll = useCallback(() => {
     if (filteredGroups.every((g) => selectedIds.has(g.id))) {
       // Deselect all visible
       setSelectedIds((prev) => {
@@ -420,7 +429,7 @@ export function TagGroupDrawer() {
         return next;
       });
     }
-  };
+  }, [filteredGroups, selectedIds]);
 
   const handleDeleted = () => {
     setSelectedIds(new Set());
@@ -428,8 +437,8 @@ export function TagGroupDrawer() {
 
   return (
     <SectionDrawer
-      opened={opened}
-      onClose={closeDrawer}
+      opened
+      onClose={onClose}
       title={<Trans>Tag Groups</Trans>}
       width={450}
     >

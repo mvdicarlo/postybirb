@@ -203,6 +203,40 @@ export const useScheduledSubmissions = (): SubmissionRecord[] =>
   );
 
 /**
+ * Select submissions with a schedule (scheduledFor or cron, not archived/template).
+ * Used by ScheduleCalendar to avoid subscribing to all submissions.
+ */
+export const useSubmissionsWithSchedule = (): SubmissionRecord[] =>
+  useSubmissionStore(
+    useShallow((state: SubmissionStoreState) =>
+      state.records.filter(
+        (s) =>
+          !s.isArchived &&
+          !s.isTemplate &&
+          (s.schedule.scheduledFor || s.schedule.cron)
+      )
+    )
+  );
+
+/**
+ * Select unscheduled, non-archived, non-template, non-multi submissions.
+ * Used by SubmissionList in the schedule drawer.
+ */
+export const useUnscheduledSubmissions = (): SubmissionRecord[] =>
+  useSubmissionStore(
+    useShallow((state: SubmissionStoreState) =>
+      state.records.filter(
+        (s) =>
+          !s.isArchived &&
+          !s.isTemplate &&
+          !s.isMultiSubmission &&
+          !s.schedule.scheduledFor &&
+          !s.schedule.cron
+      )
+    )
+  );
+
+/**
  * Select archived submissions.
  * Uses useShallow for stable reference when items haven't changed.
  */

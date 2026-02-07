@@ -27,7 +27,7 @@ import {
   IconMailOpened,
   IconTrash,
 } from '@tabler/icons-react';
-import { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import notificationApi from '../../../api/notification.api';
 import { useLocale } from '../../../hooks';
 import {
@@ -326,18 +326,19 @@ function BulkActions({
 /**
  * Individual notification card.
  */
-function NotificationCard({
+const NotificationCard = React.memo(function NotificationCard({
   notification,
   isSelected,
   onSelect,
+  formatRelativeTime,
 }: {
   notification: NotificationRecord;
   isSelected: boolean;
   onSelect: (id: string, selected: boolean) => void;
+  formatRelativeTime: (date: Date | string) => string;
 }) {
   const color = getTypeColor(notification.type);
   const icon = getTypeIcon(notification.type);
-  const { formatRelativeTime } = useLocale();
 
   const handleToggleRead = useCallback(async () => {
     try {
@@ -430,7 +431,7 @@ function NotificationCard({
       </Group>
     </Card>
   );
-}
+});
 
 // ============================================================================
 // Notification List Component
@@ -444,11 +445,13 @@ function NotificationList({
   selectedIds,
   onSelect,
   onSelectAll,
+  formatRelativeTime,
 }: {
   notifications: NotificationRecord[];
   selectedIds: Set<string>;
   onSelect: (id: string, selected: boolean) => void;
   onSelectAll: (selected: boolean) => void;
+  formatRelativeTime: (date: Date | string) => string;
 }) {
   const allSelected =
     notifications.length > 0 && selectedIds.size === notifications.length;
@@ -475,6 +478,7 @@ function NotificationList({
           notification={notification}
           isSelected={selectedIds.has(notification.id)}
           onSelect={onSelect}
+          formatRelativeTime={formatRelativeTime}
         />
       ))}
     </Stack>
@@ -487,12 +491,23 @@ function NotificationList({
 
 /**
  * Notifications drawer component.
+ * Gate pattern: returns null when closed to avoid entity store subscriptions.
  */
 export function NotificationsDrawer() {
   const activeDrawer = useActiveDrawer();
   const { closeDrawer } = useDrawerActions();
-  const opened = activeDrawer === 'notifications';
+
+  if (activeDrawer !== 'notifications') return null;
+
+  return <NotificationsDrawerContent onClose={closeDrawer} />;
+}
+
+/**
+ * Inner content — only mounted when drawer is open.
+ */
+function NotificationsDrawerContent({ onClose }: { onClose: () => void }) {
   const unreadCount = useUnreadNotificationCount();
+  const { formatRelativeTime } = useLocale();
 
   const {
     notifications,
@@ -533,8 +548,8 @@ export function NotificationsDrawer() {
 
   return (
     <SectionDrawer
-      opened={opened}
-      onClose={closeDrawer}
+      opened
+      onClose={onClose}
       title={
         <Group gap="xs">
           <Trans>Notifications</Trans>
@@ -572,6 +587,7 @@ export function NotificationsDrawer() {
             selectedIds={selectedIds}
             onSelect={handleSelect}
             onSelectAll={handleSelectAll}
+            formatRelativeTime={formatRelativeTime}
           />
         </Box>
       </Stack>

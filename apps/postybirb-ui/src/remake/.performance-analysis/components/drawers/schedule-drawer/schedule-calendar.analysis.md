@@ -27,9 +27,9 @@ FullCalendar integration for schedule visualization (370 lines). Shows scheduled
 - **FullCalendar re-renders when `events` array reference changes** — even if events are identical, a new array reference causes FullCalendar to re-process all events.
 
 ## Recommendations
-- **Use a more targeted submission selector** — instead of `useSubmissions()` (all submissions), create a `useScheduledSubmissions()` selector that only returns scheduled, non-archived, non-template submissions. This would avoid re-renders from unrelated submission changes.
-- **Memoize cron parsing** — cache Cron instances or next-run results to avoid recomputing on every render.
+- ✅ **Done**: Created `useSubmissionsWithSchedule()` targeted selector in submission-store. ScheduleCalendar now subscribes only to scheduled submissions, avoiding re-renders from unrelated submission changes. Removed redundant inline filter `useMemo`.
+- **Cron parsing** — already inside a `useMemo` keyed on `scheduledSubmissions` (which is now stable via targeted selector). No further caching needed.
 - High priority — FullCalendar is a heavy library and unnecessary re-renders are costly.
 
 ---
-*Status*: Analyzed
+*Status*: ✅ Optimized

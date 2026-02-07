@@ -26,8 +26,8 @@ File watcher management drawer (400 lines). Card-based layout with folder picker
 - **`importActionOptions` useMemo with empty deps** — contains `t()` call. Won't update on locale change.
 
 ## Recommendations
-- Extract the IIFE ConfirmActionModal to a named sub-component.
+- ✅ **Done**: Extracted IIFE ConfirmActionModal to `FolderConfirmModal` named sub-component.
 - Low priority — file watchers are typically few, and the drawer is user-initiated.
 
 ---
-*Status*: Analyzed
+*Status*: ✅ Optimized

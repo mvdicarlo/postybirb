@@ -22,7 +22,7 @@ User converter drawer. Thin wrapper that creates a user-specific `config` object
 - Same as TagConverterDrawer — `t()` calls in useMemo with `[]` deps won't update on locale change.
 
 ## Recommendations
-- Same as TagConverterDrawer.
+- **Skipped**: Same as TagConverterDrawer — locale deps unnecessary.
 
 ---
-*Status*: Analyzed
+*Status*: ✅ Reviewed — no action needed

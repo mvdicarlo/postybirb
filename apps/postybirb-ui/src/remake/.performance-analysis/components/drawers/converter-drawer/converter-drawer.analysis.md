@@ -27,17 +27,17 @@ Largest drawer component (802 lines). Generic converter drawer shared by tag/use
 - Website entity store (in `WebsiteConversionsEditor` via `useWebsites`). Each expanded converter card has its own `WebsiteConversionsEditor` instance, each subscribing to the website store independently.
 
 ## Potential Issues
-- **⚠️ HIGH: No `React.memo` on ConverterCard** — when any state changes in the parent (search query, selection, expansion), ALL converter cards re-render. With 50+ converters visible, typing in search causes all cards to re-render on every keystroke (before debounce settles).
-- **⚠️ Multiple `WebsiteConversionsEditor` store subscriptions** — each expanded card creates a new `useWebsites()` subscription. With 5 expanded cards, there are 5 independent website store subscriptions.
+- ~~**⚠️ HIGH: No `React.memo` on ConverterCard** — when any state changes in the parent (search query, selection, expansion), ALL converter cards re-render. With 50+ converters visible, typing in search causes all cards to re-render on every keystroke (before debounce settles).~~ **Fixed** — `React.memo` added to `ConverterCard`.
+- ~~**⚠️ Multiple `WebsiteConversionsEditor` store subscriptions** — each expanded card creates a new `useWebsites()` subscription. With 5 expanded cards, there are 5 independent website store subscriptions.~~ **Fixed** — `useWebsites()` lifted to `ConverterDrawer`, `websites` and `websiteMap` passed as props.
 - **`handleSelectAll` depends on `filteredConverters`** — recreated when filtered list changes. This is passed to the checkbox, causing it to re-render. Minor since it's one checkbox.
-- **`existingValues` Set recreated when `config` reference changes** — `config` is likely a new object on every parent render (created inline in TagConverterDrawer/UserConverterDrawer). This would bust the `useMemo` on every render.
-- **`activeWebsiteIds` filter `(id) => id in localConvertTo`** is always true for `Object.keys(localConvertTo)` — the filter is redundant.
+- **`existingValues` Set recreated when `config` reference changes** — `config` is memoized with `[]` deps in both parents. ✅ Stable.
+- ~~**`activeWebsiteIds` filter `(id) => id in localConvertTo`** is always true for `Object.keys(localConvertTo)` — the filter is redundant.~~ **Fixed** — redundant filter removed.
 
 ## Recommendations
-- **Add `React.memo` to `ConverterCard`** — with useCallback already on handlers, this would prevent re-rendering unchanged cards when search/selection changes.
-- **Stabilize `config` prop** — use `useMemo` in the parent (TagConverterDrawer) to avoid busting `existingValues` memo.
-- **Consider lifting `useWebsites` to the parent** and passing `websiteMap` as a prop to `WebsiteConversionsEditor` to avoid duplicate subscriptions.
-- Remove redundant `activeWebsiteIds` filter.
+- ~~**Add `React.memo` to `ConverterCard`** — with useCallback already on handlers, this would prevent re-rendering unchanged cards when search/selection changes.~~ **Done.**
+- ~~**Stabilize `config` prop** — use `useMemo` in the parent (TagConverterDrawer) to avoid busting `existingValues` memo.~~ Already stable (both parents use `useMemo` with `[]`).
+- ~~**Consider lifting `useWebsites` to the parent** and passing `websiteMap` as a prop to `WebsiteConversionsEditor` to avoid duplicate subscriptions.~~ **Done.**
+- ~~Remove redundant `activeWebsiteIds` filter.~~ **Done.**
 
 ---
 *Status*: Analyzed

@@ -141,6 +141,11 @@ export function SettingsDialog() {
     }
   }, [activeSection]);
 
+  // Skip rendering entirely when not open
+  if (!opened) {
+    return null;
+  }
+
   return (
     <Modal
       opened={opened}

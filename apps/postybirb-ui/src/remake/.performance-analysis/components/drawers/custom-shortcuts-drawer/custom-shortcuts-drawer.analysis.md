@@ -27,8 +27,8 @@ Custom text shortcuts management drawer (442 lines). Features expandable cards w
 - **`onToggleExpand={() => toggleExpanded(shortcut.id)}` creates a new closure per card** — since `ShortcutCard` is not memoized, this doesn't matter. But if `React.memo` were added, this closure pattern would break it.
 
 ## Recommendations
-- **Add `React.memo` to `ShortcutCard`** — with the expensive `DescriptionEditor` inside, preventing unnecessary re-renders is worthwhile. Would need to pass `shortcut.id` + `isExpanded` as stable props and use `useCallback` for `onToggleExpand`.
+- ✅ **Done**: Added `React.memo` to `ShortcutCard` — stable `onToggleExpand(id)` / `onDelete(id)` callbacks passed directly; card calls them with its own id.
 - Low-medium priority — drawer is only open when user is actively managing shortcuts.
 
 ---
-*Status*: Analyzed
+*Status*: ✅ Optimized
