@@ -5,10 +5,10 @@
 import { Plural, Trans } from '@lingui/react/macro';
 import { Text } from '@mantine/core';
 import {
-    FileType,
-    SubmissionRating,
-    ValidationMessage,
-    ValidationMessages,
+  FileType,
+  SubmissionRating,
+  ValidationMessage,
+  ValidationMessages,
 } from '@postybirb/types';
 import { filesize } from 'filesize';
 import { ExternalLink } from '../components/shared/external-link';
@@ -149,6 +149,16 @@ export const TranslationMessages: TranslationsMap = {
     return (
       <>
         <Trans>Tags longer than {maxLength} characters will be skipped</Trans>:{' '}
+        <span>{tags.join(', ')}</span>
+      </>
+    );
+  },
+
+  'validation.tags.double-cashtag': (props) => {
+    const { tags } = props;
+    return (
+      <>
+        <Trans>Tags should not start with #</Trans>:{' '}
         <span>{tags.join(', ')}</span>
       </>
     );

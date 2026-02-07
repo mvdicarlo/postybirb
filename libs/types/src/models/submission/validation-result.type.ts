@@ -128,6 +128,10 @@ export interface ValidationMessages {
     maxLength: number;
   };
 
+  'validation.tags.double-cashtag': {
+    tags: string[];
+  };
+
   'validation.title.max-length': {
     currentLength: number;
     maxLength: number;

@@ -66,3 +66,24 @@ export async function validateMaxTagLength({
     }
   }
 }
+
+export async function validateTagCashtag({
+  result,
+  data,
+  mergedWebsiteOptions,
+}: ValidatorParams) {
+  const tagField = mergedWebsiteOptions.getFormFieldFor('tags');
+  if (tagField.hidden !== true) {
+    const { tags } = data.options;
+    const invalidTags = tags.filter((tag) => tag.startsWith('#'));
+    if (invalidTags.length > 0) {
+      result.warnings.push({
+        id: 'validation.tags.double-cashtag',
+        field: 'tags',
+        values: {
+          tags: invalidTags,
+        },
+      });
+    }
+  }
+}
