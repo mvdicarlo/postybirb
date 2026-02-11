@@ -210,6 +210,11 @@ export class HtmlConverter extends BaseConverter {
     ) {
       styles.push(`text-align: ${attrs.textAlign}`);
     }
+
+    if (attrs.indent && attrs.indent > 0) {
+      styles.push(`margin-left: ${attrs.indent * 2}em`);
+    }
+
     return styles.join(';');
   }
 

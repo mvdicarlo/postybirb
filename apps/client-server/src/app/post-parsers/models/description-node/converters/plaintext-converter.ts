@@ -51,6 +51,17 @@ export class PlainTextConverter extends BaseConverter {
         .join('\r\n');
     }
 
+    // Indent paragraph/heading content
+    if (node.type === 'paragraph' || node.type === 'heading') {
+      const attrs = node.attrs ?? {};
+      let text = this.convertContent(node.content, context);
+      if (attrs.indent && attrs.indent > 0) {
+        const spaces = '    '.repeat(attrs.indent);
+        text = `${spaces}${text}`;
+      }
+      return text;
+    }
+
     return this.convertContent(node.content, context);
   }
 

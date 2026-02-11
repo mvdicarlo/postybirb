@@ -65,6 +65,12 @@ export class BBCodeConverter extends BaseConverter {
         text = `[${attrs.textAlign}]${text}[/${attrs.textAlign}]`;
       }
 
+      // Apply indentation
+      if (attrs.indent && attrs.indent > 0) {
+        const spaces = '\u00A0\u00A0\u00A0\u00A0'.repeat(attrs.indent);
+        text = `${spaces}${text}`;
+      }
+
       return text;
     }
 
@@ -74,6 +80,11 @@ export class BBCodeConverter extends BaseConverter {
 
       if (attrs.textAlign && attrs.textAlign !== 'left') {
         text = `[${attrs.textAlign}]${text}[/${attrs.textAlign}]`;
+      }
+
+      if (attrs.indent && attrs.indent > 0) {
+        const spaces = '\u00A0\u00A0\u00A0\u00A0'.repeat(attrs.indent);
+        text = `${spaces}${text}`;
       }
 
       return text;

@@ -230,6 +230,26 @@ export function TreeSelect({
   });
 
   // Keep all nodes expanded when tree data changes
+  const treeDataRef = useRef(treeData);
+  treeDataRef.current = treeData;
+  const treeRef = useRef(tree);
+  treeRef.current = tree;
+
+  // Only re-expand when the set of node values actually changes
+  const treeNodeKeys = useMemo(() => {
+    const collectKeys = (nodes: TreeNodeData[]): string[] => {
+      const keys: string[] = [];
+      for (const node of nodes) {
+        keys.push(node.value);
+        if (node.children) {
+          keys.push(...collectKeys(node.children));
+        }
+      }
+      return keys;
+    };
+    return collectKeys(treeData).join(',');
+  }, [treeData]);
+
   useEffect(() => {
     const expandAll = (nodes: TreeNodeData[]): Record<string, boolean> => {
       const state: Record<string, boolean> = {};
@@ -241,8 +261,9 @@ export function TreeSelect({
       }
       return state;
     };
-    tree.setExpandedState(expandAll(treeData));
-  }, [treeData, tree]);
+    treeRef.current.setExpandedState(expandAll(treeDataRef.current));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [treeNodeKeys]);
 
   // Focus search or dropdown when opened
   useEffect(() => {
