@@ -1,9 +1,9 @@
 import {
-  EntityId,
-  IReorderSubmissionFilesDto,
-  ISubmissionDto,
-  SubmissionFileMetadata,
-  SubmissionId,
+    EntityId,
+    IReorderSubmissionFilesDto,
+    ISubmissionDto,
+    SubmissionFileMetadata,
+    SubmissionId,
 } from '@postybirb/types';
 import { HttpClient } from '../transports/http-client';
 
@@ -41,8 +41,8 @@ class FileSubmissionsApi {
     return this.client.get<string>(`alt/${id}`);
   }
 
-  updateAltText(altFileId: EntityId, html: string) {
-    return this.client.patch(`alt/${altFileId}`, { html });
+  updateAltText(altFileId: EntityId, text: string) {
+    return this.client.patch(`alt/${altFileId}`, { text });
   }
 
   updateMetadata(id: EntityId, update: SubmissionFileMetadata) {

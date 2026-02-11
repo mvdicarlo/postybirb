@@ -3,7 +3,7 @@ import { htmlToText } from 'html-to-text';
 import { TurndownService } from 'turndown';
 import { IFileConverter } from './file-converter';
 
-const supportedInputMimeTypes = ['text/html'] as const;
+const supportedInputMimeTypes = ['text/html', 'text/plain'] as const;
 const supportedOutputMimeTypes = [
   'text/plain',
   'text/html',
@@ -27,7 +27,7 @@ type ConversionWeights = {
 
 /**
  * A class that converts text files to other text formats.
- * Largely for use when converting AltFiles (text/html) to other desirable formats.
+ * Largely for use when converting AltFiles (text/plain or text/html) to other desirable formats.
  * @class TextFileConverter
  * @implements {IFileConverter}
  */
@@ -53,11 +53,36 @@ export class TextFileConverter implements IFileConverter {
     return this.toMergedBuffer(file, markdown, 'text/markdown');
   };
 
+  /**
+   * Converts plain text to HTML by wrapping lines in <p> tags.
+   */
+  private convertPlaintextToHtml = async (
+    file: IFileBuffer,
+  ): Promise<IFileBuffer> => {
+    const lines = file.buffer.toString().split(/\n/);
+    const html = lines
+      .map((line) => `<p>${line || '<br>'}</p>`)
+      .join('\n');
+    return this.toMergedBuffer(file, html, 'text/html');
+  };
+
+  /**
+   * Plain text is valid markdown, so this is a passthrough with mime type change.
+   */
+  private convertPlaintextToMarkdown = async (
+    file: IFileBuffer,
+  ): Promise<IFileBuffer> => this.toMergedBuffer(file, file.buffer.toString(), 'text/markdown');
+
   private readonly supportConversionMappers: ConversionMap = {
     'text/html': {
       'text/html': this.passThrough,
       'text/plain': this.convertHtmlToPlaintext,
       'text/markdown': this.convertHtmlToMarkdown,
+    },
+    'text/plain': {
+      'text/plain': this.passThrough,
+      'text/html': this.convertPlaintextToHtml,
+      'text/markdown': this.convertPlaintextToMarkdown,
     },
   };
 

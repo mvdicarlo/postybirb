@@ -1,43 +1,10 @@
-import {
-  BlockNoteEditor,
-  BlockNoteSchema,
-  defaultBlockSpecs,
-  defaultInlineContentSpecs,
-  defaultStyleSpecs,
-} from '@blocknote/core';
-import { BlockNoteView } from '@blocknote/mantine';
-import {
-  DefaultReactSuggestionItem,
-  SuggestionMenuController,
-  getDefaultReactSlashMenuItems,
-  useCreateBlockNote,
-} from '@blocknote/react';
 import { Trans } from '@lingui/react/macro';
-import {
-  Input,
-  Loader,
-  ScrollArea,
-  useMantineColorScheme,
-} from '@mantine/core';
+import { Input, Loader, Textarea } from '@mantine/core';
 import { ISubmissionFileDto } from '@postybirb/types';
 import { debounce } from 'lodash';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useQuery } from 'react-query';
 import fileSubmissionApi from '../../../../../api/file-submission.api';
-import { filterSuggestionItems } from '../../../../shared/postybirb-editor/filter-suggestion-item';
-
-const getCustomSlashMenuItems = (
-  editor: BlockNoteEditor,
-): DefaultReactSuggestionItem[] =>
-  getDefaultReactSlashMenuItems(editor).filter((item) => {
-    if (item.key === 'table') {
-      return false;
-    }
-    if (item.key === 'emoji') {
-      return false;
-    }
-    return true;
-  });
 
 type FileTextFileAltProps = {
   file: ISubmissionFileDto;
@@ -45,59 +12,34 @@ type FileTextFileAltProps = {
 
 export function FileTextAlt(props: FileTextFileAltProps) {
   const { file } = props;
+  const [text, setText] = useState('');
+
   const {
-    data: initialHTML,
+    data: initialText,
     isLoading,
     isFetching,
-  } = useQuery([], () =>
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    fileSubmissionApi.getAltText(file.altFileId!).then((res) => res.body),
+  } = useQuery(
+    ['alt-text', file.altFileId],
+    () =>
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      fileSubmissionApi.getAltText(file.altFileId!).then((res) => res.body),
+    { enabled: !!file.altFileId },
   );
-  const theme = useMantineColorScheme();
 
-  const schema = BlockNoteSchema.create({
-    blockSpecs: {
-      paragraph: defaultBlockSpecs.paragraph,
-      heading: defaultBlockSpecs.heading,
-      divider: defaultBlockSpecs.divider,
-      audio: defaultBlockSpecs.audio,
-      video: defaultBlockSpecs.video,
-      image: defaultBlockSpecs.image,
-      table: defaultBlockSpecs.table,
-    },
-    inlineContentSpecs: {
-      ...defaultInlineContentSpecs,
-    },
-    styleSpecs: {
-      ...defaultStyleSpecs,
-    },
-  });
-
-  // Creates a new editor instance.
-  const editor = useCreateBlockNote({
-    initialContent: undefined,
-    schema,
-  }) as unknown as BlockNoteEditor;
+  useEffect(() => {
+    if (initialText != null) {
+      setText(initialText);
+    }
+  }, [initialText]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const onChange = useCallback(
-    debounce(async () => {
-      const blocks = editor.document;
-      const html = await editor.blocksToHTMLLossy(blocks);
+  const save = useCallback(
+    debounce(async (value: string) => {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      fileSubmissionApi.updateAltText(file.altFileId!, html);
+      fileSubmissionApi.updateAltText(file.altFileId!, value);
     }, 500),
-    [editor],
+    [file.altFileId],
   );
-
-  // For initialization; on mount, convert the initial HTML to blocks and replace the default editor's content
-  useEffect(() => {
-    async function loadInitialHTML() {
-      const blocks = await editor.tryParseHTMLToBlocks(initialHTML ?? '');
-      editor.replaceBlocks(editor.document, blocks);
-    }
-    loadInitialHTML();
-  }, [editor, initialHTML]);
 
   if (isLoading || isFetching) {
     return <Loader />;
@@ -108,24 +50,17 @@ export function FileTextAlt(props: FileTextFileAltProps) {
       <Input.Label>
         <Trans>Fallback Text</Trans>
       </Input.Label>
-      <ScrollArea.Autosize mah={200}>
-        <BlockNoteView
-          theme={theme.colorScheme === 'light' ? 'light' : 'dark'}
-          editor={editor}
-          tableHandles={false}
-          slashMenu={false}
-          onBlur={() => {
-            onChange();
-          }}
-        >
-          <SuggestionMenuController
-            triggerCharacter="/"
-            getItems={async (query) =>
-              filterSuggestionItems(getCustomSlashMenuItems(editor), query)
-            }
-          />
-        </BlockNoteView>
-      </ScrollArea.Autosize>
+      <Textarea
+        value={text}
+        onChange={(e) => {
+          const val = e.currentTarget.value;
+          setText(val);
+          save(val);
+        }}
+        autosize
+        minRows={3}
+        maxRows={10}
+      />
     </>
   );
 }

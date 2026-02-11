@@ -3,5 +3,5 @@ import { IsString } from 'class-validator';
 
 export class UpdateAltFileDto implements IUpdateAltFileDto {
   @IsString()
-  html: string;
+  text: string;
 }

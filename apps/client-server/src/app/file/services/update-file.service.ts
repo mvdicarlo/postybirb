@@ -10,7 +10,7 @@ import { EntityId, FileType } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { eq } from 'drizzle-orm';
 import { async as hash } from 'hasha';
-import { html as htmlBeautify } from 'js-beautify';
+import { htmlToText } from 'html-to-text';
 import * as mammoth from 'mammoth';
 import { parse } from 'path';
 import { promisify } from 'util';
@@ -227,7 +227,7 @@ export class UpdateFileService {
       file.originalname.endsWith('.docx')
     ) {
       this.logger.info('[Mutation] Updating Alt File for Text Document: DOCX');
-      altText = (await mammoth.convertToHtml({ buffer: buf })).value;
+      altText = (await mammoth.extractRawText({ buffer: buf })).value;
     }
 
     if (
@@ -236,11 +236,12 @@ export class UpdateFileService {
     ) {
       this.logger.info('[Mutation] Updating Alt File for Text Document: RTF');
       const promisifiedRtf = promisify(rtf.fromString);
-      altText = await promisifiedRtf(buf.toString(), {
+      const rtfHtml = await promisifiedRtf(buf.toString(), {
         template(_, __, content: string) {
           return content;
         },
       });
+      altText = htmlToText(rtfHtml, { wordwrap: false });
     }
 
     if (file.mimetype === 'text/plain' || file.originalname.endsWith('.txt')) {
@@ -249,7 +250,7 @@ export class UpdateFileService {
     }
 
     return altText
-      ? Buffer.from(htmlBeautify(altText, { wrap_line_length: 120 }))
+      ? Buffer.from(altText)
       : null;
   }
 

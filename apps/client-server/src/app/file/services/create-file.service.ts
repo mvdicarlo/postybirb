@@ -4,15 +4,15 @@ import { Insert, Select } from '@postybirb/database';
 import { removeFile } from '@postybirb/fs';
 import { Logger } from '@postybirb/logger';
 import {
-  DefaultSubmissionFileMetadata,
-  FileSubmission,
-  FileType,
-  IFileBuffer,
+    DefaultSubmissionFileMetadata,
+    FileSubmission,
+    FileType,
+    IFileBuffer,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { eq } from 'drizzle-orm';
 import { async as hash } from 'hasha';
-import { html as htmlBeautify } from 'js-beautify';
+import { htmlToText } from 'html-to-text';
 import * as mammoth from 'mammoth';
 import { parse } from 'path';
 import { Sharp } from 'sharp';
@@ -20,14 +20,14 @@ import { promisify } from 'util';
 import { v4 as uuid } from 'uuid';
 
 import {
-  FileBuffer,
-  fromDatabaseRecord,
-  SubmissionFile,
+    FileBuffer,
+    fromDatabaseRecord,
+    SubmissionFile,
 } from '../../drizzle/models';
 import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
 import {
-  TransactionContext,
-  withTransactionContext,
+    TransactionContext,
+    withTransactionContext,
 } from '../../drizzle/transaction-context';
 import { MulterFileInfo } from '../models/multer-file-info';
 import { ImageUtil } from '../utils/image.util';
@@ -138,18 +138,19 @@ export class CreateFileService {
       file.originalname.endsWith('.doc')
     ) {
       this.logger.info('[Mutation] Creating Alt File for Text Document: DOCX');
-      altText = (await mammoth.convertToHtml({ buffer: buf })).value;
+      altText = (await mammoth.extractRawText({ buffer: buf })).value;
     } else if (
       file.mimetype === 'application/rtf' ||
       file.originalname.endsWith('.rtf')
     ) {
       this.logger.info('[Mutation] Creating Alt File for Text Document: RTF');
       const promisifiedRtf = promisify(rtf.fromString);
-      altText = await promisifiedRtf(buf.toString(), {
+      const rtfHtml = await promisifiedRtf(buf.toString(), {
         template(_, __, content: string) {
           return content;
         },
       });
+      altText = htmlToText(rtfHtml, { wordwrap: false });
     } else if (
       file.mimetype === 'text/plain' ||
       file.originalname.endsWith('.txt')
@@ -162,16 +163,14 @@ export class CreateFileService {
       );
     }
 
-    const prettifiedBuf = Buffer.from(
-      altText ? htmlBeautify(altText, { wrap_line_length: 120 }) : '',
-    );
+    const prettifiedBuf = Buffer.from(altText ?? '');
     const altFile = await this.createFileBufferEntity(
       ctx,
       entity,
       prettifiedBuf,
       {
-        mimeType: 'text/html',
-        fileName: `${entity.fileName}.html`,
+        mimeType: 'text/plain',
+        fileName: `${entity.fileName}.txt`,
       },
     );
     await ctx
