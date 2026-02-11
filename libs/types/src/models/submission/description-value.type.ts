@@ -1,11 +1,43 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-  Block,
-  BlockSchemaFromSpecs,
-  BlockSpec,
-  DefaultBlockSchema,
-  DefaultInlineContentSchema,
-} from '@blocknote/core';
+
+/**
+ * A mark applied to a text node in TipTap JSON (bold, italic, link, etc.).
+ */
+export interface TipTapMark {
+  type: string;
+  attrs?: Record<string, any>;
+}
+
+/**
+ * A node in TipTap's JSON document structure.
+ * Can be a block (paragraph, heading), inline (custom shortcut), or text node.
+ */
+export interface TipTapNode {
+  type: string;
+  attrs?: Record<string, any>;
+  content?: TipTapNode[];
+  marks?: TipTapMark[];
+  text?: string;
+}
+
+/**
+ * A TipTap JSON document — the root wrapper for editor content.
+ */
+export interface TipTapDoc {
+  type: 'doc';
+  content: TipTapNode[];
+}
+
+/**
+ * The description content stored for a submission.
+ * Uses TipTap's native JSON document format.
+ */
+export type Description = TipTapDoc;
+
+export const DefaultDescription = (): Description => ({
+  type: 'doc',
+  content: [],
+});
 
 /**
  * An object representing a description value.
@@ -38,72 +70,6 @@ export type DescriptionValue = {
    */
   description: Description;
 };
-
-type CustomInlineContentSchema = DefaultInlineContentSchema & {
-  username: {
-    type: 'username';
-    propSchema: {
-      id: {
-        default: string;
-      };
-      shortcut: {
-        default: string;
-      };
-      only: {
-        default: string;
-      };
-      username: {
-        default: string;
-      };
-    };
-    content: 'none';
-  };
-  customShortcut: {
-    type: 'customShortcut';
-    propSchema: {
-      id: {
-        default: string;
-      };
-    };
-    content: 'styled';
-  };
-  titleShortcut: {
-    type: 'titleShortcut';
-    propSchema: Record<string, never>;
-    content: 'none';
-  };
-  tagsShortcut: {
-    type: 'tagsShortcut';
-    propSchema: Record<string, never>;
-    content: 'none';
-  };
-  contentWarningShortcut: {
-    type: 'contentWarningShortcut';
-    propSchema: Record<string, never>;
-    content: 'none';
-  };
-};
-
-type DefaultBlock = BlockSpec<
-  'defaultShortcut',
-  {
-    default: {
-      default: undefined;
-      type: 'string';
-    };
-  },
-  'none'
->;
-
-type CustomBlockContentSchema = DefaultBlockSchema &
-  BlockSchemaFromSpecs<{ defaultShortcut: DefaultBlock }>;
-
-export type Description = Block<
-  CustomBlockContentSchema,
-  CustomInlineContentSchema
->[];
-
-export const DefaultDescription = (): Description => [];
 
 /** Default description value @type {DescriptionValue} */
 export const DefaultDescriptionValue = (): DescriptionValue => ({

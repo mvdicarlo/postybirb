@@ -1,20 +1,20 @@
 /* eslint-disable lingui/text-restrictions */
 /* eslint-disable lingui/no-unlocalized-strings */
 import {
-  BlockNoteEditor,
-  BlockNoteSchema,
-  defaultBlockSpecs,
-  defaultInlineContentSpecs,
-  defaultStyleSpecs,
+    BlockNoteEditor,
+    BlockNoteSchema,
+    defaultBlockSpecs,
+    defaultInlineContentSpecs,
+    defaultStyleSpecs,
 } from '@blocknote/core';
 import '@blocknote/core/fonts/inter.css';
 import { BlockNoteView } from '@blocknote/mantine';
 import '@blocknote/mantine/style.css';
 import {
-  DefaultReactSuggestionItem,
-  getDefaultReactSlashMenuItems,
-  SuggestionMenuController,
-  useCreateBlockNote,
+    DefaultReactSuggestionItem,
+    getDefaultReactSlashMenuItems,
+    SuggestionMenuController,
+    useCreateBlockNote,
 } from '@blocknote/react';
 import { Trans } from '@lingui/react/macro';
 import { Tooltip, useMantineColorScheme } from '@mantine/core';
@@ -24,22 +24,22 @@ import { CustomShortcutStore } from '../../../stores/custom-shortcut.store';
 import { useStore } from '../../../stores/use-store';
 import { WebsiteStore } from '../../../stores/website.store';
 import {
-  getCustomShortcutsMenuItems,
-  InlineCustomShortcut,
+    getCustomShortcutsMenuItems,
+    InlineCustomShortcut,
 } from './custom/custom-shortcut';
 import {
-  DefaultShortcut,
-  getDefaultShortcutMenuItem,
+    DefaultShortcut,
+    getDefaultShortcutMenuItem,
 } from './custom/default-shortcut';
 import {
-  getSystemShortcutsMenuItems,
-  InlineContentWarningShortcut,
-  InlineTagsShortcut,
-  InlineTitleShortcut,
+    getSystemShortcutsMenuItems,
+    InlineContentWarningShortcut,
+    InlineTagsShortcut,
+    InlineTitleShortcut,
 } from './custom/inline-system-shortcuts';
 import {
-  getUsernameShortcutsMenuItems,
-  InlineUsernameShortcut,
+    getUsernameShortcutsMenuItems,
+    InlineUsernameShortcut,
 } from './custom/username-shortcut';
 import { filterSuggestionItems } from './filter-suggestion-item';
 
@@ -102,7 +102,7 @@ export function PostyBirbEditor(props: PostyBirbEditorProps) {
 
   // Creates a new editor instance.
   const editor = useCreateBlockNote({
-    initialContent: value?.length ? (value as never) : undefined,
+    initialContent: value?.content?.length ? (value as never) : undefined,
     schema,
   }) as unknown as BlockNoteEditor;
 
@@ -158,7 +158,7 @@ export function PostyBirbEditor(props: PostyBirbEditorProps) {
         tableHandles={false}
         slashMenu={false}
         onChange={() => {
-          onChange(editor.document);
+          onChange(editor.document as unknown as Description);
         }}
       >
         <SuggestionMenuController

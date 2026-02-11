@@ -1,28 +1,28 @@
 import { Trans } from '@lingui/react/macro';
 import {
-  Box,
-  Button,
-  Collapse,
-  Divider,
-  Drawer,
-  Group,
-  Loader,
-  Paper,
-  Stack,
-  Text,
-  TextInput,
+    Box,
+    Button,
+    Collapse,
+    Divider,
+    Drawer,
+    Group,
+    Loader,
+    Paper,
+    Stack,
+    Text,
+    TextInput,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { DefaultDescription, ICustomShortcutDto } from '@postybirb/types';
 import {
-  IconChevronDown,
-  IconChevronUp,
-  IconPlus,
-  IconSearch,
-  IconSortAscendingLetters,
-  IconSortDescendingLetters,
-  IconTrash,
+    IconChevronDown,
+    IconChevronUp,
+    IconPlus,
+    IconSearch,
+    IconSortAscendingLetters,
+    IconSortDescendingLetters,
+    IconTrash,
 } from '@tabler/icons-react';
 import { useMemo, useState } from 'react';
 import customShortcutApi from '../../../api/custom-shortcut.api';
@@ -103,15 +103,14 @@ function ExistingShortcut({ shortcut }: { shortcut: ICustomShortcutDto }) {
             disabled={!isValidShortcut(state) || !hasChanges}
             onClick={() => {
               const trimmedState = { ...state };
-              // BlockNote has a tendency of adding a padding element at the end that we don't want in a custom shortcut
-              while (trimmedState.shortcut.length > 0) {
+              // TipTap may add empty trailing paragraphs we don't want in a custom shortcut
+              while ((trimmedState.shortcut.content?.length ?? 0) > 0) {
                 const lastItem =
-                  trimmedState.shortcut[trimmedState.shortcut.length - 1];
+                  trimmedState.shortcut.content[trimmedState.shortcut.content.length - 1];
                 if (
-                  (lastItem.content as [])?.length === 0 &&
-                  lastItem.children.length === 0
+                  !lastItem.content || lastItem.content.length === 0
                 ) {
-                  trimmedState.shortcut.pop();
+                  trimmedState.shortcut.content.pop();
                 } else {
                   break;
                 }
@@ -251,7 +250,7 @@ function CustomShortcuts() {
               </Text>
               <PostyBirbEditor
                 isDefaultEditor={false}
-                value={newShortcut.shortcut || []}
+                value={newShortcut.shortcut || DefaultDescription()}
                 onChange={(val) =>
                   setNewShortcut({ ...newShortcut, shortcut: val })
                 }

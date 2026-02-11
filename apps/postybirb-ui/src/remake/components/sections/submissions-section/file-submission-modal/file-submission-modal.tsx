@@ -212,7 +212,7 @@ export function FileSubmissionModal({
         fileMetadata,
         defaultOptions: {
           tags: tags.length > 0 ? tags : undefined,
-          description: description.length > 0 ? description : undefined,
+          description: description.content?.length ? description : undefined,
           rating: rating !== SubmissionRating.GENERAL ? rating : undefined,
         },
         templateId: selectedTemplateId,

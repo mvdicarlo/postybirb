@@ -6,7 +6,7 @@
 import { Trans } from '@lingui/react/macro';
 import { Alert, Box, Checkbox } from '@mantine/core';
 import { DescriptionFieldType } from '@postybirb/form-builder';
-import { DefaultDescriptionValue, DescriptionValue } from '@postybirb/types';
+import { DefaultDescription, DefaultDescriptionValue, DescriptionValue } from '@postybirb/types';
 import { IconAlertTriangle } from '@tabler/icons-react';
 import { useMemo } from 'react';
 import { DescriptionEditor } from '../../../../../../shared';
@@ -92,22 +92,22 @@ export function DescriptionField({
   const insertTags = fieldValue.insertTags || defaultInsertTags;
   const insertTitle = fieldValue.insertTitle || defaultInsertTitle;
   const description = useMemo(
-    () => fieldValue.description || [],
+    () => fieldValue.description || DefaultDescription(),
     [fieldValue.description],
   );
 
   const hasTagsShortcut = useMemo(
-    () => hasInlineContentType(description, 'tagsShortcut'),
+    () => hasInlineContentType(description.content || [], 'tagsShortcut'),
     [description],
   );
 
   const hasTitleShortcut = useMemo(
-    () => hasInlineContentType(description, 'titleShortcut'),
+    () => hasInlineContentType(description.content || [], 'titleShortcut'),
     [description],
   );
 
   const containsLegacyShortcuts = useMemo(
-    () => hasLegacyShortcuts(description),
+    () => hasLegacyShortcuts(description.content || []),
     [description],
   );
 

@@ -2,7 +2,7 @@
 import { Trans } from '@lingui/react/macro';
 import { Alert, Box, Checkbox } from '@mantine/core';
 import { DescriptionFieldType } from '@postybirb/form-builder';
-import { DefaultDescriptionValue, DescriptionValue } from '@postybirb/types';
+import { DefaultDescription, DefaultDescriptionValue, DescriptionValue } from '@postybirb/types';
 import { IconAlertTriangle } from '@tabler/icons-react';
 import { useMemo } from 'react';
 import { PostyBirbEditor } from '../../shared/postybirb-editor/postybirb-editor';
@@ -62,12 +62,12 @@ export function DescriptionField(props: FormFieldProps<DescriptionFieldType>) {
   const insertTags = fieldValue.insertTags || defaultInsertTags;
   const insertTitle = fieldValue.insertTitle || defaultInsertTitle;
   const description = useMemo(
-    () => fieldValue.description || [],
+    () => fieldValue.description || DefaultDescription(),
     [fieldValue.description],
   );
 
   const containsLegacyShortcuts = useMemo(
-    () => hasLegacyShortcuts(description),
+    () => hasLegacyShortcuts(description.content || []),
     [description],
   );
 

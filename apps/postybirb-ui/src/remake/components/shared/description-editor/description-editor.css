@@ -4,20 +4,36 @@
 .description-editor-container {
   display: flex;
   flex-direction: column;
+  border: 1px solid var(--mantine-color-default-border);
+  border-radius: var(--mantine-radius-md);
 }
 
-.description-editor-container .bn-container {
+.tiptap-editor-wrapper {
   flex: 1;
   display: flex;
   flex-direction: column;
+  position: relative;
+  overflow: visible;
 }
 
-.description-editor-container .bn-editor {
+/* Bubble menu z-index */
+.pb-bubble-menu {
+  z-index: 1000;
+}
+
+.tiptap-editor-wrapper .tiptap {
   flex: 1;
+  padding: 8px 16px;
+  outline: none;
 }
 
-/* Ensure the root element also expands */
-.description-editor-container [data-theming-css-variables-demo] {
-  height: 100%;
+/* Placeholder styling */
+.tiptap p.is-editor-empty:first-child::before {
+  color: var(--mantine-color-dimmed);
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
 }
+
  
