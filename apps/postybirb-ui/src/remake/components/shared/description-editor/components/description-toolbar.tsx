@@ -60,28 +60,24 @@ export function DescriptionToolbar({ editor, onEditHtml, onInsertMedia }: Descri
     >
       {/* Formatting */}
       <ToolbarButton
-        editor={editor}
         icon={<IconBold size={16} />}
         label="Bold"
         isActive={editor.isActive('bold')}
         onClick={() => editor.chain().focus().toggleBold().run()}
       />
       <ToolbarButton
-        editor={editor}
         icon={<IconItalic size={16} />}
         label="Italic"
         isActive={editor.isActive('italic')}
         onClick={() => editor.chain().focus().toggleItalic().run()}
       />
       <ToolbarButton
-        editor={editor}
         icon={<IconUnderline size={16} />}
         label="Underline"
         isActive={editor.isActive('underline')}
         onClick={() => editor.chain().focus().toggleUnderline().run()}
       />
       <ToolbarButton
-        editor={editor}
         icon={<IconStrikethrough size={16} />}
         label="Strikethrough"
         isActive={editor.isActive('strike')}
@@ -91,21 +87,18 @@ export function DescriptionToolbar({ editor, onEditHtml, onInsertMedia }: Descri
 
       {/* Headings */}
       <ToolbarButton
-        editor={editor}
         icon={<IconH1 size={16} />}
         label="Heading 1"
         isActive={editor.isActive('heading', { level: 1 })}
         onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
       />
       <ToolbarButton
-        editor={editor}
         icon={<IconH2 size={16} />}
         label="Heading 2"
         isActive={editor.isActive('heading', { level: 2 })}
         onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
       />
       <ToolbarButton
-        editor={editor}
         icon={<IconH3 size={16} />}
         label="Heading 3"
         isActive={editor.isActive('heading', { level: 3 })}
@@ -116,21 +109,18 @@ export function DescriptionToolbar({ editor, onEditHtml, onInsertMedia }: Descri
 
       {/* Block types */}
       <ToolbarButton
-        editor={editor}
         icon={<IconBlockquote size={16} />}
         label="Blockquote"
         isActive={editor.isActive('blockquote')}
         onClick={() => editor.chain().focus().toggleBlockquote().run()}
       />
       <ToolbarButton
-        editor={editor}
         icon={<IconList size={16} />}
         label="Bullet List"
         isActive={editor.isActive('bulletList')}
         onClick={() => editor.chain().focus().toggleBulletList().run()}
       />
       <ToolbarButton
-        editor={editor}
         icon={<IconListNumbers size={16} />}
         label="Ordered List"
         isActive={editor.isActive('orderedList')}
@@ -141,7 +131,6 @@ export function DescriptionToolbar({ editor, onEditHtml, onInsertMedia }: Descri
 
       {/* Insert */}
       <ToolbarButton
-        editor={editor}
         icon={<IconLine size={16} />}
         label="Horizontal Rule"
         isActive={false}
@@ -149,7 +138,6 @@ export function DescriptionToolbar({ editor, onEditHtml, onInsertMedia }: Descri
       />
       <LinkButton editor={editor} />
       <ToolbarButton
-        editor={editor}
         icon={<IconPhoto size={16} />}
         label="Insert Image / Video"
         isActive={false}
@@ -160,21 +148,18 @@ export function DescriptionToolbar({ editor, onEditHtml, onInsertMedia }: Descri
 
       {/* Alignment */}
       <ToolbarButton
-        editor={editor}
         icon={<IconAlignLeft size={16} />}
         label="Align Left"
         isActive={editor.isActive({ textAlign: 'left' })}
         onClick={() => editor.chain().focus().setTextAlign('left').run()}
       />
       <ToolbarButton
-        editor={editor}
         icon={<IconAlignCenter size={16} />}
         label="Align Center"
         isActive={editor.isActive({ textAlign: 'center' })}
         onClick={() => editor.chain().focus().setTextAlign('center').run()}
       />
       <ToolbarButton
-        editor={editor}
         icon={<IconAlignRight size={16} />}
         label="Align Right"
         isActive={editor.isActive({ textAlign: 'right' })}
@@ -185,14 +170,12 @@ export function DescriptionToolbar({ editor, onEditHtml, onInsertMedia }: Descri
 
       {/* Indent */}
       <ToolbarButton
-        editor={editor}
         icon={<IconIndentIncrease size={16} />}
         label="Indent"
         isActive={false}
         onClick={() => editor.chain().focus().indent().run()}
       />
       <ToolbarButton
-        editor={editor}
         icon={<IconIndentDecrease size={16} />}
         label="Outdent"
         isActive={false}
@@ -208,7 +191,6 @@ export function DescriptionToolbar({ editor, onEditHtml, onInsertMedia }: Descri
 
       {/* History */}
       <ToolbarButton
-        editor={editor}
         icon={<IconArrowBackUp size={16} />}
         label="Undo"
         isActive={false}
@@ -216,7 +198,6 @@ export function DescriptionToolbar({ editor, onEditHtml, onInsertMedia }: Descri
         disabled={!editor.can().undo()}
       />
       <ToolbarButton
-        editor={editor}
         icon={<IconArrowForwardUp size={16} />}
         label="Redo"
         isActive={false}
@@ -228,7 +209,6 @@ export function DescriptionToolbar({ editor, onEditHtml, onInsertMedia }: Descri
 
       {/* HTML source */}
       <ToolbarButton
-        editor={editor}
         icon={<IconSourceCode size={16} />}
         label="Edit HTML"
         isActive={false}
@@ -246,7 +226,6 @@ function ToolbarButton({
   onClick,
   disabled,
 }: {
-  editor: Editor;
   icon: React.ReactNode;
   label: string;
   isActive: boolean;

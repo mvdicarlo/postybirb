@@ -23,7 +23,7 @@ export function HtmlEditModal({ editor, opened, onClose }: HtmlEditModalProps) {
   }, [opened, editor]);
 
   const handleApply = useCallback(() => {
-    editor.commands.setContent(html, true);
+    editor.commands.setContent(html, { emitUpdate: true });
     onClose();
   }, [editor, html, onClose]);
 

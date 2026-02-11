@@ -1,24 +1,25 @@
 import {
-  forwardRef,
-  Inject,
-  Injectable,
-  NotFoundException,
+    forwardRef,
+    Inject,
+    Injectable,
+    NotFoundException,
 } from '@nestjs/common';
 import { Insert } from '@postybirb/database';
 import {
-  AccountId,
-  Description,
-  DescriptionValue,
-  DynamicObject,
-  EntityId,
-  ISubmission,
-  ISubmissionMetadata,
-  IWebsiteFormFields,
-  NULL_ACCOUNT_ID,
-  SubmissionId,
-  SubmissionMetadataType,
-  SubmissionType,
-  ValidationResult,
+    AccountId,
+    Description,
+    DescriptionValue,
+    DynamicObject,
+    EntityId,
+    ISubmission,
+    ISubmissionMetadata,
+    IWebsiteFormFields,
+    NULL_ACCOUNT_ID,
+    SubmissionId,
+    SubmissionMetadataType,
+    SubmissionType,
+    TipTapNode,
+    ValidationResult,
 } from '@postybirb/types';
 import { AccountService } from '../account/account.service';
 import { PostyBirbService } from '../common/service/postybirb-service';
@@ -376,7 +377,8 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
     for (const option of websiteOptions) {
       const { data } = option;
       const descValue: DescriptionValue | undefined = data?.description;
-      const blocks: Description | undefined = descValue?.description;
+      const doc: Description | undefined = descValue?.description;
+      const blocks = doc?.content;
 
       if (!blocks || !Array.isArray(blocks) || blocks.length === 0) {
         continue;
@@ -389,7 +391,7 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
       if (changed) {
         const updatedDescription: DescriptionValue = {
           ...(descValue as DescriptionValue),
-          description: filtered,
+          description: { type: 'doc', content: filtered },
         };
 
         await this.repository.update(option.id, {
@@ -404,15 +406,15 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
   }
 
   /**
-   * Removes inline customShortcut items matching the given id from a Description document.
+   * Removes inline customShortcut items matching the given id from a TipTap content array.
    * Simple recursive filter without whitespace normalization.
    */
   public filterCustomShortcut(
-    blocks: Description,
+    blocks: TipTapNode[],
     deleteId: string,
   ): {
     changed: boolean;
-    filtered: Description;
+    filtered: TipTapNode[];
   } {
     let changed = false;
 
@@ -429,15 +431,15 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
 
         const {
           type,
-          props,
+          attrs,
           content: nodeContent,
         } = node as {
           type?: string;
-          props?: Record<string, unknown>;
+          attrs?: Record<string, unknown>;
           content?: unknown[];
         };
 
-        if (type === 'customShortcut' && String(props?.id ?? '') === deleteId) {
+        if (type === 'customShortcut' && String(attrs?.id ?? '') === deleteId) {
           changed = true;
           continue; // drop this inline
         }
@@ -456,20 +458,11 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
       return out;
     };
 
-    const filterBlocks = (arr: Description): Description =>
+    const filterBlocks = (arr: TipTapNode[]): TipTapNode[] =>
       arr.map((blk) => {
-        const clone: typeof blk = { ...blk } as typeof blk & {
-          content?: unknown[];
-          children?: unknown;
-        };
+        const clone: TipTapNode = { ...blk };
         if (Array.isArray(clone.content)) {
-          (clone as unknown as { content: unknown[] }).content = filterInline(
-            clone.content,
-          );
-        }
-        if (Array.isArray(clone.children)) {
-          (clone as unknown as { children: Description }).children =
-            filterBlocks(clone.children as unknown as Description);
+          clone.content = filterInline(clone.content) as TipTapNode[];
         }
         return clone;
       });

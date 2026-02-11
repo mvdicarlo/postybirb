@@ -77,12 +77,10 @@ export const TagsShortcutExtension = Node.create({
       insertTagsShortcut:
         (attrs?: { only?: string }) =>
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ({ commands }: { commands: any }) => {
-          return commands.insertContent([
+        ({ commands }: { commands: any }) => commands.insertContent([
             { type: this.name, attrs: { only: attrs?.only ?? '' } },
             { type: 'text', text: ' ' },
-          ]);
-        },
+          ]),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any;
   },

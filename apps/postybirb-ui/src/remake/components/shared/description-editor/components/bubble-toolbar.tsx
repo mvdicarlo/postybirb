@@ -66,6 +66,7 @@ export function BubbleToolbar({ editor }: BubbleToolbarProps) {
       <div
         className="pb-bubble-menu"
         ref={bubbleRef}
+        role="toolbar"
         onMouseDown={(e) => {
           // Prevent blur when interacting with the color picker
           if (colorOpened) {

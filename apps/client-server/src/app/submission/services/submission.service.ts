@@ -650,7 +650,7 @@ export class SubmissionService
           // Handle description override: only replace if overrideDescription is true AND template has non-empty description
           if (
             !overrideDescription ||
-            !dataToApply.description?.description?.length
+            !dataToApply.description?.description?.content?.length
           ) {
             delete dataToApply.description;
           }

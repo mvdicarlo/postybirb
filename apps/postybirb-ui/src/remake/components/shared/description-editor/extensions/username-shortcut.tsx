@@ -483,8 +483,7 @@ export const UsernameShortcutExtension = Node.create({
       insertUsernameShortcut:
         (attrs: { shortcut: string; only?: string; username?: string }) =>
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ({ commands }: { commands: any }) => {
-          return commands.insertContent([
+        ({ commands }: { commands: any }) => commands.insertContent([
             {
               type: this.name,
               attrs: {
@@ -494,8 +493,7 @@ export const UsernameShortcutExtension = Node.create({
               },
             },
             { type: 'text', text: ' ' },
-          ]);
-        },
+          ]),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any;
   },

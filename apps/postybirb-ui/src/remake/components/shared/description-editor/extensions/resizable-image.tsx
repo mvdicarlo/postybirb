@@ -83,7 +83,7 @@ function ResizableImageView({
 
   // Close popover and deactivate on outside click
   useEffect(() => {
-    if (!active && !opened) return;
+    if (!active && !opened) return undefined;
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       const inWrapper = wrapperRef.current?.contains(target);
@@ -159,7 +159,7 @@ function ResizableImageView({
   );
 
   useEffect(() => {
-    if (!dragging) return;
+    if (!dragging) return undefined;
 
     const onMouseMove = (e: MouseEvent) => {
       const ds = dragState.current;
@@ -258,6 +258,7 @@ function ResizableImageView({
             className={`resizable-image-wrapper${active || selected ? ' resizable-image-wrapper--active' : ''}`}
             style={{ position: 'relative', display: 'inline-block', lineHeight: 0 }}
           >
+            {/* eslint-disable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex */}
             <img
               ref={imgRef}
               src={src}
@@ -271,6 +272,14 @@ function ResizableImageView({
                 setActive(true);
                 open();
               }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setActive(true);
+                  open();
+                }
+              }}
+              tabIndex={0}
               draggable={false}
               className={`resizable-image${selected ? ' resizable-image--selected' : ''}`}
               style={{
@@ -279,11 +288,13 @@ function ResizableImageView({
                 display: 'block',
               }}
             />
+            {/* eslint-enable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex */}
             {/* Drag handles — only visible when active/selected */}
             {(active || selected) &&
               handles.map(({ position, cursor }) => (
                 <div
                   key={position}
+                  role="presentation"
                   className="resizable-image-handle"
                   style={handleStyle(position, cursor)}
                   onMouseDown={(e) => onDragStart(e, position)}
@@ -385,12 +396,10 @@ export const ResizableImageExtension = Node.create({
       setImage:
         (attrs: { src: string; alt?: string; title?: string; width?: number; height?: number }) =>
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ({ commands }: { commands: any }) => {
-          return commands.insertContent({
+        ({ commands }: { commands: any }) => commands.insertContent({
             type: this.name,
             attrs,
-          });
-        },
+          }),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any;
   },

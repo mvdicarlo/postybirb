@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
 import {
-  DefaultDescriptionValue,
-  DefaultTagValue,
-  Description,
-  SubmissionRating,
-  SubmissionType,
+    DefaultDescriptionValue,
+    DefaultTagValue,
+    SubmissionRating,
+    SubmissionType,
+    TipTapNode,
 } from '@postybirb/types';
 import { AccountModule } from '../account/account.module';
 import { AccountService } from '../account/account.service';
@@ -212,52 +212,37 @@ describe('WebsiteOptionsService', () => {
     expect(update.data.title).toEqual('title updated');
   });
 
-  it('filters nested inline content and children blocks', async () => {
-    const nestedBlocks: Description = [
+  it('filters nested inline content', async () => {
+    const blocks: TipTapNode[] = [
       {
-        id: 'test-basic-text',
         type: 'paragraph',
-        props: {
-          textColor: 'default',
-          backgroundColor: 'default',
-          textAlignment: 'left',
-        },
         content: [
-          { type: 'text', text: 'Hello, ', styles: { bold: true } },
+          { type: 'text', text: 'Hello, ', marks: [{ type: 'bold' }] },
           {
             type: 'customShortcut',
-            props: {
+            attrs: {
               id: 'to-delete',
             },
             content: [
               {
                 type: 'text',
                 text: 'User',
-                styles: {},
               },
             ],
           },
         ],
-        children: [],
       },
     ];
 
     const { changed, filtered } = service.filterCustomShortcut(
-      nestedBlocks,
+      blocks,
       'to-delete',
     );
     expect(changed).toBeTruthy();
     expect(filtered).toEqual([
       {
-        id: 'test-basic-text',
         type: 'paragraph',
-        props: {
-          textColor: 'default',
-          backgroundColor: 'default',
-          textAlignment: 'left',
-        },
-        content: [{ type: 'text', text: 'Hello, ', styles: { bold: true } }],
-        children: [],
+        content: [{ type: 'text', text: 'Hello, ', marks: [{ type: 'bold' }] }],
       },
     ]);
   });

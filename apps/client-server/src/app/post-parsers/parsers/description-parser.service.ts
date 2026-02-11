@@ -12,8 +12,8 @@ import { isWithCustomDescriptionParser } from '../../websites/models/website-mod
 import { isWithRuntimeDescriptionParser } from '../../websites/models/website-modifiers/with-runtime-description-parser';
 import { UnknownWebsite, Website } from '../../websites/website';
 import {
-    DescriptionNodeTree,
-    InsertionOptions,
+  DescriptionNodeTree,
+  InsertionOptions,
 } from '../models/description-node/description-node-tree';
 import { ConversionContext } from '../models/description-node/description-node.base';
 
@@ -187,7 +187,7 @@ export class DescriptionParserService {
       const shortcut = await this.customShortcutsService?.findById(id);
       if (shortcut) {
         const shortcutBlocks = this.mergeBlocks(
-          (shortcut.shortcut as any)?.content ?? [],
+          shortcut.shortcut?.content ?? [],
         );
         customShortcuts.set(id, shortcutBlocks);
       }

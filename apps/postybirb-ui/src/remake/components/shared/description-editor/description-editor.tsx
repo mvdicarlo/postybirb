@@ -18,7 +18,7 @@ import {
   IconTextPlus,
   IconUser,
 } from '@tabler/icons-react';
-import { Extension } from '@tiptap/core';
+import { AnyExtension, Extension } from '@tiptap/core';
 import Blockquote from '@tiptap/extension-blockquote';
 import Bold from '@tiptap/extension-bold';
 import BulletList from '@tiptap/extension-bullet-list';
@@ -43,7 +43,7 @@ import TextAlign from '@tiptap/extension-text-align';
 import { TextStyle } from '@tiptap/extension-text-style';
 import Underline from '@tiptap/extension-underline';
 import { PluginKey } from '@tiptap/pm/state';
-import { EditorContent, ReactRenderer, useEditor } from '@tiptap/react';
+import { Editor, EditorContent, ReactRenderer, useEditor } from '@tiptap/react';
 import Suggestion from '@tiptap/suggestion';
 import { useCallback, useMemo, useRef } from 'react';
 import tippy, { type Instance as TippyInstance } from 'tippy.js';
@@ -180,6 +180,9 @@ export function DescriptionEditor({
   const [htmlModalOpened, { open: openHtmlModal, close: closeHtmlModal }] = useDisclosure(false);
   const [mediaModalOpened, { open: openMediaModal, close: closeMediaModal }] = useDisclosure(false);
 
+  // Editor ref for use in callbacks before editor is created
+  const editorRef = useRef<Editor | null>(null);
+
   // Get username shortcuts from websites
   const usernameShortcuts = useMemo(
     () =>
@@ -279,7 +282,7 @@ export function DescriptionEditor({
           group: 'Shortcuts',
           icon: <IconTextPlus size={18} />,
           onSelect: () => {
-            editor?.chain().focus().insertContent({ type: 'defaultShortcut', attrs: { only: '' } }).run();
+            editorRef.current?.chain().focus().insertContent({ type: 'defaultShortcut', attrs: { only: '' } }).run();
           },
         });
       }
@@ -292,7 +295,7 @@ export function DescriptionEditor({
           icon: <IconH1 size={16} />,
           group: 'Shortcuts',
           onSelect: () => {
-            editor?.chain().focus().insertContent([
+            editorRef.current?.chain().focus().insertContent([
               { type: 'titleShortcut', attrs: { only: '' } },
               { type: 'text', text: ' ' },
             ]).run();
@@ -304,7 +307,7 @@ export function DescriptionEditor({
           icon: <IconTags size={16} />,
           group: 'Shortcuts',
           onSelect: () => {
-            editor?.chain().focus().insertContent([
+            editorRef.current?.chain().focus().insertContent([
               { type: 'tagsShortcut', attrs: { only: '' } },
               { type: 'text', text: ' ' },
             ]).run();
@@ -316,7 +319,7 @@ export function DescriptionEditor({
           icon: <IconAlertTriangle size={16} />,
           group: 'Shortcuts',
           onSelect: () => {
-            editor?.chain().focus().insertContent([
+            editorRef.current?.chain().focus().insertContent([
               { type: 'contentWarningShortcut', attrs: { only: '' } },
               { type: 'text', text: ' ' },
             ]).run();
@@ -332,7 +335,7 @@ export function DescriptionEditor({
             icon: <IconQuote size={16} />,
             group: 'Custom Shortcuts',
             onSelect: () => {
-              editor?.chain().focus().insertContent([
+              editorRef.current?.chain().focus().insertContent([
                 { type: 'customShortcut', attrs: { id: sc.id, only: '' } },
                 { type: 'text', text: ' ' },
               ]).run();
@@ -348,7 +351,7 @@ export function DescriptionEditor({
           icon: <IconUser size={16} />,
           group: 'Username Shortcuts',
           onSelect: () => {
-            editor?.chain().focus().insertContent([
+            editorRef.current?.chain().focus().insertContent([
               {
                 type: 'username',
                 attrs: {
@@ -369,8 +372,8 @@ export function DescriptionEditor({
   );
 
   // Build suggestion extensions
-  const suggestionExtensions = useMemo(
-    () => [
+  const suggestionExtensions: AnyExtension[] = useMemo(
+    (): AnyExtension[] => [
       createSuggestionExtension('slashMenu', '/', getSlashItems),
       createSuggestionExtension('shortcutMenuAt', '@', getShortcutItems),
       createSuggestionExtension('shortcutMenuBacktick', '`', getShortcutItems),
@@ -431,6 +434,9 @@ export function DescriptionEditor({
       onChangeRef.current(e.getJSON() as Description);
     },
   });
+
+  // Keep ref in sync with editor for callbacks
+  editorRef.current = editor;
 
   return (
     <Box
