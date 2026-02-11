@@ -1,9 +1,6 @@
-import {
-    ConversionContext,
-    IDescriptionBlockNodeClass,
-    IDescriptionInlineNodeClass,
-    IDescriptionTextNodeClass,
-} from '../description-node.base';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { ConversionContext } from '../description-node.base';
+import { isTextNode, TipTapNode } from '../description-node.types';
 import { BaseConverter } from './base-converter';
 
 /**
@@ -17,9 +14,6 @@ export type NPFContentBlock =
   | NPFAudioBlock
   | NPFVideoBlock;
 
-/**
- * NPF Text Block
- */
 export interface NPFTextBlock {
   type: 'text';
   text: string;
@@ -36,9 +30,6 @@ export interface NPFTextBlock {
   formatting?: NPFInlineFormatting[];
 }
 
-/**
- * NPF Inline Formatting
- */
 export interface NPFInlineFormatting {
   start: number;
   end: number;
@@ -50,16 +41,11 @@ export interface NPFInlineFormatting {
     | 'link'
     | 'mention'
     | 'color';
-  url?: string; // For link type
-  blog?: {
-    uuid: string;
-  }; // For mention type
-  hex?: string; // For color type
+  url?: string;
+  blog?: { uuid: string };
+  hex?: string;
 }
 
-/**
- * NPF Image Block
- */
 export interface NPFImageBlock {
   type: 'image';
   media: NPFMediaObject[];
@@ -68,9 +54,6 @@ export interface NPFImageBlock {
   colors?: Record<string, string>;
 }
 
-/**
- * NPF Media Object
- */
 export interface NPFMediaObject {
   url: string;
   type?: string;
@@ -79,9 +62,6 @@ export interface NPFMediaObject {
   original_dimensions_missing?: boolean;
 }
 
-/**
- * NPF Link Block
- */
 export interface NPFLinkBlock {
   type: 'link';
   url: string;
@@ -93,9 +73,6 @@ export interface NPFLinkBlock {
   poster?: NPFMediaObject[];
 }
 
-/**
- * NPF Audio Block
- */
 export interface NPFAudioBlock {
   type: 'audio';
   provider?: string;
@@ -107,9 +84,6 @@ export interface NPFAudioBlock {
   poster?: NPFMediaObject[];
 }
 
-/**
- * NPF Video Block
- */
 export interface NPFVideoBlock {
   type: 'video';
   provider?: string;
@@ -122,9 +96,6 @@ export interface NPFVideoBlock {
 
 /**
  * Converter that outputs Tumblr NPF (Nuevo Post Format) blocks.
- * NPF is Tumblr's native rich content format.
- *
- * @see https://www.tumblr.com/docs/npf
  */
 export class NpfConverter extends BaseConverter {
   private currentFormatting: NPFInlineFormatting[] = [];
@@ -133,9 +104,6 @@ export class NpfConverter extends BaseConverter {
 
   private blocks: NPFContentBlock[] = [];
 
-  /**
-   * NPF blocks are accumulated and serialized to JSON.
-   */
   protected getBlockSeparator(): string {
     return '';
   }
@@ -143,14 +111,7 @@ export class NpfConverter extends BaseConverter {
   /**
    * Override convertBlocks to accumulate NPF blocks and return JSON.
    */
-  convertBlocks(
-    nodes: Array<
-      IDescriptionBlockNodeClass & {
-        accept<T>(converter: unknown, context: ConversionContext): T;
-      }
-    >,
-    context: ConversionContext,
-  ): string {
+  convertBlocks(nodes: TipTapNode[], context: ConversionContext): string {
     this.blocks = [];
     for (const node of nodes) {
       this.convertBlockNodeRecursive(node, context, 0);
@@ -162,61 +123,106 @@ export class NpfConverter extends BaseConverter {
    * Recursively converts a block node and its children to NPF blocks.
    */
   private convertBlockNodeRecursive(
-    node: IDescriptionBlockNodeClass,
+    node: TipTapNode,
     context: ConversionContext,
     indentLevel: number,
   ): void {
-    // Handle defaultShortcut expansion with 'only' filtering
     if (node.type === 'defaultShortcut') {
       if (!this.shouldRenderShortcut(node, context)) return;
-      // Expand the default description blocks
       if (context.defaultDescription && context.defaultDescription.length > 0) {
         for (const defaultBlock of context.defaultDescription) {
-          this.convertBlockNodeRecursive(
-            defaultBlock as IDescriptionBlockNodeClass,
-            context,
-            indentLevel,
-          );
+          this.convertBlockNodeRecursive(defaultBlock, context, indentLevel);
         }
+      }
+      return;
+    }
+
+    // Handle list containers — recurse into items
+    if (node.type === 'bulletList') {
+      for (const item of node.content ?? []) {
+        this.convertListItemToNpf(item, context, 'unordered-list-item', indentLevel);
+      }
+      return;
+    }
+
+    if (node.type === 'orderedList') {
+      for (const item of node.content ?? []) {
+        this.convertListItemToNpf(item, context, 'ordered-list-item', indentLevel);
+      }
+      return;
+    }
+
+    if (node.type === 'blockquote') {
+      for (const child of node.content ?? []) {
+        const block = this.convertBlockNodeToNpf(child, context);
+        if (block.type === 'text') {
+          block.subtype = 'quote';
+        }
+        this.blocks.push(block);
       }
       return;
     }
 
     const block = this.convertBlockNodeToNpf(node, context);
 
-    // Apply indent_level for nested blocks (NPF supports 0-7)
     if (
       indentLevel > 0 &&
       block.type === 'text' &&
       indentLevel <= 7
     ) {
       block.indent_level = indentLevel;
-      // Set subtype to indented if not already set
       if (!block.subtype) {
         block.subtype = 'indented';
       }
     }
 
     this.blocks.push(block);
+  }
 
-    // Recursively process children with increased indent level
-    if (node.children && node.children.length > 0) {
-      for (const child of node.children) {
-        this.convertBlockNodeRecursive(
-          child as IDescriptionBlockNodeClass,
-          context,
-          indentLevel + 1,
-        );
+  /**
+   * Convert a listItem node to NPF text block with appropriate subtype.
+   */
+  private convertListItemToNpf(
+    node: TipTapNode,
+    context: ConversionContext,
+    subtype: 'ordered-list-item' | 'unordered-list-item',
+    indentLevel: number,
+  ): void {
+    // listItem typically contains [paragraph, ...nested lists]
+    for (const child of node.content ?? []) {
+      if (child.type === 'paragraph') {
+        this.currentFormatting = [];
+        this.currentPosition = 0;
+        const text = this.extractText(child.content ?? [], context);
+        const npfBlock: NPFTextBlock = {
+          type: 'text',
+          text,
+          subtype,
+          formatting: this.currentFormatting.length > 0 ? this.currentFormatting : undefined,
+        };
+        if (indentLevel > 0 && indentLevel <= 7) {
+          npfBlock.indent_level = indentLevel;
+        }
+        this.blocks.push(npfBlock);
+      } else if (child.type === 'bulletList') {
+        for (const item of child.content ?? []) {
+          this.convertListItemToNpf(item, context, 'unordered-list-item', indentLevel + 1);
+        }
+      } else if (child.type === 'orderedList') {
+        for (const item of child.content ?? []) {
+          this.convertListItemToNpf(item, context, 'ordered-list-item', indentLevel + 1);
+        }
+      } else {
+        this.convertBlockNodeRecursive(child, context, indentLevel);
       }
     }
   }
 
   /**
    * Stub method required by BaseConverter interface.
-   * Returns JSON string of a single NPF block for compatibility.
    */
   convertBlockNode(
-    node: IDescriptionBlockNodeClass,
+    node: TipTapNode,
     context: ConversionContext,
   ): string {
     const block = this.convertBlockNodeToNpf(node, context);
@@ -224,15 +230,15 @@ export class NpfConverter extends BaseConverter {
   }
 
   /**
-   * Internal method that returns NPF blocks.
+   * Internal method that returns a single NPF block.
    */
   private convertBlockNodeToNpf(
-    node: IDescriptionBlockNodeClass,
+    node: TipTapNode,
     context: ConversionContext,
   ): NPFContentBlock {
-    // Reset state for each block
     this.currentFormatting = [];
     this.currentPosition = 0;
+    const attrs = node.attrs ?? {};
 
     switch (node.type) {
       case 'paragraph':
@@ -241,60 +247,32 @@ export class NpfConverter extends BaseConverter {
         return this.convertHeading(node, context);
       case 'image':
         return this.convertImage(node);
-      case 'video':
-        return this.convertVideo(node);
-      case 'audio':
-        return this.convertAudio(node);
-      case 'divider':
-        // Tumblr NPF doesn't have a horizontal rule, use empty text block
+      case 'horizontalRule':
         return { type: 'text', text: '' };
       case 'defaultShortcut':
-        // Default shortcut filtered by 'only' - becomes empty if not applicable
-        // The actual expansion happens in convertBlockNodeRecursive
         return { type: 'text', text: '' };
       default:
-        // Fallback to paragraph for unknown types
         return this.convertParagraph(node, context);
     }
   }
 
-  /**
-   * Converts a paragraph block to NPF text block.
-   */
   private convertParagraph(
-    node: IDescriptionBlockNodeClass,
+    node: TipTapNode,
     context: ConversionContext,
   ): NPFTextBlock {
-    const text = this.extractText(
-      node.content as IDescriptionInlineNodeClass[],
-      context,
-    );
+    const text = this.extractText(node.content ?? [], context);
     const formatting =
       this.currentFormatting.length > 0 ? this.currentFormatting : undefined;
-
-    return {
-      type: 'text',
-      text,
-      formatting,
-    };
+    return { type: 'text', text, formatting };
   }
 
-  /**
-   * Converts a heading block to NPF text block with subtype.
-   */
   private convertHeading(
-    node: IDescriptionBlockNodeClass,
+    node: TipTapNode,
     context: ConversionContext,
   ): NPFTextBlock {
-    const text = this.extractText(
-      node.content as IDescriptionInlineNodeClass[],
-      context,
-    );
-    const level = parseInt(node.props.level || '1', 10);
-
-    // NPF supports heading1 and heading2
+    const text = this.extractText(node.content ?? [], context);
+    const level = parseInt(node.attrs?.level || '1', 10);
     const subtype = level === 1 ? 'heading1' : 'heading2';
-
     return {
       type: 'text',
       text,
@@ -304,97 +282,45 @@ export class NpfConverter extends BaseConverter {
     };
   }
 
-  /**
-   * Converts an image block to NPF image block.
-   */
-  private convertImage(node: IDescriptionBlockNodeClass): NPFImageBlock {
-    const { url = '', name, caption, previewWidth, previewHeight } = node.props;
-    const alt = name || caption || '';
-    const width = parseInt(previewWidth || '0', 10) || undefined;
-    const height = parseInt(previewHeight || '0', 10) || undefined;
+  private convertImage(node: TipTapNode): NPFImageBlock {
+    const attrs = node.attrs ?? {};
+    const url = attrs.src || '';
+    const alt = attrs.alt || '';
+    const width = attrs.width ? parseInt(String(attrs.width), 10) : undefined;
+    const height = attrs.height ? parseInt(String(attrs.height), 10) : undefined;
 
     const media: NPFMediaObject[] = [
       {
         url,
         type: this.getMimeType(url),
-        width,
-        height,
+        width: width || undefined,
+        height: height || undefined,
       },
     ];
 
     const imageBlock: NPFImageBlock = {
       type: 'image',
       media,
-      alt_text: alt,
+      alt_text: alt || undefined,
     };
-
-    if (caption) {
-      imageBlock.caption = caption;
-    }
 
     return imageBlock;
   }
 
-  /**
-   * Converts a video block to NPF video block.
-   */
-  private convertVideo(node: IDescriptionBlockNodeClass): NPFVideoBlock {
-    const { url = '', caption, previewWidth, previewHeight } = node.props;
-    const width = parseInt(previewWidth || '0', 10) || undefined;
-    const height = parseInt(previewHeight || '0', 10) || undefined;
-
-    const videoBlock: NPFVideoBlock = {
-      type: 'video',
-      provider: 'tumblr',
-      url,
-      media: {
-        url,
-        type: this.getMimeType(url),
-        width,
-        height,
-      },
-    };
-
-    return videoBlock;
-  }
-
-  /**
-   * Converts an audio block to NPF audio block.
-   */
-  private convertAudio(node: IDescriptionBlockNodeClass): NPFAudioBlock {
-    const { url = '' } = node.props;
-
-    const audioBlock: NPFAudioBlock = {
-      type: 'audio',
-      provider: 'tumblr',
-      url,
-      media: {
-        url,
-        type: this.getMimeType(url),
-      },
-    };
-
-    return audioBlock;
-  }
-
   convertInlineNode(
-    node: IDescriptionInlineNodeClass,
+    node: TipTapNode,
     context: ConversionContext,
   ): string {
+    const attrs = node.attrs ?? {};
     const startPos = this.currentPosition;
     let text = '';
 
     if (node.type === 'customShortcut') {
       if (!this.shouldRenderShortcut(node, context)) return '';
-      const shortcutBlocks = context.customShortcuts.get(node.props.id);
+      const shortcutBlocks = context.customShortcuts.get(attrs.id);
       if (shortcutBlocks) {
-        // For NPF, we need to extract just the text from shortcut blocks
-        // and merge it into the current text block
         for (const block of shortcutBlocks) {
-          text += this.extractText(
-            block.content as IDescriptionInlineNodeClass[],
-            context,
-          );
+          text += this.extractText(block.content ?? [], context);
         }
       }
       return text;
@@ -402,17 +328,13 @@ export class NpfConverter extends BaseConverter {
 
     if (node.type === 'username') {
       if (!this.shouldRenderShortcut(node, context)) return '';
-      // Username shortcuts become plain text or links in NPF
       const sc = this.getUsernameShortcutLink(node, context);
       if (!sc) {
-        text = node.props.username;
+        text = attrs.username ?? '';
       } else if (!sc.url.startsWith('http')) {
         text = sc.url;
       } else {
-        // Use the username from the shortcut result
         text = sc.username;
-
-        // Add link formatting
         if (text.length > 0) {
           this.currentFormatting.push({
             start: startPos,
@@ -422,7 +344,6 @@ export class NpfConverter extends BaseConverter {
           });
         }
       }
-
       this.currentPosition += text.length;
       return text;
     }
@@ -448,113 +369,98 @@ export class NpfConverter extends BaseConverter {
       return text;
     }
 
-    // Extract text from content
-    for (const child of node.content as IDescriptionTextNodeClass[]) {
-      text += child.text;
+    if (node.type === 'hardBreak') {
+      text = '\n';
+      this.currentPosition += text.length;
+      return text;
     }
 
+    // Generic inline: extract text from content
+    text = this.extractText(node.content ?? [], context);
+    return text;
+  }
+
+  convertTextNode(node: TipTapNode): string {
+    const textNode = node as any;
+    const startPos = this.currentPosition;
+    const text = textNode.text ?? '';
     this.currentPosition += text.length;
 
-    // Add formatting based on node type
-    if (node.type === 'link' && text.length > 0) {
+    const marks = textNode.marks ?? [];
+
+    // Add link formatting
+    const linkMark = marks.find((m: any) => m.type === 'link');
+    if (linkMark && text.length > 0) {
       this.currentFormatting.push({
         start: startPos,
         end: this.currentPosition,
         type: 'link',
-        url: node.href || node.props.href || '',
+        url: linkMark.attrs?.href || '',
       });
     }
 
-    // Also check for any text formatting within the inline node
-    let childStart = startPos;
-    for (const child of node.content as IDescriptionTextNodeClass[]) {
-      this.addFormattingForTextNode(
-        child,
-        childStart,
-        childStart + child.text.length,
-      );
-      childStart += child.text.length;
-    }
-
-    return text;
-  }
-
-  convertTextNode(node: IDescriptionTextNodeClass): string {
-    const startPos = this.currentPosition;
-    const { text } = node;
-    this.currentPosition += text.length;
-
-    this.addFormattingForTextNode(node, startPos, this.currentPosition);
+    // Add text formatting from marks
+    this.addFormattingForMarks(marks, startPos, this.currentPosition);
 
     return text;
   }
 
   /**
-   * Extracts text from inline content and builds formatting array.
+   * Extracts plain text from content array and builds formatting.
    */
   private extractText(
-    content: IDescriptionInlineNodeClass[],
+    content: TipTapNode[],
     context: ConversionContext,
   ): string {
     let text = '';
-
     for (const node of content) {
-      if (node.type === 'text') {
-        text += this.convertTextNode(
-          node as unknown as IDescriptionTextNodeClass,
-        );
+      if (isTextNode(node)) {
+        text += this.convertTextNode(node);
       } else {
         text += this.convertInlineNode(node, context);
       }
     }
-
     return text;
   }
 
   /**
-   * Adds formatting entries for a text node based on its styles.
+   * Adds formatting entries for marks on a text node.
    */
-  private addFormattingForTextNode(
-    node: IDescriptionTextNodeClass,
+  private addFormattingForMarks(
+    marks: any[],
     start: number,
     end: number,
   ): void {
-    const { styles } = node;
+    if (!marks || start === end) return;
 
-    if (!styles || start === end) return;
-
-    if (styles.bold) {
-      this.currentFormatting.push({
-        start,
-        end,
-        type: 'bold',
-      });
-    }
-
-    if (styles.italic) {
-      this.currentFormatting.push({
-        start,
-        end,
-        type: 'italic',
-      });
-    }
-
-    if (styles.strike) {
-      this.currentFormatting.push({
-        start,
-        end,
-        type: 'strikethrough',
-      });
-    }
-
-    // Handle text color
-    if (styles.textColor && styles.textColor !== 'default') {
-      this.currentFormatting.push({
-        start,
-        end,
-        type: 'color',
-        hex: styles.textColor as string,
-      });
+    for (const mark of marks) {
+      switch (mark.type) {
+        case 'bold':
+          this.currentFormatting.push({ start, end, type: 'bold' });
+          break;
+        case 'italic':
+          this.currentFormatting.push({ start, end, type: 'italic' });
+          break;
+        case 'strike':
+          this.currentFormatting.push({
+            start,
+            end,
+            type: 'strikethrough',
+          });
+          break;
+        case 'textStyle':
+          if (mark.attrs?.color) {
+            this.currentFormatting.push({
+              start,
+              end,
+              type: 'color',
+              hex: mark.attrs.color,
+            });
+          }
+          break;
+        default:
+          break;
+      }
     }
   }
 
@@ -578,3 +484,4 @@ export class NpfConverter extends BaseConverter {
     return ext ? mimeMap[ext] : undefined;
   }
 }
+

@@ -1,7 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { Description } from '@postybirb/types';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import TurndownService from 'turndown';
-import { DescriptionBlockNode } from './block-description-node';
 import { BaseConverter } from './converters/base-converter';
 import { BBCodeConverter } from './converters/bbcode-converter';
 import {
@@ -11,9 +9,7 @@ import {
 import { HtmlConverter } from './converters/html-converter';
 import { PlainTextConverter } from './converters/plaintext-converter';
 import { ConversionContext } from './description-node.base';
-import { BlockTypes, IDescriptionBlockNode } from './description-node.types';
-import { DescriptionInlineNode } from './inline-description-node';
-import { DescriptionTextNode } from './text-description-node';
+import { TipTapNode } from './description-node.types';
 
 export type InsertionOptions = {
   insertTitle?: string;
@@ -22,59 +18,43 @@ export type InsertionOptions = {
 };
 
 export class DescriptionNodeTree {
-  private readonly nodes: Array<DescriptionBlockNode>;
+  private readonly nodes: TipTapNode[];
 
   private readonly insertionOptions: InsertionOptions;
 
   private context: ConversionContext;
 
-  private readonly ad: Description = [
+  /** PostyBirb ad in TipTap JSON format */
+  private readonly ad: TipTapNode[] = [
     {
-      id: 'ad-spacing',
       type: 'paragraph',
-      props: {
-        textColor: 'default',
-        backgroundColor: 'default',
-        textAlignment: 'left',
-      },
       content: [],
-      children: [],
     },
     {
-      id: 'ad',
       type: 'paragraph',
-      props: {
-        textColor: 'default',
-        backgroundColor: 'default',
-        textAlignment: 'left',
-      },
       content: [
         {
-          type: 'link',
-          href: 'https://postybirb.com',
-          content: [
-            { type: 'text', text: 'Posted using PostyBirb', styles: {} },
+          type: 'text',
+          text: 'Posted using PostyBirb',
+          marks: [
+            {
+              type: 'link',
+              attrs: { href: 'https://postybirb.com', target: '_blank' },
+            },
           ],
         },
       ],
-      children: [],
     },
   ];
 
   constructor(
     context: ConversionContext,
-    nodes: Array<IDescriptionBlockNode>,
+    nodes: TipTapNode[],
     insertionOptions: InsertionOptions,
   ) {
     this.context = context;
     this.insertionOptions = insertionOptions;
-    this.nodes =
-      nodes.map((node) => {
-        if (BlockTypes.includes(node.type)) {
-          return new DescriptionBlockNode(node);
-        }
-        throw new Error('Root nodes must be block nodes');
-      }) ?? [];
+    this.nodes = nodes ?? [];
   }
 
   toBBCode(): string {
@@ -95,7 +75,6 @@ export class DescriptionNodeTree {
   toMarkdown(turndownService?: TurndownService): string {
     const converter = turndownService ?? new TurndownService();
 
-    // Add custom rule to convert margin-left divs to blockquotes
     converter.addRule('nestedIndent', {
       filter: (node) =>
         node.nodeName === 'DIV' &&
@@ -108,60 +87,37 @@ export class DescriptionNodeTree {
     return converter.turndown(html);
   }
 
-  /**
-   * Allows for custom conversion using a provided handler.
-   */
   parseCustom(blockHandler: CustomNodeHandler): string {
     const converter = new CustomConverter(blockHandler);
     return converter.convertBlocks(this.withInsertions(), this.context);
   }
 
-  /**
-   * Allows for custom conversion using a provided converter.
-   */
   parseWithConverter(converter: BaseConverter): string {
     return converter.convertBlocks(this.withInsertions(), this.context);
   }
 
-  /**
-   * Updates the context with resolved shortcuts and usernames.
-   */
   public updateContext(updates: Partial<ConversionContext>): void {
     this.context = { ...this.context, ...updates };
   }
 
   /**
-   * Finds all inline nodes of a specific type in the tree, including nested children.
+   * Finds all TipTap nodes of a specific type in the tree (recursively).
    */
-  public findInlineNodesByType(type: string): Array<DescriptionInlineNode> {
-    const found: Array<DescriptionInlineNode> = [];
+  public findNodesByType(type: string): TipTapNode[] {
+    const found: TipTapNode[] = [];
 
-    const traverseContent = (
-      content: Array<DescriptionInlineNode | DescriptionTextNode>,
-    ) => {
-      for (const node of content) {
-        if (node instanceof DescriptionInlineNode && node.type === type) {
+    const traverse = (nodes: TipTapNode[]) => {
+      for (const node of nodes) {
+        if (node.type === type) {
           found.push(node);
         }
-        // Only DescriptionInlineNode has content, DescriptionTextNode has text
-        if (node instanceof DescriptionInlineNode) {
-          traverseContent(node.content);
+        if (node.content) {
+          traverse(node.content);
         }
       }
     };
 
-    const traverseBlocks = (blocks: Array<DescriptionBlockNode>) => {
-      for (const block of blocks) {
-        traverseContent(block.content);
-        // Recursively traverse children
-        if (block.children && block.children.length > 0) {
-          traverseBlocks(block.children);
-        }
-      }
-    };
-
-    traverseBlocks(this.nodes);
-
+    traverse(this.nodes);
     return found;
   }
 
@@ -170,11 +126,12 @@ export class DescriptionNodeTree {
    */
   public findCustomShortcutIds(): Set<string> {
     const ids = new Set<string>();
-    const shortcuts = this.findInlineNodesByType('customShortcut');
+    const shortcuts = this.findNodesByType('customShortcut');
 
     for (const shortcut of shortcuts) {
-      if (shortcut.props.id) {
-        ids.add(shortcut.props.id);
+      const id = shortcut.attrs?.id;
+      if (id) {
+        ids.add(id);
       }
     }
 
@@ -186,18 +143,10 @@ export class DescriptionNodeTree {
    */
   public findUsernames(): Set<string> {
     const usernames = new Set<string>();
-    const usernameNodes = this.findInlineNodesByType('username');
+    const usernameNodes = this.findNodesByType('username');
 
     for (const node of usernameNodes) {
-      // Get username from props (new format) or content (old format for backwards compatibility)
-      const username = node.props.username
-        ? (node.props.username as string).trim()
-        : node.content
-            .filter((c) => c instanceof DescriptionTextNode)
-            .map((c) => c.text)
-            .join('')
-            .trim();
-
+      const username = (node.attrs?.username as string)?.trim();
       if (username) {
         usernames.add(username);
       }
@@ -206,53 +155,40 @@ export class DescriptionNodeTree {
     return usernames;
   }
 
-  private withInsertions(): Array<DescriptionBlockNode> {
+  private withInsertions(): TipTapNode[] {
     const nodes = [...this.nodes];
     const { insertAd, insertTags, insertTitle } = this.insertionOptions;
+
     if (insertTitle) {
-      nodes.unshift(
-        new DescriptionBlockNode({
-          id: 'title',
-          type: 'heading',
-          props: { level: '2' },
-          content: [
-            {
-              type: 'text',
-              text: insertTitle,
-              styles: {},
-              props: {},
-            },
-          ],
-        }),
-      );
+      nodes.unshift({
+        type: 'heading',
+        attrs: { level: 2 },
+        content: [
+          {
+            type: 'text',
+            text: insertTitle,
+          },
+        ],
+      });
     }
 
     if (insertTags) {
-      nodes.push(
-        new DescriptionBlockNode({
-          id: 'tags',
-          type: 'paragraph',
-          props: {},
-          content: [
-            {
-              type: 'text',
-              text: insertTags.map((e) => `#${e}`).join(' '),
-              styles: {},
-              props: {},
-            },
-          ],
-        }),
-      );
+      nodes.push({
+        type: 'paragraph',
+        content: [
+          {
+            type: 'text',
+            text: insertTags.map((e) => `#${e}`).join(' '),
+          },
+        ],
+      });
     }
 
     if (insertAd) {
-      nodes.push(
-        ...this.ad.map(
-          (node) =>
-            new DescriptionBlockNode(node as unknown as IDescriptionBlockNode),
-        ),
-      );
+      nodes.push(...this.ad);
     }
+
     return nodes;
   }
 }
+

@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { DescriptionType, UsernameShortcut } from '@postybirb/types';
+import { DescriptionType, TipTapNode, UsernameShortcut } from '@postybirb/types';
 import isEqual from 'lodash/isEqual';
 import { Class } from 'type-fest';
 import { WEBSITE_IMPLEMENTATIONS } from '../../constants';
@@ -12,11 +12,10 @@ import { isWithCustomDescriptionParser } from '../../websites/models/website-mod
 import { isWithRuntimeDescriptionParser } from '../../websites/models/website-modifiers/with-runtime-description-parser';
 import { UnknownWebsite, Website } from '../../websites/website';
 import {
-  DescriptionNodeTree,
-  InsertionOptions,
+    DescriptionNodeTree,
+    InsertionOptions,
 } from '../models/description-node/description-node-tree';
 import { ConversionContext } from '../models/description-node/description-node.base';
-import { IDescriptionBlockNode } from '../models/description-node/description-node.types';
 
 @Injectable()
 export class DescriptionParserService {
@@ -61,8 +60,8 @@ export class DescriptionParserService {
     }
 
     const descriptionValue = mergedOptions.description;
-    const descriptionBlocks =
-      descriptionValue.description as unknown as Array<IDescriptionBlockNode>;
+    const descriptionBlocks: TipTapNode[] =
+      descriptionValue.description?.content ?? [];
 
     const { contentWarning } = mergedOptions;
 
@@ -95,8 +94,7 @@ export class DescriptionParserService {
 
     // Pre-resolve default description
     const defaultDescription = this.mergeBlocks(
-      defaultOptions.description
-        .description as unknown as Array<IDescriptionBlockNode>,
+      defaultOptions.description.description?.content ?? [],
     );
 
     // Build tree once with minimal context
@@ -181,15 +179,15 @@ export class DescriptionParserService {
    */
   private async resolveCustomShortcutsFromTree(
     tree: DescriptionNodeTree,
-  ): Promise<Map<string, IDescriptionBlockNode[]>> {
-    const customShortcuts = new Map<string, IDescriptionBlockNode[]>();
+  ): Promise<Map<string, TipTapNode[]>> {
+    const customShortcuts = new Map<string, TipTapNode[]>();
     const shortcutIds = tree.findCustomShortcutIds();
 
     for (const id of shortcutIds) {
       const shortcut = await this.customShortcutsService?.findById(id);
       if (shortcut) {
         const shortcutBlocks = this.mergeBlocks(
-          shortcut.shortcut as unknown as Array<IDescriptionBlockNode>,
+          (shortcut.shortcut as any)?.content ?? [],
         );
         customShortcuts.set(id, shortcutBlocks);
       }
@@ -219,54 +217,35 @@ export class DescriptionParserService {
   }
 
   /**
-   * Merges block into the same type if they are adjacent and have the same type.
-   * Merge occurs on block level if all the props in the block are the same.
-   * Blocks with non-empty children are not eligible for merging.
-   *
-   * @param {Array<IDescriptionBlockNode>} blocks
-   * @return {*}  {Array<IDescriptionBlockNode>}
+   * Merges adjacent blocks of the same type together, inserting a '\n' text node between them.
+   * This simulates the visual line-by-line behavior users expect.
    */
   public mergeBlocks(
-    blocks: Array<IDescriptionBlockNode>,
-  ): Array<IDescriptionBlockNode> {
-    const mergedBlocks: Array<IDescriptionBlockNode> = [];
+    blocks: TipTapNode[],
+  ): TipTapNode[] {
+    const mergedBlocks: TipTapNode[] = [];
 
-    const blockCopy: Array<IDescriptionBlockNode> = JSON.parse(
-      JSON.stringify(blocks),
-    );
+    const blockCopy: TipTapNode[] = JSON.parse(JSON.stringify(blocks));
     for (let i = 0; i < blockCopy.length; i++) {
       const currentBlock = blockCopy[i];
       const previousBlock = mergedBlocks[mergedBlocks.length - 1];
 
-      // Check if either block has children - if so, skip merge
-      const currentHasChildren =
-        currentBlock.children && currentBlock.children.length > 0;
-      const previousHasChildren =
-        previousBlock?.children && previousBlock.children.length > 0;
-
       if (!previousBlock) {
         mergedBlocks.push(currentBlock);
       } else if (
-        // Check if the current block is of the same type as the previous block
-        // Filter out content length of 0 because those are assumed to be padding blocks.
-        // Skip merge if either block has children
         currentBlock.type === previousBlock.type &&
-        currentBlock.content.length !== 0 &&
-        previousBlock.content.length !== 0 &&
-        !currentHasChildren &&
-        !previousHasChildren &&
-        isEqual(currentBlock.props, previousBlock.props)
+        (currentBlock.content?.length ?? 0) !== 0 &&
+        (previousBlock.content?.length ?? 0) !== 0 &&
+        isEqual(currentBlock.attrs, previousBlock.attrs)
       ) {
-        // Insert a \n content then merge together the content of the two blocks
+        // Insert a \n text node then merge content
+        if (!previousBlock.content) previousBlock.content = [];
         previousBlock.content.push({
           type: 'text',
           text: '\n',
-          styles: {},
-          props: {},
         });
-        previousBlock.content.push(...currentBlock.content);
+        previousBlock.content.push(...(currentBlock.content ?? []));
       } else {
-        // Insert if no action
         mergedBlocks.push(currentBlock);
       }
     }
@@ -275,25 +254,18 @@ export class DescriptionParserService {
   }
 
   /**
-   * Recursively checks if description blocks contain a specific inline content type.
-   * Used to detect presence of title/tags shortcuts to prevent double insertion.
+   * Recursively checks if TipTap nodes contain a specific inline content type.
    */
   private hasInlineContentType(
-    blocks: Array<IDescriptionBlockNode>,
+    blocks: TipTapNode[],
     type: string,
   ): boolean {
     for (const block of blocks) {
+      if (block?.type === type) return true;
       if (Array.isArray(block?.content)) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if (block.content.some((inline: any) => inline?.type === type)) {
+        if (this.hasInlineContentType(block.content, type)) {
           return true;
         }
-      }
-      if (
-        Array.isArray(block?.children) &&
-        this.hasInlineContentType(block.children, type)
-      ) {
-        return true;
       }
     }
     return false;

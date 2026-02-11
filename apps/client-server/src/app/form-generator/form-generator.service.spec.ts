@@ -134,7 +134,7 @@ describe('FormGeneratorService', () => {
         formField: 'description',
         defaultValue: {
           overrideDefault: false,
-          description: [],
+          description: { type: 'doc', content: [] },
         },
         descriptionType: 'html',
         type: 'description',
@@ -232,7 +232,7 @@ describe('FormGeneratorService', () => {
         formField: 'description',
         defaultValue: {
           overrideDefault: false,
-          description: [],
+          description: { type: 'doc', content: [] },
         },
         descriptionType: 'html',
         type: 'description',
@@ -328,7 +328,7 @@ describe('FormGeneratorService', () => {
         formField: 'description',
         defaultValue: {
           overrideDefault: false,
-          description: [],
+          description: { type: 'doc', content: [] },
         },
         descriptionType: 'html',
         type: 'description',

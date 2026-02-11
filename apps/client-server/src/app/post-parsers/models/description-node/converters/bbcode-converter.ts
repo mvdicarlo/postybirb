@@ -1,172 +1,96 @@
-import {
-  ConversionContext,
-  IDescriptionBlockNodeClass,
-  IDescriptionInlineNodeClass,
-  IDescriptionTextNodeClass,
-} from '../description-node.base';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { ConversionContext } from '../description-node.base';
+import { TipTapNode } from '../description-node.types';
 import { BaseConverter } from './base-converter';
 
 export class BBCodeConverter extends BaseConverter {
-  /** Number of spaces per indentation level */
-  private static readonly INDENT_SPACES = 4;
-
   protected getBlockSeparator(): string {
     return '\n';
   }
 
-  /**
-   * Gets the current indentation prefix based on depth.
-   */
-  private getIndentPrefix(): string {
-    if (this.currentDepth === 0) return '';
-    return ' '.repeat(this.currentDepth * BBCodeConverter.INDENT_SPACES);
-  }
-
   convertBlockNode(
-    node: IDescriptionBlockNodeClass,
+    node: TipTapNode,
     context: ConversionContext,
   ): string {
+    const attrs = node.attrs ?? {};
+
     if (node.type === 'defaultShortcut') {
       if (!this.shouldRenderShortcut(node, context)) return '';
       return this.convertRawBlocks(context.defaultDescription, context);
     }
 
-    // For FA: More then 5 dashes in a line are replaced with a horizontal divider.
-    // For e621: Not supported, use dashes
-    // For hentai foundry: dashes will work
-    if (node.type === 'divider') return '--------';
+    // For FA: More than 5 dashes in a line are replaced with a horizontal divider.
+    if (node.type === 'horizontalRule') return '--------';
 
-    // Media blocks not supported in BBCode
-    if (
-      node.type === 'image' ||
-      node.type === 'video' ||
-      node.type === 'audio'
-    ) {
-      return '';
+    if (node.type === 'image') return '';
+    if (node.type === 'hardBreak') return '\n';
+
+    // List containers
+    if (node.type === 'bulletList') {
+      return (node.content ?? [])
+        .map((child) => this.convertBlockNode(child, context))
+        .join('\n');
     }
 
-    const indent = this.getIndentPrefix();
-    let result = '';
+    if (node.type === 'orderedList') {
+      return (node.content ?? [])
+        .map((child) => this.convertBlockNode(child, context))
+        .join('\n');
+    }
 
-    if (node.type === 'paragraph') {
-      let text = (
-        node.content as Array<
-          IDescriptionInlineNodeClass | IDescriptionTextNodeClass
-        >
-      )
+    if (node.type === 'listItem') {
+      const inner = (node.content ?? [])
         .map((child) => {
-          if (child.type === 'text') {
-            return this.convertTextNode(
-              child as IDescriptionTextNodeClass,
-              context,
-            );
+          if (child.type === 'paragraph') {
+            return this.convertContent(child.content, context);
           }
-          return this.convertInlineNode(
-            child as IDescriptionInlineNodeClass,
-            context,
-          );
+          return this.convertBlockNode(child, context);
         })
         .join('');
-
-      if (node.props.textColor && node.props.textColor !== 'default') {
-        text = `[color=${node.props.textColor}]${text}[/color]`;
-      }
-
-      // Apply text alignment if not default
-      if (node.props.textAlignment && node.props.textAlignment !== 'left') {
-        text = `[${node.props.textAlignment}]${text}[/${node.props.textAlignment}]`;
-      }
-
-      result = indent + text;
-    } else if (node.type === 'heading') {
-      const { level } = node.props;
-      let text = `[h${level}]${(
-        node.content as Array<
-          IDescriptionInlineNodeClass | IDescriptionTextNodeClass
-        >
-      )
-        .map((child) => {
-          if (child.type === 'text') {
-            return this.convertTextNode(
-              child as IDescriptionTextNodeClass,
-              context,
-            );
-          }
-          return this.convertInlineNode(
-            child as IDescriptionInlineNodeClass,
-            context,
-          );
-        })
-        .join('')}[/h${level}]`;
-
-      if (node.props.textColor && node.props.textColor !== 'default') {
-        text = `[color=${node.props.textColor}]${text}[/color]`;
-      }
-
-      // Apply text alignment if not default
-      if (node.props.textAlignment && node.props.textAlignment !== 'left') {
-        text = `[${node.props.textAlignment}]${text}[/${node.props.textAlignment}]`;
-      }
-
-      result = indent + text;
-    } else {
-      result =
-        indent +
-        (
-          node.content as Array<
-            IDescriptionInlineNodeClass | IDescriptionTextNodeClass
-          >
-        )
-          .map((child) => {
-            if (child.type === 'text') {
-              return this.convertTextNode(
-                child as IDescriptionTextNodeClass,
-                context,
-              );
-            }
-            return this.convertInlineNode(
-              child as IDescriptionInlineNodeClass,
-              context,
-            );
-          })
-          .join('');
+      return `• ${inner}`;
     }
 
-    // Process children with increased depth
-    if (node.children && node.children.length > 0) {
-      const childrenBBCode = this.convertChildren(node.children, context);
-      if (childrenBBCode) {
-        result += `\n${childrenBBCode}`;
-      }
+    if (node.type === 'blockquote') {
+      const inner = (node.content ?? [])
+        .map((child) => this.convertBlockNode(child, context))
+        .join('\n');
+      return `[quote]${inner}[/quote]`;
     }
 
-    return result;
+    if (node.type === 'paragraph') {
+      let text = this.convertContent(node.content, context);
+
+      // Apply text alignment if not default
+      if (attrs.textAlign && attrs.textAlign !== 'left') {
+        text = `[${attrs.textAlign}]${text}[/${attrs.textAlign}]`;
+      }
+
+      return text;
+    }
+
+    if (node.type === 'heading') {
+      const level = attrs.level ?? 1;
+      let text = `[h${level}]${this.convertContent(node.content, context)}[/h${level}]`;
+
+      if (attrs.textAlign && attrs.textAlign !== 'left') {
+        text = `[${attrs.textAlign}]${text}[/${attrs.textAlign}]`;
+      }
+
+      return text;
+    }
+
+    // Fallback
+    return this.convertContent(node.content, context);
   }
 
   convertInlineNode(
-    node: IDescriptionInlineNodeClass,
+    node: TipTapNode,
     context: ConversionContext,
   ): string {
-    // System shortcuts are atomic nodes with no content
-    const atomicTypes = [
-      'customShortcut',
-      'titleShortcut',
-      'tagsShortcut',
-      'contentWarningShortcut',
-      'username',
-    ];
-    if (!node.content.length && !atomicTypes.includes(node.type)) return '';
-
-    if (node.type === 'link') {
-      const content = (node.content as IDescriptionTextNodeClass[])
-        .map((child) => this.convertTextNode(child, context))
-        .join('');
-      return `[url=${node.href ?? node.props.href}]${content}[/url]`;
-    }
+    const attrs = node.attrs ?? {};
 
     if (node.type === 'username') {
       if (!this.shouldRenderShortcut(node, context)) return '';
-
       const sc = this.getUsernameShortcutLink(node, context);
       if (sc?.url.startsWith('http')) {
         return `[url=${sc.url}]${sc.username}[/url]`;
@@ -176,7 +100,7 @@ export class BBCodeConverter extends BaseConverter {
 
     if (node.type === 'customShortcut') {
       if (!this.shouldRenderShortcut(node, context)) return '';
-      const shortcutBlocks = context.customShortcuts.get(node.props.id);
+      const shortcutBlocks = context.customShortcuts.get(attrs.id);
       if (shortcutBlocks) {
         return this.convertRawBlocks(shortcutBlocks, context);
       }
@@ -198,43 +122,76 @@ export class BBCodeConverter extends BaseConverter {
       return context.contentWarningText ?? '';
     }
 
-    return (node.content as IDescriptionTextNodeClass[])
-      .map((child) => this.convertTextNode(child, context))
-      .join('');
+    if (node.type === 'hardBreak') return '\n';
+
+    return this.convertContent(node.content, context);
   }
 
   convertTextNode(
-    node: IDescriptionTextNodeClass,
+    node: TipTapNode,
     context: ConversionContext,
   ): string {
-    if (!node.text) return '';
+    const textNode = node as any;
+    if (!textNode.text) return '';
 
-    // Handle line breaks from merged blocks
-    if (node.text === '\n' || node.text === '\r\n') {
+    if (textNode.text === '\n' || textNode.text === '\r\n') {
       return '\n';
     }
 
-    const segments: string[] = [];
+    const marks = textNode.marks ?? [];
 
-    if (node.styles.bold) segments.push('b');
-    if (node.styles.italic) segments.push('i');
-    if (node.styles.underline) segments.push('u');
-    if (node.styles.strike) segments.push('s');
-
-    if (!segments.length) {
-      return node.text;
+    // Check for link mark
+    const linkMark = marks.find((m: any) => m.type === 'link');
+    if (linkMark) {
+      const href = linkMark.attrs?.href ?? '';
+      const innerText = this.renderTextWithMarks(textNode.text, marks.filter((m: any) => m.type !== 'link'));
+      return `[url=${href}]${innerText}[/url]`;
     }
 
-    const { text } = node;
+    return this.renderTextWithMarks(textNode.text, marks);
+  }
+
+  /**
+   * Renders text with BBCode formatting marks applied.
+   */
+  private renderTextWithMarks(text: string, marks: any[]): string {
+    const segments: string[] = [];
+
+    for (const mark of marks) {
+      switch (mark.type) {
+        case 'bold':
+          segments.push('b');
+          break;
+        case 'italic':
+          segments.push('i');
+          break;
+        case 'underline':
+          segments.push('u');
+          break;
+        case 'strike':
+          segments.push('s');
+          break;
+        default:
+          break;
+      }
+    }
+
+    if (!segments.length) {
+      return text;
+    }
+
     let segmentedText = `${segments.map((e) => `[${e}]`).join('')}${text}${segments
       .reverse()
       .map((e) => `[/${e}]`)
       .join('')}`;
 
-    if (node.styles.textColor && node.styles.textColor !== 'default') {
-      segmentedText = `[color=${node.styles.textColor}]${segmentedText}[/color]`;
+    // Check for textStyle mark with color
+    const textStyleMark = marks.find((m: any) => m.type === 'textStyle');
+    if (textStyleMark?.attrs?.color) {
+      segmentedText = `[color=${textStyleMark.attrs.color}]${segmentedText}[/color]`;
     }
 
     return segmentedText;
   }
 }
+

@@ -101,7 +101,7 @@ describe('formBuilder', () => {
         order: 999,
         span: 12,
         defaultValue: {
-          description: [],
+          description: { type: 'doc', content: [] },
           overrideDefault: false,
         },
         descriptionType: 'html',
@@ -144,7 +144,7 @@ describe('formBuilder', () => {
         order: 999,
         span: 12,
         defaultValue: {
-          description: [],
+          description: { type: 'doc', content: [] },
           overrideDefault: false,
         },
         descriptionType: 'markdown',

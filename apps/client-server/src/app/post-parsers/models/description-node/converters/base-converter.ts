@@ -1,46 +1,43 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { UsernameShortcut } from '@postybirb/types';
+import { ConversionContext } from '../description-node.base';
 import {
-  ConversionContext,
-  IDescriptionBlockNodeClass,
-  IDescriptionInlineNodeClass,
-  IDescriptionTextNodeClass,
-  NodeConverter,
-} from '../description-node.base';
-import { IDescriptionBlockNode } from '../description-node.types';
-
-// Type for nodes that have the accept method
-export type AcceptableBlockNode = IDescriptionBlockNodeClass & {
-  accept<T>(converter: NodeConverter<T>, context: ConversionContext): T;
-};
+    InlineTypes,
+    isTextNode,
+    TipTapNode,
+} from '../description-node.types';
 
 /**
- * Base converter with common utilities.
+ * Base converter for TipTap JSON → output format.
+ *
+ * Converters process TipTap nodes directly (no wrapper classes).
+ * Block-level nodes are dispatched to `convertBlockNode`, inline shortcut
+ * atoms to `convertInlineNode`, and text nodes to `convertTextNode`.
  */
-export abstract class BaseConverter implements NodeConverter<string> {
+export abstract class BaseConverter {
   /** Current depth for nested block rendering */
   protected currentDepth = 0;
 
+  private processingDefaultDescription = false;
+
   abstract convertBlockNode(
-    node: IDescriptionBlockNodeClass,
+    node: TipTapNode,
     context: ConversionContext,
   ): string;
 
   abstract convertInlineNode(
-    node: IDescriptionInlineNodeClass,
+    node: TipTapNode,
     context: ConversionContext,
   ): string;
 
   abstract convertTextNode(
-    node: IDescriptionTextNodeClass,
+    node: TipTapNode,
     context: ConversionContext,
   ): string;
-
-  private processingDefaultDescription = false;
 
   /**
    * Trims empty strings from the start and end of the results array,
    * preserving empty strings in the middle (for intentional blank lines).
-   * Returns the trimmed array joined with the separator.
    */
   private trimAndJoinResults(results: string[], separator: string): string {
     if (results.length === 0) return '';
@@ -48,44 +45,31 @@ export abstract class BaseConverter implements NodeConverter<string> {
     let startIndex = 0;
     let endIndex = results.length - 1;
 
-    // Find first non-empty result
     while (startIndex < results.length && results[startIndex] === '') {
       startIndex++;
     }
 
-    // Find last non-empty result
     while (endIndex >= startIndex && results[endIndex] === '') {
       endIndex--;
     }
 
-    // If all results are empty, return empty string
-    if (startIndex > endIndex) {
-      return '';
-    }
+    if (startIndex > endIndex) return '';
 
-    // Keep only the trimmed range and join
     return results.slice(startIndex, endIndex + 1).join(separator);
   }
 
   /**
-   * Converts an array of block nodes.
-   * Empty blocks are preserved in the middle but trimmed from start and end.
+   * Converts an array of top-level TipTap nodes (block nodes).
    */
-  convertBlocks(
-    nodes: AcceptableBlockNode[],
-    context: ConversionContext,
-  ): string {
-    const results = nodes.map((node) => node.accept(this, context));
+  convertBlocks(nodes: TipTapNode[], context: ConversionContext): string {
+    const results = nodes.map((node) => this.convertBlockNode(node, context));
     return this.trimAndJoinResults(results, this.getBlockSeparator());
   }
 
   /**
-   * Converts raw block data to nodes and then converts them.
+   * Converts raw TipTap block data. Handles default description recursion guard.
    */
-  convertRawBlocks(
-    blocks: IDescriptionBlockNode[],
-    context: ConversionContext,
-  ): string {
+  convertRawBlocks(blocks: TipTapNode[], context: ConversionContext): string {
     const isDefaultDescription = blocks === context.defaultDescription;
     if (isDefaultDescription) {
       if (this.processingDefaultDescription) {
@@ -95,11 +79,7 @@ export abstract class BaseConverter implements NodeConverter<string> {
     }
 
     try {
-      // Import locally to avoid circular dependency
-      // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
-      const { DescriptionBlockNode } = require('../block-description-node');
-      const nodes = blocks.map((block) => new DescriptionBlockNode(block));
-      return this.convertBlocks(nodes, context);
+      return this.convertBlocks(blocks, context);
     } finally {
       if (isDefaultDescription) {
         this.processingDefaultDescription = false;
@@ -113,16 +93,34 @@ export abstract class BaseConverter implements NodeConverter<string> {
   protected abstract getBlockSeparator(): string;
 
   /**
-   * Converts children blocks with increased depth.
-   * Override in subclasses to provide format-specific indentation.
+   * Converts the `content` array of a block node.
+   * Dispatches each child to the appropriate handler based on type.
    */
+  protected convertContent(
+    content: TipTapNode[] | undefined,
+    context: ConversionContext,
+  ): string {
+    if (!content || content.length === 0) return '';
+
+    return content
+      .map((child) => {
+        if (isTextNode(child)) {
+          return this.convertTextNode(child, context);
+        }
+        if (InlineTypes.includes(child.type)) {
+          return this.convertInlineNode(child, context);
+        }
+        // Nested block nodes (e.g., listItem content)
+        return this.convertBlockNode(child, context);
+      })
+      .join('');
+  }
+
   /**
    * Converts children blocks with increased depth.
-   * Empty blocks are preserved in the middle but trimmed from start and end.
-   * Override in subclasses to provide format-specific indentation.
    */
   protected convertChildren(
-    children: IDescriptionBlockNodeClass[],
+    children: TipTapNode[],
     context: ConversionContext,
   ): string {
     if (!children || children.length === 0) return '';
@@ -130,7 +128,7 @@ export abstract class BaseConverter implements NodeConverter<string> {
     this.currentDepth += 1;
     try {
       const results = children.map((child) =>
-        (child as AcceptableBlockNode).accept(this, context),
+        this.convertBlockNode(child, context),
       );
       return this.trimAndJoinResults(results, this.getBlockSeparator());
     } finally {
@@ -140,15 +138,15 @@ export abstract class BaseConverter implements NodeConverter<string> {
 
   /**
    * Helper to check if a shortcut should be rendered for this website.
-   * Works for all shortcut types that have the 'only' prop.
    */
   protected shouldRenderShortcut(
-    node: IDescriptionInlineNodeClass | IDescriptionBlockNodeClass,
+    node: TipTapNode,
     context: ConversionContext,
   ): boolean {
-    const onlyTo = (node.props.only?.split(',') ?? [])
-      .map((s) => s.trim().toLowerCase())
-      .filter((s) => s.length > 0);
+    const attrs = node.attrs ?? {};
+    const onlyTo = (attrs.only?.split(',') ?? [])
+      .map((s: string) => s.trim().toLowerCase())
+      .filter((s: string) => s.length > 0);
 
     if (onlyTo.length === 0) return true;
 
@@ -156,43 +154,25 @@ export abstract class BaseConverter implements NodeConverter<string> {
   }
 
   /**
-   * @deprecated Use shouldRenderShortcut instead
-   * Helper to check if username shortcut should be rendered for this website.
-   */
-  protected shouldRenderUsernameShortcut(
-    node: IDescriptionInlineNodeClass,
-    context: ConversionContext,
-  ): boolean {
-    return this.shouldRenderShortcut(node, context);
-  }
-
-  /**
    * Helper to resolve username shortcut link.
    */
   protected getUsernameShortcutLink(
-    node: IDescriptionInlineNodeClass,
+    node: TipTapNode,
     context: ConversionContext,
   ):
     | {
-      url: string;
-      username: string;
-    }
+        url: string;
+        username: string;
+      }
     | undefined {
-    // Get username from props (new format) or content (old format for backwards compatibility)
-    const username = node.props.username 
-      ? (node.props.username as string).trim()
-      : (node.content as IDescriptionTextNodeClass[])
-          .map((child) => child.text)
-          .join('')
-          .trim();
+    const attrs = node.attrs ?? {};
+    const username = (attrs.username as string)?.trim() ?? '';
 
-    // Check if we have a conversion for this username to the target website
     let convertedUsername = username;
-    let effectiveShortcutId = node.props.shortcut;
+    let effectiveShortcutId = attrs.shortcut;
 
     const converted = context.usernameConversions?.get(username);
     if (converted && converted !== username) {
-      // Use the converted username and switch to target website's shortcut
       convertedUsername = converted;
       effectiveShortcutId = context.website;
     }
@@ -204,7 +184,11 @@ export abstract class BaseConverter implements NodeConverter<string> {
       shortcut?.url;
 
     return convertedUsername && url
-      ? { url: url.replace('$1', convertedUsername), username: convertedUsername }
+      ? {
+          url: url.replace('$1', convertedUsername),
+          username: convertedUsername,
+        }
       : undefined;
   }
 }
+
