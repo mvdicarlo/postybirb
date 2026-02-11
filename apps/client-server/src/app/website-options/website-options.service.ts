@@ -1,36 +1,42 @@
 import {
-    forwardRef,
-    Inject,
-    Injectable,
-    NotFoundException,
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { Insert } from '@postybirb/database';
 import {
-    AccountId,
-    Description,
-    DescriptionValue,
-    DynamicObject,
-    EntityId,
-    ISubmission,
-    ISubmissionMetadata,
-    IWebsiteFormFields,
-    NULL_ACCOUNT_ID,
-    SubmissionId,
-    SubmissionMetadataType,
-    SubmissionType,
-    TipTapNode,
-    ValidationResult,
+  AccountId,
+  Description,
+  DescriptionType,
+  DescriptionValue,
+  DynamicObject,
+  EntityId,
+  IDescriptionPreviewResult,
+  ISubmission,
+  ISubmissionMetadata,
+  IWebsiteFormFields,
+  NULL_ACCOUNT_ID,
+  SubmissionId,
+  SubmissionMetadataType,
+  SubmissionType,
+  TipTapNode,
+  ValidationResult,
 } from '@postybirb/types';
 import { AccountService } from '../account/account.service';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { Submission, WebsiteOptions } from '../drizzle/models';
+import { Account, Submission, WebsiteOptions } from '../drizzle/models';
 import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
 import { FormGeneratorService } from '../form-generator/form-generator.service';
+import { PostParsersService } from '../post-parsers/post-parsers.service';
 import { SubmissionService } from '../submission/services/submission.service';
 import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
 import { ValidationService } from '../validation/validation.service';
+import DefaultWebsite from '../websites/implementations/default/default.website';
 import { DefaultWebsiteOptions } from '../websites/models/default-website-options';
+import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { CreateWebsiteOptionsDto } from './dtos/create-website-options.dto';
+import { PreviewDescriptionDto } from './dtos/preview-description.dto';
 import { UpdateSubmissionWebsiteOptionsDto } from './dtos/update-submission-website-options.dto';
 import { UpdateWebsiteOptionsDto } from './dtos/update-website-options.dto';
 import { ValidateWebsiteOptionsDto } from './dtos/validate-website-options.dto';
@@ -48,6 +54,8 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
     private readonly userSpecifiedOptionsService: UserSpecifiedWebsiteOptionsService,
     private readonly formGeneratorService: FormGeneratorService,
     private readonly validationService: ValidationService,
+    private readonly postParsersService: PostParsersService,
+    private readonly websiteRegistry: WebsiteRegistryService,
   ) {
     super(
       new PostyBirbDatabase('WebsiteOptionsSchema', {
@@ -333,6 +341,63 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
         ? await this.submissionService.findById(submissionOrId)
         : submissionOrId;
     return this.validationService.validateSubmission(submission);
+  }
+
+  /**
+   * Previews the parsed description for a specific website option.
+   * Parses the description the same way it would be parsed during posting,
+   * and returns both the output format type and the rendered string.
+   * @param {PreviewDescriptionDto} dto
+   * @return {Promise<IDescriptionPreviewResult>}
+   */
+  async previewDescription(
+    dto: PreviewDescriptionDto,
+  ): Promise<IDescriptionPreviewResult> {
+    const { websiteOptionId, submissionId } = dto;
+    const submission = await this.submissionService.findById(submissionId, {
+      failOnMissing: true,
+    });
+    const websiteOption = submission.options.find(
+      (option) => option.id === websiteOptionId,
+    );
+    if (!websiteOption) {
+      throw new NotFoundException(
+        `Website option ${websiteOptionId} not found`,
+      );
+    }
+
+    const website = websiteOption.isDefault
+      ? new DefaultWebsite(new Account(websiteOption.account))
+      : this.websiteRegistry.findInstance(websiteOption.account);
+
+    if (!website) {
+      throw new NotFoundException(
+        `Website instance for account ${websiteOption.accountId} not found`,
+      );
+    }
+
+    const data = await this.postParsersService.parse(
+      submission,
+      website,
+      websiteOption,
+    );
+
+    // Determine the description output type using the same logic as the parser
+    const defaultOptions = submission.options.find((o) => o.isDefault);
+    const defaultOpts = Object.assign(new DefaultWebsiteOptions(), {
+      ...defaultOptions.data,
+    });
+    const websiteOpts = Object.assign(website.getModelFor(submission.type), {
+      ...websiteOption.data,
+    });
+    const mergedOptions = websiteOpts.mergeDefaults(defaultOpts);
+    const { descriptionType } =
+      mergedOptions.getFormFieldFor('description');
+
+    return {
+      descriptionType: descriptionType as DescriptionType,
+      description: data.options.description ?? '',
+    };
   }
 
   async updateSubmissionOptions(

@@ -174,7 +174,7 @@ function BubbleButton({
   onClick: () => void;
 }) {
   return (
-    <Tooltip label={label} withArrow openDelay={300}>
+    <Tooltip label={label} withArrow openDelay={150}>
       <ActionIcon
         size="xs"
         variant={isActive ? 'filled' : 'subtle'}

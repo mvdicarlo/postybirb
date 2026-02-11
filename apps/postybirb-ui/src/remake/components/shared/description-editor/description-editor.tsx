@@ -6,7 +6,6 @@ import { useDisclosure } from '@mantine/hooks';
 import type { Description } from '@postybirb/types';
 import {
   IconAlertTriangle,
-  IconBlockquote,
   IconH1,
   IconH2,
   IconH3,
@@ -16,10 +15,9 @@ import {
   IconQuote,
   IconTags,
   IconTextPlus,
-  IconUser,
+  IconUser
 } from '@tabler/icons-react';
 import { AnyExtension, Extension } from '@tiptap/core';
-import Blockquote from '@tiptap/extension-blockquote';
 import Bold from '@tiptap/extension-bold';
 import BulletList from '@tiptap/extension-bullet-list';
 
@@ -85,6 +83,8 @@ export type DescriptionEditorProps = {
   showCustomShortcuts?: boolean;
   /** Minimum height of the editor. */
   minHeight?: number;
+  /** Callback to toggle description preview panel. */
+  onPreview?: () => void;
 };
 
 /**
@@ -169,6 +169,7 @@ export function DescriptionEditor({
   isDefaultEditor = false,
   showCustomShortcuts,
   minHeight,
+  onPreview,
 }: DescriptionEditorProps) {
   const { colorScheme } = useMantineColorScheme();
   const { t } = useLingui();
@@ -241,15 +242,6 @@ export function DescriptionEditor({
           group: 'Blocks',
           onSelect: () => {
             editor?.chain().focus().toggleOrderedList().run();
-          },
-        },
-        {
-          title: 'Blockquote',
-          icon: <IconBlockquote size={16} />,
-          aliases: ['quote', 'blockquote'],
-          group: 'Blocks',
-          onSelect: () => {
-            editor?.chain().focus().toggleBlockquote().run();
           },
         },
         {
@@ -400,7 +392,6 @@ export function DescriptionEditor({
 
       // Block types
       Heading.configure({ levels: [1, 2, 3] }),
-      Blockquote,
       HorizontalRule,
       BulletList,
       OrderedList,
@@ -444,7 +435,7 @@ export function DescriptionEditor({
       className="description-editor-container"
       data-theme={colorScheme}
     >
-      <DescriptionToolbar editor={editor} onEditHtml={openHtmlModal} onInsertMedia={openMediaModal} />
+      <DescriptionToolbar editor={editor} onEditHtml={openHtmlModal} onInsertMedia={openMediaModal} onPreview={onPreview} />
       <Box className="tiptap-editor-wrapper" style={{ flex: 1 }}>
         {editor && <BubbleToolbar editor={editor} />}
         <EditorContent editor={editor} />

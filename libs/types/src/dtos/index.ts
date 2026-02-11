@@ -37,6 +37,7 @@ export * from './user/update-user-converter.dto';
 export * from './user/user-converter.dto';
 export * from './website-options/create-user-specified-website-options.dto';
 export * from './website-options/create-website-options.dto';
+export * from './website-options/preview-description.dto';
 export * from './website-options/update-submission-website-options.dto';
 export * from './website-options/update-user-specified-website-options.dto';
 export * from './website-options/update-website-options.dto';

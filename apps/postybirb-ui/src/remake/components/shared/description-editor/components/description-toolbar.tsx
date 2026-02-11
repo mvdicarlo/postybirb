@@ -1,37 +1,37 @@
 /* eslint-disable lingui/no-unlocalized-strings */
 import {
-    ActionIcon,
-    CloseButton,
-    ColorInput,
-    Divider,
-    Group,
-    Popover,
-    Stack,
-    Tooltip,
+  ActionIcon,
+  CloseButton,
+  ColorInput,
+  Divider,
+  Group,
+  Popover,
+  Stack,
+  Tooltip,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import {
-    IconAlignCenter,
-    IconAlignLeft,
-    IconAlignRight,
-    IconArrowBackUp,
-    IconArrowForwardUp,
-    IconBlockquote,
-    IconBold,
-    IconH1,
-    IconH2,
-    IconH3,
-    IconIndentDecrease,
-    IconIndentIncrease,
-    IconItalic,
-    IconLine,
-    IconLink,
-    IconList,
-    IconListNumbers,
-    IconPhoto,
-    IconSourceCode,
-    IconStrikethrough,
-    IconUnderline,
+  IconAlignCenter,
+  IconAlignLeft,
+  IconAlignRight,
+  IconArrowBackUp,
+  IconArrowForwardUp,
+  IconBold,
+  IconEye,
+  IconH1,
+  IconH2,
+  IconH3,
+  IconIndentDecrease,
+  IconIndentIncrease,
+  IconItalic,
+  IconLine,
+  IconLink,
+  IconList,
+  IconListNumbers,
+  IconPhoto,
+  IconSourceCode,
+  IconStrikethrough,
+  IconUnderline,
 } from '@tabler/icons-react';
 import type { Editor } from '@tiptap/react';
 import { useCallback } from 'react';
@@ -40,13 +40,14 @@ interface DescriptionToolbarProps {
   editor: Editor | null;
   onEditHtml?: () => void;
   onInsertMedia?: () => void;
+  onPreview?: () => void;
 }
 
 /**
  * Fixed toolbar rendered above the TipTap editor.
  * Each button reads editor state for active styling and dispatches the appropriate command.
  */
-export function DescriptionToolbar({ editor, onEditHtml, onInsertMedia }: DescriptionToolbarProps) {
+export function DescriptionToolbar({ editor, onEditHtml, onInsertMedia, onPreview }: DescriptionToolbarProps) {
   if (!editor) return null;
 
   return (
@@ -83,6 +84,8 @@ export function DescriptionToolbar({ editor, onEditHtml, onInsertMedia }: Descri
         isActive={editor.isActive('strike')}
         onClick={() => editor.chain().focus().toggleStrike().run()}
       />
+      <TextColorButton editor={editor} />
+
       <Divider orientation="vertical" mx={4} />
 
       {/* Headings */}
@@ -108,12 +111,6 @@ export function DescriptionToolbar({ editor, onEditHtml, onInsertMedia }: Descri
       <Divider orientation="vertical" mx={4} />
 
       {/* Block types */}
-      <ToolbarButton
-        icon={<IconBlockquote size={16} />}
-        label="Blockquote"
-        isActive={editor.isActive('blockquote')}
-        onClick={() => editor.chain().focus().toggleBlockquote().run()}
-      />
       <ToolbarButton
         icon={<IconList size={16} />}
         label="Bullet List"
@@ -184,11 +181,6 @@ export function DescriptionToolbar({ editor, onEditHtml, onInsertMedia }: Descri
 
       <Divider orientation="vertical" mx={4} />
 
-      {/* Text color */}
-      <TextColorButton editor={editor} />
-
-      <Divider orientation="vertical" mx={4} />
-
       {/* History */}
       <ToolbarButton
         icon={<IconArrowBackUp size={16} />}
@@ -214,6 +206,16 @@ export function DescriptionToolbar({ editor, onEditHtml, onInsertMedia }: Descri
         isActive={false}
         onClick={() => onEditHtml?.()}
       />
+
+      {/* Preview parsed description */}
+      {onPreview && (
+        <ToolbarButton
+          icon={<IconEye size={16} />}
+          label="Preview"
+          isActive={false}
+          onClick={() => onPreview()}
+        />
+      )}
     </Group>
   );
 }

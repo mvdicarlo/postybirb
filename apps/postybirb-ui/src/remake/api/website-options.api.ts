@@ -1,11 +1,13 @@
 import {
-  ICreateWebsiteOptionsDto,
-  IUpdateSubmissionWebsiteOptionsDto,
-  IUpdateWebsiteOptionsDto,
-  IValidateWebsiteOptionsDto,
-  SubmissionId,
-  ValidationResult,
-  WebsiteOptionsDto,
+    ICreateWebsiteOptionsDto,
+    IDescriptionPreviewResult,
+    IPreviewDescriptionDto,
+    IUpdateSubmissionWebsiteOptionsDto,
+    IUpdateWebsiteOptionsDto,
+    IValidateWebsiteOptionsDto,
+    SubmissionId,
+    ValidationResult,
+    WebsiteOptionsDto,
 } from '@postybirb/types';
 import { BaseApi } from './base.api';
 
@@ -24,6 +26,13 @@ class WebsiteOptionsApi extends BaseApi<
 
   validateSubmission(submissionId: SubmissionId) {
     return this.client.get<ValidationResult[]>(`validate/${submissionId}`);
+  }
+
+  previewDescription(dto: IPreviewDescriptionDto) {
+    return this.client.post<IDescriptionPreviewResult>(
+      'preview-description',
+      dto,
+    );
   }
 
   updateSubmissionOptions(
