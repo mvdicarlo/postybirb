@@ -2,6 +2,7 @@
 /* eslint-disable lingui/no-unlocalized-strings */
 import { useLingui } from '@lingui/react/macro';
 import { Box, useMantineColorScheme } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
 import type { Description } from '@postybirb/types';
 import {
   IconAlertTriangle,
@@ -21,8 +22,7 @@ import { Extension } from '@tiptap/core';
 import Blockquote from '@tiptap/extension-blockquote';
 import Bold from '@tiptap/extension-bold';
 import BulletList from '@tiptap/extension-bullet-list';
-import Code from '@tiptap/extension-code';
-import CodeBlock from '@tiptap/extension-code-block';
+
 import Color from '@tiptap/extension-color';
 import Document from '@tiptap/extension-document';
 import Dropcursor from '@tiptap/extension-dropcursor';
@@ -52,6 +52,8 @@ import { useCustomShortcuts } from '../../../stores/entity/custom-shortcut-store
 import { useWebsites } from '../../../stores/entity/website-store';
 import { BubbleToolbar } from './components/bubble-toolbar';
 import { DescriptionToolbar } from './components/description-toolbar';
+import { HtmlEditModal } from './components/html-edit-modal';
+import { InsertMediaModal } from './components/insert-media-modal';
 import {
   filterSuggestionItems,
   SuggestionMenu,
@@ -63,6 +65,7 @@ import {
   CustomShortcutExtension,
   DefaultShortcutExtension,
   Indent,
+  ResizableImageExtension,
   TagsShortcutExtension,
   TitleShortcutExtension,
   UsernameShortcutExtension,
@@ -173,6 +176,9 @@ export function DescriptionEditor({
   const websites = useWebsites();
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
+
+  const [htmlModalOpened, { open: openHtmlModal, close: closeHtmlModal }] = useDisclosure(false);
+  const [mediaModalOpened, { open: openMediaModal, close: closeMediaModal }] = useDisclosure(false);
 
   // Get username shortcuts from websites
   const usernameShortcuts = useMemo(
@@ -346,7 +352,6 @@ export function DescriptionEditor({
               {
                 type: 'username',
                 attrs: {
-                  id: Date.now().toString(),
                   shortcut: sc.id,
                   only: '',
                   username: '',
@@ -387,7 +392,6 @@ export function DescriptionEditor({
       Italic,
       Strike,
       Underline,
-      Code,
       TextStyle,
       Color,
 
@@ -398,12 +402,12 @@ export function DescriptionEditor({
       BulletList,
       OrderedList,
       ListItem,
-      CodeBlock,
 
       // Behavior
       History,
       Dropcursor,
       Gapcursor,
+      ResizableImageExtension,
       Link.configure({ openOnClick: false }),
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
       Indent,
@@ -434,11 +438,25 @@ export function DescriptionEditor({
       className="description-editor-container"
       data-theme={colorScheme}
     >
-      <DescriptionToolbar editor={editor} />
+      <DescriptionToolbar editor={editor} onEditHtml={openHtmlModal} onInsertMedia={openMediaModal} />
       <Box className="tiptap-editor-wrapper" style={{ flex: 1 }}>
         {editor && <BubbleToolbar editor={editor} />}
         <EditorContent editor={editor} />
       </Box>
+      {editor && (
+        <HtmlEditModal
+          editor={editor}
+          opened={htmlModalOpened}
+          onClose={closeHtmlModal}
+        />
+      )}
+      {editor && (
+        <InsertMediaModal
+          editor={editor}
+          opened={mediaModalOpened}
+          onClose={closeMediaModal}
+        />
+      )}
     </Box>
   );
 }

@@ -102,6 +102,7 @@
     "@tiptap/extension-heading": "^3.19.0",
     "@tiptap/extension-history": "^3.19.0",
     "@tiptap/extension-horizontal-rule": "^3.19.0",
+    "@tiptap/extension-image": "^3.19.0",
     "@tiptap/extension-italic": "^3.19.0",
     "@tiptap/extension-link": "^3.19.0",
     "@tiptap/extension-list": "^3.19.0",

@@ -1,5 +1,6 @@
 /* eslint-disable lingui/no-unlocalized-strings */
 import { Badge } from '@mantine/core';
+import { IconArrowRight } from '@tabler/icons-react';
 import { mergeAttributes, Node } from '@tiptap/core';
 import { NodeViewWrapper, ReactNodeViewRenderer } from '@tiptap/react';
 import { useCallback, useMemo } from 'react';
@@ -35,15 +36,16 @@ function CustomShortcutView({
   return (
     <NodeViewWrapper as="span" className="custom-shortcut-container" style={{ verticalAlign: 'text-bottom' }}>
       <Badge
-        variant="outline"
-        radius="xs"
+        variant="light"
+        radius="xl"
         size="sm"
         tt="none"
         color="grape"
         contentEditable={false}
+        styles={{ label: { display: 'flex', alignItems: 'center', gap: 4 } }}
       >
-        {name}
-        <span style={{ paddingLeft: '6px', fontWeight: 'bold', fontSize: '14px' }}>→</span>
+        <span style={{ fontWeight: 600 }}>{name}</span>
+        <IconArrowRight size={12} style={{ opacity: 0.5 }} />
         <WebsiteOnlySelector only={node.attrs.only} onOnlyChange={handleOnlyChange} />
       </Badge>
     </NodeViewWrapper>

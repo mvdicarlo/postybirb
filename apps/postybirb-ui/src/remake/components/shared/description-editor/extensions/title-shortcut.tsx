@@ -1,6 +1,7 @@
 /* eslint-disable lingui/no-unlocalized-strings */
 import { Trans } from '@lingui/react/macro';
 import { Badge } from '@mantine/core';
+import { IconArrowRight } from '@tabler/icons-react';
 import { mergeAttributes, Node } from '@tiptap/core';
 import { NodeViewWrapper, ReactNodeViewRenderer } from '@tiptap/react';
 import { useCallback } from 'react';
@@ -26,15 +27,16 @@ function TitleShortcutView({
   return (
     <NodeViewWrapper as="span" className="system-shortcut-container" style={{ verticalAlign: 'text-bottom' }}>
       <Badge
-        variant="outline"
-        radius="xs"
+        variant="light"
+        radius="xl"
         size="sm"
         tt="none"
         color="blue"
         contentEditable={false}
+        styles={{ label: { display: 'flex', alignItems: 'center', gap: 4 } }}
       >
-        <Trans>Title</Trans>
-        <span style={{ paddingLeft: '6px', fontWeight: 'bold', fontSize: '14px' }}>→</span>
+        <span style={{ fontWeight: 600 }}><Trans>Title</Trans></span>
+        <IconArrowRight size={12} style={{ opacity: 0.5 }} />
         <WebsiteOnlySelector only={node.attrs.only} onOnlyChange={handleOnlyChange} />
       </Badge>
     </NodeViewWrapper>

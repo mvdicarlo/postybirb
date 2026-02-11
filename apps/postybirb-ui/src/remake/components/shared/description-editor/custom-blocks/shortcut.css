@@ -4,34 +4,45 @@
   background: transparent;
   outline: none;
   font-family: inherit;
-  font-size: 12px;
+  font-size: inherit;
   color: inherit;
-  min-width: 80px;
-  width: 80px;
-  padding: 0 8px;
-  height: 18px;
-  line-height: 18px;
+  min-width: 60px;
+  width: 70px;
+  padding: 0 6px;
+  height: 100%;
+  line-height: inherit;
   box-sizing: border-box;
 }
 
 .username-shortcut-input::placeholder {
   color: var(--mantine-color-dimmed);
   font-style: italic;
+  opacity: 0.6;
 }
 
 .username-shortcut-input:focus {
-  background-color: rgba(128, 128, 128, 0.1);
+  background-color: rgba(128, 128, 128, 0.08);
+  border-radius: var(--mantine-radius-sm);
 }
 
-/* Badge containing the editable content */
-.username-shortcut-content-badge {
-  padding-left: 0 !important;
-  padding-right: 0 !important;
-  min-width: 70px;
+/* Thin vertical separator before the username input */
+.username-shortcut-separator {
+  display: inline-block;
+  width: 1px;
+  height: 12px;
+  background-color: currentColor;
+  opacity: 0.25;
+  margin: 0 2px;
+  vertical-align: middle;
 }
 
 .only-website-toggle-btn:hover {
   background-color: rgba(128, 128, 128, 0.1);
+}
+
+/* Hover effect for inline website selector text */
+.only-website-selector:hover {
+  background-color: rgba(128, 128, 128, 0.12);
 }
 
 /* Shortcut container styling */
@@ -43,12 +54,7 @@
   vertical-align: text-bottom;
 }
 
-/* Website only selector badge styling */
-.only-website-badge {
-  vertical-align: middle;
-}
-
-/* Fix vertical alignment for shortcut badges with embedded selectors */
+/* Ensure badge labels align properly */
 .default-shortcut-container .mantine-Badge-root,
 .custom-shortcut-container .mantine-Badge-root,
 .system-shortcut-container .mantine-Badge-root {
@@ -57,11 +63,38 @@
   height: fit-content;
 }
 
-/* Ensure the arrow separator aligns properly */
-.default-shortcut-container .mantine-Badge-root > span,
-.custom-shortcut-container .mantine-Badge-root > span,
-.system-shortcut-container .mantine-Badge-root > span {
-  display: inline-flex;
-  align-items: center;
+/* Resizable image node styling */
+.resizable-image {
+  border: 2px solid transparent;
+  border-radius: var(--mantine-radius-xs);
+  transition: border-color 0.15s ease;
+}
+
+.resizable-image:hover {
+  border-color: var(--mantine-color-blue-4);
+}
+
+.resizable-image--selected {
+  border-color: var(--mantine-color-blue-5);
+  box-shadow: 0 0 0 1px var(--mantine-color-blue-2);
+}
+
+.resizable-image-wrapper--active .resizable-image {
+  border-color: var(--mantine-color-blue-5);
+}
+
+/* Drag handles */
+.resizable-image-handle {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.resizable-image-wrapper--active .resizable-image-handle {
+  opacity: 1;
+}
+
+.resizable-image-handle:hover {
+  background: var(--mantine-color-blue-6) !important;
+  transform: scale(1.3);
 }
 

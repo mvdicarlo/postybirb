@@ -1,5 +1,15 @@
 /* eslint-disable lingui/no-unlocalized-strings */
-import { ActionIcon, ColorInput, Divider, Group, Menu, Tooltip } from '@mantine/core';
+import {
+    ActionIcon,
+    CloseButton,
+    ColorInput,
+    Divider,
+    Group,
+    Popover,
+    Stack,
+    Tooltip,
+} from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
 import {
     IconAlignCenter,
     IconAlignLeft,
@@ -8,7 +18,6 @@ import {
     IconArrowForwardUp,
     IconBlockquote,
     IconBold,
-    IconCode,
     IconH1,
     IconH2,
     IconH3,
@@ -19,6 +28,8 @@ import {
     IconLink,
     IconList,
     IconListNumbers,
+    IconPhoto,
+    IconSourceCode,
     IconStrikethrough,
     IconUnderline,
 } from '@tabler/icons-react';
@@ -27,13 +38,15 @@ import { useCallback } from 'react';
 
 interface DescriptionToolbarProps {
   editor: Editor | null;
+  onEditHtml?: () => void;
+  onInsertMedia?: () => void;
 }
 
 /**
  * Fixed toolbar rendered above the TipTap editor.
  * Each button reads editor state for active styling and dispatches the appropriate command.
  */
-export function DescriptionToolbar({ editor }: DescriptionToolbarProps) {
+export function DescriptionToolbar({ editor, onEditHtml, onInsertMedia }: DescriptionToolbarProps) {
   if (!editor) return null;
 
   return (
@@ -74,14 +87,6 @@ export function DescriptionToolbar({ editor }: DescriptionToolbarProps) {
         isActive={editor.isActive('strike')}
         onClick={() => editor.chain().focus().toggleStrike().run()}
       />
-      <ToolbarButton
-        editor={editor}
-        icon={<IconCode size={16} />}
-        label="Code"
-        isActive={editor.isActive('code')}
-        onClick={() => editor.chain().focus().toggleCode().run()}
-      />
-
       <Divider orientation="vertical" mx={4} />
 
       {/* Headings */}
@@ -143,6 +148,13 @@ export function DescriptionToolbar({ editor }: DescriptionToolbarProps) {
         onClick={() => editor.chain().focus().setHorizontalRule().run()}
       />
       <LinkButton editor={editor} />
+      <ToolbarButton
+        editor={editor}
+        icon={<IconPhoto size={16} />}
+        label="Insert Image / Video"
+        isActive={false}
+        onClick={() => onInsertMedia?.()}
+      />
 
       <Divider orientation="vertical" mx={4} />
 
@@ -211,6 +223,17 @@ export function DescriptionToolbar({ editor }: DescriptionToolbarProps) {
         onClick={() => editor.chain().focus().redo().run()}
         disabled={!editor.can().redo()}
       />
+
+      <Divider orientation="vertical" mx={4} />
+
+      {/* HTML source */}
+      <ToolbarButton
+        editor={editor}
+        icon={<IconSourceCode size={16} />}
+        label="Edit HTML"
+        isActive={false}
+        onClick={() => onEditHtml?.()}
+      />
     </Group>
   );
 }
@@ -277,6 +300,7 @@ function LinkButton({ editor }: { editor: Editor }) {
 
 /** Text color picker button */
 function TextColorButton({ editor }: { editor: Editor }) {
+  const [opened, { toggle, close }] = useDisclosure(false);
   const currentColor = editor.getAttributes('textStyle')?.color || '';
 
   const handleChange = useCallback(
@@ -291,32 +315,45 @@ function TextColorButton({ editor }: { editor: Editor }) {
   );
 
   return (
-    <Menu shadow="md" width={220}>
-      <Menu.Target>
+    <Popover opened={opened} onClose={close} width={220} shadow="md" position="bottom">
+      <Popover.Target>
         <Tooltip label="Text Color" withArrow openDelay={500}>
           <ActionIcon
             size="sm"
             variant="subtle"
             color="gray"
             style={currentColor ? { color: currentColor } : undefined}
+            onClick={toggle}
           >
             <span style={{ fontWeight: 'bold', fontSize: '14px' }}>A</span>
           </ActionIcon>
         </Tooltip>
-      </Menu.Target>
-      <Menu.Dropdown>
-        <ColorInput
-          size="xs"
-          value={currentColor}
-          onChange={handleChange}
-          swatches={[
-            '#000000', '#868e96', '#fa5252', '#e64980', '#be4bdb',
-            '#7950f2', '#4c6ef5', '#228be6', '#15aabf', '#12b886',
-            '#40c057', '#82c91e', '#fab005', '#fd7e14',
-          ]}
-          swatchesPerRow={7}
-        />
-      </Menu.Dropdown>
-    </Menu>
+      </Popover.Target>
+      <Popover.Dropdown
+        onKeyDown={(e: React.KeyboardEvent) => {
+          if (e.key === 'Escape') {
+            close();
+            editor.commands.focus();
+          }
+        }}
+      >
+        <Stack gap={4}>
+          <Group justify="flex-end">
+            <CloseButton size="xs" onClick={() => { close(); editor.commands.focus(); }} />
+          </Group>
+          <ColorInput
+            size="xs"
+            value={currentColor}
+            onChange={handleChange}
+            swatches={[
+              '#000000', '#868e96', '#fa5252', '#e64980', '#be4bdb',
+              '#7950f2', '#4c6ef5', '#228be6', '#15aabf', '#12b886',
+              '#40c057', '#82c91e', '#fab005', '#fd7e14',
+            ]}
+            swatchesPerRow={7}
+          />
+        </Stack>
+      </Popover.Dropdown>
+    </Popover>
   );
 }

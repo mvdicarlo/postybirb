@@ -8,7 +8,6 @@ import { useLingui } from '@lingui/react';
 import moment from 'moment/min/moment-with-locales';
 import { useEffect, useMemo } from 'react';
 import {
-    blockNoteLocaleLanguageMap,
     calendarLanguageMap,
     cronstrueLocaleMap,
     dateLocaleMap,
@@ -26,8 +25,6 @@ export interface UseLocaleResult {
   calendarLocale: string;
   /** Locale code for cronstrue */
   cronstrueLocale: string;
-  /** Locale dictionary for BlockNote editor */
-  blockNoteLocale: Record<string, unknown>;
   /** Format a date as relative time (e.g., "2 hours ago", "in 3 days") */
   formatRelativeTime: (date: Date | string) => string;
   /** Format a date/time for display using locale-aware formatting */
@@ -88,7 +85,6 @@ export function useLocale(): UseLocaleResult {
   const dateLocale = dateLocaleMap[locale] || locale;
   const calendarLocale = calendarLanguageMap[locale] || 'en-US';
   const cronstrueLocale = cronstrueLocaleMap[locale] || 'en';
-  const blockNoteLocale = blockNoteLocaleLanguageMap[locale] || blockNoteLocaleLanguageMap.en;
 
   // Set moment locale as a proper side effect (not inside useMemo)
   useEffect(() => {
@@ -132,7 +128,6 @@ export function useLocale(): UseLocaleResult {
     dateLocale,
     calendarLocale,
     cronstrueLocale,
-    blockNoteLocale,
     ...formatters,
   };
 }

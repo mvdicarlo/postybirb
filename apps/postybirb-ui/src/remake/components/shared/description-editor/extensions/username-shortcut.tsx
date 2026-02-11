@@ -18,6 +18,7 @@ import {
 } from '@mantine/core';
 import { useDebouncedValue, useDisclosure } from '@mantine/hooks';
 import {
+    IconArrowRight,
     IconChevronDown,
     IconSearch,
     IconWorld,
@@ -41,14 +42,13 @@ function UsernameShortcutView({
   updateAttributes,
   editor: tiptapEditor,
 }: {
-  node: { attrs: { id: string; shortcut: string; only: string; username: string } };
+  node: { attrs: { shortcut: string; only: string; username: string } };
   updateAttributes: (attrs: Record<string, unknown>) => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   editor: any;
 }) {
   const websites = useWebsites();
 
-  const inlineId = node.attrs.id;
   const shortcutName = node.attrs.shortcut;
   const onlyProp = node.attrs.only;
   const usernameProp = node.attrs.username;
@@ -86,7 +86,7 @@ function UsernameShortcutView({
       // Check node before cursor
       if (pos > 0) {
         const nodeBefore = state.doc.nodeAt(pos - 1);
-        if (nodeBefore?.type.name === 'username' && nodeBefore.attrs.id === inlineId) {
+        if (nodeBefore?.type.name === 'username' && nodeBefore.attrs.shortcut === shortcutName) {
           isAdjacentRef = 'after';
           return;
         }
@@ -94,7 +94,7 @@ function UsernameShortcutView({
 
       // Check node after cursor
       const nodeAfter = state.doc.nodeAt(pos);
-      if (nodeAfter?.type.name === 'username' && nodeAfter.attrs.id === inlineId) {
+      if (nodeAfter?.type.name === 'username' && nodeAfter.attrs.shortcut === shortcutName) {
         isAdjacentRef = 'before';
         return;
       }
@@ -136,7 +136,7 @@ function UsernameShortcutView({
       tiptapEditor.off('selectionUpdate', onTransaction);
       document.removeEventListener('keydown', handleKeyDown, true);
     };
-  }, [tiptapEditor, inlineId]);
+  }, [tiptapEditor, shortcutName]);
 
   // Popover state management for website selection
   const [opened, { close, toggle }] = useDisclosure(false);
@@ -207,8 +207,8 @@ function UsernameShortcutView({
         const pmView = tiptapEditor?.view;
         if (pmView) {
           const { state } = pmView;
-          state.doc.descendants((docNode: { type: { name: string }; attrs: { id: string } }, pos: number) => {
-            if (docNode.type.name === 'username' && docNode.attrs.id === inlineId) {
+          state.doc.descendants((docNode: { type: { name: string }; attrs: { shortcut: string } }, pos: number) => {
+            if (docNode.type.name === 'username' && docNode.attrs.shortcut === shortcutName) {
               const tr = state.tr.setSelection(Selection.near(state.doc.resolve(pos)));
               pmView.dispatch(tr);
               pmView.focus();
@@ -223,8 +223,8 @@ function UsernameShortcutView({
         const pmView = tiptapEditor?.view;
         if (pmView) {
           const { state } = pmView;
-          state.doc.descendants((docNode: { type: { name: string }; attrs: { id: string }; nodeSize: number }, pos: number) => {
-            if (docNode.type.name === 'username' && docNode.attrs.id === inlineId) {
+          state.doc.descendants((docNode: { type: { name: string }; attrs: { shortcut: string }; nodeSize: number }, pos: number) => {
+            if (docNode.type.name === 'username' && docNode.attrs.shortcut === shortcutName) {
               const tr = state.tr.setSelection(Selection.near(state.doc.resolve(pos + docNode.nodeSize)));
               pmView.dispatch(tr);
               pmView.focus();
@@ -235,7 +235,7 @@ function UsernameShortcutView({
         }
       }
     },
-    [usernameProp, commitUsername, tiptapEditor, inlineId],
+    [usernameProp, commitUsername, tiptapEditor, shortcutName],
   );
 
   const handleInputClick = useCallback((e: React.MouseEvent) => {
@@ -294,20 +294,15 @@ function UsernameShortcutView({
     <NodeViewWrapper as="span" className="username-shortcut" style={{ verticalAlign: 'text-bottom', position: 'relative' }}>
       <Badge
         className="username-shortcut-badge"
-        variant="outline"
+        variant="light"
         contentEditable={false}
-        radius="xs"
-        tt="uppercase"
+        radius="xl"
+        tt="none"
         size="sm"
-        h="fit-content"
-        style={{
-          borderRight: 'none',
-          borderTopRightRadius: 0,
-          borderBottomRightRadius: 0,
-        }}
+        styles={{ label: { display: 'flex', alignItems: 'center', gap: 4 } }}
       >
-        {shortcutName}
-        <span style={{ paddingLeft: '6px', fontWeight: 'bold', fontSize: '14px' }}>→</span>
+        <span style={{ fontWeight: 600 }}>{shortcutName}</span>
+        <IconArrowRight size={12} style={{ opacity: 0.5 }} />
         <Popover
           opened={opened}
           onChange={(isOpen) => { if (!isOpen) close(); }}
@@ -319,35 +314,42 @@ function UsernameShortcutView({
         >
           <Popover.Target>
             <Tooltip label={<Trans>Select websites to apply usernames to</Trans>} withArrow>
-              <Badge
-                variant="light"
-                size="sm"
-                color={badgeColor}
+              <Box
+                component="span"
+                className="only-website-selector"
                 contentEditable={false}
-                radius="sm"
-                onClick={toggle}
-                pr={4}
-                pl={6}
-                style={{ cursor: 'pointer', transition: 'all 0.2s ease' }}
-                styles={{ root: { textTransform: 'none' } }}
-                rightSection={
-                  <Box ml={4} style={{ display: 'flex', alignItems: 'center' }}>
-                    <IconChevronDown
-                      size={12}
-                      style={{
-                        transform: opened ? 'rotate(180deg)' : 'rotate(0deg)',
-                        transition: 'transform 0.2s ease',
-                      }}
-                    />
-                  </Box>
-                }
+                onClick={(e: React.MouseEvent) => {
+                  e.stopPropagation();
+                  toggle();
+                }}
+                style={{
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 3,
+                  padding: '0 2px',
+                  borderRadius: 'var(--mantine-radius-sm)',
+                  transition: 'background-color 0.15s ease',
+                  fontWeight: 500,
+                  whiteSpace: 'nowrap',
+                }}
               >
-                {selectedDisplayText}
-              </Badge>
+                <Text span inherit size="xs" style={{ lineHeight: 1 }}>
+                  {selectedDisplayText}
+                </Text>
+                <IconChevronDown
+                  size={10}
+                  style={{
+                    transform: opened ? 'rotate(180deg)' : 'rotate(0deg)',
+                    transition: 'transform 0.2s ease',
+                    opacity: 0.7,
+                  }}
+                />
+              </Box>
             </Tooltip>
           </Popover.Target>
 
-          <Popover.Dropdown p={0}>
+          <Popover.Dropdown p={0} onMouseDown={(e: React.MouseEvent) => e.stopPropagation()}>
             <Stack gap="xs">
               <Box>
                 <Group align="apart" p="xs" style={{ alignItems: 'center' }}>
@@ -425,19 +427,11 @@ function UsernameShortcutView({
             </Stack>
           </Popover.Dropdown>
         </Popover>
-      </Badge>
 
-      {/* Username input */}
-      <Badge
-        variant="outline"
-        radius="xs"
-        tt="none"
-        size="sm"
-        h="fit-content"
-        className="username-shortcut-content-badge"
-        px={0}
-        style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
-      >
+        <span
+          className="username-shortcut-separator"
+          contentEditable={false}
+        />
         <input
           ref={inputRef}
           type="text"
@@ -465,7 +459,6 @@ export const UsernameShortcutExtension = Node.create({
 
   addAttributes() {
     return {
-      id: { default: '' },
       shortcut: { default: '' },
       only: { default: '' },
       username: { default: '' },
@@ -488,14 +481,13 @@ export const UsernameShortcutExtension = Node.create({
   addCommands() {
     return {
       insertUsernameShortcut:
-        (attrs: { id: string; shortcut: string; only?: string; username?: string }) =>
+        (attrs: { shortcut: string; only?: string; username?: string }) =>
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ({ commands }: { commands: any }) => {
           return commands.insertContent([
             {
               type: this.name,
               attrs: {
-                id: attrs.id,
                 shortcut: attrs.shortcut,
                 only: attrs.only ?? '',
                 username: attrs.username ?? '',
