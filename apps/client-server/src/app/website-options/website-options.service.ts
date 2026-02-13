@@ -3,6 +3,7 @@ import {
   Inject,
   Injectable,
   NotFoundException,
+  OnModuleInit,
 } from '@nestjs/common';
 import { Insert } from '@postybirb/database';
 import {
@@ -31,6 +32,10 @@ import { FormGeneratorService } from '../form-generator/form-generator.service';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
 import { SubmissionService } from '../submission/services/submission.service';
 import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
+import {
+  isBlockNoteFormat,
+  migrateDescription,
+} from '../utils/blocknote-to-tiptap';
 import { ValidationService } from '../validation/validation.service';
 import DefaultWebsite from '../websites/implementations/default/default.website';
 import { DefaultWebsiteOptions } from '../websites/models/default-website-options';
@@ -42,7 +47,10 @@ import { UpdateWebsiteOptionsDto } from './dtos/update-website-options.dto';
 import { ValidateWebsiteOptionsDto } from './dtos/validate-website-options.dto';
 
 @Injectable()
-export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchema'> {
+export class WebsiteOptionsService
+  extends PostyBirbService<'WebsiteOptionsSchema'>
+  implements OnModuleInit
+{
   private readonly submissionRepository = new PostyBirbDatabase(
     'SubmissionSchema',
   );
@@ -76,6 +84,87 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
         }
       }
     });
+  }
+
+  async onModuleInit() {
+    await this.migrateBlockNoteDescriptions();
+  }
+
+  /**
+   * One-time migration: convert any BlockNote-format descriptions
+   * (stored as arrays) to TipTap format ({ type: 'doc', content: [] }).
+   * Covers website options, custom shortcuts, and user-specified website options.
+   */
+  private async migrateBlockNoteDescriptions() {
+    let migrated = 0;
+
+    // 1. Migrate website options
+    const options = await this.findAll();
+    for (const option of options) {
+      const descValue = option.data?.description as
+        | DescriptionValue
+        | undefined;
+      const desc = descValue?.description;
+      if (desc && isBlockNoteFormat(desc)) {
+        const converted = migrateDescription(desc);
+        await this.repository.update(option.id, {
+          data: {
+            ...option.data,
+            description: {
+              ...descValue,
+              description: converted,
+            },
+          },
+        });
+        migrated++;
+      }
+    }
+
+    // 2. Migrate custom shortcuts
+    const customShortcutRepo = new PostyBirbDatabase('CustomShortcutSchema');
+    const shortcuts = await customShortcutRepo.findAll();
+    for (const shortcut of shortcuts) {
+      const desc = (shortcut as DynamicObject).shortcut;
+      if (desc && isBlockNoteFormat(desc)) {
+        const converted = migrateDescription(desc);
+        await customShortcutRepo.update(shortcut.id, {
+          shortcut: converted,
+        } as any);
+        migrated++;
+      }
+    }
+
+    // 3. Migrate user-specified website options
+    const userOptsRepo = new PostyBirbDatabase(
+      'UserSpecifiedWebsiteOptionsSchema',
+    );
+    const userOpts = await userOptsRepo.findAll();
+    for (const userOpt of userOpts) {
+      const opts = (userOpt as DynamicObject).options as DynamicObject;
+      if (opts?.description) {
+        const descValue = opts.description as DescriptionValue | undefined;
+        const desc = descValue?.description;
+        if (desc && isBlockNoteFormat(desc)) {
+          const converted = migrateDescription(desc);
+          await userOptsRepo.update(userOpt.id, {
+            options: {
+              ...opts,
+              description: {
+                ...descValue,
+                description: converted,
+              },
+            },
+          } as any);
+          migrated++;
+        }
+      }
+    }
+
+    if (migrated > 0) {
+      this.logger.info(
+        `Migrated ${migrated} BlockNote description(s) to TipTap format`,
+      );
+    }
   }
 
   /**
