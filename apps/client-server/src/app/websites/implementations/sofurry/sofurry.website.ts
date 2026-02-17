@@ -54,6 +54,22 @@ interface SofurrySubmissionResponse {
   folders: string[];
 }
 
+interface SoFurryFileUploadResponse {
+  contentId: string;
+  title: string;
+  description: string;
+  body: {
+    extension: string;
+    displayUrl: string;
+  };
+  position: number;
+  type: string;
+}
+
+interface SoFurryThumbnailUploadResponse {
+  url: string;
+}
+
 @WebsiteMetadata({
   name: 'sofurry',
   displayName: 'SoFurry',
@@ -64,6 +80,7 @@ interface SofurrySubmissionResponse {
   url: 'https://sofurry.com/u/$1',
 })
 @SupportsFiles({
+  fileBatchSize: 10, // A guess
   acceptedMimeTypes: [
     'image/png',
     'image/jpeg',
@@ -87,7 +104,7 @@ export default class Sofurry
   extends Website<SofurryAccountData>
   implements FileWebsite<SofurryFileSubmission>
 {
-  protected BASE_URL = 'https://www.sofurry.com';
+  protected BASE_URL = 'https://sofurry.com';
 
   public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<SofurryAccountData> =
     {
@@ -225,8 +242,6 @@ export default class Sofurry
       );
     }
 
-    const file = files[0];
-
     // Step 1: Create submission (PUT request - PostBuilder doesn't support PUT)
     cancellationToken.throwIfCancelled();
     const createRes = await Http.put<SofurrySubmissionResponse>(
@@ -249,22 +264,57 @@ export default class Sofurry
 
     const submissionId = createRes.body.id;
 
-    // Step 2: Upload file content using PostBuilder
-    const uploadRes = await new PostBuilder(this, cancellationToken)
-      .asMultipart()
-      .withHeader('x-csrf-token', csrfToken)
-      .setField('name', file.fileName)
-      .addFile('file', file)
-      .send<unknown>(`${this.BASE_URL}/ui/submission/${submissionId}/content`);
+    // Step 2: Upload files one at a time to maintain ID order
+    const contentIds: string[] = [];
+    for (const file of files) {
+      cancellationToken.throwIfCancelled();
+      const uploadRes = await new PostBuilder(this, cancellationToken)
+        .asMultipart()
+        .withHeader('X-Csrf-Token', csrfToken)
+        .withHeader('origin', this.BASE_URL)
+        .withHeader('referer', `${this.BASE_URL}/s/${submissionId}/edit`)
+        .setField('name', file.fileName)
+        .addFile('file', file)
+        .send<SoFurryFileUploadResponse>(
+          `${this.BASE_URL}/ui/submission/${submissionId}/content`,
+        );
 
-    if (uploadRes.statusCode >= 400) {
-      return PostResponse.fromWebsite(this)
-        .withException(new Error('Failed to upload file'))
-        .withAdditionalInfo(JSON.stringify(uploadRes.body));
+      if (uploadRes.statusCode >= 400 || !uploadRes.body?.contentId) {
+        return PostResponse.fromWebsite(this)
+          .withException(
+            new Error(
+              `Failed to upload file "${file.fileName}" (${contentIds.length + 1}/${files.length})`,
+            ),
+          )
+          .withAdditionalInfo(JSON.stringify(uploadRes.body));
+      }
+
+      contentIds.push(uploadRes.body.contentId);
     }
 
-    // Get category and type from options, with fallback to file type defaults
-    const defaults = this.getDefaultCategoryAndType(file.fileType);
+    // Step 2b: Upload thumbnail if available
+    let thumbUrl: string | null = null;
+    const thumbnailFile = files[0].thumbnail ? files[0] : null;
+    if (thumbnailFile) {
+      cancellationToken.throwIfCancelled();
+      const thumbRes = await new PostBuilder(this, cancellationToken)
+        .asMultipart()
+        .withHeader('X-Csrf-Token', csrfToken)
+        .withHeader('origin', this.BASE_URL)
+        .withHeader('referer', `${this.BASE_URL}/s/${submissionId}/edit`)
+        .setField('name', thumbnailFile.thumbnail.fileName)
+        .addThumbnail('file', thumbnailFile)
+        .send<SoFurryThumbnailUploadResponse>(
+          `${this.BASE_URL}/ui/submission/${submissionId}/thumbnail`,
+        );
+
+      if (thumbRes.statusCode < 400 && thumbRes.body?.url) {
+        thumbUrl = thumbRes.body.url;
+      }
+    }
+
+    // Get category and type from options, with fallback to first file's type defaults
+    const defaults = this.getDefaultCategoryAndType(files[0].fileType);
     const category = postData.options.category
       ? parseInt(postData.options.category, 10)
       : defaults.category;
@@ -292,17 +342,12 @@ export default class Sofurry
       .setField('canPurchase', false)
       .setField('purchaseAtVendor', null)
       .setField('purchaseAtUrl', null)
-      .setField('contentOrder', [submissionId])
+      .setField('contentOrder', contentIds)
+      .setField('thumbUrl', thumbUrl)
       .send<unknown>(`${this.BASE_URL}/ui/submission/${submissionId}`);
 
-    if (finalizeRes.statusCode >= 400) {
-      return PostResponse.fromWebsite(this)
-        .withException(new Error('Failed to finalize submission'))
-        .withAdditionalInfo(JSON.stringify(finalizeRes.body));
-    }
-
     return PostResponse.fromWebsite(this)
-      .withSourceUrl(`${this.BASE_URL}/view/${submissionId}`)
+      .withSourceUrl(`${this.BASE_URL}/s/${submissionId}`)
       .withMessage('File posted successfully');
   }
 

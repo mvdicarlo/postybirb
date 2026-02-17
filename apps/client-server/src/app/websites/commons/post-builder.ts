@@ -72,6 +72,13 @@ export class PostBuilder {
   private readonly fileFields = new Set<string>();
 
   /**
+   * When true, the request will be sent via Electron's BrowserWindow.loadURL
+   * with raw data bytes instead of using net.request ClientRequest.
+   * @private
+   */
+  private rawData = false;
+
+  /**
    * Creates a new PostBuilder instance.
    *
    * @param website - The website instance for which the post is being built
@@ -158,6 +165,23 @@ export class PostBuilder {
   asUrlEncoded(skipIndex = false) {
     this.postType = 'urlencoded';
     this.httpRequestOptions.skipUrlEncodedIndexing = skipIndex;
+    return this;
+  }
+
+  /**
+   * Configures the request to be sent via Electron's BrowserWindow.loadURL
+   * with raw data bytes instead of the standard net.request flow.
+   * Can be combined with any content type (multipart, json, urlencoded).
+   *
+   * @returns The PostBuilder instance for method chaining
+   *
+   * @example
+   * ```typescript
+   * builder.asMultipart().asRawData().addFile('image', file).send(url);
+   * ```
+   */
+  asRawData() {
+    this.rawData = true;
     return this;
   }
 
@@ -396,9 +420,10 @@ export class PostBuilder {
           data,
           headers: this.headers,
           options: this.httpRequestOptions,
+          uploadAsRawData: this.rawData,
         });
         this.logger.debug(`Received response from ${url}:`, value.statusCode);
-        PostResponse.validateBody(this.website, value);
+        PostResponse.validateBody(this.website, value, undefined, url);
         return value;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
