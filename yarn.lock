@@ -10702,7 +10702,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"agent-base@npm:^7.1.0, agent-base@npm:^7.1.2":
+"agent-base@npm:^7.1.0, agent-base@npm:^7.1.2, agent-base@npm:^7.1.4":
   version: 7.1.4
   resolution: "agent-base@npm:7.1.4"
   checksum: 10c0/c2c9ab7599692d594b6a161559ada307b7a624fa4c7b03e3afdb5a5e31cd0e53269115b620fcab024c5ac6a6f37fa5eb2e004f076ad30f5f7e6b8b671f7b35fe
@@ -17694,7 +17694,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"https-proxy-agent@npm:^7.0.0, https-proxy-agent@npm:^7.0.1, https-proxy-agent@npm:^7.0.5":
+"https-proxy-agent@npm:^7.0.0, https-proxy-agent@npm:^7.0.1, https-proxy-agent@npm:^7.0.5, https-proxy-agent@npm:^7.0.6":
   version: 7.0.6
   resolution: "https-proxy-agent@npm:7.0.6"
   dependencies:
@@ -23611,6 +23611,7 @@ __metadata:
     "@typescript-eslint/eslint-plugin": "npm:7.16.0"
     "@typescript-eslint/parser": "npm:7.16.0"
     "@vitejs/plugin-react-swc": "npm:3.11.0"
+    agent-base: "npm:^7.1.4"
     applicationinsights: "npm:3.12.1"
     async-mutex: "npm:^0.5.0"
     autoprefixer: "npm:10.4.13"
@@ -23660,6 +23661,8 @@ __metadata:
     history: "npm:^5.3.0"
     html-entities: "npm:^2.6.0"
     html-to-text: "npm:^9.0.5"
+    http-proxy-agent: "npm:^7.0.2"
+    https-proxy-agent: "npm:^7.0.6"
     husky: "npm:^9.1.7"
     inquirer: "npm:^12.3.0"
     jest: "npm:29.7.0"
@@ -23700,6 +23703,7 @@ __metadata:
     shx: "npm:^0.3.4"
     socket.io: "npm:^4.8.0"
     socket.io-client: "npm:^4.8.0"
+    socks-proxy-agent: "npm:^8.0.5"
     sortablejs: "npm:^1.15.3"
     swagger-ui-express: "npm:^4.1.6"
     swc_mut_cjs_exports: "npm:^10.7.0"
@@ -26162,7 +26166,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"socks-proxy-agent@npm:^8.0.3":
+"socks-proxy-agent@npm:^8.0.3, socks-proxy-agent@npm:^8.0.5":
   version: 8.0.5
   resolution: "socks-proxy-agent@npm:8.0.5"
   dependencies:
