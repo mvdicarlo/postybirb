@@ -128,14 +128,8 @@ export default class Sofurry
         );
         const csrfToken = csrfMatch ? csrfMatch[1] : undefined;
         if (csrfToken) {
-          // Fetch folders (stub for now)
+          // Fetch folders
           await this.getFolders(csrfToken);
-
-          this.setWebsiteData({
-            ...this.getWebsiteData(),
-            csrfToken,
-          });
-
           return this.loginState.setLogin(true, username);
         }
       }
