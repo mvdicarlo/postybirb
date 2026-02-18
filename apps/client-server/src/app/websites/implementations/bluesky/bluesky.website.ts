@@ -1,3 +1,4 @@
+// eslint-disable-next-line max-classes-per-file
 import {
   $Typed,
   AppBskyActorGetProfile,
@@ -29,6 +30,17 @@ import {
   SubmissionRating,
 } from '@postybirb/types';
 import { getFileTypeFromMimeType } from '@postybirb/utils/file-type';
+import { v4 } from 'uuid';
+import {
+  AcceptableBlockNode,
+  BaseConverter,
+} from '../../../post-parsers/models/description-node/converters/base-converter';
+import { PlainTextConverter } from '../../../post-parsers/models/description-node/converters/plaintext-converter';
+import {
+  ConversionContext,
+  IDescriptionInlineNodeClass,
+  IDescriptionTextNodeClass,
+} from '../../../post-parsers/models/description-node/description-node.base';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
@@ -42,6 +54,7 @@ import { DataPropertyAccessibility } from '../../models/data-property-accessibil
 import { FileWebsite } from '../../models/website-modifiers/file-website';
 import { MessageWebsite } from '../../models/website-modifiers/message-website';
 import { OAuthWebsite } from '../../models/website-modifiers/oauth-website';
+import { WithCustomDescriptionParser } from '../../models/website-modifiers/with-custom-description-parser';
 import { Website } from '../../website';
 import { BlueskyFileSubmission } from './models/bluesky-file-submission';
 import { BlueskyMessageSubmission } from './models/bluesky-message-submission';
@@ -80,7 +93,8 @@ export default class Bluesky
   implements
     FileWebsite<BlueskyFileSubmission>,
     MessageWebsite<BlueskyMessageSubmission>,
-    OAuthWebsite<BlueskyOAuthRoutes>
+    OAuthWebsite<BlueskyOAuthRoutes>,
+    WithCustomDescriptionParser
 {
   onAuthRoute: OAuthRouteHandlers<BlueskyOAuthRoutes> = {
     login: async (request) => {
@@ -128,12 +142,16 @@ export default class Bluesky
     return new BlueskyFileSubmission();
   }
 
-  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
+  calculateImageResize(_file: ISubmissionFile): ImageResizeProps {
     return {
       // Yes they are this lame: https://github.com/bluesky-social/social-app/blob/main/src/lib/constants.ts
       height: 2000,
       width: 2000,
     };
+  }
+
+  getDescriptionConverter(): BaseConverter {
+    return new BlueskyConverter();
   }
 
   async onPostFileSubmission(
@@ -184,8 +202,7 @@ export default class Bluesky
       };
     }
 
-    const rt = new RichText({ text: postData.options.description });
-    await rt.detectFacets(agent);
+    const rt = await this.getRichText(postData.options.description);
 
     const postResult = await agent.post({
       text: rt.text,
@@ -206,14 +223,11 @@ export default class Bluesky
     agent: AtpAgent,
   ) {
     if (postResult && postResult.uri) {
-      // Generate a friendly URL
-      const { handle } = profile.data;
-
-      const hostname = this.getWebsiteData().appViewUrl ?? 'https://bsky.app';
-
+      // Generate a permanent URL
+      const hostname = this.getWebsiteData().appViewUrl ?? this.BASE_URL;
+      const origin = `${hostname.includes('://') ? '' : 'https://'}${hostname}`;
       const postId = postResult.uri.slice(postResult.uri.lastIndexOf('/') + 1);
-
-      const friendlyUrl = `https://${hostname}/profile/${handle}/post/${postId}`;
+      const friendlyUrl = `${origin.padEnd(origin.length, '/')}profile/${profile.data.did}/post/${postId}`;
 
       // After the post has been made, check to see if we need to set a ThreadGate; these are the options to control who can reply to your post, and need additional calls
       if (postData.options.whoCanReply) {
@@ -315,8 +329,7 @@ export default class Bluesky
   ): Promise<void> {
     const { description } = postData.options;
 
-    const rt = new RichText({ text: description });
-    await rt.detectFacets(this.agent);
+    const rt = await this.getRichText(description);
 
     if (rt.graphemeLength > this.MAX_CHARS) {
       validator.error(
@@ -680,4 +693,131 @@ export default class Bluesky
       return `(error getting body: ${e})`;
     }
   }
+
+  async getRichText(description: string) {
+    const { text, links } = JSON.parse(description) as DescriptionWithLinks;
+    const rt = new RichText({ text });
+    await rt.detectFacets(
+      this.agent ?? new AtpAgent({ service: 'bsky.social' }),
+    );
+
+    // Convert UTF-16 indices to UTF-8 byte offsets
+    if (links && links.length > 0) {
+      const encoder = new TextEncoder();
+
+      // Encode the entire text once for efficiency
+      const textBytes = encoder.encode(text);
+
+      const byteLinks = links.map((link) => {
+        const startSlice = text.slice(0, link.start);
+        const startByte = encoder.encode(startSlice).byteLength;
+
+        const endSlice = text.slice(0, link.end);
+        const endByte = encoder.encode(endSlice).byteLength;
+
+        return {
+          start: startByte,
+          end: endByte,
+          href: link.href,
+        };
+      });
+
+      rt.facets ??= [];
+
+      for (const byteLink of byteLinks) {
+        // Skip if the byte range is invalid
+        if (
+          byteLink.start >= byteLink.end ||
+          byteLink.end > textBytes.byteLength
+        ) {
+          continue;
+        }
+
+        // Check for overlaps with existing facets
+        const hasOverlap = rt.facets.some(
+          (facet) =>
+            byteLink.start < facet.index.byteEnd &&
+            byteLink.end > facet.index.byteStart,
+        );
+
+        if (!hasOverlap) {
+          rt.facets.push({
+            index: {
+              byteStart: byteLink.start,
+              byteEnd: byteLink.end,
+            },
+            features: [
+              {
+                $type: 'app.bsky.richtext.facet#link',
+                uri: byteLink.href,
+              },
+            ],
+          });
+        }
+      }
+
+      // Sort facets
+      if (rt.facets.length > 0) {
+        rt.facets.sort((a, b) => a.index.byteStart - b.index.byteStart);
+      } else {
+        rt.facets = undefined;
+      }
+    }
+
+    return rt;
+  }
+}
+
+class BlueskyConverter extends PlainTextConverter {
+  private links: { href: string; content: string; id: string }[] = [];
+
+  convertInlineNode(
+    node: IDescriptionInlineNodeClass,
+    context: ConversionContext,
+  ): string {
+    if (node.type === 'link') {
+      const content = (node.content as IDescriptionTextNodeClass[])
+        .map((child) => this.convertTextNode(child, context))
+        .join('');
+
+      const id = v4();
+      this.links.push({ href: node.href ?? node.props.href, content, id });
+      return id;
+    }
+
+    return super.convertInlineNode(node, context);
+  }
+
+  convertBlocks(
+    nodes: AcceptableBlockNode[],
+    context: ConversionContext,
+  ): string {
+    this.links = [];
+    let text = super.convertBlocks(nodes, context);
+
+    const newLinks: RichTextLinkPosition[] = [];
+
+    for (const link of this.links) {
+      const start = text.indexOf(link.id);
+      const end = start + link.content.length;
+      text = text.replace(link.id, link.content);
+      newLinks.push({ start, end, href: link.href });
+    }
+
+    return JSON.stringify({
+      text,
+      links: newLinks,
+    } satisfies DescriptionWithLinks);
+  }
+}
+
+interface RichTextLinkPosition {
+  start: number;
+  end: number;
+  href: string;
+}
+
+interface DescriptionWithLinks {
+  text: string;
+  links: RichTextLinkPosition[];
 }
