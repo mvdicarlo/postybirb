@@ -154,7 +154,7 @@ export const TranslationMessages: TranslationsMap = {
     );
   },
 
-  'validation.tags.double-cashtag': (props) => {
+  'validation.tags.double-hashtag': (props) => {
     const { tags } = props;
     return (
       <>
