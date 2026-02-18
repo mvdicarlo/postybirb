@@ -128,7 +128,7 @@ export interface ValidationMessages {
     maxLength: number;
   };
 
-  'validation.tags.double-cashtag': {
+  'validation.tags.double-hashtag': {
     tags: string[];
   };
 
