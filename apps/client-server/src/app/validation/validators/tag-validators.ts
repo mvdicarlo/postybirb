@@ -67,7 +67,7 @@ export async function validateMaxTagLength({
   }
 }
 
-export async function validateTagCashtag({
+export async function validateTagHashtag({
   result,
   data,
   mergedWebsiteOptions,
@@ -78,7 +78,7 @@ export async function validateTagCashtag({
     const invalidTags = tags.filter((tag) => tag.startsWith('#'));
     if (invalidTags.length > 0) {
       result.warnings.push({
-        id: 'validation.tags.double-cashtag',
+        id: 'validation.tags.double-hashtag',
         field: 'tags',
         values: {
           tags: invalidTags,
