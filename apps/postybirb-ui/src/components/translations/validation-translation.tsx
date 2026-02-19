@@ -1,4 +1,4 @@
-import { Plural, Trans } from "@lingui/react/macro";
+import { Plural, Trans } from '@lingui/react/macro';
 import { Text } from '@mantine/core';
 import {
   FileType,
@@ -149,6 +149,16 @@ export const TranslationMessages: TranslationsMap = {
     return (
       <>
         <Trans>Tags longer than {maxLength} characters will be skipped</Trans>:{' '}
+        <span>{tags.join(', ')}</span>
+      </>
+    );
+  },
+
+  'validation.tags.double-hashtag': (props) => {
+    const { tags } = props;
+    return (
+      <>
+        <Trans>Tags should not start with #</Trans>:{' '}
         <span>{tags.join(', ')}</span>
       </>
     );

@@ -21,6 +21,15 @@ export class DescriptionBlockNode
   extends DescriptionNode<IDescriptionBlockNode['type']>
   implements IDescriptionBlockNode, IDescriptionBlockNodeClass
 {
+  static isSpacing(node: IDescriptionBlockNode | undefined) {
+    return (
+      node &&
+      node.type === 'paragraph' &&
+      node.content.length === 0 &&
+      node.children.length === 0
+    );
+  }
+
   id: string;
 
   content: Array<DescriptionInlineNode | DescriptionTextNode>;
@@ -53,9 +62,7 @@ export class DescriptionBlockNode
       this.children =
         node.children?.map((child) => {
           if (!BlockTypes.includes(child.type)) {
-            throw new Error(
-              `Children must be block nodes, got: ${child.type}`,
-            );
+            throw new Error(`Children must be block nodes, got: ${child.type}`);
           }
           return new DescriptionBlockNode(child, depth + 1);
         }) ?? [];

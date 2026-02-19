@@ -11,6 +11,7 @@ import { DefaultWebsiteOptions } from '../../websites/models/default-website-opt
 import { isWithCustomDescriptionParser } from '../../websites/models/website-modifiers/with-custom-description-parser';
 import { isWithRuntimeDescriptionParser } from '../../websites/models/website-modifiers/with-runtime-description-parser';
 import { UnknownWebsite, Website } from '../../websites/website';
+import { DescriptionBlockNode } from '../models/description-node/block-description-node';
 import {
   DescriptionNodeTree,
   InsertionOptions,
@@ -98,6 +99,13 @@ export class DescriptionParserService {
       defaultOptions.description
         .description as unknown as Array<IDescriptionBlockNode>,
     );
+
+    for (let i = defaultDescription.length - 1; i >= 0; i--) {
+      const element = defaultDescription[i];
+      if (DescriptionBlockNode.isSpacing(element)) {
+        defaultDescription.splice(i);
+      } else break;
+    }
 
     // Build tree once with minimal context
     const context: ConversionContext = {

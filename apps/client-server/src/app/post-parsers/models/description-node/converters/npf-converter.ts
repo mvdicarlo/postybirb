@@ -1,8 +1,8 @@
 import {
-    ConversionContext,
-    IDescriptionBlockNodeClass,
-    IDescriptionInlineNodeClass,
-    IDescriptionTextNodeClass,
+  ConversionContext,
+  IDescriptionBlockNodeClass,
+  IDescriptionInlineNodeClass,
+  IDescriptionTextNodeClass,
 } from '../description-node.base';
 import { BaseConverter } from './base-converter';
 
@@ -185,11 +185,7 @@ export class NpfConverter extends BaseConverter {
     const block = this.convertBlockNodeToNpf(node, context);
 
     // Apply indent_level for nested blocks (NPF supports 0-7)
-    if (
-      indentLevel > 0 &&
-      block.type === 'text' &&
-      indentLevel <= 7
-    ) {
+    if (indentLevel > 0 && block.type === 'text' && indentLevel <= 7) {
       block.indent_level = indentLevel;
       // Set subtype to indented if not already set
       if (!block.subtype) {
