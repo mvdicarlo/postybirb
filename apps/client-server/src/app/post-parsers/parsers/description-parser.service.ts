@@ -97,6 +97,16 @@ export class DescriptionParserService {
       defaultOptions.description.description?.content ?? [],
     );
 
+    for (let i = defaultDescription.length - 1; i >= 0; i--) {
+      const element = defaultDescription[i];
+      const isSpacing =
+        element?.type === 'paragraph' &&
+        (!element.content || element.content.length === 0);
+      if (isSpacing) {
+        defaultDescription.splice(i);
+      } else break;
+    }
+
     // Build tree once with minimal context
     const context: ConversionContext = {
       website: instance.decoratedProps.metadata.name,

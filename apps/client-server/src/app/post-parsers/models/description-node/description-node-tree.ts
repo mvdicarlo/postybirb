@@ -24,28 +24,28 @@ export class DescriptionNodeTree {
 
   private context: ConversionContext;
 
+  /** Empty paragraph used as spacing before the ad */
+  private readonly spacing: TipTapNode = {
+    type: 'paragraph',
+    content: [],
+  };
+
   /** PostyBirb ad in TipTap JSON format */
-  private readonly ad: TipTapNode[] = [
-    {
-      type: 'paragraph',
-      content: [],
-    },
-    {
-      type: 'paragraph',
-      content: [
-        {
-          type: 'text',
-          text: 'Posted using PostyBirb',
-          marks: [
-            {
-              type: 'link',
-              attrs: { href: 'https://postybirb.com', target: '_blank' },
-            },
-          ],
-        },
-      ],
-    },
-  ];
+  private readonly ad: TipTapNode = {
+    type: 'paragraph',
+    content: [
+      {
+        type: 'text',
+        text: 'Posted using PostyBirb',
+        marks: [
+          {
+            type: 'link',
+            attrs: { href: 'https://postybirb.com', target: '_blank' },
+          },
+        ],
+      },
+    ],
+  };
 
   constructor(
     context: ConversionContext,
@@ -185,7 +185,17 @@ export class DescriptionNodeTree {
     }
 
     if (insertAd) {
-      nodes.push(...this.ad);
+      const lastNode = nodes[nodes.length - 1];
+      const isLastNodeSpacing =
+        lastNode?.type === 'paragraph' &&
+        (!lastNode.content || lastNode.content.length === 0);
+
+      // Avoid duplicated spacings
+      if (!isLastNodeSpacing) {
+        nodes.push(this.spacing);
+      }
+
+      nodes.push(this.ad);
     }
 
     return nodes;

@@ -63,13 +63,14 @@ export class PostResponse implements IPostResponse {
     website: { id: string },
     res: HttpResponse<unknown>,
     stage?: string,
+    url?: string,
   ): void {
     if (res.statusCode > 303) {
       // eslint-disable-next-line @typescript-eslint/no-throw-literal
       throw PostResponse.fromWebsite(website)
         .withException(
           new Error(
-            `Unexpected status code from ${res.responseUrl}: ${res.statusCode}`,
+            `Unexpected status code from ${res.responseUrl || url}: ${res.statusCode}`,
           ),
         )
         .atStage(stage || 'Unknown')

@@ -165,11 +165,8 @@ export class NpfConverter extends BaseConverter {
 
     const block = this.convertBlockNodeToNpf(node, context);
 
-    if (
-      indentLevel > 0 &&
-      block.type === 'text' &&
-      indentLevel <= 7
-    ) {
+    // Apply indent_level for nested blocks (NPF supports 0-7)
+    if (indentLevel > 0 && block.type === 'text' && indentLevel <= 7) {
       block.indent_level = indentLevel;
       if (!block.subtype) {
         block.subtype = 'indented';
