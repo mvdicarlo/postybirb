@@ -14,7 +14,7 @@ import { E621TagCategory, TagSearchProviderSettings } from '@postybirb/types';
 import { IconBook, IconPhoto } from '@tabler/icons-react';
 import { useCallback, useRef, useState } from 'react';
 import { useAsync } from 'react-use';
-import { TagSearchProvider } from '../../components/form/fields/tag-search/tag-search-provider';
+import { TagSearchProvider } from '../../../hooks/tag-search/tag-search-provider';
 import { E621Dtext } from './e621-dtext-renderer';
 
 const headers = new Headers({
