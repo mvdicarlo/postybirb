@@ -1,7 +1,7 @@
 import { RemoteConfig } from '@postybirb/utils/electron';
 import { createRoot } from 'react-dom/client';
 import { initializeAppInsightsUI } from './app-insights-ui';
-import PostyBirb from './remake';
+import { PostyBirb } from './remake';
 
 // Initialize Application Insights for UI error tracking
 initializeAppInsightsUI();
