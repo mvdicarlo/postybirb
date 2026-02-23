@@ -145,6 +145,12 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
       title, // Override title (optional)
     };
 
+    // For non-default options, keep rating as undefined to represent
+    // "inherit from default" mode unless explicitly provided in data.
+    if (!isDefault && !data.rating) {
+      mergedData.rating = undefined as unknown as typeof mergedData.rating;
+    }
+
     const option: Insert<'WebsiteOptionsSchema'> = {
       submissionId: submission.id,
       accountId: account.id,
@@ -210,11 +216,19 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
       ),
     };
 
+    const isDefault = account.id === NULL_ACCOUNT_ID;
+
+    // For non-default options, keep rating as undefined to represent
+    // "inherit from default" mode unless explicitly provided in the DTO.
+    if (!isDefault && !createDto.data?.rating) {
+      websiteData.rating = undefined as unknown as typeof websiteData.rating;
+    }
+
     const record = await this.repository.insert({
       submissionId: submission.id,
       data: websiteData,
       accountId: account.id,
-      isDefault: account.id === NULL_ACCOUNT_ID,
+      isDefault,
     });
     this.submissionService.emit();
     return record;

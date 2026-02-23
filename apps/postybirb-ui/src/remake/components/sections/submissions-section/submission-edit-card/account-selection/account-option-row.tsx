@@ -14,7 +14,7 @@ import {
   Paper,
   Text,
 } from '@mantine/core';
-import { SubmissionRating, type WebsiteOptionsDto } from '@postybirb/types';
+import { type WebsiteOptionsDto } from '@postybirb/types';
 import { useCallback, useEffect, useState } from 'react';
 import websiteOptionsApi from '../../../../../api/website-options.api';
 import type { AccountRecord } from '../../../../../stores/records';
@@ -65,16 +65,13 @@ export function AccountOptionRow({
       setIsLoading(true);
       try {
         if (checked) {
-          // Get default rating from submission's default options
-          const defaultOption = submission.options.find((opt) => opt.isDefault);
-          const rating =
-            defaultOption?.data?.rating ?? SubmissionRating.GENERAL;
-
           // Create a new website option for this account
+          // Rating is intentionally omitted so it defaults to
+          // "inherit from default" mode on the server.
           await websiteOptionsApi.create({
             submissionId: submission.id,
             accountId: account.accountId,
-            data: { rating },
+            data: {},
           });
           setManualExpanded(true);
         } else if (websiteOption) {
