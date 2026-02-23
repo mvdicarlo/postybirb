@@ -11,7 +11,7 @@ import {
   PostEventType,
   PostRecordState,
   PostResponse,
-  SubmissionType
+  SubmissionType,
 } from '@postybirb/types';
 import {
   PostRecord,
@@ -241,10 +241,10 @@ export abstract class BasePostManager {
           : PostResponse.fromWebsite(instance)
               .withException(error)
               .withMessage(
-                `An unexpected error occurred while posting to ${
+                `${
                   instance.decoratedProps.metadata.displayName ||
                   instance.decoratedProps.metadata.name
-                }`,
+                }: ${String(error)}`,
               );
 
       await this.handlePostFailure(

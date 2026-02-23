@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Description } from '@postybirb/types';
 import TurndownService from 'turndown';
 import { DescriptionBlockNode } from './block-description-node';
 import { BaseConverter } from './converters/base-converter';
@@ -28,38 +27,43 @@ export class DescriptionNodeTree {
 
   private context: ConversionContext;
 
-  private readonly ad: Description = [
-    {
-      id: 'ad-spacing',
-      type: 'paragraph',
-      props: {
-        textColor: 'default',
-        backgroundColor: 'default',
-        textAlignment: 'left',
-      },
-      content: [],
-      children: [],
+  private readonly spacing: IDescriptionBlockNode = {
+    id: 'ad-spacing',
+    type: 'paragraph',
+    props: {
+      textColor: 'default',
+      backgroundColor: 'default',
+      textAlignment: 'left',
     },
-    {
-      id: 'ad',
-      type: 'paragraph',
-      props: {
-        textColor: 'default',
-        backgroundColor: 'default',
-        textAlignment: 'left',
-      },
-      content: [
-        {
-          type: 'link',
-          href: 'https://postybirb.com',
-          content: [
-            { type: 'text', text: 'Posted using PostyBirb', styles: {} },
-          ],
-        },
-      ],
-      children: [],
+    content: [],
+    children: [],
+  };
+
+  private readonly ad: IDescriptionBlockNode = {
+    id: 'ad',
+    type: 'paragraph',
+    props: {
+      textColor: 'default',
+      backgroundColor: 'default',
+      textAlignment: 'left',
     },
-  ];
+    content: [
+      {
+        type: 'link',
+        href: 'https://postybirb.com',
+        content: [
+          {
+            type: 'text',
+            text: 'Posted using PostyBirb',
+            styles: {},
+            props: {},
+          },
+        ],
+        props: {},
+      },
+    ],
+    children: [],
+  };
 
   constructor(
     context: ConversionContext,
@@ -246,12 +250,15 @@ export class DescriptionNodeTree {
     }
 
     if (insertAd) {
-      nodes.push(
-        ...this.ad.map(
-          (node) =>
-            new DescriptionBlockNode(node as unknown as IDescriptionBlockNode),
-        ),
-      );
+      const lastNode = nodes[nodes.length - 1];
+      const isLastNodeSpacing = DescriptionBlockNode.isSpacing(lastNode);
+
+      // Avoid duplicated spacings
+      if (!isLastNodeSpacing) {
+        nodes.push(new DescriptionBlockNode(this.spacing));
+      }
+
+      nodes.push(new DescriptionBlockNode(this.ad));
     }
     return nodes;
   }
