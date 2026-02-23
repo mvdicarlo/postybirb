@@ -27,6 +27,7 @@ export class SofurryFileSubmission extends BaseWebsiteOptions {
 
   @TagField({
     minTags: 2,
+    spaceReplacer: ' ',
   })
   tags: TagValue;
 
