@@ -97,7 +97,7 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
       event: Electron.ConsoleMessageEvent,
     ): void => {
       // eslint-disable-next-line no-console
-      console.log(`WEBVIEW: ${event.message}`);
+      // console.log(`WEBVIEW: ${event.message}`);
     };
 
     const handleDidNavigate = (event: Electron.DidNavigateEvent) => {

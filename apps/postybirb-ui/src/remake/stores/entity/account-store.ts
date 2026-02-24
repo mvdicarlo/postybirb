@@ -9,6 +9,31 @@ import accountApi from '../../api/account.api';
 import { createEntityStore, type EntityStore } from '../create-entity-store';
 import { AccountRecord } from '../records';
 
+// ============================================================================
+// Account-specific change detection
+// ============================================================================
+
+/**
+ * Deep change-detection for accounts.
+ *
+ * Checks the root `updatedAt` timestamp as well as the `state` (ILoginState)
+ * fields which may change independently (e.g. login status toggled without
+ * touching the account entity itself).
+ */
+function accountHasChanged(existing: AccountRecord, dto: IAccountDto): boolean {
+  // 1. Root entity changed
+  if (dto.updatedAt !== existing.updatedAt.toISOString()) return true;
+
+  // 2. Login state changed
+  const dtoState = dto.state;
+  const existingState = existing.state;
+  if (dtoState.isLoggedIn !== existingState.isLoggedIn) return true;
+  if (dtoState.username !== existingState.username) return true;
+  if (dtoState.pending !== existingState.pending) return true;
+
+  return false;
+}
+
 /**
  * Fetch all accounts from the API.
  */
@@ -27,6 +52,7 @@ export const useAccountStore = createEntityStore<IAccountDto, AccountRecord>(
     // eslint-disable-next-line lingui/no-unlocalized-strings
     storeName: 'AccountStore',
     websocketEvent: ACCOUNT_UPDATES,
+    hasChanged: accountHasChanged,
   }
 );
 
