@@ -61,7 +61,7 @@ jobs:
             ${{ runner.os }}-${{ matrix.arch }}-electron-cache-
 
       - name: Install dependencies
-        run: yarn install --immutable --inline-builds
+        run: yarn install --immutable
         env:
           CYPRESS_INSTALL_BINARY: 0
           ELECTRON_CACHE: ~/.cache/electron
