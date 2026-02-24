@@ -64,6 +64,7 @@ export function TreeSelect({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   const defaultPlaceholder = <Trans>Select...</Trans>;
   const displayPlaceholder = placeholder ?? defaultPlaceholder;
@@ -254,6 +255,18 @@ export function TreeSelect({
       }
     }
   }, [opened, enableSearch]);
+
+  // Scroll focused item into view
+  useEffect(() => {
+    if (focusedValue && opened && scrollAreaRef.current) {
+      const el = scrollAreaRef.current.querySelector(
+        `[data-tree-node-value="${CSS.escape(focusedValue)}"]`,
+      );
+      if (el) {
+        el.scrollIntoView({ block: 'nearest' });
+      }
+    }
+  }, [focusedValue, opened]);
 
   // Keyboard navigation
   const handleKeyDown = useCallback(
@@ -484,9 +497,11 @@ export function TreeSelect({
     transition: 'transform 150ms ease',
   });
 
+  const showClear = clearable && selectedOptions.length > 0;
+
   const rightSection = (
-    <Group gap={4} wrap="nowrap">
-      {clearable && selectedOptions.length > 0 && (
+    <Group gap={4} wrap="nowrap" pr="xs">
+      {showClear && (
         <ActionIcon
           size="sm"
           variant="subtle"
@@ -523,6 +538,7 @@ export function TreeSelect({
           onClick={() => !disabled && setOpened(!opened)}
           onKeyDown={handleKeyDown}
           rightSection={rightSection}
+          rightSectionWidth={showClear ? 56 : 32}
           rightSectionPointerEvents="auto"
         >
           <Text
@@ -562,7 +578,7 @@ export function TreeSelect({
             </Box>
           )}
 
-          <ScrollArea.Autosize mah={250} type="auto">
+          <ScrollArea.Autosize mah={250} type="auto" viewportRef={scrollAreaRef}>
             {treeData.length > 0 ? (
               <Tree
                 tree={tree}
@@ -572,6 +588,7 @@ export function TreeSelect({
                     gap={4}
                     wrap="nowrap"
                     style={nodeStyles}
+                    data-tree-node-value={node.value}
                     onClick={() => {
                       // Only handle selection for leaf nodes or selectable groups
                       const flatOpts = flattenSelectableOptions(options);
