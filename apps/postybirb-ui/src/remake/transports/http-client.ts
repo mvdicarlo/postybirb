@@ -18,13 +18,13 @@ export const defaultTargetPath = `https://localhost:${window.electron.app_port}`
 interface RemoteConfig {
   host: string | null;
   password: string | null;
-  mode?: 'client' | 'host' | null;
+  mode: 'client' | 'host' | null;
 }
 
 let cachedConfig: RemoteConfig = {
   host: localStorage.getItem(REMOTE_HOST_KEY),
   password: localStorage.getItem(REMOTE_PASSWORD_KEY),
-  mode: localStorage.getItem(REMOTE_MODE_KEY),
+  mode: localStorage.getItem(REMOTE_MODE_KEY) as 'client' | 'host' | null,
 };
 
 export const getRemoteConfig = (): RemoteConfig => cachedConfig;
