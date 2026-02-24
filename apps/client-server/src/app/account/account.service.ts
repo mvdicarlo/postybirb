@@ -66,10 +66,10 @@ export class AccountService
 
       this.emit();
 
-      await this.cycleCookies();
       Object.keys(this.loginRefreshTimers).forEach((interval) =>
         this.executeOnLoginForInterval(interval),
       );
+      await this.cycleCookies();
     });
   }
 
