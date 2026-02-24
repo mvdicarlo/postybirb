@@ -48,6 +48,7 @@ interface DeviantArtFolder {
   url: 'https://deviantart.com/$1',
 })
 @SupportsFiles({
+  fileBatchSize: 10,
   acceptedFileSizes: {
     [FileType.VIDEO]: FileSize.megabytes(200),
     [FileType.IMAGE]: FileSize.megabytes(30),
@@ -207,6 +208,37 @@ export default class DeviantArt
       return PostResponse.fromWebsite(this)
         .withAdditionalInfo(fileUpload.body)
         .withException(new Error('Failed to upload file.'));
+    }
+
+    // TODO: Handle additional files (multi-file submissions)
+    const additionalUploads: Array<{
+      deviationId: number;
+      fileId: number;
+      attachment: object;
+      deviation: object;
+    }> = [];
+    if (files.length > 1) {
+      let index = 0;
+      const csrf = await this.getCSRF();
+      for (const file of files.slice(1)) {
+        index++;
+        cancellationToken.throwIfCancelled();
+        const upload = await new PostBuilder(this, cancellationToken)
+          .asMultipart()
+          .addFile('attachment_file', file)
+          .setField('da_minor_version', this.DA_API_VERSION)
+          .setField('type', 'additional_image')
+          .setField('position', index)
+          .setField('csrf_token', csrf)
+          .setField('deviationid', fileUpload.body.deviationId)
+          .send<{
+            deviationId: number;
+            fileId: number;
+            attachment: object;
+            deviation: object;
+          }>(`${this.BASE_URL}/_puppy/dashared/deviation/attachments/add`);
+        additionalUploads.push(upload.body);
+      }
     }
 
     // Determine if submission is mature
