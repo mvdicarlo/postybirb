@@ -18,12 +18,16 @@ export const defaultTargetPath = `https://localhost:${window.electron.app_port}`
 interface RemoteConfig {
   host: string | null;
   password: string | null;
+  mode?: 'client' | 'host' | null;
 }
 
 let cachedConfig: RemoteConfig = {
   host: localStorage.getItem(REMOTE_HOST_KEY),
   password: localStorage.getItem(REMOTE_PASSWORD_KEY),
+  mode: localStorage.getItem(REMOTE_MODE_KEY),
 };
+
+export const getRemoteConfig = (): RemoteConfig => cachedConfig;
 
 /**
  * Re-read remote host / password from localStorage.
@@ -34,6 +38,7 @@ export const refreshRemoteConfig = () => {
   cachedConfig = {
     host: localStorage.getItem(REMOTE_HOST_KEY),
     password: localStorage.getItem(REMOTE_PASSWORD_KEY),
+    mode: localStorage.getItem(REMOTE_MODE_KEY) as 'client' | 'host' | null,
   };
 };
 
@@ -84,7 +89,10 @@ export class HttpError<T = unknown> extends Error {
   constructor(response: HttpResponse<T>) {
     super(`HTTP ${response.status}: ${response.statusText}`);
     this.name = 'HttpError';
-    this.response = { ...response, error: response.body as unknown as ErrorResponse };
+    this.response = {
+      ...response,
+      error: response.body as unknown as ErrorResponse,
+    };
     this.statusCode = response.status;
   }
 }
@@ -249,7 +257,10 @@ export class HttpClient {
         return resObj;
       } catch (error) {
         // Handle network-level errors (no response received)
-        if (error instanceof TypeError || (error as Error)?.name === 'TypeError') {
+        if (
+          error instanceof TypeError ||
+          (error as Error)?.name === 'TypeError'
+        ) {
           lastError = error as Error;
           if (attempt < maxRetries) {
             await this.delay(attempt, retryDelay);
@@ -281,7 +292,11 @@ export class HttpClient {
       body = await this.processResponse<T>(res);
     } catch (parseError) {
       // If we can't parse the response, use empty object or error message
-      body = (res.ok ? {} : { error: 'Parse error', message: 'Failed to parse response body' }) as T;
+      body = (
+        res.ok
+          ? {}
+          : { error: 'Parse error', message: 'Failed to parse response body' }
+      ) as T;
     }
 
     return {
