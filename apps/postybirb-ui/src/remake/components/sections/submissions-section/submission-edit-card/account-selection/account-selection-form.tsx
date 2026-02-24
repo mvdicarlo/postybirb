@@ -18,11 +18,7 @@ import {
   UnstyledButton,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import {
-  SubmissionRating,
-  SubmissionType,
-  type WebsiteOptionsDto,
-} from '@postybirb/types';
+import { SubmissionType, type WebsiteOptionsDto } from '@postybirb/types';
 import {
   IconChevronDown,
   IconChevronRight,
@@ -228,25 +224,20 @@ export function AccountSelectionForm() {
     [eligibleAccounts, optionsByAccount],
   );
 
-  // Get default rating for new options
-  const getDefaultRating = useCallback(() => {
-    const defaultOption = submission.options.find((opt) => opt.isDefault);
-    return defaultOption?.data?.rating ?? SubmissionRating.GENERAL;
-  }, [submission.options]);
-
   // Select all accounts
   const handleSelectAll = useCallback(async () => {
     if (unselectedAccounts.length === 0) return;
 
     setIsSelectingAll(true);
     try {
-      const rating = getDefaultRating();
+      // Rating is intentionally omitted so each option defaults to
+      // "inherit from default" mode on the server.
       await Promise.all(
         unselectedAccounts.map((account) =>
           websiteOptionsApi.create({
             submissionId: submission.id,
             accountId: account.accountId,
-            data: { rating },
+            data: {},
           }),
         ),
       );
@@ -256,7 +247,7 @@ export function AccountSelectionForm() {
     } finally {
       setIsSelectingAll(false);
     }
-  }, [unselectedAccounts, submission.id, getDefaultRating]);
+  }, [unselectedAccounts, submission.id]);
 
   // Deselect all accounts
   const handleDeselectAll = useCallback(async () => {

@@ -5,7 +5,7 @@
 
 import { useDebouncedCallback } from '@mantine/hooks';
 import { useEffect, useRef, useState } from 'react';
-import { useSettings, useTagSearchProvider } from '../../stores/entity/settings-store';
+import { useTagSearchProvider } from '../../stores/entity/settings-store';
 import { TagSearchProvider } from './tag-search-provider';
 import { TagSearchProviders } from './tag-search-providers';
 
@@ -45,7 +45,6 @@ export interface UseTagSearchResult {
  * ```
  */
 export function useTagSearch(fieldProviderId?: string): UseTagSearchResult {
-  const settings = useSettings();
   const tagSearchProviderSettings = useTagSearchProvider();
 
   // Determine the provider to use: field-specific or user setting

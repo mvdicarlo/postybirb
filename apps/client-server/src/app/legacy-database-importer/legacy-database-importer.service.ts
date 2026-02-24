@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import { app } from 'electron';
 import { join } from 'path';
+import { AccountService } from '../account/account.service';
 import { LegacyConverter } from './converters/legacy-converter';
 import { LegacyCustomShortcutConverter } from './converters/legacy-custom-shortcut.converter';
 import { LegacyTagConverterConverter } from './converters/legacy-tag-converter.converter';
@@ -18,6 +19,8 @@ export class LegacyDatabaseImporterService {
     app.getPath('documents'),
     'PostyBirb',
   );
+
+  constructor(private readonly accountService: AccountService) {}
 
   async import(importRequest: LegacyImportDto): Promise<{ errors: Error[] }> {
     const path = importRequest.customPath || this.LEGACY_POSTYBIRB_PLUS_PATH;
@@ -41,6 +44,11 @@ export class LegacyDatabaseImporterService {
       if (websiteDataResult.error) {
         errors.push(websiteDataResult.error);
       }
+
+      const allAccounts = await this.accountService.findAll();
+      allAccounts.forEach((account) => {
+        this.accountService.manuallyExecuteOnLogin(account.id);
+      });
     }
 
     if (importRequest.tagGroups) {

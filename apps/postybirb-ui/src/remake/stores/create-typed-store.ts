@@ -10,7 +10,7 @@ import type { BaseRecord } from './records/base-record';
 /**
  * Configuration for creating a typed store.
  */
-export interface TypedStoreConfig<TDto, TRecord extends BaseRecord> {
+export interface TypedStoreConfig<TDto extends { id: string; updatedAt: string }, TRecord extends BaseRecord> {
   /** Async function that fetches DTOs from the API */
   fetchFn: () => Promise<TDto[]>;
   /** Function that converts a DTO to a Record class */
@@ -19,6 +19,13 @@ export interface TypedStoreConfig<TDto, TRecord extends BaseRecord> {
   storeName: string;
   /** Websocket event name to subscribe to for real-time updates (optional) */
   websocketEvent?: string;
+  /**
+   * Custom comparator to determine whether a record has changed.
+   * Receives the existing record and the incoming DTO.
+   * Return `true` if the record has changed and should be re-created.
+   * When not provided, falls back to comparing `updatedAt` timestamps.
+   */
+  hasChanged?: (existing: TRecord, newDto: TDto) => boolean;
 }
 
 /**
@@ -26,7 +33,8 @@ export interface TypedStoreConfig<TDto, TRecord extends BaseRecord> {
  */
 export interface TypedStoreResult<TRecord extends BaseRecord> {
   /** The underlying Zustand store */
-  useStore: ReturnType<typeof createEntityStore<unknown, TRecord>>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  useStore: ReturnType<typeof createEntityStore<any, TRecord>>;
   /** Hook to get all records */
   useRecords: () => TRecord[];
   /** Hook to get records map for O(1) lookup */
@@ -67,7 +75,7 @@ export interface TypedStoreResult<TRecord extends BaseRecord> {
  * });
  * ```
  */
-export function createTypedStore<TDto, TRecord extends BaseRecord>(
+export function createTypedStore<TDto extends { id: string; updatedAt: string }, TRecord extends BaseRecord>(
   config: TypedStoreConfig<TDto, TRecord>
 ): TypedStoreResult<TRecord> {
   type StoreState = EntityStore<TRecord>;
@@ -78,6 +86,7 @@ export function createTypedStore<TDto, TRecord extends BaseRecord>(
     {
       storeName: config.storeName,
       websocketEvent: config.websocketEvent,
+      hasChanged: config.hasChanged,
     }
   );
 
@@ -90,10 +99,10 @@ export function createTypedStore<TDto, TRecord extends BaseRecord>(
 
   /**
    * Hook to get records map for O(1) lookup.
-   * Uses shallow comparison to prevent unnecessary re-renders.
+   * Reference stability is handled upstream by diffRecords.
    */
   const useRecordsMap = () =>
-    useStore(useShallow((state: StoreState) => state.recordsMap));
+    useStore((state: StoreState) => state.recordsMap);
 
   /**
    * Hook to get loading state.
@@ -110,6 +119,8 @@ export function createTypedStore<TDto, TRecord extends BaseRecord>(
 
   /**
    * Hook to get store actions.
+   * useShallow is required because the selector returns an object literal —
+   * without it, Zustand's Object.is check sees a new reference every render → infinite loop.
    */
   const useActions = () =>
     useStore(

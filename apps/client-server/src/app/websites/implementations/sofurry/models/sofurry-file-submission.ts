@@ -13,10 +13,15 @@ import {
 } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 import { SofurryAccountData } from './sofurry-account-data';
+import {
+  SofurryCategoriesByFileType,
+  SofurryPrivacyOptions,
+  SofurryTypesByFileType,
+} from './sofurry-categories';
 
 export class SofurryFileSubmission extends BaseWebsiteOptions {
   @DescriptionField({
-    descriptionType: DescriptionType.HTML,
+    descriptionType: DescriptionType.PLAINTEXT,
   })
   description: DescriptionValue;
 
@@ -27,12 +32,43 @@ export class SofurryFileSubmission extends BaseWebsiteOptions {
 
   @RatingField({
     options: [
-      { value: SubmissionRating.GENERAL, label: 'All Ages' },
-      { value: SubmissionRating.ADULT, label: 'Adult' },
-      { value: SubmissionRating.EXTREME, label: 'Extreme' },
+      { value: SubmissionRating.GENERAL, label: 'Clean' },
+      { value: SubmissionRating.ADULT, label: 'Mature' },
+      { value: SubmissionRating.EXTREME, label: 'Adult' },
     ],
   })
   rating: SubmissionRating;
+
+  @SelectField({
+    label: 'category',
+    section: 'website',
+    span: 6,
+    options: {
+      options: SofurryCategoriesByFileType,
+      discriminator: 'overallFileType',
+    },
+  })
+  category: string;
+
+  @SelectField({
+    label: { untranslated: 'Type' },
+    section: 'website',
+    span: 6,
+    options: {
+      options: SofurryTypesByFileType,
+      discriminator: 'overallFileType',
+    },
+  })
+  type: string;
+
+  @SelectField({
+    label: { untranslated: 'Privacy' },
+    defaultValue: '3',
+    options: SofurryPrivacyOptions,
+    section: 'website',
+    span: 6,
+  })
+  privacy: string;
 
   @SelectField<SofurryAccountData>({
     label: 'folder',
@@ -45,15 +81,51 @@ export class SofurryFileSubmission extends BaseWebsiteOptions {
       },
     ],
     section: 'website',
-    span: 12,
+    span: 6,
   })
   folder: string;
 
   @BooleanField({
-    label: 'thumbnailAsCoverArt',
+    label: 'allowComments',
+    defaultValue: true,
+    section: 'website',
+    span: 6,
+  })
+  allowComments: boolean;
+
+  @BooleanField({
+    label: 'allowFreeDownload',
+    defaultValue: true,
+    section: 'website',
+    span: 6,
+  })
+  allowDownloads: boolean;
+
+  @BooleanField({
+    label: 'intendedAsAdvertisement',
     defaultValue: false,
     section: 'website',
-    span: 12,
+    span: 6,
   })
-  thumbnailAsCoverArt: boolean;
+  intendedAsAdvertisement: boolean;
+
+  @BooleanField({
+    label: 'markAsWorkInProgress',
+    defaultValue: false,
+    section: 'website',
+    span: 6,
+  })
+  markAsWorkInProgress: boolean;
+
+  @BooleanField({
+    label: 'pixelPerfectDisplay',
+    defaultValue: false,
+    section: 'website',
+    span: 6,
+  })
+  pixelPerfectDisplay: boolean;
+
+  processTag(tag: string): string {
+    return tag.replace(/_/g, ' ');
+  }
 }

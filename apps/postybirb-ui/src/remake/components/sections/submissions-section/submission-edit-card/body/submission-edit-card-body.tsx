@@ -8,7 +8,7 @@ import { useCallback } from 'react';
 import submissionApi from '../../../../../api/submission.api';
 import { showUpdateErrorNotification } from '../../../../../utils/notifications';
 import { ComponentErrorBoundary } from '../../../../error-boundary';
-import { AccountSelectionForm } from '../account-selection';
+import { AccountSelect, SelectedAccountsForms } from '../account-selection';
 import { useSubmissionEditCardContext } from '../context';
 import { DefaultsForm } from '../defaults-form';
 import { SubmissionFileManager } from '../file-management';
@@ -68,9 +68,14 @@ export function SubmissionEditCardBody() {
         <DefaultsForm />
       </ComponentErrorBoundary>
 
-      {/* Account Selection Form - with inline expandable options */}
+      {/* Account Selection - dropdown for selecting accounts */}
       <ComponentErrorBoundary>
-        <AccountSelectionForm />
+        <AccountSelect />
+      </ComponentErrorBoundary>
+
+      {/* Website Options - per-website forms for selected accounts */}
+      <ComponentErrorBoundary>
+        <SelectedAccountsForms />
       </ComponentErrorBoundary>
     </Stack>
   );

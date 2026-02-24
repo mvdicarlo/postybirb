@@ -4,6 +4,7 @@ import {
   OnModuleInit,
   Optional,
 } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { ACCOUNT_UPDATES } from '@postybirb/socket-events';
 import {
   AccountId,
@@ -65,10 +66,30 @@ export class AccountService
 
       this.emit();
 
+      await this.cycleCookies();
       Object.keys(this.loginRefreshTimers).forEach((interval) =>
         this.executeOnLoginForInterval(interval),
       );
     });
+  }
+
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  private cycleCookies() {
+    const availableWebsites = this.websiteRegistry.getAvailableWebsites();
+    const promises = [];
+    availableWebsites.forEach((website) => {
+      this.websiteRegistry.getInstancesOf(website).forEach((instance) => {
+        promises.push(
+          instance.cycleCookies().catch((err) => {
+            this.logger
+              .withError(err)
+              .error(`Error cycling cookies for ${instance.id}:`, err);
+          }),
+        );
+      });
+    });
+
+    return Promise.all(promises);
   }
 
   private async deleteUnregisteredAccounts() {

@@ -1,8 +1,9 @@
 export {
     SubmissionsProvider,
-    useSubmissionsContext,
-    useSubmissionsContextOptional,
-    type SubmissionsContextValue,
+    useSubmissionsActions,
+    useSubmissionsData,
+    type SubmissionsActionsValue,
+    type SubmissionsDataValue,
     type SubmissionsProviderProps
 } from './submissions-context';
 

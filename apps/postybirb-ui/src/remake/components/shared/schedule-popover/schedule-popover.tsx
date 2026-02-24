@@ -27,7 +27,7 @@ import {
 } from '@tabler/icons-react';
 import { Cron } from 'croner';
 import moment from 'moment';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocalStorage } from 'react-use';
 import { CronPicker } from './cron-picker';
 
@@ -167,8 +167,8 @@ export function SchedulePopover({
     [internalSchedule],
   );
 
-  // Get display info for button
-  const getScheduleDisplay = () => {
+  // Memoize display info to avoid re-creating on every render
+  const displayInfo = useMemo(() => {
     // Check if schedule is configured (has date or cron)
     const hasScheduleConfig = Boolean(
       internalSchedule.scheduledFor || internalSchedule.cron,
@@ -214,7 +214,7 @@ export function SchedulePopover({
       color: 'blue',
       tooltip: <Trans>Scheduled (active)</Trans>,
     };
-  };
+  }, [internalSchedule, internalIsScheduled]);
 
   // Handle toggling schedule active state
   const handleToggleActive = useCallback((checked: boolean) => {
@@ -223,8 +223,11 @@ export function SchedulePopover({
 
   // Handle popover close - save changes
   const handleClose = useCallback(() => {
-    // Only call onChange if something changed
-    if (internalSchedule !== schedule || internalIsScheduled !== isScheduled) {
+    // Only call onChange if something actually changed (deep comparison)
+    if (
+      JSON.stringify(internalSchedule) !== JSON.stringify(schedule) ||
+      internalIsScheduled !== isScheduled
+    ) {
       onChange(internalSchedule, internalIsScheduled);
     }
     close();
@@ -237,7 +240,6 @@ export function SchedulePopover({
     close,
   ]);
 
-  const displayInfo = getScheduleDisplay();
   const DisplayIcon = displayInfo.icon;
 
   // Parse date for picker

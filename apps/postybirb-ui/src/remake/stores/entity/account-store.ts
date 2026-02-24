@@ -51,10 +51,10 @@ export const useAccounts = (): AccountRecord[] =>
 
 /**
  * Select accounts map for O(1) lookup.
- * Note: Map reference is stable from store, but consumers should use useShallow if deriving values.
+ * Uses useShallow for stable reference when items haven't changed.
  */
 export const useAccountsMap = () =>
-  useAccountStore((state: AccountStoreState) => state.recordsMap);
+  useAccountStore(useShallow((state: AccountStoreState) => state.recordsMap));
 
 /**
  * Select account loading state.
@@ -104,6 +104,7 @@ export const groupAccountsByWebsite = (
 
 /**
  * Select account store actions.
+ * No useShallow needed — action function refs are stable.
  */
 export const useAccountActions = () =>
   useAccountStore(

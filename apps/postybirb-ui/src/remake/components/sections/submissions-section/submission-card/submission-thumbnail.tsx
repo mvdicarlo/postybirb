@@ -5,6 +5,7 @@
 
 import { Box, HoverCard, Image, Indicator } from '@mantine/core';
 import { IconFile } from '@tabler/icons-react';
+import { memo } from 'react';
 import '../submissions-section.css';
 
 interface SubmissionThumbnailProps {
@@ -23,12 +24,12 @@ interface SubmissionThumbnailProps {
  * Shows the thumbnail image or a placeholder icon.
  * Optionally wraps in a HoverCard for image preview on hover.
  */
-export function SubmissionThumbnail({
+export const SubmissionThumbnail = memo(({
   thumbnailUrl,
   alt,
   canPreview = false,
   fileCount = 1,
-}: SubmissionThumbnailProps) {
+}: SubmissionThumbnailProps) => {
   // Calculate additional files (total - 1 for the primary file shown)
   const additionalFiles = fileCount > 1 ? fileCount - 1 : 0;
 
@@ -72,4 +73,4 @@ export function SubmissionThumbnail({
   }
 
   return thumbnailBox;
-}
+});

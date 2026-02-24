@@ -4,13 +4,13 @@
  */
 
 import type {
-    IAccountDto,
-    IWebsiteInfoDto,
-    IWebsiteMetadata,
-    UsernameShortcut,
-    WebsiteFileOptions,
-    WebsiteId,
-    WebsiteLoginType
+  IAccountDto,
+  IWebsiteInfoDto,
+  IWebsiteMetadata,
+  UsernameShortcut,
+  WebsiteFileOptions,
+  WebsiteId,
+  WebsiteLoginType
 } from '@postybirb/types';
 
 /**
@@ -27,6 +27,9 @@ export class WebsiteRecord {
   readonly supportsFile: boolean;
   readonly supportsMessage: boolean;
 
+  // Cached computed value — safe because record data is immutable after construction
+  private readonly cachedLoggedInAccounts: IAccountDto[];
+
   constructor(dto: IWebsiteInfoDto) {
     this.id = dto.id;
     this.displayName = dto.displayName;
@@ -37,6 +40,11 @@ export class WebsiteRecord {
     this.fileOptions = dto.fileOptions;
     this.supportsFile = dto.supportsFile;
     this.supportsMessage = dto.supportsMessage;
+
+    // Pre-compute filtered accounts
+    this.cachedLoggedInAccounts = this.accounts.filter(
+      (account) => account.state.isLoggedIn
+    );
   }
 
   /**
@@ -57,14 +65,14 @@ export class WebsiteRecord {
    * Get logged-in accounts for this website.
    */
   get loggedInAccounts(): IAccountDto[] {
-    return this.accounts.filter((account) => account.state.isLoggedIn);
+    return this.cachedLoggedInAccounts;
   }
 
   /**
    * Get the number of logged-in accounts.
    */
   get loggedInCount(): number {
-    return this.loggedInAccounts.length;
+    return this.cachedLoggedInAccounts.length;
   }
 
   /**

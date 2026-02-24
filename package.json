@@ -5,7 +5,7 @@
   },
   "description": "PostyBirb is a desktop application used for posting to multiple websites from one simple form.",
   "name": "postybirb",
-  "version": "4.0.14",
+  "version": "4.0.17",
   "repository": {
     "type": "git",
     "url": "git+https://mvdicarlo@github.com/mvdicarlo/postybirb.git"
@@ -107,6 +107,7 @@
     "@tiptap/html": "patch:@tiptap/html@npm%3A3.15.3#~/.yarn/patches/@tiptap-html-npm-3.15.3-a9641901db.patch",
     "@tiptap/pm": "^3.12.1",
     "@types/sortablejs": "^1.15.8",
+    "agent-base": "^7.1.4",
     "applicationinsights": "3.12.1",
     "async-mutex": "^0.5.0",
     "better-sqlite3": "^12.4.1",
@@ -132,6 +133,8 @@
     "history": "^5.3.0",
     "html-entities": "^2.6.0",
     "html-to-text": "^9.0.5",
+    "http-proxy-agent": "^7.0.2",
+    "https-proxy-agent": "^7.0.6",
     "js-beautify": "^1.15.1",
     "lodash": "^4.17.21",
     "loglayer": "^4.8.0",
@@ -159,6 +162,7 @@
     "sharp": "^0.33.5",
     "socket.io": "^4.8.0",
     "socket.io-client": "^4.8.0",
+    "socks-proxy-agent": "^8.0.5",
     "sortablejs": "^1.15.3",
     "telegram": "^2.26.22",
     "tinykeys": "^3.0.0",

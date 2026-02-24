@@ -6,39 +6,39 @@
 import { t } from '@lingui/core/macro';
 import { Trans } from '@lingui/react/macro';
 import {
-    ActionIcon,
-    Box,
-    Card,
-    Collapse,
-    Group,
-    ScrollArea,
-    Stack,
-    Text,
-    TextInput,
-    Tooltip,
+  ActionIcon,
+  Box,
+  Card,
+  Collapse,
+  Group,
+  ScrollArea,
+  Stack,
+  Text,
+  TextInput,
+  Tooltip,
 } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import type { Description } from '@postybirb/types';
 import {
-    IconCheck,
-    IconChevronDown,
-    IconChevronRight,
-    IconPlus,
-    IconX,
+  IconCheck,
+  IconChevronDown,
+  IconChevronRight,
+  IconPlus,
+  IconX,
 } from '@tabler/icons-react';
-import { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import customShortcutApi from '../../../api/custom-shortcut.api';
 import {
-    useCustomShortcuts,
-    useCustomShortcutsLoading,
+  useCustomShortcuts,
+  useCustomShortcutsLoading,
 } from '../../../stores/entity/custom-shortcut-store';
 import type { CustomShortcutRecord } from '../../../stores/records/custom-shortcut-record';
 import {
-    showCreatedNotification,
-    showCreateErrorNotification,
-    showDeletedNotification,
-    showDeleteErrorNotification,
-    showUpdateErrorNotification,
+  showCreatedNotification,
+  showCreateErrorNotification,
+  showDeletedNotification,
+  showDeleteErrorNotification,
+  showUpdateErrorNotification,
 } from '../../../utils/notifications';
 import { EmptyState } from '../../empty-state';
 import { HoldToConfirmButton } from '../../hold-to-confirm';
@@ -98,16 +98,16 @@ function useShortcutSearch(
 interface ShortcutCardProps {
   shortcut: CustomShortcutRecord;
   isExpanded: boolean;
-  onToggleExpand: () => void;
-  onDelete: () => void;
+  onToggleExpand: (id: string) => void;
+  onDelete: (id: string) => void;
 }
 
-function ShortcutCard({
+const ShortcutCard = React.memo(({
   shortcut,
   isExpanded,
   onToggleExpand,
   onDelete,
-}: ShortcutCardProps) {
+}: ShortcutCardProps) => {
   const [name, setName] = useState(shortcut.name);
   const [isEditingName, setIsEditingName] = useState(false);
   const [localDescription, setLocalDescription] = useState<Description>(
@@ -167,7 +167,7 @@ function ShortcutCard({
         <ActionIcon
           variant="subtle"
           size="sm"
-          onClick={onToggleExpand}
+          onClick={() => onToggleExpand(shortcut.id)}
           aria-label={isExpanded ? t`Collapse` : t`Expand`}
         >
           {isExpanded ? (
@@ -205,7 +205,7 @@ function ShortcutCard({
         {/* Delete button */}
         <Tooltip label={<Trans>Hold to delete</Trans>}>
           <HoldToConfirmButton
-            onConfirm={onDelete}
+            onConfirm={() => onDelete(shortcut.id)}
             size="xs"
             color="red"
             variant="subtle"
@@ -241,7 +241,7 @@ function ShortcutCard({
       </Collapse>
     </Card>
   );
-}
+});
 
 // ============================================================================
 // Create Shortcut Form
@@ -429,8 +429,8 @@ export function CustomShortcutsDrawer({
                 key={shortcut.id}
                 shortcut={shortcut}
                 isExpanded={expandedIds.has(shortcut.id)}
-                onToggleExpand={() => toggleExpanded(shortcut.id)}
-                onDelete={() => handleDelete(shortcut.id)}
+                onToggleExpand={toggleExpanded}
+                onDelete={handleDelete}
               />
             ))}
           </Stack>

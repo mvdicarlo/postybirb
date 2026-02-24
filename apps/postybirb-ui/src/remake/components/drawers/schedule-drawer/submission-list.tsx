@@ -6,19 +6,19 @@
 import { Draggable } from '@fullcalendar/interaction';
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
-    Box,
-    Group,
-    ScrollArea,
-    Stack,
-    Text,
-    TextInput,
-    ThemeIcon,
+  Box,
+  Group,
+  ScrollArea,
+  Stack,
+  Text,
+  TextInput,
+  ThemeIcon,
 } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import { SubmissionType } from '@postybirb/types';
 import { IconFile, IconMessage, IconSearch } from '@tabler/icons-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useSubmissions } from '../../../stores/entity/submission-store';
+import { useUnscheduledSubmissions } from '../../../stores/entity/submission-store';
 import type { SubmissionRecord } from '../../../stores/records';
 import { EmptyState } from '../../empty-state';
 
@@ -64,21 +64,14 @@ function DraggableSubmissionItem({
  */
 export function SubmissionList() {
   const { t } = useLingui();
-  const submissions = useSubmissions();
+  const allUnscheduled = useUnscheduledSubmissions();
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch] = useDebouncedValue(searchQuery, 200);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Get unscheduled submissions (no scheduledFor, not archived, not template)
+  // Apply search filter and sort (base filtering done in store selector)
   const unscheduledSubmissions = useMemo(() => {
-    let list = submissions.filter(
-      (s) =>
-        !s.isArchived &&
-        !s.isTemplate &&
-        !s.isMultiSubmission &&
-        !s.schedule.scheduledFor &&
-        !s.schedule.cron,
-    );
+    let list = allUnscheduled;
 
     // Apply search filter
     if (debouncedSearch?.trim()) {
@@ -87,12 +80,12 @@ export function SubmissionList() {
     }
 
     // Sort alphabetically
-    list.sort((a, b) =>
+    list = [...list].sort((a, b) =>
       a.title.toLowerCase().localeCompare(b.title.toLowerCase()),
     );
 
     return list;
-  }, [submissions, debouncedSearch]);
+  }, [allUnscheduled, debouncedSearch]);
 
   // Initialize FullCalendar Draggable on mount
   useEffect(() => {

@@ -32,9 +32,10 @@ import {
     IconTrash,
     IconX,
 } from '@tabler/icons-react';
-import { useCallback, useMemo, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { useWebsites } from '../../../stores/entity/website-store';
 import type { BaseRecord } from '../../../stores/records/base-record';
+import type { WebsiteRecord } from '../../../stores/records/website-record';
 import {
     showCreatedNotification,
     showCreateErrorNotification,
@@ -297,26 +298,22 @@ function WebsiteConversionsEditor({
   primaryValue,
   convertTo,
   onUpdate,
+  websites,
+  websiteMap,
 }: {
   converterId: string;
   primaryValue: string;
   convertTo: Record<string, string>;
   onUpdate: (id: string, convertTo: Record<string, string>) => Promise<void>;
+  websites: WebsiteRecord[];
+  websiteMap: Map<string, string>;
 }) {
-  const websites = useWebsites();
   const [localConvertTo, setLocalConvertTo] =
     useState<Record<string, string>>(convertTo);
 
-  // Get website display names map
-  const websiteMap = useMemo(() => {
-    const map = new Map<string, string>();
-    websites.forEach((w) => map.set(w.id, w.displayName));
-    return map;
-  }, [websites]);
-
-  // Websites that already have conversions (including empty string values for newly added)
+  // Websites that already have conversions
   const activeWebsiteIds = useMemo(
-    () => Object.keys(localConvertTo).filter((id) => id in localConvertTo),
+    () => Object.keys(localConvertTo),
     [localConvertTo]
   );
 
@@ -401,26 +398,28 @@ function WebsiteConversionsEditor({
 
 /**
  * Compact expandable converter card.
+ * Memoized to prevent re-rendering unchanged cards when parent state changes
+ * (e.g., search query, selection of other cards).
  */
-function ConverterCard<
-  TRecord extends ConverterRecord,
-  TCreateDto,
-  TUpdateDto,
->({
+const ConverterCard = memo(({
   converter,
   isSelected,
   onSelect,
   isExpanded,
   onToggleExpand,
   config,
+  websites,
+  websiteMap,
 }: {
-  converter: TRecord;
+  converter: ConverterRecord;
   isSelected: boolean;
   onSelect: (id: string, selected: boolean) => void;
   isExpanded: boolean;
   onToggleExpand: (id: string) => void;
-  config: ConverterDrawerConfig<TRecord, TCreateDto, TUpdateDto>;
-}) {
+  config: ConverterDrawerConfig<ConverterRecord, unknown, unknown>;
+  websites: WebsiteRecord[];
+  websiteMap: Map<string, string>;
+}) => {
   const primaryValue = config.getPrimaryValue(converter);
   const [localValue, setLocalValue] = useState(primaryValue);
 
@@ -497,12 +496,25 @@ function ConverterCard<
             primaryValue={primaryValue}
             convertTo={converter.convertTo}
             onUpdate={handleUpdate}
+            websites={websites}
+            websiteMap={websiteMap}
           />
         </Box>
       </Collapse>
     </Card>
   );
-}
+}) as <TRecord extends ConverterRecord, TCreateDto, TUpdateDto>(
+  props: {
+    converter: TRecord;
+    isSelected: boolean;
+    onSelect: (id: string, selected: boolean) => void;
+    isExpanded: boolean;
+    onToggleExpand: (id: string) => void;
+    config: ConverterDrawerConfig<TRecord, TCreateDto, TUpdateDto>;
+    websites: WebsiteRecord[];
+    websiteMap: Map<string, string>;
+  }
+) => React.JSX.Element;
 
 // ============================================================================
 // Action Components
@@ -670,6 +682,14 @@ export function ConverterDrawer<
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
+  // Single website subscription shared by all ConverterCards
+  const websites = useWebsites();
+  const websiteMap = useMemo(() => {
+    const map = new Map<string, string>();
+    websites.forEach((w) => map.set(w.id, w.displayName));
+    return map;
+  }, [websites]);
+
   // Existing values for duplicate check (case-insensitive)
   const existingValues = useMemo(
     () =>
@@ -786,6 +806,8 @@ export function ConverterDrawer<
                   isExpanded={expandedIds.has(converter.id)}
                   onToggleExpand={handleToggleExpand}
                   config={config}
+                  websites={websites}
+                  websiteMap={websiteMap}
                 />
               ))}
             </Stack>

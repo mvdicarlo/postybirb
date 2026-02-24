@@ -3,38 +3,38 @@
  * Sets up global keyboard listeners for navigation and actions.
  */
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { tinykeys } from 'tinykeys';
 import { getActionModifier } from '../../shared/platform-utils';
 import {
-  AccountKeybinding,
-  CustomShortcutsKeybinding,
-  FileSubmissionsKeybinding,
-  FileWatchersKeybinding,
-  HomeKeybinding,
-  MessageSubmissionsKeybinding,
-  NotificationsKeybinding,
-  ScheduleKeybinding,
-  SettingsKeybinding,
-  TagConvertersKeybinding,
-  TagGroupsKeybinding,
-  TemplatesKeybinding,
-  toTinykeysFormat,
-  UserConvertersKeybinding,
+    AccountKeybinding,
+    CustomShortcutsKeybinding,
+    FileSubmissionsKeybinding,
+    FileWatchersKeybinding,
+    HomeKeybinding,
+    MessageSubmissionsKeybinding,
+    NotificationsKeybinding,
+    ScheduleKeybinding,
+    SettingsKeybinding,
+    TagConvertersKeybinding,
+    TagGroupsKeybinding,
+    TemplatesKeybinding,
+    toTinykeysFormat,
+    UserConvertersKeybinding,
 } from '../config/keybindings';
 import { useDrawerStore } from '../stores/ui/drawer-store';
 import {
-  useCanGoBack,
-  useCanGoForward,
-  useNavigationHistory,
-  useViewStateActions,
+    useCanGoBack,
+    useCanGoForward,
+    useNavigationHistory,
+    useViewStateActions,
 } from '../stores/ui/navigation-store';
 import {
-  createAccountsViewState,
-  createFileSubmissionsViewState,
-  createHomeViewState,
-  createMessageSubmissionsViewState,
-  createTemplatesViewState,
+    createAccountsViewState,
+    createFileSubmissionsViewState,
+    createHomeViewState,
+    createMessageSubmissionsViewState,
+    createTemplatesViewState,
 } from '../types/view-state';
 
 /**
@@ -48,16 +48,24 @@ export function useKeybindings(): void {
   const canGoBack = useCanGoBack();
   const canGoForward = useCanGoForward();
 
+  // Store navigation state in refs so the effect doesn't re-run on every navigation.
+  // This avoids tearing down and re-creating all keyboard + mouse listeners
+  // every time canGoBack/canGoForward changes.
+  const canGoBackRef = useRef(canGoBack);
+  const canGoForwardRef = useRef(canGoForward);
+  canGoBackRef.current = canGoBack;
+  canGoForwardRef.current = canGoForward;
+
   useEffect(() => {
     const mod = getActionModifier();
 
     // Mouse button handler for back/forward navigation
     const handleMouseButton = (event: MouseEvent) => {
       // Button 3 (back) and Button 4 (forward)
-      if (event.button === 3 && canGoBack) {
+      if (event.button === 3 && canGoBackRef.current) {
         event.preventDefault();
         goBack();
-      } else if (event.button === 4 && canGoForward) {
+      } else if (event.button === 4 && canGoForwardRef.current) {
         event.preventDefault();
         goForward();
       }
@@ -69,13 +77,13 @@ export function useKeybindings(): void {
     const unsubscribe = tinykeys(window, {
       // History navigation keybindings
       [`${mod}+[`]: (event: KeyboardEvent) => {
-        if (canGoBack) {
+        if (canGoBackRef.current) {
           event.preventDefault();
           goBack();
         }
       },
       [`${mod}+]`]: (event: KeyboardEvent) => {
-        if (canGoForward) {
+        if (canGoForwardRef.current) {
           event.preventDefault();
           goForward();
         }
@@ -144,5 +152,6 @@ export function useKeybindings(): void {
       unsubscribe();
       window.removeEventListener('mouseup', handleMouseButton);
     };
-  }, [setViewState, toggleDrawer, goBack, goForward, canGoBack, canGoForward]);
+  // canGoBack/canGoForward read from refs — not needed as dependencies
+  }, [setViewState, toggleDrawer, goBack, goForward]);
 }
