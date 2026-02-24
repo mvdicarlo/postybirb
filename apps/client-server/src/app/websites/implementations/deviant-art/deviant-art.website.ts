@@ -210,7 +210,6 @@ export default class DeviantArt
         .withException(new Error('Failed to upload file.'));
     }
 
-    // TODO: Handle additional files (multi-file submissions)
     const additionalUploads: Array<{
       deviationId: number;
       fileId: number;
