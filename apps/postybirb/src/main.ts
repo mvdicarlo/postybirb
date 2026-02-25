@@ -9,7 +9,11 @@ import {
   Logger,
   trackException,
 } from '@postybirb/logger';
-import { getRemoteConfig, PostyBirbEnvConfig } from '@postybirb/utils/electron';
+import {
+  getRemoteConfig,
+  getRemoteConfigSync,
+  PostyBirbEnvConfig,
+} from '@postybirb/utils/electron';
 import { app, BrowserWindow, session } from 'electron';
 import contextMenu from 'electron-context-menu';
 import PostyBirb from './app/app';
@@ -34,17 +38,47 @@ process.env.POSTYBIRB_ENV =
     ? 'production'
     : 'development';
 
+const remoteConfig = getRemoteConfigSync();
+const entries: [string, string][] = [
+  ['Version', environment.version],
+  ['Mode', process.env.POSTYBIRB_ENV ?? ''],
+  ['Port', String(PostyBirbEnvConfig.port)],
+  ['Storage', PostyBirbDirectories.POSTYBIRB_DIRECTORY],
+  ['App Data', app.getPath('userData')],
+  ['===== Remote Config =====', ''],
+  ['Remote Enabled', String(remoteConfig?.enabled)],
+  [
+    'Remote Password',
+    remoteConfig?.enabled ? (remoteConfig?.password ?? '') : '',
+  ],
+];
+const labelWidth = Math.max(...entries.map(([k]) => k.length));
+const valueWidth = Math.max(...entries.map(([, v]) => v.length));
+// "║  Label : Value  ║" → 2 + labelWidth + 3 + valueWidth + 2
+const innerWidth = 2 + labelWidth + 3 + valueWidth + 2;
+const title = 'PostyBirb';
+const titlePad = Math.max(innerWidth, title.length + 4);
+const w = Math.max(innerWidth, titlePad);
+const titleLine = title.padStart(Math.floor((w + title.length) / 2)).padEnd(w);
+
+const lines = entries.map(
+  ([k, v]) => `║  ${k.padEnd(labelWidth)} : ${v.padEnd(valueWidth)}  ║`,
+);
+
 // eslint-disable-next-line no-console
 console.log(
-  `Starting PostyBirb v${environment.version} in ${process.env.POSTYBIRB_ENV} mode with port ${PostyBirbEnvConfig.port}`,
+  [
+    '',
+    `╔${'═'.repeat(w)}╗`,
+    `║${titleLine}║`,
+    `╠${'═'.repeat(w)}╣`,
+    ...lines,
+    `╚${'═'.repeat(w)}╝`,
+    '',
+  ].join('\n'),
 );
-// eslint-disable-next-line no-console
-console.log('Storage', PostyBirbDirectories.POSTYBIRB_DIRECTORY);
-// eslint-disable-next-line no-console
-console.log('App data', app.getPath('userData'));
 
 initializeAppInsights({
-  // enabled: environment.production || process.env.ENABLE_APP_INSIGHTS === 'true',
   enabled: true,
   appVersion: environment.version,
 });
@@ -135,7 +169,7 @@ async function start() {
     const nestApp = await Main.bootstrapClientServer();
     if (PostyBirbEnvConfig.headless) {
       // eslint-disable-next-line no-console
-      console.log('Headless mode enabled.');
+      console.log('[PostyBirb] Running in headless mode (no UI)');
     } else {
       Main.bootstrapApp(nestApp);
       Main.bootstrapAppEvents();
