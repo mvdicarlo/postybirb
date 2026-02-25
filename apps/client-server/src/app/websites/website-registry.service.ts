@@ -50,7 +50,6 @@ export class WebsiteRegistryService {
     private readonly websiteImplementations: Class<UnknownWebsite>[],
     @Optional() private readonly webSocket?: WSGateway,
   ) {
-    this.logger.debug('Registering websites');
     Object.values({ ...this.websiteImplementations }).forEach(
       (website: Class<UnknownWebsite>) => {
         if (
@@ -64,9 +63,9 @@ export class WebsiteRegistryService {
           return;
         }
 
-        this.logger.debug(
-          `Registered website: ${website.prototype.decoratedProps.metadata.name}`,
-        );
+        // this.logger.debug(
+        //   `Registered website: ${website.prototype.decoratedProps.metadata.name}`,
+        // );
         this.availableWebsites[website.prototype.decoratedProps.metadata.name] =
           website;
       },
@@ -123,7 +122,7 @@ export class WebsiteRegistryService {
       }
 
       if (!this.websiteInstances[website][id]) {
-        this.logger.info(`Creating instance of '${website}' with id '${id}'`);
+        // this.logger.info(`Creating instance of '${website}' with id '${id}'`);
         this.websiteInstances[website][id] = new WebsiteCtor(account);
         await this.websiteInstances[website][id].onInitialize(
           this.websiteDataRepository,

@@ -4,7 +4,6 @@ import {
   OnModuleInit,
   Optional,
 } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
 import { ACCOUNT_UPDATES } from '@postybirb/socket-events';
 import {
   AccountId,
@@ -17,10 +16,10 @@ import { Class } from 'type-fest';
 import { PostyBirbService } from '../common/service/postybirb-service';
 import { Account } from '../drizzle/models';
 import { FindOptions } from '../drizzle/postybirb-database/find-options.type';
-import { waitUntil } from '../utils/wait.util';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { UnknownWebsite } from '../websites/website';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
+import { AccountLoginQueue } from './account-login-queue';
 import { CreateAccountDto } from './dtos/create-account.dto';
 import { SetWebsiteDataRequestDto } from './dtos/set-website-data-request.dto';
 import { UpdateAccountDto } from './dtos/update-account.dto';
@@ -42,11 +41,14 @@ export class AccountService
     }
   > = {};
 
+  private readonly accountLoginQueue: AccountLoginQueue;
+
   constructor(
     private readonly websiteRegistry: WebsiteRegistryService,
     @Optional() webSocket?: WSGateway,
   ) {
     super('AccountSchema', webSocket);
+    this.accountLoginQueue = new AccountLoginQueue(this, websiteRegistry);
     this.repository.subscribe('AccountSchema', () => this.emit());
   }
 
@@ -69,27 +71,7 @@ export class AccountService
       Object.keys(this.loginRefreshTimers).forEach((interval) =>
         this.executeOnLoginForInterval(interval),
       );
-      await this.cycleCookies();
     });
-  }
-
-  @Cron(CronExpression.EVERY_10_MINUTES)
-  private cycleCookies() {
-    const availableWebsites = this.websiteRegistry.getAvailableWebsites();
-    const promises = [];
-    availableWebsites.forEach((website) => {
-      this.websiteRegistry.getInstancesOf(website).forEach((instance) => {
-        promises.push(
-          instance.cycleCookies().catch((err) => {
-            this.logger
-              .withError(err)
-              .error(`Error cycling cookies for ${instance.id}:`, err);
-          }),
-        );
-      });
-    });
-
-    return Promise.all(promises);
   }
 
   private async deleteUnregisteredAccounts() {
@@ -193,19 +175,7 @@ export class AccountService
    * @param {UnknownWebsite} website
    */
   private async executeOnLogin(website: UnknownWebsite) {
-    this.logger.trace(`Running onLogin on ${website.id}`);
-    try {
-      await this.awaitPendingLogin(website);
-      website.onBeforeLogin();
-      this.emit();
-      await website.onLogin();
-    } catch (e) {
-      this.logger.withError(e).error(`onLogin failed for ${website.id}`);
-    } finally {
-      website.onAfterLogin();
-      this.emit();
-      this.websiteRegistry.emit();
-    }
+    this.accountLoginQueue.add(website.account.id);
   }
 
   /**
@@ -219,29 +189,13 @@ export class AccountService
   }
 
   /**
-   * Waits for a website's pending state to be false.
-   *
-   * @param {UnknownWebsite} website
-   */
-  private async awaitPendingLogin(website: UnknownWebsite): Promise<void> {
-    if (!website.getLoginState().pending) {
-      return;
-    }
-
-    await waitUntil(() => !website.getLoginState().pending, 500);
-  }
-
-  /**
    * Executes a login refresh initiated from an external source.
    * Will always wait for current pending to complete.
    *
    * @param {AccountId} id
    */
   async manuallyExecuteOnLogin(id: AccountId): Promise<void> {
-    const account = await this.repository.findById(id);
-    const instance = this.websiteRegistry.findInstance(account);
-    await this.awaitPendingLogin(instance);
-    await this.executeOnLogin(instance);
+    this.accountLoginQueue.add(id);
   }
 
   /**

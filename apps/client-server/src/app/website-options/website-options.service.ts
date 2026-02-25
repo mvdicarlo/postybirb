@@ -220,7 +220,7 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
 
     // For non-default options, keep rating as undefined to represent
     // "inherit from default" mode unless explicitly provided in the DTO.
-    if (!isDefault && !createDto.data?.rating) {
+    if (!isDefault && createDto.data?.rating === undefined) {
       websiteData.rating = undefined as unknown as typeof websiteData.rating;
     }
 
