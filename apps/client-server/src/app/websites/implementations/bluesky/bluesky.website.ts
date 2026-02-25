@@ -698,7 +698,7 @@ export default class Bluesky
     const { text, links } = JSON.parse(description) as DescriptionWithLinks;
     const rt = new RichText({ text });
     await rt.detectFacets(
-      this.agent ?? new AtpAgent({ service: 'bsky.social' }),
+      this.agent ?? new AtpAgent({ service: 'https://bsky.social' }),
     );
 
     // Convert UTF-16 indices to UTF-8 byte offsets
