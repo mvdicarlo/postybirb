@@ -1,7 +1,12 @@
 /**
- * TreeSelect - A dropdown select with hierarchical tree structure.
- * Uses Mantine Tree, Popover, and Checkbox components.
- * Supports single/multi-select, search, keyboard navigation, and mutually exclusive options.
+ * TreeSelect - A dropdown select with hierarchical option list.
+ *
+ * Custom implementation that renders the option tree directly instead of
+ * using Mantine's Tree/useTree, which avoids the infinite re-render loop
+ * caused by rebuilding tree data on every state change.
+ *
+ * Supports single/multi-select, search filtering, keyboard navigation,
+ * and mutually exclusive options.
  */
 
 import { Trans } from '@lingui/react/macro';
@@ -15,17 +20,16 @@ import {
   ScrollArea,
   Text,
   TextInput,
-  Tree,
-  TreeNodeData,
-  useTree,
 } from '@mantine/core';
 import { SelectOption } from '@postybirb/form-builder';
-import {
-  IconChevronDown,
-  IconSearch,
-  IconX,
-} from '@tabler/icons-react';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { IconChevronDown, IconSearch, IconX } from '@tabler/icons-react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   countSelectableOptions,
   filterOptions,
@@ -36,6 +40,114 @@ import {
 } from './select-utils';
 
 const SEARCH_THRESHOLD = 7;
+
+// ── TreeNode: memoised leaf/group renderer ──────────────────────────────
+
+interface TreeNodeProps {
+  option: SelectOption;
+  depth: number;
+  multiple: boolean;
+  selectedValues: string[];
+  focusedValue: string | null;
+  onSelect: (value: string) => void;
+}
+
+const TreeNode = React.memo(function TreeNode({
+  option,
+  depth,
+  multiple,
+  selectedValues,
+  focusedValue,
+  onSelect,
+}: TreeNodeProps) {
+  if (isOptionGroup(option)) {
+    const groupValue = option.value;
+    const isSelectable = groupValue !== undefined;
+    const isSelected = isSelectable && selectedValues.includes(groupValue);
+    const isFocused = isSelectable && focusedValue === groupValue;
+
+    return (
+      <Box>
+        {/* Group header row */}
+        <Group
+          gap="xs"
+          wrap="nowrap"
+          py={4}
+          px="xs"
+          pl={depth * 16 + 8}
+          bg={isFocused ? 'var(--mantine-color-blue-light)' : undefined}
+          style={{ cursor: isSelectable ? 'pointer' : 'default' }}
+          data-tree-node-value={isSelectable ? groupValue : undefined}
+          onClick={isSelectable ? () => onSelect(groupValue) : undefined}
+        >
+          {isSelectable && multiple && (
+            <Checkbox
+              checked={isSelected}
+              onChange={() => onSelect(groupValue)}
+              onClick={(e) => e.stopPropagation()}
+              size="xs"
+            />
+          )}
+          <Text size="sm" fw={500} style={{ flex: 1 }}>
+            {option.label}
+          </Text>
+        </Group>
+
+        {/* Children (always expanded) */}
+        {option.items.map((child) => (
+          <TreeNode
+            key={
+              isOptionGroup(child) ? (child.value ?? child.label) : child.value
+            }
+            option={child}
+            depth={depth + 1}
+            multiple={multiple}
+            selectedValues={selectedValues}
+            focusedValue={focusedValue}
+            onSelect={onSelect}
+          />
+        ))}
+      </Box>
+    );
+  }
+
+  // Leaf option
+  const isSelected = selectedValues.includes(option.value);
+  const isFocused = focusedValue === option.value;
+
+  return (
+    <Group
+      gap="xs"
+      wrap="nowrap"
+      py={4}
+      px="xs"
+      pl={depth * 16 + 8}
+      bg={isFocused ? 'var(--mantine-color-blue-light)' : undefined}
+      style={{ cursor: 'pointer' }}
+      data-tree-node-value={option.value}
+      onClick={() => onSelect(option.value)}
+    >
+      {multiple ? (
+        <Checkbox
+          checked={isSelected}
+          onChange={() => onSelect(option.value)}
+          onClick={(e) => e.stopPropagation()}
+          size="xs"
+        />
+      ) : null}
+      <Text
+        size="sm"
+        style={{ flex: 1 }}
+        fw={isSelected && !multiple ? 500 : undefined}
+        c={isSelected && !multiple ? 'blue' : undefined}
+      >
+        {option.label}
+      </Text>
+    </Group>
+  );
+});
+
+// ── Main component ──────────────────────────────────────────────────────
 
 interface TreeSelectProps {
   options: SelectOption[];
@@ -69,6 +181,8 @@ export function TreeSelect({
   const defaultPlaceholder = <Trans>Select...</Trans>;
   const displayPlaceholder = placeholder ?? defaultPlaceholder;
 
+  // ── Derived data (all stable memos – no JSX in deps) ───────────────
+
   const selectedValues = useMemo(
     () => (Array.isArray(value) ? value : value ? [value] : []),
     [value],
@@ -91,7 +205,6 @@ export function TreeSelect({
     [filteredOptions],
   );
 
-  // Display text for the trigger
   const displayText = useMemo(() => {
     if (selectedOptions.length === 0) return displayPlaceholder;
     if (multiple && selectedOptions.length > 2) {
@@ -100,7 +213,8 @@ export function TreeSelect({
     return selectedOptions.map((opt) => opt.label).join(', ');
   }, [selectedOptions, displayPlaceholder, multiple]);
 
-  // Handle option selection
+  // ── Callbacks ──────────────────────────────────────────────────────
+
   const handleOptionClick = useCallback(
     (optionValue: string) => {
       if (disabled) return;
@@ -115,10 +229,8 @@ export function TreeSelect({
         let newValues: string[];
 
         if (isSelected) {
-          // Remove the option
           newValues = selectedValues.filter((v) => v !== optionValue);
         } else {
-          // Add with mutually exclusive handling
           newValues = handleMutuallyExclusiveSelection(
             selectedValues,
             option,
@@ -127,8 +239,9 @@ export function TreeSelect({
         }
         onChange(newValues);
       } else {
-        // Single select: toggle or select new
-        const newValue = selectedValues.includes(optionValue) ? '' : optionValue;
+        const newValue = selectedValues.includes(optionValue)
+          ? ''
+          : optionValue;
         onChange(newValue);
         setOpened(false);
         setSearchQuery('');
@@ -137,7 +250,15 @@ export function TreeSelect({
     [disabled, multiple, selectedValues, options, onChange],
   );
 
-  // Handle clear
+  // Ref-stable wrapper: keeps the same function identity across renders
+  // so that React.memo on TreeNode isn't invalidated by parent re-renders.
+  const handleOptionClickRef = useRef(handleOptionClick);
+  handleOptionClickRef.current = handleOptionClick;
+  const stableOnSelect = useCallback(
+    (optionValue: string) => handleOptionClickRef.current(optionValue),
+    [],
+  );
+
   const handleClear = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
@@ -147,129 +268,88 @@ export function TreeSelect({
     [disabled, multiple, onChange],
   );
 
-  // Build tree data
-  const buildTreeData = useCallback(
-    (opts: SelectOption[], depth = 0): TreeNodeData[] =>
-      opts.map((option) => {
-        if (isOptionGroup(option)) {
-          const groupValue = option.value;
-          const isSelectable = groupValue !== undefined;
-          const isSelected = isSelectable && selectedValues.includes(groupValue);
-          const isFocused = isSelectable && focusedValue === groupValue;
+  // ── Shared keyboard helpers ────────────────────────────────────────
 
-          return {
-            value: isSelectable ? groupValue : `group-${option.label}-${depth}`,
-            label: (
-              <Group
-                gap="xs"
-                wrap="nowrap"
-                style={{ width: '100%' }}
-                bg={isFocused ? 'var(--mantine-color-blue-light)' : undefined}
-              >
-                {isSelectable && (
-                  <Checkbox
-                    checked={isSelected}
-                    onChange={() => handleOptionClick(groupValue)}
-                    onClick={(e) => e.stopPropagation()}
-                    size="xs"
-                  />
-                )}
-                <Text size="sm" fw={500} style={{ flex: 1 }}>
-                  {option.label}
-                </Text>
-              </Group>
-            ),
-            children: buildTreeData(option.items, depth + 1),
-          };
-        }
-
-        const isSelected = selectedValues.includes(option.value);
-        const isFocused = focusedValue === option.value;
-
-        return {
-          value: option.value,
-          label: (
-            <Group
-              gap="xs"
-              wrap="nowrap"
-              style={{ width: '100%' }}
-              bg={isFocused ? 'var(--mantine-color-blue-light)' : undefined}
-            >
-              {multiple ? (
-                <Checkbox
-                  checked={isSelected}
-                  onChange={() => handleOptionClick(option.value)}
-                  onClick={(e) => e.stopPropagation()}
-                  size="xs"
-                />
-              ) : null}
-              <Text
-                size="sm"
-                style={{ flex: 1 }}
-                fw={isSelected && !multiple ? 500 : undefined}
-                c={isSelected && !multiple ? 'blue' : undefined}
-              >
-                {option.label}
-              </Text>
-            </Group>
-          ),
-        };
-      }),
-    [selectedValues, focusedValue, multiple, handleOptionClick],
-  );
-
-  const treeData = useMemo(
-    () => buildTreeData(filteredOptions),
-    [buildTreeData, filteredOptions],
-  );
-
-  const tree = useTree({
-    initialExpandedState: treeData.reduce(
-      (acc, node) => ({ ...acc, [node.value]: true }),
-      {} as Record<string, boolean>,
-    ),
-  });
-
-  // Keep all nodes expanded when tree data changes
-  useEffect(() => {
-    const expandAll = (nodes: TreeNodeData[]): Record<string, boolean> => {
-      const state: Record<string, boolean> = {};
-      for (const node of nodes) {
-        state[node.value] = true;
-        if (node.children) {
-          Object.assign(state, expandAll(node.children));
-        }
-      }
-      return state;
-    };
-    tree.setExpandedState(expandAll(treeData));
-  }, [treeData, tree]);
-
-  // Focus search or dropdown when opened
-  useEffect(() => {
-    if (opened) {
-      if (enableSearch) {
-        setTimeout(() => searchRef.current?.focus(), 0);
-      } else {
-        setTimeout(() => dropdownRef.current?.focus(), 0);
-      }
-    }
-  }, [opened, enableSearch]);
-
-  // Scroll focused item into view
-  useEffect(() => {
-    if (focusedValue && opened && scrollAreaRef.current) {
-      const el = scrollAreaRef.current.querySelector(
-        `[data-tree-node-value="${CSS.escape(focusedValue)}"]`,
+  const moveFocus = useCallback(
+    (direction: 'up' | 'down') => {
+      if (flatSelectableOptions.length === 0) return;
+      const currentIndex = flatSelectableOptions.findIndex(
+        (o) => o.value === focusedValue,
       );
-      if (el) {
-        el.scrollIntoView({ block: 'nearest' });
+      let nextIndex: number;
+      if (direction === 'down') {
+        nextIndex =
+          currentIndex < flatSelectableOptions.length - 1
+            ? currentIndex + 1
+            : 0;
+      } else {
+        nextIndex =
+          currentIndex > 0
+            ? currentIndex - 1
+            : flatSelectableOptions.length - 1;
       }
-    }
-  }, [focusedValue, opened]);
+      setFocusedValue(flatSelectableOptions[nextIndex]?.value ?? null);
+    },
+    [flatSelectableOptions, focusedValue],
+  );
 
-  // Keyboard navigation
-  const handleKeyDown = useCallback(
+  const closeDropdown = useCallback(() => {
+    setOpened(false);
+    setSearchQuery('');
+    setFocusedValue(null);
+    triggerRef.current?.focus();
+  }, []);
+
+  // ── Keyboard: dropdown list (shared by search input + non-search dropdown) ─
+
+  const handleListKeyDown = useCallback(
+    (event: React.KeyboardEvent) => {
+      switch (event.key) {
+        case 'ArrowDown':
+          event.preventDefault();
+          moveFocus('down');
+          break;
+        case 'ArrowUp':
+          event.preventDefault();
+          moveFocus('up');
+          break;
+        case 'Enter':
+        case ' ':
+          event.preventDefault();
+          if (focusedValue) handleOptionClick(focusedValue);
+          break;
+        case 'Escape':
+          event.preventDefault();
+          closeDropdown();
+          break;
+        case 'Home':
+          event.preventDefault();
+          if (flatSelectableOptions.length > 0)
+            setFocusedValue(flatSelectableOptions[0].value);
+          break;
+        case 'End':
+          event.preventDefault();
+          if (flatSelectableOptions.length > 0)
+            setFocusedValue(
+              flatSelectableOptions[flatSelectableOptions.length - 1].value,
+            );
+          break;
+        default:
+          break;
+      }
+    },
+    [
+      moveFocus,
+      focusedValue,
+      handleOptionClick,
+      closeDropdown,
+      flatSelectableOptions,
+    ],
+  );
+
+  // ── Keyboard: trigger button ───────────────────────────────────────
+
+  const handleTriggerKeyDown = useCallback(
     (event: React.KeyboardEvent) => {
       if (disabled) return;
 
@@ -283,68 +363,40 @@ export function TreeSelect({
             setOpened(true);
           }
           break;
-
         case 'ArrowDown':
           event.preventDefault();
           if (!opened) {
             setOpened(true);
           } else {
-            const currentIndex = flatSelectableOptions.findIndex(
-              (o) => o.value === focusedValue,
-            );
-            const nextIndex =
-              currentIndex < flatSelectableOptions.length - 1
-                ? currentIndex + 1
-                : 0;
-            setFocusedValue(flatSelectableOptions[nextIndex]?.value ?? null);
+            moveFocus('down');
           }
           break;
-
         case 'ArrowUp':
           event.preventDefault();
-          if (opened) {
-            const currentIndex = flatSelectableOptions.findIndex(
-              (o) => o.value === focusedValue,
-            );
-            const prevIndex =
-              currentIndex > 0
-                ? currentIndex - 1
-                : flatSelectableOptions.length - 1;
-            setFocusedValue(flatSelectableOptions[prevIndex]?.value ?? null);
-          }
+          if (opened) moveFocus('up');
           break;
-
         case 'Escape':
-          setOpened(false);
-          setSearchQuery('');
-          setFocusedValue(null);
-          triggerRef.current?.focus();
+          closeDropdown();
           break;
-
         case 'Tab':
           setOpened(false);
           setSearchQuery('');
           setFocusedValue(null);
           break;
-
         case 'Home':
           event.preventDefault();
-          if (opened && flatSelectableOptions.length > 0) {
+          if (opened && flatSelectableOptions.length > 0)
             setFocusedValue(flatSelectableOptions[0].value);
-          }
           break;
-
         case 'End':
           event.preventDefault();
-          if (opened && flatSelectableOptions.length > 0) {
+          if (opened && flatSelectableOptions.length > 0)
             setFocusedValue(
               flatSelectableOptions[flatSelectableOptions.length - 1].value,
             );
-          }
           break;
-
         default:
-          // Type to search
+          // Type-ahead: open and start searching
           if (
             !opened &&
             enableSearch &&
@@ -366,118 +418,36 @@ export function TreeSelect({
       flatSelectableOptions,
       enableSearch,
       handleOptionClick,
+      moveFocus,
+      closeDropdown,
     ],
   );
 
-  const handleSearchKeyDown = useCallback(
-    (event: React.KeyboardEvent<HTMLInputElement>) => {
-      switch (event.key) {
-        case 'ArrowDown':
-          event.preventDefault();
-          if (flatSelectableOptions.length > 0) {
-            const currentIndex = flatSelectableOptions.findIndex(
-              (o) => o.value === focusedValue,
-            );
-            const nextIndex =
-              currentIndex < flatSelectableOptions.length - 1
-                ? currentIndex + 1
-                : 0;
-            setFocusedValue(flatSelectableOptions[nextIndex]?.value ?? null);
-          }
-          break;
+  // ── Effects ────────────────────────────────────────────────────────
 
-        case 'ArrowUp':
-          event.preventDefault();
-          if (flatSelectableOptions.length > 0) {
-            const currentIndex = flatSelectableOptions.findIndex(
-              (o) => o.value === focusedValue,
-            );
-            const prevIndex =
-              currentIndex > 0
-                ? currentIndex - 1
-                : flatSelectableOptions.length - 1;
-            setFocusedValue(flatSelectableOptions[prevIndex]?.value ?? null);
-          }
-          break;
+  // Auto-focus the search input or dropdown when opened
+  useEffect(() => {
+    if (opened) {
+      const target = enableSearch ? searchRef : dropdownRef;
+      setTimeout(() => target.current?.focus(), 0);
+    }
+  }, [opened, enableSearch]);
 
-        case 'Enter':
-        case ' ':
-          event.preventDefault();
-          if (focusedValue) {
-            handleOptionClick(focusedValue);
-          }
-          break;
-
-        case 'Escape':
-          event.preventDefault();
-          setOpened(false);
-          setSearchQuery('');
-          setFocusedValue(null);
-          triggerRef.current?.focus();
-          break;
-
-        default:
-          // Let other keys pass through for typing
-          break;
+  // Scroll the focused item into view
+  useEffect(() => {
+    if (focusedValue && opened && scrollAreaRef.current) {
+      const el = scrollAreaRef.current.querySelector(
+        `[data-tree-node-value="${CSS.escape(focusedValue)}"]`,
+      );
+      if (el) {
+        el.scrollIntoView({ block: 'nearest' });
       }
-    },
-    [focusedValue, flatSelectableOptions, handleOptionClick],
-  );
+    }
+  }, [focusedValue, opened]);
 
-  // Handle keyboard events on the dropdown when search is not enabled
-  const handleDropdownKeyDown = useCallback(
-    (event: React.KeyboardEvent) => {
-      switch (event.key) {
-        case 'ArrowDown':
-          event.preventDefault();
-          if (flatSelectableOptions.length > 0) {
-            const currentIndex = flatSelectableOptions.findIndex(
-              (o) => o.value === focusedValue,
-            );
-            const nextIndex =
-              currentIndex < flatSelectableOptions.length - 1
-                ? currentIndex + 1
-                : 0;
-            setFocusedValue(flatSelectableOptions[nextIndex]?.value ?? null);
-          }
-          break;
+  // ── Render ─────────────────────────────────────────────────────────
 
-        case 'ArrowUp':
-          event.preventDefault();
-          if (flatSelectableOptions.length > 0) {
-            const currentIndex = flatSelectableOptions.findIndex(
-              (o) => o.value === focusedValue,
-            );
-            const prevIndex =
-              currentIndex > 0
-                ? currentIndex - 1
-                : flatSelectableOptions.length - 1;
-            setFocusedValue(flatSelectableOptions[prevIndex]?.value ?? null);
-          }
-          break;
-
-        case 'Enter':
-        case ' ':
-          event.preventDefault();
-          if (focusedValue) {
-            handleOptionClick(focusedValue);
-          }
-          break;
-
-        case 'Escape':
-          event.preventDefault();
-          setOpened(false);
-          setSearchQuery('');
-          setFocusedValue(null);
-          triggerRef.current?.focus();
-          break;
-
-        default:
-          break;
-      }
-    },
-    [focusedValue, flatSelectableOptions, handleOptionClick],
-  );
+  const showClear = clearable && selectedOptions.length > 0;
 
   const chevronStyles: React.CSSProperties = {
     color: 'var(--mantine-color-dimmed)',
@@ -485,19 +455,6 @@ export function TreeSelect({
     // eslint-disable-next-line lingui/no-unlocalized-strings
     transition: 'transform 200ms ease',
   };
-
-  const nodeStyles: React.CSSProperties = {
-    padding: 'var(--mantine-spacing-xs)',
-    cursor: 'pointer',
-  };
-
-  const expandIconStyles = (expanded: boolean): React.CSSProperties => ({
-    transform: expanded ? 'rotate(0deg)' : 'rotate(-90deg)',
-    // eslint-disable-next-line lingui/no-unlocalized-strings
-    transition: 'transform 150ms ease',
-  });
-
-  const showClear = clearable && selectedOptions.length > 0;
 
   const rightSection = (
     <Group gap={4} wrap="nowrap" pr="xs">
@@ -536,7 +493,7 @@ export function TreeSelect({
           disabled={disabled}
           error={error}
           onClick={() => !disabled && setOpened(!opened)}
-          onKeyDown={handleKeyDown}
+          onKeyDown={handleTriggerKeyDown}
           rightSection={rightSection}
           rightSectionWidth={showClear ? 56 : 32}
           rightSectionPointerEvents="auto"
@@ -559,7 +516,7 @@ export function TreeSelect({
         <Box
           ref={dropdownRef}
           tabIndex={enableSearch ? -1 : 0}
-          onKeyDown={enableSearch ? undefined : handleDropdownKeyDown}
+          onKeyDown={enableSearch ? undefined : handleListKeyDown}
           style={{ outline: 'none' }}
         >
           {enableSearch && (
@@ -571,62 +528,37 @@ export function TreeSelect({
                   setSearchQuery(e.currentTarget.value);
                   setFocusedValue(null);
                 }}
-                onKeyDown={handleSearchKeyDown}
+                onKeyDown={handleListKeyDown}
                 size="xs"
                 leftSection={<IconSearch size={14} />}
               />
             </Box>
           )}
 
-          <ScrollArea.Autosize mah={250} type="auto" viewportRef={scrollAreaRef}>
-            {treeData.length > 0 ? (
-              <Tree
-                tree={tree}
-                data={treeData}
-                renderNode={({ node, expanded, hasChildren, elementProps }) => (
-                  <Group
-                    gap={4}
-                    wrap="nowrap"
-                    style={nodeStyles}
-                    data-tree-node-value={node.value}
-                    onClick={() => {
-                      // Only handle selection for leaf nodes or selectable groups
-                      const flatOpts = flattenSelectableOptions(options);
-                      if (flatOpts.some((o) => o.value === node.value)) {
-                        handleOptionClick(node.value);
-                      }
-                    }}
-                  >
-                    <Box
-                      {...elementProps}
-                      style={{
-                        ...elementProps.style,
-                        display: 'flex',
-                        alignItems: 'center',
-                        cursor: hasChildren ? 'pointer' : 'default',
-                      }}
-                      onClick={(e) => {
-                        // Only toggle expansion, don't select
-                        e.stopPropagation();
-                        if (hasChildren) {
-                          tree.toggleExpanded(node.value);
-                        }
-                      }}
-                    >
-                      {hasChildren ? (
-                        <IconChevronDown
-                          size={14}
-                          style={expandIconStyles(expanded)}
-                        />
-                      ) : (
-                        <Box w={14} />
-                      )}
-                    </Box>
-                    <Box style={{ flex: 1 }}>{node.label}</Box>
-                  </Group>
-                )}
-              />
-            ) : (
+          <ScrollArea.Autosize
+            mah={250}
+            type="auto"
+            viewportRef={scrollAreaRef}
+          >
+            {opened && filteredOptions.length > 0 ? (
+              <Box py={4}>
+                {filteredOptions.map((option) => (
+                  <TreeNode
+                    key={
+                      isOptionGroup(option)
+                        ? (option.value ?? option.label)
+                        : option.value
+                    }
+                    option={option}
+                    depth={0}
+                    multiple={multiple}
+                    selectedValues={selectedValues}
+                    focusedValue={focusedValue}
+                    onSelect={stableOnSelect}
+                  />
+                ))}
+              </Box>
+            ) : opened ? (
               <Text size="sm" c="dimmed" ta="center" py="md">
                 {searchQuery ? (
                   <Trans>No matching options</Trans>
@@ -634,7 +566,7 @@ export function TreeSelect({
                   <Trans>No options available</Trans>
                 )}
               </Text>
-            )}
+            ) : null}
           </ScrollArea.Autosize>
         </Box>
       </Popover.Dropdown>
