@@ -91,12 +91,21 @@ export function SelectField({
 
   const value =
     getValue<string | string[]>(fieldName) ?? field.defaultValue ?? '';
-  const selectOptions = getSelectOptions(field.options, submission);
+  const selectOptions = useMemo(
+    () => getSelectOptions(field.options, submission),
+    [field.options, submission],
+  );
 
   // Detect if we need the tree select (hierarchical structure)
   const useTreeSelect = useMemo(
     () => hasNestedGroups(selectOptions),
     [selectOptions],
+  );
+
+  // Stable callback for TreeSelect onChange
+  const handleTreeChange = useCallback(
+    (newValue: string | string[]) => setValue(fieldName, newValue),
+    [fieldName, setValue],
   );
 
   // Handle multi-select with mutually exclusive logic
@@ -138,7 +147,7 @@ export function SelectField({
         <TreeSelect
           options={selectOptions}
           value={treeValue}
-          onChange={(newValue) => setValue(fieldName, newValue)}
+          onChange={handleTreeChange}
           multiple={field.allowMultiple}
           error={validations.isInvalid}
         />

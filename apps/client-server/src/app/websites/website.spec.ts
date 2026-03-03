@@ -44,7 +44,7 @@ describe('Website', () => {
   it('should store data', async () => {
     const website = new TestWebsite(await populateAccount());
     await website.onInitialize(repository);
-    website.onBeforeLogin();
+    await website.onBeforeLogin();
     await website.onLogin();
     website.onAfterLogin();
     const entity = (

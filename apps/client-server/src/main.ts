@@ -10,7 +10,7 @@ import { NestFactory, Reflector } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import {
   IsTestEnvironment,
-  PostyBirbEnvConfig
+  PostyBirbEnvConfig,
 } from '@postybirb/utils/electron';
 import compression from 'compression';
 import sharp from 'sharp';
@@ -38,6 +38,7 @@ async function bootstrap() {
     // TLS/SSL on non-test
     const { cert, key } = await SSL.getOrCreateSSL();
     app = await NestFactory.create(AppModule, {
+      logger: ['error', 'warn'],
       httpsOptions: {
         key,
         cert,

@@ -90,7 +90,7 @@ export default class Telegram
         proxies.find((e) => e.type === 'PROXY') ??
         proxies[0];
 
-      if (proxy.type !== 'DIRECT') {
+      if (proxy && proxy.type !== 'DIRECT') {
         telegramProxySettings = {
           ip: proxy.hostname,
           port: parseInt(proxy.port, 10),

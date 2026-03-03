@@ -60,7 +60,7 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
   const debouncedRefreshLogin = useCallback(
     debounce(() => {
       accountApi.refreshLogin(accountId);
-    }, 500),
+    }, 1_000),
     [accountId],
   );
 
@@ -97,7 +97,7 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
       event: Electron.ConsoleMessageEvent,
     ): void => {
       // eslint-disable-next-line no-console
-      console.log(`WEBVIEW: ${event.message}`);
+      // console.log(`WEBVIEW: ${event.message}`);
     };
 
     const handleDidNavigate = (event: Electron.DidNavigateEvent) => {

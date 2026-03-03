@@ -99,7 +99,7 @@ export class FurAffinityFileSubmission extends BaseWebsiteOptions {
       },
     ],
     section: 'website',
-    span: 6,
+    span: 12,
   })
   folders: string[];
 

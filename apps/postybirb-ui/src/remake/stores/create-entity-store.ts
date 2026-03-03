@@ -1,3 +1,4 @@
+/* eslint-disable lingui/no-unlocalized-strings */
 /**
  * Base entity store factory for creating Zustand stores with common CRUD patterns.
  * All entity stores follow a similar pattern of loading, storing, and providing access to records.
@@ -48,12 +49,16 @@ export interface BaseEntityActions<T extends BaseRecord> {
 /**
  * Complete entity store type.
  */
-export type EntityStore<T extends BaseRecord> = BaseEntityState<T> & BaseEntityActions<T>;
+export type EntityStore<T extends BaseRecord> = BaseEntityState<T> &
+  BaseEntityActions<T>;
 
 /**
  * Options for creating an entity store.
  */
-export interface CreateEntityStoreOptions<TDto = unknown, TRecord extends BaseRecord = BaseRecord> {
+export interface CreateEntityStoreOptions<
+  TDto = unknown,
+  TRecord extends BaseRecord = BaseRecord,
+> {
   /** Name of the store for debugging */
   storeName: string;
   /** Websocket event name to subscribe to for real-time updates (optional) */
@@ -72,23 +77,74 @@ export interface CreateEntityStoreOptions<TDto = unknown, TRecord extends BaseRe
 // ============================================================================
 
 /**
+ * Compute a shallow diff between two plain objects, returning changed keys
+ * with their old and new values. Nested objects are compared by JSON serialization.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function shallowDiff(
+  oldObj: Record<string, any>,
+  newObj: Record<string, any>,
+): Record<string, { old: unknown; new: unknown }> | null {
+  const changes: Record<string, { old: unknown; new: unknown }> = {};
+  const allKeys = new Set([...Object.keys(oldObj), ...Object.keys(newObj)]);
+  for (const key of allKeys) {
+    const oldVal = oldObj[key];
+    const newVal = newObj[key];
+    // Fast reference check, then fall back to JSON comparison for objects
+    if (oldVal !== newVal) {
+      const same =
+        typeof oldVal === 'object' &&
+        typeof newVal === 'object' &&
+        oldVal !== null &&
+        newVal !== null
+          ? JSON.stringify(oldVal) === JSON.stringify(newVal)
+          : false;
+      if (!same) {
+        changes[key] = { old: oldVal, new: newVal };
+      }
+    }
+  }
+  return Object.keys(changes).length > 0 ? changes : null;
+}
+
+/**
  * Diff incoming DTOs against existing records.
  * Only calls `createRecord` for genuinely new or changed entities.
  * Preserves existing record references when unchanged to prevent downstream re-renders.
  *
  * @returns `null` if nothing changed (callers should skip setState), or the new records + map.
  */
-export function diffRecords<TDto extends { id: string; updatedAt: string }, TRecord extends BaseRecord>(
+export function diffRecords<
+  TDto extends { id: string; updatedAt: string },
+  TRecord extends BaseRecord,
+>(
   existingMap: Map<EntityId, TRecord>,
   dtos: TDto[],
   createRecord: (dto: TDto) => TRecord,
   hasChanged?: (existing: TRecord, newDto: TDto) => boolean,
+  storeName?: string,
 ): { records: TRecord[]; recordsMap: Map<EntityId, TRecord> } | null {
   let anyChanged = false;
+  const tag = storeName ? `[${storeName}]` : '[diffRecords]';
+
+  const added: string[] = [];
+  const removed: string[] = [];
+  const updated: {
+    id: string;
+    changes: Record<string, { old: unknown; new: unknown }>;
+  }[] = [];
 
   // Detect additions / removals by comparing size + IDs
   if (dtos.length !== existingMap.size) {
     anyChanged = true;
+  }
+
+  // Detect removed records (exist in map but not in incoming DTOs)
+  const incomingIds = new Set(dtos.map((d) => d.id));
+  for (const id of existingMap.keys()) {
+    if (!incomingIds.has(id)) {
+      removed.push(id);
+    }
   }
 
   const records: TRecord[] = [];
@@ -108,6 +164,11 @@ export function diffRecords<TDto extends { id: string; updatedAt: string }, TRec
         records.push(newRecord);
         recordsMap.set(newRecord.id, newRecord);
         anyChanged = true;
+
+        // Compute field-level diff for logging
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const fieldDiff = shallowDiff(existing as any, newRecord as any);
+        updated.push({ id: dto.id, changes: fieldDiff ?? {} });
       } else {
         // Reuse existing reference — this is the key optimisation
         records.push(existing);
@@ -119,7 +180,44 @@ export function diffRecords<TDto extends { id: string; updatedAt: string }, TRec
       records.push(newRecord);
       recordsMap.set(newRecord.id, newRecord);
       anyChanged = true;
+      added.push(dto.id);
     }
+  }
+
+  // Log diff summary
+  if (anyChanged) {
+    // eslint-disable-next-line no-console, lingui/no-unlocalized-strings
+    console.groupCollapsed(
+      // eslint-disable-next-line lingui/no-unlocalized-strings
+      `${tag} Record diff — ${added.length} added, ${removed.length} removed, ${updated.length} updated`,
+    );
+    if (added.length > 0) {
+      // eslint-disable-next-line no-console, lingui/no-unlocalized-strings
+      console.log('Added:', added);
+    }
+    if (removed.length > 0) {
+      // eslint-disable-next-line no-console, lingui/no-unlocalized-strings
+      console.log('Removed:', removed);
+    }
+    for (const u of updated) {
+      // eslint-disable-next-line no-console, lingui/no-unlocalized-strings
+      console.groupCollapsed(`Updated: ${u.id}`);
+      for (const [key, val] of Object.entries(u.changes)) {
+        // eslint-disable-next-line no-console
+        console.log(
+          `  %c${key}`,
+          'font-weight:bold',
+          '\n    old:',
+          val.old,
+          '\n    new:',
+          val.new,
+        );
+      }
+      // eslint-disable-next-line no-console
+      console.groupEnd();
+    }
+    // eslint-disable-next-line no-console
+    console.groupEnd();
   }
 
   return anyChanged ? { records, recordsMap } : null;
@@ -132,10 +230,13 @@ export function diffRecords<TDto extends { id: string; updatedAt: string }, TRec
  * @param createRecord - Function that converts a DTO to a Record class
  * @param options - Store configuration options
  */
-export function createEntityStore<TDto extends { id: string; updatedAt: string }, TRecord extends BaseRecord>(
+export function createEntityStore<
+  TDto extends { id: string; updatedAt: string },
+  TRecord extends BaseRecord,
+>(
   fetchFn: () => Promise<TDto[]>,
   createRecord: (dto: TDto) => TRecord,
-  options: CreateEntityStoreOptions<TDto, TRecord>
+  options: CreateEntityStoreOptions<TDto, TRecord>,
 ) {
   const { storeName, websocketEvent, hasChanged } = options;
 
@@ -167,7 +268,13 @@ export function createEntityStore<TDto extends { id: string; updatedAt: string }
         const { recordsMap: existingMap } = get();
 
         // Use diffing on subsequent loads; on first load existingMap is empty so all records are new
-        const diffResult = diffRecords(existingMap, dtos, createRecord, hasChanged);
+        const diffResult = diffRecords(
+          existingMap,
+          dtos,
+          createRecord,
+          hasChanged,
+          storeName,
+        );
         if (diffResult) {
           set({
             records: diffResult.records,
@@ -183,8 +290,9 @@ export function createEntityStore<TDto extends { id: string; updatedAt: string }
         // eslint-disable-next-line no-console, lingui/no-unlocalized-strings
         console.debug(`[${storeName}] Loaded ${dtos.length} records`);
       } catch (err) {
-        // eslint-disable-next-line lingui/no-unlocalized-strings
-        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        const errorMessage =
+          // eslint-disable-next-line lingui/no-unlocalized-strings
+          err instanceof Error ? err.message : 'Unknown error';
         set({
           loadingState: 'error',
           error: errorMessage,
@@ -220,11 +328,19 @@ export function createEntityStore<TDto extends { id: string; updatedAt: string }
   // Subscribe to websocket events if event name is provided
   if (websocketEvent) {
     AppSocket.on(websocketEvent, (dtos: TDto[]) => {
-      // eslint-disable-next-line no-console, lingui/no-unlocalized-strings
-      console.debug(`[${storeName}] Received ${dtos.length} records via websocket`);
+      // eslint-disable-next-line no-console
+      console.debug(
+        `[${storeName}] Received ${dtos.length} records via websocket`,
+      );
 
       const { recordsMap: existingMap } = store.getState();
-      const diffResult = diffRecords(existingMap, dtos, createRecord, hasChanged);
+      const diffResult = diffRecords(
+        existingMap,
+        dtos,
+        createRecord,
+        hasChanged,
+        storeName,
+      );
 
       if (diffResult) {
         store.setState({
@@ -246,7 +362,7 @@ export function createEntityStore<TDto extends { id: string; updatedAt: string }
  */
 export function useRecordsSelector<T extends BaseRecord>(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  store: ReturnType<typeof createEntityStore<any, T>>
+  store: ReturnType<typeof createEntityStore<any, T>>,
 ): T[] {
   type StoreState = EntityStore<T>;
   return store((state: StoreState) => state.records);
@@ -257,7 +373,7 @@ export function useRecordsSelector<T extends BaseRecord>(
  */
 export function useLoadingStateSelector<T extends BaseRecord>(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  store: ReturnType<typeof createEntityStore<any, T>>
+  store: ReturnType<typeof createEntityStore<any, T>>,
 ) {
   type StoreState = EntityStore<T>;
   return store(
@@ -267,6 +383,6 @@ export function useLoadingStateSelector<T extends BaseRecord>(
       isLoading: state.loadingState === 'loading',
       isLoaded: state.loadingState === 'loaded',
       hasError: state.loadingState === 'error',
-    }))
+    })),
   );
 }

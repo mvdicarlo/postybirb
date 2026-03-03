@@ -12,7 +12,6 @@ import {
 import { BlueskyAccountData, BlueskyOAuthRoutes } from '@postybirb/types';
 import { IconAlertCircle, IconInfoCircle } from '@tabler/icons-react';
 import { useState } from 'react';
-import { CommonTranslations } from '../../../../translations/common-translations';
 import websitesApi from '../../../api/websites.api';
 import { ExternalLink } from '../../shared/external-link';
 import {
@@ -256,7 +255,7 @@ export default function BlueskyLoginView(
               disabled={!username || !password}
               fullWidth
             >
-              <CommonTranslations.Save />
+              <Trans>Save</Trans>
             </Button>
           </Box>
         </Stack>

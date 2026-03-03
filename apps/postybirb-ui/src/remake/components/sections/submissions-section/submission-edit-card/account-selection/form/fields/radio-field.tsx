@@ -35,11 +35,16 @@ function RatingFieldControl({
   const { t } = useLingui();
 
   const baseOptions = field.options;
+  
   const options =
     field.formField === 'rating' && !option.isDefault
       ? [{ label: t`Default`, value: '' }, ...baseOptions]
       : baseOptions;
-  const value = getValue<string>(fieldName) ?? field.defaultValue ?? '';
+  const rawValue = getValue<string>(fieldName);
+  const value =
+    !option.isDefault && (!rawValue || rawValue === defaultValue)
+      ? ''
+      : (rawValue ?? field.defaultValue ?? '');
 
   return (
     <SegmentedControl
@@ -56,7 +61,7 @@ function RatingFieldControl({
         }`,
         value: o.value ? o.value.toString() : '',
       }))}
-      onChange={(e) => setValue(fieldName, e)}
+      onChange={(e) => setValue(fieldName, e || undefined)}
     />
   );
 }

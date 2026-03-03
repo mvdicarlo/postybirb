@@ -4,8 +4,8 @@
  */
 
 // Import from the legacy location for now - this provider is shared across old/new UI
-import { e621TagSearchProvider } from '../../../website-components/e621/e621-tag-search-provider';
 // Re-export the provider base class from local definition
+import { e621TagSearchProvider } from '../../components/website-components/e621/e621-tag-search-provider';
 import { TagSearchProvider } from './tag-search-provider';
 
 /**

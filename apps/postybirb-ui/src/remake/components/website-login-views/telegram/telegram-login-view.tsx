@@ -87,7 +87,7 @@ export default function TelegramLoginView(
           defaultValue={phoneNumber}
           required
           description={
-            <ExternalLink href="https://developers.omnisend.com/guides/e164-phone-number-formatting">
+            <ExternalLink href="https://www.twilio.com/docs/glossary/what-e164">
               <Trans context="telegram.phone-number-help">
                 Phone number must be in international format
               </Trans>

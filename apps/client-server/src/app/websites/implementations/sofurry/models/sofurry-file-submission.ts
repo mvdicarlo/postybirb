@@ -27,7 +27,6 @@ export class SofurryFileSubmission extends BaseWebsiteOptions {
 
   @TagField({
     minTags: 2,
-    spaceReplacer: ' ',
   })
   tags: TagValue;
 
@@ -125,4 +124,8 @@ export class SofurryFileSubmission extends BaseWebsiteOptions {
     span: 6,
   })
   pixelPerfectDisplay: boolean;
+
+  processTag(tag: string): string {
+    return tag.replace(/_/g, ' ');
+  }
 }

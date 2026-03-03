@@ -7,7 +7,7 @@ import { FileType, ISubmissionFileDto } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { IconFileText, IconFileUnknown } from '@tabler/icons-react';
 import { memo } from 'react';
-import { defaultTargetProvider } from '../../../../../../transports/http-client';
+import { defaultTargetProvider } from '../../../../../transports/http-client';
 
 interface FilePreviewProps {
   file: ISubmissionFileDto;
