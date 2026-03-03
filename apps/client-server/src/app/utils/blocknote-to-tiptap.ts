@@ -167,7 +167,7 @@ function convertInlineContent(
  * Convert a single BlockNote block to a TipTap node.
  */
 function convertBlock(block: BNBlock): TipTapNode[] {
-  const type = block.type;
+  const {type} = block;
   const props = block.props || {};
 
   // Map BlockNote block types to TipTap node types

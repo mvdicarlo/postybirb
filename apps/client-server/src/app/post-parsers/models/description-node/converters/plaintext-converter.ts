@@ -8,12 +8,7 @@ export class PlainTextConverter extends BaseConverter {
     return '\r\n';
   }
 
-  convertBlockNode(
-    node: TipTapNode,
-    context: ConversionContext,
-  ): string {
-    const attrs = node.attrs ?? {};
-
+  convertBlockNode(node: TipTapNode, context: ConversionContext): string {
     if (node.type === 'defaultShortcut') {
       if (!this.shouldRenderShortcut(node, context)) return '';
       return this.convertRawBlocks(context.defaultDescription, context);
@@ -65,10 +60,7 @@ export class PlainTextConverter extends BaseConverter {
     return this.convertContent(node.content, context);
   }
 
-  convertInlineNode(
-    node: TipTapNode,
-    context: ConversionContext,
-  ): string {
+  convertInlineNode(node: TipTapNode, context: ConversionContext): string {
     const attrs = node.attrs ?? {};
 
     if (node.type === 'username') {
@@ -106,10 +98,7 @@ export class PlainTextConverter extends BaseConverter {
     return this.convertContent(node.content, context);
   }
 
-  convertTextNode(
-    node: TipTapNode,
-    context: ConversionContext,
-  ): string {
+  convertTextNode(node: TipTapNode, context: ConversionContext): string {
     const textNode = node as any;
 
     // Check for link mark — append URL
@@ -122,4 +111,3 @@ export class PlainTextConverter extends BaseConverter {
     return textNode.text ?? '';
   }
 }
-

@@ -233,17 +233,14 @@ describe('NpfConverter', () => {
     });
 
     it('should handle double spaces', () => {
-      const shortcutContent: IDescriptionBlockNode[] = [
+      const shortcutContent: TipTapNode[] = [
         {
-          id: 'shortcut-1',
           type: 'paragraph',
-          props: {},
           content: [
             {
               type: 'text',
               text: 'Commission Info',
-              styles: { bold: true },
-              props: {},
+              marks: [{ type: 'bold' }],
             },
           ],
         },
@@ -251,50 +248,25 @@ describe('NpfConverter', () => {
 
       context.customShortcuts.set('cs-1', shortcutContent);
 
-      const node: Description = [
+      const nodes: TipTapNode[] = [
         {
           type: 'paragraph',
-          props: {
-            backgroundColor: 'default',
-            textColor: 'default',
-            textAlignment: 'left',
-          },
-          id: '9fbc9be2-0a6d-4fca-bb07-52e3cc69b30f',
-          content: [{ text: 'aaa', type: 'text', styles: {} }],
-          children: [],
+          content: [{ type: 'text', text: 'aaa' }],
         },
         {
           type: 'defaultShortcut',
-          props: { default: true },
-          id: '917489ca-140a-4f5e-8b9c-f5844eb7f2fe',
-          content: undefined,
-          children: [],
         },
         {
           type: 'paragraph',
-          props: {
-            backgroundColor: 'default',
-            textColor: 'default',
-            textAlignment: 'left',
-          },
-          id: 'd4b1b54e-e2c5-438f-ac64-57d48bca383f',
           content: [],
-          children: [],
         },
         {
           type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          },
-          id: 'ad',
-          content: [{ type: 'text', text: 'aaa', styles: {} }],
-          children: [],
+          content: [{ type: 'text', text: 'aaa' }],
         },
       ];
 
-      const resultJson = converter.convertBlocks(node as any, context);
+      const resultJson = converter.convertBlocks(nodes, context);
       const result = JSON.parse(resultJson) as NPFTextBlock;
 
       expect(result).toMatchInlineSnapshot(`
