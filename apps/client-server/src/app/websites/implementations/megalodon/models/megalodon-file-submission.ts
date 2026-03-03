@@ -1,15 +1,15 @@
 import {
-    BooleanField,
-    DescriptionField,
-    SelectField,
-    TagField,
-    TextField,
+  BooleanField,
+  DescriptionField,
+  SelectField,
+  TagField,
+  TextField,
 } from '@postybirb/form-builder';
 import {
-    DefaultTagValue,
-    DescriptionType,
-    DescriptionValue,
-    TagValue,
+  DefaultTagValue,
+  DescriptionType,
+  DescriptionValue,
+  TagValue,
 } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
@@ -25,7 +25,7 @@ export class MegalodonFileSubmission extends BaseWebsiteOptions {
   tags: TagValue = DefaultTagValue();
 
   override processTag(tag: string) {
-    return `#${tag.replaceAll(/[^a-z0-9]/gi, '_')}`;
+    return `${tag.replaceAll(/[^a-z0-9]/gi, '_')}`;
   }
 
   @SelectField({

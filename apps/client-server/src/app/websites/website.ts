@@ -6,7 +6,7 @@ import {
   LoginState,
   SubmissionType,
 } from '@postybirb/types';
-import { getPartitionKey } from '@postybirb/utils/electron';
+import { BrowserWindowUtils, getPartitionKey } from '@postybirb/utils/electron';
 import { session } from 'electron';
 import { Account } from '../drizzle/models';
 import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
@@ -231,6 +231,17 @@ export abstract class Website<
     websiteDataRepository: PostyBirbDatabase<'WebsiteDataSchema'>,
   ): Promise<void> {
     await this.websiteDataStore.initialize(websiteDataRepository);
+  }
+
+  public async cycleCookies(): Promise<void> {
+    if (this.decoratedProps.loginFlow.type === 'user') {
+      this.logger.debug('Cycling cookies for user login flow');
+      await BrowserWindowUtils.ping(this.accountId, this.BASE_URL).catch(
+        (err) => {
+          this.logger.error('Error cycling cookies:', err);
+        },
+      );
+    }
   }
 
   /**

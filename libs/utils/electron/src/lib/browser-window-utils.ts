@@ -85,6 +85,13 @@ export class BrowserWindowUtils {
     }
   }
 
+  public static async ping(partition: string, url: string): Promise<void> {
+    const bw = await createWindow(partition, url);
+    if (!bw.isDestroyed()) {
+      bw.destroy();
+    }
+  }
+
   public static async getFormData(
     partition: string,
     url: string,

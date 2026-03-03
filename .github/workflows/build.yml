@@ -157,10 +157,20 @@ jobs:
           # ✅ Use system fpm for Linux only
           USE_SYSTEM_FPM: ${{ matrix.platform == 'linux' && 'true' || '' }}
 
+      - name: Extract version from package.json for docker tag
+        uses: actions/github-script@v8
+        id: packageVersion
+        with:
+          script: |
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync("package.json", "utf8"))
+            return pkg.version
+
       - name: Build and publish a Docker image for '${{github.repository}}'
         uses: macbre/push-to-ghcr@master
         if: matrix.platform == 'linux' && matrix.arch == 'x64'
         with:
           image_name: "${{github.repository}}"
+          extra_args: --tag ghcr.io/${{github.repository}}:${{steps.packageVersion.outputs.result}}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           dockerfile: "./Dockerfile"

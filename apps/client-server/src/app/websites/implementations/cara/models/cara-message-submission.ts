@@ -8,12 +8,4 @@ export class CaraMessageSubmission extends BaseWebsiteOptions {
     maxDescriptionLength: 5000,
   })
   description: DescriptionValue;
-
-  override processTag(tag: string): string {
-    if (tag.startsWith('#')) {
-      return tag;
-    }
-
-    return `#${tag}`;
-  }
 }

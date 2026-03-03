@@ -14,7 +14,7 @@ import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
 export class BlueskyFileSubmission extends BaseWebsiteOptions {
   @DescriptionField({
-    descriptionType: DescriptionType.PLAINTEXT,
+    descriptionType: DescriptionType.CUSTOM,
     maxDescriptionLength: Infinity, // Custom length calculation is handled by validation logic
   })
   description: DescriptionValue;
@@ -25,7 +25,7 @@ export class BlueskyFileSubmission extends BaseWebsiteOptions {
   tags: TagValue = DefaultTagValue();
 
   override processTag(tag: string) {
-    return `#${tag.replaceAll(/[^a-z0-9]/gi, '_')}`;
+    return `${tag.replaceAll(/[^a-z0-9]/gi, '_')}`;
   }
 
   // Note: in v3 it was label_rating

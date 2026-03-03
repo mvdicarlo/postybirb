@@ -54,11 +54,22 @@ interface HttpOptions {
 export interface PostOptions extends HttpOptions {
   type: 'multipart' | 'json' | 'urlencoded';
   data: Record<string, unknown>;
+  /**
+   * When true, sends the request via Electron's BrowserWindow.loadURL
+   * with raw data bytes instead of using net.request ClientRequest.
+   * Useful for websites that require browser-like form submissions.
+   */
+  uploadAsRawData?: boolean;
 }
 
 interface BinaryPostOptions extends HttpOptions {
   type: 'binary';
   data: Buffer;
+  /**
+   * When true, sends the request via Electron's BrowserWindow.loadURL
+   * with raw data bytes instead of using net.request ClientRequest.
+   */
+  uploadAsRawData?: boolean;
 }
 
 export interface HttpResponse<T> {
@@ -470,6 +481,19 @@ export class Http {
     let error: Error | undefined;
 
     try {
+      // When uploadAsRawData is set, bypass net.request and send via
+      // BrowserWindow.loadURL with the body as raw bytes.
+      if (options.uploadAsRawData) {
+        const response = await Http.performBrowserWindowPostRequest<T>(
+          url,
+          options,
+          crOptions ?? {},
+        );
+        statusCode = response.statusCode ?? 0;
+        success = statusCode >= 200 && statusCode < 400;
+        return response;
+      }
+
       const response = await new Promise<HttpResponse<T>>((resolve, reject) => {
         const req = Http.createClientRequest(options, {
           ...(crOptions ?? {}),

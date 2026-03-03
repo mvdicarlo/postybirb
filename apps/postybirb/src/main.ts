@@ -1,3 +1,6 @@
+// Ensure proxy is imported first to patch fetch before any request is made
+import '@postybirb/http';
+
 import { INestApplication } from '@nestjs/common';
 import { PostyBirbDirectories } from '@postybirb/fs';
 import {
@@ -18,8 +21,6 @@ if (!isOnlyInstance) {
   app.quit();
   process.exit();
 }
-
-//
 
 app.commandLine.appendSwitch('disable-renderer-backgrounding');
 app.commandLine.appendSwitch('disable-background-timer-throttling');
