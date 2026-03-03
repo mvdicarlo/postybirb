@@ -36,34 +36,11 @@ export abstract class BaseConverter {
   ): string;
 
   /**
-   * Trims empty strings from the start and end of the results array,
-   * preserving empty strings in the middle (for intentional blank lines).
-   */
-  private trimAndJoinResults(results: string[], separator: string): string {
-    if (results.length === 0) return '';
-
-    let startIndex = 0;
-    let endIndex = results.length - 1;
-
-    while (startIndex < results.length && results[startIndex] === '') {
-      startIndex++;
-    }
-
-    while (endIndex >= startIndex && results[endIndex] === '') {
-      endIndex--;
-    }
-
-    if (startIndex > endIndex) return '';
-
-    return results.slice(startIndex, endIndex + 1).join(separator);
-  }
-
-  /**
    * Converts an array of top-level TipTap nodes (block nodes).
    */
   convertBlocks(nodes: TipTapNode[], context: ConversionContext): string {
     const results = nodes.map((node) => this.convertBlockNode(node, context));
-    return this.trimAndJoinResults(results, this.getBlockSeparator());
+    return results.join(this.getBlockSeparator());
   }
 
   /**
@@ -130,7 +107,7 @@ export abstract class BaseConverter {
       const results = children.map((child) =>
         this.convertBlockNode(child, context),
       );
-      return this.trimAndJoinResults(results, this.getBlockSeparator());
+      return results.join(this.getBlockSeparator());
     } finally {
       this.currentDepth -= 1;
     }

@@ -1,6 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { DescriptionType, TipTapNode, UsernameShortcut } from '@postybirb/types';
-import isEqual from 'lodash/isEqual';
+import {
+  DescriptionType,
+  TipTapNode,
+  UsernameShortcut,
+} from '@postybirb/types';
 import { Class } from 'type-fest';
 import { WEBSITE_IMPLEMENTATIONS } from '../../constants';
 import { CustomShortcutsService } from '../../custom-shortcuts/custom-shortcuts.service';
@@ -127,12 +130,7 @@ export class DescriptionParserService {
       usernameConversions,
     });
 
-    const description = this.createDescription(instance, descriptionType, tree);
-
-    return description
-      .replace(/(<div><\/div>)$/, '')
-      .replace(/(<p><\/p>)$/, '')
-      .trim();
+    return this.createDescription(instance, descriptionType, tree);
   }
 
   private createDescription(
@@ -216,50 +214,14 @@ export class DescriptionParserService {
     return usernameConversions;
   }
 
-  /**
-   * Merges adjacent blocks of the same type together, inserting a '\n' text node between them.
-   * This simulates the visual line-by-line behavior users expect.
-   */
-  public mergeBlocks(
-    blocks: TipTapNode[],
-  ): TipTapNode[] {
-    const mergedBlocks: TipTapNode[] = [];
-
-    const blockCopy: TipTapNode[] = JSON.parse(JSON.stringify(blocks));
-    for (let i = 0; i < blockCopy.length; i++) {
-      const currentBlock = blockCopy[i];
-      const previousBlock = mergedBlocks[mergedBlocks.length - 1];
-
-      if (!previousBlock) {
-        mergedBlocks.push(currentBlock);
-      } else if (
-        currentBlock.type === previousBlock.type &&
-        (currentBlock.content?.length ?? 0) !== 0 &&
-        (previousBlock.content?.length ?? 0) !== 0 &&
-        isEqual(currentBlock.attrs, previousBlock.attrs)
-      ) {
-        // Insert a \n text node then merge content
-        if (!previousBlock.content) previousBlock.content = [];
-        previousBlock.content.push({
-          type: 'text',
-          text: '\n',
-        });
-        previousBlock.content.push(...(currentBlock.content ?? []));
-      } else {
-        mergedBlocks.push(currentBlock);
-      }
-    }
-
-    return mergedBlocks;
+  public mergeBlocks(blocks: TipTapNode[]): TipTapNode[] {
+    return blocks;
   }
 
   /**
    * Recursively checks if TipTap nodes contain a specific inline content type.
    */
-  private hasInlineContentType(
-    blocks: TipTapNode[],
-    type: string,
-  ): boolean {
+  private hasInlineContentType(blocks: TipTapNode[], type: string): boolean {
     for (const block of blocks) {
       if (block?.type === type) return true;
       if (Array.isArray(block?.content)) {

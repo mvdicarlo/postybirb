@@ -24,6 +24,7 @@ import {
   TipTapNode,
   ValidationResult,
 } from '@postybirb/types';
+import prettier from 'prettier';
 import { AccountService } from '../account/account.service';
 import { PostyBirbService } from '../common/service/postybirb-service';
 import { Account, Submission, WebsiteOptions } from '../drizzle/models';
@@ -129,7 +130,7 @@ export class WebsiteOptionsService
         const converted = migrateDescription(desc);
         await customShortcutRepo.update(shortcut.id, {
           shortcut: converted,
-        } as any);
+        } as unknown);
         migrated++;
       }
     }
@@ -154,7 +155,7 @@ export class WebsiteOptionsService
                 description: converted,
               },
             },
-          } as any);
+          } as unknown);
           migrated++;
         }
       }
@@ -480,12 +481,19 @@ export class WebsiteOptionsService
       ...websiteOption.data,
     });
     const mergedOptions = websiteOpts.mergeDefaults(defaultOpts);
-    const { descriptionType } =
-      mergedOptions.getFormFieldFor('description');
+    const { descriptionType } = mergedOptions.getFormFieldFor('description');
+
+    let descriptionText = data.options.description ?? '';
+    if (descriptionType === DescriptionType.HTML) {
+      // Pretty-print the HTML for preview
+      descriptionText = await prettier.format(descriptionText, {
+        parser: 'html',
+      });
+    }
 
     return {
       descriptionType: descriptionType as DescriptionType,
-      description: data.options.description ?? '',
+      description: descriptionText,
     };
   }
 

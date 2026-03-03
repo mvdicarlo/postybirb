@@ -170,7 +170,7 @@ describe('DescriptionParserService', () => {
       '',
     );
     expect(description).toMatchInlineSnapshot(
-      `"<div><span><b>Hello, </b></span>World!<br><a target="_blank" href="https://postybirb.com">A link</a></div>"`,
+      `"<div><span><b>Hello, </b></span>World!</div><div><a target=\"_blank\" href=\"https://postybirb.com\">A link</a></div>"`,
     );
   });
 
@@ -199,7 +199,8 @@ describe('DescriptionParserService', () => {
       '',
     );
     expect(description).toMatchInlineSnapshot(`
-      "**Hello,** World!  
+      "**Hello,** World!
+
       [A link](https://postybirb.com)"
     `);
   });
@@ -256,7 +257,7 @@ describe('DescriptionParserService', () => {
     );
 
     expect(description).toMatchInlineSnapshot(
-      `"<div><span><b>Hello, </b></span>World!<br><a target="_blank" href="https://postybirb.com">A link</a></div><div></div><div><a target="_blank" href="https://postybirb.com">Posted using PostyBirb</a></div>"`,
+      `"<div><span><b>Hello, </b></span>World!</div><div><a target=\"_blank\" href=\"https://postybirb.com\">A link</a></div><div></div><div><a target=\"_blank\" href=\"https://postybirb.com\">Posted using PostyBirb</a></div>"`,
     );
   });
 
@@ -288,12 +289,12 @@ describe('DescriptionParserService', () => {
     );
 
     expect(description).toMatchInlineSnapshot(
-      `"<div><span><b>Hello, </b></span>World!<br><a target="_blank" href="https://postybirb.com">A link</a></div>"`,
+      `"<div><span><b>Hello, </b></span>World!</div><div><a target=\"_blank\" href=\"https://postybirb.com\">A link</a></div>"`,
     );
   });
 
-  it('should merge similar description blocks', async () => {
-    const unmerged: TipTapNode[] = [
+  it('should pass blocks through without merging', () => {
+    const blocks: TipTapNode[] = [
       {
         type: 'paragraph',
         content: [
@@ -324,38 +325,8 @@ describe('DescriptionParserService', () => {
       },
     ];
 
-    const expected: TipTapNode[] = [
-      {
-        type: 'paragraph',
-        content: [
-          {
-            type: 'text',
-            text: 'Test\nIn the same block!',
-          },
-          {
-            type: 'text',
-            text: '\n',
-          },
-          {
-            type: 'text',
-            text: 'New block',
-          },
-        ],
-      },
-      {
-        type: 'paragraph',
-        attrs: { textAlign: 'center' },
-        content: [
-          {
-            type: 'text',
-            text: 'block',
-          },
-        ],
-      },
-    ];
-
-    const merged = service.mergeBlocks(unmerged);
-    expect(merged).toEqual(expected);
+    const result = service.mergeBlocks(blocks);
+    expect(result).toBe(blocks);
   });
 
   it('should insert default when available', async () => {

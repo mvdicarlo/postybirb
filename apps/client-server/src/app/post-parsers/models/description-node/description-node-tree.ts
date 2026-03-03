@@ -59,12 +59,12 @@ export class DescriptionNodeTree {
 
   toBBCode(): string {
     const converter = new BBCodeConverter();
-    return converter.convertBlocks(this.withInsertions(), this.context).trim();
+    return converter.convertBlocks(this.withInsertions(), this.context);
   }
 
   toPlainText(): string {
     const converter = new PlainTextConverter();
-    return converter.convertBlocks(this.withInsertions(), this.context).trim();
+    return converter.convertBlocks(this.withInsertions(), this.context);
   }
 
   toHtml(): string {
@@ -155,8 +155,51 @@ export class DescriptionNodeTree {
     return usernames;
   }
 
+  /**
+   * Checks if a TipTap node is structurally empty
+   * (no content, or content is only whitespace text nodes).
+   * Only considers paragraph/heading nodes as trimmable.
+   */
+  private isEmptyNode(node: TipTapNode): boolean {
+    if (node.type !== 'paragraph' && node.type !== 'heading') {
+      return false;
+    }
+
+    if (!node.content || node.content.length === 0) {
+      return true;
+    }
+
+    return node.content.every(
+      (child) =>
+        child.type === 'text' &&
+        (!(child as any).text || (child as any).text.trim() === ''),
+    );
+  }
+
+  /**
+   * Trims structurally empty nodes from the start and end of a block array,
+   * preserving empty nodes in the middle (intentional blank lines).
+   */
+  private trimEmptyEdgeNodes(nodes: TipTapNode[]): TipTapNode[] {
+    let start = 0;
+    let end = nodes.length - 1;
+
+    while (start < nodes.length && this.isEmptyNode(nodes[start])) {
+      start++;
+    }
+
+    while (end >= start && this.isEmptyNode(nodes[end])) {
+      end--;
+    }
+
+    if (start > end) return [];
+
+    return nodes.slice(start, end + 1);
+  }
+
   private withInsertions(): TipTapNode[] {
-    const nodes = [...this.nodes];
+    // Trim empty edge nodes before insertions so converters receive clean input
+    const nodes = this.trimEmptyEdgeNodes([...this.nodes]);
     const { insertAd, insertTags, insertTitle } = this.insertionOptions;
 
     if (insertTitle) {
