@@ -45,11 +45,21 @@ export class WebsiteRegistryService {
 
   private readonly websiteDataRepository: PostyBirbDatabase<'WebsiteDataSchema'>;
 
+  private initialized = false;
+
+  private initializedResolve: (() => void) | null = null;
+
+  private readonly initializedPromise: Promise<void>;
+
   constructor(
     @Inject(WEBSITE_IMPLEMENTATIONS)
     private readonly websiteImplementations: Class<UnknownWebsite>[],
     @Optional() private readonly webSocket?: WSGateway,
   ) {
+    this.initializedPromise = new Promise<void>((resolve) => {
+      this.initializedResolve = resolve;
+    });
+
     Object.values({ ...this.websiteImplementations }).forEach(
       (website: Class<UnknownWebsite>) => {
         if (
@@ -85,6 +95,53 @@ export class WebsiteRegistryService {
         event: WEBSITE_UPDATES,
         data: await this.getWebsiteInfo(),
       });
+    }
+  }
+
+  /**
+   * Marks the website registry as initialized.
+   * Called after all accounts have been loaded and website instances created.
+   */
+  public markAsInitialized(): void {
+    this.initialized = true;
+    if (this.initializedResolve) {
+      this.initializedResolve();
+      this.initializedResolve = null;
+    }
+    this.logger.info('Website registry marked as initialized');
+  }
+
+  /**
+   * Returns whether the website registry has been initialized
+   * (all accounts loaded and website instances created).
+   * @returns {boolean} True if initialized
+   */
+  public isRegistryInitialized(): boolean {
+    return this.initialized;
+  }
+
+  /**
+   * Returns a promise that resolves when the website registry is initialized.
+   * If already initialized, resolves immediately.
+   * @param {number} [timeoutMs] - Optional timeout in milliseconds
+   * @returns {Promise<void>}
+   */
+  public async waitForInitialization(timeoutMs?: number): Promise<void> {
+    if (this.initialized) {
+      return;
+    }
+
+    if (timeoutMs) {
+      const timeout = new Promise<void>((_, reject) => {
+        setTimeout(
+          () =>
+            reject(new Error('Website registry initialization timed out')),
+          timeoutMs,
+        );
+      });
+      await Promise.race([this.initializedPromise, timeout]);
+    } else {
+      await this.initializedPromise;
     }
   }
 

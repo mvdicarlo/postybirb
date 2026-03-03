@@ -22,6 +22,7 @@ import { NotificationsService } from '../../../notifications/notifications.servi
 import { SettingsService } from '../../../settings/settings.service';
 import { SubmissionService } from '../../../submission/services/submission.service';
 import { WSGateway } from '../../../web-socket/web-socket-gateway';
+import { WebsiteRegistryService } from '../../../websites/website-registry.service';
 import { PostManagerRegistry } from '../post-manager-v2';
 import { PostRecordFactory } from '../post-record-factory';
 
@@ -61,6 +62,7 @@ export class PostQueueService
     private readonly settingsService: SettingsService,
     private readonly notificationService: NotificationsService,
     private readonly submissionService: SubmissionService,
+    private readonly websiteRegistryService: WebsiteRegistryService,
     @Optional() webSocket?: WSGateway,
   ) {
     super('PostQueueRecordSchema', webSocket);
@@ -106,6 +108,16 @@ export class PostQueueService
           .info(
             'Detected interrupted PostRecords from crash/shutdown, resuming',
           );
+
+        // Wait for website registry to be initialized before resuming posts
+        // This ensures website instances are available for posting
+        this.logger.info(
+          'Waiting for website registry initialization before crash recovery...',
+        );
+        await this.websiteRegistryService.waitForInitialization(60_000);
+        this.logger.info(
+          'Website registry initialized, proceeding with crash recovery',
+        );
 
         for (const record of runningRecords) {
           this.logger
@@ -317,6 +329,22 @@ export class PostQueueService
 
     try {
       for (const submissionId of submissionIds) {
+        // Check if submission exists and is not archived before doing anything
+        const submission =
+          await this.submissionRepository.findById(submissionId);
+        if (!submission) {
+          this.logger
+            .withMetadata({ submissionId })
+            .warn('Submission not found, skipping enqueue');
+          continue;
+        }
+        if (submission.isArchived) {
+          this.logger
+            .withMetadata({ submissionId })
+            .info('Submission is archived, skipping enqueue');
+          continue;
+        }
+
         const existing = await this.repository.findOne({
           where: (queueRecord, { eq }) =>
             eq(queueRecord.submissionId, submissionId),
@@ -410,7 +438,11 @@ export class PostQueueService
     }
 
     const entities = await this.submissionRepository.find({
-      where: (queueRecord, { eq }) => eq(queueRecord.isScheduled, true),
+      where: (queueRecord, { eq, and }) =>
+        and(
+          eq(queueRecord.isScheduled, true),
+          eq(queueRecord.isArchived, false),
+        ),
     });
     const now = Date.now();
     const sorted = entities

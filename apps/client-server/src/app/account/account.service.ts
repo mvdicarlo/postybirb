@@ -64,6 +64,7 @@ export class AccountService
     setImmediate(async () => {
       await this.deleteUnregisteredAccounts();
       await this.initWebsiteRegistry();
+      this.websiteRegistry.markAsInitialized();
       this.initWebsiteLoginRefreshTimers();
 
       this.emit();
