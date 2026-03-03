@@ -930,6 +930,12 @@ export class SubmissionService
     }
     await this.repository.update(id, {
       isArchived: true,
+      isScheduled: false,
+      schedule: {
+        scheduledFor: undefined,
+        scheduleType: ScheduleType.NONE,
+        cron: undefined,
+      },
     });
     this.emit();
   }
