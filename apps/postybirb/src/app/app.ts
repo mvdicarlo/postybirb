@@ -46,19 +46,7 @@ export default class PostyBirb {
     return !environment.production;
   }
 
-  private static onWindowAllClosed() {
-    if (process.platform !== 'darwin') {
-      try {
-        if (PostyBirb.appTray) {
-          PostyBirb.appTray.destroy();
-        }
-      } catch {
-        // Nothing should disable quitting
-      }
-
-      PostyBirb.application.quit();
-    }
-  }
+  private static onWindowAllClosed() {}
 
   private static onClose() {
     // Dereference the window object, usually you would store windows
