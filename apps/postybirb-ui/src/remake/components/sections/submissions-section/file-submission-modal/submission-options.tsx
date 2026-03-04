@@ -11,6 +11,7 @@ import {
     Text
 } from '@mantine/core';
 import {
+    DefaultDescription,
     Description,
     SubmissionId,
     SubmissionRating,
@@ -73,7 +74,7 @@ export function SubmissionOptions({
       // Clear custom options when switching to template
       onRatingChange(SubmissionRating.GENERAL);
       onTagsChange([]);
-      onDescriptionChange([]);
+      onDescriptionChange(DefaultDescription());
     } else {
       // Clear template when switching to custom
       onTemplateChange(undefined);

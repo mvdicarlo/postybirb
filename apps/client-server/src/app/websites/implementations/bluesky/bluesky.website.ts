@@ -32,15 +32,13 @@ import {
 import { getFileTypeFromMimeType } from '@postybirb/utils/file-type';
 import { v4 } from 'uuid';
 import {
-  AcceptableBlockNode,
   BaseConverter,
 } from '../../../post-parsers/models/description-node/converters/base-converter';
 import { PlainTextConverter } from '../../../post-parsers/models/description-node/converters/plaintext-converter';
 import {
   ConversionContext,
-  IDescriptionInlineNodeClass,
-  IDescriptionTextNodeClass,
 } from '../../../post-parsers/models/description-node/description-node.base';
+import { TipTapNode } from '../../../post-parsers/models/description-node/description-node.types';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
@@ -771,25 +769,34 @@ export default class Bluesky
 class BlueskyConverter extends PlainTextConverter {
   private links: { href: string; content: string; id: string }[] = [];
 
-  convertInlineNode(
-    node: IDescriptionInlineNodeClass,
+  /**
+   * Override text node conversion to intercept link marks.
+   * In TipTap, links are marks on text nodes, not separate inline nodes.
+   */
+  convertTextNode(
+    node: TipTapNode,
     context: ConversionContext,
   ): string {
-    if (node.type === 'link') {
-      const content = (node.content as IDescriptionTextNodeClass[])
-        .map((child) => this.convertTextNode(child, context))
-        .join('');
+    const marks = (node as any).marks ?? [];
+    const linkMark = marks.find((m: any) => m.type === 'link');
 
+    if (linkMark) {
+      // Get the plain text (without the link URL appended)
+      const content = (node as any).text ?? '';
       const id = v4();
-      this.links.push({ href: node.href ?? node.props.href, content, id });
+      this.links.push({
+        href: linkMark.attrs?.href ?? '',
+        content,
+        id,
+      });
       return id;
     }
 
-    return super.convertInlineNode(node, context);
+    return super.convertTextNode(node, context);
   }
 
   convertBlocks(
-    nodes: AcceptableBlockNode[],
+    nodes: TipTapNode[],
     context: ConversionContext,
   ): string {
     this.links = [];

@@ -1,16 +1,10 @@
-import {
-    ConversionContext,
-    IDescriptionBlockNodeClass,
-    IDescriptionInlineNodeClass,
-    IDescriptionTextNodeClass,
-} from '../description-node.base';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { ConversionContext } from '../description-node.base';
+import { TipTapNode } from '../description-node.types';
 import { BaseConverter } from './base-converter';
 
 export type CustomNodeHandler = (
-  node:
-    | IDescriptionBlockNodeClass
-    | IDescriptionInlineNodeClass
-    | IDescriptionTextNodeClass,
+  node: TipTapNode,
   context: ConversionContext,
 ) => string;
 
@@ -32,32 +26,30 @@ export class CustomConverter extends BaseConverter {
   }
 
   convertBlockNode(
-    node: IDescriptionBlockNodeClass,
+    node: TipTapNode,
     context: ConversionContext,
   ): string {
     return this.blockHandler(node, context);
   }
 
   convertInlineNode(
-    node: IDescriptionInlineNodeClass,
+    node: TipTapNode,
     context: ConversionContext,
   ): string {
     if (this.inlineHandler) {
       return this.inlineHandler(node, context);
     }
-    // Default: just concatenate children
-    return (node.content as IDescriptionTextNodeClass[])
-      .map((child) => this.convertTextNode(child, context))
-      .join('');
+    return this.convertContent(node.content, context);
   }
 
   convertTextNode(
-    node: IDescriptionTextNodeClass,
+    node: TipTapNode,
     context: ConversionContext,
   ): string {
     if (this.textHandler) {
       return this.textHandler(node, context);
     }
-    return node.text;
+    return (node as any).text ?? '';
   }
 }
+

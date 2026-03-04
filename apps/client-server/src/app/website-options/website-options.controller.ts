@@ -1,13 +1,14 @@
 import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import {
-  ApiBadRequestResponse,
-  ApiNotFoundResponse,
-  ApiOkResponse,
-  ApiTags,
+    ApiBadRequestResponse,
+    ApiNotFoundResponse,
+    ApiOkResponse,
+    ApiTags,
 } from '@nestjs/swagger';
 import { EntityId, SubmissionId } from '@postybirb/types';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
 import { CreateWebsiteOptionsDto } from './dtos/create-website-options.dto';
+import { PreviewDescriptionDto } from './dtos/preview-description.dto';
 import { UpdateSubmissionWebsiteOptionsDto } from './dtos/update-submission-website-options.dto';
 import { UpdateWebsiteOptionsDto } from './dtos/update-website-options.dto';
 import { ValidateWebsiteOptionsDto } from './dtos/validate-website-options.dto';
@@ -78,5 +79,13 @@ export class WebsiteOptionsController extends PostyBirbController<'WebsiteOption
   @ApiNotFoundResponse({ description: 'Submission not found.' })
   validateSubmission(@Param('submissionId') submissionId: SubmissionId) {
     return this.service.validateSubmission(submissionId);
+  }
+
+  @Post('preview-description')
+  @ApiOkResponse({ description: 'Description preview generated.' })
+  @ApiBadRequestResponse()
+  @ApiNotFoundResponse({ description: 'Submission or option not found.' })
+  previewDescription(@Body() dto: PreviewDescriptionDto) {
+    return this.service.previewDescription(dto);
   }
 }

@@ -5,14 +5,16 @@
 
 import { Trans } from '@lingui/react/macro';
 import { Alert, Box, Checkbox } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
 import { DescriptionFieldType } from '@postybirb/form-builder';
-import { DefaultDescriptionValue, DescriptionValue } from '@postybirb/types';
+import { DefaultDescription, DefaultDescriptionValue, DescriptionValue } from '@postybirb/types';
 import { IconAlertTriangle } from '@tabler/icons-react';
 import { useMemo } from 'react';
 import { DescriptionEditor } from '../../../../../../shared';
 import { useFormFieldsContext } from '../form-fields-context';
 import { useDefaultOption } from '../hooks/use-default-option';
 import { useValidations } from '../hooks/use-validations';
+import { DescriptionPreviewPanel } from './description-preview-panel';
 import { FieldLabel } from './field-label';
 import { FormFieldProps } from './form-field.type';
 
@@ -76,9 +78,10 @@ export function DescriptionField({
   fieldName,
   field,
 }: FormFieldProps<DescriptionFieldType>) {
-  const { getValue, setValue, option } = useFormFieldsContext();
+  const { getValue, setValue, option, submission } = useFormFieldsContext();
   const defaultOption = useDefaultOption<DescriptionValue>(fieldName);
   const validations = useValidations(fieldName);
+  const [previewOpened, { toggle: togglePreview }] = useDisclosure(false);
 
   const fieldValue =
     getValue<DescriptionValue>(fieldName) ??
@@ -92,22 +95,22 @@ export function DescriptionField({
   const insertTags = fieldValue.insertTags || defaultInsertTags;
   const insertTitle = fieldValue.insertTitle || defaultInsertTitle;
   const description = useMemo(
-    () => fieldValue.description || [],
+    () => fieldValue.description || DefaultDescription(),
     [fieldValue.description],
   );
 
   const hasTagsShortcut = useMemo(
-    () => hasInlineContentType(description, 'tagsShortcut'),
+    () => hasInlineContentType(description.content || [], 'tagsShortcut'),
     [description],
   );
 
   const hasTitleShortcut = useMemo(
-    () => hasInlineContentType(description, 'titleShortcut'),
+    () => hasInlineContentType(description.content || [], 'titleShortcut'),
     [description],
   );
 
   const containsLegacyShortcuts = useMemo(
-    () => hasLegacyShortcuts(description),
+    () => hasLegacyShortcuts(description.content || []),
     [description],
   );
 
@@ -170,18 +173,29 @@ export function DescriptionField({
           label={<Trans>Insert tags at end</Trans>}
         />
         {(overrideDefault || option.isDefault) && (
-          <DescriptionEditor
-            value={description}
-            minHeight={35}
-            showCustomShortcuts
-            isDefaultEditor={option.isDefault}
-            onChange={(value) => {
-              setValue(fieldName, {
-                ...fieldValue,
-                description: value,
-              });
-            }}
-          />
+          <>
+            <DescriptionEditor
+              value={description}
+              minHeight={35}
+              showCustomShortcuts
+              isDefaultEditor={option.isDefault}
+              onPreview={togglePreview}
+              onChange={(value) => {
+                setValue(fieldName, {
+                  ...fieldValue,
+                  description: value,
+                });
+              }}
+            />
+            {previewOpened && (
+              <DescriptionPreviewPanel
+                submissionId={submission.id}
+                options={submission.options}
+                isDefaultEditor={option.isDefault}
+                currentOptionId={option.isDefault ? undefined : option.id}
+              />
+            )}
+          </>
         )}
       </FieldLabel>
     </Box>

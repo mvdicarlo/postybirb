@@ -2,7 +2,7 @@ import { sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import { CommonSchema } from './common.schema';
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
 import {
-  Description,
+    Description,
 } from '../../../../types/src/index';
 
 export const CustomShortcutSchema = sqliteTable('custom-shortcut', {
@@ -11,5 +11,5 @@ export const CustomShortcutSchema = sqliteTable('custom-shortcut', {
   shortcut: text({ mode: 'json' })
     .notNull()
     .$type<Description>()
-    .default([]),
+    .default({ type: 'doc', content: [] }),
 });

@@ -1,28 +1,6 @@
-import {
-  defaultBlockSpecs,
-  defaultInlineContentSpecs,
-  defaultStyleSpecs,
-} from '@blocknote/core';
-import type { DefaultShortcut } from './custom-blocks/default-shortcut-block';
-import type { InlineCustomShortcut } from './custom-blocks/inline-custom-shortcut';
-import type { InlineUsernameShortcut } from './custom-blocks/inline-username-shortcut';
-
 /**
- * Custom block specs including default shortcut block.
+ * Re-export TipTap JSON types from the shared types library.
+ * These are used throughout the description editor system.
  */
-export type CustomBlockSpecs = typeof defaultBlockSpecs & {
-  defaultShortcut: ReturnType<typeof DefaultShortcut>;
-};
+export type { TipTapDoc, TipTapMark, TipTapNode } from '@postybirb/types';
 
-/**
- * Custom inline content specs including custom and username shortcuts.
- */
-export type CustomInlineContentSpecs = typeof defaultInlineContentSpecs & {
-  customShortcut: typeof InlineCustomShortcut;
-  username: typeof InlineUsernameShortcut;
-};
-
-/**
- * Custom style specs (using defaults).
- */
-export type CustomStyleSpecs = typeof defaultStyleSpecs;

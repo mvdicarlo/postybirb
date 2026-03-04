@@ -3,9 +3,9 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { read } from '@postybirb/fs';
 import { Logger } from '@postybirb/logger';
 import {
-  EntityId,
-  FileSubmission,
-  SubmissionFileMetadata,
+    EntityId,
+    FileSubmission,
+    SubmissionFileMetadata,
 } from '@postybirb/types';
 import type { queueAsPromised } from 'fastq';
 import fastq from 'fastq';
@@ -180,9 +180,10 @@ export class FileService {
    * @param {UpdateAltFileDto} update
    */
   async updateAltText(id: EntityId, update: UpdateAltFileDto) {
-    const buffer = Buffer.from(update.html ?? '');
+    const buffer = Buffer.from(update.text ?? '');
     return this.fileBufferRepository.update(id, {
       buffer,
+      mimeType: 'text/plain',
       size: buffer.length,
     });
   }

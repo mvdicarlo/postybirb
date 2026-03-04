@@ -1,33 +1,23 @@
-import { Description } from '@postybirb/types';
+import { TipTapNode } from '@postybirb/types';
 import { DescriptionNodeTree } from './description-node/description-node-tree';
 import { ConversionContext } from './description-node/description-node.base';
-import { IDescriptionBlockNode } from './description-node/description-node.types';
 
 describe('DescriptionNode', () => {
   it('should support username shortcuts', () => {
-    const shortcutDescription: Description = [
+    const nodes: TipTapNode[] = [
       {
-        id: 'test-basic-text',
         type: 'paragraph',
-        props: {
-          textColor: 'default',
-          backgroundColor: 'default',
-          textAlignment: 'left',
-        },
         content: [
-          { type: 'text', text: 'Hello, ', styles: { bold: true } },
+          { type: 'text', text: 'Hello, ', marks: [{ type: 'bold' }] },
           {
             type: 'username',
-            props: {
-              id: '1740142676292',
+            attrs: {
               shortcut: 'test',
               only: '',
               username: 'User',
             },
-            content: undefined,
           },
         ],
-        children: [],
       },
     ];
 
@@ -43,13 +33,9 @@ describe('DescriptionNode', () => {
       defaultDescription: [],
     };
 
-    const tree = new DescriptionNodeTree(
-      context,
-      shortcutDescription as unknown as Array<IDescriptionBlockNode>,
-      {
-        insertAd: false,
-      },
-    );
+    const tree = new DescriptionNodeTree(context, nodes, {
+      insertAd: false,
+    });
 
     expect(tree.toPlainText()).toBe('Hello, https://test.postybirb.com/User');
     expect(tree.toHtml()).toBe(
@@ -61,29 +47,20 @@ describe('DescriptionNode', () => {
   });
 
   it('should support username shortcut conversion', () => {
-    const shortcutDescription: Description = [
+    const nodes: TipTapNode[] = [
       {
-        id: 'test-basic-text',
         type: 'paragraph',
-        props: {
-          textColor: 'default',
-          backgroundColor: 'default',
-          textAlignment: 'left',
-        },
         content: [
-          { type: 'text', text: 'Hello, ', styles: { bold: true } },
+          { type: 'text', text: 'Hello, ', marks: [{ type: 'bold' }] },
           {
             type: 'username',
-            props: {
-              id: '1740142676292',
+            attrs: {
               shortcut: 'test',
               only: '',
               username: 'User',
             },
-            content: undefined,
           },
         ],
-        children: [],
       },
     ];
 
@@ -105,13 +82,9 @@ describe('DescriptionNode', () => {
       defaultDescription: [],
     };
 
-    const tree = new DescriptionNodeTree(
-      context,
-      shortcutDescription as unknown as Array<IDescriptionBlockNode>,
-      {
-        insertAd: false,
-      },
-    );
+    const tree = new DescriptionNodeTree(context, nodes, {
+      insertAd: false,
+    });
 
     expect(tree.toPlainText()).toBe('Hello, <!~User>');
     expect(tree.toHtml()).toBe(
@@ -121,28 +94,14 @@ describe('DescriptionNode', () => {
   });
 
   it('should handle multiple paragraphs', () => {
-    const multiParagraphDescription: Description = [
+    const nodes: TipTapNode[] = [
       {
-        id: 'test-multi-paragraph',
         type: 'paragraph',
-        props: {
-          textColor: 'default',
-          backgroundColor: 'default',
-          textAlignment: 'left',
-        },
-        content: [{ type: 'text', text: 'First paragraph.', styles: {} }],
-        children: [],
+        content: [{ type: 'text', text: 'First paragraph.' }],
       },
       {
-        id: 'test-multi-paragraph-2',
         type: 'paragraph',
-        props: {
-          textColor: 'default',
-          backgroundColor: 'default',
-          textAlignment: 'left',
-        },
-        content: [{ type: 'text', text: 'Second paragraph.', styles: {} }],
-        children: [],
+        content: [{ type: 'text', text: 'Second paragraph.' }],
       },
     ];
 
@@ -153,13 +112,9 @@ describe('DescriptionNode', () => {
       defaultDescription: [],
     };
 
-    const tree = new DescriptionNodeTree(
-      context,
-      multiParagraphDescription as unknown as Array<IDescriptionBlockNode>,
-      {
-        insertAd: false,
-      },
-    );
+    const tree = new DescriptionNodeTree(context, nodes, {
+      insertAd: false,
+    });
 
     expect(tree.toPlainText()).toBe('First paragraph.\r\nSecond paragraph.');
     expect(tree.toHtml()).toBe(
@@ -170,40 +125,29 @@ describe('DescriptionNode', () => {
 
   describe('findUsernames', () => {
     it('should find all usernames in the tree', () => {
-      const description: Description = [
+      const nodes: TipTapNode[] = [
         {
-          id: 'test-usernames',
           type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          },
           content: [
-            { type: 'text', text: 'Hello ', styles: {} },
+            { type: 'text', text: 'Hello ' },
             {
               type: 'username',
-              props: {
-                id: '1740142676292',
+              attrs: {
                 shortcut: 'test',
                 only: '',
                 username: 'User1',
               },
-              content: undefined,
             },
-            { type: 'text', text: ' and ', styles: {} },
+            { type: 'text', text: ' and ' },
             {
               type: 'username',
-              props: {
-                id: '1740142676293',
+              attrs: {
                 shortcut: 'test',
                 only: '',
                 username: 'User2',
               },
-              content: undefined,
             },
           ],
-          children: [],
         },
       ];
 
@@ -214,13 +158,9 @@ describe('DescriptionNode', () => {
         defaultDescription: [],
       };
 
-      const tree = new DescriptionNodeTree(
-        context,
-        description as unknown as Array<IDescriptionBlockNode>,
-        {
-          insertAd: false,
-        },
-      );
+      const tree = new DescriptionNodeTree(context, nodes, {
+        insertAd: false,
+      });
 
       const usernames = tree.findUsernames();
       expect(usernames.size).toBe(2);
@@ -229,40 +169,24 @@ describe('DescriptionNode', () => {
     });
 
     it('should find usernames across multiple paragraphs', () => {
-      const description: Description = [
+      const nodes: TipTapNode[] = [
         {
-          id: 'para1',
           type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          },
           content: [
             {
               type: 'username',
-              props: { id: '1', shortcut: 'test', only: '', username: 'Alice' },
-              content: undefined,
+              attrs: { shortcut: 'test', only: '', username: 'Alice' },
             },
           ],
-          children: [],
         },
         {
-          id: 'para2',
           type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          },
           content: [
             {
               type: 'username',
-              props: { id: '2', shortcut: 'test', only: '', username: 'Bob' },
-              content: undefined,
+              attrs: { shortcut: 'test', only: '', username: 'Bob' },
             },
           ],
-          children: [],
         },
       ];
 
@@ -273,13 +197,9 @@ describe('DescriptionNode', () => {
         defaultDescription: [],
       };
 
-      const tree = new DescriptionNodeTree(
-        context,
-        description as unknown as Array<IDescriptionBlockNode>,
-        {
-          insertAd: false,
-        },
-      );
+      const tree = new DescriptionNodeTree(context, nodes, {
+        insertAd: false,
+      });
 
       const usernames = tree.findUsernames();
       expect(usernames.size).toBe(2);
@@ -288,17 +208,10 @@ describe('DescriptionNode', () => {
     });
 
     it('should return empty set when no usernames exist', () => {
-      const description: Description = [
+      const nodes: TipTapNode[] = [
         {
-          id: 'test-no-usernames',
           type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          },
-          content: [{ type: 'text', text: 'Just plain text', styles: {} }],
-          children: [],
+          content: [{ type: 'text', text: 'Just plain text' }],
         },
       ];
 
@@ -309,52 +222,37 @@ describe('DescriptionNode', () => {
         defaultDescription: [],
       };
 
-      const tree = new DescriptionNodeTree(
-        context,
-        description as unknown as Array<IDescriptionBlockNode>,
-        {
-          insertAd: false,
-        },
-      );
+      const tree = new DescriptionNodeTree(context, nodes, {
+        insertAd: false,
+      });
 
       const usernames = tree.findUsernames();
       expect(usernames.size).toBe(0);
     });
 
     it('should handle duplicate usernames', () => {
-      const description: Description = [
+      const nodes: TipTapNode[] = [
         {
-          id: 'test-duplicates',
           type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          },
           content: [
             {
               type: 'username',
-              props: {
-                id: '1',
+              attrs: {
                 shortcut: 'test',
                 only: '',
                 username: 'SameUser',
               },
-              content: undefined,
             },
-            { type: 'text', text: ' and ', styles: {} },
+            { type: 'text', text: ' and ' },
             {
               type: 'username',
-              props: {
-                id: '2',
+              attrs: {
                 shortcut: 'test',
                 only: '',
                 username: 'SameUser',
               },
-              content: undefined,
             },
           ],
-          children: [],
         },
       ];
 
@@ -365,13 +263,9 @@ describe('DescriptionNode', () => {
         defaultDescription: [],
       };
 
-      const tree = new DescriptionNodeTree(
-        context,
-        description as unknown as Array<IDescriptionBlockNode>,
-        {
-          insertAd: false,
-        },
-      );
+      const tree = new DescriptionNodeTree(context, nodes, {
+        insertAd: false,
+      });
 
       const usernames = tree.findUsernames();
       expect(usernames.size).toBe(1);
@@ -381,30 +275,21 @@ describe('DescriptionNode', () => {
 
   describe('findCustomShortcutIds', () => {
     it('should find all custom shortcut IDs in the tree', () => {
-      const description: Description = [
+      const nodes: TipTapNode[] = [
         {
-          id: 'test-shortcuts',
           type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          },
           content: [
-            { type: 'text', text: 'Here are some shortcuts: ', styles: {} },
+            { type: 'text', text: 'Here are some shortcuts: ' },
             {
               type: 'customShortcut',
-              props: { id: 'shortcut-1' },
-              content: [{ type: 'text', text: 'Shortcut 1', styles: {} }],
+              attrs: { id: 'shortcut-1' },
             },
-            { type: 'text', text: ' and ', styles: {} },
+            { type: 'text', text: ' and ' },
             {
               type: 'customShortcut',
-              props: { id: 'shortcut-2' },
-              content: [{ type: 'text', text: 'Shortcut 2', styles: {} }],
+              attrs: { id: 'shortcut-2' },
             },
           ],
-          children: [],
         },
       ];
 
@@ -415,13 +300,9 @@ describe('DescriptionNode', () => {
         defaultDescription: [],
       };
 
-      const tree = new DescriptionNodeTree(
-        context,
-        description as unknown as Array<IDescriptionBlockNode>,
-        {
-          insertAd: false,
-        },
-      );
+      const tree = new DescriptionNodeTree(context, nodes, {
+        insertAd: false,
+      });
 
       const shortcutIds = tree.findCustomShortcutIds();
       expect(shortcutIds.size).toBe(2);
@@ -430,40 +311,24 @@ describe('DescriptionNode', () => {
     });
 
     it('should find shortcuts across multiple paragraphs', () => {
-      const description: Description = [
+      const nodes: TipTapNode[] = [
         {
-          id: 'para1',
           type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          },
           content: [
             {
               type: 'customShortcut',
-              props: { id: 'shortcut-a' },
-              content: [{ type: 'text', text: 'A', styles: {} }],
+              attrs: { id: 'shortcut-a' },
             },
           ],
-          children: [],
         },
         {
-          id: 'para2',
           type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          },
           content: [
             {
               type: 'customShortcut',
-              props: { id: 'shortcut-b' },
-              content: [{ type: 'text', text: 'B', styles: {} }],
+              attrs: { id: 'shortcut-b' },
             },
           ],
-          children: [],
         },
       ];
 
@@ -474,13 +339,9 @@ describe('DescriptionNode', () => {
         defaultDescription: [],
       };
 
-      const tree = new DescriptionNodeTree(
-        context,
-        description as unknown as Array<IDescriptionBlockNode>,
-        {
-          insertAd: false,
-        },
-      );
+      const tree = new DescriptionNodeTree(context, nodes, {
+        insertAd: false,
+      });
 
       const shortcutIds = tree.findCustomShortcutIds();
       expect(shortcutIds.size).toBe(2);
@@ -489,17 +350,10 @@ describe('DescriptionNode', () => {
     });
 
     it('should return empty set when no custom shortcuts exist', () => {
-      const description: Description = [
+      const nodes: TipTapNode[] = [
         {
-          id: 'test-no-shortcuts',
           type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          },
-          content: [{ type: 'text', text: 'Just plain text', styles: {} }],
-          children: [],
+          content: [{ type: 'text', text: 'Just plain text' }],
         },
       ];
 
@@ -510,42 +364,29 @@ describe('DescriptionNode', () => {
         defaultDescription: [],
       };
 
-      const tree = new DescriptionNodeTree(
-        context,
-        description as unknown as Array<IDescriptionBlockNode>,
-        {
-          insertAd: false,
-        },
-      );
+      const tree = new DescriptionNodeTree(context, nodes, {
+        insertAd: false,
+      });
 
       const shortcutIds = tree.findCustomShortcutIds();
       expect(shortcutIds.size).toBe(0);
     });
 
     it('should handle duplicate shortcut IDs', () => {
-      const description: Description = [
+      const nodes: TipTapNode[] = [
         {
-          id: 'test-duplicates',
           type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          },
           content: [
             {
               type: 'customShortcut',
-              props: { id: 'same-id' },
-              content: [{ type: 'text', text: 'First', styles: {} }],
+              attrs: { id: 'same-id' },
             },
-            { type: 'text', text: ' and ', styles: {} },
+            { type: 'text', text: ' and ' },
             {
               type: 'customShortcut',
-              props: { id: 'same-id' },
-              content: [{ type: 'text', text: 'Second', styles: {} }],
+              attrs: { id: 'same-id' },
             },
           ],
-          children: [],
         },
       ];
 
@@ -556,13 +397,9 @@ describe('DescriptionNode', () => {
         defaultDescription: [],
       };
 
-      const tree = new DescriptionNodeTree(
-        context,
-        description as unknown as Array<IDescriptionBlockNode>,
-        {
-          insertAd: false,
-        },
-      );
+      const tree = new DescriptionNodeTree(context, nodes, {
+        insertAd: false,
+      });
 
       const shortcutIds = tree.findCustomShortcutIds();
       expect(shortcutIds.size).toBe(1);
@@ -570,23 +407,15 @@ describe('DescriptionNode', () => {
     });
 
     it('should handle shortcuts without IDs gracefully', () => {
-      const description: Description = [
+      const nodes: TipTapNode[] = [
         {
-          id: 'test-no-id',
           type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          },
           content: [
             {
               type: 'customShortcut',
-              props: { id: '' },
-              content: [{ type: 'text', text: 'No ID', styles: {} }],
+              attrs: { id: '' },
             },
           ],
-          children: [],
         },
       ];
 
@@ -597,13 +426,9 @@ describe('DescriptionNode', () => {
         defaultDescription: [],
       };
 
-      const tree = new DescriptionNodeTree(
-        context,
-        description as unknown as Array<IDescriptionBlockNode>,
-        {
-          insertAd: false,
-        },
-      );
+      const tree = new DescriptionNodeTree(context, nodes, {
+        insertAd: false,
+      });
 
       const shortcutIds = tree.findCustomShortcutIds();
       expect(shortcutIds.size).toBe(0);
@@ -612,28 +437,19 @@ describe('DescriptionNode', () => {
 
   describe('updateContext', () => {
     it('should allow updating context after tree creation', () => {
-      const description: Description = [
+      const nodes: TipTapNode[] = [
         {
-          id: 'test-update',
           type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          },
           content: [
             {
               type: 'username',
-              props: {
-                id: '1',
+              attrs: {
                 shortcut: 'test',
                 only: '',
                 username: 'TestUser',
               },
-              content: undefined,
             },
           ],
-          children: [],
         },
       ];
 
@@ -650,13 +466,9 @@ describe('DescriptionNode', () => {
         usernameConversions: new Map(),
       };
 
-      const tree = new DescriptionNodeTree(
-        context,
-        description as unknown as Array<IDescriptionBlockNode>,
-        {
-          insertAd: false,
-        },
-      );
+      const tree = new DescriptionNodeTree(context, nodes, {
+        insertAd: false,
+      });
 
       // Before update - no conversion
       expect(tree.toPlainText()).toBe('https://test.postybirb.com/TestUser');
@@ -677,30 +489,19 @@ describe('DescriptionNode', () => {
     });
 
     it('should convert cross-platform username tags to target website', () => {
-      // This test covers the use case where a Twitter username should be
-      // converted to a Bluesky username when posting to Bluesky
-      const description: Description = [
+      const nodes: TipTapNode[] = [
         {
-          id: 'test-cross-platform',
           type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          },
           content: [
             {
               type: 'username',
-              props: {
-                id: '1',
+              attrs: {
                 shortcut: 'twitter',
                 only: '',
                 username: 'abcd',
               },
-              content: undefined,
             },
           ],
-          children: [],
         },
       ];
 
@@ -718,19 +519,13 @@ describe('DescriptionNode', () => {
         },
         customShortcuts: new Map(),
         defaultDescription: [],
-        // User has configured: twitter="abcd" -> bluesky="abcd.bsky.app"
         usernameConversions: new Map([['abcd', 'abcd.bsky.app']]),
       };
 
-      const tree = new DescriptionNodeTree(
-        context,
-        description as unknown as Array<IDescriptionBlockNode>,
-        {
-          insertAd: false,
-        },
-      );
+      const tree = new DescriptionNodeTree(context, nodes, {
+        insertAd: false,
+      });
 
-      // Should convert to Bluesky username and use Bluesky URL
       expect(tree.toPlainText()).toBe('https://bsky.app/profile/abcd.bsky.app');
       expect(tree.toHtml()).toBe(
         '<div><a target="_blank" href="https://bsky.app/profile/abcd.bsky.app">abcd.bsky.app</a></div>',
@@ -738,28 +533,19 @@ describe('DescriptionNode', () => {
     });
 
     it('should keep original username when no conversion exists', () => {
-      const description: Description = [
+      const nodes: TipTapNode[] = [
         {
-          id: 'test-no-conversion',
           type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          },
           content: [
             {
               type: 'username',
-              props: {
-                id: '1',
+              attrs: {
                 shortcut: 'twitter',
                 only: '',
                 username: 'someuser',
               },
-              content: undefined,
             },
           ],
-          children: [],
         },
       ];
 
@@ -777,18 +563,13 @@ describe('DescriptionNode', () => {
         },
         customShortcuts: new Map(),
         defaultDescription: [],
-        usernameConversions: new Map(), // No conversion defined
+        usernameConversions: new Map(),
       };
 
-      const tree = new DescriptionNodeTree(
-        context,
-        description as unknown as Array<IDescriptionBlockNode>,
-        {
-          insertAd: false,
-        },
-      );
+      const tree = new DescriptionNodeTree(context, nodes, {
+        insertAd: false,
+      });
 
-      // Should keep original Twitter link since no conversion exists
       expect(tree.toPlainText()).toBe('https://x.com/someuser');
       expect(tree.toHtml()).toBe(
         '<div><a target="_blank" href="https://x.com/someuser">someuser</a></div>',
@@ -796,23 +577,15 @@ describe('DescriptionNode', () => {
     });
 
     it('should convert usernames when shortcut ID matches target website', () => {
-      const description: Description = [
+      const nodes: TipTapNode[] = [
         {
-          id: 'test-matching-platform',
           type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          },
           content: [
             {
               type: 'username',
-              props: { id: '1', shortcut: 'bluesky', only: '', username: 'x' },
-              content: undefined,
+              attrs: { shortcut: 'bluesky', only: '', username: 'x' },
             },
           ],
-          children: [],
         },
       ];
 
@@ -830,19 +603,13 @@ describe('DescriptionNode', () => {
         },
         customShortcuts: new Map(),
         defaultDescription: [],
-        // User has configured a converter for "x" to "bluesky_user" for bluesky
         usernameConversions: new Map([['x', 'bluesky_user']]),
       };
 
-      const tree = new DescriptionNodeTree(
-        context,
-        description as unknown as Array<IDescriptionBlockNode>,
-        {
-          insertAd: false,
-        },
-      );
+      const tree = new DescriptionNodeTree(context, nodes, {
+        insertAd: false,
+      });
 
-      // Should use converted username "bluesky_user" since shortcut matches website
       expect(tree.toPlainText()).toBe('https://bsky.app/profile/bluesky_user');
       expect(tree.toHtml()).toBe(
         '<div><a target="_blank" href="https://bsky.app/profile/bluesky_user">bluesky_user</a></div>',
@@ -850,42 +617,25 @@ describe('DescriptionNode', () => {
     });
   });
 
-  describe('nested children blocks', () => {
-    it('should render nested children with proper indentation in HTML', () => {
-      const nestedDescription: Description = [
+  describe('blockquote nesting', () => {
+    it('should render blockquotes in HTML', () => {
+      const nodes: TipTapNode[] = [
         {
-          id: 'parent-1',
           type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          },
-          content: [{ type: 'text', text: 'Para 1', styles: {} }],
-          children: [
+          content: [{ type: 'text', text: 'Para 1' }],
+        },
+        {
+          type: 'blockquote',
+          content: [
             {
-              id: 'child-1',
               type: 'paragraph',
-              props: {
-                textColor: 'default',
-                backgroundColor: 'default',
-                textAlignment: 'left',
-              },
-              content: [{ type: 'text', text: 'Para 1 nested', styles: {} }],
-              children: [],
+              content: [{ type: 'text', text: 'Para 1 nested' }],
             },
           ],
         },
         {
-          id: 'parent-2',
           type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          },
-          content: [{ type: 'text', text: 'Para 2', styles: {} }],
-          children: [],
+          content: [{ type: 'text', text: 'Para 2' }],
         },
       ];
 
@@ -896,40 +646,27 @@ describe('DescriptionNode', () => {
         defaultDescription: [],
       };
 
-      const tree = new DescriptionNodeTree(
-        context,
-        nestedDescription as unknown as Array<IDescriptionBlockNode>,
-        { insertAd: false },
-      );
+      const tree = new DescriptionNodeTree(context, nodes, {
+        insertAd: false,
+      });
 
-      // HTML should wrap children in a div with margin-left
       expect(tree.toHtml()).toBe(
-        '<div>Para 1</div><div style="margin-left: 20px"><div>Para 1 nested</div></div><div>Para 2</div>',
+        '<div>Para 1</div><blockquote><div>Para 1 nested</div></blockquote><div>Para 2</div>',
       );
     });
 
-    it('should render nested children with tab indentation in plain text', () => {
-      const nestedDescription: Description = [
+    it('should render blockquotes in plain text with > prefix', () => {
+      const nodes: TipTapNode[] = [
         {
-          id: 'parent-1',
           type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          },
-          content: [{ type: 'text', text: 'Para 1', styles: {} }],
-          children: [
+          content: [{ type: 'text', text: 'Para 1' }],
+        },
+        {
+          type: 'blockquote',
+          content: [
             {
-              id: 'child-1',
               type: 'paragraph',
-              props: {
-                textColor: 'default',
-                backgroundColor: 'default',
-                textAlignment: 'left',
-              },
-              content: [{ type: 'text', text: 'Para 1 nested', styles: {} }],
-              children: [],
+              content: [{ type: 'text', text: 'Para 1 nested' }],
             },
           ],
         },
@@ -942,38 +679,25 @@ describe('DescriptionNode', () => {
         defaultDescription: [],
       };
 
-      const tree = new DescriptionNodeTree(
-        context,
-        nestedDescription as unknown as Array<IDescriptionBlockNode>,
-        { insertAd: false },
-      );
+      const tree = new DescriptionNodeTree(context, nodes, {
+        insertAd: false,
+      });
 
-      // Plain text should use tab indentation
-      expect(tree.toPlainText()).toBe('Para 1\r\n\tPara 1 nested');
+      expect(tree.toPlainText()).toBe('Para 1\r\n> Para 1 nested');
     });
 
-    it('should render nested children with space indentation in BBCode', () => {
-      const nestedDescription: Description = [
+    it('should render blockquotes in BBCode with [quote] tags', () => {
+      const nodes: TipTapNode[] = [
         {
-          id: 'parent-1',
           type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          },
-          content: [{ type: 'text', text: 'Para 1', styles: {} }],
-          children: [
+          content: [{ type: 'text', text: 'Para 1' }],
+        },
+        {
+          type: 'blockquote',
+          content: [
             {
-              id: 'child-1',
               type: 'paragraph',
-              props: {
-                textColor: 'default',
-                backgroundColor: 'default',
-                textAlignment: 'left',
-              },
-              content: [{ type: 'text', text: 'Para 1 nested', styles: {} }],
-              children: [],
+              content: [{ type: 'text', text: 'Para 1 nested' }],
             },
           ],
         },
@@ -986,48 +710,32 @@ describe('DescriptionNode', () => {
         defaultDescription: [],
       };
 
-      const tree = new DescriptionNodeTree(
-        context,
-        nestedDescription as unknown as Array<IDescriptionBlockNode>,
-        { insertAd: false },
-      );
+      const tree = new DescriptionNodeTree(context, nodes, {
+        insertAd: false,
+      });
 
-      // BBCode should use 4 spaces per level
-      expect(tree.toBBCode()).toBe('Para 1\n    Para 1 nested');
+      expect(tree.toBBCode()).toBe('Para 1\n[quote]Para 1 nested[/quote]');
     });
 
-    it('should handle deeply nested children (multi-level)', () => {
-      const nestedDescription: Description = [
+    it('should handle deeply nested blockquotes (multi-level)', () => {
+      const nodes: TipTapNode[] = [
         {
-          id: 'parent-1',
           type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          },
-          content: [{ type: 'text', text: 'Level 0', styles: {} }],
-          children: [
+          content: [{ type: 'text', text: 'Level 0' }],
+        },
+        {
+          type: 'blockquote',
+          content: [
             {
-              id: 'child-1',
               type: 'paragraph',
-              props: {
-                textColor: 'default',
-                backgroundColor: 'default',
-                textAlignment: 'left',
-              },
-              content: [{ type: 'text', text: 'Level 1', styles: {} }],
-              children: [
+              content: [{ type: 'text', text: 'Level 1' }],
+            },
+            {
+              type: 'blockquote',
+              content: [
                 {
-                  id: 'grandchild-1',
                   type: 'paragraph',
-                  props: {
-                    textColor: 'default',
-                    backgroundColor: 'default',
-                    textAlignment: 'left',
-                  },
-                  content: [{ type: 'text', text: 'Level 2', styles: {} }],
-                  children: [],
+                  content: [{ type: 'text', text: 'Level 2' }],
                 },
               ],
             },
@@ -1042,52 +750,32 @@ describe('DescriptionNode', () => {
         defaultDescription: [],
       };
 
-      const tree = new DescriptionNodeTree(
-        context,
-        nestedDescription as unknown as Array<IDescriptionBlockNode>,
-        { insertAd: false },
+      const tree = new DescriptionNodeTree(context, nodes, {
+        insertAd: false,
+      });
+
+      expect(tree.toPlainText()).toBe('Level 0\r\n> Level 1\r\n> > Level 2');
+      expect(tree.toBBCode()).toBe(
+        'Level 0\n[quote]Level 1\n[quote]Level 2[/quote][/quote]',
       );
-
-      // Plain text should show increasing tab indentation
-      expect(tree.toPlainText()).toBe('Level 0\r\n\tLevel 1\r\n\t\tLevel 2');
-
-      // BBCode should show increasing space indentation
-      expect(tree.toBBCode()).toBe('Level 0\n    Level 1\n        Level 2');
     });
 
-    it('should handle multiple children at same level', () => {
-      const nestedDescription: Description = [
+    it('should handle multiple paragraphs at same blockquote level', () => {
+      const nodes: TipTapNode[] = [
         {
-          id: 'parent-1',
           type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          },
-          content: [{ type: 'text', text: 'Para 1', styles: {} }],
-          children: [
+          content: [{ type: 'text', text: 'Para 1' }],
+        },
+        {
+          type: 'blockquote',
+          content: [
             {
-              id: 'child-1',
               type: 'paragraph',
-              props: {
-                textColor: 'default',
-                backgroundColor: 'default',
-                textAlignment: 'left',
-              },
-              content: [{ type: 'text', text: 'Para 1 nested', styles: {} }],
-              children: [],
+              content: [{ type: 'text', text: 'Para 1 nested' }],
             },
             {
-              id: 'child-2',
               type: 'paragraph',
-              props: {
-                textColor: 'default',
-                backgroundColor: 'default',
-                textAlignment: 'left',
-              },
-              content: [{ type: 'text', text: 'Para 1 nested 2', styles: {} }],
-              children: [],
+              content: [{ type: 'text', text: 'Para 1 nested 2' }],
             },
           ],
         },
@@ -1100,51 +788,37 @@ describe('DescriptionNode', () => {
         defaultDescription: [],
       };
 
-      const tree = new DescriptionNodeTree(
-        context,
-        nestedDescription as unknown as Array<IDescriptionBlockNode>,
-        { insertAd: false },
-      );
+      const tree = new DescriptionNodeTree(context, nodes, {
+        insertAd: false,
+      });
 
       expect(tree.toPlainText()).toBe(
-        'Para 1\r\n\tPara 1 nested\r\n\tPara 1 nested 2',
+        'Para 1\r\n> Para 1 nested\r\n> Para 1 nested 2',
       );
     });
 
-    it('should find usernames in nested children', () => {
-      const nestedDescription: Description = [
+    it('should find usernames in blockquotes', () => {
+      const nodes: TipTapNode[] = [
         {
-          id: 'parent-1',
           type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          },
-          content: [{ type: 'text', text: 'Para 1 ', styles: {} }],
-          children: [
+          content: [{ type: 'text', text: 'Para 1 ' }],
+        },
+        {
+          type: 'blockquote',
+          content: [
             {
-              id: 'child-1',
               type: 'paragraph',
-              props: {
-                textColor: 'default',
-                backgroundColor: 'default',
-                textAlignment: 'left',
-              },
               content: [
-                { type: 'text', text: 'Nested ', styles: {} },
+                { type: 'text', text: 'Nested ' },
                 {
                   type: 'username',
-                  props: {
-                    id: '1',
+                  attrs: {
                     shortcut: 'test',
                     only: '',
                     username: 'NestedUser',
                   },
-                  content: undefined,
                 },
               ],
-              children: [],
             },
           ],
         },
@@ -1162,39 +836,26 @@ describe('DescriptionNode', () => {
         defaultDescription: [],
       };
 
-      const tree = new DescriptionNodeTree(
-        context,
-        nestedDescription as unknown as Array<IDescriptionBlockNode>,
-        { insertAd: false },
-      );
+      const tree = new DescriptionNodeTree(context, nodes, {
+        insertAd: false,
+      });
 
-      // Should find username in nested block
       const usernames = tree.findUsernames();
       expect(usernames.has('NestedUser')).toBe(true);
     });
 
-    it('should render nested children as blockquotes in Markdown', () => {
-      const nestedDescription: Description = [
+    it('should render blockquotes in Markdown', () => {
+      const nodes: TipTapNode[] = [
         {
-          id: 'parent-1',
           type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          },
-          content: [{ type: 'text', text: 'Para 1', styles: {} }],
-          children: [
+          content: [{ type: 'text', text: 'Para 1' }],
+        },
+        {
+          type: 'blockquote',
+          content: [
             {
-              id: 'child-1',
               type: 'paragraph',
-              props: {
-                textColor: 'default',
-                backgroundColor: 'default',
-                textAlignment: 'left',
-              },
-              content: [{ type: 'text', text: 'Para 1 nested', styles: {} }],
-              children: [],
+              content: [{ type: 'text', text: 'Para 1 nested' }],
             },
           ],
         },
@@ -1207,48 +868,32 @@ describe('DescriptionNode', () => {
         defaultDescription: [],
       };
 
-      const tree = new DescriptionNodeTree(
-        context,
-        nestedDescription as unknown as Array<IDescriptionBlockNode>,
-        { insertAd: false },
-      );
+      const tree = new DescriptionNodeTree(context, nodes, {
+        insertAd: false,
+      });
 
-      // Markdown should convert nested children to blockquotes
       expect(tree.toMarkdown()).toBe('Para 1\n\n> Para 1 nested');
     });
 
-    it('should render deeply nested children as nested blockquotes in Markdown', () => {
-      const nestedDescription: Description = [
+    it('should render deeply nested blockquotes in Markdown', () => {
+      const nodes: TipTapNode[] = [
         {
-          id: 'parent-1',
           type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          },
-          content: [{ type: 'text', text: 'Level 0', styles: {} }],
-          children: [
+          content: [{ type: 'text', text: 'Level 0' }],
+        },
+        {
+          type: 'blockquote',
+          content: [
             {
-              id: 'child-1',
               type: 'paragraph',
-              props: {
-                textColor: 'default',
-                backgroundColor: 'default',
-                textAlignment: 'left',
-              },
-              content: [{ type: 'text', text: 'Level 1', styles: {} }],
-              children: [
+              content: [{ type: 'text', text: 'Level 1' }],
+            },
+            {
+              type: 'blockquote',
+              content: [
                 {
-                  id: 'grandchild-1',
                   type: 'paragraph',
-                  props: {
-                    textColor: 'default',
-                    backgroundColor: 'default',
-                    textAlignment: 'left',
-                  },
-                  content: [{ type: 'text', text: 'Level 2', styles: {} }],
-                  children: [],
+                  content: [{ type: 'text', text: 'Level 2' }],
                 },
               ],
             },
@@ -1263,33 +908,23 @@ describe('DescriptionNode', () => {
         defaultDescription: [],
       };
 
-      const tree = new DescriptionNodeTree(
-        context,
-        nestedDescription as unknown as Array<IDescriptionBlockNode>,
-        { insertAd: false },
-      );
+      const tree = new DescriptionNodeTree(context, nodes, {
+        insertAd: false,
+      });
 
-      // Markdown should convert deeply nested children to nested blockquotes
       expect(tree.toMarkdown()).toBe('Level 0\n\n> Level 1\n> \n> > Level 2');
     });
   });
 
   describe('system inline shortcuts', () => {
     it('should render titleShortcut with title from context', () => {
-      const description = [
+      const nodes: TipTapNode[] = [
         {
-          id: 'test-title-shortcut',
           type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          },
           content: [
-            { type: 'text', text: 'Title: ', styles: {} },
-            { type: 'titleShortcut', props: {} },
+            { type: 'text', text: 'Title: ' },
+            { type: 'titleShortcut', attrs: {} },
           ],
-          children: [],
         },
       ];
 
@@ -1302,11 +937,9 @@ describe('DescriptionNode', () => {
         tags: [],
       };
 
-      const tree = new DescriptionNodeTree(
-        context,
-        description as unknown as Array<IDescriptionBlockNode>,
-        { insertAd: false },
-      );
+      const tree = new DescriptionNodeTree(context, nodes, {
+        insertAd: false,
+      });
 
       expect(tree.toPlainText()).toBe('Title: My Amazing Artwork');
       expect(tree.toHtml()).toBe(
@@ -1316,20 +949,13 @@ describe('DescriptionNode', () => {
     });
 
     it('should render tagsShortcut with tags from context', () => {
-      const description = [
+      const nodes: TipTapNode[] = [
         {
-          id: 'test-tags-shortcut',
           type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          },
           content: [
-            { type: 'text', text: 'Tags: ', styles: {} },
-            { type: 'tagsShortcut', props: {} },
+            { type: 'text', text: 'Tags: ' },
+            { type: 'tagsShortcut', attrs: {} },
           ],
-          children: [],
         },
       ];
 
@@ -1342,11 +968,9 @@ describe('DescriptionNode', () => {
         tags: ['art', 'digital', 'fantasy'],
       };
 
-      const tree = new DescriptionNodeTree(
-        context,
-        description as unknown as Array<IDescriptionBlockNode>,
-        { insertAd: false },
-      );
+      const tree = new DescriptionNodeTree(context, nodes, {
+        insertAd: false,
+      });
 
       expect(tree.toPlainText()).toBe('Tags: #art #digital #fantasy');
       expect(tree.toHtml()).toBe(
@@ -1356,20 +980,13 @@ describe('DescriptionNode', () => {
     });
 
     it('should render contentWarningShortcut with content warning from context', () => {
-      const description = [
+      const nodes: TipTapNode[] = [
         {
-          id: 'test-cw-shortcut',
           type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          },
           content: [
-            { type: 'text', text: 'CW: ', styles: {} },
-            { type: 'contentWarningShortcut', props: {} },
+            { type: 'text', text: 'CW: ' },
+            { type: 'contentWarningShortcut', attrs: {} },
           ],
-          children: [],
         },
       ];
 
@@ -1383,11 +1000,9 @@ describe('DescriptionNode', () => {
         contentWarningText: 'Mild Violence',
       };
 
-      const tree = new DescriptionNodeTree(
-        context,
-        description as unknown as Array<IDescriptionBlockNode>,
-        { insertAd: false },
-      );
+      const tree = new DescriptionNodeTree(context, nodes, {
+        insertAd: false,
+      });
 
       expect(tree.toPlainText()).toBe('CW: Mild Violence');
       expect(tree.toHtml()).toBe('<div>CW: <span>Mild Violence</span></div>');
@@ -1395,21 +1010,14 @@ describe('DescriptionNode', () => {
     });
 
     it('should render empty string when title is not in context', () => {
-      const description = [
+      const nodes: TipTapNode[] = [
         {
-          id: 'test-empty-title',
           type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          },
           content: [
-            { type: 'text', text: 'Title: ', styles: {} },
-            { type: 'titleShortcut', props: {} },
-            { type: 'text', text: ' end', styles: {} },
+            { type: 'text', text: 'Title: ' },
+            { type: 'titleShortcut', attrs: {} },
+            { type: 'text', text: ' end' },
           ],
-          children: [],
         },
       ];
 
@@ -1420,31 +1028,22 @@ describe('DescriptionNode', () => {
         defaultDescription: [],
       };
 
-      const tree = new DescriptionNodeTree(
-        context,
-        description as unknown as Array<IDescriptionBlockNode>,
-        { insertAd: false },
-      );
+      const tree = new DescriptionNodeTree(context, nodes, {
+        insertAd: false,
+      });
 
       expect(tree.toPlainText()).toBe('Title:  end');
     });
 
     it('should render empty string when tags array is empty', () => {
-      const description = [
+      const nodes: TipTapNode[] = [
         {
-          id: 'test-empty-tags',
           type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          },
           content: [
-            { type: 'text', text: 'Tags: ', styles: {} },
-            { type: 'tagsShortcut', props: {} },
-            { type: 'text', text: ' end', styles: {} },
+            { type: 'text', text: 'Tags: ' },
+            { type: 'tagsShortcut', attrs: {} },
+            { type: 'text', text: ' end' },
           ],
-          children: [],
         },
       ];
 
@@ -1456,42 +1055,26 @@ describe('DescriptionNode', () => {
         tags: [],
       };
 
-      const tree = new DescriptionNodeTree(
-        context,
-        description as unknown as Array<IDescriptionBlockNode>,
-        { insertAd: false },
-      );
+      const tree = new DescriptionNodeTree(context, nodes, {
+        insertAd: false,
+      });
 
       expect(tree.toPlainText()).toBe('Tags:  end');
     });
 
     it('should render all system shortcuts together', () => {
-      const description = [
+      const nodes: TipTapNode[] = [
         {
-          id: 'test-all-shortcuts',
           type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          },
           content: [
-            { type: 'titleShortcut', props: {} },
-            { type: 'text', text: ' - ', styles: {} },
-            { type: 'contentWarningShortcut', props: {} },
+            { type: 'titleShortcut', attrs: {} },
+            { type: 'text', text: ' - ' },
+            { type: 'contentWarningShortcut', attrs: {} },
           ],
-          children: [],
         },
         {
-          id: 'test-tags-line',
           type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          },
-          content: [{ type: 'tagsShortcut', props: {} }],
-          children: [],
+          content: [{ type: 'tagsShortcut', attrs: {} }],
         },
       ];
 
@@ -1505,11 +1088,9 @@ describe('DescriptionNode', () => {
         contentWarningText: 'NSFW',
       };
 
-      const tree = new DescriptionNodeTree(
-        context,
-        description as unknown as Array<IDescriptionBlockNode>,
-        { insertAd: false },
-      );
+      const tree = new DescriptionNodeTree(context, nodes, {
+        insertAd: false,
+      });
 
       expect(tree.toPlainText()).toBe('My Art - NSFW\r\n#tag1 #tag2');
       expect(tree.toHtml()).toBe(
@@ -1518,17 +1099,10 @@ describe('DescriptionNode', () => {
     });
 
     it('should HTML encode special characters in title', () => {
-      const description = [
+      const nodes: TipTapNode[] = [
         {
-          id: 'test-encode-title',
           type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          },
-          content: [{ type: 'titleShortcut', props: {} }],
-          children: [],
+          content: [{ type: 'titleShortcut', attrs: {} }],
         },
       ];
 
@@ -1541,11 +1115,9 @@ describe('DescriptionNode', () => {
         tags: [],
       };
 
-      const tree = new DescriptionNodeTree(
-        context,
-        description as unknown as Array<IDescriptionBlockNode>,
-        { insertAd: false },
-      );
+      const tree = new DescriptionNodeTree(context, nodes, {
+        insertAd: false,
+      });
 
       expect(tree.toHtml()).toBe(
         '<div><span>&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;</span></div>',
@@ -1553,31 +1125,22 @@ describe('DescriptionNode', () => {
     });
   });
 
-  describe('Username shortcuts with new prop format', () => {
-    it('should support username prop format (content: none)', () => {
-      const shortcutDescription: Description = [
+  describe('Username shortcuts', () => {
+    it('should support username attrs format', () => {
+      const nodes: TipTapNode[] = [
         {
-          id: 'test-username-prop',
           type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          },
           content: [
-            { type: 'text', text: 'Hello, ', styles: { bold: true } },
+            { type: 'text', text: 'Hello, ', marks: [{ type: 'bold' }] },
             {
               type: 'username',
-              props: {
-                id: '1740142676292',
+              attrs: {
                 shortcut: 'test',
                 only: '',
                 username: 'TestUser',
               },
-              content: undefined,
             },
           ],
-          children: [],
         },
       ];
 
@@ -1593,13 +1156,9 @@ describe('DescriptionNode', () => {
         defaultDescription: [],
       };
 
-      const tree = new DescriptionNodeTree(
-        context,
-        shortcutDescription as unknown as Array<IDescriptionBlockNode>,
-        {
-          insertAd: false,
-        },
-      );
+      const tree = new DescriptionNodeTree(context, nodes, {
+        insertAd: false,
+      });
 
       expect(tree.toPlainText()).toBe(
         'Hello, https://test.postybirb.com/TestUser',
@@ -1612,40 +1171,29 @@ describe('DescriptionNode', () => {
       );
     });
 
-    it('should find usernames from new prop format', () => {
-      const description: Description = [
+    it('should find usernames from attrs format', () => {
+      const nodes: TipTapNode[] = [
         {
-          id: 'test-find-username',
           type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          },
           content: [
             {
               type: 'username',
-              props: {
-                id: '1',
+              attrs: {
                 shortcut: 'twitter',
                 only: '',
                 username: 'alice',
               },
-              content: undefined,
             },
-            { type: 'text', text: ' and ', styles: {} },
+            { type: 'text', text: ' and ' },
             {
               type: 'username',
-              props: {
-                id: '2',
+              attrs: {
                 shortcut: 'twitter',
                 only: '',
                 username: 'bob',
               },
-              content: undefined,
             },
           ],
-          children: [],
         },
       ];
 
@@ -1656,13 +1204,9 @@ describe('DescriptionNode', () => {
         defaultDescription: [],
       };
 
-      const tree = new DescriptionNodeTree(
-        context,
-        description as unknown as Array<IDescriptionBlockNode>,
-        {
-          insertAd: false,
-        },
-      );
+      const tree = new DescriptionNodeTree(context, nodes, {
+        insertAd: false,
+      });
 
       const usernames = tree.findUsernames();
       expect(usernames.size).toBe(2);
@@ -1670,30 +1214,21 @@ describe('DescriptionNode', () => {
       expect(usernames.has('bob')).toBe(true);
     });
 
-    it('should support username conversion with new prop format', () => {
-      const shortcutDescription: Description = [
+    it('should support username conversion', () => {
+      const nodes: TipTapNode[] = [
         {
-          id: 'test-username-conversion',
           type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          },
           content: [
-            { type: 'text', text: 'Follow me: ', styles: {} },
+            { type: 'text', text: 'Follow me: ' },
             {
               type: 'username',
-              props: {
-                id: '1740142676292',
+              attrs: {
                 shortcut: 'twitter',
                 only: '',
                 username: 'myusername',
               },
-              content: undefined,
             },
           ],
-          children: [],
         },
       ];
 
@@ -1714,13 +1249,9 @@ describe('DescriptionNode', () => {
         usernameConversions: new Map([['myusername', 'converted_username']]),
       };
 
-      const tree = new DescriptionNodeTree(
-        context,
-        shortcutDescription as unknown as Array<IDescriptionBlockNode>,
-        {
-          insertAd: false,
-        },
-      );
+      const tree = new DescriptionNodeTree(context, nodes, {
+        insertAd: false,
+      });
 
       expect(tree.toPlainText()).toBe(
         'Follow me: https://test.postybirb.com/converted_username',
@@ -1730,38 +1261,20 @@ describe('DescriptionNode', () => {
       );
     });
 
-    it('should handle backward compatibility with old content format', () => {
-      // Old format used content: 'styled' with text in content array
-      // This test verifies that old data can still be parsed
-      const oldFormatDescription = [
+    it('should handle empty username gracefully', () => {
+      const nodes: TipTapNode[] = [
         {
-          id: 'test-old-format',
           type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          },
           content: [
-            { type: 'text', text: 'Hello, ', styles: {} },
             {
               type: 'username',
-              props: {
-                id: '1',
+              attrs: {
                 shortcut: 'test',
                 only: '',
                 username: '',
               },
-              content: [
-                {
-                  type: 'text',
-                  text: 'OldFormatUser',
-                  styles: {},
-                },
-              ],
             },
           ],
-          children: [],
         },
       ];
 
@@ -1777,65 +1290,9 @@ describe('DescriptionNode', () => {
         defaultDescription: [],
       };
 
-      const tree = new DescriptionNodeTree(
-        context,
-        oldFormatDescription as unknown as Array<IDescriptionBlockNode>,
-        {
-          insertAd: false,
-        },
-      );
-
-      expect(tree.toPlainText()).toBe(
-        'Hello, https://test.postybirb.com/OldFormatUser',
-      );
-      expect(tree.findUsernames().has('OldFormatUser')).toBe(true);
-    });
-
-    it('should handle empty username prop gracefully', () => {
-      const emptyUsernameDescription: Description = [
-        {
-          id: 'test-empty-username',
-          type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          },
-          content: [
-            {
-              type: 'username',
-              props: {
-                id: '1',
-                shortcut: 'test',
-                only: '',
-                username: '',
-              },
-              content: undefined,
-            },
-          ],
-          children: [],
-        },
-      ];
-
-      const context: ConversionContext = {
-        website: 'test',
-        shortcuts: {
-          test: {
-            id: 'test',
-            url: 'https://test.postybirb.com/$1',
-          },
-        },
-        customShortcuts: new Map(),
-        defaultDescription: [],
-      };
-
-      const tree = new DescriptionNodeTree(
-        context,
-        emptyUsernameDescription as unknown as Array<IDescriptionBlockNode>,
-        {
-          insertAd: false,
-        },
-      );
+      const tree = new DescriptionNodeTree(context, nodes, {
+        insertAd: false,
+      });
 
       expect(tree.toPlainText()).toBe('');
       expect(tree.findUsernames().size).toBe(0);

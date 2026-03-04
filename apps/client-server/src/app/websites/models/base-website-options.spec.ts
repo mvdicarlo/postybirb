@@ -1,32 +1,28 @@
 // eslint-disable-next-line max-classes-per-file
 import { TagField, TextField } from '@postybirb/form-builder';
 import {
-  DefaultDescriptionValue,
-  DefaultTagValue,
-  Description,
-  SubmissionRating,
-  TagValue,
+    DefaultDescriptionValue,
+    DefaultTagValue,
+    Description,
+    SubmissionRating,
+    TagValue,
 } from '@postybirb/types';
 import { BaseWebsiteOptions } from './base-website-options';
 import { DefaultWebsiteOptions } from './default-website-options';
 
 describe('BaseWebsiteOptions', () => {
-  const defaultDescriptionValue: Description = [
-    {
-      id: 'test-basic-text',
-      type: 'paragraph',
-      props: {
-        textColor: 'default',
-        backgroundColor: 'default',
-        textAlignment: 'left',
+  const defaultDescriptionValue: Description = {
+    type: 'doc',
+    content: [
+      {
+        type: 'paragraph',
+        content: [
+          { type: 'text', text: 'Hello, ', marks: [{ type: 'bold' }] },
+          { type: 'text', text: 'World!' },
+        ],
       },
-      content: [
-        { type: 'text', text: 'Hello, ', styles: { bold: true } },
-        { type: 'text', text: 'World!', styles: {} },
-      ],
-      children: [],
-    },
-  ];
+    ],
+  };
 
   it('should create an instance with default values', () => {
     const options = new BaseWebsiteOptions();
@@ -66,7 +62,7 @@ describe('BaseWebsiteOptions', () => {
       tags: { overrideDefault: true, tags: ['tag1', 'tag2'] },
       description: {
         overrideDefault: true,
-        description: [...defaultDescriptionValue],
+        description: defaultDescriptionValue,
         insertTitle: true,
         insertTags: true,
       },
@@ -92,7 +88,7 @@ describe('BaseWebsiteOptions', () => {
       tags: { overrideDefault: false, tags: ['defaultTag'] },
       description: {
         overrideDefault: false,
-        description: [],
+        description: { type: 'doc', content: [] },
         insertTitle: false,
         insertTags: false,
       },
@@ -104,7 +100,7 @@ describe('BaseWebsiteOptions', () => {
       tags: { overrideDefault: true, tags: ['newTag'] },
       description: {
         overrideDefault: true,
-        description: [...defaultDescriptionValue],
+        description: defaultDescriptionValue,
         insertTitle: true,
         insertTags: true,
       },
@@ -131,7 +127,7 @@ describe('BaseWebsiteOptions', () => {
     const defaultOptions = new DefaultWebsiteOptions({
       description: {
         overrideDefault: false,
-        description: [...defaultDescriptionValue],
+        description: defaultDescriptionValue,
         insertTitle: false,
         insertTags: false,
       },
@@ -140,7 +136,7 @@ describe('BaseWebsiteOptions', () => {
     const options = new BaseWebsiteOptions({
       description: {
         overrideDefault: false,
-        description: [],
+        description: { type: 'doc', content: [] },
         insertTitle: true,
         insertTags: true,
       },

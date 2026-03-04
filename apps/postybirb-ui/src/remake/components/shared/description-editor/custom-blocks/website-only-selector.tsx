@@ -1,26 +1,26 @@
 /* eslint-disable lingui/no-unlocalized-strings */
 import { Trans } from '@lingui/react/macro';
 import {
-    Badge,
-    Box,
-    Button,
-    Checkbox,
-    Divider,
-    Group,
-    Popover,
-    Stack,
-    Text,
-    TextInput,
-    ThemeIcon,
-    Tooltip,
-    UnstyledButton,
+  Badge,
+  Box,
+  Button,
+  Checkbox,
+  Divider,
+  Group,
+  Popover,
+  Stack,
+  Text,
+  TextInput,
+  ThemeIcon,
+  Tooltip,
+  UnstyledButton,
 } from '@mantine/core';
 import { useDebouncedValue, useDisclosure } from '@mantine/hooks';
 import {
-    IconChevronDown,
-    IconSearch,
-    IconWorld,
-    IconX,
+  IconChevronDown,
+  IconSearch,
+  IconWorld,
+  IconX,
 } from '@tabler/icons-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useWebsites } from '../../../../stores';
@@ -150,38 +150,38 @@ export function WebsiteOnlySelector({
           label={<Trans>Select websites to apply this shortcut to</Trans>}
           withArrow
         >
-          <Badge
-            className="only-website-badge"
-            variant="light"
-            size="sm"
-            color={badgeColor}
+          <Box
+            component="span"
+            className="only-website-selector"
             contentEditable={false}
-            radius="sm"
-            onClick={(e) => {
+            onClick={(e: React.MouseEvent) => {
               e.stopPropagation();
               toggle();
             }}
-            pr={4}
-            pl={6}
             style={{
               cursor: 'pointer',
-              transition: 'all 0.2s ease',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 3,
+              padding: '0 2px',
+              borderRadius: 'var(--mantine-radius-sm)',
+              transition: 'background-color 0.15s ease',
+              fontWeight: 500,
+              whiteSpace: 'nowrap',
             }}
-            styles={{ root: { textTransform: 'none' } }}
-            rightSection={
-              <Box ml={4} style={{ display: 'flex', alignItems: 'center' }}>
-                <IconChevronDown
-                  size={12}
-                  style={{
-                    transform: opened ? 'rotate(180deg)' : 'rotate(0deg)',
-                    transition: 'transform 0.2s ease',
-                  }}
-                />
-              </Box>
-            }
           >
-            {selectedDisplayText}
-          </Badge>
+            <Text span inherit size="xs" style={{ lineHeight: 1 }}>
+              {selectedDisplayText}
+            </Text>
+            <IconChevronDown
+              size={10}
+              style={{
+                transform: opened ? 'rotate(180deg)' : 'rotate(0deg)',
+                transition: 'transform 0.2s ease',
+                opacity: 0.7,
+              }}
+            />
+          </Box>
         </Tooltip>
       </Popover.Target>
 
