@@ -25,7 +25,23 @@ import { format } from 'node:url';
 global.fetch = async (
   input: RequestInfo | URL,
   init?: RequestInit,
-): Promise<Response> => net.fetch(input.toString(), init);
+): Promise<Response> => {
+  // Handle Request objects properly - extract the URL string and merge options.
+  // Libraries like @atproto/xrpc pass a Request object to fetch(), and calling
+  // .toString() on a Request returns "[object Request]" instead of the URL.
+  if (input instanceof Request) {
+    // If no separate init was provided, pass the Request itself as init
+    // so headers, method, body, etc. are preserved
+    if (!init) {
+      return net.fetch(input.url, input);
+    }
+    // If init was provided, it takes precedence (per fetch spec)
+    return net.fetch(input.url, init);
+  }
+
+  // For string or URL inputs, convert to string
+  return net.fetch(input.toString(), init);
+};
 
 export async function getParsedProxiesFor(url: string) {
   const proxySources = await session.defaultSession.resolveProxy(url);
