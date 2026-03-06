@@ -75,7 +75,7 @@ export function FileList({
               <Trans>No files added yet</Trans>
             </Text>
             <Text c="dimmed" size="xs" ta="center">
-              <Trans>Drop files above or click to browse</Trans>
+              <Trans>Drop files here or click to browse</Trans>
             </Text>
           </Stack>
         </Card>

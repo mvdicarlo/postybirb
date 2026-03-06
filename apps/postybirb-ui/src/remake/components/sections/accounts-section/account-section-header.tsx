@@ -55,8 +55,8 @@ export function AccountSectionHeader() {
           onChange={(value) => setLoginFilter(value as AccountLoginFilter)}
           data={[
             { value: AccountLoginFilter.All, label: t`All` },
-            { value: AccountLoginFilter.LoggedIn, label: t`Logged In` },
-            { value: AccountLoginFilter.NotLoggedIn, label: t`Not Logged In` },
+            { value: AccountLoginFilter.LoggedIn, label: t`Logged in` },
+            { value: AccountLoginFilter.NotLoggedIn, label: t`Not logged in` },
           ]}
         />
       </Stack>

@@ -12,34 +12,34 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-  ActionIcon,
-  Badge,
-  Box,
-  Button,
-  Divider,
-  Flex,
-  Group,
-  Modal,
-  Paper,
-  SegmentedControl,
-  Slider,
-  Stack,
-  Text,
-  ThemeIcon,
-  Tooltip,
+    ActionIcon,
+    Badge,
+    Box,
+    Button,
+    Divider,
+    Flex,
+    Group,
+    Modal,
+    Paper,
+    SegmentedControl,
+    Slider,
+    Stack,
+    Text,
+    ThemeIcon,
+    Tooltip,
 } from '@mantine/core';
 import { FileWithPath } from '@mantine/dropzone';
 import {
-  IconCheck,
-  IconCrop,
-  IconFlipHorizontal,
-  IconFlipVertical,
-  IconRefresh,
-  IconRotate,
-  IconRotateClockwise,
-  IconX,
-  IconZoomIn,
-  IconZoomOut,
+    IconCheck,
+    IconCrop,
+    IconFlipHorizontal,
+    IconFlipVertical,
+    IconRefresh,
+    IconRotate,
+    IconRotateClockwise,
+    IconX,
+    IconZoomIn,
+    IconZoomOut,
 } from '@tabler/icons-react';
 import Cropper from 'cropperjs';
 import 'cropperjs/dist/cropper.css';
@@ -287,7 +287,7 @@ export function ImageEditor({
               </ThemeIcon>
               <div>
                 <Text fw={500} size="sm">
-                  <Trans>Edit Image</Trans>
+                  <Trans>Edit image</Trans>
                 </Text>
                 <Text size="xs" c="dimmed" lineClamp={1}>
                   {file.name}

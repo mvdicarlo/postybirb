@@ -59,7 +59,7 @@ export function TemplatePicker({
       onChange={onChange}
       clearable
       searchable
-      nothingFoundMessage={<Trans>No templates found</Trans>}
+      nothingFoundMessage={<Trans>No results found</Trans>}
       {...selectProps}
     />
   );

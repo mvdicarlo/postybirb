@@ -383,7 +383,7 @@ export function SchedulePopover({
                   internalIsScheduled ? (
                     <Trans>Submission will be posted automatically</Trans>
                   ) : (
-                    <Trans>Schedule is configured but inactive</Trans>
+                    <Trans>Schedule configured (inactive)</Trans>
                   )
                 }
                 checked={internalIsScheduled}

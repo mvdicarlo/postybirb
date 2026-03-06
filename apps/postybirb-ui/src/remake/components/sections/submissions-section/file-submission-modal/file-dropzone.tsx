@@ -5,24 +5,24 @@
 import { Trans } from '@lingui/react/macro';
 import { Box, Button, Group, Text, Tooltip } from '@mantine/core';
 import {
-  Dropzone,
-  FileWithPath,
-  IMAGE_MIME_TYPE,
-  MS_WORD_MIME_TYPE,
-  PDF_MIME_TYPE,
+    Dropzone,
+    FileWithPath,
+    IMAGE_MIME_TYPE,
+    MS_WORD_MIME_TYPE,
+    PDF_MIME_TYPE,
 } from '@mantine/dropzone';
 import { SubmissionType } from '@postybirb/types';
 import {
-  IconClipboard,
-  IconPhoto,
-  IconUpload,
-  IconX,
+    IconClipboard,
+    IconPhoto,
+    IconUpload,
+    IconX,
 } from '@tabler/icons-react';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import './file-submission-modal.css';
 import {
-  TEXT_MIME_TYPES,
-  VIDEO_MIME_TYPES,
+    TEXT_MIME_TYPES,
+    VIDEO_MIME_TYPES,
 } from './file-submission-modal.utils';
 
 export interface FileDropzoneProps {
@@ -170,12 +170,11 @@ export function FileDropzone({ onDrop, isUploading, type }: FileDropzoneProps) {
 
           <div>
             <Text size="lg" inline>
-              <Trans>Drag files here or click to select</Trans>
+              <Trans>Drop files here or click to browse</Trans>
             </Text>
             <Text size="sm" c="dimmed" inline mt={7}>
               <Trans>
-                Attach as many files as you like, each file will become a
-                separate submission
+                Each file becomes a separate submission
               </Trans>
             </Text>
           </div>

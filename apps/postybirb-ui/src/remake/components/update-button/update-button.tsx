@@ -168,7 +168,7 @@ export function UpdateButton({ collapsed }: UpdateButtonProps) {
   ) : (
     <Box className="postybirb__nav_item_label">
       <span>
-        <Trans>Update Available</Trans>
+        <Trans>Update available</Trans>
       </span>
     </Box>
   );

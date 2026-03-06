@@ -69,7 +69,7 @@ export function UpdateModal({
         <Group gap="xs">
           <IconDownload size={20} color="var(--mantine-color-green-6)" />
           <Title order={4}>
-            <Trans>Update Available</Trans>
+            <Trans>Update available</Trans>
           </Title>
         </Group>
       }
@@ -98,7 +98,7 @@ export function UpdateModal({
         {isDownloading && (
           <Box>
             <Text size="sm" mb="xs">
-              <Trans>Downloading update...</Trans> {progress.toFixed(0)}%
+              <Trans>Downloading...</Trans> {progress.toFixed(0)}%
             </Text>
             <Progress value={progress} color="green" size="lg" animated />
           </Box>

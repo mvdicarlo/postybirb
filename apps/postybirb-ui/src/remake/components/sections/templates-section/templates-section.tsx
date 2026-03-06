@@ -4,38 +4,39 @@
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
-    ActionIcon,
-    Box,
-    Divider,
-    Group,
-    Loader,
-    ScrollArea,
-    SegmentedControl,
-    Stack,
-    Text,
-    TextInput,
-    ThemeIcon,
+  ActionIcon,
+  Box,
+  Divider,
+  Group,
+  Loader,
+  ScrollArea,
+  SegmentedControl,
+  Stack,
+  Text,
+  TextInput,
+  ThemeIcon,
 } from '@mantine/core';
 import { SubmissionType } from '@postybirb/types';
 import {
-    IconFile,
-    IconMessage,
-    IconPlus,
-    IconTemplate,
+  IconFile,
+  IconMessage,
+  IconPlus,
+  IconTemplate,
 } from '@tabler/icons-react';
 import { useCallback, useMemo, useState } from 'react';
 import submissionApi from '../../../api/submission.api';
 import {
-    useSubmissionsLoading,
-    useTemplateSubmissions,
+  useSubmissionsLoading,
+  useTemplateSubmissions,
 } from '../../../stores/entity/submission-store';
 import { useNavigationStore } from '../../../stores/ui/navigation-store';
 import { useTemplatesFilter } from '../../../stores/ui/templates-ui-store';
 import { isTemplatesViewState, type ViewState } from '../../../types/view-state';
 import {
-    showErrorNotification,
-    showSuccessNotification,
+  showErrorNotification,
+  showSuccessNotification,
 } from '../../../utils/notifications';
+import { EmptyState } from '../../empty-state';
 import { SearchInput } from '../../shared';
 import { TemplateCard } from './template-card';
 import './templates-section.css';
@@ -211,9 +212,7 @@ export function TemplatesSection({ viewState }: TemplatesSectionProps) {
               <Loader size="sm" />
             </Box>
           ) : filteredTemplates.length === 0 ? (
-            <Text size="sm" c="dimmed" ta="center" py="xl">
-              <Trans>No templates found</Trans>
-            </Text>
+            <EmptyState preset="no-results" size="sm" />
           ) : (
             filteredTemplates.map((template) => (
               <TemplateCard

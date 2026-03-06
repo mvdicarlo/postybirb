@@ -6,38 +6,38 @@
 import { t } from '@lingui/core/macro';
 import { Trans } from '@lingui/react/macro';
 import {
-  ActionIcon,
-  Box,
-  Card,
-  Group,
-  Input,
-  Select,
-  Stack,
-  Text,
-  Tooltip
+    ActionIcon,
+    Box,
+    Card,
+    Group,
+    Input,
+    Select,
+    Stack,
+    Text,
+    Tooltip
 } from '@mantine/core';
 import { DirectoryWatcherImportAction, SubmissionType } from '@postybirb/types';
 import {
-  IconDeviceFloppy,
-  IconFolder,
-  IconPlus,
-  IconTrash,
+    IconDeviceFloppy,
+    IconFolder,
+    IconPlus,
+    IconTrash,
 } from '@tabler/icons-react';
 import { useCallback, useMemo, useState } from 'react';
 import directoryWatchersApi, {
-  CheckPathResult,
-  FILE_COUNT_WARNING_THRESHOLD,
+    CheckPathResult,
+    FILE_COUNT_WARNING_THRESHOLD,
 } from '../../../api/directory-watchers.api';
 import { useDirectoryWatchers } from '../../../stores';
 import type { DirectoryWatcherRecord } from '../../../stores/records';
 import { useActiveDrawer, useDrawerActions } from '../../../stores/ui/drawer-store';
 import {
-  showCreatedNotification,
-  showCreateErrorNotification,
-  showDeletedNotification,
-  showDeleteErrorNotification,
-  showUpdatedNotification,
-  showUpdateErrorNotification,
+    showCreatedNotification,
+    showCreateErrorNotification,
+    showDeletedNotification,
+    showDeleteErrorNotification,
+    showUpdatedNotification,
+    showUpdateErrorNotification,
 } from '../../../utils/notifications';
 import { ConfirmActionModal } from '../../confirm-action-modal';
 import { EmptyState } from '../../empty-state';
@@ -365,7 +365,6 @@ function WatcherList({ watchers }: WatcherListProps) {
     return (
       <EmptyState
         preset="no-records"
-        message={<Trans>No file watchers configured</Trans>}
         description={
           <Trans>
             Create a file watcher to automatically import new files from a

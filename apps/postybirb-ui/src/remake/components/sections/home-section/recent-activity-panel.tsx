@@ -70,7 +70,6 @@ export function RecentActivityPanel() {
           <Box style={{ alignItems: 'center' }}>
             <EmptyState
               preset="no-notifications"
-              message={<Trans>No recent activity</Trans>}
               description={
                 <Trans>Activity will appear here as you use the app</Trans>
               }

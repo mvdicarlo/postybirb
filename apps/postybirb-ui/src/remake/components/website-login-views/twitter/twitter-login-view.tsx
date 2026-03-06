@@ -64,7 +64,7 @@ export default function TwitterLoginView(
   // Only update loggedInAs when data changes, but don't affect step progression
   useEffect(() => {
     if (data?.screenName && !loggedInAs) {
-      setLoggedInAs(data.screenName);
+      setLoggedInAs(`@${data.screenName}`);
     }
     // If there are existing API keys, mark them as stored so user can proceed
     if (data?.apiKey && data?.apiSecret && !keysStored) {
@@ -107,7 +107,7 @@ export default function TwitterLoginView(
           <Alert color="green" icon={<IconCheck size={16} />}>
             <Group justify="space-between">
               <Text>
-                <Trans>Successfully logged in as @{loggedInAs}</Trans>
+                <Trans>Successfully logged in as {loggedInAs}</Trans>
               </Text>
               <Button
                 variant="light"
@@ -343,7 +343,7 @@ export default function TwitterLoginView(
                             setAuthorizationUrl('');
                             setRequestToken(undefined);
                             setActiveStep(3); // Advance to completion step
-                            if (res.screenName) setLoggedInAs(res.screenName);
+                            if (res.screenName) setLoggedInAs(`@${res.screenName}`);
                           } else {
                             notifyLoginFailed(res.message);
                           }

@@ -207,7 +207,7 @@ export default function MegalodonLoginView(
           <Stepper.Completed>
             <Paper p="md" withBorder>
               <Alert color="green">
-                <Trans>Logged In</Trans>
+                <Trans>Logged in</Trans>
               </Alert>
             </Paper>
           </Stepper.Completed>

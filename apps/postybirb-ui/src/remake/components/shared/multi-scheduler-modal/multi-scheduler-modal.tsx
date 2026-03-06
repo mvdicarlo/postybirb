@@ -250,9 +250,7 @@ export function MultiSchedulerModal({
 
             <Text size="xs" c="dimmed">
               <Trans>
-                Set the interval between each submission. The first submission
-                will be scheduled at the start date, and each subsequent
-                submission will be offset by the interval.
+                Set the interval between each submission.
               </Trans>
             </Text>
 

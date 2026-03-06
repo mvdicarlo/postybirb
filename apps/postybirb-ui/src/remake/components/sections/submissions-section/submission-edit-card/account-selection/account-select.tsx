@@ -411,7 +411,7 @@ export function AccountSelect() {
             <Combobox.Options>
               {filteredGroups.length === 0 && (
                 <Combobox.Empty>
-                  <Trans>No accounts found</Trans>
+                  <Trans>No results found</Trans>
                 </Combobox.Empty>
               )}
               {filteredGroups.map((group) => {

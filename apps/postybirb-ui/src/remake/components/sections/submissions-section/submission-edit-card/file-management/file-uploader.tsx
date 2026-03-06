@@ -5,11 +5,11 @@
 import { Trans } from '@lingui/react/macro';
 import { Box, Group, Text, rem } from '@mantine/core';
 import {
-    Dropzone,
-    FileWithPath,
-    IMAGE_MIME_TYPE,
-    MS_WORD_MIME_TYPE,
-    PDF_MIME_TYPE,
+  Dropzone,
+  FileWithPath,
+  IMAGE_MIME_TYPE,
+  MS_WORD_MIME_TYPE,
+  PDF_MIME_TYPE,
 } from '@mantine/dropzone';
 import { FileType } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
@@ -17,9 +17,9 @@ import { IconPhoto, IconUpload, IconX } from '@tabler/icons-react';
 import { useState } from 'react';
 import fileSubmissionApi from '../../../../../api/file-submission.api';
 import {
-    showErrorNotification,
-    showUploadErrorNotification,
-    showWarningNotification,
+  showErrorNotification,
+  showUploadErrorNotification,
+  showWarningNotification,
 } from '../../../../../utils/notifications';
 import { useSubmissionEditCardContext } from '../context';
 
@@ -160,7 +160,7 @@ export function FileUploader() {
 
         <Box>
           <Text size="sm" inline>
-            <Trans>Drag files here or click to select</Trans>
+            <Trans>Drop files here or click to browse</Trans>
           </Text>
           <Text size="xs" c="dimmed" inline mt={4}>
             <Trans>Images, videos, audio, and text files up to 100MB</Trans>

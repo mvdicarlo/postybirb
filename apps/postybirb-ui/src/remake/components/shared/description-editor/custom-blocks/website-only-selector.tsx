@@ -238,9 +238,9 @@ export function WebsiteOnlySelector({
                 style={{ flex: 1 }}
               >
                 {selectedWebsiteIds.length === websites.length ? (
-                  <Trans>Deselect All</Trans>
+                  <Trans>Deselect all</Trans>
                 ) : (
-                  <Trans>Select All</Trans>
+                  <Trans>Select all</Trans>
                 )}
               </Button>
             </Group>
@@ -295,7 +295,7 @@ export function WebsiteOnlySelector({
             ) : (
               <Box p="md">
                 <Text ta="center" c="dimmed" size="sm">
-                  <Trans>No items found</Trans>
+                  <Trans>No results found</Trans>
                 </Text>
               </Box>
             )}

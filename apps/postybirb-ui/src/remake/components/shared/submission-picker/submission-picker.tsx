@@ -5,14 +5,14 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-    Avatar,
-    Checkbox,
-    Group,
-    Image,
-    MultiSelect,
-    type MultiSelectProps,
-    Stack,
-    Text,
+  Avatar,
+  Checkbox,
+  Group,
+  Image,
+  MultiSelect,
+  type MultiSelectProps,
+  Stack,
+  Text,
 } from '@mantine/core';
 import { SubmissionType } from '@postybirb/types';
 import { IconFile, IconMessage } from '@tabler/icons-react';
@@ -136,7 +136,7 @@ export function SubmissionPicker({
         clearable
         maxDropdownHeight={300}
         renderOption={renderOption}
-        nothingFoundMessage={<Trans>No submissions found</Trans>}
+        nothingFoundMessage={<Trans>No results found</Trans>}
         {...selectProps}
       />
       {value.length > 0 && (

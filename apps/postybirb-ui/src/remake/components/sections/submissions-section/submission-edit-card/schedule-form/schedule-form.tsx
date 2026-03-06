@@ -243,7 +243,7 @@ export function ScheduleForm({
                 {internalIsScheduled ? (
                   <Trans>Submission will be posted automatically</Trans>
                 ) : (
-                  <Trans>Schedule is configured but inactive</Trans>
+                  <Trans>Schedule configured (inactive)</Trans>
                 )}
               </Text>
             </Stack>
@@ -259,7 +259,7 @@ export function ScheduleForm({
                 {internalIsScheduled ? (
                   <Trans>Submission will be posted automatically</Trans>
                 ) : (
-                  <Trans>Schedule is configured but inactive</Trans>
+                  <Trans>Schedule configured (inactive)</Trans>
                 )}
               </Text>
             </Stack>
