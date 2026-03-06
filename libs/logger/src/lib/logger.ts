@@ -36,7 +36,7 @@ export function initializeLogger(): void {
     const fileTransport = new DailyRotateFile({
       filename: 'postybirb-%DATE%.log',
       datePattern: 'YYYY-MM-DD',
-      zippedArchive: true,
+      zippedArchive: false,
       maxSize: '20m',
       maxFiles: '14d',
       format: winston.format.combine(
