@@ -4,6 +4,7 @@
 
 export { AppSettingsSection } from './app-settings-section';
 export { AppearanceSettingsSection } from './appearance-settings-section';
+export { DataSettingsSection } from './data-settings-section';
 export { DescriptionSettingsSection } from './description-settings-section';
 export { ImportSettingsSection } from './import-settings-section';
 export { NotificationsSettingsSection } from './notifications-settings-section';

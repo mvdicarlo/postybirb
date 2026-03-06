@@ -20,6 +20,7 @@ import {
   IconDatabase,
   IconDeviceDesktop,
   IconFileDescription,
+  IconFileImport,
   IconLanguage,
   IconPalette,
   IconRouter,
@@ -30,6 +31,7 @@ import { useActiveDrawer, useDrawerActions } from '../../../stores';
 import {
   AppearanceSettingsSection,
   AppSettingsSection,
+  DataSettingsSection,
   DescriptionSettingsSection,
   ImportSettingsSection,
   NotificationsSettingsSection,
@@ -46,6 +48,7 @@ import classes from './settings-dialog.module.css';
 type SettingsSection =
   | 'appearance'
   | 'app'
+  | 'data'
   | 'description'
   | 'notifications'
   | 'remote'
@@ -102,6 +105,11 @@ const NAV_ITEMS: NavItem[] = [
   {
     id: 'import',
     label: <Trans>Import</Trans>,
+    icon: <IconFileImport size={18} />,
+  },
+  {
+    id: 'data',
+    label: <Trans>Data</Trans>,
     icon: <IconDatabase size={18} />,
   },
 ];
@@ -136,6 +144,8 @@ export function SettingsDialog() {
         return <SpellcheckerSettings />;
       case 'import':
         return <ImportSettingsSection />;
+      case 'data':
+        return <DataSettingsSection />;
       default:
         return null;
     }
