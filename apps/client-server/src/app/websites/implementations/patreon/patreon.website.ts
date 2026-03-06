@@ -38,6 +38,7 @@ import {
 } from './models/patreon-media-upload-types';
 import { PatreonMessageSubmission } from './models/patreon-message-submission';
 import { PatreonNewPostResponse } from './models/patreon-post-types';
+import { PatreonDescriptionConverter } from './patreon-description-converter';
 
 type PatreonAccessRuleSegment = Array<{
   type: 'access-rule';
@@ -469,6 +470,7 @@ export default class Patreon
         postData.options.allAsAttachment
           ? 'text_only'
           : this.getPostType(files[0].fileType),
+        initializedPost.data.id,
         uploadedFiles
           .filter((f) => f.data.attributes.media_type === 'image') // Metadata only matters for image types
           .map((f) => f.data.id),
@@ -512,7 +514,13 @@ export default class Patreon
     );
 
     const postAttributes = {
-      data: this.createDataSegment(postData, tags, accessTiers, 'text_only'),
+      data: this.createDataSegment(
+        postData,
+        tags,
+        accessTiers,
+        'text_only',
+        initializedPost.data.id,
+      ),
       meta: this.createDefaultMetadataSegment(),
       included: [...tags, ...accessTiers],
     };
@@ -569,6 +577,7 @@ export default class Patreon
     tagSegment: PatreonTagSegment,
     rulesSegment: PatreonAccessRuleSegment,
     postType: string,
+    postId: string,
     mediaIds?: string[],
   ) {
     const { options } = postData;
@@ -581,6 +590,19 @@ export default class Patreon
       earlyAccess,
       collections,
     } = options;
+
+    // Determine if any selected tier is a paid tier.
+    // Free tiers ("Everyone", free rewards) have cost === 0.
+    const folders = this.getWebsiteData()?.folders ?? [];
+    const selectedTierIds = new Set(
+      rulesSegment.map((rule) => rule.id),
+    );
+    const hasPaidTier = folders.some(
+      (folder) =>
+        selectedTierIds.has(String(folder.value)) &&
+        (folder.data as { cost?: number })?.cost > 0,
+    );
+
     const dataAttributes = {
       type: 'post',
       attributes: {
@@ -607,8 +629,33 @@ export default class Patreon
         tags: {
           publish: !schedule,
         },
+        content_json_string: PatreonDescriptionConverter.convert(
+          description ?? '<p></p>',
+          {
+            postId,
+            isMonetized: !!charge,
+            isPaidAccessSelected: hasPaidTier,
+            includePaywall: hasPaidTier,
+          },
+        ),
       },
       relationships: {
+        post_tag: tagSegment.length
+          ? {
+              data: {
+                type: 'post_tag',
+                id: tagSegment[tagSegment.length - 1].id,
+              },
+            }
+          : undefined,
+        'access-rule': rulesSegment.length
+          ? {
+              data: {
+                type: 'access-rule',
+                id: rulesSegment[rulesSegment.length - 1].id,
+              },
+            }
+          : undefined,
         user_defined_tags: {
           data: tagSegment.map((tag) => ({
             id: tag.id,
