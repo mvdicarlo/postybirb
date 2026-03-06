@@ -120,9 +120,9 @@ export default function DiscordLoginView(
               onChange={(value) => setServerLevel(Number(value))}
               data={[
                 { value: '0', label: <Trans>None</Trans> },
-                { value: '1', label: <Trans>Level 1</Trans> },
-                { value: '2', label: <Trans>Level 2</Trans> },
-                { value: '3', label: <Trans>Level 3</Trans> },
+                { value: '1', label: '1' },
+                { value: '2', label: '2' },
+                { value: '3', label: '3' },
               ]}
             />
             <Text size="xs" c="dimmed" mt={4}>

@@ -233,8 +233,7 @@ export function DescriptionPreviewPanel({
     return (
       <Alert color="yellow" p="xs" mt="xs">
         <Trans>
-          No website accounts configured. Add website accounts to preview
-          the description output.
+          Add website accounts to preview the description output.
         </Trans>
       </Alert>
     );

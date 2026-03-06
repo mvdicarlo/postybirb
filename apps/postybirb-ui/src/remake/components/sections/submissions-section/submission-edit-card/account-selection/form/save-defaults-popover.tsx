@@ -5,26 +5,26 @@
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
-  Button,
-  Checkbox,
-  Group,
-  Popover,
-  ScrollArea,
-  Stack,
-  Text,
+    Button,
+    Checkbox,
+    Group,
+    Popover,
+    ScrollArea,
+    Stack,
+    Text,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import {
-  FieldAggregateType,
-  FormBuilderMetadata,
+    FieldAggregateType,
+    FormBuilderMetadata,
 } from '@postybirb/form-builder';
 import { DynamicObject } from '@postybirb/types';
 import { IconDeviceFloppy } from '@tabler/icons-react';
 import { useCallback, useState } from 'react';
 import userSpecifiedWebsiteOptionsApi from '../../../../../../api/user-specified-website-options.api';
 import {
-  showSaveErrorNotification,
-  showSuccessNotification,
+    showSaveErrorNotification,
+    showSuccessNotification,
 } from '../../../../../../utils/notifications';
 import { getTranslatedLabel } from './fields/field-label';
 import { useFormFieldsContext } from './form-fields-context';
@@ -162,7 +162,7 @@ export function SaveDefaultsPopover() {
       <Popover.Dropdown>
         <Stack gap="sm">
           <Text size="sm" fw={500}>
-            <Trans>Save as Default</Trans>
+            <Trans>Save as default</Trans>
           </Text>
 
           <Text size="xs" c="dimmed">
@@ -170,8 +170,7 @@ export function SaveDefaultsPopover() {
             <br />
             <br />
             <Trans>
-              Saved fields will be automatically applied to this account in
-              future submissions.
+              These defaults apply to future submissions.
             </Trans>
           </Text>
 

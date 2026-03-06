@@ -167,6 +167,10 @@ msgstr ""
 msgid "Add website"
 msgstr ""
 
+#: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-edit-card/account-selection/form/fields/description-preview-panel.tsx
+msgid "Add website accounts to preview the description output."
+msgstr ""
+
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-edit-card/file-management/file-metadata.tsx
 msgid "Adjust dimensions while maintaining aspect ratio"
 msgstr ""
@@ -370,10 +374,6 @@ msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/file-submission-modal/image-editor.tsx
 msgid "Aspect Ratio"
-msgstr ""
-
-#: apps/postybirb-ui/src/remake/components/sections/submissions-section/file-submission-modal/file-dropzone.tsx
-msgid "Attach as many files as you like, each file will become a separate submission"
 msgstr ""
 
 #: libs/translations/src/lib/field-translations.ts
@@ -611,13 +611,10 @@ msgstr ""
 msgid "Content Blur"
 msgstr ""
 
+#: apps/postybirb-ui/src/remake/components/shared/description-editor/extensions/content-warning-shortcut.tsx
 #: libs/translations/src/lib/field-translations.ts
 msgid "Content warning"
 msgstr "Предупреждение (CW)"
-
-#: apps/postybirb-ui/src/remake/components/shared/description-editor/extensions/content-warning-shortcut.tsx
-msgid "Content Warning"
-msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/post-confirm-modal/post-confirm-modal.tsx
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/resume-mode-modal/resume-mode-modal.tsx
@@ -843,13 +840,10 @@ msgstr "Настройки описания"
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-edit-card/account-selection/account-select.tsx
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-edit-card/account-selection/account-selection-form.tsx
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-section-header.tsx
-msgid "Deselect all"
-msgstr ""
-
 #: apps/postybirb-ui/src/remake/components/shared/description-editor/custom-blocks/website-only-selector.tsx
 #: apps/postybirb-ui/src/remake/components/shared/description-editor/extensions/username-shortcut.tsx
-msgid "Deselect All"
-msgstr "Убрать выделение"
+msgid "Deselect all"
+msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/dialogs/settings-dialog/sections/notifications-settings-section.tsx
 msgid "Desktop Notifications"
@@ -889,16 +883,8 @@ msgid "Download Update"
 msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/update-button/update-modal.tsx
-msgid "Downloading update..."
-msgstr ""
-
 #: apps/postybirb-ui/src/remake/components/update-button/update-modal.tsx
 msgid "Downloading..."
-msgstr ""
-
-#: apps/postybirb-ui/src/remake/components/sections/submissions-section/file-submission-modal/file-dropzone.tsx
-#: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-edit-card/file-management/file-uploader.tsx
-msgid "Drag files here or click to select"
 msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/shared/reorderable-submission-list/reorderable-submission-list.tsx
@@ -913,10 +899,9 @@ msgstr ""
 msgid "Drag to reorder"
 msgstr "Перетащите чтобы переопределить порядок"
 
+#: apps/postybirb-ui/src/remake/components/sections/submissions-section/file-submission-modal/file-dropzone.tsx
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/file-submission-modal/file-list.tsx
-msgid "Drop files above or click to browse"
-msgstr ""
-
+#: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-edit-card/file-management/file-uploader.tsx
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-section-header.tsx
 msgid "Drop files here or click to browse"
 msgstr "Перетащите файлы сюда или нажмите чтобы выбрать"
@@ -938,6 +923,10 @@ msgstr ""
 msgid "e621 requires API credentials for posting. You'll need to generate an API key from your account settings to authenticate PostyBirb."
 msgstr ""
 
+#: apps/postybirb-ui/src/remake/components/sections/submissions-section/file-submission-modal/file-dropzone.tsx
+msgid "Each file becomes a separate submission"
+msgstr ""
+
 #: libs/translations/src/lib/field-translations.ts
 msgid "Early Access"
 msgstr ""
@@ -947,12 +936,9 @@ msgid "Edit"
 msgstr "Редактировать"
 
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/file-submission-modal/file-preview.tsx
+#: apps/postybirb-ui/src/remake/components/sections/submissions-section/file-submission-modal/image-editor.tsx
 msgid "Edit image"
 msgstr "Редактировать изображение"
-
-#: apps/postybirb-ui/src/remake/components/sections/submissions-section/file-submission-modal/image-editor.tsx
-msgid "Edit Image"
-msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-edit-card/file-management/submission-file-card.tsx
 msgid "Edit metadata"
@@ -965,6 +951,10 @@ msgstr ""
 #: apps/postybirb-ui/src/remake/components/dialogs/settings-dialog/sections/notifications-settings-section.tsx
 msgid "Enable desktop notifications"
 msgstr "Включить уведомления на рабочем столе"
+
+#: apps/postybirb-ui/src/remake/components/dialogs/settings-dialog/sections/tags-settings-section.tsx
+msgid "Enable global tag autocomplete from sites like e621."
+msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/dialogs/settings-dialog/sections/spellchecker-settings-section.tsx
 msgid "Enabled"
@@ -1371,11 +1361,8 @@ msgstr ""
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-edit-card/actions/submission-edit-card-actions.tsx
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-edit-card/actions/submission-edit-card-actions.tsx
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-edit-card/actions/submission-edit-card-actions.tsx
-msgid "Hold to delete"
-msgstr ""
-
 #: apps/postybirb-ui/src/remake/components/sections/templates-section/template-card.tsx
-msgid "Hold to Delete"
+msgid "Hold to delete"
 msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/drawers/converter-drawer/converter-drawer.tsx
@@ -1558,18 +1545,6 @@ msgstr ""
 msgid "Legal Notice & Disclaimer"
 msgstr ""
 
-#: apps/postybirb-ui/src/remake/components/website-login-views/discord/discord-login-view.tsx
-msgid "Level 1"
-msgstr ""
-
-#: apps/postybirb-ui/src/remake/components/website-login-views/discord/discord-login-view.tsx
-msgid "Level 2"
-msgstr ""
-
-#: apps/postybirb-ui/src/remake/components/website-login-views/discord/discord-login-view.tsx
-msgid "Level 3"
-msgstr ""
-
 #: apps/postybirb-ui/src/remake/components/dialogs/settings-dialog/sections/appearance-settings-section.tsx
 msgid "Light"
 msgstr ""
@@ -1593,8 +1568,8 @@ msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/sections/accounts-section/account-section-header.tsx
 #: apps/postybirb-ui/src/remake/components/website-login-views/megalodon/megalodon-login-view.tsx
-msgid "Logged In"
-msgstr "Вход выполнен"
+msgid "Logged in"
+msgstr ""
 
 #. placeholder {0}: username ? ` as ${username}` : ''
 #: apps/postybirb-ui/src/remake/components/sections/accounts-section/login-webview.tsx
@@ -1733,14 +1708,6 @@ msgstr ""
 msgid "New version:"
 msgstr ""
 
-#: apps/postybirb-ui/src/remake/components/sections/home-section/account-health-panel.tsx
-msgid "No accounts added"
-msgstr ""
-
-#: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-edit-card/account-selection/account-select.tsx
-msgid "No accounts found"
-msgstr ""
-
 #: libs/translations/src/lib/field-translations.ts
 msgid "No AI"
 msgstr ""
@@ -1757,25 +1724,12 @@ msgstr ""
 msgid "No default options available"
 msgstr ""
 
-#: apps/postybirb-ui/src/remake/components/drawers/file-watcher-drawer/file-watcher-drawer.tsx
-msgid "No file watchers configured"
-msgstr ""
-
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/file-submission-modal/file-list.tsx
 msgid "No files added yet"
 msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/drawers/file-watcher-drawer/file-watcher-drawer.tsx
 msgid "No folder selected"
-msgstr ""
-
-#: apps/postybirb-ui/src/remake/components/shared/description-editor/custom-blocks/website-only-selector.tsx
-#: apps/postybirb-ui/src/remake/components/shared/description-editor/extensions/username-shortcut.tsx
-msgid "No items found"
-msgstr ""
-
-#: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-edit-card/account-selection/form/fields/tree-select.tsx
-msgid "No matching options"
 msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/empty-state/empty-state.tsx
@@ -1790,23 +1744,23 @@ msgstr ""
 msgid "No options selected to apply"
 msgstr ""
 
-#: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-history-drawer.tsx
-msgid "No post history available"
-msgstr ""
-
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-edit-card/account-selection/form/fields/description-preview-panel.tsx
 msgid "No preview available"
-msgstr ""
-
-#: apps/postybirb-ui/src/remake/components/sections/home-section/recent-activity-panel.tsx
-msgid "No recent activity"
 msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/empty-state/empty-state.tsx
 msgid "No records yet"
 msgstr ""
 
+#: apps/postybirb-ui/src/remake/components/drawers/converter-drawer/converter-drawer.tsx
 #: apps/postybirb-ui/src/remake/components/empty-state/empty-state.tsx
+#: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-edit-card/account-selection/account-select.tsx
+#: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-edit-card/account-selection/form/fields/tree-select.tsx
+#: apps/postybirb-ui/src/remake/components/shared/description-editor/custom-blocks/website-only-selector.tsx
+#: apps/postybirb-ui/src/remake/components/shared/description-editor/extensions/username-shortcut.tsx
+#: apps/postybirb-ui/src/remake/components/shared/submission-picker/submission-picker.tsx
+#: apps/postybirb-ui/src/remake/components/shared/template-picker/template-picker-modal.tsx
+#: apps/postybirb-ui/src/remake/components/shared/template-picker/template-picker.tsx
 msgid "No results found"
 msgstr "Результатов не найдено"
 
@@ -1815,37 +1769,12 @@ msgstr "Результатов не найдено"
 msgid "No schedule configured"
 msgstr ""
 
-#: apps/postybirb-ui/src/remake/components/sections/home-section/upcoming-posts-panel.tsx
-msgid "No scheduled posts"
-msgstr ""
-
-#: apps/postybirb-ui/src/remake/components/shared/submission-picker/submission-picker.tsx
-msgid "No submissions found"
-msgstr ""
-
 #: apps/postybirb-ui/src/remake/components/shared/reorderable-submission-list/reorderable-submission-list.tsx
 msgid "No submissions selected"
 msgstr ""
 
-#: apps/postybirb-ui/src/remake/components/sections/templates-section/templates-section.tsx
-#: apps/postybirb-ui/src/remake/components/shared/template-picker/template-picker.tsx
-msgid "No templates found"
-msgstr "Нет шаблонов"
-
-#: apps/postybirb-ui/src/remake/components/shared/template-picker/template-picker-modal.tsx
-msgid "No templates or submissions found"
-msgstr ""
-
 #: apps/postybirb-ui/src/remake/components/sections/home-section/validation-issues-panel.tsx
 msgid "No validation issues"
-msgstr ""
-
-#: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-edit-card/account-selection/form/fields/description-preview-panel.tsx
-msgid "No website accounts configured. Add website accounts to preview the description output."
-msgstr ""
-
-#: apps/postybirb-ui/src/remake/components/drawers/converter-drawer/converter-drawer.tsx
-msgid "No website conversions"
 msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-history-drawer.tsx
@@ -1859,10 +1788,6 @@ msgstr "Нет сайтов"
 #: apps/postybirb-ui/src/remake/components/sections/accounts-section/website-visibility-picker.tsx
 msgid "No websites available"
 msgstr ""
-
-#: apps/postybirb-ui/src/remake/components/drawers/converter-drawer/converter-drawer.tsx
-msgid "No websites found"
-msgstr "Сайты не найдены"
 
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-card/submission-badges.tsx
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-edit-card/actions/submission-edit-card-actions.tsx
@@ -1887,15 +1812,12 @@ msgstr ""
 msgid "Not all tag providers support this feature."
 msgstr ""
 
+#: apps/postybirb-ui/src/remake/components/sections/accounts-section/account-section-header.tsx
 #: apps/postybirb-ui/src/remake/components/sections/accounts-section/login-webview.tsx
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-edit-card/account-selection/account-option-row.tsx
 #: apps/postybirb-ui/src/remake/components/shared/account-picker/account-picker.tsx
 msgid "Not logged in"
 msgstr "Нет входа"
-
-#: apps/postybirb-ui/src/remake/components/sections/accounts-section/account-section-header.tsx
-msgid "Not Logged In"
-msgstr "Вход не выполнен"
 
 #: apps/postybirb-ui/src/remake/components/shared/schedule-popover/schedule-popover.tsx
 msgid "Not scheduled"
@@ -2348,11 +2270,8 @@ msgid "Save API Keys"
 msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-edit-card/account-selection/form/save-defaults-popover.tsx
-msgid "Save as default"
-msgstr ""
-
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-edit-card/account-selection/form/save-defaults-popover.tsx
-msgid "Save as Default"
+msgid "Save as default"
 msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/drawers/file-watcher-drawer/file-watcher-drawer.tsx
@@ -2368,15 +2287,8 @@ msgid "Save to file"
 msgstr "Сохранить в файл"
 
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-edit-card/actions/save-to-many-action.tsx
-msgid "Save to submissions"
-msgstr ""
-
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-edit-card/actions/save-to-many-action.tsx
-msgid "Save to Submissions"
-msgstr ""
-
-#: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-edit-card/account-selection/form/save-defaults-popover.tsx
-msgid "Saved fields will be automatically applied to this account in future submissions."
+msgid "Save to submissions"
 msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/drawers/schedule-drawer/schedule-drawer.tsx
@@ -2394,15 +2306,12 @@ msgstr "Отложить"
 msgid "Schedule a submission to see it here"
 msgstr ""
 
+#: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-edit-card/schedule-form/schedule-form.tsx
+#: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-edit-card/schedule-form/schedule-form.tsx
+#: apps/postybirb-ui/src/remake/components/shared/schedule-popover/schedule-popover.tsx
 #: apps/postybirb-ui/src/remake/components/shared/schedule-popover/schedule-popover.tsx
 #: apps/postybirb-ui/src/remake/components/shared/schedule-popover/schedule-popover.tsx
 msgid "Schedule configured (inactive)"
-msgstr ""
-
-#: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-edit-card/schedule-form/schedule-form.tsx
-#: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-edit-card/schedule-form/schedule-form.tsx
-#: apps/postybirb-ui/src/remake/components/shared/schedule-popover/schedule-popover.tsx
-msgid "Schedule is configured but inactive"
 msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/sections/home-section/home-content.tsx
@@ -2461,13 +2370,10 @@ msgstr ""
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-edit-card/account-selection/account-select.tsx
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-edit-card/account-selection/account-selection-form.tsx
 #: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-section-header.tsx
-msgid "Select all"
-msgstr ""
-
 #: apps/postybirb-ui/src/remake/components/shared/description-editor/custom-blocks/website-only-selector.tsx
 #: apps/postybirb-ui/src/remake/components/shared/description-editor/extensions/username-shortcut.tsx
-msgid "Select All"
-msgstr "Выбрать все"
+msgid "Select all"
+msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/sections/accounts-section/accounts-content.tsx
 msgid "Select an account to log in"
@@ -2539,7 +2445,7 @@ msgid "Server unreachable"
 msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/shared/multi-scheduler-modal/multi-scheduler-modal.tsx
-msgid "Set the interval between each submission. The first submission will be scheduled at the start date, and each subsequent submission will be offset by the interval."
+msgid "Set the interval between each submission."
 msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/dialogs/settings-dialog/settings-dialog.tsx
@@ -2585,10 +2491,6 @@ msgstr ""
 
 #: libs/translations/src/lib/field-translations.ts
 msgid "Silent"
-msgstr ""
-
-#: apps/postybirb-ui/src/remake/components/dialogs/settings-dialog/sections/tags-settings-section.tsx
-msgid "Sites like e621 provide tag autocomplete feature which you can use outside of their tag search field."
 msgstr ""
 
 #: libs/translations/src/lib/field-translations.ts
@@ -2887,6 +2789,10 @@ msgstr ""
 msgid "Theme"
 msgstr ""
 
+#: apps/postybirb-ui/src/remake/components/sections/submissions-section/submission-edit-card/account-selection/form/save-defaults-popover.tsx
+msgid "These defaults apply to future submissions."
+msgstr ""
+
 #: apps/postybirb-ui/src/remake/components/error-boundary/error-boundary.tsx
 msgid "This component encountered an error and couldn't render properly."
 msgstr ""
@@ -3043,12 +2949,9 @@ msgid "Update API Keys"
 msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/update-button/update-button.tsx
-msgid "Update available"
-msgstr ""
-
 #: apps/postybirb-ui/src/remake/components/update-button/update-button.tsx
 #: apps/postybirb-ui/src/remake/components/update-button/update-modal.tsx
-msgid "Update Available"
+msgid "Update available"
 msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/update-button/update-modal.tsx

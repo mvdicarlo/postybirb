@@ -43,6 +43,7 @@ import {
   SubmissionRecord,
   useAccountsMap,
 } from '../../../stores';
+import { EmptyState } from '../../empty-state';
 import { CopyToClipboard } from '../../shared/copy-to-clipboard';
 import { ExternalLink } from '../../shared/external-link';
 
@@ -507,9 +508,7 @@ export function SubmissionHistoryDrawer({
         )}
 
         {descendingRecords.length === 0 ? (
-          <Text c="dimmed" ta="center" mt="xl">
-            <Trans>No post history available</Trans>
-          </Text>
+          <EmptyState preset="no-records" size="sm" />
         ) : (
           <Accordion variant="separated">
             {descendingRecords.map((record) => (

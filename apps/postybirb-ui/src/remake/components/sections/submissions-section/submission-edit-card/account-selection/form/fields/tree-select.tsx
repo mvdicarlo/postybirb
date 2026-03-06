@@ -11,32 +11,32 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-  ActionIcon,
-  Box,
-  Checkbox,
-  Group,
-  InputBase,
-  Popover,
-  ScrollArea,
-  Text,
-  TextInput,
+    ActionIcon,
+    Box,
+    Checkbox,
+    Group,
+    InputBase,
+    Popover,
+    ScrollArea,
+    Text,
+    TextInput,
 } from '@mantine/core';
 import { SelectOption } from '@postybirb/form-builder';
 import { IconChevronDown, IconSearch, IconX } from '@tabler/icons-react';
 import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
 } from 'react';
 import {
-  countSelectableOptions,
-  filterOptions,
-  flattenSelectableOptions,
-  getSelectedOptions,
-  handleMutuallyExclusiveSelection,
-  isOptionGroup,
+    countSelectableOptions,
+    filterOptions,
+    flattenSelectableOptions,
+    getSelectedOptions,
+    handleMutuallyExclusiveSelection,
+    isOptionGroup,
 } from './select-utils';
 
 const SEARCH_THRESHOLD = 7;
@@ -561,7 +561,7 @@ export function TreeSelect({
             ) : opened ? (
               <Text size="sm" c="dimmed" ta="center" py="md">
                 {searchQuery ? (
-                  <Trans>No matching options</Trans>
+                  <Trans>No results found</Trans>
                 ) : (
                   <Trans>No options available</Trans>
                 )}

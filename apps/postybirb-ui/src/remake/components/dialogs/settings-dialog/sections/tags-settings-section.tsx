@@ -49,8 +49,7 @@ export function TagsSettingsSection() {
             />
             <Text size="xs" c="dimmed" mt={5}>
               <Trans>
-                Sites like e621 provide tag autocomplete feature which you can
-                use outside of their tag search field.
+                Enable global tag autocomplete from sites like e621.
               </Trans>
             </Text>
           </Box>

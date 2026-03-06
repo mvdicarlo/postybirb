@@ -62,7 +62,7 @@ export function SaveToManyAction() {
         type={submission.type}
         excludeIds={[submission.id]}
         initialSelectedIds={targetSubmissionIds}
-        title={<Trans>Save to Submissions</Trans>}
+        title={<Trans>Save to submissions</Trans>}
       />
     </>
   );

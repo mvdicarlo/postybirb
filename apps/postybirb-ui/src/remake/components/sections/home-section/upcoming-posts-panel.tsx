@@ -84,7 +84,6 @@ export function UpcomingPostsPanel() {
           <Box style={{ alignItems: 'center' }}>
             <EmptyState
               preset="no-records"
-              message={<Trans>No scheduled posts</Trans>}
               description={<Trans>Schedule a submission to see it here</Trans>}
               size="sm"
             />

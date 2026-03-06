@@ -5,43 +5,43 @@
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
-    Box,
-    Button,
-    Checkbox,
-    ComboboxItem,
-    ComboboxItemGroup,
-    Divider,
-    Fieldset,
-    Group,
-    Modal,
-    MultiSelect,
-    ScrollArea,
-    Stack,
-    Text,
-    Title,
-    Tooltip,
+  Box,
+  Button,
+  Checkbox,
+  ComboboxItem,
+  ComboboxItemGroup,
+  Divider,
+  Fieldset,
+  Group,
+  Modal,
+  MultiSelect,
+  ScrollArea,
+  Stack,
+  Text,
+  Title,
+  Tooltip,
 } from '@mantine/core';
 import {
-    AccountId,
-    IWebsiteFormFields,
-    NULL_ACCOUNT_ID,
-    SubmissionId,
-    SubmissionType,
-    WebsiteOptionsDto,
+  AccountId,
+  IWebsiteFormFields,
+  NULL_ACCOUNT_ID,
+  SubmissionId,
+  SubmissionType,
+  WebsiteOptionsDto,
 } from '@postybirb/types';
 import { IconInfoCircle } from '@tabler/icons-react';
 import { useCallback, useMemo, useState } from 'react';
 import submissionApi from '../../../api/submission.api';
 import {
-    AccountRecord,
-    SubmissionRecord,
-    useAccounts,
-    useSubmissionsByType,
-    useTemplateSubmissions,
+  AccountRecord,
+  SubmissionRecord,
+  useAccounts,
+  useSubmissionsByType,
+  useTemplateSubmissions,
 } from '../../../stores';
 import {
-    showErrorNotification,
-    showSuccessNotification,
+  showErrorNotification,
+  showSuccessNotification,
 } from '../../../utils/notifications';
 
 interface TemplatePickerModalProps {
@@ -433,7 +433,7 @@ export function TemplatePickerModal({
           clearable
           required
           searchable
-          nothingFoundMessage={<Trans>No templates or submissions found</Trans>}
+          nothingFoundMessage={<Trans>No results found</Trans>}
           label={<Trans>Select templates or submissions to import</Trans>}
           data={options}
           value={selected}

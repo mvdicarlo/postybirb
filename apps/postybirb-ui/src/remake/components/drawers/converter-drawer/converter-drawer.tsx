@@ -280,7 +280,7 @@ function AddWebsiteDropdown({
               ))
             ) : (
               <Combobox.Empty>
-                <Trans>No websites found</Trans>
+                <Trans>No results found</Trans>
               </Combobox.Empty>
             )}
           </ScrollArea.Autosize>
@@ -380,9 +380,7 @@ function WebsiteConversionsEditor({
             />
           ))
       ) : (
-        <Text size="xs" c="dimmed" fs="italic">
-          <Trans>No website conversions</Trans>
-        </Text>
+        <EmptyState preset="no-records" size="sm" />
       )}
       <AddWebsiteDropdown
         availableWebsites={availableWebsites}

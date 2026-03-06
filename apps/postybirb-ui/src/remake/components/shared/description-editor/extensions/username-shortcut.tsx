@@ -2,27 +2,27 @@
 /* eslint-disable lingui/no-unlocalized-strings */
 import { Trans } from '@lingui/react/macro';
 import {
-    Badge,
-    Box,
-    Button,
-    Checkbox,
-    Divider,
-    Group,
-    Popover,
-    Stack,
-    Text,
-    TextInput,
-    ThemeIcon,
-    Tooltip,
-    UnstyledButton,
+  Badge,
+  Box,
+  Button,
+  Checkbox,
+  Divider,
+  Group,
+  Popover,
+  Stack,
+  Text,
+  TextInput,
+  ThemeIcon,
+  Tooltip,
+  UnstyledButton,
 } from '@mantine/core';
 import { useDebouncedValue, useDisclosure } from '@mantine/hooks';
 import {
-    IconArrowRight,
-    IconChevronDown,
-    IconSearch,
-    IconWorld,
-    IconX,
+  IconArrowRight,
+  IconChevronDown,
+  IconSearch,
+  IconWorld,
+  IconX,
 } from '@tabler/icons-react';
 import { mergeAttributes, Node } from '@tiptap/core';
 import { Selection } from '@tiptap/pm/state';
@@ -379,7 +379,7 @@ function UsernameShortcutView({
               <Box px="sm" pb="0">
                 <Group gap="xs">
                   <Button size="xs" variant="light" color="blue" onClick={handleSelectAll} style={{ flex: 1 }}>
-                    {selectedWebsiteIds.length === websites.length ? <Trans>Deselect All</Trans> : <Trans>Select All</Trans>}
+                    {selectedWebsiteIds.length === websites.length ? <Trans>Deselect all</Trans> : <Trans>Select all</Trans>}
                   </Button>
                 </Group>
               </Box>
@@ -420,7 +420,7 @@ function UsernameShortcutView({
                   </Stack>
                 ) : (
                   <Box p="md">
-                    <Text ta="center" c="dimmed" size="sm"><Trans>No items found</Trans></Text>
+                    <Text ta="center" c="dimmed" size="sm"><Trans>No results found</Trans></Text>
                   </Box>
                 )}
               </Box>

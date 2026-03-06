@@ -35,7 +35,7 @@ function ContentWarningShortcutView({
         contentEditable={false}
         styles={{ label: { display: 'flex', alignItems: 'center', gap: 4 } }}
       >
-        <span style={{ fontWeight: 600 }}><Trans>Content Warning</Trans></span>
+        <span style={{ fontWeight: 600 }}><Trans>Content warning</Trans></span>
         <IconArrowRight size={12} style={{ opacity: 0.5 }} />
         <WebsiteOnlySelector only={node.attrs.only} onOnlyChange={handleOnlyChange} />
       </Badge>

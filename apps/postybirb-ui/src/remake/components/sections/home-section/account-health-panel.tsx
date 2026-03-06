@@ -5,20 +5,20 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-  Badge,
-  Box,
-  Group,
-  Paper,
-  Progress,
-  Stack,
-  Text,
-  ThemeIcon,
-  UnstyledButton,
+    Badge,
+    Box,
+    Group,
+    Paper,
+    Progress,
+    Stack,
+    Text,
+    ThemeIcon,
+    UnstyledButton,
 } from '@mantine/core';
 import {
-  IconAlertCircle,
-  IconCircleCheck,
-  IconUsers,
+    IconAlertCircle,
+    IconCircleCheck,
+    IconUsers,
 } from '@tabler/icons-react';
 import { useAccounts } from '../../../stores/entity/account-store';
 import { useViewStateActions } from '../../../stores/ui/navigation-store';
@@ -74,7 +74,6 @@ export function AccountHealthPanel() {
           <Box style={{ alignItems: 'center' }}>
             <EmptyState
               preset="no-records"
-              message={<Trans>No accounts added</Trans>}
               description={<Trans>Add an account to start posting</Trans>}
               size="sm"
             />
