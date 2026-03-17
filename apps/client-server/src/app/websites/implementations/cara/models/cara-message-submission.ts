@@ -1,5 +1,5 @@
 import { DescriptionField, TagField } from '@postybirb/form-builder';
-import { DescriptionType, DescriptionValue, DefaultTagValue } from '@postybirb/types';
+import { DescriptionType, DescriptionValue, DefaultTagValue, TagValue } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
 export class CaraMessageSubmission extends BaseWebsiteOptions {
