@@ -7,6 +7,7 @@ import {
   DescriptionType,
   DescriptionValue,
   SubmissionRating,
+  DefaultTagValue,
 } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 import { TumblrAccountData } from './tumblr-account-data';
