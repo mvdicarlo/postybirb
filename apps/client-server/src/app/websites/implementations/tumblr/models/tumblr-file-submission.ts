@@ -31,6 +31,14 @@ export class TumblrFileSubmission extends BaseWebsiteOptions {
   })
   blog: string;
 
+  @TagField({
+    section: 'common',
+    order: 3,
+    span: 12,
+    spaceReplacer: ' ',
+  })
+  tags: TagValue = DefaultTagValue();
+
   @BooleanField({
     label: 'drugUse',
     span: 4,
