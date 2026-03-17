@@ -1,4 +1,4 @@
-import { DescriptionField } from '@postybirb/form-builder';
+import { DescriptionField, TagField } from '@postybirb/form-builder';
 import { DescriptionType, DescriptionValue, DefaultTagValue } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
