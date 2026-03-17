@@ -3,6 +3,7 @@ export * from './custom-account-data';
 export * from './discord-account-data';
 export * from './e621-account-data';
 export * from './inkbunny-account-data';
+export * from './instagram-account-data';
 export * from './megalodon-account-data';
 export * from './telegram-account-data';
 export * from './twitter-account-data';

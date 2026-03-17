@@ -8,6 +8,7 @@ import { CustomLoginView } from './custom';
 import { DiscordLoginView } from './discord';
 import { E621LoginView } from './e621';
 import { InkbunnyLoginView } from './inkbunny';
+import { InstagramLoginView } from './instagram';
 import { MegalodonLoginView } from './megalodon';
 import { TelegramLoginView } from './telegram';
 import { TwitterLoginView } from './twitter';
@@ -15,10 +16,10 @@ import type { LoginViewComponent } from './types';
 
 // Re-export types and helpers
 export {
-  createLoginHttpErrorHandler,
-  notifyInfo,
-  notifyLoginError,
-  notifyLoginFailed
+    createLoginHttpErrorHandler,
+    notifyInfo,
+    notifyLoginError,
+    notifyLoginFailed
 } from './helpers';
 export { LoginViewContainer } from './login-view-container';
 export type { LoginViewComponent, LoginViewProps } from './types';
@@ -35,6 +36,7 @@ const loginViewRegistry: Record<string, LoginViewComponent<any>> = {
   Friendica: MegalodonLoginView,
   GoToSocial: MegalodonLoginView,
   Inkbunny: InkbunnyLoginView,
+  Instagram: InstagramLoginView,
   Mastodon: MegalodonLoginView,
   Pixelfed: MegalodonLoginView,
   Pleroma: MegalodonLoginView,

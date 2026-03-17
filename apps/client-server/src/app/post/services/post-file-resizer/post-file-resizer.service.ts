@@ -66,6 +66,16 @@ export class PostFileResizerService {
 
     let sharpInstance = ImageUtil.load(file.file.buffer);
     let hasBeenModified = false;
+
+    // Apply format conversion if requested
+    if (resize.outputMimeType && file.mimeType !== resize.outputMimeType) {
+      hasBeenModified = true;
+      sharpInstance = this.applyOutputFormat(
+        sharpInstance,
+        resize.outputMimeType,
+      );
+    }
+
     if (resize.width || resize.height) {
       // Check if resizing is even worth it
       if (resize.width < file.file.width || resize.height < file.file.height) {
@@ -203,5 +213,25 @@ export class PostFileResizerService {
 
   private async isFileTooLarge(instance: Sharp, maxBytes: number) {
     return (await instance.toBuffer()).length > maxBytes;
+  }
+
+  /**
+   * Apply output format conversion to a sharp instance.
+   * Converts the image to the target MIME type (e.g., image/jpeg, image/png, image/webp).
+   */
+  private applyOutputFormat(instance: Sharp, outputMimeType: string): Sharp {
+    switch (outputMimeType) {
+      case 'image/jpeg':
+        return instance.jpeg({ quality: 100 });
+      case 'image/png':
+        return instance.png();
+      case 'image/webp':
+        return instance.webp({ quality: 100 });
+      default:
+        this.logger.warn(
+          `Unknown output format: ${outputMimeType}, skipping conversion`,
+        );
+        return instance;
+    }
   }
 }

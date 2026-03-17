@@ -1,42 +1,42 @@
 // eslint-disable-next-line max-classes-per-file
 import {
-  $Typed,
-  AppBskyActorGetProfile,
-  AppBskyEmbedImages,
-  AppBskyEmbedVideo,
-  AppBskyFeedThreadgate,
-  AppBskyVideoGetJobStatus,
-  AppBskyVideoGetUploadLimits,
-  AppBskyVideoUploadVideo,
-  AtpAgent,
-  AtUri,
-  BlobRef,
-  ComAtprotoLabelDefs,
-  RichText,
+    $Typed,
+    AppBskyActorGetProfile,
+    AppBskyEmbedImages,
+    AppBskyEmbedVideo,
+    AppBskyFeedThreadgate,
+    AppBskyVideoGetJobStatus,
+    AppBskyVideoGetUploadLimits,
+    AppBskyVideoUploadVideo,
+    AtpAgent,
+    AtUri,
+    BlobRef,
+    ComAtprotoLabelDefs,
+    RichText,
 } from '@atproto/api';
 import { ReplyRef } from '@atproto/api/dist/client/types/app/bsky/feed/post';
 import { JobStatus } from '@atproto/api/dist/client/types/app/bsky/video/defs';
 import {
-  BlueskyAccountData,
-  BlueskyOAuthRoutes,
-  FileType,
-  ILoginState,
-  ImageResizeProps,
-  ISubmissionFile,
-  OAuthRouteHandlers,
-  PostData,
-  PostResponse,
-  SimpleValidationResult,
-  SubmissionRating,
+    BlueskyAccountData,
+    BlueskyOAuthRoutes,
+    FileType,
+    ILoginState,
+    ImageResizeProps,
+    ISubmissionFile,
+    OAuthRouteHandlers,
+    PostData,
+    PostResponse,
+    SimpleValidationResult,
+    SubmissionRating,
 } from '@postybirb/types';
 import { getFileTypeFromMimeType } from '@postybirb/utils/file-type';
 import { v4 } from 'uuid';
 import {
-  BaseConverter,
+    BaseConverter,
 } from '../../../post-parsers/models/description-node/converters/base-converter';
 import { PlainTextConverter } from '../../../post-parsers/models/description-node/converters/plaintext-converter';
 import {
-  ConversionContext,
+    ConversionContext,
 } from '../../../post-parsers/models/description-node/description-node.base';
 import { TipTapNode } from '../../../post-parsers/models/description-node/description-node.types';
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -236,7 +236,9 @@ export default class Bluesky
         );
       }
 
-      return PostResponse.fromWebsite(this).withSourceUrl(friendlyUrl);
+      const response = PostResponse.fromWebsite(this).withSourceUrl(friendlyUrl);
+
+      return response;
     }
 
     return PostResponse.fromWebsite(this)

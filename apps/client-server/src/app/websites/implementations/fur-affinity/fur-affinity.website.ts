@@ -273,6 +273,9 @@ export default class FurAffinity
         .withAdditionalInfo(postResponse.body);
     }
 
+    const $ = parse(postResponse.body);
+    const submissionUrl =
+      $.querySelector('#submissionImg')?.getAttribute('src');
     return PostResponse.fromWebsite(this)
       .withSourceUrl(postResponse.responseUrl.replace('?upload-successful', ''))
       .withMessage('File posted successfully')

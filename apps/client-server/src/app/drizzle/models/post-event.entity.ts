@@ -1,11 +1,11 @@
 import {
-    AccountId,
-    EntityId,
-    IPostEvent,
-    IPostEventError,
-    IPostEventMetadata,
-    PostEventDto,
-    PostEventType,
+  AccountId,
+  EntityId,
+  IPostEvent,
+  IPostEventError,
+  IPostEventMetadata,
+  PostEventDto,
+  PostEventType,
 } from '@postybirb/types';
 import { instanceToPlain, Type } from 'class-transformer';
 import { Account } from './account.entity';
