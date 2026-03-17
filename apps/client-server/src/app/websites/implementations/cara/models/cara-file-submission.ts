@@ -1,5 +1,5 @@
 import { BooleanField, DescriptionField } from '@postybirb/form-builder';
-import { DescriptionType, DescriptionValue } from '@postybirb/types';
+import { DescriptionType, DescriptionValue, DefaultTagValue } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
 export class CaraFileSubmission extends BaseWebsiteOptions {
