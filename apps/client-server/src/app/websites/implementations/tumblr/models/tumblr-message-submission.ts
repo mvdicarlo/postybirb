@@ -2,6 +2,7 @@ import {
   BooleanField,
   DescriptionField,
   SelectField,
+  TagField,
 } from '@postybirb/form-builder';
 import {
   DescriptionType,
