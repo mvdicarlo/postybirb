@@ -8,4 +8,12 @@ export class CaraMessageSubmission extends BaseWebsiteOptions {
     maxDescriptionLength: 5000,
   })
   description: DescriptionValue;
+
+  @TagField({
+    section: 'common',
+    order: 3,
+    span: 12,
+    spaceReplacer: ' ',
+  })
+  tags: TagValue = DefaultTagValue();
 }
