@@ -13,4 +13,12 @@ export class CaraFileSubmission extends BaseWebsiteOptions {
     label: 'addToPortfolio',
   })
   addToPortfolio = false;
+
+  @TagField({
+    section: 'common',
+    order: 3,
+    span: 12,
+    spaceReplacer: ' ',
+  })
+  tags: TagValue = DefaultTagValue();
 }
