@@ -404,7 +404,7 @@ export class InstagramApiService {
     accessToken: string,
     containerId: string,
     timeoutMs = 300_000, // 5 minutes
-    intervalMs = 15_000, // 15 seconds
+    intervalMs = 10_000, // 10 seconds
   ): Promise<void> {
     const startTime = Date.now();
 

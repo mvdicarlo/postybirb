@@ -1,15 +1,18 @@
-import { BlobServiceClient, ContainerClient } from '@azure/storage-blob';
 import { Logger, PostyBirbLogger } from '@postybirb/logger';
-import { v4 as uuid } from 'uuid';
 
-const CONNECTION_STRING = '';
+const FUNCTION_BASE_URL =
+  process.env.POSTYBIRB_CLOUD_URL || 'https://postybirb.azurewebsites.net/api';
 
-const CONTAINER_NAME = 'instagram';
+interface UploadResponse {
+  url: string;
+  blobName: string;
+}
 
 /**
  * Temporary blob storage for Instagram image uploads.
- * Uploads images to Azure Blob Storage so Instagram's API can cURL them,
- * then deletes them after posting completes (success or failure).
+ * Uploads images via the PostyBirb cloud server Azure Function
+ * so Instagram's API can cURL them.
+ * Blobs are auto-deleted by Azure Lifecycle Management policy.
  */
 export class InstagramBlobService {
   private static loggerInstance: PostyBirbLogger;
@@ -21,66 +24,35 @@ export class InstagramBlobService {
     return InstagramBlobService.loggerInstance;
   }
 
-  private static getContainerClient(): ContainerClient {
-    const blobServiceClient =
-      BlobServiceClient.fromConnectionString(CONNECTION_STRING);
-    return blobServiceClient.getContainerClient(CONTAINER_NAME);
-  }
-
   /**
-   * Upload a file buffer to Azure Blob Storage.
-   * @returns The public URL of the uploaded blob and its name for cleanup.
+   * Upload a file buffer via the cloud server function.
+   * @returns The public URL of the uploaded blob.
    */
   static async upload(
     buffer: Buffer,
     mimeType: string,
-    fileExtension = 'jpg',
-  ): Promise<{ url: string; blobName: string }> {
-    const containerClient = InstagramBlobService.getContainerClient();
-
-    // Ensure container exists with public blob access
-    await containerClient.createIfNotExists({
-      access: 'blob',
-    });
-
-    const blobName = `${uuid()}.${fileExtension}`;
-    const blockBlobClient = containerClient.getBlockBlobClient(blobName);
-
-    await blockBlobClient.uploadData(buffer, {
-      blobHTTPHeaders: {
-        blobContentType: mimeType,
+  ): Promise<UploadResponse> {
+    const response = await fetch(`${FUNCTION_BASE_URL}/upload`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': mimeType,
       },
+      body: new Uint8Array(buffer),
     });
 
-    InstagramBlobService.logger.info(`Uploaded blob: ${blobName}`);
-
-    return {
-      url: blockBlobClient.url,
-      blobName,
-    };
-  }
-
-  /**
-   * Delete a blob from Azure Blob Storage.
-   * Best-effort — logs but does not throw on failure.
-   */
-  static async delete(blobName: string): Promise<void> {
-    try {
-      const containerClient = InstagramBlobService.getContainerClient();
-      const blockBlobClient = containerClient.getBlockBlobClient(blobName);
-      await blockBlobClient.deleteIfExists();
-      InstagramBlobService.logger.info(`Deleted blob: ${blobName}`);
-    } catch (e) {
-      InstagramBlobService.logger.warn(`Failed to delete blob ${blobName}`, e);
+    if (!response.ok) {
+      const errorBody = await response.text();
+      throw new Error(
+        `Failed to upload to cloud server: ${response.status} ${errorBody}`,
+      );
     }
-  }
 
-  /**
-   * Delete multiple blobs. Best-effort cleanup.
-   */
-  static async deleteAll(blobNames: string[]): Promise<void> {
-    await Promise.all(
-      blobNames.map((name) => InstagramBlobService.delete(name)),
-    );
+    const data = (await response.json()) as UploadResponse;
+    if (!data.url) {
+      throw new Error('Cloud server did not return a URL');
+    }
+
+    InstagramBlobService.logger.info(`Uploaded blob: ${data.blobName}`);
+    return data;
   }
 }

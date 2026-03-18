@@ -303,15 +303,14 @@ export default class Instagram
     const caption = this.buildCaption(postData);
 
     // Upload files to temporary blob storage so Instagram can cURL them
+    // Blobs are auto-deleted by Azure Lifecycle Management policy
     const uploadedBlobs: Array<{ url: string; blobName: string }> = [];
     try {
       for (const file of files) {
         cancellationToken.throwIfCancelled();
-        const ext = file.mimeType === 'image/jpeg' ? 'jpg' : 'png';
         const blob = await InstagramBlobService.upload(
           file.buffer,
           file.mimeType,
-          ext,
         );
         uploadedBlobs.push(blob);
       }
@@ -392,11 +391,6 @@ export default class Instagram
           e instanceof Error ? e : new Error('Failed to post to Instagram'),
         )
         .withAdditionalInfo(e);
-    } finally {
-      // Always cleanup blobs, whether post succeeded or failed
-      await InstagramBlobService.deleteAll(
-        uploadedBlobs.map((b) => b.blobName),
-      );
     }
   }
 
@@ -432,21 +426,26 @@ export default class Instagram
     }
 
     // Validate image aspect ratios
-    // Instagram supports: 4:5 portrait (0.8) to 1.91:1 landscape (1.91)
+    // Instagram only supports specific aspect ratios:
+    // 1:1 (square) = 1.0, 4:5 (portrait) = 0.8, 1.91:1 (landscape) = 1.91
+    const SUPPORTED_RATIOS = [
+      { name: '1:1', ratio: 1 / 1 },
+      { name: '4:5', ratio: 4 / 5 },
+      { name: '1.91:1', ratio: 1.91 / 1 },
+    ];
+    const RATIO_TOLERANCE = 0.02; // Allow small rounding differences
+
     const files = postData.submission?.files ?? [];
     for (const file of files) {
       if (file.width && file.height) {
         const ratio = file.width / file.height;
-        if (ratio < 4 / 5 || ratio > 1.91) {
-          validator.error(
-            'validation.file.instagram.invalid-aspect-ratio',
-            {
-              fileName: file.fileName,
-              currentRatio: ratio.toFixed(2),
-              minRatio: '4:5 (0.80)',
-              maxRatio: '1.91:1',
-            },
-          );
+        const isSupported = SUPPORTED_RATIOS.some(
+          (sr) => Math.abs(ratio - sr.ratio) <= RATIO_TOLERANCE,
+        );
+        if (!isSupported) {
+          validator.error('validation.file.instagram.invalid-aspect-ratio', {
+            fileName: file.fileName,
+          });
         }
       }
     }

@@ -223,8 +223,5 @@ export interface ValidationMessages {
 
   'validation.file.instagram.invalid-aspect-ratio': {
     fileName: string;
-    currentRatio: string;
-    minRatio: string;
-    maxRatio: string;
   };
 }
