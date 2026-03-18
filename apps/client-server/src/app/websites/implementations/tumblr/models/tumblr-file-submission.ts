@@ -2,11 +2,14 @@ import {
   BooleanField,
   DescriptionField,
   SelectField,
+  TagField,
 } from '@postybirb/form-builder';
 import {
   DescriptionType,
   DescriptionValue,
   SubmissionRating,
+  DefaultTagValue,
+  TagValue,
 } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 import { TumblrAccountData } from './tumblr-account-data';
@@ -30,6 +33,14 @@ export class TumblrFileSubmission extends BaseWebsiteOptions {
     span: 12,
   })
   blog: string;
+
+  @TagField({
+    section: 'common',
+    order: 3,
+    span: 12,
+    spaceReplacer: ' ',
+  })
+  tags: TagValue = DefaultTagValue();
 
   @BooleanField({
     label: 'drugUse',

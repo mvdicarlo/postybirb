@@ -1,5 +1,5 @@
-import { BooleanField, DescriptionField } from '@postybirb/form-builder';
-import { DescriptionType, DescriptionValue } from '@postybirb/types';
+import { BooleanField, DescriptionField, TagField } from '@postybirb/form-builder';
+import { DescriptionType, DescriptionValue, DefaultTagValue, TagValue } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
 export class CaraFileSubmission extends BaseWebsiteOptions {
@@ -13,4 +13,12 @@ export class CaraFileSubmission extends BaseWebsiteOptions {
     label: 'addToPortfolio',
   })
   addToPortfolio = false;
+
+  @TagField({
+    section: 'common',
+    order: 3,
+    span: 12,
+    spaceReplacer: ' ',
+  })
+  tags: TagValue = DefaultTagValue();
 }
