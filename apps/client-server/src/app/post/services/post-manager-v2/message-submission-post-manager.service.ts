@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import {
-  AccountId,
-  PostData,
-  PostEventType,
-  SubmissionType,
+    AccountId,
+    PostData,
+    PostEventType,
+    SubmissionType,
 } from '@postybirb/types';
 import { PostRecord } from '../../../drizzle/models';
 import { NotificationsService } from '../../../notifications/notifications.service';

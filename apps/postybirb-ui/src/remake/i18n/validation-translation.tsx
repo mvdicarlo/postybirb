@@ -355,6 +355,17 @@ export const TranslationMessages: TranslationsMap = {
     <Trans>Selected option is invalid or missing</Trans>
   ),
 
+  'validation.file.instagram.invalid-aspect-ratio': (props) => {
+    const { fileName } = props;
+    return (
+      <Trans>
+        File &quot;{fileName}&quot; has an unsupported aspect ratio for
+        Instagram. Supported ratios: 1:1 (square), 4:5 (portrait), 1.91:1
+        (landscape).
+      </Trans>
+    );
+  },
+
   'validation.rating.unsupported-rating': (props: {
     rating: string;
   }): JSX.Element => {

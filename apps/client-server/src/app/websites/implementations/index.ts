@@ -14,6 +14,7 @@ export { default as Furbooru } from './furbooru/furbooru.website';
 export { default as GoToSocial } from './gotosocial/gotosocial.website';
 export { default as HentaiFoundry } from './hentai-foundry/hentai-foundry.website';
 export { default as Inkbunny } from './inkbunny/inkbunny.website';
+export { default as Instagram } from './instagram/instagram.website';
 export { default as Itaku } from './itaku/itaku.website';
 export { default as KoFi } from './ko-fi/ko-fi.website';
 export { default as Manebooru } from './manebooru/manebooru.website';

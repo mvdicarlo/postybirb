@@ -220,4 +220,8 @@ export interface ValidationMessages {
   };
 
   'validation.folder.missing-or-invalid': object;
+
+  'validation.file.instagram.invalid-aspect-ratio': {
+    fileName: string;
+  };
 }
