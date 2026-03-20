@@ -14,7 +14,12 @@
         "assets": [
           "apps/postybirb/src/assets", 
           "apps/postybirb/src/migrations",
-          "apps/postybirb/src/app/loader"
+          "apps/postybirb/src/app/loader",
+          {
+            "glob": "sharp-worker.js",
+            "input": "apps/client-server/src/assets",
+            "output": "assets"
+          }
         ]
       },
       "configurations": {

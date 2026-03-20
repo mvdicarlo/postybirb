@@ -11,6 +11,7 @@ import { DirectoryWatchersModule } from './directory-watchers/directory-watchers
 import { FileConverterModule } from './file-converter/file-converter.module';
 import { FileModule } from './file/file.module';
 import { FormGeneratorModule } from './form-generator/form-generator.module';
+import { ImageProcessingModule } from './image-processing/image-processing.module';
 import { LegacyDatabaseImporterModule } from './legacy-database-importer/legacy-database-importer.module';
 import { LogsModule } from './logs/logs.module';
 import { NotificationsModule } from './notifications/notifications.module';
@@ -33,6 +34,7 @@ import { WebsitesModule } from './websites/websites.module';
 @Module({
   imports: [
     ScheduleModule.forRoot(),
+    ImageProcessingModule,
     AccountModule,
     WebSocketModule,
     WebsitesModule,

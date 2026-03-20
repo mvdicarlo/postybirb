@@ -5,6 +5,7 @@ import { FileModule } from '../file/file.module';
 import { FileService } from '../file/file.service';
 import { CreateFileService } from '../file/services/create-file.service';
 import { UpdateFileService } from '../file/services/update-file.service';
+import { SharpInstanceManager } from '../image-processing/sharp-instance-manager';
 import { PostParsersModule } from '../post-parsers/post-parsers.module';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
 import { WebsiteImplProvider } from '../websites/implementations/provider';
@@ -28,6 +29,7 @@ describe('ValidationService', () => {
         FileService,
         CreateFileService,
         UpdateFileService,
+        SharpInstanceManager,
       ],
     }).compile();
 

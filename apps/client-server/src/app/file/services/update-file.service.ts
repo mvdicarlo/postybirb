@@ -20,6 +20,7 @@ import {
     TransactionContext,
     withTransactionContext,
 } from '../../drizzle/transaction-context';
+import { SharpInstanceManager } from '../../image-processing/sharp-instance-manager';
 import { MulterFileInfo } from '../models/multer-file-info';
 import { ImageUtil } from '../utils/image.util';
 import { CreateFileService } from './create-file.service';
@@ -39,7 +40,10 @@ export class UpdateFileService {
     'FileBufferSchema',
   );
 
-  constructor(private readonly createFileService: CreateFileService) {}
+  constructor(
+    private readonly createFileService: CreateFileService,
+    private readonly sharpInstanceManager: SharpInstanceManager,
+  ) {}
 
   /**
    * Creates file entity and stores it.
@@ -260,7 +264,7 @@ export class UpdateFileService {
     file: MulterFileInfo,
     buf: Buffer,
   ) {
-    const { width, height, sharpInstance } = await this.getImageDetails(
+    const { width, height } = await this.getImageDetails(
       file,
       buf,
     );
@@ -295,9 +299,7 @@ export class UpdateFileService {
         height: thumbnailHeight,
         mimeType: thumbnailMimeType,
       } = await this.createFileService.generateThumbnail(
-        sharpInstance,
-        height,
-        width,
+        buf,
         file.mimetype,
       );
 
@@ -331,10 +333,8 @@ export class UpdateFileService {
    */
   private async getImageDetails(file: MulterFileInfo, buf: Buffer) {
     if (ImageUtil.isImage(file.mimetype, false)) {
-      const sharpInstance = ImageUtil.load(buf);
-
-      const { height, width } = await sharpInstance.metadata();
-      return { buffer: buf, width, height, sharpInstance };
+      const { height, width } = await this.sharpInstanceManager.getMetadata(buf);
+      return { buffer: buf, width, height };
     }
 
     throw new BadRequestException('File is not an image');

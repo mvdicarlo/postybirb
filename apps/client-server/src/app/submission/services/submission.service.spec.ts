@@ -21,6 +21,7 @@ import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { CreateFileService } from '../../file/services/create-file.service';
 import { UpdateFileService } from '../../file/services/update-file.service';
 import { FormGeneratorModule } from '../../form-generator/form-generator.module';
+import { SharpInstanceManager } from '../../image-processing/sharp-instance-manager';
 import { PostParsersModule } from '../../post-parsers/post-parsers.module';
 import { UserSpecifiedWebsiteOptionsModule } from '../../user-specified-website-options/user-specified-website-options.module';
 import { UserSpecifiedWebsiteOptionsService } from '../../user-specified-website-options/user-specified-website-options.service';
@@ -64,6 +65,7 @@ describe('SubmissionService', () => {
           SubmissionService,
           CreateFileService,
           UpdateFileService,
+          SharpInstanceManager,
           FileService,
           FileSubmissionService,
           MessageSubmissionService,

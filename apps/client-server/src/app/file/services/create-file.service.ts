@@ -15,7 +15,6 @@ import { async as hash } from 'hasha';
 import { htmlToText } from 'html-to-text';
 import * as mammoth from 'mammoth';
 import { parse } from 'path';
-import { Sharp } from 'sharp';
 import { promisify } from 'util';
 import { v4 as uuid } from 'uuid';
 
@@ -29,6 +28,7 @@ import {
     TransactionContext,
     withTransactionContext,
 } from '../../drizzle/transaction-context';
+import { SharpInstanceManager } from '../../image-processing/sharp-instance-manager';
 import { MulterFileInfo } from '../models/multer-file-info';
 import { ImageUtil } from '../utils/image.util';
 
@@ -47,6 +47,10 @@ export class CreateFileService {
   private readonly fileRepository = new PostyBirbDatabase(
     'SubmissionFileSchema',
   );
+
+  constructor(
+    private readonly sharpInstanceManager: SharpInstanceManager,
+  ) {}
 
   /**
    * Creates file entity and stores it.
@@ -240,14 +244,12 @@ export class CreateFileService {
     file: MulterFileInfo,
     buf: Buffer,
   ): Promise<SubmissionFile> {
-    const sharpInstance = ImageUtil.load(buf);
-
-    const meta = await sharpInstance.metadata();
+    const meta = await this.sharpInstanceManager.getMetadata(buf);
     const thumbnail = await this.createFileThumbnail(
       ctx,
       entity,
       file,
-      sharpInstance,
+      buf,
     );
     const update: Select<typeof this.fileRepository.schemaEntity> = {
       width: meta.width ?? 0,
@@ -280,16 +282,15 @@ export class CreateFileService {
    * Returns a thumbnail entity for a file.
    *
    * @param {SubmissionFile} fileEntity
-   * @param {File} fileEntity
    * @param {MulterFileInfo} file
-   * @param {Sharp} sharpInstance
+   * @param {Buffer} imageBuffer - The source image buffer
    * @return {*}  {Promise<IFileBuffer>}
    */
   public async createFileThumbnail(
     ctx: TransactionContext,
     fileEntity: SubmissionFile,
     file: MulterFileInfo,
-    sharpInstance: Sharp,
+    imageBuffer: Buffer,
   ): Promise<IFileBuffer> {
     const {
       buffer: thumbnailBuf,
@@ -297,9 +298,7 @@ export class CreateFileService {
       width,
       mimeType: thumbnailMimeType,
     } = await this.generateThumbnail(
-      sharpInstance,
-      fileEntity.height,
-      fileEntity.width,
+      imageBuffer,
       file.mimetype,
     );
 
@@ -317,49 +316,36 @@ export class CreateFileService {
 
   /**
    * Generates a thumbnail for display at specific dimension requirements.
+   * Delegates to the sharp worker pool for crash isolation.
    *
-   * @param {Sharp} sharpInstance
-   * @param {number} fileHeight
-   * @param {number} fileWidth
+   * @param {Buffer} imageBuffer - The source image buffer
    * @param {string} sourceMimeType - The mimetype of the source image
+   * @param {number} [preferredDimension=400] - The preferred thumbnail dimension
    * @return {*}  {Promise<{ width: number; height: number; buffer: Buffer; mimeType: string }>}
    */
   public async generateThumbnail(
-    sharpInstance: Sharp,
-    fileHeight: number,
-    fileWidth: number,
+    imageBuffer: Buffer,
     sourceMimeType: string,
+    preferredDimension = 400,
   ): Promise<{
     width: number;
     height: number;
     buffer: Buffer;
     mimeType: string;
   }> {
-    const preferredDimension = 400;
-
-    // Resize with aspect ratio preserved - Sharp will calculate the other dimension
-    const resized = sharpInstance.resize(
+    const result = await this.sharpInstanceManager.generateThumbnail(
+      imageBuffer,
+      sourceMimeType,
+      'thumbnail',
       preferredDimension,
-      preferredDimension,
-      {
-        fit: 'inside', // Ensure image fits within the box while maintaining aspect ratio
-        withoutEnlargement: true, // Don't enlarge if image is smaller than target
-      },
     );
 
-    const isJpeg =
-      sourceMimeType === 'image/jpeg' || sourceMimeType === 'image/jpg';
-    const buffer = isJpeg
-      ? await resized.jpeg({ quality: 99, force: true }).toBuffer()
-      : await resized.png({ quality: 99, force: true }).toBuffer();
-    const mimeType = isJpeg ? 'image/jpeg' : 'image/png';
-
-    // Get the actual dimensions after the buffer is generated
-    const metadata = await ImageUtil.load(buffer).metadata();
-    const width = metadata.width ?? preferredDimension;
-    const height = metadata.height ?? preferredDimension;
-
-    return { buffer, height, width, mimeType };
+    return {
+      buffer: result.buffer,
+      height: result.height,
+      width: result.width,
+      mimeType: result.mimeType,
+    };
   }
 
   /**

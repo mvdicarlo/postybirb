@@ -1,5 +1,11 @@
-import sharp from 'sharp';
-
+/**
+ * Utility class for image-related checks.
+ *
+ * NOTE: Sharp image processing has been moved to SharpInstanceManager
+ * which runs sharp in isolated worker threads for crash protection.
+ * The load() and getMetadata() methods have been removed.
+ * Use SharpInstanceManager.getMetadata() or SharpInstanceManager.resizeForPost() instead.
+ */
 export class ImageUtil {
   static isImage(mimetype: string, includeGIF = false): boolean {
     if (includeGIF && mimetype === 'image/gif') {
@@ -7,14 +13,5 @@ export class ImageUtil {
     }
 
     return mimetype.startsWith('image/') && mimetype !== 'image/gif';
-  }
-
-  static getMetadata(bufferOrPath: Buffer | string) {
-    const image = sharp(bufferOrPath);
-    return image.metadata();
-  }
-
-  static load(bufferOrPath: Buffer | string) {
-    return sharp(bufferOrPath);
   }
 }

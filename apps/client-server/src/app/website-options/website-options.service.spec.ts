@@ -14,6 +14,7 @@ import { FileConverterService } from '../file-converter/file-converter.service';
 import { FileService } from '../file/file.service';
 import { CreateFileService } from '../file/services/create-file.service';
 import { UpdateFileService } from '../file/services/update-file.service';
+import { SharpInstanceManager } from '../image-processing/sharp-instance-manager';
 import { FormGeneratorModule } from '../form-generator/form-generator.module';
 import { PostParsersModule } from '../post-parsers/post-parsers.module';
 import { CreateSubmissionDto } from '../submission/dtos/create-submission.dto';
@@ -69,6 +70,7 @@ describe('WebsiteOptionsService', () => {
           SubmissionService,
           CreateFileService,
           UpdateFileService,
+          SharpInstanceManager,
           FileService,
           SubmissionService,
           FileSubmissionService,
