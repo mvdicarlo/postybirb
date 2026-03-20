@@ -86,7 +86,7 @@ describe('PostFileResizerService', () => {
     expect(metadata.height).toBeLessThan(202);
     expect(resized.fileName).toBe('test.jpeg');
     expect(resized.thumbnail).toBeDefined();
-  }, 5_000);
+  });
 
   it('should not resize image', async () => {
     const resized = await service.resize({ file, resize: { width: 300 } });
@@ -95,7 +95,7 @@ describe('PostFileResizerService', () => {
     expect(metadata.width).toBe(file.width);
     expect(metadata.height).toBe(file.height);
     expect(resized.fileName).toBe('test.jpg');
-  }, 5_000);
+  });
 
   it('should scale down image', async () => {
     const resized = await service.resize({
@@ -107,7 +107,7 @@ describe('PostFileResizerService', () => {
     expect(resized.fileName).toBe('test.jpeg');
     expect(resized.thumbnail?.fileName).toBe('test.jpg');
     expect(resized.mimeType).toBe('image/jpeg');
-  }, 5_000);
+  });
 
   it('should fail to scale down image', async () => {
     await expect(
@@ -116,7 +116,7 @@ describe('PostFileResizerService', () => {
         resize: { maxBytes: -1 },
       }),
     ).rejects.toThrow();
-  }, 5_000);
+  });
 
   it('should not convert png thumbnail with alpha to jpeg', async () => {
     const noAlphaFile = readFileSync(
@@ -132,5 +132,5 @@ describe('PostFileResizerService', () => {
     expect(resized.fileName).toBe('test.png');
     expect(resized.thumbnail?.buffer.length).toBeLessThan(noAlphaFile.length);
     expect(resized.thumbnail?.fileName).toBe('test.png');
-  }, 5_000);
+  });
 });
