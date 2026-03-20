@@ -60,7 +60,7 @@ describe('WebsiteRegistryService', () => {
     );
 
     const instance = await service.create(account);
-    await instance.onLogin();
+    await instance.login();
     expect(instance instanceof TestWebsite).toBe(true);
     await service.remove(account);
     expect(service.getInstancesOf(TestWebsite)).toHaveLength(0);

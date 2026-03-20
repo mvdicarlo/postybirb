@@ -7,6 +7,7 @@ import {
   SubmissionType,
 } from '@postybirb/types';
 import { BrowserWindowUtils, getPartitionKey } from '@postybirb/utils/electron';
+import { Mutex } from 'async-mutex';
 import { CookiesSetDetails, session } from 'electron';
 import { Account } from '../drizzle/models';
 import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
@@ -58,6 +59,21 @@ export abstract class Website<
    * Tracks the login state of a website.
    */
   protected readonly loginState: LoginState;
+
+  /**
+   * Mutex that serializes login attempts for this website instance.
+   * The first caller acquires the lock and runs the full login lifecycle;
+   * subsequent callers wait for the lock and return the fresh state.
+   */
+  private readonly loginMutex = new Mutex();
+
+  /**
+   * When true, a follow-up login will run after the current one completes.
+   * This handles the case where cookies/state changed during an in-flight login
+   * (e.g. user logs in on a page while a login check is already running).
+   * Only one follow-up is ever queued regardless of how many callers request it.
+   */
+  private loginDirty = false;
 
   /**
    * Properties set by website decorators such as {@link WebsiteMetadata}.
@@ -224,6 +240,63 @@ export abstract class Website<
 
   // -------------- End Externally Accessed Methods --------------
 
+  // -------------- Login Methods --------------
+
+  /**
+   * Public entry point for login. Serialized via mutex so that:
+   * - The first caller runs the full lifecycle (onBeforeLogin -> onLogin).
+   * - Concurrent callers mark the login as dirty so one follow-up runs.
+   * - At most one follow-up is queued, not one per waiter.
+   *
+   * @returns {Promise<ILoginState>} The login state after the check completes.
+   */
+  public async login(): Promise<ILoginState> {
+    // If the mutex is already locked, mark dirty so a follow-up runs,
+    // then wait for all pending work (current + follow-up) to finish.
+    if (this.loginMutex.isLocked()) {
+      this.logger.debug(
+        `Login already in progress for ${this.id}, marking dirty and waiting...`,
+      );
+      this.loginDirty = true;
+      await this.loginMutex.waitForUnlock();
+      return this.loginState.getState();
+    }
+
+    return this.loginMutex.runExclusive(async () => {
+      await this.executeLogin();
+
+      if (this.loginDirty) {
+        this.loginDirty = false;
+        this.logger.debug(
+          `Running follow-up login for ${this.id} (state may have changed during previous run)`,
+        );
+        if (!this.loginState.isLoggedIn) {
+          await this.executeLogin();
+        }
+      }
+
+      return this.loginState.getState();
+    });
+  }
+
+  /**
+   * Runs the actual login lifecycle: onBeforeLogin -> onLogin.
+   * Must only be called while holding the loginMutex.
+   */
+  private async executeLogin(): Promise<void> {
+    try {
+      this.loginState.setPending(true);
+      await this.onBeforeLogin();
+      await this.onLogin();
+    } catch (e) {
+      this.logger.withError(e).error(`Login failed for ${this.id}`);
+    } finally {
+      this.loginState.setPending(false);
+    }
+  }
+
+  // -------------- End Login Methods --------------
+
   // -------------- Event Methods --------------
 
   /**
@@ -251,84 +324,82 @@ export abstract class Website<
   }
 
   /**
-   * Method that runs before onLogin to set pending flag.
-   * For user login flows, it also checks for expired cookies and attempts to refresh them by loading the website in the background.
-   * This is a workaround to load the actual web page in the background to refresh cookies that may be expiring.
+   * Runs before onLogin to handle cookie management.
+   * For user login flows, it checks for expired cookies and attempts to refresh them.
+   * Also persists session cookies with a prefix for cross-restart persistence.
    *
-   * Additionally, we perform a saving of all session cookies with a "session:" prefix to ensure they are persisted across app restarts.
-   * This is necessary because Electron's session cookies are not persisted by default, and without this, users would have to log in again every time they restart the app even if their cookies are still valid.
-   * By saving them with a prefix, we can rehydrate them on app startup and maintain the login state as long as the cookies themselves are valid.
+   * @protected - called internally by {@link login}.
    */
-  public async onBeforeLogin() {
-    this.loginState.pending = true;
-    if (this.decoratedProps.loginFlow.type === 'user') {
-      const { cookies } = session.fromPartition(
-        getPartitionKey(this.accountId),
-      );
-      const cookiesList = await cookies.get({});
-      for (const cookie of cookiesList) {
-        // Check for expired cookies
-        if (
-          cookie.expirationDate &&
-          cookie.expirationDate < Date.now() / 1000
-        ) {
-          this.logger.debug(
-            `Found expired cookie: ${cookie.name} (${cookie.domain}) - Expired at ${new Date(cookie.expirationDate * 1000).toISOString()}`,
-          );
-          await this.cycleCookies();
-        }
-
-        if (cookie.session) {
-          const setCookie: CookiesSetDetails = {
-            url: `${cookie.secure ? 'https' : 'http'}://${cookie.domain.replace(/^\./, '')}${cookie.path}`,
-            name: `${CookiePrefix}${cookie.name}`,
-            value: cookie.value,
-            domain: cookie.domain,
-            path: cookie.path,
-            secure: cookie.secure,
-            httpOnly: cookie.httpOnly,
-            sameSite: cookie.sameSite,
-            expirationDate: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 365,
-          };
-          await cookies.set(setCookie);
-          await cookies.flushStore();
-        } else if (cookie.name.startsWith(CookiePrefix)) {
-          const sessionCookieAlreadyPopulated = cookiesList.some(
-            (c) => c.name === cookie.name.replace(CookiePrefix, ''),
-          );
-          if (!sessionCookieAlreadyPopulated) {
+  protected async onBeforeLogin() {
+    try {
+      if (this.decoratedProps.loginFlow.type === 'user') {
+        const { cookies } = session.fromPartition(
+          getPartitionKey(this.accountId),
+        );
+        const cookiesList = await cookies.get({});
+        for (const cookie of cookiesList) {
+          // Check for expired cookies
+          if (
+            cookie.expirationDate &&
+            cookie.expirationDate < Date.now() / 1000
+          ) {
             this.logger.debug(
-              `Rehydrating session cookie: ${cookie.name} (${cookie.domain})`,
+              `Found expired cookie: ${cookie.name} (${cookie.domain}) - Expired at ${new Date(cookie.expirationDate * 1000).toISOString()}`,
             );
+            await this.cycleCookies();
+          }
+
+          if (cookie.session) {
             const setCookie: CookiesSetDetails = {
               url: `${cookie.secure ? 'https' : 'http'}://${cookie.domain.replace(/^\./, '')}${cookie.path}`,
-              name: cookie.name.replace(CookiePrefix, ''),
+              name: `${CookiePrefix}${cookie.name}`,
               value: cookie.value,
               domain: cookie.domain,
               path: cookie.path,
               secure: cookie.secure,
               httpOnly: cookie.httpOnly,
               sameSite: cookie.sameSite,
+              expirationDate:
+                Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 365,
             };
             await cookies.set(setCookie);
             await cookies.flushStore();
+          } else if (cookie.name.startsWith(CookiePrefix)) {
+            const sessionCookieAlreadyPopulated = cookiesList.some(
+              (c) => c.name === cookie.name.replace(CookiePrefix, ''),
+            );
+            if (!sessionCookieAlreadyPopulated) {
+              this.logger.debug(
+                `Rehydrating session cookie: ${cookie.name} (${cookie.domain})`,
+              );
+              const setCookie: CookiesSetDetails = {
+                url: `${cookie.secure ? 'https' : 'http'}://${cookie.domain.replace(/^\./, '')}${cookie.path}`,
+                name: cookie.name.replace(CookiePrefix, ''),
+                value: cookie.value,
+                domain: cookie.domain,
+                path: cookie.path,
+                secure: cookie.secure,
+                httpOnly: cookie.httpOnly,
+                sameSite: cookie.sameSite,
+              };
+              await cookies.set(setCookie);
+              await cookies.flushStore();
+            }
           }
         }
       }
+    } catch (err) {
+      this.logger.error('Error during onBeforeLogin cookie handling:', err);
     }
   }
 
   /**
-   * Method that runs after onLogin completes to remove pending flag.
-   */
-  public onAfterLogin() {
-    this.loginState.pending = false;
-  }
-
-  /**
    * Method that runs whenever a user closes the login page or on a scheduled interval.
+   * Subclasses implement this to perform the actual login / session-validation logic.
+   *
+   * @protected - called internally by {@link login}.
    */
-  public abstract onLogin(): Promise<ILoginState>;
+  protected abstract onLogin(): Promise<ILoginState>;
 
   // -------------- End Event Methods --------------
 }

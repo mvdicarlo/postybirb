@@ -225,6 +225,18 @@ export class WebsiteRegistryService {
   }
 
   /**
+   * Returns all website instances across all accounts.
+   * @returns {UnknownWebsite[]}
+   */
+  public getAll(): UnknownWebsite[] {
+    const all: UnknownWebsite[] = [];
+    for (const instances of Object.values(this.websiteInstances)) {
+      all.push(...Object.values(instances));
+    }
+    return all;
+  }
+
+  /**
    * Returns a list of all available websites.
    */
   public getAvailableWebsites(): Class<UnknownWebsite>[] {

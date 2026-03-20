@@ -165,9 +165,7 @@ export abstract class BasePostManager {
     const option = submission.options.find((o) => o.accountId === accountId);
 
     try {
-      if (!instance.getLoginState().isLoggedIn) {
-        throw new Error('Not logged in');
-      }
+      await this.ensureLoggedIn(instance);
 
       const supportedTypes = instance.getSupportedTypes();
       if (!supportedTypes.includes(submission.type)) {
@@ -541,6 +539,34 @@ export abstract class BasePostManager {
         setTimeout(resolve, waitTime);
       });
     }
+  }
+
+  /**
+   * Ensures the website instance is logged in before posting.
+   * Delegates to website.login() which is mutex-guarded:
+   * - If a login is already in progress, waits for it to finish.
+   * - If not logged in and no login in progress, triggers a fresh login.
+   * @protected
+   * @param {Website<unknown>} instance - The website instance
+   * @throws {Error} If the website is still not logged in after the login attempt
+   */
+  protected async ensureLoggedIn(instance: Website<unknown>): Promise<void> {
+    const state = instance.getLoginState();
+    if (state.isLoggedIn) {
+      return;
+    }
+
+    this.logger.info(
+      `Not logged in for ${instance.id}, triggering login...`,
+    );
+
+    const result = await instance.login();
+
+    if (!result.isLoggedIn) {
+      throw new Error('Not logged in');
+    }
+
+    this.logger.info(`Login resolved for ${instance.id} — now logged in`);
   }
 
   /**

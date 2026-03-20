@@ -4,6 +4,7 @@ import {
   OnModuleInit,
   Optional,
 } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { ACCOUNT_UPDATES } from '@postybirb/socket-events';
 import {
   AccountId,
@@ -11,6 +12,7 @@ import {
   NULL_ACCOUNT_ID,
   NullAccount,
 } from '@postybirb/types';
+import { IsTestEnvironment } from '@postybirb/utils/electron';
 import { ne } from 'drizzle-orm';
 import { Class } from 'type-fest';
 import { PostyBirbService } from '../common/service/postybirb-service';
@@ -19,10 +21,10 @@ import { FindOptions } from '../drizzle/postybirb-database/find-options.type';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { UnknownWebsite } from '../websites/website';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
-import { AccountLoginQueue } from './account-login-queue';
 import { CreateAccountDto } from './dtos/create-account.dto';
 import { SetWebsiteDataRequestDto } from './dtos/set-website-data-request.dto';
 import { UpdateAccountDto } from './dtos/update-account.dto';
+import { LoginStatePoller } from './login-state-poller';
 
 /**
  * Service responsible for returning Account data.
@@ -41,15 +43,21 @@ export class AccountService
     }
   > = {};
 
-  private readonly accountLoginQueue: AccountLoginQueue;
+  private readonly loginStatePoller: LoginStatePoller;
 
   constructor(
     private readonly websiteRegistry: WebsiteRegistryService,
     @Optional() webSocket?: WSGateway,
   ) {
     super('AccountSchema', webSocket);
-    this.accountLoginQueue = new AccountLoginQueue(this, websiteRegistry);
     this.repository.subscribe('AccountSchema', () => this.emit());
+    this.loginStatePoller = new LoginStatePoller(
+      this.websiteRegistry,
+      () => {
+        this.emit();
+        this.websiteRegistry.emit();
+      },
+    );
   }
 
   /**
@@ -73,6 +81,17 @@ export class AccountService
         this.executeOnLoginForInterval(interval),
       );
     });
+  }
+
+  /**
+   * CRON-driven poll for login state changes.
+   * Compares cached login states against live values and emits to UI on change.
+   */
+  @Cron(CronExpression.EVERY_SECOND)
+  private pollLoginStates() {
+    if (!IsTestEnvironment()) {
+      this.loginStatePoller.checkForChanges();
+    }
   }
 
   private async deleteUnregisteredAccounts() {
@@ -155,8 +174,9 @@ export class AccountService
   }
 
   /**
-   * Runs onLogin on all created website instances within a specific interval
-   * and updates website login state.
+   * Runs login on all created website instances within a specific interval.
+   * The mutex inside website.login() ensures only one login runs at a time
+   * per instance; concurrent callers simply wait and get the fresh state.
    *
    * @param {string} interval
    */
@@ -164,19 +184,12 @@ export class AccountService
     const { websites } = this.loginRefreshTimers[interval];
     websites.forEach((website) => {
       this.websiteRegistry.getInstancesOf(website).forEach((instance) => {
-        this.executeOnLogin(instance);
+        // Fire-and-forget — the poller will detect state changes
+        instance.login().catch((e) => {
+          this.logger.withError(e).error(`Login failed for ${instance.id}`);
+        });
       });
     });
-  }
-
-  /**
-   * Executes onLogin for passed in website.
-   * Updates caches login state and data.
-   *
-   * @param {UnknownWebsite} website
-   */
-  private async executeOnLogin(website: UnknownWebsite) {
-    this.accountLoginQueue.add(website.account.id);
   }
 
   /**
@@ -186,17 +199,28 @@ export class AccountService
    * @param {UnknownWebsite} website
    */
   private afterCreate(account: Account, website: UnknownWebsite) {
-    this.executeOnLogin(website);
+    // Fire-and-forget — poller picks up the state change
+    website.login().catch((e) => {
+      this.logger.withError(e).error(`Initial login failed for ${website.id}`);
+    });
   }
 
   /**
    * Executes a login refresh initiated from an external source.
-   * Will always wait for current pending to complete.
+   * Waits for the result so the caller knows when it's done.
    *
    * @param {AccountId} id
    */
   async manuallyExecuteOnLogin(id: AccountId): Promise<void> {
-    this.accountLoginQueue.add(id);
+    const account = await this.findById(id);
+    if (account) {
+      const instance = this.websiteRegistry.findInstance(account);
+      if (instance) {
+        await instance.login();
+        // Force an immediate UI update for this instance
+        this.loginStatePoller.checkInstance(instance);
+      }
+    }
   }
 
   /**

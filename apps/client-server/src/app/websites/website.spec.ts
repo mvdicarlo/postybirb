@@ -44,9 +44,7 @@ describe('Website', () => {
   it('should store data', async () => {
     const website = new TestWebsite(await populateAccount());
     await website.onInitialize(repository);
-    await website.onBeforeLogin();
-    await website.onLogin();
-    website.onAfterLogin();
+    await website.login();
     const entity = (
       await repository.select(eq(repository.schemaEntity.id, website.accountId))
     )[0];
