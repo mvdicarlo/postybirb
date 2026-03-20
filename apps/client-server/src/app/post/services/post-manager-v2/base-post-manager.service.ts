@@ -165,9 +165,7 @@ export abstract class BasePostManager {
     const option = submission.options.find((o) => o.accountId === accountId);
 
     try {
-      if (!instance.getLoginState().isLoggedIn) {
-        throw new Error('Not logged in');
-      }
+      await this.ensureLoggedIn(instance);
 
       const supportedTypes = instance.getSupportedTypes();
       if (!supportedTypes.includes(submission.type)) {
@@ -541,6 +539,72 @@ export abstract class BasePostManager {
         setTimeout(resolve, waitTime);
       });
     }
+  }
+
+  /**
+   * Ensures the website instance is logged in before posting.
+   * If login is pending (e.g. startup login checks in progress), waits for it to resolve.
+   * If not pending and not logged in, triggers a login attempt directly.
+   * @protected
+   * @param {Website<unknown>} instance - The website instance
+   * @param {number} [timeoutMs=60000] - Max time to wait for a pending login
+   * @throws {Error} If the website is still not logged in after all attempts
+   */
+  protected async ensureLoggedIn(
+    instance: Website<unknown>,
+    timeoutMs = 60_000,
+  ): Promise<void> {
+    const state = instance.getLoginState();
+    if (state.isLoggedIn) {
+      return;
+    }
+
+    if (state.pending) {
+      // Login check is already in progress (e.g. startup) — wait for it
+      this.logger.info(
+        `Login pending for ${instance.id}, waiting up to ${timeoutMs}ms...`,
+      );
+      const pollInterval = 500;
+      const deadline = Date.now() + timeoutMs;
+      while (Date.now() < deadline) {
+        await new Promise((resolve) => {
+          setTimeout(resolve, pollInterval);
+        });
+        const current = instance.getLoginState();
+        if (!current.pending) {
+          if (current.isLoggedIn) {
+            this.logger.info(
+              `Login resolved for ${instance.id} — now logged in`,
+            );
+            return;
+          }
+          // Pending finished but still not logged in — fall through to throw
+          break;
+        }
+      }
+    } else {
+      // Not pending and not logged in — attempt a direct login
+      this.logger.info(
+        `Not logged in for ${instance.id}, attempting direct login...`,
+      );
+      try {
+        await instance.onBeforeLogin();
+        await instance.onLogin();
+      } catch (error) {
+        this.logger
+          .withError(error)
+          .warn(`Direct login attempt failed for ${instance.id}`);
+      } finally {
+        instance.onAfterLogin();
+      }
+
+      if (instance.getLoginState().isLoggedIn) {
+        this.logger.info(`Direct login succeeded for ${instance.id}`);
+        return;
+      }
+    }
+
+    throw new Error('Not logged in');
   }
 
   /**
