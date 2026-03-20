@@ -1,9 +1,10 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import { ImageResizeProps } from '@postybirb/types';
+import { IsTestEnvironment } from '@postybirb/utils/electron';
 import { existsSync } from 'fs';
 import { cpus } from 'os';
-import { join } from 'path';
+import { join, resolve } from 'path';
 import Piscina from 'piscina';
 
 /**
@@ -55,75 +56,130 @@ export interface SharpWorkerResult {
 export class SharpInstanceManager implements OnModuleDestroy {
   private readonly logger = Logger();
 
-  private pool: Piscina;
+  private pool: Piscina | null = null;
+
+  /**
+   * In test mode, we call the worker function directly in-process to avoid
+   * thread contention issues with the electron test runner. The sharp logic
+   * is still fully exercised — only the threading is bypassed.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private workerFn: ((input: any) => Promise<any>) | null = null;
+
+  /**
+   * Shared pool instance. Piscina pools are heavyweight (spawn OS threads),
+   * so we share one across all NestJS module instances within the same
+   * process. This avoids exhausting thread resources when multiple
+   * TestingModules are created (e.g. during parallel test execution).
+   */
+  private static sharedPool: Piscina | null = null;
+
+  private static sharedPoolRefCount = 0;
 
   constructor() {
     const workerPath = this.resolveWorkerPath();
-    const maxThreads = Math.min(cpus().length, 4);
 
-    this.logger
-      .withMetadata({ workerPath, maxThreads })
-      .info('Initializing sharp worker pool');
+    if (IsTestEnvironment()) {
+      // In tests: call the worker function directly (no threads)
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      this.workerFn = require(workerPath);
+    } else {
+      // Production: use piscina for crash isolation
+      if (!SharpInstanceManager.sharedPool) {
+        const maxThreads = Math.min(cpus().length, 4);
 
-    this.pool = new Piscina({
-      filename: workerPath,
-      maxThreads,
-      minThreads: 0, // Allow ALL workers to be reaped after idle
-      idleTimeout: 60_000, // Kill idle workers after 60s
-    });
+        this.logger
+          .withMetadata({ workerPath, maxThreads })
+          .info('Initializing sharp worker pool');
+
+        SharpInstanceManager.sharedPool = new Piscina({
+          filename: workerPath,
+          maxThreads,
+          minThreads: 0, // Allow ALL workers to be reaped after idle
+          idleTimeout: 60_000, // Kill idle workers after 60s
+        });
+      }
+
+      SharpInstanceManager.sharedPoolRefCount++;
+      this.pool = SharpInstanceManager.sharedPool;
+    }
   }
 
   async onModuleDestroy() {
-    if (this.pool) {
-      this.logger.info('Destroying sharp worker pool');
-      await this.pool.destroy();
+    if (!this.pool) return; // Test mode — nothing to clean up
+
+    SharpInstanceManager.sharedPoolRefCount--;
+
+    if (
+      SharpInstanceManager.sharedPoolRefCount <= 0 &&
+      SharpInstanceManager.sharedPool
+    ) {
+      this.logger.info('Destroying sharp worker pool (last reference)');
+      const pool = SharpInstanceManager.sharedPool;
+      SharpInstanceManager.sharedPool = null;
+      SharpInstanceManager.sharedPoolRefCount = 0;
+      try {
+        await pool.destroy();
+      } catch {
+        // pool.destroy() throws for in-flight tasks — safe to ignore
+      }
     }
   }
 
   /**
+   * Cached resolved path — avoids repeated filesystem probing.
+   */
+  private static resolvedWorkerPath: string | null = null;
+
+  /**
    * Resolve the path to the sharp-worker.js file.
-   * Works in:
-   * - Production build: __dirname/assets/sharp-worker.js
-   * - Development/test: relative to source directory
+   * Searches multiple candidate locations to work in:
+   * - Production build (webpack output): __dirname/assets/sharp-worker.js
+   * - Jest via ts-jest/swc: __dirname relative to source tree
+   * - Electron test runner: may change __dirname/cwd, so walk up to find it
    */
   private resolveWorkerPath(): string {
-    // Production/build path: assets are next to the bundled main.js
-    const buildPath = join(__dirname, 'assets', 'sharp-worker.js');
-    if (existsSync(buildPath)) {
-      return buildPath;
+    if (SharpInstanceManager.resolvedWorkerPath) {
+      return SharpInstanceManager.resolvedWorkerPath;
     }
 
-    // Development/test: look relative to the source tree
-    // __dirname is typically apps/client-server/src/app/image-processing
-    const srcPath = join(
-      __dirname,
-      '..',
-      '..',
-      '..',
-      'assets',
-      'sharp-worker.js',
-    );
-    if (existsSync(srcPath)) {
-      return srcPath;
+    const candidates = [
+      // Production build: assets sit next to the bundled main.js
+      join(__dirname, 'assets', 'sharp-worker.js'),
+      // Source tree: __dirname = apps/client-server/src/app/image-processing
+      resolve(__dirname, '..', '..', '..', 'assets', 'sharp-worker.js'),
+      // cwd-based (nx serve, standalone)
+      join(process.cwd(), 'apps', 'client-server', 'src', 'assets', 'sharp-worker.js'),
+      // cwd-based (jest may cd into apps/client-server)
+      join(process.cwd(), 'src', 'assets', 'sharp-worker.js'),
+    ];
+
+    // Walk up from __dirname looking for the assets folder (handles
+    // any depth of __dirname that test runners might produce)
+    let dir = __dirname;
+    for (let i = 0; i < 10; i++) {
+      const candidate = join(dir, 'assets', 'sharp-worker.js');
+      if (!candidates.includes(candidate)) {
+        candidates.push(candidate);
+      }
+      const parent = resolve(dir, '..');
+      if (parent === dir) break; // reached filesystem root
+      dir = parent;
     }
 
-    // Fallback: try workspace root assets
-    const workspacePath = join(
-      process.cwd(),
-      'apps',
-      'client-server',
-      'src',
-      'assets',
-      'sharp-worker.js',
-    );
-    if (existsSync(workspacePath)) {
-      return workspacePath;
+    for (const candidate of candidates) {
+      if (existsSync(candidate)) {
+        SharpInstanceManager.resolvedWorkerPath = candidate;
+        return candidate;
+      }
     }
 
     this.logger.warn(
-      `Sharp worker not found at expected paths: ${buildPath}, ${srcPath}, ${workspacePath}. Falling back to build path.`,
+      `Sharp worker not found in any candidate path. Checked: ${candidates.join(', ')}`,
     );
-    return buildPath;
+    // Return the build path as last resort — will fail at runtime with
+    // a clear error from piscina rather than silently misbehaving.
+    return candidates[0];
   }
 
   /**
@@ -136,6 +192,11 @@ export class SharpInstanceManager implements OnModuleDestroy {
    */
   async processImage(input: SharpWorkerInput): Promise<SharpWorkerResult> {
     try {
+      // In test mode, call the worker function directly (no threads)
+      if (this.workerFn) {
+        return (await this.workerFn(input)) as SharpWorkerResult;
+      }
+
       const result = await this.pool.run(input);
 
       // Structured clone across worker threads converts Node.js Buffers
