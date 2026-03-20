@@ -171,6 +171,8 @@ describe('AccountsService', () => {
         create: jest.fn(),
         findInstance: jest.fn(),
         getAvailableWebsites: () => [],
+        markAsInitialized: jest.fn(),
+        emit: jest.fn(),
       };
 
       mockLogger = {
