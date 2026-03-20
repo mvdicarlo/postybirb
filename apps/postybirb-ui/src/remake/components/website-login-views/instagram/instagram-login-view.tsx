@@ -1,42 +1,42 @@
 /* eslint-disable lingui/no-unlocalized-strings */
 import { Trans } from '@lingui/react/macro';
 import {
-    Alert,
-    Box,
-    Button,
-    Group,
-    Loader,
-    Paper,
-    PasswordInput,
-    Stack,
-    Stepper,
-    Text,
-    TextInput,
-    Title,
+  Alert,
+  Box,
+  Button,
+  Group,
+  Loader,
+  Paper,
+  PasswordInput,
+  Stack,
+  Stepper,
+  Text,
+  TextInput,
+  Title,
 } from '@mantine/core';
 import {
-    InstagramAccountData,
-    InstagramOAuthRoutes,
+  InstagramAccountData,
+  InstagramOAuthRoutes,
 } from '@postybirb/types';
 import {
-    IconArrowLeft,
-    IconCheck,
-    IconKey,
-    IconLogin,
-    IconRefresh,
+  IconArrowLeft,
+  IconCheck,
+  IconKey,
+  IconLogin,
+  IconRefresh,
 } from '@tabler/icons-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import websitesApi from '../../../api/websites.api';
 import { showSuccessNotification } from '../../../utils';
 import type { WebviewTag } from '../../sections/accounts-section/webview-tag';
-import { ExternalLink } from '../../shared/external-link';
 import {
-    createLoginHttpErrorHandler,
-    notifyLoginFailed,
-    notifyLoginSuccess,
+  createLoginHttpErrorHandler,
+  notifyLoginFailed,
+  notifyLoginSuccess,
 } from '../helpers';
 import { LoginViewContainer } from '../login-view-container';
 import type { LoginViewProps } from '../types';
+import { InstagramSetupGuide } from './instagram-setup-guide';
 
 export default function InstagramLoginView(
   props: LoginViewProps<InstagramAccountData>,
@@ -62,6 +62,28 @@ export default function InstagramLoginView(
 
   const keysReady = appId.trim().length > 0 && appSecret.trim().length > 0;
 
+  // Reset all state when switching between accounts
+  const prevIdRef = useRef(id);
+  useEffect(() => {
+    if (prevIdRef.current !== id) {
+      prevIdRef.current = id;
+      setAppId(data?.appId ?? '');
+      setAppSecret(data?.appSecret ?? '');
+      setAuthUrl(undefined);
+      setIsStoringKeys(false);
+      setIsGettingAuthUrl(false);
+      setIsExchangingCode(false);
+      setIsRefreshing(false);
+      setLoggedInAs(data?.igUsername ? `@${data.igUsername}` : undefined);
+      setTokenExpiry(data?.tokenExpiry);
+      setKeysStored(!!(data?.appId && data?.appSecret));
+      setActiveStep(0);
+      webviewRef.current = null;
+      codeHandledRef.current = false;
+    }
+  }, [id, data]);
+
+  // Sync from incoming data (e.g. after server-side changes)
   useEffect(() => {
     if (data?.igUsername && !loggedInAs) {
       setLoggedInAs(`@${data.igUsername}`);
@@ -270,87 +292,7 @@ export default function InstagramLoginView(
           >
             <Paper p="md" withBorder>
               <Stack gap="md">
-                <Alert color="blue" variant="light">
-                  <Stack gap="xs">
-                    <Text size="sm" fw={600}>
-                      <Trans>Prerequisites</Trans>
-                    </Text>
-                    <Text size="sm">
-                      {'• Your Instagram account must be a '}
-                      <Text span fw={600}>
-                        Professional account
-                      </Text>
-                      {' (Business or Creator). You can convert in Instagram app → Settings → Account → Switch to Professional account.'}
-                    </Text>
-
-                    <Text size="sm" fw={600} mt="xs">
-                      <Trans>App Setup Steps:</Trans>
-                    </Text>
-
-                    <Text size="sm" component="div">
-                      {'1. Go to '}
-                      <ExternalLink href="https://developers.facebook.com/apps/">
-                        Meta Developer Apps
-                      </ExternalLink>
-                      {' and click '}
-                      <Text span fw={600}>
-                        Create App
-                      </Text>
-                      {'. Select the '}
-                      <Text span fw={600}>
-                        Manage messaging & content on Instagram
-                      </Text>
-                      {' use case, then choose '}
-                      <Text span fw={600}>
-                        Business
-                      </Text>
-                      {' type. Your app stays in Development Mode — no App Review needed.'}
-                    </Text>
-                    <Text size="sm">
-                      {'2. Go to '}
-                      <Text span fw={600}>
-                        {'App Roles > Roles'}
-                      </Text>
-                      {' and click "Add People". Under the '}
-                      <Text span fw={600}>
-                        Instagram Testers
-                      </Text>
-                      {' tab, add your Instagram username. Then open Instagram → Settings → Apps and Websites → accept the tester invitation.'}
-                    </Text>
-                    <Text size="sm">
-                      {'3. Go to '}
-                      <Text span fw={600}>
-                        {'Instagram > API setup with Instagram login'}
-                      </Text>
-                      {' and add this redirect URI:'}
-                    </Text>
-                    <Text
-                      size="xs"
-                      ff="monospace"
-                      c="dimmed"
-                      p="xs"
-                      bg="var(--mantine-color-dark-7)"
-                      style={{ borderRadius: 4 }}
-                    >
-                      {`https://localhost:${window.electron?.app_port || '9487'}/api/websites/instagram/callback`}
-                    </Text>
-                    <Text size="sm">
-                      {'4. In '}
-                      <Text span fw={600}>
-                        {'App Settings > Basic'}
-                      </Text>
-                      {', copy your '}
-                      <Text span fw={600}>
-                        App ID
-                      </Text>
-                      {' and '}
-                      <Text span fw={600}>
-                        App Secret
-                      </Text>
-                      {' and paste them below.'}
-                    </Text>
-                  </Stack>
-                </Alert>
+                <InstagramSetupGuide />
 
                 <TextInput
                   label={<Trans>App ID</Trans>}
