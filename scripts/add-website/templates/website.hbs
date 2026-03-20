@@ -52,7 +52,7 @@ export default class {{pascalWebsiteName}} extends Website<{{pascalWebsiteName}}
       folders: true
     };
 
-  public async onLogin(): Promise<ILoginState> {
+  protected async onLogin(): Promise<ILoginState> {
     if (this.account.name === 'test') {
       this.loginState.logout();
     }

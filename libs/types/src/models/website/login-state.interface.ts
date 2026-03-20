@@ -18,4 +18,10 @@ export interface ILoginState {
    * @type {boolean}
    */
   pending: boolean;
+  /**
+   * ISO 8601 timestamp of the last time the login state was updated.
+   * Used to detect stale cached values.
+   * @type {(string | null)}
+   */
+  lastUpdated: string | null;
 }

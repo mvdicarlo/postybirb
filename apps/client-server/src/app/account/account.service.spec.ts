@@ -80,7 +80,7 @@ describe('AccountsService', () => {
     const instance = registryService.findInstance(record);
     expect(instance).toBeDefined();
 
-    await instance.onLogin();
+    await instance.login();
     const websiteData = instance.getWebsiteData();
     expect(websiteData).toEqual({
       test: 'test-mode',
@@ -113,7 +113,8 @@ describe('AccountsService', () => {
     expect(groups[0].name).toEqual(dto.name);
     expect(groups[0].website).toEqual(dto.website);
     expect(groups[0].groups).toEqual(dto.groups);
-    expect(record.toDTO()).toEqual({
+    const recordDto = record.toDTO();
+    expect(recordDto).toEqual({
       groups: dto.groups,
       name: dto.name,
       website: dto.website,
@@ -124,6 +125,7 @@ describe('AccountsService', () => {
         isLoggedIn: true,
         pending: false,
         username: 'TestUser',
+        lastUpdated: expect.any(String),
       },
       data: {
         test: 'test-mode',

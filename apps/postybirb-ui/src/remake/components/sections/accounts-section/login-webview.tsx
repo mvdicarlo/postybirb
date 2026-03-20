@@ -22,7 +22,6 @@ import {
   IconRefresh,
   IconUserCheck,
 } from '@tabler/icons-react';
-import { debounce } from 'lodash';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import accountApi from '../../../api/account.api';
 import { useAccount } from '../../../stores';
@@ -55,21 +54,49 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
   // Track to which account we've shown the success notification to avoid duplicates
   const hasShownSuccessNotification = useRef<string | null>(null);
 
-  // Debounced refresh login to avoid excessive API calls
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const debouncedRefreshLogin = useCallback(
-    debounce(() => {
-      accountApi.refreshLogin(accountId);
-    }, 1_000),
+  // Track whether we have an in-flight login request to prevent duplicate calls
+  const loginInFlight = useRef(false);
+
+  // Track the last time we fired a login check to debounce navigation events
+  const lastLoginCheckTime = useRef(0);
+
+  // Minimum ms between automatic (navigation-triggered) login checks
+  const AUTO_CHECK_DEBOUNCE_MS = 2_000;
+
+  /**
+   * Fire a login check, deduplicating against in-flight requests.
+   * @param force - If true, skip the time-based debounce (for manual clicks)
+   */
+  const triggerLoginCheck = useCallback(
+    async (force = false) => {
+      const now = Date.now();
+
+      // Skip if a request is already in flight
+      if (loginInFlight.current) {
+        return;
+      }
+
+      // Skip automatic checks that are too close together
+      if (!force && now - lastLoginCheckTime.current < AUTO_CHECK_DEBOUNCE_MS) {
+        return;
+      }
+
+      loginInFlight.current = true;
+      lastLoginCheckTime.current = now;
+
+      try {
+        await accountApi.refreshLogin(accountId);
+      } finally {
+        loginInFlight.current = false;
+      }
+    },
     [accountId],
   );
 
-  // Manual login check handler
+  // Manual login check handler — always forces, shows spinner via isPending
   const handleCheckLogin = useCallback(() => {
-    if (!isPending) {
-      accountApi.refreshLogin(accountId);
-    }
-  }, [accountId, isPending]);
+    triggerLoginCheck(true);
+  }, [triggerLoginCheck]);
 
   // Show notification on first successful login
   useEffect(() => {
@@ -90,35 +117,55 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
 
     const handleStopLoading = () => {
       setIsLoading(false);
-      debouncedRefreshLogin();
-    };
-
-    const handleConsoleMessage = (
-      event: Electron.ConsoleMessageEvent,
-    ): void => {
-      // eslint-disable-next-line no-console
-      // console.log(`WEBVIEW: ${event.message}`);
+      // Automatic check after page finishes loading — debounced
+      triggerLoginCheck(false);
     };
 
     const handleDidNavigate = (event: Electron.DidNavigateEvent) => {
       setCurrentUrl(event.url);
     };
 
+    // SPA navigations (pushState, replaceState, hashchange) don't trigger
+    // did-navigate or did-stop-loading — catch them explicitly
+    const handleDidNavigateInPage = (
+      event: Electron.DidNavigateInPageEvent,
+    ) => {
+      setCurrentUrl(event.url);
+      triggerLoginCheck(false);
+    };
+
+    // Iframe navigations (OAuth callback frames, CAPTCHA frames)
+    const handleFrameNavigation = () => {
+      triggerLoginCheck(false);
+    };
+
+    // HTTP redirects (302 during OAuth flows) — the final landing page
+    // may set cookies before did-stop-loading fires
+    const handleRedirect = () => {
+      triggerLoginCheck(false);
+    };
+
     webview.addEventListener('did-start-loading', handleStartLoading);
     webview.addEventListener('did-stop-loading', handleStopLoading);
-    webview.addEventListener('console-message', handleConsoleMessage);
     webview.addEventListener('did-navigate', handleDidNavigate);
+    webview.addEventListener('did-navigate-in-page', handleDidNavigateInPage);
+    webview.addEventListener('did-frame-navigate', handleFrameNavigation);
+    webview.addEventListener('did-redirect-navigation', handleRedirect);
 
     return () => {
       webview.removeEventListener('did-start-loading', handleStartLoading);
       webview.removeEventListener('did-stop-loading', handleStopLoading);
-      webview.removeEventListener('console-message', handleConsoleMessage);
       webview.removeEventListener('did-navigate', handleDidNavigate);
-      debouncedRefreshLogin.cancel();
-      // Trigger final login check when webview closes
-      accountApi.refreshLogin(accountId);
+      webview.removeEventListener(
+        'did-navigate-in-page',
+        handleDidNavigateInPage,
+      );
+      webview.removeEventListener('did-frame-navigate', handleFrameNavigation);
+      webview.removeEventListener('did-redirect-navigation', handleRedirect);
+      // Fire a final login check when the webview closes (user is done)
+      triggerLoginCheck(true);
     };
-  }, [debouncedRefreshLogin, accountId]);
+  }, [triggerLoginCheck, accountId]);
 
   // Handle refresh button click
   const handleRefresh = () => {
@@ -176,12 +223,21 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
             </ActionIcon>
           </Tooltip>
 
-          <Tooltip label={<Trans>Check login status</Trans>}>
+          <Tooltip
+            label={
+              isPending ? (
+                <Trans>Login check in progress...</Trans>
+              ) : (
+                <Trans>Check login status</Trans>
+              )
+            }
+          >
             <ActionIcon
               variant="subtle"
               size="sm"
               onClick={handleCheckLogin}
               color="blue"
+              loading={isPending}
             >
               <IconUserCheck size={16} />
             </ActionIcon>

@@ -42,6 +42,7 @@ export class Account extends DatabaseEntity implements IAccount {
         isLoggedIn: false,
         username: '',
         pending: false,
+        lastUpdated: null,
       },
       websiteInfo: {
         websiteDisplayName:
