@@ -13,7 +13,6 @@ import {
   PostyBirbEnvConfig,
 } from '@postybirb/utils/electron';
 import compression from 'compression';
-import sharp from 'sharp';
 import { AppModule } from './app/app.module';
 import { DatabaseEntity } from './app/drizzle/models';
 import { SSL } from './app/security-and-authentication/ssl';
@@ -84,8 +83,6 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
-
-  sharp.cache({ files: 0 });
 
   const { port } = PostyBirbEnvConfig;
 

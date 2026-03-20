@@ -7,11 +7,7 @@ import {
   ISubmissionFile,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
-import type { queueAsPromised } from 'fastq';
-import fastq from 'fastq';
-import { cpus } from 'os';
-import { Sharp } from 'sharp';
-import { ImageUtil } from '../../../file/utils/image.util';
+import { SharpInstanceManager } from '../../../image-processing/sharp-instance-manager';
 import { PostingFile, ThumbnailOptions } from '../../models/posting-file';
 
 type ResizeRequest = {
@@ -22,21 +18,24 @@ type ResizeRequest = {
 /**
  * Responsible for resizing an image file to a smaller size before
  * posting to a website.
+ *
+ * All sharp/libvips work is delegated to the SharpInstanceManager,
+ * which runs sharp in isolated worker threads. If libvips crashes
+ * (e.g. after long idle), only the worker dies — the main process
+ * survives.
+ *
  * @class PostFileResizer
  */
 @Injectable()
 export class PostFileResizerService {
   private readonly logger = Logger();
 
-  private readonly queue: queueAsPromised<ResizeRequest, PostingFile> =
-    fastq.promise<this, ResizeRequest>(
-      this,
-      this.process,
-      Math.min(cpus().length, 4),
-    );
+  constructor(
+    private readonly sharpInstanceManager: SharpInstanceManager,
+  ) {}
 
   public async resize(request: ResizeRequest): Promise<PostingFile> {
-    return this.queue.push(request);
+    return this.process(request);
   }
 
   private async process(request: ResizeRequest): Promise<PostingFile> {
@@ -48,10 +47,13 @@ export class PostFileResizerService {
       throw new Error('File buffer is missing');
     }
 
+    const primaryFile = await this.processPrimaryFile(file, resize);
+    const thumbnail = await this.processThumbnailFile(file);
+
     const newPostingFile = new PostingFile(
       file.id,
-      await this.processPrimaryFile(file, resize),
-      await this.processThumbnailFile(file),
+      primaryFile,
+      thumbnail,
     );
 
     newPostingFile.metadata = file.metadata;
@@ -64,52 +66,25 @@ export class PostFileResizerService {
   ): Promise<IFileBuffer> {
     if (!resize) return file.file;
 
-    let sharpInstance = ImageUtil.load(file.file.buffer);
-    let hasBeenModified = false;
+    const result = await this.sharpInstanceManager.resizeForPost({
+      buffer: file.file.buffer,
+      resize,
+      mimeType: file.mimeType,
+      fileName: file.fileName,
+      fileId: file.id,
+      fileWidth: file.file.width,
+      fileHeight: file.file.height,
+      generateThumbnail: false,
+    });
 
-    // Apply format conversion if requested
-    if (resize.outputMimeType && file.mimeType !== resize.outputMimeType) {
-      hasBeenModified = true;
-      sharpInstance = this.applyOutputFormat(
-        sharpInstance,
-        resize.outputMimeType,
-      );
-    }
-
-    if (resize.width || resize.height) {
-      // Check if resizing is even worth it
-      if (resize.width < file.file.width || resize.height < file.file.height) {
-        hasBeenModified = true;
-        sharpInstance = await this.resizeImage(
-          sharpInstance,
-          resize.width,
-          resize.height,
-          'Primary',
-        );
-      }
-    }
-
-    if (resize.maxBytes && file.file.buffer.length > resize.maxBytes) {
-      if (this.isFileTooLarge(sharpInstance, resize.maxBytes)) {
-        hasBeenModified = true;
-        sharpInstance = await this.scaleDownImage(
-          sharpInstance,
-          resize.maxBytes,
-          resize.allowQualityLoss,
-          file.mimeType,
-        );
-      }
-    }
-
-    if (hasBeenModified) {
-      const m = await sharpInstance.metadata();
+    if (result.modified && result.buffer) {
       return {
         ...file.file,
-        fileName: `${file.id}.${m.format}`,
-        buffer: await sharpInstance.toBuffer(),
-        mimeType: `image/${m.format}`,
-        height: m.height,
-        width: m.width,
+        fileName: result.fileName || `${file.id}.${result.format}`,
+        buffer: result.buffer,
+        mimeType: result.mimeType || file.mimeType,
+        height: result.height || file.file.height,
+        width: result.width || file.file.width,
       };
     }
 
@@ -129,109 +104,19 @@ export class PostFileResizerService {
 
     thumb = thumb ?? { ...file.file }; // Ensure file to process
 
-    let instance = ImageUtil.load(thumb.buffer);
-    instance = await this.resizeImage(instance, 500, 500, 'thumbnail');
-    const { mimeType } = thumb;
+    const result = await this.sharpInstanceManager.generateThumbnail(
+      thumb.buffer,
+      thumb.mimeType,
+      thumb.fileName,
+      500,
+    );
 
-    const { width, height } = await instance.metadata();
     return {
-      buffer: await instance.toBuffer(),
+      buffer: result.buffer,
       fileName: thumb.fileName,
-      mimeType,
-      height,
-      width,
+      mimeType: thumb.mimeType,
+      height: result.height,
+      width: result.width,
     };
-  }
-
-  private async resizeImage(
-    instance: Sharp,
-    width: number,
-    height: number,
-    source: string,
-  ) {
-    const metadata = await instance.metadata();
-    this.logger
-      .withMetadata({ width, height, metadata })
-      .info(`Resizing (${source})`);
-    if (metadata.width > width || metadata.height > height) {
-      return ImageUtil.load(
-        await instance
-          .resize({ width, height, fit: 'inside', withoutEnlargement: true })
-          .toBuffer(),
-      );
-    }
-    return instance;
-  }
-
-  private async scaleDownImage(
-    instance: Sharp,
-    maxBytes: number,
-    allowQualityLoss: boolean,
-    mimeType: string,
-  ) {
-    let s = instance;
-    const metadata = await instance.metadata();
-    // If PNG and no alpha channel, convert to JPEG
-    // if (mimeType === 'image/png' && !metadata.hasAlpha) {
-    //   // eslint-disable-next-line no-param-reassign
-    //   mimeType = 'image/jpeg';
-    //   s = s.jpeg({ quality: 100 });
-    // }
-
-    // if (
-    //   mimeType === 'image/jpeg' &&
-    //   allowQualityLoss &&
-    //   (await this.isFileTooLarge(s, maxBytes))
-    // ) {
-    //   s = s.jpeg({ quality: 98 });
-    // }
-
-    let counter = 0;
-    while (await this.isFileTooLarge(s, maxBytes)) {
-      counter += 1;
-      const resizePercent = 1 - counter * 0.05;
-      if (resizePercent <= 0.1) break;
-
-      s = await this.resizeImage(
-        instance, // scale against original only
-        Math.round(metadata.width * resizePercent),
-        Math.round(metadata.height * resizePercent),
-        'Primary Scaling',
-      );
-
-      if (!(await this.isFileTooLarge(s, maxBytes))) return s;
-    }
-
-    if (await this.isFileTooLarge(s, maxBytes)) {
-      throw new Error(
-        'Image is still too large after scaling down. Try scaling down the image manually.',
-      );
-    }
-
-    return s;
-  }
-
-  private async isFileTooLarge(instance: Sharp, maxBytes: number) {
-    return (await instance.toBuffer()).length > maxBytes;
-  }
-
-  /**
-   * Apply output format conversion to a sharp instance.
-   * Converts the image to the target MIME type (e.g., image/jpeg, image/png, image/webp).
-   */
-  private applyOutputFormat(instance: Sharp, outputMimeType: string): Sharp {
-    switch (outputMimeType) {
-      case 'image/jpeg':
-        return instance.jpeg({ quality: 100 });
-      case 'image/png':
-        return instance.png();
-      case 'image/webp':
-        return instance.webp({ quality: 100 });
-      default:
-        this.logger.warn(
-          `Unknown output format: ${outputMimeType}, skipping conversion`,
-        );
-        return instance;
-    }
   }
 }

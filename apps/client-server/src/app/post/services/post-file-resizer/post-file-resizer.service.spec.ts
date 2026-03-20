@@ -6,21 +6,23 @@ import {
 } from '@postybirb/types';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { ImageUtil } from '../../../file/utils/image.util';
+import { SharpInstanceManager } from '../../../image-processing/sharp-instance-manager';
 import { PostFileResizerService } from './post-file-resizer.service';
 
 describe('PostFileResizerService', () => {
   let service: PostFileResizerService;
+  let sharpManager: SharpInstanceManager;
   let module: TestingModule;
   let testFile: Buffer;
   let file: ISubmissionFile;
 
   beforeEach(async () => {
     module = await Test.createTestingModule({
-      providers: [PostFileResizerService],
+      providers: [PostFileResizerService, SharpInstanceManager],
     }).compile();
 
     service = module.get<PostFileResizerService>(PostFileResizerService);
+    sharpManager = module.get<SharpInstanceManager>(SharpInstanceManager);
   });
 
   function createFile(
@@ -81,7 +83,7 @@ describe('PostFileResizerService', () => {
   it('should resize image', async () => {
     const resized = await service.resize({ file, resize: { width: 100 } });
     expect(resized.buffer.length).toBeLessThan(testFile.length);
-    const metadata = await ImageUtil.load(resized.buffer).metadata();
+    const metadata = await sharpManager.getMetadata(resized.buffer);
     expect(metadata.width).toBe(100);
     expect(metadata.height).toBeLessThan(202);
     expect(resized.fileName).toBe('test.jpeg');
@@ -91,7 +93,7 @@ describe('PostFileResizerService', () => {
   it('should not resize image', async () => {
     const resized = await service.resize({ file, resize: { width: 300 } });
     expect(resized.buffer.length).toBe(testFile.length);
-    const metadata = await ImageUtil.load(resized.buffer).metadata();
+    const metadata = await sharpManager.getMetadata(resized.buffer);
     expect(metadata.width).toBe(file.width);
     expect(metadata.height).toBe(file.height);
     expect(resized.fileName).toBe('test.jpg');
