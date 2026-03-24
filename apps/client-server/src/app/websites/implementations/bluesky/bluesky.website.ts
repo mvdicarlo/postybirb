@@ -779,12 +779,12 @@ class BlueskyConverter extends PlainTextConverter {
     node: TipTapNode,
     context: ConversionContext,
   ): string {
-    const marks = (node as Record<string, unknown>).marks as Array<{ type: string; attrs?: Record<string, string> }> ?? [];
-    const linkMark = marks.find((m) => m.type === 'link');
+    const marks = (node as any).marks ?? [];
+    const linkMark = marks.find((m: any) => m.type === 'link');
 
     if (linkMark) {
       // Get the plain text (without the link URL appended)
-      const content = ((node as Record<string, unknown>).text as string) ?? '';
+      const content = (node as any).text ?? '';
       const id = v4();
       this.links.push({
         href: linkMark.attrs?.href ?? '',
