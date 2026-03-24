@@ -108,7 +108,7 @@ export class SharpInstanceManager implements OnModuleDestroy {
       });
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const diagnostics = (result as any).diagnostics;
+      const { diagnostics } = result as any;
       if (diagnostics) {
         this.logger
           .withMetadata(diagnostics)
