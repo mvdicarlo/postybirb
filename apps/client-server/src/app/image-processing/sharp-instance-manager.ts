@@ -11,7 +11,7 @@ import Piscina from 'piscina';
  * Input sent to the sharp worker thread.
  */
 export interface SharpWorkerInput {
-  operation: 'resize' | 'metadata' | 'thumbnail';
+  operation: 'resize' | 'metadata' | 'thumbnail' | 'healthcheck';
   buffer: Buffer;
   resize?: ImageResizeProps;
   mimeType: string;
@@ -87,6 +87,42 @@ export class SharpInstanceManager implements OnModuleDestroy {
         minThreads: 0, // Allow ALL workers to be reaped after idle
         idleTimeout: 60_000, // Kill idle workers after 60s
       });
+    }
+
+    // Run health check asynchronously — don't block construction,
+    // but log warnings if sharp is broken on this system.
+    this.runHealthCheck();
+  }
+
+  /**
+   * Probe the worker with a trivial sharp operation to detect
+   * missing native bindings, glibc issues, or sandbox restrictions
+   * at startup rather than failing silently during posting.
+   */
+  private async runHealthCheck(): Promise<void> {
+    try {
+      const result = await this.processImage({
+        operation: 'healthcheck',
+        buffer: Buffer.alloc(0),
+        mimeType: '',
+      });
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { diagnostics } = result as any;
+      if (diagnostics) {
+        this.logger
+          .withMetadata(diagnostics)
+          .info('Sharp health check passed');
+      }
+    } catch (error) {
+      this.logger
+        .withError(error)
+        .error(
+          'Sharp health check FAILED — image processing will not work. ' +
+          'This usually means native sharp bindings failed to load. ' +
+          'On Linux, ensure glibc >= 2.17 is installed. ' +
+          'On Snap/Flatpak, the sandbox may prevent loading native modules.',
+        );
     }
   }
 
