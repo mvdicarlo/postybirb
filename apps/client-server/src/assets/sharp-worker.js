@@ -23,7 +23,6 @@ if (os.platform() === 'linux' && !process.env.MALLOC_ARENA_MAX) {
   process.env.MALLOC_ARENA_MAX = '2';
 }
 
-
 /**
  * Create a sharp instance with the pixel limit disabled.
  * Sharp's default limit (268 megapixels) rejects large images
@@ -98,24 +97,35 @@ function applyOutputFormat(instance, outputMimeType) {
 
 /**
  * Resize image to fit within width/height bounds.
+ * Uses a single sharp pipeline for both the size check and the resize.
+ *
  * @param {Buffer} inputBuffer
  * @param {number} width
  * @param {number} height
- * @returns {Promise<{buffer: Buffer, metadata: import('sharp').Metadata}>}
+ * @returns {Promise<{buffer: Buffer, width: number, height: number, format: string}>}
  */
 async function resizeImage(inputBuffer, width, height) {
-  const instance = load(inputBuffer);
-  const metadata = await instance.metadata();
+  const metadata = await load(inputBuffer).metadata();
 
   if (metadata.width > width || metadata.height > height) {
-    const resizedBuffer = await load(inputBuffer)
+    // Use resolveWithObject to get output info without re-decoding
+    const { data, info } = await load(inputBuffer)
       .resize({ width, height, fit: 'inside', withoutEnlargement: true })
-      .toBuffer();
-    const resizedMeta = await load(resizedBuffer).metadata();
-    return { buffer: resizedBuffer, metadata: resizedMeta };
+      .toBuffer({ resolveWithObject: true });
+    return {
+      buffer: data,
+      width: info.width,
+      height: info.height,
+      format: info.format,
+    };
   }
 
-  return { buffer: inputBuffer, metadata };
+  return {
+    buffer: inputBuffer,
+    width: metadata.width,
+    height: metadata.height,
+    format: metadata.format,
+  };
 }
 
 /**
@@ -157,27 +167,44 @@ async function resizeImage(inputBuffer, width, height) {
  * @param {number} originalHeight - Original image height
  * @param {number} maxBytes - Maximum allowed file size in bytes
  * @param {string} mimeType - The output MIME type (for choosing encoder)
- * @returns {Promise<Buffer>} Buffer that fits within maxBytes
+ * @returns {Promise<{buffer: Buffer, width: number, height: number, format: string}>}
+ *   Buffer that fits within maxBytes, plus its dimensions/format.
  */
-async function scaleDownImage(inputBuffer, originalBuffer, originalWidth, originalHeight, maxBytes, mimeType) {
+async function scaleDownImage(
+  inputBuffer,
+  originalBuffer,
+  originalWidth,
+  originalHeight,
+  maxBytes,
+  mimeType,
+) {
   // Step 1: Re-encode at full size.
   // For JPEG, MozJPEG alone often reduces the file by 20%+ without any
   // dimension change. For PNG (lossless), re-encoding doesn't help with
   // file size, so we skip directly to dimensional reduction.
-  let fullSizeBuffer;
+  let result;
   if (mimeType === 'image/png') {
-    fullSizeBuffer = inputBuffer;
+    result = {
+      buffer: inputBuffer,
+      width: originalWidth,
+      height: originalHeight,
+      format: 'png',
+    };
   } else {
-    fullSizeBuffer = await encodeAtScale(
-      originalBuffer, originalWidth, originalHeight, 1.0, mimeType,
+    result = await encodeAtScale(
+      originalBuffer,
+      originalWidth,
+      originalHeight,
+      1.0,
+      mimeType,
     );
   }
 
-  if (fullSizeBuffer.length <= maxBytes) {
-    return fullSizeBuffer;
+  if (result.buffer.length <= maxBytes) {
+    return result;
   }
 
-  const fullSize = fullSizeBuffer.length;
+  const fullSize = result.buffer.length;
   const ratio = fullSize / maxBytes;
 
   // Step 2: Adaptive first guess — choose safety margin based on
@@ -196,14 +223,18 @@ async function scaleDownImage(inputBuffer, originalBuffer, originalWidth, origin
   scale = Math.max(scale, 0.1);
 
   let currentBuffer = await encodeAtScale(
-    originalBuffer, originalWidth, originalHeight, scale, mimeType,
+    originalBuffer,
+    originalWidth,
+    originalHeight,
+    scale,
+    mimeType,
   );
 
   // Track data points for secant interpolation
   let prevScale = 1.0;
   let prevBytes = fullSize;
   let currScale = scale;
-  let currBytes = currentBuffer.length;
+  let currBytes = currentBuffer.buffer.length;
 
   // Step 3: Secant refinement — use two-point interpolation to converge.
   // The secant method models scale² → bytes as locally linear and
@@ -234,19 +265,22 @@ async function scaleDownImage(inputBuffer, originalBuffer, originalWidth, origin
     // Don't repeat a nearly identical scale
     if (Math.abs(nextScale - currScale) < 0.005) break;
 
-    const nextBuffer = await encodeAtScale(
-      originalBuffer, originalWidth, originalHeight, nextScale, mimeType,
+    const nextResult = await encodeAtScale(
+      originalBuffer,
+      originalWidth,
+      originalHeight,
+      nextScale,
+      mimeType,
     );
 
-    // Shift data points for next iteration
     prevScale = currScale;
     prevBytes = currBytes;
     currScale = nextScale;
-    currBytes = nextBuffer.length;
-    currentBuffer = nextBuffer;
+    currBytes = nextResult.buffer.length;
+    currentBuffer = nextResult;
   }
 
-  if (currentBuffer.length > maxBytes) {
+  if (currentBuffer.buffer.length > maxBytes) {
     throw new Error(
       'Image is still too large after scaling down. Try scaling down the image manually.',
     );
@@ -265,9 +299,15 @@ async function scaleDownImage(inputBuffer, originalBuffer, originalWidth, origin
  * @param {number} originalHeight - Original height
  * @param {number} scale - Scale factor (0.1 to 1.0)
  * @param {string} mimeType - Output MIME type
- * @returns {Promise<Buffer>}
+ * @returns {Promise<{buffer: Buffer, width: number, height: number, format: string}>}
  */
-async function encodeAtScale(originalBuffer, originalWidth, originalHeight, scale, mimeType) {
+async function encodeAtScale(
+  originalBuffer,
+  originalWidth,
+  originalHeight,
+  scale,
+  mimeType,
+) {
   let pipeline = load(originalBuffer);
 
   if (scale < 0.999) {
@@ -281,14 +321,22 @@ async function encodeAtScale(originalBuffer, originalWidth, originalHeight, scal
     });
   }
 
-  // Apply format-specific encoding with optimal settings
+  // Apply format-specific encoding and get output info in one call
   if (mimeType === 'image/png') {
-    return pipeline.png().toBuffer();
+    pipeline = pipeline.png();
   } else if (mimeType === 'image/webp') {
-    return pipeline.webp({ quality: 100 }).toBuffer();
+    pipeline = pipeline.webp({ quality: 100 });
+  } else {
+    pipeline = pipeline.jpeg({ quality: 100, mozjpeg: true });
   }
-  // Default: JPEG with MozJPEG for best compression at Q100
-  return pipeline.jpeg({ quality: 100, mozjpeg: true }).toBuffer();
+
+  const { data, info } = await pipeline.toBuffer({ resolveWithObject: true });
+  return {
+    buffer: data,
+    width: info.width,
+    height: info.height,
+    format: info.format,
+  };
 }
 
 /**
@@ -299,33 +347,42 @@ async function encodeAtScale(originalBuffer, originalWidth, originalHeight, scal
  * @param {number} [preferredDimension=400]
  * @returns {Promise<{buffer: Buffer, width: number, height: number, mimeType: string, fileName: string}>}
  */
-async function generateThumbnail(sourceBuffer, sourceMimeType, sourceFileName, preferredDimension) {
+async function generateThumbnail(
+  sourceBuffer,
+  sourceMimeType,
+  sourceFileName,
+  preferredDimension,
+) {
   const dimension = preferredDimension || 400;
-  const instance = load(sourceBuffer);
 
-  const resized = instance.resize(dimension, dimension, {
+  const isJpeg =
+    sourceMimeType === 'image/jpeg' || sourceMimeType === 'image/jpg';
+  let pipeline = load(sourceBuffer).resize(dimension, dimension, {
     fit: 'inside',
     withoutEnlargement: true,
   });
 
-  const isJpeg = sourceMimeType === 'image/jpeg' || sourceMimeType === 'image/jpg';
-  const buffer = isJpeg
-    ? await resized.jpeg({ quality: 99, force: true }).toBuffer()
-    : await resized.png({ quality: 99, force: true }).toBuffer();
+  pipeline = isJpeg
+    ? pipeline.jpeg({ quality: 99, force: true })
+    : pipeline.png({ quality: 99, force: true });
+
+  // Get buffer + output dimensions in one call — no re-decode needed
+  const { data, info } = await pipeline.toBuffer({ resolveWithObject: true });
   const mimeType = isJpeg ? 'image/jpeg' : 'image/png';
 
-  const metadata = await load(buffer).metadata();
-  const width = metadata.width || dimension;
-  const height = metadata.height || dimension;
-
-  // Build thumbnail file name
   const ext = isJpeg ? 'jpg' : 'png';
   const baseName = sourceFileName
     ? sourceFileName.replace(/\.[^.]+$/, '')
     : 'thumbnail';
   const fileName = `thumbnail_${baseName}.${ext}`;
 
-  return { buffer, width, height, mimeType, fileName };
+  return {
+    buffer: data,
+    width: info.width,
+    height: info.height,
+    mimeType,
+    fileName,
+  };
 }
 
 /**
@@ -369,17 +426,30 @@ module.exports = async function processImage(input) {
       const resize = input.resize || {};
       let buffer = input.buffer;
       let modified = false;
+      let finalWidth = input.fileWidth;
+      let finalHeight = input.fileHeight;
+      let finalFormat = input.mimeType
+        ? input.mimeType.replace('image/', '')
+        : 'jpeg';
 
       // Step 1: Apply format conversion if requested
       if (resize.outputMimeType && input.mimeType !== resize.outputMimeType) {
         modified = true;
-        buffer = await applyOutputFormat(load(buffer), resize.outputMimeType).toBuffer();
+        buffer = await applyOutputFormat(
+          load(buffer),
+          resize.outputMimeType,
+        ).toBuffer();
       }
 
       // Step 2: Dimensional resize if requested
       if (resize.width || resize.height) {
-        const srcWidth = input.fileWidth || (await load(buffer).metadata()).width;
-        const srcHeight = input.fileHeight || (await load(buffer).metadata()).height;
+        let srcWidth = input.fileWidth;
+        let srcHeight = input.fileHeight;
+        if (!srcWidth || !srcHeight) {
+          const meta = await load(buffer).metadata();
+          srcWidth = srcWidth || meta.width;
+          srcHeight = srcHeight || meta.height;
+        }
 
         if (
           (resize.width && resize.width < srcWidth) ||
@@ -388,6 +458,9 @@ module.exports = async function processImage(input) {
           modified = true;
           const result = await resizeImage(buffer, resize.width, resize.height);
           buffer = result.buffer;
+          finalWidth = result.width;
+          finalHeight = result.height;
+          finalFormat = result.format;
         }
       }
 
@@ -395,20 +468,36 @@ module.exports = async function processImage(input) {
       if (resize.maxBytes && input.buffer.length > resize.maxBytes) {
         if (buffer.length > resize.maxBytes) {
           modified = true;
-          const origMeta = await load(input.buffer).metadata();
-          buffer = await scaleDownImage(
+          let origWidth = input.fileWidth;
+          let origHeight = input.fileHeight;
+          if (!origWidth || !origHeight) {
+            const origMeta = await load(input.buffer).metadata();
+            origWidth = origWidth || origMeta.width;
+            origHeight = origHeight || origMeta.height;
+          }
+          const scaleResult = await scaleDownImage(
             buffer,
             input.buffer,
-            origMeta.width,
-            origMeta.height,
+            origWidth,
+            origHeight,
             resize.maxBytes,
             resize.outputMimeType || input.mimeType,
           );
+          buffer = scaleResult.buffer;
+          finalWidth = scaleResult.width;
+          finalHeight = scaleResult.height;
+          finalFormat = scaleResult.format;
         }
       }
 
-      // Get final metadata
-      const finalMeta = await load(buffer).metadata();
+      // If modified but metadata wasn't captured (e.g. only format conversion),
+      // decode once to get dimensions.
+      if (modified && !finalWidth) {
+        const finalMeta = await load(buffer).metadata();
+        finalWidth = finalMeta.width;
+        finalHeight = finalMeta.height;
+        finalFormat = finalMeta.format;
+      }
 
       // Step 4: Generate thumbnail if requested
       let thumbnailResult;
@@ -425,17 +514,23 @@ module.exports = async function processImage(input) {
 
       return {
         buffer: modified ? buffer : undefined,
-        width: finalMeta.width,
-        height: finalMeta.height,
-        format: finalMeta.format,
-        mimeType: `image/${finalMeta.format}`,
-        fileName: input.fileId ? `${input.fileId}.${finalMeta.format}` : input.fileName,
+        width: finalWidth,
+        height: finalHeight,
+        format: finalFormat,
+        mimeType: `image/${finalFormat}`,
+        fileName: input.fileId
+          ? `${input.fileId}.${finalFormat}`
+          : input.fileName,
         modified,
         thumbnailBuffer: thumbnailResult ? thumbnailResult.buffer : undefined,
-        thumbnailMimeType: thumbnailResult ? thumbnailResult.mimeType : undefined,
+        thumbnailMimeType: thumbnailResult
+          ? thumbnailResult.mimeType
+          : undefined,
         thumbnailWidth: thumbnailResult ? thumbnailResult.width : undefined,
         thumbnailHeight: thumbnailResult ? thumbnailResult.height : undefined,
-        thumbnailFileName: thumbnailResult ? thumbnailResult.fileName : undefined,
+        thumbnailFileName: thumbnailResult
+          ? thumbnailResult.fileName
+          : undefined,
       };
     }
 
