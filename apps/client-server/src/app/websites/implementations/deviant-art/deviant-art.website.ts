@@ -31,7 +31,7 @@ import { DeviantArtMessageSubmission } from './models/deviant-art-message-submis
 
 interface DeviantArtFolder {
   description: string;
-  folderId: string;
+  folderId: number;
   hasSubfolders: boolean;
   name: string;
   parentId: string | null;
@@ -141,20 +141,20 @@ export default class DeviantArt
         const children = childrenByParentId[parentKey] || [];
 
         return children.map((folder) => {
-          const subChildren = buildTree(folder.folderId);
+          const subChildren = buildTree(folder.folderId.toString());
 
           if (subChildren.length > 0) {
             // This folder has children, create a group
             return {
               label: folder.name,
-              value: folder.folderId,
+              value: folder.folderId.toString(),
               items: subChildren,
             };
           }
           // This is a leaf folder
           return {
             label: folder.name,
-            value: folder.folderId,
+            value: folder.folderId.toString(),
           };
         });
       };
