@@ -17,6 +17,17 @@ sharp.cache({ files: 0 });
 sharp.concurrency(1); // Limit per-worker thread count to reduce native memory pressure
 
 /**
+ * Create a sharp instance with the pixel limit disabled.
+ * Sharp's default limit (268 megapixels) rejects large images
+ * that artists commonly work with (e.g. 50MB+ high-res JPEGs).
+ * @param {Buffer} buffer
+ * @returns {import('sharp').Sharp}
+ */
+function load(buffer) {
+  return sharp(buffer, { limitInputPixels: false });
+}
+
+/**
  * @typedef {Object} SharpWorkerInput
  * @property {'resize' | 'metadata' | 'thumbnail'} operation
  * @property {Buffer} buffer - The image buffer to process
@@ -81,14 +92,14 @@ function applyOutputFormat(instance, outputMimeType) {
  * @returns {Promise<{buffer: Buffer, metadata: import('sharp').Metadata}>}
  */
 async function resizeImage(inputBuffer, width, height) {
-  const instance = sharp(inputBuffer);
+  const instance = load(inputBuffer);
   const metadata = await instance.metadata();
 
   if (metadata.width > width || metadata.height > height) {
-    const resizedBuffer = await sharp(inputBuffer)
+    const resizedBuffer = await load(inputBuffer)
       .resize({ width, height, fit: 'inside', withoutEnlargement: true })
       .toBuffer();
-    const resizedMeta = await sharp(resizedBuffer).metadata();
+    const resizedMeta = await load(resizedBuffer).metadata();
     return { buffer: resizedBuffer, metadata: resizedMeta };
   }
 
@@ -151,7 +162,7 @@ async function scaleDownImage(inputBuffer, originalBuffer, originalWidth, origin
  */
 async function generateThumbnail(sourceBuffer, sourceMimeType, sourceFileName, preferredDimension) {
   const dimension = preferredDimension || 400;
-  const instance = sharp(sourceBuffer);
+  const instance = load(sourceBuffer);
 
   const resized = instance.resize(dimension, dimension, {
     fit: 'inside',
@@ -164,7 +175,7 @@ async function generateThumbnail(sourceBuffer, sourceMimeType, sourceFileName, p
     : await resized.png({ quality: 99, force: true }).toBuffer();
   const mimeType = isJpeg ? 'image/jpeg' : 'image/png';
 
-  const metadata = await sharp(buffer).metadata();
+  const metadata = await load(buffer).metadata();
   const width = metadata.width || dimension;
   const height = metadata.height || dimension;
 
@@ -188,7 +199,7 @@ module.exports = async function processImage(input) {
 
   switch (operation) {
     case 'metadata': {
-      const metadata = await sharp(input.buffer).metadata();
+      const metadata = await load(input.buffer).metadata();
       return {
         width: metadata.width || 0,
         height: metadata.height || 0,
@@ -223,13 +234,13 @@ module.exports = async function processImage(input) {
       // Step 1: Apply format conversion if requested
       if (resize.outputMimeType && input.mimeType !== resize.outputMimeType) {
         modified = true;
-        buffer = await applyOutputFormat(sharp(buffer), resize.outputMimeType).toBuffer();
+        buffer = await applyOutputFormat(load(buffer), resize.outputMimeType).toBuffer();
       }
 
       // Step 2: Dimensional resize if requested
       if (resize.width || resize.height) {
-        const srcWidth = input.fileWidth || (await sharp(buffer).metadata()).width;
-        const srcHeight = input.fileHeight || (await sharp(buffer).metadata()).height;
+        const srcWidth = input.fileWidth || (await load(buffer).metadata()).width;
+        const srcHeight = input.fileHeight || (await load(buffer).metadata()).height;
 
         if (
           (resize.width && resize.width < srcWidth) ||
@@ -246,7 +257,7 @@ module.exports = async function processImage(input) {
         if (buffer.length > resize.maxBytes) {
           modified = true;
           // Get original dimensions for scaling reference
-          const origMeta = await sharp(input.buffer).metadata();
+          const origMeta = await load(input.buffer).metadata();
           buffer = await scaleDownImage(
             buffer,
             input.buffer,
@@ -258,7 +269,7 @@ module.exports = async function processImage(input) {
       }
 
       // Get final metadata
-      const finalMeta = await sharp(buffer).metadata();
+      const finalMeta = await load(buffer).metadata();
 
       // Step 4: Generate thumbnail if requested
       let thumbnailResult;
