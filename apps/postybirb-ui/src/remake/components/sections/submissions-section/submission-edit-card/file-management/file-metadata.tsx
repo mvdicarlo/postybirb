@@ -20,6 +20,7 @@ import {
   Tooltip,
 } from '@mantine/core';
 import {
+  AccountId,
   FileType,
   IAccountDto,
   ISubmissionFileDto,
@@ -47,6 +48,9 @@ interface FileMetadataProps {
 export function FileMetadata({ file, accounts }: FileMetadataProps) {
   const { metadata } = file;
   const fileType = getFileType(file.fileName);
+  const [ignoredWebsites, setIgnoredWebsites] = useState<AccountId[]>(
+    metadata.ignoredWebsites ?? [],
+  );
 
   // Create a save function that updates metadata on the server
   const save = useCallback(() => {
@@ -63,9 +67,11 @@ export function FileMetadata({ file, accounts }: FileMetadataProps) {
           <BasicWebsiteSelect
             label={<Trans>Skip Accounts</Trans>}
             size="xs"
-            selected={metadata.ignoredWebsites ?? []}
+            selected={ignoredWebsites}
             onSelect={(selectedAccounts) => {
-              metadata.ignoredWebsites = selectedAccounts.map((acc) => acc.id);
+              const ids = selectedAccounts.map((acc) => acc.id);
+              setIgnoredWebsites(ids);
+              metadata.ignoredWebsites = ids;
               save();
             }}
           />

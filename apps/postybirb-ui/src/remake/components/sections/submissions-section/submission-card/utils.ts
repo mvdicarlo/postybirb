@@ -19,12 +19,12 @@ export function getThumbnailUrl(
 
   // Use the thumbnail if available
   if (primaryFile.hasThumbnail) {
-    return `${baseUrl}/api/file/thumbnail/${primaryFile.id}`;
+    return `${baseUrl}/api/file/thumbnail/${primaryFile.id}?${primaryFile.hash}`;
   }
 
   // Check if it's an image type that can be displayed directly
   if (primaryFile.mimeType?.startsWith('image/')) {
-    return `${baseUrl}/api/file/file/${primaryFile.id}`;
+    return `${baseUrl}/api/file/file/${primaryFile.id}?${primaryFile.hash}`;
   }
 
   return undefined;
