@@ -170,7 +170,7 @@
     "regenerator-runtime": "^0.13.9",
     "rxjs": "^7.3.0",
     "sanitize-html": "^2.13.0",
-    "sharp": "^0.33.5",
+    "sharp": "^0.34.5",
     "socket.io": "^4.8.0",
     "socket.io-client": "^4.8.0",
     "socks-proxy-agent": "^8.0.5",
