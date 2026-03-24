@@ -349,15 +349,35 @@ export default class Telegram
           const messageMedia = await telegram.invoke(
             new Api.messages.UploadMedia({ media, peer }),
           );
-          const file =
-            messageMedia.className === 'MessageMediaPhoto'
-              ? messageMedia.photo
-              : messageMedia.className === 'MessageMediaDocument'
-                ? messageMedia.document
-                : undefined;
 
-          if (!file) {
-            throw new Error(`Unknwon media type: ${messageMedia.className}`);
+          let inputMedia: Api.InputMediaPhoto | Api.InputMediaDocument;
+
+          if (
+            messageMedia.className === 'MessageMediaPhoto' &&
+            messageMedia.photo?.className === 'Photo'
+          ) {
+            inputMedia = new Api.InputMediaPhoto({
+              id: new Api.InputPhoto({
+                id: messageMedia.photo.id,
+                accessHash: messageMedia.photo.accessHash,
+                fileReference: messageMedia.photo.fileReference,
+              }),
+              spoiler: postData.options.spoiler,
+            });
+          } else if (
+            messageMedia.className === 'MessageMediaDocument' &&
+            messageMedia.document?.className === 'Document'
+          ) {
+            inputMedia = new Api.InputMediaDocument({
+              id: new Api.InputDocument({
+                id: messageMedia.document.id,
+                accessHash: messageMedia.document.accessHash,
+                fileReference: messageMedia.document.fileReference,
+              }),
+              spoiler: postData.options.spoiler,
+            });
+          } else {
+            throw new Error(`Unknown media type: ${messageMedia.className}`);
           }
 
           // Only add description to the first media in first batch
@@ -365,7 +385,7 @@ export default class Telegram
 
           multiMedia.push(
             new Api.InputSingleMedia({
-              media,
+              media: inputMedia,
               message: useDescription ? mediaDescription : '',
               entities: useDescription ? mediaEntities : [],
             }),
