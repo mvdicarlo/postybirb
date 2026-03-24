@@ -6,36 +6,36 @@
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
-    Badge,
-    Box,
-    Button,
-    Checkbox,
-    CloseButton,
-    Combobox,
-    Group,
-    Pill,
-    PillsInput,
-    ScrollArea,
-    Stack,
-    Text,
-    useCombobox,
+  Badge,
+  Box,
+  Button,
+  Checkbox,
+  CloseButton,
+  Combobox,
+  Group,
+  Pill,
+  PillsInput,
+  ScrollArea,
+  Stack,
+  Text,
+  useCombobox,
 } from '@mantine/core';
 import { SubmissionRating, SubmissionType } from '@postybirb/types';
 import {
-    IconCircleFilled,
-    IconSquare,
-    IconSquareCheck,
+  IconCircleFilled,
+  IconSquare,
+  IconSquareCheck,
 } from '@tabler/icons-react';
 import { useCallback, useMemo, useState } from 'react';
 import websiteOptionsApi from '../../../../../api/website-options.api';
 import { useAccounts } from '../../../../../stores/entity/account-store';
 import {
-    useFileWebsites,
-    useMessageWebsites,
+  useFileWebsites,
+  useMessageWebsites,
 } from '../../../../../stores/entity/website-store';
 import type {
-    AccountRecord,
-    WebsiteRecord,
+  AccountRecord,
+  WebsiteRecord,
 } from '../../../../../stores/records';
 import { useSubmissionEditCardContext } from '../context';
 
@@ -352,7 +352,7 @@ export function AccountSelect() {
         <Combobox.DropdownTarget>
           <PillsInput
             pointer
-            onClick={() => combobox.toggleDropdown()}
+            onClick={() => combobox.openDropdown()}
             rightSection={
               selectedAccountIds.size > 0 ? (
                 <CloseButton
