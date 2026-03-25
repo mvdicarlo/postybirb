@@ -5,11 +5,11 @@
 import { Trans } from '@lingui/react/macro';
 import { Box, Group, Text, rem } from '@mantine/core';
 import {
-  Dropzone,
-  FileWithPath,
-  IMAGE_MIME_TYPE,
-  MS_WORD_MIME_TYPE,
-  PDF_MIME_TYPE,
+    Dropzone,
+    FileWithPath,
+    IMAGE_MIME_TYPE,
+    MS_WORD_MIME_TYPE,
+    PDF_MIME_TYPE,
 } from '@mantine/dropzone';
 import { FileType } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
@@ -17,9 +17,9 @@ import { IconPhoto, IconUpload, IconX } from '@tabler/icons-react';
 import { useState } from 'react';
 import fileSubmissionApi from '../../../../../api/file-submission.api';
 import {
-  showErrorNotification,
-  showUploadErrorNotification,
-  showWarningNotification,
+    showErrorNotification,
+    showUploadErrorNotification,
+    showWarningNotification,
 } from '../../../../../utils/notifications';
 import { useSubmissionEditCardContext } from '../context';
 
@@ -118,6 +118,7 @@ export function FileUploader() {
         ...AUDIO_MIME_TYPES,
         ...TEXT_MIME_TYPES,
       ]}
+      useFsAccessApi={false}
       loading={uploading}
       multiple
     >

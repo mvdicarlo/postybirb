@@ -141,6 +141,7 @@ export function FileDropzone({ onDrop, isUploading, type }: FileDropzoneProps) {
       <Dropzone
         onDrop={onDrop}
         accept={acceptedMimeTypes}
+        useFsAccessApi={false}
         loading={isUploading}
         disabled={isUploading}
         styles={{
