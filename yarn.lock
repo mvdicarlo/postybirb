@@ -9969,13 +9969,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/sortablejs@npm:^1.15.8":
-  version: 1.15.9
-  resolution: "@types/sortablejs@npm:1.15.9"
-  checksum: 10c0/d8ddf3da28a84a023d3003aa64b6495a7112e3945ac05d937afdb7c182b04a1025f126b2977ed8d5a9ede229b4bab85f037efbc97fde8a71128e056ac3122fa9
-  languageName: node
-  linkType: hard
-
 "@types/stack-utils@npm:^2.0.0":
   version: 2.0.3
   resolution: "@types/stack-utils@npm:2.0.3"
@@ -22785,7 +22778,6 @@ __metadata:
     "@types/react-dom": "npm:18.3.0"
     "@types/react-router-dom": "npm:^5.3.3"
     "@types/sanitize-html": "npm:2.9.0"
-    "@types/sortablejs": "npm:^1.15.8"
     "@types/uuid": "npm:^10.0.0"
     "@typescript-eslint/eslint-plugin": "npm:7.16.0"
     "@typescript-eslint/parser": "npm:7.16.0"
@@ -22884,7 +22876,6 @@ __metadata:
     socket.io: "npm:^4.8.0"
     socket.io-client: "npm:^4.8.0"
     socks-proxy-agent: "npm:^8.0.5"
-    sortablejs: "npm:^1.15.3"
     swagger-ui-express: "npm:^4.1.6"
     swc_mut_cjs_exports: "npm:^10.7.0"
     tailwindcss: "npm:3.4.3"
@@ -25224,13 +25215,6 @@ __metadata:
   dependencies:
     is-plain-obj: "npm:^1.0.0"
   checksum: 10c0/5dd383b0299a40277051f7498c3999520138e2eb50d422962f658738341c9e82349fad4a3024d5ba1a3122688fbaf958f2a472d4c53bade55515097c2ce15420
-  languageName: node
-  linkType: hard
-
-"sortablejs@npm:^1.15.3":
-  version: 1.15.6
-  resolution: "sortablejs@npm:1.15.6"
-  checksum: 10c0/a75dcf53e5613b4106d46434e40114830f9c6449b3b439bc1925c1fbf0a0c1f044727a8f3d4ae1759fa7beaa33e7eb0c4a413e6aa88d6026577b59f3658ff727
   languageName: node
   linkType: hard
 

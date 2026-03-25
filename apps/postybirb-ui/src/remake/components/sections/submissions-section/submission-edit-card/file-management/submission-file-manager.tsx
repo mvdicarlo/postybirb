@@ -1,14 +1,30 @@
 /**
  * SubmissionFileManager - Container for file cards with drag-and-drop reordering.
+ * Uses dnd-kit for React-native drag-and-drop (consolidated from sortablejs).
  */
 
+import {
+  closestCenter,
+  DndContext,
+  DragEndEvent,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { Trans } from '@lingui/react/macro';
 import { Box, Group, Paper, ScrollArea, Stack, Text } from '@mantine/core';
 import { ISubmissionFileDto } from '@postybirb/types';
 import { IconArrowsSort } from '@tabler/icons-react';
-import { useEffect, useRef, useState } from 'react';
-import Sortable from 'sortablejs';
-import { draggableIndexesAreDefined } from '../../../../../../helpers/sortable.helper';
+import { CSSProperties, useCallback, useEffect, useMemo, useState } from 'react';
 import fileSubmissionApi from '../../../../../api/file-submission.api';
 import { useSubmissionEditCardContext } from '../context';
 import './file-management.css';
@@ -27,9 +43,47 @@ function orderFiles(files: ISubmissionFileDto[]): ISubmissionFileDto[] {
     });
 }
 
+/** Wrapper that makes a SubmissionFileCard sortable via dnd-kit */
+function SortableFileCard({
+  file,
+  isDraggable,
+  totalFiles,
+}: {
+  file: ISubmissionFileDto;
+  isDraggable: boolean;
+  totalFiles: number;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: file.id,
+    disabled: !isDraggable,
+  });
+
+  const style: CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      <SubmissionFileCard
+        file={file}
+        draggable={isDraggable}
+        totalFiles={totalFiles}
+      />
+    </div>
+  );
+}
+
 export function SubmissionFileManager() {
   const { submission } = useSubmissionEditCardContext();
-  const ref = useRef<HTMLDivElement>(null);
   const [orderedFiles, setOrderedFiles] = useState(() =>
     orderFiles(submission.files),
   );
@@ -41,62 +95,53 @@ export function SubmissionFileManager() {
     setOrderedFiles(orderFiles(submission.files));
   }, [submission.files, fileIds]);
 
-  // Setup SortableJS for drag-and-drop reordering
-  useEffect(() => {
-    const el = ref.current;
-    if (!el || orderedFiles.length <= 1) {
-      return () => {};
-    }
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 8 },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
 
-    const sortable = new Sortable(el, {
-      disabled: orderedFiles.length <= 1,
-      draggable: `.${DRAGGABLE_FILE_CLASS}`,
-      direction: 'vertical',
-      onEnd: (event) => {
-        if (
-          draggableIndexesAreDefined(event) &&
-          event.oldDraggableIndex !== event.newDraggableIndex
-        ) {
-          const newOrderedFiles = [...orderedFiles];
-          const [movedFile] = newOrderedFiles.splice(
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            event.oldDraggableIndex!,
-            1,
-          );
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          newOrderedFiles.splice(event.newDraggableIndex!, 0, movedFile);
+  const fileIdList = useMemo(
+    () => orderedFiles.map((f) => f.id),
+    [orderedFiles],
+  );
 
-          // Update order property for all files
-          const baseOrder = Date.now();
-          newOrderedFiles.forEach((file, index) => {
-            // eslint-disable-next-line no-param-reassign
-            file.order = baseOrder + index;
-          });
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
 
-          setOrderedFiles(newOrderedFiles);
+      const oldIndex = orderedFiles.findIndex((f) => f.id === active.id);
+      const newIndex = orderedFiles.findIndex((f) => f.id === over.id);
+      if (oldIndex === -1 || newIndex === -1) return;
 
-          // Persist to backend
-          fileSubmissionApi.reorder({
-            order: newOrderedFiles.reduce(
-              (acc: Record<string, number>, file) => {
-                acc[file.id] = file.order ?? 0;
-                return acc;
-              },
-              {},
-            ),
-          });
-        }
-      },
-    });
+      const newOrderedFiles = arrayMove(orderedFiles, oldIndex, newIndex);
 
-    return () => {
-      try {
-        sortable.destroy();
-      } catch {
-        // Ignore destroy errors
-      }
-    };
-  }, [orderedFiles]);
+      // Update order property for all files
+      const baseOrder = Date.now();
+      newOrderedFiles.forEach((file, index) => {
+        // eslint-disable-next-line no-param-reassign
+        file.order = baseOrder + index;
+      });
+
+      setOrderedFiles(newOrderedFiles);
+
+      // Persist to backend
+      fileSubmissionApi.reorder({
+        order: newOrderedFiles.reduce(
+          (acc: Record<string, number>, file) => {
+            acc[file.id] = file.order ?? 0;
+            return acc;
+          },
+          {},
+        ),
+      });
+    },
+    [orderedFiles],
+  );
 
   const isDraggable = orderedFiles.length > 1;
 
@@ -125,16 +170,27 @@ export function SubmissionFileManager() {
         scrollbarSize={6}
         type="auto"
       >
-        <Stack ref={ref} gap="md">
-          {orderedFiles.map((file) => (
-            <SubmissionFileCard
-              key={`${file.id}:${file.hash}`}
-              file={file}
-              draggable={isDraggable}
-              totalFiles={orderedFiles.length}
-            />
-          ))}
-        </Stack>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={fileIdList}
+            strategy={verticalListSortingStrategy}
+          >
+            <Stack gap="md">
+              {orderedFiles.map((file) => (
+                <SortableFileCard
+                  key={`${file.id}:${file.hash}`}
+                  file={file}
+                  isDraggable={isDraggable}
+                  totalFiles={orderedFiles.length}
+                />
+              ))}
+            </Stack>
+          </SortableContext>
+        </DndContext>
       </ScrollArea>
 
       <Box p="md" pt={0}>

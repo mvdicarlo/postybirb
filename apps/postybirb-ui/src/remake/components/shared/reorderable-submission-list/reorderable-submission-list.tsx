@@ -8,7 +8,23 @@ import { Box, Paper, ScrollArea, Stack, Text } from '@mantine/core';
 import { PostRecordState } from '@postybirb/types';
 import { IconGripVertical } from '@tabler/icons-react';
 import { useCallback, useEffect, useRef } from 'react';
-import Sortable from 'sortablejs';
+import {
+  closestCenter,
+  DndContext,
+  DragEndEvent,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import type { SubmissionRecord } from '../../../stores/records';
 import { cn } from '../../../utils/class-names';
 import './reorderable-submission-list.css';
@@ -37,60 +53,42 @@ export function ReorderableSubmissionList({
   renderExtra,
   maxHeight = '400px',
 }: ReorderableSubmissionListProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
   const focusedIndexRef = useRef<number>(-1);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  // Initialize Sortable.js for drag-and-drop
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return undefined;
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 8 },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
 
-    const sortable = new Sortable(el, {
-      draggable: '.postybirb__reorderable-item',
-      handle: '.postybirb__reorderable-handle',
-      direction: 'vertical',
-      animation: 150,
-      ghostClass: 'postybirb__reorderable-ghost',
-      onEnd: (event) => {
-        const { oldIndex, newIndex } = event;
-        if (
-          oldIndex !== undefined &&
-          newIndex !== undefined &&
-          oldIndex !== newIndex
-        ) {
-          const newOrder = [...submissions];
-          const [moved] = newOrder.splice(oldIndex, 1);
-          newOrder.splice(newIndex, 0, moved);
-          onReorder(newOrder);
-        }
-      },
-    });
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
 
-    return () => {
-      try {
-        sortable.destroy();
-      } catch {
-        // Ignore destroy errors
+      const oldIndex = submissions.findIndex((s) => s.id === active.id);
+      const newIndex = submissions.findIndex((s) => s.id === over.id);
+      if (oldIndex !== -1 && newIndex !== -1) {
+        onReorder(arrayMove(submissions, oldIndex, newIndex));
       }
-    };
-  }, [submissions, onReorder]);
+    },
+    [submissions, onReorder],
+  );
 
-  // Handle keyboard navigation
+  // Handle keyboard navigation (arrow keys to reorder)
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent, index: number) => {
       if (event.key === 'ArrowUp' && index > 0) {
         event.preventDefault();
-        const newOrder = [...submissions];
-        const [moved] = newOrder.splice(index, 1);
-        newOrder.splice(index - 1, 0, moved);
-        onReorder(newOrder);
+        onReorder(arrayMove(submissions, index, index - 1));
         focusedIndexRef.current = index - 1;
       } else if (event.key === 'ArrowDown' && index < submissions.length - 1) {
         event.preventDefault();
-        const newOrder = [...submissions];
-        const [moved] = newOrder.splice(index, 1);
-        newOrder.splice(index + 1, 0, moved);
-        onReorder(newOrder);
+        onReorder(arrayMove(submissions, index, index + 1));
         focusedIndexRef.current = index + 1;
       }
     },
@@ -133,42 +131,94 @@ export function ReorderableSubmissionList({
       </Text>
       <Box style={{ overflow: 'hidden', maxHeight }}>
         <ScrollArea h="100%" scrollbars="y">
-          <Stack gap="xs" ref={containerRef}>
-            {submissions.map((submission, index) => {
-              const title = submission.getDefaultOptions()?.data?.title;
-              const lastPost = submission.latestPost;
-              const hasFailedPost =
-                lastPost && lastPost.state === PostRecordState.FAILED;
-
-              return (
-                <Paper
-                  key={submission.id}
-                  withBorder
-                  p="xs"
-                  radius="sm"
-                  tabIndex={0}
-                  className={cn(['postybirb__reorderable-item'], {
-                    'postybirb__reorderable-item--failed': hasFailedPost,
-                  })}
-                  onKeyDown={(e) => handleKeyDown(e, index)}
-                >
-                  <Box className="postybirb__reorderable-item-content">
-                    <Box className="postybirb__reorderable-handle">
-                      <IconGripVertical size={16} />
-                    </Box>
-                    <Box className="postybirb__reorderable-item-main">
-                      <Text size="sm" fw={500} truncate>
-                        {title || <Trans>Untitled</Trans>}
-                      </Text>
-                      {renderExtra && renderExtra(submission, index)}
-                    </Box>
-                  </Box>
-                </Paper>
-              );
-            })}
-          </Stack>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={submissions.map((s) => s.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <Stack gap="xs" ref={containerRef}>
+                {submissions.map((submission, index) => (
+                  <SortableReorderableItem
+                    key={submission.id}
+                    submission={submission}
+                    index={index}
+                    onKeyDown={handleKeyDown}
+                    renderExtra={renderExtra}
+                  />
+                ))}
+              </Stack>
+            </SortableContext>
+          </DndContext>
         </ScrollArea>
       </Box>
     </Box>
+  );
+}
+
+/** Sortable item wrapper using dnd-kit */
+function SortableReorderableItem({
+  submission,
+  index,
+  onKeyDown,
+  renderExtra,
+}: {
+  submission: SubmissionRecord;
+  index: number;
+  onKeyDown: (event: React.KeyboardEvent, index: number) => void;
+  renderExtra?: ReorderableSubmissionListProps['renderExtra'];
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: submission.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  const title = submission.getDefaultOptions()?.data?.title;
+  const lastPost = submission.latestPost;
+  const hasFailedPost =
+    lastPost && lastPost.state === PostRecordState.FAILED;
+
+  return (
+    <Paper
+      ref={setNodeRef}
+      style={style}
+      withBorder
+      p="xs"
+      radius="sm"
+      tabIndex={0}
+      className={cn(['postybirb__reorderable-item'], {
+        'postybirb__reorderable-item--failed': hasFailedPost,
+      })}
+      onKeyDown={(e) => onKeyDown(e, index)}
+    >
+      <Box className="postybirb__reorderable-item-content">
+        <Box
+          className="postybirb__reorderable-handle"
+          {...attributes}
+          {...listeners}
+        >
+          <IconGripVertical size={16} />
+        </Box>
+        <Box className="postybirb__reorderable-item-main">
+          <Text size="sm" fw={500} truncate>
+            {title || <Trans>Untitled</Trans>}
+          </Text>
+          {renderExtra && renderExtra(submission, index)}
+        </Box>
+      </Box>
+    </Paper>
   );
 }
