@@ -2,15 +2,15 @@
 // No need to import BlockNote in the server-side website implementation
 import { Http } from '@postybirb/http';
 import {
-  DynamicObject,
-  FileType,
-  ILoginState,
-  ImageResizeProps,
-  ISubmissionFile,
-  PostData,
-  PostResponse,
-  SimpleValidationResult,
-  SubmissionRating,
+    DynamicObject,
+    FileType,
+    ILoginState,
+    ImageResizeProps,
+    ISubmissionFile,
+    PostData,
+    PostResponse,
+    SimpleValidationResult,
+    SubmissionRating,
 } from '@postybirb/types';
 import parse from 'node-html-parser';
 import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
@@ -101,7 +101,13 @@ export default class Tumblr
     });
 
     const root = parse(page.body);
-    const initialState = root.querySelector('#___INITIAL_STATE___').innerText;
+    const initialStateEl = root.querySelector('#___INITIAL_STATE___');
+    if (!initialStateEl) {
+      this.logger.warn('Failed to find #___INITIAL_STATE___ element during login');
+      this.loginState.logout();
+      return this.loginState;
+    }
+    const initialState = initialStateEl.innerText;
     const cleanedState = initialState.trim().replace(/\\\\"/g, '\\"');
     const data = JSON.parse(cleanedState);
     const apiToken = data?.apiFetchStore?.API_TOKEN;
