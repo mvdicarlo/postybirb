@@ -313,6 +313,7 @@ export function SubmissionSectionHeader({
               ...PDF_MIME_TYPE,
               ...MS_WORD_MIME_TYPE,
             ]}
+            useFsAccessApi={false}
             py={6}
             style={{ cursor: 'pointer' }}
           >
