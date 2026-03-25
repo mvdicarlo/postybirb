@@ -91,7 +91,13 @@ export class SharpInstanceManager implements OnModuleDestroy {
 
     // Run health check asynchronously — don't block construction,
     // but log warnings if sharp is broken on this system.
-    this.runHealthCheck();
+    // The .catch() is a safety net to prevent unhandled rejection
+    // if something unexpected escapes the try/catch inside runHealthCheck.
+    this.runHealthCheck().catch((err) => {
+      this.logger
+        .withError(err)
+        .error('Unexpected error during sharp health check');
+    });
   }
 
   /**
