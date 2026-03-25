@@ -17,6 +17,8 @@
 /.swc
 /.jest
 /.eslint
+.jest
+.swc
 
 # dependencies
 /node_modules
