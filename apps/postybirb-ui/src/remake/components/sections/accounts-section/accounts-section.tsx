@@ -178,11 +178,22 @@ export function AccountsSection({ viewState }: AccountsSectionProps) {
     }
 
     const query = searchQuery.toLowerCase();
-    return websiteAccounts.filter(
+    const filtered = websiteAccounts.filter(
       (acc) =>
         acc.name.toLowerCase().includes(query) ||
         acc.username?.toLowerCase().includes(query),
     );
+
+    // If no accounts matched but the website name matches the query,
+    // show all accounts (user likely intended to filter to the website level)
+    if (filtered.length === 0) {
+      const website = websites.find((w) => w.id === websiteId);
+      if (website?.displayName.toLowerCase().includes(query)) {
+        return websiteAccounts;
+      }
+    }
+
+    return filtered;
   };
 
   const isLoading = websitesLoading || accountsLoading;
