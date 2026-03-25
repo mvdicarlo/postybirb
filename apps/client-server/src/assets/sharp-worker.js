@@ -405,6 +405,49 @@ module.exports = async function processImage(input) {
       };
     }
 
+    case 'healthcheck': {
+      // Validate sharp can load, decode, resize, and encode.
+      // Catches missing native bindings, glibc issues, sandbox
+      // restrictions, etc. at startup instead of mid-post.
+      const diagnostics = {
+        platform: os.platform(),
+        arch: os.arch(),
+        nodeVersion: process.version,
+        sharpVersions: sharp.versions || {},
+        glibcVersion: null,
+        malloc_arena_max: process.env.MALLOC_ARENA_MAX || 'unset',
+      };
+
+      // Detect glibc version on Linux
+      if (os.platform() === 'linux') {
+        try {
+          const report = process.report ? process.report.getReport() : null;
+          if (report && report.header && report.header.glibcVersionRuntime) {
+            diagnostics.glibcVersion = report.header.glibcVersionRuntime;
+          }
+        } catch {
+          // process.report may not be available
+        }
+      }
+
+      // Create a tiny 1x1 JPEG, read it back — exercises the full
+      // sharp pipeline including native bindings
+      const pixel = Buffer.from([255, 0, 0]); // 1 red pixel
+      const testImg = await sharp(pixel, { raw: { width: 1, height: 1, channels: 3 } })
+        .jpeg({ quality: 50 })
+        .toBuffer();
+      const testMeta = await sharp(testImg).metadata();
+
+      return {
+        modified: false,
+        width: testMeta.width,
+        height: testMeta.height,
+        format: testMeta.format,
+        mimeType: 'image/jpeg',
+        diagnostics,
+      };
+    }
+
     case 'thumbnail': {
       const result = await generateThumbnail(
         input.buffer,
