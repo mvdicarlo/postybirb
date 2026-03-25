@@ -11,33 +11,33 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-    Box,
-    Button,
-    CloseButton,
-    Flex,
-    Group,
-    Overlay,
-    Paper,
-    Portal,
-    Progress,
-    Text,
-    Transition,
+  Box,
+  Button,
+  CloseButton,
+  Flex,
+  Group,
+  Overlay,
+  Paper,
+  Portal,
+  Progress,
+  Text,
+  Transition,
 } from '@mantine/core';
 import { FileWithPath } from '@mantine/dropzone';
 import {
-    DefaultDescription,
-    Description,
-    IFileMetadata,
-    SubmissionId,
-    SubmissionRating,
-    SubmissionType,
-    Tag,
+  DefaultDescription,
+  Description,
+  IFileMetadata,
+  SubmissionId,
+  SubmissionRating,
+  SubmissionType,
+  Tag,
 } from '@postybirb/types';
-import { IconFileUpload } from '@tabler/icons-react';
+import { IconPlus } from '@tabler/icons-react';
 import { useCallback, useEffect, useState } from 'react';
 import {
-    showUploadErrorNotification,
-    showUploadSuccessNotification,
+  showUploadErrorNotification,
+  showUploadSuccessNotification,
 } from '../../../../utils/notifications';
 import { FileDropzone } from './file-dropzone';
 import { FileList } from './file-list';
@@ -284,7 +284,7 @@ export function FileSubmissionModal({
                 className="postybirb__file_submission_modal_header"
               >
                 <Text size="lg" fw={500}>
-                  <Trans>Add File Submission</Trans>
+                  <Trans>Create File Submissions</Trans>
                 </Text>
                 <CloseButton
                   onClick={handleClose}
@@ -337,13 +337,13 @@ export function FileSubmissionModal({
                   loading={isUploading}
                   onClick={handleUpload}
                   variant={isUploading ? 'light' : 'filled'}
-                  leftSection={<IconFileUpload size={16} />}
+                  leftSection={<IconPlus size={16} />}
                   disabled={fileItems.length === 0}
                   fullWidth
                   radius="md"
                   size="md"
                 >
-                  <Trans>Upload</Trans>
+                  <Trans>Create</Trans>
                 </Button>
               </Box>
             </Paper>
