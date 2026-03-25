@@ -57,9 +57,14 @@ export default class Toyhouse
       }
 
       const $ = parse(res.body);
-      const username = $.querySelector(
+      const usernameEl = $.querySelector(
         '.navbar .display-user-tiny > span.display-user-username',
-      ).text.trim();
+      );
+      if (!usernameEl) {
+        this.logger.warn('Failed to find username element during login');
+        return this.loginState.setLogin(false, null);
+      }
+      const username = usernameEl.text.trim();
 
       const characters = await this.loadAllCharacters($);
 
@@ -128,7 +133,12 @@ export default class Toyhouse
     const $ = parse(page.body);
     const token = $.querySelector(
       'head > meta[name="csrf-token"]',
-    ).getAttribute('content');
+    )?.getAttribute('content');
+    if (!token) {
+      return PostResponse.fromWebsite(this).withException(
+        new Error('Failed to find csrf-token meta element'),
+      );
+    }
 
     // This form data is very finnicky on what does and does not work.
     // Having some fields as empty strings is actually required. Be wary about changing anything about this payload.

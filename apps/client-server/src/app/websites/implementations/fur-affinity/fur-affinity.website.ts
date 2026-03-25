@@ -94,10 +94,11 @@ export default class FurAffinity
       if (res.body.includes('logout-link')) {
         const $ = parse(res.body);
         this.getFolders($);
-        return this.loginState.setLogin(
-          true,
-          $.querySelector('.loggedin_user_avatar').getAttribute('alt'),
-        );
+        const username = $.querySelector('.loggedin_user_avatar')?.getAttribute('alt');
+        if (!username) {
+          this.logger.warn('Failed to find loggedin_user_avatar element during login');
+        }
+        return this.loginState.setLogin(true, username ?? null);
       }
 
       return this.loginState.setLogin(false, null);
@@ -111,7 +112,12 @@ export default class FurAffinity
     const folders: SelectOption[] = [];
     const flatFolders: SelectOption[] = [];
 
-    $.querySelector('select[name=assign_folder_id]').children.forEach((el) => {
+    const folderSelect = $.querySelector('select[name=assign_folder_id]');
+    if (!folderSelect) {
+      this.logger.warn('Failed to find folder select element during login');
+      return;
+    }
+    folderSelect.children.forEach((el) => {
       if (el.tagName === 'OPTION') {
         if (el.getAttribute('value') === '0') {
           return;
@@ -155,7 +161,7 @@ export default class FurAffinity
   private processForError(body: string): string | undefined {
     if (body.includes('redirect-message')) {
       const $ = parse(body);
-      let msg = $.querySelector('.redirect-message').textContent.trim();
+      let msg = $.querySelector('.redirect-message')?.textContent?.trim();
 
       if (msg?.includes('CAPTCHA')) {
         msg =

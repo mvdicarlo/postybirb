@@ -1,12 +1,12 @@
 import { SelectOption } from '@postybirb/form-builder';
 import { Http } from '@postybirb/http';
 import {
-  ILoginState,
-  ImageResizeProps,
-  ISubmissionFile,
-  PostData,
-  PostResponse,
-  SimpleValidationResult,
+    ILoginState,
+    ImageResizeProps,
+    ISubmissionFile,
+    PostData,
+    PostResponse,
+    SimpleValidationResult,
 } from '@postybirb/types';
 import parse, { HTMLElement } from 'node-html-parser';
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -87,12 +87,22 @@ export default abstract class BaseSubscribeStar
     const topBar = $.querySelector('.top_bar-user_info');
     if (topBar) {
       const username = topBar.innerText.trim();
-      this.sessionData.csrfToken = $.querySelector(
+      const csrfToken = $.querySelector(
         'meta[name="csrf-token"]',
-      ).getAttribute('content');
-      this.sessionData.userId = topBar
+      )?.getAttribute('content');
+      if (!csrfToken) {
+        this.logger.warn('Failed to find csrf-token meta element during login');
+        return this.loginState.setLogin(false, null);
+      }
+      this.sessionData.csrfToken = csrfToken;
+      const userId = topBar
         .querySelector('img')
-        .getAttribute('data-user-id');
+        ?.getAttribute('data-user-id');
+      if (!userId) {
+        this.logger.warn('Failed to find user-id img element during login');
+        return this.loginState.setLogin(false, null);
+      }
+      this.sessionData.userId = userId;
       this.loadTiers($);
       return this.loginState.setLogin(true, username || 'unknown');
     }
@@ -155,8 +165,8 @@ export default abstract class BaseSubscribeStar
       );
       const $ = parse(body);
       const newPost = $.querySelector('.new_post')
-        .querySelector('.new_post-inner')
-        .getAttribute('data-form-template');
+        ?.querySelector('.new_post-inner')
+        ?.getAttribute('data-form-template');
       if (newPost) {
         // Parse the JSON string first
         let decoded = JSON.parse(newPost);
@@ -170,16 +180,14 @@ export default abstract class BaseSubscribeStar
         return {
           s3UploadPath: innerDoc
             .querySelector('.post_xodal')
-            .getAttribute('data-s3-upload-path'),
+            ?.getAttribute('data-s3-upload-path'),
           s3Url: innerDoc
             .querySelector('.post_xodal')
-            .getAttribute('data-s3-url'),
-          authenticityToken: parse(
-            innerDoc
-              .querySelectorAll('form input')
-              .find((input) => input.rawAttrs.includes('authenticity_token'))
-              .outerHTML,
-          ).children[0].getAttribute('value'),
+            ?.getAttribute('data-s3-url'),
+          authenticityToken: innerDoc
+            .querySelectorAll('form input')
+            .find((input) => input.rawAttrs.includes('authenticity_token'))
+            ?.getAttribute('value'),
         };
       }
     } catch (error) {
@@ -347,10 +355,13 @@ export default abstract class BaseSubscribeStar
     }
 
     const $ = parse(post.body.html);
-    const postId = $.querySelector('.post').getAttribute('data-id');
+    const postId = $.querySelector('.post')?.getAttribute('data-id');
+    if (!postId) {
+      this.logger.warn('Failed to find post ID in file submission response');
+    }
     return PostResponse.fromWebsite(this)
       .withAdditionalInfo(post.body)
-      .withSourceUrl(`${this.BASE_URL}/posts/${postId}`);
+      .withSourceUrl(postId ? `${this.BASE_URL}/posts/${postId}` : undefined);
   }
 
   async onValidateFileSubmission(
@@ -404,10 +415,13 @@ export default abstract class BaseSubscribeStar
     }
 
     const $ = parse(post.body.html);
-    const postId = $.querySelector('.post').getAttribute('data-id');
+    const postId = $.querySelector('.post')?.getAttribute('data-id');
+    if (!postId) {
+      this.logger.warn('Failed to find post ID in message submission response');
+    }
     return PostResponse.fromWebsite(this)
       .withAdditionalInfo(post.body)
-      .withSourceUrl(`${this.BASE_URL}/posts/${postId}`);
+      .withSourceUrl(postId ? `${this.BASE_URL}/posts/${postId}` : undefined);
   }
 
   async onValidateMessageSubmission(

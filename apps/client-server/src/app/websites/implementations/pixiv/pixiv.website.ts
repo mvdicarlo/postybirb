@@ -1,11 +1,11 @@
 import { Http } from '@postybirb/http';
 import {
-  FileType,
-  ILoginState,
-  ImageResizeProps,
-  PostData,
-  PostResponse,
-  SubmissionRating,
+    FileType,
+    ILoginState,
+    ImageResizeProps,
+    PostData,
+    PostResponse,
+    SubmissionRating,
 } from '@postybirb/types';
 import parse from 'node-html-parser';
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -53,7 +53,11 @@ export default class Pixiv
       const $ = parse(res.body);
       let username = '';
       try {
-        const data = $.querySelector('#__NEXT_DATA__').textContent;
+        const data = $.querySelector('#__NEXT_DATA__')?.textContent;
+        if (!data) {
+          this.logger.warn('Failed to find #__NEXT_DATA__ element during login');
+          return this.loginState.setLogin(true, 'Logged In');
+        }
         username = JSON.parse(
           JSON.parse(data).props.pageProps.serverSerializedPreloadedState,
         ).userData.self.pixivId;
@@ -90,9 +94,13 @@ export default class Pixiv
     );
 
     const $ = parse(page.body);
-    const accountInfo = JSON.parse(
-      $.querySelector('#__NEXT_DATA__').textContent,
-    );
+    const nextData = $.querySelector('#__NEXT_DATA__')?.textContent;
+    if (!nextData) {
+      return PostResponse.fromWebsite(this)
+        .withException(new Error('Failed to find #__NEXT_DATA__ element'))
+        .withAdditionalInfo(page.body);
+    }
+    const accountInfo = JSON.parse(nextData);
     const { token } = JSON.parse(
       accountInfo.props.pageProps.serverSerializedPreloadedState,
     ).api;
