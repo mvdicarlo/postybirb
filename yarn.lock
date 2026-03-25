@@ -22801,7 +22801,7 @@ __metadata:
     dotenv: "npm:10.0.0"
     drizzle-kit: "npm:^0.31.7"
     drizzle-orm: "npm:^0.44.7"
-    electron: "npm:^35"
+    electron: "npm:^40.8.4"
     electron-builder: "npm:^24.13.3"
     electron-builder-squirrel-windows: "npm:24.13.3"
     electron-context-menu: "npm:^3.1.1"

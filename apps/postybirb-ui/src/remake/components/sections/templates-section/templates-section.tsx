@@ -4,11 +4,12 @@
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
-  ActionIcon,
   Box,
+  Button,
   Divider,
   Group,
   Loader,
+  Modal,
   ScrollArea,
   SegmentedControl,
   Stack,
@@ -16,6 +17,7 @@ import {
   TextInput,
   ThemeIcon,
 } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
 import { SubmissionType } from '@postybirb/types';
 import {
   IconFile,
@@ -56,7 +58,9 @@ export function TemplatesSection({ viewState }: TemplatesSectionProps) {
     useTemplatesFilter();
   const setViewState = useNavigationStore((state) => state.setViewState);
 
-  // New template name input
+  // Create template modal
+  const [modalOpened, { open: openModal, close: closeModal }] =
+    useDisclosure(false);
   const [newTemplateName, setNewTemplateName] = useState('');
   const [isCreating, setIsCreating] = useState(false);
 
@@ -94,12 +98,13 @@ export function TemplatesSection({ viewState }: TemplatesSectionProps) {
       });
       showSuccessNotification(<Trans>Template created</Trans>);
       setNewTemplateName('');
+      closeModal();
     } catch {
       showErrorNotification(<Trans>Failed to create template</Trans>);
     } finally {
       setIsCreating(false);
     }
-  }, [newTemplateName, tabType]);
+  }, [newTemplateName, tabType, closeModal]);
 
   // Handle key press in input
   const handleKeyDown = useCallback(
@@ -180,27 +185,48 @@ export function TemplatesSection({ viewState }: TemplatesSectionProps) {
         />
 
         {/* Create new template */}
-        <Group gap="xs">
+        <Button
+          size="xs"
+          variant="light"
+          leftSection={<IconPlus size={14} />}
+          onClick={openModal}
+          fullWidth
+        >
+          <Trans>Create New Template</Trans>
+        </Button>
+      </Stack>
+
+      {/* Create template modal */}
+      <Modal
+        opened={modalOpened}
+        onClose={closeModal}
+        title={<Trans>Create New Template</Trans>}
+        size="sm"
+        centered
+      >
+        <Stack gap="md">
           <TextInput
-            size="xs"
-            placeholder={t`New template name...`}
+            label={<Trans>Template Name</Trans>}
             value={newTemplateName}
             onChange={(e) => setNewTemplateName(e.target.value)}
             onKeyDown={handleKeyDown}
-            style={{ flex: 1 }}
             disabled={isCreating}
+            data-autofocus
           />
-          <ActionIcon
-            size="md"
-            variant="filled"
-            onClick={handleCreateTemplate}
-            disabled={!newTemplateName.trim() || isCreating}
-            loading={isCreating}
-          >
-            <IconPlus size={16} />
-          </ActionIcon>
-        </Group>
-      </Stack>
+          <Group justify="flex-end">
+            <Button variant="default" onClick={closeModal} disabled={isCreating}>
+              <Trans>Cancel</Trans>
+            </Button>
+            <Button
+              onClick={handleCreateTemplate}
+              disabled={!newTemplateName.trim()}
+              loading={isCreating}
+            >
+              <Trans>Create</Trans>
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
 
       <Divider />
 
