@@ -65,6 +65,10 @@ async function bootstrap() {
     .setTitle('PostyBirb')
     .setDescription('PostyBirb API')
     .setVersion('1.0')
+    .addApiKey(
+      { type: 'apiKey', name: 'x-remote-password', in: 'header' },
+      'x-remote-password',
+    )
     .addTag('account')
     .addTag('custom-shortcut')
     .addTag('directory-watchers')
@@ -82,6 +86,7 @@ async function bootstrap() {
     .addTag('websites')
     .build();
   const document = SwaggerModule.createDocument(app, config);
+  document.security = [{ 'x-remote-password': [] }];
   SwaggerModule.setup('api', app, document);
 
   const { port } = PostyBirbEnvConfig;
