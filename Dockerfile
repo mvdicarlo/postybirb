@@ -29,7 +29,6 @@ RUN apt-get update && apt-get install -y \
     libnss3 \
     libasound2 \
     libxss1 \
-    libgconf-2-4 \
     libgbm-dev \
     libxshmfence-dev \
     libdrm-dev \
