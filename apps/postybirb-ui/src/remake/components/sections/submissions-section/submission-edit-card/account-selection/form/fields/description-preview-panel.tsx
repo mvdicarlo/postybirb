@@ -6,24 +6,24 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-    ActionIcon,
-    Alert,
-    Box,
-    CopyButton,
-    Group,
-    Loader,
-    ScrollArea,
-    Tabs,
-    Text,
-    Textarea,
-    Tooltip,
-    TypographyStylesProvider,
+  ActionIcon,
+  Alert,
+  Box,
+  CopyButton,
+  Group,
+  Loader,
+  ScrollArea,
+  Tabs,
+  Text,
+  Textarea,
+  Tooltip,
+  Typography,
 } from '@mantine/core';
 import {
-    DescriptionType,
-    IDescriptionPreviewResult,
-    SubmissionId,
-    WebsiteOptionsDto,
+  DescriptionType,
+  IDescriptionPreviewResult,
+  SubmissionId,
+  WebsiteOptionsDto,
 } from '@postybirb/types';
 import { IconCheck, IconCopy } from '@tabler/icons-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -64,7 +64,13 @@ function formatDescriptionType(type: DescriptionType): string {
   }
 }
 
-function PreviewContent({ preview }: { preview: PreviewState }) {
+function PreviewContent({
+  preview,
+  websiteId,
+}: {
+  preview: PreviewState;
+  websiteId: string;
+}) {
   if (preview.loading) {
     return (
       <Box p="md" style={{ display: 'flex', justifyContent: 'center' }}>
@@ -90,6 +96,10 @@ function PreviewContent({ preview }: { preview: PreviewState }) {
   }
 
   const { descriptionType, description } = preview.result;
+
+  const Renderer =
+    descriptionPreviewRendererByType.get(descriptionType) ??
+    descriptionPreviewRendererByWebsite.get(websiteId);
 
   return (
     <Box>
@@ -129,13 +139,13 @@ function PreviewContent({ preview }: { preview: PreviewState }) {
       />
 
       {/* HTML rendered preview */}
-      {descriptionType === DescriptionType.HTML && description && (
+      {description && Renderer && (
         <Box mt="xs">
           <Text size="xs" c="dimmed" mb={4}>
             Rendered:
           </Text>
           <ScrollArea.Autosize mah={300}>
-            <TypographyStylesProvider>
+            <Typography>
               <Box
                 style={{
                   border: '1px solid var(--mantine-color-default-border)',
@@ -143,15 +153,30 @@ function PreviewContent({ preview }: { preview: PreviewState }) {
                   padding: 'var(--mantine-spacing-xs)',
                   fontSize: '13px',
                 }}
-                dangerouslySetInnerHTML={{ __html: description }}
-              />
-            </TypographyStylesProvider>
+              >
+                <Renderer description={description} />
+              </Box>
+            </Typography>
           </ScrollArea.Autosize>
         </Box>
       )}
     </Box>
   );
 }
+
+export const descriptionPreviewRendererByType = new Map<
+  string,
+  (props: { description: string }) => React.ReactNode
+>();
+
+export const descriptionPreviewRendererByWebsite = new Map<
+  string,
+  (props: { description: string }) => React.ReactNode
+>();
+
+descriptionPreviewRendererByType.set(DescriptionType.HTML, (description) => (
+  <Box dangerouslySetInnerHTML={{ __html: description }} />
+));
 
 export function DescriptionPreviewPanel({
   submissionId,
@@ -232,9 +257,7 @@ export function DescriptionPreviewPanel({
   if (previewableOptions.length === 0) {
     return (
       <Alert color="yellow" p="xs" mt="xs">
-        <Trans>
-          Add website accounts to preview the description output.
-        </Trans>
+        <Trans>Add website accounts to preview the description output.</Trans>
       </Alert>
     );
   }
@@ -264,7 +287,7 @@ export function DescriptionPreviewPanel({
             <Text size="xs">↻</Text>
           </ActionIcon>
         </Group>
-        <PreviewContent preview={preview} />
+        <PreviewContent preview={preview} websiteId={opt.account.website} />
       </Box>
     );
   }
@@ -307,7 +330,10 @@ export function DescriptionPreviewPanel({
                   <Text size="xs">↻</Text>
                 </ActionIcon>
               </Group>
-              <PreviewContent preview={preview} />
+              <PreviewContent
+                preview={preview}
+                websiteId={opt.account.website}
+              />
             </Tabs.Panel>
           );
         })}

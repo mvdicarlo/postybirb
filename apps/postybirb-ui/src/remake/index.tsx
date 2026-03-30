@@ -22,6 +22,8 @@ import { useColorScheme, usePrimaryColor } from './stores/ui/appearance-store';
 import { cssVariableResolver } from './theme/css-variable-resolver';
 import { createAppTheme } from './theme/theme';
 
+import './components/website-components/index';
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

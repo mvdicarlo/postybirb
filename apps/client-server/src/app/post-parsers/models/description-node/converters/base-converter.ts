@@ -1,11 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { UsernameShortcut } from '@postybirb/types';
 import { ConversionContext } from '../description-node.base';
-import {
-    InlineTypes,
-    isTextNode,
-    TipTapNode,
-} from '../description-node.types';
+import { InlineTypes, isTextNode, TipTapNode } from '../description-node.types';
 
 /**
  * Base converter for TipTap JSON → output format.
@@ -18,6 +14,7 @@ export abstract class BaseConverter {
   /** Current depth for nested block rendering */
   protected currentDepth = 0;
 
+  /** Used to prevent loop when default shortcut is insert into default section */
   private processingDefaultDescription = false;
 
   abstract convertBlockNode(
@@ -168,4 +165,3 @@ export abstract class BaseConverter {
       : undefined;
   }
 }
-
