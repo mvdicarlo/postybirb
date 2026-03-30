@@ -7,7 +7,11 @@ import { Trans } from '@lingui/react/macro';
 import { Alert, Box, Checkbox } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { DescriptionFieldType } from '@postybirb/form-builder';
-import { DefaultDescription, DefaultDescriptionValue, DescriptionValue } from '@postybirb/types';
+import {
+  DefaultDescription,
+  DefaultDescriptionValue,
+  DescriptionValue,
+} from '@postybirb/types';
 import { IconAlertTriangle } from '@tabler/icons-react';
 import { useMemo } from 'react';
 import { DescriptionEditor } from '../../../../../../shared';
@@ -150,7 +154,7 @@ export function DescriptionField({
         )}
         <Checkbox
           mb="4"
-          disabled={hasTitleShortcut || defaultInsertTitle}
+          disabled={(overrideDefault && hasTitleShortcut) || defaultInsertTitle}
           checked={insertTitle}
           onChange={(e) => {
             setValue(fieldName, {
@@ -162,7 +166,7 @@ export function DescriptionField({
         />
         <Checkbox
           mb="4"
-          disabled={hasTagsShortcut || defaultInsertTags}
+          disabled={(overrideDefault && hasTagsShortcut) || defaultInsertTags}
           checked={insertTags}
           onChange={(e) => {
             setValue(fieldName, {
