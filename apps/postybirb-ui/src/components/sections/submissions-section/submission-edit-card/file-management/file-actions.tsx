@@ -31,6 +31,7 @@ import {
     showErrorWithTitleNotification,
 } from '../../../../../utils/notifications';
 import { ImageEditor } from '../../file-submission-modal/image-editor';
+import { useSubmissionEditCardContext } from '../context';
 import { FilePreview } from './file-preview';
 
 interface FileActionsProps {
@@ -42,7 +43,9 @@ interface FileActionsProps {
  * File actions panel with horizontal layout - primary file and thumbnail management.
  */
 export function FileActions({ file, submissionId }: FileActionsProps) {
+  const { submission } = useSubmissionEditCardContext();
   const fileType = getFileType(file.fileName);
+  const isArchived = submission.isArchived;
 
   // Editor modal states - stores the file to edit and which target to update
   const [editorFile, setEditorFile] = useState<FileWithPath | null>(null);
@@ -181,7 +184,7 @@ export function FileActions({ file, submissionId }: FileActionsProps) {
           </Box>
 
           <Group gap={4}>
-            <FileButton onChange={handlePrimaryReplace}>
+            <FileButton onChange={handlePrimaryReplace} disabled={isArchived}>
               {(buttonProps) => (
                 <Tooltip label={<Trans>Replace file</Trans>} withArrow>
                   <ActionIcon
@@ -189,6 +192,7 @@ export function FileActions({ file, submissionId }: FileActionsProps) {
                     variant="light"
                     color="blue"
                     size="xs"
+                    disabled={isArchived}
                   >
                     <IconReplace size={12} />
                   </ActionIcon>
@@ -236,7 +240,8 @@ export function FileActions({ file, submissionId }: FileActionsProps) {
                   variant="light"
                   color="teal"
                   size="xs"
-                  onClick={handleCropFromPrimary}
+                  disabled={isArchived}
+                  onClick={isArchived ? undefined : handleCropFromPrimary}
                   loading={isLoadingPrimary}
                 >
                   <IconCrop size={12} />
@@ -245,7 +250,7 @@ export function FileActions({ file, submissionId }: FileActionsProps) {
             )}
 
             {/* Upload custom thumbnail */}
-            <FileButton accept="image/*" onChange={handleThumbnailUpload}>
+            <FileButton accept="image/*" onChange={handleThumbnailUpload} disabled={isArchived}>
               {(buttonProps) => (
                 <Tooltip label={<Trans>Upload thumbnail</Trans>} withArrow>
                   <ActionIcon
@@ -253,6 +258,7 @@ export function FileActions({ file, submissionId }: FileActionsProps) {
                     variant="light"
                     color="indigo"
                     size="xs"
+                    disabled={isArchived}
                   >
                     <IconFileUpload size={12} />
                   </ActionIcon>

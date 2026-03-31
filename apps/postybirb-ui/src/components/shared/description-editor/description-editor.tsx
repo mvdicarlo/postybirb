@@ -85,6 +85,8 @@ export type DescriptionEditorProps = {
   minHeight?: number;
   /** Callback to toggle description preview panel. */
   onPreview?: () => void;
+  /** Whether the editor is read-only (e.g., archived submission). */
+  readOnly?: boolean;
 };
 
 /**
@@ -170,6 +172,7 @@ export function DescriptionEditor({
   showCustomShortcuts,
   minHeight,
   onPreview,
+  readOnly = false,
 }: DescriptionEditorProps) {
   const { colorScheme } = useMantineColorScheme();
   const { t } = useLingui();
@@ -421,6 +424,7 @@ export function DescriptionEditor({
       ...suggestionExtensions,
     ],
     content: value && value.content && value.content.length > 0 ? value : undefined,
+    editable: !readOnly,
     onUpdate: ({ editor: e }) => {
       onChangeRef.current(e.getJSON() as Description);
     },
@@ -435,9 +439,9 @@ export function DescriptionEditor({
       className="description-editor-container"
       data-theme={colorScheme}
     >
-      <DescriptionToolbar editor={editor} onEditHtml={openHtmlModal} onInsertMedia={openMediaModal} onPreview={onPreview} />
+      {!readOnly && <DescriptionToolbar editor={editor} onEditHtml={openHtmlModal} onInsertMedia={openMediaModal} onPreview={onPreview} />}
       <Box className="tiptap-editor-wrapper" style={{ flex: 1 }}>
-        {editor && <BubbleToolbar editor={editor} />}
+        {editor && !readOnly && <BubbleToolbar editor={editor} />}
         <EditorContent editor={editor} />
       </Box>
       {editor && (

@@ -120,6 +120,7 @@ export function FileUploader() {
       ]}
       useFsAccessApi={false}
       loading={uploading}
+      disabled={submission.isArchived}
       multiple
     >
       <Group

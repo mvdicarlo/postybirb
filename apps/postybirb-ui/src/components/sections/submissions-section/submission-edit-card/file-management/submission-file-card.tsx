@@ -54,7 +54,7 @@ export const SubmissionFileCard = memo(({
   const [expanded, { toggle }] = useDisclosure(false);
   const fileType = getFileType(file.fileName);
 
-  const canDelete = totalFiles > 1;
+  const canDelete = totalFiles > 1 && !submission.isArchived;
 
   const handleDelete = async () => {
     if (!canDelete) return;
@@ -151,20 +151,22 @@ export const SubmissionFileCard = memo(({
 
             <Group gap="xs">
               {/* Edit metadata button - more discoverable */}
-              <Tooltip label={expanded ? <Trans>Collapse</Trans> : <Trans>Edit metadata</Trans>}>
-                <ActionIcon 
-                  size="sm" 
-                  variant={expanded ? "filled" : "light"}
-                  color="blue"
-                  onClick={toggle}
-                >
-                  {expanded ? (
-                    <IconChevronDown size={14} />
-                  ) : (
-                    <IconPencil size={14} />
-                  )}
-                </ActionIcon>
-              </Tooltip>
+              {!submission.isArchived && (
+                <Tooltip label={expanded ? <Trans>Collapse</Trans> : <Trans>Edit metadata</Trans>}>
+                  <ActionIcon 
+                    size="sm" 
+                    variant={expanded ? "filled" : "light"}
+                    color="blue"
+                    onClick={toggle}
+                  >
+                    {expanded ? (
+                      <IconChevronDown size={14} />
+                    ) : (
+                      <IconPencil size={14} />
+                    )}
+                  </ActionIcon>
+                </Tooltip>
+              )}
 
               {/* Delete button */}
               <Tooltip

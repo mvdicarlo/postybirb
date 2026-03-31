@@ -58,6 +58,7 @@ export function SubmissionEditCardBody() {
           <ScheduleForm
             schedule={submission.schedule}
             isScheduled={submission.isScheduled}
+            disabled={submission.isArchived}
             onChange={handleScheduleChange}
           />
         </ComponentErrorBoundary>

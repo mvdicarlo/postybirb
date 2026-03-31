@@ -143,7 +143,7 @@ export function SubmissionFileManager() {
     [orderedFiles],
   );
 
-  const isDraggable = orderedFiles.length > 1;
+  const isDraggable = orderedFiles.length > 1 && !submission.isArchived;
 
   return (
     <Paper withBorder p={0} radius="md">

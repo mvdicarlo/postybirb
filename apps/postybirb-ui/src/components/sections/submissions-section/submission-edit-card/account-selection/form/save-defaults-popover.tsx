@@ -135,6 +135,11 @@ export function SaveDefaultsPopover() {
     return null;
   }
 
+  // Don't show for archived submissions
+  if (submission.isArchived) {
+    return null;
+  }
+
   return (
     <Popover
       trapFocus

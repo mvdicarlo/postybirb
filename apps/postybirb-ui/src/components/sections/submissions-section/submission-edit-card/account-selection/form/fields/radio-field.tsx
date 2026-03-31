@@ -31,7 +31,7 @@ function RatingFieldControl({
   field,
   defaultValue,
 }: RatingFieldControlProps) {
-  const { getValue, setValue, option } = useFormFieldsContext();
+  const { getValue, setValue, option, submission } = useFormFieldsContext();
   const { t } = useLingui();
 
   const baseOptions = field.options;
@@ -51,6 +51,7 @@ function RatingFieldControl({
       value={value}
       orientation={field.layout}
       size="xs"
+      disabled={submission.isArchived}
       data={options.map((o) => ({
         label: `${o.label}${
           defaultValue !== undefined &&
@@ -67,13 +68,14 @@ function RatingFieldControl({
 }
 
 function InnerRadioField({ fieldName, field }: InnerRadioFieldProps) {
-  const { getValue, setValue } = useFormFieldsContext();
+  const { getValue, setValue, submission } = useFormFieldsContext();
   const value = getValue<string>(fieldName) ?? field.defaultValue ?? '';
 
   return (
     <SegmentedControl
       value={value}
       size="xs"
+      disabled={submission.isArchived}
       data={field.options.map((o) => ({
         label: `${o.label}${
           field.defaultValue !== undefined &&

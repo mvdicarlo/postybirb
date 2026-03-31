@@ -149,6 +149,7 @@ export function SelectField({
           value={treeValue}
           onChange={handleTreeChange}
           multiple={field.allowMultiple}
+          disabled={submission.isArchived}
           error={validations.isInvalid}
         />
       </FieldLabel>
@@ -171,6 +172,7 @@ export function SelectField({
           data={flatOptions}
           value={multiValue}
           onChange={handleMultiChange}
+          disabled={submission.isArchived}
           clearable
           searchable
         />
@@ -190,6 +192,7 @@ export function SelectField({
         data={flatOptions}
         value={singleValue}
         onChange={(val) => setValue(fieldName, val)}
+        disabled={submission.isArchived}
         clearable
         searchable
       />
