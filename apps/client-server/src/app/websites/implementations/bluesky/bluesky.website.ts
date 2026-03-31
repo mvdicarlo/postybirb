@@ -1,43 +1,39 @@
 // eslint-disable-next-line max-classes-per-file
 import {
-    $Typed,
-    AppBskyActorGetProfile,
-    AppBskyEmbedImages,
-    AppBskyEmbedVideo,
-    AppBskyFeedThreadgate,
-    AppBskyVideoGetJobStatus,
-    AppBskyVideoGetUploadLimits,
-    AppBskyVideoUploadVideo,
-    AtpAgent,
-    AtUri,
-    BlobRef,
-    ComAtprotoLabelDefs,
-    RichText,
+  $Typed,
+  AppBskyActorGetProfile,
+  AppBskyEmbedImages,
+  AppBskyEmbedVideo,
+  AppBskyFeedThreadgate,
+  AppBskyVideoGetJobStatus,
+  AppBskyVideoGetUploadLimits,
+  AppBskyVideoUploadVideo,
+  AtpAgent,
+  AtUri,
+  BlobRef,
+  ComAtprotoLabelDefs,
+  RichText,
 } from '@atproto/api';
 import { ReplyRef } from '@atproto/api/dist/client/types/app/bsky/feed/post';
 import { JobStatus } from '@atproto/api/dist/client/types/app/bsky/video/defs';
 import {
-    BlueskyAccountData,
-    BlueskyOAuthRoutes,
-    FileType,
-    ILoginState,
-    ImageResizeProps,
-    ISubmissionFile,
-    OAuthRouteHandlers,
-    PostData,
-    PostResponse,
-    SimpleValidationResult,
-    SubmissionRating,
+  BlueskyAccountData,
+  BlueskyOAuthRoutes,
+  FileType,
+  ILoginState,
+  ImageResizeProps,
+  ISubmissionFile,
+  OAuthRouteHandlers,
+  PostData,
+  PostResponse,
+  SimpleValidationResult,
+  SubmissionRating,
 } from '@postybirb/types';
 import { getFileTypeFromMimeType } from '@postybirb/utils/file-type';
 import { v4 } from 'uuid';
-import {
-    BaseConverter,
-} from '../../../post-parsers/models/description-node/converters/base-converter';
+import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
 import { PlainTextConverter } from '../../../post-parsers/models/description-node/converters/plaintext-converter';
-import {
-    ConversionContext,
-} from '../../../post-parsers/models/description-node/description-node.base';
+import { ConversionContext } from '../../../post-parsers/models/description-node/description-node.base';
 import { TipTapNode } from '../../../post-parsers/models/description-node/description-node.types';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
@@ -236,7 +232,8 @@ export default class Bluesky
         );
       }
 
-      const response = PostResponse.fromWebsite(this).withSourceUrl(friendlyUrl);
+      const response =
+        PostResponse.fromWebsite(this).withSourceUrl(friendlyUrl);
 
       return response;
     }
@@ -775,16 +772,13 @@ class BlueskyConverter extends PlainTextConverter {
    * Override text node conversion to intercept link marks.
    * In TipTap, links are marks on text nodes, not separate inline nodes.
    */
-  convertTextNode(
-    node: TipTapNode,
-    context: ConversionContext,
-  ): string {
-    const marks = (node as any).marks ?? [];
-    const linkMark = marks.find((m: any) => m.type === 'link');
+  convertTextNode(node: TipTapNode, context: ConversionContext): string {
+    const marks = node.marks ?? [];
+    const linkMark = marks.find((m) => m.type === 'link');
 
     if (linkMark) {
       // Get the plain text (without the link URL appended)
-      const content = (node as any).text ?? '';
+      const content = node.text ?? '';
       const id = v4();
       this.links.push({
         href: linkMark.attrs?.href ?? '',
@@ -797,10 +791,12 @@ class BlueskyConverter extends PlainTextConverter {
     return super.convertTextNode(node, context);
   }
 
-  convertBlocks(
-    nodes: TipTapNode[],
-    context: ConversionContext,
-  ): string {
+  convertBlocks(nodes: TipTapNode[], context: ConversionContext): string {
+    // When plaintext encouters the default description it uses convertRawBlocks which calls convertBlock
+    // which returns json that ends up in user posts
+    if (nodes === context.defaultDescription)
+      return super.convertBlocks(nodes, context);
+
     this.links = [];
     let text = super.convertBlocks(nodes, context);
 
