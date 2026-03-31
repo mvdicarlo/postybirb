@@ -5,9 +5,13 @@
 
 import { Trans } from '@lingui/react/macro';
 import { Alert, Box, Checkbox } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
+import { useDebouncedCallback, useDisclosure } from '@mantine/hooks';
 import { DescriptionFieldType } from '@postybirb/form-builder';
-import { DefaultDescription, DefaultDescriptionValue, DescriptionValue } from '@postybirb/types';
+import {
+  DefaultDescription,
+  DefaultDescriptionValue,
+  DescriptionValue,
+} from '@postybirb/types';
 import { IconAlertTriangle } from '@tabler/icons-react';
 import { useMemo } from 'react';
 import { DescriptionEditor } from '../../../../../../shared';
@@ -114,6 +118,13 @@ export function DescriptionField({
     [description],
   );
 
+  const descriptionChangeEvent = useMemo(() => new EventTarget(), []);
+
+  const debouncedDispatchDescriptionChange = useDebouncedCallback(
+    () => descriptionChangeEvent.dispatchEvent(new Event('change')),
+    { delay: 1000, flushOnUnmount: false },
+  );
+
   return (
     <Box>
       {containsLegacyShortcuts && (
@@ -144,6 +155,7 @@ export function DescriptionField({
                 ...fieldValue,
                 overrideDefault: e.target.checked,
               });
+              debouncedDispatchDescriptionChange();
             }}
             label={<Trans>Use custom description</Trans>}
           />
@@ -157,6 +169,7 @@ export function DescriptionField({
               ...fieldValue,
               insertTitle: e.target.checked,
             });
+            debouncedDispatchDescriptionChange();
           }}
           label={<Trans>Insert title at start</Trans>}
         />
@@ -169,6 +182,7 @@ export function DescriptionField({
               ...fieldValue,
               insertTags: e.target.checked,
             });
+            debouncedDispatchDescriptionChange();
           }}
           label={<Trans>Insert tags at end</Trans>}
         />
@@ -185,6 +199,7 @@ export function DescriptionField({
                   ...fieldValue,
                   description: value,
                 });
+                debouncedDispatchDescriptionChange();
               }}
             />
             {previewOpened && (
@@ -193,6 +208,7 @@ export function DescriptionField({
                 options={submission.options}
                 isDefaultEditor={option.isDefault}
                 currentOptionId={option.isDefault ? undefined : option.id}
+                changeEvent={descriptionChangeEvent}
               />
             )}
           </>

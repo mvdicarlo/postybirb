@@ -6,24 +6,24 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-    ActionIcon,
-    Alert,
-    Box,
-    CopyButton,
-    Group,
-    Loader,
-    ScrollArea,
-    Tabs,
-    Text,
-    Textarea,
-    Tooltip,
-    TypographyStylesProvider,
+  ActionIcon,
+  Alert,
+  Box,
+  CopyButton,
+  Group,
+  Loader,
+  ScrollArea,
+  Tabs,
+  Text,
+  Textarea,
+  Tooltip,
+  TypographyStylesProvider,
 } from '@mantine/core';
 import {
-    DescriptionType,
-    IDescriptionPreviewResult,
-    SubmissionId,
-    WebsiteOptionsDto,
+  DescriptionType,
+  IDescriptionPreviewResult,
+  SubmissionId,
+  WebsiteOptionsDto,
 } from '@postybirb/types';
 import { IconCheck, IconCopy } from '@tabler/icons-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -39,6 +39,7 @@ interface DescriptionPreviewPanelProps {
   isDefaultEditor: boolean;
   /** The current (non-default) option ID, if applicable */
   currentOptionId?: string;
+  changeEvent: EventTarget;
 }
 
 interface PreviewState {
@@ -158,6 +159,7 @@ export function DescriptionPreviewPanel({
   options,
   isDefaultEditor,
   currentOptionId,
+  changeEvent,
 }: DescriptionPreviewPanelProps) {
   const websitesMap = useWebsitesMap();
   const [previews, setPreviews] = useState<Record<string, PreviewState>>({});
@@ -188,11 +190,13 @@ export function DescriptionPreviewPanel({
   );
 
   const loadPreview = useCallback(
-    async (optionId: string) => {
-      setPreviews((prev) => ({
-        ...prev,
-        [optionId]: { loading: true },
-      }));
+    async (optionId: string, setLoading = true) => {
+      if (setLoading) {
+        setPreviews((prev) => ({
+          ...prev,
+          [optionId]: { loading: true },
+        }));
+      }
 
       try {
         const response = await websiteOptionsApi.previewDescription({
@@ -229,12 +233,24 @@ export function DescriptionPreviewPanel({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [previewableOptions.map((o) => o.id).join(',')]);
 
+  useEffect(() => {
+    const listener = () => {
+      for (const option of previewableOptions) {
+        // Setting loading makes the whole description section flicker on type because the size of the
+        // preview component changs
+        loadPreview(option.id, false);
+      }
+    };
+    changeEvent.addEventListener('change', listener);
+
+    return () => changeEvent.removeEventListener('change', listener);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [changeEvent, loadPreview, previewableOptions.map((o) => o.id).join(',')]);
+
   if (previewableOptions.length === 0) {
     return (
       <Alert color="yellow" p="xs" mt="xs">
-        <Trans>
-          Add website accounts to preview the description output.
-        </Trans>
+        <Trans>Add website accounts to preview the description output.</Trans>
       </Alert>
     );
   }
