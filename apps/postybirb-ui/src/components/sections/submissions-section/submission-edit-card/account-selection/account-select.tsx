@@ -247,7 +247,12 @@ export function AccountSelect() {
     } finally {
       setIsSelectingAll(false);
     }
-  }, [allEligibleAccounts, selectedAccountIds, submission.id, getDefaultRating]);
+  }, [
+    allEligibleAccounts,
+    selectedAccountIds,
+    submission.id,
+    getDefaultRating,
+  ]);
 
   // Deselect all accounts
   const handleDeselectAll = useCallback(async () => {
@@ -287,7 +292,7 @@ export function AccountSelect() {
   const hasUnselectedAccounts =
     allEligibleAccounts.length > selectedAccountIds.size;
 
-  const isArchived = submission.isArchived;
+  const { isArchived } = submission;
 
   // Render selected account pills
   const selectedPills = useMemo(() => {
@@ -299,7 +304,9 @@ export function AccountSelect() {
           <Pill
             key={accountId}
             withRemoveButton={!isArchived}
-            onRemove={isArchived ? undefined : () => handlePillRemove(accountId)}
+            onRemove={
+              isArchived ? undefined : () => handlePillRemove(accountId)
+            }
           >
             {acc.websiteDisplayName} - {acc.name}
             {acc.username ? ` (${acc.username})` : ''}

@@ -5,16 +5,16 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-    ActionIcon,
-    Badge,
-    Box,
-    Divider,
-    FileButton,
-    Group,
-    Image,
-    Stack,
-    Text,
-    Tooltip,
+  ActionIcon,
+  Badge,
+  Box,
+  Divider,
+  FileButton,
+  Group,
+  Image,
+  Stack,
+  Text,
+  Tooltip,
 } from '@mantine/core';
 import { FileWithPath } from '@mantine/dropzone';
 import { FileType, ISubmissionFileDto, SubmissionId } from '@postybirb/types';
@@ -22,13 +22,13 @@ import { getFileType } from '@postybirb/utils/file-type';
 import { IconCrop, IconFileUpload, IconReplace } from '@tabler/icons-react';
 import { useState } from 'react';
 import fileSubmissionApi, {
-    FileUpdateTarget,
+  FileUpdateTarget,
 } from '../../../../../api/file-submission.api';
 import { defaultTargetProvider } from '../../../../../transports/http-client';
 import {
-    showErrorNotification,
-    showErrorWithContext,
-    showErrorWithTitleNotification,
+  showErrorNotification,
+  showErrorWithContext,
+  showErrorWithTitleNotification,
 } from '../../../../../utils/notifications';
 import { ImageEditor } from '../../file-submission-modal/image-editor';
 import { useSubmissionEditCardContext } from '../context';
@@ -45,7 +45,7 @@ interface FileActionsProps {
 export function FileActions({ file, submissionId }: FileActionsProps) {
   const { submission } = useSubmissionEditCardContext();
   const fileType = getFileType(file.fileName);
-  const isArchived = submission.isArchived;
+  const { isArchived } = submission;
 
   // Editor modal states - stores the file to edit and which target to update
   const [editorFile, setEditorFile] = useState<FileWithPath | null>(null);
@@ -80,7 +80,7 @@ export function FileActions({ file, submissionId }: FileActionsProps) {
         <Trans>Update Failed</Trans>,
         <Trans>
           File types do not match. Please upload a file of the same type.
-        </Trans>
+        </Trans>,
       );
       return;
     }
@@ -126,7 +126,7 @@ export function FileActions({ file, submissionId }: FileActionsProps) {
       setEditorFile(primaryFile);
     } catch {
       showErrorNotification(
-        <Trans>Failed to load primary file for cropping.</Trans>
+        <Trans>Failed to load primary file for cropping.</Trans>,
       );
     } finally {
       setIsLoadingPrimary(false);
@@ -250,7 +250,11 @@ export function FileActions({ file, submissionId }: FileActionsProps) {
             )}
 
             {/* Upload custom thumbnail */}
-            <FileButton accept="image/*" onChange={handleThumbnailUpload} disabled={isArchived}>
+            <FileButton
+              accept="image/*"
+              onChange={handleThumbnailUpload}
+              disabled={isArchived}
+            >
               {(buttonProps) => (
                 <Tooltip label={<Trans>Upload thumbnail</Trans>} withArrow>
                   <ActionIcon
