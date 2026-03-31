@@ -8,11 +8,13 @@ import { useDisclosure } from '@mantine/hooks';
 import { useEffect, useState } from 'react';
 import type { SubmissionRecord } from '../../../../stores/records';
 import { ComponentErrorBoundary } from '../../../error-boundary';
+import { PostHistoryContent } from '../submission-history';
 import { SubmissionEditCardActions } from './actions';
 import { SubmissionEditCardBody } from './body';
 import {
   SubmissionEditCardProvider,
   useSubmissionEditCardContext,
+  type SubmissionEditCardViewMode,
 } from './context';
 import { SubmissionEditCardHeader } from './header';
 import './submission-edit-card.css';
@@ -32,8 +34,9 @@ export interface SubmissionEditCardProps {
  * Inner card component that uses context.
  */
 function SubmissionEditCardInner() {
-  const { isCollapsible, defaultExpanded } = useSubmissionEditCardContext();
-  const [expanded, { toggle }] = useDisclosure(defaultExpanded);
+  const { isCollapsible, defaultExpanded, viewMode, submission } =
+    useSubmissionEditCardContext();
+  const [expanded, { toggle, open }] = useDisclosure(defaultExpanded);
 
   // If not collapsible, always show expanded
   const isExpanded = isCollapsible ? expanded : true;
@@ -45,6 +48,13 @@ function SubmissionEditCardInner() {
       setRenderBody(true);
     }
   }, [isExpanded]);
+
+  // Auto-expand when switching to history mode on a collapsed card
+  useEffect(() => {
+    if (viewMode === 'history' && isCollapsible && !expanded) {
+      open();
+    }
+  }, [viewMode, isCollapsible, expanded, open]);
 
   const onTransitionEnd = () => {
     if (!isExpanded) {
@@ -79,7 +89,14 @@ function SubmissionEditCardInner() {
       {/* Collapsible Body */}
       <Collapse in={isExpanded} onTransitionEnd={onTransitionEnd}>
         <ComponentErrorBoundary>
-          {renderBody && <SubmissionEditCardBody />}
+          {renderBody &&
+            (viewMode === 'history' ? (
+              <Box p="md">
+                <PostHistoryContent submission={submission} />
+              </Box>
+            ) : (
+              <SubmissionEditCardBody />
+            ))}
         </ComponentErrorBoundary>
       </Collapse>
     </Paper>
@@ -95,6 +112,8 @@ export function SubmissionEditCard({
   defaultExpanded = true,
   targetSubmissionIds,
 }: SubmissionEditCardProps) {
+  const [viewMode, setViewMode] = useState<SubmissionEditCardViewMode>('edit');
+
   return (
     <ComponentErrorBoundary>
       <SubmissionEditCardProvider
@@ -102,6 +121,8 @@ export function SubmissionEditCard({
         isCollapsible={isCollapsible}
         defaultExpanded={defaultExpanded}
         targetSubmissionIds={targetSubmissionIds}
+        viewMode={viewMode}
+        setViewMode={setViewMode}
       >
         <SubmissionEditCardInner />
       </SubmissionEditCardProvider>

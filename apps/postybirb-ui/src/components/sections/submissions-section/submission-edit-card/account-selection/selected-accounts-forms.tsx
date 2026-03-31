@@ -6,31 +6,40 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-    Badge,
-    Box,
-    Collapse,
-    Divider,
-    Group,
-    Paper,
-    Stack,
-    Text,
-    UnstyledButton,
+  Badge,
+  Box,
+  Collapse,
+  Divider,
+  Group,
+  Paper,
+  Stack,
+  Text,
+  Tooltip,
+  UnstyledButton,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import type { WebsiteOptionsDto } from '@postybirb/types';
+import type { EntityId, WebsiteOptionsDto } from '@postybirb/types';
 import {
-    IconChevronDown,
-    IconChevronRight,
-    IconCircleFilled,
+  IconCheck,
+  IconChevronDown,
+  IconChevronRight,
+  IconCircleFilled,
+  IconLoader,
+  IconX,
 } from '@tabler/icons-react';
 import { useMemo } from 'react';
 import { useAccounts } from '../../../../../stores/entity/account-store';
 import { useWebsites } from '../../../../../stores/entity/website-store';
 import type {
-    AccountRecord,
-    WebsiteRecord,
+  AccountRecord,
+  WebsiteRecord,
 } from '../../../../../stores/records';
 import { ComponentErrorBoundary } from '../../../../error-boundary';
+import {
+  type AccountPostStatus,
+  type AccountPostStatusEntry,
+  getAccountPostStatusMap,
+} from '../../submission-history';
 import { useSubmissionEditCardContext } from '../context';
 import './account-selection.css';
 import { FormFieldsProvider, SectionLayout } from './form';
@@ -43,13 +52,99 @@ interface WebsiteFormGroupProps {
     hasErrors: boolean;
     hasWarnings: boolean;
   }>;
+  accountStatusMap: Map<EntityId, AccountPostStatusEntry>;
+}
+
+/**
+ * Get the icon for an individual account post status.
+ */
+function AccountStatusIcon({ status, errors }: { status: AccountPostStatus; errors: string[] }) {
+  switch (status) {
+    case 'success':
+      return (
+        <Tooltip label={<Trans>Posted successfully</Trans>} withArrow>
+          <IconCheck size={14} color="var(--mantine-color-green-6)" style={{ flexShrink: 0 }} />
+        </Tooltip>
+      );
+    case 'failed':
+      return (
+        <Tooltip
+          label={errors.length > 0 ? errors.join(' | ') : <Trans>Post failed</Trans>}
+          multiline
+          w={300}
+          withArrow
+        >
+          <IconX size={14} color="var(--mantine-color-red-6)" style={{ flexShrink: 0 }} />
+        </Tooltip>
+      );
+    case 'running':
+      return (
+        <Tooltip label={<Trans>Posting in progress</Trans>} withArrow>
+          <IconLoader size={14} color="var(--mantine-color-blue-6)" style={{ flexShrink: 0 }} />
+        </Tooltip>
+      );
+    default:
+      return null;
+  }
+}
+
+/**
+ * Compute the aggregate status icon for a website group.
+ */
+function GroupStatusIcon({ options, accountStatusMap }: {
+  options: WebsiteFormGroupProps['options'];
+  accountStatusMap: Map<EntityId, AccountPostStatusEntry>;
+}) {
+  const statuses = options
+    .map(({ option }) => accountStatusMap.get(option.accountId))
+    .filter((s): s is AccountPostStatusEntry => s != null);
+
+  if (statuses.length === 0) return null;
+
+  const hasAnyFailed = statuses.some((s) => s.status === 'failed');
+  const hasAnyRunning = statuses.some((s) => s.status === 'running');
+  const allSuccess = statuses.every((s) => s.status === 'success');
+
+  if (allSuccess) {
+    return (
+      <Tooltip label={<Trans>All posted successfully</Trans>} withArrow>
+        <IconCheck size={14} color="var(--mantine-color-green-6)" style={{ flexShrink: 0 }} />
+      </Tooltip>
+    );
+  }
+
+  if (hasAnyFailed) {
+    const failedErrors = statuses
+      .filter((s) => s.status === 'failed')
+      .flatMap((s) => s.errors);
+    return (
+      <Tooltip
+        label={failedErrors.length > 0 ? failedErrors.join(' | ') : <Trans>Some posts failed</Trans>}
+        multiline
+        w={300}
+        withArrow
+      >
+        <IconX size={14} color="var(--mantine-color-red-6)" style={{ flexShrink: 0 }} />
+      </Tooltip>
+    );
+  }
+
+  if (hasAnyRunning) {
+    return (
+      <Tooltip label={<Trans>Posting in progress</Trans>} withArrow>
+        <IconLoader size={14} color="var(--mantine-color-blue-6)" style={{ flexShrink: 0 }} />
+      </Tooltip>
+    );
+  }
+
+  return null;
 }
 
 /**
  * A single website group with collapsible form sections.
  * Collapsed by default. Shows error/warning counts in header.
  */
-function WebsiteFormGroup({ website, options }: WebsiteFormGroupProps) {
+function WebsiteFormGroup({ website, options, accountStatusMap }: WebsiteFormGroupProps) {
   const { submission } = useSubmissionEditCardContext();
   const [expanded, { toggle }] = useDisclosure(false);
 
@@ -87,6 +182,7 @@ function WebsiteFormGroup({ website, options }: WebsiteFormGroupProps) {
             {website.displayName}
           </Text>
           <Group gap={4}>
+            <GroupStatusIcon options={options} accountStatusMap={accountStatusMap} />
             {errorCount > 0 && (
               <Badge size="xs" variant="light" color="red">
                 {errorCount} {errorCount === 1 ? 'error' : 'errors'}
@@ -136,6 +232,18 @@ function WebsiteFormGroup({ website, options }: WebsiteFormGroupProps) {
                     ({account.username})
                   </Text>
                 )}
+                {(() => {
+                  const accountStatus = accountStatusMap.get(option.accountId);
+                  if (accountStatus) {
+                    return (
+                      <AccountStatusIcon
+                        status={accountStatus.status}
+                        errors={accountStatus.errors}
+                      />
+                    );
+                  }
+                  return null;
+                })()}
                 {hasErrors && (
                   <Badge size="xs" variant="light" color="red">
                     <Trans>Error</Trans>
@@ -169,6 +277,15 @@ export function SelectedAccountsForms() {
   const { submission } = useSubmissionEditCardContext();
   const accounts = useAccounts();
   const websites = useWebsites();
+
+  // Compute per-account post status from latest post record
+  // Skip for templates and multi-edit cards (they never have post history)
+  const accountStatusMap = useMemo(() => {
+    if (submission.isTemplate || submission.isMultiSubmission) {
+      return new Map<EntityId, AccountPostStatusEntry>();
+    }
+    return getAccountPostStatusMap(submission);
+  }, [submission]);
 
   // Map accountId -> AccountRecord
   const accountById = useMemo(() => {
@@ -273,6 +390,7 @@ export function SelectedAccountsForms() {
           key={website.id}
           website={website}
           options={options}
+          accountStatusMap={accountStatusMap}
         />
       ))}
     </Stack>
