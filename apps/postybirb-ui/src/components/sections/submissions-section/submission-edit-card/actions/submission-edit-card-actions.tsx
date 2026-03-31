@@ -6,21 +6,21 @@ import { Trans } from '@lingui/react/macro';
 import { ActionIcon, Group, Tooltip } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import {
-  IconArchiveOff,
-  IconHistory,
-  IconCancel,
-  IconSend,
-  IconTrash,
+    IconArchiveOff,
+    IconCancel,
+    IconHistory,
+    IconSend,
+    IconTrash,
 } from '@tabler/icons-react';
 import postManagerApi from '../../../../../api/post-manager.api';
 import postQueueApi from '../../../../../api/post-queue.api';
 import submissionApi from '../../../../../api/submission.api';
 import {
-  showDeletedNotification,
-  showDeleteErrorNotification,
-  showPostErrorNotification,
-  showRestoredNotification,
-  showRestoreErrorNotification,
+    showDeletedNotification,
+    showDeleteErrorNotification,
+    showPostErrorNotification,
+    showRestoredNotification,
+    showRestoreErrorNotification,
 } from '../../../../../utils/notifications';
 import { HoldToConfirmButton } from '../../../../hold-to-confirm';
 import { SubmissionHistoryDrawer } from '../../submission-history-drawer';
@@ -33,6 +33,7 @@ import { SaveToManyAction } from './save-to-many-action';
  */
 export function SubmissionEditCardActions() {
   const { submission } = useSubmissionEditCardContext();
+  // Drawer is only used for archived submissions (list-level context)
   const [historyOpened, historyDrawer] = useDisclosure(false);
 
   const handlePost = async () => {
@@ -145,7 +146,7 @@ export function SubmissionEditCardActions() {
     );
   }
 
-  // If currently posting, show cancel button instead of post
+  // If currently posting, show cancel button
   if (submission.isPosting) {
     return (
       <Group gap={4} wrap="nowrap" onClick={(e) => e.stopPropagation()}>
@@ -176,9 +177,6 @@ export function SubmissionEditCardActions() {
   // Check if submission can be posted
   const canPost = !submission.hasErrors && submission.hasWebsiteOptions;
 
-  // Check if submission has history
-  const hasHistory = submission.posts.length > 0;
-
   // Determine tooltip message for disabled post button
   let postTooltip: React.ReactNode = <Trans>Hold to post</Trans>;
   if (submission.hasErrors) {
@@ -187,47 +185,31 @@ export function SubmissionEditCardActions() {
     postTooltip = <Trans>No websites selected</Trans>;
   }
 
-  // Normal state: show template, history (if available), post and delete
+  // Normal state: show template, post and delete
   return (
-    <>
-      <Group gap={4} wrap="nowrap" onClick={(e) => e.stopPropagation()}>
-        <ApplyTemplateAction />
-        {hasHistory && (
-          <Tooltip label={<Trans>View history</Trans>}>
-            <ActionIcon variant="subtle" size="sm" onClick={historyDrawer.open}>
-              <IconHistory size={16} />
-            </ActionIcon>
-          </Tooltip>
-        )}
-        <Tooltip label={postTooltip}>
-          <HoldToConfirmButton
-            variant="subtle"
-            size="sm"
-            color="blue"
-            onConfirm={handlePost}
-            disabled={!canPost}
-          >
-            <IconSend size={16} />
-          </HoldToConfirmButton>
-        </Tooltip>
-        <Tooltip label={<Trans>Hold to delete</Trans>}>
-          <HoldToConfirmButton
-            variant="subtle"
-            size="sm"
-            color="red"
-            onConfirm={handleDelete}
-          >
-            <IconTrash size={16} />
-          </HoldToConfirmButton>
-        </Tooltip>
-      </Group>
-
-      {/* History drawer */}
-      <SubmissionHistoryDrawer
-        opened={historyOpened}
-        onClose={historyDrawer.close}
-        submission={submission}
-      />
-    </>
+    <Group gap={4} wrap="nowrap" onClick={(e) => e.stopPropagation()}>
+      <ApplyTemplateAction />
+      <Tooltip label={postTooltip}>
+        <HoldToConfirmButton
+          variant="subtle"
+          size="sm"
+          color="blue"
+          onConfirm={handlePost}
+          disabled={!canPost}
+        >
+          <IconSend size={16} />
+        </HoldToConfirmButton>
+      </Tooltip>
+      <Tooltip label={<Trans>Hold to delete</Trans>}>
+        <HoldToConfirmButton
+          variant="subtle"
+          size="sm"
+          color="red"
+          onConfirm={handleDelete}
+        >
+          <IconTrash size={16} />
+        </HoldToConfirmButton>
+      </Tooltip>
+    </Group>
   );
 }

@@ -291,6 +291,20 @@ export class UpdateFileService {
         ),
       );
 
+    // Reset metadata dimensions so they don't reference the old file size
+    const updatedMetadata = { ...submissionFile.metadata };
+    if (updatedMetadata.dimensions) {
+      updatedMetadata.dimensions = {
+        ...updatedMetadata.dimensions,
+        default: { width, height },
+      };
+    }
+    await ctx
+      .getDb()
+      .update(this.fileRepository.schemaEntity)
+      .set({ metadata: updatedMetadata })
+      .where(eq(this.fileRepository.schemaEntity.id, submissionFile.id));
+
     if (submissionFile.hasThumbnail && !submissionFile.hasCustomThumbnail) {
       // Regenerate auto-thumbnail;
       const {

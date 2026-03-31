@@ -19,7 +19,7 @@ import {
 import { FileWithPath } from '@mantine/dropzone';
 import { FileType, ISubmissionFileDto, SubmissionId } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
-import { IconCrop, IconFileUpload, IconReplace } from '@tabler/icons-react';
+import { IconCrop, IconFileUpload, IconPencil, IconReplace } from '@tabler/icons-react';
 import { useState } from 'react';
 import fileSubmissionApi, {
   FileUpdateTarget,
@@ -110,18 +110,36 @@ export function FileActions({ file, submissionId }: FileActionsProps) {
     setEditorFile(payload as FileWithPath);
   };
 
+  const fetchPrimaryAsFile = async (): Promise<FileWithPath> => {
+    const response = await fetch(
+      `${defaultTargetProvider()}/api/file/file/${file.id}?${file.hash}`,
+    );
+    const blob = await response.blob();
+    return new File([blob], file.fileName, {
+      type: file.mimeType,
+    }) as FileWithPath;
+  };
+
+  const handleEditPrimary = async () => {
+    setIsLoadingPrimary(true);
+    try {
+      const primaryFile = await fetchPrimaryAsFile();
+      setEditorTarget('file');
+      setEditorFile(primaryFile);
+    } catch {
+      showErrorNotification(
+        <Trans>Failed to load file for editing.</Trans>
+      );
+    } finally {
+      setIsLoadingPrimary(false);
+    }
+  };
+
   const handleCropFromPrimary = async () => {
     // Fetch the primary file as blob and convert to File
     setIsLoadingPrimary(true);
     try {
-      const response = await fetch(
-        `${defaultTargetProvider()}/api/file/file/${file.id}?${file.hash}`,
-      );
-      const blob = await response.blob();
-      const primaryFile = new File([blob], file.fileName, {
-        type: file.mimeType,
-      }) as FileWithPath;
-
+      const primaryFile = await fetchPrimaryAsFile();
       setEditorTarget('thumbnail');
       setEditorFile(primaryFile);
     } catch {
@@ -184,6 +202,24 @@ export function FileActions({ file, submissionId }: FileActionsProps) {
           </Box>
 
           <Group gap={4}>
+            {/* Edit primary - only for editable images */}
+            {fileType === FileType.IMAGE &&
+              (file.mimeType === 'image/png' ||
+                file.mimeType === 'image/jpeg') && (
+                <Tooltip label={<Trans>Edit file</Trans>} withArrow>
+                  <ActionIcon
+                    disabled={isArchived}
+                    variant="light"
+                    color="grape"
+                    size="xs"
+                    onClick={handleEditPrimary}
+                    loading={isLoadingPrimary}
+                  >
+                    <IconPencil size={12} />
+                  </ActionIcon>
+                </Tooltip>
+              )}
+
             <FileButton onChange={handlePrimaryReplace} disabled={isArchived}>
               {(buttonProps) => (
                 <Tooltip label={<Trans>Replace file</Trans>} withArrow>

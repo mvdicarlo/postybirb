@@ -18,9 +18,7 @@ import {
 import { useDisclosure } from '@mantine/hooks';
 import {
     FileType,
-    IAccountDto,
     ISubmissionFileDto,
-    NULL_ACCOUNT_ID,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import {
@@ -29,14 +27,14 @@ import {
     IconPencil,
     IconTrash
 } from '@tabler/icons-react';
-import { memo, useMemo } from 'react';
+import { memo } from 'react';
 import fileSubmissionApi from '../../../../../api/file-submission.api';
-import { useAccountsMap } from '../../../../../stores/entity/account-store';
 import { showErrorWithContext } from '../../../../../utils/notifications';
 import { useSubmissionEditCardContext } from '../context';
 import { FileActions } from './file-actions';
 import { FileMetadata } from './file-metadata';
 import { DRAGGABLE_FILE_CLASS } from './submission-file-manager';
+import { useSubmissionAccounts } from './use-submission-accounts';
 
 interface SubmissionFileCardProps {
   file: ISubmissionFileDto;
@@ -50,7 +48,7 @@ export const SubmissionFileCard = memo(({
   totalFiles,
 }: SubmissionFileCardProps) => {
   const { submission } = useSubmissionEditCardContext();
-  const accountsMap = useAccountsMap();
+  const accounts = useSubmissionAccounts();
   const [expanded, { toggle }] = useDisclosure(false);
   const fileType = getFileType(file.fileName);
 
@@ -65,32 +63,6 @@ export const SubmissionFileCard = memo(({
       showErrorWithContext(error, <Trans>Failed to delete file</Trans>);
     }
   };
-
-  // Get accounts for metadata (exclude default) - use store for full IAccountDto with websiteInfo
-  const accounts: IAccountDto[] = useMemo(() => {
-    const accountIds = submission.options
-      .map((option) => option.account?.id)
-      .filter((id): id is string => !!id && id !== NULL_ACCOUNT_ID);
-
-    return accountIds
-      .map((id) => {
-        const record = accountsMap.get(id);
-        if (!record) return null;
-        // Map AccountRecord to IAccountDto
-        return {
-          id: record.id,
-          name: record.name,
-          website: record.website,
-          groups: record.groups,
-          state: record.state,
-          data: record.data,
-          websiteInfo: record.websiteInfo,
-          createdAt: record.createdAt.toISOString(),
-          updatedAt: record.updatedAt.toISOString(),
-        } as IAccountDto;
-      })
-      .filter((acc): acc is IAccountDto => acc !== null);
-  }, [submission.options, accountsMap]);
 
   return (
     <Paper
