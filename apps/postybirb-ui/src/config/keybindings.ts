@@ -8,7 +8,7 @@ import {
   formatKeybindingDisplay,
   getActionModifier,
   getNavigationModifier,
-} from '../../shared/platform-utils';
+} from '../shared/platform-utils';
 
 const navMod = getNavigationModifier();
 const actionMod = getActionModifier();

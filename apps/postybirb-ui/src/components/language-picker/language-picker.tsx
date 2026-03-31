@@ -5,20 +5,20 @@
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
-    Badge,
-    Box,
-    Group,
-    Kbd,
-    NavLink as MantineNavLink,
-    Menu,
-    Text,
-    Tooltip,
+  Badge,
+  Box,
+  Group,
+  Kbd,
+  NavLink as MantineNavLink,
+  Menu,
+  Text,
+  Tooltip,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { IconCheck, IconLanguage, IconWorld } from '@tabler/icons-react';
 import { useState } from 'react';
-import { formatKeybindingDisplay } from '../../../shared/platform-utils';
 import { languages } from '../../i18n/languages';
+import { formatKeybindingDisplay } from '../../shared/platform-utils';
 import { useLanguageActions } from '../../stores/ui/locale-store';
 import '../../styles/layout.css';
 import { cn } from '../../utils/class-names';

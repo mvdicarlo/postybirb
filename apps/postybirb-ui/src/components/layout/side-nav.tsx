@@ -17,7 +17,7 @@ import {
 } from '@mantine/core';
 import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
-import { formatKeybindingDisplay } from '../../../shared/platform-utils';
+import { formatKeybindingDisplay } from '../../shared/platform-utils';
 import { useActiveDrawer, useDrawerActions } from '../../stores/ui/drawer-store';
 import { useViewState, useViewStateActions } from '../../stores/ui/navigation-store';
 import '../../styles/layout.css';
