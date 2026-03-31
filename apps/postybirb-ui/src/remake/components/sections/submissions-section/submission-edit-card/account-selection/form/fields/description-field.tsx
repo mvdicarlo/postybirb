@@ -162,7 +162,7 @@ export function DescriptionField({
         )}
         <Checkbox
           mb="4"
-          disabled={hasTitleShortcut || defaultInsertTitle}
+          disabled={(overrideDefault && hasTitleShortcut) || defaultInsertTitle}
           checked={insertTitle}
           onChange={(e) => {
             setValue(fieldName, {
@@ -175,7 +175,7 @@ export function DescriptionField({
         />
         <Checkbox
           mb="4"
-          disabled={hasTagsShortcut || defaultInsertTags}
+          disabled={(overrideDefault && hasTagsShortcut) || defaultInsertTags}
           checked={insertTags}
           onChange={(e) => {
             setValue(fieldName, {
