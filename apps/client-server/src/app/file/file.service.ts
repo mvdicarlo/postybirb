@@ -3,9 +3,9 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { read } from '@postybirb/fs';
 import { Logger } from '@postybirb/logger';
 import {
-    EntityId,
-    FileSubmission,
-    SubmissionFileMetadata,
+  EntityId,
+  FileSubmission,
+  SubmissionFileMetadata,
 } from '@postybirb/types';
 import type { queueAsPromised } from 'fastq';
 import fastq from 'fastq';
@@ -190,8 +190,8 @@ export class FileService {
 
   async updateMetadata(id: string, update: SubmissionFileMetadata) {
     const file = await this.findFile(id);
-    file.metadata = { ...file.metadata, ...update };
-    await this.fileRepository.update(id, file);
+    const merged = { ...file.metadata, ...update };
+    await this.fileRepository.update(id, { metadata: merged });
   }
 
   async reorderFiles(update: ReorderSubmissionFilesDto) {

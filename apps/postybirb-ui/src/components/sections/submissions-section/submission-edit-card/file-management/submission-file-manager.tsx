@@ -21,12 +21,30 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Trans } from '@lingui/react/macro';
-import { Box, Group, Paper, ScrollArea, Stack, Text } from '@mantine/core';
+import {
+  Box,
+  Button,
+  Collapse,
+  Divider,
+  Group,
+  Paper,
+  ScrollArea,
+  Stack,
+  Text,
+} from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
 import { ISubmissionFileDto } from '@postybirb/types';
-import { IconArrowsSort } from '@tabler/icons-react';
-import { CSSProperties, useCallback, useEffect, useMemo, useState } from 'react';
+import { IconArrowsSort, IconListDetails } from '@tabler/icons-react';
+import {
+  CSSProperties,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import fileSubmissionApi from '../../../../../api/file-submission.api';
 import { useSubmissionEditCardContext } from '../context';
+import { BulkFileEditor } from './bulk-file-editor';
 import './file-management.css';
 import { FileUploader } from './file-uploader';
 import { SubmissionFileCard } from './submission-file-card';
@@ -87,6 +105,7 @@ export function SubmissionFileManager() {
   const [orderedFiles, setOrderedFiles] = useState(() =>
     orderFiles(submission.files),
   );
+  const [bulkOpen, { toggle: toggleBulk }] = useDisclosure(false);
 
   // Track file IDs to ensure reactivity when files are added/removed
   const fileIds = submission.files.map((f) => f.id).join(',');
@@ -131,13 +150,10 @@ export function SubmissionFileManager() {
 
       // Persist to backend
       fileSubmissionApi.reorder({
-        order: newOrderedFiles.reduce(
-          (acc: Record<string, number>, file) => {
-            acc[file.id] = file.order ?? 0;
-            return acc;
-          },
-          {},
-        ),
+        order: newOrderedFiles.reduce((acc: Record<string, number>, file) => {
+          acc[file.id] = file.order ?? 0;
+          return acc;
+        }, {}),
       });
     },
     [orderedFiles],
@@ -152,16 +168,36 @@ export function SubmissionFileManager() {
           <Text size="sm" fw={600}>
             <Trans>Files</Trans> ({orderedFiles.length})
           </Text>
-          {isDraggable && (
-            <Group gap="xs">
-              <IconArrowsSort size={14} />
-              <Text size="xs" c="dimmed">
-                <Trans>Drag to reorder</Trans>
-              </Text>
-            </Group>
-          )}
+          <Group gap="xs">
+            {orderedFiles.length > 1 && (
+              <Button
+                size="xs"
+                variant={bulkOpen ? 'filled' : 'subtle'}
+                color="violet"
+                onClick={toggleBulk}
+                leftSection={<IconListDetails size={12} />}
+              >
+                <Trans>Bulk edit files</Trans>
+              </Button>
+            )}
+            {isDraggable && (
+              <>
+                <IconArrowsSort size={14} />
+                <Text size="xs" c="dimmed">
+                  <Trans>Drag to reorder</Trans>
+                </Text>
+              </>
+            )}
+          </Group>
         </Group>
       </Box>
+
+      {/* Bulk edit panel */}
+      <Collapse in={bulkOpen && orderedFiles.length > 1}>
+        <Divider />
+        <BulkFileEditor files={orderedFiles} />
+        <Divider />
+      </Collapse>
 
       <ScrollArea
         h={orderedFiles.length === 1 ? 'auto' : 350}
