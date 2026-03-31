@@ -259,7 +259,11 @@ export function ScheduleForm({
 
           <Tabs.Panel value={ScheduleType.RECURRING} pl="md">
             <Stack gap="sm">
-              <Box style={disabled ? { pointerEvents: 'none', opacity: 0.6 } : undefined}>
+              <Box
+                // CronPicker does not support a disabled prop, so we use
+                // pointer-events to prevent interaction when archived.
+                style={disabled ? { pointerEvents: 'none', opacity: 0.6 } : undefined}
+              >
                 <CronPicker
                   value={internalSchedule.cron || DEFAULT_CRON}
                   onChange={handleCronChange}

@@ -375,7 +375,7 @@ export function AccountSelect() {
                 selectedPills
               ) : (
                 <PillsInput.Field
-                  placeholder={isArchived ? undefined : t`Select accounts...`}
+                  placeholder={t`Select accounts...`}
                   value={search}
                   disabled={isArchived}
                   onChange={(e) => {

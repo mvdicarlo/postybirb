@@ -241,7 +241,7 @@ export function FileActions({ file, submissionId }: FileActionsProps) {
                   color="teal"
                   size="xs"
                   disabled={isArchived}
-                  onClick={isArchived ? undefined : handleCropFromPrimary}
+                  onClick={handleCropFromPrimary}
                   loading={isLoadingPrimary}
                 >
                   <IconCrop size={12} />
