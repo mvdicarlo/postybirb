@@ -28,7 +28,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     // call does it automatically.
     // eslint-disable-next-line no-param-reassign
     lang = lang ?? 'en';
-    const { messages } = await import(`../../../../../lang/${lang}.po`);
+    const { messages } = await import(`../../../../lang/${lang}.po`);
     i18n.loadAndActivate({ locale: lang, messages });
     moment.locale(lang);
     setLoaded(true);
