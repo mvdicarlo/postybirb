@@ -106,37 +106,50 @@ export class PostQueueService
         this.logger
           .withMetadata({ count: runningRecords.length })
           .info(
-            'Detected interrupted PostRecords from crash/shutdown, resuming',
+            'Detected interrupted PostRecords from crash/shutdown, scheduling resume',
           );
 
-        // Wait for website registry to be initialized before resuming posts
-        // This ensures website instances are available for posting
-        this.logger.info(
-          'Waiting for website registry initialization before crash recovery...',
-        );
-        await this.websiteRegistryService.waitForInitialization(60_000);
-        this.logger.info(
-          'Website registry initialized, proceeding with crash recovery',
-        );
-
-        for (const record of runningRecords) {
-          this.logger
-            .withMetadata({
-              recordId: record.id,
-              resumeMode: record.resumeMode,
-            })
-            .info('Resuming interrupted PostRecord');
-
-          // Resume the post - the manager will build resume context
-          // from the record's events that already completed
-          await this.postManagerRegistry.startPost(record);
-        }
+        // Resume in the background so onModuleInit does not block server startup
+        this.resumeInterruptedPosts(runningRecords);
       }
     } catch (error) {
       this.logger
         .withMetadata({ error })
         .error('Failed to recover interrupted posts on startup');
       // Don't throw - allow the app to start even if crash recovery fails
+    }
+  }
+
+  /**
+   * Resume interrupted posts in the background.
+   * This is intentionally not awaited so it does not block server startup.
+   */
+  private async resumeInterruptedPosts(
+    runningRecords: PostRecord[],
+  ): Promise<void> {
+    try {
+      this.logger.info(
+        'Waiting for website registry initialization before crash recovery...',
+      );
+      await this.websiteRegistryService.waitForInitialization(60_000);
+      this.logger.info(
+        'Website registry initialized, proceeding with crash recovery',
+      );
+
+      for (const record of runningRecords) {
+        this.logger
+          .withMetadata({
+            recordId: record.id,
+            resumeMode: record.resumeMode,
+          })
+          .info('Resuming interrupted PostRecord');
+
+        await this.postManagerRegistry.startPost(record);
+      }
+    } catch (error) {
+      this.logger
+        .withMetadata({ error })
+        .error('Failed to resume interrupted posts');
     }
   }
 
