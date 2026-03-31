@@ -6,7 +6,7 @@
 import { Trans } from '@lingui/react/macro';
 import { Box, Kbd, NavLink as MantineNavLink, Tooltip, useMantineColorScheme } from '@mantine/core';
 import { IconMoon, IconSun } from '@tabler/icons-react';
-import { formatKeybindingDisplay } from '../../../shared/platform-utils';
+import { formatKeybindingDisplay } from '../../shared/platform-utils';
 import { useAppearanceActions } from '../../stores/ui/appearance-store';
 import '../../styles/layout.css';
 
