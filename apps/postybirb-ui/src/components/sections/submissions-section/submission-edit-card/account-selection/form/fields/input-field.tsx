@@ -16,7 +16,7 @@ function TextField({
   field,
   defaultValue,
 }: FormFieldProps<TextFieldType> & { defaultValue: string | undefined }) {
-  const { getValue, setValue } = useFormFieldsContext();
+  const { getValue, setValue, submission } = useFormFieldsContext();
   const value = getValue<string>(fieldName) ?? field.defaultValue ?? '';
 
   return (
@@ -26,6 +26,7 @@ function TextField({
       placeholder={defaultValue}
       w="100%"
       maxLength={field.maxLength}
+      disabled={submission.isArchived}
       description={
         field.maxLength
           ? `${value?.length ?? 0} / ${field.maxLength}`
@@ -42,7 +43,7 @@ function TextAreaField({
   field,
   defaultValue,
 }: FormFieldProps<TextFieldType> & { defaultValue: string | undefined }) {
-  const { getValue, setValue } = useFormFieldsContext();
+  const { getValue, setValue, submission } = useFormFieldsContext();
   const value = getValue<string>(fieldName) ?? field.defaultValue ?? '';
 
   return (
@@ -52,6 +53,7 @@ function TextAreaField({
       placeholder={defaultValue}
       w="100%"
       maxLength={field.maxLength}
+      disabled={submission.isArchived}
       description={
         field.maxLength
           ? `${value?.length ?? 0} / ${field.maxLength}`

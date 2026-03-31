@@ -4,7 +4,7 @@
  */
 
 import { Trans } from '@lingui/react/macro';
-import { Group, Paper, Stack, Switch, Tabs, Text, Title } from '@mantine/core';
+import { Box, Group, Paper, Stack, Switch, Tabs, Text, Title } from '@mantine/core';
 import { DateTimePicker, DateValue } from '@mantine/dates';
 import { ISubmissionScheduleInfo, ScheduleType } from '@postybirb/types';
 import { IconCalendar, IconCalendarOff, IconRepeat } from '@tabler/icons-react';
@@ -22,6 +22,8 @@ export interface ScheduleFormProps {
   isScheduled: boolean;
   /** Callback when schedule changes */
   onChange: (schedule: ISubmissionScheduleInfo, isScheduled: boolean) => void;
+  /** Whether all schedule controls should be disabled (e.g., archived submission) */
+  disabled?: boolean;
 }
 
 const SCHEDULE_GLOBAL_KEY = 'postybirb-last-schedule';
@@ -34,6 +36,7 @@ export function ScheduleForm({
   schedule,
   isScheduled,
   onChange,
+  disabled = false,
 }: ScheduleFormProps) {
   const { formatRelativeTime } = useLocale();
   const [internalSchedule, setInternalSchedule] =
@@ -178,6 +181,7 @@ export function ScheduleForm({
                 )
               }
               checked={internalIsScheduled}
+              disabled={disabled}
               onChange={(e) => handleToggleActive(e.currentTarget.checked)}
               size="sm"
             />
@@ -187,7 +191,7 @@ export function ScheduleForm({
         {/* Vertical tabs layout */}
         <Tabs
           value={internalSchedule.scheduleType}
-          onChange={handleTypeChange}
+          onChange={disabled ? undefined : handleTypeChange}
           orientation="vertical"
           variant="pills"
         >
@@ -195,18 +199,21 @@ export function ScheduleForm({
             <Tabs.Tab
               value={ScheduleType.NONE}
               leftSection={<IconCalendarOff size={16} />}
+              disabled={disabled}
             >
               <Trans>None</Trans>
             </Tabs.Tab>
             <Tabs.Tab
               value={ScheduleType.SINGLE}
               leftSection={<IconCalendar size={16} />}
+              disabled={disabled}
             >
               <Trans>Once</Trans>
             </Tabs.Tab>
             <Tabs.Tab
               value={ScheduleType.RECURRING}
               leftSection={<IconRepeat size={16} />}
+              disabled={disabled}
             >
               <Trans>Recurring</Trans>
             </Tabs.Tab>
@@ -231,6 +238,7 @@ export function ScheduleForm({
                 highlightToday
                 minDate={new Date()}
                 value={scheduledDate}
+                disabled={disabled}
                 onChange={handleDateTimeChange}
                 error={isDateInPast ? <Trans>Date is in the past</Trans> : null}
               />
@@ -251,10 +259,16 @@ export function ScheduleForm({
 
           <Tabs.Panel value={ScheduleType.RECURRING} pl="md">
             <Stack gap="sm">
-              <CronPicker
-                value={internalSchedule.cron || DEFAULT_CRON}
-                onChange={handleCronChange}
-              />
+              <Box
+                // CronPicker does not support a disabled prop, so we use
+                // pointer-events to prevent interaction when archived.
+                style={disabled ? { pointerEvents: 'none', opacity: 0.6 } : undefined}
+              >
+                <CronPicker
+                  value={internalSchedule.cron || DEFAULT_CRON}
+                  onChange={handleCronChange}
+                />
+              </Box>
               <Text size="sm" c={internalIsScheduled ? 'blue' : 'dimmed'}>
                 {internalIsScheduled ? (
                   <Trans>Submission will be posted automatically</Trans>

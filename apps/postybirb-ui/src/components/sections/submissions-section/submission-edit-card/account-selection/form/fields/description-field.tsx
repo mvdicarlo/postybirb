@@ -149,6 +149,7 @@ export function DescriptionField({
         {defaultOption === undefined ? null : (
           <Checkbox
             mb="4"
+            disabled={submission.isArchived}
             checked={overrideDefault}
             onChange={(e) => {
               setValue(fieldName, {
@@ -162,7 +163,7 @@ export function DescriptionField({
         )}
         <Checkbox
           mb="4"
-          disabled={(overrideDefault && hasTitleShortcut) || defaultInsertTitle}
+          disabled={submission.isArchived || (overrideDefault && hasTitleShortcut) || defaultInsertTitle}
           checked={insertTitle}
           onChange={(e) => {
             setValue(fieldName, {
@@ -175,7 +176,7 @@ export function DescriptionField({
         />
         <Checkbox
           mb="4"
-          disabled={(overrideDefault && hasTagsShortcut) || defaultInsertTags}
+          disabled={submission.isArchived || (overrideDefault && hasTagsShortcut) || defaultInsertTags}
           checked={insertTags}
           onChange={(e) => {
             setValue(fieldName, {
@@ -194,6 +195,7 @@ export function DescriptionField({
               showCustomShortcuts
               isDefaultEditor={option.isDefault}
               onPreview={togglePreview}
+              readOnly={submission.isArchived}
               onChange={(value) => {
                 setValue(fieldName, {
                   ...fieldValue,

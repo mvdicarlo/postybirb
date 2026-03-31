@@ -247,7 +247,12 @@ export function AccountSelect() {
     } finally {
       setIsSelectingAll(false);
     }
-  }, [allEligibleAccounts, selectedAccountIds, submission.id, getDefaultRating]);
+  }, [
+    allEligibleAccounts,
+    selectedAccountIds,
+    submission.id,
+    getDefaultRating,
+  ]);
 
   // Deselect all accounts
   const handleDeselectAll = useCallback(async () => {
@@ -287,6 +292,8 @@ export function AccountSelect() {
   const hasUnselectedAccounts =
     allEligibleAccounts.length > selectedAccountIds.size;
 
+  const { isArchived } = submission;
+
   // Render selected account pills
   const selectedPills = useMemo(() => {
     const pills: JSX.Element[] = [];
@@ -296,8 +303,10 @@ export function AccountSelect() {
         pills.push(
           <Pill
             key={accountId}
-            withRemoveButton
-            onRemove={() => handlePillRemove(accountId)}
+            withRemoveButton={!isArchived}
+            onRemove={
+              isArchived ? undefined : () => handlePillRemove(accountId)
+            }
           >
             {acc.websiteDisplayName} - {acc.name}
             {acc.username ? ` (${acc.username})` : ''}
@@ -306,7 +315,7 @@ export function AccountSelect() {
       }
     });
     return pills;
-  }, [selectedAccountIds, accountById, handlePillRemove]);
+  }, [selectedAccountIds, accountById, handlePillRemove, isArchived]);
 
   return (
     <Stack gap="xs">
@@ -315,7 +324,7 @@ export function AccountSelect() {
           <Trans>Websites</Trans>
         </Text>
         <Group gap="xs">
-          {hasUnselectedAccounts && (
+          {hasUnselectedAccounts && !isArchived && (
             <Button
               size="xs"
               variant="subtle"
@@ -327,7 +336,7 @@ export function AccountSelect() {
               <Trans>Select all</Trans>
             </Button>
           )}
-          {hasSelectedAccounts && (
+          {hasSelectedAccounts && !isArchived && (
             <Button
               size="xs"
               variant="subtle"
@@ -345,16 +354,17 @@ export function AccountSelect() {
       <Combobox
         store={combobox}
         onOptionSubmit={(val) => {
-          handleAccountToggle(val);
+          if (!isArchived) handleAccountToggle(val);
         }}
         withinPortal={false}
       >
         <Combobox.DropdownTarget>
           <PillsInput
             pointer
-            onClick={() => combobox.openDropdown()}
+            disabled={isArchived}
+            onClick={() => !isArchived && combobox.openDropdown()}
             rightSection={
-              selectedAccountIds.size > 0 ? (
+              selectedAccountIds.size > 0 && !isArchived ? (
                 <CloseButton
                   size="sm"
                   onMouseDown={(e) => e.preventDefault()}
@@ -363,7 +373,7 @@ export function AccountSelect() {
                   aria-label="Clear all"
                 />
               ) : (
-                <Combobox.Chevron />
+                !isArchived && <Combobox.Chevron />
               )
             }
           >
@@ -374,18 +384,19 @@ export function AccountSelect() {
                 <PillsInput.Field
                   placeholder={t`Select accounts...`}
                   value={search}
+                  disabled={isArchived}
                   onChange={(e) => {
                     setSearch(e.currentTarget.value);
                     combobox.openDropdown();
                     combobox.updateSelectedOptionIndex();
                   }}
-                  onFocus={() => combobox.openDropdown()}
+                  onFocus={() => !isArchived && combobox.openDropdown()}
                   onKeyDown={(e) => {
                     if (e.key === 'Backspace' && search.length === 0) {
                       e.preventDefault();
                       // Remove last selected
                       const lastId = Array.from(selectedAccountIds).pop();
-                      if (lastId) handlePillRemove(lastId);
+                      if (lastId && !isArchived) handlePillRemove(lastId);
                     }
                   }}
                 />
@@ -394,12 +405,13 @@ export function AccountSelect() {
                 <PillsInput.Field
                   placeholder=""
                   value={search}
+                  disabled={isArchived}
                   onChange={(e) => {
                     setSearch(e.currentTarget.value);
                     combobox.openDropdown();
                     combobox.updateSelectedOptionIndex();
                   }}
-                  onFocus={() => combobox.openDropdown()}
+                  onFocus={() => !isArchived && combobox.openDropdown()}
                 />
               )}
             </Pill.Group>

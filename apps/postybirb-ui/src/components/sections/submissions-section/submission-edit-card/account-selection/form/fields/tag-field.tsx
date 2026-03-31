@@ -68,7 +68,7 @@ export function TagField({
   fieldName,
   field,
 }: FormFieldProps<TagFieldType>): JSX.Element {
-  const { getValue, setValue, option } = useFormFieldsContext();
+  const { getValue, setValue, option, submission } = useFormFieldsContext();
   const defaultOption = useDefaultOption<TagValue>(fieldName);
   const validations = useValidations(fieldName);
 
@@ -136,6 +136,7 @@ export function TagField({
         {option.isDefault ? null : (
           <Checkbox
             mb="4"
+            disabled={submission.isArchived}
             checked={overrideDefault}
             onChange={(e) => {
               setValue(fieldName, {
@@ -172,6 +173,7 @@ export function TagField({
         <TagsInput
           inputWrapperOrder={['label', 'input', 'description', 'error']}
           clearable
+          disabled={submission.isArchived}
           required={field.required}
           value={tagValue}
           data={[...search.data, ...tagGroupsOptions]}

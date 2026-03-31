@@ -17,7 +17,7 @@ function DateTimePickerField({
   field,
   defaultValue,
 }: FormFieldProps<DateTimeFieldType> & { defaultValue: string | undefined }) {
-  const { getValue, setValue } = useFormFieldsContext();
+  const { getValue, setValue, submission } = useFormFieldsContext();
 
   const value = getValue<string>(fieldName) ?? field.defaultValue ?? '';
   const dateValue = value ? moment(value).toDate() : null;
@@ -29,6 +29,7 @@ function DateTimePickerField({
     <DateTimePicker
       rightSection={<IconCalendar />}
       value={dateValue}
+      disabled={submission.isArchived}
       onChange={(date) => {
         if (date) {
           setValue(fieldName, moment(date).toISOString());
