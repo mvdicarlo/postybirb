@@ -52,6 +52,11 @@ export function FileMetadata({ file, accounts }: FileMetadataProps) {
     metadata.ignoredWebsites ?? [],
   );
 
+  // Sync local state when file prop changes (e.g. after bulk edit)
+  useEffect(() => {
+    setIgnoredWebsites(metadata.ignoredWebsites ?? []);
+  }, [metadata.ignoredWebsites]);
+
   // Create a save function that updates metadata on the server
   const save = useCallback(() => {
     fileSubmissionApi.updateMetadata(file.id, metadata).catch((error) => {
@@ -80,6 +85,7 @@ export function FileMetadata({ file, accounts }: FileMetadataProps) {
         {/* Alt Text */}
         <Grid.Col span={6}>
           <TextInput
+            key={`alt-${file.id}-${file.updatedAt}`}
             label={<Trans>Alt Text</Trans>}
             defaultValue={metadata.altText}
             size="xs"
@@ -93,6 +99,7 @@ export function FileMetadata({ file, accounts }: FileMetadataProps) {
         {/* Spoiler Text */}
         <Grid.Col span={6}>
           <TextInput
+            key={`spoiler-${file.id}-${file.updatedAt}`}
             label={<Trans>Spoiler Text</Trans>}
             defaultValue={metadata.spoilerText}
             size="xs"
@@ -142,6 +149,13 @@ function FileDimensions({ file, accounts, save }: FileDimensionsProps) {
   const [height, setHeight] = useState<number>(providedHeight || 1);
   const [width, setWidth] = useState<number>(providedWidth || 1);
   const aspectRef = useRef(file.width / file.height);
+
+  // Sync local state when file dimensions change (e.g. after bulk edit)
+  useEffect(() => {
+    const { width: pw, height: ph } = metadata.dimensions?.default ?? file;
+    setHeight(ph || 1);
+    setWidth(pw || 1);
+  }, [file, metadata.dimensions]);
 
   const original = { h: file.height, w: file.width };
   const scale = Math.round((height / original.h) * 100);
@@ -447,6 +461,11 @@ function FileSourceUrls({ metadata, save }: FileSourceUrlsProps) {
     ...(metadata.sourceUrls || []),
     '', // Always have one empty slot
   ]);
+
+  // Sync local state when source URLs change (e.g. after bulk edit)
+  useEffect(() => {
+    setUrls([...(metadata.sourceUrls || []), '']);
+  }, [metadata.sourceUrls]);
 
   const updateUrl = (index: number, value: string) => {
     const newUrls = [...urls];
