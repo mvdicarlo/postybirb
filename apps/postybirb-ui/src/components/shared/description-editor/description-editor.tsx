@@ -15,7 +15,7 @@ import {
   IconQuote,
   IconTags,
   IconTextPlus,
-  IconUser
+  IconUser,
 } from '@tabler/icons-react';
 import { AnyExtension, Extension } from '@tiptap/core';
 import Bold from '@tiptap/extension-bold';
@@ -136,7 +136,10 @@ function createSuggestionExtension(
                 });
               },
               onUpdate: (props) => {
-                component?.updateProps({ items: props.items, command: props.command });
+                component?.updateProps({
+                  items: props.items,
+                  command: props.command,
+                });
                 if (popup?.[0] && props.clientRect) {
                   popup[0].setProps({
                     getReferenceClientRect: props.clientRect as () => DOMRect,
@@ -181,8 +184,10 @@ export function DescriptionEditor({
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
 
-  const [htmlModalOpened, { open: openHtmlModal, close: closeHtmlModal }] = useDisclosure(false);
-  const [mediaModalOpened, { open: openMediaModal, close: closeMediaModal }] = useDisclosure(false);
+  const [htmlModalOpened, { open: openHtmlModal, close: closeHtmlModal }] =
+    useDisclosure(false);
+  const [mediaModalOpened, { open: openMediaModal, close: closeMediaModal }] =
+    useDisclosure(false);
 
   // Editor ref for use in callbacks before editor is created
   const editorRef = useRef<Editor | null>(null);
@@ -277,7 +282,11 @@ export function DescriptionEditor({
           group: 'Shortcuts',
           icon: <IconTextPlus size={18} />,
           onSelect: () => {
-            editorRef.current?.chain().focus().insertContent({ type: 'defaultShortcut', attrs: { only: '' } }).run();
+            editorRef.current
+              ?.chain()
+              .focus()
+              .insertContent({ type: 'defaultShortcut', attrs: { only: '' } })
+              .run();
           },
         });
       }
@@ -290,10 +299,14 @@ export function DescriptionEditor({
           icon: <IconH1 size={16} />,
           group: 'Shortcuts',
           onSelect: () => {
-            editorRef.current?.chain().focus().insertContent([
-              { type: 'titleShortcut', attrs: { only: '' } },
-              { type: 'text', text: ' ' },
-            ]).run();
+            editorRef.current
+              ?.chain()
+              .focus()
+              .insertContent([
+                { type: 'titleShortcut', attrs: { only: '' } },
+                { type: 'text', text: ' ' },
+              ])
+              .run();
           },
         },
         {
@@ -302,10 +315,14 @@ export function DescriptionEditor({
           icon: <IconTags size={16} />,
           group: 'Shortcuts',
           onSelect: () => {
-            editorRef.current?.chain().focus().insertContent([
-              { type: 'tagsShortcut', attrs: { only: '' } },
-              { type: 'text', text: ' ' },
-            ]).run();
+            editorRef.current
+              ?.chain()
+              .focus()
+              .insertContent([
+                { type: 'tagsShortcut', attrs: { only: '' } },
+                { type: 'text', text: ' ' },
+              ])
+              .run();
           },
         },
         {
@@ -314,10 +331,14 @@ export function DescriptionEditor({
           icon: <IconAlertTriangle size={16} />,
           group: 'Shortcuts',
           onSelect: () => {
-            editorRef.current?.chain().focus().insertContent([
-              { type: 'contentWarningShortcut', attrs: { only: '' } },
-              { type: 'text', text: ' ' },
-            ]).run();
+            editorRef.current
+              ?.chain()
+              .focus()
+              .insertContent([
+                { type: 'contentWarningShortcut', attrs: { only: '' } },
+                { type: 'text', text: ' ' },
+              ])
+              .run();
           },
         },
       );
@@ -330,10 +351,14 @@ export function DescriptionEditor({
             icon: <IconQuote size={16} />,
             group: 'Custom Shortcuts',
             onSelect: () => {
-              editorRef.current?.chain().focus().insertContent([
-                { type: 'customShortcut', attrs: { id: sc.id, only: '' } },
-                { type: 'text', text: ' ' },
-              ]).run();
+              editorRef.current
+                ?.chain()
+                .focus()
+                .insertContent([
+                  { type: 'customShortcut', attrs: { id: sc.id, only: '' } },
+                  { type: 'text', text: ' ' },
+                ])
+                .run();
             },
           });
         }
@@ -346,17 +371,21 @@ export function DescriptionEditor({
           icon: <IconUser size={16} />,
           group: 'Username Shortcuts',
           onSelect: () => {
-            editorRef.current?.chain().focus().insertContent([
-              {
-                type: 'username',
-                attrs: {
-                  shortcut: sc.id,
-                  only: '',
-                  username: '',
+            editorRef.current
+              ?.chain()
+              .focus()
+              .insertContent([
+                {
+                  type: 'username',
+                  attrs: {
+                    shortcut: sc.id,
+                    only: '',
+                    username: '',
+                  },
                 },
-              },
-              { type: 'text', text: ' ' },
-            ]).run();
+                { type: 'text', text: ' ' },
+              ])
+              .run();
           },
         });
       }
@@ -423,9 +452,11 @@ export function DescriptionEditor({
       // Suggestion menus
       ...suggestionExtensions,
     ],
-    content: value && value.content && value.content.length > 0 ? value : undefined,
+    content:
+      value && value.content && value.content.length > 0 ? value : undefined,
     editable: !readOnly,
     onUpdate: ({ editor: e }) => {
+      if (readOnly) return;
       onChangeRef.current(e.getJSON() as Description);
     },
   });
@@ -435,11 +466,22 @@ export function DescriptionEditor({
 
   return (
     <Box
-      style={{ minHeight, height: '100%' }}
+      style={{
+        minHeight,
+        height: '100%',
+        pointerEvents: readOnly ? 'none' : undefined,
+      }}
       className="description-editor-container"
       data-theme={colorScheme}
     >
-      {!readOnly && <DescriptionToolbar editor={editor} onEditHtml={openHtmlModal} onInsertMedia={openMediaModal} onPreview={onPreview} />}
+      {!readOnly && (
+        <DescriptionToolbar
+          editor={editor}
+          onEditHtml={openHtmlModal}
+          onInsertMedia={openMediaModal}
+          onPreview={onPreview}
+        />
+      )}
       <Box className="tiptap-editor-wrapper" style={{ flex: 1 }}>
         {editor && !readOnly && <BubbleToolbar editor={editor} />}
         <EditorContent editor={editor} />
