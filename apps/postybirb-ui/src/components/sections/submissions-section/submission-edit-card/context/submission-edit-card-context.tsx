@@ -3,8 +3,17 @@
  * Each card has its own context to manage its submission state and actions.
  */
 
-import { createContext, useContext, useMemo, type ReactNode } from 'react';
+import {
+    createContext,
+    useContext,
+    useMemo,
+    type Dispatch,
+    type ReactNode,
+    type SetStateAction,
+} from 'react';
 import type { SubmissionRecord } from '../../../../../stores/records';
+
+export type SubmissionEditCardViewMode = 'edit' | 'history';
 
 /**
  * Context value for a submission edit card.
@@ -18,6 +27,10 @@ export interface SubmissionEditCardContextValue {
   defaultExpanded: boolean;
   /** Target submission IDs for mass edit mode (to pre-populate Save To Many) */
   targetSubmissionIds?: string[];
+  /** Current view mode: edit form or post history */
+  viewMode: SubmissionEditCardViewMode;
+  /** Set the current view mode */
+  setViewMode: Dispatch<SetStateAction<SubmissionEditCardViewMode>>;
 }
 
 const SubmissionEditCardContext =
@@ -32,6 +45,8 @@ interface SubmissionEditCardProviderProps {
   isCollapsible: boolean;
   defaultExpanded?: boolean;
   targetSubmissionIds?: string[];
+  viewMode: SubmissionEditCardViewMode;
+  setViewMode: Dispatch<SetStateAction<SubmissionEditCardViewMode>>;
 }
 
 /**
@@ -43,6 +58,8 @@ export function SubmissionEditCardProvider({
   isCollapsible,
   defaultExpanded = true,
   targetSubmissionIds,
+  viewMode,
+  setViewMode,
 }: SubmissionEditCardProviderProps) {
   const value = useMemo<SubmissionEditCardContextValue>(
     () => ({
@@ -50,8 +67,10 @@ export function SubmissionEditCardProvider({
       isCollapsible,
       defaultExpanded,
       targetSubmissionIds,
+      viewMode,
+      setViewMode,
     }),
-    [submission, isCollapsible, defaultExpanded, targetSubmissionIds],
+    [submission, isCollapsible, defaultExpanded, targetSubmissionIds, viewMode, setViewMode],
   );
 
   return (

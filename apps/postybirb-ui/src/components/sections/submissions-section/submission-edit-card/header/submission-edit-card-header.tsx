@@ -4,9 +4,9 @@
  */
 
 import { Trans } from '@lingui/react/macro';
-import { Badge, Box, Group, Text } from '@mantine/core';
+import { Badge, Box, Group, SegmentedControl, Text } from '@mantine/core';
 import { IconChevronDown, IconChevronRight } from '@tabler/icons-react';
-import { useSubmissionEditCardContext } from '../context';
+import { useSubmissionEditCardContext, type SubmissionEditCardViewMode } from '../context';
 
 export interface SubmissionEditCardHeaderProps {
   /** Whether the card is expanded (controls chevron direction) */
@@ -20,7 +20,8 @@ export interface SubmissionEditCardHeaderProps {
 export function SubmissionEditCardHeader({
   isExpanded = true,
 }: SubmissionEditCardHeaderProps) {
-  const { submission, isCollapsible } = useSubmissionEditCardContext();
+  const { submission, isCollapsible, viewMode, setViewMode } =
+    useSubmissionEditCardContext();
 
   const ChevronIcon = isExpanded ? IconChevronDown : IconChevronRight;
 
@@ -37,6 +38,23 @@ export function SubmissionEditCardHeader({
       <Text fw={600} size="sm" truncate style={{ flex: 1 }}>
         {submission.title || <Trans>Untitled</Trans>}
       </Text>
+
+      {/* Edit / History toggle - shown when post history exists */}
+      {!submission.isTemplate &&
+        !submission.isMultiSubmission &&
+        submission.posts.length > 0 && (
+          <Box onClick={(e) => e.stopPropagation()} style={{ flexShrink: 0 }}>
+            <SegmentedControl
+              size="xs"
+              value={viewMode}
+              onChange={(value) => setViewMode(value as SubmissionEditCardViewMode)}
+              data={[
+                { label: <Trans>Edit</Trans>, value: 'edit' },
+                { label: <Trans>History</Trans>, value: 'history' },
+              ]}
+            />
+          </Box>
+        )}
 
       {/* Archived badge */}
       {submission.isArchived && (
