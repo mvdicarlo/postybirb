@@ -6,6 +6,7 @@ import {
   Box,
   Button,
   Group,
+  NumberInput,
   Radio,
   Stack,
   Text,
@@ -100,7 +101,7 @@ export default function CustomLoginView(
 
   const updateFormData = (
     field: keyof Omit<CustomAccountData, 'headers'>,
-    value: string,
+    value: string | number,
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -174,6 +175,23 @@ export default function CustomLoginView(
               updateFormData('notificationUrl', event.currentTarget.value)
             }
             placeholder="https://your-server.com/api/notifications"
+          />
+
+          <NumberInput
+            label={<Text>File Batch Limit</Text>}
+            description={
+              <Text>
+                The maximum number of files that can be submitted in a single
+                batch
+              </Text>
+            }
+            value={formData.fileBatchLimit || ''}
+            onChange={(value) =>
+              updateFormData(
+                'fileBatchLimit',
+                Number.isNaN(Number(value)) ? 1 : Number(value),
+              )
+            }
           />
 
           <Group grow>

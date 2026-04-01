@@ -10,4 +10,5 @@ export interface CustomAccountData {
   thumbnailField?: string;
   titleField?: string;
   altTextField?: string;
+  fileBatchLimit?: number;
 }

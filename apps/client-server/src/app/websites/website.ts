@@ -236,6 +236,17 @@ export abstract class Website<
    */
   public async setWebsiteData(data: D) {
     await this.websiteDataStore.setData(data);
+    this.onWebsiteDataChange(data);
+  }
+
+  /**
+   * Hook that runs whenever website data is updated via {@link setWebsiteData}.
+   * Subclasses can implement this to react to data changes, e.g. update internal state or trigger side effects.
+   * @param {D} newData - The new website data that was set.
+   * @returns {Promise<void>}
+   */
+  protected async onWebsiteDataChange(newData: D) {
+    // Nothing to do here yet, but this is a hook for future if we want to trigger any actions on data change
   }
 
   // -------------- End Externally Accessed Methods --------------
