@@ -29,6 +29,7 @@ import { IconCheck, IconCopy } from '@tabler/icons-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import websiteOptionsApi from '../../../../../../../api/website-options.api';
 import { useWebsitesMap } from '../../../../../../../stores/entity/website-store';
+import { ComponentErrorBoundary } from '../../../../../../error-boundary';
 
 interface DescriptionPreviewPanelProps {
   /** The submission ID */
@@ -99,8 +100,8 @@ function PreviewContent({
   const { descriptionType, description } = preview.result;
 
   const Renderer =
-    descriptionPreviewRendererByType.get(descriptionType) ??
-    descriptionPreviewRendererByWebsite.get(websiteId);
+    descriptionPreviewRendererByWebsite.get(websiteId) ??
+    descriptionPreviewRendererByType.get(descriptionType);
 
   return (
     <Box>
@@ -155,7 +156,9 @@ function PreviewContent({
                   fontSize: '13px',
                 }}
               >
-                <Renderer description={description} />
+                <ComponentErrorBoundary>
+                  <Renderer description={description} />
+                </ComponentErrorBoundary>
               </Box>
             </Typography>
           </ScrollArea.Autosize>
@@ -348,10 +351,12 @@ export function DescriptionPreviewPanel({
                   <Text size="xs">↻</Text>
                 </ActionIcon>
               </Group>
-              <PreviewContent
-                preview={preview}
-                websiteId={opt.account.website}
-              />
+              <ComponentErrorBoundary>
+                <PreviewContent
+                  preview={preview}
+                  websiteId={opt.account.website}
+                />
+              </ComponentErrorBoundary>
             </Tabs.Panel>
           );
         })}

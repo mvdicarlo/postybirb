@@ -1,3 +1,4 @@
+// eslint-disable-next-line max-classes-per-file
 import { Http } from '@postybirb/http';
 import {
   E621AccountData,
@@ -11,8 +12,12 @@ import {
   PostResponse,
   SimpleValidationResult,
   SubmissionRating,
+  TipTapNode,
 } from '@postybirb/types';
 import { app } from 'electron';
+import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
+import { BBCodeConverter } from '../../../post-parsers/models/description-node/converters/bbcode-converter';
+import { ConversionContext } from '../../../post-parsers/models/description-node/description-node.base';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
@@ -25,6 +30,7 @@ import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
 import { FileWebsite } from '../../models/website-modifiers/file-website';
 import { OAuthWebsite } from '../../models/website-modifiers/oauth-website';
+import { WithCustomDescriptionParser } from '../../models/website-modifiers/with-custom-description-parser';
 import { Website } from '../../website';
 import { E621FileSubmission } from './models/e621-file-submission';
 
@@ -51,7 +57,10 @@ import { E621FileSubmission } from './models/e621-file-submission';
 @DisableAds()
 export default class E621
   extends Website<E621AccountData>
-  implements FileWebsite<E621FileSubmission>, OAuthWebsite<E621OAuthRoutes>
+  implements
+    FileWebsite<E621FileSubmission>,
+    OAuthWebsite<E621OAuthRoutes>,
+    WithCustomDescriptionParser
 {
   protected BASE_URL = 'https://e621.net/';
 
@@ -98,6 +107,10 @@ export default class E621
     return undefined;
   }
 
+  getDescriptionConverter(): BaseConverter {
+    return new E621Converter();
+  }
+
   private readonly headers = { 'User-Agent': `PostyBirb/${app.getVersion()}` };
 
   private async request<T>(
@@ -129,10 +142,7 @@ export default class E621
     const accountData = this.websiteDataStore.getData();
     const file = files[0];
 
-    // Spec: https://e621.net/help/dtext
-    const description = postData.options.description
-      .replace(/\[url=([^\]]*)\]([^[]*)\[\/url\]/g, '"$2":[$1]')
-      .replace(/\[h(\d)](.+)\[\/h\d]/g, 'h$1. $2');
+    const { description } = postData.options;
 
     const formData = {
       login: accountData.username,
@@ -351,6 +361,17 @@ export default class E621
     this.metadataCache.set(url, result);
 
     return result;
+  }
+}
+
+// Spec: https://e621.net/help/dtext
+class E621Converter extends BBCodeConverter {
+  convertBlocks(nodes: TipTapNode[], context: ConversionContext): string {
+    const text = super.convertBlocks(nodes, context);
+
+    return text
+      .replace(/\[url=([^\]]*)\]([^[]*)\[\/url\]/g, '"$2":[$1]')
+      .replace(/\[h(\d)](.+)\[\/h\d]/g, 'h$1. $2');
   }
 }
 

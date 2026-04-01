@@ -22033,6 +22033,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"phoenix-bbcode@npm:^1.4.0":
+  version: 1.4.0
+  resolution: "phoenix-bbcode@npm:1.4.0"
+  checksum: 10c0/90b4d7b92fafd035dc8d8776688e3dad914745ab2406a398ade058f3635ec6adb7c108bc09a302c691ebd4a8952ffc1f4ad57ffa1560d2f9c383e39259d2cb02
+  languageName: node
+  linkType: hard
+
 "picocolors@npm:1.1.1, picocolors@npm:^1.0.0, picocolors@npm:^1.1.0, picocolors@npm:^1.1.1":
   version: 1.1.1
   resolution: "picocolors@npm:1.1.1"
@@ -22951,6 +22958,7 @@ __metadata:
     npm-run-all: "npm:^4.1.5"
     nx: "npm:19.8.9"
     nx-electron: "npm:19.0.0"
+    phoenix-bbcode: "npm:^1.4.0"
     piscina: "npm:^5.1.4"
     postcss: "npm:8.4.38"
     postcss-import: "npm:^14.0.2"

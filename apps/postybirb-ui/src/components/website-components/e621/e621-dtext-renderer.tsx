@@ -1,6 +1,7 @@
 /* eslint-disable lingui/no-unlocalized-strings */
 import reactPreset from '@bbob/preset-react';
 import BBCode from '@bbob/react';
+import { descriptionPreviewRendererByWebsite } from '../../sections/submissions-section/submission-edit-card/account-selection/form/fields/description-preview-panel';
 
 // ----------------------------------------------------------------------
 // Custom preset that extends the default React preset with DText‑specific tags
@@ -17,6 +18,19 @@ const dtextPreset = reactPreset.extend((tags, options) => ({
     return {
       tag: 'details',
       content: [{ tag: 'summary', content: 'Spoiler' }, ...content],
+    };
+  },
+  // Render [right] as a div with text-align: right
+  right: (node) => {
+    const content = Array.isArray(node.content)
+      ? node.content
+      : node.content
+        ? [node.content]
+        : [];
+    return {
+      tag: 'div',
+      attrs: { style: { textAlign: 'right' } },
+      content,
     };
   },
 }));
@@ -49,6 +63,13 @@ export function E621Dtext({ dtext }: E621DtextProps) {
     (_, title, url) => `[url=${url}]${title}[/url]`,
   );
 
+  processed = processed.replace(
+    /^(h[1-6])\.\s+(.*)$/gim,
+    (_, tag, content) =>
+      // Convert h1 to [h1], etc.
+      `[${tag}]${content}[/${tag}]`,
+  );
+
   return (
     <div style={{ whiteSpace: 'pre-wrap' }}>
       <BBCode plugins={[dtextPreset()]} options={{ onlyAllowTags: undefined }}>
@@ -57,3 +78,7 @@ export function E621Dtext({ dtext }: E621DtextProps) {
     </div>
   );
 }
+
+descriptionPreviewRendererByWebsite.set('e621', ({ description }) => (
+  <E621Dtext dtext={description} />
+));
