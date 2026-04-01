@@ -1,49 +1,84 @@
-import { Trans } from '@lingui/react/macro';
-import React from 'react';
+/* eslint-disable lingui/no-unlocalized-strings */
+import reactPreset from '@bbob/preset-react';
+import BBCode from '@bbob/react';
+import { descriptionPreviewRendererByWebsite } from '../../sections/submissions-section/submission-edit-card/account-selection/form/fields/description-preview-panel';
 
-// May be used for preview feature, still needs to have actual
-// bbcode parser instead of this fast implementation
+// ----------------------------------------------------------------------
+// Custom preset that extends the default React preset with DText‑specific tags
+// ----------------------------------------------------------------------
+const dtextPreset = reactPreset.extend((tags, options) => ({
+  ...tags,
+  // Render [spoiler] as a <details> block
+  spoiler: (node) => {
+    const content = Array.isArray(node.content)
+      ? node.content
+      : node.content
+        ? [node.content]
+        : [];
+    return {
+      tag: 'details',
+      content: [{ tag: 'summary', content: 'Spoiler' }, ...content],
+    };
+  },
+  // Render [right] as a div with text-align: right
+  right: (node) => {
+    const content = Array.isArray(node.content)
+      ? node.content
+      : node.content
+        ? [node.content]
+        : [];
+    return {
+      tag: 'div',
+      attrs: { style: { textAlign: 'right' } },
+      content,
+    };
+  },
+}));
 
-export function E621Dtext({ dtext }: { dtext: string }) {
-  const text = dtext.slice(0, 1000).replaceAll('\n\r', '\n'); // Cut long text
-
-  const elements: React.ReactNode[] = [];
-
-  const lines = text.split('\n');
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    if (line) elements.push(<E621DtextLine key={`line-${i}`} line={line} />);
-    elements.push(<br key={`br-${i}`} />);
-  }
-
-  if (dtext.length > text.length) {
-    elements.push(<React.Fragment key="ellipsis">...</React.Fragment>);
-    elements.push(
-      <Trans key="more">and {dtext.length - text.length} more</Trans>,
-    );
-  }
-
-  return elements;
+// ----------------------------------------------------------------------
+// React component
+// ----------------------------------------------------------------------
+export interface E621DtextProps {
+  dtext: string;
 }
 
-function E621DtextLine({ line }: { line: string }) {
-  const tokens = line.split(/\[([^\]]+)\]([^[]+)\[([^\]]+)\]/);
+export function E621Dtext({ dtext }: E621DtextProps) {
+  let processed = dtext;
 
-  if (tokens.length === 1) return tokens[0];
+  // 1. Plain URLs: https://example.com
+  processed = processed.replace(
+    /(https?:\/\/[^\s<]+)/g,
+    (match) => `[url]${match}[/url]`,
+  );
 
-  const elements: React.ReactNode[] = [];
+  // 2. Angle-bracketed URLs: <https://example.com/link_(test)>
+  processed = processed.replace(
+    /<((https?:\/\/)[^>]+)>/g,
+    (_, url) => `[url]${url}[/url]`,
+  );
 
-  for (let i = 0; i < tokens.length; i++) {
-    const token = tokens[i];
-    const text = tokens[i + 1];
-    const next = tokens[i + 2];
-    if (next === `/${token}`) {
-      if (token === 'b') elements.push(<strong key={`b-${i}`}>{text}</strong>);
-      if (token === 'i') elements.push(<i key={`i-${i}`}>{text}</i>);
-      i += 2;
-    } else
-      elements.push(<React.Fragment key={`t-${i}`}>{token}</React.Fragment>);
-  }
+  // 3. Custom title links: "A link":https://example.com
+  processed = processed.replace(
+    /"([^"]+)":([^\s\]]+)/g,
+    (_, title, url) => `[url=${url}]${title}[/url]`,
+  );
 
-  return elements;
+  processed = processed.replace(
+    /^(h[1-6])\.\s+(.*)$/gim,
+    (_, tag, content) =>
+      // Convert h1 to [h1], etc.
+      `[${tag}]${content}[/${tag}]`,
+  );
+
+  return (
+    <div style={{ whiteSpace: 'pre-wrap' }}>
+      <BBCode plugins={[dtextPreset()]} options={{ onlyAllowTags: undefined }}>
+        {processed}
+      </BBCode>
+    </div>
+  );
 }
+
+descriptionPreviewRendererByWebsite.set('e621', ({ description }) => (
+  <E621Dtext dtext={description} />
+));

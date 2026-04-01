@@ -17,7 +17,7 @@ import {
   Text,
   Textarea,
   Tooltip,
-  TypographyStylesProvider,
+  Typography,
 } from '@mantine/core';
 import {
   DescriptionType,
@@ -29,6 +29,7 @@ import { IconCheck, IconCopy } from '@tabler/icons-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import websiteOptionsApi from '../../../../../../../api/website-options.api';
 import { useWebsitesMap } from '../../../../../../../stores/entity/website-store';
+import { ComponentErrorBoundary } from '../../../../../../error-boundary';
 
 interface DescriptionPreviewPanelProps {
   /** The submission ID */
@@ -65,7 +66,13 @@ function formatDescriptionType(type: DescriptionType): string {
   }
 }
 
-function PreviewContent({ preview }: { preview: PreviewState }) {
+function PreviewContent({
+  preview,
+  websiteId,
+}: {
+  preview: PreviewState;
+  websiteId: string;
+}) {
   if (preview.loading) {
     return (
       <Box p="md" style={{ display: 'flex', justifyContent: 'center' }}>
@@ -91,6 +98,10 @@ function PreviewContent({ preview }: { preview: PreviewState }) {
   }
 
   const { descriptionType, description } = preview.result;
+
+  const Renderer =
+    descriptionPreviewRendererByWebsite.get(websiteId) ??
+    descriptionPreviewRendererByType.get(descriptionType);
 
   return (
     <Box>
@@ -130,13 +141,13 @@ function PreviewContent({ preview }: { preview: PreviewState }) {
       />
 
       {/* HTML rendered preview */}
-      {descriptionType === DescriptionType.HTML && description && (
+      {description && Renderer && (
         <Box mt="xs">
           <Text size="xs" c="dimmed" mb={4}>
             Rendered:
           </Text>
           <ScrollArea.Autosize mah={300}>
-            <TypographyStylesProvider>
+            <Typography>
               <Box
                 style={{
                   border: '1px solid var(--mantine-color-default-border)',
@@ -144,15 +155,32 @@ function PreviewContent({ preview }: { preview: PreviewState }) {
                   padding: 'var(--mantine-spacing-xs)',
                   fontSize: '13px',
                 }}
-                dangerouslySetInnerHTML={{ __html: description }}
-              />
-            </TypographyStylesProvider>
+              >
+                <ComponentErrorBoundary>
+                  <Renderer description={description} />
+                </ComponentErrorBoundary>
+              </Box>
+            </Typography>
           </ScrollArea.Autosize>
         </Box>
       )}
     </Box>
   );
 }
+
+export const descriptionPreviewRendererByType = new Map<
+  string,
+  (props: { description: string }) => React.ReactNode
+>();
+
+export const descriptionPreviewRendererByWebsite = new Map<
+  string,
+  (props: { description: string }) => React.ReactNode
+>();
+
+descriptionPreviewRendererByType.set(DescriptionType.HTML, (description) => (
+  <Box dangerouslySetInnerHTML={{ __html: description }} />
+));
 
 export function DescriptionPreviewPanel({
   submissionId,
@@ -280,7 +308,7 @@ export function DescriptionPreviewPanel({
             <Text size="xs">↻</Text>
           </ActionIcon>
         </Group>
-        <PreviewContent preview={preview} />
+        <PreviewContent preview={preview} websiteId={opt.account.website} />
       </Box>
     );
   }
@@ -323,7 +351,12 @@ export function DescriptionPreviewPanel({
                   <Text size="xs">↻</Text>
                 </ActionIcon>
               </Group>
-              <PreviewContent preview={preview} />
+              <ComponentErrorBoundary>
+                <PreviewContent
+                  preview={preview}
+                  websiteId={opt.account.website}
+                />
+              </ComponentErrorBoundary>
             </Tabs.Panel>
           );
         })}

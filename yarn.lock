@@ -2858,6 +2858,102 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@bbob/core@npm:*":
+  version: 4.3.1
+  resolution: "@bbob/core@npm:4.3.1"
+  dependencies:
+    "@bbob/parser": "npm:*"
+    "@bbob/plugin-helper": "npm:*"
+    "@bbob/types": "npm:*"
+  checksum: 10c0/193511255ba7f2223e1cf7db35a24ae498740c2742160963a29880403b68bb344957e7720db4b29046913458133843fd6c6f6eb5fb3894a925e2a1384be27521
+  languageName: node
+  linkType: hard
+
+"@bbob/html@npm:*":
+  version: 4.3.1
+  resolution: "@bbob/html@npm:4.3.1"
+  dependencies:
+    "@bbob/core": "npm:*"
+    "@bbob/plugin-helper": "npm:*"
+    "@bbob/types": "npm:*"
+  checksum: 10c0/f830639b847e8f26f5b69ec42dc9cfdbe8918004814bbd5ed7c047e5b5d74c8d842b9c554bea6b7a629bc0ddb3ab6e3db5a38a01c206787e0f84f79f6e37fe6b
+  languageName: node
+  linkType: hard
+
+"@bbob/parser@npm:*":
+  version: 4.3.1
+  resolution: "@bbob/parser@npm:4.3.1"
+  dependencies:
+    "@bbob/plugin-helper": "npm:*"
+    "@bbob/types": "npm:*"
+  checksum: 10c0/f21400db6843dc9ef6ba9e1ec16bae6f1b11b656af3701a122cea4802b27daab213f6244e340b40569538bb716c7129ed614a060b9f66096605b8e6540743fff
+  languageName: node
+  linkType: hard
+
+"@bbob/plugin-helper@npm:*":
+  version: 4.3.1
+  resolution: "@bbob/plugin-helper@npm:4.3.1"
+  dependencies:
+    "@bbob/types": "npm:*"
+  checksum: 10c0/7f2fbc7ecb2925621c65be67aa35ab37aaddf9baa0c9783015039e9394293604b3993124ad471eb9e458f6aa3f1ae7e7725151fd571f46dfe4fc8e2b9c0032e6
+  languageName: node
+  linkType: hard
+
+"@bbob/preset-html5@npm:*":
+  version: 4.3.1
+  resolution: "@bbob/preset-html5@npm:4.3.1"
+  dependencies:
+    "@bbob/plugin-helper": "npm:*"
+    "@bbob/preset": "npm:*"
+    "@bbob/types": "npm:*"
+  checksum: 10c0/37cf7523457d74783d0c2557e2937a97a66dff327939de17d47d793c54deb58eb1525810491cac73e0f1ee81d8895f5ec61e0fa002ea1c48a7beeeab8e9dab46
+  languageName: node
+  linkType: hard
+
+"@bbob/preset-react@npm:^4.3.1":
+  version: 4.3.1
+  resolution: "@bbob/preset-react@npm:4.3.1"
+  dependencies:
+    "@bbob/plugin-helper": "npm:*"
+    "@bbob/preset-html5": "npm:*"
+    "@bbob/types": "npm:*"
+  peerDependencies:
+    react: "> 15.0"
+  checksum: 10c0/f3c9192a3eedf07bf8dfc80386e609c35bb16390463946ea8e1aa0ed08d3f0b6955e981e9d5ec27ace8f8baeba2ad996bd193db01f89d7b3cb0e4f7a2a2581f3
+  languageName: node
+  linkType: hard
+
+"@bbob/preset@npm:*":
+  version: 4.3.1
+  resolution: "@bbob/preset@npm:4.3.1"
+  dependencies:
+    "@bbob/plugin-helper": "npm:*"
+    "@bbob/types": "npm:*"
+  checksum: 10c0/f424529137d47830301c2e06beec9d053998857b0a5222bab936b9439ad1c2e9df8cc89b29bc7e3977a7c6a240f8356fb268e05b84a73f0c195fd0966cb20939
+  languageName: node
+  linkType: hard
+
+"@bbob/react@npm:^4.3.1":
+  version: 4.3.1
+  resolution: "@bbob/react@npm:4.3.1"
+  dependencies:
+    "@bbob/core": "npm:*"
+    "@bbob/html": "npm:*"
+    "@bbob/plugin-helper": "npm:*"
+    "@bbob/types": "npm:*"
+  peerDependencies:
+    react: "> 15.0"
+  checksum: 10c0/5808c34a6f740648b2eae2c84058fc0ce435b666087daa8d384b9797d0fc3a3c0e53d520b34695eb41dcc6810ca3f1f91d4e4477f4fd901fa11052fcc03227d0
+  languageName: node
+  linkType: hard
+
+"@bbob/types@npm:*":
+  version: 4.3.1
+  resolution: "@bbob/types@npm:4.3.1"
+  checksum: 10c0/79bd4b299c79cff3634142b9de1f58383329147fdeee554fcb29a52300b6c7dcbd452ef906093fc08867d3089103ee4b209aa2b8a611824e0259bd5f52faaecf
+  languageName: node
+  linkType: hard
+
 "@bcoe/v8-coverage@npm:^0.2.3":
   version: 0.2.3
   resolution: "@bcoe/v8-coverage@npm:0.2.3"
@@ -22674,6 +22770,8 @@ __metadata:
     "@babel/preset-env": "npm:7.12.13"
     "@babel/preset-react": "npm:^7.14.5"
     "@babel/preset-typescript": "npm:7.12.13"
+    "@bbob/preset-react": "npm:^4.3.1"
+    "@bbob/react": "npm:^4.3.1"
     "@commitlint/cli": "npm:^19.5.0"
     "@commitlint/config-conventional": "npm:^19.5.0"
     "@dnd-kit/core": "npm:^6.3.1"
