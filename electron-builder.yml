@@ -100,6 +100,8 @@ nsis:
 win:
   icon: icons/icon.ico
   requestedExecutionLevel: asInvoker
+  publisherName:
+    - "Michael DiCarlo"
   target:
     - target: nsis
       arch:
