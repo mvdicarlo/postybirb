@@ -87,6 +87,8 @@ export type DescriptionEditorProps = {
   onPreview?: () => void;
   /** Whether the editor is read-only (e.g., archived submission). */
   readOnly?: boolean;
+  /** Id of the editor to force recreation of the editor instance which ensures that initial content gets updated */
+  id?: string;
 };
 
 /**
@@ -176,6 +178,7 @@ export function DescriptionEditor({
   minHeight,
   onPreview,
   readOnly = false,
+  id = 'default',
 }: DescriptionEditorProps) {
   const { colorScheme } = useMantineColorScheme();
   const { t } = useLingui();
@@ -406,60 +409,63 @@ export function DescriptionEditor({
     [getSlashItems, getShortcutItems],
   );
 
-  const editor = useEditor({
-    extensions: [
-      // Core
-      Document,
-      Paragraph,
-      TextNode,
-      HardBreak,
+  const editor = useEditor(
+    {
+      extensions: [
+        // Core
+        Document,
+        Paragraph,
+        TextNode,
+        HardBreak,
 
-      // Formatting marks
-      Bold,
-      Italic,
-      Strike,
-      Underline,
-      TextStyle,
-      Color,
+        // Formatting marks
+        Bold,
+        Italic,
+        Strike,
+        Underline,
+        TextStyle,
+        Color,
 
-      // Block types
-      Heading.configure({ levels: [1, 2, 3] }),
-      HorizontalRule,
-      BulletList,
-      OrderedList,
-      ListItem,
+        // Block types
+        Heading.configure({ levels: [1, 2, 3] }),
+        HorizontalRule,
+        BulletList,
+        OrderedList,
+        ListItem,
 
-      // Behavior
-      History,
-      Dropcursor,
-      Gapcursor,
-      ResizableImageExtension,
-      Link.configure({ openOnClick: false }),
-      TextAlign.configure({ types: ['heading', 'paragraph'] }),
-      Indent,
-      Placeholder.configure({
-        placeholder: t`Type / for commands or @, \` or '{' for shortcuts`,
-      }),
+        // Behavior
+        History,
+        Dropcursor,
+        Gapcursor,
+        ResizableImageExtension,
+        Link.configure({ openOnClick: false }),
+        TextAlign.configure({ types: ['heading', 'paragraph'] }),
+        Indent,
+        Placeholder.configure({
+          placeholder: t`Type / for commands or @, \` or '{' for shortcuts`,
+        }),
 
-      // Custom shortcut nodes
-      DefaultShortcutExtension,
-      CustomShortcutExtension,
-      UsernameShortcutExtension,
-      TitleShortcutExtension,
-      TagsShortcutExtension,
-      ContentWarningShortcutExtension,
+        // Custom shortcut nodes
+        DefaultShortcutExtension,
+        CustomShortcutExtension,
+        UsernameShortcutExtension,
+        TitleShortcutExtension,
+        TagsShortcutExtension,
+        ContentWarningShortcutExtension,
 
-      // Suggestion menus
-      ...suggestionExtensions,
-    ],
-    content:
-      value && value.content && value.content.length > 0 ? value : undefined,
-    editable: !readOnly,
-    onUpdate: ({ editor: e }) => {
-      if (readOnly) return;
-      onChangeRef.current(e.getJSON() as Description);
+        // Suggestion menus
+        ...suggestionExtensions,
+      ],
+      content:
+        value && value.content && value.content.length > 0 ? value : undefined,
+      editable: !readOnly,
+      onUpdate: ({ editor: e }) => {
+        if (readOnly) return;
+        onChangeRef.current(e.getJSON() as Description);
+      },
     },
-  });
+    [id],
+  );
 
   // Keep ref in sync with editor for callbacks
   editorRef.current = editor;

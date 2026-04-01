@@ -122,13 +122,15 @@ export function FormFieldsProvider({
   const getValue = useCallback(
     <T = unknown,>(name: string): T => {
       // Local value takes precedence (optimistic update)
-      if (name in localValues) {
+      // by checking that current option is the one passed in the props we ensure that we don't use
+      // cached values from the different entity (e.g. description from one template does not render in another)
+      if (optionIdRef.current === option.id && name in localValues) {
         return localValues[name] as T;
       }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return (option.data as any)[name] as T;
     },
-    [option.data, localValues],
+    [option.data, option.id, localValues],
   );
 
   // Update a field value with immediate local update and debounced server save
