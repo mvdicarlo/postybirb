@@ -54,10 +54,13 @@ export default class Custom
       thumbnailField: true,
       titleField: true,
       altTextField: true,
+      fileBatchLimit: true,
     };
 
   public async onLogin(): Promise<ILoginState> {
     const data = this.websiteDataStore.getData();
+    // HACK: Ensure any initial data is processed
+    this.onWebsiteDataChange(data);
 
     // Check if we have either a file URL or notification URL configured
     if (data?.fileUrl || data?.notificationUrl) {
@@ -66,6 +69,14 @@ export default class Custom
     }
 
     return this.loginState.setLogin(false, null);
+  }
+
+  async onWebsiteDataChange(newData: CustomAccountData): Promise<void> {
+    this.logger.info('Website data updated');
+    this.decoratedProps.fileOptions.fileBatchSize = Math.max(
+      newData.fileBatchLimit || 1,
+      1,
+    );
   }
 
   createFileModel(): CustomFileSubmission {
@@ -228,10 +239,9 @@ export default class Custom
         'Unexpected error during custom message submission',
         error,
       );
-      return PostResponse.fromWebsite(this)
-        .withException(
-          error instanceof Error ? error : new Error(String(error)),
-        );
+      return PostResponse.fromWebsite(this).withException(
+        error instanceof Error ? error : new Error(String(error)),
+      );
     }
   }
 
