@@ -16,6 +16,7 @@ import { QueryClient, QueryClientProvider } from 'react-query';
 import { Disclaimer } from './components/disclaimer/disclaimer';
 import { PageErrorBoundary } from './components/error-boundary';
 import { Layout } from './components/layout/layout';
+import { TourProvider } from './components/onboarding-tour';
 import { I18nProvider } from './providers/i18n-provider';
 import { loadAllStores } from './stores';
 import { useColorScheme, usePrimaryColor } from './stores/ui/appearance-store';
@@ -48,7 +49,9 @@ function AppContent() {
   return (
     <QueryClientProvider client={queryClient}>
       <PageErrorBoundary>
-        <Layout />
+        <TourProvider>
+          <Layout />
+        </TourProvider>
       </PageErrorBoundary>
     </QueryClientProvider>
   );
