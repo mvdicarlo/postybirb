@@ -31,6 +31,7 @@ export function useLayoutTourSteps(): Step[] {
       target: '[data-tour-id="home"]',
       placement: 'right',
       skipBeacon: true,
+      scrollOffset: 100,
       title: <Trans>Home Dashboard</Trans>,
       content: (
         <Text size="sm" c="dimmed">
@@ -45,6 +46,7 @@ export function useLayoutTourSteps(): Step[] {
       target: '[data-tour-id="accounts"]',
       placement: 'right',
       skipBeacon: true,
+      scrollOffset: 100,
       title: <Trans>Accounts</Trans>,
       content: (
         <Text size="sm" c="dimmed">
@@ -59,6 +61,7 @@ export function useLayoutTourSteps(): Step[] {
       target: '[data-tour-id="file-submissions"]',
       placement: 'right',
       skipBeacon: true,
+      scrollOffset: 100,
       title: <Trans>Post Files</Trans>,
       content: (
         <Text size="sm" c="dimmed">
@@ -73,6 +76,7 @@ export function useLayoutTourSteps(): Step[] {
       target: '[data-tour-id="message-submissions"]',
       placement: 'right',
       skipBeacon: true,
+      scrollOffset: 100,
       title: <Trans>Send Messages</Trans>,
       content: (
         <Text size="sm" c="dimmed">
@@ -87,6 +91,7 @@ export function useLayoutTourSteps(): Step[] {
       target: '[data-tour-id="templates"]',
       placement: 'right',
       skipBeacon: true,
+      scrollOffset: 100,
       title: <Trans>Templates</Trans>,
       content: (
         <Text size="sm" c="dimmed">
@@ -101,6 +106,7 @@ export function useLayoutTourSteps(): Step[] {
       target: '[data-tour-id="schedule"]',
       placement: 'right',
       skipBeacon: true,
+      scrollOffset: 100,
       title: <Trans>Schedule</Trans>,
       content: (
         <Text size="sm" c="dimmed">
@@ -115,6 +121,7 @@ export function useLayoutTourSteps(): Step[] {
       target: '[data-tour-id="tag-groups"]',
       placement: 'right',
       skipBeacon: true,
+      scrollOffset: 100,
       title: <Trans>Tag Groups</Trans>,
       content: (
         <Text size="sm" c="dimmed">
@@ -129,6 +136,7 @@ export function useLayoutTourSteps(): Step[] {
       target: '[data-tour-id="custom-shortcuts"]',
       placement: 'right',
       skipBeacon: true,
+      scrollOffset: 100,
       title: <Trans>Custom Shortcuts</Trans>,
       content: (
         <Text size="sm" c="dimmed">
@@ -143,6 +151,7 @@ export function useLayoutTourSteps(): Step[] {
       target: '[data-tour-id="file-watchers"]',
       placement: 'right',
       skipBeacon: true,
+      scrollOffset: 100,
       title: <Trans>File Watchers</Trans>,
       content: (
         <Text size="sm" c="dimmed">
@@ -157,6 +166,7 @@ export function useLayoutTourSteps(): Step[] {
       target: '[data-tour-id="settings"]',
       placement: 'right',
       skipBeacon: true,
+      scrollOffset: 100,
       title: <Trans>Settings</Trans>,
       content: (
         <Text size="sm" c="dimmed">

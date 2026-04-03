@@ -4,41 +4,46 @@
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
-  Box,
-  Button,
-  Divider,
-  Group,
-  Loader,
-  Modal,
-  ScrollArea,
-  SegmentedControl,
-  Stack,
-  Text,
-  TextInput,
-  ThemeIcon,
+    ActionIcon,
+    Box,
+    Button,
+    Divider,
+    Group,
+    Loader,
+    Modal,
+    ScrollArea,
+    SegmentedControl,
+    Stack,
+    Text,
+    TextInput,
+    ThemeIcon,
+    Tooltip,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { SubmissionType } from '@postybirb/types';
 import {
-  IconFile,
-  IconMessage,
-  IconPlus,
-  IconTemplate,
+    IconFile,
+    IconHelp,
+    IconMessage,
+    IconPlus,
+    IconTemplate,
 } from '@tabler/icons-react';
 import { useCallback, useMemo, useState } from 'react';
 import submissionApi from '../../../api/submission.api';
 import {
-  useSubmissionsLoading,
-  useTemplateSubmissions,
+    useSubmissionsLoading,
+    useTemplateSubmissions,
 } from '../../../stores/entity/submission-store';
 import { useNavigationStore } from '../../../stores/ui/navigation-store';
 import { useTemplatesFilter } from '../../../stores/ui/templates-ui-store';
+import { useTourActions } from '../../../stores/ui/tour-store';
 import { isTemplatesViewState, type ViewState } from '../../../types/view-state';
 import {
-  showErrorNotification,
-  showSuccessNotification,
+    showErrorNotification,
+    showSuccessNotification,
 } from '../../../utils/notifications';
 import { EmptyState } from '../../empty-state';
+import { TEMPLATES_TOUR_ID } from '../../onboarding-tour/tours/templates-tour';
 import { SearchInput } from '../../shared';
 import { TemplateCard } from './template-card';
 import './templates-section.css';
@@ -56,6 +61,7 @@ export function TemplatesSection({ viewState }: TemplatesSectionProps) {
   const { isLoading } = useSubmissionsLoading();
   const { tabType, searchQuery, setTabType, setSearchQuery } =
     useTemplatesFilter();
+  const { startTour } = useTourActions();
   const setViewState = useNavigationStore((state) => state.setViewState);
 
   // Create template modal
@@ -139,25 +145,39 @@ export function TemplatesSection({ viewState }: TemplatesSectionProps) {
     <Box h="100%" className="postybirb__templates__section">
       {/* Header */}
       <Stack gap="xs" p="xs" className="postybirb__templates__header">
-        <Group gap="xs">
-          <ThemeIcon size="sm" variant="light">
-            <IconTemplate size={14} />
-          </ThemeIcon>
-          <Text size="sm" fw={500}>
-            <Trans>Templates</Trans>
-          </Text>
+        <Group gap="xs" justify="space-between">
+          <Group gap="xs">
+            <ThemeIcon size="sm" variant="light">
+              <IconTemplate size={14} />
+            </ThemeIcon>
+            <Text size="sm" fw={500}>
+              <Trans>Templates</Trans>
+            </Text>
+          </Group>
+          <Tooltip label={<Trans>Templates Tour</Trans>}>
+            <ActionIcon
+              variant="subtle"
+              size="sm"
+              onClick={() => startTour(TEMPLATES_TOUR_ID)}
+            >
+              <IconHelp size={18} />
+            </ActionIcon>
+          </Tooltip>
         </Group>
 
         {/* Search */}
-        <SearchInput
-          size="xs"
-          value={searchQuery}
-          onChange={setSearchQuery}
-          onClear={() => setSearchQuery('')}
-        />
+        <Box data-tour-id="templates-search">
+          <SearchInput
+            size="xs"
+            value={searchQuery}
+            onChange={setSearchQuery}
+            onClear={() => setSearchQuery('')}
+          />
+        </Box>
 
         {/* Tabs */}
         <SegmentedControl
+          data-tour-id="templates-type-tabs"
           size="xs"
           fullWidth
           value={tabType}
@@ -186,6 +206,7 @@ export function TemplatesSection({ viewState }: TemplatesSectionProps) {
 
         {/* Create new template */}
         <Button
+          data-tour-id="templates-create"
           size="xs"
           variant="light"
           leftSection={<IconPlus size={14} />}

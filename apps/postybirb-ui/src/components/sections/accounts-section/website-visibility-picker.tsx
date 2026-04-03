@@ -5,17 +5,16 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-  ActionIcon,
-  Badge,
-  Box,
-  Checkbox,
-  Popover,
-  ScrollArea,
-  Stack,
-  Text,
-  Tooltip,
+    ActionIcon,
+    Badge,
+    Box,
+    Checkbox,
+    Popover,
+    ScrollArea,
+    Stack,
+    Text,
+    Tooltip,
 } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
 import { IconEye, IconEyeOff } from '@tabler/icons-react';
 import { useWebsites } from '../../../stores/entity/website-store';
 import { useAccountsFilter } from '../../../stores/ui/accounts-ui-store';
@@ -40,7 +39,7 @@ export function WebsiteVisibilityPicker() {
     >
       <Popover.Target>
         <Tooltip label={<Trans>Toggle website visibility</Trans>}>
-          <Box>
+          <Box data-tour-id="accounts-visibility">
             <ActionIcon
               variant={hasHidden ? 'light' : 'subtle'}
               color={hasHidden ? 'yellow' : 'gray'}

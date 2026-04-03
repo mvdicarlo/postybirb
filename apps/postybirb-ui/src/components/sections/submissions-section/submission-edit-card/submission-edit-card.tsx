@@ -12,9 +12,9 @@ import { PostHistoryContent } from '../submission-history';
 import { SubmissionEditCardActions } from './actions';
 import { SubmissionEditCardBody } from './body';
 import {
-  SubmissionEditCardProvider,
-  useSubmissionEditCardContext,
-  type SubmissionEditCardViewMode,
+    SubmissionEditCardProvider,
+    useSubmissionEditCardContext,
+    type SubmissionEditCardViewMode,
 } from './context';
 import { SubmissionEditCardHeader } from './header';
 import './submission-edit-card.css';
@@ -76,7 +76,7 @@ function SubmissionEditCardInner() {
           </Group>
         </UnstyledButton>
       ) : (
-        <Box className="postybirb__edit_card_header_static">
+        <Box data-tour-id="edit-card-header" className="postybirb__edit_card_header_static">
           <ComponentErrorBoundary>
             <Group gap="xs" px="sm" py="xs" wrap="nowrap">
               <SubmissionEditCardHeader />

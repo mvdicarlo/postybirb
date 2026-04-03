@@ -6,42 +6,45 @@
 import { t } from '@lingui/core/macro';
 import { Trans } from '@lingui/react/macro';
 import {
-  ActionIcon,
-  Box,
-  Card,
-  Collapse,
-  Group,
-  ScrollArea,
-  Stack,
-  Text,
-  TextInput,
-  Tooltip,
+    ActionIcon,
+    Box,
+    Card,
+    Collapse,
+    Group,
+    ScrollArea,
+    Stack,
+    Text,
+    TextInput,
+    Tooltip,
 } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import type { Description } from '@postybirb/types';
 import {
-  IconCheck,
-  IconChevronDown,
-  IconChevronRight,
-  IconPlus,
-  IconX,
+    IconCheck,
+    IconChevronDown,
+    IconChevronRight,
+    IconHelp,
+    IconPlus,
+    IconX,
 } from '@tabler/icons-react';
 import React, { useCallback, useMemo, useState } from 'react';
 import customShortcutApi from '../../../api/custom-shortcut.api';
 import {
-  useCustomShortcuts,
-  useCustomShortcutsLoading,
+    useCustomShortcuts,
+    useCustomShortcutsLoading,
 } from '../../../stores/entity/custom-shortcut-store';
 import type { CustomShortcutRecord } from '../../../stores/records/custom-shortcut-record';
+import { useTourActions } from '../../../stores/ui/tour-store';
 import {
-  showCreatedNotification,
-  showCreateErrorNotification,
-  showDeletedNotification,
-  showDeleteErrorNotification,
-  showUpdateErrorNotification,
+    showCreatedNotification,
+    showCreateErrorNotification,
+    showDeletedNotification,
+    showDeleteErrorNotification,
+    showUpdateErrorNotification,
 } from '../../../utils/notifications';
 import { EmptyState } from '../../empty-state';
 import { HoldToConfirmButton } from '../../hold-to-confirm';
+import { CUSTOM_SHORTCUTS_TOUR_ID } from '../../onboarding-tour/tours/custom-shortcuts-tour';
 import { DescriptionEditor, SearchInput } from '../../shared';
 import { SectionDrawer } from '../section-drawer';
 
@@ -160,7 +163,7 @@ const ShortcutCard = React.memo(({
   };
 
   return (
-    <Card withBorder p="xs">
+    <Card withBorder p="xs" data-tour-id="shortcuts-card">
       {/* Header row */}
       <Group gap="xs" wrap="nowrap" align="center">
         {/* Expand/collapse button */}
@@ -343,6 +346,7 @@ export function CustomShortcutsDrawer({
   const [isCreating, setIsCreating] = useState(false);
 
   const filteredShortcuts = useShortcutSearch(shortcuts, searchQuery);
+  const { startTour } = useTourActions();
 
   // Existing shortcut names for duplicate checking
   const existingNames = useMemo(
@@ -382,12 +386,21 @@ export function CustomShortcutsDrawer({
     <SectionDrawer
       opened={opened}
       onClose={onClose}
-      title={<Trans>Custom Shortcuts</Trans>}
+      title={
+        <Group gap="xs">
+          <Trans>Custom Shortcuts</Trans>
+          <Tooltip label={<Trans>Shortcuts Tour</Trans>}>
+            <ActionIcon variant="subtle" size="xs" onClick={() => startTour(CUSTOM_SHORTCUTS_TOUR_ID)}>
+              <IconHelp size={16} />
+            </ActionIcon>
+          </Tooltip>
+        </Group>
+      }
       width={520}
     >
       <Stack gap="sm" h="100%">
         {/* Search and add button */}
-        <Group gap="xs" wrap="nowrap">
+        <Group gap="xs" wrap="nowrap" data-tour-id="shortcuts-search">
           <SearchInput
             value={searchQuery}
             onChange={setSearchQuery}
@@ -396,6 +409,7 @@ export function CustomShortcutsDrawer({
           />
           <Tooltip label={<Trans>Add shortcut</Trans>}>
             <ActionIcon
+              data-tour-id="shortcuts-create"
               variant="light"
               color="blue"
               size="md"

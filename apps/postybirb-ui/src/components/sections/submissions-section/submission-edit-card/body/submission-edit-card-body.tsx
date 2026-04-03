@@ -2,7 +2,7 @@
  * SubmissionEditCardBody - Body content of the submission edit card.
  */
 
-import { Stack } from '@mantine/core';
+import { Box, Stack } from '@mantine/core';
 import { ISubmissionScheduleInfo, SubmissionType } from '@postybirb/types';
 import { useCallback } from 'react';
 import submissionApi from '../../../../../api/submission.api';
@@ -48,35 +48,45 @@ export function SubmissionEditCardBody() {
       {/* File Management Section (conditional) */}
       {showFileManagement && (
         <ComponentErrorBoundary>
-          <SubmissionFileManager />
+          <Box data-tour-id="edit-card-files">
+            <SubmissionFileManager />
+          </Box>
         </ComponentErrorBoundary>
       )}
 
       {/* Schedule Form - configure when submission should be posted */}
       {showScheduleForm && (
         <ComponentErrorBoundary>
-          <ScheduleForm
-            schedule={submission.schedule}
-            isScheduled={submission.isScheduled}
-            disabled={submission.isArchived}
-            onChange={handleScheduleChange}
-          />
+          <Box data-tour-id="edit-card-schedule">
+            <ScheduleForm
+              schedule={submission.schedule}
+              isScheduled={submission.isScheduled}
+              disabled={submission.isArchived}
+              onChange={handleScheduleChange}
+            />
+          </Box>
         </ComponentErrorBoundary>
       )}
 
       {/* Defaults Form - global options like title, description, tags */}
       <ComponentErrorBoundary>
-        <DefaultsForm />
+        <Box data-tour-id="edit-card-defaults">
+          <DefaultsForm />
+        </Box>
       </ComponentErrorBoundary>
 
       {/* Account Selection - dropdown for selecting accounts */}
       <ComponentErrorBoundary>
-        <AccountSelect />
+        <Box data-tour-id="edit-card-accounts">
+          <AccountSelect />
+        </Box>
       </ComponentErrorBoundary>
 
       {/* Website Options - per-website forms for selected accounts */}
       <ComponentErrorBoundary>
-        <SelectedAccountsForms />
+        <Box data-tour-id="edit-card-website-forms">
+          <SelectedAccountsForms />
+        </Box>
       </ComponentErrorBoundary>
     </Stack>
   );

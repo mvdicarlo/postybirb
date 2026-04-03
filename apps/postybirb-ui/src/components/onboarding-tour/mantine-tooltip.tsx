@@ -45,7 +45,7 @@ export function MantineTooltip({
           </Title>
         )}
         {/* eslint-disable-next-line lingui/no-unlocalized-strings */}
-        <CloseButton onClick={closeProps.onClick} aria-label="Close" size="xs" variant="subtle" />
+        <CloseButton onClick={skipProps.onClick} aria-label="Close" size="xs" variant="subtle" />
       </Group>
 
       {/* Content */}

@@ -455,7 +455,7 @@ const ConverterCard = memo(({
   );
 
   return (
-    <Card padding="xs" withBorder shadow="0">
+    <Card padding="xs" withBorder shadow="0" data-tour-id="converter-card">
       <Group gap="xs" wrap="nowrap">
         <Checkbox
           checked={isSelected}
@@ -756,6 +756,7 @@ export function ConverterDrawer<
     >
       <Stack gap="md" h="100%">
         {/* Create form */}
+        <Box data-tour-id="converter-create">
         <CreateConverterForm
           existingValues={existingValues}
           onCreate={handleCreate}
@@ -763,8 +764,10 @@ export function ConverterDrawer<
           duplicateError={config.duplicateError}
         />
 
+        </Box>
+
         {/* Search and actions */}
-        <Group gap="xs">
+        <Group gap="xs" data-tour-id="converter-search">
           <SearchInput
             flex={1}
             size="sm"

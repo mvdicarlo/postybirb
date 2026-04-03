@@ -47,7 +47,7 @@ export function AccountHealthPanel() {
   const hasIssues = loggedOutAccounts > 0;
 
   return (
-    <Paper withBorder p="md" radius="md" h="100%">
+    <Paper withBorder p="md" radius="md" h="100%" data-tour-id="home-account-health">
       <Stack gap="sm" h="100%">
         <Group justify="space-between">
           <Group gap="xs">

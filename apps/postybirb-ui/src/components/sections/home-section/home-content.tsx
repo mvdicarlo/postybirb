@@ -5,20 +5,24 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
+    ActionIcon,
     Button,
     Center,
     Container,
+    Group,
     ScrollArea,
     SimpleGrid,
     Stack,
     Text,
     ThemeIcon,
     Title,
+    Tooltip,
 } from '@mantine/core';
 import { SubmissionType } from '@postybirb/types';
 import {
     IconCalendar,
     IconFile,
+    IconHelp,
     IconHome,
     IconMessage,
     IconStack2,
@@ -38,6 +42,7 @@ import {
     createFileSubmissionsViewState,
     createMessageSubmissionsViewState,
 } from '../../../types/view-state';
+import { HOME_TOUR_ID } from '../../onboarding-tour/tours/home-tour';
 import { LAYOUT_TOUR_ID } from '../../onboarding-tour/tours/layout-tour';
 import { AccountHealthPanel } from './account-health-panel';
 import { QueueControlCard } from './queue-control-card';
@@ -121,6 +126,8 @@ export function HomeContent() {
   const queuedSubmissions = useQueuedSubmissions();
   const scheduledSubmissions = useScheduledSubmissions();
 
+  const { startTour } = useTourActions();
+
   // New user detection: no submissions and no accounts
   const isNewUser = regularSubmissions.length === 0 && accounts.length === 0;
 
@@ -141,13 +148,24 @@ export function HomeContent() {
       <Container size="xl" py="md">
         <Stack gap="md">
           {/* Header */}
-          <Title order={3}>
-            <Trans>Dashboard</Trans>
-          </Title>
+          <Group justify="space-between" align="center">
+            <Title order={3}>
+              <Trans>Dashboard</Trans>
+            </Title>
+            <Tooltip label={<Trans>Dashboard Tour</Trans>}>
+              <ActionIcon
+                variant="subtle"
+                size="sm"
+                onClick={() => startTour(HOME_TOUR_ID)}
+              >
+                <IconHelp size={18} />
+              </ActionIcon>
+            </Tooltip>
+          </Group>
 
           <QueueControlCard />
           {/* Stats Row */}
-          <SimpleGrid cols={{ base: 4 }} spacing="md">
+          <SimpleGrid cols={{ base: 4 }} spacing="md" data-tour-id="home-stat-cards">
             <StatCard
               icon={<IconFile size={20} />}
               count={fileCount}

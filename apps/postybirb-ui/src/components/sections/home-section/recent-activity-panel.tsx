@@ -6,11 +6,11 @@
 import { Trans } from '@lingui/react/macro';
 import { Box, Group, Paper, Stack, Text, ThemeIcon } from '@mantine/core';
 import {
-  IconActivity,
-  IconAlertTriangle,
-  IconCheck,
-  IconInfoCircle,
-  IconX,
+    IconActivity,
+    IconAlertTriangle,
+    IconCheck,
+    IconInfoCircle,
+    IconX,
 } from '@tabler/icons-react';
 import { useMemo } from 'react';
 import { useLocale } from '../../../hooks';
@@ -55,7 +55,7 @@ export function RecentActivityPanel() {
   );
 
   return (
-    <Paper withBorder p="md" radius="md" h="100%">
+    <Paper withBorder p="md" radius="md" h="100%" data-tour-id="home-recent-activity">
       <Stack gap="sm" h="100%">
         <Group gap="xs">
           <ThemeIcon size="md" variant="light" color="cyan" radius="md">

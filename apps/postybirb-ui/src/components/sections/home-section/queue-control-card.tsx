@@ -32,7 +32,7 @@ export function QueueControlCard() {
   };
 
   return (
-    <Paper withBorder p="md" radius="md" h="100%">
+    <Paper withBorder p="md" radius="md" h="100%" data-tour-id="home-queue-control">
       <Stack gap="sm" justify="center" h="100%">
         <Button
           variant="light"

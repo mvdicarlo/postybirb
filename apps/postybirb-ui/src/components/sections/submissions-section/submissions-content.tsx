@@ -6,41 +6,41 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-  ActionIcon,
-  Box,
-  Card,
-  Center,
-  Container,
-  Divider,
-  Group,
-  ScrollArea,
-  Stack,
-  Switch,
-  Text,
-  Title,
+    ActionIcon,
+    Box,
+    Card,
+    Center,
+    Container,
+    Divider,
+    Group,
+    ScrollArea,
+    Stack,
+    Switch,
+    Text,
+    Title,
 } from '@mantine/core';
 import type { SubmissionId } from '@postybirb/types';
 import { SubmissionType } from '@postybirb/types';
 import {
-  IconInbox,
-  IconLayoutSidebarLeftCollapse,
-  IconLayoutSidebarLeftExpand,
+    IconInbox,
+    IconLayoutSidebarLeftCollapse,
+    IconLayoutSidebarLeftExpand,
 } from '@tabler/icons-react';
 import { useMemo } from 'react';
 import {
-  useSubmissionsByType,
-  useSubmissionsMap,
+    useSubmissionsByType,
+    useSubmissionsMap,
 } from '../../../stores/entity/submission-store';
 import type { SubmissionRecord } from '../../../stores/records';
 import {
-  useSubNavVisible,
-  useSubmissionsContentPreferences,
-  useToggleSectionPanel,
+    useSubNavVisible,
+    useSubmissionsContentPreferences,
+    useToggleSectionPanel,
 } from '../../../stores/ui/submissions-ui-store';
 import {
-  isFileSubmissionsViewState,
-  isMessageSubmissionsViewState,
-  type ViewState,
+    isFileSubmissionsViewState,
+    isMessageSubmissionsViewState,
+    type ViewState,
 } from '../../../types/view-state';
 import { SubmissionEditCard } from './submission-edit-card';
 
@@ -189,7 +189,7 @@ export function SubmissionsContent({
         hasArchived={hasArchived}
       />
       <Divider />
-      <Box style={{ flex: 1, minHeight: 0 }}>
+      <Box data-tour-id="submissions-editor" style={{ flex: 1, minHeight: 0 }}>
         {selectedIds.length === 0 && !preferMultiEdit ? (
           <EmptySubmissionSelection />
         ) : (

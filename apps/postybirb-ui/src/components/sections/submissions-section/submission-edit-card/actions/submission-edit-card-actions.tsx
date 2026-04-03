@@ -8,6 +8,7 @@ import { useDisclosure } from '@mantine/hooks';
 import {
     IconArchiveOff,
     IconCancel,
+    IconHelp,
     IconHistory,
     IconSend,
     IconTrash,
@@ -15,6 +16,7 @@ import {
 import postManagerApi from '../../../../../api/post-manager.api';
 import postQueueApi from '../../../../../api/post-queue.api';
 import submissionApi from '../../../../../api/submission.api';
+import { useTourActions } from '../../../../../stores/ui/tour-store';
 import {
     showDeletedNotification,
     showDeleteErrorNotification,
@@ -23,6 +25,7 @@ import {
     showRestoreErrorNotification,
 } from '../../../../../utils/notifications';
 import { HoldToConfirmButton } from '../../../../hold-to-confirm';
+import { SUBMISSION_EDIT_TOUR_ID } from '../../../../onboarding-tour/tours/submission-edit-tour';
 import { SubmissionHistoryDrawer } from '../../submission-history-drawer';
 import { useSubmissionEditCardContext } from '../context';
 import { ApplyTemplateAction } from './apply-template-action';
@@ -33,6 +36,7 @@ import { SaveToManyAction } from './save-to-many-action';
  */
 export function SubmissionEditCardActions() {
   const { submission } = useSubmissionEditCardContext();
+  const { startTour } = useTourActions();
   // Drawer is only used for archived submissions (list-level context)
   const [historyOpened, historyDrawer] = useDisclosure(false);
 
@@ -188,6 +192,11 @@ export function SubmissionEditCardActions() {
   // Normal state: show template, post and delete
   return (
     <Group gap={4} wrap="nowrap" onClick={(e) => e.stopPropagation()}>
+      <Tooltip label={<Trans>Editor Tour</Trans>}>
+        <ActionIcon variant="subtle" size="sm" onClick={() => startTour(SUBMISSION_EDIT_TOUR_ID)}>
+          <IconHelp size={16} />
+        </ActionIcon>
+      </Tooltip>
       <ApplyTemplateAction />
       <Tooltip label={postTooltip}>
         <HoldToConfirmButton

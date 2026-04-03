@@ -4,34 +4,34 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-  ActionIcon,
-  Card,
-  Group,
-  Text,
-  TextInput,
-  ThemeIcon,
-  Tooltip,
+    ActionIcon,
+    Card,
+    Group,
+    Text,
+    TextInput,
+    ThemeIcon,
+    Tooltip,
 } from '@mantine/core';
 import { SubmissionType } from '@postybirb/types';
 import {
-  IconCheck,
-  IconCopy,
-  IconFile,
-  IconMessage,
-  IconPencil,
-  IconTrash,
-  IconX,
+    IconCheck,
+    IconCopy,
+    IconFile,
+    IconMessage,
+    IconPencil,
+    IconTrash,
+    IconX,
 } from '@tabler/icons-react';
 import { useCallback, useEffect, useState } from 'react';
 import submissionApi from '../../../api/submission.api';
 import type { SubmissionRecord } from '../../../stores/records';
 import {
-  showDeletedNotification,
-  showDeleteErrorNotification,
-  showDuplicatedNotification,
-  showDuplicateErrorNotification,
-  showErrorNotification,
-  showUpdatedNotification,
+    showDeletedNotification,
+    showDeleteErrorNotification,
+    showDuplicatedNotification,
+    showDuplicateErrorNotification,
+    showErrorNotification,
+    showUpdatedNotification,
 } from '../../../utils/notifications';
 import { HoldToConfirmButton } from '../../hold-to-confirm';
 import './templates-section.css';
@@ -122,6 +122,7 @@ export function TemplateCard({
       withBorder
       p="xs"
       radius="sm"
+      data-tour-id="templates-card"
       className={`postybirb__templates__card ${isSelected ? 'postybirb__templates__card--selected' : ''}`}
       onClick={() => !isEditing && onSelect(template.id)}
       style={{ cursor: isEditing ? 'default' : 'pointer' }}

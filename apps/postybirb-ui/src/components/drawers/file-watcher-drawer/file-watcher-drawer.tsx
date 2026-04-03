@@ -20,6 +20,7 @@ import { DirectoryWatcherImportAction, SubmissionType } from '@postybirb/types';
 import {
     IconDeviceFloppy,
     IconFolder,
+    IconHelp,
     IconPlus,
     IconTrash,
 } from '@tabler/icons-react';
@@ -31,6 +32,7 @@ import directoryWatchersApi, {
 import { useDirectoryWatchers } from '../../../stores';
 import type { DirectoryWatcherRecord } from '../../../stores/records';
 import { useActiveDrawer, useDrawerActions } from '../../../stores/ui/drawer-store';
+import { useTourActions } from '../../../stores/ui/tour-store';
 import {
     showCreatedNotification,
     showCreateErrorNotification,
@@ -43,6 +45,7 @@ import { ConfirmActionModal } from '../../confirm-action-modal';
 import { EmptyState } from '../../empty-state';
 import { ComponentErrorBoundary } from '../../error-boundary';
 import { HoldToConfirmButton } from '../../hold-to-confirm';
+import { FILE_WATCHERS_TOUR_ID } from '../../onboarding-tour/tours/file-watchers-tour';
 import { TemplatePicker } from '../../shared/template-picker';
 import { SectionDrawer } from '../section-drawer';
 
@@ -214,7 +217,7 @@ function FileWatcherCard({ watcher }: FileWatcherCardProps) {
   }, [watcher.id]);
 
   return (
-    <Card padding="md" withBorder>
+    <Card padding="md" withBorder data-tour-id="file-watchers-card">
       <ComponentErrorBoundary>
       <Stack gap="sm">
         {/* Folder Path */}
@@ -338,6 +341,7 @@ function CreateWatcherButton() {
   return (
     <Tooltip label={<Trans>Create new file watcher</Trans>}>
       <ActionIcon
+        data-tour-id="file-watchers-create"
         variant="filled"
         size="lg"
         onClick={handleCreate}
@@ -406,12 +410,22 @@ export function FileWatcherDrawer() {
  */
 function FileWatcherDrawerContent({ onClose }: { onClose: () => void }) {
   const watchers = useDirectoryWatchers();
+  const { startTour } = useTourActions();
 
   return (
     <SectionDrawer
       opened
       onClose={onClose}
-      title={<Trans>File Watchers</Trans>}
+      title={
+        <Group gap="xs">
+          <Trans>File Watchers</Trans>
+          <Tooltip label={<Trans>File Watchers Tour</Trans>}>
+            <ActionIcon variant="subtle" size="xs" onClick={() => startTour(FILE_WATCHERS_TOUR_ID)}>
+              <IconHelp size={16} />
+            </ActionIcon>
+          </Tooltip>
+        </Group>
+      }
       width={400}
     >
       <Stack gap="md" h="100%">

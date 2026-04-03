@@ -4,8 +4,19 @@
  */
 
 import { Trans, useLingui } from '@lingui/react/macro';
-import { Box, Group, SegmentedControl, Stack, Text } from '@mantine/core';
+import {
+    ActionIcon,
+    Box,
+    Group,
+    SegmentedControl,
+    Stack,
+    Text,
+    Tooltip,
+} from '@mantine/core';
+import { IconHelp } from '@tabler/icons-react';
 import { AccountLoginFilter, useAccountsFilter } from '../../../stores/ui/accounts-ui-store';
+import { useTourActions } from '../../../stores/ui/tour-store';
+import { ACCOUNTS_TOUR_ID } from '../../onboarding-tour/tours/accounts-tour';
 import { SearchInput } from '../../shared';
 import { WebsiteVisibilityPicker } from './website-visibility-picker';
 
@@ -16,6 +27,7 @@ import { WebsiteVisibilityPicker } from './website-visibility-picker';
 export function AccountSectionHeader() {
   const { searchQuery, loginFilter, setSearchQuery, setLoginFilter } =
     useAccountsFilter();
+  const { startTour } = useTourActions();
   const { t } = useLingui();
 
   return (
@@ -36,19 +48,33 @@ export function AccountSectionHeader() {
           <Text fw={600} size="sm">
             <Trans>Accounts</Trans>
           </Text>
-          <WebsiteVisibilityPicker />
+          <Group gap="xs">
+            <Tooltip label={<Trans>Take the tour</Trans>}>
+              <ActionIcon
+                variant="subtle"
+                size="sm"
+                onClick={() => startTour(ACCOUNTS_TOUR_ID)}
+              >
+                <IconHelp size={16} />
+              </ActionIcon>
+            </Tooltip>
+            <WebsiteVisibilityPicker />
+          </Group>
         </Group>
 
         {/* Search input */}
-        <SearchInput
-          size="xs"
-          value={searchQuery}
-          onChange={setSearchQuery}
-          onClear={() => setSearchQuery('')}
-        />
+        <Box data-tour-id="accounts-search">
+          <SearchInput
+            size="xs"
+            value={searchQuery}
+            onChange={setSearchQuery}
+            onClear={() => setSearchQuery('')}
+          />
+        </Box>
 
         {/* Login status filter */}
         <SegmentedControl
+          data-tour-id="accounts-login-filter"
           size="xs"
           fullWidth
           value={loginFilter}
