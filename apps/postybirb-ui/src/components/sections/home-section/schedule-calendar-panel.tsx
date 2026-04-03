@@ -147,7 +147,7 @@ export function ScheduleCalendarPanel() {
   };
 
   return (
-    <Paper withBorder p="md" radius="md" h="100%">
+    <Paper withBorder p="md" radius="md" h="100%" data-tour-id="home-schedule-calendar">
       <Stack gap="sm" h="100%">
         {/* Header */}
         <Group justify="space-between">

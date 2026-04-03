@@ -5,13 +5,13 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-  Badge,
-  Box,
-  Group,
-  Paper,
-  Stack,
-  Text,
-  ThemeIcon,
+    Badge,
+    Box,
+    Group,
+    Paper,
+    Stack,
+    Text,
+    ThemeIcon,
 } from '@mantine/core';
 import { SubmissionType } from '@postybirb/types';
 import { IconAlertTriangle, IconExclamationCircle } from '@tabler/icons-react';
@@ -83,7 +83,7 @@ export function ValidationIssuesPanel() {
   const totalWarnings = issues.reduce((acc, i) => acc + i.warningCount, 0);
 
   return (
-    <Paper withBorder p="md" radius="md" h="100%">
+    <Paper withBorder p="md" radius="md" h="100%" data-tour-id="home-validation-issues">
       <Stack gap="sm" h="100%">
         <Group gap="xs" justify="space-between">
           <Group gap="xs">

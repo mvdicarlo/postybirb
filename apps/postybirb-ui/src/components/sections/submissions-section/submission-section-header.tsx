@@ -5,37 +5,40 @@
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
-  ActionIcon,
-  Box,
-  Button,
-  Checkbox,
-  Group,
-  Kbd,
-  Popover,
-  SegmentedControl,
-  Stack,
-  Text,
-  TextInput,
-  Tooltip,
+    ActionIcon,
+    Box,
+    Button,
+    Checkbox,
+    Group,
+    Kbd,
+    Popover,
+    SegmentedControl,
+    Stack,
+    Text,
+    TextInput,
+    Tooltip,
 } from '@mantine/core';
 import { Dropzone, FileWithPath, IMAGE_MIME_TYPE, MS_WORD_MIME_TYPE, PDF_MIME_TYPE } from '@mantine/dropzone';
 import { useDisclosure } from '@mantine/hooks';
 import { SubmissionId, SubmissionType } from '@postybirb/types';
 import {
-  IconCalendarEvent,
-  IconPlus,
-  IconSend,
-  IconTemplate,
-  IconTrash,
-  IconUpload,
-  IconViewportShort,
-  IconViewportTall,
+    IconCalendarEvent,
+    IconHelp,
+    IconPlus,
+    IconSend,
+    IconTemplate,
+    IconTrash,
+    IconUpload,
+    IconViewportShort,
+    IconViewportTall,
 } from '@tabler/icons-react';
 import { useCallback, useState } from 'react';
 import { DeleteSelectedKeybinding, formatKeybindingDisplay } from '../../../config/keybindings';
 import type { SubmissionRecord } from '../../../stores/records';
 import { useSubmissionViewMode } from '../../../stores/ui/appearance-store';
 import { type SubmissionFilter, useSubmissionsFilter } from '../../../stores/ui/submissions-ui-store';
+import { useTourActions } from '../../../stores/ui/tour-store';
+import { SUBMISSIONS_TOUR_ID } from '../../onboarding-tour/tours/submissions-tour';
 import { MultiSchedulerModal, SearchInput } from '../../shared';
 import { TemplatePickerModal } from '../../shared/template-picker';
 import './submissions-section.css';
@@ -91,6 +94,7 @@ export function SubmissionSectionHeader({
   const { filter, searchQuery, setFilter, setSearchQuery } =
     useSubmissionsFilter(submissionType);
   const { viewMode, toggleViewMode } = useSubmissionViewMode();
+  const { startTour } = useTourActions();
   const { t } = useLingui();
 
   // Popover state for message submission creation
@@ -150,6 +154,7 @@ export function SubmissionSectionHeader({
               }
             >
               <Checkbox
+                data-tour-id="submissions-select-all"
                 size="xs"
                 checked={selectionState === 'all'}
                 indeterminate={selectionState === 'partial'}
@@ -167,6 +172,15 @@ export function SubmissionSectionHeader({
                 headerTitle
               )}
             </Text>
+            <Tooltip label={<Trans>Submissions Tour</Trans>}>
+              <ActionIcon
+                variant="subtle"
+                size="xs"
+                onClick={() => startTour(SUBMISSIONS_TOUR_ID)}
+              >
+                <IconHelp size={16} />
+              </ActionIcon>
+            </Tooltip>
           </Group>
           <Group gap="xs">
             {/* Apply template button - only show when items are selected */}
@@ -242,6 +256,7 @@ export function SubmissionSectionHeader({
               onCreateSubmission && (
                 <Tooltip label={<Trans>Create Submission</Trans>}>
                   <ActionIcon
+                    data-tour-id="submissions-create"
                     variant="light"
                     size="sm"
                     onClick={onCreateSubmission}
@@ -265,6 +280,7 @@ export function SubmissionSectionHeader({
                 <Popover.Target>
                   <Tooltip label={<Trans>Create Message</Trans>}>
                     <ActionIcon
+                      data-tour-id="submissions-create"
                       variant="light"
                       size="sm"
                       onClick={popover.toggle}
@@ -305,6 +321,7 @@ export function SubmissionSectionHeader({
         {/* Compact dropzone for file submissions */}
         {isFileType && onFileDrop && (
           <Dropzone
+            data-tour-id="submissions-dropzone"
             onDrop={onFileDrop}
             accept={[
               ...IMAGE_MIME_TYPE,
@@ -329,15 +346,17 @@ export function SubmissionSectionHeader({
         )}
 
         {/* Search input */}
-        <SearchInput
-          size="xs"
-          value={searchQuery}
-          onChange={setSearchQuery}
-          onClear={() => setSearchQuery('')}
-        />
+        <Box data-tour-id="submissions-search">
+          <SearchInput
+            size="xs"
+            value={searchQuery}
+            onChange={setSearchQuery}
+            onClear={() => setSearchQuery('')}
+          />
+        </Box>
 
         {/* Status filter and view mode toggle */}
-        <Group gap="xs" wrap="nowrap">
+        <Group gap="xs" wrap="nowrap" data-tour-id="submissions-filter">
           <SegmentedControl
             size="xs"
             style={{ flex: 1 }}

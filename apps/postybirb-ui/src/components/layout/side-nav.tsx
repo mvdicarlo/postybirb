@@ -4,28 +4,55 @@
  * Handles view, drawer, and custom navigation items.
  */
 
+import { Trans } from '@lingui/react/macro';
 import {
-  Box,
-  Divider,
-  Image,
-  Kbd,
-  NavLink as MantineNavLink,
-  ScrollArea,
-  Text,
-  Title,
-  Tooltip,
+    Box,
+    Divider,
+    Image,
+    Kbd,
+    NavLink as MantineNavLink,
+    ScrollArea,
+    Text,
+    Title,
+    Tooltip,
 } from '@mantine/core';
-import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
+import { IconChevronLeft, IconChevronRight, IconHelp } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 import { formatKeybindingDisplay } from '../../shared/platform-utils';
 import { useActiveDrawer, useDrawerActions } from '../../stores/ui/drawer-store';
 import { useViewState, useViewStateActions } from '../../stores/ui/navigation-store';
+import { useTourActions } from '../../stores/ui/tour-store';
 import '../../styles/layout.css';
 import type { NavigationItem, SideNavProps } from '../../types/navigation';
 import { cn } from '../../utils/class-names';
 import { LanguagePicker } from '../language-picker';
+import { LAYOUT_TOUR_ID } from '../onboarding-tour/tours/layout-tour';
 import { ThemePicker } from '../theme-picker';
 import { UpdateButton } from '../update-button';
+
+function TourButton({ collapsed }: { collapsed: boolean }) {
+  const { startTour } = useTourActions();
+
+  const navLink = (
+    <MantineNavLink
+      leftSection={<IconHelp size={20} />}
+      label={collapsed ? undefined : (
+        <Trans>Take the Tour</Trans>
+      )}
+      onClick={() => startTour(LAYOUT_TOUR_ID)}
+    />
+  );
+
+  if (collapsed) {
+    return (
+      <Tooltip label={<Trans>Take the Tour</Trans>} position="right" withArrow>
+        <Box data-tour-id="tour-button">{navLink}</Box>
+      </Tooltip>
+    );
+  }
+
+  return <Box data-tour-id="tour-button">{navLink}</Box>;
+}
 
 /**
  * Render a single navigation item based on its type.
@@ -45,7 +72,7 @@ function NavItemRenderer({
   // Handle theme item separately using the ThemePicker component
   if (item.type === 'theme') {
     return (
-      <Box key={item.id}>
+      <Box key={item.id} data-tour-id={item.id}>
         <ThemePicker collapsed={collapsed} kbd={item.kbd} />
       </Box>
     );
@@ -54,7 +81,7 @@ function NavItemRenderer({
   // Handle language item separately using the LanguagePicker component
   if (item.type === 'language') {
     return (
-      <Box key={item.id}>
+      <Box key={item.id} data-tour-id={item.id}>
         <LanguagePicker collapsed={collapsed} kbd={item.kbd} />
       </Box>
     );
@@ -124,12 +151,12 @@ function NavItemRenderer({
         position="right"
         withArrow
       >
-        {navLinkContent}
+        <Box data-tour-id={item.id}>{navLinkContent}</Box>
       </Tooltip>
     );
   }
 
-  return <Box key={item.id}>{navLinkContent}</Box>;
+  return <Box key={item.id} data-tour-id={item.id}>{navLinkContent}</Box>;
 }
 
 /**
@@ -196,6 +223,9 @@ export function SideNav({ items, collapsed, onCollapsedChange }: SideNavProps) {
 
           {/* Update button - shows when update is available */}
           <UpdateButton collapsed={collapsed} />
+
+          {/* Tour button */}
+          <TourButton collapsed={collapsed} />
 
           {items.map((item) => {
             // Handle divider

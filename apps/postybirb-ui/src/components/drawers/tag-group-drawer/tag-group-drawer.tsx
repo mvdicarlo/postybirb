@@ -7,32 +7,34 @@
 import { t } from '@lingui/core/macro';
 import { Trans } from '@lingui/react/macro';
 import {
-  ActionIcon,
-  Box,
-  Checkbox,
-  Group,
-  Stack,
-  Table,
-  TagsInput,
-  TextInput,
-  Tooltip,
+    ActionIcon,
+    Box,
+    Checkbox,
+    Group,
+    Stack,
+    Table,
+    TagsInput,
+    TextInput,
+    Tooltip,
 } from '@mantine/core';
 import { useDebouncedCallback, useDebouncedValue } from '@mantine/hooks';
-import { IconPlus, IconTrash } from '@tabler/icons-react';
+import { IconHelp, IconPlus, IconTrash } from '@tabler/icons-react';
 import React, { useCallback, useMemo, useState } from 'react';
 import tagGroupsApi from '../../../api/tag-groups.api';
 import { useTagGroups } from '../../../stores';
 import type { TagGroupRecord } from '../../../stores/records';
 import { useActiveDrawer, useDrawerActions } from '../../../stores/ui/drawer-store';
+import { useTourActions } from '../../../stores/ui/tour-store';
 import {
-  showCreatedNotification,
-  showCreateErrorNotification,
-  showDeletedNotification,
-  showDeleteErrorNotification,
-  showUpdateErrorNotification,
+    showCreatedNotification,
+    showCreateErrorNotification,
+    showDeletedNotification,
+    showDeleteErrorNotification,
+    showUpdateErrorNotification,
 } from '../../../utils/notifications';
 import { EmptyState } from '../../empty-state';
 import { HoldToConfirmButton } from '../../hold-to-confirm';
+import { TAG_GROUPS_TOUR_ID } from '../../onboarding-tour/tours/tag-groups-tour';
 import { SearchInput } from '../../shared';
 import { SectionDrawer } from '../section-drawer';
 
@@ -396,6 +398,7 @@ export function TagGroupDrawer() {
 function TagGroupDrawerContent({ onClose }: { onClose: () => void }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const { startTour } = useTourActions();
 
   const { filteredGroups } = useTagGroupSearch(searchQuery);
 
@@ -437,15 +440,26 @@ function TagGroupDrawerContent({ onClose }: { onClose: () => void }) {
     <SectionDrawer
       opened
       onClose={onClose}
-      title={<Trans>Tag Groups</Trans>}
+      title={
+        <Group gap="xs">
+          <Trans>Tag Groups</Trans>
+          <Tooltip label={<Trans>Tag Groups Tour</Trans>}>
+            <ActionIcon variant="subtle" size="xs" onClick={() => startTour(TAG_GROUPS_TOUR_ID)}>
+              <IconHelp size={16} />
+            </ActionIcon>
+          </Tooltip>
+        </Group>
+      }
       width={450}
     >
       <Stack gap="md" h="100%">
         {/* Create new tag group form */}
-        <CreateTagGroupForm />
+        <Box data-tour-id="tag-groups-create">
+          <CreateTagGroupForm />
+        </Box>
 
         {/* Search and delete actions */}
-        <Group gap="xs">
+        <Group gap="xs" data-tour-id="tag-groups-search">
           <SearchInput
             flex={1}
             size="sm"
@@ -460,7 +474,7 @@ function TagGroupDrawerContent({ onClose }: { onClose: () => void }) {
         </Group>
 
         {/* Table */}
-        <Box style={{ flex: 1, overflow: 'auto' }}>
+        <Box data-tour-id="tag-groups-table" style={{ flex: 1, overflow: 'auto' }}>
           <TagGroupsTable
             groups={filteredGroups}
             selectedIds={selectedIds}

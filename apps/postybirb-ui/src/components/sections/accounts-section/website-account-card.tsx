@@ -5,38 +5,38 @@
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
-  ActionIcon,
-  Badge,
-  Box,
-  Button,
-  Collapse,
-  Group,
-  Paper,
-  Popover,
-  Stack,
-  Text,
-  TextInput,
-  Tooltip,
-  UnstyledButton,
+    ActionIcon,
+    Badge,
+    Box,
+    Button,
+    Collapse,
+    Group,
+    Paper,
+    Popover,
+    Stack,
+    Text,
+    TextInput,
+    Tooltip,
+    UnstyledButton,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import {
-  IconChevronDown,
-  IconChevronRight,
-  IconLogin,
-  IconPlus,
-  IconRefresh,
-  IconTrash,
-  IconUser,
+    IconChevronDown,
+    IconChevronRight,
+    IconLogin,
+    IconPlus,
+    IconRefresh,
+    IconTrash,
+    IconUser,
 } from '@tabler/icons-react';
 import { memo, useCallback, useState } from 'react';
 import accountApi from '../../../api/account.api';
 import type { AccountRecord } from '../../../stores/records';
 import type { WebsiteRecord } from '../../../stores/records/website-record';
 import {
-  showCreateErrorNotification,
-  showCreatedNotification,
-  showUpdateErrorNotification,
+    showCreateErrorNotification,
+    showCreatedNotification,
+    showUpdateErrorNotification,
 } from '../../../utils/notifications';
 import { HoldToConfirmButton } from '../../hold-to-confirm';
 import { useAccountsContext } from './context';
@@ -118,6 +118,7 @@ const AccountRow = memo(({ account }: { account: AccountRecord }) => {
 
   return (
     <Group
+      data-tour-id="accounts-account-row"
       gap="xs"
       px="xs"
       py={4}
@@ -323,7 +324,7 @@ export const WebsiteAccountCard = memo(({
   }, [handleCreateAccount, closeAddPopover]);
 
   return (
-    <Paper withBorder radius="sm" p={0}>
+    <Paper withBorder radius="sm" p={0} data-tour-id="accounts-website-card">
       {/* Website header */}
       <UnstyledButton onClick={toggle} style={{ width: '100%' }}>
         <Group gap="xs" px="sm" py="xs" wrap="nowrap">
@@ -362,7 +363,7 @@ export const WebsiteAccountCard = memo(({
           >
             <Popover.Target>
               <UnstyledButton onClick={openAddPopover}>
-                <Group gap="xs" px="xs" py={4}>
+                <Group gap="xs" px="xs" py={4} data-tour-id="accounts-add-account">
                   <IconPlus size={14} style={{ opacity: 0.5 }} />
                   <Text size="xs" c="dimmed">
                     <Trans>Add account</Trans>

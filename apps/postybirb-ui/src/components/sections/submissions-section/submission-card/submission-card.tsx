@@ -164,6 +164,7 @@ export const SubmissionCard = memo(({
       p="xs"
       radius="0"
       withBorder
+      data-tour-id="submissions-card"
       onClick={handleCardClick}
       onKeyDown={handleKeyDown}
       tabIndex={0}

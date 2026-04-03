@@ -117,7 +117,7 @@ export function TemplatesContent({ viewState }: TemplatesContentProps) {
     <Box h="100%" style={{ display: 'flex', flexDirection: 'column' }}>
       <TemplatesContentHeader />
       <Divider />
-      <Box style={{ flex: 1, minHeight: 0 }}>
+      <Box data-tour-id="templates-editor" style={{ flex: 1, minHeight: 0 }}>
         {!selectedTemplate ? (
           <EmptyTemplateSelection />
         ) : (

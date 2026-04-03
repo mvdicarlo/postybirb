@@ -5,37 +5,45 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-  Center,
-  Container,
-  ScrollArea,
-  SimpleGrid,
-  Stack,
-  Text,
-  ThemeIcon,
-  Title,
+    ActionIcon,
+    Button,
+    Center,
+    Container,
+    Group,
+    ScrollArea,
+    SimpleGrid,
+    Stack,
+    Text,
+    ThemeIcon,
+    Title,
+    Tooltip,
 } from '@mantine/core';
 import { SubmissionType } from '@postybirb/types';
 import {
-  IconCalendar,
-  IconFile,
-  IconHome,
-  IconMessage,
-  IconStack2,
+    IconCalendar,
+    IconFile,
+    IconHelp,
+    IconHome,
+    IconMessage,
+    IconStack2,
 } from '@tabler/icons-react';
 import { useAccounts } from '../../../stores/entity/account-store';
 import {
-  useQueuedSubmissions,
-  useRegularSubmissions,
-  useScheduledSubmissions,
-  useSubmissionsByType,
+    useQueuedSubmissions,
+    useRegularSubmissions,
+    useScheduledSubmissions,
+    useSubmissionsByType,
 } from '../../../stores/entity/submission-store';
 import { useDrawerActions } from '../../../stores/ui/drawer-store';
 import { useViewStateActions } from '../../../stores/ui/navigation-store';
+import { useTourActions } from '../../../stores/ui/tour-store';
 import '../../../styles/layout.css';
 import {
-  createFileSubmissionsViewState,
-  createMessageSubmissionsViewState,
+    createFileSubmissionsViewState,
+    createMessageSubmissionsViewState,
 } from '../../../types/view-state';
+import { HOME_TOUR_ID } from '../../onboarding-tour/tours/home-tour';
+import { LAYOUT_TOUR_ID } from '../../onboarding-tour/tours/layout-tour';
 import { AccountHealthPanel } from './account-health-panel';
 import { QueueControlCard } from './queue-control-card';
 import { RecentActivityPanel } from './recent-activity-panel';
@@ -48,6 +56,8 @@ import { ValidationIssuesPanel } from './validation-issues-panel';
  * Empty state for new users with onboarding tips.
  */
 function WelcomeEmptyState() {
+  const { startTour } = useTourActions();
+
   return (
     <Center h="100%">
       <Stack align="center" gap="lg" maw={500}>
@@ -63,6 +73,14 @@ function WelcomeEmptyState() {
             submission.
           </Trans>
         </Text>
+        <Button
+          variant="gradient"
+          size="md"
+          radius="xl"
+          onClick={() => startTour(LAYOUT_TOUR_ID)}
+        >
+          <Trans>Take the Tour</Trans>
+        </Button>
         <Stack gap="xs" align="center">
           <Text size="sm" fw={500}>
             <Trans>Quick tips to get started:</Trans>
@@ -108,6 +126,8 @@ export function HomeContent() {
   const queuedSubmissions = useQueuedSubmissions();
   const scheduledSubmissions = useScheduledSubmissions();
 
+  const { startTour } = useTourActions();
+
   // New user detection: no submissions and no accounts
   const isNewUser = regularSubmissions.length === 0 && accounts.length === 0;
 
@@ -128,13 +148,24 @@ export function HomeContent() {
       <Container size="xl" py="md">
         <Stack gap="md">
           {/* Header */}
-          <Title order={3}>
-            <Trans>Dashboard</Trans>
-          </Title>
+          <Group justify="space-between" align="center">
+            <Title order={3}>
+              <Trans>Dashboard</Trans>
+            </Title>
+            <Tooltip label={<Trans>Dashboard Tour</Trans>}>
+              <ActionIcon
+                variant="subtle"
+                size="sm"
+                onClick={() => startTour(HOME_TOUR_ID)}
+              >
+                <IconHelp size={18} />
+              </ActionIcon>
+            </Tooltip>
+          </Group>
 
           <QueueControlCard />
           {/* Stats Row */}
-          <SimpleGrid cols={{ base: 4 }} spacing="md">
+          <SimpleGrid cols={{ base: 4 }} spacing="md" data-tour-id="home-stat-cards">
             <StatCard
               icon={<IconFile size={20} />}
               count={fileCount}

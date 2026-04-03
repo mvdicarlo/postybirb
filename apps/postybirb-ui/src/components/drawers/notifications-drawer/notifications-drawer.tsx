@@ -6,44 +6,47 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-  ActionIcon,
-  Badge,
-  Box,
-  Card,
-  Checkbox,
-  Group,
-  SegmentedControl,
-  Stack,
-  Text,
-  Tooltip,
+    ActionIcon,
+    Badge,
+    Box,
+    Card,
+    Checkbox,
+    Group,
+    SegmentedControl,
+    Stack,
+    Text,
+    Tooltip,
 } from '@mantine/core';
 import {
-  IconAlertTriangle,
-  IconBell,
-  IconCheck,
-  IconCircleCheck,
-  IconExclamationCircle,
-  IconMail,
-  IconMailOpened,
-  IconTrash,
+    IconAlertTriangle,
+    IconBell,
+    IconCheck,
+    IconCircleCheck,
+    IconExclamationCircle,
+    IconHelp,
+    IconMail,
+    IconMailOpened,
+    IconTrash,
 } from '@tabler/icons-react';
 import React, { useCallback, useMemo, useState } from 'react';
 import notificationApi from '../../../api/notification.api';
 import { useLocale } from '../../../hooks';
 import {
-  useNotifications,
-  useUnreadNotificationCount,
+    useNotifications,
+    useUnreadNotificationCount,
 } from '../../../stores/entity/notification-store';
 import type { NotificationRecord } from '../../../stores/records';
 import { useActiveDrawer, useDrawerActions } from '../../../stores/ui/drawer-store';
+import { useTourActions } from '../../../stores/ui/tour-store';
 import {
-  showDeletedNotification,
-  showDeleteErrorNotification,
-  showSuccessNotification,
-  showUpdateErrorNotification,
+    showDeletedNotification,
+    showDeleteErrorNotification,
+    showSuccessNotification,
+    showUpdateErrorNotification,
 } from '../../../utils/notifications';
 import { EmptyState } from '../../empty-state';
 import { HoldToConfirmButton } from '../../hold-to-confirm';
+import { NOTIFICATIONS_TOUR_ID } from '../../onboarding-tour/tours/notifications-tour';
 import { SectionDrawer } from '../section-drawer';
 
 // ============================================================================
@@ -508,6 +511,7 @@ export function NotificationsDrawer() {
 function NotificationsDrawerContent({ onClose }: { onClose: () => void }) {
   const unreadCount = useUnreadNotificationCount();
   const { formatRelativeTime } = useLocale();
+  const { startTour } = useTourActions();
 
   const {
     notifications,
@@ -558,6 +562,11 @@ function NotificationsDrawerContent({ onClose }: { onClose: () => void }) {
               {unreadCount}
             </Badge>
           )}
+          <Tooltip label={<Trans>Notifications Tour</Trans>}>
+            <ActionIcon variant="subtle" size="xs" onClick={() => startTour(NOTIFICATIONS_TOUR_ID)}>
+              <IconHelp size={16} />
+            </ActionIcon>
+          </Tooltip>
         </Group>
       }
       width={500}
@@ -565,12 +574,16 @@ function NotificationsDrawerContent({ onClose }: { onClose: () => void }) {
       <Stack gap="md" h="100%">
         {/* Filters */}
         <Stack gap="xs">
+          <Box data-tour-id="notifications-read-filter">
           <ReadStatusFilter
             value={readFilter}
             onChange={setReadFilter}
             unreadCount={unreadCount}
           />
+          </Box>
+          <Box data-tour-id="notifications-type-filter">
           <TypeFilter value={typeFilter} onChange={setTypeFilter} />
+          </Box>
         </Stack>
 
         {/* Bulk Actions */}
@@ -581,7 +594,7 @@ function NotificationsDrawerContent({ onClose }: { onClose: () => void }) {
         />
 
         {/* Notification List */}
-        <Box style={{ flex: 1, overflow: 'auto' }}>
+        <Box data-tour-id="notifications-list" style={{ flex: 1, overflow: 'auto' }}>
           <NotificationList
             notifications={notifications}
             selectedIds={selectedIds}
