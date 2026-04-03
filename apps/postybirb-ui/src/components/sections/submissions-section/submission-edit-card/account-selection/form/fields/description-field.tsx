@@ -8,9 +8,9 @@ import { Alert, Box, Checkbox } from '@mantine/core';
 import { useDebouncedCallback, useDisclosure } from '@mantine/hooks';
 import { DescriptionFieldType } from '@postybirb/form-builder';
 import {
-  DefaultDescription,
-  DefaultDescriptionValue,
-  DescriptionValue,
+    DefaultDescription,
+    DefaultDescriptionValue,
+    DescriptionValue,
 } from '@postybirb/types';
 import { IconAlertTriangle } from '@tabler/icons-react';
 import { useMemo } from 'react';
@@ -126,7 +126,7 @@ export function DescriptionField({
   );
 
   return (
-    <Box>
+    <Box data-tour-id="edit-card-description">
       {containsLegacyShortcuts && (
         <Alert
           icon={<IconAlertTriangle size={16} />}

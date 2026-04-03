@@ -46,12 +46,12 @@ function TourButton({ collapsed }: { collapsed: boolean }) {
   if (collapsed) {
     return (
       <Tooltip label={<Trans>Take the Tour</Trans>} position="right" withArrow>
-        {navLink}
+        <Box data-tour-id="tour-button">{navLink}</Box>
       </Tooltip>
     );
   }
 
-  return navLink;
+  return <Box data-tour-id="tour-button">{navLink}</Box>;
 }
 
 /**

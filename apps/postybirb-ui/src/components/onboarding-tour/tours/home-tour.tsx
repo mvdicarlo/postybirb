@@ -60,7 +60,6 @@ export function useHomeTourSteps(): Step[] {
       target: '[data-tour-id="home-schedule-calendar"]',
       placement: 'right',
       skipBeacon: true,
-      scrollOffset: 100,
       title: <Trans>Schedule Calendar</Trans>,
       content: (
         <Text size="sm" c="dimmed">
@@ -75,7 +74,6 @@ export function useHomeTourSteps(): Step[] {
       target: '[data-tour-id="home-recent-activity"]',
       placement: 'left',
       skipBeacon: true,
-      scrollOffset: 100,
       title: <Trans>Recent Activity</Trans>,
       content: (
         <Text size="sm" c="dimmed">
@@ -90,7 +88,6 @@ export function useHomeTourSteps(): Step[] {
       target: '[data-tour-id="home-upcoming-posts"]',
       placement: 'top',
       skipBeacon: true,
-      scrollOffset: 100,
       title: <Trans>Upcoming Posts</Trans>,
       content: (
         <Text size="sm" c="dimmed">
@@ -105,7 +102,6 @@ export function useHomeTourSteps(): Step[] {
       target: '[data-tour-id="home-validation-issues"]',
       placement: 'top',
       skipBeacon: true,
-      scrollOffset: 100,
       title: <Trans>Validation Issues</Trans>,
       content: (
         <Text size="sm" c="dimmed">
@@ -120,7 +116,6 @@ export function useHomeTourSteps(): Step[] {
       target: '[data-tour-id="home-account-health"]',
       placement: 'top',
       skipBeacon: true,
-      scrollOffset: 100,
       title: <Trans>Account Health</Trans>,
       content: (
         <Text size="sm" c="dimmed">

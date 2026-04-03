@@ -3,9 +3,9 @@
  * Reads active tour from the tour store and renders the appropriate steps.
  */
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { EVENTS, Joyride, STATUS, type Controls, type EventData } from 'react-joyride';
-import { useActiveTourId, useTourActions, useTourStarted } from '../../stores/ui/tour-store';
+import { useActiveTourId, useIsTourCompleted, useTourActions, useTourStarted } from '../../stores/ui/tour-store';
 import { MantineTooltip } from './mantine-tooltip';
 import { ACCOUNTS_TOUR_ID, useAccountsTourSteps } from './tours/accounts-tour';
 import { CUSTOM_SHORTCUTS_TOUR_ID, useCustomShortcutsTourSteps } from './tours/custom-shortcuts-tour';
@@ -77,8 +77,32 @@ function useTourSteps(tourId: string | null) {
 export function TourProvider({ children }: { children: React.ReactNode }) {
   const activeTourId = useActiveTourId();
   const tourStarted = useTourStarted();
-  const { completeTour, skipTour, endTour } = useTourActions();
-  const steps = useTourSteps(activeTourId);
+  const { completeTour, skipTour, endTour, startTour } = useTourActions();
+  const layoutTourCompleted = useIsTourCompleted(LAYOUT_TOUR_ID);
+  const allSteps = useTourSteps(activeTourId);
+
+  // Auto-start layout tour on first app load if never completed
+  useEffect(() => {
+    if (!layoutTourCompleted && !tourStarted) {
+      // Small delay to ensure the DOM is fully rendered
+      const timer = setTimeout(() => startTour(LAYOUT_TOUR_ID), 500);
+      return () => clearTimeout(timer);
+    }
+    return undefined;
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Filter out steps whose target elements don't exist in the DOM.
+  // This handles conditional UI like the file dropzone (only for file submissions)
+  // or file management section (only for file submission edit cards).
+  const steps = useMemo(
+    () =>
+      allSteps.filter((step) => {
+        if (typeof step.target !== 'string') return true;
+        if (step.target === 'body') return true;
+        return document.querySelector(step.target) !== null;
+      }),
+    [allSteps],
+  );
 
   const handleEvent = useCallback(
     (data: EventData, _controls: Controls) => {

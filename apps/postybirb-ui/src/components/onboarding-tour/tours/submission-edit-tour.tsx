@@ -90,6 +90,23 @@ export function useSubmissionEditTourSteps(): Step[] {
       ),
     },
     {
+      target: '[data-tour-id="edit-card-description"]',
+      placement: 'bottom',
+      skipBeacon: true,
+      scrollOffset: 150,
+      title: <Trans>Description Editor</Trans>,
+      content: (
+        <Text size="sm" c="dimmed">
+          <Trans>
+            Write your post description with rich text formatting. Type @ to
+            insert username shortcuts, &#123; to insert custom text shortcuts,
+            or use the / slash menu for headings, lists, and more. Shortcuts are
+            automatically expanded per website when posting.
+          </Trans>
+        </Text>
+      ),
+    },
+    {
       target: '[data-tour-id="edit-card-accounts"]',
       placement: 'bottom',
       skipBeacon: true,
