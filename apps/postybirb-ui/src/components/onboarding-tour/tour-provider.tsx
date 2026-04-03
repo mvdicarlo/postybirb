@@ -4,22 +4,60 @@
  */
 
 import { useCallback, useEffect, useMemo } from 'react';
-import { EVENTS, Joyride, STATUS, type Controls, type EventData } from 'react-joyride';
-import { useActiveTourId, useIsTourCompleted, useTourActions, useTourStarted } from '../../stores/ui/tour-store';
+import {
+  EVENTS,
+  Joyride,
+  STATUS,
+  type Controls,
+  type EventData,
+} from 'react-joyride';
+import {
+  useActiveTourId,
+  useIsTourCompleted,
+  useTourActions,
+  useTourStarted,
+} from '../../stores/ui/tour-store';
 import { MantineTooltip } from './mantine-tooltip';
 import { ACCOUNTS_TOUR_ID, useAccountsTourSteps } from './tours/accounts-tour';
-import { CUSTOM_SHORTCUTS_TOUR_ID, useCustomShortcutsTourSteps } from './tours/custom-shortcuts-tour';
-import { FILE_WATCHERS_TOUR_ID, useFileWatchersTourSteps } from './tours/file-watchers-tour';
+import {
+  CUSTOM_SHORTCUTS_TOUR_ID,
+  useCustomShortcutsTourSteps,
+} from './tours/custom-shortcuts-tour';
+import {
+  FILE_WATCHERS_TOUR_ID,
+  useFileWatchersTourSteps,
+} from './tours/file-watchers-tour';
 import { HOME_TOUR_ID, useHomeTourSteps } from './tours/home-tour';
 import { LAYOUT_TOUR_ID, useLayoutTourSteps } from './tours/layout-tour';
-import { NOTIFICATIONS_TOUR_ID, useNotificationsTourSteps } from './tours/notifications-tour';
+import {
+  NOTIFICATIONS_TOUR_ID,
+  useNotificationsTourSteps,
+} from './tours/notifications-tour';
 import { SCHEDULE_TOUR_ID, useScheduleTourSteps } from './tours/schedule-tour';
-import { SUBMISSION_EDIT_TOUR_ID, useSubmissionEditTourSteps } from './tours/submission-edit-tour';
-import { SUBMISSIONS_TOUR_ID, useSubmissionsTourSteps } from './tours/submissions-tour';
-import { TAG_CONVERTERS_TOUR_ID, useTagConvertersTourSteps } from './tours/tag-converters-tour';
-import { TAG_GROUPS_TOUR_ID, useTagGroupsTourSteps } from './tours/tag-groups-tour';
-import { TEMPLATES_TOUR_ID, useTemplatesTourSteps } from './tours/templates-tour';
-import { USER_CONVERTERS_TOUR_ID, useUserConvertersTourSteps } from './tours/user-converters-tour';
+import {
+  SUBMISSION_EDIT_TOUR_ID,
+  useSubmissionEditTourSteps,
+} from './tours/submission-edit-tour';
+import {
+  SUBMISSIONS_TOUR_ID,
+  useSubmissionsTourSteps,
+} from './tours/submissions-tour';
+import {
+  TAG_CONVERTERS_TOUR_ID,
+  useTagConvertersTourSteps,
+} from './tours/tag-converters-tour';
+import {
+  TAG_GROUPS_TOUR_ID,
+  useTagGroupsTourSteps,
+} from './tours/tag-groups-tour';
+import {
+  TEMPLATES_TOUR_ID,
+  useTemplatesTourSteps,
+} from './tours/templates-tour';
+import {
+  USER_CONVERTERS_TOUR_ID,
+  useUserConvertersTourSteps,
+} from './tours/user-converters-tour';
 
 /**
  * Map of tour IDs to their step hooks.
@@ -71,7 +109,22 @@ function useTourSteps(tourId: string | null) {
       default:
         return [];
     }
-  }, [tourId, layoutSteps, accountsSteps, homeSteps, templatesSteps, tagGroupsSteps, customShortcutsSteps, fileWatchersSteps, scheduleSteps, submissionsSteps, submissionEditSteps, tagConvertersSteps, userConvertersSteps, notificationsSteps]);
+  }, [
+    tourId,
+    layoutSteps,
+    accountsSteps,
+    homeSteps,
+    templatesSteps,
+    tagGroupsSteps,
+    customShortcutsSteps,
+    fileWatchersSteps,
+    scheduleSteps,
+    submissionsSteps,
+    submissionEditSteps,
+    tagConvertersSteps,
+    userConvertersSteps,
+    notificationsSteps,
+  ]);
 }
 
 export function TourProvider({ children }: { children: React.ReactNode }) {
@@ -120,6 +173,7 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
           }
         }
       } else if (type === EVENTS.TOUR_END) {
+        if (activeTourId) completeTour(activeTourId);
         endTour();
       }
     },
