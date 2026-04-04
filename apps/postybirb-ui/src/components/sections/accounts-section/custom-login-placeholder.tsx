@@ -33,7 +33,12 @@ export function CustomLoginPlaceholder({
   // Render the actual login component if available
   if (LoginComponent) {
     return (
-      <LoginComponent account={account} website={website} data={account.data} />
+      <LoginComponent
+        key={account.id}
+        account={account}
+        website={website}
+        data={account.data}
+      />
     );
   }
 
