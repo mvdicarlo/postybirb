@@ -25,9 +25,7 @@ ipcMain.handle('get-cookies-for-account', async (event, accountId: string) => {
   const cookies = await session
     .fromPartition(`persist:${accountId}`)
     .cookies.get({});
-  if (cookies.length === 0) {
-    return '';
-  }
+
   return Buffer.from(JSON.stringify(cookies)).toString('base64');
 });
 
