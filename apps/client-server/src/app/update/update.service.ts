@@ -1,9 +1,10 @@
 import { Injectable, Optional } from '@nestjs/common';
-import { Interval } from '@nestjs/schedule';
 import { Logger } from '@postybirb/logger';
 import { UPDATE_UPDATES } from '@postybirb/socket-events';
 import { ReleaseNoteInfo, UpdateState } from '@postybirb/types';
 import { ProgressInfo, UpdateInfo, autoUpdater } from 'electron-updater';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import isDocker from 'is-docker';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 
 /**
@@ -31,7 +32,7 @@ export class UpdateService {
     autoUpdater.allowPrerelease = true;
 
     this.registerListeners();
-    setTimeout(() => this.checkForUpdates(), 5_000);
+    if (!isDocker()) setTimeout(() => this.checkForUpdates(), 5_000);
   }
 
   /**
@@ -98,7 +99,6 @@ export class UpdateService {
     this.emit();
   }
 
-  @Interval(600_000)
   public checkForUpdates() {
     if (
       this.updateState.updateDownloading ||
