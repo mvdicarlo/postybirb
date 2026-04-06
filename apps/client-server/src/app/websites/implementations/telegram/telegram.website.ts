@@ -1,3 +1,4 @@
+// eslint-disable-next-line max-classes-per-file
 import { SelectOption } from '@postybirb/form-builder';
 import { getParsedProxiesFor } from '@postybirb/http';
 import {
@@ -7,11 +8,12 @@ import {
   OAuthRouteHandlers,
   PostData,
   PostResponse,
+  SimpleValidationResult,
   TelegramAccountData,
   TelegramOAuthRoutes,
+  TipTapNode,
 } from '@postybirb/types';
 import { supportsImage } from '@postybirb/utils/file-type';
-import parse from 'node-html-parser';
 import { Api, TelegramClient } from 'telegram';
 import { CustomFile } from 'telegram/client/uploads';
 import { Entity } from 'telegram/define';
@@ -20,10 +22,13 @@ import { LogLevel } from 'telegram/extensions/Logger';
 import { returnBigInt } from 'telegram/Helpers';
 import { SocksProxyType } from 'telegram/network/connection/TCPMTProxy';
 import { StringSession } from 'telegram/sessions';
+import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
+import { HtmlConverter } from '../../../post-parsers/models/description-node/converters/html-converter';
+import { ConversionContext } from '../../../post-parsers/models/description-node/description-node.base';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
-import { validatorPassthru } from '../../commons/validator-passthru';
+import { SubmissionValidator } from '../../commons/validator';
 import { CustomLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
@@ -34,6 +39,7 @@ import {
 } from '../../models/website-modifiers/file-website';
 import { MessageWebsite } from '../../models/website-modifiers/message-website';
 import { OAuthWebsite } from '../../models/website-modifiers/oauth-website';
+import { WithCustomDescriptionParser } from '../../models/website-modifiers/with-custom-description-parser';
 import { Website } from '../../website';
 import { TelegramFileSubmission } from './models/telegram-file-submission';
 import { TelegramMessageSubmission } from './models/telegram-message-submission';
@@ -59,7 +65,8 @@ export default class Telegram
   implements
     FileWebsite<TelegramFileSubmission>,
     MessageWebsite<TelegramMessageSubmission>,
-    OAuthWebsite<TelegramOAuthRoutes>
+    OAuthWebsite<TelegramOAuthRoutes>,
+    WithCustomDescriptionParser
 {
   protected BASE_URL = 'https://t.me/';
 
@@ -245,23 +252,6 @@ export default class Telegram
         : undefined;
   }
 
-  htmlToDescriptionEntities(html: string) {
-    // eslint-disable-next-line no-param-reassign
-    const withHr = html.replaceAll('<hr>', '<span>————————</span>');
-
-    // All blocknote paragraphs are wrapped using <div> or <span> without \n between them at the top level
-    // By default HTMLToTelegram will concatente them, so add newlines manually
-    // eslint-disable-next-line no-param-reassign
-    const withNewlines = parse(withHr)
-      .childNodes.filter((node) => node.nodeType === 1) // Filter only element nodes
-      .map((el) => el.toString())
-      .join('\n');
-
-    const normalized = withNewlines.replaceAll('<br>', '\n');
-
-    return HTMLToTelegram.parse(normalized);
-  }
-
   async onPostFileSubmission(
     postData: PostData<TelegramFileSubmission>,
     files: PostingFile[],
@@ -307,7 +297,7 @@ export default class Telegram
 
     const lastBatch = batch.index === batch.totalBatches - 1;
 
-    const [description, entities] = this.htmlToDescriptionEntities(
+    const [description, entities] = TelegramConverter.fromJson(
       postData.options.description,
     );
 
@@ -445,7 +435,36 @@ export default class Telegram
     return peer;
   }
 
-  onValidateFileSubmission = validatorPassthru;
+  private readonly MAX_CHARS = 4096;
+
+  private async validateDescription(
+    postData: PostData<TelegramMessageSubmission | TelegramFileSubmission>,
+    validator: SubmissionValidator<
+      TelegramMessageSubmission | TelegramFileSubmission
+    >,
+  ): Promise<void> {
+    const { description } = postData.options;
+
+    const [text] = TelegramConverter.fromJson(description);
+
+    if (text.length > this.MAX_CHARS) {
+      validator.error(
+        'validation.description.max-length',
+        { maxLength: this.MAX_CHARS, currentLength: text.length },
+        'description',
+      );
+    }
+  }
+
+  async onValidateFileSubmission(
+    postData: PostData<TelegramFileSubmission>,
+  ): Promise<SimpleValidationResult> {
+    const validator = this.createValidator<TelegramFileSubmission>();
+
+    this.validateDescription(postData, validator);
+
+    return validator.result;
+  }
 
   createMessageModel(): TelegramMessageSubmission {
     return new TelegramMessageSubmission();
@@ -457,7 +476,7 @@ export default class Telegram
   ): Promise<PostResponse> {
     cancellationToken.throwIfCancelled();
     let response: Api.TypeUpdates | undefined;
-    const [description, entities] = this.htmlToDescriptionEntities(
+    const [description, entities] = TelegramConverter.fromJson(
       postData.options.description,
     );
     const telegram = await this.getTelegramClient();
@@ -481,5 +500,54 @@ export default class Telegram
     return postResponse;
   }
 
-  onValidateMessageSubmission = validatorPassthru;
+  async onValidateMessageSubmission(
+    postData: PostData<TelegramMessageSubmission>,
+  ): Promise<SimpleValidationResult> {
+    const validator = this.createValidator<TelegramMessageSubmission>();
+
+    this.validateDescription(postData, validator);
+
+    return validator.result;
+  }
+
+  getDescriptionConverter(): BaseConverter {
+    return new TelegramConverter();
+  }
+}
+
+class TelegramConverter extends HtmlConverter {
+  protected getBlockSeparator(): string {
+    return '<br>';
+  }
+
+  convertBlocks(nodes: TipTapNode[], context: ConversionContext): string {
+    // When html encouters the default description it uses convertRawBlocks which calls convertBlock
+    // which returns json that ends up in user posts
+    if (nodes === context.defaultDescription)
+      return super.convertBlocks(nodes, context);
+
+    let html = super.convertBlocks(nodes, context);
+
+    html = html.replaceAll('<hr>', '<span>————————</span>');
+
+    // Used for description preview
+    const rendered = HTMLToTelegram.unparse(
+      ...TelegramConverter.fromHtml(html),
+    ).replaceAll('\n', '<br>');
+
+    return JSON.stringify({
+      html,
+      rendered,
+    });
+  }
+
+  static fromJson(json: string) {
+    const { html } = JSON.parse(json) as { html: string };
+
+    return TelegramConverter.fromHtml(html);
+  }
+
+  private static fromHtml(html: string) {
+    return HTMLToTelegram.parse(html.replaceAll('<br>', '\n'));
+  }
 }

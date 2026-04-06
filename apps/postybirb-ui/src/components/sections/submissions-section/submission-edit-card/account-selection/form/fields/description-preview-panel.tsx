@@ -178,9 +178,18 @@ export const descriptionPreviewRendererByWebsite = new Map<
   (props: { description: string }) => React.ReactNode
 >();
 
-descriptionPreviewRendererByType.set(DescriptionType.HTML, (description) => (
-  <Box dangerouslySetInnerHTML={{ __html: description }} />
-));
+descriptionPreviewRendererByType.set(
+  DescriptionType.HTML,
+  ({ description }) => (
+    <Box dangerouslySetInnerHTML={{ __html: description }} />
+  ),
+);
+
+descriptionPreviewRendererByType.set(
+  DescriptionType.PLAINTEXT,
+  ({ description }) =>
+    description.split('\n').map((e) => <Box key={e}>{e}</Box>),
+);
 
 export function DescriptionPreviewPanel({
   submissionId,
