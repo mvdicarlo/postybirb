@@ -258,7 +258,7 @@ function ToolbarButton({
   );
 }
 
-/** Link insert button with URL prompt (Mantine modal + clipboard default) */
+/** Link insert button with URL prompt */
 function LinkButton({ editor }: { editor: Editor }) {
   const isActive = editor.isActive('link');
   const [opened, { open, close }] = useDisclosure(false);
