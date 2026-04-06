@@ -1,6 +1,6 @@
-import { TipTapNode } from '@postybirb/types';
+import { NPFTextBlock, TipTapNode } from '@postybirb/types';
 import { ConversionContext } from '../description-node.base';
-import { NpfConverter, NPFTextBlock } from './npf-converter';
+import { NpfConverter } from './npf-converter';
 
 describe('NpfConverter', () => {
   let converter: NpfConverter;
