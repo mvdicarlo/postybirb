@@ -344,7 +344,7 @@ export default class Bluesky
     >,
   ): void {
     const url = postData.options.replyToUrl;
-    if (url.trim() && !this.getPostIdFromUrl(url)) {
+    if (url?.trim() && !this.getPostIdFromUrl(url)) {
       validator.error(
         'validation.file.bluesky.invalid-reply-url',
         {},
@@ -355,9 +355,9 @@ export default class Bluesky
 
   private async getReplyRef(
     agent: AtpAgent,
-    url: string,
+    url?: string,
   ): Promise<ReplyRef | null> {
-    if (!url.trim()) return null;
+    if (!url?.trim()) return null;
 
     const postId = this.getPostIdFromUrl(url);
     if (!postId) throw new Error(`Invalid reply to url '${url}'`);
