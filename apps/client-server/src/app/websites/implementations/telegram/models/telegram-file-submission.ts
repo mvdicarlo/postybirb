@@ -14,8 +14,7 @@ import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
 export class TelegramFileSubmission extends BaseWebsiteOptions {
   @DescriptionField({
-    descriptionType: DescriptionType.HTML,
-    maxDescriptionLength: 4096,
+    descriptionType: DescriptionType.CUSTOM,
   })
   description: DescriptionValue;
 

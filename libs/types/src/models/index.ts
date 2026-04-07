@@ -21,6 +21,7 @@ export * from './submission/file-submission/file-submission';
 export * from './submission/file-submission/file-submission-metadata.type';
 export * from './submission/file-submission/modified-file-dimension.type';
 export * from './submission/message-submission/message-submission.type';
+export * from './submission/npf-description.type';
 export * from './submission/submission-file-props.interface';
 export * from './submission/submission-file.interface';
 export * from './submission/submission-metadata.interface';
@@ -50,4 +51,3 @@ export * from './website/website-data.interface';
 export * from './website/website-info.interface';
 export * from './website/website-login-type';
 export * from './website/website.type';
-

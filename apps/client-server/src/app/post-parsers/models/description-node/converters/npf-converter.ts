@@ -1,98 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import {
+  NPFContentBlock,
+  NPFImageBlock,
+  NPFInlineFormatting,
+  NPFMediaObject,
+  NPFTextBlock,
+} from '@postybirb/types';
 import { ConversionContext } from '../description-node.base';
-import { isTextNode, TipTapNode } from '../description-node.types';
+import { isTextNode, TipTapMark, TipTapNode } from '../description-node.types';
 import { BaseConverter } from './base-converter';
-
-/**
- * Tumblr NPF (Nuevo Post Format) content block types.
- * @see https://www.tumblr.com/docs/npf
- */
-export type NPFContentBlock =
-  | NPFTextBlock
-  | NPFImageBlock
-  | NPFLinkBlock
-  | NPFAudioBlock
-  | NPFVideoBlock;
-
-export interface NPFTextBlock {
-  type: 'text';
-  text: string;
-  subtype?:
-    | 'heading1'
-    | 'heading2'
-    | 'quote'
-    | 'indented'
-    | 'chat'
-    | 'ordered-list-item'
-    | 'unordered-list-item'
-    | 'quirky';
-  indent_level?: number;
-  formatting?: NPFInlineFormatting[];
-}
-
-export interface NPFInlineFormatting {
-  start: number;
-  end: number;
-  type:
-    | 'bold'
-    | 'italic'
-    | 'strikethrough'
-    | 'small'
-    | 'link'
-    | 'mention'
-    | 'color';
-  url?: string;
-  blog?: { uuid: string };
-  hex?: string;
-}
-
-export interface NPFImageBlock {
-  type: 'image';
-  media: NPFMediaObject[];
-  alt_text?: string;
-  caption?: string;
-  colors?: Record<string, string>;
-}
-
-export interface NPFMediaObject {
-  url: string;
-  type?: string;
-  width?: number;
-  height?: number;
-  original_dimensions_missing?: boolean;
-}
-
-export interface NPFLinkBlock {
-  type: 'link';
-  url: string;
-  title?: string;
-  description?: string;
-  author?: string;
-  site_name?: string;
-  display_url?: string;
-  poster?: NPFMediaObject[];
-}
-
-export interface NPFAudioBlock {
-  type: 'audio';
-  provider?: string;
-  url?: string;
-  media?: NPFMediaObject;
-  title?: string;
-  artist?: string;
-  album?: string;
-  poster?: NPFMediaObject[];
-}
-
-export interface NPFVideoBlock {
-  type: 'video';
-  provider?: string;
-  url?: string;
-  media?: NPFMediaObject;
-  poster?: NPFMediaObject[];
-  embed_html?: string;
-  embed_url?: string;
-}
 
 /**
  * Converter that outputs Tumblr NPF (Nuevo Post Format) blocks.
@@ -140,14 +56,24 @@ export class NpfConverter extends BaseConverter {
     // Handle list containers — recurse into items
     if (node.type === 'bulletList') {
       for (const item of node.content ?? []) {
-        this.convertListItemToNpf(item, context, 'unordered-list-item', indentLevel);
+        this.convertListItemToNpf(
+          item,
+          context,
+          'unordered-list-item',
+          indentLevel,
+        );
       }
       return;
     }
 
     if (node.type === 'orderedList') {
       for (const item of node.content ?? []) {
-        this.convertListItemToNpf(item, context, 'ordered-list-item', indentLevel);
+        this.convertListItemToNpf(
+          item,
+          context,
+          'ordered-list-item',
+          indentLevel,
+        );
       }
       return;
     }
@@ -195,7 +121,10 @@ export class NpfConverter extends BaseConverter {
           type: 'text',
           text,
           subtype,
-          formatting: this.currentFormatting.length > 0 ? this.currentFormatting : undefined,
+          formatting:
+            this.currentFormatting.length > 0
+              ? this.currentFormatting
+              : undefined,
         };
         if (indentLevel > 0 && indentLevel <= 7) {
           npfBlock.indent_level = indentLevel;
@@ -203,11 +132,21 @@ export class NpfConverter extends BaseConverter {
         this.blocks.push(npfBlock);
       } else if (child.type === 'bulletList') {
         for (const item of child.content ?? []) {
-          this.convertListItemToNpf(item, context, 'unordered-list-item', indentLevel + 1);
+          this.convertListItemToNpf(
+            item,
+            context,
+            'unordered-list-item',
+            indentLevel + 1,
+          );
         }
       } else if (child.type === 'orderedList') {
         for (const item of child.content ?? []) {
-          this.convertListItemToNpf(item, context, 'ordered-list-item', indentLevel + 1);
+          this.convertListItemToNpf(
+            item,
+            context,
+            'ordered-list-item',
+            indentLevel + 1,
+          );
         }
       } else {
         this.convertBlockNodeRecursive(child, context, indentLevel);
@@ -218,10 +157,7 @@ export class NpfConverter extends BaseConverter {
   /**
    * Stub method required by BaseConverter interface.
    */
-  convertBlockNode(
-    node: TipTapNode,
-    context: ConversionContext,
-  ): string {
+  convertBlockNode(node: TipTapNode, context: ConversionContext): string {
     const block = this.convertBlockNodeToNpf(node, context);
     return JSON.stringify(block);
   }
@@ -235,7 +171,6 @@ export class NpfConverter extends BaseConverter {
   ): NPFContentBlock {
     this.currentFormatting = [];
     this.currentPosition = 0;
-    const attrs = node.attrs ?? {};
 
     switch (node.type) {
       case 'paragraph':
@@ -284,7 +219,9 @@ export class NpfConverter extends BaseConverter {
     const url = attrs.src || '';
     const alt = attrs.alt || '';
     const width = attrs.width ? parseInt(String(attrs.width), 10) : undefined;
-    const height = attrs.height ? parseInt(String(attrs.height), 10) : undefined;
+    const height = attrs.height
+      ? parseInt(String(attrs.height), 10)
+      : undefined;
 
     const media: NPFMediaObject[] = [
       {
@@ -304,10 +241,7 @@ export class NpfConverter extends BaseConverter {
     return imageBlock;
   }
 
-  convertInlineNode(
-    node: TipTapNode,
-    context: ConversionContext,
-  ): string {
+  convertInlineNode(node: TipTapNode, context: ConversionContext): string {
     const attrs = node.attrs ?? {};
     const startPos = this.currentPosition;
     let text = '';
@@ -349,6 +283,7 @@ export class NpfConverter extends BaseConverter {
       if (!this.shouldRenderShortcut(node, context)) return '';
       text = context.title ?? '';
       this.currentPosition += text.length;
+      this.addFormattingForMarks(node.marks, startPos, this.currentPosition);
       return text;
     }
 
@@ -356,6 +291,7 @@ export class NpfConverter extends BaseConverter {
       if (!this.shouldRenderShortcut(node, context)) return '';
       text = context.tags?.map((e) => `#${e}`).join(' ') ?? '';
       this.currentPosition += text.length;
+      this.addFormattingForMarks(node.marks, startPos, this.currentPosition);
       return text;
     }
 
@@ -363,6 +299,7 @@ export class NpfConverter extends BaseConverter {
       if (!this.shouldRenderShortcut(node, context)) return '';
       text = context.contentWarningText ?? '';
       this.currentPosition += text.length;
+      this.addFormattingForMarks(node.marks, startPos, this.currentPosition);
       return text;
     }
 
@@ -378,26 +315,11 @@ export class NpfConverter extends BaseConverter {
   }
 
   convertTextNode(node: TipTapNode): string {
-    const textNode = node as any;
+    const text = node.text ?? '';
     const startPos = this.currentPosition;
-    const text = textNode.text ?? '';
     this.currentPosition += text.length;
 
-    const marks = textNode.marks ?? [];
-
-    // Add link formatting
-    const linkMark = marks.find((m: any) => m.type === 'link');
-    if (linkMark && text.length > 0) {
-      this.currentFormatting.push({
-        start: startPos,
-        end: this.currentPosition,
-        type: 'link',
-        url: linkMark.attrs?.href || '',
-      });
-    }
-
-    // Add text formatting from marks
-    this.addFormattingForMarks(marks, startPos, this.currentPosition);
+    this.addFormattingForMarks(node.marks, startPos, this.currentPosition);
 
     return text;
   }
@@ -424,7 +346,7 @@ export class NpfConverter extends BaseConverter {
    * Adds formatting entries for marks on a text node.
    */
   private addFormattingForMarks(
-    marks: any[],
+    marks: TipTapMark[],
     start: number,
     end: number,
   ): void {
@@ -455,6 +377,15 @@ export class NpfConverter extends BaseConverter {
             });
           }
           break;
+        case 'link':
+          if (typeof mark.attrs?.href === 'string')
+            this.currentFormatting.push({
+              start,
+              end,
+              type: 'link',
+              url: mark.attrs.href,
+            });
+          break;
         default:
           break;
       }
@@ -481,4 +412,3 @@ export class NpfConverter extends BaseConverter {
     return ext ? mimeMap[ext] : undefined;
   }
 }
-
