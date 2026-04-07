@@ -21,7 +21,7 @@ import { Entity } from 'telegram/define';
 import { HTMLParser as HTMLToTelegram } from 'telegram/extensions/html';
 import { LogLevel } from 'telegram/extensions/Logger';
 import { returnBigInt } from 'telegram/Helpers';
-import { SocksProxyType } from 'telegram/network/connection/TCPMTProxy';
+import { ProxyInterface } from 'telegram/network/connection/TCPMTProxy';
 import { StringSession } from 'telegram/sessions';
 import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
 import { HtmlConverter } from '../../../post-parsers/models/description-node/converters/html-converter';
@@ -94,23 +94,7 @@ export default class Telegram
         `Creating client for ${account.appId} with session present ${!!account.session}`,
       );
 
-      let telegramProxySettings: SocksProxyType;
-      const proxies = await getParsedProxiesFor('https://t.me');
-      const proxy =
-        proxies.find((e) => e.type === 'SOCKS') ??
-        proxies.find((e) => e.type === 'PROXY') ??
-        proxies[0];
-
-      if (proxy && proxy.type !== 'DIRECT') {
-        telegramProxySettings = {
-          ip: proxy.hostname,
-          port: parseInt(proxy.port, 10),
-          socksType: 5,
-        };
-        this.logger
-          .withMetadata({ proxy: telegramProxySettings, proxies })
-          .info('Using SOCKS5 proxy resolved from URL');
-      }
+      const telegramProxySettings = await this.resolveProxySettings();
 
       client = new TelegramClient(
         new StringSession(account.session ?? ''),
@@ -164,7 +148,7 @@ export default class Telegram
         this.onLogin();
         return { success: true };
       } catch (e) {
-        this.logger.error(e);
+        this.logger.withError(e).error('Failed to ');
         const passwordRequired = String(e).includes('Password is empty');
         const passwordInvalid = String(e).includes('PASSWORD_HASH_INVALID');
         const codeInvalid = String(e).includes('CODE_INVALID');
@@ -178,6 +162,63 @@ export default class Telegram
       }
     },
   };
+
+  private async resolveProxySettings() {
+    let telegramProxySettings: ProxyInterface | undefined;
+
+    // Example:
+    // tg://proxy?server=127.0.0.1&port=1080&secret=dda7e716f615266d980bf8e2e41acc36b0
+    const env = process.env.POSTYBIRB_TELEGRAM_MTPROXY;
+    if (env) {
+      try {
+        const parsed = new URL(env);
+        if (
+          parsed.protocol === 'tg:' &&
+          parsed.host === 'proxy' &&
+          parsed.search
+        ) {
+          telegramProxySettings = {
+            MTProxy: true,
+            ip: parsed.searchParams.get('ip') ?? '',
+            secret: parsed.searchParams.get('secret') ?? '',
+            port: parseInt(parsed.searchParams.get('port') ?? '', 10),
+          };
+          this.logger.info('Using', env);
+        }
+      } catch (e) {
+        this.logger
+          .withError(e)
+          .error(
+            'Failed to parse env POSTYBIRB_TELEGRAM_MTPROXY, falling back to other proxy settings...',
+          );
+      }
+    }
+
+    if (!telegramProxySettings) {
+      const proxies = [
+        ...(await getParsedProxiesFor('https://telegram.org')),
+        ...(await getParsedProxiesFor('https://t.me/')),
+      ];
+      const proxy =
+        proxies.find((e) => e?.type === 'SOCKS') ??
+        proxies.find((e) => e?.type === 'PROXY') ??
+        proxies[0];
+
+      if (proxy && proxy.type !== 'DIRECT') {
+        telegramProxySettings = {
+          ip: proxy.hostname,
+          port: parseInt(proxy.port, 10),
+          socksType: 5,
+        };
+        this.logger
+          .withMetadata({ proxy: telegramProxySettings, proxies })
+          .info(
+            'Using SOCKS5 proxy resolved for hostname t.me or telegram.org',
+          );
+      }
+    }
+    return telegramProxySettings;
+  }
 
   private async loadChannels(telegram: TelegramClient) {
     this.logger.info('Loading folders...');
