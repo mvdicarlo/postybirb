@@ -8,6 +8,7 @@ import {
   SubmissionRating,
 } from '@postybirb/types';
 import { BrowserWindowUtils } from '@postybirb/utils/electron';
+import { calculateImageResize } from '@postybirb/utils/file-type';
 import { mutation, query } from 'gql-query-builder';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
@@ -86,16 +87,11 @@ export default class Picarto
   }
 
   calculateImageResize(file: ISubmissionFile): ImageResizeProps {
-    // Max 4K image size for non-member users and <= 15MB
-    if (file.width > 3840 || file.height > 2160) {
-      return {
-        width: 3840,
-        height: 2160,
-        maxBytes: FileSize.megabytes(15),
-      };
-    }
-
-    return undefined;
+    return calculateImageResize(file, {
+      maxWidth: 3840,
+      maxHeight: 2160,
+      maxBytes: FileSize.megabytes(15),
+    });
   }
 
   async onPostFileSubmission(

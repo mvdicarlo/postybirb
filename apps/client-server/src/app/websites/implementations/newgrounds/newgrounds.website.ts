@@ -91,7 +91,7 @@ export default class Newgrounds
   }
 
   calculateImageResize(file: ISubmissionFile): ImageResizeProps {
-    return { maxBytes: FileSize.megabytes(40) };
+    return undefined;
   }
 
   private parseDescription(text: string): string {

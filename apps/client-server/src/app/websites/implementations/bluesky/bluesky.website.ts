@@ -29,7 +29,7 @@ import {
   SimpleValidationResult,
   SubmissionRating,
 } from '@postybirb/types';
-import { getFileTypeFromMimeType } from '@postybirb/utils/file-type';
+import { calculateImageResize, getFileTypeFromMimeType } from '@postybirb/utils/file-type';
 import { v4 } from 'uuid';
 import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
 import { PlainTextConverter } from '../../../post-parsers/models/description-node/converters/plaintext-converter';
@@ -136,12 +136,12 @@ export default class Bluesky
     return new BlueskyFileSubmission();
   }
 
-  calculateImageResize(_file: ISubmissionFile): ImageResizeProps {
-    return {
-      // Yes they are this lame: https://github.com/bluesky-social/social-app/blob/main/src/lib/constants.ts
-      height: 2000,
-      width: 2000,
-    };
+  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
+    // https://github.com/bluesky-social/social-app/blob/main/src/lib/constants.ts
+    return calculateImageResize(file, {
+      maxWidth: 2000,
+      maxHeight: 2000,
+    });
   }
 
   getDescriptionConverter(): BaseConverter {
