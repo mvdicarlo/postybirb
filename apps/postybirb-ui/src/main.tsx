@@ -13,6 +13,16 @@ function Root() {
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 createRoot(document.getElementById('root')!).render(<Root />);
 
+window.addEventListener('keydown', (event) => {
+  if (
+    event.key === 'F5' ||
+    (event.ctrlKey && event.key.toLowerCase() === 'r')
+  ) {
+    event.preventDefault();
+    window.location.reload();
+  }
+});
+
 declare global {
   interface Window {
     electron: {
