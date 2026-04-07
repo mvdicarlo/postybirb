@@ -1,12 +1,16 @@
 /* eslint-disable lingui/no-unlocalized-strings */
+import { Trans } from '@lingui/react/macro';
 import {
   ActionIcon,
+  Button,
   CloseButton,
   ColorInput,
   Divider,
   Group,
+  Modal,
   Popover,
   Stack,
+  TextInput,
   Tooltip,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
@@ -34,7 +38,7 @@ import {
   IconUnderline,
 } from '@tabler/icons-react';
 import type { Editor } from '@tiptap/react';
-import { useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface DescriptionToolbarProps {
   editor: Editor | null;
@@ -47,7 +51,12 @@ interface DescriptionToolbarProps {
  * Fixed toolbar rendered above the TipTap editor.
  * Each button reads editor state for active styling and dispatches the appropriate command.
  */
-export function DescriptionToolbar({ editor, onEditHtml, onInsertMedia, onPreview }: DescriptionToolbarProps) {
+export function DescriptionToolbar({
+  editor,
+  onEditHtml,
+  onInsertMedia,
+  onPreview,
+}: DescriptionToolbarProps) {
   if (!editor) return null;
 
   return (
@@ -252,30 +261,93 @@ function ToolbarButton({
 /** Link insert button with URL prompt */
 function LinkButton({ editor }: { editor: Editor }) {
   const isActive = editor.isActive('link');
+  const [opened, { open, close }] = useDisclosure(false);
+  const [url, setUrl] = useState('');
 
-  const handleClick = useCallback(() => {
+  // Read clipboard text when modal opens
+  useEffect(() => {
+    if (opened) {
+      const getClipboardUrl = async () => {
+        try {
+          const text = await navigator.clipboard.readText();
+
+          if (text.startsWith('http://') || text.startsWith('https://')) {
+            setUrl(text);
+          } else {
+            setUrl('');
+          }
+        } catch (err) {
+          // eslint-disable-next-line no-console
+          console.warn('Failed to read clipboard:', err);
+          setUrl('');
+        }
+      };
+      getClipboardUrl();
+    }
+  }, [opened]);
+
+  const handleInsertLink = useCallback(() => {
+    if (url && url.trim()) {
+      editor.chain().focus().setLink({ href: url.trim() }).run();
+    }
+    close();
+    setUrl('');
+  }, [editor, url, close]);
+
+  const handleRemoveLink = useCallback(() => {
+    editor.chain().focus().unsetLink().run();
+  }, [editor]);
+
+  const handleMainClick = useCallback(() => {
     if (isActive) {
-      editor.chain().focus().unsetLink().run();
-      return;
+      handleRemoveLink();
+    } else {
+      open();
     }
-    // eslint-disable-next-line no-alert
-    const url = window.prompt('Enter URL');
-    if (url) {
-      editor.chain().focus().setLink({ href: url }).run();
-    }
-  }, [editor, isActive]);
+  }, [isActive, handleRemoveLink, open]);
 
   return (
-    <Tooltip label={isActive ? 'Remove Link' : 'Insert Link'} withArrow openDelay={500}>
-      <ActionIcon
-        size="sm"
-        variant={isActive ? 'filled' : 'subtle'}
-        color={isActive ? 'blue' : 'gray'}
-        onClick={handleClick}
+    <>
+      <Tooltip
+        label={isActive ? 'Remove Link' : 'Insert Link'}
+        withArrow
+        openDelay={500}
       >
-        <IconLink size={16} />
-      </ActionIcon>
-    </Tooltip>
+        <ActionIcon
+          size="sm"
+          variant={isActive ? 'filled' : 'subtle'}
+          color={isActive ? 'blue' : 'gray'}
+          onClick={handleMainClick}
+        >
+          <IconLink size={16} />
+        </ActionIcon>
+      </Tooltip>
+
+      <Modal
+        opened={opened}
+        onClose={close}
+        title="Insert Link"
+        size="md"
+        centered
+      >
+        <TextInput
+          label="URL"
+          placeholder="https://example.com"
+          value={url}
+          onChange={(event) => setUrl(event.currentTarget.value)}
+          data-autofocus
+          mb="md"
+        />
+        <Group justify="flex-end">
+          <Button variant="default" onClick={close}>
+            <Trans>Cancel</Trans>
+          </Button>
+          <Button onClick={handleInsertLink} disabled={!url.trim()}>
+            <Trans>Insert</Trans>
+          </Button>
+        </Group>
+      </Modal>
+    </>
   );
 }
 
@@ -296,7 +368,13 @@ function TextColorButton({ editor }: { editor: Editor }) {
   );
 
   return (
-    <Popover opened={opened} onClose={close} width={220} shadow="md" position="bottom">
+    <Popover
+      opened={opened}
+      onClose={close}
+      width={220}
+      shadow="md"
+      position="bottom"
+    >
       <Popover.Target>
         <Tooltip label="Text Color" withArrow openDelay={500}>
           <ActionIcon
@@ -320,16 +398,33 @@ function TextColorButton({ editor }: { editor: Editor }) {
       >
         <Stack gap={4}>
           <Group justify="flex-end">
-            <CloseButton size="xs" onClick={() => { close(); editor.commands.focus(); }} />
+            <CloseButton
+              size="xs"
+              onClick={() => {
+                close();
+                editor.commands.focus();
+              }}
+            />
           </Group>
           <ColorInput
             size="xs"
             value={currentColor}
             onChange={handleChange}
             swatches={[
-              '#000000', '#868e96', '#fa5252', '#e64980', '#be4bdb',
-              '#7950f2', '#4c6ef5', '#228be6', '#15aabf', '#12b886',
-              '#40c057', '#82c91e', '#fab005', '#fd7e14',
+              '#000000',
+              '#868e96',
+              '#fa5252',
+              '#e64980',
+              '#be4bdb',
+              '#7950f2',
+              '#4c6ef5',
+              '#228be6',
+              '#15aabf',
+              '#12b886',
+              '#40c057',
+              '#82c91e',
+              '#fab005',
+              '#fd7e14',
             ]}
             swatchesPerRow={7}
           />
