@@ -14,7 +14,7 @@ import {
   TelegramOAuthRoutes,
   TipTapNode,
 } from '@postybirb/types';
-import { supportsImage } from '@postybirb/utils/file-type';
+import { calculateImageResize, supportsImage } from '@postybirb/utils/file-type';
 import { Api, TelegramClient } from 'telegram';
 import { CustomFile } from 'telegram/client/uploads';
 import { Entity } from 'telegram/define';
@@ -249,7 +249,10 @@ export default class Telegram
   }
 
   calculateImageResize(file: ISubmissionFile): ImageResizeProps {
-    return { width: 2560, height: 2560 };
+    return calculateImageResize(file, {
+      maxWidth: 2560,
+      maxHeight: 2560,
+    });
   }
 
   async onPostFileSubmission(

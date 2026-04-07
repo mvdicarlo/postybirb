@@ -1,16 +1,17 @@
 import {
-    FileType,
-    ILoginState,
-    ImageResizeProps,
-    InstagramAccountData,
-    InstagramOAuthRoutes,
-    ISubmissionFile,
-    OAuthRouteHandlers,
-    PostData,
-    PostResponse,
-    SimpleValidationResult,
+  FileType,
+  ILoginState,
+  ImageResizeProps,
+  InstagramAccountData,
+  InstagramOAuthRoutes,
+  ISubmissionFile,
+  OAuthRouteHandlers,
+  PostData,
+  PostResponse,
+  SimpleValidationResult,
 } from '@postybirb/types';
 import { PostyBirbEnvConfig } from '@postybirb/utils/electron';
+import { calculateImageResize } from '@postybirb/utils/file-type';
 import { v4 as uuidv4 } from 'uuid';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
@@ -24,9 +25,9 @@ import { DataPropertyAccessibility } from '../../models/data-property-accessibil
 import { FileWebsite } from '../../models/website-modifiers/file-website';
 import { Website } from '../../website';
 import {
-    getInstagramRedirectUri,
-    InstagramApiService,
-    retrieveOAuthCode,
+  getInstagramRedirectUri,
+  InstagramApiService,
+  retrieveOAuthCode,
 } from './instagram-api-service/instagram-api-service';
 import { InstagramBlobService } from './instagram-blob-service/instagram-blob-service';
 import { InstagramFileSubmission } from './models/instagram-file-submission';
@@ -264,25 +265,16 @@ export default class Instagram
   calculateImageResize(file: ISubmissionFile): ImageResizeProps {
     // Instagram API only accepts JPEG. Convert any input format to JPEG.
     // See: https://developers.facebook.com/docs/instagram-platform/content-publishing#limitations
-    const props: ImageResizeProps = {};
+    const resizeProps = calculateImageResize(file, {
+      maxWidth: 1080,
+      maxBytes: FileSize.megabytes(30),
+    });
 
     if (file.mimeType !== 'image/jpeg') {
-      props.outputMimeType = 'image/jpeg';
+      return { ...resizeProps, outputMimeType: 'image/jpeg' };
     }
 
-    if (file.width > 1080) {
-      props.width = 1080;
-    }
-
-    if (file.size > FileSize.megabytes(30)) {
-      props.maxBytes = FileSize.megabytes(30);
-    }
-
-    if (Object.keys(props).length > 0) {
-      return props;
-    }
-
-    return undefined;
+    return resizeProps;
   }
 
   async onPostFileSubmission(

@@ -7,6 +7,7 @@ import {
   PostData,
   PostResponse,
 } from '@postybirb/types';
+import { calculateImageResize } from '@postybirb/utils/file-type';
 import { parse } from 'node-html-parser';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
@@ -89,18 +90,11 @@ export default class HentaiFoundry
   }
 
   calculateImageResize(file: ISubmissionFile): ImageResizeProps | undefined {
-    if (
-      file.width > 1500 ||
-      file.height > 1500 ||
-      file.size > FileSize.megabytes(2)
-    ) {
-      return {
-        height: 1500,
-        width: 1500,
-        maxBytes: FileSize.megabytes(2),
-      };
-    }
-    return undefined;
+    return calculateImageResize(file, {
+      maxWidth: 1500,
+      maxHeight: 1500,
+      maxBytes: FileSize.megabytes(2),
+    });
   }
 
   async onPostFileSubmission(
