@@ -120,6 +120,10 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
           }
         }
       } else if (type === EVENTS.TOUR_END) {
+        // Mark as completed on any close to ensure the localStorage flag is set
+        if (activeTourId) {
+          completeTour(activeTourId);
+        }
         endTour();
       }
     },

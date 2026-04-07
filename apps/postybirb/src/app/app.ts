@@ -13,10 +13,9 @@ import {
   NativeImage,
   Tray,
   app,
-  globalShortcut,
   nativeImage,
   nativeTheme,
-  screen,
+  screen
 } from 'electron';
 import { join } from 'path';
 import { environment } from '../environments/environment';
@@ -205,18 +204,6 @@ export default class PostyBirb {
     PostyBirb.BrowserWindow = browserWindow;
     PostyBirb.application = electronApp;
     PostyBirb.appImage = nativeImage.createFromPath(appIcon);
-
-    PostyBirb.application.on('browser-window-focus', () => {
-      globalShortcut.registerAll(['f5', 'CommandOrControl+R'], () => {
-        if (PostyBirb.mainWindow && PostyBirb.mainWindow.isFocused()) {
-          PostyBirb.mainWindow.reload();
-        }
-      });
-    });
-    PostyBirb.application.on('browser-window-blur', () => {
-      globalShortcut.unregister('f5');
-      globalShortcut.unregister('CommandOrControl+R');
-    });
     PostyBirb.application.on('window-all-closed', PostyBirb.onWindowAllClosed); // Quit when all windows are closed.
     PostyBirb.application.on('ready', PostyBirb.onReady); // App is ready to load data
     PostyBirb.application.on('activate', PostyBirb.onActivate); // App is activated
