@@ -2,6 +2,7 @@
 import { SelectOption } from '@postybirb/form-builder';
 import { getParsedProxiesFor } from '@postybirb/http';
 import {
+  FileType,
   ILoginState,
   ImageResizeProps,
   ISubmissionFile,
@@ -58,7 +59,10 @@ import { TelegramMessageSubmission } from './models/telegram-message-submission'
     'audio/mp3',
   ],
   fileBatchSize: 10,
-  acceptedFileSizes: { '*': FileSize.megabytes(30) },
+  acceptedFileSizes: {
+    '*': FileSize.megabytes(1000 * 2),
+    [FileType.IMAGE]: FileSize.megabytes(10),
+  },
 })
 export default class Telegram
   extends Website<TelegramAccountData>
@@ -245,11 +249,7 @@ export default class Telegram
   }
 
   calculateImageResize(file: ISubmissionFile): ImageResizeProps {
-    return file.width > 2560 || file.height > 2560
-      ? { width: 2560, height: 2560 }
-      : file.size > this.decoratedProps.fileOptions.acceptedFileSizes['*']
-        ? { maxBytes: this.decoratedProps.fileOptions.acceptedFileSizes['*'] }
-        : undefined;
+    return { width: 2560, height: 2560 };
   }
 
   async onPostFileSubmission(
