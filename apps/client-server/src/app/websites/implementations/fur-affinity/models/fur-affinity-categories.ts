@@ -1,7 +1,7 @@
 import { SelectOption } from '@postybirb/form-builder';
 
 // Run this script on https://www.furaffinity.net/submit/finalize/ to update categories
-// Array.prototype.map.call(document.querySelector("select[name='cat']"), (e) => ({value: e.value, label: e.label, parent: e.parentNode?.label})).reduce((e, c) => {  if (!c.parent) return e;  const f = e.find(e => e.label === c.parent) ?? (e[e.push({label: c.parent, items: []})-1]);  f.items.push({value: c.value, label: c.label});  return e;}, [])
+// JSON.stringify(Array.prototype.map.call(document.querySelector("select[name='cat']"), (e) => ({ value: e.value, label: e.label, parent: e.parentNode?.label, })).reduce((e, c) => { if (!c.parent) { e.push({ value: c.value, label: c.label }); return e; }; const f = e.find((e) => e.label === c.parent) ?? e[e.push({ label: c.parent, items: [] }) - 1]; f.items.push({ value: c.value, label: c.label }); return e; }, []))
 
 export const FurAffinityCategories: SelectOption[] = [
   {
