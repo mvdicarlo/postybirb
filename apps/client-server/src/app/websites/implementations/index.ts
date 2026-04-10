@@ -19,6 +19,7 @@ export { default as Itaku } from './itaku/itaku.website';
 export { default as KoFi } from './ko-fi/ko-fi.website';
 export { default as Manebooru } from './manebooru/manebooru.website';
 export { default as Mastodon } from './mastodon/mastodon.website';
+export { default as Misskey } from './misskey/misskey.website';
 export { default as Newgrounds } from './newgrounds/newgrounds.website';
 export { default as Patreon } from './patreon/patreon.website';
 export { default as Picarto } from './picarto/picarto.website';

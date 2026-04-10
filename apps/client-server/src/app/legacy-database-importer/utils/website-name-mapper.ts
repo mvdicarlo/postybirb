@@ -22,7 +22,7 @@ export class WebsiteNameMapper {
     KoFi: 'ko-fi',
     Manebooru: 'manebooru',
     Mastodon: 'mastodon',
-    MissKey: 'mastodon', // MissKey now uses Mastodon implementation
+    MissKey: 'misskey',
     Newgrounds: 'newgrounds',
     Patreon: 'patreon',
     Picarto: 'picarto',
