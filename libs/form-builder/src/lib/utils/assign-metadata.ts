@@ -140,7 +140,6 @@ export function createFieldDecorator<
         );
 
         const chainedFields = chain
-          .reverse()
           .filter((c) => c !== target.constructor.name)
           .map((c) => Reflect.getMetadata(target[getMetadataKey(c)], proto));
 
