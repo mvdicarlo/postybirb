@@ -3,7 +3,6 @@ import { Logger } from '@postybirb/logger';
 import { UPDATE_UPDATES } from '@postybirb/socket-events';
 import { ReleaseNoteInfo, UpdateState } from '@postybirb/types';
 import { ProgressInfo, UpdateInfo, autoUpdater } from 'electron-updater';
-// eslint-disable-next-line import/no-extraneous-dependencies
 import isDocker from 'is-docker';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 
