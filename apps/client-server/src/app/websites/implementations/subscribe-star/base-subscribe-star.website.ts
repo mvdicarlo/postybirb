@@ -1,13 +1,14 @@
 import { SelectOption } from '@postybirb/form-builder';
 import { Http } from '@postybirb/http';
 import {
-    ILoginState,
-    ImageResizeProps,
-    ISubmissionFile,
-    PostData,
-    PostResponse,
-    SimpleValidationResult,
+  ILoginState,
+  ImageResizeProps,
+  ISubmissionFile,
+  PostData,
+  PostResponse,
+  SimpleValidationResult,
 } from '@postybirb/types';
+import { BrowserWindowUtils } from '@postybirb/utils/electron';
 import parse, { HTMLElement } from 'node-html-parser';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
@@ -86,7 +87,7 @@ export default abstract class BaseSubscribeStar
     const $ = parse(profilePage);
     const topBar = $.querySelector('.top_bar-user_info');
     if (topBar) {
-      const username = topBar.innerText.trim();
+      const username = $.querySelector('.top_bar-user_name').innerText.trim();
       const csrfToken = $.querySelector(
         'meta[name="csrf-token"]',
       )?.getAttribute('content');
@@ -95,9 +96,7 @@ export default abstract class BaseSubscribeStar
         return this.loginState.setLogin(false, null);
       }
       this.sessionData.csrfToken = csrfToken;
-      const userId = topBar
-        .querySelector('img')
-        ?.getAttribute('data-user-id');
+      const userId = topBar.querySelector('img')?.getAttribute('data-user-id');
       if (!userId) {
         this.logger.warn('Failed to find user-id img element during login');
         return this.loginState.setLogin(false, null);
@@ -156,13 +155,11 @@ export default abstract class BaseSubscribeStar
   }
 
   private async getPostData(): Promise<SubscribeStarUploadData | undefined> {
+    const url = `${this.BASE_URL}/${this.loginState.username}`;
     try {
-      const { body } = await Http.get<string>(
-        `${this.BASE_URL}/${this.loginState.username}`,
-        {
-          partition: this.accountId,
-        },
-      );
+      const { body } = await Http.get<string>(url, {
+        partition: this.accountId,
+      });
       const $ = parse(body);
       const newPost = $.querySelector('.new_post')
         ?.querySelector('.new_post-inner')
@@ -180,19 +177,70 @@ export default abstract class BaseSubscribeStar
         return {
           s3UploadPath: innerDoc
             .querySelector('.post_xodal')
-            ?.getAttribute('data-s3-upload-path'),
+            .getAttribute('data-s3-upload-path'),
           s3Url: innerDoc
             .querySelector('.post_xodal')
-            ?.getAttribute('data-s3-url'),
+            .getAttribute('data-s3-url'),
           authenticityToken: innerDoc
             .querySelectorAll('form input')
             .find((input) => input.rawAttrs.includes('authenticity_token'))
-            ?.getAttribute('value'),
+            .getAttribute('value'),
         };
       }
+      this.logger.warn(
+        'Falling back to BrowserWindow method for acquiring S3 token due to missing data-form-template element',
+      );
+      return await this.fallbackS3TokenLoader(url);
     } catch (error) {
       this.logger.error(error, 'Failed to parse post data');
     }
+    return undefined;
+  }
+
+  private async fallbackS3TokenLoader(
+    url: string,
+  ): Promise<SubscribeStarUploadData | undefined> {
+    const { authenticityToken, s3UploadPath, s3Url } =
+      await BrowserWindowUtils.runScriptOnPage<{
+        authenticityToken: string;
+        s3UploadPath: string;
+        s3Url: string;
+      }>(
+        this.accountId,
+        url,
+        `
+      async function getInfo() {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(JSON.parse(document.querySelector('.new_post')
+                ?.querySelector('.new_post-inner')
+                ?.getAttribute('data-form-template')).replace(/\\u([0-9a-fA-F]{4})/g, (match, hex) =>
+                  String.fromCharCode(parseInt(hex, 16)),
+                ) , 'text/html');
+        
+        const s3UploadPath = doc.querySelector('.post_xodal').getAttribute('data-s3-upload-path');
+        const s3Url = doc.querySelector('.post_xodal').getAttribute('data-s3-url');
+        const authenticityToken = [...doc.querySelectorAll('form input')].find((input) => input.getAttribute('name') === 'authenticity_token')
+          .getAttribute('value') ;
+
+
+        const out = { authenticityToken, s3UploadPath, s3Url };
+
+        return out;
+      }
+      
+      return getInfo();
+    `,
+        1000,
+      );
+
+    if (authenticityToken && s3UploadPath && s3Url) {
+      return {
+        authenticityToken,
+        s3UploadPath,
+        s3Url,
+      };
+    }
+
     return undefined;
   }
 
