@@ -1,11 +1,11 @@
 import { Http } from '@postybirb/http';
 import {
-    FileType,
-    ILoginState,
-    ImageResizeProps,
-    PostData,
-    PostResponse,
-    SubmissionRating,
+  FileType,
+  ILoginState,
+  ImageResizeProps,
+  PostData,
+  PostResponse,
+  SubmissionRating,
 } from '@postybirb/types';
 import parse from 'node-html-parser';
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -55,7 +55,9 @@ export default class Pixiv
       try {
         const data = $.querySelector('#__NEXT_DATA__')?.textContent;
         if (!data) {
-          this.logger.warn('Failed to find #__NEXT_DATA__ element during login');
+          this.logger.warn(
+            'Failed to find #__NEXT_DATA__ element during login',
+          );
           return this.loginState.setLogin(true, 'Logged In');
         }
         username = JSON.parse(
@@ -113,7 +115,7 @@ export default class Pixiv
       .asMultipart()
       .setField('title', options.title.substring(0, 32))
       .setField('caption', options.description)
-      .setField('tags[]', options.tags.slice(0, 10))
+      .setField('tags[]', options.tags)
       .setField('allowTagEdit', options.communityTags)
       .setField('xRestrict', contentRating)
       .setField('sexual', options.sexual)
