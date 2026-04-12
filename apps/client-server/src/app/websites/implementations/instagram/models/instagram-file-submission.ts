@@ -1,14 +1,14 @@
 import {
-    DescriptionField,
-    RatingField,
-    TagField,
+  DescriptionField,
+  RatingField,
+  TagField,
 } from '@postybirb/form-builder';
 import {
-    DefaultTagValue,
-    DescriptionType,
-    DescriptionValue,
-    SubmissionRating,
-    TagValue,
+  DefaultTagValue,
+  DescriptionType,
+  DescriptionValue,
+  SubmissionRating,
+  TagValue,
 } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
@@ -44,6 +44,6 @@ export class InstagramFileSubmission extends BaseWebsiteOptions {
    */
   override processTag(tag: string): string {
     const cleaned = tag.replace(/[^a-zA-Z0-9_\u00C0-\u024F\u1E00-\u1EFF]/g, '');
-    return cleaned ? `#${cleaned}` : '';
+    return cleaned ? `${cleaned}` : '';
   }
 }
