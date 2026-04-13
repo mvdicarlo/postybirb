@@ -26,20 +26,6 @@ export class TumblrFileSubmission extends BaseWebsiteOptions {
   })
   description: DescriptionValue;
 
-  @SelectField<TumblrAccountData>({
-    label: 'blog',
-    options: [],
-    required: true,
-    derive: [
-      {
-        key: 'blogs',
-        populate: 'options',
-      },
-    ],
-    span: 12,
-  })
-  blog: string;
-
   @TagField({
     section: 'common',
     order: 3,
@@ -95,4 +81,18 @@ export class TumblrFileSubmission extends BaseWebsiteOptions {
     ],
   })
   sexualContent = false;
+
+  @SelectField<TumblrAccountData>({
+    label: 'blog',
+    options: [],
+    required: true,
+    derive: [
+      {
+        key: 'blogs',
+        populate: 'options',
+      },
+    ],
+    span: 6,
+  })
+  blog: string;
 }
