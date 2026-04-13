@@ -20,7 +20,8 @@ jobs:
       matrix:
         ci:
           - name: Lint
-            command: "yarn nx affected -t lint --cache --cache-strategy content --cache-location .eslint"
+            command: "yarn nx affected -t lint --cache --cache-strategy content
+              --cache-location .eslint"
 
           - name: TypeCheck
             command: "yarn nx affected -t typecheck"
@@ -30,7 +31,12 @@ jobs:
           # grep filters out useless spam in console about not able to access display.
           # pipefail needed because otherwise grep returns exit code 0 and failed tests don't display in ci as failed
           - name: Test
-            command: 'set -o pipefail && xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" -- yarn nx affected -t test | grep -v -E "ERROR:viz_main_impl\.cc\(183\)|ERROR:object_proxy\.cc\(576\)|ERROR:bus\.cc\(408\)"'
+            command: "set -o pipefail && xvfb-run --auto-servernum --server-args=\"-screen 0
+              1280x960x24\" -- yarn nx affected -t test | grep -v -E
+              \"ERROR:viz_main_impl\\.cc\\(183\\)|ERROR:object_proxy\\.cc\\(576\
+              \\)|ERROR:bus\\.cc\\(408\\)|ERROR:gles2_cmd_decoder_passthrough\\\
+              .cc\\(1094\\)|ERROR:gl_utils\\.cc\\(431\\)|ERROR:browser_main_loop\
+              \\.cc\\(276\\)\""
 
     steps:
       - name: Check out Git repository
@@ -49,7 +55,6 @@ jobs:
             dist/out-tsc
 
           key: ${{ runner.os }}-ci
-
         # This is needed to be run before node setup, because node setup uses yarn to get cache dir
       - name: Enable corepack to use Yarn v4
         run: corepack enable
@@ -59,13 +64,11 @@ jobs:
         with:
           node-version: "22"
           cache: yarn
-
         # These flags needed to speed up ci
       - name: Install dependencies
         run: yarn install --immutable
         env:
           CYPRESS_INSTALL_BINARY: 0 # Skip downloading Cypress binary (not needed for CI)
-
         # Used to calculate affected
       - name: Setup SHAs
         uses: nrwl/nx-set-shas@v4
