@@ -550,7 +550,7 @@ export abstract class MegalodonWebsite
 
       // Create status with media
       const statusResult = await client.postStatus(
-        postData.options.description,
+        postData.options.description || '',
         {
           media_ids: mediaIds,
           sensitive: postData.options.sensitive || isSensitiveRating || false,
@@ -601,7 +601,7 @@ export abstract class MegalodonWebsite
         postData.options.rating === SubmissionRating.EXTREME;
 
       const statusResult = await client.postStatus(
-        postData.options.description,
+        postData.options.description || '',
         {
           sensitive: postData.options.sensitive || isSensitiveRating || false,
           visibility: postData.options.visibility || 'public',

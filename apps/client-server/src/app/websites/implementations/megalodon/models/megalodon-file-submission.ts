@@ -22,6 +22,7 @@ export class MegalodonFileSubmission extends BaseWebsiteOptions {
 
   @DescriptionField({
     descriptionType: DescriptionType.PLAINTEXT,
+    required: false,
   })
   description: DescriptionValue;
 
