@@ -29,6 +29,20 @@ export class TelegramFileSubmission extends BaseWebsiteOptions {
   })
   tags: TagValue;
 
+  @BooleanField({
+    label: 'silent',
+    section: 'website',
+    span: 6,
+  })
+  silent = false;
+
+  @BooleanField({
+    label: 'spoiler',
+    section: 'website',
+    span: 6,
+  })
+  spoiler = false;
+
   @SelectField<TelegramAccountData>({
     label: 'channel',
     derive: [{ key: 'channels', populate: 'options' }],
@@ -37,20 +51,7 @@ export class TelegramFileSubmission extends BaseWebsiteOptions {
     minSelected: 1,
     required: true,
     section: 'website',
+    span: 6,
   })
   channels: string[];
-
-  @BooleanField({
-    label: 'silent',
-    section: 'website',
-    span: 12,
-  })
-  silent = false;
-
-  @BooleanField({
-    label: 'spoiler',
-    section: 'website',
-    span: 12,
-  })
-  spoiler = false;
 }
