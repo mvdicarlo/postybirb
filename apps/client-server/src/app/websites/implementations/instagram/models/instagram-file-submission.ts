@@ -2,6 +2,7 @@ import {
   DescriptionField,
   RatingField,
   TagField,
+  TitleField,
 } from '@postybirb/form-builder';
 import {
   DefaultTagValue,
@@ -13,6 +14,11 @@ import {
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
 export class InstagramFileSubmission extends BaseWebsiteOptions {
+  @TitleField({
+    expectedInDescription: true,
+  })
+  title = '';
+
   @DescriptionField({
     descriptionType: DescriptionType.PLAINTEXT,
     maxDescriptionLength: 2200,
@@ -21,6 +27,7 @@ export class InstagramFileSubmission extends BaseWebsiteOptions {
 
   @TagField({
     maxTags: 30,
+    expectedInDescription: true,
   })
   tags: TagValue = DefaultTagValue();
 

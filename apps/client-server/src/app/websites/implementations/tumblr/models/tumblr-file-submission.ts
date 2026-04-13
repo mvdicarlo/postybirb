@@ -3,18 +3,24 @@ import {
   DescriptionField,
   SelectField,
   TagField,
+  TitleField,
 } from '@postybirb/form-builder';
 import {
+  DefaultTagValue,
   DescriptionType,
   DescriptionValue,
   SubmissionRating,
-  DefaultTagValue,
   TagValue,
 } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 import { TumblrAccountData } from './tumblr-account-data';
 
 export class TumblrFileSubmission extends BaseWebsiteOptions {
+  @TitleField({
+    expectedInDescription: true,
+  })
+  title = '';
+
   @DescriptionField({
     descriptionType: DescriptionType.CUSTOM,
   })

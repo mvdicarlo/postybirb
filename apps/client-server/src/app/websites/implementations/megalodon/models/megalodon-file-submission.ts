@@ -4,6 +4,7 @@ import {
   SelectField,
   TagField,
   TextField,
+  TitleField,
 } from '@postybirb/form-builder';
 import {
   DefaultTagValue,
@@ -14,6 +15,11 @@ import {
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
 export class MegalodonFileSubmission extends BaseWebsiteOptions {
+  @TitleField({
+    expectedInDescription: true,
+  })
+  title = '';
+
   @DescriptionField({
     descriptionType: DescriptionType.PLAINTEXT,
   })
@@ -21,6 +27,7 @@ export class MegalodonFileSubmission extends BaseWebsiteOptions {
 
   @TagField({
     spaceReplacer: '_',
+    expectedInDescription: true,
   })
   tags: TagValue = DefaultTagValue();
 

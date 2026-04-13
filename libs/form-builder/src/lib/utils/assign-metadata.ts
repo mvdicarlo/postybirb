@@ -81,7 +81,8 @@ export function createFieldDecorator<
      * @param options - Options to be changed
      */
     onCreate?: (
-      options: FieldType<FieldValue, TypeKey>,
+      fields: Record<string, object>,
+      options: FieldType<FieldValue, TypeKey> & ExtraFields,
       target: any,
       propertyKey: string | symbol,
     ) => void;
@@ -134,7 +135,9 @@ export function createFieldDecorator<
           Reflect.getMetadata(sym, proto) || {};
 
         field.onCreate?.(
-          fieldOptions as unknown as FieldType<FieldValue, TypeKey>,
+          fields,
+          fieldOptions as unknown as FieldType<FieldValue, TypeKey> &
+            ExtraFields,
           target,
           propertyKey,
         );

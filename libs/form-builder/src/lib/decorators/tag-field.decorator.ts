@@ -1,5 +1,6 @@
 import { DefaultTagValue, TagValue } from '@postybirb/types';
 import 'reflect-metadata';
+import { DescriptionFieldType } from '../types';
 import { createFieldDecorator } from '../utils/assign-metadata';
 
 type TagExtraFields = {
@@ -9,6 +10,7 @@ type TagExtraFields = {
   maxTagLength?: number;
   minTagLength?: number;
   spaceReplacer?: string;
+  expectedInDescription?: boolean;
 };
 
 export const TagField = createFieldDecorator<TagValue, TagExtraFields>('tag')({
@@ -18,5 +20,15 @@ export const TagField = createFieldDecorator<TagValue, TagExtraFields>('tag')({
     defaultValue: DefaultTagValue(),
     minTagLength: 1,
     spaceReplacer: '_',
+    expectedInDescription: false,
+  },
+  onCreate(fields, options) {
+    // Ensure all fields have been initialized
+    setImmediate(() => {
+      if (options.expectedInDescription) {
+        const description = fields.description as DescriptionFieldType;
+        description.defaultValue.insertTags = true;
+      }
+    });
   },
 });

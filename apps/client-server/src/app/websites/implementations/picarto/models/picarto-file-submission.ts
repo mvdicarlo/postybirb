@@ -16,6 +16,7 @@ export class PicartoFileSubmission extends BaseWebsiteOptions {
   description: DescriptionValue;
 
   @TagField({
+    minTagLength: 1,
     maxTags: 30,
     maxTagLength: 30,
     spaceReplacer: '_',

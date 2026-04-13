@@ -113,6 +113,14 @@ export interface ValidationMessages {
     minLength: number;
   };
 
+  'validation.description.missing-tags': object;
+
+  'validation.description.unexpected-tags': object;
+
+  'validation.description.missing-title': object;
+
+  'validation.description.unexpected-title': object;
+
   'validation.tags.max-tags': {
     currentLength: number;
     maxLength: number;

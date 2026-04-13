@@ -3,6 +3,7 @@ import {
   SelectField,
   TagField,
   TextField,
+  TitleField,
 } from '@postybirb/form-builder';
 import {
   DefaultTagValue,
@@ -21,8 +22,14 @@ export class BlueskyFileSubmission extends BaseWebsiteOptions {
 
   @TagField({
     spaceReplacer: '_',
+    expectedInDescription: true,
   })
   tags: TagValue = DefaultTagValue();
+
+  @TitleField({
+    expectedInDescription: true,
+  })
+  title = '';
 
   override processTag(tag: string) {
     return `${tag.replaceAll(/[^a-z0-9]/gi, '_')}`;

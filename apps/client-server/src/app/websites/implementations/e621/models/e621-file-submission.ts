@@ -1,4 +1,9 @@
-import { DescriptionField, TagField, TextField } from '@postybirb/form-builder';
+import {
+  DescriptionField,
+  TagField,
+  TextField,
+  TitleField,
+} from '@postybirb/form-builder';
 import {
   DefaultTagValue,
   DescriptionType,
@@ -8,6 +13,11 @@ import {
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
 export class E621FileSubmission extends BaseWebsiteOptions {
+  @TitleField({
+    expectedInDescription: true,
+  })
+  title = '';
+
   @DescriptionField({
     descriptionType: DescriptionType.CUSTOM,
   })

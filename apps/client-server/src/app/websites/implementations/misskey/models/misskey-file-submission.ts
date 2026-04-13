@@ -1,19 +1,25 @@
 import {
-    BooleanField,
-    DescriptionField,
-    SelectField,
-    TagField,
-    TextField,
+  BooleanField,
+  DescriptionField,
+  SelectField,
+  TagField,
+  TextField,
+  TitleField,
 } from '@postybirb/form-builder';
 import {
-    DefaultTagValue,
-    DescriptionType,
-    DescriptionValue,
-    TagValue,
+  DefaultTagValue,
+  DescriptionType,
+  DescriptionValue,
+  TagValue,
 } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
 export class MisskeyFileSubmission extends BaseWebsiteOptions {
+  @TitleField({
+    expectedInDescription: true,
+  })
+  title = '';
+
   @DescriptionField({
     descriptionType: DescriptionType.PLAINTEXT,
   })
@@ -21,11 +27,12 @@ export class MisskeyFileSubmission extends BaseWebsiteOptions {
 
   @TagField({
     spaceReplacer: '_',
+    expectedInDescription: true,
   })
   tags: TagValue = DefaultTagValue();
 
   override processTag(tag: string) {
-    return `#${tag.replaceAll(/[^a-z0-9]/gi, '_')}`;
+    return `${tag.replaceAll(/[^a-z0-9]/gi, '_')}`;
   }
 
   @SelectField({

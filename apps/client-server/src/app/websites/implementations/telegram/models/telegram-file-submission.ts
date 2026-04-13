@@ -3,6 +3,7 @@ import {
   DescriptionField,
   SelectField,
   TagField,
+  TitleField,
 } from '@postybirb/form-builder';
 import {
   DescriptionType,
@@ -13,12 +14,19 @@ import {
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
 export class TelegramFileSubmission extends BaseWebsiteOptions {
+  @TitleField({
+    expectedInDescription: true,
+  })
+  title = '';
+
   @DescriptionField({
     descriptionType: DescriptionType.CUSTOM,
   })
   description: DescriptionValue;
 
-  @TagField({})
+  @TagField({
+    expectedInDescription: true,
+  })
   tags: TagValue;
 
   @SelectField<TelegramAccountData>({
@@ -29,17 +37,20 @@ export class TelegramFileSubmission extends BaseWebsiteOptions {
     minSelected: 1,
     required: true,
     section: 'website',
-    span: 6,
   })
   channels: string[];
 
   @BooleanField({
     label: 'silent',
     section: 'website',
-    span: 6,
+    span: 12,
   })
   silent = false;
 
-  @BooleanField({ label: 'spoiler', section: 'website', span: 6 })
+  @BooleanField({
+    label: 'spoiler',
+    section: 'website',
+    span: 12,
+  })
   spoiler = false;
 }

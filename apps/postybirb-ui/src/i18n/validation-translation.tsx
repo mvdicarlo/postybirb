@@ -46,6 +46,32 @@ export const TranslationMessages: TranslationsMap = {
     );
   },
 
+  'validation.description.missing-tags': () => (
+    <Trans>
+      Tags will not be inserted. Use tags shortcut or enable 'Insert tags at
+      end'
+    </Trans>
+  ),
+  'validation.description.unexpected-tags': () => (
+    <Trans>
+      Tags are not expected in the description of this website because it has
+      dedicated tags field. Remove tags shortcut or disable 'Insert tags at end'
+    </Trans>
+  ),
+  'validation.description.missing-title': () => (
+    <Trans>
+      Title will not be inserted. Use title shortcut or enable 'Insert title at
+      start'
+    </Trans>
+  ),
+  'validation.description.unexpected-title': () => (
+    <Trans>
+      Title are not expected in the description of this website because it has
+      dedicated title field. Remove title shortcut or disable 'Insert title at
+      start'
+    </Trans>
+  ),
+
   'validation.file.file-batch-size': (props) => {
     const { maxBatchSize, expectedBatchesToCreate } = props;
     return (
