@@ -24,9 +24,7 @@ export class TelegramFileSubmission extends BaseWebsiteOptions {
   })
   description: DescriptionValue;
 
-  @TagField({
-    expectedInDescription: true,
-  })
+  @TagField({})
   tags: TagValue;
 
   @SelectField<TelegramAccountData>({
