@@ -1,8 +1,4 @@
-import {
-  DescriptionField,
-  TagField,
-  TitleField,
-} from '@postybirb/form-builder';
+import { DescriptionField, TagField } from '@postybirb/form-builder';
 import {
   DefaultTagValue,
   DescriptionType,
@@ -15,6 +11,8 @@ export class CaraMessageSubmission extends BaseWebsiteOptions {
   @DescriptionField({
     descriptionType: DescriptionType.PLAINTEXT,
     maxDescriptionLength: 5000,
+    expectsInlineTags: true,
+    expectsInlineTitle: true,
   })
   description: DescriptionValue;
 
@@ -23,12 +21,6 @@ export class CaraMessageSubmission extends BaseWebsiteOptions {
     order: 3,
     span: 12,
     spaceReplacer: ' ',
-    expectedInDescription: true,
   })
   tags: TagValue = DefaultTagValue();
-
-  @TitleField({
-    expectedInDescription: true,
-  })
-  title = '';
 }

@@ -2,20 +2,15 @@ import {
   BooleanField,
   DescriptionField,
   TagField,
-  TitleField,
 } from '@postybirb/form-builder';
 import { DescriptionType, DescriptionValue, TagValue } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
 export class DiscordFileSubmission extends BaseWebsiteOptions {
-  @TitleField({
-    expectedInDescription: true,
-  })
-  title = '';
-
   @DescriptionField({
     descriptionType: DescriptionType.MARKDOWN,
     maxDescriptionLength: 2000,
+    expectsInlineTitle: true,
   })
   description: DescriptionValue;
 

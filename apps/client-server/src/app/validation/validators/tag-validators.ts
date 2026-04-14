@@ -80,35 +80,3 @@ export async function validateTagHashtag({
     );
   }
 }
-
-export async function validateTagsPresence({
-  data,
-  mergedWebsiteOptions,
-  validator,
-}: ValidatorParams) {
-  const { hidden, expectedInDescription } =
-    mergedWebsiteOptions.getFormFieldFor('tags');
-  const { tags, description } = data.options;
-
-  if (hidden || !description || !tags.length) return;
-
-  const presentTags = tags.filter((e) => description.includes(`#${e}`));
-
-  if (expectedInDescription) {
-    if (presentTags.length === 0) {
-      // Tags are missing in the description
-      validator.warning(
-        'validation.description.missing-tags',
-        {},
-        'description',
-      );
-    }
-  } else if (presentTags.length === tags.length) {
-    // All tags are in description
-    validator.warning(
-      'validation.description.unexpected-tags',
-      {},
-      'description',
-    );
-  }
-}

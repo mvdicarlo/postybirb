@@ -3,7 +3,6 @@ import {
   DescriptionField,
   SelectField,
   TagField,
-  TitleField,
 } from '@postybirb/form-builder';
 import {
   DefaultTagValue,
@@ -16,13 +15,9 @@ import { BaseWebsiteOptions } from '../../../models/base-website-options';
 import { TumblrAccountData } from './tumblr-account-data';
 
 export class TumblrFileSubmission extends BaseWebsiteOptions {
-  @TitleField({
-    expectedInDescription: true,
-  })
-  title = '';
-
   @DescriptionField({
     descriptionType: DescriptionType.CUSTOM,
+    expectsInlineTitle: true,
   })
   description: DescriptionValue;
 

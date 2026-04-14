@@ -190,7 +190,6 @@ describe('formBuilder', () => {
             "overrideDefault": false,
             "tags": [],
           },
-          "expectedInDescription": false,
           "formField": "tag",
           "label": "tags",
           "minTagLength": 1,

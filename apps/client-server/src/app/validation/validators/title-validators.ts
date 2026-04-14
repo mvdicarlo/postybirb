@@ -39,35 +39,3 @@ export async function validateTitleMinLength({
     );
   }
 }
-
-export async function validateTitlePresence({
-  data,
-  mergedWebsiteOptions,
-  validator,
-}: ValidatorParams) {
-  const { hidden, expectedInDescription } =
-    mergedWebsiteOptions.getFormFieldFor('title');
-  const { title, description } = data.options;
-
-  if (hidden || !title || !description) return;
-
-  const hasTitleText = description.includes(title);
-
-  if (expectedInDescription) {
-    if (!hasTitleText) {
-      // Title is missing in the description
-      validator.warning(
-        'validation.description.missing-title',
-        {},
-        'description',
-      );
-    }
-  } else if (hasTitleText) {
-    // Title is in the description
-    validator.warning(
-      'validation.description.unexpected-title',
-      {},
-      'description',
-    );
-  }
-}

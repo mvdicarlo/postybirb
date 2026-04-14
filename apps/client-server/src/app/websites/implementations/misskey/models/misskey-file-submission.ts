@@ -4,7 +4,6 @@ import {
   SelectField,
   TagField,
   TextField,
-  TitleField,
 } from '@postybirb/form-builder';
 import {
   DefaultTagValue,
@@ -15,19 +14,15 @@ import {
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
 export class MisskeyFileSubmission extends BaseWebsiteOptions {
-  @TitleField({
-    expectedInDescription: true,
-  })
-  title = '';
-
   @DescriptionField({
     descriptionType: DescriptionType.PLAINTEXT,
+    expectsInlineTags: true,
+    expectsInlineTitle: true,
   })
   description: DescriptionValue;
 
   @TagField({
     spaceReplacer: '_',
-    expectedInDescription: true,
   })
   tags: TagValue = DefaultTagValue();
 

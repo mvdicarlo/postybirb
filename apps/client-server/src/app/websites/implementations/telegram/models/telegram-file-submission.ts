@@ -3,7 +3,6 @@ import {
   DescriptionField,
   SelectField,
   TagField,
-  TitleField,
 } from '@postybirb/form-builder';
 import {
   DescriptionType,
@@ -14,13 +13,9 @@ import {
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
 export class TelegramFileSubmission extends BaseWebsiteOptions {
-  @TitleField({
-    expectedInDescription: true,
-  })
-  title = '';
-
   @DescriptionField({
     descriptionType: DescriptionType.CUSTOM,
+    expectsInlineTitle: true,
   })
   description: DescriptionValue;
 

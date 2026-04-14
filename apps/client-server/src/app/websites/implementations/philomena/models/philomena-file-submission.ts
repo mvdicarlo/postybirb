@@ -1,8 +1,4 @@
-import {
-  DescriptionField,
-  TagField,
-  TitleField,
-} from '@postybirb/form-builder';
+import { DescriptionField, TagField } from '@postybirb/form-builder';
 import { DescriptionType, DescriptionValue, TagValue } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
@@ -11,13 +7,9 @@ import { BaseWebsiteOptions } from '../../../models/base-website-options';
  * Subclasses can override field decorators to customize validation.
  */
 export class PhilomenaFileSubmission extends BaseWebsiteOptions {
-  @TitleField({
-    expectedInDescription: true,
-  })
-  title = '';
-
   @DescriptionField({
     descriptionType: DescriptionType.MARKDOWN,
+    expectsInlineTitle: true,
   })
   description: DescriptionValue;
 

@@ -1,8 +1,4 @@
-import {
-  DescriptionField,
-  RatingField,
-  TitleField,
-} from '@postybirb/form-builder';
+import { DescriptionField, RatingField } from '@postybirb/form-builder';
 import {
   DescriptionType,
   DescriptionValue,
@@ -11,13 +7,10 @@ import {
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
 export class TwitterMessageSubmission extends BaseWebsiteOptions {
-  @TitleField({
-    expectedInDescription: true,
-  })
-  title = '';
-
   @DescriptionField({
     descriptionType: DescriptionType.PLAINTEXT,
+    expectsInlineTags: true,
+    expectsInlineTitle: true,
   })
   description: DescriptionValue;
 

@@ -3,7 +3,6 @@ import {
   SelectField,
   TagField,
   TextField,
-  TitleField,
 } from '@postybirb/form-builder';
 import {
   DefaultTagValue,
@@ -17,19 +16,15 @@ export class BlueskyFileSubmission extends BaseWebsiteOptions {
   @DescriptionField({
     descriptionType: DescriptionType.CUSTOM,
     maxDescriptionLength: Infinity, // Custom length calculation is handled by validation logic
+    expectsInlineTags: true,
+    expectsInlineTitle: true,
   })
   description: DescriptionValue;
 
   @TagField({
     spaceReplacer: '_',
-    expectedInDescription: true,
   })
   tags: TagValue = DefaultTagValue();
-
-  @TitleField({
-    expectedInDescription: true,
-  })
-  title = '';
 
   override processTag(tag: string) {
     return `${tag.replaceAll(/[^a-z0-9]/gi, '_')}`;
