@@ -1,4 +1,5 @@
 import { DescriptionType } from '@postybirb/types';
+import DefaultWebsite from '../../websites/implementations/default/default.website';
 import { ValidatorParams } from './validator.type';
 
 export async function validateDescriptionMaxLength({
@@ -59,7 +60,10 @@ export async function validateTagsPresence({
   data,
   mergedWebsiteOptions,
   validator,
+  websiteInstance,
 }: ValidatorParams) {
+  if (websiteInstance instanceof DefaultWebsite) return;
+
   const tagsField = mergedWebsiteOptions.getFormFieldFor('tags');
   const descriptionField = mergedWebsiteOptions.getFormFieldFor('description');
   const { tags, description } = data.options;
@@ -92,11 +96,13 @@ export async function validateTitlePresence({
   data,
   mergedWebsiteOptions,
   validator,
+  websiteInstance,
 }: ValidatorParams) {
+  if (websiteInstance instanceof DefaultWebsite) return;
+
   const titleField = mergedWebsiteOptions.getFormFieldFor('tags');
   const descriptionField = mergedWebsiteOptions.getFormFieldFor('description');
   const { title, description } = data.options;
-
   if (titleField.hidden || descriptionField.hidden) return;
   if (!description || !title) return;
 
