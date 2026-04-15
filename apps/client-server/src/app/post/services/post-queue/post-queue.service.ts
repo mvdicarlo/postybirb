@@ -189,7 +189,9 @@ export class PostQueueService
     if (orphanedRecords.length > 0) {
       this.logger
         .withMetadata({ count: orphanedRecords.length })
-        .warn('Found orphaned PostRecords (PENDING/RUNNING with no queue record), marking as FAILED');
+        .warn(
+          'Found orphaned PostRecords (PENDING/RUNNING with no queue record), marking as FAILED',
+        );
 
       for (const record of orphanedRecords) {
         this.logger
@@ -459,13 +461,35 @@ export class PostQueueService
     });
     const now = Date.now();
     const sorted = entities
-      .filter((e) => new Date(e.schedule.scheduledFor).getTime() <= now) // Only those that are ready to be posted.
+      .filter((e) => {
+        // Only those that are ready to be posted.
+        if (new Date(e.schedule.scheduledFor).getTime() <= now) return false;
+
+        // Ignore already posting submissions
+        if (e.posts[0].state === PostRecordState.RUNNING) return false;
+
+        return true;
+      })
       .sort(
         (a, b) =>
           new Date(a.schedule.scheduledFor).getTime() -
           new Date(b.schedule.scheduledFor).getTime(),
       ); // Sort by oldest first.
-    await this.enqueue(sorted.map((s) => s.id));
+
+    await this.enqueue(
+      sorted
+        // Filter out failed submissions to not create infinity loop. Recurring submissions are omitted because
+        // Their scheduledFor gets updated below and they won't be scheduled again at the same time after failure
+        .filter((e) => {
+          if (e.schedule.scheduleType === ScheduleType.RECURRING) return true;
+          if (e.posts[0].state === PostRecordState.FAILED) return false;
+
+          return true;
+        })
+        .map((s) => s.id),
+    );
+
+    // Update next run for recurring submissions
     sorted
       .filter((s) => s.schedule.cron)
       .forEach((s) => {
