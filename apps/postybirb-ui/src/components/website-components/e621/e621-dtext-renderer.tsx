@@ -20,19 +20,6 @@ const dtextPreset = reactPreset.extend((tags, options) => ({
       content: [{ tag: 'summary', content: 'Spoiler' }, ...content],
     };
   },
-  // Render [right] as a div with text-align: right
-  right: (node) => {
-    const content = Array.isArray(node.content)
-      ? node.content
-      : node.content
-        ? [node.content]
-        : [];
-    return {
-      tag: 'div',
-      attrs: { style: { textAlign: 'right' } },
-      content,
-    };
-  },
 }));
 
 // ----------------------------------------------------------------------
@@ -45,29 +32,22 @@ export interface E621DtextProps {
 export function E621Dtext({ dtext }: E621DtextProps) {
   let processed = dtext;
 
-  // 1. Plain URLs: https://example.com
+  // Plain URLs: https://example.com
   processed = processed.replace(
     /(https?:\/\/[^\s<]+)/g,
     (match) => `[url]${match}[/url]`,
   );
 
-  // 2. Angle-bracketed URLs: <https://example.com/link_(test)>
-  processed = processed.replace(
-    /<((https?:\/\/)[^>]+)>/g,
-    (_, url) => `[url]${url}[/url]`,
-  );
-
-  // 3. Custom title links: "A link":https://example.com
+  // Hyperlinks: "A link":https://example.com
   processed = processed.replace(
     /"([^"]+)":([^\s\]]+)/g,
     (_, title, url) => `[url=${url}]${title}[/url]`,
   );
 
+  // Custom header format to bbcode (h1. to [h1][/h1])
   processed = processed.replace(
     /^(h[1-6])\.\s+(.*)$/gim,
-    (_, tag, content) =>
-      // Convert h1 to [h1], etc.
-      `[${tag}]${content}[/${tag}]`,
+    (_, tag, content) => `[${tag}]${content}[/${tag}]`,
   );
 
   return (
