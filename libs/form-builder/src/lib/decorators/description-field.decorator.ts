@@ -39,8 +39,8 @@ export const DescriptionField = createFieldDecorator<
   onCreate(options) {
     const { defaultValue } = options;
     if (defaultValue) {
-      defaultValue.insertTags = options.expectsInlineTitle;
-      defaultValue.insertTitle = options.expectsInlineTags;
+      defaultValue.insertTitle = options.expectsInlineTitle;
+      defaultValue.insertTags = options.expectsInlineTags;
     }
   },
 });
