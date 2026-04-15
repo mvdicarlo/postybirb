@@ -66,7 +66,7 @@ export const TranslationMessages: TranslationsMap = {
   ),
   'validation.description.unexpected-title': () => (
     <Trans>
-      Title are not expected in the description of this website because it has
+      Title is not expected in the description of this website because it has
       dedicated title field. Remove title shortcut or disable 'Insert title at
       start'
     </Trans>
