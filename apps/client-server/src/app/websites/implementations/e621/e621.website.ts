@@ -366,6 +366,15 @@ export default class E621
 
 // Spec: https://e621.net/help/dtext
 class E621Converter extends BBCodeConverter {
+  convertBlockNode(node: TipTapNode, context: ConversionContext): string {
+    const attrs = node.attrs ?? {};
+
+    // E621 does not support text align
+    delete attrs.textAlign;
+
+    return super.convertBlockNode(node, context);
+  }
+
   convertBlocks(nodes: TipTapNode[], context: ConversionContext): string {
     const text = super.convertBlocks(nodes, context);
 
