@@ -5,6 +5,7 @@ import { join } from 'path';
 import { AccountService } from '../account/account.service';
 import { LegacyConverter } from './converters/legacy-converter';
 import { LegacyCustomShortcutConverter } from './converters/legacy-custom-shortcut.converter';
+import { LegacySubmissionConverter } from './converters/legacy-submission.converter';
 import { LegacyTagConverterConverter } from './converters/legacy-tag-converter.converter';
 import { LegacyTagGroupConverter } from './converters/legacy-tag-group.converter';
 import { LegacyUserAccountConverter } from './converters/legacy-user-account.converter';
@@ -81,6 +82,24 @@ export class LegacyDatabaseImporterService {
       }
     }
 
+    if (importRequest.submissions) {
+      // Import submissions (must be after accounts for FK references)
+      const submissionResult = await this.processSubmissionImport(
+        new LegacySubmissionConverter(path, false),
+      );
+      if (submissionResult.error) {
+        errors.push(submissionResult.error);
+      }
+
+      // Import submission templates
+      const templateResult = await this.processSubmissionImport(
+        new LegacySubmissionConverter(path, true),
+      );
+      if (templateResult.error) {
+        errors.push(templateResult.error);
+      }
+    }
+
     return { errors };
   }
 
@@ -94,6 +113,24 @@ export class LegacyDatabaseImporterService {
     } catch (error) {
       this.logger.error(
         `Import for ${converter.legacyFileName} failed.`,
+        error,
+      );
+      return { error };
+    }
+  }
+
+  private async processSubmissionImport(
+    converter: LegacySubmissionConverter,
+  ): Promise<{ error?: Error }> {
+    try {
+      this.logger.info(
+        `Starting import for ${converter.submissionFileName}...`,
+      );
+      await converter.import();
+      return {};
+    } catch (error) {
+      this.logger.error(
+        `Import for ${converter.submissionFileName} failed.`,
         error,
       );
       return { error };
