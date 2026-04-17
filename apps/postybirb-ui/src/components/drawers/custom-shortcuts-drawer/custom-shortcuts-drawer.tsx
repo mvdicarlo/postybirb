@@ -6,41 +6,40 @@
 import { t } from '@lingui/core/macro';
 import { Trans } from '@lingui/react/macro';
 import {
-    ActionIcon,
-    Box,
-    Card,
-    Collapse,
-    Group,
-    ScrollArea,
-    Stack,
-    Text,
-    TextInput,
-    Tooltip,
+  ActionIcon,
+  Box,
+  Card,
+  Collapse,
+  Group,
+  ScrollArea,
+  Stack,
+  Text,
+  TextInput,
+  Tooltip,
 } from '@mantine/core';
-import { useDebouncedValue } from '@mantine/hooks';
+import { useDebouncedCallback, useDebouncedValue } from '@mantine/hooks';
 import type { Description } from '@postybirb/types';
 import {
-    IconCheck,
-    IconChevronDown,
-    IconChevronRight,
-    IconHelp,
-    IconPlus,
-    IconX,
+  IconChevronDown,
+  IconChevronRight,
+  IconHelp,
+  IconPlus,
+  IconX,
 } from '@tabler/icons-react';
 import React, { useCallback, useMemo, useState } from 'react';
 import customShortcutApi from '../../../api/custom-shortcut.api';
 import {
-    useCustomShortcuts,
-    useCustomShortcutsLoading,
+  useCustomShortcuts,
+  useCustomShortcutsLoading,
 } from '../../../stores/entity/custom-shortcut-store';
 import type { CustomShortcutRecord } from '../../../stores/records/custom-shortcut-record';
 import { useTourActions } from '../../../stores/ui/tour-store';
 import {
-    showCreatedNotification,
-    showCreateErrorNotification,
-    showDeletedNotification,
-    showDeleteErrorNotification,
-    showUpdateErrorNotification,
+  showCreatedNotification,
+  showCreateErrorNotification,
+  showDeletedNotification,
+  showDeleteErrorNotification,
+  showUpdateErrorNotification,
 } from '../../../utils/notifications';
 import { EmptyState } from '../../empty-state';
 import { HoldToConfirmButton } from '../../hold-to-confirm';
@@ -105,146 +104,131 @@ interface ShortcutCardProps {
   onDelete: (id: string) => void;
 }
 
-const ShortcutCard = React.memo(({
-  shortcut,
-  isExpanded,
-  onToggleExpand,
-  onDelete,
-}: ShortcutCardProps) => {
-  const [name, setName] = useState(shortcut.name);
-  const [isEditingName, setIsEditingName] = useState(false);
-  const [localDescription, setLocalDescription] = useState<Description>(
-    shortcut.shortcut || [],
-  );
-  const [isDirty, setIsDirty] = useState(false);
+const ShortcutCard = React.memo(
+  ({ shortcut, isExpanded, onToggleExpand, onDelete }: ShortcutCardProps) => {
+    const [name, setName] = useState(shortcut.name);
+    const [isEditingName, setIsEditingName] = useState(false);
+    const [localDescription, setLocalDescription] = useState<Description>(
+      shortcut.shortcut || [],
+    );
 
-  const handleNameBlur = async () => {
-    setIsEditingName(false);
-    const trimmed = name.trim();
-    if (trimmed && trimmed !== shortcut.name) {
-      try {
-        await customShortcutApi.update(shortcut.id, {
-          name: trimmed,
-          shortcut: shortcut.shortcut,
-        });
-      } catch (error) {
-        showUpdateErrorNotification(t`shortcut`);
+    const handleNameBlur = async () => {
+      setIsEditingName(false);
+      const trimmed = name.trim();
+      if (trimmed && trimmed !== shortcut.name) {
+        try {
+          await customShortcutApi.update(shortcut.id, {
+            name: trimmed,
+            shortcut: shortcut.shortcut,
+          });
+        } catch (error) {
+          showUpdateErrorNotification(t`shortcut`);
+          setName(shortcut.name);
+        }
+      } else {
         setName(shortcut.name);
       }
-    } else {
-      setName(shortcut.name);
-    }
-  };
+    };
 
-  const handleNameKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      (e.target as HTMLInputElement).blur();
-    } else if (e.key === 'Escape') {
-      setName(shortcut.name);
-      setIsEditingName(false);
-    }
-  };
+    const handleNameKeyDown = (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        (e.target as HTMLInputElement).blur();
+      } else if (e.key === 'Escape') {
+        setName(shortcut.name);
+        setIsEditingName(false);
+      }
+    };
 
-  const handleDescriptionChange = (value: Description) => {
-    setLocalDescription(value);
-    setIsDirty(true);
-  };
+    const handleDescriptionChange = (value: Description) => {
+      setLocalDescription(value);
+      handleSave();
+    };
 
-  const handleSave = async () => {
-    try {
-      await customShortcutApi.update(shortcut.id, {
-        name: shortcut.name,
-        shortcut: localDescription,
-      });
-      setIsDirty(false);
-    } catch (error) {
-      showUpdateErrorNotification(t`shortcut`);
-    }
-  };
+    const handleSave = useDebouncedCallback(
+      async () => {
+        try {
+          await customShortcutApi.update(shortcut.id, {
+            name: shortcut.name,
+            shortcut: localDescription,
+          });
+        } catch (error) {
+          showUpdateErrorNotification(t`shortcut`);
+        }
+      },
+      { delay: 1000, flushOnUnmount: false },
+    );
 
-  return (
-    <Card withBorder p="xs" data-tour-id="shortcuts-card">
-      {/* Header row */}
-      <Group gap="xs" wrap="nowrap" align="center">
-        {/* Expand/collapse button */}
-        <ActionIcon
-          variant="subtle"
-          size="sm"
-          onClick={() => onToggleExpand(shortcut.id)}
-          aria-label={isExpanded ? t`Collapse` : t`Expand`}
-        >
-          {isExpanded ? (
-            <IconChevronDown size={16} />
-          ) : (
-            <IconChevronRight size={16} />
-          )}
-        </ActionIcon>
-
-        {/* Name (editable) */}
-        {isEditingName ? (
-          <TextInput
-            size="xs"
-            value={name}
-            onChange={(e) => setName(e.currentTarget.value)}
-            onBlur={handleNameBlur}
-            onKeyDown={handleNameKeyDown}
-            autoFocus
-            maxLength={64}
-            flex={1}
-          />
-        ) : (
-          <Text
-            size="sm"
-            fw={500}
-            flex={1}
-            style={{ cursor: 'pointer' }}
-            onClick={() => setIsEditingName(true)}
-            truncate
-          >
-            {shortcut.name}
-          </Text>
-        )}
-
-        {/* Delete button */}
-        <Tooltip label={<Trans>Hold to delete</Trans>}>
-          <HoldToConfirmButton
-            onConfirm={() => onDelete(shortcut.id)}
-            size="xs"
-            color="red"
+    return (
+      <Card withBorder p="xs" data-tour-id="shortcuts-card">
+        {/* Header row */}
+        <Group gap="xs" wrap="nowrap" align="center">
+          {/* Expand/collapse button */}
+          <ActionIcon
             variant="subtle"
+            size="sm"
+            onClick={() => onToggleExpand(shortcut.id)}
+            aria-label={isExpanded ? t`Collapse` : t`Expand`}
           >
-            <IconX size={14} />
-          </HoldToConfirmButton>
-        </Tooltip>
-      </Group>
+            {isExpanded ? (
+              <IconChevronDown size={16} />
+            ) : (
+              <IconChevronRight size={16} />
+            )}
+          </ActionIcon>
 
-      {/* Expanded content */}
-      <Collapse in={isExpanded}>
-        <Box mt="xs">
-          <DescriptionEditor
-            value={localDescription}
-            onChange={handleDescriptionChange}
-            showCustomShortcuts={false}
-            minHeight={80}
-          />
-          {isDirty && (
-            <Group mt="xs" justify="flex-end">
-              <ActionIcon
-                variant="filled"
-                color="blue"
-                size="sm"
-                onClick={handleSave}
-                aria-label={t`Save`}
-              >
-                <IconCheck size={14} />
-              </ActionIcon>
-            </Group>
+          {/* Name (editable) */}
+          {isEditingName ? (
+            <TextInput
+              size="xs"
+              value={name}
+              onChange={(e) => setName(e.currentTarget.value)}
+              onBlur={handleNameBlur}
+              onKeyDown={handleNameKeyDown}
+              autoFocus
+              maxLength={64}
+              flex={1}
+            />
+          ) : (
+            <Text
+              size="sm"
+              fw={500}
+              flex={1}
+              style={{ cursor: 'pointer' }}
+              onClick={() => setIsEditingName(true)}
+              truncate
+            >
+              {shortcut.name}
+            </Text>
           )}
-        </Box>
-      </Collapse>
-    </Card>
-  );
-});
+
+          {/* Delete button */}
+          <Tooltip label={<Trans>Hold to delete</Trans>}>
+            <HoldToConfirmButton
+              onConfirm={() => onDelete(shortcut.id)}
+              size="xs"
+              color="red"
+              variant="subtle"
+            >
+              <IconX size={14} />
+            </HoldToConfirmButton>
+          </Tooltip>
+        </Group>
+
+        {/* Expanded content */}
+        <Collapse in={isExpanded}>
+          <Box mt="xs">
+            <DescriptionEditor
+              value={localDescription}
+              onChange={handleDescriptionChange}
+              showCustomShortcuts={false}
+              minHeight={80}
+            />
+          </Box>
+        </Collapse>
+      </Card>
+    );
+  },
+);
 
 // ============================================================================
 // Create Shortcut Form
@@ -390,7 +374,11 @@ export function CustomShortcutsDrawer({
         <Group gap="xs">
           <Trans>Custom Shortcuts</Trans>
           <Tooltip label={<Trans>Shortcuts Tour</Trans>}>
-            <ActionIcon variant="subtle" size="xs" onClick={() => startTour(CUSTOM_SHORTCUTS_TOUR_ID)}>
+            <ActionIcon
+              variant="subtle"
+              size="xs"
+              onClick={() => startTour(CUSTOM_SHORTCUTS_TOUR_ID)}
+            >
               <IconHelp size={16} />
             </ActionIcon>
           </Tooltip>
