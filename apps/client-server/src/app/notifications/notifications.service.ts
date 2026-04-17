@@ -73,6 +73,24 @@ export class NotificationsService extends PostyBirbService<'NotificationSchema'>
   }
 
   /**
+   * Trims notifications to a maximum of 250, removing the oldest first.
+   * Runs every 5 minutes.
+   */
+  @Cron(CronExpression.EVERY_5_MINUTES)
+  private async trimNotifications() {
+    const notifications = await this.repository.findAll();
+    if (notifications.length <= 250) {
+      return;
+    }
+    const sorted = notifications.sort(
+      (a, b) =>
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+    );
+    const toRemove = sorted.slice(0, notifications.length - 250);
+    await this.repository.deleteById(toRemove.map((n) => n.id));
+  }
+
+  /**
    * Sends a desktop notification based on user settings and notification type.
    *
    * @param notification - The notification data to display

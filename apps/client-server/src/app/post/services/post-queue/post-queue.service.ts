@@ -293,6 +293,19 @@ export class PostQueueService
         .withMetadata({ submissionId: record.submissionId })
         .error('Post failed');
 
+      // Clear isScheduled for non-recurring submissions so they don't retry indefinitely
+      if (
+        submission.isScheduled &&
+        submission.schedule.scheduleType !== ScheduleType.RECURRING
+      ) {
+        await this.submissionService.update(record.submissionId, {
+          isScheduled: false,
+        });
+        this.logger
+          .withMetadata({ submissionId: record.submissionId })
+          .info('Cleared isScheduled flag after post failure');
+      }
+
       // Count failed events for the message
       const failedEventCount =
         record.events?.filter((e) => e.eventType === 'POST_ATTEMPT_FAILED')
