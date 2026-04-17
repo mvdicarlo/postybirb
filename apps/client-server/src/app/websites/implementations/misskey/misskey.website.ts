@@ -1,14 +1,14 @@
 import { Logger } from '@postybirb/logger';
 import {
-    ILoginState,
-    ImageResizeProps,
-    ISubmissionFile,
-    MisskeyAccountData,
-    MisskeyOAuthRoutes,
-    OAuthRouteHandlers,
-    PostData,
-    PostResponse,
-    SimpleValidationResult,
+  ILoginState,
+  ImageResizeProps,
+  ISubmissionFile,
+  MisskeyAccountData,
+  MisskeyOAuthRoutes,
+  OAuthRouteHandlers,
+  PostData,
+  PostResponse,
+  SimpleValidationResult,
 } from '@postybirb/types';
 import { calculateImageResize } from '@postybirb/utils/file-type';
 import { v4 as uuidv4 } from 'uuid';
@@ -44,6 +44,7 @@ const MIAUTH_PERMISSIONS = [
   acceptedMimeTypes: [
     'image/png',
     'image/jpeg',
+    'image/jpg',
     'image/gif',
     'image/webp',
     'image/avif',
@@ -170,17 +171,14 @@ export default class Misskey
         data.accessToken,
       );
 
-      // Apply per-user policies (file size, MIME types)
+      // Apply per-user policies (file size only — MIME type overrides are skipped because
+      // Misskey returns glob-style patterns like 'image/' and 'audio/*' that are incompatible
+      // with the app's exact-match MIME type handling. The static @SupportsFiles list is used.)
       if (user.policies && this.decoratedProps.fileOptions) {
         if (user.policies.maxFileSizeMb) {
           this.decoratedProps.fileOptions.acceptedFileSizes = {
             '*': FileSize.megabytes(user.policies.maxFileSizeMb),
           };
-        }
-
-        if (user.policies.uploadableFileTypes?.length) {
-          this.decoratedProps.fileOptions.acceptedMimeTypes =
-            user.policies.uploadableFileTypes;
         }
       }
 
