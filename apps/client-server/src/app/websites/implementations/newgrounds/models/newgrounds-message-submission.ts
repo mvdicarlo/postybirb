@@ -1,28 +1,8 @@
-import {
-  DescriptionField,
-  RatingField,
-  TagField,
-} from '@postybirb/form-builder';
-import {
-  DescriptionType,
-  DescriptionValue,
-  SubmissionRating,
-  TagValue,
-} from '@postybirb/types';
-import { BaseWebsiteOptions } from '../../../models/base-website-options';
+import { RatingField } from '@postybirb/form-builder';
+import { SubmissionRating } from '@postybirb/types';
+import { NewgroundsBaseSubmission } from './newgrounds-base-submission';
 
-export class NewgroundsMessageSubmission extends BaseWebsiteOptions {
-  @DescriptionField({
-    descriptionType: DescriptionType.HTML,
-  })
-  description: DescriptionValue;
-
-  @TagField({
-    maxTags: 12,
-    spaceReplacer: '-',
-  })
-  tags: TagValue;
-
+export class NewgroundsMessageSubmission extends NewgroundsBaseSubmission {
   @RatingField({
     options: [
       { value: SubmissionRating.GENERAL, label: 'Suitable for everyone' },

@@ -21,7 +21,11 @@ import { isMessageWebsite } from '../websites/models/website-modifiers/message-w
 import { UnknownWebsite } from '../websites/website';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { validators } from './validators';
-import { Validator, ValidatorParams } from './validators/validator.type';
+import {
+  FieldValidator,
+  Validator,
+  ValidatorParams,
+} from './validators/validator.type';
 
 type ValidationCacheRecord = {
   submissionLastUpdatedTimestamp: string;
@@ -154,7 +158,7 @@ export class ValidationService {
       const website = websiteOption.isDefault
         ? new DefaultWebsite(new Account(websiteOption.account))
         : this.websiteRegistry.findInstance(websiteOption.account);
-      
+
       if (!website) {
         this.logger.error(
           `Failed to find website instance for account ${websiteOption.accountId}`,
@@ -190,6 +194,7 @@ export class ValidationService {
 
       const params: ValidatorParams = {
         result,
+        validator: new FieldValidator(result.errors, result.warnings),
         websiteInstance: website,
         data,
         submission,

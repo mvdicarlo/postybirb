@@ -12,5 +12,6 @@ export const TitleField = createFieldDecorator<string, ExtraOptions>('title')({
     defaultValue: '',
     formField: 'input',
     label: 'title',
+    expectedInDescription: false,
   },
 });

@@ -1,14 +1,14 @@
 import { Logger } from '@postybirb/logger';
 import {
-    ILoginState,
-    ImageResizeProps,
-    ISubmissionFile,
-    MisskeyAccountData,
-    MisskeyOAuthRoutes,
-    OAuthRouteHandlers,
-    PostData,
-    PostResponse,
-    SimpleValidationResult,
+  ILoginState,
+  ImageResizeProps,
+  ISubmissionFile,
+  MisskeyAccountData,
+  MisskeyOAuthRoutes,
+  OAuthRouteHandlers,
+  PostData,
+  PostResponse,
+  SimpleValidationResult,
 } from '@postybirb/types';
 import { calculateImageResize } from '@postybirb/utils/file-type';
 import { v4 as uuidv4 } from 'uuid';
@@ -266,21 +266,6 @@ export default class Misskey
         fileIds.push(driveFile.id);
       }
 
-      // Build description with tags
-      let description = postData.options.description || '';
-      const tags = postData.options.tags || [];
-      if (tags.length > 0) {
-        const processedTags = tags
-          .map((tag) => this.createFileModel().processTag(tag))
-          .filter((tag) => !!tag)
-          .join(' ');
-        if (processedTags) {
-          description = description
-            ? `${description}\n\n${processedTags}`
-            : processedTags;
-        }
-      }
-
       cancellationToken.throwIfCancelled();
 
       // Create the note
@@ -288,7 +273,7 @@ export default class Misskey
         instanceUrl,
         accessToken,
         {
-          text: description || undefined,
+          text: postData.options.description || undefined,
           fileIds,
           visibility: postData.options.visibility || 'public',
           cw: postData.options.cw || undefined,
@@ -352,26 +337,11 @@ export default class Misskey
     }
 
     try {
-      // Build description with tags
-      let description = postData.options.description || '';
-      const tags = postData.options.tags || [];
-      if (tags.length > 0) {
-        const processedTags = tags
-          .map((tag) => this.createMessageModel().processTag(tag))
-          .filter((tag) => !!tag)
-          .join(' ');
-        if (processedTags) {
-          description = description
-            ? `${description}\n\n${processedTags}`
-            : processedTags;
-        }
-      }
-
       const note = await MisskeyApiService.createNote(
         instanceUrl,
         accessToken,
         {
-          text: description,
+          text: postData.options.description,
           visibility: postData.options.visibility || 'public',
           cw: postData.options.cw || undefined,
           localOnly: postData.options.localOnly || false,

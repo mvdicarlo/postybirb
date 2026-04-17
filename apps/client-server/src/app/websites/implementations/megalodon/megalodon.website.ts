@@ -544,21 +544,21 @@ export abstract class MegalodonWebsite
         mediaIds.push(uploadResult.data.id);
       }
 
-      // Build description with tags
-      const description = postData.options.description || '';
-
       const isSensitiveRating =
         postData.options.rating === SubmissionRating.ADULT ||
         postData.options.rating === SubmissionRating.EXTREME;
 
       // Create status with media
-      const statusResult = await client.postStatus(description, {
-        media_ids: mediaIds,
-        sensitive: postData.options.sensitive || isSensitiveRating || false,
-        visibility: postData.options.visibility || 'public',
-        spoiler_text: postData.options.spoilerText || undefined,
-        language: postData.options.language || undefined,
-      });
+      const statusResult = await client.postStatus(
+        postData.options.description || '',
+        {
+          media_ids: mediaIds,
+          sensitive: postData.options.sensitive || isSensitiveRating || false,
+          visibility: postData.options.visibility || 'public',
+          spoiler_text: postData.options.spoilerText || undefined,
+          language: postData.options.language || undefined,
+        },
+      );
 
       const status = statusResult.data;
       // Check if it's a Status (not ScheduledStatus)
@@ -596,26 +596,19 @@ export abstract class MegalodonWebsite
     );
 
     try {
-      // Build description with tags
-      let description = postData.options.description || '';
-      const tags = postData.options.tags || [];
-      if (tags.length > 0) {
-        const processedTags = tags
-          .map((tag) => this.createMessageModel().processTag(tag))
-          .join(' ');
-        description = `${description}\n\n${processedTags}`.trim();
-      }
-
       const isSensitiveRating =
         postData.options.rating === SubmissionRating.ADULT ||
         postData.options.rating === SubmissionRating.EXTREME;
 
-      const statusResult = await client.postStatus(description, {
-        sensitive: postData.options.sensitive || isSensitiveRating || false,
-        visibility: postData.options.visibility || 'public',
-        spoiler_text: postData.options.spoilerText || undefined,
-        language: postData.options.language || undefined,
-      });
+      const statusResult = await client.postStatus(
+        postData.options.description || '',
+        {
+          sensitive: postData.options.sensitive || isSensitiveRating || false,
+          visibility: postData.options.visibility || 'public',
+          spoiler_text: postData.options.spoilerText || undefined,
+          language: postData.options.language || undefined,
+        },
+      );
 
       const status = statusResult.data;
       // Check if it's a Status (not ScheduledStatus)

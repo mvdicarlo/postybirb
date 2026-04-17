@@ -1,33 +1,15 @@
 import {
   BooleanField,
-  DescriptionField,
   RadioField,
   RatingField,
   SelectField,
-  TagField,
 } from '@postybirb/form-builder';
-import {
-  DescriptionType,
-  DescriptionValue,
-  SubmissionRating,
-  TagValue,
-} from '@postybirb/types';
-import { BaseWebsiteOptions } from '../../../models/base-website-options';
+import { SubmissionRating } from '@postybirb/types';
+import { NewgroundsBaseSubmission } from './newgrounds-base-submission';
 
 export type NewgroundsRating = 'a' | 'b' | 'c';
 
-export class NewgroundsFileSubmission extends BaseWebsiteOptions {
-  @DescriptionField({
-    descriptionType: DescriptionType.HTML,
-  })
-  description: DescriptionValue;
-
-  @TagField({
-    maxTags: 12,
-    spaceReplacer: '-',
-  })
-  tags: TagValue;
-
+export class NewgroundsFileSubmission extends NewgroundsBaseSubmission {
   @RatingField({
     hidden: true,
   })

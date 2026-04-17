@@ -5,10 +5,10 @@ import {
   TagField,
 } from '@postybirb/form-builder';
 import {
+  DefaultTagValue,
   DescriptionType,
   DescriptionValue,
   SubmissionRating,
-  DefaultTagValue,
   TagValue,
 } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
@@ -17,22 +17,9 @@ import { TumblrAccountData } from './tumblr-account-data';
 export class TumblrFileSubmission extends BaseWebsiteOptions {
   @DescriptionField({
     descriptionType: DescriptionType.CUSTOM,
+    expectsInlineTitle: true,
   })
   description: DescriptionValue;
-
-  @SelectField<TumblrAccountData>({
-    label: 'blog',
-    options: [],
-    required: true,
-    derive: [
-      {
-        key: 'blogs',
-        populate: 'options',
-      },
-    ],
-    span: 12,
-  })
-  blog: string;
 
   @TagField({
     section: 'common',
@@ -89,4 +76,18 @@ export class TumblrFileSubmission extends BaseWebsiteOptions {
     ],
   })
   sexualContent = false;
+
+  @SelectField<TumblrAccountData>({
+    label: 'blog',
+    options: [],
+    required: true,
+    derive: [
+      {
+        key: 'blogs',
+        populate: 'options',
+      },
+    ],
+    span: 6,
+  })
+  blog: string;
 }

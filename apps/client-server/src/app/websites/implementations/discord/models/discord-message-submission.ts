@@ -10,6 +10,7 @@ export class DiscordMessageSubmission extends BaseWebsiteOptions {
   @DescriptionField({
     descriptionType: DescriptionType.MARKDOWN,
     maxDescriptionLength: 2000,
+    expectsInlineTitle: true,
   })
   description: DescriptionValue;
 

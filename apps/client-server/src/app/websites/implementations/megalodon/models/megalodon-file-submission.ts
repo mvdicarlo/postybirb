@@ -16,6 +16,9 @@ import { BaseWebsiteOptions } from '../../../models/base-website-options';
 export class MegalodonFileSubmission extends BaseWebsiteOptions {
   @DescriptionField({
     descriptionType: DescriptionType.PLAINTEXT,
+    required: false,
+    expectsInlineTags: true,
+    expectsInlineTitle: true,
   })
   description: DescriptionValue;
 

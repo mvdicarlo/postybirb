@@ -16,6 +16,8 @@ export class BlueskyFileSubmission extends BaseWebsiteOptions {
   @DescriptionField({
     descriptionType: DescriptionType.CUSTOM,
     maxDescriptionLength: Infinity, // Custom length calculation is handled by validation logic
+    expectsInlineTags: true,
+    expectsInlineTitle: true,
   })
   description: DescriptionValue;
 

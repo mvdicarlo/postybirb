@@ -291,9 +291,6 @@ export default class Instagram
       );
     }
 
-    // Build caption with hashtags
-    const caption = this.buildCaption(postData);
-
     // Upload files to temporary blob storage so Instagram can cURL them
     // Blobs are auto-deleted by Azure Lifecycle Management policy
     const uploadedBlobs: Array<{ url: string; blobName: string }> = [];
@@ -317,7 +314,7 @@ export default class Instagram
           accessToken,
           igUserId,
           filesToPost[0].url,
-          caption,
+          postData.options.description,
           altText,
         );
 
@@ -352,7 +349,7 @@ export default class Instagram
           accessToken,
           igUserId,
           childIds,
-          caption,
+          postData.options.description,
         );
 
         // Poll until ready
@@ -391,32 +388,6 @@ export default class Instagram
   ): Promise<SimpleValidationResult> {
     const validator = this.createValidator<InstagramFileSubmission>();
 
-    // Validate caption length (including hashtags)
-    const caption = this.buildCaption(postData);
-    if (caption.length > 2200) {
-      validator.warning(
-        'validation.description.max-length',
-        {
-          currentLength: caption.length,
-          maxLength: 2200,
-        },
-        'description',
-      );
-    }
-
-    // Validate hashtag count
-    const tags = postData.options.tags || [];
-    if (tags.length > 30) {
-      validator.warning(
-        'validation.tags.max-tags',
-        {
-          currentLength: tags.length,
-          maxLength: 30,
-        },
-        'tags',
-      );
-    }
-
     // Validate image aspect ratios
     // Instagram only supports specific aspect ratios:
     // 1:1 (square) = 1.0, 4:5 (portrait) = 0.8, 1.91:1 (landscape) = 1.91
@@ -443,31 +414,5 @@ export default class Instagram
     }
 
     return validator.result;
-  }
-
-  // ========================================================================
-  // Helpers
-  // ========================================================================
-
-  /**
-   * Build the Instagram caption from description + hashtags.
-   * Instagram tags are appended as #hashtags at the end of the caption.
-   */
-  private buildCaption(postData: PostData<InstagramFileSubmission>): string {
-    let caption = postData.options.description || '';
-
-    const tags = postData.options.tags || [];
-    if (tags.length > 0) {
-      const hashtagModel = this.createFileModel();
-      const hashtags = tags
-        .map((tag) => hashtagModel.processTag(tag))
-        .filter((tag) => !!tag)
-        .join(' ');
-      if (hashtags) {
-        caption = caption ? `${caption}\n\n${hashtags}` : hashtags;
-      }
-    }
-
-    return caption;
   }
 }

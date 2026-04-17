@@ -183,25 +183,27 @@ describe('formBuilder', () => {
       field: string[];
     }
 
-    expect(formBuilder(new TestType(), {})).toEqual({
-      field: {
-        defaultValue: {
-          overrideDefault: false,
-          tags: [],
+    expect(formBuilder(new TestType(), {})).toMatchInlineSnapshot(`
+      {
+        "field": {
+          "defaultValue": {
+            "overrideDefault": false,
+            "tags": [],
+          },
+          "formField": "tag",
+          "label": "tags",
+          "minTagLength": 1,
+          "order": 999,
+          "responsive": {
+            "xs": 12,
+          },
+          "section": "website",
+          "spaceReplacer": "_",
+          "span": 12,
+          "type": "tag",
         },
-        formField: 'tag',
-        label: 'tags',
-        minTagLength: 1,
-        order: 999,
-        responsive: {
-          xs: 12,
-        },
-        section: 'website',
-        spaceReplacer: '_',
-        span: 12,
-        type: 'tag',
-      },
-    });
+      }
+    `);
   });
 
   it('should support section and layout properties', () => {
