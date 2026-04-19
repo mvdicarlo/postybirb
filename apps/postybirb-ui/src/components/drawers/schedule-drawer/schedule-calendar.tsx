@@ -26,6 +26,8 @@ import {
   Text,
   ThemeIcon,
 } from '@mantine/core';
+import { TimePicker } from '@mantine/dates';
+import { useDebouncedCallback } from '@mantine/hooks';
 import { ScheduleType, SubmissionType } from '@postybirb/types';
 import {
   IconCalendarOff,
@@ -51,11 +53,16 @@ const dayjsPlugin = createPlugin({
   cmdFormatter(cmdStr: string, arg: VerboseFormattingArg): string {
     const locale = arg.localeCodes[0];
     if (arg.end) {
-      const start = dayjs(...arg.start.array).locale(locale);
-      const end = dayjs(...arg.end.array).locale(locale);
+      const start = dayjs(new Date(...(arg.start.array as [number]))).locale(
+        locale,
+      );
+      const end = dayjs(new Date(...(arg.end.array as [number]))).locale(
+        locale,
+      );
       return `${start.format(cmdStr)} – ${end.format(cmdStr)}`;
     }
-    return dayjs(...arg.date.array)
+
+    return dayjs(new Date(...(arg.date.array as [number])))
       .locale(locale)
       .format(cmdStr);
   },
@@ -69,7 +76,7 @@ export function ScheduleCalendar() {
   const {
     calendarLocale,
     formatRelativeTime,
-    formatDateTime,
+    formatDate,
     startOfWeek,
     hourCycle,
   } = useLocale();
@@ -129,7 +136,6 @@ export function ScheduleCalendar() {
             id: submission.id,
             title,
             start: dayjs(submission.schedule.scheduledFor).toISOString(),
-            startEditable: true,
             backgroundColor: submission.isScheduled
               ? isMessageType
                 ? '#40c057'
@@ -139,7 +145,7 @@ export function ScheduleCalendar() {
               ? isMessageType
                 ? '#40c057'
                 : '#339af0'
-              : '#4D4D4E',
+              : '#909296',
             textColor: '#ffffff',
             extendedProps: {
               type: submission.isScheduled ? 'scheduled' : 'unscheduled',
@@ -235,6 +241,33 @@ export function ScheduleCalendar() {
     setModalOpened(false);
   };
 
+  const handleScheduleTimeChange = useDebouncedCallback(
+    (time: string) => {
+      if (!time || !selectedEvent?.start) return;
+      const [hours, minutes] = time.split(':').map((n) => parseInt(n, 10));
+
+      if (typeof hours !== 'number' || typeof minutes !== 'number') return;
+
+      const scheduledFor = new Date(selectedEvent.start);
+
+      scheduledFor.setHours(hours);
+      scheduledFor.setMinutes(minutes);
+
+      submissionApi
+        .update(selectedEvent.id, { scheduledFor: scheduledFor.toISOString() })
+        .then(() => {
+          showScheduleUpdatedNotification(selectedEvent.title);
+        })
+        .catch((error) => {
+          showUpdateErrorNotification(error.message);
+        });
+    },
+    { delay: 500, flushOnUnmount: false },
+  );
+
+  // eslint-disable-next-line lingui/no-unlocalized-strings
+  const timeFormat = hourCycle === 'h12' ? 'hh:mm A' : 'HH:mm';
+
   return (
     <div style={{ overflow: 'auto', position: 'relative', height: '100%' }}>
       <FullCalendar
@@ -257,17 +290,20 @@ export function ScheduleCalendar() {
         selectMirror
         dayMaxEvents
         allDaySlot={false}
+        // fixes issue with offset on drag
+        fixedMirrorParent={document.body}
         weekends
         events={events}
         locale={calendarLocale as LocaleInput}
         firstDay={startOfWeek}
-        // eslint-disable-next-line lingui/no-unlocalized-strings
-        eventTimeFormat={hourCycle === 'h12' ? 'hh:mm A' : 'HH:mm'}
+        eventTimeFormat={timeFormat}
         eventDrop={handleEventDrop}
         height="100%"
         themeSystem="standard"
         snapDuration="00:01:00"
         slotLabelInterval="00:60:00"
+        dayHeaderFormat={{ day: 'numeric' }}
+        slotLabelFormat={timeFormat}
         droppable
         drop={handleExternalDrop}
         eventClick={handleEventClick}
@@ -289,8 +325,13 @@ export function ScheduleCalendar() {
               <IconClock size={14} />
             </ThemeIcon>
             <Text size="sm" c="dimmed">
-              {selectedEvent?.start ? formatDateTime(selectedEvent.start) : ''}
+              {selectedEvent?.start ? formatDate(selectedEvent.start) : ''}
             </Text>
+            <TimePicker
+              defaultValue={selectedEvent?.start?.toTimeString() ?? ''}
+              format={hourCycle === 'h12' ? '12h' : '24h'}
+              onChange={handleScheduleTimeChange}
+            />
           </Group>
           {selectedEvent?.start && (
             <Text size="xs" c="dimmed">

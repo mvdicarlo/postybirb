@@ -165,23 +165,25 @@
 }
 
 /* Weekend background (subtle distinction) */
-.schedule-drawer-calendar .fc .fc-daygrid-day.fc-day-sat,
-.schedule-drawer-calendar .fc .fc-daygrid-day.fc-day-sun {
-  background-color: var(--mantine-color-gray-0);
+.schedule-drawer-calendar .fc .fc-day-sat .fc-daygrid-day-number,
+.schedule-drawer-calendar .fc .fc-day-sun .fc-daygrid-day-number {
+  color: var(--mantine-color-gray-7);
 }
 
 :root[data-mantine-color-scheme='dark']
   .schedule-drawer-calendar
   .fc
-  .fc-daygrid-day.fc-day-sat,
+  .fc-day-sat
+  .fc-daygrid-day-number,
 :root[data-mantine-color-scheme='dark']
   .schedule-drawer-calendar
   .fc
-  .fc-daygrid-day.fc-day-sun {
-  background-color: var(--mantine-color-dark-7);
+  .fc-day-sun
+  .fc-daygrid-day-number {
+  color: var(--mantine-color-red-6);
 }
 
-/* ===== Events ===== */
+/* Events */
 .schedule-drawer-calendar .fc-event {
   cursor: pointer;
   transition: all 0.15s ease;
@@ -222,19 +224,17 @@
 /* Draggable element styles */
 .calendar-draggable {
   cursor: grab;
-  width: 100%;
-  border-radius: var(--mantine-radius-md);
   user-select: none;
   transition: background-color 0.2s ease;
-  padding: var(--mantine-spacing-xs);
-  background-color: var(--mantine-primary-color-light);
-  color: var(--mantine-primary-color-light-color);
-  font-weight: 500;
-  margin-bottom: var(--mantine-spacing-xs);
+}
+
+:root[data-mantine-color-scheme='light'] .calendar-draggable {
+  box-shadow: var(--paper-shadow);
+  border-radius: var(--paper-radius);
 }
 
 .calendar-draggable:hover {
-  background-color: var(--mantine-primary-color-light-hover);
+  border-color: var(--mantine-primary-color-filled);
 }
 
 .calendar-draggable:active {
