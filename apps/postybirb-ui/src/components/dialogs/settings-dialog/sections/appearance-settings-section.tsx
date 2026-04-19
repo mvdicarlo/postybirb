@@ -1,13 +1,14 @@
 /**
- * Appearance Settings Section - Theme and color customization.
+ * Appearance Settings Section - Theme, color, and regional customization.
  */
 
-import { Trans } from '@lingui/react/macro';
+import { Trans, useLingui } from '@lingui/react/macro';
 import {
   Box,
   ColorSwatch,
   Group,
   SegmentedControl,
+  Select,
   SimpleGrid,
   Stack,
   Text,
@@ -15,12 +16,15 @@ import {
   useMantineTheme,
 } from '@mantine/core';
 import { IconMoon, IconSun, IconSunMoon } from '@tabler/icons-react';
+import { useMemo } from 'react';
+import { useLocale } from '../../../../hooks/use-locale.js';
 import {
   type ColorScheme,
   MANTINE_COLORS,
   type MantinePrimaryColor,
   useAppearanceActions,
 } from '../../../../stores/ui/appearance-store';
+import { useLanguageActions } from '../../../../stores/ui/locale-store';
 
 /**
  * Color scheme options for the segmented control.
@@ -72,6 +76,60 @@ export function AppearanceSettingsSection() {
   const theme = useMantineTheme();
   const { colorScheme, primaryColor, setColorScheme, setPrimaryColor } =
     useAppearanceActions();
+  const { hourCycle, setHourCycle, startOfWeek, setStartOfWeek } =
+    useLanguageActions();
+  const locale = useLocale();
+
+  const { t } = useLingui();
+
+  const weekdayOptions = useMemo(() => {
+    // Build localized weekday names (Sunday to Saturday)
+    const baseDate = new Date(2024, 0, 7); // known Sunday
+    const weekdayNames = Array.from({ length: 7 }, (_, i) => {
+      const date = new Date(baseDate);
+      date.setDate(baseDate.getDate() + i);
+
+      const name = new Intl.DateTimeFormat(locale.locale, {
+        weekday: 'long',
+      }).format(date);
+      return capitalize(name);
+    });
+
+    const defaultStartOfWeek = weekdayNames[locale.defaultStartOfWeek];
+    const options = [
+      { value: 'locale', label: t`Locale default (${defaultStartOfWeek})` },
+    ];
+
+    // Add numeric options (0 = Sunday ... 6 = Saturday)
+    for (const [i, label] of weekdayNames.entries()) {
+      options.push({ value: i.toString(), label });
+    }
+
+    return options;
+  }, [locale.defaultStartOfWeek, locale.locale, t]);
+
+  const defaultLocaleHours = locale.defaultHourCycle.slice(1);
+  const hourCycleOptions = useMemo(
+    () => [
+      {
+        value: 'locale',
+        label: <Trans>Locale default ({defaultLocaleHours})</Trans>,
+      },
+      { value: 'h12', label: '12h' },
+      { value: 'h24', label: '24h' },
+    ],
+    [defaultLocaleHours],
+  );
+
+  // Handle start of week change: if 'locale' is selected, store the numeric default
+  const handleStartOfWeekChange = (value: string | null) => {
+    if (value === null) return;
+    if (value === 'locale') {
+      setStartOfWeek('locale');
+    } else {
+      setStartOfWeek(parseInt(value, 10));
+    }
+  };
 
   return (
     <Stack gap="xl">
@@ -87,6 +145,9 @@ export function AppearanceSettingsSection() {
 
       {/* Primary Color Selection */}
       <Box>
+        <Text size="sm" fw={500} mb="xs">
+          <Trans>Primary color</Trans>
+        </Text>
         <SimpleGrid cols={6} spacing="sm">
           {MANTINE_COLORS.map((color) => {
             const isSelected = primaryColor === color;
@@ -94,11 +155,7 @@ export function AppearanceSettingsSection() {
             const colorValue = theme.colors[color][6];
 
             return (
-              <Tooltip
-                key={color}
-                label={capitalize(color)}
-                withArrow
-              >
+              <Tooltip key={color} label={capitalize(color)} withArrow>
                 <Box
                   onClick={() => setPrimaryColor(color as MantinePrimaryColor)}
                   style={{
@@ -118,6 +175,36 @@ export function AppearanceSettingsSection() {
             );
           })}
         </SimpleGrid>
+      </Box>
+
+      {/* Hour Cycle Selection */}
+      <Box>
+        <Text size="sm" fw={500} mb="xs">
+          <Trans>Hour cycle</Trans>
+        </Text>
+        <SegmentedControl
+          value={hourCycle}
+          onChange={(value) => setHourCycle(value as 'locale' | 'h12' | 'h24')}
+          data={hourCycleOptions}
+          fullWidth
+        />
+      </Box>
+
+      {/* Start of Week Selection */}
+      <Box>
+        <Text size="sm" fw={500} mb="xs">
+          <Trans>Start of week</Trans>
+        </Text>
+        <Select
+          value={
+            startOfWeek === locale.defaultStartOfWeek
+              ? 'locale'
+              : startOfWeek.toString()
+          }
+          onChange={handleStartOfWeekChange}
+          data={weekdayOptions}
+          allowDeselect={false}
+        />
       </Box>
     </Stack>
   );

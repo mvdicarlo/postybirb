@@ -6,6 +6,11 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { useShallow } from 'zustand/react/shallow';
+import { supportedLocaleCodes } from '../../i18n/languages.js';
+
+type HourCycle = 'h12' | 'h24' | 'locale';
+
+type StartOfWeek = number | 'locale';
 
 // ============================================================================
 // Types
@@ -17,6 +22,18 @@ import { useShallow } from 'zustand/react/shallow';
 interface LocaleState {
   /** Current language code */
   language: string;
+
+  /**
+   * 24 hours or 12 hours (AM/PM)
+   * locale defaults to current locale info
+   */
+  hourCycle: HourCycle;
+
+  /**
+   * 0=Sunday, 1=Monday, 6=Saturday
+   * locale defaults to current locale info
+   */
+  startOfWeek: StartOfWeek;
 }
 
 /**
@@ -28,6 +45,10 @@ interface LocaleActions {
 
   /** Reset locale state */
   resetLocale: () => void;
+
+  setHourCycle: (hourCycle: HourCycle) => void;
+
+  setStartOfWeek: (startOfWeek: StartOfWeek) => void;
 }
 
 /**
@@ -44,11 +65,6 @@ export type LocaleStore = LocaleState & LocaleActions;
  */
 const STORAGE_KEY = 'postybirb-locale';
 
-/**
- * Supported locale codes for the application.
- */
-export const SUPPORTED_LOCALES = ['en', 'de', 'lt', 'pt-BR', 'ru', 'es', 'ta'];
-
 // ============================================================================
 // Helper Functions
 // ============================================================================
@@ -62,13 +78,13 @@ const getDefaultLanguage = (): string => {
     const browserLocale = navigator.language;
 
     // Check for exact match first (e.g., pt-BR)
-    if (SUPPORTED_LOCALES.includes(browserLocale)) {
+    if ((supportedLocaleCodes as string[]).includes(browserLocale)) {
       return browserLocale;
     }
 
     // Try base language (e.g., en-US -> en)
     const baseLocale = browserLocale.split('-')[0];
-    if (SUPPORTED_LOCALES.includes(baseLocale)) {
+    if ((supportedLocaleCodes as string[]).includes(baseLocale)) {
       return baseLocale;
     }
   }
@@ -84,6 +100,8 @@ const getDefaultLanguage = (): string => {
  */
 const initialState: LocaleState = {
   language: getDefaultLanguage(),
+  startOfWeek: 'locale',
+  hourCycle: 'locale',
 };
 
 // ============================================================================
@@ -101,6 +119,10 @@ export const useLocaleStore = create<LocaleStore>()(
 
       // Actions
       setLanguage: (language) => set({ language }),
+
+      setHourCycle: (hourCycle) => set({ hourCycle }),
+
+      setStartOfWeek: (startOfWeek) => set({ startOfWeek }),
 
       // Reset to initial state
       resetLocale: () => set(initialState),
@@ -125,5 +147,11 @@ export const useLanguageActions = () =>
     useShallow((state) => ({
       language: state.language,
       setLanguage: state.setLanguage,
+
+      startOfWeek: state.startOfWeek,
+      setStartOfWeek: state.setStartOfWeek,
+
+      hourCycle: state.hourCycle,
+      setHourCycle: state.setHourCycle,
     })),
   );

@@ -15,6 +15,10 @@ export { SearchInput } from './search-input';
 export { SimpleTagInput } from './simple-tag-input';
 export type { SimpleTagInputProps } from './simple-tag-input';
 export { SubmissionPicker, SubmissionPickerModal } from './submission-picker';
-export type { SubmissionPickerProps, SubmissionPickerModalProps } from './submission-picker';
+export type {
+  SubmissionPickerModalProps,
+  SubmissionPickerProps,
+} from './submission-picker';
 export { TemplatePicker } from './template-picker/template-picker';
 
+export { DateTimePickerWithLocalization } from './date-time-picker-with-localization/date-time-picker-with-localization';

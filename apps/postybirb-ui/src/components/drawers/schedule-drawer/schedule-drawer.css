@@ -17,7 +17,7 @@
 }
 
 :root[data-mantine-color-scheme='dark'] .schedule-drawer-sidebar {
-  border-color: var(--mantine-color-dark-4);
+  border-right-color: var(--mantine-color-dark-4);
   background-color: var(--mantine-color-dark-6);
 }
 
@@ -31,66 +31,107 @@
 
 /* Base light theme styles */
 .schedule-drawer-calendar .fc {
+  /* Base colors */
   --fc-border-color: var(--mantine-color-gray-3);
   --fc-page-bg-color: var(--mantine-color-body);
   --fc-neutral-bg-color: var(--mantine-color-gray-0);
   --fc-neutral-text-color: var(--mantine-color-text);
+
+  /* Button styles (matching Mantine Button) */
   --fc-button-text-color: var(--mantine-color-white);
-  --fc-button-bg-color: var(--mantine-color-blue-6);
-  --fc-button-border-color: var(--mantine-color-blue-6);
-  --fc-button-hover-bg-color: var(--mantine-color-blue-7);
-  --fc-button-hover-border-color: var(--mantine-color-blue-7);
-  --fc-button-active-bg-color: var(--mantine-color-blue-8);
-  --fc-button-active-border-color: var(--mantine-color-blue-8);
-  
-  /* Month/week view */
-  --fc-today-bg-color: var(--mantine-color-blue-0);
-  --fc-highlight-color: var(--mantine-color-blue-1);
+  --fc-button-bg-color: var(--mantine-primary-color-filled);
+  --fc-button-border-color: var(--mantine-primary-color-filled);
+  --fc-button-hover-bg-color: var(--mantine-primary-color-filled-hover);
+  --fc-button-hover-border-color: var(--mantine-primary-color-filled-hover);
+  --fc-button-active-bg-color: var(--mantine-primary-color-filled);
+  --fc-button-active-border-color: var(--mantine-primary-color-filled);
+
+  /* Event styles */
   --fc-event-text-color: var(--mantine-color-white);
-  --fc-event-border-color: var(--mantine-color-blue-6);
-  --fc-event-bg-color: var(--mantine-color-blue-6);
-  
+  --fc-event-border-color: var(--mantine-primary-color-filled);
+  --fc-event-bg-color: var(--mantine-primary-color-filled);
+
+  /* Today & highlight (using Mantine primary color light variants) */
+  --fc-today-bg-color: var(--mantine-primary-color-light);
+  --fc-highlight-color: var(--mantine-primary-color-light-hover);
+
   /* List view */
   --fc-list-event-hover-bg-color: var(--mantine-color-gray-0);
   --fc-theme-standard-list-day-cushion-background: var(--mantine-color-gray-0);
+
+  /* Typography */
+  font-family: var(--mantine-font-family);
+  font-size: var(--mantine-font-size-md);
 }
 
 /* Dark theme overrides */
 :root[data-mantine-color-scheme='dark'] .schedule-drawer-calendar .fc {
   --fc-border-color: var(--mantine-color-dark-4);
-  --fc-page-bg-color: var(--mantine-color-body);
   --fc-neutral-bg-color: var(--mantine-color-dark-6);
-  --fc-neutral-text-color: var(--mantine-color-text);
-  --fc-button-text-color: var(--mantine-color-white);
-  --fc-button-bg-color: var(--mantine-color-blue-6);
-  --fc-button-border-color: var(--mantine-color-blue-6);
-  --fc-button-hover-bg-color: var(--mantine-color-blue-7);
-  --fc-button-hover-border-color: var(--mantine-color-blue-7);
-  --fc-button-active-bg-color: var(--mantine-color-blue-8);
-  --fc-button-active-border-color: var(--mantine-color-blue-8);
-  
-  /* Month/week view */
-  --fc-today-bg-color: rgba(59, 130, 246, 0.1);
-  --fc-highlight-color: rgba(59, 130, 246, 0.2);
-  --fc-event-text-color: var(--mantine-color-white);
-  --fc-event-border-color: var(--mantine-color-blue-6);
-  --fc-event-bg-color: var(--mantine-color-blue-6);
-  
-  /* List view */
   --fc-list-event-hover-bg-color: var(--mantine-color-dark-6);
   --fc-theme-standard-list-day-cushion-background: var(--mantine-color-dark-6);
+  --fc-today-bg-color: var(--mantine-primary-color-light);
+  --fc-highlight-color: var(--mantine-primary-color-light-hover);
 }
 
-/* Text color styles for better Mantine integration */
-.schedule-drawer-calendar .fc-col-header-cell-cushion,
-.schedule-drawer-calendar .fc-daygrid-day-number,
-.schedule-drawer-calendar .fc-list-day-text,
-.schedule-drawer-calendar .fc-list-event-title,
-.schedule-drawer-calendar .fc-list-day-side-text {
-  color: var(--mantine-color-text) !important;
+/* ===== Toolbar & Buttons ===== */
+.schedule-drawer-calendar .fc .fc-toolbar {
+  margin-bottom: var(--mantine-spacing-md);
+  gap: var(--mantine-spacing-sm);
+  flex-wrap: wrap;
 }
 
-/* Table and grid elements */
+.schedule-drawer-calendar .fc .fc-toolbar-title {
+  font-size: var(--mantine-font-size-xl);
+  font-weight: 600;
+  color: var(--mantine-color-text);
+}
+
+/* Mantine‑style buttons */
+.schedule-drawer-calendar .fc .fc-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--mantine-line-height-md);
+  padding: 0 var(--mantine-spacing-sm);
+  font-size: var(--mantine-font-size-sm);
+  font-weight: 500;
+  border-radius: var(--mantine-radius-md);
+  transition: all 0.15s ease;
+  cursor: pointer;
+  background-color: var(--fc-button-bg-color);
+  border: 1px solid var(--fc-button-border-color);
+  color: var(--fc-button-text-color);
+  box-shadow: var(--mantine-shadow-xs);
+}
+
+.schedule-drawer-calendar .fc .fc-button:hover {
+  background-color: var(--fc-button-hover-bg-color);
+  border-color: var(--fc-button-hover-border-color);
+  transform: translateY(-1px);
+  box-shadow: var(--mantine-shadow-sm);
+}
+
+.schedule-drawer-calendar .fc .fc-button:focus-visible {
+  outline: 2px solid var(--mantine-primary-color-filled);
+  outline-offset: 2px;
+}
+
+.schedule-drawer-calendar .fc .fc-button-primary:not(:disabled):active,
+.schedule-drawer-calendar .fc .fc-button-primary.fc-button-active {
+  background-color: var(--fc-button-active-bg-color);
+  border-color: var(--fc-button-active-border-color);
+  transform: translateY(0);
+  box-shadow: var(--mantine-shadow-xs);
+}
+
+/* Button group spacing */
+.schedule-drawer-calendar .fc .fc-button-group > .fc-button {
+  margin: 0 2px;
+  border-radius: var(--mantine-radius-md);
+}
+
+/* ===== Calendar Grid ===== */
 .schedule-drawer-calendar .fc th,
 .schedule-drawer-calendar .fc td,
 .schedule-drawer-calendar .fc .fc-timegrid-slot,
@@ -98,38 +139,84 @@
 .schedule-drawer-calendar .fc .fc-timegrid-axis-cushion,
 .schedule-drawer-calendar .fc .fc-timegrid-axis,
 .schedule-drawer-calendar .fc .fc-col-header-cell {
-  color: var(--mantine-color-text) !important;
   border-color: var(--fc-border-color) !important;
-}
-
-/* Calendar toolbar styling */
-.schedule-drawer-calendar .fc .fc-toolbar {
-  margin-bottom: var(--mantine-spacing-md);
-}
-
-.schedule-drawer-calendar .fc .fc-toolbar-title {
   color: var(--mantine-color-text);
+}
+
+/* Column headers */
+.schedule-drawer-calendar .fc .fc-col-header-cell-cushion {
+  padding: var(--mantine-spacing-xs);
   font-weight: 600;
-  font-size: 1.5rem;
+  color: var(--mantine-color-text);
 }
 
-.schedule-drawer-calendar .fc .fc-button-group > .fc-button {
-  border-radius: var(--mantine-radius-md);
+/* Day numbers */
+.schedule-drawer-calendar .fc .fc-daygrid-day-number {
+  padding: var(--mantine-spacing-xs);
   font-weight: 500;
-  margin: 0 2px;
-  transition: all 0.2s ease;
+  color: var(--mantine-color-text);
+}
+
+/* Today highlight */
+.schedule-drawer-calendar .fc .fc-daygrid-day.fc-day-today {
+  background-color: var(--fc-today-bg-color);
+  border: 1px solid var(--mantine-primary-color-filled);
+  border-radius: var(--mantine-radius-sm);
+}
+
+/* Weekend background (subtle distinction) */
+.schedule-drawer-calendar .fc .fc-daygrid-day.fc-day-sat,
+.schedule-drawer-calendar .fc .fc-daygrid-day.fc-day-sun {
+  background-color: var(--mantine-color-gray-0);
+}
+
+:root[data-mantine-color-scheme='dark']
+  .schedule-drawer-calendar
+  .fc
+  .fc-daygrid-day.fc-day-sat,
+:root[data-mantine-color-scheme='dark']
+  .schedule-drawer-calendar
+  .fc
+  .fc-daygrid-day.fc-day-sun {
+  background-color: var(--mantine-color-dark-7);
+}
+
+/* ===== Events ===== */
+.schedule-drawer-calendar .fc-event {
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border-radius: var(--mantine-radius-sm);
+  border: none;
+  background-color: var(--fc-event-bg-color);
+  color: var(--fc-event-text-color);
+  font-size: var(--mantine-font-size-sm);
+  padding: 2px 6px;
   box-shadow: var(--mantine-shadow-xs);
 }
 
-.schedule-drawer-calendar .fc .fc-button-group > .fc-button:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--mantine-shadow-sm);
+.schedule-drawer-calendar .fc-event:hover {
+  transform: scale(1.01);
+  filter: brightness(0.95);
+  box-shadow: var(--mantine-shadow-md);
+  z-index: var(--mantine-z-index-popover);
 }
 
-.schedule-drawer-calendar .fc .fc-button:not(:disabled):active,
-.schedule-drawer-calendar .fc .fc-button:not(:disabled).fc-button-active {
-  box-shadow: var(--mantine-shadow-xs);
-  transform: none;
+/* Day grid event */
+.schedule-drawer-calendar .fc-daygrid-event {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Time grid event */
+.schedule-drawer-calendar .fc-timegrid-event {
+  padding: 4px 6px;
+}
+
+/* Event resize handle */
+.schedule-drawer-calendar .fc .fc-event-resizer {
+  background-color: var(--mantine-primary-color-filled);
+  border-radius: var(--mantine-radius-xs);
 }
 
 /* Draggable element styles */
@@ -140,14 +227,14 @@
   user-select: none;
   transition: background-color 0.2s ease;
   padding: var(--mantine-spacing-xs);
+  background-color: var(--mantine-primary-color-light);
+  color: var(--mantine-primary-color-light-color);
+  font-weight: 500;
+  margin-bottom: var(--mantine-spacing-xs);
 }
 
 .calendar-draggable:hover {
-  background-color: var(--mantine-color-blue-0);
-}
-
-:root[data-mantine-color-scheme='dark'] .calendar-draggable:hover {
-  background-color: rgba(59, 130, 246, 0.1);
+  background-color: var(--mantine-primary-color-light-hover);
 }
 
 .calendar-draggable:active {
@@ -157,72 +244,19 @@
 /* Dragging state styles */
 .calendar-draggable.fc-event-dragging {
   opacity: 0.8;
-  background-color: var(--mantine-color-blue-1);
+  background-color: var(--mantine-primary-color-light);
   box-shadow: var(--mantine-shadow-lg);
 }
 
-:root[data-mantine-color-scheme='dark'] .calendar-draggable.fc-event-dragging {
-  background-color: rgba(59, 130, 246, 0.2);
+/* List View */
+.schedule-drawer-calendar .fc-list-day-text,
+.schedule-drawer-calendar .fc-list-day-side-text,
+.schedule-drawer-calendar .fc-list-event-title {
+  color: var(--mantine-color-text);
 }
 
-/* FullCalendar event styling */
-.schedule-drawer-calendar .fc-h-event {
-  border-radius: var(--mantine-radius-sm);
-  box-shadow: var(--mantine-shadow-xs);
-  padding: 2px 4px;
-  border: 1px solid var(--fc-event-border-color);
-}
-
-.schedule-drawer-calendar .fc-daygrid-event {
-  border-radius: var(--mantine-radius-sm);
-  padding: 2px 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  box-shadow: var(--mantine-shadow-xs);
-}
-
-/* Event hover and interaction effects */
-.schedule-drawer-calendar .fc-event {
-  cursor: pointer;
-  transition: 
-    transform 0.15s ease,
-    box-shadow 0.15s ease,
-    opacity 0.15s ease;
-}
-
-.schedule-drawer-calendar .fc-event:hover {
-  transform: scale(1.02);
-  box-shadow: var(--mantine-shadow-md);
-  z-index: var(--z-section-panel) !important;
-  opacity: 0.95;
-}
-
-/* Today cell highlighting */
-.schedule-drawer-calendar .fc .fc-daygrid-day.fc-day-today {
-  background-color: var(--fc-today-bg-color);
-  border-color: var(--mantine-color-blue-3);
-}
-
-:root[data-mantine-color-scheme='dark'] .schedule-drawer-calendar .fc .fc-daygrid-day.fc-day-today {
-  border-color: var(--mantine-color-blue-7);
-}
-
-/* Weekend styling */
-.schedule-drawer-calendar .fc .fc-daygrid-day.fc-day-sat,
-.schedule-drawer-calendar .fc .fc-daygrid-day.fc-day-sun {
-  background-color: var(--mantine-color-gray-0);
-}
-
-:root[data-mantine-color-scheme='dark'] .schedule-drawer-calendar .fc .fc-daygrid-day.fc-day-sat,
-:root[data-mantine-color-scheme='dark'] .schedule-drawer-calendar .fc .fc-daygrid-day.fc-day-sun {
-  background-color: var(--mantine-color-dark-7);
-}
-
-/* Month view day number styling */
-.schedule-drawer-calendar .fc .fc-daygrid-day-number {
-  padding: var(--mantine-spacing-xs);
-  font-weight: 500;
+.schedule-drawer-calendar .fc-list-event:hover td {
+  background-color: var(--fc-list-event-hover-bg-color);
 }
 
 /* Time grid styling for week/day views */
@@ -235,8 +269,23 @@
   color: var(--mantine-color-dimmed);
 }
 
-/* Event resize handle styling */
-.schedule-drawer-calendar .fc .fc-event-resizer {
-  background-color: var(--mantine-color-blue-6);
-  border-radius: var(--mantine-radius-xs);
+/* ===== Responsive Adjustments ===== */
+@media (max-width: 768px) {
+  .schedule-drawer-content {
+    height: calc(100vh - 80px);
+  }
+
+  .schedule-drawer-sidebar {
+    width: 240px;
+    min-width: 240px;
+  }
+
+  .schedule-drawer-calendar .fc .fc-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .schedule-drawer-calendar .fc .fc-toolbar-title {
+    text-align: center;
+  }
 }

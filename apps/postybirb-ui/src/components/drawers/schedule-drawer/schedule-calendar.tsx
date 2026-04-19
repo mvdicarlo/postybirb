@@ -3,8 +3,14 @@
  * Supports drag-drop from external elements, event moving, and click-to-manage.
  */
 
-import { EventClickArg, EventDropArg } from '@fullcalendar/core';
-import { EventImpl } from '@fullcalendar/core/internal';
+import {
+  createPlugin,
+  EventClickArg,
+  EventDropArg,
+  EventInput,
+  LocaleInput,
+} from '@fullcalendar/core';
+import { EventImpl, VerboseFormattingArg } from '@fullcalendar/core/internal';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin, { DropArg } from '@fullcalendar/interaction';
 import FullCalendar from '@fullcalendar/react';
@@ -29,7 +35,7 @@ import {
   IconMessage,
 } from '@tabler/icons-react';
 import Cron from 'croner';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import submissionApi from '../../../api/submission.api';
 import { useLocale } from '../../../hooks';
@@ -40,12 +46,33 @@ import {
   showUpdateErrorNotification,
 } from '../../../utils/notifications';
 
+const dayjsPlugin = createPlugin({
+  name: 'dayjs',
+  cmdFormatter(cmdStr: string, arg: VerboseFormattingArg): string {
+    const locale = arg.localeCodes[0];
+    if (arg.end) {
+      const start = dayjs(...arg.start.array).locale(locale);
+      const end = dayjs(...arg.end.array).locale(locale);
+      return `${start.format(cmdStr)} – ${end.format(cmdStr)}`;
+    }
+    return dayjs(...arg.date.array)
+      .locale(locale)
+      .format(cmdStr);
+  },
+});
+
 /**
  * Calendar component for schedule drawer.
  * Shows all scheduled submissions (both FILE and MESSAGE types).
  */
 export function ScheduleCalendar() {
-  const { calendarLocale, formatRelativeTime, formatDateTime } = useLocale();
+  const {
+    calendarLocale,
+    formatRelativeTime,
+    formatDateTime,
+    startOfWeek,
+    hourCycle,
+  } = useLocale();
   const scheduledSubmissions = useSubmissionsWithSchedule();
   const [selectedEvent, setSelectedEvent] = useState<EventImpl | null>(null);
   const [modalOpened, setModalOpened] = useState(false);
@@ -53,10 +80,10 @@ export function ScheduleCalendar() {
   const calendarRef = useRef<any>(null);
 
   // Format events for FullCalendar
-  const events = useMemo(
+  const events: EventInput[] = useMemo(
     () =>
       scheduledSubmissions.flatMap((submission) => {
-        const result = [];
+        const result: EventInput[] = [];
         const { title } = submission;
         const isMessageType = submission.type === SubmissionType.MESSAGE;
 
@@ -66,7 +93,7 @@ export function ScheduleCalendar() {
             result.push({
               id: submission.id,
               title,
-              start: moment(submission.schedule.scheduledFor).toISOString(),
+              start: dayjs(submission.schedule.scheduledFor).toISOString(),
               backgroundColor: isMessageType ? '#40c057' : '#339af0',
               borderColor: isMessageType ? '#40c057' : '#339af0',
               textColor: '#ffffff',
@@ -85,7 +112,7 @@ export function ScheduleCalendar() {
             result.push({
               id: `${submission.id}-recurring-${index}`,
               title,
-              start: moment(nextRun).toISOString(),
+              start: dayjs(nextRun).toISOString(),
               backgroundColor: isMessageType ? '#69db7c' : '#74c0fc',
               borderColor: isMessageType ? '#69db7c' : '#74c0fc',
               textColor: '#ffffff',
@@ -101,7 +128,8 @@ export function ScheduleCalendar() {
           result.push({
             id: submission.id,
             title,
-            start: moment(submission.schedule.scheduledFor).toISOString(),
+            start: dayjs(submission.schedule.scheduledFor).toISOString(),
+            startEditable: true,
             backgroundColor: submission.isScheduled
               ? isMessageType
                 ? '#40c057'
@@ -111,7 +139,7 @@ export function ScheduleCalendar() {
               ? isMessageType
                 ? '#40c057'
                 : '#339af0'
-              : '#909296',
+              : '#4D4D4E',
             textColor: '#ffffff',
             extendedProps: {
               type: submission.isScheduled ? 'scheduled' : 'unscheduled',
@@ -179,7 +207,7 @@ export function ScheduleCalendar() {
       .then(() => {
         showInfoNotification(
           selectedEvent.title,
-          <Trans>Submission unscheduled</Trans>
+          <Trans>Submission unscheduled</Trans>,
         );
       })
       .catch((error) => {
@@ -211,7 +239,12 @@ export function ScheduleCalendar() {
     <div style={{ overflow: 'auto', position: 'relative', height: '100%' }}>
       <FullCalendar
         ref={calendarRef}
-        plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+        plugins={[
+          dayGridPlugin,
+          timeGridPlugin,
+          interactionPlugin,
+          dayjsPlugin,
+        ]}
         headerToolbar={{
           // eslint-disable-next-line lingui/no-unlocalized-strings
           left: 'prev,next today',
@@ -226,7 +259,10 @@ export function ScheduleCalendar() {
         allDaySlot={false}
         weekends
         events={events}
-        locale={calendarLocale}
+        locale={calendarLocale as LocaleInput}
+        firstDay={startOfWeek}
+        // eslint-disable-next-line lingui/no-unlocalized-strings
+        eventTimeFormat={hourCycle === 'h12' ? 'hh:mm A' : 'HH:mm'}
         eventDrop={handleEventDrop}
         height="100%"
         themeSystem="standard"
@@ -253,9 +289,7 @@ export function ScheduleCalendar() {
               <IconClock size={14} />
             </ThemeIcon>
             <Text size="sm" c="dimmed">
-              {selectedEvent?.start
-                ? formatDateTime(selectedEvent.start)
-                : ''}
+              {selectedEvent?.start ? formatDateTime(selectedEvent.start) : ''}
             </Text>
           </Group>
           {selectedEvent?.start && (

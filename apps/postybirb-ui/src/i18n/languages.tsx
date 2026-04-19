@@ -1,14 +1,23 @@
 import { msg } from '@lingui/core/macro';
+
 import 'cronstrue/locales/de';
 import 'cronstrue/locales/es';
 import 'cronstrue/locales/pt_BR';
 import 'cronstrue/locales/ru';
+
 import 'dayjs/locale/de';
 import 'dayjs/locale/es';
 import 'dayjs/locale/lt';
 import 'dayjs/locale/pt-br';
 import 'dayjs/locale/ru';
 import 'dayjs/locale/ta';
+
+import calendarDE from '@fullcalendar/core/locales/de';
+import calendarES from '@fullcalendar/core/locales/es';
+import calendarLT from '@fullcalendar/core/locales/lt';
+import calendarPT_BR from '@fullcalendar/core/locales/pt-br';
+import calendarRU from '@fullcalendar/core/locales/ru';
+import calendarTA from '@fullcalendar/core/locales/ta-in';
 
 export const languages = [
   [msg`English`, 'en'],
@@ -32,14 +41,14 @@ export const dateLocaleMap: Record<string, string> = {
   ta: 'ta',
 };
 
-export const calendarLanguageMap: Record<string, string> = {
-  'pt-BR': 'pt-br',
+export const calendarLanguageMap: Record<string, string | object> = {
+  'pt-BR': calendarPT_BR,
   en: 'en-US',
-  de: 'de-DE',
-  lt: 'lt-LT',
-  ru: 'ru-RU',
-  es: 'pt-BR',
-  ta: 'ta-IN',
+  de: calendarDE,
+  lt: calendarLT,
+  ru: calendarRU,
+  es: calendarES,
+  ta: calendarTA,
 };
 
 /**
