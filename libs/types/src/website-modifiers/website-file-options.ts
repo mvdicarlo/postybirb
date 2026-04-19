@@ -40,4 +40,9 @@ export type WebsiteFileOptions = {
    * The supported file types for the website.
    */
   supportedFileTypes: FileType[];
+
+  /**
+   * If file alt text is equal or greater then this number it will be trimmed and the warning will be shown
+   */
+  maxAltTextLength?: number;
 };

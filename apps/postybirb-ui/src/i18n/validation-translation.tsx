@@ -145,6 +145,18 @@ export const TranslationMessages: TranslationsMap = {
     <Trans>File will be modified to support website requirements</Trans>
   ),
 
+  'validation.file.alt-text.max-length': (props) => {
+    const maxLength = props?.maxLength ?? 0;
+    const currentLength = props?.currentLength ?? 0;
+    const { fileName } = props;
+    return (
+      <Trans>
+        ({fileName}) Alt text length is greater then maximum ({currentLength} /{' '}
+        {maxLength}) and will be trimmed.
+      </Trans>
+    );
+  },
+
   'validation.tags.max-tags': (props) => {
     const { maxLength, currentLength } = props;
     return (

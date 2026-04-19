@@ -103,6 +103,13 @@ export interface ValidationMessages {
     fileId: string;
   };
 
+  'validation.file.alt-text.max-length': {
+    fileName: string;
+    fileId: string;
+    currentLength: number;
+    maxLength: number;
+  };
+
   'validation.description.max-length': {
     currentLength: number;
     maxLength: number;
