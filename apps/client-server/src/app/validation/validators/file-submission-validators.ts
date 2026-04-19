@@ -286,3 +286,35 @@ export async function validateImageFileDimensions({
     }
   });
 }
+
+export async function validateFileAltTextLength({
+  validator,
+  websiteInstance,
+  submission,
+}: ValidatorParams) {
+  const { maxAltTextLength } = websiteInstance.decoratedProps.fileOptions;
+
+  if (
+    !isFileHandlingWebsite(websiteInstance) ||
+    !isFileSubmission(submission) ||
+    websiteInstance instanceof DefaultWebsite ||
+    !maxAltTextLength
+  ) {
+    return;
+  }
+
+  submission.files.forEach((file) => {
+    if (isFileFiltered(file, submission, websiteInstance)) {
+      return;
+    }
+
+    if (file.metadata.altText?.length >= maxAltTextLength) {
+      validator.warning('validation.file.alt-text.max-length', {
+        currentLength: file.metadata.altText.length,
+        maxLength: maxAltTextLength,
+        fileId: file.id,
+        fileName: file.fileName,
+      });
+    }
+  });
+}

@@ -105,7 +105,7 @@ export class TwitterApiServiceV2 {
             const body: Record<string, unknown> = { media_id: mediaId };
 
             if (altText) {
-              body.alt_text = { text: altText.substring(0, 1000) };
+              body.alt_text = { text: altText };
             }
 
             if (contentBlur) {

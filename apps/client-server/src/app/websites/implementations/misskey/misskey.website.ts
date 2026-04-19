@@ -59,6 +59,9 @@ const MIAUTH_PERMISSIONS = [
     '*': FileSize.megabytes(30),
   },
   fileBatchSize: 16,
+
+  // https://github.com/misskey-dev/misskey/blob/1391269a674e067df7fa5c15a27133ba16a928db/packages/backend/src/server/api/endpoints/drive/files/upload-from-url.ts#L36
+  maxAltTextLength: 512,
 })
 @DisableAds()
 export default class Misskey
