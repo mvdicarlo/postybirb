@@ -10,7 +10,7 @@
     "isolatedModules": true,
     "types": ["vite/client"],
     "noEmit": true,
-    "lib": ["DOM", "DOM.Iterable", "ESNext", "ES2025.Intl"],
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "allowJs": false,
     "esModuleInterop": false,
     "skipLibCheck": true,
