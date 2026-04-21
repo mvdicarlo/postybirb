@@ -1,6 +1,6 @@
 import { clearDatabase } from '@postybirb/database';
 import { ensureDirSync, PostyBirbDirectories, writeSync } from '@postybirb/fs';
-import { NullAccount, NULL_ACCOUNT_ID, SubmissionRating, SubmissionType } from '@postybirb/types';
+import { NULL_ACCOUNT_ID, NullAccount, SubmissionRating, SubmissionType } from '@postybirb/types';
 import { copyFileSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { v4 } from 'uuid';

@@ -13,9 +13,10 @@ import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { v4 } from 'uuid';
 import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
-import { LegacySubmission, LegacyFileRecord } from '../legacy-entities/legacy-submission';
+import { LegacyFileRecord, LegacySubmission } from '../legacy-entities/legacy-submission';
 import { LegacySubmissionPart } from '../legacy-entities/legacy-submission-part';
 import { SubmissionPartTransformerRegistry } from '../transformers/submission-part/submission-part-transformer-registry';
+import { LegacyDescriptionConverter } from '../utils/legacy-description-converter';
 import { NdjsonParser } from '../utils/ndjson-parser';
 import { WebsiteNameMapper } from '../utils/website-name-mapper';
 
@@ -433,11 +434,10 @@ export class LegacySubmissionConverter {
     }
 
     if (legacyData.description) {
-      // For the default part, store description as-is in a basic format
-      // since it will be overridden by per-website parts
+      const html = legacyData.description.value || '';
       result.description = {
         overrideDefault: legacyData.description.overwriteDefault ?? false,
-        description: { type: 'doc', content: [] },
+        description: LegacyDescriptionConverter.convert(html),
       };
     }
 

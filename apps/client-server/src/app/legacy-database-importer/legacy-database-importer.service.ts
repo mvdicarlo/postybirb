@@ -47,9 +47,9 @@ export class LegacyDatabaseImporterService {
       }
 
       const allAccounts = await this.accountService.findAll();
-      allAccounts.forEach((account) => {
-        this.accountService.manuallyExecuteOnLogin(account.id);
-      });
+      for (const account of allAccounts) {
+        await this.accountService.registerAndLogin(account.id);
+      }
     }
 
     if (importRequest.tagGroups) {
