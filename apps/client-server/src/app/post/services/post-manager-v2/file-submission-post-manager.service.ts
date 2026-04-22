@@ -148,13 +148,19 @@ export class FileSubmissionPostManager extends BasePostManager {
           ),
         )
       ).map((f) => {
-        const fileWithMetadata = f.withMetadata(f.metadata);
-        fileWithMetadata.metadata.sourceUrls = [
-          ...(fileWithMetadata.metadata.sourceUrls ?? []),
+        // eslint-disable-next-line no-param-reassign
+        f.metadata.sourceUrls = [
+          ...(f.metadata.sourceUrls ?? []),
           ...allSourceUrls,
         ].filter((s) => !!s?.trim());
 
-        return fileWithMetadata;
+        const { maxAltTextLength } = instance.decoratedProps.fileOptions;
+        if (f.metadata.altText.length >= maxAltTextLength) {
+          // eslint-disable-next-line no-param-reassign
+          f.metadata.altText = f.metadata.altText.slice(0, maxAltTextLength);
+        }
+
+        return f;
       });
 
       // Verify files are supported by the website after all processing

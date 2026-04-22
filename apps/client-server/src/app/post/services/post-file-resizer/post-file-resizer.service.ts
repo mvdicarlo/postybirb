@@ -30,9 +30,7 @@ type ResizeRequest = {
 export class PostFileResizerService {
   private readonly logger = Logger();
 
-  constructor(
-    private readonly sharpInstanceManager: SharpInstanceManager,
-  ) {}
+  constructor(private readonly sharpInstanceManager: SharpInstanceManager) {}
 
   public async resize(request: ResizeRequest): Promise<PostingFile> {
     return this.process(request);
@@ -50,14 +48,9 @@ export class PostFileResizerService {
     const primaryFile = await this.processPrimaryFile(file, resize);
     const thumbnail = await this.processThumbnailFile(file);
 
-    const newPostingFile = new PostingFile(
-      file.id,
-      primaryFile,
-      thumbnail,
+    return new PostingFile(file.id, primaryFile, thumbnail).withMetadata(
+      file.metadata,
     );
-
-    newPostingFile.metadata = file.metadata;
-    return newPostingFile;
   }
 
   private async processPrimaryFile(
