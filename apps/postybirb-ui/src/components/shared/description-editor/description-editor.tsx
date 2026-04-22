@@ -44,7 +44,7 @@ import { PluginKey } from '@tiptap/pm/state';
 import { Editor, EditorContent, ReactRenderer, useEditor } from '@tiptap/react';
 import Suggestion from '@tiptap/suggestion';
 import { useCallback, useMemo, useRef } from 'react';
-import tippy, { type Instance as TippyInstance } from 'tippy';
+import tippy, { type Instance as TippyInstance } from 'tippy.js';
 
 import { useCustomShortcuts } from '../../../stores/entity/custom-shortcut-store';
 import { useWebsites } from '../../../stores/entity/website-store';
