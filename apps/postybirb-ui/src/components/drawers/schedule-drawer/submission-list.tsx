@@ -6,7 +6,7 @@
 import { Draggable } from '@fullcalendar/interaction';
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
-  Box,
+  Card,
   Group,
   ScrollArea,
   Stack,
@@ -35,7 +35,10 @@ function DraggableSubmissionItem({
   const isMessage = submission.type === SubmissionType.MESSAGE;
 
   return (
-    <Box
+    <Card
+      withBorder
+      p="sm"
+      radius="sm"
       className="calendar-draggable"
       data-submission-id={submission.id}
       style={{
@@ -55,7 +58,7 @@ function DraggableSubmissionItem({
           {title}
         </Text>
       </Group>
-    </Box>
+    </Card>
   );
 }
 

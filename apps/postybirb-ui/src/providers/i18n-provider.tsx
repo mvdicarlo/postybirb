@@ -8,7 +8,7 @@ import { i18n } from '@lingui/core';
 import { I18nProvider as LinguiI18nProvider } from '@lingui/react';
 import { Group, Loader } from '@mantine/core';
 import { DatesProvider } from '@mantine/dates';
-import moment from 'moment/min/moment-with-locales';
+import dayjs from 'dayjs';
 import { useCallback, useEffect, useState } from 'react';
 import { useLanguage } from '../stores/ui/locale-store';
 
@@ -30,7 +30,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     lang = lang ?? 'en';
     const { messages } = await import(`../../../../lang/${lang}.po`);
     i18n.loadAndActivate({ locale: lang, messages });
-    moment.locale(lang);
+    dayjs.locale(lang);
     setLoaded(true);
   }, []);
 
@@ -70,7 +70,9 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
       <Loader />
       <div>Loading translations...</div>
       {tooLongLoading && (
-        <div>Loading takes too much time, please check the console for errors.</div>
+        <div>
+          Loading takes too much time, please check the console for errors.
+        </div>
       )}
     </Group>
   );

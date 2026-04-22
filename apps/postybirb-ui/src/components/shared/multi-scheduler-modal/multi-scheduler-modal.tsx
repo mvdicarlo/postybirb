@@ -16,7 +16,6 @@ import {
   Text,
   Title,
 } from '@mantine/core';
-import { DateTimePicker } from '@mantine/dates';
 import { ScheduleType } from '@postybirb/types';
 import { IconCalendarEvent } from '@tabler/icons-react';
 import { useCallback, useMemo, useState } from 'react';
@@ -28,6 +27,7 @@ import {
   showErrorNotification,
   showSuccessNotification,
 } from '../../../utils/notifications';
+import { DateTimePickerWithLocalization } from '../date-time-picker-with-localization/date-time-picker-with-localization';
 import { ReorderableSubmissionList } from '../reorderable-submission-list';
 import './multi-scheduler-modal.css';
 
@@ -73,7 +73,11 @@ export function MultiSchedulerModal({
   submissions: initialSubmissions,
 }: MultiSchedulerModalProps) {
   const { t } = useLingui();
-  const { formatDateTime } = useLocale();
+  const {
+    formatDateTime,
+    dayjsDateTimeFormat: dateTimeFormat,
+    startOfWeek,
+  } = useLocale();
 
   // Reorderable submissions state
   const [orderedSubmissions, setOrderedSubmissions] =
@@ -109,13 +113,7 @@ export function MultiSchedulerModal({
 
   // Handle date change
   const handleDateChange = useCallback(
-    (value: Date | string | null) => {
-      // DateTimePicker may pass string or Date
-      const date = value
-        ? typeof value === 'string'
-          ? new Date(value)
-          : value
-        : null;
+    (date: Date | null) => {
       setSelectedDate(date);
       if (date && !Number.isNaN(date.getTime())) {
         setLastUsedDate(date.toISOString());
@@ -237,9 +235,7 @@ export function MultiSchedulerModal({
             <Trans>Schedule Settings</Trans>
           </Text>
           <Stack gap="md">
-            <DateTimePicker
-              // eslint-disable-next-line lingui/no-unlocalized-strings
-              valueFormat="YYYY-MM-DD HH:mm"
+            <DateTimePickerWithLocalization
               label={<Trans>Start Date</Trans>}
               value={selectedDate}
               onChange={handleDateChange}
@@ -249,9 +245,7 @@ export function MultiSchedulerModal({
             />
 
             <Text size="xs" c="dimmed">
-              <Trans>
-                Set the interval between each submission.
-              </Trans>
+              <Trans>Set the interval between each submission.</Trans>
             </Text>
 
             <Group grow>

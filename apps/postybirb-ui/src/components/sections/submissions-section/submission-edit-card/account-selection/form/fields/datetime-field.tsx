@@ -2,10 +2,11 @@
  * DateTimeField - Date/time picker field.
  */
 
-import { DateTimePicker } from '@mantine/dates';
 import { DateTimeFieldType } from '@postybirb/form-builder';
 import { IconCalendar } from '@tabler/icons-react';
-import moment from 'moment';
+import dayjs from 'dayjs';
+import { useLocale } from '../../../../../../../hooks/use-locale';
+import { DateTimePickerWithLocalization } from '../../../../../../shared/index';
 import { useFormFieldsContext } from '../form-fields-context';
 import { useDefaultOption } from '../hooks/use-default-option';
 import { useValidations } from '../hooks/use-validations';
@@ -20,31 +21,31 @@ function DateTimePickerField({
   const { getValue, setValue, submission } = useFormFieldsContext();
 
   const value = getValue<string>(fieldName) ?? field.defaultValue ?? '';
-  const dateValue = value ? moment(value).toDate() : null;
+  const dateValue = value ? dayjs(value).toDate() : null;
 
-  const minDate = field.min ? moment(field.min).toDate() : undefined;
-  const maxDate = field.max ? moment(field.max).toDate() : undefined;
+  const minDate = field.min ? dayjs(field.min).toDate() : undefined;
+  const maxDate = field.max ? dayjs(field.max).toDate() : undefined;
+
+  const { dayjsDateTimeFormat: dateTimeFormat } = useLocale();
+
+  const format = field.format || dateTimeFormat;
 
   return (
-    <DateTimePicker
+    <DateTimePickerWithLocalization
       rightSection={<IconCalendar />}
       value={dateValue}
       disabled={submission.isArchived}
+      valueFormat={format}
       onChange={(date) => {
         if (date) {
-          setValue(fieldName, moment(date).toISOString());
+          setValue(fieldName, date);
         } else {
           setValue(fieldName, '');
         }
       }}
       placeholder={
-        defaultValue
-          ? // eslint-disable-next-line lingui/no-unlocalized-strings
-            moment(defaultValue).format(field.format || 'YYYY-MM-DD HH:mm')
-          : undefined
+        defaultValue ? dayjs(defaultValue).format(format) : undefined
       }
-      // eslint-disable-next-line lingui/no-unlocalized-strings
-      valueFormat={field.format || 'YYYY-MM-DD HH:mm'}
       withSeconds={false}
       minDate={minDate}
       maxDate={maxDate}
