@@ -25,7 +25,7 @@ export interface UseLocaleResult {
   /** Current app locale code (e.g., 'en', 'de', 'pt-BR') */
   locale: string;
 
-  /** Locale code for date libraries (dayjs/moment) */
+  /** Locale code for date libraries (dayjs) */
   dateLocale: string;
 
   /** Locale code for FullCalendar */
@@ -126,7 +126,7 @@ export function useLocale(): UseLocaleResult {
     // eslint-disable-next-line lingui/no-unlocalized-strings
     hourCycle === 'h24' ? 'YYYY-MM-DD HH:mm' : 'YYYY-MM-DD hh:mm A';
 
-  // Set moment locale as a proper side effect (not inside useMemo)
+  // Set dayjs locale as a proper side effect (not inside useMemo)
   useEffect(() => {
     dayjs.locale(dateLocale);
   }, [dateLocale]);

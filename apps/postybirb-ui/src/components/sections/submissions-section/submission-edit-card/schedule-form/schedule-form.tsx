@@ -17,7 +17,7 @@ import {
 import { ISubmissionScheduleInfo, ScheduleType } from '@postybirb/types';
 import { IconCalendar, IconCalendarOff, IconRepeat } from '@tabler/icons-react';
 import { Cron } from 'croner';
-import moment from 'dayjs';
+import dayjs from 'dayjs';
 import { useCallback, useEffect, useState } from 'react';
 import { useLocalStorage } from 'react-use';
 import { useLocale } from '../../../../../hooks';
@@ -83,7 +83,7 @@ export function ScheduleForm({
           if (lastUsedDate && new Date(lastUsedDate) > new Date()) {
             scheduledFor = lastUsedDate;
           } else {
-            scheduledFor = moment()
+            scheduledFor = dayjs()
               .add(1, 'day')
               .hour(9)
               .minute(0)
