@@ -109,7 +109,7 @@ export class LegacySubmissionConverter {
 
   constructor(
     private readonly databasePath: string,
-    private readonly isTemplate: boolean = false,
+    private readonly isTemplate = false,
   ) {}
 
   /**

@@ -6,7 +6,7 @@ export class PatreonSubmissionPartTransformer extends BaseSubmissionPartTransfor
   transform(legacyData: any, submissionType: string): IWebsiteFormFields | null {
     if (!legacyData) return null;
 
-    const base: IWebsiteFormFields = {
+    const base = {
       title: legacyData.title ?? '',
       tags: this.convertTags(legacyData.tags),
       description: this.convertDescription(legacyData.description),
