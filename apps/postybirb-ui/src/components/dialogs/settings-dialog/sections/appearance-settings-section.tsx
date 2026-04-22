@@ -17,7 +17,7 @@ import {
 } from '@mantine/core';
 import { IconMoon, IconSun, IconSunMoon } from '@tabler/icons-react';
 import { useMemo } from 'react';
-import { useLocale } from '../../../../hooks/use-locale.js';
+import { useLocale } from '../../../../hooks/use-locale';
 import {
   type ColorScheme,
   MANTINE_COLORS,

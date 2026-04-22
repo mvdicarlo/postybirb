@@ -13,7 +13,7 @@ import {
   cronstrueLocaleMap,
   dateLocaleMap,
 } from '../i18n/languages';
-import { useLocaleStore } from '../stores/ui/locale-store.js';
+import { useLocaleStore } from '../stores/ui/locale-store';
 
 dayjs.extend(relativeTime);
 dayjs.extend(customParseFormat);

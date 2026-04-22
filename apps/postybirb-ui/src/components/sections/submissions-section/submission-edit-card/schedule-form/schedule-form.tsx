@@ -21,7 +21,7 @@ import moment from 'dayjs';
 import { useCallback, useEffect, useState } from 'react';
 import { useLocalStorage } from 'react-use';
 import { useLocale } from '../../../../../hooks';
-import { DateTimePickerWithLocalization } from '../../../../shared/index.js';
+import { DateTimePickerWithLocalization } from '../../../../shared/index';
 import { CronPicker } from '../../../../shared/schedule-popover/cron-picker';
 
 export interface ScheduleFormProps {

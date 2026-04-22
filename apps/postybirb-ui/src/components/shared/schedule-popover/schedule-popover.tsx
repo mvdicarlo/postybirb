@@ -28,7 +28,7 @@ import { Cron } from 'croner';
 import dayjs from 'dayjs';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocalStorage } from 'react-use';
-import { DateTimePickerWithLocalization } from '../date-time-picker-with-localization/date-time-picker-with-localization.js';
+import { DateTimePickerWithLocalization } from '../date-time-picker-with-localization/date-time-picker-with-localization';
 import { CronPicker } from './cron-picker';
 
 export interface SchedulePopoverProps {

@@ -1,6 +1,6 @@
 import { DateTimePicker, DateTimePickerProps, DayOfWeek } from '@mantine/dates';
 import dayjs from 'dayjs';
-import { useLocale } from '../../../hooks/use-locale.js';
+import { useLocale } from '../../../hooks/use-locale';
 
 type Props = Omit<DateTimePickerProps, 'onChange'> & {
   onChange(date: Date | null): void;

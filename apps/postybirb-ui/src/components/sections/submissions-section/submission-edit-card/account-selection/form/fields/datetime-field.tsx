@@ -5,8 +5,8 @@
 import { DateTimeFieldType } from '@postybirb/form-builder';
 import { IconCalendar } from '@tabler/icons-react';
 import dayjs from 'dayjs';
-import { useLocale } from '../../../../../../../hooks/use-locale.js';
-import { DateTimePickerWithLocalization } from '../../../../../../shared/index.js';
+import { useLocale } from '../../../../../../../hooks/use-locale';
+import { DateTimePickerWithLocalization } from '../../../../../../shared/index';
 import { useFormFieldsContext } from '../form-fields-context';
 import { useDefaultOption } from '../hooks/use-default-option';
 import { useValidations } from '../hooks/use-validations';

@@ -27,7 +27,7 @@ import {
   showErrorNotification,
   showSuccessNotification,
 } from '../../../utils/notifications';
-import { DateTimePickerWithLocalization } from '../date-time-picker-with-localization/date-time-picker-with-localization.js';
+import { DateTimePickerWithLocalization } from '../date-time-picker-with-localization/date-time-picker-with-localization';
 import { ReorderableSubmissionList } from '../reorderable-submission-list';
 import './multi-scheduler-modal.css';
 

@@ -6,7 +6,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { useShallow } from 'zustand/react/shallow';
-import { supportedLocaleCodes } from '../../i18n/languages.js';
+import { supportedLocaleCodes } from '../../i18n/languages';
 
 type HourCycle = 'h12' | 'h24' | 'locale';
 
