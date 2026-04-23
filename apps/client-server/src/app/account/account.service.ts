@@ -1,16 +1,16 @@
 import {
-  BadRequestException,
-  Injectable,
-  OnModuleInit,
-  Optional,
+    BadRequestException,
+    Injectable,
+    OnModuleInit,
+    Optional,
 } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ACCOUNT_UPDATES } from '@postybirb/socket-events';
 import {
-  AccountId,
-  IWebsiteMetadata,
-  NULL_ACCOUNT_ID,
-  NullAccount,
+    AccountId,
+    IWebsiteMetadata,
+    NULL_ACCOUNT_ID,
+    NullAccount,
 } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/electron';
 import { ne } from 'drizzle-orm';
@@ -202,6 +202,35 @@ export class AccountService
     // Fire-and-forget — poller picks up the state change
     website.login().catch((e) => {
       this.logger.withError(e).error(`Initial login failed for ${website.id}`);
+    });
+  }
+
+  /**
+   * Ensures a website instance is registered for an account that already
+   * exists in the database (e.g. from a legacy import). Creates the instance
+   * if it doesn't already exist, then triggers login.
+   *
+   * @param {AccountId} id
+   */
+  async registerAndLogin(id: AccountId): Promise<void> {
+    const account = await this.repository.findById(id);
+    if (!account || account.id === NULL_ACCOUNT_ID) {
+      return;
+    }
+
+    let instance = this.websiteRegistry.findInstance(account);
+    if (!instance) {
+      if (!this.websiteRegistry.canCreate(account.website)) {
+        this.logger.warn(
+          `Cannot create website instance for ${account.website} (account: ${account.id})`,
+        );
+        return;
+      }
+      instance = await this.websiteRegistry.create(account);
+    }
+
+    instance.login().catch((e) => {
+      this.logger.withError(e).error(`Login failed for ${instance.id}`);
     });
   }
 
