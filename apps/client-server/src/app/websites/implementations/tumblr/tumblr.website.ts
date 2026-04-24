@@ -2,15 +2,15 @@
 // No need to import BlockNote in the server-side website implementation
 import { Http } from '@postybirb/http';
 import {
-    DynamicObject,
-    FileType,
-    ILoginState,
-    ImageResizeProps,
-    ISubmissionFile,
-    PostData,
-    PostResponse,
-    SimpleValidationResult,
-    SubmissionRating,
+  DynamicObject,
+  FileType,
+  ILoginState,
+  ImageResizeProps,
+  ISubmissionFile,
+  PostData,
+  PostResponse,
+  SimpleValidationResult,
+  SubmissionRating,
 } from '@postybirb/types';
 import parse from 'node-html-parser';
 import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
@@ -325,7 +325,7 @@ export default class Tumblr
     }
 
     if (options.sexualContent) {
-      labels.push('sexual_content');
+      labels.push('sexual_themes');
     }
 
     return labels;
