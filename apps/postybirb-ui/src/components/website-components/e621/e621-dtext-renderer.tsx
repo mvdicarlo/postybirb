@@ -32,16 +32,22 @@ export interface E621DtextProps {
 export function E621Dtext({ dtext }: E621DtextProps) {
   let processed = dtext;
 
-  // Plain URLs: https://example.com
+  // Hyperlinks: "A link":[https://example.com]
   processed = processed.replace(
-    /(https?:\/\/[^\s<]+)/g,
-    (match) => `[url]${match}[/url]`,
+    /"([^"]+)":\[([^\]]+)\]/g,
+    (_, title, url) => `[url=${url}]${title}[/url]`,
   );
 
   // Hyperlinks: "A link":https://example.com
   processed = processed.replace(
-    /"([^"]+)":([^\s\]]+)/g,
+    /"([^"]+)":([^\s]+)/g,
     (_, title, url) => `[url=${url}]${title}[/url]`,
+  );
+
+  // Plain URLs: https://example.com
+  processed = processed.replace(
+    /\s<?(https?:\/\/[^\s<]+)>?\s/g,
+    (match) => `[url]${match}[/url]`,
   );
 
   // Custom header format to bbcode (h1. to [h1][/h1])
