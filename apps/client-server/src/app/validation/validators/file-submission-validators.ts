@@ -292,6 +292,8 @@ export async function validateFileAltTextLength({
   websiteInstance,
   submission,
 }: ValidatorParams) {
+  if (!websiteInstance.decoratedProps.fileOptions) return;
+
   const { maxAltTextLength } = websiteInstance.decoratedProps.fileOptions;
 
   if (
