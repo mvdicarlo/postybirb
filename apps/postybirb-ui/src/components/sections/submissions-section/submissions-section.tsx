@@ -71,7 +71,7 @@ export function SubmissionsSection({
   // Get selected submission records for bulk actions
   const selectedSubmissions = useMemo(
     () => orderedSubmissions.filter((s) => selectedIds.includes(s.id)),
-    [orderedSubmissions, selectedIds]
+    [orderedSubmissions, selectedIds],
   );
 
   // Action handlers
@@ -101,13 +101,18 @@ export function SubmissionsSection({
     submissionType,
   });
 
+  const handleFilesDrop = useCallback(
+    (files: FileWithPath[]): void => {
+      setInitialFiles(files);
+      openFileModal();
+    },
+    [openFileModal],
+  );
+
   // Global dropzone - opens modal when files are dragged into the section panel
   useGlobalDropzone({
-    isOpen: isFileModalOpen,
-    onOpen: openFileModal,
-    onClose: closeFileModal,
+    onDrop: handleFilesDrop,
     enabled: submissionType === SubmissionType.FILE,
-    targetElementId: 'postybirb-section-panel',
   });
 
   // Delete confirmation modal
@@ -247,10 +252,7 @@ export function SubmissionsSection({
         totalCount={orderedSubmissions.length}
         onDeleteSelected={handleDeleteWithConfirm}
         onPostSelected={handlePostWithConfirm}
-        onFileDrop={(files) => {
-          setInitialFiles(files);
-          openFileModal();
-        }}
+        onFileDrop={handleFilesDrop}
       />
 
       {/* Tabs for Submissions / Archived */}
