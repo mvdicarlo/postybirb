@@ -14,7 +14,10 @@ import {
   TelegramOAuthRoutes,
   TipTapNode,
 } from '@postybirb/types';
-import { calculateImageResize, supportsImage } from '@postybirb/utils/file-type';
+import {
+  calculateImageResize,
+  supportsImage,
+} from '@postybirb/utils/file-type';
 import { Api, TelegramClient } from 'telegram';
 import { CustomFile } from 'telegram/client/uploads';
 import { Entity } from 'telegram/define';
@@ -368,7 +371,7 @@ export default class Telegram
       const peer = this.getPeer(channel);
 
       if (medias.length === 1) {
-        await telegram.invoke(
+        response = await telegram.invoke(
           new Api.messages.SendMedia({
             media: medias[0],
             message: firstInBatch ? mediaDescription : '',
@@ -460,7 +463,8 @@ export default class Telegram
     const peerId = channelUpdate?.message?.peerId;
     if (peerId?.className !== 'PeerChannel') return '';
 
-    const chat = response.chats.find((e) => e.id === peerId.channelId);
+    const chat = response.chats.find((e) => e.id.equals(peerId.channelId));
+
     if (!chat || chat.className !== 'Channel' || !chat.username) return '';
 
     return `https://t.me/${chat.username}/${channelUpdate.message.id}`;
