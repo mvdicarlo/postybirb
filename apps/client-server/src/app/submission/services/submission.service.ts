@@ -90,6 +90,7 @@ export class SubmissionService
       [
         'PostRecordSchema',
         'PostQueueRecordSchema',
+        'PostEventSchema',
         'SubmissionFileSchema',
         'FileBufferSchema',
       ],

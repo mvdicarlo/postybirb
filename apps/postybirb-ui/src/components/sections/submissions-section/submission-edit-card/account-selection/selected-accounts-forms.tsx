@@ -83,6 +83,12 @@ function AccountStatusIcon({ status, errors }: { status: AccountPostStatus; erro
           <IconLoader size={14} color="var(--mantine-color-blue-6)" style={{ flexShrink: 0 }} />
         </Tooltip>
       );
+    case 'rate-limited':
+      return (
+        <Tooltip label={<Trans>Waiting (rate limit)</Trans>} withArrow>
+          <IconLoader size={14} color="var(--mantine-color-orange-6)" style={{ flexShrink: 0 }} />
+        </Tooltip>
+      );
     default:
       return null;
   }

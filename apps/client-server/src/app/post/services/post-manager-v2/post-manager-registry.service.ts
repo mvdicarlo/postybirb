@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
-import { EntityId, SubmissionType } from '@postybirb/types';
+import { EntityId, IPostWaitState, SubmissionType } from '@postybirb/types';
 import { PostRecord } from '../../../drizzle/models';
 import { PostRecordFactory } from '../post-record-factory';
 import { BasePostManager } from './base-post-manager.service';
@@ -92,5 +92,18 @@ export class PostManagerRegistry {
   public isPostingType(type: SubmissionType): boolean {
     const manager = this.getManager(type);
     return manager?.isPosting() ?? false;
+  }
+
+  /**
+   * Get all active wait states across all managers.
+   * Computed from in-memory data, no DB access.
+   * @returns {IPostWaitState[]} Currently active wait states
+   */
+  public getWaitStates(): IPostWaitState[] {
+    const states: IPostWaitState[] = [];
+    for (const manager of this.managers.values()) {
+      states.push(...manager.getWaitStates());
+    }
+    return states;
   }
 }
