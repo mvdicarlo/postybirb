@@ -61,7 +61,7 @@ export default class KoFi
       });
 
       // Check if logged in by looking for login button
-      if (!res.body.includes('btn-login')) {
+      if (res.body.includes('profile-tab')) {
         const html = parse(res.body);
         const username = html
           .querySelector('input[name="DisplayName"]')
@@ -93,9 +93,9 @@ export default class KoFi
     return undefined;
   }
 
-  private extractId(html: string): string | null {
+  private extractId(html: string): string | undefined {
     const match = html.match(/pageId:\s*'([^']+)'/);
-    return match ? match[1] : null;
+    return match ? match[1] : undefined;
   }
 
   private async retrieveAlbums(id: string): Promise<void> {

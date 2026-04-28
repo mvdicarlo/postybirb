@@ -307,9 +307,29 @@ export function AccountSelect() {
             onRemove={
               isArchived ? undefined : () => handlePillRemove(accountId)
             }
+            style={{ maxWidth: 'unset', flex: 'none' }}
           >
-            {acc.websiteDisplayName} - {acc.name}
-            {acc.username ? ` (${acc.username})` : ''}
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 4,
+              }}
+            >
+              <Badge
+                size="xs"
+                variant="light"
+                radius="sm"
+                px={4}
+                style={{ flexShrink: 0 }}
+              >
+                {acc.websiteDisplayName}
+              </Badge>
+              <Text size="xs" span>
+                {acc.name}
+                {acc.username ? ` (${acc.username})` : ''}
+              </Text>
+            </span>
           </Pill>,
         );
       }
