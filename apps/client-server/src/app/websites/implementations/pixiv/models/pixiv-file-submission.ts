@@ -81,6 +81,15 @@ export class PixivFileSubmission extends BaseWebsiteOptions {
   containsContent: string[];
 
   @BooleanField({
+    label: 'aIGenerated',
+    required: true,
+    defaultValue: false,
+    section: 'website',
+    span: 6,
+  })
+  aiGenerated: boolean;
+
+  @BooleanField({
     label: 'allowCommunityTags',
     defaultValue: true,
     section: 'website',
@@ -104,13 +113,4 @@ export class PixivFileSubmission extends BaseWebsiteOptions {
     span: 6,
   })
   sexual: boolean;
-
-  @BooleanField({
-    label: 'aIGenerated',
-    required: true,
-    defaultValue: false,
-    section: 'website',
-    span: 6,
-  })
-  aiGenerated: boolean;
 }
