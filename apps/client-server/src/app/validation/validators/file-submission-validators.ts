@@ -292,6 +292,8 @@ export async function validateFileAltTextLength({
   websiteInstance,
   submission,
 }: ValidatorParams) {
+  if (!websiteInstance.decoratedProps.fileOptions) return;
+
   const { maxAltTextLength } = websiteInstance.decoratedProps.fileOptions;
 
   if (
@@ -304,11 +306,14 @@ export async function validateFileAltTextLength({
   }
 
   submission.files.forEach((file) => {
-    if (isFileFiltered(file, submission, websiteInstance)) {
+    if (
+      !file.metadata.altText ||
+      isFileFiltered(file, submission, websiteInstance)
+    ) {
       return;
     }
 
-    if (file.metadata.altText?.length >= maxAltTextLength) {
+    if (file.metadata.altText.length >= maxAltTextLength) {
       validator.warning('validation.file.alt-text.max-length', {
         currentLength: file.metadata.altText.length,
         maxLength: maxAltTextLength,

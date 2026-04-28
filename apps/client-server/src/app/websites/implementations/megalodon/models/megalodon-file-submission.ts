@@ -37,7 +37,7 @@ export class MegalodonFileSubmission extends BaseWebsiteOptions {
   tags: TagValue = DefaultTagValue();
 
   override processTag(tag: string) {
-    return `${tag.replaceAll(/[^a-z0-9]/gi, '_')}`;
+    return `${tag.replaceAll(/\s+/g, '_')}`;
   }
 
   @SelectField({

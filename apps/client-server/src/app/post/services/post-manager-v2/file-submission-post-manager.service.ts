@@ -154,10 +154,12 @@ export class FileSubmissionPostManager extends BasePostManager {
           ...allSourceUrls,
         ].filter((s) => !!s?.trim());
 
-        const { maxAltTextLength } = instance.decoratedProps.fileOptions;
-        if (f.metadata.altText.length >= maxAltTextLength) {
-          // eslint-disable-next-line no-param-reassign
-          f.metadata.altText = f.metadata.altText.slice(0, maxAltTextLength);
+        if (instance.decoratedProps.fileOptions) {
+          const { maxAltTextLength } = instance.decoratedProps.fileOptions;
+          if (f.metadata.altText.length >= maxAltTextLength) {
+            // eslint-disable-next-line no-param-reassign
+            f.metadata.altText = f.metadata.altText.slice(0, maxAltTextLength);
+          }
         }
 
         return f;
