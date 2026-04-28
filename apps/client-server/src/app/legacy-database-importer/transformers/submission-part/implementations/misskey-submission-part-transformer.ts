@@ -11,9 +11,9 @@ export class MisskeySubmissionPartTransformer extends BaseSubmissionPartTransfor
       tags: this.convertTags(legacyData.tags),
       description: this.convertDescription(legacyData.description),
       rating: this.convertRating(legacyData.rating),
-      contentWarning: legacyData.spoilerText ?? '',
-      visibility: legacyData.visibility ?? 'public',
+      // Modern Misskey model uses 'cw' field, not 'contentWarning'
       cw: legacyData.spoilerText || undefined,
+      visibility: legacyData.visibility ?? 'public',
       useTitle: legacyData.useTitle ?? true,
     } as IWebsiteFormFields;
   }

@@ -17,8 +17,11 @@ export class DeviantArtSubmissionPartTransformer extends BaseSubmissionPartTrans
     if (submissionType === 'FILE') {
       return {
         ...base,
-        folders: Array.isArray(legacyData.folders) ? legacyData.folders : [],
-        displayResolution: legacyData.displayResolution ?? 'original',
+        // Legacy may store folder IDs as numbers; modern expects strings
+        folders: Array.isArray(legacyData.folders)
+          ? legacyData.folders.map((f: any) => String(f))
+          : [],
+        displayResolution: this.mapDisplayResolution(legacyData.displayResolution),
         scraps: legacyData.scraps ?? false,
         disableComments: legacyData.disableComments ?? false,
         allowFreeDownload: legacyData.freeDownload ?? true,
@@ -32,5 +35,19 @@ export class DeviantArtSubmissionPartTransformer extends BaseSubmissionPartTrans
     }
 
     return base;
+  }
+
+  /**
+   * Map legacy displayResolution (numeric) to modern string values.
+   * Legacy uses 0=original, 1=800, 2=1200, 3=1800.
+   */
+  private mapDisplayResolution(value: any): string {
+    const map: Record<string, string> = {
+      '0': 'original',
+      '1': 'max_800',
+      '2': 'max_1200',
+      '3': 'max_1800',
+    };
+    return map[String(value)] ?? 'original';
   }
 }

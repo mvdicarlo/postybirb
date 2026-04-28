@@ -12,7 +12,11 @@ export class AryionSubmissionPartTransformer extends BaseSubmissionPartTransform
       description: this.convertDescription(legacyData.description),
       rating: this.convertRating(legacyData.rating),
       contentWarning: this.convertContentWarning(legacyData.spoilerText),
-      folder: Array.isArray(legacyData.folder) ? legacyData.folder[0] ?? '' : legacyData.folder ?? '',
+      // Legacy stores folder as an array path [root, child, grandchild, ...]
+      // Modern expects the deepest (last) folder ID
+      folder: Array.isArray(legacyData.folder)
+        ? legacyData.folder[legacyData.folder.length - 1] ?? ''
+        : legacyData.folder ?? '',
       viewPermissions: legacyData.viewPermissions ?? 'ALL',
       commentPermissions: legacyData.commentPermissions ?? 'USER',
       tagPermissions: legacyData.tagPermissions ?? 'USER',

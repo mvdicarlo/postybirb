@@ -16,7 +16,8 @@ export class MegalodonSubmissionPartTransformer extends BaseSubmissionPartTransf
       tags: this.convertTags(legacyData.tags),
       description: this.convertDescription(legacyData.description),
       rating: this.convertRating(legacyData.rating),
-      contentWarning: legacyData.spoilerText ?? '',
+      // Modern Megalodon model uses 'spoilerText' not 'contentWarning'
+      spoilerText: legacyData.spoilerText ?? '',
       visibility: legacyData.visibility ?? 'public',
       replyToUrl: legacyData.replyToUrl,
     };

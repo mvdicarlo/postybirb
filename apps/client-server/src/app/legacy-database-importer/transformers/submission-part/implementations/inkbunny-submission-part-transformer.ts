@@ -10,7 +10,9 @@ export class InkbunnySubmissionPartTransformer extends BaseSubmissionPartTransfo
       title: legacyData.title ?? '',
       tags: this.convertTags(legacyData.tags),
       description: this.convertDescription(legacyData.description),
-      rating: this.convertRating(legacyData.rating),
+      // Inkbunny uses its own rating system (numeric strings like '2', '3', '4', '5')
+      // not the standard general/mature/adult/extreme. Pass through as-is.
+      rating: legacyData.rating,
       contentWarning: this.convertContentWarning(legacyData.spoilerText),
       category: legacyData.submissionType,
       blockGuests: legacyData.blockGuests ?? false,
