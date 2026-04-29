@@ -39,12 +39,12 @@ import {
 } from '@tabler/icons-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import postQueueApi from '../../../api/post-queue.api';
-import type { SubmissionRecord } from '../../../stores/records';
 import { useQueuedSubmissions } from '../../../stores/entity/submission-store';
+import type { SubmissionRecord } from '../../../stores/records';
 import { useViewStateActions } from '../../../stores/ui/navigation-store';
 import {
-  useWaitStates,
   useWaitStateActions,
+  useWaitStates,
 } from '../../../stores/ui/wait-state-store';
 import {
   createFileSubmissionsViewState,
@@ -53,7 +53,7 @@ import {
 import {
   type AccountPostStatusEntry,
   getAccountPostStatusMap,
-} from '../../sections/submissions-section/submission-history';
+} from '../submissions-section/submission-history';
 
 // =============================================================================
 // Helpers
@@ -75,7 +75,9 @@ function getStatusColor(status: AccountPostStatusEntry['status']): string {
   }
 }
 
-function getStatusIcon(status: AccountPostStatusEntry['status']): React.ReactNode {
+function getStatusIcon(
+  status: AccountPostStatusEntry['status'],
+): React.ReactNode {
   switch (status) {
     case 'success':
       return <IconCheck size={12} />;
@@ -95,6 +97,7 @@ function getStatusIcon(status: AccountPostStatusEntry['status']): React.ReactNod
  * Format a remaining time in ms to a human string like "4m 30s".
  */
 function formatRemainingTime(ms: number): string {
+  // eslint-disable-next-line lingui/no-unlocalized-strings
   if (ms <= 0) return '< 1s';
   const totalSeconds = Math.ceil(ms / 1000);
   const minutes = Math.floor(totalSeconds / 60);
@@ -120,7 +123,7 @@ function getFileProgress(submission: SubmissionRecord): {
   const totalFiles = submission.files.length;
   if (totalFiles === 0) return null;
 
-  const latestPost = submission.latestPost;
+  const { latestPost } = submission;
   if (!latestPost?.events) return { posted: 0, failed: 0, total: totalFiles };
 
   const posted = new Set<string>();
@@ -243,9 +246,10 @@ function ActivePostCard({
   const completedAccounts = Array.from(accountStatusMap.values()).filter(
     (e) => e.status === 'success' || e.status === 'failed',
   ).length;
-  const progressPercent = totalAccounts > 0
-    ? Math.round((completedAccounts / totalAccounts) * 100)
-    : 0;
+  const progressPercent =
+    totalAccounts > 0
+      ? Math.round((completedAccounts / totalAccounts) * 100)
+      : 0;
 
   // File progress
   const fileProgress = getFileProgress(submission);
@@ -268,11 +272,7 @@ function ActivePostCard({
         {/* Header */}
         <Group justify="space-between" wrap="nowrap">
           <Group gap="xs" style={{ minWidth: 0, flex: 1 }}>
-            <Badge
-              size="xs"
-              variant="light"
-              color="blue"
-            >
+            <Badge size="xs" variant="light" color="blue">
               <Trans>Posting</Trans>
             </Badge>
             <Badge
@@ -302,6 +302,7 @@ function ActivePostCard({
 
         {/* Progress bar */}
         <Tooltip
+          // eslint-disable-next-line lingui/no-unlocalized-strings
           label={`${completedAccounts} / ${totalAccounts} accounts`}
           withArrow
         >
@@ -453,7 +454,7 @@ export function PostingActivityPanel() {
     const queuedList: SubmissionRecord[] = [];
 
     for (const sub of queuedSubmissions) {
-      const latestPost = sub.latestPost;
+      const { latestPost } = sub;
       if (latestPost?.state === PostRecordState.RUNNING) {
         activeList.push(sub);
       } else {
@@ -479,7 +480,7 @@ export function PostingActivityPanel() {
           <Text size="sm" fw={500}>
             <Trans>Posting Activity</Trans>
           </Text>
-          {(active.length + queued.length) > 0 && (
+          {active.length + queued.length > 0 && (
             <Badge size="xs" variant="light" color="blue">
               {active.length + queued.length}
             </Badge>
