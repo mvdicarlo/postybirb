@@ -3,7 +3,15 @@
  */
 
 import { Trans } from '@lingui/react/macro';
-import { Alert, Box, Button, Checkbox, Stack, Text, Title } from '@mantine/core';
+import {
+  Alert,
+  Box,
+  Button,
+  Checkbox,
+  Stack,
+  Text,
+  Title,
+} from '@mantine/core';
 import { IconCheck, IconInfoCircle, IconX } from '@tabler/icons-react';
 import { useState } from 'react';
 import legacyImporterApi from '../../../../api/legacy-database-importer.api';
@@ -18,6 +26,8 @@ export function ImportSettingsSection() {
     tagGroups: true,
     accounts: true,
     tagConverters: true,
+    submissions: true,
+    templates: true,
   });
 
   const handleImport = async () => {
@@ -95,6 +105,28 @@ export function ImportSettingsSection() {
                 setImportOptions({
                   ...importOptions,
                   tagConverters: event.currentTarget.checked,
+                })
+              }
+            />
+
+            <Checkbox
+              label={<Trans>Submissions</Trans>}
+              checked={importOptions.submissions}
+              onChange={(event) =>
+                setImportOptions({
+                  ...importOptions,
+                  submissions: event.currentTarget.checked,
+                })
+              }
+            />
+
+            <Checkbox
+              label={<Trans>Templates</Trans>}
+              checked={importOptions.templates}
+              onChange={(event) =>
+                setImportOptions({
+                  ...importOptions,
+                  templates: event.currentTarget.checked,
                 })
               }
             />
