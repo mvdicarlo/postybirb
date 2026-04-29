@@ -1,6 +1,7 @@
 import {
   BooleanField,
   DescriptionField,
+  NumberField,
   RatingField,
   SelectField,
   TextField,
@@ -157,13 +158,13 @@ export class HentaiFoundryFileSubmission extends BaseWebsiteOptions {
   })
   media: string;
 
-  @TextField({
+  @NumberField({
     label: 'timeTaken',
-    maxLength: 50,
+    min: 0,
     section: 'website',
     span: 6,
   })
-  timeTaken: string;
+  timeTaken: number;
 
   @TextField({
     label: 'reference',

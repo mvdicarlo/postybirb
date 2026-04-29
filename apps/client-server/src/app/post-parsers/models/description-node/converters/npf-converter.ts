@@ -45,9 +45,15 @@ export class NpfConverter extends BaseConverter {
   ): void {
     if (node.type === 'defaultShortcut') {
       if (!this.shouldRenderShortcut(node, context)) return;
+      if (this.processingDefaultDescription) return;
       if (context.defaultDescription && context.defaultDescription.length > 0) {
-        for (const defaultBlock of context.defaultDescription) {
-          this.convertBlockNodeRecursive(defaultBlock, context, indentLevel);
+        this.processingDefaultDescription = true;
+        try {
+          for (const defaultBlock of context.defaultDescription) {
+            this.convertBlockNodeRecursive(defaultBlock, context, indentLevel);
+          }
+        } finally {
+          this.processingDefaultDescription = false;
         }
       }
       return;

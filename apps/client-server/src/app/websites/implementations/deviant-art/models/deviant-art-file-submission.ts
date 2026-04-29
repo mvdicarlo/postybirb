@@ -37,7 +37,7 @@ export class DeviantArtFileSubmission extends BaseWebsiteOptions {
 
   @SelectField({
     section: 'website',
-    span: 6,
+    span: 12,
     label: 'folder',
     derive: [
       {
@@ -49,6 +49,18 @@ export class DeviantArtFileSubmission extends BaseWebsiteOptions {
     allowMultiple: true,
   })
   folders: string[] = [];
+
+  @SelectField({
+    label: 'allowModifications',
+    options: [
+      { value: 'yes', label: 'Yes' },
+      { value: 'share', label: 'Share Alike' },
+      { value: 'no', label: 'No' },
+    ],
+    section: 'website',
+    span: 6,
+  })
+  allowModifications = 'no';
 
   @SelectField({
     label: 'displayResolution',
@@ -118,16 +130,4 @@ export class DeviantArtFileSubmission extends BaseWebsiteOptions {
     span: 6,
   })
   isCommercialUse = false;
-
-  @SelectField({
-    label: 'allowModifications',
-    options: [
-      { value: 'yes', label: 'Yes' },
-      { value: 'share', label: 'Share Alike' },
-      { value: 'no', label: 'No' },
-    ],
-    section: 'website',
-    span: 6,
-  })
-  allowModifications = 'no';
 }

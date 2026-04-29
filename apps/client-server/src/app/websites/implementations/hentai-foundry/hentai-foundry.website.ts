@@ -188,7 +188,7 @@ export default class HentaiFoundry
       )
       .setConditional('Pictures[rating_rape]', postData.options.rape, '1', '0')
       .setField('Pictures[media_id]', postData.options.media)
-      .setField('Pictures[time_taken]', postData.options.timeTaken || '')
+      .setField('Pictures[time_taken]', postData.options.timeTaken != null ? String(postData.options.timeTaken) : '')
       .setField('Pictures[reference]', postData.options.reference || '')
       .setField('Pictures[license_id]', '0');
 

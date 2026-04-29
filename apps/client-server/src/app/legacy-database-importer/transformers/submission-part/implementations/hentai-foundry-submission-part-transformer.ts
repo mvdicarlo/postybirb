@@ -25,7 +25,7 @@ export class HentaiFoundrySubmissionPartTransformer extends BaseSubmissionPartTr
         sexRating: String(legacyData.sexRating ?? '0'),
         spoilersRating: String(legacyData.spoilersRating ?? '0'),
         media: String(legacyData.media ?? '0'),
-        timeTaken: legacyData.timeTaken ?? '',
+        timeTaken: legacyData.timeTaken ? Number(legacyData.timeTaken) : undefined,
         scraps: legacyData.scraps ?? false,
         disableComments: legacyData.disableComments ?? false,
         // Content checkboxes

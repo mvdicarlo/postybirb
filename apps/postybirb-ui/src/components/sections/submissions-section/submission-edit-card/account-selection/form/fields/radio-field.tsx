@@ -41,8 +41,10 @@ function RatingFieldControl({
       ? [{ label: t`Default`, value: '' }, ...baseOptions]
       : baseOptions;
   const rawValue = getValue<string>(fieldName);
+  // Only show "Default" when the value was never explicitly set (undefined/null/empty).
+  // If the user explicitly chose a value that happens to match the default, show their choice.
   const value =
-    !option.isDefault && (!rawValue || rawValue === defaultValue)
+    !option.isDefault && !rawValue
       ? ''
       : (rawValue ?? field.defaultValue ?? '');
 

@@ -4,21 +4,23 @@
 
 import { Box } from '@mantine/core';
 import type {
-  BooleanFieldType,
-  DateTimeFieldType,
-  DescriptionFieldType,
-  FieldAggregateType,
-  RadioFieldType,
-  RatingFieldType,
-  SelectFieldType,
-  TagFieldType,
-  TextFieldType,
+    BooleanFieldType,
+    DateTimeFieldType,
+    DescriptionFieldType,
+    FieldAggregateType,
+    NumberFieldType,
+    RadioFieldType,
+    RatingFieldType,
+    SelectFieldType,
+    TagFieldType,
+    TextFieldType,
 } from '@postybirb/form-builder';
 import { BooleanField } from './fields/boolean-field';
 import { DateTimeField } from './fields/datetime-field';
 import { DescriptionField } from './fields/description-field';
 import './fields/field.css';
 import { InputField } from './fields/input-field';
+import { NumberField } from './fields/number-field';
 import { RadioField } from './fields/radio-field';
 import { SelectField } from './fields/select-field';
 import { TagField } from './fields/tag-field';
@@ -93,6 +95,11 @@ export function FormField({ fieldName, field }: FormFieldProps) {
           fieldName={fieldName}
           field={field as DateTimeFieldType}
         />
+      );
+      break;
+    case 'number':
+      formField = (
+        <NumberField fieldName={fieldName} field={field as NumberFieldType} />
       );
       break;
     default:
