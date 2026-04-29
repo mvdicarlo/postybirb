@@ -17,5 +17,5 @@
 }
 
 .postybirb__language_picker_item--selected {
-  background-color: var(--mantine-color-blue-light);
+  background-color: var(--mantine-primary-color-light);
 }

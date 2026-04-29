@@ -36,6 +36,23 @@ import { PostEventRepository } from '../post-record-factory';
 import { BasePostManager } from './base-post-manager.service';
 
 /**
+ * Returns true if `mimeType` is accepted by any entry in `patterns`.
+ * Handles exact matches, prefix patterns ("image/"), and wildcard patterns ("image/*").
+ */
+function mimeTypeIsAccepted(mimeType: string, patterns: string[]): boolean {
+  return patterns.some((pattern) => {
+    if (pattern === mimeType) return true;
+    if (pattern.endsWith('/*')) {
+      return mimeType.startsWith(pattern.slice(0, -1)); // 'image/*' → prefix 'image/'
+    }
+    if (pattern.endsWith('/')) {
+      return mimeType.startsWith(pattern); // 'image/' → matches 'image/jpeg'
+    }
+    return false;
+  });
+}
+
+/**
  * PostManager for file submissions.
  * Handles file batching, resizing, and conversion.
  * @class FileSubmissionPostManager
@@ -131,13 +148,21 @@ export class FileSubmissionPostManager extends BasePostManager {
           ),
         )
       ).map((f) => {
-        const fileWithMetadata = f.withMetadata(f.metadata);
-        fileWithMetadata.metadata.sourceUrls = [
-          ...(fileWithMetadata.metadata.sourceUrls ?? []),
+        // eslint-disable-next-line no-param-reassign
+        f.metadata.sourceUrls = [
+          ...(f.metadata.sourceUrls ?? []),
           ...allSourceUrls,
         ].filter((s) => !!s?.trim());
 
-        return fileWithMetadata;
+        if (instance.decoratedProps.fileOptions) {
+          const { maxAltTextLength } = instance.decoratedProps.fileOptions;
+          if (f.metadata.altText.length >= maxAltTextLength) {
+            // eslint-disable-next-line no-param-reassign
+            f.metadata.altText = f.metadata.altText.slice(0, maxAltTextLength);
+          }
+        }
+
+        return f;
       });
 
       // Verify files are supported by the website after all processing
@@ -289,7 +314,7 @@ export class FileSubmissionPostManager extends BasePostManager {
     if (acceptedMimeTypes.length === 0) return;
 
     postingFiles.forEach((f) => {
-      if (!acceptedMimeTypes.includes(f.mimeType)) {
+      if (!mimeTypeIsAccepted(f.mimeType, acceptedMimeTypes)) {
         throw new Error(
           `Website '${websiteInstance.decoratedProps.metadata.displayName}' does not support the file type ${f.mimeType} and attempts to convert it did not resolve the issue`,
         );
@@ -368,7 +393,7 @@ export class FileSubmissionPostManager extends BasePostManager {
     if (
       fileType === FileType.TEXT &&
       file.hasAltFile &&
-      !allowedMimeTypes.includes(file.mimeType)
+      !mimeTypeIsAccepted(file.mimeType, allowedMimeTypes)
     ) {
       // Use alt file if it exists and is a text file
       if (

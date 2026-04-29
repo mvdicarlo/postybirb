@@ -4,15 +4,24 @@
  */
 
 import { Trans } from '@lingui/react/macro';
-import { Box, Group, Paper, Stack, Switch, Tabs, Text, Title } from '@mantine/core';
-import { DateTimePicker, DateValue } from '@mantine/dates';
+import {
+  Box,
+  Group,
+  Paper,
+  Stack,
+  Switch,
+  Tabs,
+  Text,
+  Title,
+} from '@mantine/core';
 import { ISubmissionScheduleInfo, ScheduleType } from '@postybirb/types';
 import { IconCalendar, IconCalendarOff, IconRepeat } from '@tabler/icons-react';
 import { Cron } from 'croner';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { useCallback, useEffect, useState } from 'react';
 import { useLocalStorage } from 'react-use';
 import { useLocale } from '../../../../../hooks';
+import { DateTimePickerWithLocalization } from '../../../../shared/index';
 import { CronPicker } from '../../../../shared/schedule-popover/cron-picker';
 
 export interface ScheduleFormProps {
@@ -38,7 +47,11 @@ export function ScheduleForm({
   onChange,
   disabled = false,
 }: ScheduleFormProps) {
-  const { formatRelativeTime } = useLocale();
+  const {
+    formatRelativeTime,
+    dayjsDateTimeFormat: dateTimeFormat,
+    startOfWeek,
+  } = useLocale();
   const [internalSchedule, setInternalSchedule] =
     useState<ISubmissionScheduleInfo>(schedule);
   const [internalIsScheduled, setInternalIsScheduled] =
@@ -70,7 +83,7 @@ export function ScheduleForm({
           if (lastUsedDate && new Date(lastUsedDate) > new Date()) {
             scheduledFor = lastUsedDate;
           } else {
-            scheduledFor = moment()
+            scheduledFor = dayjs()
               .add(1, 'day')
               .hour(9)
               .minute(0)
@@ -112,10 +125,10 @@ export function ScheduleForm({
 
   // Handle date/time change for single schedule
   const handleDateTimeChange = useCallback(
-    (date: DateValue) => {
+    (date: Date | null) => {
       if (!date) return;
-      // DateValue can be Date or string, convert to ISO string
-      const scheduledFor = date instanceof Date ? date.toISOString() : new Date(date).toISOString();
+
+      const scheduledFor = date.toISOString();
       const newSchedule: ISubmissionScheduleInfo = {
         ...internalSchedule,
         scheduledFor,
@@ -229,13 +242,10 @@ export function ScheduleForm({
 
           <Tabs.Panel value={ScheduleType.SINGLE} pl="md">
             <Stack gap="sm">
-              <DateTimePicker
+              <DateTimePickerWithLocalization
                 label={<Trans>Date and Time</Trans>}
                 size="sm"
                 clearable={false}
-                // eslint-disable-next-line lingui/no-unlocalized-strings
-                valueFormat="YYYY-MM-DD HH:mm"
-                highlightToday
                 minDate={new Date()}
                 value={scheduledDate}
                 disabled={disabled}
@@ -262,7 +272,9 @@ export function ScheduleForm({
               <Box
                 // CronPicker does not support a disabled prop, so we use
                 // pointer-events to prevent interaction when archived.
-                style={disabled ? { pointerEvents: 'none', opacity: 0.6 } : undefined}
+                style={
+                  disabled ? { pointerEvents: 'none', opacity: 0.6 } : undefined
+                }
               >
                 <CronPicker
                   value={internalSchedule.cron || DEFAULT_CRON}

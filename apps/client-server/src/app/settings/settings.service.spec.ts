@@ -45,7 +45,6 @@ describe('SettingsService', () => {
         showWikiInHelpOnHover: false,
       },
       hiddenWebsites: ['test'],
-      language: 'en',
       allowAd: true,
       queuePaused: false,
     };

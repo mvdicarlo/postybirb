@@ -46,6 +46,32 @@ export const TranslationMessages: TranslationsMap = {
     );
   },
 
+  'validation.description.missing-tags': () => (
+    <Trans>
+      Tags will not be inserted. Use tags shortcut or enable 'Insert tags at
+      end'
+    </Trans>
+  ),
+  'validation.description.unexpected-tags': () => (
+    <Trans>
+      Tags are not expected in the description of this website because it has
+      dedicated tags field. Remove tags shortcut or disable 'Insert tags at end'
+    </Trans>
+  ),
+  'validation.description.missing-title': () => (
+    <Trans>
+      Title will not be inserted. Use title shortcut or enable 'Insert title at
+      start'
+    </Trans>
+  ),
+  'validation.description.unexpected-title': () => (
+    <Trans>
+      Title is not expected in the description of this website because it has
+      dedicated title field. Remove title shortcut or disable 'Insert title at
+      start'
+    </Trans>
+  ),
+
   'validation.file.file-batch-size': (props) => {
     const { maxBatchSize, expectedBatchesToCreate } = props;
     return (
@@ -118,6 +144,18 @@ export const TranslationMessages: TranslationsMap = {
   'validation.file.image-resize': () => (
     <Trans>File will be modified to support website requirements</Trans>
   ),
+
+  'validation.file.alt-text.max-length': (props) => {
+    const maxLength = props?.maxLength ?? 0;
+    const currentLength = props?.currentLength ?? 0;
+    const { fileName } = props;
+    return (
+      <Trans>
+        ({fileName}) Alt text length is greater then maximum ({currentLength} /{' '}
+        {maxLength}) and will be trimmed.
+      </Trans>
+    );
+  },
 
   'validation.tags.max-tags': (props) => {
     const { maxLength, currentLength } = props;

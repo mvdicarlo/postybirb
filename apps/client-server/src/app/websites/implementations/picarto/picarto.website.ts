@@ -172,11 +172,6 @@ export default class Picarto
     const { options } = postData;
 
     const rating = this.convertRating(options.rating);
-    const tags = (options.tags || [])
-      .map((t) => t.trim().replace(/\s+/g, '_'))
-      .filter((t) => t.length >= 1)
-      .map((t) => (t.length > 30 ? t.slice(0, 30) : t))
-      .slice(0, 30);
 
     const createArtworkGql = mutation({
       operation: 'createArtwork',
@@ -196,7 +191,7 @@ export default class Picarto
             schedule_publishing_time: '',
             schedule_publishing_timezone: '',
             software: (options.softwares || []).join(','),
-            tags: tags.join(','),
+            tags: (options.tags || []).join(','),
             title: options.title || '',
             variations: variationUids.join(','),
             visibility: options.visibility || 'PUBLIC',

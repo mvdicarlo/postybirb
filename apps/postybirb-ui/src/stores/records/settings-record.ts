@@ -3,12 +3,12 @@
  */
 
 import type {
-    DesktopNotificationSettings,
-    EntityId,
-    ISettingsOptions,
-    SettingsDto,
-    TagSearchProviderSettings,
-    WebsiteId,
+  DesktopNotificationSettings,
+  EntityId,
+  ISettingsOptions,
+  SettingsDto,
+  TagSearchProviderSettings,
+  WebsiteId,
 } from '@postybirb/types';
 import { BaseRecord } from './base-record';
 
@@ -35,11 +35,6 @@ export class SettingsRecord extends BaseRecord {
   /** List of hidden website IDs */
   get hiddenWebsites(): WebsiteId[] {
     return this.settings.hiddenWebsites;
-  }
-
-  /** Current language setting */
-  get language(): string {
-    return this.settings.language;
   }
 
   /** Whether ads are allowed */

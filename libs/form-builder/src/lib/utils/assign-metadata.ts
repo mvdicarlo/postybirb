@@ -80,11 +80,7 @@ export function createFieldDecorator<
      *
      * @param options - Options to be changed
      */
-    onCreate?: (
-      options: FieldType<FieldValue, TypeKey>,
-      target: any,
-      propertyKey: string | symbol,
-    ) => void;
+    onCreate?: (options: FieldType<FieldValue, TypeKey> & ExtraFields) => void;
   }) {
     function decorator<Data extends unknown | PrimitiveRecord = unknown>(
       options: PartialOnly<
@@ -133,12 +129,6 @@ export function createFieldDecorator<
         const fields: FormBuilderMetadata =
           Reflect.getMetadata(sym, proto) || {};
 
-        field.onCreate?.(
-          fieldOptions as unknown as FieldType<FieldValue, TypeKey>,
-          target,
-          propertyKey,
-        );
-
         const chainedFields = chain
           .filter((c) => c !== target.constructor.name)
           .map((c) => Reflect.getMetadata(target[getMetadataKey(c)], proto));
@@ -157,6 +147,11 @@ export function createFieldDecorator<
             });
           }
         }
+
+        field.onCreate?.(
+          fieldOptions as unknown as FieldType<FieldValue, TypeKey> &
+            ExtraFields,
+        );
 
         fields[propertyKey] = Object.assign(
           fields[propertyKey] ?? {},

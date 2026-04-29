@@ -105,7 +105,10 @@ export class PlainTextConverter extends BaseConverter {
     const marks = textNode.marks ?? [];
     const linkMark = marks.find((m: any) => m.type === 'link');
     if (linkMark) {
-      return `${textNode.text}: ${linkMark.attrs?.href ?? ''}`;
+      const href = linkMark.attrs?.href ?? '';
+      if (textNode.text === href) return href;
+
+      return `${textNode.text}: ${href}`;
     }
 
     return textNode.text ?? '';

@@ -16,6 +16,8 @@ export class BlueskyFileSubmission extends BaseWebsiteOptions {
   @DescriptionField({
     descriptionType: DescriptionType.CUSTOM,
     maxDescriptionLength: Infinity, // Custom length calculation is handled by validation logic
+    expectsInlineTags: true,
+    expectsInlineTitle: true,
   })
   description: DescriptionValue;
 
@@ -25,7 +27,7 @@ export class BlueskyFileSubmission extends BaseWebsiteOptions {
   tags: TagValue = DefaultTagValue();
 
   override processTag(tag: string) {
-    return `${tag.replaceAll(/[^a-z0-9]/gi, '_')}`;
+    return `${tag.replaceAll(/\s+/g, '_')}`;
   }
 
   // Note: in v3 it was label_rating

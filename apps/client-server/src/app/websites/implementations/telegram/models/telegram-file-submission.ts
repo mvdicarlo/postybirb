@@ -15,6 +15,8 @@ import { BaseWebsiteOptions } from '../../../models/base-website-options';
 export class TelegramFileSubmission extends BaseWebsiteOptions {
   @DescriptionField({
     descriptionType: DescriptionType.CUSTOM,
+    expectsInlineTitle: true,
+    expectsInlineTags: true,
   })
   description: DescriptionValue;
 
@@ -36,10 +38,14 @@ export class TelegramFileSubmission extends BaseWebsiteOptions {
   @BooleanField({
     label: 'silent',
     section: 'website',
-    span: 6,
+    span: 12,
   })
   silent = false;
 
-  @BooleanField({ label: 'spoiler', section: 'website', span: 6 })
+  @BooleanField({
+    label: 'spoiler',
+    section: 'website',
+    span: 12,
+  })
   spoiler = false;
 }

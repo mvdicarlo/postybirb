@@ -114,18 +114,6 @@ export default class Newgrounds
     }
   }
 
-  private formatTags(tags: string[]): string[] {
-    return tags
-      .map((tag) =>
-        tag
-          .replace(/(\(|\)|:|#|;|\]|\[|')/g, '')
-          .replace(/_/g, '-')
-          .replace(/\s+/g, '-')
-          .toLowerCase(),
-      )
-      .slice(0, 12);
-  }
-
   private checkIsSaved(response: NewgroundsPostResponse): boolean {
     return response.success === 'saved';
   }
@@ -259,7 +247,7 @@ export default class Newgrounds
       const { options } = postData;
       const updateProps = {
         title: postData.options.title,
-        'option[tags]': this.formatTags(postData.options.tags).join(','),
+        'option[tags]': postData.options.tags.join(','),
         'option[include_in_portal]': options.sketch ? '0' : '1',
         'option[use_creative_commons]': options.creativeCommons ? '1' : '0',
         'option[cc_commercial]': options.commercial ? 'yes' : 'no',
@@ -390,6 +378,7 @@ export default class Newgrounds
       .setField('emoticon', '6')
       .setField('comments_pref', '1')
       .setField('tag', '')
+      .setField('tags[]', postData.options.tags)
       .setField('body', `<p>${postData.options.description}</p>`)
       .setField(
         'suitability',
@@ -403,12 +392,6 @@ export default class Newgrounds
         Accept: '*/*',
         'Content-Type': 'multipart/form-data',
       });
-
-    // Add tags as array
-    const formattedTags = this.formatTags(postData.options.tags);
-    for (const tag of formattedTags) {
-      builder.setField('tags[]', tag);
-    }
 
     const post = await builder.send<{ url: string }>(
       `${this.BASE_URL}/account/news/post`,

@@ -10,6 +10,7 @@ import { BaseWebsiteOptions } from '../../../models/base-website-options';
 export class E621FileSubmission extends BaseWebsiteOptions {
   @DescriptionField({
     descriptionType: DescriptionType.CUSTOM,
+    expectsInlineTitle: true,
   })
   description: DescriptionValue;
 

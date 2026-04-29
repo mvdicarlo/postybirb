@@ -15,7 +15,6 @@ import {
   Text,
   Tooltip,
 } from '@mantine/core';
-import { DateTimePicker } from '@mantine/dates';
 import { useDisclosure } from '@mantine/hooks';
 import { ISubmissionScheduleInfo, ScheduleType } from '@postybirb/types';
 import {
@@ -26,9 +25,10 @@ import {
   IconX,
 } from '@tabler/icons-react';
 import { Cron } from 'croner';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocalStorage } from 'react-use';
+import { DateTimePickerWithLocalization } from '../date-time-picker-with-localization/date-time-picker-with-localization';
 import { CronPicker } from './cron-picker';
 
 export interface SchedulePopoverProps {
@@ -90,7 +90,7 @@ export function SchedulePopover({
           if (lastUsedDate && new Date(lastUsedDate) > new Date()) {
             scheduledFor = lastUsedDate;
           } else {
-            scheduledFor = moment()
+            scheduledFor = dayjs()
               .add(1, 'day')
               .hour(9)
               .minute(0)
@@ -331,29 +331,19 @@ export function SchedulePopover({
           {/* Single schedule - Date picker */}
           {internalSchedule.scheduleType === ScheduleType.SINGLE && (
             <Box>
-              <DateTimePicker
+              <DateTimePickerWithLocalization
                 label={<Trans>Date and Time</Trans>}
                 size="xs"
                 clearable={false}
-                // eslint-disable-next-line lingui/no-unlocalized-strings
-                valueFormat="YYYY-MM-DD HH:mm"
-                highlightToday
                 minDate={new Date()}
                 value={scheduledDate}
-                onChange={(value) => {
-                  // DateTimePicker returns string when valueFormat is specified
-                  if (value) {
-                    handleDateChange(new Date(value));
-                  } else {
-                    handleDateChange(null);
-                  }
-                }}
+                onChange={handleDateChange}
                 error={isDateInPast ? <Trans>Date is in the past</Trans> : null}
                 popoverProps={{ withinPortal: true }}
               />
               {scheduledDate && !isDateInPast && (
                 <Text size="xs" c="dimmed" mt={4}>
-                  {moment(scheduledDate).fromNow()}
+                  {dayjs(scheduledDate).fromNow()}
                 </Text>
               )}
             </Box>

@@ -9,6 +9,7 @@ import { BaseWebsiteOptions } from '../../../models/base-website-options';
 export class PhilomenaFileSubmission extends BaseWebsiteOptions {
   @DescriptionField({
     descriptionType: DescriptionType.MARKDOWN,
+    expectsInlineTitle: true,
   })
   description: DescriptionValue;
 

@@ -103,6 +103,13 @@ export interface ValidationMessages {
     fileId: string;
   };
 
+  'validation.file.alt-text.max-length': {
+    fileName: string;
+    fileId: string;
+    currentLength: number;
+    maxLength: number;
+  };
+
   'validation.description.max-length': {
     currentLength: number;
     maxLength: number;
@@ -112,6 +119,14 @@ export interface ValidationMessages {
     currentLength: number;
     minLength: number;
   };
+
+  'validation.description.missing-tags': object;
+
+  'validation.description.unexpected-tags': object;
+
+  'validation.description.missing-title': object;
+
+  'validation.description.unexpected-title': object;
 
   'validation.tags.max-tags': {
     currentLength: number;
