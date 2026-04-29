@@ -11,6 +11,7 @@ export * from './post/post-event.interface';
 export * from './post/post-queue-record.interface';
 export * from './post/post-record.interface';
 export * from './post/post-response.type';
+export * from './post/post-wait-state.interface';
 export * from './remote/update-cookies-remote.type';
 export * from './settings/settings-options.interface';
 export * from './settings/settings.constants';

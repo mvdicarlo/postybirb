@@ -45,6 +45,7 @@ import {
 import { HOME_TOUR_ID } from '../../onboarding-tour/tours/home-tour';
 import { LAYOUT_TOUR_ID } from '../../onboarding-tour/tours/layout-tour';
 import { AccountHealthPanel } from './account-health-panel';
+import { PostingActivityPanel } from './posting-activity-panel';
 import { QueueControlCard } from './queue-control-card';
 import { RecentActivityPanel } from './recent-activity-panel';
 import { ScheduleCalendarPanel } from './schedule-calendar-panel';
@@ -164,6 +165,7 @@ export function HomeContent() {
           </Group>
 
           <QueueControlCard />
+          <PostingActivityPanel />
           {/* Stats Row */}
           <SimpleGrid cols={{ base: 4 }} spacing="md" data-tour-id="home-stat-cards">
             <StatCard

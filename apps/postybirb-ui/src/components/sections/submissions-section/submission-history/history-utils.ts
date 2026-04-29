@@ -172,6 +172,7 @@ export type AccountPostStatus =
   | 'failed'
   | 'running'
   | 'waiting'
+  | 'rate-limited'
   | null;
 
 /**
@@ -180,6 +181,8 @@ export type AccountPostStatus =
 export interface AccountPostStatusEntry {
   status: AccountPostStatus;
   errors: string[];
+  /** ISO timestamp for when a rate-limit wait ends (only set when status is 'rate-limited'). */
+  waitUntil?: string;
 }
 
 /**

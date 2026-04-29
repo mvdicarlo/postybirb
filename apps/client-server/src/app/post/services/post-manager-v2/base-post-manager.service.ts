@@ -4,9 +4,11 @@ import {
   trackException,
   trackMetric,
 } from '@postybirb/logger';
+import { POST_WAIT_STATE } from '@postybirb/socket-events';
 import {
   AccountId,
   EntityId,
+  IPostWaitState,
   PostData,
   PostEventType,
   PostRecordState,
@@ -24,6 +26,7 @@ import { PostParsersService } from '../../../post-parsers/post-parsers.service';
 import { ValidationService } from '../../../validation/validation.service';
 import { UnknownWebsite, Website } from '../../../websites/website';
 import { WebsiteRegistryService } from '../../../websites/website-registry.service';
+import { WSGateway } from '../../../web-socket/web-socket-gateway';
 import { CancellableToken } from '../../models/cancellable-token';
 import { CancellationError } from '../../models/cancellation-error';
 import { PostEventRepository, ResumeContext } from '../post-record-factory';
@@ -70,6 +73,7 @@ export abstract class BasePostManager {
     protected readonly postParserService: PostParsersService,
     protected readonly validationService: ValidationService,
     protected readonly notificationService: NotificationsService,
+    protected readonly webSocket?: WSGateway,
   ) {
     this.postRepository = new PostyBirbDatabase('PostRecordSchema');
   }
@@ -512,6 +516,7 @@ export abstract class BasePostManager {
   /**
    * Wait for posting wait interval to avoid rate limiting.
    * Uses the website's configured minimumPostWaitInterval.
+   * Emits an ephemeral WebSocket event so the UI can display a countdown.
    * @protected
    * @param {AccountId} accountId - The account ID
    * @param {Website<unknown>} instance - The website instance
@@ -535,10 +540,67 @@ export abstract class BasePostManager {
       this.logger.info(
         `Waiting ${waitTime}ms before posting to ${instance.id}`,
       );
+
+      // Emit ephemeral wait state via WebSocket for UI display
+      this.emitWaitStates();
+
       await new Promise((resolve) => {
         setTimeout(resolve, waitTime);
       });
     }
+  }
+
+  /**
+   * Compute and emit current wait states via WebSocket.
+   * Uses in-memory lastTimePostedToWebsite data.
+   * @protected
+   */
+  protected emitWaitStates(): void {
+    if (!this.webSocket) return;
+    const states = this.getWaitStates();
+    if (states.length > 0) {
+      this.webSocket.emit({ event: POST_WAIT_STATE, data: states });
+    }
+  }
+
+  /**
+   * Get active wait states for rate-limited websites.
+   * Computes from in-memory lastTimePostedToWebsite data.
+   * @returns {IPostWaitState[]} Currently active wait states
+   */
+  public getWaitStates(): IPostWaitState[] {
+    const states: IPostWaitState[] = [];
+    if (!this.currentPost) return states;
+
+    const { submissionId, submission } = this.currentPost;
+
+    for (const option of submission.options) {
+      const lastTime = this.lastTimePostedToWebsite[option.accountId];
+      if (!lastTime) continue;
+
+      const instance = this.websiteRegistry.findInstance(option.account);
+      if (!instance) continue;
+
+      const waitInterval =
+        instance.decoratedProps.metadata.minimumPostWaitInterval ?? 0;
+      if (!waitInterval) continue;
+
+      const timeSinceLastPost = Date.now() - lastTime.getTime();
+      if (timeSinceLastPost < waitInterval) {
+        states.push({
+          submissionId,
+          accountId: option.accountId,
+          waitUntil: new Date(
+            lastTime.getTime() + waitInterval,
+          ).toISOString(),
+          websiteName:
+            instance.decoratedProps.metadata.displayName ??
+            instance.decoratedProps.metadata.name,
+        });
+      }
+    }
+
+    return states;
   }
 
   /**

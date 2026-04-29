@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable lingui/no-unlocalized-strings */
 /**
  * Base entity store factory for creating Zustand stores with common CRUD patterns.
@@ -80,7 +81,6 @@ export interface CreateEntityStoreOptions<
  * Compute a shallow diff between two plain objects, returning changed keys
  * with their old and new values. Nested objects are compared by JSON serialization.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function shallowDiff(
   oldObj: Record<string, any>,
   newObj: Record<string, any>,
