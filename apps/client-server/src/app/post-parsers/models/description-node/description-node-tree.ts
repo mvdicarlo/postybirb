@@ -218,6 +218,10 @@ export class DescriptionNodeTree {
     if (insertTags) {
       nodes.push({
         type: 'paragraph',
+        content: [],
+      });
+      nodes.push({
+        type: 'paragraph',
         content: [
           {
             type: 'text',
@@ -244,4 +248,3 @@ export class DescriptionNodeTree {
     return nodes;
   }
 }
-
