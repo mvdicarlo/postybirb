@@ -15,6 +15,7 @@ import { detector, Entity } from 'megalodon';
 import { Readable } from 'stream';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
+import { wait } from '../../../utils/wait.util';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
 import { FileWebsite } from '../../models/website-modifiers/file-website';
 import { MessageWebsite } from '../../models/website-modifiers/message-website';
@@ -549,16 +550,36 @@ export abstract class MegalodonWebsite
         postData.options.rating === SubmissionRating.EXTREME;
 
       // Create status with media
-      const statusResult = await client.postStatus(
-        postData.options.description || '',
-        {
-          media_ids: mediaIds,
-          sensitive: isSensitiveRating || false,
-          visibility: postData.options.visibility || 'public',
-          spoiler_text: postData.options.spoilerText || undefined,
-          language: undefined,
-        },
-      );
+      // Retry loop to handle media still processing (e.g. GIF transcoding)
+      const maxRetries = 20;
+      const retryDelayMs = 10_000;
+      let statusResult: Awaited<ReturnType<typeof client.postStatus>>;
+
+      for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        cancellationToken.throwIfCancelled();
+        try {
+          statusResult = await client.postStatus(
+            postData.options.description || '',
+            {
+              media_ids: mediaIds,
+              sensitive: isSensitiveRating || false,
+              visibility: postData.options.visibility || 'public',
+              spoiler_text: postData.options.spoilerText || undefined,
+              language: undefined,
+            },
+          );
+          break;
+        } catch (postError) {
+          if (postError?.response?.status === 422 && attempt < maxRetries) {
+            this.logger
+              .withMetadata({ attempt: attempt + 1, maxRetries })
+              .info('Media still processing, waiting before retry');
+            await wait(retryDelayMs);
+            continue;
+          }
+          throw postError;
+        }
+      }
 
       const status = statusResult.data;
       // Check if it's a Status (not ScheduledStatus)
