@@ -103,7 +103,9 @@ export default class Tumblr
     const root = parse(page.body);
     const initialStateEl = root.querySelector('#___INITIAL_STATE___');
     if (!initialStateEl) {
-      this.logger.warn('Failed to find #___INITIAL_STATE___ element during login');
+      this.logger.warn(
+        'Failed to find #___INITIAL_STATE___ element during login',
+      );
       this.loginState.logout();
       return this.loginState;
     }
@@ -147,6 +149,19 @@ export default class Tumblr
 
   calculateImageResize(file: ISubmissionFile): ImageResizeProps {
     return undefined;
+  }
+
+  private getBlogData(blogId: string) {
+    const { blogs } = this.getWebsiteData();
+    let blogData = blogs.find((b) => b.value === blogId);
+    if (!blogData) {
+      blogData = blogs.find(
+        (b) => b.label.toLowerCase() === blogId.toLowerCase(),
+      );
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    return blogData!;
   }
 
   async onPostFileSubmission(
@@ -208,9 +223,7 @@ export default class Tumblr
       result.body.response.state === 'transcoding' // publishing video
     ) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const blogData = this.getWebsiteData().blogs.find(
-        (b) => b.value === blogId,
-      )!;
+      const blogData = this.getBlogData(blogId);
       const postUrl = `${blogData.data.url}${result.body.response.id}`;
       return PostResponse.fromWebsite(this)
         .withAdditionalInfo(result.body)
@@ -282,9 +295,7 @@ export default class Tumblr
 
     if (result.body.response.state === 'published') {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const blogData = this.getWebsiteData().blogs.find(
-        (b) => b.value === blogId,
-      )!;
+      const blogData = this.getBlogData(blogId);
       const postUrl = `${blogData.data.url}${result.body.response.id}`;
       return PostResponse.fromWebsite(this)
         .withAdditionalInfo(result.body)
