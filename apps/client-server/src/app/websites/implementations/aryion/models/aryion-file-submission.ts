@@ -2,12 +2,14 @@ import {
   BooleanField,
   DescriptionField,
   RadioField,
+  RatingField,
   SelectField,
 } from '@postybirb/form-builder';
 import {
   DefaultDescriptionValue,
   DescriptionType,
   DescriptionValue,
+  SubmissionRating,
 } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
@@ -16,6 +18,12 @@ export class AryionFileSubmission extends BaseWebsiteOptions {
     descriptionType: DescriptionType.BBCODE,
   })
   description: DescriptionValue = DefaultDescriptionValue();
+
+  @RatingField({
+    required: false,
+    hidden: true,
+  })
+  rating: SubmissionRating;
 
   @SelectField({
     label: 'folder',

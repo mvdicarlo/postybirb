@@ -29,7 +29,10 @@ import {
   SimpleValidationResult,
   SubmissionRating,
 } from '@postybirb/types';
-import { calculateImageResize, getFileTypeFromMimeType } from '@postybirb/utils/file-type';
+import {
+  calculateImageResize,
+  getFileTypeFromMimeType,
+} from '@postybirb/utils/file-type';
 import { v4 } from 'uuid';
 import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
 import { PlainTextConverter } from '../../../post-parsers/models/description-node/converters/plaintext-converter';
@@ -76,7 +79,7 @@ import { BlueskyMessageSubmission } from './models/bluesky-message-submission';
     'video/webm',
   ],
   acceptedFileSizes: {
-    '*': 1_000_000,
+    '*': 2_000_000,
     [FileType.VIDEO]: FileSize.megabytes(50),
   },
   fileBatchSize: 4,
@@ -139,8 +142,8 @@ export default class Bluesky
   calculateImageResize(file: ISubmissionFile): ImageResizeProps {
     // https://github.com/bluesky-social/social-app/blob/main/src/lib/constants.ts
     return calculateImageResize(file, {
-      maxWidth: 2000,
-      maxHeight: 2000,
+      maxWidth: 4000,
+      maxHeight: 4000,
     });
   }
 

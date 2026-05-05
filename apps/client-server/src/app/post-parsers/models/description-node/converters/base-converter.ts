@@ -15,7 +15,7 @@ export abstract class BaseConverter {
   protected currentDepth = 0;
 
   /** Used to prevent loop when default shortcut is insert into default section */
-  private processingDefaultDescription = false;
+  protected processingDefaultDescription = false;
 
   abstract convertBlockNode(
     node: TipTapNode,

@@ -16,6 +16,7 @@ export class TelegramFileSubmission extends BaseWebsiteOptions {
   @DescriptionField({
     descriptionType: DescriptionType.CUSTOM,
     expectsInlineTitle: true,
+    expectsInlineTags: true,
   })
   description: DescriptionValue;
 

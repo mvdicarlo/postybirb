@@ -553,10 +553,10 @@ export abstract class MegalodonWebsite
         postData.options.description || '',
         {
           media_ids: mediaIds,
-          sensitive: postData.options.sensitive || isSensitiveRating || false,
+          sensitive: isSensitiveRating || false,
           visibility: postData.options.visibility || 'public',
           spoiler_text: postData.options.spoilerText || undefined,
-          language: postData.options.language || undefined,
+          language: undefined,
         },
       );
 
@@ -603,10 +603,10 @@ export abstract class MegalodonWebsite
       const statusResult = await client.postStatus(
         postData.options.description || '',
         {
-          sensitive: postData.options.sensitive || isSensitiveRating || false,
+          sensitive: isSensitiveRating || false,
           visibility: postData.options.visibility || 'public',
           spoiler_text: postData.options.spoilerText || undefined,
-          language: postData.options.language || undefined,
+          language: undefined,
         },
       );
 

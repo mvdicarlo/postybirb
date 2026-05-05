@@ -1,6 +1,6 @@
 import {
-  BooleanField,
   DescriptionField,
+  RatingField,
   SelectField,
   TagField,
   TextField,
@@ -9,6 +9,7 @@ import {
   DefaultTagValue,
   DescriptionType,
   DescriptionValue,
+  SubmissionRating,
   TagValue,
 } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
@@ -22,13 +23,21 @@ export class MegalodonFileSubmission extends BaseWebsiteOptions {
   })
   description: DescriptionValue;
 
+  @RatingField({
+    options: [
+      { value: SubmissionRating.GENERAL, label: 'Safe' },
+      { value: SubmissionRating.ADULT, label: 'Sensitive' },
+    ],
+  })
+  rating: SubmissionRating;
+
   @TagField({
     spaceReplacer: '_',
   })
   tags: TagValue = DefaultTagValue();
 
   override processTag(tag: string) {
-    return `${tag.replaceAll(/[^a-z0-9]/gi, '_')}`;
+    return `${tag.replaceAll(/\s+/g, '_')}`;
   }
 
   @SelectField({
@@ -48,16 +57,4 @@ export class MegalodonFileSubmission extends BaseWebsiteOptions {
     span: 12,
   })
   spoilerText?: string;
-
-  @TextField({
-    label: 'language',
-    span: 12,
-  })
-  language?: string;
-
-  @BooleanField({
-    label: 'sensitiveContent',
-    span: 3,
-  })
-  sensitive = false;
 }

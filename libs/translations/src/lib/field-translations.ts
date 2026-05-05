@@ -73,7 +73,7 @@ export const FieldLabelTranslations = {
   schedule: msg`Schedule`,
   scraps: msg`Send to scraps`,
   sensitiveContent: msg`Sensitive content`,
-  sexualContent: msg`Sexual Content`,
+  sexualContent: msg`Sexual Themes`,
   shareOnFeed: msg`Share on feed`,
   silent: msg`Silent`,
   sketch: msg`Sketch`,

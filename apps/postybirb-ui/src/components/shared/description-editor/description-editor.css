@@ -27,6 +27,17 @@
   outline: none;
 }
 
+.tiptap-editor-wrapper .tiptap p,
+.tiptap-editor-wrapper .tiptap h1,
+.tiptap-editor-wrapper .tiptap h2,
+.tiptap-editor-wrapper .tiptap h3,
+.tiptap-editor-wrapper .tiptap ul,
+.tiptap-editor-wrapper .tiptap ol,
+.tiptap-editor-wrapper .tiptap blockquote {
+  margin-top: 0.25em;
+  margin-bottom: 0.25em;
+}
+
 /* Placeholder styling */
 .tiptap p.is-editor-empty:first-child::before {
   color: var(--mantine-color-dimmed);
