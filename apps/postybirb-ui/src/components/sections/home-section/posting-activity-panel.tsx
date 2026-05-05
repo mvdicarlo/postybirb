@@ -39,6 +39,7 @@ import {
 } from '@tabler/icons-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import postQueueApi from '../../../api/post-queue.api';
+import { useAccountsMap } from '../../../stores/entity/account-store';
 import { useQueuedSubmissions } from '../../../stores/entity/submission-store';
 import type { SubmissionRecord } from '../../../stores/records';
 import { useViewStateActions } from '../../../stores/ui/navigation-store';
@@ -177,19 +178,18 @@ function WaitCountdown({ waitUntil }: { waitUntil: string }) {
  */
 function AccountStatusRow({
   accountId,
+  accountName,
   entry,
   waitState,
 }: {
   accountId: EntityId;
+  accountName: string;
   entry: AccountPostStatusEntry;
   waitState?: IPostWaitState;
 }) {
   const effectiveStatus = waitState ? 'rate-limited' : entry.status;
   const color = getStatusColor(effectiveStatus);
   const icon = getStatusIcon(effectiveStatus);
-
-  // Use wait state website name or fall back to account snapshot
-  const displayName = waitState?.websiteName ?? accountId;
 
   return (
     <Group gap="xs" wrap="nowrap">
@@ -199,7 +199,7 @@ function AccountStatusRow({
         </ThemeIcon>
       )}
       <Text size="xs" style={{ flex: 1, minWidth: 0 }} truncate>
-        {displayName}
+        {accountName}
       </Text>
       {effectiveStatus === 'rate-limited' && waitState && (
         <WaitCountdown waitUntil={waitState.waitUntil} />
@@ -226,6 +226,7 @@ function ActivePostCard({
   waitStates: IPostWaitState[];
 }) {
   const { setViewState } = useViewStateActions();
+  const accountsMap = useAccountsMap();
   const accountStatusMap = useMemo(
     () => getAccountPostStatusMap(submission),
     [submission],
@@ -240,6 +241,37 @@ function ActivePostCard({
     }
     return map;
   }, [waitStates, submission.id]);
+
+  // Group accounts by website for display
+  const websiteGroups = useMemo(() => {
+    type GroupEntry = {
+      accountId: EntityId;
+      accountName: string;
+      entry: AccountPostStatusEntry;
+    };
+    const groups = new Map<string, GroupEntry[]>();
+
+    for (const [accountId, entry] of accountStatusMap) {
+      const account = accountsMap.get(accountId);
+      // eslint-disable-next-line lingui/no-unlocalized-strings
+      const websiteDisplayName = account?.websiteDisplayName ?? 'Unknown';
+      const accountName = account?.name ?? accountId;
+
+      let group = groups.get(websiteDisplayName);
+      if (!group) {
+        group = [];
+        groups.set(websiteDisplayName, group);
+      }
+      group.push({ accountId, accountName, entry });
+    }
+
+    return Array.from(groups.entries()).map(
+      ([websiteDisplayName, accounts]) => ({
+        websiteDisplayName,
+        accounts,
+      }),
+    );
+  }, [accountStatusMap, accountsMap]);
 
   // Progress calculation
   const totalAccounts = accountStatusMap.size;
@@ -329,15 +361,25 @@ function ActivePostCard({
           </Text>
         )}
 
-        {/* Per-account status rows */}
-        <Stack gap={4}>
-          {Array.from(accountStatusMap.entries()).map(([accountId, entry]) => (
-            <AccountStatusRow
-              key={accountId}
-              accountId={accountId}
-              entry={entry}
-              waitState={waitStateMap.get(accountId)}
-            />
+        {/* Per-account status rows grouped by website */}
+        <Stack gap={8}>
+          {websiteGroups.map(({ websiteDisplayName, accounts }) => (
+            <Box key={websiteDisplayName}>
+              <Text size="xs" fw={600} c="dimmed" mb={2}>
+                {websiteDisplayName}
+              </Text>
+              <Stack gap={2} ml="xs">
+                {accounts.map(({ accountId, accountName, entry }) => (
+                  <AccountStatusRow
+                    key={accountId}
+                    accountId={accountId}
+                    accountName={accountName}
+                    entry={entry}
+                    waitState={waitStateMap.get(accountId)}
+                  />
+                ))}
+              </Stack>
+            </Box>
           ))}
         </Stack>
       </Stack>

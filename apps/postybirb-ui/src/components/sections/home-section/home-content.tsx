@@ -5,42 +5,42 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-    ActionIcon,
-    Button,
-    Center,
-    Container,
-    Group,
-    ScrollArea,
-    SimpleGrid,
-    Stack,
-    Text,
-    ThemeIcon,
-    Title,
-    Tooltip,
+  ActionIcon,
+  Button,
+  Center,
+  Container,
+  Group,
+  ScrollArea,
+  SimpleGrid,
+  Stack,
+  Text,
+  ThemeIcon,
+  Title,
+  Tooltip,
 } from '@mantine/core';
 import { SubmissionType } from '@postybirb/types';
 import {
-    IconCalendar,
-    IconFile,
-    IconHelp,
-    IconHome,
-    IconMessage,
-    IconStack2,
+  IconCalendar,
+  IconFile,
+  IconHelp,
+  IconHome,
+  IconMessage,
+  IconStack2,
 } from '@tabler/icons-react';
 import { useAccounts } from '../../../stores/entity/account-store';
 import {
-    useQueuedSubmissions,
-    useRegularSubmissions,
-    useScheduledSubmissions,
-    useSubmissionsByType,
+  useQueuedSubmissions,
+  useRegularSubmissions,
+  useScheduledSubmissions,
+  useSubmissionsByType,
 } from '../../../stores/entity/submission-store';
 import { useDrawerActions } from '../../../stores/ui/drawer-store';
 import { useViewStateActions } from '../../../stores/ui/navigation-store';
 import { useTourActions } from '../../../stores/ui/tour-store';
 import '../../../styles/layout.css';
 import {
-    createFileSubmissionsViewState,
-    createMessageSubmissionsViewState,
+  createFileSubmissionsViewState,
+  createMessageSubmissionsViewState,
 } from '../../../types/view-state';
 import { HOME_TOUR_ID } from '../../onboarding-tour/tours/home-tour';
 import { LAYOUT_TOUR_ID } from '../../onboarding-tour/tours/layout-tour';

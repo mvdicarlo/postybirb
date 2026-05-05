@@ -1,23 +1,23 @@
 import { Injectable, Optional } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import {
-  AccountId,
-  FileSubmission,
-  FileSubmissionMetadata,
-  FileType,
-  ImageResizeProps,
-  PostData,
-  PostEventType,
-  SubmissionFileMetadata,
-  SubmissionType,
+    AccountId,
+    FileSubmission,
+    FileSubmissionMetadata,
+    FileType,
+    ImageResizeProps,
+    PostData,
+    PostEventType,
+    SubmissionFileMetadata,
+    SubmissionType,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { chunk } from 'lodash';
 import {
-  FileBuffer,
-  PostRecord,
-  Submission,
-  SubmissionFile,
+    FileBuffer,
+    PostRecord,
+    Submission,
+    SubmissionFile,
 } from '../../../drizzle/models';
 import { FileConverterService } from '../../../file-converter/file-converter.service';
 import { NotificationsService } from '../../../notifications/notifications.service';
@@ -26,8 +26,8 @@ import { ValidationService } from '../../../validation/validation.service';
 import { WSGateway } from '../../../web-socket/web-socket-gateway';
 import { getSupportedFileSize } from '../../../websites/decorators/supports-files.decorator';
 import {
-  ImplementedFileWebsite,
-  isFileWebsite,
+    ImplementedFileWebsite,
+    isFileWebsite,
 } from '../../../websites/models/website-modifiers/file-website';
 import { UnknownWebsite } from '../../../websites/website';
 import { WebsiteRegistryService } from '../../../websites/website-registry.service';

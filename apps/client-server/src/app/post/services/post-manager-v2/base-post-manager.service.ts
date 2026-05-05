@@ -24,9 +24,9 @@ import { PostyBirbDatabase } from '../../../drizzle/postybirb-database/postybirb
 import { NotificationsService } from '../../../notifications/notifications.service';
 import { PostParsersService } from '../../../post-parsers/post-parsers.service';
 import { ValidationService } from '../../../validation/validation.service';
+import { WSGateway } from '../../../web-socket/web-socket-gateway';
 import { UnknownWebsite, Website } from '../../../websites/website';
 import { WebsiteRegistryService } from '../../../websites/website-registry.service';
-import { WSGateway } from '../../../web-socket/web-socket-gateway';
 import { CancellableToken } from '../../models/cancellable-token';
 import { CancellationError } from '../../models/cancellation-error';
 import { PostEventRepository, ResumeContext } from '../post-record-factory';
@@ -49,6 +49,12 @@ export abstract class BasePostManager {
   protected readonly logger = Logger(this.constructor.name);
 
   protected readonly lastTimePostedToWebsite: Record<AccountId, Date> = {};
+
+  /**
+   * Accounts currently sleeping in waitForPostingWaitInterval.
+   * Used to ensure getWaitStates() only reports actively waiting accounts.
+   */
+  private readonly activelyWaiting = new Set<AccountId>();
 
   /**
    * The current post being processed.
@@ -542,11 +548,16 @@ export abstract class BasePostManager {
       );
 
       // Emit ephemeral wait state via WebSocket for UI display
+      this.activelyWaiting.add(accountId);
       this.emitWaitStates();
 
-      await new Promise((resolve) => {
-        setTimeout(resolve, waitTime);
-      });
+      try {
+        await new Promise((resolve) => {
+          setTimeout(resolve, waitTime);
+        });
+      } finally {
+        this.activelyWaiting.delete(accountId);
+      }
     }
   }
 
@@ -575,6 +586,9 @@ export abstract class BasePostManager {
     const { submissionId, submission } = this.currentPost;
 
     for (const option of submission.options) {
+      // Only report accounts that are actually sleeping in the wait interval
+      if (!this.activelyWaiting.has(option.accountId)) continue;
+
       const lastTime = this.lastTimePostedToWebsite[option.accountId];
       if (!lastTime) continue;
 
