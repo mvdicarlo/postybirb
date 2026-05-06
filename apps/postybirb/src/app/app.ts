@@ -15,7 +15,7 @@ import {
   app,
   nativeImage,
   nativeTheme,
-  screen
+  screen,
 } from 'electron';
 import { join } from 'path';
 import { environment } from '../environments/environment';
@@ -104,6 +104,12 @@ export default class PostyBirb {
     PostyBirb.mainWindow.setMenu(null);
     PostyBirb.mainWindow.center();
     // PostyBirb.mainWindow.webContents.openDevTools({ mode: 'detach' });
+
+    PostyBirb.mainWindow.webContents.on('will-navigate', (event, url) => {
+      if (url.startsWith('file://')) {
+        event.preventDefault();
+      }
+    });
 
     // if main window is ready to show, close the splash window and show the main window
     PostyBirb.mainWindow.once('ready-to-show', () => {

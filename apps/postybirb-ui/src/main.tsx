@@ -23,6 +23,29 @@ window.addEventListener('keydown', (event) => {
   }
 });
 
+const isFileDropEvent = (event: Event): boolean => {
+  const dragEvent = event as DragEvent;
+  const transferTypes = dragEvent.dataTransfer?.types;
+
+  if (!transferTypes) {
+    return false;
+  }
+
+  // eslint-disable-next-line lingui/no-unlocalized-strings
+  return Array.from(transferTypes).includes('Files');
+};
+
+const preventUnhandledFileDropNavigation = (event: Event) => {
+  if (event.defaultPrevented || !isFileDropEvent(event)) {
+    return;
+  }
+
+  event.preventDefault();
+};
+
+window.addEventListener('dragover', preventUnhandledFileDropNavigation);
+window.addEventListener('drop', preventUnhandledFileDropNavigation);
+
 declare global {
   interface Window {
     electron: {
