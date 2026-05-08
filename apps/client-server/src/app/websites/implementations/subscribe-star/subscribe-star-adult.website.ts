@@ -1,6 +1,6 @@
 import { FileType } from '@postybirb/types';
 import { DisableAds } from '../../decorators/disable-ads.decorator';
-import { UserLoginFlow } from '../../decorators/login-flow.decorator';
+import { CustomLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { SupportsUsernameShortcut } from '../../decorators/supports-username-shortcut.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
@@ -10,7 +10,7 @@ import BaseSubscribeStar from './base-subscribe-star.website';
   name: 'subscribe-star-adult',
   displayName: 'SubscribeStar (Adult)',
 })
-@UserLoginFlow('https://www.subscribestar.adult/login')
+@CustomLoginFlow('SubscribeStarAdult')
 @SupportsUsernameShortcut({
   id: 'subscribe-star-adult',
   url: 'https://www.subscribestar.adult/$1',

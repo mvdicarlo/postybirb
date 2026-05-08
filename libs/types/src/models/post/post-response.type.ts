@@ -91,8 +91,10 @@ export class PostResponse implements IPostResponse {
     return this;
   }
 
-  withSourceUrl(url: string) {
-    this.sourceUrl = url;
+  withSourceUrl(url?: string) {
+    if (url) {
+      this.sourceUrl = url;
+    }
     return this;
   }
 

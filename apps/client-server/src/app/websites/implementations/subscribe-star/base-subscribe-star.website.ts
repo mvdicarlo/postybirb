@@ -10,6 +10,8 @@ import {
 } from '@postybirb/types';
 import { BrowserWindowUtils } from '@postybirb/utils/electron';
 import parse, { HTMLElement } from 'node-html-parser';
+import { parse as parseFileName } from 'path';
+import { v4 } from 'uuid';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import { PostBuilder } from '../../commons/post-builder';
@@ -30,6 +32,7 @@ type SubscribeStarUploadData = {
   s3Url: string;
   s3UploadPath: string;
   authenticityToken: string;
+  csrfToken: string;
 };
 
 type SubscribeStarPostResponse = {
@@ -87,7 +90,7 @@ export default abstract class BaseSubscribeStar
     const $ = parse(profilePage);
     const topBar = $.querySelector('.top_bar-user_info');
     if (topBar) {
-      const username = $.querySelector('.top_bar-user_name').innerText.trim();
+      const username = $.querySelector('.top_bar-user_name')?.innerText.trim();
       const csrfToken = $.querySelector(
         'meta[name="csrf-token"]',
       )?.getAttribute('content');
@@ -150,11 +153,11 @@ export default abstract class BaseSubscribeStar
     return new SubscribeStarFileSubmission();
   }
 
-  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
+  calculateImageResize(file: ISubmissionFile): ImageResizeProps | undefined {
     return undefined;
   }
 
-  private async getPostData(): Promise<SubscribeStarUploadData | undefined> {
+  private async getPostData(): Promise<SubscribeStarUploadData> {
     const url = `${this.BASE_URL}/${this.loginState.username}`;
     try {
       const { body } = await Http.get<string>(url, {
@@ -169,22 +172,31 @@ export default abstract class BaseSubscribeStar
         let decoded = JSON.parse(newPost);
 
         // Then decode unicode and HTML entities
-        decoded = decoded.replace(/\\u([0-9a-fA-F]{4})/g, (match, hex) =>
-          String.fromCharCode(parseInt(hex, 16)),
+        decoded = decoded.replace(
+          /\\u([0-9a-fA-F]{4})/g,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (match: any, hex: any) => String.fromCharCode(parseInt(hex, 16)),
         );
 
         const innerDoc = parse(decoded);
         return {
-          s3UploadPath: innerDoc
-            .querySelector('.post_xodal')
-            .getAttribute('data-s3-upload-path'),
-          s3Url: innerDoc
-            .querySelector('.post_xodal')
-            .getAttribute('data-s3-url'),
-          authenticityToken: innerDoc
-            .querySelectorAll('form input')
-            .find((input) => input.rawAttrs.includes('authenticity_token'))
-            .getAttribute('value'),
+          s3UploadPath:
+            innerDoc
+              .querySelector('.post_xodal')
+              ?.getAttribute('data-s3-upload-path') || '',
+          s3Url:
+            innerDoc
+              .querySelector('.post_xodal')
+              ?.getAttribute('data-s3-url') || '',
+          authenticityToken:
+            innerDoc
+              .querySelectorAll('form input')
+              .find((input) => input.rawAttrs.includes('authenticity_token'))
+              ?.getAttribute('value') || '',
+          csrfToken:
+            $.querySelector('meta[name="csrf-token"]')?.getAttribute(
+              'content',
+            ) || '',
         };
       }
       this.logger.warn(
@@ -192,19 +204,20 @@ export default abstract class BaseSubscribeStar
       );
       return await this.fallbackS3TokenLoader(url);
     } catch (error) {
-      this.logger.error(error, 'Failed to parse post data');
+      this.logger.error(error as never, 'Failed to parse post data');
     }
-    return undefined;
+    throw new Error('Failed to acquire post data');
   }
 
   private async fallbackS3TokenLoader(
     url: string,
-  ): Promise<SubscribeStarUploadData | undefined> {
-    const { authenticityToken, s3UploadPath, s3Url } =
+  ): Promise<SubscribeStarUploadData> {
+    const { authenticityToken, s3UploadPath, s3Url, csrfToken } =
       await BrowserWindowUtils.runScriptOnPage<{
         authenticityToken: string;
         s3UploadPath: string;
         s3Url: string;
+        csrfToken: string;
       }>(
         this.accountId,
         url,
@@ -221,9 +234,9 @@ export default abstract class BaseSubscribeStar
         const s3Url = doc.querySelector('.post_xodal').getAttribute('data-s3-url');
         const authenticityToken = [...doc.querySelectorAll('form input')].find((input) => input.getAttribute('name') === 'authenticity_token')
           .getAttribute('value') ;
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-
-        const out = { authenticityToken, s3UploadPath, s3Url };
+        const out = { authenticityToken, s3UploadPath, s3Url, csrfToken };
 
         return out;
       }
@@ -233,15 +246,16 @@ export default abstract class BaseSubscribeStar
         1000,
       );
 
-    if (authenticityToken && s3UploadPath && s3Url) {
+    if (authenticityToken && s3UploadPath && s3Url && csrfToken) {
       return {
         authenticityToken,
         s3UploadPath,
         s3Url,
+        csrfToken,
       };
     }
 
-    return undefined;
+    throw new Error('Failed to acquire S3 token');
   }
 
   private async uploadFile(
@@ -250,23 +264,28 @@ export default abstract class BaseSubscribeStar
   ): Promise<string | undefined> {
     const bucket = uploadData.s3Url.split('//')[1].split('.')[0];
 
-    // Build the S3 key using the existing GUID filename
-    const key = `${uploadData.s3UploadPath}/${file.fileName}`;
+    const signId = v4();
+    const { ext } = parseFileName(file.fileName);
+    const key = `${uploadData.s3UploadPath}/${signId}${ext}`;
 
-    // Get presigned URL for upload
-    const presignUrl = `${
-      this.BASE_URL
-    }/presigned_url/upload?_=${Date.now()}&key=${encodeURIComponent(
-      key,
-    )}&file_name=${encodeURIComponent(file.fileName)}&content_type=${encodeURIComponent(
-      file.mimeType,
-    )}&bucket=${bucket}`;
+    // Get presigned URL for upload-
+    const presignUrl = `${this.BASE_URL}/presigned_url/upload?_=${Date.now()}&key=${
+      key
+    }&file_name=${encodeURIComponent(file.fileName)}&content_type=${
+      file.mimeType
+    }&bucket=${bucket}`;
 
-    const presign = await Http.get<{ url: string; fields?: object }>(
-      presignUrl,
-      {
-        partition: this.accountId,
-      },
+    const presign = await Http.get<{
+      url: string;
+      fields: Record<string, string>;
+    }>(presignUrl, {
+      partition: this.accountId,
+    });
+
+    PostResponse.validateBody(
+      this,
+      presign,
+      'Failed to get presigned URL for file upload',
     );
 
     // Upload file to S3
@@ -276,11 +295,12 @@ export default abstract class BaseSubscribeStar
       data: {
         ...presign.body.fields,
         file: file.toPostFormat(),
-        authenticity_token: uploadData.authenticityToken,
+        authenticity_token: uploadData.csrfToken,
       },
       headers: {
         Referer: `${this.BASE_URL}/`,
         Origin: this.BASE_URL,
+        'X-CSRF-Token': uploadData.csrfToken,
       },
     });
 
@@ -289,13 +309,14 @@ export default abstract class BaseSubscribeStar
     }
 
     // Build the record for processing
-    const record: Record<string, unknown> = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const record: Record<string, any> = {
       path: key,
-      url: `${presign.body.url}/${key}`,
-      original_filename: file.fileName,
-      content_type: file.mimeType,
+      url: `${presign.body.url}/${presign.body.fields.key}`,
+      original_filename: presign.body.fields['x-amz-meta-original-filename'],
+      content_type: presign.body.fields['Content-Type'],
       bucket,
-      authenticity_token: uploadData.authenticityToken,
+      authenticity_token: uploadData.csrfToken,
     };
 
     // Add dimensions for images using pre-acquired width/height from PostingFile
@@ -316,7 +337,9 @@ export default abstract class BaseSubscribeStar
         type: 'multipart',
         data: record,
         headers: {
-          'X-CSRF-Token': this.sessionData.csrfToken,
+          'X-CSRF-Token': uploadData.csrfToken,
+          Accept: 'application/json',
+          Referer: `${this.BASE_URL}/${this.loginState.username}`,
         },
       },
     );
@@ -364,14 +387,14 @@ export default abstract class BaseSubscribeStar
           'upload_ids[]': uploadedFileIds,
         },
         headers: {
-          'X-CSRF-Token': this.sessionData.csrfToken,
+          'X-CSRF-Token': uploadData.csrfToken,
         },
       });
     }
 
     const builder = new PostBuilder(this, cancellationToken)
       .asUrlEncoded(true)
-      .withHeader('X-Csrf-Token', this.sessionData.csrfToken)
+      .withHeader('X-Csrf-Token', uploadData.csrfToken)
       .withHeader('Referrer', `${this.BASE_URL}/${this.loginState.username}`)
       .setField('authenticity_token', uploadData.authenticityToken)
       .setField('html_content', `<div>${postData.options.description}</div>`)
@@ -431,7 +454,7 @@ export default abstract class BaseSubscribeStar
     const uploadData = await this.getPostData();
     const builder = new PostBuilder(this, cancellationToken)
       .asUrlEncoded(true)
-      .withHeader('X-Csrf-Token', this.sessionData.csrfToken)
+      .withHeader('X-Csrf-Token', uploadData.csrfToken)
       .withHeader('Referrer', `${this.BASE_URL}/${this.loginState.username}`)
       .setField('authenticity_token', uploadData.authenticityToken)
       .setField('html_content', `<div>${postData.options.description}</div>`)
