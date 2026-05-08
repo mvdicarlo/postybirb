@@ -2,21 +2,21 @@
 FROM node:24-bookworm-slim AS builder
 
 # For ca-certificates
-RUN apt-get update && apt-get install -y curl 
+RUN apt-get update && apt-get install -y curl python[latest] build-essential
 
 WORKDIR /source
 
 COPY . .
 
 # Conditional build - only build if release/linux-unpacked doesn't exist
-RUN if [ -d "./release/linux-unpacked" ]; then \
+RUN if [ -d "./release/linux*unpacked" ]; then \
         echo "Found existing build, copying..."; \
-        cp -r ./release/linux-unpacked/ /app;\
+        cp -r ./release/linux*unpacked/ /app;\
     else \
         echo "Building from source..."; rm -rf .nx && \
         CYPRESS_INSTALL_BINARY=0 corepack yarn install --inline-builds && \
         corepack yarn dist:linux --dir && \
-        cp -r ./release/linux-unpacked/ /app;\
+        cp -r ./release/linux*unpacked/ /app;\
     fi 
     
 FROM node:24-bookworm-slim
