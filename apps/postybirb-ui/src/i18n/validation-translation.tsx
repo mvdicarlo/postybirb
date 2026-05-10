@@ -396,8 +396,7 @@ export const TranslationMessages: TranslationsMap = {
     return (
       <Trans>
         File &quot;{fileName}&quot; has an unsupported aspect ratio for
-        Instagram. Supported ratios: 1:1 (square), 4:5 (portrait), 1.91:1
-        (landscape).
+        Instagram. Ratio must be between 3:4 and 1.91:1.
       </Trans>
     );
   },
