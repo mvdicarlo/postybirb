@@ -47,10 +47,17 @@ VOLUME [ "/root/.config/postybirb" ]
 
 ENV DISPLAY=:99
 
+# Generally it's better to set the port by remapping your desired port to 8080 when running the container,
+# But this allows you to directly override the value passed to the --port argument when running Postybirb
+# (if needed)
+ENV SERVER_PORT_OVERRIDE=8080
+
+# This value can't be overridden, if you want to use the SERVER_PORT_OVERRIDE enviroment variable
+# You'll need to expose that port yourself when starting the docker container
 EXPOSE 8080
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=5 \
-    CMD curl http://127.0.0.1:8080 || [ $? -eq 52 ] && exit 0 || exit 1
+    CMD curl http://127.0.0.1:${SERVER_PORT_OVERRIDE} || [ $? -eq 52 ] && exit 0 || exit 1
 
 COPY ./entrypoint.sh .
 
