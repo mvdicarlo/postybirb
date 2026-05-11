@@ -59,17 +59,17 @@ export class DescriptionNodeTree {
 
   toBBCode(): string {
     const converter = new BBCodeConverter();
-    return converter.convertBlocks(this.withInsertions(), this.context);
+    return converter.convert(this.withInsertions(), this.context);
   }
 
   toPlainText(): string {
     const converter = new PlainTextConverter();
-    return converter.convertBlocks(this.withInsertions(), this.context);
+    return converter.convert(this.withInsertions(), this.context);
   }
 
   toHtml(): string {
     const converter = new HtmlConverter();
-    return converter.convertBlocks(this.withInsertions(), this.context);
+    return converter.convert(this.withInsertions(), this.context);
   }
 
   toMarkdown(turndownService?: TurndownService): string {
@@ -89,11 +89,11 @@ export class DescriptionNodeTree {
 
   parseCustom(blockHandler: CustomNodeHandler): string {
     const converter = new CustomConverter(blockHandler);
-    return converter.convertBlocks(this.withInsertions(), this.context);
+    return converter.convert(this.withInsertions(), this.context);
   }
 
   parseWithConverter(converter: BaseConverter): string {
-    return converter.convertBlocks(this.withInsertions(), this.context);
+    return converter.convert(this.withInsertions(), this.context);
   }
 
   public updateContext(updates: Partial<ConversionContext>): void {

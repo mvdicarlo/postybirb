@@ -4,47 +4,67 @@ import { ConversionContext } from '../description-node.base';
 import { InlineTypes, isTextNode, TipTapNode } from '../description-node.types';
 
 /**
- * Base converter for TipTap JSON → output format.
+ * Base converter for transforming TipTap JSON into a target output format.
  *
- * Converters process TipTap nodes directly (no wrapper classes).
- * Block-level nodes are dispatched to `convertBlockNode`, inline shortcut
- * atoms to `convertInlineNode`, and text nodes to `convertTextNode`.
+ * Processes TipTap nodes directly (no wrapper classes). Block-level nodes,
+ * inline shortcut atoms, and text nodes each have dedicated abstract methods
+ * that subclasses must implement.
+ *
+ * Conversion flow:
+ * - `convert()` starts conversion of a node array and calls `convertBlocks()`
+ * - Recursion uses `convertContent()` for node content and `convertChildren()` for nested blocks.
+ * - A guard prevents infinite loops when processing the default description.
  */
 export abstract class BaseConverter {
-  /** Current depth for nested block rendering */
+  /** Current nesting depth for hierarchical block formatting. */
   protected currentDepth = 0;
 
-  /** Used to prevent loop when default shortcut is insert into default section */
+  /** Prevents infinite loops when processing the default description. */
   protected processingDefaultDescription = false;
 
+  /**
+   * Converts a block-level TipTap node (e.g., paragraph, heading, list).
+   */
   abstract convertBlockNode(
     node: TipTapNode,
     context: ConversionContext,
   ): string;
 
+  /**
+   * Converts an inline shortcut atom (e.g., mention, hashtag).
+   */
   abstract convertInlineNode(
     node: TipTapNode,
     context: ConversionContext,
   ): string;
 
+  /**
+   * Converts a plain text node.
+   */
   abstract convertTextNode(
     node: TipTapNode,
     context: ConversionContext,
   ): string;
 
   /**
-   * Converts an array of top-level TipTap nodes (block nodes).
+   * Entry point for converting an array of TipTap nodes.
+   *
+   * The default implementation calls `convertBlocks()`. Subclasses may override
+   * this method if they need to produce a different output type (e.g., a JSON
+   * structure instead of a plain string).
    */
-  convertBlocks(nodes: TipTapNode[], context: ConversionContext): string {
-    const results = nodes.map((node) => this.convertBlockNode(node, context));
-    return results.join(this.getBlockSeparator());
+  convert(nodes: TipTapNode[], context: ConversionContext): string {
+    return this.convertBlocks(nodes, context);
   }
 
   /**
-   * Converts raw TipTap block data. Handles default description recursion guard.
+   * Converts an array of block nodes.
+   *
+   * Handles the special case where the input is the default description,
+   * preventing recursive reprocessing of the same content.
    */
-  convertRawBlocks(blocks: TipTapNode[], context: ConversionContext): string {
-    const isDefaultDescription = blocks === context.defaultDescription;
+  convertBlocks(nodes: TipTapNode[], context: ConversionContext): string {
+    const isDefaultDescription = nodes === context.defaultDescription;
     if (isDefaultDescription) {
       if (this.processingDefaultDescription) {
         return '';
@@ -53,7 +73,8 @@ export abstract class BaseConverter {
     }
 
     try {
-      return this.convertBlocks(blocks, context);
+      const results = nodes.map((node) => this.convertBlockNode(node, context));
+      return results.join(this.getBlockSeparator());
     } finally {
       if (isDefaultDescription) {
         this.processingDefaultDescription = false;
@@ -62,13 +83,14 @@ export abstract class BaseConverter {
   }
 
   /**
-   * Returns the separator to use between blocks.
+   * Returns the string used to separate block-level nodes in the final output.
    */
   protected abstract getBlockSeparator(): string;
 
   /**
-   * Converts the `content` array of a block node.
-   * Dispatches each child to the appropriate handler based on type.
+   * Converts the inline content of a block node.
+   *
+   * Handles text nodes, inline shortcuts, and nested blocks appropriately.
    */
   protected convertContent(
     content: TipTapNode[] | undefined,
@@ -91,7 +113,7 @@ export abstract class BaseConverter {
   }
 
   /**
-   * Converts children blocks with increased depth.
+   * Converts child blocks, maintaining proper nesting.
    */
   protected convertChildren(
     children: TipTapNode[],
@@ -111,7 +133,10 @@ export abstract class BaseConverter {
   }
 
   /**
-   * Helper to check if a shortcut should be rendered for this website.
+   * Determines whether a shortcut should be rendered for the target website.
+   *
+   * If the shortcut has an `only` restriction, the website must be listed;
+   * otherwise, the shortcut is always rendered.
    */
   protected shouldRenderShortcut(
     node: TipTapNode,
@@ -128,7 +153,11 @@ export abstract class BaseConverter {
   }
 
   /**
-   * Helper to resolve username shortcut link.
+   * Resolves a username shortcut into a URL and the final username.
+   *
+   * Applies any context-specific username conversion, then looks up the
+   * corresponding shortcut definition. Returns `undefined` if the username
+   * or the resolved URL is missing.
    */
   protected getUsernameShortcutLink(
     node: TipTapNode,

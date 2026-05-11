@@ -11,7 +11,7 @@ export class PlainTextConverter extends BaseConverter {
   convertBlockNode(node: TipTapNode, context: ConversionContext): string {
     if (node.type === 'defaultShortcut') {
       if (!this.shouldRenderShortcut(node, context)) return '';
-      return this.convertRawBlocks(context.defaultDescription, context);
+      return this.convertBlocks(context.defaultDescription, context);
     }
 
     if (node.type === 'horizontalRule') return '----------';
@@ -73,7 +73,7 @@ export class PlainTextConverter extends BaseConverter {
       if (!this.shouldRenderShortcut(node, context)) return '';
       const shortcutBlocks = context.customShortcuts.get(attrs.id);
       if (shortcutBlocks) {
-        return this.convertRawBlocks(shortcutBlocks, context);
+        return this.convertBlocks(shortcutBlocks, context);
       }
       return '';
     }

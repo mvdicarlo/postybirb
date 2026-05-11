@@ -13,7 +13,7 @@ export class BBCodeConverter extends BaseConverter {
 
     if (node.type === 'defaultShortcut') {
       if (!this.shouldRenderShortcut(node, context)) return '';
-      return this.convertRawBlocks(context.defaultDescription, context);
+      return this.convertBlocks(context.defaultDescription, context);
     }
 
     // For FA: More than 5 dashes in a line are replaced with a horizontal divider.
@@ -107,7 +107,7 @@ export class BBCodeConverter extends BaseConverter {
       if (!this.shouldRenderShortcut(node, context)) return '';
       const shortcutBlocks = context.customShortcuts.get(attrs.id);
       if (shortcutBlocks) {
-        return this.convertRawBlocks(shortcutBlocks, context);
+        return this.convertBlocks(shortcutBlocks, context);
       }
       return '';
     }

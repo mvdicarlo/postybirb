@@ -9,16 +9,13 @@ export class HtmlConverter extends BaseConverter {
     return '';
   }
 
-  convertBlockNode(
-    node: TipTapNode,
-    context: ConversionContext,
-  ): string {
+  convertBlockNode(node: TipTapNode, context: ConversionContext): string {
     const attrs = node.attrs ?? {};
 
     // Handle special block types
     if (node.type === 'defaultShortcut') {
       if (!this.shouldRenderShortcut(node, context)) return '';
-      return this.convertRawBlocks(context.defaultDescription, context);
+      return this.convertBlocks(context.defaultDescription, context);
     }
 
     if (node.type === 'horizontalRule') return '<hr>';
@@ -68,10 +65,7 @@ export class HtmlConverter extends BaseConverter {
     return `<${tag}${styles ? ` style="${styles}"` : ''}>${content}</${tag}>`;
   }
 
-  convertInlineNode(
-    node: TipTapNode,
-    context: ConversionContext,
-  ): string {
+  convertInlineNode(node: TipTapNode, context: ConversionContext): string {
     const attrs = node.attrs ?? {};
 
     if (node.type === 'username') {
@@ -86,7 +80,7 @@ export class HtmlConverter extends BaseConverter {
       if (!this.shouldRenderShortcut(node, context)) return '';
       const shortcutBlocks = context.customShortcuts.get(attrs.id);
       if (shortcutBlocks) {
-        return this.convertRawBlocks(shortcutBlocks, context);
+        return this.convertBlocks(shortcutBlocks, context);
       }
       return '';
     }
@@ -119,10 +113,7 @@ export class HtmlConverter extends BaseConverter {
     return content ? `<span>${content}</span>` : '';
   }
 
-  convertTextNode(
-    node: TipTapNode,
-    context: ConversionContext,
-  ): string {
+  convertTextNode(node: TipTapNode, context: ConversionContext): string {
     const textNode = node as any;
     if (!textNode.text) return '';
 
@@ -139,7 +130,10 @@ export class HtmlConverter extends BaseConverter {
     const linkMark = marks.find((m: any) => m.type === 'link');
     if (linkMark) {
       const href = linkMark.attrs?.href ?? '';
-      const innerHtml = this.renderTextWithMarks(textNode.text, marks.filter((m: any) => m.type !== 'link'));
+      const innerHtml = this.renderTextWithMarks(
+        textNode.text,
+        marks.filter((m: any) => m.type !== 'link'),
+      );
       return `<a target="_blank" href="${href}">${innerHtml}</a>`;
     }
 
@@ -178,7 +172,10 @@ export class HtmlConverter extends BaseConverter {
       styles.push(`color: ${textStyleMark.attrs.color}`);
     }
 
-    const encodedText = encode(text, { level: 'html5' }).replace(/\n/g, '<br />');
+    const encodedText = encode(text, { level: 'html5' }).replace(
+      /\n/g,
+      '<br />',
+    );
 
     if (!segments.length && !styles.length) {
       return encodedText;
@@ -204,10 +201,7 @@ export class HtmlConverter extends BaseConverter {
     const attrs = node.attrs ?? {};
     const styles: string[] = [];
 
-    if (
-      attrs.textAlign &&
-      attrs.textAlign !== 'left'
-    ) {
+    if (attrs.textAlign && attrs.textAlign !== 'left') {
       styles.push(`text-align: ${attrs.textAlign}`);
     }
 
@@ -233,4 +227,3 @@ export class HtmlConverter extends BaseConverter {
     return `<div>${imgTag}</div>`;
   }
 }
-
