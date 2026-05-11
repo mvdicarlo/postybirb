@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { UsernameShortcut } from '@postybirb/types';
 import { TipTapNode } from './description-node.types';
 

@@ -266,7 +266,7 @@ describe('NpfConverter', () => {
         },
       ];
 
-      const resultJson = converter.convertBlocks(nodes, context);
+      const resultJson = converter.convert(nodes, context);
       const result = JSON.parse(resultJson) as NPFTextBlock;
 
       expect(result).toMatchInlineSnapshot(`

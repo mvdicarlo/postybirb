@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import TurndownService from 'turndown';
 import { BaseConverter } from './converters/base-converter';
 import { BBCodeConverter } from './converters/bbcode-converter';
@@ -170,9 +169,7 @@ export class DescriptionNodeTree {
     }
 
     return node.content.every(
-      (child) =>
-        child.type === 'text' &&
-        (!(child as any).text || (child as any).text.trim() === ''),
+      (child) => child.type === 'text' && !child.text?.trim(),
     );
   }
 

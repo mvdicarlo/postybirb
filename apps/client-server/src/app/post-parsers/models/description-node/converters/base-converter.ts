@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { UsernameShortcut } from '@postybirb/types';
 import { ConversionContext } from '../description-node.base';
 import { InlineTypes, isTextNode, TipTapNode } from '../description-node.types';
