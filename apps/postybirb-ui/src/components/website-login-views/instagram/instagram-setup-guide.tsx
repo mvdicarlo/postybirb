@@ -1,23 +1,23 @@
 /* eslint-disable lingui/no-unlocalized-strings */
 import {
-    Accordion,
-    Badge,
-    Checkbox,
-    Code,
-    Divider,
-    Group,
-    Paper,
-    Progress,
-    Stack,
-    Text,
-    ThemeIcon,
-    Title,
+  Accordion,
+  Badge,
+  Checkbox,
+  Code,
+  Divider,
+  Group,
+  Paper,
+  Progress,
+  Stack,
+  Text,
+  ThemeIcon,
+  Title,
 } from '@mantine/core';
 import {
-    IconCircleCheck,
-    IconKey,
-    IconSettings,
-    IconUserCheck,
+  IconCircleCheck,
+  IconKey,
+  IconSettings,
+  IconUserCheck,
 } from '@tabler/icons-react';
 import { useCallback, useMemo, useState } from 'react';
 import { ExternalLink } from '../../shared/external-link';
@@ -35,8 +35,6 @@ interface SetupSection {
   icon: React.ReactNode;
   steps: SetupStep[];
 }
-
-const REDIRECT_URL = `https://localhost:${window.electron?.app_port || '9487'}/api/websites/instagram/callback`;
 
 const SETUP_SECTIONS: SetupSection[] = [
   {
@@ -337,7 +335,7 @@ export function InstagramSetupGuide() {
                               userSelect: 'all',
                             }}
                           >
-                            {REDIRECT_URL}
+                            {`https://localhost:${window.electron.app_port}/api/websites/instagram/callback`}
                           </Code>
                         )}
                       </div>
