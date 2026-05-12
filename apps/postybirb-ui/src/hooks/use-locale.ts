@@ -187,6 +187,7 @@ function getLocaleInfo(locale: string) {
   try {
     const intlLocale = new Intl.Locale(locale);
 
+    // @ts-expect-error typings were included into typescript 6.0
     const weekInfo = intlLocale.getWeekInfo() as WeekInfo;
 
     const rawHourCycle = intlLocale.hourCycle ?? 'h23';
