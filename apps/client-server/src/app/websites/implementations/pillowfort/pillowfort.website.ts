@@ -154,6 +154,11 @@ export default class Pillowfort
         .setField('commit', 'Submit')
         .setConditional('rebloggable', postData.options.allowReblogging, 'on')
         .setConditional('commentable', postData.options.allowComments, 'on')
+        .setConditional(
+          'nsfw',
+          postData.options.rating !== SubmissionRating.GENERAL,
+          'on',
+        )
         .setField(
           'picture[][pic_url]',
           uploadedImages.map((upload) => upload.full_image),
