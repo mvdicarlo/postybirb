@@ -20,7 +20,7 @@ import {
   IconUserCheck,
 } from '@tabler/icons-react';
 import { useCallback, useMemo, useState } from 'react';
-import { defaultTargetProvider } from '../../../transports/http-client';
+import { getBaseUrl } from '../../../transports/http-client';
 import { ExternalLink } from '../../shared/external-link';
 
 interface SetupStep {
@@ -336,7 +336,7 @@ export function InstagramSetupGuide() {
                               userSelect: 'all',
                             }}
                           >
-                            {`${defaultTargetProvider()}/api/websites/instagram/callback`}
+                            {`${getBaseUrl()}/api/websites/instagram/callback`}
                           </Code>
                         )}
                       </div>

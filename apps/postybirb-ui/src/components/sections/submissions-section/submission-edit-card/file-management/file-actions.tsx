@@ -19,12 +19,17 @@ import {
 import { FileWithPath } from '@mantine/dropzone';
 import { FileType, ISubmissionFileDto, SubmissionId } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
-import { IconCrop, IconFileUpload, IconPencil, IconReplace } from '@tabler/icons-react';
+import {
+  IconCrop,
+  IconFileUpload,
+  IconPencil,
+  IconReplace,
+} from '@tabler/icons-react';
 import { useState } from 'react';
 import fileSubmissionApi, {
   FileUpdateTarget,
 } from '../../../../../api/file-submission.api';
-import { defaultTargetProvider } from '../../../../../transports/http-client';
+import { getBaseUrl } from '../../../../../transports/http-client';
 import {
   showErrorNotification,
   showErrorWithContext,
@@ -112,7 +117,7 @@ export function FileActions({ file, submissionId }: FileActionsProps) {
 
   const fetchPrimaryAsFile = async (): Promise<FileWithPath> => {
     const response = await fetch(
-      `${defaultTargetProvider()}/api/file/file/${file.id}?${file.hash}`,
+      `${getBaseUrl()}/api/file/file/${file.id}?${file.hash}`,
     );
     const blob = await response.blob();
     return new File([blob], file.fileName, {
@@ -127,9 +132,7 @@ export function FileActions({ file, submissionId }: FileActionsProps) {
       setEditorTarget('file');
       setEditorFile(primaryFile);
     } catch {
-      showErrorNotification(
-        <Trans>Failed to load file for editing.</Trans>
-      );
+      showErrorNotification(<Trans>Failed to load file for editing.</Trans>);
     } finally {
       setIsLoadingPrimary(false);
     }
@@ -325,7 +328,7 @@ function ThumbnailDisplay({ file }: { file: ISubmissionFileDto }) {
   }
 
   // Use file hash for cache-busting — stable across renders, changes when content updates
-  const src = `${defaultTargetProvider()}/api/file/thumbnail/${file.id}?${file.hash}`;
+  const src = `${getBaseUrl()}/api/file/thumbnail/${file.id}?${file.hash}`;
 
   return (
     <Image
