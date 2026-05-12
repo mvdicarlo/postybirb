@@ -45,7 +45,10 @@ window.addEventListener('storage', (e) => {
   }
 });
 
-export const isRemote = () => cachedConfig.mode === 'client';
+export const isRemote = () =>
+  cachedConfig.mode === 'client' &&
+  cachedConfig.host?.trim() &&
+  !cachedConfig.host?.startsWith('localhost');
 
 export const getBaseUrl = () => {
   const remoteUrl = cachedConfig.host;
