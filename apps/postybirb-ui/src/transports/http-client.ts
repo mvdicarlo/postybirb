@@ -46,14 +46,11 @@ window.addEventListener('storage', (e) => {
 });
 
 export const isRemote = () =>
-  cachedConfig.mode === 'client' &&
-  cachedConfig.host?.trim() &&
-  !cachedConfig.host?.startsWith('localhost');
+  cachedConfig.mode === 'client' && cachedConfig.host?.trim();
 
 export const getBaseUrl = () => {
-  const remoteUrl = cachedConfig.host;
-  if (remoteUrl?.trim() && isRemote()) {
-    return `https://${remoteUrl}`;
+  if (isRemote()) {
+    return `https://${cachedConfig.host}`;
   }
 
   return `https://localhost:${window.electron.app_port}`;
