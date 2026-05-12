@@ -2,6 +2,7 @@
 /* eslint-disable no-continue */
 import { Logger } from '@postybirb/logger';
 import {
+  DefaultSubmissionFileMetadata,
   ISubmissionMetadata,
   ISubmissionScheduleInfo,
   NULL_ACCOUNT_ID,
@@ -262,7 +263,11 @@ export class LegacySubmissionConverter {
             hasThumbnail: false,
             hasCustomThumbnail: false,
             hasAltFile: false,
-            metadata: {},
+            metadata: {
+              ...DefaultSubmissionFileMetadata(),
+              altText: fileRecord.altText ?? '',
+              ignoredWebsites: fileRecord.ignoredAccounts ?? [],
+            },
             order: fileRecord.order ?? i,
           });
 
