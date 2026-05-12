@@ -13,7 +13,7 @@ import { PostQueueRecord } from './post-queue-record.entity';
 import { Submission } from './submission.entity';
 
 export class PostRecord extends DatabaseEntity implements IPostRecord {
-  version: string;
+  version?: string;
 
   postQueueRecordId: EntityId;
 

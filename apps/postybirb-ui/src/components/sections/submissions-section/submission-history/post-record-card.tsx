@@ -74,7 +74,7 @@ export function PostRecordCard({ record, accountsMap }: PostRecordCardProps) {
     .filter((e) => !!e);
 
   const recordWithVersions = {
-    version: record.version,
+    version: record.version ?? 'unknown',
     debug: {
       clientVersion: window.electron.app_version,
       isRemote: isRemote(),
