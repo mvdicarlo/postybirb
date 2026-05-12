@@ -42,35 +42,35 @@ export class FurAffinityFileSubmission extends BaseWebsiteOptions {
   rating: SubmissionRating;
 
   @SelectField({
+    required: true,
     label: 'category',
-    defaultValue: '1',
     options: FurAffinityCategories,
     section: 'website',
     span: 6,
   })
-  category: string;
+  category = '1';
 
   @SelectField({
+    required: true,
     label: 'theme',
-    defaultValue: '1',
     options: FurAffinityThemes,
     section: 'website',
     span: 6,
   })
-  theme: string;
+  theme = '1';
 
   @SelectField({
+    required: true,
     label: 'species',
-    defaultValue: '1',
     options: FurAffinitySpecies,
     section: 'website',
     span: 6,
   })
-  species: string;
+  species = '1';
 
   @SelectField({
+    required: true,
     label: 'gender',
-    defaultValue: '0',
     options: [
       { value: '0', label: 'Any' },
       { value: '2', label: 'Male' },
@@ -86,7 +86,7 @@ export class FurAffinityFileSubmission extends BaseWebsiteOptions {
     section: 'website',
     span: 6,
   })
-  gender: string;
+  gender = '0';
 
   @SelectField<FurAffinityAccountData>({
     label: 'folder',
@@ -101,21 +101,19 @@ export class FurAffinityFileSubmission extends BaseWebsiteOptions {
     section: 'website',
     span: 12,
   })
-  folders: string[];
+  folders: string[] = [];
 
   @BooleanField({
     label: 'disableComments',
-    defaultValue: false,
     section: 'website',
     span: 6,
   })
-  disableComments: boolean;
+  disableComments = false;
 
   @BooleanField({
     label: 'scraps',
-    defaultValue: false,
     section: 'website',
     span: 6,
   })
-  scraps: boolean;
+  scraps = false;
 }
