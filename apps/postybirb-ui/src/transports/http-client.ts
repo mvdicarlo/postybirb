@@ -7,7 +7,7 @@ export const REMOTE_PASSWORD_KEY = 'remote_password';
 export const REMOTE_HOST_KEY = 'remote_host';
 export const REMOTE_MODE_KEY = 'remote_mode';
 
-export const defaultTargetPath = `https://localhost:${window.electron.app_port}`;
+const defaultTargetPath = `https://localhost:${window.electron.app_port}`;
 
 // ---------------------------------------------------------------------------
 // Cached localStorage config

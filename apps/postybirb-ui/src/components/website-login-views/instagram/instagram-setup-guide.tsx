@@ -20,6 +20,7 @@ import {
   IconUserCheck,
 } from '@tabler/icons-react';
 import { useCallback, useMemo, useState } from 'react';
+import { defaultTargetProvider } from '../../../transports/http-client';
 import { ExternalLink } from '../../shared/external-link';
 
 interface SetupStep {
@@ -335,7 +336,7 @@ export function InstagramSetupGuide() {
                               userSelect: 'all',
                             }}
                           >
-                            {`https://localhost:${window.electron.app_port}/api/websites/instagram/callback`}
+                            {`${defaultTargetProvider()}/api/websites/instagram/callback`}
                           </Code>
                         )}
                       </div>
