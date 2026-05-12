@@ -7,8 +7,6 @@ export const REMOTE_PASSWORD_KEY = 'remote_password';
 export const REMOTE_HOST_KEY = 'remote_host';
 export const REMOTE_MODE_KEY = 'remote_mode';
 
-export const defaultTargetPath = `https://localhost:${window.electron.app_port}`;
-
 // ---------------------------------------------------------------------------
 // Cached localStorage config
 // Values are read once on module load and refreshed on `storage` events or
@@ -49,13 +47,13 @@ window.addEventListener('storage', (e) => {
   }
 });
 
-export const defaultTargetProvider = () => {
+export const getBaseUrl = () => {
   const remoteUrl = cachedConfig.host;
   if (remoteUrl?.trim()) {
     return `https://${remoteUrl}`;
   }
 
-  return defaultTargetPath;
+  return `https://localhost:${window.electron.app_port}`;
 };
 
 export const getRemotePassword = () => {
@@ -126,7 +124,7 @@ export class HttpClient {
 
   constructor(
     private readonly basePath: string,
-    private readonly targetProvider: () => string = defaultTargetProvider,
+    private readonly targetProvider: () => string = getBaseUrl,
   ) {}
 
   public get<T = any>(

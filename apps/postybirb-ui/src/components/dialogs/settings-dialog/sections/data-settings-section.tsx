@@ -8,8 +8,8 @@ import { Alert, Box, Button, Stack, Text, Title } from '@mantine/core';
 import { IconDownload, IconInfoCircle, IconX } from '@tabler/icons-react';
 import { useState } from 'react';
 import {
-    defaultTargetProvider,
-    getRemotePassword,
+  getBaseUrl,
+  getRemotePassword,
 } from '../../../../transports/http-client';
 
 export function DataSettingsSection() {
@@ -21,7 +21,7 @@ export function DataSettingsSection() {
     setError(null);
 
     try {
-      const url = new URL('api/logs/download', defaultTargetProvider());
+      const url = new URL('api/logs/download', getBaseUrl());
       const headers: Record<string, string> = {};
       const pw = getRemotePassword();
       if (pw) {

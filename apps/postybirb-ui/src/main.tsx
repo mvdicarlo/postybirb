@@ -1,4 +1,4 @@
-import { RemoteConfig } from '@postybirb/utils/electron';
+import { PreloadBridge } from '@postybirb/types';
 import { createRoot } from 'react-dom/client';
 import { initializeAppInsightsUI } from './app-insights-ui';
 import { PostyBirb } from './index';
@@ -48,24 +48,6 @@ window.addEventListener('drop', preventUnhandledFileDropNavigation);
 
 declare global {
   interface Window {
-    electron: {
-      getAppVersion(): Promise<string>;
-      getLanIp(): Promise<string | undefined>;
-      getRemoteConfig(): RemoteConfig;
-      pickDirectory?(): Promise<string | undefined>;
-      openExternalLink(url: string): void;
-      getCookiesForAccount(accountId: string): Promise<string>;
-      quit(code?: number): void;
-      platform: NodeJS.Platform;
-      app_port: string;
-      app_version: string;
-
-      setSpellCheckerEnabled(value: boolean): void;
-      setSpellcheckerLanguages: (languages: string[]) => Promise<void>;
-      getSpellcheckerLanguages: () => Promise<string[]>;
-      getAllSpellcheckerLanguages: () => Promise<string[]>;
-      getSpellcheckerWords: () => Promise<string[]>;
-      setSpellcheckerWords: (words: string[]) => Promise<void>;
-    };
+    electron: PreloadBridge;
   }
 }

@@ -1,0 +1,21 @@
+import { RemoteConfig } from '@postybirb/utils/electron';
+
+export interface PreloadBridge {
+  getAppVersion(): Promise<string>;
+  getLanIp(): Promise<string | undefined>;
+  getRemoteConfig(): RemoteConfig;
+  pickDirectory?(): Promise<string | undefined>;
+  openExternalLink(url: string): void;
+  getCookiesForAccount(accountId: string): Promise<string>;
+  quit(code?: number): void;
+  platform: NodeJS.Platform;
+  app_port: string;
+  app_version: string;
+
+  setSpellCheckerEnabled(value: boolean): void;
+  setSpellcheckerLanguages: (languages: string[]) => Promise<void>;
+  getSpellcheckerLanguages: () => Promise<string[]>;
+  getAllSpellcheckerLanguages: () => Promise<string[]>;
+  getSpellcheckerWords: () => Promise<string[]>;
+  setSpellcheckerWords: (words: string[]) => Promise<void>;
+}

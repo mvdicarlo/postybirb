@@ -3,7 +3,7 @@
  */
 
 import type { SubmissionRecord } from '../../../../stores/records';
-import { defaultTargetProvider } from '../../../../transports/http-client';
+import { getBaseUrl } from '../../../../transports/http-client';
 
 /**
  * Get the thumbnail URL for a submission.
@@ -15,7 +15,7 @@ export function getThumbnailUrl(
   const { primaryFile } = submission;
   if (!primaryFile) return undefined;
 
-  const baseUrl = defaultTargetProvider();
+  const baseUrl = getBaseUrl();
 
   // Use the thumbnail if available
   if (primaryFile.hasThumbnail) {
