@@ -53,6 +53,7 @@ export class BrowserWindowUtils {
     url: string,
     script: string,
     wait = 0,
+    timeout = 60_000,
   ): Promise<T> {
     const bw = await createWindow(partition, url);
     try {
@@ -61,14 +62,23 @@ export class BrowserWindowUtils {
       }
 
       // Using promise to handle errors. See more: https://github.com/electron/electron/pull/11158
-      const page = await bw.webContents.executeJavaScript(`
+      const page = await Promise.race([
+        bw.webContents.executeJavaScript(`
       (function() {
         try {
           ${script}
         } catch (e) {
           return Promise.reject(e);
         }
-      })()`);
+      })()`),
+        new Promise<never>((_, reject) => {
+          setTimeout(
+            () =>
+              reject(new Error(`runScriptOnPage timed out after ${timeout}ms`)),
+            timeout,
+          );
+        }),
+      ]);
       return page;
     } catch (err) {
       const e = err as Error;

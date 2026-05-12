@@ -160,56 +160,14 @@ export default abstract class BaseSubscribeStar
   private async getPostData(): Promise<SubscribeStarUploadData> {
     const url = `${this.BASE_URL}/${this.loginState.username}`;
     try {
-      const { body } = await Http.get<string>(url, {
-        partition: this.accountId,
-      });
-      const $ = parse(body);
-      const newPost = $.querySelector('.new_post')
-        ?.querySelector('.new_post-inner')
-        ?.getAttribute('data-form-template');
-      if (newPost) {
-        // Parse the JSON string first
-        let decoded = JSON.parse(newPost);
-
-        // Then decode unicode and HTML entities
-        decoded = decoded.replace(
-          /\\u([0-9a-fA-F]{4})/g,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (match: any, hex: any) => String.fromCharCode(parseInt(hex, 16)),
-        );
-
-        const innerDoc = parse(decoded);
-        return {
-          s3UploadPath:
-            innerDoc
-              .querySelector('.post_xodal')
-              ?.getAttribute('data-s3-upload-path') || '',
-          s3Url:
-            innerDoc
-              .querySelector('.post_xodal')
-              ?.getAttribute('data-s3-url') || '',
-          authenticityToken:
-            innerDoc
-              .querySelectorAll('form input')
-              .find((input) => input.rawAttrs.includes('authenticity_token'))
-              ?.getAttribute('value') || '',
-          csrfToken:
-            $.querySelector('meta[name="csrf-token"]')?.getAttribute(
-              'content',
-            ) || '',
-        };
-      }
-      this.logger.warn(
-        'Falling back to BrowserWindow method for acquiring S3 token due to missing data-form-template element',
-      );
-      return await this.fallbackS3TokenLoader(url);
+      return await this.acquireUploadTokens(url);
     } catch (error) {
       this.logger.error(error as never, 'Failed to parse post data');
     }
     throw new Error('Failed to acquire post data');
   }
 
-  private async fallbackS3TokenLoader(
+  private async acquireUploadTokens(
     url: string,
   ): Promise<SubscribeStarUploadData> {
     const { authenticityToken, s3UploadPath, s3Url, csrfToken } =
