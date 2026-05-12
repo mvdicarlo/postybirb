@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   NPFContentBlock,
   NPFImageBlock,
@@ -25,9 +24,9 @@ export class NpfConverter extends BaseConverter {
   }
 
   /**
-   * Override convertBlocks to accumulate NPF blocks and return JSON.
+   * Override convert to accumulate NPF blocks and return JSON.
    */
-  convertBlocks(nodes: TipTapNode[], context: ConversionContext): string {
+  convert(nodes: TipTapNode[], context: ConversionContext): string {
     this.blocks = [];
     for (const node of nodes) {
       this.convertBlockNodeRecursive(node, context, 0);

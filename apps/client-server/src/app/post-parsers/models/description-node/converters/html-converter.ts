@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { encode } from 'html-entities';
 import { ConversionContext } from '../description-node.base';
-import { TipTapNode } from '../description-node.types';
+import { TipTapMark, TipTapNode } from '../description-node.types';
 import { BaseConverter } from './base-converter';
 
 export class HtmlConverter extends BaseConverter {
@@ -9,16 +8,11 @@ export class HtmlConverter extends BaseConverter {
     return '';
   }
 
-  convertBlockNode(
-    node: TipTapNode,
-    context: ConversionContext,
-  ): string {
-    const attrs = node.attrs ?? {};
-
+  convertBlockNode(node: TipTapNode, context: ConversionContext): string {
     // Handle special block types
     if (node.type === 'defaultShortcut') {
       if (!this.shouldRenderShortcut(node, context)) return '';
-      return this.convertRawBlocks(context.defaultDescription, context);
+      return this.convertBlocks(context.defaultDescription, context);
     }
 
     if (node.type === 'horizontalRule') return '<hr>';
@@ -68,10 +62,7 @@ export class HtmlConverter extends BaseConverter {
     return `<${tag}${styles ? ` style="${styles}"` : ''}>${content}</${tag}>`;
   }
 
-  convertInlineNode(
-    node: TipTapNode,
-    context: ConversionContext,
-  ): string {
+  convertInlineNode(node: TipTapNode, context: ConversionContext): string {
     const attrs = node.attrs ?? {};
 
     if (node.type === 'username') {
@@ -86,7 +77,7 @@ export class HtmlConverter extends BaseConverter {
       if (!this.shouldRenderShortcut(node, context)) return '';
       const shortcutBlocks = context.customShortcuts.get(attrs.id);
       if (shortcutBlocks) {
-        return this.convertRawBlocks(shortcutBlocks, context);
+        return this.convertBlocks(shortcutBlocks, context);
       }
       return '';
     }
@@ -119,37 +110,34 @@ export class HtmlConverter extends BaseConverter {
     return content ? `<span>${content}</span>` : '';
   }
 
-  convertTextNode(
-    node: TipTapNode,
-    context: ConversionContext,
-  ): string {
-    const textNode = node as any;
-    if (!textNode.text) return '';
+  convertTextNode(node: TipTapNode, context: ConversionContext): string {
+    if (!node.text) return '';
 
     // Handle line breaks from merged blocks
-    if (textNode.text === '\n' || textNode.text === '\r\n') {
+    if (node.text === '\n' || node.text === '\r\n') {
       return '<br>';
     }
 
-    const marks = textNode.marks ?? [];
-    const segments: string[] = [];
-    const styles: string[] = [];
+    const marks = node.marks ?? [];
 
     // Check for link mark — wrap entire text in <a>
-    const linkMark = marks.find((m: any) => m.type === 'link');
+    const linkMark = marks.find((m) => m.type === 'link');
     if (linkMark) {
       const href = linkMark.attrs?.href ?? '';
-      const innerHtml = this.renderTextWithMarks(textNode.text, marks.filter((m: any) => m.type !== 'link'));
+      const innerHtml = this.renderTextWithMarks(
+        node.text,
+        marks.filter((m) => m.type !== 'link'),
+      );
       return `<a target="_blank" href="${href}">${innerHtml}</a>`;
     }
 
-    return this.renderTextWithMarks(textNode.text, marks);
+    return this.renderTextWithMarks(node.text, marks);
   }
 
   /**
    * Renders text with formatting marks (bold, italic, etc.) applied.
    */
-  private renderTextWithMarks(text: string, marks: any[]): string {
+  private renderTextWithMarks(text: string, marks: TipTapMark[]): string {
     const segments: string[] = [];
     const styles: string[] = [];
 
@@ -173,12 +161,15 @@ export class HtmlConverter extends BaseConverter {
     }
 
     // Check for textStyle mark with color
-    const textStyleMark = marks.find((m: any) => m.type === 'textStyle');
+    const textStyleMark = marks.find((m) => m.type === 'textStyle');
     if (textStyleMark?.attrs?.color) {
       styles.push(`color: ${textStyleMark.attrs.color}`);
     }
 
-    const encodedText = encode(text, { level: 'html5' }).replace(/\n/g, '<br />');
+    const encodedText = encode(text, { level: 'html5' }).replace(
+      /\n/g,
+      '<br />',
+    );
 
     if (!segments.length && !styles.length) {
       return encodedText;
@@ -204,10 +195,7 @@ export class HtmlConverter extends BaseConverter {
     const attrs = node.attrs ?? {};
     const styles: string[] = [];
 
-    if (
-      attrs.textAlign &&
-      attrs.textAlign !== 'left'
-    ) {
+    if (attrs.textAlign && attrs.textAlign !== 'left') {
       styles.push(`text-align: ${attrs.textAlign}`);
     }
 
@@ -233,4 +221,3 @@ export class HtmlConverter extends BaseConverter {
     return `<div>${imgTag}</div>`;
   }
 }
-

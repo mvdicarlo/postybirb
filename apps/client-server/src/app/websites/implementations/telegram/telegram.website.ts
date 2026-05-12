@@ -568,13 +568,8 @@ class TelegramConverter extends HtmlConverter {
     return '<br>';
   }
 
-  convertBlocks(nodes: TipTapNode[], context: ConversionContext): string {
-    // When html encouters the default description it uses convertRawBlocks which calls convertBlock
-    // which returns json that ends up in user posts
-    if (nodes === context.defaultDescription)
-      return super.convertBlocks(nodes, context);
-
-    let html = super.convertBlocks(nodes, context);
+  convert(nodes: TipTapNode[], context: ConversionContext): string {
+    let html = super.convert(nodes, context);
 
     html = html.replaceAll('<hr>', '<span>————————</span>');
 

@@ -375,8 +375,8 @@ class E621Converter extends BBCodeConverter {
     return super.convertBlockNode(node, context);
   }
 
-  convertBlocks(nodes: TipTapNode[], context: ConversionContext): string {
-    const text = super.convertBlocks(nodes, context);
+  convert(nodes: TipTapNode[], context: ConversionContext): string {
+    const text = super.convert(nodes, context);
 
     return text
       .replace(/\[url=([^\]]*)\]([^[]*)\[\/url\]/g, '"$2":[$1]')
