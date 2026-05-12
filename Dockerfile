@@ -47,10 +47,15 @@ VOLUME [ "/root/.config/postybirb" ]
 
 ENV DISPLAY=:99
 
-EXPOSE 8080
+ENV POSTYBIRB_PORT=8080
+
+# Note that this isn't dynamic, so if you use a port
+# Other than 8080 you'll need to map it when you run 
+# the docker image
+EXPOSE $POSTYBIRB_PORT
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=5 \
-    CMD curl http://127.0.0.1:8080 || [ $? -eq 52 ] && exit 0 || exit 1
+    CMD curl http://127.0.0.1:${POSTYBIRB_PORT} || [ $? -eq 52 ] && exit 0 || exit 1
 
 COPY ./entrypoint.sh .
 
