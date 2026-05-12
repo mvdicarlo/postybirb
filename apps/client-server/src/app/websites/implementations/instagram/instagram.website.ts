@@ -389,22 +389,19 @@ export default class Instagram
     const validator = this.createValidator<InstagramFileSubmission>();
 
     // Validate image aspect ratios
-    // Instagram only supports specific aspect ratios:
-    // 1:1 (square) = 1.0, 4:5 (portrait) = 0.8, 1.91:1 (landscape) = 1.91
-    const SUPPORTED_RATIOS = [
-      { name: '1:1', ratio: 1 / 1 },
-      { name: '4:5', ratio: 4 / 5 },
-      { name: '1.91:1', ratio: 1.91 / 1 },
-    ];
+    // Instagram only supports aspect ratios between 3:4 and 1.91:1
     const RATIO_TOLERANCE = 0.02; // Allow small rounding differences
+
+    const MIN_RATIO = 0.75;
+    const MAX_RATIO = 1.91;
 
     const files = postData.submission?.files ?? [];
     for (const file of files) {
       if (file.width && file.height) {
         const ratio = file.width / file.height;
-        const isSupported = SUPPORTED_RATIOS.some(
-          (sr) => Math.abs(ratio - sr.ratio) <= RATIO_TOLERANCE,
-        );
+        const isSupported =
+          ratio >= MIN_RATIO - RATIO_TOLERANCE &&
+          ratio <= MAX_RATIO + RATIO_TOLERANCE;
         if (!isSupported) {
           validator.error('validation.file.instagram.invalid-aspect-ratio', {
             fileName: file.fileName,
