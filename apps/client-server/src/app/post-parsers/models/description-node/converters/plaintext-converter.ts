@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ConversionContext } from '../description-node.base';
 import { TipTapNode } from '../description-node.types';
 import { BaseConverter } from './base-converter';
@@ -11,7 +10,7 @@ export class PlainTextConverter extends BaseConverter {
   convertBlockNode(node: TipTapNode, context: ConversionContext): string {
     if (node.type === 'defaultShortcut') {
       if (!this.shouldRenderShortcut(node, context)) return '';
-      return this.convertRawBlocks(context.defaultDescription, context);
+      return this.convertBlocks(context.defaultDescription, context);
     }
 
     if (node.type === 'horizontalRule') return '----------';
@@ -73,7 +72,7 @@ export class PlainTextConverter extends BaseConverter {
       if (!this.shouldRenderShortcut(node, context)) return '';
       const shortcutBlocks = context.customShortcuts.get(attrs.id);
       if (shortcutBlocks) {
-        return this.convertRawBlocks(shortcutBlocks, context);
+        return this.convertBlocks(shortcutBlocks, context);
       }
       return '';
     }
@@ -99,18 +98,16 @@ export class PlainTextConverter extends BaseConverter {
   }
 
   convertTextNode(node: TipTapNode, context: ConversionContext): string {
-    const textNode = node as any;
-
     // Check for link mark — append URL
-    const marks = textNode.marks ?? [];
-    const linkMark = marks.find((m: any) => m.type === 'link');
+    const marks = node.marks ?? [];
+    const linkMark = marks.find((m) => m.type === 'link');
     if (linkMark) {
       const href = linkMark.attrs?.href ?? '';
-      if (textNode.text === href) return href;
+      if (node.text === href) return href;
 
-      return `${textNode.text}: ${href}`;
+      return `${node.text}: ${href}`;
     }
 
-    return textNode.text ?? '';
+    return node.text ?? '';
   }
 }

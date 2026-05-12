@@ -1,23 +1,22 @@
 import { Injectable, Optional } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import {
-    AccountId,
-    FileSubmission,
-    FileSubmissionMetadata,
-    FileType,
-    ImageResizeProps,
-    PostData,
-    PostEventType,
-    SubmissionFileMetadata,
-    SubmissionType,
+  AccountId,
+  FileSubmission,
+  FileSubmissionMetadata,
+  FileType,
+  ImageResizeProps,
+  PostData,
+  PostEventType,
+  SubmissionType
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { chunk } from 'lodash';
 import {
-    FileBuffer,
-    PostRecord,
-    Submission,
-    SubmissionFile,
+  FileBuffer,
+  PostRecord,
+  Submission,
+  SubmissionFile,
 } from '../../../drizzle/models';
 import { FileConverterService } from '../../../file-converter/file-converter.service';
 import { NotificationsService } from '../../../notifications/notifications.service';
@@ -26,8 +25,8 @@ import { ValidationService } from '../../../validation/validation.service';
 import { WSGateway } from '../../../web-socket/web-socket-gateway';
 import { getSupportedFileSize } from '../../../websites/decorators/supports-files.decorator';
 import {
-    ImplementedFileWebsite,
-    isFileWebsite,
+  ImplementedFileWebsite,
+  isFileWebsite,
 } from '../../../websites/models/website-modifiers/file-website';
 import { UnknownWebsite } from '../../../websites/website';
 import { WebsiteRegistryService } from '../../../websites/website-registry.service';
@@ -157,12 +156,16 @@ export class FileSubmissionPostManager extends BasePostManager {
           ...allSourceUrls,
         ].filter((s) => !!s?.trim());
 
-        if (instance.decoratedProps.fileOptions) {
-          const { maxAltTextLength } = instance.decoratedProps.fileOptions;
-          if (f.metadata.altText.length >= maxAltTextLength) {
-            // eslint-disable-next-line no-param-reassign
-            f.metadata.altText = f.metadata.altText.slice(0, maxAltTextLength);
-          }
+        const maxAltTextLength =
+          instance.decoratedProps.fileOptions?.maxAltTextLength;
+        if (
+          typeof maxAltTextLength === 'number' &&
+          maxAltTextLength > 0 &&
+          f.metadata.altText &&
+          f.metadata.altText.length > maxAltTextLength
+        ) {
+          // eslint-disable-next-line no-param-reassign
+          f.metadata.altText = f.metadata.altText.slice(0, maxAltTextLength);
         }
 
         return f;
@@ -196,7 +199,6 @@ export class FileSubmissionPostManager extends BasePostManager {
 
       if (result.exception) {
         // Emit FILE_FAILED events for each file in the batch
-        const storedBatchIndex = batchIndex; // Capture for closure
         await Promise.all(
           batch.map((file) =>
             this.postEventRepository.insert({
@@ -211,7 +213,7 @@ export class FileSubmissionPostManager extends BasePostManager {
                 additionalInfo: result.additionalInfo,
               },
               metadata: {
-                batchNumber: storedBatchIndex,
+                batchNumber: batchIndex,
                 accountSnapshot: {
                   name: instance.account.name,
                   website: instance.decoratedProps.metadata.name,
@@ -233,7 +235,6 @@ export class FileSubmissionPostManager extends BasePostManager {
       }
 
       // Emit FILE_POSTED events for each file in the batch
-      const storedBatchIndex = batchIndex; // Capture for closure
       await Promise.all(
         batch.map((file) =>
           this.postEventRepository.insert({
@@ -243,7 +244,7 @@ export class FileSubmissionPostManager extends BasePostManager {
             fileId: file.id,
             sourceUrl: result.sourceUrl,
             metadata: {
-              batchNumber: storedBatchIndex,
+              batchNumber: batchIndex,
               accountSnapshot: {
                 name: instance.account.name,
                 website: instance.decoratedProps.metadata.name,
@@ -342,8 +343,6 @@ export class FileSubmissionPostManager extends BasePostManager {
       await file.load();
     }
 
-    const fileMetadata: SubmissionFileMetadata = file.metadata;
-    let resizeParams: ImageResizeProps | undefined;
     const { fileOptions } = instance.decoratedProps;
     const allowedMimeTypes = fileOptions.acceptedMimeTypes ?? [];
     const fileType = getFileType(file.mimeType);
@@ -361,29 +360,7 @@ export class FileSubmissionPostManager extends BasePostManager {
         );
       }
 
-      resizeParams = this.getResizeParameters(submission, instance, file);
-
-      // User defined dimensions
-      const userDefinedDimensions =
-        // eslint-disable-next-line @typescript-eslint/dot-notation
-        fileMetadata?.dimensions['default'] ??
-        fileMetadata?.dimensions[instance.accountId];
-
-      if (userDefinedDimensions) {
-        if (userDefinedDimensions.width && userDefinedDimensions.height) {
-          resizeParams = resizeParams ?? {};
-          if (
-            userDefinedDimensions.width > resizeParams.width &&
-            userDefinedDimensions.height > resizeParams.height
-          ) {
-            resizeParams = {
-              ...resizeParams,
-              width: userDefinedDimensions.width,
-              height: userDefinedDimensions.height,
-            };
-          }
-        }
-      }
+      const resizeParams = this.getResizeParameters(submission, instance, file);
 
       // We pass to resize even if no resize parameters are set
       // as it handles the bundling to PostingFile
@@ -433,28 +410,33 @@ export class FileSubmissionPostManager extends BasePostManager {
     instance: ImplementedFileWebsite,
     file: SubmissionFile,
   ): ImageResizeProps | undefined {
-    // Use website's own calculation method
-    let resizeParams = instance.calculateImageResize(file);
+    // Use website's own calculation method. Copy to avoid mutating any
+    // shared/cached object the website implementation may return.
+    const websiteParams = instance.calculateImageResize(file);
+    let resizeParams: ImageResizeProps | undefined = websiteParams
+      ? { ...websiteParams }
+      : undefined;
 
-    // Apply user-defined dimensions if set
-    const fileParams = file.metadata.dimensions?.[instance.accountId];
+    // Apply user-defined dimensions if set. Prefer per-account override,
+    // otherwise fall back to the 'default' entry.
+    // eslint-disable-next-line @typescript-eslint/dot-notation
+    const fileParams =
+      file.metadata.dimensions?.[instance.accountId] ??
+      // eslint-disable-next-line @typescript-eslint/dot-notation
+      file.metadata.dimensions?.['default'];
     if (fileParams) {
       if (fileParams.width) {
-        if (!resizeParams) {
-          resizeParams = {};
-        }
+        resizeParams = resizeParams ?? {};
         resizeParams.width = Math.min(
-          file.width,
+          file.width || Infinity,
           fileParams.width,
           resizeParams.width ?? Infinity,
         );
       }
       if (fileParams.height) {
-        if (!resizeParams) {
-          resizeParams = {};
-        }
+        resizeParams = resizeParams ?? {};
         resizeParams.height = Math.min(
-          file.height,
+          file.height || Infinity,
           fileParams.height,
           resizeParams.height ?? Infinity,
         );
@@ -465,9 +447,7 @@ export class FileSubmissionPostManager extends BasePostManager {
     if (!resizeParams?.maxBytes) {
       const supportedFileSize = getSupportedFileSize(instance, file);
       if (supportedFileSize && file.size > supportedFileSize) {
-        if (!resizeParams) {
-          resizeParams = {};
-        }
+        resizeParams = resizeParams ?? {};
         resizeParams.maxBytes = supportedFileSize;
       }
     }

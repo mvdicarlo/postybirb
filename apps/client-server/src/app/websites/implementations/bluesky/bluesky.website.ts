@@ -794,14 +794,9 @@ class BlueskyConverter extends PlainTextConverter {
     return super.convertTextNode(node, context);
   }
 
-  convertBlocks(nodes: TipTapNode[], context: ConversionContext): string {
-    // When plaintext encouters the default description it uses convertRawBlocks which calls convertBlock
-    // which returns json that ends up in user posts
-    if (nodes === context.defaultDescription)
-      return super.convertBlocks(nodes, context);
-
+  convert(nodes: TipTapNode[], context: ConversionContext): string {
     this.links = [];
-    let text = super.convertBlocks(nodes, context);
+    let text = super.convert(nodes, context);
 
     const newLinks: RichTextLinkPosition[] = [];
 

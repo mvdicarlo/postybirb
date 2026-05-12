@@ -14,7 +14,6 @@ import { HTMLElement, parse } from 'node-html-parser';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
-import HtmlParserUtil from '../../../utils/html-parser.util';
 import { PostBuilder } from '../../commons/post-builder';
 import { validatorPassthru } from '../../commons/validator-passthru';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
@@ -94,16 +93,20 @@ export default class FurAffinity
       if (res.body.includes('logout-link')) {
         const $ = parse(res.body);
         this.getFolders($);
-        const username = $.querySelector('.loggedin_user_avatar')?.getAttribute('alt');
+        const username = $.querySelector('.loggedin_user_avatar')?.getAttribute(
+          'alt',
+        );
         if (!username) {
-          this.logger.warn('Failed to find loggedin_user_avatar element during login');
+          this.logger.warn(
+            'Failed to find loggedin_user_avatar element during login',
+          );
         }
         return this.loginState.setLogin(true, username ?? null);
       }
 
       return this.loginState.setLogin(false, null);
     } catch (e) {
-      this.logger.error('Failed to login', e);
+      this.logger.withError(e).error('Failed to login');
       return this.loginState.setLogin(false, null);
     }
   }
@@ -123,20 +126,20 @@ export default class FurAffinity
           return;
         }
         const folder: SelectOption = {
-          value: el.getAttribute('value'),
-          label: el.textContent,
+          value: el.getAttribute('value') || '',
+          label: el.textContent || 'Unknown',
         };
         folders.push(folder);
         flatFolders.push(folder);
       } else {
         const optgroup: SelectOption = {
-          label: el.getAttribute('label'),
+          label: el.getAttribute('label') || 'Unknown',
           items: [],
         };
         [...el.children].forEach((opt) => {
           const f: SelectOption = {
-            value: opt.getAttribute('value'),
-            label: opt.textContent,
+            value: opt.getAttribute('value') || '',
+            label: opt.textContent || 'Unknown',
           };
           optgroup.items.push(f);
           flatFolders.push(f);
@@ -154,7 +157,7 @@ export default class FurAffinity
     return new FurAffinityFileSubmission();
   }
 
-  calculateImageResize(): ImageResizeProps {
+  calculateImageResize(): ImageResizeProps | undefined {
     return undefined;
   }
 
@@ -244,7 +247,7 @@ export default class FurAffinity
       .setField('message', postData.options.description)
       .setField('keywords', postData.options.tags.join(' '))
       .setField('rating', this.getRating(postData.options.rating))
-      .setField('atype', postData.options.theme)
+      .setField('atype', postData.options.theme || '1')
       .setField('species', postData.options.species)
       .setField('gender', postData.options.gender)
       .setConditional(
@@ -331,10 +334,6 @@ export default class FurAffinity
         )
         .withAdditionalInfo(page.body);
     }
-    const key2 = HtmlParserUtil.getInputValue(
-      page.body.split('action="/controls/journal/"').pop(),
-      'key',
-    );
     const builder = new PostBuilder(this, cancellationToken)
       .asUrlEncoded()
       .setField('key', key)
