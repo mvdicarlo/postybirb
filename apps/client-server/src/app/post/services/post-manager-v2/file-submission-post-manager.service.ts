@@ -1,23 +1,23 @@
 import { Injectable, Optional } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import {
-    AccountId,
-    FileSubmission,
-    FileSubmissionMetadata,
-    FileType,
-    ImageResizeProps,
-    PostData,
-    PostEventType,
-    SubmissionFileMetadata,
-    SubmissionType,
+  AccountId,
+  FileSubmission,
+  FileSubmissionMetadata,
+  FileType,
+  ImageResizeProps,
+  PostData,
+  PostEventType,
+  SubmissionFileMetadata,
+  SubmissionType,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { chunk } from 'lodash';
 import {
-    FileBuffer,
-    PostRecord,
-    Submission,
-    SubmissionFile,
+  FileBuffer,
+  PostRecord,
+  Submission,
+  SubmissionFile,
 } from '../../../drizzle/models';
 import { FileConverterService } from '../../../file-converter/file-converter.service';
 import { NotificationsService } from '../../../notifications/notifications.service';
@@ -26,8 +26,8 @@ import { ValidationService } from '../../../validation/validation.service';
 import { WSGateway } from '../../../web-socket/web-socket-gateway';
 import { getSupportedFileSize } from '../../../websites/decorators/supports-files.decorator';
 import {
-    ImplementedFileWebsite,
-    isFileWebsite,
+  ImplementedFileWebsite,
+  isFileWebsite,
 } from '../../../websites/models/website-modifiers/file-website';
 import { UnknownWebsite } from '../../../websites/website';
 import { WebsiteRegistryService } from '../../../websites/website-registry.service';
@@ -366,22 +366,23 @@ export class FileSubmissionPostManager extends BasePostManager {
       // User defined dimensions
       const userDefinedDimensions =
         // eslint-disable-next-line @typescript-eslint/dot-notation
-        fileMetadata?.dimensions['default'] ??
-        fileMetadata?.dimensions[instance.accountId];
+        fileMetadata?.dimensions?.['default'] ??
+        fileMetadata?.dimensions?.[instance.accountId];
 
       if (userDefinedDimensions) {
         if (userDefinedDimensions.width && userDefinedDimensions.height) {
           resizeParams = resizeParams ?? {};
-          if (
-            userDefinedDimensions.width > resizeParams.width &&
-            userDefinedDimensions.height > resizeParams.height
-          ) {
-            resizeParams = {
-              ...resizeParams,
-              width: userDefinedDimensions.width,
-              height: userDefinedDimensions.height,
-            };
-          }
+          resizeParams = {
+            ...resizeParams,
+            width: Math.min(
+              userDefinedDimensions.width,
+              resizeParams.width ?? Infinity,
+            ),
+            height: Math.min(
+              userDefinedDimensions.height,
+              resizeParams.height ?? Infinity,
+            ),
+          };
         }
       }
 
