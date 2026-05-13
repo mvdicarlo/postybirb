@@ -9,21 +9,22 @@ import { navItems } from '../../config/nav-items';
 import { useKeybindings } from '../../hooks/use-keybindings';
 import { useViewState } from '../../stores/ui/navigation-store';
 import {
-  useSidenavCollapsed,
-  useSubNavVisible,
-  useSubmissionsUIStore,
+    useSidenavCollapsed,
+    useSubNavVisible,
+    useSubmissionsUIStore,
 } from '../../stores/ui/submissions-ui-store';
 import '../../styles/layout.css';
 import { cn } from '../../utils/class-names';
 import {
-  CustomShortcutsDrawer,
-  FileWatcherDrawer,
-  NotificationsDrawer,
-  ScheduleDrawer,
-  SettingsDialog,
-  TagConverterDrawer,
-  TagGroupDrawer,
-  UserConverterDrawer,
+    CustomShortcutsDrawer,
+    FileWatcherDrawer,
+    GlobalSubmissionHistoryDrawer,
+    NotificationsDrawer,
+    ScheduleDrawer,
+    SettingsDialog,
+    TagConverterDrawer,
+    TagGroupDrawer,
+    UserConverterDrawer,
 } from '../drawers/drawers';
 import { PrimaryContent } from './primary-content';
 import { SectionPanel } from './section-panel';
@@ -73,6 +74,7 @@ export function Layout() {
         <CustomShortcutsDrawer />
         <FileWatcherDrawer />
         <ScheduleDrawer />
+        <GlobalSubmissionHistoryDrawer />
       </Box>
     </Box>
   );

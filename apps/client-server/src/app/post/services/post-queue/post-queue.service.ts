@@ -1,16 +1,16 @@
 import {
-  Injectable,
-  InternalServerErrorException,
-  OnModuleInit,
-  Optional,
+    Injectable,
+    InternalServerErrorException,
+    OnModuleInit,
+    Optional,
 } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import {
-  EntityId,
-  PostRecordResumeMode,
-  PostRecordState,
-  ScheduleType,
-  SubmissionId,
+    EntityId,
+    PostRecordResumeMode,
+    PostRecordState,
+    ScheduleType,
+    SubmissionId,
 } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/electron';
 import { Mutex } from 'async-mutex';
@@ -285,7 +285,7 @@ export class PostQueueService
         tags: ['post-success'],
         data: {
           submissionId: record.submissionId,
-          type: submission.type,
+          submissionType: submission.type,
         },
       });
     } else if (record.state === PostRecordState.FAILED) {
@@ -322,7 +322,7 @@ export class PostQueueService
         tags: ['post-incomplete'],
         data: {
           submissionId: record.submissionId,
-          type: submission.type,
+          submissionType: submission.type,
           failedCount: failedEventCount,
         },
       });

@@ -16,8 +16,8 @@ import {
   DeleteSelectedKeybinding,
   toTinykeysFormat,
 } from '../../../config/keybindings';
-import { SubmissionRecord } from '../../../stores';
 import { useSubmissionsLoading } from '../../../stores/entity/submission-store';
+import { useSubmissionHistoryDrawerStore } from '../../../stores/ui/submission-history-drawer-store';
 import { ConfirmActionModal } from '../../confirm-action-modal';
 import { ArchivedSubmissionList } from './archived-submission-list';
 import { SubmissionsProvider } from './context';
@@ -30,7 +30,6 @@ import {
 } from './hooks';
 import { PostConfirmModal } from './post-confirm-modal';
 import { ResumeModeModal } from './resume-mode-modal';
-import { SubmissionHistoryDrawer } from './submission-history-drawer';
 import { SubmissionList } from './submission-list';
 import { SubmissionSectionHeader } from './submission-section-header';
 import './submissions-section.css';
@@ -54,12 +53,8 @@ export function SubmissionsSection({
   const [activeTab, setActiveTab] = useState<SubmissionTab>('submissions');
 
   // Get filtered and ordered submissions
-  const {
-    allSubmissions,
-    orderedSubmissions,
-    setOrderedSubmissions,
-    isDragEnabled,
-  } = useSubmissions({ submissionType });
+  const { orderedSubmissions, setOrderedSubmissions, isDragEnabled } =
+    useSubmissions({ submissionType });
 
   // Selection management
   const { selectedIds, selectionState, handleSelect, handleToggleSelectAll } =
@@ -71,7 +66,7 @@ export function SubmissionsSection({
   // Get selected submission records for bulk actions
   const selectedSubmissions = useMemo(
     () => orderedSubmissions.filter((s) => selectedIds.includes(s.id)),
-    [orderedSubmissions, selectedIds]
+    [orderedSubmissions, selectedIds],
   );
 
   // Action handlers
@@ -119,10 +114,6 @@ export function SubmissionsSection({
   // Post confirmation modal
   const [postModalOpened, postModal] = useDisclosure(false);
 
-  // History drawer state
-  const [historySubmission, setHistorySubmission] =
-    useState<SubmissionRecord | null>(null);
-
   // Handle delete with confirmation
   const handleDeleteWithConfirm = useCallback(() => {
     if (selectedIds.length > 0) {
@@ -162,19 +153,9 @@ export function SubmissionsSection({
     return unsubscribe;
   }, [selectedIds.length, deleteModal]);
 
-  // Handle view history - find submission by id and open drawer
-  const handleViewHistory = useCallback(
-    (id: string) => {
-      const submission = allSubmissions.find((s) => s.id === id);
-      if (submission) {
-        setHistorySubmission(submission);
-      }
-    },
-    [allSubmissions],
-  );
-
-  const handleCloseHistory = useCallback(() => {
-    setHistorySubmission(null);
+  // Handle view history - open the global history drawer
+  const handleViewHistory = useCallback((id: string) => {
+    useSubmissionHistoryDrawerStore.getState().open(id);
   }, []);
 
   // Get the appropriate icon for the submissions tab
@@ -298,13 +279,6 @@ export function SubmissionsSection({
           <ArchivedSubmissionList submissionType={submissionType} />
         )}
       </SubmissionsProvider>
-
-      {/* History drawer */}
-      <SubmissionHistoryDrawer
-        opened={historySubmission !== null}
-        onClose={handleCloseHistory}
-        submission={historySubmission}
-      />
 
       {/* Resume mode modal */}
       <ResumeModeModal
