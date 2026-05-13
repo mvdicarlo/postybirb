@@ -3,7 +3,7 @@ import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import { AccountSchema } from './account.schema';
 import { CommonSchema, id } from './common.schema';
 import { SubmissionSchema } from './submission.schema';
-// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { IWebsiteFormFields } from '../../../../types/src/index';
 
 export const WebsiteOptionsSchema = sqliteTable('website-options', {
