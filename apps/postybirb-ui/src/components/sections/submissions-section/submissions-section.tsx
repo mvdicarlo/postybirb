@@ -13,8 +13,8 @@ import { IconArchive, IconFiles, IconMessage } from '@tabler/icons-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { tinykeys } from 'tinykeys';
 import {
-    DeleteSelectedKeybinding,
-    toTinykeysFormat,
+  DeleteSelectedKeybinding,
+  toTinykeysFormat,
 } from '../../../config/keybindings';
 import { useSubmissionsLoading } from '../../../stores/entity/submission-store';
 import { useSubmissionHistoryDrawerStore } from '../../../stores/ui/submission-history-drawer-store';
@@ -23,13 +23,14 @@ import { ArchivedSubmissionList } from './archived-submission-list';
 import { SubmissionsProvider } from './context';
 import { FileSubmissionModal } from './file-submission-modal';
 import {
-    useGlobalDropzone,
-    useSubmissionHandlers,
-    useSubmissions,
-    useSubmissionSelection,
+  useGlobalDropzone,
+  useSubmissionHandlers,
+  useSubmissions,
+  useSubmissionSelection,
 } from './hooks';
 import { PostConfirmModal } from './post-confirm-modal';
 import { ResumeModeModal } from './resume-mode-modal';
+import { SubmissionList } from './submission-list';
 import { SubmissionSectionHeader } from './submission-section-header';
 import './submissions-section.css';
 import type { SubmissionsSectionProps } from './types';
@@ -52,11 +53,8 @@ export function SubmissionsSection({
   const [activeTab, setActiveTab] = useState<SubmissionTab>('submissions');
 
   // Get filtered and ordered submissions
-  const {
-    orderedSubmissions,
-    setOrderedSubmissions,
-    isDragEnabled,
-  } = useSubmissions({ submissionType });
+  const { orderedSubmissions, setOrderedSubmissions, isDragEnabled } =
+    useSubmissions({ submissionType });
 
   // Selection management
   const { selectedIds, selectionState, handleSelect, handleToggleSelectAll } =
@@ -68,7 +66,7 @@ export function SubmissionsSection({
   // Get selected submission records for bulk actions
   const selectedSubmissions = useMemo(
     () => orderedSubmissions.filter((s) => selectedIds.includes(s.id)),
-    [orderedSubmissions, selectedIds]
+    [orderedSubmissions, selectedIds],
   );
 
   // Action handlers
@@ -156,12 +154,9 @@ export function SubmissionsSection({
   }, [selectedIds.length, deleteModal]);
 
   // Handle view history - open the global history drawer
-  const handleViewHistory = useCallback(
-    (id: string) => {
-      useSubmissionHistoryDrawerStore.getState().open(id);
-    },
-    [],
-  );
+  const handleViewHistory = useCallback((id: string) => {
+    useSubmissionHistoryDrawerStore.getState().open(id);
+  }, []);
 
   // Get the appropriate icon for the submissions tab
   const SubmissionsIcon =
