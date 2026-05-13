@@ -3,13 +3,14 @@
  * Handles both data storage and UI notification display.
  */
 
-import type { MantineColor } from '@mantine/core';
+import { Anchor, type MantineColor } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { NOTIFICATION_UPDATES } from '@postybirb/socket-events';
 import type { INotification } from '@postybirb/types';
 import { useShallow } from 'zustand/react/shallow';
 import notificationApi from '../../api/notification.api';
 import AppSocket from '../../transports/websocket';
+import { navigateToSubmissionHistory } from '../../utils/navigate-to-submission-history';
 import { createEntityStore, type EntityStore } from '../create-entity-store';
 import { NotificationRecord } from '../records';
 
@@ -51,11 +52,35 @@ function showUINotification(notification: INotification): void {
   const id = `notification-${notification.id}`;
   const color = getNotificationColor(notification.type);
 
+  const submissionId = notification.data?.submissionId as string | undefined;
+
+  const message = submissionId ? (
+    <div>
+      <div>{notification.message}</div>
+      <Anchor
+        size="xs"
+        mt={4}
+        onClick={(e: React.MouseEvent) => {
+          e.stopPropagation();
+          notifications.hide(id);
+          navigateToSubmissionHistory(submissionId);
+        }}
+      >
+        {
+          // eslint-disable-next-line lingui/no-unlocalized-strings
+          'View Error →'
+        }
+      </Anchor>
+    </div>
+  ) : (
+    notification.message
+  );
+
   notifications.show({
     id,
     // eslint-disable-next-line lingui/no-unlocalized-strings
     title: notification.title || 'Notification',
-    message: notification.message,
+    message,
     autoClose: true,
     color,
     onClose: () => {

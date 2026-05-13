@@ -12,9 +12,9 @@ import { PostHistoryContent } from '../submission-history';
 import { SubmissionEditCardActions } from './actions';
 import { SubmissionEditCardBody } from './body';
 import {
-    SubmissionEditCardProvider,
-    useSubmissionEditCardContext,
-    type SubmissionEditCardViewMode,
+  SubmissionEditCardProvider,
+  useSubmissionEditCardContext,
+  type SubmissionEditCardViewMode,
 } from './context';
 import { SubmissionEditCardHeader } from './header';
 import './submission-edit-card.css';
