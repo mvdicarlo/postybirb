@@ -179,6 +179,7 @@
     "telegram": "^2.26.22",
     "tinykeys": "^3.0.0",
     "tippy.js": "^6.3.7",
+    "ts-node": "^10.9.2",
     "tslib": "2.5.2",
     "turndown": "^7.2.0",
     "twitter-api-v2": "^1.27.0",
