@@ -11,6 +11,8 @@ import { SubmissionSchema } from './submission.schema';
 
 export const PostRecordSchema = sqliteTable('post-record', {
   ...CommonSchema(),
+  version: text(),
+
   submissionId: id().references(() => SubmissionSchema.id, {
     onDelete: 'cascade',
   }),

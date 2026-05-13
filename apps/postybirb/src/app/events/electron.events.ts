@@ -4,21 +4,12 @@
  */
 
 import { app, dialog, ipcMain, session, shell } from 'electron';
-import { environment } from '../../environments/environment';
 
 export default class ElectronEvents {
   static bootstrapElectronEvents(): Electron.IpcMain {
     return ipcMain;
   }
 }
-
-// Retrieve app version
-ipcMain.handle('get-app-version', () => {
-  // eslint-disable-next-line no-console
-  console.log(`Fetching application version... [v${environment.version}]`);
-
-  return environment.version;
-});
 
 // Return cookies for account, bundled as base64
 ipcMain.handle('get-cookies-for-account', async (event, accountId: string) => {

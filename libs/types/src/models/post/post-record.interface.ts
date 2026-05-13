@@ -10,6 +10,8 @@ import { IPostQueueRecord } from './post-queue-record.interface';
  * @extends {IEntity}
  */
 export interface IPostRecord extends IEntity {
+  version?: string;
+
   submissionId: SubmissionId;
 
   /**
