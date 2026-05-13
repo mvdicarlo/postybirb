@@ -145,7 +145,7 @@ export default class Main {
 
   static async bootstrapClientServer(): Promise<INestApplication> {
     return (
-      // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
+      // eslint-disable-next-line @nx/enforce-module-boundaries
       (await import('apps/client-server/src/main')).bootstrapClientServer()
     );
   }

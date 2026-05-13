@@ -1,7 +1,7 @@
 import { relations } from 'drizzle-orm';
 import { index, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import { v4 } from 'uuid';
-// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import {
   IPostEventError,
   IPostEventMetadata,

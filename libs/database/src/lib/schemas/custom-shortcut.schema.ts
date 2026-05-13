@@ -1,6 +1,6 @@
 import { sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import { CommonSchema } from './common.schema';
-// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import {
     Description,
 } from '../../../../types/src/index';
