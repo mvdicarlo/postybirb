@@ -4,14 +4,6 @@ import { Logger, PostyBirbLogger } from '@postybirb/logger';
 const GRAPH_API_BASE = 'https://graph.instagram.com/v21.0';
 
 /**
- * Build the OAuth redirect URI pointing to PostyBirb's own server.
- * The port must match the running PostyBirb server port.
- */
-export function getInstagramRedirectUri(port: string | number): string {
-  return `https://localhost:${port}/api/websites/instagram/callback`;
-}
-
-/**
  * Temporary in-memory store for OAuth authorization codes.
  * Maps state nonce → { code, timestamp }.
  * Codes expire after 5 minutes.
@@ -147,11 +139,14 @@ export class InstagramApiService {
       code,
     });
 
-    const response = await fetch('https://api.instagram.com/oauth/access_token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: params.toString(),
-    });
+    const response = await fetch(
+      'https://api.instagram.com/oauth/access_token',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params.toString(),
+      },
+    );
     const data = await response.json();
 
     if (data.error) {
@@ -190,9 +185,7 @@ export class InstagramApiService {
         'Long-lived token exchange failed',
         data.error,
       );
-      throw new Error(
-        data.error.message || 'Failed to get long-lived token',
-      );
+      throw new Error(data.error.message || 'Failed to get long-lived token');
     }
 
     return {
@@ -328,9 +321,7 @@ export class InstagramApiService {
         'Failed to create image container',
         data.error,
       );
-      throw new Error(
-        data.error.message || 'Failed to create image container',
-      );
+      throw new Error(data.error.message || 'Failed to create image container');
     }
 
     return { id: data.id };
@@ -388,9 +379,7 @@ export class InstagramApiService {
     const data = await response.json();
 
     if (data.error) {
-      throw new Error(
-        data.error.message || 'Failed to check container status',
-      );
+      throw new Error(data.error.message || 'Failed to check container status');
     }
 
     return data.status_code as InstagramContainerStatus;
@@ -468,10 +457,7 @@ export class InstagramApiService {
     const data = await response.json();
 
     if (data.error) {
-      InstagramApiService.logger.error(
-        'Failed to publish media',
-        data.error,
-      );
+      InstagramApiService.logger.error('Failed to publish media', data.error);
       throw new Error(data.error.message || 'Failed to publish media');
     }
 
