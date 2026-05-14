@@ -14,10 +14,7 @@ import {
   TextInput,
   Title,
 } from '@mantine/core';
-import {
-  InstagramAccountData,
-  InstagramOAuthRoutes,
-} from '@postybirb/types';
+import { InstagramAccountData, InstagramOAuthRoutes } from '@postybirb/types';
 import {
   IconArrowLeft,
   IconCheck,
@@ -27,7 +24,7 @@ import {
 } from '@tabler/icons-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import websitesApi from '../../../api/websites.api';
-import { showSuccessNotification } from '../../../utils';
+import { showErrorNotification, showSuccessNotification } from '../../../utils';
 import type { WebviewTag } from '../../sections/accounts-section/webview-tag';
 import {
   createLoginHttpErrorHandler,
@@ -36,7 +33,12 @@ import {
 } from '../helpers';
 import { LoginViewContainer } from '../login-view-container';
 import type { LoginViewProps } from '../types';
-import { InstagramSetupGuide } from './instagram-setup-guide';
+import {
+  getInstagramRedirectUri,
+  getInstagramRedirectUriError,
+  instagramCallbackPath,
+  InstagramSetupGuide,
+} from './instagram-setup-guide';
 
 export default function InstagramLoginView(
   props: LoginViewProps<InstagramAccountData>,
@@ -61,6 +63,8 @@ export default function InstagramLoginView(
   const codeHandledRef = useRef(false);
 
   const keysReady = appId.trim().length > 0 && appSecret.trim().length > 0;
+
+  const redirectUri = getInstagramRedirectUri();
 
   // Reset all state when switching between accounts
   const prevIdRef = useRef(id);
@@ -128,13 +132,18 @@ export default function InstagramLoginView(
   // Exchange the authorization code for tokens
   const doExchangeCode = useCallback(
     (code: string) => {
+      if (!redirectUri) {
+        showErrorNotification(getInstagramRedirectUriError());
+        return;
+      }
+
       if (isExchangingCode) return;
       setIsExchangingCode(true);
       websitesApi
         .performOAuthStep<InstagramOAuthRoutes, 'exchangeCode'>(
           id,
           'exchangeCode',
-          { code },
+          { code, redirectUri },
         )
         .then((res) => {
           if (res.success) {
@@ -169,27 +178,27 @@ export default function InstagramLoginView(
     const webview = webviewRef.current;
     if (!webview || !authUrl) return undefined;
 
-    const callbackPath = '/api/websites/instagram/callback';
-
     const handleNavigate = (event: Electron.DidNavigateEvent) => {
       if (codeHandledRef.current) return;
 
+      let url;
       try {
-        const url = new URL(event.url);
-        if (url.pathname === callbackPath) {
-          const code = url.searchParams.get('code');
-          const error = url.searchParams.get('error');
-
-          if (code) {
-            codeHandledRef.current = true;
-            doExchangeCode(code);
-          } else if (error) {
-            const desc = url.searchParams.get('error_description') || error;
-            notifyLoginFailed(desc);
-          }
-        }
+        url = new URL(event.url);
       } catch {
         // Not a valid URL, ignore
+      }
+
+      if (url?.pathname === instagramCallbackPath) {
+        const code = url.searchParams.get('code');
+        const error = url.searchParams.get('error');
+
+        if (code) {
+          codeHandledRef.current = true;
+          doExchangeCode(code);
+        } else if (error) {
+          const desc = url.searchParams.get('error_description') || error;
+          notifyLoginFailed(desc);
+        }
       }
     };
 
@@ -236,9 +245,7 @@ export default function InstagramLoginView(
               </Group>
               {tokenExpiry && (
                 <Text size="xs" c="dimmed">
-                  <Trans>
-                    Token expires: {formatExpiry(tokenExpiry)}
-                  </Trans>
+                  <Trans>Token expires: {formatExpiry(tokenExpiry)}</Trans>
                 </Text>
               )}
               <Button
@@ -274,6 +281,14 @@ export default function InstagramLoginView(
               >
                 <Trans>Refresh Token</Trans>
               </Button>
+            </Stack>
+          </Alert>
+        )}
+
+        {!redirectUri && (
+          <Alert color="red">
+            <Stack>
+              <Text>{getInstagramRedirectUriError()}</Text>
             </Stack>
           </Alert>
         )}
@@ -320,10 +335,11 @@ export default function InstagramLoginView(
                     onClick={() => {
                       setIsStoringKeys(true);
                       websitesApi
-                        .performOAuthStep<
-                          InstagramOAuthRoutes,
-                          'setAppCredentials'
-                        >(id, 'setAppCredentials', { appId, appSecret })
+                        .performOAuthStep<InstagramOAuthRoutes>(
+                          id,
+                          'setAppCredentials',
+                          { appId, appSecret },
+                        )
                         .then(() => {
                           setKeysStored(true);
                           setActiveStep(1);
@@ -380,13 +396,18 @@ export default function InstagramLoginView(
                       loading={isGettingAuthUrl}
                       leftSection={<IconLogin size={16} />}
                       onClick={() => {
+                        if (!redirectUri) {
+                          showErrorNotification(getInstagramRedirectUriError());
+                          return;
+                        }
                         setIsGettingAuthUrl(true);
                         codeHandledRef.current = false;
                         websitesApi
-                          .performOAuthStep<
-                            InstagramOAuthRoutes,
-                            'getAuthUrl'
-                          >(id, 'getAuthUrl', {})
+                          .performOAuthStep<InstagramOAuthRoutes, 'getAuthUrl'>(
+                            id,
+                            'getAuthUrl',
+                            { redirectUri },
+                          )
                           .then((res) => {
                             if (res.success && res.url) {
                               setAuthUrl(res.url);
