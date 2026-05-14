@@ -175,13 +175,22 @@ export const instagramCallbackPath = '/api/websites/instagram/callback';
 export function getInstagramRedirectUri() {
   const baseUrl = getBaseUrl();
   const url = new URL(baseUrl);
-  if (url.hostname !== 'localhost' && !url.hostname.includes('.')) return null;
+  const isCustomLocalHostname =
+    // Custom hostnames like https://MYHOSTNAME or https://myhostname.local are not permitted,
+    // see https://github.com/mvdicarlo/postybirb/issues/760
+    (!url.hostname.includes('.') || url.hostname.endsWith('.local')) &&
+    // Localhost is allowed
+    url.hostname !== 'localhost';
+
+  if (isCustomLocalHostname) return null;
 
   return `${baseUrl}${instagramCallbackPath}`;
 }
 
 export function getInstagramRedirectUriError() {
-  return `Instagram does not support URLs with system hostnames: ${getBaseUrl()}. Please use direct ip for host in the remote settings instead.`;
+  // If someone's tech savvy enough to set up a remote on their network and use custom local hostnames
+  // it's safe to assume they'd know what that means
+  return `Instagram does not support URLs with custom local hostnames: ${getBaseUrl()}. Please use direct ip for host in the remote settings instead.`;
 }
 
 export function InstagramSetupGuide() {
