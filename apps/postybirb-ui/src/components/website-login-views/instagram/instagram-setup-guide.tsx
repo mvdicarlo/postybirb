@@ -170,6 +170,20 @@ function saveCheckedState(state: Record<string, boolean>) {
   }
 }
 
+export const instagramCallbackPath = '/api/websites/instagram/callback';
+
+export function getInstagramRedirectUri() {
+  const baseUrl = getBaseUrl();
+  const url = new URL(baseUrl);
+  if (url.hostname === 'localhost' && !url.hostname.includes('.')) return null;
+
+  return `${baseUrl}${instagramCallbackPath}`;
+}
+
+export function getInstagramRedirectUriError() {
+  return `Instagram does not support URLs with system hostnames: ${getBaseUrl()}. Please use direct ip for host in the remote settings instead.`;
+}
+
 export function InstagramSetupGuide() {
   const [checked, setChecked] =
     useState<Record<string, boolean>>(loadCheckedState);
@@ -336,7 +350,8 @@ export function InstagramSetupGuide() {
                               userSelect: 'all',
                             }}
                           >
-                            {`${getBaseUrl()}/api/websites/instagram/callback`}
+                            {getInstagramRedirectUri() ||
+                              getInstagramRedirectUriError()}
                           </Code>
                         )}
                       </div>
