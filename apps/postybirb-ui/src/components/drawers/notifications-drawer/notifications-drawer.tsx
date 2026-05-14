@@ -6,43 +6,46 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-    ActionIcon,
-    Badge,
-    Box,
-    Card,
-    Checkbox,
-    Group,
-    SegmentedControl,
-    Stack,
-    Text,
-    Tooltip,
+  ActionIcon,
+  Anchor,
+  Badge,
+  Box,
+  Card,
+  Checkbox,
+  Group,
+  SegmentedControl,
+  Stack,
+  Text,
+  Tooltip,
 } from '@mantine/core';
 import {
-    IconAlertTriangle,
-    IconBell,
-    IconCheck,
-    IconCircleCheck,
-    IconExclamationCircle,
-    IconHelp,
-    IconMail,
-    IconMailOpened,
-    IconTrash,
+  IconAlertTriangle,
+  IconBell,
+  IconCheck,
+  IconCircleCheck,
+  IconExclamationCircle,
+  IconExternalLink,
+  IconHelp,
+  IconMail,
+  IconMailOpened,
+  IconTrash,
 } from '@tabler/icons-react';
 import React, { useCallback, useMemo, useState } from 'react';
 import notificationApi from '../../../api/notification.api';
 import { useLocale } from '../../../hooks';
 import {
-    useNotifications,
-    useUnreadNotificationCount,
+  useNotifications,
+  useUnreadNotificationCount,
 } from '../../../stores/entity/notification-store';
 import type { NotificationRecord } from '../../../stores/records';
 import { useActiveDrawer, useDrawerActions } from '../../../stores/ui/drawer-store';
 import { useTourActions } from '../../../stores/ui/tour-store';
+import { navigateToSubmissionHistory } from '../../../utils/navigate-to-submission-history';
 import {
-    showDeletedNotification,
-    showDeleteErrorNotification,
-    showSuccessNotification,
-    showUpdateErrorNotification,
+  showDeletedNotification,
+  showDeleteErrorNotification,
+  showSuccessNotification,
+  showUpdateErrorNotification,
 } from '../../../utils/notifications';
 import { EmptyState } from '../../empty-state';
 import { HoldToConfirmButton } from '../../hold-to-confirm';
@@ -334,14 +337,26 @@ const NotificationCard = React.memo(({
   isSelected,
   onSelect,
   formatRelativeTime,
+  onNavigate,
 }: {
   notification: NotificationRecord;
   isSelected: boolean;
   onSelect: (id: string, selected: boolean) => void;
   formatRelativeTime: (date: Date | string) => string;
+  onNavigate?: () => void;
 }) => {
   const color = getTypeColor(notification.type);
   const icon = getTypeIcon(notification.type);
+
+  const submissionId = notification.data?.submissionId as string | undefined;
+  const hasSubmissionLink = Boolean(submissionId);
+
+  const handleViewError = useCallback(() => {
+    if (submissionId) {
+      navigateToSubmissionHistory(submissionId);
+      onNavigate?.();
+    }
+  }, [submissionId, onNavigate]);
 
   const handleToggleRead = useCallback(async () => {
     try {
@@ -401,6 +416,14 @@ const NotificationCard = React.memo(({
               ))}
             </Group>
           )}
+          {hasSubmissionLink && (
+            <Anchor size="xs" onClick={handleViewError}>
+              <Group gap={4} wrap="nowrap">
+                <IconExternalLink size={12} />
+                <Trans>View Error</Trans>
+              </Group>
+            </Anchor>
+          )}
         </Stack>
         <Group gap={4}>
           <Tooltip
@@ -449,12 +472,14 @@ function NotificationList({
   onSelect,
   onSelectAll,
   formatRelativeTime,
+  onNavigate,
 }: {
   notifications: NotificationRecord[];
   selectedIds: Set<string>;
   onSelect: (id: string, selected: boolean) => void;
   onSelectAll: (selected: boolean) => void;
   formatRelativeTime: (date: Date | string) => string;
+  onNavigate?: () => void;
 }) {
   const allSelected =
     notifications.length > 0 && selectedIds.size === notifications.length;
@@ -482,6 +507,7 @@ function NotificationList({
           isSelected={selectedIds.has(notification.id)}
           onSelect={onSelect}
           formatRelativeTime={formatRelativeTime}
+          onNavigate={onNavigate}
         />
       ))}
     </Stack>
@@ -601,6 +627,7 @@ function NotificationsDrawerContent({ onClose }: { onClose: () => void }) {
             onSelect={handleSelect}
             onSelectAll={handleSelectAll}
             formatRelativeTime={formatRelativeTime}
+            onNavigate={onClose}
           />
         </Box>
       </Stack>

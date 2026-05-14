@@ -19,13 +19,7 @@ interface RemoteConfig {
   mode: 'client' | 'host' | null;
 }
 
-let cachedConfig: RemoteConfig = {
-  host: localStorage.getItem(REMOTE_HOST_KEY),
-  password: localStorage.getItem(REMOTE_PASSWORD_KEY),
-  mode: localStorage.getItem(REMOTE_MODE_KEY) as 'client' | 'host' | null,
-};
-
-export const getRemoteConfig = (): RemoteConfig => cachedConfig;
+let cachedConfig: RemoteConfig;
 
 /**
  * Re-read remote host / password from localStorage.
@@ -40,6 +34,10 @@ export const refreshRemoteConfig = () => {
   };
 };
 
+refreshRemoteConfig();
+
+export const getRemoteConfig = (): RemoteConfig => cachedConfig;
+
 // Keep the cache in sync when another tab/window changes the values.
 window.addEventListener('storage', (e) => {
   if (e.key === REMOTE_HOST_KEY || e.key === REMOTE_PASSWORD_KEY) {
@@ -47,10 +45,12 @@ window.addEventListener('storage', (e) => {
   }
 });
 
+export const isRemote = () =>
+  cachedConfig.mode === 'client' && cachedConfig.host?.trim();
+
 export const getBaseUrl = () => {
-  const remoteUrl = cachedConfig.host;
-  if (remoteUrl?.trim()) {
-    return `https://${remoteUrl}`;
+  if (isRemote()) {
+    return `https://${cachedConfig.host}`;
   }
 
   return `https://localhost:${window.electron.app_port}`;

@@ -1,7 +1,6 @@
 import { RemoteConfig } from '@postybirb/utils/electron';
 
 export interface PreloadBridge {
-  getAppVersion(): Promise<string>;
   getLanIp(): Promise<string | undefined>;
   getRemoteConfig(): RemoteConfig;
   pickDirectory?(): Promise<string | undefined>;

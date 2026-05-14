@@ -4,7 +4,6 @@
 
 import { Trans } from '@lingui/react/macro';
 import { ActionIcon, Group, Tooltip } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
 import {
     IconArchiveOff,
     IconCancel,
@@ -16,6 +15,7 @@ import {
 import postManagerApi from '../../../../../api/post-manager.api';
 import postQueueApi from '../../../../../api/post-queue.api';
 import submissionApi from '../../../../../api/submission.api';
+import { useSubmissionHistoryDrawerStore } from '../../../../../stores/ui/submission-history-drawer-store';
 import { useTourActions } from '../../../../../stores/ui/tour-store';
 import {
     showDeletedNotification,
@@ -26,7 +26,6 @@ import {
 } from '../../../../../utils/notifications';
 import { HoldToConfirmButton } from '../../../../hold-to-confirm';
 import { SUBMISSION_EDIT_TOUR_ID } from '../../../../onboarding-tour/tours/submission-edit-tour';
-import { SubmissionHistoryDrawer } from '../../submission-history-drawer';
 import { useSubmissionEditCardContext } from '../context';
 import { ApplyTemplateAction } from './apply-template-action';
 import { SaveToManyAction } from './save-to-many-action';
@@ -37,8 +36,6 @@ import { SaveToManyAction } from './save-to-many-action';
 export function SubmissionEditCardActions() {
   const { submission } = useSubmissionEditCardContext();
   const { startTour } = useTourActions();
-  // Drawer is only used for archived submissions (list-level context)
-  const [historyOpened, historyDrawer] = useDisclosure(false);
 
   const handlePost = async () => {
     try {
@@ -87,14 +84,13 @@ export function SubmissionEditCardActions() {
   if (submission.isArchived) {
     const hasHistory = submission.posts.length > 0;
     return (
-      <>
-        <Group gap={4} wrap="nowrap" onClick={(e) => e.stopPropagation()}>
+      <Group gap={4} wrap="nowrap" onClick={(e) => e.stopPropagation()}>
           {hasHistory && (
             <Tooltip label={<Trans>View history</Trans>}>
               <ActionIcon
                 variant="subtle"
                 size="sm"
-                onClick={historyDrawer.open}
+                onClick={() => useSubmissionHistoryDrawerStore.getState().open(submission.id)}
               >
                 <IconHistory size={16} />
               </ActionIcon>
@@ -121,14 +117,6 @@ export function SubmissionEditCardActions() {
             </HoldToConfirmButton>
           </Tooltip>
         </Group>
-
-        {/* History drawer */}
-        <SubmissionHistoryDrawer
-          opened={historyOpened}
-          onClose={historyDrawer.close}
-          submission={submission}
-        />
-      </>
     );
   }
 
