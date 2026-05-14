@@ -75,7 +75,7 @@ export function isRemote() {
 /**
  * @returns Url of the server app is currently connected to, either local or remote if configured
  *
- * @example https://localhost:9478
+ * @example https://localhost:9487
  * @example https://mydomain.com
  * @example https://192.168.3.1:8080
  */

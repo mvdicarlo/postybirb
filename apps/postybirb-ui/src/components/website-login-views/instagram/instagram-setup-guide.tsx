@@ -175,7 +175,7 @@ export const instagramCallbackPath = '/api/websites/instagram/callback';
 export function getInstagramRedirectUri() {
   const baseUrl = getBaseUrl();
   const url = new URL(baseUrl);
-  if (url.hostname === 'localhost' && !url.hostname.includes('.')) return null;
+  if (url.hostname !== 'localhost' && !url.hostname.includes('.')) return null;
 
   return `${baseUrl}${instagramCallbackPath}`;
 }
@@ -340,20 +340,22 @@ export function InstagramSetupGuide() {
                           }}
                         />
                         {/* Show redirect URL inline for step 2c-2 */}
-                        {step.id === '2c-2' && (
-                          <Code
-                            block
-                            style={{
-                              marginTop: 4,
-                              marginLeft: 30,
-                              fontSize: 12,
-                              userSelect: 'all',
-                            }}
-                          >
-                            {getInstagramRedirectUri() ||
-                              getInstagramRedirectUriError()}
-                          </Code>
-                        )}
+                        {step.id === '2c-2' &&
+                          (getInstagramRedirectUri() ? (
+                            <Code
+                              block
+                              style={{
+                                marginTop: 4,
+                                marginLeft: 30,
+                                fontSize: 12,
+                                userSelect: 'all',
+                              }}
+                            >
+                              {getInstagramRedirectUri()}
+                            </Code>
+                          ) : (
+                            <Text>{getInstagramRedirectUriError()}</Text>
+                          ))}
                       </div>
                     ))}
                   </Stack>
