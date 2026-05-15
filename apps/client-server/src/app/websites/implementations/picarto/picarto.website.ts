@@ -7,7 +7,6 @@ import {
   PostResponse,
   SubmissionRating,
 } from '@postybirb/types';
-import { BrowserWindowUtils } from '@postybirb/utils/electron';
 import { calculateImageResize } from '@postybirb/utils/file-type';
 import { mutation, query } from 'gql-query-builder';
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -55,7 +54,7 @@ export default class Picarto
   public async onLogin(): Promise<ILoginState> {
     // Load the site and read localStorage to find the auth payload
     try {
-      const ls = await BrowserWindowUtils.getLocalStorage<{
+      const ls = await this.platform.browser.getLocalStorage<{
         auth?: string;
       }>(this.accountId, this.BASE_URL, 3000);
 

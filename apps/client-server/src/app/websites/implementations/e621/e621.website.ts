@@ -14,7 +14,6 @@ import {
   SubmissionRating,
   TipTapNode,
 } from '@postybirb/types';
-import { app } from 'electron';
 import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
 import { BBCodeConverter } from '../../../post-parsers/models/description-node/converters/bbcode-converter';
 import { ConversionContext } from '../../../post-parsers/models/description-node/description-node.base';
@@ -111,7 +110,9 @@ export default class E621
     return new E621Converter();
   }
 
-  private readonly headers = { 'User-Agent': `PostyBirb/${app.getVersion()}` };
+  private get headers() {
+    return { 'User-Agent': `PostyBirb/${this.platform.app.getVersion()}` };
+  }
 
   private async request<T>(
     cancellableToken: CancellableToken,

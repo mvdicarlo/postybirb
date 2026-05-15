@@ -8,7 +8,6 @@ import {
   PostResponse,
   SimpleValidationResult,
 } from '@postybirb/types';
-import { BrowserWindowUtils } from '@postybirb/utils/electron';
 import parse, { HTMLElement } from 'node-html-parser';
 import { parse as parseFileName } from 'path';
 import { v4 } from 'uuid';
@@ -171,7 +170,7 @@ export default abstract class BaseSubscribeStar
     url: string,
   ): Promise<SubscribeStarUploadData> {
     const { authenticityToken, s3UploadPath, s3Url, csrfToken } =
-      await BrowserWindowUtils.runScriptOnPage<{
+      await this.platform.browser.runScriptOnPage<{
         authenticityToken: string;
         s3UploadPath: string;
         s3Url: string;

@@ -1,12 +1,10 @@
 import { INestApplication } from '@nestjs/common';
 import {
-  PostyBirbEnvConfig,
-  getStartupOptions,
   isLinux,
   isOSX,
-  onStartupOptionsUpdate,
-  setStartupOptions,
-} from '@postybirb/utils/electron';
+  PostyBirbEnvConfig,
+  StartupOptionsManager,
+} from '@postybirb/utils/common';
 import {
   BrowserWindow,
   Menu,
@@ -97,7 +95,7 @@ export default class PostyBirb {
         backgroundThrottling: false,
         preload: join(__dirname, 'preload.js'),
         webviewTag: true,
-        spellcheck: getStartupOptions().spellchecker,
+        spellcheck: StartupOptionsManager.get().spellchecker,
         devTools: true,
       },
     });
@@ -149,14 +147,14 @@ export default class PostyBirb {
           enabled: !isLinux(),
           label: 'Launch on Startup',
           type: 'checkbox',
-          checked: getStartupOptions().startAppOnSystemStartup,
+          checked: StartupOptionsManager.get().startAppOnSystemStartup,
           click(event) {
             const { checked } = event;
             app.setLoginItemSettings({
               openAtLogin: event.checked,
               path: app.getPath('exe'),
             });
-            setStartupOptions({
+            StartupOptionsManager.set({
               startAppOnSystemStartup: checked,
             });
           },
@@ -181,7 +179,7 @@ export default class PostyBirb {
       tray.setContextMenu(Menu.buildFromTemplate(trayItems));
       tray.setToolTip('PostyBirb');
       tray.on('click', () => PostyBirb.showMainWindow());
-      onStartupOptionsUpdate(PostyBirb.refreshAppTray);
+      StartupOptionsManager.onUpdate(PostyBirb.refreshAppTray);
       PostyBirb.appTray = tray;
     }
   }

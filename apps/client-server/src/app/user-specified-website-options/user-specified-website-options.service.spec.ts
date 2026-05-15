@@ -4,6 +4,7 @@ import { clearDatabase } from '@postybirb/database';
 import { NULL_ACCOUNT_ID, SubmissionType } from '@postybirb/types';
 import { AccountModule } from '../account/account.module';
 import { AccountService } from '../account/account.service';
+import { TestPlatformModule } from '../platform/testing/test-platform.module';
 import { CreateUserSpecifiedWebsiteOptionsDto } from './dtos/create-user-specified-website-options.dto';
 import { UpdateUserSpecifiedWebsiteOptionsDto } from './dtos/update-user-specified-website-options.dto';
 import { UserSpecifiedWebsiteOptionsService } from './user-specified-website-options.service';
@@ -15,7 +16,7 @@ describe('UserSpecifiedWebsiteOptionsService', () => {
   beforeEach(async () => {
     clearDatabase();
     module = await Test.createTestingModule({
-      imports: [AccountModule],
+      imports: [TestPlatformModule, AccountModule],
       providers: [UserSpecifiedWebsiteOptionsService],
     }).compile();
 

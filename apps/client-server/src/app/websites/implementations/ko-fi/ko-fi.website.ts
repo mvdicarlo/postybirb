@@ -8,7 +8,6 @@ import {
   PostData,
   PostResponse,
 } from '@postybirb/types';
-import { BrowserWindowUtils } from '@postybirb/utils/electron';
 import { parse } from 'node-html-parser';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
@@ -204,7 +203,7 @@ export default class KoFi
       let sourceUrl: string | undefined;
       try {
         // Try to find the source url
-        sourceUrl = await BrowserWindowUtils.runScriptOnPage(
+        sourceUrl = await this.platform.browser.runScriptOnPage(
           this.accountId,
           `${this.BASE_URL}/${this.sessionData.kofiAccountId}/posts`,
           `return document.querySelector('#postsContainerDiv .feeditem-unit .dropdown-share-list input').value`,

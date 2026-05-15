@@ -1,5 +1,5 @@
+import { FormFile } from '@postybirb/http/types';
 import { IFileBuffer } from '@postybirb/types';
-import { FormFile } from '../../../../../../libs/http/src/lib/form-file'; // Direct import to avoid electron loading
 import { CancellableToken } from '../../post/models/cancellable-token';
 import { PostingFile } from '../../post/models/posting-file';
 import { PostBuilder } from './post-builder';

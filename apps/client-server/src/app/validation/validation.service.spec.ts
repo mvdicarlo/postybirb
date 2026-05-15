@@ -6,6 +6,7 @@ import { FileService } from '../file/file.service';
 import { CreateFileService } from '../file/services/create-file.service';
 import { UpdateFileService } from '../file/services/update-file.service';
 import { SharpInstanceManager } from '../image-processing/sharp-instance-manager';
+import { TestPlatformModule } from '../platform/testing/test-platform.module';
 import { PostParsersModule } from '../post-parsers/post-parsers.module';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
 import { WebsiteImplProvider } from '../websites/implementations/provider';
@@ -19,7 +20,7 @@ describe('ValidationService', () => {
   beforeEach(async () => {
     clearDatabase();
     const module: TestingModule = await Test.createTestingModule({
-      imports: [WebsitesModule, PostParsersModule, FileModule],
+      imports: [TestPlatformModule, WebsitesModule, PostParsersModule, FileModule],
       providers: [
         WebsiteImplProvider,
         ValidationService,

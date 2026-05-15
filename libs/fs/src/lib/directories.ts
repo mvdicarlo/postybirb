@@ -1,7 +1,5 @@
-import {
-  getStartupOptions,
-  IsTestEnvironment,
-} from '@postybirb/utils/electron';
+import { IsTestEnvironment } from '@postybirb/utils/common';
+import { StartupOptionsManager } from '@postybirb/utils/common';
 import { join } from 'path';
 import { deleteDirSync, ensureDirSync } from './fs';
 
@@ -10,7 +8,7 @@ function getPostyBirbDirectory() {
     return join(__dirname.split('libs')[0], 'test');
   }
 
-  return getStartupOptions().appDataPath;
+  return StartupOptionsManager.get().appDataPath;
 }
 
 /**

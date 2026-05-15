@@ -6,7 +6,6 @@ import {
   PostResponse,
   SubmissionRating,
 } from '@postybirb/types';
-import { BrowserWindowUtils } from '@postybirb/utils/electron';
 import { parse } from 'node-html-parser';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
@@ -57,7 +56,7 @@ export default class Pillowfort
         partition: this.accountId,
       });
 
-      await BrowserWindowUtils.getLocalStorage(this.accountId, this.BASE_URL);
+      await this.platform.browser.getLocalStorage(this.accountId, this.BASE_URL);
 
       if (res.body.includes('/signout')) {
         const html = parse(res.body);

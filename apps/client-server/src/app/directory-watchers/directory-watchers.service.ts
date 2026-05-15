@@ -6,7 +6,7 @@ import {
   EntityId,
   SubmissionType,
 } from '@postybirb/types';
-import { IsTestEnvironment } from '@postybirb/utils/electron';
+import { IsTestEnvironment } from '@postybirb/utils/common';
 import { mkdir, readdir, rename, writeFile } from 'fs/promises';
 import { getType } from 'mime';
 import { join } from 'path';

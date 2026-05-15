@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
 import { NULL_ACCOUNT_ID } from '@postybirb/types';
 import { Account } from '../drizzle/models';
+import { noopPlatformProvider } from '../platform/testing/noop-platform-providers';
 import { waitUntil } from '../utils/wait.util';
 import { WebsiteImplProvider } from '../websites/implementations/provider';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
@@ -51,7 +52,12 @@ describe('AccountsService', () => {
   beforeEach(async () => {
     clearDatabase();
     module = await Test.createTestingModule({
-      providers: [AccountService, WebsiteRegistryService, WebsiteImplProvider],
+      providers: [
+        AccountService,
+        WebsiteRegistryService,
+        WebsiteImplProvider,
+        ...[noopPlatformProvider],
+      ],
     }).compile();
 
     service = module.get<AccountService>(AccountService);

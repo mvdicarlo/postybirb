@@ -10,7 +10,6 @@ import {
   SimpleValidationResult,
   SubmissionRating,
 } from '@postybirb/types';
-import { BrowserWindowUtils } from '@postybirb/utils/electron';
 import { parse } from 'node-html-parser';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
@@ -142,7 +141,7 @@ export default class Newgrounds
     cancellationToken: CancellableToken,
   ): Promise<IPostResponse> {
     // Step 1: Get the user key from the page
-    const userKey: string = await BrowserWindowUtils.runScriptOnPage(
+    const userKey: string = await this.platform.browser.runScriptOnPage(
       this.accountId,
       `${this.BASE_URL}/projects/art/new`,
       'return PHP.get("uek")',

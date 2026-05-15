@@ -12,7 +12,7 @@ import {
     ScheduleType,
     SubmissionId,
 } from '@postybirb/types';
-import { IsTestEnvironment } from '@postybirb/utils/electron';
+import { IsTestEnvironment } from '@postybirb/utils/common';
 import { Mutex } from 'async-mutex';
 import { Cron as CronGenerator } from 'croner';
 import { PostyBirbService } from '../../../common/service/postybirb-service';

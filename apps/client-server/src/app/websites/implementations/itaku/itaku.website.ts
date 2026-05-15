@@ -9,7 +9,6 @@ import {
   SimpleValidationResult,
   SubmissionRating,
 } from '@postybirb/types';
-import { BrowserWindowUtils } from '@postybirb/utils/electron';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
@@ -73,7 +72,7 @@ export default class Itaku
     };
 
   public async onLogin(): Promise<ILoginState> {
-    const localStorage = await BrowserWindowUtils.getLocalStorage<{
+    const localStorage = await this.platform.browser.getLocalStorage<{
       token: string;
     }>(this.accountId, this.BASE_URL);
 

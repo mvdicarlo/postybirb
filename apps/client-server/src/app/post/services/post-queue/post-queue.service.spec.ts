@@ -13,6 +13,7 @@ import { AccountService } from '../../../account/account.service';
 import { CreateAccountDto } from '../../../account/dtos/create-account.dto';
 import { PostyBirbDatabase } from '../../../drizzle/postybirb-database/postybirb-database';
 import { SettingsService } from '../../../settings/settings.service';
+import { TestPlatformModule } from '../../../platform/testing/test-platform.module';
 import { CreateSubmissionDto } from '../../../submission/dtos/create-submission.dto';
 import { SubmissionService } from '../../../submission/services/submission.service';
 import { SubmissionModule } from '../../../submission/submission.module';
@@ -50,6 +51,7 @@ describe('PostQueueService', () => {
     try {
       module = await Test.createTestingModule({
         imports: [
+          TestPlatformModule,
           SubmissionModule,
           AccountModule,
           WebsiteOptionsModule,
