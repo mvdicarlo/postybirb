@@ -6,5 +6,5 @@ export default {
   testEnvironment: 'node',
   moduleFileExtensions: ['ts', 'js', 'html'],
   coverageDirectory: '../../coverage/apps/client-server',
-  runner: '@kayahr/jest-electron-runner/main',
+
 };
