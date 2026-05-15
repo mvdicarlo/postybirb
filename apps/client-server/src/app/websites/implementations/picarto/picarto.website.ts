@@ -1,4 +1,4 @@
-import { Http } from '@postybirb/http';
+
 import {
   ILoginState,
   ImageResizeProps,
@@ -115,7 +115,7 @@ export default class Picarto
       fields: ['key', '__typename'],
     });
 
-    const jwtResp = await Http.post<{
+    const jwtResp = await this.platform.http.post<{
       data: { generateJwtToken: { key: string } };
     }>('https://ptvintern.picarto.tv/ptvapi', {
       partition: this.accountId,
@@ -201,7 +201,7 @@ export default class Picarto
       fields: ['status', 'message', 'data', '__typename'],
     });
 
-    const finish = await Http.post<{
+    const finish = await this.platform.http.post<{
       errors?: unknown[];
       data?: { createArtwork?: { status: 'error' | 'ok'; message?: string } };
     }>('https://ptvintern.picarto.tv/ptvapi', {
@@ -239,7 +239,7 @@ export default class Picarto
         fields: ['id', 'title'],
       });
 
-      const res = await Http.post<{
+      const res = await this.platform.http.post<{
         data: { albums: { id: string | null; title: string }[] };
       }>('https://ptvintern.picarto.tv/ptvapi', {
         partition: this.accountId,

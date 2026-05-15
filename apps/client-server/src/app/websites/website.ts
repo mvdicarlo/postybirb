@@ -170,7 +170,7 @@ export abstract class Website<
    * facade so adding new platform capabilities does not change every
    * subclass constructor.
    */
-  protected readonly platform: PlatformService;
+  public readonly platform: PlatformService;
 
   // -------------- Externally Accessed Methods --------------
   // Methods intended to be executed by consumers of a Website

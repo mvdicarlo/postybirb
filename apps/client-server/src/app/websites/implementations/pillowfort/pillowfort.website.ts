@@ -1,4 +1,4 @@
-import { Http } from '@postybirb/http';
+
 import {
   ILoginState,
   ImageResizeProps,
@@ -52,7 +52,7 @@ export default class Pillowfort
 
   public async onLogin(): Promise<ILoginState> {
     try {
-      const res = await Http.get<string>(this.BASE_URL, {
+      const res = await this.platform.http.get<string>(this.BASE_URL, {
         partition: this.accountId,
       });
 
@@ -90,7 +90,7 @@ export default class Pillowfort
   ): Promise<PostResponse> {
     try {
       // Get form page and CSRF token
-      const page = await Http.get<string>(`${this.BASE_URL}/posts/new`, {
+      const page = await this.platform.http.get<string>(`${this.BASE_URL}/posts/new`, {
         partition: this.accountId,
       });
 
@@ -113,7 +113,7 @@ export default class Pillowfort
         cancellationToken.throwIfCancelled();
 
         // Upload the image
-        const upload = await Http.post<{
+        const upload = await this.platform.http.post<{
           full_image: string;
           small_image: string;
         }>(`${this.BASE_URL}/image_upload`, {
@@ -204,7 +204,7 @@ export default class Pillowfort
   ): Promise<PostResponse> {
     try {
       // Get form page and CSRF token
-      const page = await Http.get<string>(`${this.BASE_URL}/posts/new`, {
+      const page = await this.platform.http.get<string>(`${this.BASE_URL}/posts/new`, {
         partition: this.accountId,
       });
 

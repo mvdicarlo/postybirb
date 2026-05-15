@@ -8,8 +8,7 @@ import {
 import { ClassTransformOptions } from '@nestjs/common/interfaces/external/class-transform-options.interface';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { IsTestEnvironment } from '@postybirb/utils/common';
-import { PostyBirbEnvConfig } from '@postybirb/utils/common';
+import { IsTestEnvironment, PostyBirbEnvConfig } from '@postybirb/utils/common';
 import compression from 'compression';
 import { AppModule } from './app/app.module';
 import { DatabaseEntity } from './app/drizzle/models';

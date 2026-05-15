@@ -4,6 +4,7 @@ import { Provider } from '@nestjs/common';
 import {
   PlatformAppService,
   PlatformBrowserService,
+  PlatformHttpService,
   PlatformNetworkService,
   PlatformNotificationService,
   PlatformService,
@@ -69,6 +70,36 @@ class NoopPlatformNetworkService implements PlatformNetworkService {
   }
 }
 
+class NoopPlatformHttpService implements PlatformHttpService {
+  getUserAgent(): string {
+    return 'PostyBirb/0.0.0-test';
+  }
+
+  async getWebsiteCookies(): Promise<never[]> {
+    return [];
+  }
+
+  async getParsedProxiesFor(): Promise<never[]> {
+    return [];
+  }
+
+  async get<T>(): Promise<never> {
+    throw new Error('NoopPlatformHttpService.get is not implemented');
+  }
+
+  async post<T>(): Promise<never> {
+    throw new Error('NoopPlatformHttpService.post is not implemented');
+  }
+
+  async patch<T>(): Promise<never> {
+    throw new Error('NoopPlatformHttpService.patch is not implemented');
+  }
+
+  async put<T>(): Promise<never> {
+    throw new Error('NoopPlatformHttpService.put is not implemented');
+  }
+}
+
 /**
  * No-op {@link PlatformService} facade for unit tests that do not exercise
  * platform-specific behavior. Each sub-service is an independent no-op
@@ -84,6 +115,8 @@ export class NoopPlatformService extends PlatformService {
   readonly notification = new NoopPlatformNotificationService();
 
   readonly network = new NoopPlatformNetworkService();
+
+  readonly http = new NoopPlatformHttpService();
 }
 
 /**

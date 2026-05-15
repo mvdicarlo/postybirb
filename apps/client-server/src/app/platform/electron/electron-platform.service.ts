@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PlatformService } from '@postybirb/platform';
 import { ElectronAppService } from './electron-app.service';
 import { ElectronBrowserService } from './electron-browser.service';
+import { ElectronHttpService } from './electron-http.service';
 import { ElectronNetworkService } from './electron-network.service';
 import { ElectronNotificationService } from './electron-notification.service';
 import { ElectronSessionService } from './electron-session.service';
@@ -21,4 +22,6 @@ export class ElectronPlatformService extends PlatformService {
   readonly notification = new ElectronNotificationService();
 
   readonly network = new ElectronNetworkService();
+
+  readonly http = new ElectronHttpService();
 }

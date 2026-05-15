@@ -1,5 +1,5 @@
 import { SelectOption } from '@postybirb/form-builder';
-import { Http } from '@postybirb/http';
+
 import {
   ILoginState,
   ImageResizeProps,
@@ -55,7 +55,7 @@ export default class KoFi
   public async onLogin(): Promise<ILoginState> {
     try {
       // Retrieve settings page to check login status
-      const res = await Http.get<string>(`${this.BASE_URL}/settings`, {
+      const res = await this.platform.http.get<string>(`${this.BASE_URL}/settings`, {
         partition: this.accountId,
       });
 
@@ -99,7 +99,7 @@ export default class KoFi
 
   private async retrieveAlbums(id: string): Promise<void> {
     try {
-      const { body } = await Http.get<string>(
+      const { body } = await this.platform.http.get<string>(
         `${this.BASE_URL}/${id}/gallery`,
         {
           partition: this.accountId,

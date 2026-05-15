@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Http } from '@postybirb/http';
+
 import {
   ILoginState,
   ImageResizeProps,
@@ -69,7 +69,7 @@ export default class Newgrounds
 
   public async onLogin(): Promise<ILoginState> {
     try {
-      const res = await Http.get<string>(this.BASE_URL, {
+      const res = await this.platform.http.get<string>(this.BASE_URL, {
         partition: this.accountId,
       });
 
@@ -123,7 +123,7 @@ export default class Newgrounds
     userKey: string,
   ): Promise<void> {
     try {
-      await Http.post(`${this.BASE_URL}/projects/art/remove/${projectId}`, {
+      await this.platform.http.post(`${this.BASE_URL}/projects/art/remove/${projectId}`, {
         partition: this.accountId,
         type: 'multipart',
         data: {
@@ -348,7 +348,7 @@ export default class Newgrounds
     cancellationToken: CancellableToken,
   ): Promise<IPostResponse> {
     // Step 1: Get the page to extract userkey
-    const page = await Http.get<string>(`${this.BASE_URL}/account/news/post`, {
+    const page = await this.platform.http.get<string>(`${this.BASE_URL}/account/news/post`, {
       partition: this.accountId,
     });
 

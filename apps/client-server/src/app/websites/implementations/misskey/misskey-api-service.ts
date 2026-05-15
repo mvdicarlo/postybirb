@@ -1,12 +1,14 @@
-import { FormFile, Http } from '@postybirb/http';
+import { FormFile } from '@postybirb/http/types';
 import { Logger } from '@postybirb/logger';
+import { PlatformHttpService } from '@postybirb/platform';
 
 const logger = Logger('MisskeyApiService');
 
 /**
  * Ensures the response body is parsed as JSON.
- * Http.post only auto-parses when content-type is application/json.
- * Some Misskey instances may return different content-types.
+ * `PlatformHttpService.post` only auto-parses when the content-type is
+ * `application/json`. Some Misskey instances may return different
+ * content-types.
  */
 function ensureJson<T>(body: T | string): T {
   if (typeof body === 'string') {
@@ -75,10 +77,11 @@ export class MisskeyApiService {
    * POST /api/miauth/{sessionId}/check
    */
   static async checkMiAuth(
+    http: PlatformHttpService,
     instanceUrl: string,
     sessionId: string,
   ): Promise<{ token: string; user: MisskeyUser }> {
-    const res = await Http.post<{ token: string; user: MisskeyUser }>(
+    const res = await http.post<{ token: string; user: MisskeyUser }>(
       `https://${instanceUrl}/api/miauth/${sessionId}/check`,
       { type: 'json', data: {} },
     );
@@ -96,10 +99,11 @@ export class MisskeyApiService {
    * POST /api/i
    */
   static async verifyCredentials(
+    http: PlatformHttpService,
     instanceUrl: string,
     token: string,
   ): Promise<MisskeyUser> {
-    const res = await Http.post<MisskeyUser>(
+    const res = await http.post<MisskeyUser>(
       `https://${instanceUrl}/api/i`,
       { type: 'json', data: { i: token } },
     );
@@ -117,9 +121,10 @@ export class MisskeyApiService {
    * POST /api/meta
    */
   static async getInstanceMeta(
+    http: PlatformHttpService,
     instanceUrl: string,
   ): Promise<MisskeyMeta> {
-    const res = await Http.post<MisskeyMeta>(
+    const res = await http.post<MisskeyMeta>(
       `https://${instanceUrl}/api/meta`,
       { type: 'json', data: { detail: true } },
     );
@@ -132,6 +137,7 @@ export class MisskeyApiService {
    * POST /api/drive/files/create (multipart)
    */
   static async uploadFile(
+    http: PlatformHttpService,
     instanceUrl: string,
     token: string,
     file: Buffer,
@@ -156,7 +162,7 @@ export class MisskeyApiService {
       data.isSensitive = 'true';
     }
 
-    const res = await Http.post<MisskeyDriveFile>(
+    const res = await http.post<MisskeyDriveFile>(
       `https://${instanceUrl}/api/drive/files/create`,
       { type: 'multipart', data },
     );
@@ -187,6 +193,7 @@ export class MisskeyApiService {
    * POST /api/notes/create
    */
   static async createNote(
+    http: PlatformHttpService,
     instanceUrl: string,
     token: string,
     options: {
@@ -218,7 +225,7 @@ export class MisskeyApiService {
       data.localOnly = true;
     }
 
-    const res = await Http.post<{ createdNote: MisskeyNote }>(
+    const res = await http.post<{ createdNote: MisskeyNote }>(
       `https://${instanceUrl}/api/notes/create`,
       { type: 'json', data },
     );

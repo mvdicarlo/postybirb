@@ -1,5 +1,5 @@
 // eslint-disable-next-line max-classes-per-file
-import { Http } from '@postybirb/http';
+
 import {
   E621AccountData,
   E621OAuthRoutes,
@@ -80,7 +80,7 @@ export default class E621
     login: async (data) => {
       // This check is only run at account creation stage because v3 did this. Maybe its worth moving to the onLogin?
       try {
-        const response = await Http.get(
+        const response = await this.platform.http.get(
           `https://e621.net/posts.json?login=${encodeURIComponent(data.username)}&api_key=${
             data.key
           }&limit=1`,
@@ -123,10 +123,10 @@ export default class E621
     cancellableToken.throwIfCancelled();
 
     if (method === 'get') {
-      return Http.get<T>(`${this.BASE_URL}${url}`, { partition: '' });
+      return this.platform.http.get<T>(`${this.BASE_URL}${url}`, { partition: '' });
     }
 
-    return Http.post<T>(`${this.BASE_URL}${url}`, {
+    return this.platform.http.post<T>(`${this.BASE_URL}${url}`, {
       partition: '',
       type: 'multipart',
       data: form,

@@ -1,5 +1,5 @@
 import { SelectOption } from '@postybirb/form-builder';
-import { Http } from '@postybirb/http';
+
 import {
   FileType,
   ILoginState,
@@ -78,7 +78,7 @@ export default class Itaku
 
     if (localStorage.token) {
       this.sessionData.token = localStorage.token.replace(/"/g, '');
-      const user = await Http.get<ItakuUserInfo>(
+      const user = await this.platform.http.get<ItakuUserInfo>(
         `${this.BASE_URL}/api/auth/user/`,
         {
           partition: this.accountId,
@@ -100,7 +100,7 @@ export default class Itaku
 
   private async retrieveFolders(): Promise<void> {
     try {
-      const notificationFolderRes = await Http.get<
+      const notificationFolderRes = await this.platform.http.get<
         { id: string; num_images: number; title: string }[]
       >(
         `${this.BASE_URL}/api/post_folders/?owner=${this.sessionData.profile.owner}`,
@@ -118,7 +118,7 @@ export default class Itaku
           label: f.title,
         }));
 
-      const galleryFolderRes = await Http.get<{
+      const galleryFolderRes = await this.platform.http.get<{
         count: number;
         links: object;
         results: {

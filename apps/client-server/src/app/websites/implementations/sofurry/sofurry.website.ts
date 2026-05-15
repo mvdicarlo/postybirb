@@ -1,5 +1,5 @@
 import { SelectOption } from '@postybirb/form-builder';
-import { Http } from '@postybirb/http';
+
 import {
   FileType,
   ILoginState,
@@ -113,7 +113,7 @@ export default class Sofurry
 
   public async onLogin(): Promise<ILoginState> {
     try {
-      const res = await Http.get<string>(this.BASE_URL, {
+      const res = await this.platform.http.get<string>(this.BASE_URL, {
         partition: this.accountId,
       });
 
@@ -145,7 +145,7 @@ export default class Sofurry
    * Fetch a fresh CSRF token from SoFurry.
    */
   private async fetchCsrfToken(): Promise<string | undefined> {
-    const res = await Http.get<string>(this.BASE_URL, {
+    const res = await this.platform.http.get<string>(this.BASE_URL, {
       partition: this.accountId,
     });
 
@@ -159,7 +159,7 @@ export default class Sofurry
    * Fetch user folders from SoFurry.
    */
   private async getFolders(csrfToken: string): Promise<void> {
-    const res = await Http.get<[{ id: string; name: string }]>(
+    const res = await this.platform.http.get<[{ id: string; name: string }]>(
       `${this.BASE_URL}/ui/folders`,
       {
         partition: this.accountId,
@@ -238,7 +238,7 @@ export default class Sofurry
 
     // Step 1: Create submission (PUT request - PostBuilder doesn't support PUT)
     cancellationToken.throwIfCancelled();
-    const createRes = await Http.put<SofurrySubmissionResponse>(
+    const createRes = await this.platform.http.put<SofurrySubmissionResponse>(
       `${this.BASE_URL}/ui/submission`,
       {
         partition: this.accountId,
