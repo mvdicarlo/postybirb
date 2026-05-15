@@ -1,4 +1,4 @@
-import { Http, HttpResponse } from '@postybirb/http';
+import { HttpResponse } from '@postybirb/http/types';
 import {
   DiscordAccountData,
   ILoginState,
@@ -143,7 +143,7 @@ export default class Discord
 
     formData.payload_json = JSON.stringify(payload);
     cancellationToken.throwIfCancelled();
-    return Http.post(webhook, {
+    return this.platform.http.post(webhook, {
       partition: undefined,
       type: 'multipart',
       data: formData,
@@ -166,7 +166,7 @@ export default class Discord
       postData.options.useTitle,
     );
     cancellationToken.throwIfCancelled();
-    return Http.post(webhook, {
+    return this.platform.http.post(webhook, {
       partition: undefined,
       type: 'json',
       data: messageData,

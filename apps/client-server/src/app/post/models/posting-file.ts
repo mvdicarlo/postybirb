@@ -1,4 +1,4 @@
-import { FormFile } from '@postybirb/http';
+import { FormFile } from '@postybirb/http/types';
 import {
   FileType,
   IFileBuffer,

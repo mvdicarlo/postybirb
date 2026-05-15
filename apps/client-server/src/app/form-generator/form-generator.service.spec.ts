@@ -8,6 +8,7 @@ import {
 } from '@postybirb/types';
 import { AccountModule } from '../account/account.module';
 import { AccountService } from '../account/account.service';
+import { TestPlatformModule } from '../platform/testing/test-platform.module';
 import { CreateUserSpecifiedWebsiteOptionsDto } from '../user-specified-website-options/dtos/create-user-specified-website-options.dto';
 import { UserSpecifiedWebsiteOptionsModule } from '../user-specified-website-options/user-specified-website-options.module';
 import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
@@ -24,6 +25,7 @@ describe('FormGeneratorService', () => {
     clearDatabase();
     module = await Test.createTestingModule({
       imports: [
+        TestPlatformModule,
         AccountModule,
         WebsitesModule,
         UserSpecifiedWebsiteOptionsModule,

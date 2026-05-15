@@ -133,6 +133,7 @@ export default class Misskey
 
       try {
         const result = await MisskeyApiService.checkMiAuth(
+          this.platform.http,
           data.instanceUrl,
           data.miAuthSessionId,
         );
@@ -170,6 +171,7 @@ export default class Misskey
 
     try {
       const user = await MisskeyApiService.verifyCredentials(
+        this.platform.http,
         data.instanceUrl,
         data.accessToken,
       );
@@ -187,7 +189,10 @@ export default class Misskey
 
       // Fetch instance limits
       try {
-        const meta = await MisskeyApiService.getInstanceMeta(data.instanceUrl);
+        const meta = await MisskeyApiService.getInstanceMeta(
+          this.platform.http,
+          data.instanceUrl,
+        );
         this.logger
           .withMetadata(meta)
           .info(`Fetched instance metadata for ${data.instanceUrl}`);
@@ -253,6 +258,7 @@ export default class Misskey
           .info('Uploading file to Misskey Drive');
 
         const driveFile = await MisskeyApiService.uploadFile(
+          this.platform.http,
           instanceUrl,
           accessToken,
           file.buffer,
@@ -271,6 +277,7 @@ export default class Misskey
 
       // Create the note
       const note = await MisskeyApiService.createNote(
+        this.platform.http,
         instanceUrl,
         accessToken,
         {
@@ -339,6 +346,7 @@ export default class Misskey
 
     try {
       const note = await MisskeyApiService.createNote(
+        this.platform.http,
         instanceUrl,
         accessToken,
         {

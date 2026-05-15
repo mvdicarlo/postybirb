@@ -1,4 +1,4 @@
-import { Http } from '@postybirb/http';
+
 import {
   ILoginState,
   ImageResizeProps,
@@ -62,7 +62,7 @@ export default class HentaiFoundry
 
   public async onLogin(): Promise<ILoginState> {
     try {
-      const res = await Http.get<string>(this.BASE_URL, {
+      const res = await this.platform.http.get<string>(this.BASE_URL, {
         partition: this.accountId,
       });
 
@@ -103,7 +103,7 @@ export default class HentaiFoundry
     cancellationToken: CancellableToken,
   ): Promise<IPostResponse> {
     // Get the form page first
-    const page = await Http.get<string>(`${this.BASE_URL}/pictures/create`, {
+    const page = await this.platform.http.get<string>(`${this.BASE_URL}/pictures/create`, {
       partition: this.accountId,
     });
 
@@ -212,7 +212,7 @@ export default class HentaiFoundry
     postData: PostData<HentaiFoundryMessageSubmission>,
     cancellationToken: CancellableToken,
   ): Promise<IPostResponse> {
-    const page = await Http.get<string>(`${this.BASE_URL}/UserBlogs/create`, {
+    const page = await this.platform.http.get<string>(`${this.BASE_URL}/UserBlogs/create`, {
       partition: this.accountId,
     });
 

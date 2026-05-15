@@ -1,4 +1,4 @@
-import { Http } from '@postybirb/http';
+
 import {
   ILoginState,
   ImageResizeProps,
@@ -61,7 +61,7 @@ export default class Piczel
     };
 
   public async onLogin(): Promise<ILoginState> {
-    const res = await Http.get<string>(`${this.BASE_URL}/gallery/upload`, {
+    const res = await this.platform.http.get<string>(`${this.BASE_URL}/gallery/upload`, {
       partition: this.accountId,
     });
 
@@ -94,7 +94,7 @@ export default class Piczel
 
   private async getFolders(username: string): Promise<void> {
     try {
-      const res = await Http.get<{ id: number; name: string }[]>(
+      const res = await this.platform.http.get<{ id: number; name: string }[]>(
         `${this.BASE_URL}/api/users/${username}/gallery/folders`,
         {
           partition: this.accountId,

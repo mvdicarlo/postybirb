@@ -1,4 +1,4 @@
-import { Http } from '@postybirb/http';
+
 import {
   ILoginState,
   ImageResizeProps,
@@ -39,7 +39,7 @@ export abstract class PhilomenaWebsite<
    * and extracting the username from the data-user-name attribute.
    */
   public async onLogin(): Promise<ILoginState> {
-    const res = await Http.get<string>(`${this.BASE_URL}`, {
+    const res = await this.platform.http.get<string>(`${this.BASE_URL}`, {
       partition: this.accountId,
     });
 
@@ -127,7 +127,7 @@ export abstract class PhilomenaWebsite<
    * Philomena sites use CSRF tokens and other hidden fields.
    */
   protected async getUploadFormFields(): Promise<Record<string, string>> {
-    const uploadPage = await Http.get<string>(`${this.BASE_URL}/images/new`, {
+    const uploadPage = await this.platform.http.get<string>(`${this.BASE_URL}/images/new`, {
       partition: this.accountId,
     });
 

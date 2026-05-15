@@ -1,4 +1,4 @@
-import { Http } from '@postybirb/http';
+
 import {
   ILoginState,
   ImageResizeProps,
@@ -62,7 +62,7 @@ export default class Artconomy
 
   public async onLogin(): Promise<ILoginState> {
     try {
-      const authCheck = await Http.get<{ username: string; id: number }>(
+      const authCheck = await this.platform.http.get<{ username: string; id: number }>(
         `${this.BASE_URL}/api/profiles/data/requester/`,
         {
           partition: this.accountId,
@@ -74,7 +74,7 @@ export default class Artconomy
 
       if (authCheck.statusCode === 200 && authCheck.body.username !== '_') {
         // Get CSRF token from cookies
-        const cookies = await Http.getWebsiteCookies(
+        const cookies = await this.platform.http.getWebsiteCookies(
           this.accountId,
           this.BASE_URL,
         );

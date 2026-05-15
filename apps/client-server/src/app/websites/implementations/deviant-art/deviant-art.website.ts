@@ -1,5 +1,5 @@
 import { SelectOption, SelectOptionSingle } from '@postybirb/form-builder';
-import { Http } from '@postybirb/http';
+
 import {
   FileType,
   ILoginState,
@@ -85,10 +85,10 @@ export default class DeviantArt
     };
 
   public async onLogin(): Promise<ILoginState> {
-    const res = await Http.get<string>(this.BASE_URL, {
+    const res = await this.platform.http.get<string>(this.BASE_URL, {
       partition: this.accountId,
     });
-    const cookies = await Http.getWebsiteCookies(this.accountId, this.BASE_URL);
+    const cookies = await this.platform.http.getWebsiteCookies(this.accountId, this.BASE_URL);
     const userInfoCookie = cookies.find((c) => c.name === 'userinfo');
     if (userInfoCookie) {
       const userInfo = JSON.parse(
@@ -104,7 +104,7 @@ export default class DeviantArt
   }
 
   private async getCSRF(accountId = this.accountId) {
-    const url = await Http.get<string>(this.BASE_URL, {
+    const url = await this.platform.http.get<string>(this.BASE_URL, {
       partition: accountId,
     });
     return url.body.match(/window.__CSRF_TOKEN__ = '(.*)'/)?.[1];
@@ -113,7 +113,7 @@ export default class DeviantArt
   private async getFolders(username: string) {
     try {
       const csrf = await this.getCSRF();
-      const { body } = await Http.get<{ results: DeviantArtFolder[] }>(
+      const { body } = await this.platform.http.get<{ results: DeviantArtFolder[] }>(
         `${
           this.BASE_URL
         }/_puppy/dashared/gallection/folders?offset=0&limit=250&type=gallery&with_all_folder=true&with_permissions=true&username=${encodeURIComponent(

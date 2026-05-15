@@ -30,7 +30,7 @@ PostyBirb supports a wide range of websites, see the full list [here](./apps/cli
 - ♻️ Username converters – Automatically rewrite usernames per website.
 - ⚡ Custom shortcuts – Create your own text snippets for descriptions.
 - ✍️ Description formatting – Apply bold, italics, color, etc. PostyBirb converts formatting to match each website's capabilities.
-- 🚀 Description preview – See how any of the features above with look with website specific formatting applied. 
+- 🚀 Description preview – See how any of the features above with look with website specific formatting applied.
 - 📐 Autoscaling – Scales images automatically.
 - 📄 File & notification posts – Supports both media uploads and text‑only posts.
 - 📅 Scheduling – Post at exact dates or repeating intervals. Login credentials stay on your device, and PostyBirb must be running for scheduled posts to go out - your credentials remain private and under your control.
@@ -83,13 +83,31 @@ If you're on linux or other OS please create an issue with log from the unsucess
 
 </summary>
 
-6. `yarn run setup` Installs hooks/husky
-7. `yarn start` Starts app
+7. `yarn run setup` Installs hooks/husky
+8. `yarn start` Starts app
 
-## Common commands:
+## Common commands
 
 - Run tests/format/lint: `yarn test`/`yarn format`/`yarn lint`
 - Build & Package app: `yarn dist`
+
+### Native module mismatch after packaging
+
+Running `yarn dist` (or any `dist:*` variant) calls `electron-builder install-app-deps` as part of the packaging step. This rebuilds native modules (e.g. `better-sqlite3`) for **Electron's embedded Node.js**, which has a different `NODE_MODULE_VERSION` than your system Node.
+
+After packaging, if you run `yarn test` and get an error like:
+
+```txt
+The module '...better_sqlite3.node' was compiled against a different Node.js version using NODE_MODULE_VERSION 133. This version of Node.js requires NODE_MODULE_VERSION 137.
+```
+
+the fix is to reinstall dependencies, which restores the system-Node-compatible binary:
+
+```bash
+rm -rf node_modules && yarn install
+```
+
+This is expected behaviour — the packaging step intentionally overwrites the binary for Electron. Tests always need the system-Node binary, so a fresh install after packaging is required before running tests again.
 
 ### Recommended Plugins (VSCode)
 

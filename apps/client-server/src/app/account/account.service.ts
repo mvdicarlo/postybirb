@@ -12,7 +12,7 @@ import {
     NULL_ACCOUNT_ID,
     NullAccount,
 } from '@postybirb/types';
-import { IsTestEnvironment } from '@postybirb/utils/electron';
+import { IsTestEnvironment } from '@postybirb/utils/common';
 import { ne } from 'drizzle-orm';
 import { Class } from 'type-fest';
 import { PostyBirbService } from '../common/service/postybirb-service';

@@ -1,5 +1,5 @@
 import { SelectOption } from '@postybirb/form-builder';
-import { FormFile, Http } from '@postybirb/http';
+import { FormFile } from '@postybirb/http/types';
 import {
   DynamicObject,
   FileType,
@@ -112,7 +112,7 @@ export default class Patreon
     };
 
   public async onLogin(): Promise<ILoginState> {
-    const membershipPage = await Http.get<string>(
+    const membershipPage = await this.platform.http.get<string>(
       `${this.BASE_URL}/membership`,
       {
         partition: this.accountId,
@@ -125,7 +125,7 @@ export default class Patreon
       ?.getAttribute('content');
 
     if (csrf) {
-      const badgesResult = await Http.get<{
+      const badgesResult = await this.platform.http.get<{
         data: Array<{
           id: string;
           type: string;
@@ -144,7 +144,7 @@ export default class Patreon
         const campaignId = campaignBadge.id.split(':')[1];
         const campaignQueryString =
           '?fields[rewardItem]=title%2Cdescription%2Coffer_id%2Citem_type%2Cis_deleted%2Cis_ended%2Cis_published&fields[accessRule]=access_rule_type%2Camount_cents%2Cpost_count&include=post_aggregation%2Ccreator.campaign%2Ccreator.pledge_to_current_user.null%2Cconnected_socials%2Ccurrent_user_pledge.reward.null%2Ccurrent_user_pledge.campaign.null%2Crewards.items.null%2Crewards.cadence_options.null%2Crss_auth_token%2Caccess_rules.tier.null%2Cactive_offer.rewards.null%2Cscheduled_offer.rewards.null%2Ccreator.pledges.campaign.null%2Creward_items.template%2Crewards.null%2Crewards.reward_recommendations%2Cthanks_embed%2Cthanks_msg&json-api-version=1.0&json-api-use-default-includes=false';
-        const campaignResult = await Http.get<PatreonCampaignResponse>(
+        const campaignResult = await this.platform.http.get<PatreonCampaignResponse>(
           `${this.BASE_URL}/api/campaigns/${campaignId}${campaignQueryString}`,
           { partition: this.accountId },
         );
@@ -222,7 +222,7 @@ export default class Patreon
   }
 
   private async loadCollections(campaignId: string): Promise<SelectOption[]> {
-    const collectionRes = await Http.get<PatreonCollectionResponse>(
+    const collectionRes = await this.platform.http.get<PatreonCollectionResponse>(
       `${this.BASE_URL}/api/collection?filter[campaign_id]=${campaignId}&filter[must_contain_at_least_one_published_post]=false&json-api-version=1.0&json-api-use-default-includes=false`,
       {
         partition: this.accountId,
@@ -273,7 +273,7 @@ export default class Patreon
   }
 
   private async initializePost() {
-    const res = await Http.post<PatreonNewPostResponse>(
+    const res = await this.platform.http.post<PatreonNewPostResponse>(
       `${this.BASE_URL}/api/posts?fields[post]=post_type%2Cpost_metadata&include=drop&json-api-version=1.0&json-api-use-default-includes=false`,
       {
         partition: this.accountId,
@@ -300,7 +300,7 @@ export default class Patreon
     postUrl: string,
     data: DynamicObject,
   ): Promise<void> {
-    const res = await Http.patch(
+    const res = await this.platform.http.patch(
       `${postUrl}?json-api-version=1.0&json-api-use-default-includes=false&include=[]`,
       {
         partition: this.accountId,
@@ -360,7 +360,7 @@ export default class Patreon
       },
     };
 
-    const init = await Http.post<PatreonMediaUploadResponse>(
+    const init = await this.platform.http.post<PatreonMediaUploadResponse>(
       `${this.BASE_URL}/api/media?json-api-version=1.0&json-api-use-default-includes=false&include=%5B%5D`,
       {
         partition: this.accountId,
@@ -385,7 +385,7 @@ export default class Patreon
 
     const timeout = Date.now() + 90_000;
     while (Date.now() <= timeout) {
-      const state = await Http.get<PatreonMediaUploadResponse>(
+      const state = await this.platform.http.get<PatreonMediaUploadResponse>(
         `${this.BASE_URL}/api/media/${init.body.data.id}?json-api-version=1.0&json-api-use-default-includes=false&include=[]`,
         {
           partition: this.accountId,

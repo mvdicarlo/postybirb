@@ -10,7 +10,7 @@ import {
   PostResponse,
   SimpleValidationResult,
 } from '@postybirb/types';
-import { PostyBirbEnvConfig } from '@postybirb/utils/electron';
+import { PostyBirbEnvConfig } from '@postybirb/utils/common';
 import { calculateImageResize } from '@postybirb/utils/file-type';
 import { v4 as uuidv4 } from 'uuid';
 import { CancellableToken } from '../../../post/models/cancellable-token';

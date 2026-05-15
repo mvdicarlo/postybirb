@@ -12,6 +12,20 @@ import FormData from 'form-data';
 import urlEncoded from 'form-urlencoded';
 import { encode as encodeQueryString } from 'querystring';
 import { FormFile } from './form-file';
+import {
+  BinaryPostOptions,
+  HttpOptions,
+  HttpResponse,
+  PostOptions,
+} from './types';
+
+export type {
+  BinaryPostOptions,
+  HttpOptions,
+  HttpRequestOptions,
+  HttpResponse,
+  PostOptions,
+} from './types';
 
 // https://www.electronjs.org/docs/api/client-request#instance-methods
 const RESTRICTED_HEADERS: string[] = [
@@ -30,54 +44,6 @@ const RESTRICTED_HEADERS: string[] = [
 const DEFAULT_HEADERS: Record<string, string> = {
   'Accept-Encoding': 'gzip, deflate, br',
 };
-
-export interface HttpRequestOptions {
-  // Skips adding index to url encoded data for arrays
-  skipUrlEncodedIndexing?: boolean;
-}
-
-interface HttpOptions {
-  headers?: Record<string, string>;
-  queryParameters?: Record<
-    string,
-    | string
-    | number
-    | boolean
-    | readonly string[]
-    | readonly number[]
-    | readonly boolean[]
-  >;
-  partition?: string | undefined;
-  options?: HttpRequestOptions;
-}
-
-export interface PostOptions extends HttpOptions {
-  type: 'multipart' | 'json' | 'urlencoded';
-  data: Record<string, unknown>;
-  /**
-   * When true, sends the request via Electron's BrowserWindow.loadURL
-   * with raw data bytes instead of using net.request ClientRequest.
-   * Useful for websites that require browser-like form submissions.
-   */
-  uploadAsRawData?: boolean;
-}
-
-interface BinaryPostOptions extends HttpOptions {
-  type: 'binary';
-  data: Buffer;
-  /**
-   * When true, sends the request via Electron's BrowserWindow.loadURL
-   * with raw data bytes instead of using net.request ClientRequest.
-   */
-  uploadAsRawData?: boolean;
-}
-
-export interface HttpResponse<T> {
-  body: T;
-  statusCode: number;
-  statusMessage: string;
-  responseUrl: string;
-}
 
 interface CreateBodyData {
   contentType: string;
