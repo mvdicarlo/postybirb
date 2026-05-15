@@ -1,5 +1,6 @@
 // eslint-disable-next-line max-classes-per-file
 
+// eslint-disable-next-line max-classes-per-file
 import {
   E621AccountData,
   E621OAuthRoutes,

@@ -6,7 +6,9 @@ export type AppEnvConfig = {
   headless: boolean;
 };
 
-const args = minimist(process.argv.slice(process.defaultApp ? 2 : 1));
+const args = minimist(
+  process.argv.slice((process as NodeJS.Process & { defaultApp?: boolean }).defaultApp ? 2 : 1),
+);
 
 let cached: AppEnvConfig | null = null;
 
