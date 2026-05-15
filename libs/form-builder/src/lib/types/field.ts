@@ -2,13 +2,14 @@ import type {
   FieldLabelTranslations,
   FieldLabelTranslationsId,
 } from '@postybirb/translations';
+import { FormBuilderMetadata } from './index';
 import { PrimitiveRecord } from './primitive-record';
 
-export type FieldType<
+export interface FieldType<
   V,
   F extends string,
   T extends PrimitiveRecord | unknown = unknown,
-> = {
+> {
   /**
    * Pulls a default value from a key property
    */
@@ -20,16 +21,6 @@ export type FieldType<
    * Can also be read from the value of a field set in the object i.e. `field = 'value'`.
    */
   defaultValue?: V;
-
-  /**
-   * The field will be enabled when all listed props are defined.
-   */
-  enableWhenDefined?: Array<keyof T>;
-
-  /**
-   * The field will be enabled when all the listed props are undefined.
-   */
-  enableWhenUndefined?: Array<keyof T>;
 
   /**
    * Metadata for determining what type of field to generate.
@@ -68,7 +59,6 @@ export type FieldType<
    */
   hidden?: boolean;
 
-  // New section-based layout properties
   /**
    * The section this field belongs to for layout purposes
    * Well-known sections: 'common', 'website', others will be grouped below
@@ -107,19 +97,38 @@ export type FieldType<
   breakRow?: boolean;
 
   /**
-   * Allow derivation of a field from derived external data
-   * Selects the key from the provided object and sets the populate field to that value.
+   * Allow derivation of a field from derived website account data (NOT OPTIONS OR OTHER FIELDS)
+   * Selects the key from website account data and sets the populate field inside these options to that value.
+   *
+   * @example
+   * ```js
+   * export type WebsiteAccountData = {
+   *    galleryFolders: SelectOption[];
+   * };
+   *
+   *
+   *  derive: [
+   *    {
+   *      key: 'galleryFolders',
+   *      populate: 'options',
+   *    },
+   *  ],
+   *  options: [],
+   * ```
    */
   derive?: {
     key: keyof T;
     populate: string;
   }[];
 
+  /** Allows derivation of a field options from arbitrary data, e.g. options or other fields */
+  customDerive?(this: this, fields: FormBuilderMetadata, options: T): void;
+
   /**
-   * Shows in the UI when all properties are satisfied.
+   * Shows in the UI when all properties are satisfied. Each property can have multiple alloved options
    * Evaluates in field.tsx
-   * @type {Array<[keyof T, any[]]>}
+   *
+   * @example showWhen: [['sensitiveContent', [true]]] // shows field when sensitiveContent is set to true
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  showWhen?: Array<[keyof T, any[]]>;
-};
+  showWhen?: Array<[field: keyof T, allowedOptions: unknown[]]>;
+}
