@@ -12,9 +12,9 @@ import {
   AtUri,
   BlobRef,
   ComAtprotoLabelDefs,
-  RichText,
 } from '@atproto/api';
 import { ReplyRef } from '@atproto/api/dist/client/types/app/bsky/feed/post';
+import { isMention } from '@atproto/api/dist/client/types/app/bsky/richtext/facet';
 import { JobStatus } from '@atproto/api/dist/client/types/app/bsky/video/defs';
 import {
   BlueskyAccountData,
@@ -33,11 +33,7 @@ import {
   calculateImageResize,
   getFileTypeFromMimeType,
 } from '@postybirb/utils/file-type';
-import { v4 } from 'uuid';
 import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
-import { PlainTextConverter } from '../../../post-parsers/models/description-node/converters/plaintext-converter';
-import { ConversionContext } from '../../../post-parsers/models/description-node/description-node.base';
-import { TipTapNode } from '../../../post-parsers/models/description-node/description-node.types';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
@@ -53,6 +49,7 @@ import { MessageWebsite } from '../../models/website-modifiers/message-website';
 import { OAuthWebsite } from '../../models/website-modifiers/oauth-website';
 import { WithCustomDescriptionParser } from '../../models/website-modifiers/with-custom-description-parser';
 import { Website } from '../../website';
+import { BlueskyConverter } from './bluesky.description';
 import { BlueskyFileSubmission } from './models/bluesky-file-submission';
 import { BlueskyMessageSubmission } from './models/bluesky-message-submission';
 
@@ -199,7 +196,7 @@ export default class Bluesky
       };
     }
 
-    const rt = await this.getRichText(postData.options.description);
+    const rt = await BlueskyConverter.getRichText(postData.options.description);
 
     const postResult = await agent.post({
       text: rt.text,
@@ -329,12 +326,27 @@ export default class Bluesky
   ): Promise<void> {
     const { description } = postData.options;
 
-    const rt = await this.getRichText(description);
+    const rt = await BlueskyConverter.getRichText(description);
 
     if (rt.graphemeLength > this.MAX_CHARS) {
       validator.error(
         'validation.description.max-length',
         { maxLength: this.MAX_CHARS, currentLength: rt.graphemeLength },
+        'description',
+      );
+    }
+
+    // When RichText.detectFacets encounters invalid mention (user does not exists) it sets did to empty string
+    const invalidMentions = rt.facets
+      .filter((e) =>
+        e.features.find((feature) => isMention(feature) && feature.did === ''),
+      )
+      .map((e) => rt.unicodeText.slice(e.index.byteStart, e.index.byteEnd));
+
+    if (invalidMentions.length) {
+      validator.error(
+        'validation.description.bluesky.invalid-mentions',
+        { mentions: invalidMentions },
         'description',
       );
     }
@@ -693,134 +705,4 @@ export default class Bluesky
       return `(error getting body: ${e})`;
     }
   }
-
-  async getRichText(description: string) {
-    const { text, links } = JSON.parse(description) as DescriptionWithLinks;
-    const rt = new RichText({ text });
-    await rt.detectFacets(
-      this.agent ?? new AtpAgent({ service: 'https://bsky.social' }),
-    );
-
-    // Convert UTF-16 indices to UTF-8 byte offsets
-    if (links && links.length > 0) {
-      const encoder = new TextEncoder();
-
-      // Encode the entire text once for efficiency
-      const textBytes = encoder.encode(text);
-
-      const byteLinks = links.map((link) => {
-        const startSlice = text.slice(0, link.start);
-        const startByte = encoder.encode(startSlice).byteLength;
-
-        const endSlice = text.slice(0, link.end);
-        const endByte = encoder.encode(endSlice).byteLength;
-
-        return {
-          start: startByte,
-          end: endByte,
-          href: link.href,
-        };
-      });
-
-      rt.facets ??= [];
-
-      for (const byteLink of byteLinks) {
-        // Skip if the byte range is invalid
-        if (
-          byteLink.start >= byteLink.end ||
-          byteLink.end > textBytes.byteLength
-        ) {
-          continue;
-        }
-
-        // Check for overlaps with existing facets
-        const hasOverlap = rt.facets.some(
-          (facet) =>
-            byteLink.start < facet.index.byteEnd &&
-            byteLink.end > facet.index.byteStart,
-        );
-
-        if (!hasOverlap) {
-          rt.facets.push({
-            index: {
-              byteStart: byteLink.start,
-              byteEnd: byteLink.end,
-            },
-            features: [
-              {
-                $type: 'app.bsky.richtext.facet#link',
-                uri: byteLink.href,
-              },
-            ],
-          });
-        }
-      }
-
-      // Sort facets
-      if (rt.facets.length > 0) {
-        rt.facets.sort((a, b) => a.index.byteStart - b.index.byteStart);
-      } else {
-        rt.facets = undefined;
-      }
-    }
-
-    return rt;
-  }
-}
-
-class BlueskyConverter extends PlainTextConverter {
-  private links: { href: string; content: string; id: string }[] = [];
-
-  /**
-   * Override text node conversion to intercept link marks.
-   * In TipTap, links are marks on text nodes, not separate inline nodes.
-   */
-  convertTextNode(node: TipTapNode, context: ConversionContext): string {
-    const marks = node.marks ?? [];
-    const linkMark = marks.find((m) => m.type === 'link');
-
-    if (linkMark) {
-      // Get the plain text (without the link URL appended)
-      const content = node.text ?? '';
-      const id = v4();
-      this.links.push({
-        href: linkMark.attrs?.href ?? '',
-        content,
-        id,
-      });
-      return id;
-    }
-
-    return super.convertTextNode(node, context);
-  }
-
-  convert(nodes: TipTapNode[], context: ConversionContext): string {
-    this.links = [];
-    let text = super.convert(nodes, context);
-
-    const newLinks: RichTextLinkPosition[] = [];
-
-    for (const link of this.links) {
-      const start = text.indexOf(link.id);
-      const end = start + link.content.length;
-      text = text.replace(link.id, link.content);
-      newLinks.push({ start, end, href: link.href });
-    }
-
-    return JSON.stringify({
-      text,
-      links: newLinks,
-    } satisfies DescriptionWithLinks);
-  }
-}
-
-interface RichTextLinkPosition {
-  start: number;
-  end: number;
-  href: string;
-}
-
-interface DescriptionWithLinks {
-  text: string;
-  links: RichTextLinkPosition[];
 }
