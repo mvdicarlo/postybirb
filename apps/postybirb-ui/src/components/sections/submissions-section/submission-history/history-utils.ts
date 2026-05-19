@@ -3,11 +3,11 @@
  */
 
 import {
-    EntityId,
-    PostEventDto,
-    PostEventType,
-    PostRecordDto,
-    PostRecordState,
+  EntityId,
+  PostEventDto,
+  PostEventType,
+  PostRecordDto,
+  PostRecordState,
 } from '@postybirb/types';
 import type { SubmissionRecord } from '../../../../stores/records';
 
@@ -19,6 +19,7 @@ export interface DerivedWebsitePost {
   accountName: string;
   websiteName: string;
   isSuccess: boolean;
+  isRunning: boolean;
   sourceUrls: string[];
   errors: string[];
 }
@@ -34,7 +35,7 @@ export function extractWebsitePostsFromEvents(
 
   const postsByAccount = new Map<EntityId, DerivedWebsitePost>();
 
-  for (const event of events) {
+  for (const event of events.slice().reverse()) {
     if (!event.accountId) continue;
 
     // Get or create post entry for this account
@@ -48,6 +49,7 @@ export function extractWebsitePostsFromEvents(
         // eslint-disable-next-line lingui/no-unlocalized-strings
         websiteName: accountSnapshot?.website ?? '?',
         isSuccess: false,
+        isRunning: false,
         sourceUrls: [],
         errors: [],
       };
@@ -56,12 +58,18 @@ export function extractWebsitePostsFromEvents(
 
     // Process event based on type
     switch (event.eventType) {
+      case PostEventType.POST_ATTEMPT_STARTED:
+        post.isRunning = true;
+        break;
+
       case PostEventType.POST_ATTEMPT_COMPLETED:
         post.isSuccess = true;
+        post.isRunning = false;
         break;
 
       case PostEventType.POST_ATTEMPT_FAILED:
         post.isSuccess = false;
+        post.isRunning = false;
         if (event.error?.message) {
           post.errors.push(event.error.message);
         }
@@ -109,30 +117,6 @@ export function exportPostRecordToFile(record: PostRecordDto): string {
   URL.revokeObjectURL(url);
 
   return filename;
-}
-
-/**
- * Format duration in human-readable format.
- */
-export function formatDuration(ms: number): string {
-  const seconds = Math.floor(ms / 1000);
-  const minutes = Math.floor(seconds / 60);
-  const hours = Math.floor(minutes / 60);
-
-  if (hours > 0) {
-    // eslint-disable-next-line lingui/no-unlocalized-strings
-    return `${hours}h ${minutes % 60}m`;
-  }
-  if (minutes > 0) {
-    // eslint-disable-next-line lingui/no-unlocalized-strings
-    return `${minutes}m ${seconds % 60}s`;
-  }
-  if (seconds < 1) {
-    // eslint-disable-next-line lingui/no-unlocalized-strings
-    return '< 1s';
-  }
-  // eslint-disable-next-line lingui/no-unlocalized-strings
-  return `${seconds}s`;
 }
 
 /**
