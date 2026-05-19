@@ -170,6 +170,29 @@ function saveCheckedState(state: Record<string, boolean>) {
   }
 }
 
+export const instagramCallbackPath = '/api/websites/instagram/callback';
+
+export function getInstagramRedirectUri() {
+  const baseUrl = getBaseUrl();
+  const url = new URL(baseUrl);
+  const isCustomLocalHostname =
+    // Custom hostnames like https://MYHOSTNAME or https://myhostname.local are not permitted,
+    // see https://github.com/mvdicarlo/postybirb/issues/760
+    (!url.hostname.includes('.') || url.hostname.endsWith('.local')) &&
+    // Localhost is allowed
+    url.hostname !== 'localhost';
+
+  if (isCustomLocalHostname) return null;
+
+  return `${baseUrl}${instagramCallbackPath}`;
+}
+
+export function getInstagramRedirectUriError() {
+  // If someone's tech savvy enough to set up a remote on their network and use custom local hostnames
+  // it's safe to assume they'd know what that means
+  return `Instagram does not support URLs with custom local hostnames: ${getBaseUrl()}. Please use direct ip for host in the remote settings instead.`;
+}
+
 export function InstagramSetupGuide() {
   const [checked, setChecked] =
     useState<Record<string, boolean>>(loadCheckedState);
@@ -326,19 +349,22 @@ export function InstagramSetupGuide() {
                           }}
                         />
                         {/* Show redirect URL inline for step 2c-2 */}
-                        {step.id === '2c-2' && (
-                          <Code
-                            block
-                            style={{
-                              marginTop: 4,
-                              marginLeft: 30,
-                              fontSize: 12,
-                              userSelect: 'all',
-                            }}
-                          >
-                            {`${getBaseUrl()}/api/websites/instagram/callback`}
-                          </Code>
-                        )}
+                        {step.id === '2c-2' &&
+                          (getInstagramRedirectUri() ? (
+                            <Code
+                              block
+                              style={{
+                                marginTop: 4,
+                                marginLeft: 30,
+                                fontSize: 12,
+                                userSelect: 'all',
+                              }}
+                            >
+                              {getInstagramRedirectUri()}
+                            </Code>
+                          ) : (
+                            <Text>{getInstagramRedirectUriError()}</Text>
+                          ))}
                       </div>
                     ))}
                   </Stack>

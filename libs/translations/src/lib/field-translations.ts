@@ -90,6 +90,7 @@ export const FieldLabelTranslations = {
   title: msg`Title`,
   uploadThumbnail: msg`Upload thumbnail`,
   useTitle: msg`Use title`,
+  useEmbed: msg`Use embeds for title and description`,
   viewPermissions: msg`View permissions`,
   violence: msg`Violence`,
   visibility: msg`Visibility`,

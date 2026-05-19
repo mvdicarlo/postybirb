@@ -1,27 +1,7 @@
-import {
-  BooleanField,
-  DescriptionField,
-  TagField,
-} from '@postybirb/form-builder';
-import { DescriptionType, DescriptionValue, TagValue } from '@postybirb/types';
-import { BaseWebsiteOptions } from '../../../models/base-website-options';
+import { BooleanField } from '@postybirb/form-builder';
+import { DiscordMessageSubmission } from './discord-message-submission';
 
-export class DiscordFileSubmission extends BaseWebsiteOptions {
-  @DescriptionField({
-    descriptionType: DescriptionType.MARKDOWN,
-    maxDescriptionLength: 2000,
-    expectsInlineTitle: true,
-  })
-  description: DescriptionValue;
-
-  @TagField({
-    hidden: true,
-  })
-  tags: TagValue;
-
+export class DiscordFileSubmission extends DiscordMessageSubmission {
   @BooleanField({ label: 'spoiler', section: 'website', span: 6 })
   isSpoiler = false;
-
-  @BooleanField({ label: 'useTitle', section: 'website', span: 6 })
-  useTitle = true;
 }

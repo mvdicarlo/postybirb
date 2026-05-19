@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { formBuilder } from '@postybirb/form-builder';
 import { Logger } from '@postybirb/logger';
 import {
   EntityId,
@@ -168,6 +169,7 @@ export class ValidationService {
           `Failed to find website instance for account ${websiteOption.accountId}`,
         );
       }
+
       // All sub-validations mutate the result object
       const result: ValidationResult = {
         id: websiteOption.id,
@@ -188,8 +190,13 @@ export class ValidationService {
       const defaultOpts = Object.assign(new DefaultWebsiteOptions(), {
         ...defaultOptions.data,
       });
+
+      const websiteOptions = website.getModelFor(submission.type);
+      // Derive all options and properties to operate on the same object that will be used for actual posting
+      formBuilder(websiteOptions, website.getWebsiteData());
+
       const mergedWebsiteOptions = Object.assign(
-        website.getModelFor(submission.type),
+        websiteOptions,
         websiteOption.data,
       ).mergeDefaults(defaultOpts);
 

@@ -100,9 +100,10 @@ export async function validateTitlePresence({
 }: ValidatorParams) {
   if (websiteInstance instanceof DefaultWebsite) return;
 
-  const titleField = mergedWebsiteOptions.getFormFieldFor('tags');
+  const titleField = mergedWebsiteOptions.getFormFieldFor('title');
   const descriptionField = mergedWebsiteOptions.getFormFieldFor('description');
   const { title, description } = data.options;
+
   if (titleField.hidden || descriptionField.hidden) return;
   if (!description || !title) return;
 

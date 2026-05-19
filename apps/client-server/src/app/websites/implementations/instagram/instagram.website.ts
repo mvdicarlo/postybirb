@@ -10,7 +10,6 @@ import {
   PostResponse,
   SimpleValidationResult,
 } from '@postybirb/types';
-import { PostyBirbEnvConfig } from '@postybirb/utils/common';
 import { calculateImageResize } from '@postybirb/utils/file-type';
 import { v4 as uuidv4 } from 'uuid';
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -25,7 +24,6 @@ import { DataPropertyAccessibility } from '../../models/data-property-accessibil
 import { FileWebsite } from '../../models/website-modifiers/file-website';
 import { Website } from '../../website';
 import {
-  getInstagramRedirectUri,
   InstagramApiService,
   retrieveOAuthCode,
 } from './instagram-api-service/instagram-api-service';
@@ -93,7 +91,7 @@ export default class Instagram
       return { success: true };
     },
 
-    getAuthUrl: async () => {
+    getAuthUrl: async ({ redirectUri }) => {
       const { appId } = this.websiteDataStore.getData();
       if (!appId) {
         return {
@@ -103,7 +101,6 @@ export default class Instagram
       }
 
       const state = uuidv4();
-      const redirectUri = getInstagramRedirectUri(PostyBirbEnvConfig.port);
       const url = InstagramApiService.getAuthUrl(appId, redirectUri, state);
       return { success: true, url, state };
     },
@@ -121,7 +118,7 @@ export default class Instagram
       return { success: false, message: 'No code available yet' };
     },
 
-    exchangeCode: async ({ code }) => {
+    exchangeCode: async ({ code, redirectUri }) => {
       const { appId, appSecret } = this.websiteDataStore.getData();
       if (!appId || !appSecret) {
         return { success: false, message: 'App credentials are not set' };
@@ -129,7 +126,6 @@ export default class Instagram
 
       try {
         // Step 1: Exchange code for short-lived token
-        const redirectUri = getInstagramRedirectUri(PostyBirbEnvConfig.port);
         const tokenResult = await InstagramApiService.exchangeCodeForToken(
           appId,
           appSecret,
