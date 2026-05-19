@@ -54,14 +54,14 @@ export class BBCodeConverter extends BaseConverter {
     }
 
     if (node.type === 'paragraph') {
-      let text = this.convertContent(node.content, context);
+      const text = this.convertContent(node.content, context);
 
       return this.withAlignAndIndentation(node, text);
     }
 
     if (node.type === 'heading') {
       const level = attrs.level ?? 1;
-      let text = `[h${level}]${this.convertContent(node.content, context)}[/h${level}]`;
+      const text = `[h${level}]${this.convertContent(node.content, context)}[/h${level}]`;
 
       return this.withAlignAndIndentation(node, text);
     }

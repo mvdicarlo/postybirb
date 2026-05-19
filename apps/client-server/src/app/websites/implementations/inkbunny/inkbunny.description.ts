@@ -15,7 +15,7 @@ export class InkbunnyConverter extends BBCodeConverter {
       };
       const level = postyBirbToInkBunnyLevelMapping[rawLevel];
 
-      let text = `${'[t]'.repeat(level)}${this.convertContent(node.content, context)}${'[/t]'.repeat(level)}`;
+      const text = `${'[t]'.repeat(level)}${this.convertContent(node.content, context)}${'[/t]'.repeat(level)}`;
 
       return this.withAlignAndIndentation(node, text);
     }
