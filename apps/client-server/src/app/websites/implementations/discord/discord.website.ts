@@ -118,6 +118,7 @@ export default class Discord
               postData.options.title,
               postData.options.description,
               postData.options.useTitle,
+              postData.options.useEmbed,
             ),
           }
         : {}),
@@ -164,6 +165,7 @@ export default class Discord
       postData.options.title,
       postData.options.description,
       postData.options.useTitle,
+      postData.options.useEmbed,
     );
     cancellationToken.throwIfCancelled();
     return Http.post(webhook, {
@@ -202,14 +204,29 @@ export default class Discord
     title: string,
     description: string,
     useTitle: boolean,
+    useEmbed: boolean,
   ) {
+    const { isForum } = this.websiteDataStore.getData();
+
+    if (!useEmbed) {
+      if (!description) throw new Error('No content to post');
+
+      return {
+        content: description,
+        allowed_mentions: {
+          parse: ['everyone', 'users', 'roles'],
+        },
+        embeds: [],
+        thread_name: isForum ? title || 'PostyBirb Post' : undefined,
+      };
+    }
+
     if (!description && !useTitle) {
       throw new Error('No content to post');
     }
 
     const mentions =
       description?.match(/(<){0,1}@(&){0,1}[a-zA-Z0-9]+(>){0,1}/g) || [];
-    const { isForum } = this.websiteDataStore.getData();
 
     return {
       content: mentions.length ? mentions.join(' ') : undefined,
