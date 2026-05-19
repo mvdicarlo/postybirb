@@ -25,7 +25,7 @@ export type InstagramOAuthRoutes = {
    * Generates and returns the Facebook OAuth dialog URL.
    */
   getAuthUrl: {
-    request: Record<string, never>;
+    request: { redirectUri: string };
     response: {
       success: boolean;
       url?: string;
@@ -49,7 +49,7 @@ export type InstagramOAuthRoutes = {
    * Exchanges the authorization code for tokens, discovers the IG Business account.
    */
   exchangeCode: {
-    request: { code: string };
+    request: { code: string; redirectUri: string };
     response: {
       success: boolean;
       igUsername?: string;
