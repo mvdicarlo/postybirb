@@ -7,7 +7,6 @@ import {
   closestCenter,
   DndContext,
   DragEndEvent,
-  KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
@@ -15,7 +14,6 @@ import {
 import {
   arrayMove,
   SortableContext,
-  sortableKeyboardCoordinates,
   useSortable,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
@@ -37,6 +35,7 @@ import { ISubmissionFileDto } from '@postybirb/types';
 import { IconArrowsSort, IconListDetails } from '@tabler/icons-react';
 import {
   CSSProperties,
+  PointerEvent,
   useCallback,
   useEffect,
   useMemo,
@@ -59,6 +58,28 @@ function orderFiles(files: ISubmissionFileDto[]): ISubmissionFileDto[] {
       const bOrder = b.order ?? Number.MAX_SAFE_INTEGER;
       return aOrder - bOrder;
     });
+}
+
+// Custom sensor that ignores pointer events on form fields and allows for text selection without dragging files
+class IgnoreFormFieldsPointerSensor extends PointerSensor {
+  static activators = [
+    {
+      eventName: 'onPointerDown' as const,
+      handler: ({ nativeEvent: event }: PointerEvent) => {
+        const target = event.target as HTMLElement;
+        const selector =
+          // eslint-disable-next-line lingui/no-unlocalized-strings
+          'input, textarea, select, button, [contenteditable="true"]';
+
+        // Block drag start when interacting with inputs, textareas, buttons, etc.
+        if (target && (target.matches(selector) || target.closest(selector))) {
+          return false;
+        }
+
+        return true;
+      },
+    },
+  ];
 }
 
 /** Wrapper that makes a SubmissionFileCard sortable via dnd-kit */
@@ -115,11 +136,8 @@ export function SubmissionFileManager() {
   }, [submission.files, fileIds]);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
+    useSensor(IgnoreFormFieldsPointerSensor, {
       activationConstraint: { distance: 8 },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
     }),
   );
 
