@@ -70,8 +70,9 @@ export class BBCodeConverter extends BaseConverter {
     return this.convertContent(node.content, context);
   }
 
-  protected withAlignAndIndentation(node: TipTapNode, text: string) {
+  protected withAlignAndIndentation(node: TipTapNode, childrenText: string) {
     const attrs = node.attrs ?? {};
+    let text = childrenText;
 
     // Apply text alignment if not default
     if (attrs.textAlign && attrs.textAlign !== 'left') {
