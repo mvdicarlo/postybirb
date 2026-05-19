@@ -1,5 +1,5 @@
 import { EntityId, IUpdateSettingsDto, SettingsDto } from '@postybirb/types';
-import { StartupOptions } from '@postybirb/utils/electron';
+import { StartupOptions } from '@postybirb/utils/common';
 import { HttpClient } from '../transports/http-client';
 
 class SettingsApi {

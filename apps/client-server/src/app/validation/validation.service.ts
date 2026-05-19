@@ -15,7 +15,6 @@ import { Account, Submission, WebsiteOptions } from '../drizzle/models';
 import { FileConverterService } from '../file-converter/file-converter.service';
 import { FileService } from '../file/file.service';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
-import DefaultWebsite from '../websites/implementations/default/default.website';
 import { DefaultWebsiteOptions } from '../websites/models/default-website-options';
 import { isFileWebsite } from '../websites/models/website-modifiers/file-website';
 import { isMessageWebsite } from '../websites/models/website-modifiers/message-website';
@@ -157,7 +156,9 @@ export class ValidationService {
       }
 
       const website = websiteOption.isDefault
-        ? new DefaultWebsite(new Account(websiteOption.account))
+        ? this.websiteRegistry.createDefaultWebsiteInstance(
+            new Account(websiteOption.account),
+          )
         : this.websiteRegistry.findInstance(websiteOption.account);
 
       if (!website) {

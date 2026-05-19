@@ -1,5 +1,5 @@
 import { SelectOption } from '@postybirb/form-builder';
-import { Http } from '@postybirb/http';
+
 import {
   FileType,
   ILoginState,
@@ -9,7 +9,6 @@ import {
   SimpleValidationResult,
   SubmissionRating,
 } from '@postybirb/types';
-import { BrowserWindowUtils } from '@postybirb/utils/electron';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
@@ -73,13 +72,13 @@ export default class Itaku
     };
 
   public async onLogin(): Promise<ILoginState> {
-    const localStorage = await BrowserWindowUtils.getLocalStorage<{
+    const localStorage = await this.platform.browser.getLocalStorage<{
       token: string;
     }>(this.accountId, this.BASE_URL);
 
     if (localStorage.token) {
       this.sessionData.token = localStorage.token.replace(/"/g, '');
-      const user = await Http.get<ItakuUserInfo>(
+      const user = await this.platform.http.get<ItakuUserInfo>(
         `${this.BASE_URL}/api/auth/user/`,
         {
           partition: this.accountId,
@@ -101,7 +100,7 @@ export default class Itaku
 
   private async retrieveFolders(): Promise<void> {
     try {
-      const notificationFolderRes = await Http.get<
+      const notificationFolderRes = await this.platform.http.get<
         { id: string; num_images: number; title: string }[]
       >(
         `${this.BASE_URL}/api/post_folders/?owner=${this.sessionData.profile.owner}`,
@@ -119,7 +118,7 @@ export default class Itaku
           label: f.title,
         }));
 
-      const galleryFolderRes = await Http.get<{
+      const galleryFolderRes = await this.platform.http.get<{
         count: number;
         links: object;
         results: {

@@ -1,6 +1,6 @@
 // eslint-disable-next-line max-classes-per-file
 import { SelectOption } from '@postybirb/form-builder';
-import { getParsedProxiesFor } from '@postybirb/http';
+
 import {
   FileType,
   ILoginState,
@@ -199,8 +199,8 @@ export default class Telegram
 
     if (!telegramProxySettings) {
       const proxies = [
-        ...(await getParsedProxiesFor('https://telegram.org')),
-        ...(await getParsedProxiesFor('https://t.me/')),
+        ...(await this.platform.http.getParsedProxiesFor('https://telegram.org')),
+        ...(await this.platform.http.getParsedProxiesFor('https://t.me/')),
       ];
       const proxy =
         proxies.find((e) => e?.type === 'SOCKS') ??

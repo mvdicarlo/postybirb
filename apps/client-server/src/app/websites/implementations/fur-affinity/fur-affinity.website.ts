@@ -1,5 +1,5 @@
 import { SelectOption } from '@postybirb/form-builder';
-import { Http } from '@postybirb/http';
+
 import {
   FileType,
   ILoginState,
@@ -85,7 +85,7 @@ export default class FurAffinity
 
   public async onLogin(): Promise<ILoginState> {
     try {
-      const res = await Http.get<string>(
+      const res = await this.platform.http.get<string>(
         `${this.BASE_URL}/controls/submissions`,
         { partition: this.accountId },
       );
@@ -182,7 +182,7 @@ export default class FurAffinity
     files: PostingFile[],
     cancellationToken: CancellableToken,
   ): Promise<IPostResponse> {
-    const part1 = await Http.get<string>(`${this.BASE_URL}/submit/`, {
+    const part1 = await this.platform.http.get<string>(`${this.BASE_URL}/submit/`, {
       partition: this.accountId,
       headers: {
         Referer: 'https://www.furaffinity.net/submit/',
@@ -319,7 +319,7 @@ export default class FurAffinity
     postData: PostData<FurAffinityMessageSubmission>,
     cancellationToken: CancellableToken,
   ): Promise<IPostResponse> {
-    const page = await Http.get<string>(`${this.BASE_URL}/controls/journal`, {
+    const page = await this.platform.http.get<string>(`${this.BASE_URL}/controls/journal`, {
       partition: this.accountId,
     });
     PostResponse.validateBody(this, page);

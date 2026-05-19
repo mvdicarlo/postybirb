@@ -1,8 +1,8 @@
 import { Injectable, Optional } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { PlatformService } from '@postybirb/platform';
 import { NOTIFICATION_UPDATES } from '@postybirb/socket-events';
 import { EntityId } from '@postybirb/types';
-import { Notification as ElectronNotification } from 'electron';
 import { PostyBirbService } from '../common/service/postybirb-service';
 import { Notification } from '../drizzle/models/notification.entity';
 import { SettingsService } from '../settings/settings.service';
@@ -25,6 +25,7 @@ export class NotificationsService extends PostyBirbService<'NotificationSchema'>
    */
   constructor(
     private readonly settingsService: SettingsService,
+    private readonly platform: PlatformService,
     @Optional() webSocket?: WSGateway,
   ) {
     super('NotificationSchema', webSocket);
@@ -105,48 +106,22 @@ export class NotificationsService extends PostyBirbService<'NotificationSchema'>
       return;
     }
 
-    if (
-      desktopNotifications.showOnDirectoryWatcherError &&
-      tags.includes('directory-watcher') &&
-      type === 'error'
-    ) {
-      new ElectronNotification({
-        title,
-        body: message,
-      }).show();
-    }
+    const shouldShow =
+      (desktopNotifications.showOnDirectoryWatcherError &&
+        tags.includes('directory-watcher') &&
+        type === 'error') ||
+      (desktopNotifications.showOnDirectoryWatcherSuccess &&
+        tags.includes('directory-watcher') &&
+        type === 'success') ||
+      (desktopNotifications.showOnPostError &&
+        tags.includes('post') &&
+        type === 'error') ||
+      (desktopNotifications.showOnPostSuccess &&
+        tags.includes('post') &&
+        type === 'success');
 
-    if (
-      desktopNotifications.showOnDirectoryWatcherSuccess &&
-      tags.includes('directory-watcher') &&
-      type === 'success'
-    ) {
-      new ElectronNotification({
-        title,
-        body: message,
-      }).show();
-    }
-
-    if (
-      desktopNotifications.showOnPostError &&
-      tags.includes('post') &&
-      type === 'error'
-    ) {
-      new ElectronNotification({
-        title,
-        body: message,
-      }).show();
-    }
-
-    if (
-      desktopNotifications.showOnPostSuccess &&
-      tags.includes('post') &&
-      type === 'success'
-    ) {
-      new ElectronNotification({
-        title,
-        body: message,
-      }).show();
+    if (shouldShow) {
+      this.platform.notification.show({ title, body: message });
     }
   }
 

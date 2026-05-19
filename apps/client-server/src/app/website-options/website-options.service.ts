@@ -37,7 +37,6 @@ import {
   migrateDescription,
 } from '../utils/blocknote-to-tiptap';
 import { ValidationService } from '../validation/validation.service';
-import DefaultWebsite from '../websites/implementations/default/default.website';
 import { DefaultWebsiteOptions } from '../websites/models/default-website-options';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { CreateWebsiteOptionsDto } from './dtos/create-website-options.dto';
@@ -470,7 +469,9 @@ export class WebsiteOptionsService
     }
 
     const website = websiteOption.isDefault
-      ? new DefaultWebsite(new Account(websiteOption.account))
+      ? this.websiteRegistry.createDefaultWebsiteInstance(
+          new Account(websiteOption.account),
+        )
       : this.websiteRegistry.findInstance(websiteOption.account);
 
     if (!website) {

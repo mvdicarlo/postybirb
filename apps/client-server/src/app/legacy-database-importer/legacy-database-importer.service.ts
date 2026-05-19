@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
-import { app } from 'electron';
+import { PlatformService } from '@postybirb/platform';
 import { join } from 'path';
 import { AccountService } from '../account/account.service';
 import { LegacyConverter } from './converters/legacy-converter';
@@ -16,12 +16,17 @@ import { LegacyImportDto } from './dtos/legacy-import.dto';
 export class LegacyDatabaseImporterService {
   private readonly logger = Logger(LegacyDatabaseImporterService.name);
 
-  protected readonly LEGACY_POSTYBIRB_PLUS_PATH = join(
-    app.getPath('documents'),
-    'PostyBirb',
-  );
+  protected readonly LEGACY_POSTYBIRB_PLUS_PATH: string;
 
-  constructor(private readonly accountService: AccountService) {}
+  constructor(
+    private readonly accountService: AccountService,
+    platform: PlatformService,
+  ) {
+    this.LEGACY_POSTYBIRB_PLUS_PATH = join(
+      platform.app.getPath('documents'),
+      'PostyBirb',
+    );
+  }
 
   async import(importRequest: LegacyImportDto): Promise<{ errors: Error[] }> {
     const path = importRequest.customPath || this.LEGACY_POSTYBIRB_PLUS_PATH;

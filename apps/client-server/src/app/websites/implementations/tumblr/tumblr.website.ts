@@ -1,6 +1,6 @@
 // BlockNote types are used in the UI, but conversion happens via DescriptionNode
 // No need to import BlockNote in the server-side website implementation
-import { Http } from '@postybirb/http';
+
 import {
   DynamicObject,
   FileType,
@@ -96,7 +96,7 @@ export default class Tumblr
     };
 
   public async onLogin(): Promise<ILoginState> {
-    const page = await Http.get<string>(`${this.BASE_URL}`, {
+    const page = await this.platform.http.get<string>(`${this.BASE_URL}`, {
       partition: this.accountId,
     });
 

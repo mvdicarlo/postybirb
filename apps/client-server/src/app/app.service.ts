@@ -1,13 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { app } from 'electron';
+import { PlatformService } from '@postybirb/platform';
 
 @Injectable()
 export class AppService {
+  constructor(private readonly platform: PlatformService) {}
+
   getData(): Record<string, string> {
     return {
       message: 'pong',
-      version: app.getVersion(),
-      location: app.getPath('userData'),
+      version: this.platform.app.getVersion(),
+      location: this.platform.app.getPath('userData'),
     };
   }
 }

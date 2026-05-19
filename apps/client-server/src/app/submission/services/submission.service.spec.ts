@@ -23,6 +23,7 @@ import { UpdateFileService } from '../../file/services/update-file.service';
 import { FormGeneratorModule } from '../../form-generator/form-generator.module';
 import { SharpInstanceManager } from '../../image-processing/sharp-instance-manager';
 import { PostParsersModule } from '../../post-parsers/post-parsers.module';
+import { TestPlatformModule } from '../../platform/testing/test-platform.module';
 import { UserSpecifiedWebsiteOptionsModule } from '../../user-specified-website-options/user-specified-website-options.module';
 import { UserSpecifiedWebsiteOptionsService } from '../../user-specified-website-options/user-specified-website-options.service';
 import { waitUntilPromised } from '../../utils/wait.util';
@@ -55,6 +56,7 @@ describe('SubmissionService', () => {
     try {
       module = await Test.createTestingModule({
         imports: [
+          TestPlatformModule,
           AccountModule,
           WebsitesModule,
           UserSpecifiedWebsiteOptionsModule,

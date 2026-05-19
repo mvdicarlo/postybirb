@@ -1,5 +1,6 @@
 // eslint-disable-next-line max-classes-per-file
-import { Http } from '@postybirb/http';
+
+// eslint-disable-next-line max-classes-per-file
 import {
   E621AccountData,
   E621OAuthRoutes,
@@ -14,7 +15,6 @@ import {
   SubmissionRating,
   TipTapNode,
 } from '@postybirb/types';
-import { app } from 'electron';
 import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
 import { BBCodeConverter } from '../../../post-parsers/models/description-node/converters/bbcode-converter';
 import { ConversionContext } from '../../../post-parsers/models/description-node/description-node.base';
@@ -81,7 +81,7 @@ export default class E621
     login: async (data) => {
       // This check is only run at account creation stage because v3 did this. Maybe its worth moving to the onLogin?
       try {
-        const response = await Http.get(
+        const response = await this.platform.http.get(
           `https://e621.net/posts.json?login=${encodeURIComponent(data.username)}&api_key=${
             data.key
           }&limit=1`,
@@ -111,7 +111,9 @@ export default class E621
     return new E621Converter();
   }
 
-  private readonly headers = { 'User-Agent': `PostyBirb/${app.getVersion()}` };
+  private get headers() {
+    return { 'User-Agent': `PostyBirb/${this.platform.app.getVersion()}` };
+  }
 
   private async request<T>(
     cancellableToken: CancellableToken,
@@ -122,10 +124,10 @@ export default class E621
     cancellableToken.throwIfCancelled();
 
     if (method === 'get') {
-      return Http.get<T>(`${this.BASE_URL}${url}`, { partition: '' });
+      return this.platform.http.get<T>(`${this.BASE_URL}${url}`, { partition: '' });
     }
 
-    return Http.post<T>(`${this.BASE_URL}${url}`, {
+    return this.platform.http.post<T>(`${this.BASE_URL}${url}`, {
       partition: '',
       type: 'multipart',
       data: form,
