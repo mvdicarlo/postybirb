@@ -10,6 +10,7 @@ import {
   PostResponse,
   SubmissionRating,
 } from '@postybirb/types';
+import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
@@ -25,7 +26,9 @@ import {
   PostBatchData,
 } from '../../models/website-modifiers/file-website';
 import { OAuthWebsite } from '../../models/website-modifiers/oauth-website';
+import { WithCustomDescriptionParser } from '../../models/website-modifiers/with-custom-description-parser';
 import { Website } from '../../website';
+import { InkbunnyConverter } from './inkbunny.description';
 import { InkbunnyFileSubmission } from './models/inkbunny-file-submission';
 
 @WebsiteMetadata({
@@ -79,7 +82,8 @@ export default class Inkbunny
   extends Website<InkbunnyAccountData>
   implements
     FileWebsite<InkbunnyFileSubmission>,
-    OAuthWebsite<InkbunnyOAuthRoutes>
+    OAuthWebsite<InkbunnyOAuthRoutes>,
+    WithCustomDescriptionParser
 {
   protected BASE_URL = 'https://inkbunny.net';
 
@@ -156,6 +160,10 @@ export default class Inkbunny
 
   calculateImageResize(): ImageResizeProps {
     return undefined;
+  }
+
+  getDescriptionConverter(): BaseConverter {
+    return new InkbunnyConverter();
   }
 
   async onPostFileSubmission(
@@ -246,7 +254,7 @@ export default class Inkbunny
         .withException(
           error instanceof Error ? error : new Error(String(error)),
         )
-        .withAdditionalInfo({ 
+        .withAdditionalInfo({
           fileCount: files.length,
           batchIndex: batch.index,
           totalBatches: batch.totalBatches,

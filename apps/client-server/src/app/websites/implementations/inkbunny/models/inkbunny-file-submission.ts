@@ -53,7 +53,7 @@ export class InkbunnyFileSubmission extends BaseWebsiteOptions {
   rating: SubmissionRating;
 
   @DescriptionField({
-    descriptionType: DescriptionType.BBCODE,
+    descriptionType: DescriptionType.CUSTOM,
   })
   description: DescriptionValue;
 
