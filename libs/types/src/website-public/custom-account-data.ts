@@ -6,6 +6,7 @@ export interface CustomAccountData {
   headers: { name: string; value: string }[];
   notificationUrl?: string;
   ratingField?: string;
+  sourceUrlsField?: string;
   tagField?: string;
   thumbnailField?: string;
   titleField?: string;

@@ -4,14 +4,16 @@ export type WebsiteFileOptions = {
   /**
    * A list of accepted Mime types.
    * Only needed when using File posting websites.
+   *
+   * Set empty to accept all mime types
    */
   acceptedMimeTypes: string[];
 
   /**
    * The acceptable file size limits in bytes.
    * Only needed when using File posting websites.
-   * Supports FileType(FileType.IMAGE), MimeType (image/png), WildCard (image/*),
-   * and File Extension (e.g. '.txt')
+   * Supports FileType (FileType.IMAGE), MimeType (image/png), WildCard (image/*),
+   * and File Extension (e.g. '.txt'). If the limit is not specified or not found for the file type Number.MAX_SAFE_INTEGER is used
    *
    * Example:
    *  {
