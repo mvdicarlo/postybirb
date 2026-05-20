@@ -104,8 +104,6 @@ function E621TagSearchItem(props: {
 
     const url = `https://e621.net/wiki_pages.json?search[title]=${encodeURIComponent(tag.name)}`;
     const pages = await e621Get<E621WikiPage[]>(url);
-    if (!pages.length) return undefined;
-
     const page = pages[0];
     wikiPagesCache.set(tag.name, page);
     return page;
@@ -174,9 +172,6 @@ function E621TagSearchItem(props: {
                   {wikiPage.loading ? (
                     <Group gap="xs">
                       <Loader size="xs" />
-                      <Text size="xs" c="dimmed">
-                        <Loader />
-                      </Text>
                     </Group>
                   ) : wikiPage.value?.body ? (
                     <Box
