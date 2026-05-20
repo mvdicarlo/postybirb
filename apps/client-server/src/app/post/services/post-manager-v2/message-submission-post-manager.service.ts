@@ -1,10 +1,10 @@
 import { Injectable, Optional } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import {
-    AccountId,
-    PostData,
-    PostEventType,
-    SubmissionType,
+  AccountId,
+  PostData,
+  PostEventType,
+  SubmissionType,
 } from '@postybirb/types';
 import { PostRecord } from '../../../drizzle/models';
 import { NotificationsService } from '../../../notifications/notifications.service';
@@ -101,6 +101,7 @@ export class MessageSubmissionPostManager extends BasePostManager {
           website: instance.decoratedProps.metadata.name,
         },
         responseMessage: result.message,
+        additionalInfo: result.additionalInfo,
       },
     });
 

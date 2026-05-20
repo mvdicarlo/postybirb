@@ -1,4 +1,3 @@
-
 import {
   ILoginState,
   ImageResizeProps,
@@ -127,15 +126,18 @@ export abstract class PhilomenaWebsite<
    * Philomena sites use CSRF tokens and other hidden fields.
    */
   protected async getUploadFormFields(): Promise<Record<string, string>> {
-    const uploadPage = await this.platform.http.get<string>(`${this.BASE_URL}/images/new`, {
-      partition: this.accountId,
-    });
+    const uploadPage = await this.platform.http.get<string>(
+      `${this.BASE_URL}/images/new`,
+      {
+        partition: this.accountId,
+      },
+    );
 
     const root = parse(uploadPage.body);
     const form = root.querySelector('#content form');
-    const inputs = form.querySelectorAll('input, textarea, select');
+    const inputs = form?.querySelectorAll('input, textarea, select') || [];
 
-    return inputs.reduce((acc, input) => {
+    return inputs.reduce((acc: Record<string, string>, input) => {
       const name = input.getAttribute('name');
       if (name) {
         const value = input.getAttribute('value') || input.textContent.trim();
@@ -162,14 +164,31 @@ export abstract class PhilomenaWebsite<
       .asMultipart()
       .withData(fields)
       .setField('_method', 'post')
+      .setField('image[anonymous]', 'false')
       .setField('image[tag_input]', tagsWithRating.join(', ').trim())
       .addFile('image[image]', file)
       .setField('image[description]', description || '')
-      .setField('image[source_url]', file.metadata.sourceUrls?.[0] || '');
+      .setField(
+        'image[sources][0][source]',
+        file.metadata.sourceUrls?.[0] || '',
+      );
 
     const result = await builder.send<string>(`${this.BASE_URL}/images`);
 
-    return PostResponse.fromWebsite(this).withAdditionalInfo(result.body);
+    const { body, responseUrl } = result;
+    if (body.includes('Image has already been uploaded')) {
+      return PostResponse.fromWebsite(this)
+        .withAdditionalInfo(result.body)
+        .withException(
+          new Error(
+            'Duplicate image - the file you uploaded already exists on the site.',
+          ),
+        );
+    }
+
+    return PostResponse.fromWebsite(this)
+      .withAdditionalInfo(result.body)
+      .withSourceUrl(responseUrl);
   }
 
   onValidateFileSubmission = validatorPassthru;
