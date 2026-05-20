@@ -1,13 +1,13 @@
-import { BlueskyConverter } from './bluesky.description';
+import { BlueskyConverter } from './bluesky-description-converter';
 
 describe('BlueskyDescriptionConverter', () => {
   it('should convert links', async () => {
     expect(
       (
         await BlueskyConverter.getRichText(
-          '{"text":"Text @nonexistentmentionwithwrongid.bluesky.social!","links":[]}'
+          '{"text":"Text @nonexistentmentionwithwrongid.bluesky.social!","links":[]}',
         )
-      ).facets
+      ).facets,
     ).toMatchInlineSnapshot(`
       [
         {
