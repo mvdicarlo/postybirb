@@ -1,6 +1,15 @@
-import { DescriptionType } from '@postybirb/types';
+import { DescriptionType, TipTapNode } from '@postybirb/types';
 import DefaultWebsite from '../../websites/implementations/default/default.website';
 import { ValidatorParams } from './validator.type';
+
+function hasNodeType(nodes: TipTapNode[], type: string): boolean {
+  for (const node of nodes) {
+    if (node?.type === type) return true;
+    if (Array.isArray(node?.content) && hasNodeType(node.content, type))
+      return true;
+  }
+  return false;
+}
 
 export async function validateDescriptionMaxLength({
   data,
@@ -107,7 +116,14 @@ export async function validateTitlePresence({
   if (titleField.hidden || descriptionField.hidden) return;
   if (!description || !title) return;
 
-  const hasTitleText = description.includes(title);
+  // Check raw DescriptionValue rather than the rendered string, which may have
+  // HTML-encoded characters that cause description.includes(title) to fail.
+  const websiteDescValue = mergedWebsiteOptions.description;
+  const hasTitleShortcut = hasNodeType(
+    websiteDescValue?.description?.content ?? [],
+    'titleShortcut',
+  );
+  const hasTitleText = !!websiteDescValue?.insertTitle || hasTitleShortcut;
 
   if (descriptionField.expectsInlineTitle) {
     if (!hasTitleText) {
