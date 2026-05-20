@@ -28,7 +28,7 @@ import {
 import { OAuthWebsite } from '../../models/website-modifiers/oauth-website';
 import { WithCustomDescriptionParser } from '../../models/website-modifiers/with-custom-description-parser';
 import { Website } from '../../website';
-import { InkbunnyConverter } from './inkbunny.description';
+import { InkbunnyConverter } from './inkbunny-description-converter';
 import { InkbunnyFileSubmission } from './models/inkbunny-file-submission';
 
 @WebsiteMetadata({
