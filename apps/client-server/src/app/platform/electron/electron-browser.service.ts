@@ -1,3 +1,5 @@
+import { Injectable } from '@nestjs/common';
+import { PlatformBrowserService } from '@postybirb/platform';
 import { BrowserWindow } from 'electron';
 
 function delay(ms: number): Promise<void> {
@@ -6,8 +8,11 @@ function delay(ms: number): Promise<void> {
   });
 }
 
-async function createWindow(partition: string, url: string) {
-  const bw: Electron.BrowserWindow = new BrowserWindow({
+async function createWindow(
+  partition: string,
+  url: string,
+): Promise<Electron.BrowserWindow> {
+  const bw = new BrowserWindow({
     show: false,
     webPreferences: {
       partition: `persist:${partition}`,
@@ -24,8 +29,15 @@ async function createWindow(partition: string, url: string) {
   return bw;
 }
 
-export class BrowserWindowUtils {
-  static async getLocalStorage<T = object>(
+/**
+ * Electron-backed implementation of {@link PlatformBrowserService}. Drives a
+ * hidden {@link BrowserWindow} with a per-partition session to let callers
+ * read localStorage, ping URLs, or evaluate scripts against an authenticated
+ * page.
+ */
+@Injectable()
+export class ElectronBrowserService extends PlatformBrowserService {
+  async getLocalStorage<T = Record<string, string>>(
     partition: string,
     url: string,
     wait?: number,
@@ -48,11 +60,12 @@ export class BrowserWindowUtils {
     }
   }
 
-  public static async runScriptOnPage<T>(
+  async runScriptOnPage<T>(
     partition: string,
     url: string,
     script: string,
     wait = 0,
+    timeout = 60_000,
   ): Promise<T> {
     const bw = await createWindow(partition, url);
     try {
@@ -61,14 +74,23 @@ export class BrowserWindowUtils {
       }
 
       // Using promise to handle errors. See more: https://github.com/electron/electron/pull/11158
-      const page = await bw.webContents.executeJavaScript(`
+      const page = await Promise.race([
+        bw.webContents.executeJavaScript(`
       (function() {
         try {
           ${script}
         } catch (e) {
           return Promise.reject(e);
         }
-      })()`);
+      })()`),
+        new Promise<never>((_, reject) => {
+          setTimeout(
+            () =>
+              reject(new Error(`runScriptOnPage timed out after ${timeout}ms`)),
+            timeout,
+          );
+        }),
+      ]);
       return page;
     } catch (err) {
       const e = err as Error;
@@ -85,34 +107,10 @@ export class BrowserWindowUtils {
     }
   }
 
-  public static async ping(partition: string, url: string): Promise<void> {
+  async ping(partition: string, url: string): Promise<void> {
     const bw = await createWindow(partition, url);
     if (!bw.isDestroyed()) {
       bw.destroy();
-    }
-  }
-
-  public static async getFormData(
-    partition: string,
-    url: string,
-    selector: { id?: string; custom?: string },
-  ): Promise<object> {
-    const bw = await createWindow(partition, url);
-    try {
-      return await bw.webContents.executeJavaScript(
-        `JSON.parse(JSON.stringify(Array.from(new FormData(${
-          selector.id
-            ? `document.getElementById('${selector.id}')`
-            : selector.custom
-        })).reduce((obj, [k, v]) => ({...obj, [k]: v}), {})))`,
-      );
-    } catch (err) {
-      bw.destroy();
-      throw err;
-    } finally {
-      if (!bw.isDestroyed()) {
-        bw.destroy();
-      }
     }
   }
 }

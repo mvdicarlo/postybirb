@@ -16,6 +16,7 @@ import { CreateFileService } from '../file/services/create-file.service';
 import { UpdateFileService } from '../file/services/update-file.service';
 import { SharpInstanceManager } from '../image-processing/sharp-instance-manager';
 import { FormGeneratorModule } from '../form-generator/form-generator.module';
+import { TestPlatformModule } from '../platform/testing/test-platform.module';
 import { PostParsersModule } from '../post-parsers/post-parsers.module';
 import { CreateSubmissionDto } from '../submission/dtos/create-submission.dto';
 import { FileSubmissionService } from '../submission/services/file-submission.service';
@@ -60,6 +61,7 @@ describe('WebsiteOptionsService', () => {
     try {
       module = await Test.createTestingModule({
         imports: [
+          TestPlatformModule,
           WebsitesModule,
           AccountModule,
           UserSpecifiedWebsiteOptionsModule,

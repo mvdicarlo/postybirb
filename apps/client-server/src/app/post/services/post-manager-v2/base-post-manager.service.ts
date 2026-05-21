@@ -1,24 +1,24 @@
 import {
-  Logger,
-  trackEvent,
-  trackException,
-  trackMetric,
+    Logger,
+    trackEvent,
+    trackException,
+    trackMetric,
 } from '@postybirb/logger';
 import { POST_WAIT_STATE } from '@postybirb/socket-events';
 import {
-  AccountId,
-  EntityId,
-  IPostWaitState,
-  PostData,
-  PostEventType,
-  PostRecordState,
-  PostResponse,
-  SubmissionType,
+    AccountId,
+    EntityId,
+    IPostWaitState,
+    PostData,
+    PostEventType,
+    PostRecordState,
+    PostResponse,
+    SubmissionType,
 } from '@postybirb/types';
 import {
-  PostRecord,
-  Submission,
-  WebsiteOptions,
+    PostRecord,
+    Submission,
+    WebsiteOptions,
 } from '../../../drizzle/models';
 import { PostyBirbDatabase } from '../../../drizzle/postybirb-database/postybirb-database';
 import { NotificationsService } from '../../../notifications/notifications.service';
@@ -261,6 +261,8 @@ export abstract class BasePostManager {
         instance,
         errorResponse,
         data,
+        entity.submissionId,
+        submission.type,
       );
 
       // Track failure in App Insights (detailed)
@@ -343,6 +345,8 @@ export abstract class BasePostManager {
    * @param {Website<unknown>} instance - The website instance
    * @param {PostResponse} errorResponse - The error response
    * @param {PostData} [postData] - The post data
+   * @param {string} [submissionId] - The submission ID for notification linking
+   * @param {string} [submissionType] - The submission type for navigation
    */
   protected async handlePostFailure(
     postRecordId: EntityId,
@@ -350,6 +354,8 @@ export abstract class BasePostManager {
     instance: Website<unknown>,
     errorResponse: PostResponse,
     postData?: PostData,
+    submissionId?: string,
+    submissionType?: string,
   ): Promise<void> {
     await this.postEventRepository.insert({
       postRecordId,
@@ -374,7 +380,10 @@ export abstract class BasePostManager {
       title: `Failed to post to ${instance.decoratedProps.metadata.displayName}`,
       message: errorResponse.message || 'Unknown error',
       tags: ['post-failure', instance.decoratedProps.metadata.name],
-      data: {},
+      data: {
+        ...(submissionId && { submissionId }),
+        ...(submissionType && { submissionType }),
+      },
     });
   }
 

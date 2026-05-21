@@ -10,7 +10,6 @@ import {
   PostResponse,
   SimpleValidationResult,
 } from '@postybirb/types';
-import { PostyBirbEnvConfig } from '@postybirb/utils/electron';
 import { calculateImageResize } from '@postybirb/utils/file-type';
 import { v4 as uuidv4 } from 'uuid';
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -25,7 +24,6 @@ import { DataPropertyAccessibility } from '../../models/data-property-accessibil
 import { FileWebsite } from '../../models/website-modifiers/file-website';
 import { Website } from '../../website';
 import {
-  getInstagramRedirectUri,
   InstagramApiService,
   retrieveOAuthCode,
 } from './instagram-api-service/instagram-api-service';
@@ -93,7 +91,7 @@ export default class Instagram
       return { success: true };
     },
 
-    getAuthUrl: async () => {
+    getAuthUrl: async ({ redirectUri }) => {
       const { appId } = this.websiteDataStore.getData();
       if (!appId) {
         return {
@@ -103,7 +101,6 @@ export default class Instagram
       }
 
       const state = uuidv4();
-      const redirectUri = getInstagramRedirectUri(PostyBirbEnvConfig.port);
       const url = InstagramApiService.getAuthUrl(appId, redirectUri, state);
       return { success: true, url, state };
     },
@@ -121,7 +118,7 @@ export default class Instagram
       return { success: false, message: 'No code available yet' };
     },
 
-    exchangeCode: async ({ code }) => {
+    exchangeCode: async ({ code, redirectUri }) => {
       const { appId, appSecret } = this.websiteDataStore.getData();
       if (!appId || !appSecret) {
         return { success: false, message: 'App credentials are not set' };
@@ -129,7 +126,6 @@ export default class Instagram
 
       try {
         // Step 1: Exchange code for short-lived token
-        const redirectUri = getInstagramRedirectUri(PostyBirbEnvConfig.port);
         const tokenResult = await InstagramApiService.exchangeCodeForToken(
           appId,
           appSecret,
@@ -389,22 +385,19 @@ export default class Instagram
     const validator = this.createValidator<InstagramFileSubmission>();
 
     // Validate image aspect ratios
-    // Instagram only supports specific aspect ratios:
-    // 1:1 (square) = 1.0, 4:5 (portrait) = 0.8, 1.91:1 (landscape) = 1.91
-    const SUPPORTED_RATIOS = [
-      { name: '1:1', ratio: 1 / 1 },
-      { name: '4:5', ratio: 4 / 5 },
-      { name: '1.91:1', ratio: 1.91 / 1 },
-    ];
+    // Instagram only supports aspect ratios between 3:4 and 1.91:1
     const RATIO_TOLERANCE = 0.02; // Allow small rounding differences
+
+    const MIN_RATIO = 0.75;
+    const MAX_RATIO = 1.91;
 
     const files = postData.submission?.files ?? [];
     for (const file of files) {
       if (file.width && file.height) {
         const ratio = file.width / file.height;
-        const isSupported = SUPPORTED_RATIOS.some(
-          (sr) => Math.abs(ratio - sr.ratio) <= RATIO_TOLERANCE,
-        );
+        const isSupported =
+          ratio >= MIN_RATIO - RATIO_TOLERANCE &&
+          ratio <= MAX_RATIO + RATIO_TOLERANCE;
         if (!isSupported) {
           validator.error('validation.file.instagram.invalid-aspect-ratio', {
             fileName: file.fileName,

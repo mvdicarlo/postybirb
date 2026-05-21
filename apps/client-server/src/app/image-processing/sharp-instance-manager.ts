@@ -1,7 +1,7 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import { ImageResizeProps } from '@postybirb/types';
-import { IsTestEnvironment } from '@postybirb/utils/electron';
+import { IsTestEnvironment } from '@postybirb/utils/common';
 import { existsSync } from 'fs';
 import { cpus } from 'os';
 import { join, resolve } from 'path';

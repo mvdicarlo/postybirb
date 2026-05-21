@@ -1,4 +1,4 @@
-import { HttpResponse } from '@postybirb/http';
+import { HttpResponse } from '@postybirb/http/types';
 
 export type IPostResponse = {
   /**

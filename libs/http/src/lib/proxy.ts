@@ -17,7 +17,6 @@ import { HttpProxyAgent } from 'http-proxy-agent';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import { SocksProxyAgent } from 'socks-proxy-agent';
 
-// eslint-disable-next-line import/no-extraneous-dependencies
 import axios from 'axios';
 import { format } from 'node:url';
 

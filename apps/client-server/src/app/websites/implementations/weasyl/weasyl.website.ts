@@ -1,5 +1,5 @@
 import { SelectOption } from '@postybirb/form-builder';
-import { Http } from '@postybirb/http';
+
 import {
   FileType,
   ILoginState,
@@ -77,7 +77,7 @@ export default class Weasyl
     };
 
   public async onLogin(): Promise<ILoginState> {
-    const res = await Http.get<{ login: string }>(
+    const res = await this.platform.http.get<{ login: string }>(
       `${this.BASE_URL}/api/whoami`,
       {
         partition: this.accountId,
@@ -95,7 +95,7 @@ export default class Weasyl
   }
 
   private async getFolders(username: string): Promise<void> {
-    const res = await Http.get<{
+    const res = await this.platform.http.get<{
       folders: {
         title: string;
         folder_id: string;
@@ -272,7 +272,7 @@ export default class Weasyl
 
     if (body.includes('Weasyl experienced a technical issue')) {
       // Unknown issue so do a second check
-      const recheck = await Http.get<string>(result.responseUrl, {
+      const recheck = await this.platform.http.get<string>(result.responseUrl, {
         partition: this.accountId,
       });
       if (recheck.body.includes('Submission Information')) {
@@ -301,7 +301,7 @@ export default class Weasyl
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     const url = `${this.BASE_URL}/submit/journal`;
-    const submissionPage = await Http.get<string>(url, {
+    const submissionPage = await this.platform.http.get<string>(url, {
       partition: this.accountId,
     });
     PostResponse.validateBody(this, submissionPage);

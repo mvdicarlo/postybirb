@@ -1,6 +1,6 @@
 import { relations } from 'drizzle-orm';
 import { integer, real, sqliteTable, text } from 'drizzle-orm/sqlite-core';
-// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import {
     ISubmissionMetadata,
     ISubmissionScheduleInfo,

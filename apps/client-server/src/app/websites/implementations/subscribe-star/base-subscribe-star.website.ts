@@ -1,5 +1,5 @@
 import { SelectOption } from '@postybirb/form-builder';
-import { Http } from '@postybirb/http';
+
 import {
   ILoginState,
   ImageResizeProps,
@@ -8,7 +8,6 @@ import {
   PostResponse,
   SimpleValidationResult,
 } from '@postybirb/types';
-import { BrowserWindowUtils } from '@postybirb/utils/electron';
 import parse, { HTMLElement } from 'node-html-parser';
 import { parse as parseFileName } from 'path';
 import { v4 } from 'uuid';
@@ -80,7 +79,7 @@ export default abstract class BaseSubscribeStar
     };
 
   public async onLogin(): Promise<ILoginState> {
-    const { body: profilePage } = await Http.get<string>(
+    const { body: profilePage } = await this.platform.http.get<string>(
       `${this.BASE_URL}/profile/settings`,
       {
         partition: this.accountId,
@@ -160,60 +159,18 @@ export default abstract class BaseSubscribeStar
   private async getPostData(): Promise<SubscribeStarUploadData> {
     const url = `${this.BASE_URL}/${this.loginState.username}`;
     try {
-      const { body } = await Http.get<string>(url, {
-        partition: this.accountId,
-      });
-      const $ = parse(body);
-      const newPost = $.querySelector('.new_post')
-        ?.querySelector('.new_post-inner')
-        ?.getAttribute('data-form-template');
-      if (newPost) {
-        // Parse the JSON string first
-        let decoded = JSON.parse(newPost);
-
-        // Then decode unicode and HTML entities
-        decoded = decoded.replace(
-          /\\u([0-9a-fA-F]{4})/g,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (match: any, hex: any) => String.fromCharCode(parseInt(hex, 16)),
-        );
-
-        const innerDoc = parse(decoded);
-        return {
-          s3UploadPath:
-            innerDoc
-              .querySelector('.post_xodal')
-              ?.getAttribute('data-s3-upload-path') || '',
-          s3Url:
-            innerDoc
-              .querySelector('.post_xodal')
-              ?.getAttribute('data-s3-url') || '',
-          authenticityToken:
-            innerDoc
-              .querySelectorAll('form input')
-              .find((input) => input.rawAttrs.includes('authenticity_token'))
-              ?.getAttribute('value') || '',
-          csrfToken:
-            $.querySelector('meta[name="csrf-token"]')?.getAttribute(
-              'content',
-            ) || '',
-        };
-      }
-      this.logger.warn(
-        'Falling back to BrowserWindow method for acquiring S3 token due to missing data-form-template element',
-      );
-      return await this.fallbackS3TokenLoader(url);
+      return await this.acquireUploadTokens(url);
     } catch (error) {
       this.logger.error(error as never, 'Failed to parse post data');
     }
     throw new Error('Failed to acquire post data');
   }
 
-  private async fallbackS3TokenLoader(
+  private async acquireUploadTokens(
     url: string,
   ): Promise<SubscribeStarUploadData> {
     const { authenticityToken, s3UploadPath, s3Url, csrfToken } =
-      await BrowserWindowUtils.runScriptOnPage<{
+      await this.platform.browser.runScriptOnPage<{
         authenticityToken: string;
         s3UploadPath: string;
         s3Url: string;
@@ -275,7 +232,7 @@ export default abstract class BaseSubscribeStar
       file.mimeType
     }&bucket=${bucket}`;
 
-    const presign = await Http.get<{
+    const presign = await this.platform.http.get<{
       url: string;
       fields: Record<string, string>;
     }>(presignUrl, {
@@ -289,7 +246,7 @@ export default abstract class BaseSubscribeStar
     );
 
     // Upload file to S3
-    const postFile = await Http.post<string>(presign.body.url, {
+    const postFile = await this.platform.http.post<string>(presign.body.url, {
       partition: this.accountId,
       type: 'multipart',
       data: {
@@ -330,7 +287,7 @@ export default abstract class BaseSubscribeStar
     }
 
     // Process the S3 attachment
-    const processFile = await Http.post<SubscribeStarProcessFileResponse>(
+    const processFile = await this.platform.http.post<SubscribeStarProcessFileResponse>(
       `${this.BASE_URL}/post_uploads/process_s3_attachments.json`,
       {
         partition: this.accountId,
@@ -380,7 +337,7 @@ export default abstract class BaseSubscribeStar
 
     // Reorder files if there are multiple uploads
     if (uploadedFileIds.length > 1) {
-      await Http.post(`${this.BASE_URL}/post_uploads/reorder`, {
+      await this.platform.http.post(`${this.BASE_URL}/post_uploads/reorder`, {
         partition: this.accountId,
         type: 'multipart',
         data: {

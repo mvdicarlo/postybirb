@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 /* eslint-disable lingui/no-unlocalized-strings */
 import io, { ManagerOptions, SocketOptions } from 'socket.io-client';
-import { defaultTargetProvider, getRemotePassword } from './http-client';
+import { getBaseUrl, getRemotePassword } from './http-client';
 
 // Retry configuration
 const INITIAL_RETRY_DELAY = 1000; // 1 second
@@ -33,7 +33,7 @@ if (remotePassword) {
   };
 }
 
-const AppSocket = io(defaultTargetProvider(), socketSettings);
+const AppSocket = io(getBaseUrl(), socketSettings);
 
 // Connection event handlers
 AppSocket.on('connect', () => {

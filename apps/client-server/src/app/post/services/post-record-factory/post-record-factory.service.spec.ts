@@ -12,6 +12,7 @@ import { AccountService } from '../../../account/account.service';
 import { PostEvent, PostRecord } from '../../../drizzle/models';
 import { PostyBirbDatabase } from '../../../drizzle/postybirb-database/postybirb-database';
 import { PostParsersModule } from '../../../post-parsers/post-parsers.module';
+import { TestPlatformModule } from '../../../platform/testing/test-platform.module';
 import { CreateSubmissionDto } from '../../../submission/dtos/create-submission.dto';
 import { SubmissionService } from '../../../submission/services/submission.service';
 import { SubmissionModule } from '../../../submission/submission.module';
@@ -34,6 +35,7 @@ describe('PostRecordFactory', () => {
 
     module = await Test.createTestingModule({
       imports: [
+        TestPlatformModule,
         SubmissionModule,
         AccountModule,
         WebsitesModule,

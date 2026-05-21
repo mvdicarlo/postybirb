@@ -33,6 +33,9 @@ export { FileWatcherDrawer } from './file-watcher-drawer';
 // Re-export the ScheduleDrawer
 export { ScheduleDrawer } from './schedule-drawer';
 
+// Re-export the GlobalSubmissionHistoryDrawer
+export { GlobalSubmissionHistoryDrawer } from './global-submission-history-drawer/global-submission-history-drawer';
+
 /**
  * Custom shortcuts drawer wrapper.
  * Connects the drawer to the UI store.

@@ -5,36 +5,38 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-    Accordion,
-    ActionIcon,
-    Badge,
-    Button,
-    Card,
-    Divider,
-    Group,
-    Stack,
-    Table,
-    Text,
-    Textarea,
-    Tooltip,
+  Accordion,
+  ActionIcon,
+  Badge,
+  Button,
+  Card,
+  Divider,
+  Group,
+  Stack,
+  Table,
+  Text,
+  Textarea,
+  Tooltip,
 } from '@mantine/core';
 import { EntityId, PostRecordDto, PostRecordState } from '@postybirb/types';
 import {
-    IconCheck,
-    IconDeviceFloppy,
-    IconExternalLink,
-    IconInfoCircle,
-    IconLoader,
-    IconX,
+  IconCheck,
+  IconDeviceFloppy,
+  IconExternalLink,
+  IconInfoCircle,
+  IconLoader,
+  IconX,
 } from '@tabler/icons-react';
+import { omit } from 'lodash';
 import { useLocale } from '../../../../hooks';
 import type { AccountRecord } from '../../../../stores/records';
+import { isRemote } from '../../../../transports/http-client';
 import { CopyToClipboard } from '../../../shared/copy-to-clipboard';
 import { ExternalLink } from '../../../shared/external-link';
 import {
-    exportPostRecordToFile,
-    extractWebsitePostsFromEvents,
-    formatDuration,
+  exportPostRecordToFile,
+  extractWebsitePostsFromEvents,
+  formatDuration,
 } from './history-utils';
 
 function getStateIcon(state: PostRecordState): React.ReactNode {
@@ -61,7 +63,26 @@ interface PostRecordCardProps {
  */
 export function PostRecordCard({ record, accountsMap }: PostRecordCardProps) {
   const { formatDateTime } = useLocale();
-  const formattedJson = JSON.stringify(record, null, 2);
+  const errors = record.events
+    ?.map((e) => {
+      if (e.error?.stack) {
+        return `${e.metadata?.accountSnapshot?.website}: ${e.error.stack}`;
+      }
+
+      return '';
+    })
+    .filter((e) => !!e);
+
+  const recordWithVersions = {
+    version: record.version ?? 'unknown',
+    debug: {
+      clientVersion: window.electron.app_version,
+      isRemote: isRemote(),
+      errors,
+    },
+    ...omit(record, 'version'),
+  };
+  const formattedJson = JSON.stringify(recordWithVersions, null, 2);
 
   const handleSaveToFile = () => {
     exportPostRecordToFile(record);

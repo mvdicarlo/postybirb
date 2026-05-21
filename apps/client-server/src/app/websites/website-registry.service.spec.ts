@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
 import { Account } from '../drizzle/models';
 import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
+import { noopPlatformProvider } from '../platform/testing/noop-platform-providers';
 import { WebsiteImplProvider } from './implementations/provider';
 import TestWebsite from './implementations/test/test.website';
 import { WebsiteRegistryService } from './website-registry.service';
@@ -14,7 +15,11 @@ describe('WebsiteRegistryService', () => {
   beforeEach(async () => {
     clearDatabase();
     module = await Test.createTestingModule({
-      providers: [WebsiteRegistryService, WebsiteImplProvider],
+      providers: [
+        WebsiteRegistryService,
+        WebsiteImplProvider,
+        ...[noopPlatformProvider],
+      ],
     }).compile();
 
     service = module.get<WebsiteRegistryService>(WebsiteRegistryService);

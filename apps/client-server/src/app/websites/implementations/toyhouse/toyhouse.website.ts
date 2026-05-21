@@ -1,4 +1,4 @@
-import { FormFile, Http, HttpResponse } from '@postybirb/http';
+import { FormFile, HttpResponse } from '@postybirb/http/types';
 import {
   ILoginState,
   ImageResizeProps,
@@ -46,7 +46,7 @@ export default class Toyhouse
 
   public async onLogin(): Promise<ILoginState> {
     try {
-      const res = await Http.get<string>(
+      const res = await this.platform.http.get<string>(
         `${this.BASE_URL}/~characters/manage/folder:all`,
         { partition: this.accountId },
       );
@@ -89,7 +89,7 @@ export default class Toyhouse
     while (hasNextPage) {
       const url = `${this.BASE_URL}/~characters/manage/folder:all?page=${pageNumber}`;
 
-      const res = await Http.get<string>(url, {
+      const res = await this.platform.http.get<string>(url, {
         partition: this.accountId,
       });
 
@@ -120,7 +120,7 @@ export default class Toyhouse
   ): Promise<PostResponse> {
     cancellationToken.throwIfCancelled();
 
-    const page = await Http.get<string>(`${this.BASE_URL}/~images/upload`, {
+    const page = await this.platform.http.get<string>(`${this.BASE_URL}/~images/upload`, {
       partition: this.accountId,
     });
 
@@ -186,7 +186,7 @@ export default class Toyhouse
       'character_ids[]': [...postData.options.characters, ''],
     };
 
-    const result = await Http.post<string>(`${this.BASE_URL}/~images/upload`, {
+    const result = await this.platform.http.post<string>(`${this.BASE_URL}/~images/upload`, {
       partition: this.accountId,
       data: formData,
       type: 'multipart',

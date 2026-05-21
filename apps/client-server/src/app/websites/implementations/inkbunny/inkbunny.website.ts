@@ -1,4 +1,4 @@
-import { Http } from '@postybirb/http';
+
 import {
   ILoginState,
   ImageResizeProps,
@@ -96,7 +96,7 @@ export default class Inkbunny
     login: async (request) => {
       this.logger.info(`Attempting Inkbunny login for ${request.username}`);
 
-      const authResponse = await Http.get<{
+      const authResponse = await this.platform.http.get<{
         sid?: string;
         error_message?: string;
       }>(
@@ -127,7 +127,7 @@ export default class Inkbunny
     }
 
     try {
-      const authCheck = await Http.post<{ error_code?: string }>(
+      const authCheck = await this.platform.http.post<{ error_code?: string }>(
         `${this.BASE_URL}/api_watchlist.php`,
         {
           partition: this.accountId,

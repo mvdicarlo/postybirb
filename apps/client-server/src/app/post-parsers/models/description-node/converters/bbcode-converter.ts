@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ConversionContext } from '../description-node.base';
-import { TipTapNode } from '../description-node.types';
+import { TipTapMark, TipTapNode } from '../description-node.types';
 import { BaseConverter } from './base-converter';
 
 export class BBCodeConverter extends BaseConverter {
@@ -13,7 +12,7 @@ export class BBCodeConverter extends BaseConverter {
 
     if (node.type === 'defaultShortcut') {
       if (!this.shouldRenderShortcut(node, context)) return '';
-      return this.convertRawBlocks(context.defaultDescription, context);
+      return this.convertBlocks(context.defaultDescription, context);
     }
 
     // For FA: More than 5 dashes in a line are replaced with a horizontal divider.
@@ -107,7 +106,7 @@ export class BBCodeConverter extends BaseConverter {
       if (!this.shouldRenderShortcut(node, context)) return '';
       const shortcutBlocks = context.customShortcuts.get(attrs.id);
       if (shortcutBlocks) {
-        return this.convertRawBlocks(shortcutBlocks, context);
+        return this.convertBlocks(shortcutBlocks, context);
       }
       return '';
     }
@@ -133,33 +132,32 @@ export class BBCodeConverter extends BaseConverter {
   }
 
   convertTextNode(node: TipTapNode, context: ConversionContext): string {
-    const textNode = node as any;
-    if (!textNode.text) return '';
+    if (!node.text) return '';
 
-    if (textNode.text === '\n' || textNode.text === '\r\n') {
+    if (node.text === '\n' || node.text === '\r\n') {
       return '\n';
     }
 
-    const marks = textNode.marks ?? [];
+    const marks = node.marks ?? [];
 
     // Check for link mark
-    const linkMark = marks.find((m: any) => m.type === 'link');
+    const linkMark = marks.find((m) => m.type === 'link');
     if (linkMark) {
       const href = linkMark.attrs?.href ?? '';
-      const link = `[url=${href}]${textNode.text}[/url]`;
+      const link = `[url=${href}]${node.text}[/url]`;
       return this.renderTextWithMarks(
         link,
-        marks.filter((m: any) => m.type !== 'link'),
+        marks.filter((m) => m.type !== 'link'),
       );
     }
 
-    return this.renderTextWithMarks(textNode.text, marks);
+    return this.renderTextWithMarks(node.text, marks);
   }
 
   /**
    * Renders text with BBCode formatting marks applied.
    */
-  private renderTextWithMarks(text: string, marks: any[]): string {
+  private renderTextWithMarks(text: string, marks: TipTapMark[]): string {
     const segments: string[] = [];
 
     for (const mark of marks) {
@@ -191,7 +189,7 @@ export class BBCodeConverter extends BaseConverter {
       .join('')}`;
 
     // Check for textStyle mark with color
-    const textStyleMark = marks.find((m: any) => m.type === 'textStyle');
+    const textStyleMark = marks.find((m) => m.type === 'textStyle');
     if (textStyleMark?.attrs?.color) {
       segmentedText = `[color=${textStyleMark.attrs.color}]${segmentedText}[/color]`;
     }
