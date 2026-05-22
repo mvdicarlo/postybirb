@@ -3,13 +3,26 @@
  */
 
 import {
-    EntityId,
-    PostEventDto,
-    PostEventType,
-    PostRecordDto,
-    PostRecordState,
+  EntityId,
+  PostEventDto,
+  PostEventType,
+  PostRecordDto,
+  PostRecordState,
 } from '@postybirb/types';
 import type { SubmissionRecord } from '../../../../stores/records';
+
+/**
+ * Lifecycle status for an individual website post within a post record.
+ * - 'pending'  : account appears in events (or is expected) but no START yet
+ * - 'running'  : POST_ATTEMPT_STARTED received, no terminal event yet
+ * - 'success'  : POST_ATTEMPT_COMPLETED received
+ * - 'failed'   : POST_ATTEMPT_FAILED received
+ */
+export type DerivedWebsitePostStatus =
+  | 'pending'
+  | 'running'
+  | 'success'
+  | 'failed';
 
 /**
  * Derived website post information from events.
@@ -18,21 +31,28 @@ export interface DerivedWebsitePost {
   accountId: EntityId;
   accountName: string;
   websiteName: string;
-  isSuccess: boolean;
+  status: DerivedWebsitePostStatus;
   sourceUrls: string[];
   errors: string[];
 }
 
 /**
  * Extract website post results from post events.
- * Aggregates events per account to determine success/failure and source URLs.
+ * Aggregates events per account to determine lifecycle status and source URLs.
+ * An account that has only POST_ATTEMPT_STARTED is reported as 'running'
+ * (rather than incorrectly defaulting to 'failed').
  */
 export function extractWebsitePostsFromEvents(
   events: PostEventDto[] | undefined,
 ): DerivedWebsitePost[] {
   if (!events || events.length === 0) return [];
 
-  const postsByAccount = new Map<EntityId, DerivedWebsitePost>();
+  type Accumulator = DerivedWebsitePost & {
+    started: boolean;
+    completed: boolean;
+    failed: boolean;
+  };
+  const postsByAccount = new Map<EntityId, Accumulator>();
 
   for (const event of events) {
     if (!event.accountId) continue;
@@ -47,21 +67,28 @@ export function extractWebsitePostsFromEvents(
         accountName: accountSnapshot?.name ?? 'Unknown',
         // eslint-disable-next-line lingui/no-unlocalized-strings
         websiteName: accountSnapshot?.website ?? '?',
-        isSuccess: false,
+        status: 'pending',
         sourceUrls: [],
         errors: [],
+        started: false,
+        completed: false,
+        failed: false,
       };
       postsByAccount.set(event.accountId, post);
     }
 
     // Process event based on type
     switch (event.eventType) {
+      case PostEventType.POST_ATTEMPT_STARTED:
+        post.started = true;
+        break;
+
       case PostEventType.POST_ATTEMPT_COMPLETED:
-        post.isSuccess = true;
+        post.completed = true;
         break;
 
       case PostEventType.POST_ATTEMPT_FAILED:
-        post.isSuccess = false;
+        post.failed = true;
         if (event.error?.message) {
           post.errors.push(event.error.message);
         }
@@ -86,7 +113,22 @@ export function extractWebsitePostsFromEvents(
     }
   }
 
-  return Array.from(postsByAccount.values());
+  // Classify final status. Order matters: completed > failed > running > pending.
+  return Array.from(postsByAccount.values()).map((p) => {
+    let status: DerivedWebsitePostStatus = 'pending';
+    if (p.completed) status = 'success';
+    else if (p.failed) status = 'failed';
+    else if (p.started) status = 'running';
+
+    return {
+      accountId: p.accountId,
+      accountName: p.accountName,
+      websiteName: p.websiteName,
+      status,
+      sourceUrls: p.sourceUrls,
+      errors: p.errors,
+    };
+  });
 }
 
 /**

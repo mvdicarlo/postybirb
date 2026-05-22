@@ -90,8 +90,10 @@ export function PostRecordCard({ record, accountsMap }: PostRecordCardProps) {
 
   // Extract website posts from events
   const websitePosts = extractWebsitePostsFromEvents(record.events);
-  const successCount = websitePosts.filter((p) => p.isSuccess).length;
-  const failedCount = websitePosts.length - successCount;
+  const successCount = websitePosts.filter((p) => p.status === 'success').length;
+  const failedCount = websitePosts.filter((p) => p.status === 'failed').length;
+  const runningCount = websitePosts.filter((p) => p.status === 'running').length;
+  const pendingCount = websitePosts.filter((p) => p.status === 'pending').length;
 
   // Calculate duration if completed
   const startedAt = new Date(record.createdAt);
@@ -119,6 +121,16 @@ export function PostRecordCard({ record, accountsMap }: PostRecordCardProps) {
             {failedCount > 0 && (
               <Badge size="sm" color="red" variant="light">
                 {failedCount} <Trans>failed</Trans>
+              </Badge>
+            )}
+            {runningCount > 0 && (
+              <Badge size="sm" color="blue" variant="light">
+                {runningCount} <Trans>running</Trans>
+              </Badge>
+            )}
+            {pendingCount > 0 && (
+              <Badge size="sm" color="gray" variant="light">
+                {pendingCount} <Trans>waiting</Trans>
               </Badge>
             )}
             {duration && (
@@ -167,43 +179,71 @@ export function PostRecordCard({ record, accountsMap }: PostRecordCardProps) {
                         </Text>
                       </Table.Td>
                       <Table.Td>
-                        {post.isSuccess ? (
-                          <Group gap="xs">
-                            <IconCheck
-                              size={16}
-                              color="var(--mantine-color-green-6)"
-                            />
-                            <Text size="sm" c="green.7">
-                              <Trans>Success</Trans>
-                            </Text>
-                          </Group>
-                        ) : (
-                          <Group gap="xs">
-                            <IconX
-                              size={16}
-                              color="var(--mantine-color-red-6)"
-                            />
-                            <Text size="sm" c="red.7">
-                              <Trans>Failed</Trans>
-                            </Text>
-                            {post.errors.length > 0 && (
-                              <Tooltip
-                                label={post.errors.join(' | ')}
-                                multiline
-                                w={300}
-                                withArrow
-                              >
-                                <ActionIcon
-                                  size="xs"
-                                  variant="subtle"
-                                  color="red"
-                                >
-                                  <IconInfoCircle size={14} />
-                                </ActionIcon>
-                              </Tooltip>
-                            )}
-                          </Group>
-                        )}
+                        {(() => {
+                          switch (post.status) {
+                            case 'success':
+                              return (
+                                <Group gap="xs">
+                                  <IconCheck
+                                    size={16}
+                                    color="var(--mantine-color-green-6)"
+                                  />
+                                  <Text size="sm" c="green.7">
+                                    <Trans>Success</Trans>
+                                  </Text>
+                                </Group>
+                              );
+                            case 'running':
+                              return (
+                                <Group gap="xs">
+                                  <IconLoader
+                                    size={16}
+                                    color="var(--mantine-color-blue-6)"
+                                  />
+                                  <Text size="sm" c="blue.7">
+                                    <Trans>Posting</Trans>
+                                  </Text>
+                                </Group>
+                              );
+                            case 'pending':
+                              return (
+                                <Group gap="xs">
+                                  <Text size="sm" c="dimmed">
+                                    <Trans>Waiting</Trans>
+                                  </Text>
+                                </Group>
+                              );
+                            case 'failed':
+                            default:
+                              return (
+                                <Group gap="xs">
+                                  <IconX
+                                    size={16}
+                                    color="var(--mantine-color-red-6)"
+                                  />
+                                  <Text size="sm" c="red.7">
+                                    <Trans>Failed</Trans>
+                                  </Text>
+                                  {post.errors.length > 0 && (
+                                    <Tooltip
+                                      label={post.errors.join(' | ')}
+                                      multiline
+                                      w={300}
+                                      withArrow
+                                    >
+                                      <ActionIcon
+                                        size="xs"
+                                        variant="subtle"
+                                        color="red"
+                                      >
+                                        <IconInfoCircle size={14} />
+                                      </ActionIcon>
+                                    </Tooltip>
+                                  )}
+                                </Group>
+                              );
+                          }
+                        })()}
                       </Table.Td>
                       <Table.Td>
                         {post.sourceUrls.length > 0 ? (
