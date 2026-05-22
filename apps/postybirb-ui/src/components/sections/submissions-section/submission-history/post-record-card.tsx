@@ -12,6 +12,7 @@ import {
   Card,
   Divider,
   Group,
+  Loader,
   Stack,
   Table,
   Text,
@@ -201,8 +202,10 @@ export function PostRecordCard({ record, accountsMap }: PostRecordCardProps) {
                             case 'running':
                               return (
                                 <Group gap="xs">
-                                  <IconLoader
+                                  <Loader
                                     size={16}
+                                    mt={3}
+                                    type="bars"
                                     color="var(--mantine-color-blue-6)"
                                   />
                                   <Text size="sm" c="blue.7">
