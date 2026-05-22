@@ -54,40 +54,38 @@ export class BBCodeConverter extends BaseConverter {
     }
 
     if (node.type === 'paragraph') {
-      let text = this.convertContent(node.content, context);
+      const text = this.convertContent(node.content, context);
 
-      // Apply text alignment if not default
-      if (attrs.textAlign && attrs.textAlign !== 'left') {
-        text = `[${attrs.textAlign}]${text}[/${attrs.textAlign}]`;
-      }
-
-      // Apply indentation
-      if (attrs.indent && attrs.indent > 0) {
-        const spaces = '\u00A0\u00A0\u00A0\u00A0'.repeat(attrs.indent);
-        text = `${spaces}${text}`;
-      }
-
-      return text;
+      return this.withAlignAndIndentation(node, text);
     }
 
     if (node.type === 'heading') {
       const level = attrs.level ?? 1;
-      let text = `[h${level}]${this.convertContent(node.content, context)}[/h${level}]`;
+      const text = `[h${level}]${this.convertContent(node.content, context)}[/h${level}]`;
 
-      if (attrs.textAlign && attrs.textAlign !== 'left') {
-        text = `[${attrs.textAlign}]${text}[/${attrs.textAlign}]`;
-      }
-
-      if (attrs.indent && attrs.indent > 0) {
-        const spaces = '\u00A0\u00A0\u00A0\u00A0'.repeat(attrs.indent);
-        text = `${spaces}${text}`;
-      }
-
-      return text;
+      return this.withAlignAndIndentation(node, text);
     }
 
     // Fallback
     return this.convertContent(node.content, context);
+  }
+
+  protected withAlignAndIndentation(node: TipTapNode, childrenText: string) {
+    const attrs = node.attrs ?? {};
+    let text = childrenText;
+
+    // Apply text alignment if not default
+    if (attrs.textAlign && attrs.textAlign !== 'left') {
+      text = `[${attrs.textAlign}]${text}[/${attrs.textAlign}]`;
+    }
+
+    // Apply indentation
+    if (attrs.indent && attrs.indent > 0) {
+      const spaces = '\u00A0\u00A0\u00A0\u00A0'.repeat(attrs.indent);
+      text = `${spaces}${text}`;
+    }
+
+    return text;
   }
 
   convertInlineNode(node: TipTapNode, context: ConversionContext): string {
