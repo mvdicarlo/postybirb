@@ -176,7 +176,15 @@ export abstract class BaseConverter {
     const converted = context.usernameConversions?.get(username);
     if (converted && converted !== username) {
       convertedUsername = converted;
-      effectiveShortcutId = context.website;
+      // Use the shortcut ID registered for the target website so the
+      // website-specific convert function (e.g. :icon$1: for FA) is invoked.
+      // If the target website has no shortcut, keep the original shortcut so
+      // the link still renders using the original URL template.
+      const targetShortcutId =
+        context.websiteToShortcutId?.[context.website];
+      if (targetShortcutId && context.shortcuts[targetShortcutId]) {
+        effectiveShortcutId = targetShortcutId;
+      }
     }
 
     const shortcut: UsernameShortcut | undefined =

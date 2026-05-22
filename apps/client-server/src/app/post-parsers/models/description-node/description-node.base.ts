@@ -7,6 +7,8 @@ import { TipTapNode } from './description-node.types';
 export interface ConversionContext {
   website: string;
   shortcuts: Record<string, UsernameShortcut>;
+  /** Maps website metadata name to the shortcut ID for that website */
+  websiteToShortcutId?: Record<string, string>;
   customShortcuts: Map<string, TipTapNode[]>;
   defaultDescription: TipTapNode[];
   title?: string;
