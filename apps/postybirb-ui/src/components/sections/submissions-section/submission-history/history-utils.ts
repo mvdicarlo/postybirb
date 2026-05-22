@@ -3,13 +3,26 @@
  */
 
 import {
-    EntityId,
-    PostEventDto,
-    PostEventType,
-    PostRecordDto,
-    PostRecordState,
+  EntityId,
+  PostEventDto,
+  PostEventType,
+  PostRecordDto,
+  PostRecordState,
 } from '@postybirb/types';
 import type { SubmissionRecord } from '../../../../stores/records';
+
+/**
+ * Lifecycle status for an individual website post within a post record.
+ * - 'pending'  : account appears in events (or is expected) but no START yet
+ * - 'running'  : POST_ATTEMPT_STARTED received, no terminal event yet
+ * - 'success'  : POST_ATTEMPT_COMPLETED received
+ * - 'failed'   : POST_ATTEMPT_FAILED received
+ */
+export type DerivedWebsitePostStatus =
+  | 'pending'
+  | 'running'
+  | 'success'
+  | 'failed';
 
 /**
  * Derived website post information from events.
@@ -18,75 +31,123 @@ export interface DerivedWebsitePost {
   accountId: EntityId;
   accountName: string;
   websiteName: string;
-  isSuccess: boolean;
+  status: DerivedWebsitePostStatus;
   sourceUrls: string[];
   errors: string[];
 }
 
+// =============================================================================
+// Shared per-account event accumulator (used by both extractWebsitePostsFromEvents
+// and getAccountPostStatusMap to avoid duplicating the event classification logic).
+// =============================================================================
+
+interface AccountEventAccumulator {
+  started: boolean;
+  completed: boolean;
+  failed: boolean;
+  errors: string[];
+  sourceUrls: string[];
+  accountName: string;
+  websiteName: string;
+}
+
+/**
+ * Accumulate per-account lifecycle flags from a list of post events.
+ */
+function accumulateAccountEvents(
+  events: PostEventDto[],
+): Map<EntityId, AccountEventAccumulator> {
+  const map = new Map<EntityId, AccountEventAccumulator>();
+
+  for (const event of events) {
+    if (!event.accountId) continue;
+
+    let entry = map.get(event.accountId);
+    if (!entry) {
+      const snap = event.metadata?.accountSnapshot;
+      entry = {
+        started: false,
+        completed: false,
+        failed: false,
+        errors: [],
+        sourceUrls: [],
+        // eslint-disable-next-line lingui/no-unlocalized-strings
+        accountName: snap?.name ?? 'Unknown',
+        // eslint-disable-next-line lingui/no-unlocalized-strings
+        websiteName: snap?.website ?? '?',
+      };
+      map.set(event.accountId, entry);
+    }
+
+    switch (event.eventType) {
+      case PostEventType.POST_ATTEMPT_STARTED:
+        entry.started = true;
+        break;
+      case PostEventType.POST_ATTEMPT_COMPLETED:
+        entry.completed = true;
+        break;
+      case PostEventType.POST_ATTEMPT_FAILED:
+        entry.failed = true;
+        if (event.error?.message) {
+          entry.errors.push(event.error.message);
+        }
+        break;
+      case PostEventType.MESSAGE_POSTED:
+      case PostEventType.FILE_POSTED:
+        if (event.sourceUrl) {
+          entry.sourceUrls.push(event.sourceUrl);
+        }
+        break;
+      case PostEventType.MESSAGE_FAILED:
+      case PostEventType.FILE_FAILED:
+        if (event.error?.message) {
+          entry.errors.push(event.error.message);
+        }
+        break;
+      default:
+        break;
+    }
+  }
+
+  return map;
+}
+
+/**
+ * Classify lifecycle flags into a single status.
+ * Priority: completed > failed > started > pending.
+ */
+function classifyStatus(entry: {
+  started: boolean;
+  completed: boolean;
+  failed: boolean;
+}): DerivedWebsitePostStatus {
+  if (entry.completed) return 'success';
+  if (entry.failed) return 'failed';
+  if (entry.started) return 'running';
+  return 'pending';
+}
+
 /**
  * Extract website post results from post events.
- * Aggregates events per account to determine success/failure and source URLs.
+ * Aggregates events per account to determine lifecycle status and source URLs.
+ * An account that has only POST_ATTEMPT_STARTED is reported as 'running'
+ * (rather than incorrectly defaulting to 'failed').
  */
 export function extractWebsitePostsFromEvents(
   events: PostEventDto[] | undefined,
 ): DerivedWebsitePost[] {
   if (!events || events.length === 0) return [];
 
-  const postsByAccount = new Map<EntityId, DerivedWebsitePost>();
+  const accumulated = accumulateAccountEvents(events);
 
-  for (const event of events) {
-    if (!event.accountId) continue;
-
-    // Get or create post entry for this account
-    let post = postsByAccount.get(event.accountId);
-    if (!post) {
-      const accountSnapshot = event.metadata?.accountSnapshot;
-      post = {
-        accountId: event.accountId,
-        // eslint-disable-next-line lingui/no-unlocalized-strings
-        accountName: accountSnapshot?.name ?? 'Unknown',
-        // eslint-disable-next-line lingui/no-unlocalized-strings
-        websiteName: accountSnapshot?.website ?? '?',
-        isSuccess: false,
-        sourceUrls: [],
-        errors: [],
-      };
-      postsByAccount.set(event.accountId, post);
-    }
-
-    // Process event based on type
-    switch (event.eventType) {
-      case PostEventType.POST_ATTEMPT_COMPLETED:
-        post.isSuccess = true;
-        break;
-
-      case PostEventType.POST_ATTEMPT_FAILED:
-        post.isSuccess = false;
-        if (event.error?.message) {
-          post.errors.push(event.error.message);
-        }
-        break;
-
-      case PostEventType.MESSAGE_POSTED:
-      case PostEventType.FILE_POSTED:
-        if (event.sourceUrl) {
-          post.sourceUrls.push(event.sourceUrl);
-        }
-        break;
-
-      case PostEventType.MESSAGE_FAILED:
-      case PostEventType.FILE_FAILED:
-        if (event.error?.message) {
-          post.errors.push(event.error.message);
-        }
-        break;
-
-      default:
-        break;
-    }
-  }
-
-  return Array.from(postsByAccount.values());
+  return Array.from(accumulated.entries()).map(([accountId, entry]) => ({
+    accountId,
+    accountName: entry.accountName,
+    websiteName: entry.websiteName,
+    status: classifyStatus(entry),
+    sourceUrls: entry.sourceUrls,
+    errors: entry.errors,
+  }));
 }
 
 /**
@@ -231,56 +292,15 @@ export function getAccountPostStatusMap(
     return result;
   }
 
-  // Build per-account event state
-  const accountEvents = new Map<
-    EntityId,
-    { started: boolean; completed: boolean; failed: boolean; errors: string[] }
-  >();
+  // Reuse the shared accumulator and classifier
+  const accumulated = accumulateAccountEvents(events);
 
-  for (const event of events) {
-    if (!event.accountId) continue;
-
-    let entry = accountEvents.get(event.accountId);
-    if (!entry) {
-      entry = { started: false, completed: false, failed: false, errors: [] };
-      accountEvents.set(event.accountId, entry);
-    }
-
-    switch (event.eventType) {
-      case PostEventType.POST_ATTEMPT_STARTED:
-        entry.started = true;
-        break;
-      case PostEventType.POST_ATTEMPT_COMPLETED:
-        entry.completed = true;
-        break;
-      case PostEventType.POST_ATTEMPT_FAILED:
-        entry.failed = true;
-        if (event.error?.message) {
-          entry.errors.push(event.error.message);
-        }
-        break;
-      case PostEventType.MESSAGE_FAILED:
-      case PostEventType.FILE_FAILED:
-        if (event.error?.message) {
-          entry.errors.push(event.error.message);
-        }
-        break;
-      default:
-        break;
-    }
-  }
-
-  // Classify each account that has events
-  for (const [accountId, entry] of accountEvents) {
-    if (entry.completed) {
-      result.set(accountId, { status: 'success', errors: [] });
-    } else if (entry.failed) {
-      result.set(accountId, { status: 'failed', errors: entry.errors });
-    } else if (entry.started) {
-      result.set(accountId, { status: 'running', errors: [] });
-    } else {
-      result.set(accountId, { status: 'waiting', errors: [] });
-    }
+  for (const [accountId, entry] of accumulated) {
+    const status = classifyStatus(entry);
+    // Map DerivedWebsitePostStatus to AccountPostStatus
+    const mappedStatus: AccountPostStatus =
+      status === 'pending' ? 'waiting' : status;
+    result.set(accountId, { status: mappedStatus, errors: entry.errors });
   }
 
   // Accounts with options but no events yet are "waiting" (later batch)
