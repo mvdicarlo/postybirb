@@ -23,6 +23,7 @@ import { ConversionContext } from '../models/description-node/description-node.b
 @Injectable()
 export class DescriptionParserService {
   private readonly websiteShortcuts: Record<string, UsernameShortcut> = {};
+  private readonly websiteToShortcutId: Record<string, string> = {};
 
   constructor(
     private readonly settingsService: SettingsService,
@@ -36,6 +37,11 @@ export class DescriptionParserService {
         website.prototype.decoratedProps.usernameShortcut;
       if (shortcut) {
         this.websiteShortcuts[shortcut.id] = shortcut;
+        const websiteName: string =
+          website.prototype.decoratedProps.metadata?.name;
+        if (websiteName) {
+          this.websiteToShortcutId[websiteName] = shortcut.id;
+        }
       }
     });
   }
@@ -114,6 +120,7 @@ export class DescriptionParserService {
     const context: ConversionContext = {
       website: instance.decoratedProps.metadata.name,
       shortcuts: this.websiteShortcuts,
+      websiteToShortcutId: this.websiteToShortcutId,
       customShortcuts: new Map(),
       defaultDescription,
       title,

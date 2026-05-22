@@ -12,6 +12,9 @@ import { useShallow } from 'zustand/react/shallow';
 // Types
 // ============================================================================
 
+/** Sort direction for template name sorting. */
+export type TemplateSortOrder = 'asc' | 'desc';
+
 /**
  * Templates UI state interface.
  */
@@ -21,6 +24,9 @@ interface TemplatesUIState {
 
   /** Templates search query */
   templatesSearchQuery: string;
+
+  /** Template name sort order */
+  templatesSortOrder: TemplateSortOrder;
 }
 
 /**
@@ -32,6 +38,12 @@ interface TemplatesUIActions {
 
   /** Set templates search query */
   setTemplatesSearchQuery: (query: string) => void;
+
+  /** Set template name sort order */
+  setTemplatesSortOrder: (order: TemplateSortOrder) => void;
+
+  /** Toggle sort order between asc and desc */
+  toggleTemplatesSortOrder: () => void;
 
   /** Reset templates UI state */
   resetTemplatesUI: () => void;
@@ -61,6 +73,7 @@ const STORAGE_KEY = 'postybirb-templates-ui';
 const initialState: TemplatesUIState = {
   templatesTabType: SubmissionType.FILE,
   templatesSearchQuery: '',
+  templatesSortOrder: 'asc',
 };
 
 // ============================================================================
@@ -80,6 +93,13 @@ export const useTemplatesUIStore = create<TemplatesUIStore>()(
       setTemplatesTabType: (templatesTabType) => set({ templatesTabType }),
       setTemplatesSearchQuery: (templatesSearchQuery) =>
         set({ templatesSearchQuery }),
+      setTemplatesSortOrder: (templatesSortOrder) =>
+        set({ templatesSortOrder }),
+      toggleTemplatesSortOrder: () =>
+        set((state) => ({
+          templatesSortOrder:
+            state.templatesSortOrder === 'asc' ? 'desc' : 'asc',
+        })),
 
       // Reset to initial state
       resetTemplatesUI: () => set(initialState),
@@ -101,7 +121,10 @@ export const useTemplatesFilter = () =>
     useShallow((state) => ({
       tabType: state.templatesTabType,
       searchQuery: state.templatesSearchQuery,
+      sortOrder: state.templatesSortOrder,
       setTabType: state.setTemplatesTabType,
       setSearchQuery: state.setTemplatesSearchQuery,
+      setSortOrder: state.setTemplatesSortOrder,
+      toggleSortOrder: state.toggleTemplatesSortOrder,
     })),
   );

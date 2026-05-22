@@ -66,10 +66,14 @@ function SortableFileCard({
   file,
   isDraggable,
   totalFiles,
+  onMoveUp,
+  onMoveDown,
 }: {
   file: ISubmissionFileDto;
   isDraggable: boolean;
   totalFiles: number;
+  onMoveUp: (id: string) => void;
+  onMoveDown: (id: string) => void;
 }) {
   const {
     attributes,
@@ -89,12 +93,33 @@ function SortableFileCard({
     opacity: isDragging ? 0.5 : 1,
   };
 
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (!isDraggable || !e.altKey) return;
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        onMoveUp(file.id);
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        onMoveDown(file.id);
+      }
+    },
+    [isDraggable, file.id, onMoveUp, onMoveDown],
+  );
+
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+    // eslint-disable-next-line jsx-a11y/no-static-element-interactions
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      onKeyDown={handleKeyDown}
+    >
       <SubmissionFileCard
         file={file}
         draggable={isDraggable}
         totalFiles={totalFiles}
+        dragListeners={isDraggable ? listeners : undefined}
       />
     </div>
   );
@@ -128,6 +153,28 @@ export function SubmissionFileManager() {
     [orderedFiles],
   );
 
+  const applyReorder = useCallback(
+    (oldIndex: number, newIndex: number) => {
+      const newOrderedFiles = arrayMove(orderedFiles, oldIndex, newIndex);
+
+      const baseOrder = Date.now();
+      newOrderedFiles.forEach((file, index) => {
+        // eslint-disable-next-line no-param-reassign
+        file.order = baseOrder + index;
+      });
+
+      setOrderedFiles(newOrderedFiles);
+
+      fileSubmissionApi.reorder({
+        order: newOrderedFiles.reduce((acc: Record<string, number>, file) => {
+          acc[file.id] = file.order ?? 0;
+          return acc;
+        }, {}),
+      });
+    },
+    [orderedFiles],
+  );
+
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
       const { active, over } = event;
@@ -137,26 +184,25 @@ export function SubmissionFileManager() {
       const newIndex = orderedFiles.findIndex((f) => f.id === over.id);
       if (oldIndex === -1 || newIndex === -1) return;
 
-      const newOrderedFiles = arrayMove(orderedFiles, oldIndex, newIndex);
-
-      // Update order property for all files
-      const baseOrder = Date.now();
-      newOrderedFiles.forEach((file, index) => {
-        // eslint-disable-next-line no-param-reassign
-        file.order = baseOrder + index;
-      });
-
-      setOrderedFiles(newOrderedFiles);
-
-      // Persist to backend
-      fileSubmissionApi.reorder({
-        order: newOrderedFiles.reduce((acc: Record<string, number>, file) => {
-          acc[file.id] = file.order ?? 0;
-          return acc;
-        }, {}),
-      });
+      applyReorder(oldIndex, newIndex);
     },
-    [orderedFiles],
+    [orderedFiles, applyReorder],
+  );
+
+  const handleMoveUp = useCallback(
+    (id: string) => {
+      const index = orderedFiles.findIndex((f) => f.id === id);
+      if (index > 0) applyReorder(index, index - 1);
+    },
+    [orderedFiles, applyReorder],
+  );
+
+  const handleMoveDown = useCallback(
+    (id: string) => {
+      const index = orderedFiles.findIndex((f) => f.id === id);
+      if (index < orderedFiles.length - 1) applyReorder(index, index + 1);
+    },
+    [orderedFiles, applyReorder],
   );
 
   const isDraggable = orderedFiles.length > 1 && !submission.isArchived;
@@ -222,6 +268,8 @@ export function SubmissionFileManager() {
                   file={file}
                   isDraggable={isDraggable}
                   totalFiles={orderedFiles.length}
+                  onMoveUp={handleMoveUp}
+                  onMoveDown={handleMoveDown}
                 />
               ))}
             </Stack>
