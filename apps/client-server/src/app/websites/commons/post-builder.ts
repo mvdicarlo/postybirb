@@ -1,9 +1,8 @@
 import {
   FormFile,
-  Http,
   HttpRequestOptions,
   PostOptions,
-} from '@postybirb/http';
+} from '@postybirb/http/types';
 import { Logger } from '@postybirb/logger';
 import { FileType, PostResponse } from '@postybirb/types';
 import { CancellableToken } from '../../post/models/cancellable-token';
@@ -414,7 +413,7 @@ export class PostBuilder {
 
     while (attempt <= maxRetries) {
       try {
-        const value = await Http.post<ReturnValue>(url, {
+        const value = await this.website.platform.http.post<ReturnValue>(url, {
           partition: this.website.account.id,
           type: this.postType,
           data,

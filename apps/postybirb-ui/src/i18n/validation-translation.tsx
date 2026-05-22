@@ -305,6 +305,16 @@ export const TranslationMessages: TranslationsMap = {
     </Trans>
   ),
 
+  'validation.description.bluesky.invalid-mentions': ({ mentions }) => {
+    const mentionsList = mentions.join(', ');
+    return (
+      <Trans>
+        These mentioned users don't exist: {mentionsList}. Ensure that their tag
+        is correct (e.g. name.bsky.social instead of name.bluesky.social)
+      </Trans>
+    );
+  },
+
   'validation.file.e621.tags.network-error': () => (
     <Trans>Failed to validate tags. Please check them manually</Trans>
   ),

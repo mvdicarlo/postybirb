@@ -1,5 +1,5 @@
 import { SelectOption } from '@postybirb/form-builder';
-import { Http } from '@postybirb/http';
+
 import {
   ILoginState,
   ImageResizeProps,
@@ -8,7 +8,6 @@ import {
   PostResponse,
   SimpleValidationResult,
 } from '@postybirb/types';
-import { BrowserWindowUtils } from '@postybirb/utils/electron';
 import parse, { HTMLElement } from 'node-html-parser';
 import { parse as parseFileName } from 'path';
 import { v4 } from 'uuid';
@@ -80,7 +79,7 @@ export default abstract class BaseSubscribeStar
     };
 
   public async onLogin(): Promise<ILoginState> {
-    const { body: profilePage } = await Http.get<string>(
+    const { body: profilePage } = await this.platform.http.get<string>(
       `${this.BASE_URL}/profile/settings`,
       {
         partition: this.accountId,
@@ -171,7 +170,7 @@ export default abstract class BaseSubscribeStar
     url: string,
   ): Promise<SubscribeStarUploadData> {
     const { authenticityToken, s3UploadPath, s3Url, csrfToken } =
-      await BrowserWindowUtils.runScriptOnPage<{
+      await this.platform.browser.runScriptOnPage<{
         authenticityToken: string;
         s3UploadPath: string;
         s3Url: string;
@@ -233,7 +232,7 @@ export default abstract class BaseSubscribeStar
       file.mimeType
     }&bucket=${bucket}`;
 
-    const presign = await Http.get<{
+    const presign = await this.platform.http.get<{
       url: string;
       fields: Record<string, string>;
     }>(presignUrl, {
@@ -247,7 +246,7 @@ export default abstract class BaseSubscribeStar
     );
 
     // Upload file to S3
-    const postFile = await Http.post<string>(presign.body.url, {
+    const postFile = await this.platform.http.post<string>(presign.body.url, {
       partition: this.accountId,
       type: 'multipart',
       data: {
@@ -288,7 +287,7 @@ export default abstract class BaseSubscribeStar
     }
 
     // Process the S3 attachment
-    const processFile = await Http.post<SubscribeStarProcessFileResponse>(
+    const processFile = await this.platform.http.post<SubscribeStarProcessFileResponse>(
       `${this.BASE_URL}/post_uploads/process_s3_attachments.json`,
       {
         partition: this.accountId,
@@ -338,7 +337,7 @@ export default abstract class BaseSubscribeStar
 
     // Reorder files if there are multiple uploads
     if (uploadedFileIds.length > 1) {
-      await Http.post(`${this.BASE_URL}/post_uploads/reorder`, {
+      await this.platform.http.post(`${this.BASE_URL}/post_uploads/reorder`, {
         partition: this.accountId,
         type: 'multipart',
         data: {

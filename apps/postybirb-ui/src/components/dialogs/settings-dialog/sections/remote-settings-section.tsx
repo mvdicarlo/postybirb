@@ -26,9 +26,9 @@ import {
 } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 import {
-  REMOTE_HOST_KEY,
-  REMOTE_MODE_KEY,
-  REMOTE_PASSWORD_KEY,
+  getRemoteConfig,
+  resetRemoteConfig,
+  updateRemoteConfig,
 } from '../../../../transports/http-client';
 import {
   showConnectionErrorNotification,
@@ -44,22 +44,17 @@ export function RemoteSettingsSection() {
   const [showPassword, setShowPassword] = useState(false);
   const [showLanIp, setShowLanIp] = useState(false);
   const [lanIp, setLanIp] = useState<string>('localhost:9487');
-  const [remoteConfig, setRemoteConfig] = useState({
+  const electronRemoteConfig = window.electron?.getRemoteConfig() ?? {
     enabled: true,
     password: '',
-  });
+  };
+  const uiRemoteConfig = getRemoteConfig();
 
-  // Local storage state
-  const [remoteMode, setRemoteMode] = useState<'host' | 'client'>(
-    () =>
-      (localStorage.getItem(REMOTE_MODE_KEY) as 'host' | 'client') || 'host',
+  const [remoteMode, setRemoteMode] = useState(uiRemoteConfig.mode || 'host');
+  const [remotePassword, setRemotePassword] = useState(
+    uiRemoteConfig.password || '',
   );
-  const [remotePassword, setRemotePassword] = useState<string>(
-    () => localStorage.getItem(REMOTE_PASSWORD_KEY) || '',
-  );
-  const [hostUrl, setHostUrl] = useState<string>(
-    () => localStorage.getItem(REMOTE_HOST_KEY) || '',
-  );
+  const [hostUrl, setHostUrl] = useState(uiRemoteConfig.host || '');
 
   const isHost = remoteMode === 'host';
 
@@ -73,10 +68,6 @@ export function RemoteSettingsSection() {
         .catch(() => {
           setLanIp('localhost:9487');
         });
-    }
-
-    if (window.electron?.getRemoteConfig) {
-      setRemoteConfig(window.electron.getRemoteConfig());
     }
   }, []);
 
@@ -145,8 +136,7 @@ export function RemoteSettingsSection() {
   };
 
   const handleSaveClientSettings = () => {
-    localStorage.setItem(REMOTE_HOST_KEY, hostUrl.trim());
-    localStorage.setItem(REMOTE_PASSWORD_KEY, remotePassword.trim());
+    updateRemoteConfig({ host: hostUrl, password: remotePassword });
     window.location.reload();
   };
 
@@ -155,9 +145,7 @@ export function RemoteSettingsSection() {
   };
 
   const confirmReset = () => {
-    localStorage.removeItem(REMOTE_MODE_KEY);
-    localStorage.removeItem(REMOTE_HOST_KEY);
-    localStorage.removeItem(REMOTE_PASSWORD_KEY);
+    resetRemoteConfig();
     window.location.reload();
   };
 
@@ -186,7 +174,7 @@ export function RemoteSettingsSection() {
               leftSection={<IconServer size={16} />}
               onClick={() => {
                 setRemoteMode('host');
-                localStorage.setItem(REMOTE_MODE_KEY, 'host');
+                updateRemoteConfig({ mode: 'host' });
               }}
             >
               <Trans>Host</Trans>
@@ -196,7 +184,7 @@ export function RemoteSettingsSection() {
               leftSection={<IconNetwork size={16} />}
               onClick={() => {
                 setRemoteMode('client');
-                localStorage.setItem(REMOTE_MODE_KEY, 'client');
+                updateRemoteConfig({ mode: 'client' });
               }}
             >
               <Trans>Client</Trans>
@@ -245,7 +233,9 @@ export function RemoteSettingsSection() {
                 <TextInput
                   label={<Trans>Password</Trans>}
                   leftSection={<IconRouter size={18} />}
-                  value={showPassword ? remoteConfig.password : '•••••••••••'}
+                  value={
+                    showPassword ? electronRemoteConfig.password : '•••••••••••'
+                  }
                   readOnly
                   style={{ flex: 1 }}
                   rightSection={
@@ -262,7 +252,7 @@ export function RemoteSettingsSection() {
                         )}
                       </Button>
                       <CopyToClipboard
-                        value={remoteConfig.password}
+                        value={electronRemoteConfig.password}
                         size="xs"
                       />
                     </Group>

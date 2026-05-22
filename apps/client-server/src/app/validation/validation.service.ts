@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { formBuilder } from '@postybirb/form-builder';
 import { Logger } from '@postybirb/logger';
 import {
   EntityId,
@@ -14,7 +15,6 @@ import { Account, Submission, WebsiteOptions } from '../drizzle/models';
 import { FileConverterService } from '../file-converter/file-converter.service';
 import { FileService } from '../file/file.service';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
-import DefaultWebsite from '../websites/implementations/default/default.website';
 import { DefaultWebsiteOptions } from '../websites/models/default-website-options';
 import { isFileWebsite } from '../websites/models/website-modifiers/file-website';
 import { isMessageWebsite } from '../websites/models/website-modifiers/message-website';
@@ -156,7 +156,9 @@ export class ValidationService {
       }
 
       const website = websiteOption.isDefault
-        ? new DefaultWebsite(new Account(websiteOption.account))
+        ? this.websiteRegistry.createDefaultWebsiteInstance(
+            new Account(websiteOption.account),
+          )
         : this.websiteRegistry.findInstance(websiteOption.account);
 
       if (!website) {
@@ -167,6 +169,7 @@ export class ValidationService {
           `Failed to find website instance for account ${websiteOption.accountId}`,
         );
       }
+
       // All sub-validations mutate the result object
       const result: ValidationResult = {
         id: websiteOption.id,
@@ -187,8 +190,13 @@ export class ValidationService {
       const defaultOpts = Object.assign(new DefaultWebsiteOptions(), {
         ...defaultOptions.data,
       });
+
+      const websiteOptions = website.getModelFor(submission.type);
+      // Derive all options and properties to operate on the same object that will be used for actual posting
+      formBuilder(websiteOptions, website.getWebsiteData());
+
       const mergedWebsiteOptions = Object.assign(
-        website.getModelFor(submission.type),
+        websiteOptions,
         websiteOption.data,
       ).mergeDefaults(defaultOpts);
 

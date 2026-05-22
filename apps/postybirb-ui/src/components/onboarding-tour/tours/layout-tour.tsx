@@ -157,7 +157,7 @@ export function useLayoutTourSteps(): Step[] {
       target: '[data-tour-id="user-converters"]',
       placement: 'right',
       skipBeacon: true,
-      title: <Trans>User Converters</Trans>,
+      title: <Trans>Username Aliases</Trans>,
       content: (
         <Text size="sm" c="dimmed">
           <Trans>

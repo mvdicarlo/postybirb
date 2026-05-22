@@ -90,7 +90,7 @@ msgid "A tag converter with this tag already exists"
 msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/drawers/user-converter-drawer/user-converter-drawer.tsx
-msgid "A user converter with this username already exists"
+msgid "A username alias with this username already exists"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/disclaimer/disclaimer.tsx
@@ -4238,20 +4238,20 @@ msgid "Used for other sites (like e621) as source url base. Independent from cus
 msgstr ""
 
 #: apps/postybirb-ui/src/remake/components/drawers/user-converter-drawer/user-converter-drawer.tsx
-msgid "user converter"
+msgid "username alias"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/user-converter-drawer.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/user-converter-drawer.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/user-converter-drawer.tsx
-msgid "User converter"
+msgid "Username alias"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/user-converter-drawer.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx
 #: apps/postybirb-ui/src/remake/components/drawers/user-converter-drawer/user-converter-drawer.tsx
 #: apps/postybirb-ui/src/remake/config/nav-items.tsx
-msgid "User Converters"
+msgid "Username Aliases"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/user-converter-drawer.tsx

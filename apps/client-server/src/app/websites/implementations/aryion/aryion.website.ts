@@ -1,5 +1,5 @@
 import { SelectOption } from '@postybirb/form-builder';
-import { Http } from '@postybirb/http';
+
 import {
   FileType,
   ILoginState,
@@ -67,7 +67,7 @@ export default class Aryion
     };
 
   public async onLogin(): Promise<ILoginState> {
-    const res = await Http.get<string>(`${this.BASE_URL}/g4/treeview.php`, {
+    const res = await this.platform.http.get<string>(`${this.BASE_URL}/g4/treeview.php`, {
       partition: this.accountId,
     });
 

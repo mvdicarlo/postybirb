@@ -1,10 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
+import { PlatformService } from '@postybirb/platform';
+import { NoopPlatformService } from '../platform/testing/noop-platform-providers';
 import { SettingsService } from '../settings/settings.service';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { CreateNotificationDto } from './dtos/create-notification.dto';
 import { UpdateNotificationDto } from './dtos/update-notification.dto';
 import { NotificationsService } from './notifications.service';
+
+const noopPlatform: PlatformService = new NoopPlatformService();
 
 describe('NotificationsService', () => {
   let service: NotificationsService;
@@ -22,6 +26,10 @@ describe('NotificationsService', () => {
       providers: [
         NotificationsService,
         SettingsService,
+        {
+          provide: PlatformService,
+          useValue: noopPlatform,
+        },
         {
           provide: WSGateway,
           useValue: webSocketMock,
@@ -91,8 +99,11 @@ describe('NotificationsService', () => {
   });
 
   it('should initialize without websocket and not throw error', () => {
-    // @ts-expect-error Test case
-    const serviceWithoutWebsocket = new NotificationsService();
+    const serviceWithoutWebsocket = new NotificationsService(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      undefined as any,
+      noopPlatform,
+    );
     expect(serviceWithoutWebsocket).toBeDefined();
   });
 });

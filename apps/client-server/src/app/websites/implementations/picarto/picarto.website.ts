@@ -1,4 +1,4 @@
-import { Http } from '@postybirb/http';
+
 import {
   ILoginState,
   ImageResizeProps,
@@ -7,7 +7,6 @@ import {
   PostResponse,
   SubmissionRating,
 } from '@postybirb/types';
-import { BrowserWindowUtils } from '@postybirb/utils/electron';
 import { calculateImageResize } from '@postybirb/utils/file-type';
 import { mutation, query } from 'gql-query-builder';
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -55,7 +54,7 @@ export default class Picarto
   public async onLogin(): Promise<ILoginState> {
     // Load the site and read localStorage to find the auth payload
     try {
-      const ls = await BrowserWindowUtils.getLocalStorage<{
+      const ls = await this.platform.browser.getLocalStorage<{
         auth?: string;
       }>(this.accountId, this.BASE_URL, 3000);
 
@@ -116,7 +115,7 @@ export default class Picarto
       fields: ['key', '__typename'],
     });
 
-    const jwtResp = await Http.post<{
+    const jwtResp = await this.platform.http.post<{
       data: { generateJwtToken: { key: string } };
     }>('https://ptvintern.picarto.tv/ptvapi', {
       partition: this.accountId,
@@ -202,7 +201,7 @@ export default class Picarto
       fields: ['status', 'message', 'data', '__typename'],
     });
 
-    const finish = await Http.post<{
+    const finish = await this.platform.http.post<{
       errors?: unknown[];
       data?: { createArtwork?: { status: 'error' | 'ok'; message?: string } };
     }>('https://ptvintern.picarto.tv/ptvapi', {
@@ -240,7 +239,7 @@ export default class Picarto
         fields: ['id', 'title'],
       });
 
-      const res = await Http.post<{
+      const res = await this.platform.http.post<{
         data: { albums: { id: string | null; title: string }[] };
       }>('https://ptvintern.picarto.tv/ptvapi', {
         partition: this.accountId,

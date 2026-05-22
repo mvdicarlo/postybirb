@@ -1,15 +1,21 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
-import { getRemoteConfig } from '@postybirb/utils/electron';
-import { session } from 'electron';
+import {
+  PlatformCookie,
+  PlatformCookieDetails,
+  PlatformService,
+} from '@postybirb/platform';
+import { RemoteConfigManager } from '@postybirb/utils/common';
 import { UpdateCookiesRemoteDto } from './models/update-cookies-remote.dto';
 
 @Injectable()
 export class RemoteService {
   protected readonly logger = Logger(this.constructor.name);
 
+  constructor(private readonly platform: PlatformService) {}
+
   async validate(password: string): Promise<boolean> {
-    const remoteConfig = await getRemoteConfig();
+    const remoteConfig = await RemoteConfigManager.get();
     // if (!remoteConfig.enabled) {
     //   this.logger.error('Remote access is not enabled');
     //   throw new UnauthorizedException('Remote access is not enabled');
@@ -47,21 +53,22 @@ export class RemoteService {
       this.logger.warn('No cookies provided for account, skipping update');
       return;
     }
-    const accountSession = session.fromPartition(
-      `persist:${updateCookies.accountId}`,
-    );
-    await accountSession.clearStorageData();
+    await this.platform.session.clearStorageData(updateCookies.accountId);
     await Promise.all(
       cookies.map((cookie) =>
-        accountSession.cookies.set(this.convertCookie(cookie)),
+        this.platform.session.setCookie(
+          updateCookies.accountId,
+          this.convertCookie(cookie),
+        ),
       ),
     );
   }
 
-  private convertCookie(cookie: Electron.Cookie): Electron.CookiesSetDetails {
-    const url = `${cookie.secure ? 'https' : 'http'}://${cookie.domain}${cookie.path || ''}`;
-    const details: Electron.CookiesSetDetails = {
-      domain: `.${cookie.domain}`.replace('..', '.'),
+  private convertCookie(cookie: PlatformCookie): PlatformCookieDetails {
+    const domain = cookie.domain ?? '';
+    const url = `${cookie.secure ? 'https' : 'http'}://${domain}${cookie.path || ''}`;
+    const details: PlatformCookieDetails = {
+      domain: `.${domain}`.replace('..', '.'),
       httpOnly: cookie.httpOnly || false,
       name: cookie.name,
       secure: cookie.secure || false,

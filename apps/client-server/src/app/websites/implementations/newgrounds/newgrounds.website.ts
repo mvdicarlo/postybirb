@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Http } from '@postybirb/http';
+
 import {
   ILoginState,
   ImageResizeProps,
@@ -10,7 +10,6 @@ import {
   SimpleValidationResult,
   SubmissionRating,
 } from '@postybirb/types';
-import { BrowserWindowUtils } from '@postybirb/utils/electron';
 import { parse } from 'node-html-parser';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
@@ -70,7 +69,7 @@ export default class Newgrounds
 
   public async onLogin(): Promise<ILoginState> {
     try {
-      const res = await Http.get<string>(this.BASE_URL, {
+      const res = await this.platform.http.get<string>(this.BASE_URL, {
         partition: this.accountId,
       });
 
@@ -124,7 +123,7 @@ export default class Newgrounds
     userKey: string,
   ): Promise<void> {
     try {
-      await Http.post(`${this.BASE_URL}/projects/art/remove/${projectId}`, {
+      await this.platform.http.post(`${this.BASE_URL}/projects/art/remove/${projectId}`, {
         partition: this.accountId,
         type: 'multipart',
         data: {
@@ -142,7 +141,7 @@ export default class Newgrounds
     cancellationToken: CancellableToken,
   ): Promise<IPostResponse> {
     // Step 1: Get the user key from the page
-    const userKey: string = await BrowserWindowUtils.runScriptOnPage(
+    const userKey: string = await this.platform.browser.runScriptOnPage(
       this.accountId,
       `${this.BASE_URL}/projects/art/new`,
       'return PHP.get("uek")',
@@ -349,7 +348,7 @@ export default class Newgrounds
     cancellationToken: CancellableToken,
   ): Promise<IPostResponse> {
     // Step 1: Get the page to extract userkey
-    const page = await Http.get<string>(`${this.BASE_URL}/account/news/post`, {
+    const page = await this.platform.http.get<string>(`${this.BASE_URL}/account/news/post`, {
       partition: this.accountId,
     });
 

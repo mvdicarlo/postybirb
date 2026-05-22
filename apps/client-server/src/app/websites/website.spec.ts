@@ -1,9 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
+import { PlatformService } from '@postybirb/platform';
 import { eq } from 'drizzle-orm';
 import { Account } from '../drizzle/models';
 import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
 import { PostyBirbDatabaseUtil } from '../drizzle/postybirb-database/postybirb-database.util';
+import { createNoopPlatformContext } from '../platform/testing/noop-platform-context';
+import { noopPlatformProvider } from '../platform/testing/noop-platform-providers';
 import { WebsiteImplProvider } from './implementations/provider';
 import TestWebsite from './implementations/test/test.website';
 import { WebsiteRegistryService } from './website-registry.service';
@@ -12,14 +15,20 @@ describe('Website', () => {
   let module: TestingModule;
 
   let repository: PostyBirbDatabase<'WebsiteDataSchema'>;
+  let platformContext: PlatformService;
 
   beforeEach(async () => {
     clearDatabase();
     module = await Test.createTestingModule({
-      providers: [WebsiteRegistryService, WebsiteImplProvider],
+      providers: [
+        WebsiteRegistryService,
+        WebsiteImplProvider,
+        noopPlatformProvider,
+      ],
     }).compile();
     const service = module.get(WebsiteRegistryService);
     repository = service.getRepository();
+    platformContext = createNoopPlatformContext();
   });
 
   afterAll(async () => {
@@ -42,7 +51,7 @@ describe('Website', () => {
   }
 
   it('should store data', async () => {
-    const website = new TestWebsite(await populateAccount());
+    const website = new TestWebsite(await populateAccount(), platformContext);
     await website.onInitialize(repository);
     await website.login();
     const entity = (

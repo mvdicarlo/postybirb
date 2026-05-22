@@ -1,8 +1,9 @@
 {
-  "name": "utils-electron",
+  "name": "utils-common",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "libs/utils/electron/src",
+  "sourceRoot": "libs/utils/common/src",
   "projectType": "library",
+  "tags": [],
   "targets": {
     "lint": {
       "executor": "@nx/eslint:lint",
@@ -10,11 +11,10 @@
     },
     "test": {
       "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/libs/utils/electron"],
+      "outputs": ["{workspaceRoot}/coverage/libs/utils/common"],
       "options": {
-        "jestConfig": "libs/utils/electron/jest.config.ts"
+        "jestConfig": "libs/utils/common/jest.config.ts"
       }
     }
-  },
-  "tags": []
+  }
 }

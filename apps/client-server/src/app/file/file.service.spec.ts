@@ -10,6 +10,7 @@ import { SubmissionFile } from '../drizzle/models';
 import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
 import { FileConverterService } from '../file-converter/file-converter.service';
 import { FormGeneratorService } from '../form-generator/form-generator.service';
+import { noopPlatformProvider } from '../platform/testing/noop-platform-providers';
 import { DescriptionParserService } from '../post-parsers/parsers/description-parser.service';
 import { TagParserService } from '../post-parsers/parsers/tag-parser.service';
 import { TitleParser } from '../post-parsers/parsers/title-parser';
@@ -123,6 +124,7 @@ describe('FileService', () => {
         FileConverterService,
         CustomShortcutsService,
         UserConvertersService,
+        ...[noopPlatformProvider],
       ],
     }).compile();
     fileBufferRepository = new PostyBirbDatabase('FileBufferSchema');

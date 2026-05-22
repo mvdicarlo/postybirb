@@ -203,6 +203,8 @@ export interface ValidationMessages {
 
   'validation.file.bluesky.rating-matches-default': object;
 
+  'validation.description.bluesky.invalid-mentions': { mentions: string[] };
+
   'validation.file.e621.tags.network-error': object;
 
   'validation.file.e621.tags.recommended': {

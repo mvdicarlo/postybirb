@@ -7,10 +7,17 @@ import { DescriptionType, DescriptionValue, TagValue } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
 export class DiscordMessageSubmission extends BaseWebsiteOptions {
-  @DescriptionField({
+  @DescriptionField<DiscordMessageSubmission>({
     descriptionType: DescriptionType.MARKDOWN,
     maxDescriptionLength: 2000,
-    expectsInlineTitle: true,
+    customDerive(_, target) {
+      if (target.useEmbed) {
+        this.expectsInlineTitle = !target.useTitle;
+      } else {
+        // Use title is not applicable when useEmbed is disabled
+        this.expectsInlineTitle = true;
+      }
+    },
   })
   description: DescriptionValue;
 
@@ -19,6 +26,14 @@ export class DiscordMessageSubmission extends BaseWebsiteOptions {
   })
   tags: TagValue;
 
-  @BooleanField({ label: 'useTitle', section: 'website' })
+  @BooleanField<DiscordMessageSubmission>({
+    label: 'useTitle',
+    section: 'website',
+    span: 6,
+    showWhen: [['useEmbed', [true]]],
+  })
   useTitle = true;
+
+  @BooleanField({ label: 'useEmbed', section: 'website', span: 6 })
+  useEmbed = true;
 }

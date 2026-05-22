@@ -517,6 +517,9 @@ describe('DescriptionNode', () => {
             url: 'https://bsky.app/profile/$1',
           },
         },
+        websiteToShortcutId: {
+          bluesky: 'bluesky',
+        },
         customShortcuts: new Map(),
         defaultDescription: [],
         usernameConversions: new Map([['abcd', 'abcd.bsky.app']]),
@@ -1244,6 +1247,9 @@ describe('DescriptionNode', () => {
             url: 'https://test.postybirb.com/$1',
           },
         },
+        websiteToShortcutId: {
+          test: 'test',
+        },
         customShortcuts: new Map(),
         defaultDescription: [],
         usernameConversions: new Map([['myusername', 'converted_username']]),
@@ -1296,6 +1302,210 @@ describe('DescriptionNode', () => {
 
       expect(tree.toPlainText()).toBe('');
       expect(tree.findUsernames().size).toBe(0);
+    });
+  });
+
+  describe('username alias conversions', () => {
+    it('should use target website shortcut format when alias converts username', () => {
+      const nodes: TipTapNode[] = [
+        {
+          type: 'paragraph',
+          content: [
+            {
+              type: 'username',
+              attrs: {
+                shortcut: 'other-site',
+                only: '',
+                username: 'OriginalUser',
+              },
+            },
+          ],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'fur-affinity',
+        shortcuts: {
+          'other-site': {
+            id: 'other-site',
+            url: 'https://other-site.com/user/$1',
+          },
+          furaffinity: {
+            id: 'furaffinity',
+            url: 'https://furaffinity.net/user/$1',
+            convert: (websiteName, shortcut) => {
+              if (websiteName === 'fur-affinity' && shortcut === 'furaffinity') {
+                return ':icon$1:';
+              }
+              return undefined;
+            },
+          },
+        },
+        websiteToShortcutId: {
+          'fur-affinity': 'furaffinity',
+        },
+        customShortcuts: new Map(),
+        defaultDescription: [],
+        usernameConversions: new Map([['OriginalUser', 'ConvertedUser']]),
+      };
+
+      const tree = new DescriptionNodeTree(context, nodes, {
+        insertAd: false,
+      });
+
+      expect(tree.toBBCode()).toBe(':iconConvertedUser:');
+      expect(tree.toHtml()).toBe(
+        '<div><span>:iconConvertedUser:</span></div>',
+      );
+      expect(tree.toPlainText()).toBe(':iconConvertedUser:');
+    });
+
+    it('should fall back to original shortcut when target website has no shortcut', () => {
+      const nodes: TipTapNode[] = [
+        {
+          type: 'paragraph',
+          content: [
+            {
+              type: 'username',
+              attrs: {
+                shortcut: 'furaffinity',
+                only: '',
+                username: 'OriginalUser',
+              },
+            },
+          ],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'test-no-shortcut',
+        shortcuts: {
+          furaffinity: {
+            id: 'furaffinity',
+            url: 'https://furaffinity.net/user/$1',
+            convert: (websiteName, shortcut) => {
+              if (websiteName === 'fur-affinity' && shortcut === 'furaffinity') {
+                return ':icon$1:';
+              }
+              return undefined;
+            },
+          },
+        },
+        websiteToShortcutId: {},
+        customShortcuts: new Map(),
+        defaultDescription: [],
+        usernameConversions: new Map([['OriginalUser', 'ConvertedUser']]),
+      };
+
+      const tree = new DescriptionNodeTree(context, nodes, {
+        insertAd: false,
+      });
+
+      // Should use the original furaffinity shortcut URL with the converted username
+      expect(tree.toBBCode()).toBe(
+        '[url=https://furaffinity.net/user/ConvertedUser]ConvertedUser[/url]',
+      );
+      expect(tree.toHtml()).toBe(
+        '<div><a target="_blank" href="https://furaffinity.net/user/ConvertedUser">ConvertedUser</a></div>',
+      );
+      expect(tree.toPlainText()).toBe(
+        'https://furaffinity.net/user/ConvertedUser',
+      );
+    });
+
+    it('should not alter output when no alias conversion exists for a username', () => {
+      const nodes: TipTapNode[] = [
+        {
+          type: 'paragraph',
+          content: [
+            {
+              type: 'username',
+              attrs: {
+                shortcut: 'furaffinity',
+                only: '',
+                username: 'SomeUser',
+              },
+            },
+          ],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'fur-affinity',
+        shortcuts: {
+          furaffinity: {
+            id: 'furaffinity',
+            url: 'https://furaffinity.net/user/$1',
+            convert: (websiteName, shortcut) => {
+              if (websiteName === 'fur-affinity' && shortcut === 'furaffinity') {
+                return ':icon$1:';
+              }
+              return undefined;
+            },
+          },
+        },
+        websiteToShortcutId: {
+          'fur-affinity': 'furaffinity',
+        },
+        customShortcuts: new Map(),
+        defaultDescription: [],
+        usernameConversions: new Map(),
+      };
+
+      const tree = new DescriptionNodeTree(context, nodes, {
+        insertAd: false,
+      });
+
+      // No conversion — uses original shortcut with original username
+      expect(tree.toBBCode()).toBe(':iconSomeUser:');
+      expect(tree.toHtml()).toBe('<div><span>:iconSomeUser:</span></div>');
+    });
+
+    it('should convert username but keep original shortcut format when same as target', () => {
+      const nodes: TipTapNode[] = [
+        {
+          type: 'paragraph',
+          content: [
+            {
+              type: 'username',
+              attrs: {
+                shortcut: 'furaffinity',
+                only: '',
+                username: 'OldName',
+              },
+            },
+          ],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'fur-affinity',
+        shortcuts: {
+          furaffinity: {
+            id: 'furaffinity',
+            url: 'https://furaffinity.net/user/$1',
+            convert: (websiteName, shortcut) => {
+              if (websiteName === 'fur-affinity' && shortcut === 'furaffinity') {
+                return ':icon$1:';
+              }
+              return undefined;
+            },
+          },
+        },
+        websiteToShortcutId: {
+          'fur-affinity': 'furaffinity',
+        },
+        customShortcuts: new Map(),
+        defaultDescription: [],
+        usernameConversions: new Map([['OldName', 'NewName']]),
+      };
+
+      const tree = new DescriptionNodeTree(context, nodes, {
+        insertAd: false,
+      });
+
+      expect(tree.toBBCode()).toBe(':iconNewName:');
+      expect(tree.toHtml()).toBe('<div><span>:iconNewName:</span></div>');
     });
   });
 });

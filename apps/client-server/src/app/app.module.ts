@@ -15,6 +15,7 @@ import { ImageProcessingModule } from './image-processing/image-processing.modul
 import { LegacyDatabaseImporterModule } from './legacy-database-importer/legacy-database-importer.module';
 import { LogsModule } from './logs/logs.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { PlatformModule } from './platform/platform.module';
 import { PostParsersModule } from './post-parsers/post-parsers.module';
 import { PostModule } from './post/post.module';
 import { RemotePasswordMiddleware } from './remote/remote.middleware';
@@ -33,6 +34,7 @@ import { WebsitesModule } from './websites/websites.module';
 
 @Module({
   imports: [
+    PlatformModule,
     ScheduleModule.forRoot(),
     ImageProcessingModule,
     AccountModule,
