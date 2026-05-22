@@ -4,43 +4,48 @@
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
-    ActionIcon,
-    Box,
-    Button,
-    Divider,
-    Group,
-    Loader,
-    Modal,
-    ScrollArea,
-    SegmentedControl,
-    Stack,
-    Text,
-    TextInput,
-    ThemeIcon,
-    Tooltip,
+  ActionIcon,
+  Box,
+  Button,
+  Divider,
+  Group,
+  Loader,
+  Modal,
+  ScrollArea,
+  SegmentedControl,
+  Stack,
+  Text,
+  TextInput,
+  ThemeIcon,
+  Tooltip,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { SubmissionType } from '@postybirb/types';
 import {
-    IconFile,
-    IconHelp,
-    IconMessage,
-    IconPlus,
-    IconTemplate,
+  IconFile,
+  IconHelp,
+  IconMessage,
+  IconPlus,
+  IconSortAscendingLetters,
+  IconSortDescendingLetters,
+  IconTemplate,
 } from '@tabler/icons-react';
 import { useCallback, useMemo, useState } from 'react';
 import submissionApi from '../../../api/submission.api';
 import {
-    useSubmissionsLoading,
-    useTemplateSubmissions,
+  useSubmissionsLoading,
+  useTemplateSubmissions,
 } from '../../../stores/entity/submission-store';
 import { useNavigationStore } from '../../../stores/ui/navigation-store';
 import { useTemplatesFilter } from '../../../stores/ui/templates-ui-store';
 import { useTourActions } from '../../../stores/ui/tour-store';
-import { isTemplatesViewState, type ViewState } from '../../../types/view-state';
 import {
-    showErrorNotification,
-    showSuccessNotification,
+  isTemplatesViewState,
+  type ViewState,
+} from '../../../types/view-state';
+import {
+  showErrorNotification,
+  showSuccessNotification,
 } from '../../../utils/notifications';
 import { EmptyState } from '../../empty-state';
 import { TEMPLATES_TOUR_ID } from '../../onboarding-tour/tours/templates-tour';
@@ -59,8 +64,14 @@ export function TemplatesSection({ viewState }: TemplatesSectionProps) {
   const { t } = useLingui();
   const templates = useTemplateSubmissions();
   const { isLoading } = useSubmissionsLoading();
-  const { tabType, searchQuery, setTabType, setSearchQuery } =
-    useTemplatesFilter();
+  const {
+    tabType,
+    searchQuery,
+    sortOrder,
+    setTabType,
+    setSearchQuery,
+    toggleSortOrder,
+  } = useTemplatesFilter();
   const { startTour } = useTourActions();
   const setViewState = useNavigationStore((state) => state.setViewState);
 
@@ -88,7 +99,7 @@ export function TemplatesSection({ viewState }: TemplatesSectionProps) {
         });
       }
     },
-    [viewState, setViewState]
+    [viewState, setViewState],
   );
 
   // Handle creating a new template
@@ -119,26 +130,33 @@ export function TemplatesSection({ viewState }: TemplatesSectionProps) {
         handleCreateTemplate();
       }
     },
-    [handleCreateTemplate]
+    [handleCreateTemplate],
   );
 
-  // Filter templates by type and search query
+  // Filter and sort templates by type, search query, and name sort order
   const filteredTemplates = useMemo(
     () =>
-      templates.filter((template) => {
-        // Filter by type
-        if (template.type !== tabType) return false;
+      templates
+        .filter((template) => {
+          // Filter by type
+          if (template.type !== tabType) return false;
 
-        // Filter by search query
-        if (searchQuery) {
-          const query = searchQuery.toLowerCase();
-          const name = template.title?.toLowerCase() ?? '';
-          if (!name.includes(query)) return false;
-        }
+          // Filter by search query
+          if (searchQuery) {
+            const query = searchQuery.toLowerCase();
+            const name = template.title?.toLowerCase() ?? '';
+            if (!name.includes(query)) return false;
+          }
 
-        return true;
-      }),
-    [templates, tabType, searchQuery]
+          return true;
+        })
+        .sort((a, b) => {
+          const nameA = (a.title ?? '').toLowerCase();
+          const nameB = (b.title ?? '').toLowerCase();
+          const cmp = nameA.localeCompare(nameB);
+          return sortOrder === 'asc' ? cmp : -cmp;
+        }),
+    [templates, tabType, searchQuery, sortOrder],
   );
 
   return (
@@ -165,15 +183,24 @@ export function TemplatesSection({ viewState }: TemplatesSectionProps) {
           </Tooltip>
         </Group>
 
-        {/* Search */}
-        <Box data-tour-id="templates-search">
-          <SearchInput
-            size="xs"
-            value={searchQuery}
-            onChange={setSearchQuery}
-            onClear={() => setSearchQuery('')}
-          />
-        </Box>
+        {/* Search + Sort */}
+        <Group gap="xs" data-tour-id="templates-search">
+          <Box style={{ flex: 1 }}>
+            <SearchInput
+              size="xs"
+              value={searchQuery}
+              onChange={setSearchQuery}
+              onClear={() => setSearchQuery('')}
+            />
+          </Box>
+          <ActionIcon variant="light" size="sm" onClick={toggleSortOrder}>
+            {sortOrder === 'asc' ? (
+              <IconSortAscendingLetters size={14} />
+            ) : (
+              <IconSortDescendingLetters size={14} />
+            )}
+          </ActionIcon>
+        </Group>
 
         {/* Tabs */}
         <SegmentedControl
@@ -235,7 +262,11 @@ export function TemplatesSection({ viewState }: TemplatesSectionProps) {
             data-autofocus
           />
           <Group justify="flex-end">
-            <Button variant="default" onClick={closeModal} disabled={isCreating}>
+            <Button
+              variant="default"
+              onClick={closeModal}
+              disabled={isCreating}
+            >
               <Trans>Cancel</Trans>
             </Button>
             <Button
