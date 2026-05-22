@@ -104,11 +104,13 @@ export function TagField({
   // Build tag group options for dropdown
   const tagGroupsOptions = useMemo(
     () =>
-      tagGroups.map((tagGroup) => ({
-        label: `${TAG_GROUP_LABEL}${JSON.stringify({ name: tagGroup.name, tags: tagGroup.tags })}`,
-        value: `${TAG_GROUP_LABEL}${JSON.stringify({ name: tagGroup.name, tags: tagGroup.tags })}`,
-        disabled: containsAllTagsInGroup(tagValue, tagGroup),
-      })),
+      tagGroups
+        .map((tagGroup) => ({
+          label: `${TAG_GROUP_LABEL}${JSON.stringify({ name: tagGroup.name, tags: tagGroup.tags })}`,
+          value: `${TAG_GROUP_LABEL}${JSON.stringify({ name: tagGroup.name, tags: tagGroup.tags })}`,
+          disabled: containsAllTagsInGroup(tagValue, tagGroup),
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label)),
     [tagGroups, tagValue],
   );
 
