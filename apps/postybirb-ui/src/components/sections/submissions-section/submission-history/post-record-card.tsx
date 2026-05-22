@@ -118,11 +118,6 @@ export function PostRecordCard({ record, accountsMap }: PostRecordCardProps) {
             </Text>
           </Group>
           <Group gap="xs">
-            {runningCount > 0 && (
-              <Badge size="sm" color="blue" variant="light">
-                {runningCount} <Trans>posting</Trans>
-              </Badge>
-            )}
             {successCount > 0 && (
               <Badge size="sm" color="green" variant="light">
                 {successCount} <Trans>success</Trans>
