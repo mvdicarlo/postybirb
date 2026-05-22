@@ -5,7 +5,6 @@
 import { DateTimeFieldType } from '@postybirb/form-builder';
 import { IconCalendar } from '@tabler/icons-react';
 import dayjs from 'dayjs';
-import { useLocale } from '../../../../../../../hooks/use-locale';
 import { DateTimePickerWithLocalization } from '../../../../../../shared/index';
 import { useFormFieldsContext } from '../form-fields-context';
 import { useDefaultOption } from '../hooks/use-default-option';
@@ -26,26 +25,16 @@ function DateTimePickerField({
   const minDate = field.min ? dayjs(field.min).toDate() : undefined;
   const maxDate = field.max ? dayjs(field.max).toDate() : undefined;
 
-  const { dayjsDateTimeFormat: dateTimeFormat } = useLocale();
-
-  const format = field.format || dateTimeFormat;
-
   return (
     <DateTimePickerWithLocalization
       rightSection={<IconCalendar />}
-      value={dateValue}
       disabled={submission.isArchived}
-      valueFormat={format}
+      valueFormat={field.format}
+      value={dateValue}
       onChange={(date) => {
-        if (date) {
-          setValue(fieldName, date);
-        } else {
-          setValue(fieldName, '');
-        }
+        setValue(fieldName, date ?? '');
       }}
-      placeholder={
-        defaultValue ? dayjs(defaultValue).format(format) : undefined
-      }
+      placeholder={defaultValue ? new Date(defaultValue) : undefined}
       withSeconds={false}
       minDate={minDate}
       maxDate={maxDate}
