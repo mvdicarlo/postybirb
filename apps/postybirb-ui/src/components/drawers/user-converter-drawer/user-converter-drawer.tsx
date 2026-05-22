@@ -1,5 +1,5 @@
 /**
- * UserConverterDrawer - Drawer for managing user converters.
+ * UserConverterDrawer - Drawer for managing username aliases.
  * Uses the generic ConverterDrawer component with user-specific configuration.
  */
 
@@ -54,8 +54,8 @@ function UserConverterDrawerContent({ onClose }: { onClose: () => void }) {
     > => ({
       title: (
         <Group gap="xs">
-          <Trans>User Converters</Trans>
-          <Tooltip label={<Trans>User Converters Tour</Trans>}>
+          <Trans>Username Aliases</Trans>
+          <Tooltip label={<Trans>Username Aliases Tour</Trans>}>
             <ActionIcon variant="subtle" size="xs" onClick={() => startTour(USER_CONVERTERS_TOUR_ID)}>
               <IconHelp size={16} />
             </ActionIcon>
@@ -78,8 +78,8 @@ function UserConverterDrawerContent({ onClose }: { onClose: () => void }) {
         username: string,
         convertTo: Record<string, string>
       ): ICreateUserConverterDto => ({ username, convertTo }),
-      entityName: t`user converter`,
-      duplicateError: t`A user converter with this username already exists`,
+      entityName: t`username alias`,
+      duplicateError: t`A username alias with this username already exists`,
     }),
     [startTour]
   );
