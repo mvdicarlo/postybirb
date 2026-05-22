@@ -380,7 +380,7 @@ export function SubmissionSectionHeader({
               { value: 'all', label: t`All` },
               { value: 'queued', label: t`Queued` },
               { value: 'scheduled', label: t`Scheduled` },
-              { value: 'unscheduled', label: t`Unscheduled` },
+              { value: 'unscheduled', label: t`Not scheduled` },
             ]}
           />
           <Tooltip
