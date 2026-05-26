@@ -28,7 +28,9 @@ export class LegacyDatabaseImporterService {
     );
   }
 
-  async import(importRequest: LegacyImportDto): Promise<{ errors: Error[] }> {
+  async import(
+    importRequest: LegacyImportDto,
+  ): Promise<{ errors: { message: string }[] }> {
     const path = importRequest.customPath || this.LEGACY_POSTYBIRB_PLUS_PATH;
 
     const errors: Error[] = [];
@@ -53,7 +55,9 @@ export class LegacyDatabaseImporterService {
 
       const allAccounts = await this.accountService.findAll();
       for (const account of allAccounts) {
-        await this.accountService.registerAndLogin(account.id);
+        if (account) {
+          await this.accountService.registerAndLogin(account.id);
+        }
       }
     }
 
@@ -105,7 +109,7 @@ export class LegacyDatabaseImporterService {
       }
     }
 
-    return { errors };
+    return { errors: errors.map((e) => ({ message: e.message })) };
   }
 
   private async processImport(
@@ -116,11 +120,10 @@ export class LegacyDatabaseImporterService {
       await converter.import();
       return {};
     } catch (error) {
-      this.logger.error(
-        `Import for ${converter.legacyFileName} failed.`,
-        error,
-      );
-      return { error };
+      this.logger
+        .withError(error)
+        .error(`Import for ${converter.legacyFileName} failed.`);
+      return { error: error as Error };
     }
   }
 
@@ -134,11 +137,10 @@ export class LegacyDatabaseImporterService {
       await converter.import();
       return {};
     } catch (error) {
-      this.logger.error(
-        `Import for ${converter.submissionFileName} failed.`,
-        error,
-      );
-      return { error };
+      this.logger
+        .withError(error)
+        .error(`Import for ${converter.submissionFileName} failed.`);
+      return { error: error as Error };
     }
   }
 }
