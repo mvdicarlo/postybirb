@@ -338,12 +338,12 @@ export default class Bluesky
 
     // When RichText.detectFacets encounters invalid mention (user does not exists) it sets did to empty string
     const invalidMentions = rt.facets
-      .filter((e) =>
+      ?.filter((e) =>
         e.features.find((feature) => isMention(feature) && feature.did === ''),
       )
       .map((e) => rt.unicodeText.slice(e.index.byteStart, e.index.byteEnd));
 
-    if (invalidMentions.length) {
+    if (invalidMentions?.length) {
       validator.error(
         'validation.description.bluesky.invalid-mentions',
         { mentions: invalidMentions },
