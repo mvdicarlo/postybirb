@@ -4,7 +4,8 @@ import { contextBridge, ipcRenderer } from 'electron';
 // Implementation at electron.events.ts, typings for ui at main.tsx
 
 contextBridge.exposeInMainWorld('electron', {
-  pickDirectory: () => ipcRenderer.invoke('pick-directory'),
+  pickDirectory: (defaultPath) =>
+    ipcRenderer.invoke('pick-directory', defaultPath),
   openExternalLink: (url: string) => {
     // Prevent app crash from trying to open undefined link
     if (!url) {

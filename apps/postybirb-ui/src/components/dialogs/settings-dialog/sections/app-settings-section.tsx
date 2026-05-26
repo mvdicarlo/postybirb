@@ -12,7 +12,7 @@ import {
   Text,
   TextInput,
   Title,
-  useMantineColorScheme
+  useMantineColorScheme,
 } from '@mantine/core';
 import { IconFolder, IconRouter } from '@tabler/icons-react';
 import { useQuery } from 'react-query';
@@ -90,13 +90,15 @@ export function AppSettingsSection() {
               <Button
                 onClick={() => {
                   if (window?.electron?.pickDirectory) {
-                    window.electron.pickDirectory().then((appDataPath) => {
-                      if (appDataPath) {
-                        settingsApi
-                          .updateSystemStartupSettings({ appDataPath })
-                          .finally(refetch);
-                      }
-                    });
+                    window.electron
+                      .pickDirectory(startupSettings?.appDataPath)
+                      .then((appDataPath) => {
+                        if (appDataPath) {
+                          settingsApi
+                            .updateSystemStartupSettings({ appDataPath })
+                            .finally(refetch);
+                        }
+                      });
                   }
                 }}
               >

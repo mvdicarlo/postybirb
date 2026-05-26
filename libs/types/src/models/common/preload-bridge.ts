@@ -3,7 +3,7 @@ import { RemoteConfig } from '@postybirb/utils/common';
 export interface PreloadBridge {
   getLanIp(): Promise<string | undefined>;
   getRemoteConfig(): RemoteConfig;
-  pickDirectory?(): Promise<string | undefined>;
+  pickDirectory?(defaultPath?: string): Promise<string | undefined>;
   openExternalLink(url: string): void;
   getCookiesForAccount(accountId: string): Promise<string>;
   quit(code?: number): void;
