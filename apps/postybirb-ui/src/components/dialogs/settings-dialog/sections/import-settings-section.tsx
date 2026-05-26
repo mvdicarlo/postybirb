@@ -4,13 +4,13 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-  Alert,
-  Box,
-  Button,
-  Checkbox,
-  Stack,
-  Text,
-  Title,
+    Alert,
+    Box,
+    Button,
+    Checkbox,
+    Stack,
+    Text,
+    Title,
 } from '@mantine/core';
 import { IconCheck, IconInfoCircle, IconX } from '@tabler/icons-react';
 import { useState } from 'react';
@@ -18,7 +18,7 @@ import legacyImporterApi from '../../../../api/legacy-database-importer.api';
 
 export function ImportSettingsSection() {
   const [importing, setImporting] = useState(false);
-  const [errors, setErrors] = useState<Error[]>([]);
+  const [errors, setErrors] = useState<{ message: string }[]>([]);
   const [success, setSuccess] = useState(false);
 
   const [importOptions, setImportOptions] = useState({
@@ -43,7 +43,9 @@ export function ImportSettingsSection() {
         setSuccess(true);
       }
     } catch (error) {
-      setErrors([error as Error]);
+      const message =
+        error instanceof Error ? error.message : String(error);
+      setErrors([{ message }]);
     } finally {
       setImporting(false);
     }
