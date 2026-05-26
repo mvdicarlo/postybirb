@@ -43,16 +43,26 @@ ipcMain.handle('get-lan-ip', async () => {
   return addresses.length > 0 ? addresses[0] : undefined;
 });
 
-ipcMain.handle('pick-directory', async (): Promise<string | undefined> => {
-  const { canceled, filePaths } = await dialog.showOpenDialog({
-    properties: ['openDirectory'],
-  });
-  if (!canceled) {
-    return filePaths[0];
-  }
+ipcMain.handle(
+  'pick-directory',
+  async (
+    event,
+    defaultPath: string | undefined,
+  ): Promise<string | undefined> => {
+    if (defaultPath && typeof defaultPath !== 'string')
+      throw new Error('Expected default path to be a string');
 
-  return undefined;
-});
+    const { canceled, filePaths } = await dialog.showOpenDialog({
+      defaultPath,
+      properties: ['openDirectory'],
+    });
+    if (!canceled) {
+      return filePaths[0];
+    }
+
+    return undefined;
+  },
+);
 
 ipcMain.on('open-external-link', (event, url) => {
   shell.openExternal(url);
