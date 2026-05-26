@@ -5,38 +5,50 @@
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
-    ActionIcon,
-    Box,
-    Button,
-    Checkbox,
-    Group,
-    Kbd,
-    Popover,
-    SegmentedControl,
-    Stack,
-    Text,
-    TextInput,
-    Tooltip,
+  ActionIcon,
+  Box,
+  Button,
+  Checkbox,
+  Group,
+  Kbd,
+  Popover,
+  SegmentedControl,
+  Stack,
+  Text,
+  TextInput,
+  Tooltip,
 } from '@mantine/core';
-import { Dropzone, FileWithPath, IMAGE_MIME_TYPE, MS_WORD_MIME_TYPE, PDF_MIME_TYPE } from '@mantine/dropzone';
+import {
+  Dropzone,
+  FileWithPath,
+  IMAGE_MIME_TYPE,
+  MS_WORD_MIME_TYPE,
+  PDF_MIME_TYPE,
+} from '@mantine/dropzone';
 import { useDisclosure } from '@mantine/hooks';
 import { SubmissionId, SubmissionType } from '@postybirb/types';
 import {
-    IconCalendarEvent,
-    IconHelp,
-    IconPlus,
-    IconSend,
-    IconTemplate,
-    IconTrash,
-    IconUpload,
-    IconViewportShort,
-    IconViewportTall,
+  IconCalendarEvent,
+  IconHelp,
+  IconPlus,
+  IconSend,
+  IconTemplate,
+  IconTrash,
+  IconUpload,
+  IconViewportShort,
+  IconViewportTall,
 } from '@tabler/icons-react';
 import { useCallback, useState } from 'react';
-import { DeleteSelectedKeybinding, formatKeybindingDisplay } from '../../../config/keybindings';
+import {
+  DeleteSelectedKeybinding,
+  formatKeybindingDisplay,
+} from '../../../config/keybindings';
 import type { SubmissionRecord } from '../../../stores/records';
 import { useSubmissionViewMode } from '../../../stores/ui/appearance-store';
-import { type SubmissionFilter, useSubmissionsFilter } from '../../../stores/ui/submissions-ui-store';
+import {
+  type SubmissionFilter,
+  useSubmissionsFilter,
+} from '../../../stores/ui/submissions-ui-store';
 import { useTourActions } from '../../../stores/ui/tour-store';
 import { SUBMISSIONS_TOUR_ID } from '../../onboarding-tour/tours/submissions-tour';
 import { MultiSchedulerModal, SearchInput } from '../../shared';
@@ -233,7 +245,9 @@ export function SubmissionSectionHeader({
                 label={
                   <Group gap="xs">
                     <Trans>Delete</Trans>
-                    <Kbd size="xs">{formatKeybindingDisplay(DeleteSelectedKeybinding)}</Kbd>
+                    <Kbd size="xs">
+                      {formatKeybindingDisplay(DeleteSelectedKeybinding)}
+                    </Kbd>
                   </Group>
                 }
               >
@@ -366,6 +380,7 @@ export function SubmissionSectionHeader({
               { value: 'all', label: t`All` },
               { value: 'queued', label: t`Queued` },
               { value: 'scheduled', label: t`Scheduled` },
+              { value: 'unscheduled', label: t`Not scheduled` },
             ]}
           />
           <Tooltip

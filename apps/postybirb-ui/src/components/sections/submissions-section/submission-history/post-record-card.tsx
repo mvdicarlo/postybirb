@@ -12,6 +12,7 @@ import {
   Card,
   Divider,
   Group,
+  Loader,
   Stack,
   Table,
   Text,
@@ -36,7 +37,6 @@ import { ExternalLink } from '../../../shared/external-link';
 import {
   exportPostRecordToFile,
   extractWebsitePostsFromEvents,
-  formatDuration,
 } from './history-utils';
 
 function getStateIcon(state: PostRecordState): React.ReactNode {
@@ -62,7 +62,7 @@ interface PostRecordCardProps {
  * Displays an individual post record as an Accordion.Item.
  */
 export function PostRecordCard({ record, accountsMap }: PostRecordCardProps) {
-  const { formatDateTime } = useLocale();
+  const { formatDateTime, formatDuration } = useLocale();
   const errors = record.events
     ?.map((e) => {
       if (e.error?.stack) {
@@ -90,10 +90,16 @@ export function PostRecordCard({ record, accountsMap }: PostRecordCardProps) {
 
   // Extract website posts from events
   const websitePosts = extractWebsitePostsFromEvents(record.events);
-  const successCount = websitePosts.filter((p) => p.status === 'success').length;
+  const successCount = websitePosts.filter(
+    (p) => p.status === 'success',
+  ).length;
   const failedCount = websitePosts.filter((p) => p.status === 'failed').length;
-  const runningCount = websitePosts.filter((p) => p.status === 'running').length;
-  const pendingCount = websitePosts.filter((p) => p.status === 'pending').length;
+  const runningCount = websitePosts.filter(
+    (p) => p.status === 'running',
+  ).length;
+  const pendingCount = websitePosts.filter(
+    (p) => p.status === 'pending',
+  ).length;
 
   // Calculate duration if completed
   const startedAt = new Date(record.createdAt);
@@ -196,8 +202,10 @@ export function PostRecordCard({ record, accountsMap }: PostRecordCardProps) {
                             case 'running':
                               return (
                                 <Group gap="xs">
-                                  <IconLoader
+                                  <Loader
                                     size={16}
+                                    mt={3}
+                                    type="bars"
                                     color="var(--mantine-color-blue-6)"
                                   />
                                   <Text size="sm" c="blue.7">
@@ -251,10 +259,10 @@ export function PostRecordCard({ record, accountsMap }: PostRecordCardProps) {
                             {post.sourceUrls.map((url) => (
                               <ExternalLink href={url} key={url}>
                                 <Group gap={4}>
-                                  <IconExternalLink size="0.75rem" />
                                   <Text size="xs" c="blue.6" td="underline">
                                     <Trans>View</Trans>
                                   </Text>
+                                  <IconExternalLink size="0.75rem" />
                                 </Group>
                               </ExternalLink>
                             ))}

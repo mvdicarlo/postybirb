@@ -173,30 +173,6 @@ export function exportPostRecordToFile(record: PostRecordDto): string {
 }
 
 /**
- * Format duration in human-readable format.
- */
-export function formatDuration(ms: number): string {
-  const seconds = Math.floor(ms / 1000);
-  const minutes = Math.floor(seconds / 60);
-  const hours = Math.floor(minutes / 60);
-
-  if (hours > 0) {
-    // eslint-disable-next-line lingui/no-unlocalized-strings
-    return `${hours}h ${minutes % 60}m`;
-  }
-  if (minutes > 0) {
-    // eslint-disable-next-line lingui/no-unlocalized-strings
-    return `${minutes}m ${seconds % 60}s`;
-  }
-  if (seconds < 1) {
-    // eslint-disable-next-line lingui/no-unlocalized-strings
-    return '< 1s';
-  }
-  // eslint-disable-next-line lingui/no-unlocalized-strings
-  return `${seconds}s`;
-}
-
-/**
  * Get icon for post record state (used in PostRecordCard).
  * Returns a React element — import from React consumers only.
  */
