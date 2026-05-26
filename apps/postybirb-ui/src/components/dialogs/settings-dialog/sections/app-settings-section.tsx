@@ -2,26 +2,24 @@
  * App Settings Section - Startup and system settings.
  */
 
-import { Trans, useLingui } from '@lingui/react/macro';
+import { Trans } from '@lingui/react/macro';
 import {
+  Alert,
   Box,
   Button,
   Group,
+  Loader,
   Stack,
   Switch,
   Text,
   TextInput,
   Title,
-  useMantineColorScheme
 } from '@mantine/core';
 import { IconFolder, IconRouter } from '@tabler/icons-react';
 import { useQuery } from 'react-query';
 import settingsApi from '../../../../api/settings.api';
 
 export function AppSettingsSection() {
-  const { t } = useLingui();
-  const { colorScheme } = useMantineColorScheme();
-
   const {
     data: startupSettings,
     isLoading,
@@ -33,7 +31,7 @@ export function AppSettingsSection() {
     { cacheTime: 0 },
   );
 
-  if (isLoading) return null;
+  if (isLoading) return <Loader />;
 
   return (
     <Stack gap="lg">
@@ -103,7 +101,28 @@ export function AppSettingsSection() {
                 <Trans>Browse</Trans>
               </Button>
             </Group>
+            <Alert color="yellow" mt="xs">
+              <Stack gap="xs">
+                <Trans>
+                  Changing storage folder does not automatically move app data.
+                  You need to change location, quit using button below and then
+                  manually move files.
+                </Trans>
+              </Stack>
+            </Alert>
           </Box>
+
+          <Alert color="yellow">
+            <Stack gap="xs">
+              <Trans>
+                If you change these settings you will need to restart the app
+                using the Quit button to apply them.
+              </Trans>
+              <Button color="yellow" onClick={() => window.electron.quit()}>
+                <Trans>Quit</Trans>
+              </Button>
+            </Stack>
+          </Alert>
         </Stack>
       </Box>
     </Stack>
