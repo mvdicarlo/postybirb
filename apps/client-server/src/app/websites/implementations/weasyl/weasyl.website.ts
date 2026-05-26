@@ -312,7 +312,6 @@ export default class Weasyl
       .asMultipart()
       .withHeader('Referer', url)
       .withHeader('Origin', 'https://www.weasyl.com')
-      .withHeader('Host', 'www.weasyl.com')
       .setField('title', title)
       .setField('rating', this.convertRating(rating))
       .setField('content', this.modifyDescription(description))
