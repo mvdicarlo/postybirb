@@ -54,7 +54,7 @@ export class DescriptionParserService {
     title: string,
   ): Promise<string> {
     const mergedOptions = websiteOptions.mergeDefaults(defaultOptions);
-    const { descriptionType, hidden } =
+    const { descriptionType, hidden, maxDescriptionLength } =
       mergedOptions.getFormFieldFor('description');
 
     if (descriptionType === DescriptionType.NONE || hidden) {
@@ -147,21 +147,41 @@ export class DescriptionParserService {
       usernameConversions,
     });
 
-    return this.createDescription(instance, descriptionType, tree);
+    return this.createDescription(
+      instance,
+      descriptionType,
+      tree,
+      maxDescriptionLength,
+    );
   }
 
   private createDescription(
     instance: Website<unknown>,
     descriptionType: DescriptionType,
     tree: DescriptionNodeTree,
+    maxDescriptionLength: number,
   ): string {
     switch (descriptionType) {
       case DescriptionType.MARKDOWN:
         return tree.toMarkdown();
       case DescriptionType.HTML:
         return tree.toHtml();
-      case DescriptionType.PLAINTEXT:
-        return tree.toPlainText();
+      case DescriptionType.PLAINTEXT: {
+        // Truncate the description if it exceeds the maximum length
+        // Generally plaintext descriptions are more likely to have length limits.
+        // This is a bit of a blunt truncation, but it's the most straightforward way to enforce the limit.
+        const plainText = tree.toPlainText();
+        if (
+          maxDescriptionLength &&
+          maxDescriptionLength > 0 &&
+          plainText.length > maxDescriptionLength
+        ) {
+          return plainText
+            .replace('Posted using PostyBirb', '') // Remove the PostyBirb attribution
+            .substring(0, maxDescriptionLength);
+        }
+        return plainText;
+      }
       case DescriptionType.BBCODE:
         return tree.toBBCode();
       case DescriptionType.CUSTOM:
@@ -178,6 +198,7 @@ export class DescriptionParserService {
             instance,
             instance.getRuntimeParser(),
             tree,
+            maxDescriptionLength,
           );
         }
         throw new Error(
