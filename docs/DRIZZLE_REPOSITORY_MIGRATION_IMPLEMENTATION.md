@@ -1,6 +1,6 @@
 # Drizzle Repository Migration — Implementation Plan
 
-Status: not started
+Status: Phase A complete; Phase B not started
 Companion to: [DRIZZLE_REPOSITORY_MIGRATION.md](DRIZZLE_REPOSITORY_MIGRATION.md)
 
 This document is the trackable, checkable form of the migration spec. Each
@@ -133,13 +133,14 @@ yet).
 - [x] Gate: lib lint + tsc green; 41/41 tests still pass. No
   client-server change yet.
 
-### Step 4 — Phase A gate
+### Step 4 — Phase A gate ✅
 
-- [ ] `nx run database:test` green
-- [ ] `nx run database:lint` green
-- [ ] `nx run database:build` green
-- [ ] `nx run client-server:test` still green (nothing in client-server
-  changed, sanity check)
+- [x] `nx run database:test` green (41 tests across 5 spec files)
+- [x] `nx run database:lint` green
+- [x] `tsc --noEmit -p libs/database/tsconfig.lib.json` green (lib has no
+  `build` target; tsc stands in)
+- [x] `nx run client-server:test` still green (351 tests across 39 specs,
+  no client-server file changed during Phase A)
 
 ---
 
