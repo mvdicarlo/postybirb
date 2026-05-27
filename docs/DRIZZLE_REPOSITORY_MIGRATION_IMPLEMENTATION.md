@@ -116,17 +116,22 @@ yet).
 - [x] Gate: lib tests green (41 tests across 5 spec files). The
   client-server copy is left untouched.
 
-### Step 3 — Export new infrastructure from lib barrel
+### Step 3 — Export new infrastructure from lib barrel ✅
 
-- [ ] Outputs:
-  - [ ] `libs/database/src/index.ts` re-exports: `EntityRepository`,
+- [x] Outputs:
+  - [x] `libs/database/src/index.ts` re-exports: `EntityRepository`,
     `HydrationContext`, `SubscriberBus`, `RepositoryRegistry`,
     `EntityNotFoundError`, `OptimisticConcurrencyError`,
     `TransactionContext`, `withTransactionContext`, plus the types from
     `repositories/base/types.ts` consumers will need (`Action`,
-    `SubscriberCb`, `EntityId`, `DefaultWithFor`).
-- [ ] Tests: build/lint only (`nx run database:build`, `nx run database:lint`).
-- [ ] Gate: lib build + lint green. No client-server change yet.
+    `SubscriberCb`, `EntityId`, `DefaultWithFor`, `FindFirstConfig`,
+    `FindManyConfig`, `SchemaQuery`, `SchemaTable`, `TableSchemaKey`,
+    `EntityCtor`, `RepoEntity`, `EntityRepositoryConfig`).
+- [x] Tests: build/lint only (`nx run database:lint` +
+  `tsc --noEmit -p libs/database/tsconfig.lib.json`). No `build` target
+  exists on the lib; tsc stands in.
+- [x] Gate: lib lint + tsc green; 41/41 tests still pass. No
+  client-server change yet.
 
 ### Step 4 — Phase A gate
 
