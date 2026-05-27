@@ -19,7 +19,12 @@ import {
   Textarea,
   Tooltip,
 } from '@mantine/core';
-import { EntityId, PostRecordDto, PostRecordState } from '@postybirb/types';
+import {
+  EntityId,
+  PostRecordDto,
+  PostRecordState,
+  SubmissionType,
+} from '@postybirb/types';
 import {
   IconCheck,
   IconDeviceFloppy,
@@ -73,8 +78,10 @@ export function PostRecordCard({ record, accountsMap }: PostRecordCardProps) {
     })
     .filter((e) => !!e);
 
+  const hasFileId = record.events?.some((e) => e.fileId);
   const recordWithVersions = {
     version: record.version ?? 'unknown',
+    submissionType: hasFileId ? SubmissionType.FILE : SubmissionType.MESSAGE,
     debug: {
       clientVersion: window.electron.app_version,
       isRemote: isRemote(),
