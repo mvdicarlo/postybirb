@@ -170,7 +170,7 @@ export default class Itaku
     return new ItakuFileSubmission();
   }
 
-  calculateImageResize(): ImageResizeProps {
+  calculateImageResize(): ImageResizeProps | undefined {
     return undefined;
   }
 
@@ -229,20 +229,16 @@ export default class Itaku
     const builder = new PostBuilder(this, cancellationToken)
       .asJson()
       .setField('title', postData.options.title)
-      .setField('content', postData.options.description)
-      .setField('folders', postData.options.folders)
-      .setField('tags', postData.options.tags.join(','))
+      .setField('content', postData.options.description ?? '')
+      .setField('folders', postData.options.folders ?? [])
+      .setField(
+        'tags',
+        postData.options.tags.map((tag) => ({ name: tag })),
+      )
       .setField('maturity_rating', this.convertRating(postData.options.rating))
       .setField('visibility', postData.options.visibility)
-      .setField(
-        'gallery_images',
-        uploadedFiles?.map((file) => file.id),
-      )
-      .setConditional(
-        'content_warning',
-        !!postData.options.contentWarning,
-        postData.options.contentWarning,
-      )
+      .setField('gallery_images', uploadedFiles?.map((file) => file.id) ?? [])
+      .setField('content_warning', postData.options.contentWarning ?? '')
       .withHeader('Authorization', `Token ${this.sessionData.token}`);
 
     const post = await builder.send<{ id: number }>(
