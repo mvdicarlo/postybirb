@@ -21,7 +21,6 @@ import {
   MouseWheelInputEvent,
   PageFaviconUpdatedEvent,
   PageTitleUpdatedEvent,
-  PluginCrashedEvent,
   PrintToPDFOptions,
   UpdateTargetUrlEvent,
   WebviewTagPrintOptions,
@@ -339,18 +338,6 @@ export interface WebviewTag extends HTMLElement {
     useCapture?: boolean,
   ): this;
   removeEventListener(event: 'crashed', listener: (event: Event) => void): this;
-  /**
-   * Fired when a plugin process is crashed.
-   */
-  addEventListener(
-    event: 'plugin-crashed',
-    listener: (event: PluginCrashedEvent) => void,
-    useCapture?: boolean,
-  ): this;
-  removeEventListener(
-    event: 'plugin-crashed',
-    listener: (event: PluginCrashedEvent) => void,
-  ): this;
   /**
    * Fired when the WebContents is destroyed.
    */
