@@ -97,23 +97,24 @@ Note: `EntityRepository` itself is type-checked here but not exercised
 against an in-memory db until Phase C step 13 (no concrete subclass exists
 yet).
 
-### Step 2 — Add lib `TransactionContext`
+### Step 2 — Add lib `TransactionContext` ✅
 
-- [ ] Outputs:
-  - [ ] `libs/database/src/lib/transaction/transaction-context.ts` — copy of
+- [x] Outputs:
+  - [x] `libs/database/src/lib/transaction/transaction-context.ts` — copy of
     the current client-server `transaction-context.ts`, re-pointed so
     `commit()` calls `SubscriberBus.notifyImmediate(...)` (per §5) instead
     of the legacy `PostyBirbDatabase.notifySubscribers`. Public surface
     unchanged: `track`, `trackMany`, `getDb`, `cleanup`, `commit`,
     `withTransactionContext`.
-- [ ] Tests added:
-  - [ ] `transaction-context.spec.ts`:
-    - [ ] `track` + `commit` issues one `notifyImmediate` per
+- [x] Tests added:
+  - [x] `transaction-context.spec.ts`:
+    - [x] `track` + `commit` issues one `notifyImmediate` per
       `(schemaKey, action)` with union of tracked ids
-    - [ ] `cleanup` (rollback path) does NOT fire notifications
-    - [ ] `withTransactionContext` resolves to the callback's return value
+    - [x] `cleanup` (rollback path) does NOT fire notifications
+    - [x] `withTransactionContext` resolves to the callback's return value
       and propagates thrown errors after running cleanup
-- [ ] Gate: lib tests green. The client-server copy is left untouched.
+- [x] Gate: lib tests green (41 tests across 5 spec files). The
+  client-server copy is left untouched.
 
 ### Step 3 — Export new infrastructure from lib barrel
 
