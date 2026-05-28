@@ -1,7 +1,7 @@
 import { SettingsConstants } from '@postybirb/types';
-import { SettingsRepository } from './repositories/settings.repository';
 import { OptimisticConcurrencyError } from './repositories/base/optimistic-concurrency.error';
 import { createTestRepository } from './repositories/base/test-utils';
+import { SettingsRepository } from './repositories/settings.repository';
 import { saveFromEntity } from './save-from-entity';
 
 describe('saveFromEntity', () => {

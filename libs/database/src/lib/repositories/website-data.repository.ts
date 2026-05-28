@@ -1,5 +1,5 @@
-import { WebsiteData } from '../entities/website-data.entity';
 import { getDatabase } from '../database';
+import { WebsiteData } from '../entities/website-data.entity';
 import { WebsiteDataSchema } from '../schemas';
 import { EntityRepository } from './base/entity-repository';
 

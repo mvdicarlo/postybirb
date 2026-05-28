@@ -1,5 +1,5 @@
-import { TagConverter } from '../entities/tag-converter.entity';
 import { getDatabase } from '../database';
+import { TagConverter } from '../entities/tag-converter.entity';
 import { TagConverterSchema } from '../schemas';
 import { EntityRepository } from './base/entity-repository';
 

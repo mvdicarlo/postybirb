@@ -1,5 +1,5 @@
-import { TagGroup } from '../entities/tag-group.entity';
 import { getDatabase } from '../database';
+import { TagGroup } from '../entities/tag-group.entity';
 import { TagGroupSchema } from '../schemas';
 import { EntityRepository } from './base/entity-repository';
 

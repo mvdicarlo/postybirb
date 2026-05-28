@@ -1,6 +1,6 @@
 # Drizzle Repository Migration — Implementation Plan
 
-Status: Phase B complete; Phase C not started
+Status: Phase C complete; Phase D not started
 Companion to: [DRIZZLE_REPOSITORY_MIGRATION.md](DRIZZLE_REPOSITORY_MIGRATION.md)
 
 This document is the trackable, checkable form of the migration spec. Each
@@ -370,48 +370,51 @@ For each repository other than `SubmissionRepository`, add a spec that:
 
 Output checkboxes:
 
-- [ ] `account.repository.spec.ts`
-- [ ] `custom-shortcut.repository.spec.ts`
-- [ ] `directory-watcher.repository.spec.ts`
-- [ ] `file-buffer.repository.spec.ts`
-- [ ] `notification.repository.spec.ts`
-- [ ] `post-event.repository.spec.ts`
-- [ ] `post-queue-record.repository.spec.ts`
-- [ ] `post-record.repository.spec.ts`
-- [ ] `settings.repository.spec.ts`
-- [ ] `submission-file.repository.spec.ts`
-- [ ] `tag-converter.repository.spec.ts`
-- [ ] `tag-group.repository.spec.ts`
-- [ ] `user-converter.repository.spec.ts`
-- [ ] `user-specified-website-options.repository.spec.ts`
-- [ ] `website-data.repository.spec.ts`
-- [ ] `website-options.repository.spec.ts`
+- [x] `account.repository.spec.ts`
+- [x] `custom-shortcut.repository.spec.ts`
+- [x] `directory-watcher.repository.spec.ts`
+- [x] `file-buffer.repository.spec.ts`
+- [x] `notification.repository.spec.ts`
+- [x] `post-event.repository.spec.ts`
+- [x] `post-queue-record.repository.spec.ts`
+- [x] `post-record.repository.spec.ts`
+- [x] `settings.repository.spec.ts`
+- [x] `submission-file.repository.spec.ts`
+- [x] `tag-converter.repository.spec.ts`
+- [x] `tag-group.repository.spec.ts`
+- [x] `user-converter.repository.spec.ts`
+- [x] `user-specified-website-options.repository.spec.ts`
+- [x] `website-data.repository.spec.ts`
+- [x] `website-options.repository.spec.ts`
 
 (Note: `submission.repository.spec.ts` is the one written for step 13.)
 
 ### Step 15 — Cross-entity registry / `saveFromEntity` integration spec
 
-- [ ] Outputs:
-  - [ ] `libs/database/src/lib/repositories/repository-registry.integration.spec.ts`:
-    - [ ] constructs every repository, asserts `RepositoryRegistry.get(K)`
+- [x] Outputs:
+  - [x] `libs/database/src/lib/repositories/repository-registry.integration.spec.ts`:
+    - [x] constructs every repository, asserts `RepositoryRegistry.get(K)`
       returns each
-    - [ ] `RepositoryRegistry.get(K)` for each `SchemaKey` returns an
+    - [x] `RepositoryRegistry.get(K)` for each `SchemaKey` returns an
       `instanceof` the corresponding repository class
-    - [ ] hydrated entity of each class round-trips through
-      `saveFromEntity` end-to-end against `:memory:`
+    - [x] hydrated entity of each class round-trips through
+      `saveFromEntity` end-to-end against `:memory:` (PostEvent excluded
+      from the round-trip — append-only ledger with no `updatedAt`
+      column; registry assertion still covers `PostEventSchema`)
 
 ### Step 16 — Phase C gate
 
-- [ ] `nx run database:test` green (Phase A + B + C specs)
-- [ ] `nx run database:lint` green
-- [ ] `nx run database:build` green
-- [ ] `nx run client-server:test` still green (still untouched)
-- [ ] **Manual checklist:**
-  - [ ] every `SchemaKey` has a corresponding `XRepository` class exported
+- [x] `nx run database:test` green (Phase A + B + C specs) — 42 suites / 155 tests
+- [x] `nx run database:lint` green
+- [x] `tsc --noEmit -p libs/database/tsconfig.lib.json` green (no `database:build`
+  target exists; the lib is TS-paths only, so `tsc --noEmit` is the build proxy)
+- [x] `nx run client-server:test` still green (still untouched) — 351 tests
+- [x] **Manual checklist:**
+  - [x] every `SchemaKey` has a corresponding `XRepository` class exported
     from `@postybirb/database`
-  - [ ] every entity has a `*Row` type and `static fromRow`/`fromRows`
-  - [ ] every entity / repo / base module appears in `libs/database/src/index.ts`
-  - [ ] no file in `libs/database/src/lib/{entities,repositories,transaction}`
+  - [x] every entity has a `*Row` type and `static fromRow`/`fromRows`
+  - [x] every entity / repo / base module appears in `libs/database/src/index.ts`
+  - [x] no file in `libs/database/src/lib/{entities,repositories,transaction}`
     imports from `class-transformer`, `@nestjs/*`, or `apps/`
 
 ---
@@ -606,7 +609,7 @@ Tick when each phase is fully merged.
 
 - [ ] **Phase A** — lib base infrastructure
 - [x] **Phase B** — lib entities
-- [ ] **Phase C** — lib repositories + `saveFromEntity` (lib data layer
+- [x] **Phase C** — lib repositories + `saveFromEntity` (lib data layer
   independently proven)
 - [ ] **Phase D** — client-server cutover (17 schemas)
 - [ ] **Phase E** — cleanup

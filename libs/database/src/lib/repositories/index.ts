@@ -7,11 +7,12 @@ export * from './post-event.repository';
 export * from './post-queue-record.repository';
 export * from './post-record.repository';
 export * from './settings.repository';
-export * from './submission.repository';
 export * from './submission-file.repository';
+export * from './submission.repository';
 export * from './tag-converter.repository';
 export * from './tag-group.repository';
 export * from './user-converter.repository';
 export * from './user-specified-website-options.repository';
 export * from './website-data.repository';
 export * from './website-options.repository';
+

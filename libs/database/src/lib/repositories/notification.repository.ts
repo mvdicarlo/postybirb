@@ -1,5 +1,5 @@
-import { Notification } from '../entities/notification.entity';
 import { getDatabase } from '../database';
+import { Notification } from '../entities/notification.entity';
 import { NotificationSchema } from '../schemas';
 import { EntityRepository } from './base/entity-repository';
 

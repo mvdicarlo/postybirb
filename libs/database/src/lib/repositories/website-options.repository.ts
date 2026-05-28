@@ -1,5 +1,5 @@
-import { WebsiteOptions } from '../entities/website-options.entity';
 import { getDatabase } from '../database';
+import { WebsiteOptions } from '../entities/website-options.entity';
 import { WebsiteOptionsSchema } from '../schemas';
 import { EntityRepository } from './base/entity-repository';
 

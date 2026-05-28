@@ -1,5 +1,5 @@
-import { CustomShortcut } from '../entities/custom-shortcut.entity';
 import { getDatabase } from '../database';
+import { CustomShortcut } from '../entities/custom-shortcut.entity';
 import { CustomShortcutSchema } from '../schemas';
 import { EntityRepository } from './base/entity-repository';
 

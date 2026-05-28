@@ -1,13 +1,13 @@
 import { SettingsConstants } from '@postybirb/types';
+import { AccountRepository } from '../account.repository';
 import { SettingsRepository } from '../settings.repository';
 import { RepositoryRegistry } from './repository-registry';
 import { SubscriberBus } from './subscriber-bus';
 import {
-  createTestRepositories,
-  createTestRepository,
-  resetRepositoryState,
+    createTestRepositories,
+    createTestRepository,
+    resetRepositoryState,
 } from './test-utils';
-import { AccountRepository } from '../account.repository';
 
 describe('createTestRepository', () => {
   const settings = createTestRepository(SettingsRepository);

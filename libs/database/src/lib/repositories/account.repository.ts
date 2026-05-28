@@ -1,5 +1,5 @@
-import { Account } from '../entities/account.entity';
 import { getDatabase } from '../database';
+import { Account } from '../entities/account.entity';
 import { AccountSchema } from '../schemas';
 import { EntityRepository } from './base/entity-repository';
 

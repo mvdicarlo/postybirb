@@ -1,5 +1,5 @@
-import { Settings } from '../entities/settings.entity';
 import { getDatabase } from '../database';
+import { Settings } from '../entities/settings.entity';
 import { SettingsSchema } from '../schemas';
 import { EntityRepository } from './base/entity-repository';
 

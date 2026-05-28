@@ -1,5 +1,5 @@
-import { Submission } from '../entities/submission.entity';
 import { getDatabase } from '../database';
+import { Submission } from '../entities/submission.entity';
 import { SubmissionSchema } from '../schemas';
 import { EntityRepository } from './base/entity-repository';
 

@@ -1,5 +1,5 @@
-import { PostRecord } from '../entities/post-record.entity';
 import { getDatabase } from '../database';
+import { PostRecord } from '../entities/post-record.entity';
 import { PostRecordSchema } from '../schemas';
 import { EntityRepository } from './base/entity-repository';
 

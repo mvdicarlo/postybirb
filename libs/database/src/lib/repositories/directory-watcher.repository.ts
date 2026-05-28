@@ -1,5 +1,5 @@
-import { DirectoryWatcher } from '../entities/directory-watcher.entity';
 import { getDatabase } from '../database';
+import { DirectoryWatcher } from '../entities/directory-watcher.entity';
 import { DirectoryWatcherSchema } from '../schemas';
 import { EntityRepository } from './base/entity-repository';
 

@@ -1,5 +1,5 @@
-import { PostEvent } from '../entities/post-event.entity';
 import { getDatabase } from '../database';
+import { PostEvent } from '../entities/post-event.entity';
 import { PostEventSchema } from '../schemas';
 import { EntityRepository } from './base/entity-repository';
 

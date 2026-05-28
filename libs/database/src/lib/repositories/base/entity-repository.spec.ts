@@ -1,16 +1,16 @@
-import { ScheduleType, SubmissionType } from '@postybirb/types';
 import type {
-  Insert,
-  ISubmissionMetadata,
+    Insert,
+    ISubmissionMetadata,
 } from '@postybirb/types';
+import { ScheduleType, SubmissionType } from '@postybirb/types';
 import { eq } from 'drizzle-orm';
 import { Submission } from '../../entities/submission.entity';
 import { SubmissionSchema } from '../../schemas';
 import { SubmissionRepository } from '../submission.repository';
 import { EntityNotFoundError } from './entity-not-found.error';
 import { SubscriberBus } from './subscriber-bus';
-import type { Action, SubscriberCb } from './types';
 import { createTestRepository } from './test-utils';
+import type { Action, SubscriberCb } from './types';
 
 /**
  * Integration spec for EntityRepository, using SubmissionRepository as
