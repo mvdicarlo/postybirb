@@ -47,3 +47,8 @@ export {
   withTransactionContext
 } from './lib/transaction/transaction-context';
 
+// Entity classes and *Row aliases (Phase B Step 5/6). These are the
+// lib-side entity implementations consumed by repositories in Phase C
+// and by client-server at the cutover in Phase D.
+export * from './lib/entities';
+

@@ -1,6 +1,6 @@
 # Drizzle Repository Migration — Implementation Plan
 
-Status: Phase A complete; Phase B not started
+Status: Phase B complete; Phase C not started
 Companion to: [DRIZZLE_REPOSITORY_MIGRATION.md](DRIZZLE_REPOSITORY_MIGRATION.md)
 
 This document is the trackable, checkable form of the migration spec. Each
@@ -176,77 +176,80 @@ copy:
 Per-entity output checkboxes (each implies the file is created and its spec
 in step 7 passes):
 
-- [ ] `account.entity.ts`
-- [ ] `custom-shortcut.entity.ts`
-- [ ] `directory-watcher.entity.ts`
-- [ ] `file-buffer.entity.ts`
-- [ ] `notification.entity.ts`
-- [ ] `post-event.entity.ts`
-- [ ] `post-queue-record.entity.ts`
-- [ ] `post-record.entity.ts`
-- [ ] `settings.entity.ts`
-- [ ] `submission.entity.ts`
-- [ ] `submission-file.entity.ts`
-- [ ] `tag-converter.entity.ts`
-- [ ] `tag-group.entity.ts`
-- [ ] `user-converter.entity.ts`
-- [ ] `user-specified-website-options.entity.ts`
-- [ ] `website-data.entity.ts`
-- [ ] `website-options.entity.ts`
+- [x] `account.entity.ts`
+- [x] `custom-shortcut.entity.ts`
+- [x] `directory-watcher.entity.ts`
+- [x] `file-buffer.entity.ts`
+- [x] `notification.entity.ts`
+- [x] `post-event.entity.ts`
+- [x] `post-queue-record.entity.ts`
+- [x] `post-record.entity.ts`
+- [x] `settings.entity.ts`
+- [x] `submission.entity.ts`
+- [x] `submission-file.entity.ts`
+- [x] `tag-converter.entity.ts`
+- [x] `tag-group.entity.ts`
+- [x] `user-converter.entity.ts`
+- [x] `user-specified-website-options.entity.ts`
+- [x] `website-data.entity.ts`
+- [x] `website-options.entity.ts`
 
-- [ ] `libs/database/src/lib/entities/index.ts` re-exports all of the
+- [x] `libs/database/src/lib/entities/index.ts` re-exports all of the
   above.
 
 ### Step 7 — Add per-entity `fromRow` specs
 
-- [ ] Outputs:
-  - [ ] `libs/database/src/lib/repositories/base/test-utils.ts` adds a
+- [x] Outputs:
+  - [x] `libs/database/src/lib/repositories/base/test-utils.ts` adds a
     shared `assertRowRoundtrips(row, entity)` helper that iterates
     `Object.keys(row)` and asserts each is present on the hydrated entity
     (per §4 Coverage requirement).
-  - [ ] One spec file per entity:
-    - [ ] `account.entity.spec.ts`
-    - [ ] `custom-shortcut.entity.spec.ts`
-    - [ ] `directory-watcher.entity.spec.ts`
-    - [ ] `file-buffer.entity.spec.ts`
-    - [ ] `notification.entity.spec.ts`
-    - [ ] `post-event.entity.spec.ts`
-    - [ ] `post-queue-record.entity.spec.ts`
-    - [ ] `post-record.entity.spec.ts`
-    - [ ] `settings.entity.spec.ts`
-    - [ ] `submission.entity.spec.ts`
-    - [ ] `submission-file.entity.spec.ts`
-    - [ ] `tag-converter.entity.spec.ts`
-    - [ ] `tag-group.entity.spec.ts`
-    - [ ] `user-converter.entity.spec.ts`
-    - [ ] `user-specified-website-options.entity.spec.ts`
-    - [ ] `website-data.entity.spec.ts`
-    - [ ] `website-options.entity.spec.ts`
-  - [ ] Each spec asserts (no db required — `fromRow` operates on plain
+  - [x] One spec file per entity:
+    - [x] `account.entity.spec.ts`
+    - [x] `custom-shortcut.entity.spec.ts`
+    - [x] `directory-watcher.entity.spec.ts`
+    - [x] `file-buffer.entity.spec.ts`
+    - [x] `notification.entity.spec.ts`
+    - [x] `post-event.entity.spec.ts`
+    - [x] `post-queue-record.entity.spec.ts`
+    - [x] `post-record.entity.spec.ts`
+    - [x] `settings.entity.spec.ts`
+    - [x] `submission.entity.spec.ts`
+    - [x] `submission-file.entity.spec.ts`
+    - [x] `tag-converter.entity.spec.ts`
+    - [x] `tag-group.entity.spec.ts`
+    - [x] `user-converter.entity.spec.ts`
+    - [x] `user-specified-website-options.entity.spec.ts`
+    - [x] `website-data.entity.spec.ts`
+    - [x] `website-options.entity.spec.ts`
+  - [x] Each spec asserts (no db required — `fromRow` operates on plain
     rows):
-    - [ ] every scalar column round-trips via `assertRowRoundtrips`
-    - [ ] each declared relation hydrates to the correct entity class when
+    - [x] every scalar column round-trips via `assertRowRoundtrips`
+    - [x] each declared relation hydrates to the correct entity class when
       present in the input row
-    - [ ] each declared relation is left `undefined`/unset when absent from
+    - [x] each declared relation is left `undefined`/unset when absent from
       the input row
-    - [ ] a back-reference in nested rows (e.g.
+    - [x] a back-reference in nested rows (e.g.
       `submission.options[0].submission = <same id>`) shares object
       identity with the parent when a shared `HydrationContext` is passed
 
 ### Step 8 — Export entities from lib barrel
 
-- [ ] Outputs:
-  - [ ] `libs/database/src/index.ts` re-exports every entity class and its
-    `*Row` type.
-- [ ] Gate: lib build + lint green.
+- [x] Outputs:
+  - [x] `libs/database/src/index.ts` re-exports every entity class and its
+    `*Row` type (via `export * from './lib/entities'`).
+- [x] Gate: lib `tsc -p libs/database/tsconfig.lib.json` + lint green
+  (database lib has no `build` target — buildless TS-paths consumer).
 
 ### Step 9 — Phase B gate
 
-- [ ] `nx run database:test` green (Phase A specs + 18 new entity specs)
-- [ ] `nx run database:lint` green
-- [ ] `nx run database:build` green
-- [ ] `nx run client-server:test` still green — sanity check that
-  client-server's entity files / wrapper / specs are completely undisturbed
+- [x] `nx run database:test` green (22 suites, 89 tests: Phase A specs + 17
+  new entity specs).
+- [x] `nx run database:lint` green.
+- [x] `tsc -p libs/database/tsconfig.lib.json` green (substitutes for the
+  planned `database:build` — no build target exists; lib is TS-paths-only).
+- [x] `nx run client-server:test` still green (351 tests) — client-server's
+  entity files / wrapper / specs completely undisturbed.
 
 ---
 
@@ -602,7 +605,7 @@ Goal: legacy wrapper deleted; temporary union removed; workspace clean.
 Tick when each phase is fully merged.
 
 - [ ] **Phase A** — lib base infrastructure
-- [ ] **Phase B** — lib entities
+- [x] **Phase B** — lib entities
 - [ ] **Phase C** — lib repositories + `saveFromEntity` (lib data layer
   independently proven)
 - [ ] **Phase D** — client-server cutover (17 schemas)
