@@ -1,6 +1,5 @@
 import type { EntityId } from '@postybirb/types';
 import type { DBQueryConfig, ExtractTablesWithRelations } from 'drizzle-orm';
-import type { AnySQLiteColumn } from 'drizzle-orm/sqlite-core';
 import type { PostyBirbDatabaseType } from '../../database';
 import type { SchemaKey } from '../../helper-types';
 import type * as relations from '../../relations/relations';

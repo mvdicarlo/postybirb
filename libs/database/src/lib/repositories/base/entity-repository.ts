@@ -1,8 +1,8 @@
 import type { EntityId, IEntity } from '@postybirb/types';
 import { NULL_ACCOUNT_ID } from '@postybirb/types';
+import type { RunResult } from 'better-sqlite3';
 import { eq, inArray, SQL, type KnownKeysOnly } from 'drizzle-orm';
 import type { AnySQLiteColumn } from 'drizzle-orm/sqlite-core';
-import type { RunResult } from 'better-sqlite3';
 import { getDatabase, type PostyBirbDatabaseType } from '../../database';
 import type { Insert, SchemaKey } from '../../helper-types';
 import { EntityNotFoundError } from './entity-not-found.error';

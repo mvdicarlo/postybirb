@@ -12,7 +12,7 @@ export function getMetadataKey(name: string) {
 }
 
 export function getParentMetadataKeys(proto: object) {
-  const chain = [];
+  const chain: string[] = [];
   let currentProto = proto.constructor;
   while (currentProto && currentProto.name) {
     chain.push(currentProto.name);

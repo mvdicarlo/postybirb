@@ -10,7 +10,7 @@ export type PostyBirbDatabaseType = BetterSQLite3Database<typeof schema>;
 const migrationsFolder = IsTestEnvironment()
   ? join(__dirname.split('libs')[0], 'apps', 'postybirb', 'src', 'migrations')
   : join(__dirname, 'migrations');
-let db: PostyBirbDatabaseType;
+let db: PostyBirbDatabaseType | undefined;
 
 /**
  * Get the database instance

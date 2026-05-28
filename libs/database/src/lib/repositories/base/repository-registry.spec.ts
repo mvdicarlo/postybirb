@@ -1,6 +1,6 @@
-import { RepositoryRegistry } from './repository-registry';
-import type { EntityRepository } from './entity-repository';
 import type { SchemaKey } from '../../helper-types';
+import type { EntityRepository } from './entity-repository';
+import { RepositoryRegistry } from './repository-registry';
 
 // Lightweight fake — RepositoryRegistry stores instances opaquely and tests
 // only need identity equality. Avoids spinning up an in-memory db just to
