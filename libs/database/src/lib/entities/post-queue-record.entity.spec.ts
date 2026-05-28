@@ -1,18 +1,18 @@
-import {
-  PostRecordResumeMode,
-  PostRecordState,
-  ScheduleType,
-  SubmissionType,
-} from '@postybirb/types';
 import type { ISubmissionMetadata } from '@postybirb/types';
 import {
-  PostQueueRecord,
-  type PostQueueRecordRow,
+    PostRecordResumeMode,
+    PostRecordState,
+    ScheduleType,
+    SubmissionType,
+} from '@postybirb/types';
+import { HydrationContext } from '../repositories/base/hydration-context';
+import { assertRowRoundtrips } from '../repositories/base/test-utils';
+import {
+    PostQueueRecord,
+    type PostQueueRecordRow,
 } from './post-queue-record.entity';
 import { PostRecord } from './post-record.entity';
 import { Submission } from './submission.entity';
-import { HydrationContext } from '../repositories/base/hydration-context';
-import { assertRowRoundtrips } from '../repositories/base/test-utils';
 
 function buildRow(
   overrides: Partial<PostQueueRecordRow> = {},

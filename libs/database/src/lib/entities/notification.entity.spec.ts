@@ -1,6 +1,6 @@
-import { Notification, type NotificationRow } from './notification.entity';
 import { HydrationContext } from '../repositories/base/hydration-context';
 import { assertRowRoundtrips } from '../repositories/base/test-utils';
+import { Notification, type NotificationRow } from './notification.entity';
 
 function buildRow(overrides: Partial<NotificationRow> = {}): NotificationRow {
   return {

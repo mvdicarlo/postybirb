@@ -1,6 +1,6 @@
-import { FileBuffer, type FileBufferRow } from './file-buffer.entity';
 import { HydrationContext } from '../repositories/base/hydration-context';
 import { assertRowRoundtrips } from '../repositories/base/test-utils';
+import { FileBuffer, type FileBufferRow } from './file-buffer.entity';
 
 function buildRow(overrides: Partial<FileBufferRow> = {}): FileBufferRow {
   return {

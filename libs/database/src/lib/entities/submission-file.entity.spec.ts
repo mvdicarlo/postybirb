@@ -1,16 +1,15 @@
-import { ScheduleType, SubmissionType } from '@postybirb/types';
 import type {
-  ISubmissionMetadata,
-  SubmissionFileMetadata,
+    ISubmissionMetadata,
+    SubmissionFileMetadata,
 } from '@postybirb/types';
-import {
-  SubmissionFile,
-  type SubmissionFileRow,
-} from './submission-file.entity';
-import { FileBuffer } from './file-buffer.entity';
-import { Submission } from './submission.entity';
-import { HydrationContext } from '../repositories/base/hydration-context';
+import { ScheduleType, SubmissionType } from '@postybirb/types';
 import { assertRowRoundtrips } from '../repositories/base/test-utils';
+import { FileBuffer } from './file-buffer.entity';
+import {
+    SubmissionFile,
+    type SubmissionFileRow,
+} from './submission-file.entity';
+import { Submission } from './submission.entity';
 
 function buildRow(overrides: Partial<SubmissionFileRow> = {}): SubmissionFileRow {
   return {

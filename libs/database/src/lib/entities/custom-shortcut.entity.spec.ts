@@ -1,7 +1,7 @@
 import { DefaultDescription } from '@postybirb/types';
-import { CustomShortcut, type CustomShortcutRow } from './custom-shortcut.entity';
 import { HydrationContext } from '../repositories/base/hydration-context';
 import { assertRowRoundtrips } from '../repositories/base/test-utils';
+import { CustomShortcut, type CustomShortcutRow } from './custom-shortcut.entity';
 
 function buildRow(overrides: Partial<CustomShortcutRow> = {}): CustomShortcutRow {
   return {

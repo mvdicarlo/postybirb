@@ -1,16 +1,16 @@
-import { SubmissionType, ScheduleType } from '@postybirb/types';
 import type {
-  IWebsiteFormFields,
-  ISubmissionMetadata,
+    ISubmissionMetadata,
+    IWebsiteFormFields,
 } from '@postybirb/types';
-import {
-  WebsiteOptions,
-  type WebsiteOptionsRow,
-} from './website-options.entity';
-import { Account } from './account.entity';
-import { Submission, type SubmissionRow } from './submission.entity';
+import { ScheduleType, SubmissionType } from '@postybirb/types';
 import { HydrationContext } from '../repositories/base/hydration-context';
 import { assertRowRoundtrips } from '../repositories/base/test-utils';
+import { Account } from './account.entity';
+import { Submission, type SubmissionRow } from './submission.entity';
+import {
+    WebsiteOptions,
+    type WebsiteOptionsRow,
+} from './website-options.entity';
 
 function buildRow(
   overrides: Partial<WebsiteOptionsRow> = {},

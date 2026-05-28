@@ -1,16 +1,16 @@
-import {
-  DirectoryWatcherImportAction,
-  SubmissionType,
-  ScheduleType,
-} from '@postybirb/types';
 import type { ISubmissionMetadata } from '@postybirb/types';
 import {
-  DirectoryWatcher,
-  type DirectoryWatcherRow,
-} from './directory-watcher.entity';
-import { Submission, type SubmissionRow } from './submission.entity';
+    DirectoryWatcherImportAction,
+    ScheduleType,
+    SubmissionType,
+} from '@postybirb/types';
 import { HydrationContext } from '../repositories/base/hydration-context';
 import { assertRowRoundtrips } from '../repositories/base/test-utils';
+import {
+    DirectoryWatcher,
+    type DirectoryWatcherRow,
+} from './directory-watcher.entity';
+import { Submission, type SubmissionRow } from './submission.entity';
 
 function buildRow(
   overrides: Partial<DirectoryWatcherRow> = {},

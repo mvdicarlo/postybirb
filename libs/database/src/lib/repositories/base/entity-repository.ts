@@ -10,14 +10,14 @@ import { HydrationContext } from './hydration-context';
 import { RepositoryRegistry } from './repository-registry';
 import { SubscriberBus } from './subscriber-bus';
 import type {
-  Action,
-  DefaultWithFor,
-  EntityCtor,
-  FindFirstConfig,
-  FindManyConfig,
-  SchemaQuery,
-  SchemaTable,
-  SubscriberCb,
+    Action,
+    DefaultWithFor,
+    EntityCtor,
+    FindFirstConfig,
+    FindManyConfig,
+    SchemaQuery,
+    SchemaTable,
+    SubscriberCb,
 } from './types';
 
 /**

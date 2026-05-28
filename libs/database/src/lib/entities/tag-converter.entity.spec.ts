@@ -1,6 +1,6 @@
-import { TagConverter, type TagConverterRow } from './tag-converter.entity';
 import { HydrationContext } from '../repositories/base/hydration-context';
 import { assertRowRoundtrips } from '../repositories/base/test-utils';
+import { TagConverter, type TagConverterRow } from './tag-converter.entity';
 
 function buildRow(overrides: Partial<TagConverterRow> = {}): TagConverterRow {
   return {

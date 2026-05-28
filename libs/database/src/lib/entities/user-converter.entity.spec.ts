@@ -1,6 +1,6 @@
-import { UserConverter, type UserConverterRow } from './user-converter.entity';
 import { HydrationContext } from '../repositories/base/hydration-context';
 import { assertRowRoundtrips } from '../repositories/base/test-utils';
+import { UserConverter, type UserConverterRow } from './user-converter.entity';
 
 function buildRow(overrides: Partial<UserConverterRow> = {}): UserConverterRow {
   return {

@@ -1,6 +1,6 @@
-import { TagGroup, type TagGroupRow } from './tag-group.entity';
 import { HydrationContext } from '../repositories/base/hydration-context';
 import { assertRowRoundtrips } from '../repositories/base/test-utils';
+import { TagGroup, type TagGroupRow } from './tag-group.entity';
 
 function buildRow(overrides: Partial<TagGroupRow> = {}): TagGroupRow {
   return {

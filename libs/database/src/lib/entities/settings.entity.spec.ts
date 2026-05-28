@@ -1,6 +1,6 @@
-import { Settings, type SettingsRow } from './settings.entity';
 import { HydrationContext } from '../repositories/base/hydration-context';
 import { assertRowRoundtrips } from '../repositories/base/test-utils';
+import { Settings, type SettingsRow } from './settings.entity';
 
 function buildRow(overrides: Partial<SettingsRow> = {}): SettingsRow {
   return {
