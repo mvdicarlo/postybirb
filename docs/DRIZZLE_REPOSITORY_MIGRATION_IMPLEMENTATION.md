@@ -152,13 +152,13 @@ Goal: clean entity classes (no `class-transformer` decorators) live in
 `libs/database/src/lib/entities/` with `static fromRow`/`fromRows` and
 per-entity `*Row` aliases. Client-server entity files are NOT touched.
 
-### Step 5 — Copy `database-entity.ts` (base entity)
+### Step 5 — Copy `database-entity.ts` (base entity) ✅
 
-- [ ] Outputs:
-  - [ ] `libs/database/src/lib/entities/database-entity.ts` — base class,
+- [x] Outputs:
+  - [x] `libs/database/src/lib/entities/database-entity.ts` — base class,
     `entitySchemaKey` field, no `class-transformer` imports.
-- [ ] Tests: lint + build only.
-- [ ] Gate: lib lint + build green.
+- [x] Tests: lint + tsc only (no behaviour change).
+- [x] Gate: lib lint + tsc green.
 
 ### Step 6 — Copy + clean each entity (18 entities)
 
