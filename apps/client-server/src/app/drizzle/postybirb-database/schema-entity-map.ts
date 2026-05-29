@@ -1,4 +1,4 @@
-import { Account, SchemaKey } from '@postybirb/database';
+import { Account, CustomShortcut, SchemaKey } from '@postybirb/database';
 import {
     DirectoryWatcher,
     FileBuffer,
@@ -15,7 +15,6 @@ import {
     WebsiteData,
     WebsiteOptions,
 } from '../models';
-import { CustomShortcut } from '../models/custom-shortcut.entity';
 import { Notification } from '../models/notification.entity';
 
 export type DatabaseSchemaEntityMap = {

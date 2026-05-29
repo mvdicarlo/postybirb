@@ -5,7 +5,7 @@ import {
     NotFoundException,
     OnModuleInit,
 } from '@nestjs/common';
-import { Account, Insert } from '@postybirb/database';
+import { Account, CustomShortcutRepository, Insert } from '@postybirb/database';
 import {
     AccountId,
     Description,
@@ -121,7 +121,7 @@ export class WebsiteOptionsService
     }
 
     // 2. Migrate custom shortcuts
-    const customShortcutRepo = new PostyBirbDatabase('CustomShortcutSchema');
+    const customShortcutRepo = new CustomShortcutRepository();
     const shortcuts = await customShortcutRepo.findAll();
     for (const shortcut of shortcuts) {
       const desc = (shortcut as DynamicObject).shortcut;
