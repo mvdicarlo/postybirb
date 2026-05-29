@@ -7,6 +7,7 @@ import {
   FileSubmission,
   SubmissionFileMetadata,
 } from '@postybirb/types';
+import { FileBufferRepository } from '@postybirb/database';
 import type { queueAsPromised } from 'fastq';
 import fastq from 'fastq';
 import { readFile } from 'fs/promises';
@@ -34,9 +35,7 @@ export class FileService {
     Task
   >(this, this.doTask, Math.min(cpus().length, 5));
 
-  private readonly fileBufferRepository = new PostyBirbDatabase(
-    'FileBufferSchema',
-  );
+  private readonly fileBufferRepository = new FileBufferRepository();
 
   private readonly fileRepository = new PostyBirbDatabase(
     'SubmissionFileSchema',
