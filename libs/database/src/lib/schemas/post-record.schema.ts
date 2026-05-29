@@ -1,5 +1,9 @@
-import { PostRecordResumeMode, PostRecordState } from '@postybirb/types';
 import { AnySQLiteColumn, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+// eslint-disable-next-line @nx/enforce-module-boundaries
+import {
+  PostRecordResumeMode,
+  PostRecordState,
+} from '../../../../types/src/index';
 import { CommonSchema, id } from './common.schema';
 import { SubmissionSchema } from './submission.schema';
 

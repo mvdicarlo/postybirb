@@ -1,5 +1,8 @@
 import { HttpResponse } from '@postybirb/http/types';
-import { toError } from '@postybirb/utils/common';
+
+// Required by drizzle which does not support custom paths like this
+// eslint-disable-next-line @nx/enforce-module-boundaries
+import { toError } from '../../../../utils/common/src/index';
 
 export type IPostResponse = {
   /**
