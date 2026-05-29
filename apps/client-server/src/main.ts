@@ -10,8 +10,8 @@ import { NestFactory, Reflector } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { IsTestEnvironment, PostyBirbEnvConfig } from '@postybirb/utils/common';
 import compression from 'compression';
+import { DatabaseEntity } from '@postybirb/database';
 import { AppModule } from './app/app.module';
-import { DatabaseEntity } from './app/drizzle/models';
 import { SSL } from './app/security-and-authentication/ssl';
 import { WebSocketAdapter } from './app/web-socket/web-socket-adapter';
 

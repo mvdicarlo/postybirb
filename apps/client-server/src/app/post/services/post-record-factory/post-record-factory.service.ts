@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PostEvent, PostRecordRepository } from '@postybirb/database';
+import { PostEvent, PostRecord, PostRecordRepository } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import {
     AccountId,
@@ -8,7 +8,6 @@ import {
     PostRecordResumeMode,
     PostRecordState,
 } from '@postybirb/types';
-import { PostRecord } from '../../../drizzle/models';
 import { InvalidPostChainError } from '../../errors';
 import { PostEventRepository } from './post-event.repository';
 

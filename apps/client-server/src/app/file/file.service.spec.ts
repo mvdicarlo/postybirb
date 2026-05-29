@@ -1,13 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { clearDatabase, SubmissionFileRepository } from '@postybirb/database';
+import { clearDatabase, FileBufferRepository, SubmissionFile, SubmissionFileRepository } from '@postybirb/database';
 import { PostyBirbDirectories, writeSync } from '@postybirb/fs';
 import { FileSubmission, SubmissionType } from '@postybirb/types';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { AccountService } from '../account/account.service';
 import { CustomShortcutsService } from '../custom-shortcuts/custom-shortcuts.service';
-import { SubmissionFile } from '../drizzle/models';
-import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
 import { FileConverterService } from '../file-converter/file-converter.service';
 import { FormGeneratorService } from '../form-generator/form-generator.service';
 import { SharpInstanceManager } from '../image-processing/sharp-instance-manager';
@@ -39,7 +37,7 @@ describe('FileService', () => {
   let service: FileService;
   let submissionService: SubmissionService;
   let module: TestingModule;
-  let fileBufferRepository: PostyBirbDatabase<'FileBufferSchema'>;
+  let fileBufferRepository: FileBufferRepository;
 
   async function createSubmission() {
     const dto = new CreateSubmissionDto();
@@ -127,7 +125,7 @@ describe('FileService', () => {
         ...[noopPlatformProvider],
       ],
     }).compile();
-    fileBufferRepository = new PostyBirbDatabase('FileBufferSchema');
+    fileBufferRepository = new FileBufferRepository();
     service = module.get<FileService>(FileService);
     submissionService = module.get<SubmissionService>(SubmissionService);
 

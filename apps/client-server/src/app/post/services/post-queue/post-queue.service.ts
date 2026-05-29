@@ -5,7 +5,7 @@ import {
     Optional,
 } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { PostQueueRecord, PostQueueRecordRepository, PostRecordRepository, SubmissionRepository } from '@postybirb/database';
+import { PostQueueRecord, PostQueueRecordRepository, PostRecord, PostRecordRepository, SubmissionRepository } from '@postybirb/database';
 import {
     EntityId,
     PostRecordResumeMode,
@@ -17,7 +17,6 @@ import { IsTestEnvironment } from '@postybirb/utils/common';
 import { Mutex } from 'async-mutex';
 import { Cron as CronGenerator } from 'croner';
 import { PostyBirbService } from '../../../common/service/postybirb-service';
-import { PostRecord } from '../../../drizzle/models';
 import { NotificationsService } from '../../../notifications/notifications.service';
 import { SettingsService } from '../../../settings/settings.service';
 import { SubmissionService } from '../../../submission/services/submission.service';

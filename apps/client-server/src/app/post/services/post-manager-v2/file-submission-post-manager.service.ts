@@ -17,7 +17,7 @@ import {
     PostRecord,
     Submission,
     SubmissionFile,
-} from '../../../drizzle/models';
+} from '@postybirb/database';
 import { FileConverterService } from '../../../file-converter/file-converter.service';
 import { NotificationsService } from '../../../notifications/notifications.service';
 import { PostParsersService } from '../../../post-parsers/post-parsers.service';

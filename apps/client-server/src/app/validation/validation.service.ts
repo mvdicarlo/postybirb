@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Account } from '@postybirb/database';
+import { Account, Submission, WebsiteOptions } from '@postybirb/database';
 import { formBuilder } from '@postybirb/form-builder';
 import { Logger } from '@postybirb/logger';
 import {
@@ -12,7 +12,6 @@ import {
     SubmissionType,
     ValidationResult,
 } from '@postybirb/types';
-import { Submission, WebsiteOptions } from '../drizzle/models';
 import { FileConverterService } from '../file-converter/file-converter.service';
 import { FileService } from '../file/file.service';
 import { PostParsersService } from '../post-parsers/post-parsers.service';

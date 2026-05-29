@@ -5,7 +5,7 @@ import {
     NotFoundException,
     Optional,
 } from '@nestjs/common';
-import { Account, WebsiteDataRepository } from '@postybirb/database';
+import { Account, AccountRepository, WebsiteDataRepository } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import { PlatformService } from '@postybirb/platform';
 import { WEBSITE_UPDATES } from '@postybirb/socket-events';
@@ -18,7 +18,6 @@ import {
 import { IsTestEnvironment } from '@postybirb/utils/common';
 import { Class } from 'type-fest';
 import { WEBSITE_IMPLEMENTATIONS } from '../constants';
-import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { validateWebsiteDecoratorProps } from './decorators/website-decorator-props';
 import { OAuthWebsiteRequestDto } from './dtos/oauth-website-request.dto';
@@ -43,7 +42,7 @@ export class WebsiteRegistryService {
 
   private readonly websiteInstances: WebsiteInstances = {};
 
-  private readonly accountRepository: PostyBirbDatabase<'AccountSchema'>;
+  private readonly accountRepository: AccountRepository;
 
   private readonly websiteDataRepository: WebsiteDataRepository;
 
@@ -84,7 +83,7 @@ export class WebsiteRegistryService {
       },
     );
 
-    this.accountRepository = new PostyBirbDatabase('AccountSchema');
+    this.accountRepository = new AccountRepository();
     this.websiteDataRepository = new WebsiteDataRepository();
     this.accountRepository.subscribe(
       ['AccountSchema', 'WebsiteDataSchema'],

@@ -1,4 +1,5 @@
-import { PostRecordRepository } from '@postybirb/database';
+import { PostRecord, PostRecordRepository, Submission, WebsiteOptions ,
+} from '@postybirb/database';
 import {
     Logger,
     trackEvent,
@@ -16,11 +17,7 @@ import {
     PostResponse,
     SubmissionType,
 } from '@postybirb/types';
-import {
-    PostRecord,
-    Submission,
-    WebsiteOptions,
-} from '../../../drizzle/models';
+
 import { NotificationsService } from '../../../notifications/notifications.service';
 import { PostParsersService } from '../../../post-parsers/post-parsers.service';
 import { ValidationService } from '../../../validation/validation.service';

@@ -1,6 +1,6 @@
 import * as rtf from '@iarna/rtf-to-html';
 import { Injectable } from '@nestjs/common';
-import { Insert, Select, SubmissionFileRepository, TransactionContext, withTransactionContext } from '@postybirb/database';
+import { FileBuffer, FileBufferRepository, Insert, Select, SubmissionFile, SubmissionFileRepository, TransactionContext, withTransactionContext } from '@postybirb/database';
 import { removeFile } from '@postybirb/fs';
 import { Logger } from '@postybirb/logger';
 import {
@@ -18,12 +18,6 @@ import { parse } from 'path';
 import { promisify } from 'util';
 import { v4 as uuid } from 'uuid';
 
-import {
-    FileBuffer,
-    fromDatabaseRecord,
-    SubmissionFile,
-} from '../../drizzle/models';
-import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
 import { SharpInstanceManager } from '../../image-processing/sharp-instance-manager';
 import { MulterFileInfo } from '../models/multer-file-info';
 import { ImageUtil } from '../utils/image.util';
@@ -36,9 +30,7 @@ import { ImageUtil } from '../utils/image.util';
 export class CreateFileService {
   private readonly logger = Logger();
 
-  private readonly fileBufferRepository = new PostyBirbDatabase(
-    'FileBufferSchema',
-  );
+  private readonly fileBufferRepository = new FileBufferRepository();
 
   private readonly fileRepository = new SubmissionFileRepository();
 
@@ -209,8 +201,7 @@ export class CreateFileService {
       metadata: DefaultSubmissionFileMetadata(),
       order: Date.now(),
     };
-    const sf = fromDatabaseRecord(
-      SubmissionFile,
+    const sf = SubmissionFile.fromRows(
       await ctx
         .getDb()
         .insert(this.fileRepository.table)
@@ -261,8 +252,7 @@ export class CreateFileService {
       },
     };
 
-    return fromDatabaseRecord(
-      SubmissionFile,
+    return SubmissionFile.fromRows(
       await ctx
         .getDb()
         .update(this.fileRepository.table)
@@ -369,11 +359,10 @@ export class CreateFileService {
       ...opts,
     };
 
-    const result = fromDatabaseRecord(
-      FileBuffer,
+    const result = FileBuffer.fromRows(
       await ctx
         .getDb()
-        .insert(this.fileBufferRepository.schemaEntity)
+        .insert(this.fileBufferRepository.table)
         .values(data)
         .returning(),
     )[0];

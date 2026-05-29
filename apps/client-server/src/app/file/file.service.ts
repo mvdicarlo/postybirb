@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign */
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { EntityNotFoundError, FileBufferRepository, SubmissionFileRepository } from '@postybirb/database';
+import { EntityNotFoundError, FileBufferRepository, SubmissionFile, SubmissionFileRepository } from '@postybirb/database';
 import { read } from '@postybirb/fs';
 import { Logger } from '@postybirb/logger';
 import {
@@ -12,7 +12,6 @@ import type { queueAsPromised } from 'fastq';
 import fastq from 'fastq';
 import { readFile } from 'fs/promises';
 import { cpus } from 'os';
-import { SubmissionFile } from '../drizzle/models';
 import { ReorderSubmissionFilesDto } from '../submission/dtos/reorder-submission-files.dto';
 import { UpdateAltFileDto } from '../submission/dtos/update-alt-file.dto';
 import { MulterFileInfo, TaskOrigin } from './models/multer-file-info';

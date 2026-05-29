@@ -1,9 +1,8 @@
-import { clearDatabase, WebsiteDataRepository } from '@postybirb/database';
+import { AccountRepository, clearDatabase, WebsiteDataRepository } from '@postybirb/database';
 import { ensureDirSync, PostyBirbDirectories, writeSync } from '@postybirb/fs';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { v4 } from 'uuid';
-import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
 import { LegacyUserAccountConverter } from './legacy-user-account.converter';
 import { LegacyWebsiteDataConverter } from './legacy-website-data.converter';
 
@@ -11,7 +10,7 @@ describe('LegacyWebsiteDataConverter', () => {
   let accountConverter: LegacyUserAccountConverter;
   let websiteDataConverter: LegacyWebsiteDataConverter;
   let testDataPath: string;
-  let accountRepository: PostyBirbDatabase<'AccountSchema'>;
+  let accountRepository: AccountRepository;
   let websiteDataRepository: WebsiteDataRepository;
   const ts = Date.now();
 
@@ -36,7 +35,7 @@ describe('LegacyWebsiteDataConverter', () => {
 
     accountConverter = new LegacyUserAccountConverter(testDataPath);
     websiteDataConverter = new LegacyWebsiteDataConverter(testDataPath);
-    accountRepository = new PostyBirbDatabase('AccountSchema');
+    accountRepository = new AccountRepository();
     websiteDataRepository = new WebsiteDataRepository();
   });
 

@@ -1,4 +1,4 @@
-import { clearDatabase } from '@postybirb/database';
+import { clearDatabase, PostRecord, Submission } from '@postybirb/database';
 import {
   AccountId,
   EntityId,
@@ -10,7 +10,6 @@ import {
   SubmissionType,
 } from '@postybirb/types';
 import 'reflect-metadata';
-import { PostRecord, Submission } from '../../../drizzle/models';
 import { NotificationsService } from '../../../notifications/notifications.service';
 import { PostParsersService } from '../../../post-parsers/post-parsers.service';
 import { ValidationService } from '../../../validation/validation.service';
@@ -66,32 +65,34 @@ describe('MessageSubmissionPostManager', () => {
   });
 
   function createSubmission(): Submission {
-    return new Submission({
+    const s = new Submission({
       id: 'test-submission',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       metadata: {},
       type: SubmissionType.MESSAGE,
-      files: [],
-      options: [],
       isScheduled: false,
       schedule: {} as never,
       order: 1,
-      posts: [] as never,
       isTemplate: false,
       isMultiSubmission: false,
       isArchived: false,
     });
+    s.files = [];
+    s.options = [];
+    s.posts = [] as never;
+    return s;
   }
 
   function createPostRecord(submission: Submission): PostRecord {
-    return new PostRecord({
+    const pr = new PostRecord({
       id: 'test-post-record' as EntityId,
-      submission,
       state: PostRecordState.PENDING,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     });
+    pr.submission = submission;
+    return pr;
   }
 
   function createMockWebsite(accountId: AccountId): UnknownWebsite {
