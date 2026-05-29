@@ -1,4 +1,4 @@
-import { Account, CustomShortcut, DirectoryWatcher, FileBuffer, SchemaKey } from '@postybirb/database';
+import { Account, CustomShortcut, DirectoryWatcher, FileBuffer, Notification, SchemaKey } from '@postybirb/database';
 import {
     PostEvent,
     PostQueueRecord,
@@ -13,7 +13,6 @@ import {
     WebsiteData,
     WebsiteOptions,
 } from '../models';
-import { Notification } from '../models/notification.entity';
 
 export type DatabaseSchemaEntityMap = {
   AccountSchema: InstanceType<typeof Account>;
