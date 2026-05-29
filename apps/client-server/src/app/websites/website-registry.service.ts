@@ -259,7 +259,7 @@ export class WebsiteRegistryService {
     // eslint-disable-next-line no-restricted-syntax
     for (const website of availableWebsites) {
       const accounts = await this.accountRepository.find({
-        where: (account, { eq }) =>
+        where: (account: any, { eq }) =>
           eq(account.website, website.prototype.decoratedProps.metadata.name),
       });
       dtos.push({

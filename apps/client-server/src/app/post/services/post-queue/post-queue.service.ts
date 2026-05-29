@@ -459,7 +459,7 @@ export class PostQueueService
     }
 
     const entities = await this.submissionRepository.find({
-      where: (queueRecord, { eq, and }) =>
+      where: (queueRecord: any, { eq, and }) =>
         and(
           eq(queueRecord.isScheduled, true),
           eq(queueRecord.isArchived, false),

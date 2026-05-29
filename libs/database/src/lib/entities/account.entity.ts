@@ -23,7 +23,7 @@ export interface AccountWebsiteInstanceLike {
   getSupportedTypes(): SubmissionType[];
   decoratedProps: {
     metadata: {
-      displayName: string;
+      displayName?: string;
     };
   };
 }

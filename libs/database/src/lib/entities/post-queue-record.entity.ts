@@ -67,7 +67,7 @@ export class PostQueueRecord
     return ctx.getOrCreate(
       'PostQueueRecordSchema',
       row.id,
-      () => new PostQueueRecord(row as Partial<IPostQueueRecord>),
+      () => new PostQueueRecord(row as unknown as Partial<IPostQueueRecord>),
       (e) => {
         if (row.postRecord)
           e.postRecord = PostRecord.fromRow(row.postRecord, ctx);
