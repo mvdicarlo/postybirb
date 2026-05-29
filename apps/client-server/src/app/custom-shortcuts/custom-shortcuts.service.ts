@@ -1,17 +1,17 @@
 import { Injectable, Optional } from '@nestjs/common';
+import { CustomShortcut, CustomShortcutRepository } from '@postybirb/database';
 import { CUSTOM_SHORTCUT_UPDATES } from '@postybirb/socket-events';
 import { EntityId } from '@postybirb/types';
 import { eq } from 'drizzle-orm';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { CustomShortcut } from '../drizzle/models/custom-shortcut.entity';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { CreateCustomShortcutDto } from './dtos/create-custom-shortcut.dto';
 import { UpdateCustomShortcutDto } from './dtos/update-custom-shortcut.dto';
 
 @Injectable()
-export class CustomShortcutsService extends PostyBirbService<'CustomShortcutSchema'> {
+export class CustomShortcutsService extends PostyBirbService<CustomShortcutRepository> {
   constructor(@Optional() webSocket?: WSGateway) {
-    super('CustomShortcutSchema', webSocket);
+    super(new CustomShortcutRepository(), webSocket);
     this.repository.subscribe('CustomShortcutSchema', () => this.emit());
   }
 
@@ -30,7 +30,7 @@ export class CustomShortcutsService extends PostyBirbService<'CustomShortcutSche
       .withMetadata(createCustomShortcutDto)
       .info('Creating custom shortcut');
     await this.throwIfExists(
-      eq(this.schema.name, createCustomShortcutDto.name),
+      eq(this.table.name, createCustomShortcutDto.name),
     );
     return this.repository.insert(createCustomShortcutDto);
   }
@@ -49,10 +49,10 @@ export class CustomShortcutsService extends PostyBirbService<'CustomShortcutSche
     return this.repository.update(id, updateCustomShortcutDto);
   }
 
-  public async remove(id: EntityId) {
-    const existing = await this.repository.findById(id, {
+  public async remove(id: EntityId): Promise<void> {
+    await this.repository.findById(id, {
       failOnMissing: true,
     });
-    return super.remove(id);
+    await super.remove(id);
   }
 }

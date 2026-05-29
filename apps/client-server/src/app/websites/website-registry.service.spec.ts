@@ -1,7 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { clearDatabase } from '@postybirb/database';
-import { Account } from '../drizzle/models';
-import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
+import { Account, AccountRepository, clearDatabase } from '@postybirb/database';
 import { noopPlatformProvider } from '../platform/testing/noop-platform-providers';
 import { WebsiteImplProvider } from './implementations/provider';
 import TestWebsite from './implementations/test/test.website';
@@ -10,7 +8,7 @@ import { WebsiteRegistryService } from './website-registry.service';
 describe('WebsiteRegistryService', () => {
   let service: WebsiteRegistryService;
   let module: TestingModule;
-  let accountRepository: PostyBirbDatabase<'AccountSchema'>;
+  let accountRepository: AccountRepository;
 
   beforeEach(async () => {
     clearDatabase();
@@ -23,7 +21,7 @@ describe('WebsiteRegistryService', () => {
     }).compile();
 
     service = module.get<WebsiteRegistryService>(WebsiteRegistryService);
-    accountRepository = new PostyBirbDatabase('AccountSchema');
+    accountRepository = new AccountRepository();
   });
 
   afterAll(async () => {

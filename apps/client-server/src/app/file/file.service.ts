@@ -1,18 +1,17 @@
 /* eslint-disable no-param-reassign */
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { EntityNotFoundError, FileBufferRepository, SubmissionFile, SubmissionFileRepository } from '@postybirb/database';
 import { read } from '@postybirb/fs';
 import { Logger } from '@postybirb/logger';
 import {
-  EntityId,
-  FileSubmission,
-  SubmissionFileMetadata,
+    EntityId,
+    FileSubmission,
+    SubmissionFileMetadata,
 } from '@postybirb/types';
 import type { queueAsPromised } from 'fastq';
 import fastq from 'fastq';
 import { readFile } from 'fs/promises';
 import { cpus } from 'os';
-import { SubmissionFile } from '../drizzle/models';
-import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
 import { ReorderSubmissionFilesDto } from '../submission/dtos/reorder-submission-files.dto';
 import { UpdateAltFileDto } from '../submission/dtos/update-alt-file.dto';
 import { MulterFileInfo, TaskOrigin } from './models/multer-file-info';
@@ -34,13 +33,9 @@ export class FileService {
     Task
   >(this, this.doTask, Math.min(cpus().length, 5));
 
-  private readonly fileBufferRepository = new PostyBirbDatabase(
-    'FileBufferSchema',
-  );
+  private readonly fileBufferRepository = new FileBufferRepository();
 
-  private readonly fileRepository = new PostyBirbDatabase(
-    'SubmissionFileSchema',
-  );
+  private readonly fileRepository = new SubmissionFileRepository();
 
   constructor(
     private readonly createFileService: CreateFileService,
@@ -145,7 +140,14 @@ export class FileService {
    * @param {EntityId} id
    */
   public async findFile(id: EntityId): Promise<SubmissionFile> {
-    return this.fileRepository.findById(id, { failOnMissing: true });
+    try {
+      return await this.fileRepository.findById(id, { failOnMissing: true });
+    } catch (err) {
+      if (err instanceof EntityNotFoundError) {
+        throw new NotFoundException(err.message);
+      }
+      throw err;
+    }
   }
 
   /**

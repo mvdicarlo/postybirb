@@ -1,21 +1,20 @@
-import { clearDatabase } from '@postybirb/database';
+import { AccountRepository, clearDatabase, FileBufferRepository, SubmissionFileRepository, SubmissionRepository, WebsiteOptionsRepository } from '@postybirb/database';
 import { ensureDirSync, PostyBirbDirectories, writeSync } from '@postybirb/fs';
 import { NULL_ACCOUNT_ID, NullAccount, SubmissionRating, SubmissionType } from '@postybirb/types';
 import { copyFileSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { v4 } from 'uuid';
-import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
 import { LegacySubmissionConverter } from './legacy-submission.converter';
 
 describe('LegacySubmissionConverter', () => {
   let converter: LegacySubmissionConverter;
   let templateConverter: LegacySubmissionConverter;
   let testDataPath: string;
-  let submissionRepository: PostyBirbDatabase<'SubmissionSchema'>;
-  let websiteOptionsRepository: PostyBirbDatabase<'WebsiteOptionsSchema'>;
-  let submissionFileRepository: PostyBirbDatabase<'SubmissionFileSchema'>;
-  let fileBufferRepository: PostyBirbDatabase<'FileBufferSchema'>;
-  let accountRepository: PostyBirbDatabase<'AccountSchema'>;
+  let submissionRepository: SubmissionRepository;
+  let websiteOptionsRepository: WebsiteOptionsRepository;
+  let submissionFileRepository: SubmissionFileRepository;
+  let fileBufferRepository: FileBufferRepository;
+  let accountRepository: AccountRepository;
   const ts = Date.now();
 
   /**
@@ -110,11 +109,11 @@ describe('LegacySubmissionConverter', () => {
 
     converter = new LegacySubmissionConverter(testDataPath, false);
     templateConverter = new LegacySubmissionConverter(testDataPath, true);
-    submissionRepository = new PostyBirbDatabase('SubmissionSchema');
-    websiteOptionsRepository = new PostyBirbDatabase('WebsiteOptionsSchema');
-    submissionFileRepository = new PostyBirbDatabase('SubmissionFileSchema');
-    fileBufferRepository = new PostyBirbDatabase('FileBufferSchema');
-    accountRepository = new PostyBirbDatabase('AccountSchema');
+    submissionRepository = new SubmissionRepository();
+    websiteOptionsRepository = new WebsiteOptionsRepository();
+    submissionFileRepository = new SubmissionFileRepository();
+    fileBufferRepository = new FileBufferRepository();
+    accountRepository = new AccountRepository();
 
     // Pre-populate accounts (FK dependency)
     await createTestAccounts();
@@ -320,7 +319,7 @@ describe('LegacySubmissionConverter', () => {
       clearDatabase();
 
       // Still need NullAccount for default WebsiteOptions FK
-      accountRepository = new PostyBirbDatabase('AccountSchema');
+      accountRepository = new AccountRepository();
       await accountRepository.insert(new NullAccount());
 
       const freshConverter = new LegacySubmissionConverter(testDataPath, false);

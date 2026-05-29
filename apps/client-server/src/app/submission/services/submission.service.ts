@@ -1,40 +1,42 @@
 /* eslint-disable no-param-reassign */
 import {
-  BadRequestException,
-  forwardRef,
-  Inject,
-  Injectable,
-  NotFoundException,
-  OnModuleInit,
-  Optional,
+    BadRequestException,
+    forwardRef,
+    Inject,
+    Injectable,
+    NotFoundException,
+    OnModuleInit,
+    Optional,
 } from '@nestjs/common';
 import {
-  FileBufferSchema,
-  Insert,
-  SubmissionFileSchema,
-  SubmissionSchema,
-  WebsiteOptionsSchema,
+    FileBuffer,
+    FileBufferSchema,
+    Insert,
+    Submission,
+    SubmissionFileSchema,
+    SubmissionRepository,
+    SubmissionSchema,
+    WebsiteOptions,
+    WebsiteOptionsSchema,
+    withTransactionContext,
 } from '@postybirb/database';
 import { SUBMISSION_UPDATES } from '@postybirb/socket-events';
 import {
-  FileSubmission,
-  FileSubmissionMetadata,
-  ISubmissionDto,
-  ISubmissionMetadata,
-  MessageSubmission,
-  NULL_ACCOUNT_ID,
-  ScheduleType,
-  SubmissionId,
-  SubmissionMetadataType,
-  SubmissionType,
+    FileSubmission,
+    FileSubmissionMetadata,
+    ISubmissionDto,
+    ISubmissionMetadata,
+    MessageSubmission,
+    NULL_ACCOUNT_ID,
+    ScheduleType,
+    SubmissionId,
+    SubmissionMetadataType,
+    SubmissionType,
 } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/common';
 import { eq } from 'drizzle-orm';
 import * as path from 'path';
 import { PostyBirbService } from '../../common/service/postybirb-service';
-import { FileBuffer, Submission, WebsiteOptions } from '../../drizzle/models';
-import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
-import { withTransactionContext } from '../../drizzle/transaction-context';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { WSGateway } from '../../web-socket/web-socket-gateway';
 import { WebsiteOptionsService } from '../../website-options/website-options.service';
@@ -54,7 +56,7 @@ type SubmissionEntity = Submission<SubmissionMetadataType>;
  */
 @Injectable()
 export class SubmissionService
-  extends PostyBirbService<'SubmissionSchema'>
+  extends PostyBirbService<SubmissionRepository>
   implements OnModuleInit
 {
   private emitDebounceTimer: ReturnType<typeof setTimeout> | null = null;
@@ -68,22 +70,7 @@ export class SubmissionService
     @Optional() webSocket: WSGateway,
   ) {
     super(
-      new PostyBirbDatabase('SubmissionSchema', {
-        options: {
-          with: {
-            account: true,
-          },
-        },
-        posts: {
-          with: {
-            events: {
-              account: true,
-            },
-          },
-        },
-        postQueueRecord: true,
-        files: true,
-      }),
+      new SubmissionRepository(),
       webSocket,
     );
     this.repository.subscribe(
@@ -535,10 +522,9 @@ export class SubmissionService
     }
   }
 
-  public async remove(id: SubmissionId) {
-    const result = await super.remove(id);
+  public async remove(id: SubmissionId): Promise<void> {
+    await super.remove(id);
     this.emit();
-    return result;
   }
 
   async applyMultiSubmission(applyMultiSubmissionDto: ApplyMultiSubmissionDto) {

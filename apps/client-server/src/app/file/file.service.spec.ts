@@ -1,15 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { clearDatabase } from '@postybirb/database';
+import { clearDatabase, FileBufferRepository, SubmissionFile, SubmissionFileRepository } from '@postybirb/database';
 import { PostyBirbDirectories, writeSync } from '@postybirb/fs';
 import { FileSubmission, SubmissionType } from '@postybirb/types';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { AccountService } from '../account/account.service';
 import { CustomShortcutsService } from '../custom-shortcuts/custom-shortcuts.service';
-import { SubmissionFile } from '../drizzle/models';
-import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
 import { FileConverterService } from '../file-converter/file-converter.service';
 import { FormGeneratorService } from '../form-generator/form-generator.service';
+import { SharpInstanceManager } from '../image-processing/sharp-instance-manager';
 import { noopPlatformProvider } from '../platform/testing/noop-platform-providers';
 import { DescriptionParserService } from '../post-parsers/parsers/description-parser.service';
 import { TagParserService } from '../post-parsers/parsers/tag-parser.service';
@@ -31,7 +30,6 @@ import { FileService } from './file.service';
 import { MulterFileInfo } from './models/multer-file-info';
 import { CreateFileService } from './services/create-file.service';
 import { UpdateFileService } from './services/update-file.service';
-import { SharpInstanceManager } from '../image-processing/sharp-instance-manager';
 
 describe('FileService', () => {
   let testFile: Buffer | null = null;
@@ -39,7 +37,7 @@ describe('FileService', () => {
   let service: FileService;
   let submissionService: SubmissionService;
   let module: TestingModule;
-  let fileBufferRepository: PostyBirbDatabase<'FileBufferSchema'>;
+  let fileBufferRepository: FileBufferRepository;
 
   async function createSubmission() {
     const dto = new CreateSubmissionDto();
@@ -127,7 +125,7 @@ describe('FileService', () => {
         ...[noopPlatformProvider],
       ],
     }).compile();
-    fileBufferRepository = new PostyBirbDatabase('FileBufferSchema');
+    fileBufferRepository = new FileBufferRepository();
     service = module.get<FileService>(FileService);
     submissionService = module.get<SubmissionService>(SubmissionService);
 
@@ -257,9 +255,7 @@ describe('FileService', () => {
     const fileInfo = createMulterData(path[0]);
 
     // Get initial count of entities
-    const initialFiles = await new PostyBirbDatabase(
-      'SubmissionFileSchema',
-    ).findAll();
+    const initialFiles = await new SubmissionFileRepository().findAll();
     const initialBuffers = await fileBufferRepository.findAll();
     const initialFileCount = initialFiles.length;
     const initialBufferCount = initialBuffers.length;
@@ -285,9 +281,7 @@ describe('FileService', () => {
     ).rejects.toThrow('Simulated error during buffer creation');
 
     // Verify that entities were cleaned up
-    const finalFiles = await new PostyBirbDatabase(
-      'SubmissionFileSchema',
-    ).findAll();
+    const finalFiles = await new SubmissionFileRepository().findAll();
     const finalBuffers = await fileBufferRepository.findAll();
 
     expect(finalFiles.length).toBe(initialFileCount);

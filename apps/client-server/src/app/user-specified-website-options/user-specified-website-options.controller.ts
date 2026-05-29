@@ -6,6 +6,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { EntityId } from '@postybirb/types';
+import { UserSpecifiedWebsiteOptionsRepository } from '@postybirb/database';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
 import { CreateUserSpecifiedWebsiteOptionsDto } from './dtos/create-user-specified-website-options.dto';
 import { UpdateUserSpecifiedWebsiteOptionsDto } from './dtos/update-user-specified-website-options.dto';
@@ -17,7 +18,7 @@ import { UserSpecifiedWebsiteOptionsService } from './user-specified-website-opt
  */
 @ApiTags('user-specified-website-options')
 @Controller('user-specified-website-options')
-export class UserSpecifiedWebsiteOptionsController extends PostyBirbController<'UserSpecifiedWebsiteOptionsSchema'> {
+export class UserSpecifiedWebsiteOptionsController extends PostyBirbController<UserSpecifiedWebsiteOptionsRepository> {
   constructor(readonly service: UserSpecifiedWebsiteOptionsService) {
     super(service);
   }

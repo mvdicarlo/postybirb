@@ -1,7 +1,7 @@
 import { Injectable, Optional } from '@nestjs/common';
+import { PostEventRepository, PostRecordRepository } from '@postybirb/database';
 import { EntityId, PostEventDto } from '@postybirb/types';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 
 /**
@@ -9,13 +9,11 @@ import { WSGateway } from '../web-socket/web-socket-gateway';
  * @class PostService
  */
 @Injectable()
-export class PostService extends PostyBirbService<'PostRecordSchema'> {
-  private readonly postEventRepository = new PostyBirbDatabase(
-    'PostEventSchema',
-  );
+export class PostService extends PostyBirbService<PostRecordRepository> {
+  private readonly postEventRepository = new PostEventRepository();
 
   constructor(@Optional() webSocket?: WSGateway) {
-    super('PostRecordSchema', webSocket);
+    super(new PostRecordRepository(), webSocket);
   }
 
   /**

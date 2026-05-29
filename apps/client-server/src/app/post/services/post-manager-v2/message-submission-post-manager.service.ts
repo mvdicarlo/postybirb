@@ -6,7 +6,7 @@ import {
   PostEventType,
   SubmissionType,
 } from '@postybirb/types';
-import { PostRecord } from '../../../drizzle/models';
+import { PostRecord } from '@postybirb/database';
 import { NotificationsService } from '../../../notifications/notifications.service';
 import { PostParsersService } from '../../../post-parsers/post-parsers.service';
 import { ValidationService } from '../../../validation/validation.service';

@@ -1,10 +1,10 @@
 import { Injectable, Optional } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { Notification, NotificationRepository } from '@postybirb/database';
 import { PlatformService } from '@postybirb/platform';
 import { NOTIFICATION_UPDATES } from '@postybirb/socket-events';
 import { EntityId } from '@postybirb/types';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { Notification } from '../drizzle/models/notification.entity';
 import { SettingsService } from '../settings/settings.service';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { CreateNotificationDto } from './dtos/create-notification.dto';
@@ -16,7 +16,7 @@ import { UpdateNotificationDto } from './dtos/update-notification.dto';
  * sending desktop notifications based on user settings.
  */
 @Injectable()
-export class NotificationsService extends PostyBirbService<'NotificationSchema'> {
+export class NotificationsService extends PostyBirbService<NotificationRepository> {
   /**
    * Creates a new instance of the NotificationsService.
    *
@@ -28,7 +28,7 @@ export class NotificationsService extends PostyBirbService<'NotificationSchema'>
     private readonly platform: PlatformService,
     @Optional() webSocket?: WSGateway,
   ) {
-    super('NotificationSchema', webSocket);
+    super(new NotificationRepository(), webSocket);
     this.repository.subscribe('NotificationSchema', () => this.emit());
     this.removeStaleNotifications();
   }

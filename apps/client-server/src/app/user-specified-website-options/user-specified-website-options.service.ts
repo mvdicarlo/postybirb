@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
+import { UserSpecifiedWebsiteOptions, UserSpecifiedWebsiteOptionsRepository } from '@postybirb/database';
 import { AccountId, EntityId, SubmissionType } from '@postybirb/types';
 import { and, eq } from 'drizzle-orm';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { UserSpecifiedWebsiteOptions } from '../drizzle/models';
 import { CreateUserSpecifiedWebsiteOptionsDto } from './dtos/create-user-specified-website-options.dto';
 import { UpdateUserSpecifiedWebsiteOptionsDto } from './dtos/update-user-specified-website-options.dto';
 
 @Injectable()
-export class UserSpecifiedWebsiteOptionsService extends PostyBirbService<'UserSpecifiedWebsiteOptionsSchema'> {
+export class UserSpecifiedWebsiteOptionsService extends PostyBirbService<UserSpecifiedWebsiteOptionsRepository> {
   constructor() {
-    super('UserSpecifiedWebsiteOptionsSchema');
+    super(new UserSpecifiedWebsiteOptionsRepository());
   }
 
   async create(
@@ -20,8 +20,8 @@ export class UserSpecifiedWebsiteOptionsService extends PostyBirbService<'UserSp
       .info(`Creating UserSpecifiedWebsiteOptions '${createDto.accountId}'`);
     await this.throwIfExists(
       and(
-        eq(this.schema.accountId, createDto.accountId),
-        eq(this.schema.type, createDto.type),
+        eq(this.table.accountId, createDto.accountId),
+        eq(this.table.type, createDto.type),
       ),
     );
     return this.repository.insert({

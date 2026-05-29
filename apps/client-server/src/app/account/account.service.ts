@@ -5,6 +5,7 @@ import {
     Optional,
 } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { Account, AccountRepository } from '@postybirb/database';
 import { ACCOUNT_UPDATES } from '@postybirb/socket-events';
 import {
     AccountId,
@@ -16,8 +17,6 @@ import { IsTestEnvironment } from '@postybirb/utils/common';
 import { ne } from 'drizzle-orm';
 import { Class } from 'type-fest';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { Account } from '../drizzle/models';
-import { FindOptions } from '../drizzle/postybirb-database/find-options.type';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { UnknownWebsite } from '../websites/website';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
@@ -32,7 +31,7 @@ import { LoginStatePoller } from './login-state-poller';
  */
 @Injectable()
 export class AccountService
-  extends PostyBirbService<'AccountSchema'>
+  extends PostyBirbService<AccountRepository>
   implements OnModuleInit
 {
   private readonly loginRefreshTimers: Record<
@@ -49,7 +48,7 @@ export class AccountService
     private readonly websiteRegistry: WebsiteRegistryService,
     @Optional() webSocket?: WSGateway,
   ) {
-    super('AccountSchema', webSocket);
+    super(new AccountRepository(), webSocket);
     this.repository.subscribe('AccountSchema', () => this.emit());
     this.loginStatePoller = new LoginStatePoller(
       this.websiteRegistry,
@@ -96,7 +95,7 @@ export class AccountService
 
   private async deleteUnregisteredAccounts() {
     const accounts = await this.repository.find({
-      where: ne(this.repository.schemaEntity.id, NULL_ACCOUNT_ID),
+      where: ne(this.table.id, NULL_ACCOUNT_ID),
     });
     const unregisteredAccounts = accounts.filter(
       (account) => !this.websiteRegistry.canCreate(account.website),
@@ -132,7 +131,7 @@ export class AccountService
    */
   private async initWebsiteRegistry(): Promise<void> {
     const accounts = await this.repository.find({
-      where: ne(this.repository.schemaEntity.id, NULL_ACCOUNT_ID),
+      where: ne(this.table.id, NULL_ACCOUNT_ID),
     });
     await Promise.all(
       accounts.map((account) => this.websiteRegistry.create(account)),
@@ -272,20 +271,19 @@ export class AccountService
     return account.withWebsiteInstance(instance);
   }
 
-  public findById(id: AccountId, options?: FindOptions) {
+  public findById(id: AccountId, options?: { failOnMissing?: boolean }) {
     return this.repository
       .findById(id, options)
       .then((account) => this.injectWebsiteInstance(account));
   }
 
   public async findAll() {
-    return this.repository
-      .find({
-        where: ne(this.repository.schemaEntity.id, NULL_ACCOUNT_ID),
-      })
-      .then((accounts) =>
-        accounts.map((account) => this.injectWebsiteInstance(account)),
-      );
+    const accounts = await this.repository.find({
+      where: ne(this.table.id, NULL_ACCOUNT_ID),
+    });
+    return accounts.map(
+      (account) => this.injectWebsiteInstance(account) as Account,
+    );
   }
 
   async update(id: AccountId, update: UpdateAccountDto) {
@@ -295,12 +293,12 @@ export class AccountService
       .then((account) => this.injectWebsiteInstance(account));
   }
 
-  async remove(id: AccountId) {
+  async remove(id: AccountId): Promise<void> {
     const account = await this.findById(id);
     if (account) {
       this.websiteRegistry.remove(account);
     }
-    return super.remove(id);
+    await super.remove(id);
   }
 
   /**

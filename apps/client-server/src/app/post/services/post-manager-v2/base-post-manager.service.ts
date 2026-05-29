@@ -1,3 +1,5 @@
+import { PostRecord, PostRecordRepository, Submission, WebsiteOptions ,
+} from '@postybirb/database';
 import {
     Logger,
     trackEvent,
@@ -15,12 +17,7 @@ import {
     PostResponse,
     SubmissionType,
 } from '@postybirb/types';
-import {
-    PostRecord,
-    Submission,
-    WebsiteOptions,
-} from '../../../drizzle/models';
-import { PostyBirbDatabase } from '../../../drizzle/postybirb-database/postybirb-database';
+
 import { NotificationsService } from '../../../notifications/notifications.service';
 import { PostParsersService } from '../../../post-parsers/post-parsers.service';
 import { ValidationService } from '../../../validation/validation.service';
@@ -71,7 +68,7 @@ export abstract class BasePostManager {
    */
   protected resumeContext: ResumeContext | null = null;
 
-  protected readonly postRepository: PostyBirbDatabase<'PostRecordSchema'>;
+  protected readonly postRepository: PostRecordRepository;
 
   constructor(
     protected readonly postEventRepository: PostEventRepository,
@@ -81,7 +78,7 @@ export abstract class BasePostManager {
     protected readonly notificationService: NotificationsService,
     protected readonly webSocket?: WSGateway,
   ) {
-    this.postRepository = new PostyBirbDatabase('PostRecordSchema');
+    this.postRepository = new PostRecordRepository();
   }
 
   /**

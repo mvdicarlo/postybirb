@@ -1,4 +1,4 @@
-import { NotFoundException } from '@nestjs/common';
+import { EntityNotFoundError } from '@postybirb/database';
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
 import {
@@ -53,7 +53,7 @@ describe('FormGeneratorService', () => {
   it('should fail on missing account', async () => {
     await expect(
       service.generateForm({ accountId: 'fake', type: SubmissionType.MESSAGE })
-    ).rejects.toThrow(NotFoundException);
+    ).rejects.toThrow(EntityNotFoundError);
   });
 
   it('should return user specific defaults', async () => {
