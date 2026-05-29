@@ -1,4 +1,5 @@
 import { clearDatabase, TagConverterRepository } from '@postybirb/database';
+import { NotFoundException } from '@nestjs/common';
 import 'reflect-metadata';
 import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
 import { PostyBirbService } from './postybirb-service';
@@ -71,6 +72,15 @@ describe('PostyBirbService', () => {
 
       await service.remove(created.id);
       expect(await service.findAll()).toHaveLength(0);
+    });
+
+    it('throws NotFoundException for findById({failOnMissing}) on a missing id', async () => {
+      await expect(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (service as any).repository.findById('00000000-0000-0000-0000-000000000000', {
+          failOnMissing: true,
+        }),
+      ).rejects.toBeInstanceOf(NotFoundException);
     });
   });
 });

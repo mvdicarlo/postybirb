@@ -1,5 +1,6 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import {
+  EntityNotFoundError,
   EntityRepository,
   SchemaKey,
 } from '@postybirb/database';
@@ -34,8 +35,18 @@ export type PostyBirbDataSource<TKey extends SchemaKey> =
  * subclass call sites keep compiling and running unchanged through the
  * per-schema cutover in Phase D Steps 19-20.
  *
+ * Also remaps the lib's `EntityNotFoundError` to Nest's
+ * `NotFoundException` for `findById({ failOnMissing: true })` calls.
+ * Phase D Step 18 audit (apps/client-server/src/app/**):
+ *   - Zero `catch (NotFoundException)` / `instanceof NotFoundException`
+ *     consumer sites; every `NotFoundException` reference is a `throw`.
+ *   - ~10 `failOnMissing: true` call sites across services + 1 controller
+ *     all rely on Nest's HTTP exception filter converting the throw to
+ *     a 404. Without the remap, lib repos would 500.
+ *
  * Removed in Phase E Step 24 once every call site has migrated to the
- * lib surface directly (`.table`, `.notify`).
+ * lib surface directly (`.table`, `.notify`) and consumers explicitly
+ * handle `EntityNotFoundError` themselves.
  */
 function adaptEntityRepository<TKey extends SchemaKey>(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -54,6 +65,21 @@ function adaptEntityRepository<TKey extends SchemaKey>(
   if (!adapted.forceNotify) {
     adapted.forceNotify = (ids, action) => repo.notify(ids, action);
   }
+  // Remap EntityNotFoundError -> NotFoundException so failOnMissing
+  // callers keep getting 404s (see audit comment above).
+  const originalFindById = repo.findById.bind(repo);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (adapted as any).findById = async (...args: Parameters<typeof originalFindById>) => {
+    try {
+      const result = await originalFindById(...args);
+      return result;
+    } catch (err) {
+      if (err instanceof EntityNotFoundError) {
+        throw new NotFoundException(err.message);
+      }
+      throw err;
+    }
+  };
   return adapted as PostyBirbDatabase<TKey>;
 }
 
