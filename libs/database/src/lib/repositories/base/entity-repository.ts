@@ -83,7 +83,12 @@ export abstract class EntityRepository<
 
   protected readonly EntityClass: EntityCtor<TEntity>;
 
-  protected readonly defaultWith?: DefaultWithFor<TKey>;
+  /**
+   * Default eager-load config. Typed as the generic `DefaultWithFor<TKey>`
+   * at the property level to allow variance when concrete repos are
+   * assigned to `EntityRepository<SchemaKey, IEntity>`.
+   */
+  protected readonly defaultWith?: DefaultWithFor<SchemaKey>;
 
   /**
    * Reference to the table's `id` column. Resolved once via a single cast
@@ -99,7 +104,7 @@ export abstract class EntityRepository<
     this.table = config.table;
     this.query = config.query;
     this.EntityClass = config.EntityClass;
-    this.defaultWith = config.defaultWith;
+    this.defaultWith = config.defaultWith as unknown as DefaultWithFor<SchemaKey>;
     this.idColumn = (config.table as unknown as { id: AnySQLiteColumn }).id;
     this.db = getDatabase();
     RepositoryRegistry.register(
@@ -115,7 +120,7 @@ export abstract class EntityRepository<
   public async findById(
     id: EntityId,
     options?: { failOnMissing?: boolean },
-    withOverride?: DefaultWithFor<TKey>,
+    withOverride?: DefaultWithFor<SchemaKey>,
   ): Promise<TEntity | null> {
     const record = await this.query.findFirst({
       where: eq(this.idColumn, id),
@@ -139,7 +144,7 @@ export abstract class EntityRepository<
     return this.EntityClass.fromRows(records);
   }
 
-  public async find(config: FindManyConfig<TKey>): Promise<TEntity[]> {
+  public async find(config: FindManyConfig<SchemaKey>): Promise<TEntity[]> {
     const records = (await this.query.findMany({
       ...(config as object),
       with: config.with ?? this.defaultWith ?? {},
@@ -147,7 +152,7 @@ export abstract class EntityRepository<
     return this.EntityClass.fromRows(records);
   }
 
-  public async findOne(config: FindFirstConfig<TKey>): Promise<TEntity | null> {
+  public async findOne(config: FindFirstConfig<SchemaKey>): Promise<TEntity | null> {
     const record = await this.query.findFirst({
       ...(config as object),
       with: config.with ?? this.defaultWith ?? {},
