@@ -1,5 +1,6 @@
 import { PostyBirbDirectories } from '@postybirb/fs';
 import { IsTestEnvironment } from '@postybirb/utils/common';
+import Database from 'better-sqlite3';
 import { BetterSQLite3Database, drizzle } from 'drizzle-orm/better-sqlite3';
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import { join } from 'path';
@@ -19,13 +20,21 @@ let db: PostyBirbDatabaseType;
  */
 export function getDatabase() {
   if (!db) {
-    const path = IsTestEnvironment()
-      ? ':memory:'
-      : join(
-          PostyBirbDirectories.DATA_DIRECTORY,
-          `database-${process.env.POSTYBIRB_ENV}.sqlite`,
-        );
-    db = drizzle(path, { schema });
+    if (IsTestEnvironment()) {
+      // Use an in-memory database for tests to avoid filesystem I/O errors
+      // (e.g. SQLITE_IOERR_FSTAT) in CI environments. Enable foreign-key
+      // enforcement so that ON DELETE CASCADE / SET NULL constraints behave
+      // identically to the production database.
+      const sqlite = new Database(':memory:');
+      sqlite.pragma('foreign_keys = ON');
+      db = drizzle(sqlite, { schema });
+    } else {
+      const path = join(
+        PostyBirbDirectories.DATA_DIRECTORY,
+        `database-${process.env.POSTYBIRB_ENV}.sqlite`,
+      );
+      db = drizzle(path, { schema });
+    }
     migrate(db, { migrationsFolder });
   }
 
