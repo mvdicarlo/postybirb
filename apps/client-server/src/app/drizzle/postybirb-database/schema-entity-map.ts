@@ -1,6 +1,5 @@
-import { Account, CustomShortcut, DirectoryWatcher, FileBuffer, Notification, PostEvent, PostQueueRecord, PostRecord, SchemaKey, Settings, Submission, SubmissionFile, TagConverter, TagGroup, UserConverter } from '@postybirb/database';
+import { Account, CustomShortcut, DirectoryWatcher, FileBuffer, Notification, PostEvent, PostQueueRecord, PostRecord, SchemaKey, Settings, Submission, SubmissionFile, TagConverter, TagGroup, UserConverter, UserSpecifiedWebsiteOptions } from '@postybirb/database';
 import {
-    UserSpecifiedWebsiteOptions,
     WebsiteData,
     WebsiteOptions,
 } from '../models';

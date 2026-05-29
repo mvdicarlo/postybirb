@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
+import { UserSpecifiedWebsiteOptions, UserSpecifiedWebsiteOptionsRepository } from '@postybirb/database';
 import { AccountId, EntityId, SubmissionType } from '@postybirb/types';
 import { and, eq } from 'drizzle-orm';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { UserSpecifiedWebsiteOptions } from '../drizzle/models';
 import { CreateUserSpecifiedWebsiteOptionsDto } from './dtos/create-user-specified-website-options.dto';
 import { UpdateUserSpecifiedWebsiteOptionsDto } from './dtos/update-user-specified-website-options.dto';
 
 @Injectable()
 export class UserSpecifiedWebsiteOptionsService extends PostyBirbService<'UserSpecifiedWebsiteOptionsSchema'> {
   constructor() {
-    super('UserSpecifiedWebsiteOptionsSchema');
+    super(new UserSpecifiedWebsiteOptionsRepository());
   }
 
   async create(

@@ -5,7 +5,7 @@ import {
     NotFoundException,
     OnModuleInit,
 } from '@nestjs/common';
-import { Account, CustomShortcutRepository, Insert, SubmissionRepository } from '@postybirb/database';
+import { Account, CustomShortcutRepository, Insert, SubmissionRepository, UserSpecifiedWebsiteOptionsRepository } from '@postybirb/database';
 import {
     AccountId,
     Description,
@@ -133,9 +133,7 @@ export class WebsiteOptionsService
     }
 
     // 3. Migrate user-specified website options
-    const userOptsRepo = new PostyBirbDatabase(
-      'UserSpecifiedWebsiteOptionsSchema',
-    );
+    const userOptsRepo = new UserSpecifiedWebsiteOptionsRepository();
     const userOpts = await userOptsRepo.findAll();
     for (const userOpt of userOpts) {
       const opts = (userOpt as DynamicObject).options as DynamicObject;
