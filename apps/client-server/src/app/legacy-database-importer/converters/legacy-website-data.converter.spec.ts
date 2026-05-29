@@ -1,4 +1,4 @@
-import { clearDatabase } from '@postybirb/database';
+import { clearDatabase, WebsiteDataRepository } from '@postybirb/database';
 import { ensureDirSync, PostyBirbDirectories, writeSync } from '@postybirb/fs';
 import { readFileSync } from 'fs';
 import { join } from 'path';
@@ -12,7 +12,7 @@ describe('LegacyWebsiteDataConverter', () => {
   let websiteDataConverter: LegacyWebsiteDataConverter;
   let testDataPath: string;
   let accountRepository: PostyBirbDatabase<'AccountSchema'>;
-  let websiteDataRepository: PostyBirbDatabase<'WebsiteDataSchema'>;
+  let websiteDataRepository: WebsiteDataRepository;
   const ts = Date.now();
 
   beforeEach(async () => {
@@ -37,7 +37,7 @@ describe('LegacyWebsiteDataConverter', () => {
     accountConverter = new LegacyUserAccountConverter(testDataPath);
     websiteDataConverter = new LegacyWebsiteDataConverter(testDataPath);
     accountRepository = new PostyBirbDatabase('AccountSchema');
-    websiteDataRepository = new PostyBirbDatabase('WebsiteDataSchema');
+    websiteDataRepository = new WebsiteDataRepository();
   });
 
   /**

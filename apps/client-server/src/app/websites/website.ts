@@ -1,4 +1,4 @@
-import { Account } from '@postybirb/database';
+import { Account, WebsiteDataRepository } from '@postybirb/database';
 import { Logger, PostyBirbLogger } from '@postybirb/logger';
 import { PlatformCookieDetails, PlatformService } from '@postybirb/platform';
 import {
@@ -9,7 +9,6 @@ import {
     SubmissionType,
 } from '@postybirb/types';
 import { Mutex } from 'async-mutex';
-import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
 import { SubmissionValidator } from './commons/validator';
 import { WebsiteDecoratorProps } from './decorators/website-decorator-props';
 import { DataPropertyAccessibility } from './models/data-property-accessibility';
@@ -320,7 +319,7 @@ export abstract class Website<
    * Method that runs once on initialization of the Website class.
    */
   public async onInitialize(
-    websiteDataRepository: PostyBirbDatabase<'WebsiteDataSchema'>,
+    websiteDataRepository: WebsiteDataRepository,
   ): Promise<void> {
     await this.websiteDataStore.initialize(websiteDataRepository);
   }

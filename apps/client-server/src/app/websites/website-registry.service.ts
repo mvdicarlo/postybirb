@@ -5,7 +5,7 @@ import {
     NotFoundException,
     Optional,
 } from '@nestjs/common';
-import { Account } from '@postybirb/database';
+import { Account, WebsiteDataRepository } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import { PlatformService } from '@postybirb/platform';
 import { WEBSITE_UPDATES } from '@postybirb/socket-events';
@@ -45,7 +45,7 @@ export class WebsiteRegistryService {
 
   private readonly accountRepository: PostyBirbDatabase<'AccountSchema'>;
 
-  private readonly websiteDataRepository: PostyBirbDatabase<'WebsiteDataSchema'>;
+  private readonly websiteDataRepository: WebsiteDataRepository;
 
   private initialized = false;
 
@@ -85,7 +85,7 @@ export class WebsiteRegistryService {
     );
 
     this.accountRepository = new PostyBirbDatabase('AccountSchema');
-    this.websiteDataRepository = new PostyBirbDatabase('WebsiteDataSchema');
+    this.websiteDataRepository = new WebsiteDataRepository();
     this.accountRepository.subscribe(
       ['AccountSchema', 'WebsiteDataSchema'],
       () => this.emit(),
