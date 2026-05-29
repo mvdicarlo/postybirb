@@ -9,7 +9,7 @@ import { WSGateway } from '../web-socket/web-socket-gateway';
  * @class PostService
  */
 @Injectable()
-export class PostService extends PostyBirbService<'PostRecordSchema'> {
+export class PostService extends PostyBirbService<PostRecordRepository> {
   private readonly postEventRepository = new PostEventRepository();
 
   constructor(@Optional() webSocket?: WSGateway) {
@@ -24,8 +24,8 @@ export class PostService extends PostyBirbService<'PostRecordSchema'> {
    */
   async getEvents(postRecordId: EntityId): Promise<PostEventDto[]> {
     const events = await this.postEventRepository.find({
-      where: (event, { eq }) => eq(event.postRecordId, postRecordId),
-      orderBy: (event, { asc }) => asc(event.createdAt),
+      where: (event: any, { eq }) => eq(event.postRecordId, postRecordId),
+      orderBy: (event: any, { asc }) => asc(event.createdAt),
       with: {
         account: true,
       },

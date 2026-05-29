@@ -129,7 +129,7 @@ export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
     return ctx.getOrCreate(
       'SubmissionSchema',
       row.id,
-      () => new Submission<TM>(row as Partial<ISubmission<TM>>),
+      () => new Submission<TM>(row as unknown as Partial<ISubmission<TM>>),
       (e) => {
         if (row.options)
           e.options = row.options.map((o) => WebsiteOptions.fromRow(o, ctx));

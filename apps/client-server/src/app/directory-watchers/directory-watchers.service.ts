@@ -59,7 +59,7 @@ export interface CheckPathResult {
 }
 
 @Injectable()
-export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcherSchema'> {
+export class DirectoryWatchersService extends PostyBirbService<DirectoryWatcherRepository> {
   private runningWatchers = new Set<EntityId>();
 
   private recoveredWatchers = new Set<EntityId>();

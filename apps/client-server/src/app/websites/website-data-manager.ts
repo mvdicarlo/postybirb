@@ -33,7 +33,7 @@ export default class WebsiteDataManager<T extends DynamicObject> {
       });
     }
 
-    this.entity = entity;
+    this.entity = entity as WebsiteData<T>;
   }
 
   private async saveData() {

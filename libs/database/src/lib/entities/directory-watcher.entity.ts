@@ -68,7 +68,7 @@ export class DirectoryWatcher
     return ctx.getOrCreate(
       'DirectoryWatcherSchema',
       row.id,
-      () => new DirectoryWatcher(row as Partial<IDirectoryWatcher>),
+      () => new DirectoryWatcher(row as unknown as Partial<IDirectoryWatcher>),
       (e) => {
         if (row.template) e.template = Submission.fromRow(row.template, ctx);
       },

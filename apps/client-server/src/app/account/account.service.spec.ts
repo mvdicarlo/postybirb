@@ -168,7 +168,7 @@ describe('AccountsService', () => {
       mockRepository = {
         find: jest.fn(),
         deleteById: jest.fn(),
-        schemaEntity: { id: 'id' },
+        table: { id: 'id' },
       };
 
       mockWebsiteRegistry = {
@@ -211,7 +211,7 @@ describe('AccountsService', () => {
 
       // Verify that find was called to get all accounts except NULL_ACCOUNT_ID
       expect(mockRepository.find).toHaveBeenCalledWith({
-        where: expect.any(Object), // ne(schemaEntity.id, NULL_ACCOUNT_ID)
+        where: expect.any(Object), // ne(table.id, NULL_ACCOUNT_ID)
       });
 
       // Verify canCreate was called for each account's website
@@ -301,7 +301,7 @@ describe('AccountsService', () => {
       } as Account;
 
       // Mock the repository.find to only return non-NULL accounts (simulating the database query)
-      // The actual service uses ne(this.repository.schemaEntity.id, NULL_ACCOUNT_ID) to exclude it
+      // The actual service uses ne(this.table.id, NULL_ACCOUNT_ID) to exclude it
       mockRepository.find.mockResolvedValue([
         mockUnregisteredAccount, // Only return the unregistered account, not the null account
       ]);

@@ -56,7 +56,7 @@ type SubmissionEntity = Submission<SubmissionMetadataType>;
  */
 @Injectable()
 export class SubmissionService
-  extends PostyBirbService<'SubmissionSchema'>
+  extends PostyBirbService<SubmissionRepository>
   implements OnModuleInit
 {
   private emitDebounceTimer: ReturnType<typeof setTimeout> | null = null;
@@ -221,7 +221,7 @@ export class SubmissionService
 
   private async populateMultiSubmission(type: SubmissionType) {
     const existing = await this.repository.findOne({
-      where: (submission, { eq: equals, and }) =>
+      where: (submission: any, { eq: equals, and }) =>
         and(
           eq(submission.type, type),
           equals(submission.isMultiSubmission, true),
@@ -522,10 +522,9 @@ export class SubmissionService
     }
   }
 
-  public async remove(id: SubmissionId) {
-    const result = await super.remove(id);
+  public async remove(id: SubmissionId): Promise<void> {
+    await super.remove(id);
     this.emit();
-    return result;
   }
 
   async applyMultiSubmission(applyMultiSubmissionDto: ApplyMultiSubmissionDto) {
@@ -534,7 +533,7 @@ export class SubmissionService
       failOnMissing: true,
     });
     const submissions = await this.repository.find({
-      where: (submission, { inArray }) => inArray(submission.id, submissionIds),
+      where: (submission: any, { inArray }) => inArray(submission.id, submissionIds),
     });
     if (merge) {
       // Keeps unique options, overwrites overlapping options
@@ -687,7 +686,7 @@ export class SubmissionService
   public async duplicate(id: SubmissionId) {
     this.logger.info(`Duplicating Submission '${id}'`);
     const entityToDuplicate = await this.repository.findOne({
-      where: (submission, { eq: equals }) => equals(submission.id, id),
+      where: (submission: any, { eq: equals }) => equals(submission.id, id),
       with: {
         options: {
           with: {

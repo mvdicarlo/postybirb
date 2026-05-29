@@ -31,7 +31,7 @@ export class PostEventRepository {
     excludeAccountId: AccountId,
   ): Promise<string[]> {
     const events = await this.repository.find({
-      where: (event, { eq, and, inArray }) =>
+      where: (event: any, { eq, and, inArray }) =>
         and(
           eq(event.postRecordId, postRecordId),
           inArray(event.eventType, [
@@ -58,7 +58,7 @@ export class PostEventRepository {
    */
   async getFailedEvents(postRecordId: EntityId): Promise<PostEvent[]> {
     return this.repository.find({
-      where: (event, { eq, and, inArray }) =>
+      where: (event: any, { eq, and, inArray }) =>
         and(
           eq(event.postRecordId, postRecordId),
           inArray(event.eventType, [

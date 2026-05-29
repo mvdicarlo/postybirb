@@ -34,7 +34,7 @@ import { SubmissionService } from './submission.service';
  */
 @Injectable()
 export class FileSubmissionService
-  extends PostyBirbService<'SubmissionSchema'>
+  extends PostyBirbService<SubmissionRepository>
   implements ISubmissionService<FileSubmission>
 {
   constructor(

@@ -10,7 +10,7 @@ import { CreateUserConverterDto } from './dtos/create-user-converter.dto';
 import { UpdateUserConverterDto } from './dtos/update-user-converter.dto';
 
 @Injectable()
-export class UserConvertersService extends PostyBirbService<'UserConverterSchema'> {
+export class UserConvertersService extends PostyBirbService<UserConverterRepository> {
   constructor(@Optional() webSocket?: WSGateway) {
     super(new UserConverterRepository(), webSocket);
     this.repository.subscribe('UserConverterSchema', () => {
@@ -22,7 +22,7 @@ export class UserConvertersService extends PostyBirbService<'UserConverterSchema
     this.logger
       .withMetadata(createDto)
       .info(`Creating UserConverter '${createDto.username}'`);
-    await this.throwIfExists(eq(this.schema.username, createDto.username));
+    await this.throwIfExists(eq(this.table.username, createDto.username));
     return this.repository.insert(createDto);
   }
 
@@ -40,7 +40,7 @@ export class UserConvertersService extends PostyBirbService<'UserConverterSchema
    */
   async convert(instance: Website<unknown>, username: string): Promise<string> {
     const converter = await this.repository.findOne({
-      where: (c, { eq: eqFn }) => eqFn(c.username, username),
+      where: (c: any, { eq: eqFn }) => eqFn(c.username, username),
     });
 
     if (!converter) {

@@ -166,7 +166,7 @@ export class SubmissionFile
     return ctx.getOrCreate(
       'SubmissionFileSchema',
       row.id,
-      () => new SubmissionFile(row as Partial<ISubmissionFile>),
+      () => new SubmissionFile(row as unknown as Partial<ISubmissionFile>),
       (e) => {
         if (row.submission)
           e.submission = Submission.fromRow<FileSubmissionMetadata>(

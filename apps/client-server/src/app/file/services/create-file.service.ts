@@ -1,6 +1,6 @@
 import * as rtf from '@iarna/rtf-to-html';
 import { Injectable } from '@nestjs/common';
-import { FileBuffer, FileBufferRepository, Insert, Select, SubmissionFile, SubmissionFileRepository, TransactionContext, withTransactionContext } from '@postybirb/database';
+import { FileBuffer, FileBufferRepository, FileBufferRow, Insert, Select, SubmissionFile, SubmissionFileRepository, SubmissionFileRow, TransactionContext, withTransactionContext } from '@postybirb/database';
 import { removeFile } from '@postybirb/fs';
 import { Logger } from '@postybirb/logger';
 import {
@@ -202,11 +202,11 @@ export class CreateFileService {
       order: Date.now(),
     };
     const sf = SubmissionFile.fromRows(
-      await ctx
+      (await ctx
         .getDb()
         .insert(this.fileRepository.table)
         .values(submissionFile)
-        .returning(),
+        .returning()) as SubmissionFileRow[],
     );
 
     const entity = sf[0];
@@ -253,12 +253,12 @@ export class CreateFileService {
     };
 
     return SubmissionFile.fromRows(
-      await ctx
+      (await ctx
         .getDb()
         .update(this.fileRepository.table)
         .set(update)
         .where(eq(this.fileRepository.table.id, entity.id))
-        .returning(),
+        .returning()) as SubmissionFileRow[],
     )[0];
   }
 
@@ -360,11 +360,11 @@ export class CreateFileService {
     };
 
     const result = FileBuffer.fromRows(
-      await ctx
+      (await ctx
         .getDb()
         .insert(this.fileBufferRepository.table)
         .values(data)
-        .returning(),
+        .returning()) as FileBufferRow[],
     )[0];
 
     ctx.track('FileBufferSchema', result.id);

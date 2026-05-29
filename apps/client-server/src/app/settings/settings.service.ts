@@ -18,7 +18,7 @@ import { UpdateSettingsDto } from './dtos/update-settings.dto';
 
 @Injectable()
 export class SettingsService
-  extends PostyBirbService<'SettingsSchema'>
+  extends PostyBirbService<SettingsRepository>
   implements OnModuleInit
 {
   constructor(@Optional() webSocket: WSGateway) {
@@ -144,7 +144,7 @@ export class SettingsService
    */
   public getDefaultSettings() {
     return this.repository.findOne({
-      where: (setting, { eq: equals }) =>
+      where: (setting: any, { eq: equals }) =>
         equals(setting.profile, SettingsConstants.DEFAULT_PROFILE_NAME),
     });
   }

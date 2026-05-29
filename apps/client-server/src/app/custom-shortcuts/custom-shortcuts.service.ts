@@ -9,7 +9,7 @@ import { CreateCustomShortcutDto } from './dtos/create-custom-shortcut.dto';
 import { UpdateCustomShortcutDto } from './dtos/update-custom-shortcut.dto';
 
 @Injectable()
-export class CustomShortcutsService extends PostyBirbService<'CustomShortcutSchema'> {
+export class CustomShortcutsService extends PostyBirbService<CustomShortcutRepository> {
   constructor(@Optional() webSocket?: WSGateway) {
     super(new CustomShortcutRepository(), webSocket);
     this.repository.subscribe('CustomShortcutSchema', () => this.emit());
@@ -49,10 +49,10 @@ export class CustomShortcutsService extends PostyBirbService<'CustomShortcutSche
     return this.repository.update(id, updateCustomShortcutDto);
   }
 
-  public async remove(id: EntityId) {
-    const existing = await this.repository.findById(id, {
+  public async remove(id: EntityId): Promise<void> {
+    await this.repository.findById(id, {
       failOnMissing: true,
     });
-    return super.remove(id);
+    await super.remove(id);
   }
 }

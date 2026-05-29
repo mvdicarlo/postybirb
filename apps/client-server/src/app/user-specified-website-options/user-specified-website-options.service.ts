@@ -7,7 +7,7 @@ import { CreateUserSpecifiedWebsiteOptionsDto } from './dtos/create-user-specifi
 import { UpdateUserSpecifiedWebsiteOptionsDto } from './dtos/update-user-specified-website-options.dto';
 
 @Injectable()
-export class UserSpecifiedWebsiteOptionsService extends PostyBirbService<'UserSpecifiedWebsiteOptionsSchema'> {
+export class UserSpecifiedWebsiteOptionsService extends PostyBirbService<UserSpecifiedWebsiteOptionsRepository> {
   constructor() {
     super(new UserSpecifiedWebsiteOptionsRepository());
   }
@@ -20,8 +20,8 @@ export class UserSpecifiedWebsiteOptionsService extends PostyBirbService<'UserSp
       .info(`Creating UserSpecifiedWebsiteOptions '${createDto.accountId}'`);
     await this.throwIfExists(
       and(
-        eq(this.schema.accountId, createDto.accountId),
-        eq(this.schema.type, createDto.type),
+        eq(this.table.accountId, createDto.accountId),
+        eq(this.table.type, createDto.type),
       ),
     );
     return this.repository.insert({
@@ -68,7 +68,7 @@ export class UserSpecifiedWebsiteOptionsService extends PostyBirbService<'UserSp
   ) {
     return this.repository.findOne({
       // eslint-disable-next-line @typescript-eslint/no-shadow
-      where: (options, { and, eq }) =>
+      where: (options: any, { and, eq }) =>
         and(eq(options.accountId, accountId), eq(options.type, type)),
     });
   }

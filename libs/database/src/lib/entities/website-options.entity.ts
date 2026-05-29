@@ -88,7 +88,7 @@ export class WebsiteOptions
     return ctx.getOrCreate(
       'WebsiteOptionsSchema',
       row.id,
-      () => new WebsiteOptions(row as Partial<IWebsiteOptions> & { submissionId?: SubmissionId }),
+      () => new WebsiteOptions(row as unknown as Partial<IWebsiteOptions> & { submissionId?: SubmissionId }),
       (e) => {
         if (row.account) e.account = Account.fromRow(row.account, ctx);
         if (row.submission)

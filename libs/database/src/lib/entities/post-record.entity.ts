@@ -107,7 +107,7 @@ export class PostRecord
     return ctx.getOrCreate(
       'PostRecordSchema',
       row.id,
-      () => new PostRecord(row as Partial<IPostRecord>),
+      () => new PostRecord(row as unknown as Partial<IPostRecord>),
       (e) => {
         if (row.submission)
           e.submission = Submission.fromRow(row.submission, ctx);
