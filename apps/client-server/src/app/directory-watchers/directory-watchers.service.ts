@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, Optional } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { DirectoryWatcher, DirectoryWatcherRepository } from '@postybirb/database';
 import { DIRECTORY_WATCHER_UPDATES } from '@postybirb/socket-events';
 import {
   DirectoryWatcherImportAction,
@@ -11,7 +12,6 @@ import { mkdir, readdir, rename, writeFile } from 'fs/promises';
 import { getType } from 'mime';
 import { join } from 'path';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { DirectoryWatcher } from '../drizzle/models';
 import { MulterFileInfo } from '../file/models/multer-file-info';
 import { NotificationsService } from '../notifications/notifications.service';
 import { SubmissionService } from '../submission/services/submission.service';
@@ -75,7 +75,7 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
     private readonly notificationService: NotificationsService,
     @Optional() webSocket?: WSGateway,
   ) {
-    super('DirectoryWatcherSchema', webSocket);
+    super(new DirectoryWatcherRepository(), webSocket);
     this.repository.subscribe('DirectoryWatcherSchema', () =>
       this.emitUpdates(),
     );
