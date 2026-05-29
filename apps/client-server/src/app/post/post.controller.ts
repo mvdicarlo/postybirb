@@ -1,6 +1,7 @@
 import { Controller, Get, Param } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { EntityId } from '@postybirb/types';
+import { PostRecordRepository } from '@postybirb/database';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
 import { PostManagerRegistry } from './services/post-manager-v2/post-manager-registry.service';
 import { PostService } from './post.service';
@@ -11,7 +12,7 @@ import { PostService } from './post.service';
  */
 @ApiTags('post')
 @Controller('post')
-export class PostController extends PostyBirbController<'PostRecordSchema'> {
+export class PostController extends PostyBirbController<PostRecordRepository> {
   constructor(
     readonly service: PostService,
     private readonly postManagerRegistry: PostManagerRegistry,

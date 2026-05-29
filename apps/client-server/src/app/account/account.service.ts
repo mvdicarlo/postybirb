@@ -31,7 +31,7 @@ import { LoginStatePoller } from './login-state-poller';
  */
 @Injectable()
 export class AccountService
-  extends PostyBirbService<'AccountSchema'>
+  extends PostyBirbService<AccountRepository>
   implements OnModuleInit
 {
   private readonly loginRefreshTimers: Record<

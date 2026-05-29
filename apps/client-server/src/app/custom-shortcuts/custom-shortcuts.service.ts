@@ -9,7 +9,7 @@ import { CreateCustomShortcutDto } from './dtos/create-custom-shortcut.dto';
 import { UpdateCustomShortcutDto } from './dtos/update-custom-shortcut.dto';
 
 @Injectable()
-export class CustomShortcutsService extends PostyBirbService<'CustomShortcutSchema'> {
+export class CustomShortcutsService extends PostyBirbService<CustomShortcutRepository> {
   constructor(@Optional() webSocket?: WSGateway) {
     super(new CustomShortcutRepository(), webSocket);
     this.repository.subscribe('CustomShortcutSchema', () => this.emit());

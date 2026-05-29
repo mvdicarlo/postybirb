@@ -46,7 +46,7 @@ import { ValidateWebsiteOptionsDto } from './dtos/validate-website-options.dto';
 
 @Injectable()
 export class WebsiteOptionsService
-  extends PostyBirbService<'WebsiteOptionsSchema'>
+  extends PostyBirbService<WebsiteOptionsRepository>
   implements OnModuleInit
 {
   private readonly submissionRepository = new SubmissionRepository();
@@ -274,7 +274,7 @@ export class WebsiteOptionsService
     }
 
     const exists = await this.repository.findOne({
-      where: (wo, { and, eq }) =>
+      where: (wo: any, { and, eq }) =>
         and(eq(wo.submissionId, submission.id), eq(wo.accountId, account.id)),
     });
     if (exists) {

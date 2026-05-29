@@ -15,7 +15,7 @@ import { PostyBirbService } from './postybirb-service';
  *
  * @see docs/DRIZZLE_REPOSITORY_MIGRATION_IMPLEMENTATION.md
  */
-class TagConvertersTestService extends PostyBirbService<'TagConverterSchema'> {
+class TagConvertersTestService extends PostyBirbService<TagConverterRepository> {
   constructor(repository: TagConverterRepository) {
     super(repository);
   }

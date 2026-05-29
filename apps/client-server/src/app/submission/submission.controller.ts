@@ -18,6 +18,7 @@ import {
 } from '@nestjs/swagger';
 import { ISubmissionDto, SubmissionId, SubmissionType } from '@postybirb/types';
 import { parse } from 'path';
+import { SubmissionRepository } from '@postybirb/database';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
 import { MulterFileInfo } from '../file/models/multer-file-info';
 import { ApplyMultiSubmissionDto } from './dtos/apply-multi-submission.dto';
@@ -35,7 +36,7 @@ import { SubmissionService } from './services/submission.service';
  */
 @ApiTags('submissions')
 @Controller('submissions')
-export class SubmissionController extends PostyBirbController<'SubmissionSchema'> {
+export class SubmissionController extends PostyBirbController<SubmissionRepository> {
   constructor(readonly service: SubmissionService) {
     super(service);
   }

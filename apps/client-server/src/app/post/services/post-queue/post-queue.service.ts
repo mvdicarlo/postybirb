@@ -33,7 +33,7 @@ import { PostRecordFactory } from '../post-record-factory';
  */
 @Injectable()
 export class PostQueueService
-  extends PostyBirbService<'PostQueueRecordSchema'>
+  extends PostyBirbService<PostQueueRecordRepository>
   implements OnModuleInit
 {
   private readonly queueModificationMutex = new Mutex();
@@ -224,8 +224,8 @@ export class PostQueueService
     });
   }
 
-  public override remove(id: EntityId) {
-    return this.dequeue([id]);
+  public override async remove(id: EntityId): Promise<void> {
+    await this.dequeue([id]);
   }
 
   /**
@@ -367,7 +367,7 @@ export class PostQueueService
         }
 
         const existing = await this.repository.findOne({
-          where: (queueRecord, { eq }) =>
+          where: (queueRecord: any, { eq }) =>
             eq(queueRecord.submissionId, submissionId),
           with: {
             postRecord: true,
@@ -432,7 +432,7 @@ export class PostQueueService
 
     try {
       const records = await this.repository.find({
-        where: (queueRecord, { inArray }) =>
+        where: (queueRecord: any, { inArray }) =>
           inArray(queueRecord.submissionId, submissionIds),
       });
 
@@ -637,7 +637,7 @@ export class PostQueueService
    */
   public async peek(): Promise<PostQueueRecord | undefined> {
     return this.repository.findOne({
-      orderBy: (queueRecord, { asc }) => asc(queueRecord.createdAt),
+      orderBy: (queueRecord: any, { asc }) => asc(queueRecord.createdAt),
       with: {
         submission: true,
         postRecord: {

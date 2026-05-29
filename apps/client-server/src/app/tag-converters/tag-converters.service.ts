@@ -10,7 +10,7 @@ import { CreateTagConverterDto } from './dtos/create-tag-converter.dto';
 import { UpdateTagConverterDto } from './dtos/update-tag-converter.dto';
 
 @Injectable()
-export class TagConvertersService extends PostyBirbService<'TagConverterSchema'> {
+export class TagConvertersService extends PostyBirbService<TagConverterRepository> {
   constructor(@Optional() webSocket?: WSGateway) {
     super(new TagConverterRepository(), webSocket);
     this.repository.subscribe('TagConverterSchema', () => {
@@ -22,7 +22,7 @@ export class TagConvertersService extends PostyBirbService<'TagConverterSchema'>
     this.logger
       .withMetadata(createDto)
       .info(`Creating TagConverter '${createDto.tag}'`);
-    await this.throwIfExists(eq(this.schema.tag, createDto.tag));
+    await this.throwIfExists(eq(this.table.tag, createDto.tag));
     return this.repository.insert(createDto);
   }
 
@@ -50,7 +50,7 @@ export class TagConvertersService extends PostyBirbService<'TagConverterSchema'>
 
     // { tag: { $in: tags } }
     const converters = await this.repository.find({
-      where: (converter, { inArray }) => inArray(converter.tag, tags),
+      where: (converter: any, { inArray }) => inArray(converter.tag, tags),
     });
     return tags.map((tag) => {
       const converter = converters.find((c) => c.tag === tag);

@@ -16,7 +16,7 @@ import { UpdateNotificationDto } from './dtos/update-notification.dto';
  * sending desktop notifications based on user settings.
  */
 @Injectable()
-export class NotificationsService extends PostyBirbService<'NotificationSchema'> {
+export class NotificationsService extends PostyBirbService<NotificationRepository> {
   /**
    * Creates a new instance of the NotificationsService.
    *

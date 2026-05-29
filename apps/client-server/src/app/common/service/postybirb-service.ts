@@ -2,11 +2,11 @@ import { BadRequestException } from '@nestjs/common';
 import {
   Action,
   EntityRepository,
-  SchemaEntityMap,
+  RepoEntity,
   SchemaKey,
 } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
-import { EntityId } from '@postybirb/types';
+import { EntityId, IEntity } from '@postybirb/types';
 import { SQL } from 'drizzle-orm';
 import { WSGateway } from '../../web-socket/web-socket-gateway';
 import { WebSocketEvents } from '../../web-socket/web-socket.events';
@@ -14,14 +14,17 @@ import { WebSocketEvents } from '../../web-socket/web-socket.events';
 /**
  * Base class that implements simple CRUD logic by delegating to a
  * lib-side `EntityRepository`. Phase E Step 24 removed the legacy
- * `PostyBirbDataSource` union, `adaptEntityRepository` shim, the
+ * `PostyBirbDatabase` wrapper, `adaptEntityRepository` shim, the
  * `string`-key constructor overload, and the `@Injectable()` decorator
  * (this class is abstract and never DI-resolved). Subclasses now hand
  * an explicit repository instance to `super(...)`.
  *
- * The second generic `TEntity` is inferred from the repository so
- * `findById`/`findAll`/`remove` callers receive concretely typed
- * results without restating the entity class.
+ * Generic over the *repository class* itself rather than the schema
+ * key: this lets TypeScript infer both `TKey` and `TEntity` directly
+ * from the repo, so subclasses just write
+ * `extends PostyBirbService<AccountRepository>` and `this.repository`
+ * is typed as the concrete `AccountRepository` (exposing any
+ * subclass-specific methods without a cast).
  *
  * `EntityNotFoundError` → 404 translation is handled globally by
  * `EntityNotFoundExceptionFilter` (registered in `main.ts`), so this
@@ -31,15 +34,15 @@ import { WebSocketEvents } from '../../web-socket/web-socket.events';
  * @class PostyBirbService
  */
 export abstract class PostyBirbService<
-  TSchemaKey extends SchemaKey,
-  TEntity extends SchemaEntityMap[TSchemaKey] = SchemaEntityMap[TSchemaKey],
+  TRepo extends EntityRepository<SchemaKey, IEntity>,
+  TEntity extends IEntity = RepoEntity<TRepo>,
 > {
   protected readonly logger = Logger(this.constructor.name);
 
-  protected readonly repository: EntityRepository<TSchemaKey, TEntity>;
+  protected readonly repository: TRepo;
 
   constructor(
-    repository: EntityRepository<TSchemaKey, TEntity>,
+    repository: TRepo,
     private readonly webSocket?: WSGateway,
   ) {
     this.repository = repository;
@@ -100,11 +103,11 @@ export abstract class PostyBirbService<
     id: EntityId,
     options?: { failOnMissing?: boolean },
   ): Promise<TEntity | null> {
-    return this.repository.findById(id, options);
+    return this.repository.findById(id, options) as Promise<TEntity | null>;
   }
 
   public findAll(): Promise<TEntity[]> {
-    return this.repository.findAll();
+    return this.repository.findAll() as Promise<TEntity[]>;
   }
 
   public async remove(id: EntityId): Promise<void> {

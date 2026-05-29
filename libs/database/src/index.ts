@@ -9,7 +9,6 @@ const Schemas = {
 export * from './lib/database';
 export * from './lib/helper-types';
 export * from './lib/schemas';
-export type { SchemaEntityMap } from './lib/schema-entity-map';
 export { Schemas };
 
 // Repository infrastructure (Phase A of the Drizzle repository migration).

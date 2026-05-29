@@ -9,7 +9,7 @@ import { WSGateway } from '../web-socket/web-socket-gateway';
  * @class PostService
  */
 @Injectable()
-export class PostService extends PostyBirbService<'PostRecordSchema'> {
+export class PostService extends PostyBirbService<PostRecordRepository> {
   private readonly postEventRepository = new PostEventRepository();
 
   constructor(@Optional() webSocket?: WSGateway) {
