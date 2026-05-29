@@ -14,8 +14,12 @@ describe('UserConverterRepository', () => {
 
   it('rejects duplicate `username` (unique constraint)', async () => {
     await repo.insert({ username: 'dup', convertTo: {} });
-    await expect(
-      repo.insert({ username: 'dup', convertTo: {} }),
-    ).rejects.toThrow();
+    let threw = false;
+    try {
+      await repo.insert({ username: 'dup', convertTo: {} });
+    } catch {
+      threw = true;
+    }
+    expect(threw).toBe(true);
   });
 });

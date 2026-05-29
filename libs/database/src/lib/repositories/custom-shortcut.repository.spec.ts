@@ -19,9 +19,13 @@ describe('CustomShortcutRepository', () => {
       name: 'dup',
       shortcut: { type: 'doc', content: [] },
     });
-    await expect(
-      repo.insert({ name: 'dup', shortcut: { type: 'doc', content: [] } }),
-    ).rejects.toThrow();
+    let threw = false;
+    try {
+      await repo.insert({ name: 'dup', shortcut: { type: 'doc', content: [] } });
+    } catch {
+      threw = true;
+    }
+    expect(threw).toBe(true);
   });
 
   it('update fires subscriber and persists the change', async () => {

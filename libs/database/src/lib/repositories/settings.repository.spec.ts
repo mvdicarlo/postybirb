@@ -19,12 +19,16 @@ describe('SettingsRepository', () => {
       profile: 'dup',
       settings: SettingsConstants.DEFAULT_SETTINGS,
     });
-    await expect(
-      repo.insert({
+    let threw = false;
+    try {
+      await repo.insert({
         profile: 'dup',
         settings: SettingsConstants.DEFAULT_SETTINGS,
-      }),
-    ).rejects.toThrow();
+      });
+    } catch {
+      threw = true;
+    }
+    expect(threw).toBe(true);
   });
 
   it('update persists settings change', async () => {

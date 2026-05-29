@@ -11,7 +11,13 @@ describe('TagGroupRepository', () => {
 
   it('rejects duplicate `name` (unique constraint)', async () => {
     await repo.insert({ name: 'dup', tags: [] });
-    await expect(repo.insert({ name: 'dup', tags: [] })).rejects.toThrow();
+    let threw = false;
+    try {
+      await repo.insert({ name: 'dup', tags: [] });
+    } catch {
+      threw = true;
+    }
+    expect(threw).toBe(true);
   });
 
   it('update persists the change', async () => {
