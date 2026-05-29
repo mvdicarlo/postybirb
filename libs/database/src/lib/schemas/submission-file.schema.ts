@@ -1,3 +1,4 @@
+import { relations } from 'drizzle-orm';
 import {
   AnySQLiteColumn,
   integer,
@@ -35,3 +36,25 @@ export const SubmissionFileSchema = sqliteTable('submission-file', {
     .default({} as SubmissionFileMetadata),
   order: integer().default(Number.MAX_SAFE_INTEGER).notNull(),
 });
+
+export const SubmissionFileRelations = relations(
+  SubmissionFileSchema,
+  ({ one }) => ({
+    submission: one(SubmissionSchema, {
+      fields: [SubmissionFileSchema.submissionId],
+      references: [SubmissionSchema.id],
+    }),
+    file: one(FileBufferSchema, {
+      fields: [SubmissionFileSchema.primaryFileId],
+      references: [FileBufferSchema.id],
+    }),
+    thumbnail: one(FileBufferSchema, {
+      fields: [SubmissionFileSchema.thumbnailId],
+      references: [FileBufferSchema.id],
+    }),
+    altFile: one(FileBufferSchema, {
+      fields: [SubmissionFileSchema.altFileId],
+      references: [FileBufferSchema.id],
+    }),
+  }),
+);

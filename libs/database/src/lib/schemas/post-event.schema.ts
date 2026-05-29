@@ -1,3 +1,4 @@
+import { relations } from 'drizzle-orm';
 import {
   AnySQLiteColumn,
   index,
@@ -79,3 +80,14 @@ export const PostEventSchema = sqliteTable(
     ),
   ],
 );
+
+export const PostEventRelations = relations(PostEventSchema, ({ one }) => ({
+  postRecord: one(PostRecordSchema, {
+    fields: [PostEventSchema.postRecordId],
+    references: [PostRecordSchema.id],
+  }),
+  account: one(AccountSchema, {
+    fields: [PostEventSchema.accountId],
+    references: [AccountSchema.id],
+  }),
+}));

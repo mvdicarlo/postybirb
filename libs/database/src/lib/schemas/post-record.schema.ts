@@ -1,3 +1,4 @@
+import { relations } from 'drizzle-orm';
 import { AnySQLiteColumn, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import {
@@ -5,6 +6,7 @@ import {
   PostRecordState,
 } from '../../../../types/src/index';
 import { CommonSchema, id } from './common.schema';
+import { PostEventSchema } from './post-event.schema';
 import { SubmissionSchema } from './submission.schema';
 
 export const PostRecordSchema = sqliteTable('post-record', {
@@ -49,3 +51,24 @@ export const PostRecordSchema = sqliteTable('post-record', {
     .notNull()
     .default(PostRecordState.PENDING),
 });
+
+export const PostRecordRelations = relations(
+  PostRecordSchema,
+  ({ one, many }) => ({
+    submission: one(SubmissionSchema, {
+      fields: [PostRecordSchema.submissionId],
+      references: [SubmissionSchema.id],
+    }),
+    events: many(PostEventSchema),
+    /** The originating NEW PostRecord for this chain (null if this IS the origin) */
+    origin: one(PostRecordSchema, {
+      fields: [PostRecordSchema.originPostRecordId],
+      references: [PostRecordSchema.id],
+      relationName: 'originChain',
+    }),
+    /** All CONTINUE/RETRY PostRecords that chain to this origin */
+    chainedRecords: many(PostRecordSchema, {
+      relationName: 'originChain',
+    }),
+  }),
+);

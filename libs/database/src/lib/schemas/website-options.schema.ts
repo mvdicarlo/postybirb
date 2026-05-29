@@ -1,3 +1,4 @@
+import { relations } from 'drizzle-orm';
 import {
   AnySQLiteColumn,
   integer,
@@ -25,3 +26,17 @@ export const WebsiteOptionsSchema = sqliteTable('website-options', {
   data: text({ mode: 'json' }).notNull().$type<IWebsiteFormFields>(),
   isDefault: integer({ mode: 'boolean' }).notNull(),
 });
+
+export const WebsiteOptionsRelations = relations(
+  WebsiteOptionsSchema,
+  ({ one }) => ({
+    account: one(AccountSchema, {
+      fields: [WebsiteOptionsSchema.accountId],
+      references: [AccountSchema.id],
+    }),
+    submission: one(SubmissionSchema, {
+      fields: [WebsiteOptionsSchema.submissionId],
+      references: [SubmissionSchema.id],
+    }),
+  }),
+);

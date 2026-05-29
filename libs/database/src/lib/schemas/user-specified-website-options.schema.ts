@@ -1,3 +1,4 @@
+import { relations } from 'drizzle-orm';
 import { AnySQLiteColumn, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import { AccountSchema } from './account.schema';
 import { CommonSchema, id, submissionType } from './common.schema';
@@ -14,4 +15,14 @@ export const UserSpecifiedWebsiteOptionsSchema = sqliteTable(
     options: text({ mode: 'json' }).notNull(),
     ...submissionType(),
   },
+);
+
+export const UserSpecifiedWebsiteOptionsRelations = relations(
+  UserSpecifiedWebsiteOptionsSchema,
+  ({ one }) => ({
+    account: one(AccountSchema, {
+      fields: [UserSpecifiedWebsiteOptionsSchema.accountId],
+      references: [AccountSchema.id],
+    }),
+  }),
 );

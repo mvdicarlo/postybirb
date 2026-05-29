@@ -54,13 +54,13 @@ export class PostParsersService {
         ...defaultOptions.data,
         ...websiteOptions.data,
         tags,
-        description: await this.descriptionParser.parse(
+        description: (await this.descriptionParser.parse(
           instance,
           defaultOpts,
           websiteOpts,
           tags,
           title,
-        ),
+        )) as string,
         title,
         contentWarning,
         rating: this.ratingParser.parse(defaultOpts, websiteOpts),

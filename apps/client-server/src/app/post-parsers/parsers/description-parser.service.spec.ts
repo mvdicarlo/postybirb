@@ -845,7 +845,7 @@ describe('DescriptionParserService', () => {
       expect(description).toMatchInlineSnapshot(
         `"<div>Title: <span>My Title</span></div>"`,
       );
-      expect((description.match(/My Title/g) || []).length).toBe(1);
+      expect((description!.match(/My Title/g) || []).length).toBe(1);
     });
 
     it('should not double-insert tags when tagsShortcut is present and insertTags is true', async () => {
@@ -885,7 +885,7 @@ describe('DescriptionParserService', () => {
       expect(description).toMatchInlineSnapshot(
         `"<div>Tags: <span>#tag1 #tag2</span></div>"`,
       );
-      expect((description.match(/#tag1 #tag2/g) || []).length).toBe(1);
+      expect((description!.match(/#tag1 #tag2/g) || []).length).toBe(1);
     });
 
     it('should render all system shortcuts together in plaintext', async () => {

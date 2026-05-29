@@ -359,7 +359,8 @@ export class AccountService
       return null as T;
     }
 
-    const instance = this.findWebsiteInstanceOrThrow(account);
-    return account.withWebsiteInstance(instance) as T;
+    return account.withWebsiteInstance(
+      this.websiteRegistry.findInstance(account),
+    ) as T;
   }
 }

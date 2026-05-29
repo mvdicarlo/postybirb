@@ -53,13 +53,13 @@ export class DescriptionParserService {
     websiteOptions: BaseWebsiteOptions,
     tags: string[],
     title: string,
-  ): Promise<string> {
+  ): Promise<string | undefined> {
     const mergedOptions = websiteOptions.mergeDefaults(defaultOptions);
     const { descriptionType, hidden, maxDescriptionLength } =
       mergedOptions.getFormFieldFor('description');
 
     if (descriptionType === DescriptionType.NONE || hidden) {
-      return '';
+      return undefined;
     }
 
     const settings = await this.settingsService.getDefaultSettings();
