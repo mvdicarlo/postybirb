@@ -5,7 +5,7 @@ import {
     Optional,
 } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { PostQueueRecord, PostQueueRecordRepository, PostRecordRepository } from '@postybirb/database';
+import { PostQueueRecord, PostQueueRecordRepository, PostRecordRepository, SubmissionRepository } from '@postybirb/database';
 import {
     EntityId,
     PostRecordResumeMode,
@@ -18,7 +18,6 @@ import { Mutex } from 'async-mutex';
 import { Cron as CronGenerator } from 'croner';
 import { PostyBirbService } from '../../../common/service/postybirb-service';
 import { PostRecord } from '../../../drizzle/models';
-import { PostyBirbDatabase } from '../../../drizzle/postybirb-database/postybirb-database';
 import { NotificationsService } from '../../../notifications/notifications.service';
 import { SettingsService } from '../../../settings/settings.service';
 import { SubmissionService } from '../../../submission/services/submission.service';
@@ -46,9 +45,7 @@ export class PostQueueService
 
   private readonly postRecordRepository = new PostRecordRepository();
 
-  private readonly submissionRepository = new PostyBirbDatabase(
-    'SubmissionSchema',
-  );
+  private readonly submissionRepository = new SubmissionRepository();
 
   /**
    * Maximum time (in ms) a post can be RUNNING without any activity before being considered stuck.

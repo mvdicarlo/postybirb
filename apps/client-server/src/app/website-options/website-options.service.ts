@@ -5,7 +5,7 @@ import {
     NotFoundException,
     OnModuleInit,
 } from '@nestjs/common';
-import { Account, CustomShortcutRepository, Insert } from '@postybirb/database';
+import { Account, CustomShortcutRepository, Insert, SubmissionRepository } from '@postybirb/database';
 import {
     AccountId,
     Description,
@@ -51,9 +51,7 @@ export class WebsiteOptionsService
   extends PostyBirbService<'WebsiteOptionsSchema'>
   implements OnModuleInit
 {
-  private readonly submissionRepository = new PostyBirbDatabase(
-    'SubmissionSchema',
-  );
+  private readonly submissionRepository = new SubmissionRepository();
 
   constructor(
     @Inject(forwardRef(() => SubmissionService))

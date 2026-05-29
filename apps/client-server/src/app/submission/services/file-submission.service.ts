@@ -4,6 +4,7 @@ import {
   Inject,
   Injectable,
 } from '@nestjs/common';
+import { SubmissionRepository } from '@postybirb/database';
 import {
   EntityId,
   FileSubmission,
@@ -16,7 +17,6 @@ import {
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { PostyBirbService } from '../../common/service/postybirb-service';
-import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
 import { FileService } from '../../file/file.service';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
@@ -42,11 +42,7 @@ export class FileSubmissionService
     @Inject(forwardRef(() => SubmissionService))
     private readonly submissionService: SubmissionService,
   ) {
-    super(
-      new PostyBirbDatabase('SubmissionSchema', {
-        files: true,
-      }),
-    );
+    super(new SubmissionRepository());
   }
 
   async populate(

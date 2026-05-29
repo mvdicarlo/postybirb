@@ -12,6 +12,7 @@ import {
   FileBufferSchema,
   Insert,
   SubmissionFileSchema,
+  SubmissionRepository,
   SubmissionSchema,
   WebsiteOptionsSchema,
 } from '@postybirb/database';
@@ -68,22 +69,7 @@ export class SubmissionService
     @Optional() webSocket: WSGateway,
   ) {
     super(
-      new PostyBirbDatabase('SubmissionSchema', {
-        options: {
-          with: {
-            account: true,
-          },
-        },
-        posts: {
-          with: {
-            events: {
-              account: true,
-            },
-          },
-        },
-        postQueueRecord: true,
-        files: true,
-      }),
+      new SubmissionRepository(),
       webSocket,
     );
     this.repository.subscribe(
