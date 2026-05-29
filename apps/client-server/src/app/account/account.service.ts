@@ -15,8 +15,8 @@ import {
 import { IsTestEnvironment } from '@postybirb/utils/common';
 import { ne } from 'drizzle-orm';
 import { Class } from 'type-fest';
+import { Account, AccountRepository } from '@postybirb/database';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { Account } from '../drizzle/models';
 import { FindOptions } from '../drizzle/postybirb-database/find-options.type';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { UnknownWebsite } from '../websites/website';
@@ -49,7 +49,7 @@ export class AccountService
     private readonly websiteRegistry: WebsiteRegistryService,
     @Optional() webSocket?: WSGateway,
   ) {
-    super('AccountSchema', webSocket);
+    super(new AccountRepository(), webSocket);
     this.repository.subscribe('AccountSchema', () => this.emit());
     this.loginStatePoller = new LoginStatePoller(
       this.websiteRegistry,
@@ -96,7 +96,7 @@ export class AccountService
 
   private async deleteUnregisteredAccounts() {
     const accounts = await this.repository.find({
-      where: ne(this.repository.schemaEntity.id, NULL_ACCOUNT_ID),
+      where: ne(this.table.id, NULL_ACCOUNT_ID),
     });
     const unregisteredAccounts = accounts.filter(
       (account) => !this.websiteRegistry.canCreate(account.website),
@@ -132,7 +132,7 @@ export class AccountService
    */
   private async initWebsiteRegistry(): Promise<void> {
     const accounts = await this.repository.find({
-      where: ne(this.repository.schemaEntity.id, NULL_ACCOUNT_ID),
+      where: ne(this.table.id, NULL_ACCOUNT_ID),
     });
     await Promise.all(
       accounts.map((account) => this.websiteRegistry.create(account)),
@@ -279,13 +279,12 @@ export class AccountService
   }
 
   public async findAll() {
-    return this.repository
-      .find({
-        where: ne(this.repository.schemaEntity.id, NULL_ACCOUNT_ID),
-      })
-      .then((accounts) =>
-        accounts.map((account) => this.injectWebsiteInstance(account)),
-      );
+    const accounts = await this.repository.find({
+      where: ne(this.table.id, NULL_ACCOUNT_ID),
+    });
+    return accounts.map(
+      (account) => this.injectWebsiteInstance(account) as Account,
+    );
   }
 
   async update(id: AccountId, update: UpdateAccountDto) {

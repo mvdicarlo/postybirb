@@ -11,7 +11,8 @@ import {
   SubmissionType,
   ValidationResult,
 } from '@postybirb/types';
-import { Account, Submission, WebsiteOptions } from '../drizzle/models';
+import { Account } from '@postybirb/database';
+import { Submission, WebsiteOptions } from '../drizzle/models';
 import { FileConverterService } from '../file-converter/file-converter.service';
 import { FileService } from '../file/file.service';
 import { PostParsersService } from '../post-parsers/post-parsers.service';

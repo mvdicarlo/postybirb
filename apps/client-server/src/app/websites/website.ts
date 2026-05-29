@@ -8,7 +8,7 @@ import {
   SubmissionType,
 } from '@postybirb/types';
 import { Mutex } from 'async-mutex';
-import { Account } from '../drizzle/models';
+import { Account } from '@postybirb/database';
 import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
 import { SubmissionValidator } from './commons/validator';
 import { WebsiteDecoratorProps } from './decorators/website-decorator-props';

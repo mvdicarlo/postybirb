@@ -16,8 +16,8 @@ import {
 } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/common';
 import { Class } from 'type-fest';
+import { Account } from '@postybirb/database';
 import { WEBSITE_IMPLEMENTATIONS } from '../constants';
-import { Account } from '../drizzle/models';
 import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { validateWebsiteDecoratorProps } from './decorators/website-decorator-props';

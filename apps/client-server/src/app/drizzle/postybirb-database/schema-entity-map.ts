@@ -1,6 +1,5 @@
-import { SchemaKey } from '@postybirb/database';
+import { Account, SchemaKey } from '@postybirb/database';
 import {
-    Account,
     DirectoryWatcher,
     FileBuffer,
     PostEvent,
