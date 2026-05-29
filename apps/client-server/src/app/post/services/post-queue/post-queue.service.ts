@@ -5,6 +5,7 @@ import {
     Optional,
 } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { PostQueueRecord, PostQueueRecordRepository } from '@postybirb/database';
 import {
     EntityId,
     PostRecordResumeMode,
@@ -16,7 +17,7 @@ import { IsTestEnvironment } from '@postybirb/utils/common';
 import { Mutex } from 'async-mutex';
 import { Cron as CronGenerator } from 'croner';
 import { PostyBirbService } from '../../../common/service/postybirb-service';
-import { PostQueueRecord, PostRecord } from '../../../drizzle/models';
+import { PostRecord } from '../../../drizzle/models';
 import { PostyBirbDatabase } from '../../../drizzle/postybirb-database/postybirb-database';
 import { NotificationsService } from '../../../notifications/notifications.service';
 import { SettingsService } from '../../../settings/settings.service';
@@ -65,7 +66,7 @@ export class PostQueueService
     private readonly websiteRegistryService: WebsiteRegistryService,
     @Optional() webSocket?: WSGateway,
   ) {
-    super('PostQueueRecordSchema', webSocket);
+    super(new PostQueueRecordRepository(), webSocket);
   }
 
   /**
