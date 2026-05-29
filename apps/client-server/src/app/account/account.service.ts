@@ -17,7 +17,6 @@ import { IsTestEnvironment } from '@postybirb/utils/common';
 import { ne } from 'drizzle-orm';
 import { Class } from 'type-fest';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { FindOptions } from '../drizzle/postybirb-database/find-options.type';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { UnknownWebsite } from '../websites/website';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
@@ -272,7 +271,7 @@ export class AccountService
     return account.withWebsiteInstance(instance);
   }
 
-  public findById(id: AccountId, options?: FindOptions) {
+  public findById(id: AccountId, options?: { failOnMissing?: boolean }) {
     return this.repository
       .findById(id, options)
       .then((account) => this.injectWebsiteInstance(account));
