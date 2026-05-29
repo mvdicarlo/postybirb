@@ -1,7 +1,7 @@
 import { SubmissionType } from '@postybirb/types';
 import { AccountRepository } from './account.repository';
-import { UserSpecifiedWebsiteOptionsRepository } from './user-specified-website-options.repository';
 import { createTestRepositories } from './base/test-utils';
+import { UserSpecifiedWebsiteOptionsRepository } from './user-specified-website-options.repository';
 
 describe('UserSpecifiedWebsiteOptionsRepository', () => {
   const repos = createTestRepositories({

@@ -1,15 +1,15 @@
-import {
-  ScheduleType,
-  SubmissionType,
-} from '@postybirb/types';
 import type {
-  ISubmissionMetadata,
-  SubmissionFileMetadata,
+    ISubmissionMetadata,
+    SubmissionFileMetadata,
 } from '@postybirb/types';
+import {
+    ScheduleType,
+    SubmissionType,
+} from '@postybirb/types';
+import { createTestRepositories } from './base/test-utils';
 import { FileBufferRepository } from './file-buffer.repository';
 import { SubmissionFileRepository } from './submission-file.repository';
 import { SubmissionRepository } from './submission.repository';
-import { createTestRepositories } from './base/test-utils';
 
 describe('FileBufferRepository', () => {
   const repos = createTestRepositories({

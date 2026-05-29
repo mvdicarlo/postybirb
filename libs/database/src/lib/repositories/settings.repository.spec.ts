@@ -1,6 +1,6 @@
 import { SettingsConstants } from '@postybirb/types';
-import { SettingsRepository } from './settings.repository';
 import { createTestRepository } from './base/test-utils';
+import { SettingsRepository } from './settings.repository';
 
 describe('SettingsRepository', () => {
   const repo = createTestRepository(SettingsRepository);

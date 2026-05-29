@@ -1,19 +1,21 @@
-import {
-  DirectoryWatcherImportAction,
-  PostEventType,
-  PostRecordResumeMode,
-  PostRecordState,
-  ScheduleType,
-  SettingsConstants,
-  SubmissionType,
-} from '@postybirb/types';
 import type {
-  ISubmissionMetadata,
-  IWebsiteFormFields,
-  SubmissionFileMetadata,
+    ISubmissionMetadata,
+    IWebsiteFormFields,
+    SubmissionFileMetadata,
+} from '@postybirb/types';
+import {
+    DirectoryWatcherImportAction,
+    PostEventType,
+    PostRecordResumeMode,
+    PostRecordState,
+    ScheduleType,
+    SettingsConstants,
+    SubmissionType,
 } from '@postybirb/types';
 import { saveFromEntity } from '../save-from-entity';
 import { AccountRepository } from './account.repository';
+import { RepositoryRegistry } from './base/repository-registry';
+import { createTestRepositories } from './base/test-utils';
 import { CustomShortcutRepository } from './custom-shortcut.repository';
 import { DirectoryWatcherRepository } from './directory-watcher.repository';
 import { FileBufferRepository } from './file-buffer.repository';
@@ -30,8 +32,6 @@ import { UserConverterRepository } from './user-converter.repository';
 import { UserSpecifiedWebsiteOptionsRepository } from './user-specified-website-options.repository';
 import { WebsiteDataRepository } from './website-data.repository';
 import { WebsiteOptionsRepository } from './website-options.repository';
-import { RepositoryRegistry } from './base/repository-registry';
-import { createTestRepositories } from './base/test-utils';
 
 describe('RepositoryRegistry + saveFromEntity integration', () => {
   const ctors = {

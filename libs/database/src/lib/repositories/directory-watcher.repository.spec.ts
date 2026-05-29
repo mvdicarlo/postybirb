@@ -1,12 +1,12 @@
-import {
-  DirectoryWatcherImportAction,
-  ScheduleType,
-  SubmissionType,
-} from '@postybirb/types';
 import type { ISubmissionMetadata } from '@postybirb/types';
+import {
+    DirectoryWatcherImportAction,
+    ScheduleType,
+    SubmissionType,
+} from '@postybirb/types';
+import { createTestRepositories } from './base/test-utils';
 import { DirectoryWatcherRepository } from './directory-watcher.repository';
 import { SubmissionRepository } from './submission.repository';
-import { createTestRepositories } from './base/test-utils';
 
 describe('DirectoryWatcherRepository', () => {
   const repos = createTestRepositories({

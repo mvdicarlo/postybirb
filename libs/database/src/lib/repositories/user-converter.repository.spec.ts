@@ -1,5 +1,5 @@
-import { UserConverterRepository } from './user-converter.repository';
 import { createTestRepository } from './base/test-utils';
+import { UserConverterRepository } from './user-converter.repository';
 
 describe('UserConverterRepository', () => {
   const repo = createTestRepository(UserConverterRepository);

@@ -1,8 +1,8 @@
 import { AccountRepository } from './account.repository';
-import { WebsiteDataRepository } from './website-data.repository';
 import { SubscriberBus } from './base/subscriber-bus';
 import { createTestRepositories } from './base/test-utils';
 import type { Action, SubscriberCb } from './base/types';
+import { WebsiteDataRepository } from './website-data.repository';
 
 describe('AccountRepository', () => {
   const repos = createTestRepositories({

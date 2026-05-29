@@ -1,6 +1,6 @@
 import { AccountRepository } from './account.repository';
-import { WebsiteDataRepository } from './website-data.repository';
 import { createTestRepositories } from './base/test-utils';
+import { WebsiteDataRepository } from './website-data.repository';
 
 describe('WebsiteDataRepository', () => {
   const repos = createTestRepositories({

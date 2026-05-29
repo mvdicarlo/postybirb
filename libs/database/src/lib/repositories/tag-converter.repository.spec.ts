@@ -1,5 +1,5 @@
-import { TagConverterRepository } from './tag-converter.repository';
 import { createTestRepository } from './base/test-utils';
+import { TagConverterRepository } from './tag-converter.repository';
 
 describe('TagConverterRepository', () => {
   const repo = createTestRepository(TagConverterRepository);

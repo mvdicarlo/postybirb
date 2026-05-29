@@ -1,5 +1,5 @@
-import { TagGroupRepository } from './tag-group.repository';
 import { createTestRepository } from './base/test-utils';
+import { TagGroupRepository } from './tag-group.repository';
 
 describe('TagGroupRepository', () => {
   const repo = createTestRepository(TagGroupRepository);

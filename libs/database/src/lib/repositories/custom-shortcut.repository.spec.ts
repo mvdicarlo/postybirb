@@ -1,7 +1,7 @@
-import { CustomShortcutRepository } from './custom-shortcut.repository';
 import { SubscriberBus } from './base/subscriber-bus';
 import { createTestRepository } from './base/test-utils';
 import type { Action, SubscriberCb } from './base/types';
+import { CustomShortcutRepository } from './custom-shortcut.repository';
 
 describe('CustomShortcutRepository', () => {
   const repo = createTestRepository(CustomShortcutRepository);

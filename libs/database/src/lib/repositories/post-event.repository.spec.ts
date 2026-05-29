@@ -1,16 +1,16 @@
-import {
-  PostEventType,
-  PostRecordResumeMode,
-  PostRecordState,
-  ScheduleType,
-  SubmissionType,
-} from '@postybirb/types';
 import type { ISubmissionMetadata } from '@postybirb/types';
+import {
+    PostEventType,
+    PostRecordResumeMode,
+    PostRecordState,
+    ScheduleType,
+    SubmissionType,
+} from '@postybirb/types';
 import { AccountRepository } from './account.repository';
+import { createTestRepositories } from './base/test-utils';
 import { PostEventRepository } from './post-event.repository';
 import { PostRecordRepository } from './post-record.repository';
 import { SubmissionRepository } from './submission.repository';
-import { createTestRepositories } from './base/test-utils';
 
 describe('PostEventRepository', () => {
   const repos = createTestRepositories({

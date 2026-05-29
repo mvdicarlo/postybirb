@@ -1,12 +1,12 @@
-import { ScheduleType, SubmissionType } from '@postybirb/types';
 import type {
-  ISubmissionMetadata,
-  IWebsiteFormFields,
+    ISubmissionMetadata,
+    IWebsiteFormFields,
 } from '@postybirb/types';
+import { ScheduleType, SubmissionType } from '@postybirb/types';
 import { AccountRepository } from './account.repository';
+import { createTestRepositories } from './base/test-utils';
 import { SubmissionRepository } from './submission.repository';
 import { WebsiteOptionsRepository } from './website-options.repository';
-import { createTestRepositories } from './base/test-utils';
 
 describe('WebsiteOptionsRepository', () => {
   const repos = createTestRepositories({

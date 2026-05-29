@@ -1,7 +1,7 @@
-import { NotificationRepository } from './notification.repository';
 import { SubscriberBus } from './base/subscriber-bus';
 import { createTestRepository } from './base/test-utils';
 import type { Action, SubscriberCb } from './base/types';
+import { NotificationRepository } from './notification.repository';
 
 describe('NotificationRepository', () => {
   const repo = createTestRepository(NotificationRepository);
