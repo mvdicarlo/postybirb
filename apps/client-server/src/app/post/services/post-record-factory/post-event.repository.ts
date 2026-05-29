@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { Insert, PostEvent, PostEventRepository as LibPostEventRepository } from '@postybirb/database';
+import { Insert, PostEventRepository as LibPostEventRepository, PostEvent } from '@postybirb/database';
 import {
-  AccountId,
-  EntityId,
-  PostEventType,
+    AccountId,
+    EntityId,
+    PostEventType,
 } from '@postybirb/types';
 
 /**

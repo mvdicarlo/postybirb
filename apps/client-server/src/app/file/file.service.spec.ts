@@ -10,6 +10,7 @@ import { SubmissionFile } from '../drizzle/models';
 import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
 import { FileConverterService } from '../file-converter/file-converter.service';
 import { FormGeneratorService } from '../form-generator/form-generator.service';
+import { SharpInstanceManager } from '../image-processing/sharp-instance-manager';
 import { noopPlatformProvider } from '../platform/testing/noop-platform-providers';
 import { DescriptionParserService } from '../post-parsers/parsers/description-parser.service';
 import { TagParserService } from '../post-parsers/parsers/tag-parser.service';
@@ -31,7 +32,6 @@ import { FileService } from './file.service';
 import { MulterFileInfo } from './models/multer-file-info';
 import { CreateFileService } from './services/create-file.service';
 import { UpdateFileService } from './services/update-file.service';
-import { SharpInstanceManager } from '../image-processing/sharp-instance-manager';
 
 describe('FileService', () => {
   let testFile: Buffer | null = null;

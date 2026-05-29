@@ -1,40 +1,39 @@
 /* eslint-disable no-param-reassign */
 import {
-  BadRequestException,
-  forwardRef,
-  Inject,
-  Injectable,
-  NotFoundException,
-  OnModuleInit,
-  Optional,
+    BadRequestException,
+    forwardRef,
+    Inject,
+    Injectable,
+    NotFoundException,
+    OnModuleInit,
+    Optional,
 } from '@nestjs/common';
 import {
-  FileBufferSchema,
-  Insert,
-  SubmissionFileSchema,
-  SubmissionRepository,
-  SubmissionSchema,
-  WebsiteOptionsSchema,
+    FileBufferSchema,
+    Insert,
+    SubmissionFileSchema,
+    SubmissionRepository,
+    SubmissionSchema,
+    WebsiteOptionsSchema,
 } from '@postybirb/database';
 import { SUBMISSION_UPDATES } from '@postybirb/socket-events';
 import {
-  FileSubmission,
-  FileSubmissionMetadata,
-  ISubmissionDto,
-  ISubmissionMetadata,
-  MessageSubmission,
-  NULL_ACCOUNT_ID,
-  ScheduleType,
-  SubmissionId,
-  SubmissionMetadataType,
-  SubmissionType,
+    FileSubmission,
+    FileSubmissionMetadata,
+    ISubmissionDto,
+    ISubmissionMetadata,
+    MessageSubmission,
+    NULL_ACCOUNT_ID,
+    ScheduleType,
+    SubmissionId,
+    SubmissionMetadataType,
+    SubmissionType,
 } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/common';
 import { eq } from 'drizzle-orm';
 import * as path from 'path';
 import { PostyBirbService } from '../../common/service/postybirb-service';
 import { FileBuffer, Submission, WebsiteOptions } from '../../drizzle/models';
-import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
 import { withTransactionContext } from '../../drizzle/transaction-context';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { WSGateway } from '../../web-socket/web-socket-gateway';

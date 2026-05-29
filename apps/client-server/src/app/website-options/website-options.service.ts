@@ -28,7 +28,6 @@ import { AccountService } from '../account/account.service';
 import { PostyBirbService } from '../common/service/postybirb-service';
 
 import { Submission } from '../drizzle/models';
-import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
 import { FormGeneratorService } from '../form-generator/form-generator.service';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
 import { SubmissionService } from '../submission/services/submission.service';

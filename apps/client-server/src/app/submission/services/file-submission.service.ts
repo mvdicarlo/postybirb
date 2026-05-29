@@ -1,19 +1,19 @@
 import {
-  BadRequestException,
-  forwardRef,
-  Inject,
-  Injectable,
+    BadRequestException,
+    forwardRef,
+    Inject,
+    Injectable,
 } from '@nestjs/common';
 import { SubmissionRepository } from '@postybirb/database';
 import {
-  EntityId,
-  FileSubmission,
-  FileType,
-  isFileSubmission,
-  ISubmission,
-  SubmissionFileMetadata,
-  SubmissionId,
-  SubmissionType,
+    EntityId,
+    FileSubmission,
+    FileType,
+    isFileSubmission,
+    ISubmission,
+    SubmissionFileMetadata,
+    SubmissionId,
+    SubmissionType,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { PostyBirbService } from '../../common/service/postybirb-service';

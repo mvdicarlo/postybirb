@@ -1,18 +1,18 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase, PostRecordRepository } from '@postybirb/database';
 import {
-  AccountId,
-  DefaultDescription,
-  PostRecordState,
-  SubmissionId,
-  SubmissionRating,
-  SubmissionType,
+    AccountId,
+    DefaultDescription,
+    PostRecordState,
+    SubmissionId,
+    SubmissionRating,
+    SubmissionType,
 } from '@postybirb/types';
 import { AccountModule } from '../../../account/account.module';
 import { AccountService } from '../../../account/account.service';
 import { CreateAccountDto } from '../../../account/dtos/create-account.dto';
-import { SettingsService } from '../../../settings/settings.service';
 import { TestPlatformModule } from '../../../platform/testing/test-platform.module';
+import { SettingsService } from '../../../settings/settings.service';
 import { CreateSubmissionDto } from '../../../submission/dtos/create-submission.dto';
 import { SubmissionService } from '../../../submission/services/submission.service';
 import { SubmissionModule } from '../../../submission/submission.module';

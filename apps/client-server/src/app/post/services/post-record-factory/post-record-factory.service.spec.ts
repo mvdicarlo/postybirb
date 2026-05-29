@@ -1,17 +1,17 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase, PostEvent, PostRecordRepository } from '@postybirb/database';
 import {
-  EntityId,
-  PostEventType,
-  PostRecordResumeMode,
-  PostRecordState,
-  SubmissionType,
+    EntityId,
+    PostEventType,
+    PostRecordResumeMode,
+    PostRecordState,
+    SubmissionType,
 } from '@postybirb/types';
 import { AccountModule } from '../../../account/account.module';
 import { AccountService } from '../../../account/account.service';
 import { PostRecord } from '../../../drizzle/models';
-import { PostParsersModule } from '../../../post-parsers/post-parsers.module';
 import { TestPlatformModule } from '../../../platform/testing/test-platform.module';
+import { PostParsersModule } from '../../../post-parsers/post-parsers.module';
 import { CreateSubmissionDto } from '../../../submission/dtos/create-submission.dto';
 import { SubmissionService } from '../../../submission/services/submission.service';
 import { SubmissionModule } from '../../../submission/submission.module';

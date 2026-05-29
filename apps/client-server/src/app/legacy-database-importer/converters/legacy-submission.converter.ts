@@ -3,12 +3,12 @@
 import { SubmissionFileRepository, WebsiteOptionsRepository } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import {
-  DefaultSubmissionFileMetadata,
-  ISubmissionMetadata,
-  ISubmissionScheduleInfo,
-  NULL_ACCOUNT_ID,
-  ScheduleType,
-  SubmissionType,
+    DefaultSubmissionFileMetadata,
+    ISubmissionMetadata,
+    ISubmissionScheduleInfo,
+    NULL_ACCOUNT_ID,
+    ScheduleType,
+    SubmissionType,
 } from '@postybirb/types';
 import { createHash } from 'crypto';
 import { existsSync, readFileSync } from 'fs';
