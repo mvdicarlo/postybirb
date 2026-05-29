@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { clearDatabase } from '@postybirb/database';
+import { clearDatabase, SubmissionFileRepository } from '@postybirb/database';
 import { PostyBirbDirectories, writeSync } from '@postybirb/fs';
 import { FileSubmission, SubmissionType } from '@postybirb/types';
 import { readFileSync } from 'fs';
@@ -257,9 +257,7 @@ describe('FileService', () => {
     const fileInfo = createMulterData(path[0]);
 
     // Get initial count of entities
-    const initialFiles = await new PostyBirbDatabase(
-      'SubmissionFileSchema',
-    ).findAll();
+    const initialFiles = await new SubmissionFileRepository().findAll();
     const initialBuffers = await fileBufferRepository.findAll();
     const initialFileCount = initialFiles.length;
     const initialBufferCount = initialBuffers.length;
@@ -285,9 +283,7 @@ describe('FileService', () => {
     ).rejects.toThrow('Simulated error during buffer creation');
 
     // Verify that entities were cleaned up
-    const finalFiles = await new PostyBirbDatabase(
-      'SubmissionFileSchema',
-    ).findAll();
+    const finalFiles = await new SubmissionFileRepository().findAll();
     const finalBuffers = await fileBufferRepository.findAll();
 
     expect(finalFiles.length).toBe(initialFileCount);

@@ -1,6 +1,5 @@
-import { Account, CustomShortcut, DirectoryWatcher, FileBuffer, Notification, PostEvent, PostQueueRecord, PostRecord, SchemaKey, Settings, Submission } from '@postybirb/database';
+import { Account, CustomShortcut, DirectoryWatcher, FileBuffer, Notification, PostEvent, PostQueueRecord, PostRecord, SchemaKey, Settings, Submission, SubmissionFile } from '@postybirb/database';
 import {
-    SubmissionFile,
     TagConverter,
     TagGroup,
     UserConverter,

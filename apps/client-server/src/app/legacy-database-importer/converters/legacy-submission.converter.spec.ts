@@ -1,4 +1,4 @@
-import { clearDatabase } from '@postybirb/database';
+import { clearDatabase, SubmissionFileRepository } from '@postybirb/database';
 import { ensureDirSync, PostyBirbDirectories, writeSync } from '@postybirb/fs';
 import { NULL_ACCOUNT_ID, NullAccount, SubmissionRating, SubmissionType } from '@postybirb/types';
 import { copyFileSync, readFileSync } from 'fs';
@@ -13,7 +13,7 @@ describe('LegacySubmissionConverter', () => {
   let testDataPath: string;
   let submissionRepository: PostyBirbDatabase<'SubmissionSchema'>;
   let websiteOptionsRepository: PostyBirbDatabase<'WebsiteOptionsSchema'>;
-  let submissionFileRepository: PostyBirbDatabase<'SubmissionFileSchema'>;
+  let submissionFileRepository: SubmissionFileRepository;
   let fileBufferRepository: PostyBirbDatabase<'FileBufferSchema'>;
   let accountRepository: PostyBirbDatabase<'AccountSchema'>;
   const ts = Date.now();
@@ -112,7 +112,7 @@ describe('LegacySubmissionConverter', () => {
     templateConverter = new LegacySubmissionConverter(testDataPath, true);
     submissionRepository = new PostyBirbDatabase('SubmissionSchema');
     websiteOptionsRepository = new PostyBirbDatabase('WebsiteOptionsSchema');
-    submissionFileRepository = new PostyBirbDatabase('SubmissionFileSchema');
+    submissionFileRepository = new SubmissionFileRepository();
     fileBufferRepository = new PostyBirbDatabase('FileBufferSchema');
     accountRepository = new PostyBirbDatabase('AccountSchema');
 

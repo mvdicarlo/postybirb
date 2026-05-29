@@ -1,6 +1,6 @@
 import * as rtf from '@iarna/rtf-to-html';
 import { Injectable } from '@nestjs/common';
-import { Insert, Select } from '@postybirb/database';
+import { Insert, Select, SubmissionFileRepository } from '@postybirb/database';
 import { removeFile } from '@postybirb/fs';
 import { Logger } from '@postybirb/logger';
 import {
@@ -44,9 +44,7 @@ export class CreateFileService {
     'FileBufferSchema',
   );
 
-  private readonly fileRepository = new PostyBirbDatabase(
-    'SubmissionFileSchema',
-  );
+  private readonly fileRepository = new SubmissionFileRepository();
 
   constructor(
     private readonly sharpInstanceManager: SharpInstanceManager,
@@ -96,9 +94,9 @@ export class CreateFileService {
           );
           await ctx
             .getDb()
-            .update(this.fileRepository.schemaEntity)
+            .update(this.fileRepository.table)
             .set({ primaryFileId: primaryFile.id })
-            .where(eq(this.fileRepository.schemaEntity.id, entity.id));
+            .where(eq(this.fileRepository.table.id, entity.id));
           this.logger
             .withMetadata({ id: entity.id })
             .info('SubmissionFile Created');
@@ -179,12 +177,12 @@ export class CreateFileService {
     );
     await ctx
       .getDb()
-      .update(this.fileRepository.schemaEntity)
+      .update(this.fileRepository.table)
       .set({
         altFileId: altFile.id,
         hasAltFile: true,
       })
-      .where(eq(this.fileRepository.schemaEntity.id, entity.id));
+      .where(eq(this.fileRepository.table.id, entity.id));
     this.logger.withMetadata({ id: altFile.id }).info('Alt File Created');
   }
 
@@ -219,7 +217,7 @@ export class CreateFileService {
       SubmissionFile,
       await ctx
         .getDb()
-        .insert(this.fileRepository.schemaEntity)
+        .insert(this.fileRepository.table)
         .values(submissionFile)
         .returning(),
     );
@@ -251,7 +249,7 @@ export class CreateFileService {
       file,
       buf,
     );
-    const update: Select<typeof this.fileRepository.schemaEntity> = {
+    const update: Select<typeof this.fileRepository.table> = {
       width: meta.width ?? 0,
       height: meta.height ?? 0,
       hasThumbnail: true,
@@ -271,9 +269,9 @@ export class CreateFileService {
       SubmissionFile,
       await ctx
         .getDb()
-        .update(this.fileRepository.schemaEntity)
+        .update(this.fileRepository.table)
         .set(update)
-        .where(eq(this.fileRepository.schemaEntity.id, entity.id))
+        .where(eq(this.fileRepository.table.id, entity.id))
         .returning(),
     )[0];
   }
