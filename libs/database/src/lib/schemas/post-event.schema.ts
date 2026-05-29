@@ -1,5 +1,9 @@
-import { relations } from 'drizzle-orm';
-import { index, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import {
+  AnySQLiteColumn,
+  index,
+  sqliteTable,
+  text,
+} from 'drizzle-orm/sqlite-core';
 import { v4 } from 'uuid';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import {
@@ -30,10 +34,12 @@ export const PostEventSchema = sqliteTable(
     // Parent reference
     postRecordId: id()
       .notNull()
-      .references(() => PostRecordSchema.id, { onDelete: 'cascade' }),
+      .references((): AnySQLiteColumn => PostRecordSchema.id, {
+        onDelete: 'cascade',
+      }),
 
     // Account this event relates to
-    accountId: id().references(() => AccountSchema.id, {
+    accountId: id().references((): AnySQLiteColumn => AccountSchema.id, {
       onDelete: 'set null',
     }),
 
@@ -73,14 +79,3 @@ export const PostEventSchema = sqliteTable(
     ),
   ],
 );
-
-export const PostEventRelations = relations(PostEventSchema, ({ one }) => ({
-  postRecord: one(PostRecordSchema, {
-    fields: [PostEventSchema.postRecordId],
-    references: [PostRecordSchema.id],
-  }),
-  account: one(AccountSchema, {
-    fields: [PostEventSchema.accountId],
-    references: [AccountSchema.id],
-  }),
-}));

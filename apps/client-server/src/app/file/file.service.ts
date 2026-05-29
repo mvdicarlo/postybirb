@@ -129,7 +129,10 @@ export class FileService {
     return `${nameParts.join('_')}.${ext}`;
   }
 
-  private async getFile(path: string, taskOrigin: TaskOrigin): Promise<Buffer> {
+  private async getFile(
+    path: string,
+    taskOrigin: TaskOrigin | undefined,
+  ): Promise<Buffer> {
     switch (taskOrigin) {
       case 'directory-watcher':
         return readFile(path);

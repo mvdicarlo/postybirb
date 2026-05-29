@@ -43,11 +43,17 @@ export interface PostyBirbLogger {
   /**
    * Specifies metadata to include with the log message
    */
-  withMetadata(metadata: Record<string, unknown>): PostyBirbLogger;
+  withMetadata(metadata: unknown): PostyBirbLogger;
   /**
    * Specifies an Error to include with the log message
    */
   withError(error: unknown): PostyBirbLogger;
+
+  /**
+   * Appends context data which will be included with
+   * every log entry.
+   */
+  withContext(context: Record<string, unknown>): PostyBirbLogger;
 }
 
 let log: LogLayerLogger;
@@ -56,10 +62,10 @@ export function Logger(prefix?: string): PostyBirbLogger {
   initializeLogger();
 
   if (prefix) {
-    return log.withPrefix(`[${prefix}]`);
+    return log.withPrefix(`[${prefix}]`) as unknown as PostyBirbLogger;
   }
 
-  return log.child();
+  return log.child() as unknown as PostyBirbLogger;
 }
 
 export function initializeLogger(): void {

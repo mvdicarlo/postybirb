@@ -61,7 +61,10 @@ export default class Discord
       return this.loginState.setLogin(true, this.account.name);
     }
 
-    if (data.serverLevel > 0) {
+    if (
+      this.decoratedProps.fileOptions?.acceptedFileSizes &&
+      data.serverLevel > 0
+    ) {
       // NOTE: Not entirely sure if this is a safe thing to do, but it does
       // avoid having to create additional custom validation logic.
       if (data.serverLevel === 2) {
@@ -122,7 +125,7 @@ export default class Discord
             ),
           }
         : {}),
-      attachments: [],
+      attachments: [] as object[],
     };
 
     const formData: {

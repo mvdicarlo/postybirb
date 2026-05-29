@@ -173,9 +173,7 @@ export default class Pixiv
           ),
         );
     } catch (error) {
-      return PostResponse.fromWebsite(this).withException(
-        error instanceof Error ? error : new Error(JSON.stringify(error)),
-      );
+      return PostResponse.fromWebsite(this).withException(error);
     }
   }
 

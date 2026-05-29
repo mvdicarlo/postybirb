@@ -211,7 +211,7 @@ export class PostyBirbDatabase<
     const record = await this.db.query[this.schemaKey].findFirst({
       where: eq(this.schemaEntity.id, id),
       with: {
-        ...(load ?? this.load ?? {}),
+        ...(load ?? (this.load as object) ?? {}),
       },
     });
 
@@ -280,7 +280,7 @@ export class PostyBirbDatabase<
   public async findAll(): Promise<TEntityClass[]> {
     const records: object[] = await this.db.query[this.schemaKey].findMany({
       with: {
-        ...(this.load ?? {}),
+        ...((this.load as object) ?? {}),
       },
     });
     return this.classConverter(records);
@@ -294,7 +294,7 @@ export class PostyBirbDatabase<
 
     await this.db
       .update(this.schemaEntity)
-      .set(set)
+      .set(set as object)
       .where(eq(this.schemaEntity.id, id));
     this.notify([id], 'update');
     return this.findById(id, { failOnMissing: true });

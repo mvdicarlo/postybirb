@@ -1,15 +1,16 @@
 import { relations } from 'drizzle-orm';
 import {
-    AccountSchema,
-    DirectoryWatcherSchema,
-    FileBufferSchema,
-    PostQueueRecordSchema,
-    PostRecordSchema,
-    SubmissionFileSchema,
-    SubmissionSchema,
-    UserSpecifiedWebsiteOptionsSchema,
-    WebsiteDataSchema,
-    WebsiteOptionsSchema,
+  AccountSchema,
+  DirectoryWatcherSchema,
+  FileBufferSchema,
+  PostEventSchema,
+  PostQueueRecordSchema,
+  PostRecordSchema,
+  SubmissionFileSchema,
+  SubmissionSchema,
+  UserSpecifiedWebsiteOptionsSchema,
+  WebsiteDataSchema,
+  WebsiteOptionsSchema,
 } from '../schemas';
 
 export const AccountRelations = relations(AccountSchema, ({ one, many }) => ({
@@ -51,8 +52,30 @@ export const PostRecordRelations = relations(
       fields: [PostRecordSchema.submissionId],
       references: [SubmissionSchema.id],
     }),
+    events: many(PostEventSchema),
+    /** The originating NEW PostRecord for this chain (null if this IS the origin) */
+    origin: one(PostRecordSchema, {
+      fields: [PostRecordSchema.originPostRecordId],
+      references: [PostRecordSchema.id],
+      relationName: 'originChain',
+    }),
+    /** All CONTINUE/RETRY PostRecords that chain to this origin */
+    chainedRecords: many(PostRecordSchema, {
+      relationName: 'originChain',
+    }),
   }),
 );
+
+export const PostEventRelations = relations(PostEventSchema, ({ one }) => ({
+  postRecord: one(PostRecordSchema, {
+    fields: [PostEventSchema.postRecordId],
+    references: [PostRecordSchema.id],
+  }),
+  account: one(AccountSchema, {
+    fields: [PostEventSchema.accountId],
+    references: [AccountSchema.id],
+  }),
+}));
 
 export const SubmissionFileRelations = relations(
   SubmissionFileSchema,

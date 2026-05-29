@@ -1,4 +1,5 @@
 import { HttpResponse } from '@postybirb/http/types';
+import { toError } from '@postybirb/utils/common';
 
 export type IPostResponse = {
   /**
@@ -78,10 +79,11 @@ export class PostResponse implements IPostResponse {
     }
   }
 
-  withException(exception: Error) {
-    this.exception = exception;
+  withException(exception: unknown) {
+    this.exception = toError(exception);
+
     if (!this.message) {
-      this.message = exception.message;
+      this.message = this.exception.message;
     }
     return this;
   }

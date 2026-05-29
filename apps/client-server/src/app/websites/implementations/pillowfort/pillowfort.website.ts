@@ -1,4 +1,3 @@
-
 import {
   ILoginState,
   ImageResizeProps,
@@ -56,7 +55,10 @@ export default class Pillowfort
         partition: this.accountId,
       });
 
-      await this.platform.browser.getLocalStorage(this.accountId, this.BASE_URL);
+      await this.platform.browser.getLocalStorage(
+        this.accountId,
+        this.BASE_URL,
+      );
 
       if (res.body.includes('/signout')) {
         const html = parse(res.body);
@@ -78,8 +80,7 @@ export default class Pillowfort
     return new PillowfortFileSubmission();
   }
 
-  calculateImageResize(): ImageResizeProps {
-    // PillowFort max file size is 2MB, we'll use default resizing logic
+  calculateImageResize(): ImageResizeProps | undefined {
     return undefined;
   }
 
@@ -90,9 +91,12 @@ export default class Pillowfort
   ): Promise<PostResponse> {
     try {
       // Get form page and CSRF token
-      const page = await this.platform.http.get<string>(`${this.BASE_URL}/posts/new`, {
-        partition: this.accountId,
-      });
+      const page = await this.platform.http.get<string>(
+        `${this.BASE_URL}/posts/new`,
+        {
+          partition: this.accountId,
+        },
+      );
 
       // Extract CSRF token
       const html = parse(page.body);
@@ -186,9 +190,7 @@ export default class Pillowfort
         .withAdditionalInfo(post.body);
     } catch (e) {
       this.logger.error('Failed to post submission', e);
-      return PostResponse.fromWebsite(this)
-        .withMessage(e.message)
-        .withException(e);
+      return PostResponse.fromWebsite(this).withException(e);
     }
   }
 
@@ -204,9 +206,12 @@ export default class Pillowfort
   ): Promise<PostResponse> {
     try {
       // Get form page and CSRF token
-      const page = await this.platform.http.get<string>(`${this.BASE_URL}/posts/new`, {
-        partition: this.accountId,
-      });
+      const page = await this.platform.http.get<string>(
+        `${this.BASE_URL}/posts/new`,
+        {
+          partition: this.accountId,
+        },
+      );
 
       // Extract CSRF token
       const html = parse(page.body);
@@ -254,9 +259,7 @@ export default class Pillowfort
         .withAdditionalInfo(post.body);
     } catch (e) {
       this.logger.error('Failed to post submission', e);
-      return PostResponse.fromWebsite(this)
-        .withMessage(e.message)
-        .withException(e);
+      return PostResponse.fromWebsite(this).withException(e);
     }
   }
 

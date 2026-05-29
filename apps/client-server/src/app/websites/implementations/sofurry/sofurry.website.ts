@@ -288,7 +288,7 @@ export default class Sofurry
 
     // Step 2b: Upload thumbnail if available
     let thumbUrl: string | null = null;
-    const thumbnailFile = files[0].thumbnail ? files[0] : null;
+    const thumbnailFile = files[0].thumbnail;
     if (thumbnailFile) {
       cancellationToken.throwIfCancelled();
       const thumbRes = await new PostBuilder(this, cancellationToken)
@@ -296,8 +296,8 @@ export default class Sofurry
         .withHeader('X-Csrf-Token', csrfToken)
         .withHeader('origin', this.BASE_URL)
         .withHeader('referer', `${this.BASE_URL}/s/${submissionId}/edit`)
-        .setField('name', thumbnailFile.thumbnail.fileName)
-        .addThumbnail('file', thumbnailFile)
+        .setField('name', thumbnailFile.fileName)
+        .addThumbnail('file', files[0])
         .send<SoFurryThumbnailUploadResponse>(
           `${this.BASE_URL}/ui/submission/${submissionId}/thumbnail`,
         );

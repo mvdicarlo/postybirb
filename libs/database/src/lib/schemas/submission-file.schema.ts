@@ -1,5 +1,9 @@
-import { relations } from 'drizzle-orm';
-import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import {
+  AnySQLiteColumn,
+  integer,
+  sqliteTable,
+  text,
+} from 'drizzle-orm/sqlite-core';
 import { CommonSchema, id } from './common.schema';
 import { FileBufferSchema } from './file-buffer.schema';
 import { SubmissionSchema } from './submission.schema';
@@ -10,12 +14,12 @@ export const SubmissionFileSchema = sqliteTable('submission-file', {
   ...CommonSchema(),
   submissionId: id()
     .notNull()
-    .references(() => SubmissionSchema.id, {
+    .references((): AnySQLiteColumn => SubmissionSchema.id, {
       onDelete: 'cascade',
     }),
-  primaryFileId: id().references(() => FileBufferSchema.id),
-  thumbnailId: id().references(() => FileBufferSchema.id),
-  altFileId: id().references(() => FileBufferSchema.id),
+  primaryFileId: id().references((): AnySQLiteColumn => FileBufferSchema.id),
+  thumbnailId: id().references((): AnySQLiteColumn => FileBufferSchema.id),
+  altFileId: id().references((): AnySQLiteColumn => FileBufferSchema.id),
   fileName: text().notNull(),
   hasAltFile: integer({ mode: 'boolean' }).notNull().default(false),
   hasCustomThumbnail: integer({ mode: 'boolean' }).notNull().default(false),
@@ -31,25 +35,3 @@ export const SubmissionFileSchema = sqliteTable('submission-file', {
     .default({} as SubmissionFileMetadata),
   order: integer().default(Number.MAX_SAFE_INTEGER).notNull(),
 });
-
-export const SubmissionFileRelations = relations(
-  SubmissionFileSchema,
-  ({ one }) => ({
-    submission: one(SubmissionSchema, {
-      fields: [SubmissionFileSchema.submissionId],
-      references: [SubmissionSchema.id],
-    }),
-    file: one(FileBufferSchema, {
-      fields: [SubmissionFileSchema.primaryFileId],
-      references: [FileBufferSchema.id],
-    }),
-    thumbnail: one(FileBufferSchema, {
-      fields: [SubmissionFileSchema.thumbnailId],
-      references: [FileBufferSchema.id],
-    }),
-    altFile: one(FileBufferSchema, {
-      fields: [SubmissionFileSchema.altFileId],
-      references: [FileBufferSchema.id],
-    }),
-  }),
-);

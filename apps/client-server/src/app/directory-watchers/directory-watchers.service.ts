@@ -6,7 +6,7 @@ import {
   EntityId,
   SubmissionType,
 } from '@postybirb/types';
-import { IsTestEnvironment } from '@postybirb/utils/common';
+import { IsTestEnvironment, toError } from '@postybirb/utils/common';
 import { mkdir, readdir, rename, writeFile } from 'fs/promises';
 import { getType } from 'mime';
 import { join } from 'path';
@@ -229,7 +229,7 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
           this.logger.withError(err).error(`Failed to process file ${file}`);
           results.failed.push({
             file,
-            error: err instanceof Error ? err.message : String(err),
+            error: toError(err).message,
           });
         }
       }

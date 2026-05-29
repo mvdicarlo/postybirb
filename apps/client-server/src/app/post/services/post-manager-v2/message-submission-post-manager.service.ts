@@ -58,6 +58,8 @@ export class MessageSubmissionPostManager extends BasePostManager {
     this.logger.info(`Posting message to ${instance.id}`);
 
     await this.waitForPostingWaitInterval(accountId, instance);
+
+    if (!this.cancelToken) throw new Error('No cancel token is defined');
     this.cancelToken.throwIfCancelled();
 
     const result = await (

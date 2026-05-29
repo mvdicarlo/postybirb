@@ -10,6 +10,7 @@ import { SubmissionFile } from '../drizzle/models';
 import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
 import { FileConverterService } from '../file-converter/file-converter.service';
 import { FormGeneratorService } from '../form-generator/form-generator.service';
+import { SharpInstanceManager } from '../image-processing/sharp-instance-manager';
 import { noopPlatformProvider } from '../platform/testing/noop-platform-providers';
 import { DescriptionParserService } from '../post-parsers/parsers/description-parser.service';
 import { TagParserService } from '../post-parsers/parsers/tag-parser.service';
@@ -31,7 +32,6 @@ import { FileService } from './file.service';
 import { MulterFileInfo } from './models/multer-file-info';
 import { CreateFileService } from './services/create-file.service';
 import { UpdateFileService } from './services/update-file.service';
-import { SharpInstanceManager } from '../image-processing/sharp-instance-manager';
 
 describe('FileService', () => {
   let testFile: Buffer | null = null;
@@ -56,7 +56,7 @@ describe('FileService', () => {
       originalname: 'small_image.jpg',
       encoding: '',
       mimetype: 'image/jpeg',
-      size: testFile.length,
+      size: testFile?.length ?? 0,
       destination: '',
       filename: 'small_image.jpg',
       path,
@@ -70,7 +70,7 @@ describe('FileService', () => {
       originalname: 'png_with_alpha.png',
       encoding: '',
       mimetype: 'image/png',
-      size: testFile2.length,
+      size: testFile2?.length ?? 0,
       destination: '',
       filename: 'png_with_alpha.jpg',
       path,
@@ -82,8 +82,8 @@ describe('FileService', () => {
     const path = `${PostyBirbDirectories.DATA_DIRECTORY}/${Date.now()}.jpg`;
     const path2 = `${PostyBirbDirectories.DATA_DIRECTORY}/${Date.now()}.png`;
 
-    writeSync(path, testFile);
-    writeSync(path2, testFile2);
+    writeSync(path, testFile!);
+    writeSync(path2, testFile2!);
     return [path, path2];
   }
 
@@ -138,14 +138,16 @@ describe('FileService', () => {
   async function loadBuffers(rec: SubmissionFile) {
     // !bug - https://github.com/drizzle-team/drizzle-orm/issues/3497
     // eslint-disable-next-line no-param-reassign
-    rec.file = await fileBufferRepository.findById(rec.primaryFileId);
+    rec.file = await fileBufferRepository.findById(rec.primaryFileId, {
+      failOnMissing: true,
+    });
     // eslint-disable-next-line no-param-reassign
     rec.thumbnail = rec.thumbnailId
-      ? await fileBufferRepository.findById(rec.thumbnailId)
+      ? (await fileBufferRepository.findById(rec.thumbnailId)) || undefined
       : undefined;
     // eslint-disable-next-line no-param-reassign
     rec.altFile = rec.altFileId
-      ? await fileBufferRepository.findById(rec.altFileId)
+      ? (await fileBufferRepository.findById(rec.altFileId)) || undefined
       : undefined;
   }
 
@@ -164,7 +166,7 @@ describe('FileService', () => {
     await loadBuffers(file);
     expect(file.file).toBeDefined();
     expect(file.thumbnail).toBeDefined();
-    expect(file.thumbnail.fileName.startsWith('thumbnail_')).toBe(true);
+    expect(file.thumbnail?.fileName.startsWith('thumbnail_')).toBe(true);
     expect(file.fileName).toBe(fileInfo.originalname);
     expect(file.size).toBe(fileInfo.size);
     expect(file.hasThumbnail).toBe(true);
@@ -196,7 +198,7 @@ describe('FileService', () => {
       originalname: 'small_image.jpg',
       encoding: '',
       mimetype: 'image/png',
-      size: testFile.length,
+      size: testFile?.length ?? 0,
       destination: '',
       filename: 'small_image.jpg',
       path: path2[0],

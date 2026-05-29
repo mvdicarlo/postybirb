@@ -32,9 +32,9 @@ export class PostParsersService {
     instance: UnknownWebsite,
     websiteOptions: IWebsiteOptions,
   ): Promise<PostData<IWebsiteFormFields>> {
-    const defaultOptions: IWebsiteOptions = submission.options.find(
-      (o) => o.isDefault,
-    );
+    const defaultOptions = submission.options.find((o) => o.isDefault);
+    if (!defaultOptions) throw new Error('No defalt website options found');
+
     const defaultOpts = Object.assign(new DefaultWebsiteOptions(), {
       ...defaultOptions.data,
     });
