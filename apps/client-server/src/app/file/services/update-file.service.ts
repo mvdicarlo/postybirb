@@ -5,7 +5,7 @@ import {
     Injectable,
     NotFoundException,
 } from '@nestjs/common';
-import { SubmissionFileRepository } from '@postybirb/database';
+import { SubmissionFileRepository, TransactionContext, withTransactionContext } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import { EntityId, FileType } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
@@ -17,10 +17,6 @@ import { parse } from 'path';
 import { promisify } from 'util';
 import { SubmissionFile } from '../../drizzle/models';
 import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
-import {
-    TransactionContext,
-    withTransactionContext,
-} from '../../drizzle/transaction-context';
 import { SharpInstanceManager } from '../../image-processing/sharp-instance-manager';
 import { MulterFileInfo } from '../models/multer-file-info';
 import { ImageUtil } from '../utils/image.util';

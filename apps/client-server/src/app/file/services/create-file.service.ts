@@ -1,6 +1,6 @@
 import * as rtf from '@iarna/rtf-to-html';
 import { Injectable } from '@nestjs/common';
-import { Insert, Select, SubmissionFileRepository } from '@postybirb/database';
+import { Insert, Select, SubmissionFileRepository, TransactionContext, withTransactionContext } from '@postybirb/database';
 import { removeFile } from '@postybirb/fs';
 import { Logger } from '@postybirb/logger';
 import {
@@ -24,10 +24,6 @@ import {
     SubmissionFile,
 } from '../../drizzle/models';
 import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
-import {
-    TransactionContext,
-    withTransactionContext,
-} from '../../drizzle/transaction-context';
 import { SharpInstanceManager } from '../../image-processing/sharp-instance-manager';
 import { MulterFileInfo } from '../models/multer-file-info';
 import { ImageUtil } from '../utils/image.util';
