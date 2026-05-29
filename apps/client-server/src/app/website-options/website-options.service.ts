@@ -1,28 +1,28 @@
 import {
-  forwardRef,
-  Inject,
-  Injectable,
-  NotFoundException,
-  OnModuleInit,
+    forwardRef,
+    Inject,
+    Injectable,
+    NotFoundException,
+    OnModuleInit,
 } from '@nestjs/common';
-import { Insert , Account } from '@postybirb/database';
+import { Account, Insert } from '@postybirb/database';
 import {
-  AccountId,
-  Description,
-  DescriptionType,
-  DescriptionValue,
-  DynamicObject,
-  EntityId,
-  IDescriptionPreviewResult,
-  ISubmission,
-  ISubmissionMetadata,
-  IWebsiteFormFields,
-  NULL_ACCOUNT_ID,
-  SubmissionId,
-  SubmissionMetadataType,
-  SubmissionType,
-  TipTapNode,
-  ValidationResult,
+    AccountId,
+    Description,
+    DescriptionType,
+    DescriptionValue,
+    DynamicObject,
+    EntityId,
+    IDescriptionPreviewResult,
+    ISubmission,
+    ISubmissionMetadata,
+    IWebsiteFormFields,
+    NULL_ACCOUNT_ID,
+    SubmissionId,
+    SubmissionMetadataType,
+    SubmissionType,
+    TipTapNode,
+    ValidationResult,
 } from '@postybirb/types';
 import { AccountService } from '../account/account.service';
 import { PostyBirbService } from '../common/service/postybirb-service';
@@ -34,8 +34,8 @@ import { PostParsersService } from '../post-parsers/post-parsers.service';
 import { SubmissionService } from '../submission/services/submission.service';
 import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
 import {
-  isBlockNoteFormat,
-  migrateDescription,
+    isBlockNoteFormat,
+    migrateDescription,
 } from '../utils/blocknote-to-tiptap';
 import { ValidationService } from '../validation/validation.service';
 import { DefaultWebsiteOptions } from '../websites/models/default-website-options';

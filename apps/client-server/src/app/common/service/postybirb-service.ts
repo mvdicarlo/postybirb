@@ -1,8 +1,8 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import {
-  EntityNotFoundError,
-  EntityRepository,
-  SchemaKey,
+    EntityNotFoundError,
+    EntityRepository,
+    SchemaKey,
 } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import { Action, EntityId } from '@postybirb/types';

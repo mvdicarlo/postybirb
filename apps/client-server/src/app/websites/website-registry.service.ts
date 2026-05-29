@@ -1,22 +1,22 @@
 import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  NotFoundException,
-  Optional,
+    BadRequestException,
+    Inject,
+    Injectable,
+    NotFoundException,
+    Optional,
 } from '@nestjs/common';
+import { Account } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import { PlatformService } from '@postybirb/platform';
 import { WEBSITE_UPDATES } from '@postybirb/socket-events';
 import {
-  DynamicObject,
-  IAccount,
-  IWebsiteInfoDto,
-  OAuthRoutes,
+    DynamicObject,
+    IAccount,
+    IWebsiteInfoDto,
+    OAuthRoutes,
 } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/common';
 import { Class } from 'type-fest';
-import { Account } from '@postybirb/database';
 import { WEBSITE_IMPLEMENTATIONS } from '../constants';
 import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
 import { WSGateway } from '../web-socket/web-socket-gateway';

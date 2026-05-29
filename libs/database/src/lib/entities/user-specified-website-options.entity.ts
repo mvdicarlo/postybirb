@@ -1,9 +1,9 @@
 import type {
-    AccountId,
-    DynamicObject,
-    IUserSpecifiedWebsiteOptions,
-    SubmissionType,
-    UserSpecifiedWebsiteOptionsDto,
+  AccountId,
+  DynamicObject,
+  IUserSpecifiedWebsiteOptions,
+  SubmissionType,
+  UserSpecifiedWebsiteOptionsDto,
 } from '@postybirb/types';
 import type { InferSelectModel } from 'drizzle-orm';
 import { HydrationContext } from '../repositories/base/hydration-context';
