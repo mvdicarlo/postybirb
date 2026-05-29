@@ -1,12 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { Insert } from '@postybirb/database';
+import { Insert, PostEvent, PostEventRepository as LibPostEventRepository } from '@postybirb/database';
 import {
   AccountId,
   EntityId,
   PostEventType,
 } from '@postybirb/types';
-import { PostEvent } from '../../../drizzle/models';
-import { PostyBirbDatabase } from '../../../drizzle/postybirb-database/postybirb-database';
 
 /**
  * Repository for querying PostEvent records.
@@ -15,12 +13,10 @@ import { PostyBirbDatabase } from '../../../drizzle/postybirb-database/postybirb
  */
 @Injectable()
 export class PostEventRepository {
-  private readonly repository: PostyBirbDatabase<'PostEventSchema'>;
+  private readonly repository: LibPostEventRepository;
 
   constructor() {
-    this.repository = new PostyBirbDatabase('PostEventSchema', {
-      account: true,
-    });
+    this.repository = new LibPostEventRepository();
   }
 
   /**

@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { clearDatabase } from '@postybirb/database';
+import { clearDatabase, PostEvent } from '@postybirb/database';
 import {
   EntityId,
   PostEventType,
@@ -9,7 +9,7 @@ import {
 } from '@postybirb/types';
 import { AccountModule } from '../../../account/account.module';
 import { AccountService } from '../../../account/account.service';
-import { PostEvent, PostRecord } from '../../../drizzle/models';
+import { PostRecord } from '../../../drizzle/models';
 import { PostyBirbDatabase } from '../../../drizzle/postybirb-database/postybirb-database';
 import { PostParsersModule } from '../../../post-parsers/post-parsers.module';
 import { TestPlatformModule } from '../../../platform/testing/test-platform.module';
