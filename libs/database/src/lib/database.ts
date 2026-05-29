@@ -3,6 +3,7 @@ import { IsTestEnvironment } from '@postybirb/utils/common';
 import { BetterSQLite3Database, drizzle } from 'drizzle-orm/better-sqlite3';
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import { join } from 'path';
+import { RepositoryRegistry } from './repositories/base/repository-registry';
 import * as schema from './schemas';
 
 export type PostyBirbDatabaseType = BetterSQLite3Database<typeof schema>;
@@ -35,7 +36,15 @@ export function getDatabase() {
 /**
  * Clear the database instance.
  * Used for testing.
+ *
+ * Also clears the `RepositoryRegistry`. Repositories cache `getDatabase()`
+ * at construction time; without clearing the registry, the next test that
+ * constructs new repositories would have its `register()` call ignored
+ * (first-registration-wins) and any consumer using
+ * `RepositoryRegistry.get(...)` (e.g. `SubmissionFile.load()`) would query
+ * the prior, now-discarded database instance.
  */
 export function clearDatabase() {
   db = undefined;
+  RepositoryRegistry.clear();
 }
