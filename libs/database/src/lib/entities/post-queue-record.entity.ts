@@ -22,18 +22,38 @@ export class PostQueueRecord
   extends DatabaseEntity<IPostQueueRecord>
   implements IPostQueueRecord
 {
-  public readonly entitySchemaKey = 'PostQueueRecordSchema' as const;
+  public readonly entitySchemaKey!: 'PostQueueRecordSchema';
 
-  postRecordId!: EntityId;
+  public postRecordId: EntityId;
 
-  submissionId!: SubmissionId;
+  public submissionId: SubmissionId;
 
-  postRecord!: PostRecord;
+  public postRecord!: PostRecord;
 
-  submission!: Submission;
+  public submission!: Submission;
+
+  constructor(init: Partial<IPostQueueRecord> = {}) {
+    super(init);
+    Object.defineProperty(this, 'entitySchemaKey', {
+      value: 'PostQueueRecordSchema',
+      enumerable: false,
+      writable: false,
+      configurable: false,
+    });
+    this.postRecordId = (init.postRecordId === undefined ? null : init.postRecordId) as EntityId;
+    this.submissionId = init.submissionId ?? '';
+  }
 
   public toObject(): IPostQueueRecord {
-    return { ...this };
+    return {
+      id: this.id,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+      postRecordId: this.postRecordId,
+      submissionId: this.submissionId,
+      postRecord: this.postRecord,
+      submission: this.submission,
+    };
   }
 
   public toDTO(): PostQueueRecordDto {
@@ -47,10 +67,7 @@ export class PostQueueRecord
     return ctx.getOrCreate(
       'PostQueueRecordSchema',
       row.id,
-      () => {
-        const { postRecord, submission, ...scalars } = row;
-        return Object.assign(new PostQueueRecord(), scalars);
-      },
+      () => new PostQueueRecord(row as Partial<IPostQueueRecord>),
       (e) => {
         if (row.postRecord)
           e.postRecord = PostRecord.fromRow(row.postRecord, ctx);

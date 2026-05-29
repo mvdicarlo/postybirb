@@ -24,24 +24,52 @@ export class FileBuffer
   extends DatabaseEntity<IFileBuffer>
   implements IFileBuffer
 {
-  public readonly entitySchemaKey = 'FileBufferSchema' as const;
+  public readonly entitySchemaKey!: 'FileBufferSchema';
 
-  submissionFileId!: EntityId;
+  public submissionFileId: EntityId;
 
-  buffer!: Buffer;
+  public buffer: Buffer;
 
-  fileName!: string;
+  public fileName: string;
 
-  mimeType!: string;
+  public mimeType: string;
 
-  size!: number;
+  public size: number;
 
-  width!: number;
+  public width: number;
 
-  height!: number;
+  public height: number;
+
+  constructor(init: Partial<IFileBuffer> = {}) {
+    super(init);
+    Object.defineProperty(this, 'entitySchemaKey', {
+      value: 'FileBufferSchema',
+      enumerable: false,
+      writable: false,
+      configurable: false,
+    });
+    this.submissionFileId = init.submissionFileId ?? '';
+    this.buffer = init.buffer ?? Buffer.alloc(0);
+    this.fileName = init.fileName ?? '';
+    this.mimeType = init.mimeType ?? '';
+    this.size = init.size ?? 0;
+    this.width = init.width ?? 0;
+    this.height = init.height ?? 0;
+  }
 
   public toObject(): IFileBuffer {
-    return { ...this };
+    return {
+      id: this.id,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+      submissionFileId: this.submissionFileId,
+      buffer: this.buffer,
+      fileName: this.fileName,
+      mimeType: this.mimeType,
+      size: this.size,
+      width: this.width,
+      height: this.height,
+    };
   }
 
   public toDTO(): FileBufferDto {
@@ -54,9 +82,7 @@ export class FileBuffer
     row: FileBufferRow,
     ctx: HydrationContext = new HydrationContext(),
   ): FileBuffer {
-    return ctx.getOrCreate('FileBufferSchema', row.id, () =>
-      Object.assign(new FileBuffer(), row),
-    );
+    return ctx.getOrCreate('FileBufferSchema', row.id, () => new FileBuffer(row));
   }
 
   static fromRows(

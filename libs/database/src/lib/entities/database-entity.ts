@@ -8,30 +8,32 @@ import type { SchemaKey } from '../helper-types';
  *
  * Key differences vs the legacy base:
  *
+ * - **No implicit `Object.assign(this, entity)`.** The legacy pattern of
+ *   `super(entity); Object.assign(this, entity);` in every subclass plus
+ *   `Object.assign(this, entity)` in the base produced a fragile
+ *   construction order: derived-class field initializers
+ *   (`groups: string[] = []`) run AFTER `super()` and silently clobber
+ *   whatever the base assigned. Concrete entities here MUST assign each
+ *   field by name in their own constructor. The base handles only
+ *   `id`, `createdAt`, and `updatedAt`.
+ *
+ * - **`entitySchemaKey` is non-enumerable.** Defined via
+ *   `Object.defineProperty` in subclass constructors so it does NOT
+ *   leak through `{ ...entity }`, `Object.keys`, JSON serialization, or
+ *   drizzle insert payloads. Use `getSchemaKey(entity)` to read it
+ *   externally; subclasses still expose it as a typed property.
+ *
  * - **No `class-transformer` imports.** Lib entities hydrate exclusively
  *   through `static fromRow(row, ctx?)` / `static fromRows(rows, ctx?)`
- *   defined per entity. The legacy `fromDatabaseRecord(...)` helper and
- *   the `@Type` / `@Exclude` decorator pattern are NOT carried over here.
- *   They survive in the legacy `apps/client-server` copy until that
- *   folder is deleted in Phase E.
+ *   defined per entity.
  *
  * - **Generic over the entity interface (`T extends IEntity`).** The
- *   constructor accepts `Partial<T>`, so concrete subclasses do NOT need
- *   to override the constructor just to widen the parameter type. The
- *   legacy pattern (subclass calls `super(entity)` then redundantly
- *   `Object.assign(this, entity)` a second time) is gone — the base
- *   does it once, correctly.
+ *   constructor accepts `Partial<T>` for `id` / `createdAt` /
+ *   `updatedAt` only; subclasses widen for their own columns via their
+ *   own constructor parameter.
  *
- * - **Abstract `entitySchemaKey` field.** Concrete subclasses declare
- *   this as a `readonly` class field (e.g.
- *   `readonly entitySchemaKey = 'AccountSchema' as const`). TypeScript
- *   guarantees every concrete subclass sets it. Used by
- *   `RepositoryRegistry.getFor(entity)` to resolve the owning repository
- *   without a separate map.
- *
- * - **`toObject()` returns `T`** so the inherited signature is honest
- *   for downstream callers; subclasses no longer need to override the
- *   declared return type.
+ * - **`toObject()` returns `T`** as an explicit object literal so the
+ *   inherited signature is honest and no class-field metadata leaks.
  */
 export abstract class DatabaseEntity<
   T extends IEntity = IEntity,
@@ -51,22 +53,23 @@ export abstract class DatabaseEntity<
   public updatedAt!: string;
 
   /**
-   * The schema key that owns this entity. Declared as an abstract
-   * class field — concrete subclasses MUST set it as a `readonly`
-   * field so it is part of the prototype shape and cannot be forgotten.
-   * NOTE: abstract field initializers run AFTER the base constructor,
-   * so do not read this from within `DatabaseEntity`'s constructor.
+   * The schema key that owns this entity. Subclasses set this via
+   * `Object.defineProperty(this, 'entitySchemaKey', { value: 'XSchema' })`
+   * in their constructor so it is NON-ENUMERABLE and never leaks into
+   * `toObject` / `toDTO` / drizzle insert payloads. The declared type
+   * is `SchemaKey` for ergonomics; concrete subclasses narrow it to a
+   * literal via the cast.
    */
   public abstract readonly entitySchemaKey: SchemaKey;
 
-  constructor(entity: Partial<T> = {}) {
+  constructor(entity: Partial<IEntity> = {}) {
     // Assign `id` first and explicitly so TS sees a definite assignment
-    // on the `readonly` field, then layer the remaining columns via
-    // Object.assign for ergonomic spread-style construction in `fromRow`.
+    // on the `readonly` field. createdAt/updatedAt likewise get defaulted
+    // here so subclasses don't need to. Concrete column assignment is
+    // the subclass's responsibility — the base does NOT Object.assign.
     this.id = entity.id ?? v4();
     this.createdAt = entity.createdAt ?? new Date().toISOString();
     this.updatedAt = entity.updatedAt ?? new Date().toISOString();
-    Object.assign(this, entity);
   }
 
   public abstract toObject(): T;

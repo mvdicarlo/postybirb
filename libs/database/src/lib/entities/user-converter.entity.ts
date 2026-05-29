@@ -10,14 +10,32 @@ export class UserConverter
   extends DatabaseEntity<IUserConverter>
   implements IUserConverter
 {
-  public readonly entitySchemaKey = 'UserConverterSchema' as const;
+  public readonly entitySchemaKey!: 'UserConverterSchema';
 
-  username!: string;
+  public username: string;
 
-  convertTo!: Record<string, string>;
+  public convertTo: Record<string, string>;
+
+  constructor(init: Partial<IUserConverter> = {}) {
+    super(init);
+    Object.defineProperty(this, 'entitySchemaKey', {
+      value: 'UserConverterSchema',
+      enumerable: false,
+      writable: false,
+      configurable: false,
+    });
+    this.username = init.username ?? '';
+    this.convertTo = init.convertTo ?? {};
+  }
 
   public toObject(): IUserConverter {
-    return { ...this };
+    return {
+      id: this.id,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+      username: this.username,
+      convertTo: this.convertTo,
+    };
   }
 
   public toDTO(): UserConverterDto {
@@ -28,9 +46,7 @@ export class UserConverter
     row: UserConverterRow,
     ctx: HydrationContext = new HydrationContext(),
   ): UserConverter {
-    return ctx.getOrCreate('UserConverterSchema', row.id, () =>
-      Object.assign(new UserConverter(), row),
-    );
+    return ctx.getOrCreate('UserConverterSchema', row.id, () => new UserConverter(row));
   }
 
   static fromRows(

@@ -7,14 +7,32 @@ import { DatabaseEntity } from './database-entity';
 export type TagGroupRow = InferSelectModel<typeof TagGroupSchema>;
 
 export class TagGroup extends DatabaseEntity<ITagGroup> implements ITagGroup {
-  public readonly entitySchemaKey = 'TagGroupSchema' as const;
+  public readonly entitySchemaKey!: 'TagGroupSchema';
 
-  name!: string;
+  public name: string;
 
-  tags!: string[];
+  public tags: string[];
+
+  constructor(init: Partial<ITagGroup> = {}) {
+    super(init);
+    Object.defineProperty(this, 'entitySchemaKey', {
+      value: 'TagGroupSchema',
+      enumerable: false,
+      writable: false,
+      configurable: false,
+    });
+    this.name = init.name ?? '';
+    this.tags = init.tags ?? [];
+  }
 
   public toObject(): ITagGroup {
-    return { ...this };
+    return {
+      id: this.id,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+      name: this.name,
+      tags: this.tags,
+    };
   }
 
   public toDTO(): TagGroupDto {
@@ -25,9 +43,7 @@ export class TagGroup extends DatabaseEntity<ITagGroup> implements ITagGroup {
     row: TagGroupRow,
     ctx: HydrationContext = new HydrationContext(),
   ): TagGroup {
-    return ctx.getOrCreate('TagGroupSchema', row.id, () =>
-      Object.assign(new TagGroup(), row),
-    );
+    return ctx.getOrCreate('TagGroupSchema', row.id, () => new TagGroup(row));
   }
 
   static fromRows(

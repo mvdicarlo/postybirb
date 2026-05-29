@@ -21,18 +21,39 @@ export class UserSpecifiedWebsiteOptions
   extends DatabaseEntity<IUserSpecifiedWebsiteOptions>
   implements IUserSpecifiedWebsiteOptions
 {
-  public readonly entitySchemaKey = 'UserSpecifiedWebsiteOptionsSchema' as const;
+  public readonly entitySchemaKey!: 'UserSpecifiedWebsiteOptionsSchema';
 
-  accountId!: AccountId;
+  public accountId: AccountId;
 
-  account!: Account;
+  public account!: Account;
 
-  type!: SubmissionType;
+  public type: SubmissionType;
 
-  options!: DynamicObject;
+  public options: DynamicObject;
+
+  constructor(init: Partial<IUserSpecifiedWebsiteOptions> = {}) {
+    super(init);
+    Object.defineProperty(this, 'entitySchemaKey', {
+      value: 'UserSpecifiedWebsiteOptionsSchema',
+      enumerable: false,
+      writable: false,
+      configurable: false,
+    });
+    this.accountId = init.accountId ?? '';
+    this.type = init.type ?? ('' as SubmissionType);
+    this.options = init.options ?? {};
+  }
 
   public toObject(): IUserSpecifiedWebsiteOptions {
-    return { ...this };
+    return {
+      id: this.id,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+      accountId: this.accountId,
+      account: this.account,
+      type: this.type,
+      options: this.options,
+    };
   }
 
   public toDTO(): UserSpecifiedWebsiteOptionsDto {
@@ -46,10 +67,7 @@ export class UserSpecifiedWebsiteOptions
     return ctx.getOrCreate(
       'UserSpecifiedWebsiteOptionsSchema',
       row.id,
-      () => {
-        const { account, ...scalars } = row;
-        return Object.assign(new UserSpecifiedWebsiteOptions(), scalars);
-      },
+      () => new UserSpecifiedWebsiteOptions(row as Partial<IUserSpecifiedWebsiteOptions>),
       (e) => {
         if (row.account) e.account = Account.fromRow(row.account, ctx);
       },

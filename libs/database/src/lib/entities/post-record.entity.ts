@@ -29,34 +29,67 @@ export class PostRecord
   extends DatabaseEntity<IPostRecord>
   implements IPostRecord
 {
-  public readonly entitySchemaKey = 'PostRecordSchema' as const;
+  public readonly entitySchemaKey!: 'PostRecordSchema';
 
-  version?: string;
+  public version?: string;
 
-  postQueueRecordId!: EntityId;
+  public postQueueRecordId: EntityId;
 
-  submissionId!: SubmissionId;
+  public submissionId: SubmissionId;
 
-  submission!: Submission;
+  public submission!: Submission;
 
-  originPostRecordId?: EntityId;
+  public originPostRecordId?: EntityId;
 
-  origin?: PostRecord;
+  public origin?: PostRecord;
 
-  chainedRecords?: PostRecord[];
+  public chainedRecords?: PostRecord[];
 
-  completedAt?: string;
+  public completedAt?: string;
 
-  state!: PostRecordState;
+  public state: PostRecordState;
 
-  resumeMode!: PostRecordResumeMode;
+  public resumeMode: PostRecordResumeMode;
 
-  events!: PostEvent[];
+  public events!: PostEvent[];
 
-  postQueueRecord!: PostQueueRecord;
+  public postQueueRecord!: PostQueueRecord;
+
+  constructor(init: Partial<IPostRecord> = {}) {
+    super(init);
+    Object.defineProperty(this, 'entitySchemaKey', {
+      value: 'PostRecordSchema',
+      enumerable: false,
+      writable: false,
+      configurable: false,
+    });
+    this.version = init.version;
+    this.postQueueRecordId = init.postQueueRecordId ?? '';
+    this.submissionId = init.submissionId ?? '';
+    this.originPostRecordId = init.originPostRecordId;
+    this.completedAt = init.completedAt;
+    this.state = init.state ?? ('' as PostRecordState);
+    this.resumeMode = init.resumeMode ?? ('' as PostRecordResumeMode);
+  }
 
   public toObject(): IPostRecord {
-    return { ...this };
+    return {
+      id: this.id,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+      version: this.version,
+      postQueueRecordId: this.postQueueRecordId,
+      submissionId: this.submissionId,
+      submission: this.submission,
+      originPostRecordId: this.originPostRecordId,
+      origin: this.origin,
+      chainedRecords: this.chainedRecords,
+      completedAt: this.completedAt,
+      state: this.state,
+      resumeMode: this.resumeMode,
+      events: this.events,
+      postQueueRecord: this.postQueueRecord,
+    };
   }
 
   public toDTO(): PostRecordDto {
@@ -74,17 +107,7 @@ export class PostRecord
     return ctx.getOrCreate(
       'PostRecordSchema',
       row.id,
-      () => {
-        const {
-          submission,
-          origin,
-          chainedRecords,
-          events,
-          postQueueRecord,
-          ...scalars
-        } = row;
-        return Object.assign(new PostRecord(), scalars);
-      },
+      () => new PostRecord(row as Partial<IPostRecord>),
       (e) => {
         if (row.submission)
           e.submission = Submission.fromRow(row.submission, ctx);

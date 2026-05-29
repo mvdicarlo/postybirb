@@ -21,12 +21,28 @@ export class WebsiteData<T extends DynamicObject = DynamicObject>
   extends DatabaseEntity<IWebsiteData<T>>
   implements IWebsiteData<T>
 {
-  public readonly entitySchemaKey = 'WebsiteDataSchema' as const;
+  public readonly entitySchemaKey!: 'WebsiteDataSchema';
 
-  data!: T;
+  public data: T;
+
+  constructor(init: Partial<IWebsiteData<T>> = {}) {
+    super(init);
+    Object.defineProperty(this, 'entitySchemaKey', {
+      value: 'WebsiteDataSchema',
+      enumerable: false,
+      writable: false,
+      configurable: false,
+    });
+    this.data = (init.data ?? ({} as T)) as T;
+  }
 
   public toObject(): IWebsiteData<T> {
-    return { ...this };
+    return {
+      id: this.id,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+      data: this.data,
+    };
   }
 
   public toDTO(): IWebsiteDataDto {
@@ -37,9 +53,7 @@ export class WebsiteData<T extends DynamicObject = DynamicObject>
     row: WebsiteDataRow,
     ctx: HydrationContext = new HydrationContext(),
   ): WebsiteData {
-    return ctx.getOrCreate('WebsiteDataSchema', row.id, () =>
-      Object.assign(new WebsiteData(), row),
-    );
+    return ctx.getOrCreate('WebsiteDataSchema', row.id, () => new WebsiteData(row as Partial<IWebsiteData>));
   }
 
   static fromRows(

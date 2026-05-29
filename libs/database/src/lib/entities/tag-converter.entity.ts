@@ -10,14 +10,32 @@ export class TagConverter
   extends DatabaseEntity<ITagConverter>
   implements ITagConverter
 {
-  public readonly entitySchemaKey = 'TagConverterSchema' as const;
+  public readonly entitySchemaKey!: 'TagConverterSchema';
 
-  tag!: string;
+  public tag: string;
 
-  convertTo!: Record<string, string>;
+  public convertTo: Record<string, string>;
+
+  constructor(init: Partial<ITagConverter> = {}) {
+    super(init);
+    Object.defineProperty(this, 'entitySchemaKey', {
+      value: 'TagConverterSchema',
+      enumerable: false,
+      writable: false,
+      configurable: false,
+    });
+    this.tag = init.tag ?? '';
+    this.convertTo = init.convertTo ?? {};
+  }
 
   public toObject(): ITagConverter {
-    return { ...this };
+    return {
+      id: this.id,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+      tag: this.tag,
+      convertTo: this.convertTo,
+    };
   }
 
   public toDTO(): TagConverterDto {
@@ -28,9 +46,7 @@ export class TagConverter
     row: TagConverterRow,
     ctx: HydrationContext = new HydrationContext(),
   ): TagConverter {
-    return ctx.getOrCreate('TagConverterSchema', row.id, () =>
-      Object.assign(new TagConverter(), row),
-    );
+    return ctx.getOrCreate('TagConverterSchema', row.id, () => new TagConverter(row));
   }
 
   static fromRows(

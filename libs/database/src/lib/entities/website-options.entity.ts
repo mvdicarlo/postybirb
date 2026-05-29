@@ -28,22 +28,50 @@ export class WebsiteOptions
   extends DatabaseEntity<IWebsiteOptions>
   implements IWebsiteOptions
 {
-  public readonly entitySchemaKey = 'WebsiteOptionsSchema' as const;
+  public readonly entitySchemaKey!: 'WebsiteOptionsSchema';
 
-  accountId!: AccountId;
+  public accountId: AccountId;
 
-  submissionId!: SubmissionId;
+  /**
+   * Class-only field carried for legacy parity; not part of
+   * `IWebsiteOptions` (which exposes the resolved `submission` relation).
+   * Excluded from `toObject`.
+   */
+  public submissionId: SubmissionId;
 
-  account!: Account;
+  public account!: Account;
 
-  submission!: Submission;
+  public submission!: Submission;
 
-  data!: IWebsiteFormFields;
+  public data: IWebsiteFormFields;
 
-  isDefault!: boolean;
+  public isDefault: boolean;
+
+  constructor(init: Partial<IWebsiteOptions> & { submissionId?: SubmissionId } = {}) {
+    super(init);
+    Object.defineProperty(this, 'entitySchemaKey', {
+      value: 'WebsiteOptionsSchema',
+      enumerable: false,
+      writable: false,
+      configurable: false,
+    });
+    this.accountId = init.accountId ?? '';
+    this.submissionId = init.submissionId ?? '';
+    this.data = init.data ?? ({} as IWebsiteFormFields);
+    this.isDefault = init.isDefault ?? false;
+  }
 
   public toObject(): IWebsiteOptions {
-    return { ...this };
+    return {
+      id: this.id,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+      accountId: this.accountId,
+      account: this.account,
+      submission: this.submission,
+      data: this.data,
+      isDefault: this.isDefault,
+    };
   }
 
   public toDTO(): WebsiteOptionsDto {
@@ -60,10 +88,7 @@ export class WebsiteOptions
     return ctx.getOrCreate(
       'WebsiteOptionsSchema',
       row.id,
-      () => {
-        const { account, submission, ...scalars } = row;
-        return Object.assign(new WebsiteOptions(), scalars);
-      },
+      () => new WebsiteOptions(row as Partial<IWebsiteOptions> & { submissionId?: SubmissionId }),
       (e) => {
         if (row.account) e.account = Account.fromRow(row.account, ctx);
         if (row.submission)

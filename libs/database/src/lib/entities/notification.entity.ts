@@ -10,24 +10,52 @@ export class Notification
   extends DatabaseEntity<INotification>
   implements INotification
 {
-  public readonly entitySchemaKey = 'NotificationSchema' as const;
+  public readonly entitySchemaKey!: 'NotificationSchema';
 
-  title!: string;
+  public title: string;
 
-  message!: string;
+  public message: string;
 
-  tags!: string[];
+  public tags: string[];
 
-  data!: Record<string, unknown>;
+  public data: Record<string, unknown>;
 
-  isRead!: boolean;
+  public isRead: boolean;
 
-  hasEmitted!: boolean;
+  public hasEmitted: boolean;
 
-  type!: 'warning' | 'error' | 'info' | 'success';
+  public type: 'warning' | 'error' | 'info' | 'success';
+
+  constructor(init: Partial<INotification> = {}) {
+    super(init);
+    Object.defineProperty(this, 'entitySchemaKey', {
+      value: 'NotificationSchema',
+      enumerable: false,
+      writable: false,
+      configurable: false,
+    });
+    this.title = init.title ?? '';
+    this.message = init.message ?? '';
+    this.tags = init.tags ?? [];
+    this.data = init.data ?? {};
+    this.isRead = init.isRead ?? false;
+    this.hasEmitted = init.hasEmitted ?? false;
+    this.type = init.type ?? 'info';
+  }
 
   public toObject(): INotification {
-    return { ...this };
+    return {
+      id: this.id,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+      title: this.title,
+      message: this.message,
+      tags: this.tags,
+      data: this.data,
+      isRead: this.isRead,
+      hasEmitted: this.hasEmitted,
+      type: this.type,
+    };
   }
 
   public toDTO(): INotification {
@@ -38,9 +66,7 @@ export class Notification
     row: NotificationRow,
     ctx: HydrationContext = new HydrationContext(),
   ): Notification {
-    return ctx.getOrCreate('NotificationSchema', row.id, () =>
-      Object.assign(new Notification(), row),
-    );
+    return ctx.getOrCreate('NotificationSchema', row.id, () => new Notification(row as Partial<INotification>));
   }
 
   static fromRows(

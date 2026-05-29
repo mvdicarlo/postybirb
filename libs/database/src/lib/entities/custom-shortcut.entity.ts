@@ -23,14 +23,32 @@ export class CustomShortcut
   extends DatabaseEntity<ICustomShortcut>
   implements ICustomShortcut
 {
-  public readonly entitySchemaKey = 'CustomShortcutSchema' as const;
+  public readonly entitySchemaKey!: 'CustomShortcutSchema';
 
-  name!: string;
+  public name: string;
 
-  shortcut: Description = DefaultDescription();
+  public shortcut: Description;
+
+  constructor(init: Partial<ICustomShortcut> = {}) {
+    super(init);
+    Object.defineProperty(this, 'entitySchemaKey', {
+      value: 'CustomShortcutSchema',
+      enumerable: false,
+      writable: false,
+      configurable: false,
+    });
+    this.name = init.name ?? '';
+    this.shortcut = init.shortcut ?? DefaultDescription();
+  }
 
   public toObject(): ICustomShortcut {
-    return { ...this };
+    return {
+      id: this.id,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+      name: this.name,
+      shortcut: this.shortcut,
+    };
   }
 
   public toDTO(): ICustomShortcutDto {
@@ -41,9 +59,7 @@ export class CustomShortcut
     row: CustomShortcutRow,
     ctx: HydrationContext = new HydrationContext(),
   ): CustomShortcut {
-    return ctx.getOrCreate('CustomShortcutSchema', row.id, () =>
-      Object.assign(new CustomShortcut(), row),
-    );
+    return ctx.getOrCreate('CustomShortcutSchema', row.id, () => new CustomShortcut(row));
   }
 
   static fromRows(

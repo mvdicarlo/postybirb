@@ -23,28 +23,60 @@ export class PostEvent
   extends DatabaseEntity<IPostEvent>
   implements IPostEvent
 {
-  public readonly entitySchemaKey = 'PostEventSchema' as const;
+  public readonly entitySchemaKey!: 'PostEventSchema';
 
-  postRecordId!: EntityId;
+  public postRecordId: EntityId;
 
-  accountId?: AccountId;
+  public accountId?: AccountId;
 
-  postRecord!: PostRecord;
+  /**
+   * Eagerly-loaded relation. NOT part of `IPostEvent` — excluded from
+   * `toObject` to keep the serialized payload aligned with the interface.
+   */
+  public postRecord!: PostRecord;
 
-  account?: Account;
+  public account?: Account;
 
-  eventType!: PostEventType;
+  public eventType: PostEventType;
 
-  fileId?: EntityId;
+  public fileId?: EntityId;
 
-  sourceUrl?: string;
+  public sourceUrl?: string;
 
-  error?: IPostEventError;
+  public error?: IPostEventError;
 
-  metadata?: IPostEventMetadata;
+  public metadata?: IPostEventMetadata;
+
+  constructor(init: Partial<IPostEvent> = {}) {
+    super(init);
+    Object.defineProperty(this, 'entitySchemaKey', {
+      value: 'PostEventSchema',
+      enumerable: false,
+      writable: false,
+      configurable: false,
+    });
+    this.postRecordId = init.postRecordId ?? '';
+    this.accountId = (init.accountId === undefined ? undefined : init.accountId) as AccountId | undefined;
+    this.eventType = init.eventType ?? ('' as PostEventType);
+    this.fileId = init.fileId;
+    this.sourceUrl = init.sourceUrl;
+    this.error = init.error;
+    this.metadata = init.metadata;
+  }
 
   public toObject(): IPostEvent {
-    return { ...this };
+    return {
+      id: this.id,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+      postRecordId: this.postRecordId,
+      accountId: this.accountId,
+      eventType: this.eventType,
+      fileId: this.fileId,
+      sourceUrl: this.sourceUrl,
+      error: this.error,
+      metadata: this.metadata,
+    };
   }
 
   public toDTO(): PostEventDto {
@@ -61,10 +93,7 @@ export class PostEvent
     return ctx.getOrCreate(
       'PostEventSchema',
       row.id,
-      () => {
-        const { postRecord, account, ...scalars } = row;
-        return Object.assign(new PostEvent(), scalars);
-      },
+      () => new PostEvent(row as Partial<IPostEvent>),
       (e) => {
         if (row.postRecord)
           e.postRecord = PostRecord.fromRow(row.postRecord, ctx);

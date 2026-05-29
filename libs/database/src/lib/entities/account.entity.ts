@@ -38,13 +38,13 @@ export type AccountRow = InferSelectModel<typeof AccountSchema> & {
 };
 
 export class Account extends DatabaseEntity<IAccount> implements IAccount {
-  public readonly entitySchemaKey = 'AccountSchema' as const;
+  public readonly entitySchemaKey!: 'AccountSchema';
 
-  name!: string;
+  public name: string;
 
-  website!: string;
+  public website: string;
 
-  groups: string[] = [];
+  public groups: string[];
 
   /**
    * Eagerly-loaded website data row. Stripped from `toDTO` payloads —
@@ -52,23 +52,42 @@ export class Account extends DatabaseEntity<IAccount> implements IAccount {
    * required to satisfy `IAccount` even though drizzle omits it when no
    * `with: { websiteData: true }` clause is present (legacy parity).
    */
-  websiteData!: WebsiteData;
+  public websiteData!: WebsiteData;
 
   /**
    * Runtime website instance — NOT a database column. Attached via
    * `withWebsiteInstance` and consumed by `toDTO` for the DTO payload.
    * Excluded from `toObject` so it never leaks into serialized state.
    */
-  websiteInstance?: AccountWebsiteInstanceLike;
+  public websiteInstance?: AccountWebsiteInstanceLike;
+
+  constructor(init: Partial<IAccount> = {}) {
+    super(init);
+    Object.defineProperty(this, 'entitySchemaKey', {
+      value: 'AccountSchema',
+      enumerable: false,
+      writable: false,
+      configurable: false,
+    });
+    this.name = init.name ?? '';
+    this.website = init.website ?? '';
+    this.groups = init.groups ?? [];
+  }
 
   public toObject(): IAccount {
-    const { websiteInstance: _wi, ...rest } = this;
-    return rest as unknown as IAccount;
+    return {
+      id: this.id,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+      name: this.name,
+      website: this.website,
+      groups: this.groups,
+    } as IAccount;
   }
 
   public toDTO(): IAccountDto {
-    const dto: IAccountDto = {
-      ...(this.toObject() as unknown as IAccountDto),
+    return {
+      ...this.toObject(),
       data: (this.websiteInstance?.getWebsiteData() ?? {}) as IAccountDto['data'],
       state: this.websiteInstance?.getLoginState() ?? {
         isLoggedIn: false,
@@ -81,8 +100,7 @@ export class Account extends DatabaseEntity<IAccount> implements IAccount {
           this.websiteInstance?.decoratedProps.metadata.displayName ?? '',
         supports: this.websiteInstance?.getSupportedTypes() ?? [],
       },
-    };
-    return dto;
+    } as IAccountDto;
   }
 
   withWebsiteInstance(websiteInstance: AccountWebsiteInstanceLike): this {
@@ -97,10 +115,7 @@ export class Account extends DatabaseEntity<IAccount> implements IAccount {
     return ctx.getOrCreate(
       'AccountSchema',
       row.id,
-      () => {
-        const { websiteData, ...scalars } = row;
-        return Object.assign(new Account(), scalars);
-      },
+      () => new Account(row),
       (e) => {
         if (row.websiteData) {
           e.websiteData = WebsiteData.fromRow(row.websiteData, ctx);

@@ -35,38 +35,72 @@ export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
   extends DatabaseEntity<ISubmission<T>>
   implements ISubmission<T>
 {
-  public readonly entitySchemaKey = 'SubmissionSchema' as const;
+  public readonly entitySchemaKey!: 'SubmissionSchema';
 
-  type!: SubmissionType;
+  public type: SubmissionType;
 
-  options!: WebsiteOptions[];
+  public options!: WebsiteOptions[];
 
-  postQueueRecord?: PostQueueRecord;
+  public postQueueRecord?: PostQueueRecord;
 
-  isScheduled = false;
+  public isScheduled: boolean;
 
-  isTemplate = false;
+  public isTemplate: boolean;
 
-  isMultiSubmission = false;
+  public isMultiSubmission: boolean;
 
-  isArchived = false;
+  public isArchived: boolean;
 
-  isInitialized = false;
+  public isInitialized: boolean;
 
-  schedule: ISubmissionScheduleInfo = {
-    scheduleType: ScheduleType.NONE,
-  };
+  public schedule: ISubmissionScheduleInfo;
 
-  files!: SubmissionFile[];
+  public files!: SubmissionFile[];
 
-  metadata!: T;
+  public metadata: T;
 
-  posts!: PostRecord[];
+  public posts!: PostRecord[];
 
-  order!: number;
+  public order: number;
+
+  constructor(init: Partial<ISubmission<T>> = {}) {
+    super(init);
+    Object.defineProperty(this, 'entitySchemaKey', {
+      value: 'SubmissionSchema',
+      enumerable: false,
+      writable: false,
+      configurable: false,
+    });
+    this.type = init.type ?? ('' as SubmissionType);
+    this.isScheduled = init.isScheduled ?? false;
+    this.isTemplate = init.isTemplate ?? false;
+    this.isMultiSubmission = init.isMultiSubmission ?? false;
+    this.isArchived = init.isArchived ?? false;
+    this.isInitialized = init.isInitialized ?? false;
+    this.schedule = init.schedule ?? { scheduleType: ScheduleType.NONE };
+    this.metadata = (init.metadata ?? ({} as T)) as T;
+    this.order = init.order ?? 0;
+  }
 
   public toObject(): ISubmission<T> {
-    return { ...this } as ISubmission<T>;
+    return {
+      id: this.id,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+      type: this.type,
+      options: this.options,
+      postQueueRecord: this.postQueueRecord,
+      isScheduled: this.isScheduled,
+      isTemplate: this.isTemplate,
+      isMultiSubmission: this.isMultiSubmission,
+      isArchived: this.isArchived,
+      isInitialized: this.isInitialized,
+      schedule: this.schedule,
+      files: this.files,
+      metadata: this.metadata,
+      posts: this.posts,
+      order: this.order,
+    } as ISubmission<T>;
   }
 
   public toDTO(): ISubmissionDto {
@@ -95,10 +129,7 @@ export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
     return ctx.getOrCreate(
       'SubmissionSchema',
       row.id,
-      () => {
-        const { options, posts, files, postQueueRecord, ...scalars } = row;
-        return Object.assign(new Submission<TM>(), scalars);
-      },
+      () => new Submission<TM>(row as Partial<ISubmission<TM>>),
       (e) => {
         if (row.options)
           e.options = row.options.map((o) => WebsiteOptions.fromRow(o, ctx));

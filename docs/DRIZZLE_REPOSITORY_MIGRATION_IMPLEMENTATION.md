@@ -466,6 +466,62 @@ the legacy wrapper still exists but is no longer reachable.
   - [ ] Existing legacy-wrapper path still throws `NotFoundException`
     directly (no double-wrap).
 
+### Step 18.5 — Lib entity construction refactor
+
+While performing the Step 19 cutover for `AccountSchema`, two latent bugs
+in the lib `DatabaseEntity` base + the 17 concrete lib entities surfaced
+and blocked the cutover:
+
+1. **Field-initializer clobber.** The legacy entities relied on a *second*
+   `Object.assign(this, entity)` inside every subclass constructor to win
+   the construction-order race against derived class-field initializers
+   (`groups: string[] = []`, `schedule: ISubmissionScheduleInfo = {…}`,
+   `shortcut: Description = DefaultDescription()`, etc.). The lib base
+   removed that "redundant" call, so any field with an initializer
+   silently clobbered the values the base had just assigned.
+2. **`entitySchemaKey` leaked through serialization.** Declared as a
+   plain `public readonly entitySchemaKey = 'XSchema' as const;` class
+   field, it was enumerable and shipped through `{ ...this }` /
+   `toObject()` / drizzle insert payloads / DTO round-trips.
+
+Fix (already implemented before continuing the per-schema cutover):
+
+- [x] Outputs:
+  - [x] `libs/database/src/lib/entities/database-entity.ts`: removed
+    `Object.assign(this, entity)` from the base constructor; the base now
+    only sets `id`, `createdAt`, `updatedAt`. Concrete subclasses MUST
+    assign every column-backed field explicitly in their own constructor.
+  - [x] `entitySchemaKey` is declared with the definite-assignment
+    assertion (`public readonly entitySchemaKey!: 'XSchema';`) and set
+    via `Object.defineProperty(this, 'entitySchemaKey', { value,
+    enumerable: false, writable: false, configurable: false })` from each
+    subclass constructor — non-enumerable so it cannot leak through
+    spread / `Object.keys` / DTO output.
+  - [x] Every one of the 17 lib entities now has an explicit
+    `constructor(init: Partial<I…> = {}) { super(init); /* defineProperty */;
+    this.col1 = init.col1 ?? default; … }` plus an explicit
+    `toObject()` object literal that lists each schema field by name.
+    Hydrated relation objects are excluded from `toObject()` when they
+    are class-only (e.g. `PostEvent.postRecord`, `WebsiteOptions.submissionId`)
+    so the returned value structurally matches the interface.
+  - [x] `fromRow` switched from `Object.assign(new X(), scalars)` to
+    `new X(row as Partial<I…>)`. Nullable FK fields (`templateId`,
+    `postRecordId`, `accountId`, `originPostRecordId`, `primaryFileId`,
+    `thumbnailId`, `altFileId`) default to `null` (not `''`) and use the
+    `init.x === undefined ? null : init.x` guard so explicit DB nulls
+    survive the round-trip.
+- [x] Tests:
+  - [x] `nx test database` — all 43 suites / 162 tests green, including
+    the `repository-registry.integration` round-trip and the FK
+    `ON DELETE SET NULL` repository specs that triggered the bug.
+  - [x] `nx test client-server` — 40 suites / 360 tests green
+    (Account, websites, validation, website-options, etc. all consume
+    the refactored entities).
+
+This step was not in the original plan; it is recorded here because the
+per-schema cutover sequence in Steps 19/20 depends on entities that
+behave consistently under both construction paths.
+
 ### Step 19 + 20 — Per-schema consumer cutover (×17, one PR each)
 
 For each schema, in a single PR:

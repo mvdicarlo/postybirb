@@ -20,18 +20,40 @@ export class DirectoryWatcher
   extends DatabaseEntity<IDirectoryWatcher>
   implements IDirectoryWatcher
 {
-  public readonly entitySchemaKey = 'DirectoryWatcherSchema' as const;
+  public readonly entitySchemaKey!: 'DirectoryWatcherSchema';
 
-  path?: string;
+  public path?: string;
 
-  templateId!: SubmissionId;
+  public templateId: SubmissionId;
 
-  importAction!: DirectoryWatcherImportAction;
+  public importAction: DirectoryWatcherImportAction;
 
-  template!: Submission;
+  public template!: Submission;
+
+  constructor(init: Partial<IDirectoryWatcher> = {}) {
+    super(init);
+    Object.defineProperty(this, 'entitySchemaKey', {
+      value: 'DirectoryWatcherSchema',
+      enumerable: false,
+      writable: false,
+      configurable: false,
+    });
+    this.path = init.path;
+    this.templateId = (init.templateId === undefined ? null : init.templateId) as SubmissionId;
+    this.importAction =
+      init.importAction ?? ('' as DirectoryWatcherImportAction);
+  }
 
   public toObject(): IDirectoryWatcher {
-    return { ...this };
+    return {
+      id: this.id,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+      path: this.path,
+      templateId: this.templateId,
+      importAction: this.importAction,
+      template: this.template,
+    };
   }
 
   public toDTO(): DirectoryWatcherDto {
@@ -46,10 +68,7 @@ export class DirectoryWatcher
     return ctx.getOrCreate(
       'DirectoryWatcherSchema',
       row.id,
-      () => {
-        const { template, ...scalars } = row;
-        return Object.assign(new DirectoryWatcher(), scalars);
-      },
+      () => new DirectoryWatcher(row as Partial<IDirectoryWatcher>),
       (e) => {
         if (row.template) e.template = Submission.fromRow(row.template, ctx);
       },

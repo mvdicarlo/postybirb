@@ -24,48 +24,96 @@ export class SubmissionFile
   extends DatabaseEntity<ISubmissionFile>
   implements ISubmissionFile
 {
-  public readonly entitySchemaKey = 'SubmissionFileSchema' as const;
+  public readonly entitySchemaKey!: 'SubmissionFileSchema';
 
-  submissionId!: EntityId;
+  public submissionId: EntityId;
 
-  primaryFileId!: EntityId;
+  public primaryFileId: EntityId;
 
-  altFileId!: EntityId;
+  public altFileId: EntityId;
 
-  thumbnailId!: EntityId;
+  public thumbnailId: EntityId;
 
-  submission!: Submission<FileSubmissionMetadata>;
+  public submission!: Submission<FileSubmissionMetadata>;
 
-  fileName!: string;
+  public fileName: string;
 
-  hash!: string;
+  public hash: string;
 
-  mimeType!: string;
+  public mimeType: string;
 
-  file!: FileBuffer;
+  public file!: FileBuffer;
 
-  thumbnail?: FileBuffer;
+  public thumbnail?: FileBuffer;
 
-  altFile?: FileBuffer;
+  public altFile?: FileBuffer;
 
-  hasThumbnail!: boolean;
+  public hasThumbnail: boolean;
 
-  hasAltFile!: boolean;
+  public hasAltFile: boolean;
 
-  hasCustomThumbnail!: boolean;
+  public hasCustomThumbnail: boolean;
 
-  size!: number;
+  public size: number;
 
-  width!: number;
+  public width: number;
 
-  height!: number;
+  public height: number;
 
-  metadata!: SubmissionFileMetadata;
+  public metadata: SubmissionFileMetadata;
 
-  order!: number;
+  public order: number;
+
+  constructor(init: Partial<ISubmissionFile> = {}) {
+    super(init);
+    Object.defineProperty(this, 'entitySchemaKey', {
+      value: 'SubmissionFileSchema',
+      enumerable: false,
+      writable: false,
+      configurable: false,
+    });
+    this.submissionId = init.submissionId ?? '';
+    this.primaryFileId = (init.primaryFileId === undefined ? null : init.primaryFileId) as EntityId;
+    this.altFileId = (init.altFileId === undefined ? null : init.altFileId) as EntityId;
+    this.thumbnailId = (init.thumbnailId === undefined ? null : init.thumbnailId) as EntityId;
+    this.fileName = init.fileName ?? '';
+    this.hash = init.hash ?? '';
+    this.mimeType = init.mimeType ?? '';
+    this.hasThumbnail = init.hasThumbnail ?? false;
+    this.hasAltFile = init.hasAltFile ?? false;
+    this.hasCustomThumbnail = init.hasCustomThumbnail ?? false;
+    this.size = init.size ?? 0;
+    this.width = init.width ?? 0;
+    this.height = init.height ?? 0;
+    this.metadata = init.metadata ?? ({} as SubmissionFileMetadata);
+    this.order = init.order ?? 0;
+  }
 
   public toObject(): ISubmissionFile {
-    return { ...this };
+    return {
+      id: this.id,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+      submissionId: this.submissionId,
+      primaryFileId: this.primaryFileId,
+      altFileId: this.altFileId,
+      thumbnailId: this.thumbnailId,
+      submission: this.submission,
+      fileName: this.fileName,
+      hash: this.hash,
+      mimeType: this.mimeType,
+      file: this.file,
+      thumbnail: this.thumbnail,
+      altFile: this.altFile,
+      hasThumbnail: this.hasThumbnail,
+      hasAltFile: this.hasAltFile,
+      hasCustomThumbnail: this.hasCustomThumbnail,
+      size: this.size,
+      width: this.width,
+      height: this.height,
+      metadata: this.metadata,
+      order: this.order,
+    };
   }
 
   public toDTO(): ISubmissionFileDto {
@@ -118,10 +166,7 @@ export class SubmissionFile
     return ctx.getOrCreate(
       'SubmissionFileSchema',
       row.id,
-      () => {
-        const { submission, file, thumbnail, altFile, ...scalars } = row;
-        return Object.assign(new SubmissionFile(), scalars);
-      },
+      () => new SubmissionFile(row as Partial<ISubmissionFile>),
       (e) => {
         if (row.submission)
           e.submission = Submission.fromRow<FileSubmissionMetadata>(
