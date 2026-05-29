@@ -1,4 +1,3 @@
-
 import {
   FileType,
   ILoginState,
@@ -76,7 +75,7 @@ export default class Pixiv
     return new PixivFileSubmission();
   }
 
-  calculateImageResize(): ImageResizeProps {
+  calculateImageResize(): ImageResizeProps | undefined {
     return undefined;
   }
 

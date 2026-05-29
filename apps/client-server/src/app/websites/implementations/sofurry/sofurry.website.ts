@@ -189,7 +189,7 @@ export default class Sofurry
     return new SofurryFileSubmission();
   }
 
-  calculateImageResize(): ImageResizeProps {
+  calculateImageResize(): ImageResizeProps | undefined {
     return undefined;
   }
 

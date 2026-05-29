@@ -85,7 +85,7 @@ export default class Discord
     return new DiscordFileSubmission();
   }
 
-  calculateImageResize(): ImageResizeProps {
+  calculateImageResize(): ImageResizeProps | undefined {
     return undefined;
   }
 
@@ -144,11 +144,12 @@ export default class Discord
 
     formData.payload_json = JSON.stringify(payload);
     cancellationToken.throwIfCancelled();
-    return this.platform.http.post(webhook, {
-      partition: undefined,
-      type: 'multipart',
-      data: formData,
-    })
+    return this.platform.http
+      .post(webhook, {
+        partition: undefined,
+        type: 'multipart',
+        data: formData,
+      })
       .then((res) => this.handleResponse(res))
       .catch((error) => this.handleError(error, payload));
   }
@@ -168,11 +169,12 @@ export default class Discord
       postData.options.useEmbed,
     );
     cancellationToken.throwIfCancelled();
-    return this.platform.http.post(webhook, {
-      partition: undefined,
-      type: 'json',
-      data: messageData,
-    })
+    return this.platform.http
+      .post(webhook, {
+        partition: undefined,
+        type: 'json',
+        data: messageData,
+      })
       .then((res) => this.handleResponse(res))
       .catch((error) => this.handleError(error, messageData));
   }

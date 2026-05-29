@@ -1,4 +1,3 @@
-
 import {
   ILoginState,
   ImageResizeProps,
@@ -158,7 +157,7 @@ export default class Inkbunny
     return new InkbunnyFileSubmission();
   }
 
-  calculateImageResize(): ImageResizeProps {
+  calculateImageResize(): ImageResizeProps | undefined {
     return undefined;
   }
 
