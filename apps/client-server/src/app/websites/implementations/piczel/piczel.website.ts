@@ -1,4 +1,3 @@
-
 import {
   ILoginState,
   ImageResizeProps,
@@ -39,18 +38,7 @@ import { PiczelFileSubmission } from './models/piczel-file-submission';
   url: 'https://piczel.tv/gallery/$1',
 })
 export default class Piczel
-  extends Website<
-    PiczelAccountData,
-    {
-      preloadedData?: {
-        auth?: {
-          client: string;
-          uid: string;
-          'access-token': string;
-        };
-      };
-    }
-  >
+  extends Website<PiczelAccountData>
   implements FileWebsite<PiczelFileSubmission>
 {
   protected BASE_URL = 'https://piczel.tv';
@@ -61,9 +49,12 @@ export default class Piczel
     };
 
   public async onLogin(): Promise<ILoginState> {
-    const res = await this.platform.http.get<string>(`${this.BASE_URL}/gallery/upload`, {
-      partition: this.accountId,
-    });
+    const res = await this.platform.http.get<string>(
+      `${this.BASE_URL}/gallery/upload`,
+      {
+        partition: this.accountId,
+      },
+    );
 
     if (res.body.includes('/signup')) {
       return this.loginState.logout();
@@ -71,17 +62,18 @@ export default class Piczel
 
     try {
       const $ = parse(res.body);
-      const preloadedData = JSON.parse(
-        $.getElementById('_R_').textContent.split(
-          'window.__PRELOADED_STATE__ = ',
-        )[1],
-      );
+      const preloadState = $.getElementById('_R_')?.textContent.split(
+        'window.__PRELOADED_STATE__ = ',
+      )[1];
+      if (!preloadState) {
+        return this.loginState.logout();
+      }
+      const preloadedData = JSON.parse(preloadState);
+
       const { username } = preloadedData.currentUser.data;
       if (!username) {
         return this.loginState.logout();
       }
-      // Store the preloaded data in session data for authentication
-      this.sessionData.preloadedData = preloadedData;
 
       // Fetch folders
       await this.getFolders(username);
@@ -129,12 +121,6 @@ export default class Piczel
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfCancelled();
-    const { preloadedData } = this.sessionData;
-    if (!preloadedData?.auth) {
-      throw new Error('No authentication data found');
-    }
-
-    const { auth } = preloadedData;
     const { options } = postData;
     const builder = new PostBuilder(this, cancellationToken)
       .asJson()
@@ -158,9 +144,6 @@ export default class Piczel
       .setConditional('folder_id', !!options.folder, options.folder)
       .withHeaders({
         Accept: '*/*',
-        client: auth.client,
-        uid: auth.uid,
-        'access-token': auth['access-token'],
       });
 
     const result = await builder.send<{ id?: string }>(

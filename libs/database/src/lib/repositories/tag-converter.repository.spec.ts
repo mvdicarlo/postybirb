@@ -13,9 +13,13 @@ describe('TagConverterRepository', () => {
 
   it('rejects duplicate `tag` (unique constraint)', async () => {
     await repo.insert({ tag: 'dup', convertTo: {} });
-    await expect(
-      repo.insert({ tag: 'dup', convertTo: {} }),
-    ).rejects.toThrow();
+    let threw = false;
+    try {
+      await repo.insert({ tag: 'dup', convertTo: {} });
+    } catch {
+      threw = true;
+    }
+    expect(threw).toBe(true);
   });
 
   it('deleteById removes the row', async () => {

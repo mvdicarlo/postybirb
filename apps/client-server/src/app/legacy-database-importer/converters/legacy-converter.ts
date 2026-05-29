@@ -66,7 +66,19 @@ export abstract class LegacyConverter {
         continue;
       }
 
-      await modernDb.insert(modernEntity);
+      try {
+        await modernDb.insert(modernEntity);
+      } catch (err) {
+        const message = (err as Error).message ?? '';
+        if (message.includes('UNIQUE constraint failed')) {
+          logger.warn(
+            `Skipping record ${legacyEntity._id} due to unique constraint violation: ${message}`,
+          );
+          skippedCount++;
+        } else {
+          throw err;
+        }
+      }
     }
 
     if (skippedCount > 0) {
