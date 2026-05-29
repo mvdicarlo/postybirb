@@ -39,8 +39,7 @@ mac:
   target:
     - target: dmg
     - target: zip
-  notarize:
-    teamId: 'ZRKS9CNUQZ'
+  notarize: true
 
 linux:
   category: Network
@@ -101,8 +100,9 @@ nsis:
 win:
   icon: icons/icon.ico
   requestedExecutionLevel: asInvoker
-  publisherName:
-    - "Michael DiCarlo"
+  signtoolOptions:
+    publisherName:
+      - "Michael DiCarlo"
   target:
     - target: nsis
       arch:

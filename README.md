@@ -155,6 +155,60 @@ web-socket and https.
 
 Used for functions that are impossible to implement without having a dedicated server (e.g. hosting images for Instagram uploads)
 
----
+## Windows build prerequisites
 
-This project was generated using [Nx](https://nx.dev).
+Packaging the app (`yarn dist` / `yarn run make`) rebuilds native modules
+(`better-sqlite3`, `bufferutil`, `utf-8-validate`) against Electron's embedded
+Node via `node-gyp`. On Windows this requires **Python** and the **MSVC C++
+build tools** — without them the rebuild will hang or fail silently.
+
+### 1. Install Python 3.11
+
+```powershell
+winget install -e --id Python.Python.3.11
+```
+
+Close and reopen your terminal so `python` is on `PATH`.
+
+### 2. Install Visual Studio 2022 Build Tools (with the C++ workload)
+
+The important part is the `Microsoft.VisualStudio.Workload.VCTools` workload
+plus its recommended components (MSVC toolset + Windows SDK). Installing just
+the Build Tools package without that workload is **not enough** and is a common
+cause of `node-gyp` rebuilds hanging on Windows.
+
+Run this from an **elevated** PowerShell:
+
+```powershell
+winget install -e --id Microsoft.VisualStudio.2022.BuildTools `
+  --override "--passive --wait --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended"
+```
+
+If you already have Build Tools installed but are missing the C++ workload,
+add it without reinstalling:
+
+```powershell
+& "C:\Program Files (x86)\Microsoft Visual Studio\Installer\setup.exe" modify `
+  --installPath "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools" `
+  --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended `
+  --passive --norestart
+```
+
+Verify the install:
+
+```powershell
+& "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" `
+  -latest -products * `
+  -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 `
+  -property installationPath
+```
+
+A path printed means the toolchain is ready. Close and reopen your terminal.
+
+### 3. Visual Studio discovery issues
+
+If `node-gyp` still can't discover the Visual Studio install:
+
+```powershell
+Install-Module VSSetup -Scope CurrentUser
+```
