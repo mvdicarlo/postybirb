@@ -1,9 +1,9 @@
 import { Injectable, Optional } from '@nestjs/common';
+import { UserConverter, UserConverterRepository } from '@postybirb/database';
 import { USER_CONVERTER_UPDATES } from '@postybirb/socket-events';
 import { EntityId } from '@postybirb/types';
 import { eq } from 'drizzle-orm';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { UserConverter } from '../drizzle/models';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { Website } from '../websites/website';
 import { CreateUserConverterDto } from './dtos/create-user-converter.dto';
@@ -12,7 +12,7 @@ import { UpdateUserConverterDto } from './dtos/update-user-converter.dto';
 @Injectable()
 export class UserConvertersService extends PostyBirbService<'UserConverterSchema'> {
   constructor(@Optional() webSocket?: WSGateway) {
-    super('UserConverterSchema', webSocket);
+    super(new UserConverterRepository(), webSocket);
     this.repository.subscribe('UserConverterSchema', () => {
       this.emit();
     });
