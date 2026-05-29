@@ -2,20 +2,16 @@ import type { EntityId } from '@postybirb/types';
 import type { DBQueryConfig, ExtractTablesWithRelations } from 'drizzle-orm';
 import type { PostyBirbDatabaseType } from '../../database';
 import type { SchemaKey } from '../../helper-types';
-import type * as relations from '../../relations/relations';
 import type * as schemas from '../../schemas';
 import type { EntityRepository } from './entity-repository';
 import type { HydrationContext } from './hydration-context';
 
 /**
- * Combined type of all drizzle schemas + relations, used to extract the
+ * The schemas barrel exports both table definitions and co-located
+ * `relations()` bindings. This type is used to extract the
  * `ExtractedRelations` map drizzle's `DBQueryConfig` needs.
- *
- * This intentionally mirrors the `Schemas` namespace constructed at runtime
- * in `libs/database/src/index.ts` but stays type-only here to avoid a
- * circular import with the barrel.
  */
-export type AllSchemas = typeof schemas & typeof relations;
+export type AllSchemas = typeof schemas;
 
 export type ExtractedRelations = ExtractTablesWithRelations<AllSchemas>;
 
@@ -49,7 +45,7 @@ export type DefaultWithFor<K extends SchemaKey> = DBQueryConfig<
   'many',
   true,
   ExtractedRelations,
-  SchemaTable<K>
+  ExtractedRelations[K]
 >['with'];
 
 /**
@@ -59,7 +55,7 @@ export type FindManyConfig<K extends SchemaKey> = DBQueryConfig<
   'many',
   true,
   ExtractedRelations,
-  SchemaTable<K>
+  ExtractedRelations[K]
 >;
 
 /**
@@ -84,9 +80,7 @@ export type SchemaQuery<K extends SchemaKey> = PostyBirbDatabaseType['query'][K]
 export type Action = 'insert' | 'update' | 'delete';
 
 /**
- * Subscriber callback. The third argument (`schemaKey`) is new vs the
- * legacy `PostyBirbDatabase` callback and is optional from the caller's
- * perspective (existing two-arg callbacks still type-check).
+ * Subscriber callback invoked by `SubscriberBus` after write operations.
  */
 export type SubscriberCb<K extends SchemaKey = SchemaKey> = (
   ids: EntityId[],

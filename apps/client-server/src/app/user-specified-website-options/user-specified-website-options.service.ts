@@ -68,7 +68,7 @@ export class UserSpecifiedWebsiteOptionsService extends PostyBirbService<UserSpe
   ) {
     return this.repository.findOne({
       // eslint-disable-next-line @typescript-eslint/no-shadow
-      where: (options: any, { and, eq }) =>
+      where: (options, { and, eq }) =>
         and(eq(options.accountId, accountId), eq(options.type, type)),
     });
   }

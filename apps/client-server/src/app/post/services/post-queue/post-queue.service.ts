@@ -367,7 +367,7 @@ export class PostQueueService
         }
 
         const existing = await this.repository.findOne({
-          where: (queueRecord: any, { eq }) =>
+          where: (queueRecord, { eq }) =>
             eq(queueRecord.submissionId, submissionId),
           with: {
             postRecord: true,
@@ -432,7 +432,7 @@ export class PostQueueService
 
     try {
       const records = await this.repository.find({
-        where: (queueRecord: any, { inArray }) =>
+        where: (queueRecord, { inArray }) =>
           inArray(queueRecord.submissionId, submissionIds),
       });
 
@@ -459,10 +459,10 @@ export class PostQueueService
     }
 
     const entities = await this.submissionRepository.find({
-      where: (queueRecord: any, { eq, and }) =>
+      where: (submission, { eq, and }) =>
         and(
-          eq(queueRecord.isScheduled, true),
-          eq(queueRecord.isArchived, false),
+          eq(submission.isScheduled, true),
+          eq(submission.isArchived, false),
         ),
     });
     const now = Date.now();
@@ -637,7 +637,7 @@ export class PostQueueService
    */
   public async peek(): Promise<PostQueueRecord | undefined> {
     return this.repository.findOne({
-      orderBy: (queueRecord: any, { asc }) => asc(queueRecord.createdAt),
+      orderBy: (queueRecord, { asc }) => asc(queueRecord.createdAt),
       with: {
         submission: true,
         postRecord: {

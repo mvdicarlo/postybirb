@@ -221,7 +221,7 @@ export class SubmissionService
 
   private async populateMultiSubmission(type: SubmissionType) {
     const existing = await this.repository.findOne({
-      where: (submission: any, { eq: equals, and }) =>
+      where: (submission, { eq: equals, and }) =>
         and(
           eq(submission.type, type),
           equals(submission.isMultiSubmission, true),
@@ -533,7 +533,7 @@ export class SubmissionService
       failOnMissing: true,
     });
     const submissions = await this.repository.find({
-      where: (submission: any, { inArray }) => inArray(submission.id, submissionIds),
+      where: (submission, { inArray }) => inArray(submission.id, submissionIds),
     });
     if (merge) {
       // Keeps unique options, overwrites overlapping options
@@ -686,7 +686,7 @@ export class SubmissionService
   public async duplicate(id: SubmissionId) {
     this.logger.info(`Duplicating Submission '${id}'`);
     const entityToDuplicate = await this.repository.findOne({
-      where: (submission: any, { eq: equals }) => equals(submission.id, id),
+      where: (submission, { eq: equals }) => equals(submission.id, id),
       with: {
         options: {
           with: {

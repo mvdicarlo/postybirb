@@ -274,7 +274,7 @@ export class WebsiteOptionsService
     }
 
     const exists = await this.repository.findOne({
-      where: (wo: any, { and, eq }) =>
+      where: (wo, { and, eq }) =>
         and(eq(wo.submissionId, submission.id), eq(wo.accountId, account.id)),
     });
     if (exists) {

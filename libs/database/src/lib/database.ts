@@ -6,6 +6,11 @@ import { join } from 'path';
 import { RepositoryRegistry } from './repositories/base/repository-registry';
 import * as schema from './schemas';
 
+/**
+ * The schema barrel (`./schemas`) exports both table definitions AND their
+ * co-located `relations()` bindings, which is all drizzle needs for the
+ * relational query API (`db.query.X.findMany({ with: ... })`).
+ */
 export type PostyBirbDatabaseType = BetterSQLite3Database<typeof schema>;
 
 const migrationsFolder = IsTestEnvironment()

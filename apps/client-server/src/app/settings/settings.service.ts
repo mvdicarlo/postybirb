@@ -144,7 +144,7 @@ export class SettingsService
    */
   public getDefaultSettings() {
     return this.repository.findOne({
-      where: (setting: any, { eq: equals }) =>
+      where: (setting, { eq: equals }) =>
         equals(setting.profile, SettingsConstants.DEFAULT_PROFILE_NAME),
     });
   }

@@ -1,7 +1,7 @@
 import type { EntityId, IEntity } from '@postybirb/types';
 import { NULL_ACCOUNT_ID } from '@postybirb/types';
 import type { RunResult } from 'better-sqlite3';
-import { eq, inArray, SQL, type KnownKeysOnly } from 'drizzle-orm';
+import { eq, inArray, SQL } from 'drizzle-orm';
 import type { AnySQLiteColumn } from 'drizzle-orm/sqlite-core';
 import { getDatabase, type PostyBirbDatabaseType } from '../../database';
 import type { Insert, SchemaKey } from '../../helper-types';
@@ -139,9 +139,7 @@ export abstract class EntityRepository<
     return this.EntityClass.fromRows(records);
   }
 
-  public async find<TCfg extends FindManyConfig<TKey>>(
-    config: TCfg & KnownKeysOnly<TCfg, FindManyConfig<TKey>>,
-  ): Promise<TEntity[]> {
+  public async find(config: FindManyConfig<TKey>): Promise<TEntity[]> {
     const records = (await this.query.findMany({
       ...(config as object),
       with: (config.with ?? this.defaultWith ?? {}) as never,
@@ -149,9 +147,7 @@ export abstract class EntityRepository<
     return this.EntityClass.fromRows(records);
   }
 
-  public async findOne<TCfg extends FindFirstConfig<TKey>>(
-    config: TCfg & KnownKeysOnly<TCfg, FindFirstConfig<TKey>>,
-  ): Promise<TEntity | null> {
+  public async findOne(config: FindFirstConfig<TKey>): Promise<TEntity | null> {
     const record = await this.query.findFirst({
       ...(config as object),
       with: (config.with ?? this.defaultWith ?? {}) as never,
