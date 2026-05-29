@@ -12,10 +12,9 @@ import { WebsiteData, type WebsiteDataRow } from './website-data.entity';
 
 /**
  * Minimal structural type for the runtime website instance attached to an
- * `Account` via `withWebsiteInstance`. The legacy entity imports
- * `UnknownWebsite` directly from `apps/client-server/.../websites/website`,
- * which the lib cannot depend on. Concrete website classes already satisfy
- * this shape, so the Phase D cutover requires no change at the call site.
+ * `Account` via `withWebsiteInstance`. The lib uses this local interface
+ * rather than importing concrete website classes from `apps/client-server`.
+ * All website implementations already satisfy this shape.
  */
 export interface AccountWebsiteInstanceLike {
   getWebsiteData(): unknown;
@@ -50,7 +49,7 @@ export class Account extends DatabaseEntity<IAccount> implements IAccount {
    * Eagerly-loaded website data row. Stripped from `toDTO` payloads —
    * exposed only via the per-website-instance projection. Typed as
    * required to satisfy `IAccount` even though drizzle omits it when no
-   * `with: { websiteData: true }` clause is present (legacy parity).
+   * `with: { websiteData: true }` clause is supplied.
    */
   public websiteData!: WebsiteData;
 

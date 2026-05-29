@@ -16,8 +16,7 @@ import { DatabaseEntity } from './database-entity';
 export type CustomShortcutRow = InferSelectModel<typeof CustomShortcutSchema>;
 
 /**
- * Lib copy of the legacy `CustomShortcut` entity. Behaviourally identical;
- * the legacy `apps/client-server` copy is left untouched until Phase E.
+ * Entity for `CustomShortcutSchema`. No relation eager-loads.
  */
 export class CustomShortcut
   extends DatabaseEntity<ICustomShortcut>

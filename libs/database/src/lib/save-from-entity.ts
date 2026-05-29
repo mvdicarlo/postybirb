@@ -7,9 +7,6 @@ import { RepositoryRegistry } from './repositories/base/repository-registry';
 /**
  * Persist `entity` via the repository registered for its `entitySchemaKey`.
  *
- * Semantics (parity with the legacy
- * `apps/client-server/src/app/drizzle/postybirb-database/postybirb-database.util.ts`):
- *
  * - If a row with `entity.id` already exists and its persisted
  *   `updatedAt` differs from the in-memory `entity.updatedAt`, throws
  *   {@link OptimisticConcurrencyError}.
@@ -18,8 +15,7 @@ import { RepositoryRegistry } from './repositories/base/repository-registry';
  * - If no row exists, the entity is inserted and its `createdAt` /
  *   `updatedAt` are refreshed in place.
  *
- * The returned reference is the same `entity` instance the caller passed
- * in (mutated), matching legacy behaviour.
+ * Returns the same `entity` instance the caller passed in (mutated).
  */
 export async function saveFromEntity<T extends DatabaseEntity>(
   entity: T,

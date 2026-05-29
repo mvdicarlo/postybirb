@@ -33,7 +33,7 @@ export class WebsiteOptions
   public accountId: AccountId;
 
   /**
-   * Class-only field carried for legacy parity; not part of
+   * Schema column — the owning submission id. Not part of
    * `IWebsiteOptions` (which exposes the resolved `submission` relation).
    * Excluded from `toObject`.
    */

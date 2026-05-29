@@ -4,8 +4,7 @@ import { RepositoryRegistry } from './repository-registry';
 
 // Lightweight fake — RepositoryRegistry stores instances opaquely and tests
 // only need identity equality. Avoids spinning up an in-memory db just to
-// exercise registration/lookup semantics. The full EntityRepository
-// integration spec lives in Phase C.
+// exercise registration/lookup semantics.
 function makeFakeRepo<K extends SchemaKey>(key: K) {
   return { schemaKey: key, marker: Symbol(`fake-${String(key)}`) } as unknown as
     EntityRepository<K, never>;

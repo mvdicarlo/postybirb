@@ -4,9 +4,8 @@ import { PostEventSchema } from '../schemas';
 import { EntityRepository } from './base/entity-repository';
 
 /**
- * Default eager-load mirrors the legacy
- * `apps/client-server/src/app/post/services/post-record-factory/post-event.repository.ts`
- * consumer which always reads the related account.
+ * Repository for {@link PostEvent}. Eager-loads the related account
+ * on every query by default.
  */
 export class PostEventRepository extends EntityRepository<
   'PostEventSchema',

@@ -1,6 +1,6 @@
 # Drizzle Repository Migration — Implementation Plan
 
-Status: Phase C complete; Phase D not started
+Status: **complete**
 Companion to: [DRIZZLE_REPOSITORY_MIGRATION.md](DRIZZLE_REPOSITORY_MIGRATION.md)
 
 This document is the trackable, checkable form of the migration spec. Each
@@ -704,9 +704,9 @@ Goal: legacy wrapper deleted; temporary union removed; workspace clean.
 
 Tick when each phase is fully merged.
 
-- [ ] **Phase A** — lib base infrastructure
+- [x] **Phase A** — lib base infrastructure
 - [x] **Phase B** — lib entities
 - [x] **Phase C** — lib repositories + `saveFromEntity` (lib data layer
   independently proven)
-- [ ] **Phase D** — client-server cutover (17 schemas)
-- [ ] **Phase E** — cleanup
+- [x] **Phase D** — client-server cutover (17 schemas)
+- [x] **Phase E** — cleanup

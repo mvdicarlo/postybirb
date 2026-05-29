@@ -17,13 +17,8 @@ interface TrackedEntity {
  * automatic cleanup on failure. This works around drizzle-orm's synchronous
  * transaction requirement with better-sqlite3.
  *
- * Lib-local replacement for the legacy
- * `apps/client-server/src/app/drizzle/transaction-context.ts`. Behavioural
- * parity is preserved with one structural change: `commit()` broadcasts
- * through `SubscriberBus.notifyImmediate(...)` instead of the legacy
- * `PostyBirbDatabase.notifySubscribers(...)` static hook. The bus is the
- * single notification authority in the new architecture (see migration
- * spec §5).
+ * `commit()` broadcasts inserts through `SubscriberBus.notifyImmediate`
+ * (bypassing coalescing, since `commit()` is itself a coalescing point).
  */
 export class TransactionContext {
   private readonly logger = Logger();

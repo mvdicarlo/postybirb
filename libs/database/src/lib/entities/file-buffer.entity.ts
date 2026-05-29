@@ -15,10 +15,8 @@ import { DatabaseEntity } from './database-entity';
 export type FileBufferRow = InferSelectModel<typeof FileBufferSchema>;
 
 /**
- * Lib copy of the legacy `FileBuffer` entity. `buffer` is intentionally
- * carried through `toObject` here; the legacy copy used
- * `@Exclude({ toPlainOnly: true })` to strip it from the DTO. Equivalent
- * stripping happens in `toDTO()` so the public payload is unchanged.
+ * Entity for `FileBufferSchema`. `buffer` is carried through `toObject`
+ * but stripped from `toDTO` so binary data never reaches the wire payload.
  */
 export class FileBuffer
   extends DatabaseEntity<IFileBuffer>
@@ -73,7 +71,7 @@ export class FileBuffer
   }
 
   public toDTO(): FileBufferDto {
-    // Legacy parity: strip `buffer` from the wire payload.
+    // Strip `buffer` from the wire payload.
     const { buffer: _buffer, ...rest } = this.toObject();
     return rest as unknown as FileBufferDto;
   }

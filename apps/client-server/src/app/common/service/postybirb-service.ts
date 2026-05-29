@@ -12,25 +12,17 @@ import { WSGateway } from '../../web-socket/web-socket-gateway';
 import { WebSocketEvents } from '../../web-socket/web-socket.events';
 
 /**
- * Base class that implements simple CRUD logic by delegating to a
- * lib-side `EntityRepository`. Phase E Step 24 removed the legacy
- * `PostyBirbDatabase` wrapper, `adaptEntityRepository` shim, the
- * `string`-key constructor overload, and the `@Injectable()` decorator
- * (this class is abstract and never DI-resolved). Subclasses now hand
- * an explicit repository instance to `super(...)`.
+ * Abstract base for NestJS CRUD services. Delegates reads and writes to
+ * a concrete `EntityRepository` from `@postybirb/database`.
  *
- * Generic over the *repository class* itself rather than the schema
- * key: this lets TypeScript infer both `TKey` and `TEntity` directly
- * from the repo, so subclasses just write
+ * Generic over the *repository class*: subclasses write
  * `extends PostyBirbService<AccountRepository>` and `this.repository`
- * is typed as the concrete `AccountRepository` (exposing any
- * subclass-specific methods without a cast).
+ * is typed as the concrete `AccountRepository`, exposing any
+ * subclass-specific query helpers without a cast.
  *
  * `EntityNotFoundError` → 404 translation is handled globally by
- * `EntityNotFoundExceptionFilter` (registered in `main.ts`), so this
- * base no longer remaps it per call.
+ * `EntityNotFoundExceptionFilter` (registered in `main.ts`).
  *
- * @see docs/DRIZZLE_REPOSITORY_MIGRATION_IMPLEMENTATION.md
  * @class PostyBirbService
  */
 export abstract class PostyBirbService<

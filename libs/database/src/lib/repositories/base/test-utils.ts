@@ -12,8 +12,8 @@ import { SubscriberBus } from './subscriber-bus';
  * structurally checked by the caller instead.
  *
  * The helper is intentionally minimal — it exists so per-entity specs
- * can satisfy the §4 "every scalar column round-trips" coverage
- * requirement without each spec repeating the same loop.
+ * can verify every scalar column round-trips without each spec repeating
+ * the same loop.
  */
 export function assertRowRoundtrips<
   R extends { id: EntityId },

@@ -9,8 +9,7 @@ type AnyRepo = EntityRepository<SchemaKey, any>;
  * Process-wide registry of repository instances, keyed by `SchemaKey`.
  *
  * Used by `saveFromEntity` to resolve `entity.entitySchemaKey` to the
- * concrete repository at runtime, replacing the legacy
- * `DatabaseSchemaEntityMapConst`.
+ * concrete repository at runtime.
  *
  * **First-registration-wins.** Multiple `new XRepository(...)` instances
  * are expected (each consumer constructs its own with its own default

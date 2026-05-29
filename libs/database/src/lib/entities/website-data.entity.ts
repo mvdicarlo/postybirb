@@ -9,11 +9,10 @@ import type { WebsiteDataSchema } from '../schemas';
 import { DatabaseEntity } from './database-entity';
 
 /**
- * Row alias for `WebsiteDataSchema`. The `account` relation is intentionally
- * NOT typed here even though drizzle defines it — populating it would
- * create a circular type with `Account.websiteData`. Set it externally if
- * a future caller needs it; `fromRow` ignores it because the legacy code
- * path never read it back into the entity.
+ * Row alias for `WebsiteDataSchema`. The `account` back-relation is
+ * intentionally NOT typed here — populating it would create a circular
+ * type with `Account.websiteData`. Pass it externally if a caller needs it;
+ * `fromRow` leaves it unset.
  */
 export type WebsiteDataRow = InferSelectModel<typeof WebsiteDataSchema>;
 

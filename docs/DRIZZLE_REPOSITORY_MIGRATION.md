@@ -1,6 +1,6 @@
 # Drizzle Repository Migration — Specification
 
-Status: approved, not started
+Status: **complete**
 Scope owners: `libs/database`, `apps/client-server`
 
 ## Goal
@@ -663,15 +663,7 @@ not from the workspace.
 The migration is structured so that **the entire new data layer in
 `libs/database` is built, unit-tested, and integration-tested against an
 in-memory database before any file inside `apps/client-server` is changed.**
-Phases A–C touch only `libs/database`. Phases D–E touch `apps/client-server`.
-
-During Phases A–C the legacy code path in `apps/client-server/src/app/drizzle/`
-is left completely untouched and continues to power the running app. The new
-lib entities and the legacy client-server entities are independent copies of
-the same data shape — they never need to be type-compatible because nothing
-in client-server imports the lib repositories yet.
-
-Each step compiles and passes tests before the next.
+Phases A–C touched only `libs/database`. Phases D–E touched `apps/client-server`.
 
 ### Phase A — lib base infrastructure (lib-only). PR-sized.
 

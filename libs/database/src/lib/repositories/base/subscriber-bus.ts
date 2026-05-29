@@ -15,18 +15,14 @@ interface PendingBucket {
 /**
  * In-process publish/subscribe bus for repository write notifications.
  *
- * Replaces the legacy `PostyBirbDatabase.subscribers` map. Two important
- * differences:
+ * `notify` is **coalesced** through `queueMicrotask`. Multiple `notify`
+ * calls for the same `(schemaKey, action)` within a single tick are
+ * collapsed to a single subscriber invocation carrying the union of ids.
+ * This eliminates redundant per-write websocket emits in loops.
  *
- *  1. `notify` is **coalesced** through `queueMicrotask`. Multiple `notify`
- *     calls for the same `(schemaKey, action)` within a single tick are
- *     collapsed to a single subscriber invocation carrying the union of
- *     ids. This eliminates the N-emit-per-loop pattern of the legacy
- *     wrapper without changing observable semantics for any caller that
- *     already `await`s between writes.
- *  2. Subscriber callbacks receive `schemaKey` as a third argument. Old
- *     two-argument callbacks continue to type-check because the extra
- *     positional argument is optional from the caller's perspective.
+ * Subscriber callbacks receive `schemaKey` as a third argument. Two-argument
+ * callbacks continue to type-check because the extra positional argument is
+ * optional from the caller's perspective.
  *
  * Use `notifyImmediate` to bypass coalescing — required by
  * `TransactionContext.commit()` (which is itself a coalescing point) and

@@ -24,8 +24,7 @@ import type {
  * Constructor config passed by a subclass to `super(...)`. The literal
  * `schemaKey` plus the concrete `table` / `query` / `EntityClass` lets the
  * base class operate without ever indexing `db.query[K]` from a generic
- * type parameter — which is the root cause of every type weakness in the
- * legacy `PostyBirbDatabase` wrapper.
+ * type parameter, which would widen the column types to `unknown`.
  */
 export interface EntityRepositoryConfig<
   TKey extends SchemaKey,
@@ -45,7 +44,7 @@ export interface EntityRepositoryConfig<
  * property level. See `submission.repository.ts` for a representative
  * subclass.
  *
- * Behavioural notes (parity with the legacy wrapper):
+ * Behavioural notes:
  *
  *  - `findById({ failOnMissing: true })` throws `EntityNotFoundError` with
  *    the standardised message `'{SchemaKey} with id "{id}" not found'`.
@@ -76,8 +75,7 @@ export abstract class EntityRepository<
   public readonly schemaKey: TKey;
 
   /**
-   * Drizzle table descriptor. Replaces the legacy `schemaEntity` getter
-   * with a more accurate name.
+   * Drizzle table descriptor for the underlying schema.
    */
   public readonly table: SchemaTable<TKey>;
 
@@ -197,7 +195,7 @@ export abstract class EntityRepository<
     this.notify(ids, 'insert');
 
     // Re-fetch each row so the returned entity reflects `defaultWith`
-    // eager-loads. Matches legacy behaviour.
+    // eager-loads.
     const hydrated = await Promise.all(
       ids.map((id) => this.findById(id, { failOnMissing: true })),
     );
@@ -246,8 +244,7 @@ export abstract class EntityRepository<
 
   /**
    * Per-repo shortcut for `SubscriberBus.notify(this.schemaKey, ids, action)`.
-   * Coalesced. Replaces the legacy misleadingly-named `forceNotify`.
-   * Callers needing synchronous delivery should call
+   * Coalesced. Callers needing synchronous delivery should call
    * `SubscriberBus.notifyImmediate` directly.
    */
   public notify(ids: EntityId[], action: Action): void {

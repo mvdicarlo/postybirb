@@ -11,11 +11,7 @@ export * from './lib/helper-types';
 export * from './lib/schemas';
 export { Schemas };
 
-// Repository infrastructure (Phase A of the Drizzle repository migration).
-// See docs/DRIZZLE_REPOSITORY_MIGRATION.md and the companion
-// implementation plan for the full migration scope. These exports are the
-// public surface of the lib's repository layer; they are emitted now but
-// not yet consumed by client-server (that switch happens in Phase D).
+// Repository infrastructure
   export { EntityNotFoundError } from './lib/repositories/base/entity-not-found.error';
     export {
         EntityRepository,
@@ -39,27 +35,19 @@ export { Schemas };
         TableSchemaKey
     } from './lib/repositories/base/types';
 
-// Transaction context (Phase A Step 2). Replaces the legacy
-// apps/client-server/src/app/drizzle/transaction-context.ts at the
-// client-server cutover in Phase D.
+// Transaction context
 export {
     TransactionContext,
     withTransactionContext
 } from './lib/transaction/transaction-context';
 
-// Entity classes and *Row aliases (Phase B Step 5/6). These are the
-// lib-side entity implementations consumed by repositories in Phase C
-// and by client-server at the cutover in Phase D.
+// Entity classes and *Row type aliases
 export * from './lib/entities';
 
-// Concrete repository subclasses (Phase C Step 11). One per schema; each
-// extends EntityRepository<K, X> and sets its own defaultWith mirroring
-// the heaviest legacy consumer.
+// Concrete repository subclasses — one per schema
 export * from './lib/repositories';
 
-// saveFromEntity (Phase C Step 12). Lib port of the legacy
-// PostyBirbDatabaseUtil.saveFromEntity, resolving the target repository
-// via RepositoryRegistry and throwing OptimisticConcurrencyError on
-// version conflict.
+// saveFromEntity — resolves the target repository via RepositoryRegistry;
+// throws OptimisticConcurrencyError on version conflict
 export { saveFromEntity } from './lib/save-from-entity';
 

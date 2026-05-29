@@ -13,9 +13,9 @@ import { createTestRepository } from './test-utils';
 import type { Action, SubscriberCb } from './types';
 
 /**
- * Integration spec for EntityRepository, using SubmissionRepository as
- * the representative subclass. Covers the surface promised by Phase C
- * Step 13: read/write/subscribe/select/count/notify parity.
+ * Integration spec for `EntityRepository` using `SubmissionRepository` as
+ * the representative subclass. Covers: reads, writes, subscriptions,
+ * raw select, count, and coalesced notify.
  */
 describe('EntityRepository (SubmissionRepository)', () => {
   const repo = createTestRepository(SubmissionRepository);

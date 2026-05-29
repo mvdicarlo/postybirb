@@ -18,9 +18,10 @@ import type { SchemaKey } from '../../helper-types';
  * snapshots. Callers needing identity across multiple calls must pass a
  * shared `HydrationContext` explicitly to the entity's static `fromRow`.
  *
- * Identity dedup is a deliberate behaviour change vs the legacy
- * `class-transformer`-based hydration path, which produced two distinct
- * instances for repeated rows.
+ * Identity dedup is a deliberate behaviour choice: the same row appearing
+ * twice in a `findMany` result yields the same entity instance. Two
+ * sequential `repo.findById(x)` calls produce entities that do NOT share
+ * identity — separate fetches return separate snapshots.
  */
 export class HydrationContext {
   private readonly cache = new Map<string, unknown>();

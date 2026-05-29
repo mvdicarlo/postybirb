@@ -3,37 +3,21 @@ import { v4 } from 'uuid';
 import type { SchemaKey } from '../helper-types';
 
 /**
- * Lib-local replacement for
- * `apps/client-server/src/app/drizzle/models/database-entity.ts`.
+ * Abstract base for all database entities in `libs/database`.
  *
- * Key differences vs the legacy base:
+ * Construction rules:
  *
- * - **No implicit `Object.assign(this, entity)`.** The legacy pattern of
- *   `super(entity); Object.assign(this, entity);` in every subclass plus
- *   `Object.assign(this, entity)` in the base produced a fragile
- *   construction order: derived-class field initializers
- *   (`groups: string[] = []`) run AFTER `super()` and silently clobber
- *   whatever the base assigned. Concrete entities here MUST assign each
- *   field by name in their own constructor. The base handles only
- *   `id`, `createdAt`, and `updatedAt`.
- *
- * - **`entitySchemaKey` is non-enumerable.** Defined via
- *   `Object.defineProperty` in subclass constructors so it does NOT
- *   leak through `{ ...entity }`, `Object.keys`, JSON serialization, or
- *   drizzle insert payloads. Use `getSchemaKey(entity)` to read it
- *   externally; subclasses still expose it as a typed property.
- *
- * - **No `class-transformer` imports.** Lib entities hydrate exclusively
- *   through `static fromRow(row, ctx?)` / `static fromRows(rows, ctx?)`
- *   defined per entity.
- *
- * - **Generic over the entity interface (`T extends IEntity`).** The
- *   constructor accepts `Partial<T>` for `id` / `createdAt` /
- *   `updatedAt` only; subclasses widen for their own columns via their
- *   own constructor parameter.
- *
- * - **`toObject()` returns `T`** as an explicit object literal so the
- *   inherited signature is honest and no class-field metadata leaks.
+ * - The base assigns only `id`, `createdAt`, and `updatedAt`. Concrete
+ *   subclasses MUST assign every column-backed field explicitly in their
+ *   own constructor body.
+ * - `entitySchemaKey` is set via `Object.defineProperty` in each
+ *   subclass constructor (non-enumerable) so it never leaks through
+ *   `{ ...entity }`, `Object.keys`, JSON serialization, or drizzle
+ *   insert payloads.
+ * - Entities hydrate exclusively through `static fromRow(row, ctx?)` /
+ *   `static fromRows(rows, ctx?)` defined on each concrete class.
+ * - `toObject()` returns an explicit object literal of type `T` so the
+ *   signature is honest and no class-field metadata leaks.
  */
 export abstract class DatabaseEntity<
   T extends IEntity = IEntity,
