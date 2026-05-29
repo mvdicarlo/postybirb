@@ -135,8 +135,7 @@ describe('WebsiteOptionsService', () => {
       accountId: account.id,
       createdAt: record.createdAt,
       updatedAt: record.updatedAt,
-      account: record.account.toObject(),
-      submissionId: submission.id,
+      account: record.account,
       submission: record.submission.toDTO(),
     });
   });

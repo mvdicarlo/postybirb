@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-continue */
-import { SubmissionFileRepository } from '@postybirb/database';
+import { SubmissionFileRepository, WebsiteOptionsRepository } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import {
   DefaultSubmissionFileMetadata,
@@ -123,7 +123,7 @@ export class LegacySubmissionConverter {
 
   public async import(): Promise<void> {
     const submissionDb = new PostyBirbDatabase('SubmissionSchema');
-    const websiteOptionsDb = new PostyBirbDatabase('WebsiteOptionsSchema');
+    const websiteOptionsDb = new WebsiteOptionsRepository();
     const accountDb = new PostyBirbDatabase('AccountSchema');
     const submissionFileDb = new SubmissionFileRepository();
     const fileBufferDb = new PostyBirbDatabase('FileBufferSchema');

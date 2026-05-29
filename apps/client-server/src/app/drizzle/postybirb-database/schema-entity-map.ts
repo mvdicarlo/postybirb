@@ -1,7 +1,4 @@
-import { Account, CustomShortcut, DirectoryWatcher, FileBuffer, Notification, PostEvent, PostQueueRecord, PostRecord, SchemaKey, Settings, Submission, SubmissionFile, TagConverter, TagGroup, UserConverter, UserSpecifiedWebsiteOptions, WebsiteData } from '@postybirb/database';
-import {
-    WebsiteOptions,
-} from '../models';
+import { Account, CustomShortcut, DirectoryWatcher, FileBuffer, Notification, PostEvent, PostQueueRecord, PostRecord, SchemaKey, Settings, Submission, SubmissionFile, TagConverter, TagGroup, UserConverter, UserSpecifiedWebsiteOptions, WebsiteData, WebsiteOptions } from '@postybirb/database';
 
 export type DatabaseSchemaEntityMap = {
   AccountSchema: InstanceType<typeof Account>;

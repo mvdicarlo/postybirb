@@ -5,7 +5,7 @@ import {
     NotFoundException,
     OnModuleInit,
 } from '@nestjs/common';
-import { Account, CustomShortcutRepository, Insert, SubmissionRepository, UserSpecifiedWebsiteOptionsRepository } from '@postybirb/database';
+import { Account, CustomShortcutRepository, Insert, SubmissionRepository, UserSpecifiedWebsiteOptionsRepository, WebsiteOptions, WebsiteOptionsRepository } from '@postybirb/database';
 import {
     AccountId,
     Description,
@@ -27,7 +27,7 @@ import {
 import { AccountService } from '../account/account.service';
 import { PostyBirbService } from '../common/service/postybirb-service';
 
-import { Submission, WebsiteOptions } from '../drizzle/models';
+import { Submission } from '../drizzle/models';
 import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
 import { FormGeneratorService } from '../form-generator/form-generator.service';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
@@ -63,12 +63,7 @@ export class WebsiteOptionsService
     private readonly postParsersService: PostParsersService,
     private readonly websiteRegistry: WebsiteRegistryService,
   ) {
-    super(
-      new PostyBirbDatabase('WebsiteOptionsSchema', {
-        account: true,
-        submission: true,
-      }),
-    );
+    super(new WebsiteOptionsRepository());
 
     this.repository.subscribe('CustomShortcutSchema', (ids, action) => {
       if (action === 'delete') {
