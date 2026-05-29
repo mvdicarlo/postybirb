@@ -386,8 +386,13 @@ Output checkboxes:
 - [x] `user-specified-website-options.repository.spec.ts`
 - [x] `website-data.repository.spec.ts`
 - [x] `website-options.repository.spec.ts`
+- [x] `submission.repository.spec.ts` (defaultWith graph + cascade
+  coverage; generic surface is in `base/entity-repository.spec.ts`)
 
-(Note: `submission.repository.spec.ts` is the one written for step 13.)
+(Note: the generic EntityRepository surface is covered by Step 13's
+`base/entity-repository.spec.ts`, which uses SubmissionRepository as
+its vehicle; `submission.repository.spec.ts` covers only what is
+Submission-specific.)
 
 ### Step 15 — Cross-entity registry / `saveFromEntity` integration spec
 
