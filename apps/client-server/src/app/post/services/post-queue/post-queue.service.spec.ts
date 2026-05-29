@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { clearDatabase } from '@postybirb/database';
+import { clearDatabase, PostRecordRepository } from '@postybirb/database';
 import {
   AccountId,
   DefaultDescription,
@@ -11,7 +11,6 @@ import {
 import { AccountModule } from '../../../account/account.module';
 import { AccountService } from '../../../account/account.service';
 import { CreateAccountDto } from '../../../account/dtos/create-account.dto';
-import { PostyBirbDatabase } from '../../../drizzle/postybirb-database/postybirb-database';
 import { SettingsService } from '../../../settings/settings.service';
 import { TestPlatformModule } from '../../../platform/testing/test-platform.module';
 import { CreateSubmissionDto } from '../../../submission/dtos/create-submission.dto';
@@ -197,7 +196,7 @@ describe('PostQueueService', () => {
     );
 
     // Simulate the post completing (with failure) - manually update the record
-    const database = new PostyBirbDatabase('PostRecordSchema');
+    const database = new PostRecordRepository();
     await database.update(postRecord.id, {
       state: PostRecordState.FAILED,
       completedAt: new Date().toISOString(),

@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { clearDatabase, PostEvent } from '@postybirb/database';
+import { clearDatabase, PostEvent, PostRecordRepository } from '@postybirb/database';
 import {
   EntityId,
   PostEventType,
@@ -10,7 +10,6 @@ import {
 import { AccountModule } from '../../../account/account.module';
 import { AccountService } from '../../../account/account.service';
 import { PostRecord } from '../../../drizzle/models';
-import { PostyBirbDatabase } from '../../../drizzle/postybirb-database/postybirb-database';
 import { PostParsersModule } from '../../../post-parsers/post-parsers.module';
 import { TestPlatformModule } from '../../../platform/testing/test-platform.module';
 import { CreateSubmissionDto } from '../../../submission/dtos/create-submission.dto';
@@ -27,7 +26,7 @@ describe('PostRecordFactory', () => {
   let factory: PostRecordFactory;
   let submissionService: SubmissionService;
   let accountService: AccountService;
-  let postRecordRepository: PostyBirbDatabase<'PostRecordSchema'>;
+  let postRecordRepository: PostRecordRepository;
   let postEventRepository: PostEventRepository;
 
   beforeEach(async () => {
@@ -49,7 +48,7 @@ describe('PostRecordFactory', () => {
     submissionService = module.get<SubmissionService>(SubmissionService);
     accountService = module.get<AccountService>(AccountService);
     postEventRepository = module.get<PostEventRepository>(PostEventRepository);
-    postRecordRepository = new PostyBirbDatabase('PostRecordSchema');
+    postRecordRepository = new PostRecordRepository();
 
     await accountService.onModuleInit();
   });

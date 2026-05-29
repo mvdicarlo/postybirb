@@ -5,7 +5,7 @@ import {
     Optional,
 } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { PostQueueRecord, PostQueueRecordRepository } from '@postybirb/database';
+import { PostQueueRecord, PostQueueRecordRepository, PostRecordRepository } from '@postybirb/database';
 import {
     EntityId,
     PostRecordResumeMode,
@@ -44,9 +44,7 @@ export class PostQueueService
 
   private initTime = Date.now();
 
-  private readonly postRecordRepository = new PostyBirbDatabase(
-    'PostRecordSchema',
-  );
+  private readonly postRecordRepository = new PostRecordRepository();
 
   private readonly submissionRepository = new PostyBirbDatabase(
     'SubmissionSchema',
