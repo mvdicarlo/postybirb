@@ -453,14 +453,18 @@ the legacy wrapper still exists but is no longer reachable.
   - [ ] Audit: grep for `catch (NotFoundException)` / `instanceof
     NotFoundException` across `apps/client-server/src/app/**`. Document
     findings as a comment block at the top of `postybirb-service.ts`.
-  - [ ] If any sites depend on it, add the remap in `PostyBirbService`:
+  - [ ] Add the remap unconditionally in the base `PostyBirbService.findById`
+    wrapper (not per-consumer):
     `catch (e) { if (e instanceof EntityNotFoundError) throw new
-    NotFoundException(e.message); throw e; }` around the `failOnMissing`
-    code paths.
+    NotFoundException(e.message); throw e; }`. Centralising it here means
+    services and controllers stop caring whether the lib repo or the
+    legacy wrapper raised the error.
 - [ ] Tests:
-  - [ ] If remap added: new test case in `postybirb-service.spec.ts`
-    asserts `EntityNotFoundError` from the lib becomes
+  - [ ] New test case in `postybirb-service.spec.ts` asserts
+    `EntityNotFoundError` from a lib `EntityRepository` becomes
     `NotFoundException` at the service boundary.
+  - [ ] Existing legacy-wrapper path still throws `NotFoundException`
+    directly (no double-wrap).
 
 ### Step 19 + 20 — Per-schema consumer cutover (×17, one PR each)
 
@@ -471,11 +475,24 @@ For each schema, in a single PR:
     `super('XSchema', ws)` with `new XRepository(...)` /
     `super(new XRepository(), ws)`. Update import paths to
     `@postybirb/database`. Rename `repository.schemaEntity` →
-    `repository.table` at call sites.
+    `repository.table` and `repository.forceNotify` → `repository.notify`
+    at call sites (both renames align with the lib repo surface).
 20. Once that schema has zero remaining legacy imports, delete
     `apps/client-server/src/app/drizzle/models/X.entity.ts`. Re-run the
     consumer's full spec suite to confirm nothing imports the deleted
     file.
+
+Ride-along (apply once during the first schema PR, then reuse for the
+rest):
+
+- Rename the base-service `schema` getter to `table` and update the
+  consumer call sites in that PR's diff. The legacy name shadowed
+  drizzle's own "schema" concept; aligning with the lib repo's `table`
+  property removes the ambiguity.
+- Add a `protected notify(ids, action)` passthrough on `PostyBirbService`
+  so transactional code in services stops reaching through
+  `this.repository.forceNotify` / `.notify` directly. The base hides the
+  legacy-vs-lib naming difference until Step 24.
 
 Per-schema PR checkboxes:
 
@@ -546,10 +563,29 @@ Goal: legacy wrapper deleted; temporary union removed; workspace clean.
 
 - [ ] Outputs:
   - [ ] `apps/client-server/src/app/common/service/postybirb-service.ts`
-    accepts `EntityRepository<SchemaKey, any>` only.
+    accepts `EntityRepository<TKey, TEntity>` only. Delete the
+    `PostyBirbDataSource` union and `adaptEntityRepository` shim.
+  - [ ] Delete the `string`-key constructor overload. With the legacy
+    wrapper gone there is no reason for the base to construct its own
+    repository; subclasses pass the repo instance explicitly (standard
+    Nest DI shape).
+  - [ ] Add a second generic to the base:
+    `PostyBirbService<TKey extends SchemaKey, TEntity extends IEntity =
+    DatabaseSchemaEntityMap[TKey]>`. `findById` / `findAll` / `remove`
+    now return concretely-typed entities instead of the implicit `any`
+    they had under the legacy wrapper. Subclasses that already pin a
+    `TKey` get the matching `TEntity` for free.
+  - [ ] Remove the `@Injectable()` decorator from `PostyBirbService` —
+    it is abstract and never resolved by the Nest container.
+  - [ ] Have `remove(id)` return `void` (or `Promise<void>`) rather than
+    leaking the better-sqlite3 `RunResult` through service signatures.
+    Update any caller that still inspects the result.
 - [ ] Tests:
-  - [ ] `postybirb-service.spec.ts` updated to drop the legacy-wrapper case
-    if still present; all client-server specs green.
+  - [ ] `postybirb-service.spec.ts` updated to drop the legacy-wrapper case;
+    all client-server specs green.
+  - [ ] Type-level: a subclass `extends PostyBirbService<'SubmissionSchema'>`
+    sees `findById` return `Promise<SubmissionEntity | null>` (verified
+    via `tsc --noEmit`).
 
 ### Step 25 — Delete `apps/client-server/src/app/drizzle/`
 

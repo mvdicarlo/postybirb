@@ -1,12 +1,61 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { SchemaKey } from '@postybirb/database';
+import {
+  EntityRepository,
+  SchemaKey,
+} from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
-import { EntityId } from '@postybirb/types';
+import { Action, EntityId } from '@postybirb/types';
 import { SQL } from 'drizzle-orm';
 import { FindOptions } from '../../drizzle/postybirb-database/find-options.type';
 import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
 import { WSGateway } from '../../web-socket/web-socket-gateway';
 import { WebSocketEvents } from '../../web-socket/web-socket.events';
+
+/**
+ * Temporary union of the legacy `PostyBirbDatabase` wrapper and the new
+ * lib-side `EntityRepository`. Introduced for Phase D Step 17 of the
+ * Drizzle Repository Migration so this base class can accept either
+ * source while per-schema services migrate one at a time. Removed in
+ * Phase E Step 24.
+ *
+ * @see docs/DRIZZLE_REPOSITORY_MIGRATION_IMPLEMENTATION.md
+ */
+export type PostyBirbDataSource<TKey extends SchemaKey> =
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  | PostyBirbDatabase<TKey>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  | EntityRepository<TKey, any>;
+
+/**
+ * Adapt a lib-side `EntityRepository` into the structural shape the
+ * subclasses currently consume via `this.repository.*` (i.e. the legacy
+ * `PostyBirbDatabase` surface). Grafts the two surface differences
+ * (`schemaEntity` → `table`, `forceNotify` → `notify`) so existing
+ * subclass call sites keep compiling and running unchanged through the
+ * per-schema cutover in Phase D Steps 19-20.
+ *
+ * Removed in Phase E Step 24 once every call site has migrated to the
+ * lib surface directly (`.table`, `.notify`).
+ */
+function adaptEntityRepository<TKey extends SchemaKey>(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  repo: EntityRepository<TKey, any>,
+): PostyBirbDatabase<TKey> {
+  const adapted = repo as unknown as PostyBirbDatabase<TKey> & {
+    schemaEntity?: unknown;
+    forceNotify?: (ids: EntityId[], action: Action) => void;
+  };
+  if (!('schemaEntity' in adapted)) {
+    Object.defineProperty(adapted, 'schemaEntity', {
+      get: () => repo.table,
+      configurable: true,
+    });
+  }
+  if (!adapted.forceNotify) {
+    adapted.forceNotify = (ids, action) => repo.notify(ids, action);
+  }
+  return adapted as PostyBirbDatabase<TKey>;
+}
 
 /**
  * Base class that implements simple CRUD logic
@@ -20,13 +69,15 @@ export abstract class PostyBirbService<TSchemaKey extends SchemaKey> {
   protected readonly repository: PostyBirbDatabase<TSchemaKey>;
 
   constructor(
-    private readonly table: TSchemaKey | PostyBirbDatabase<TSchemaKey>,
+    private readonly source: TSchemaKey | PostyBirbDataSource<TSchemaKey>,
     private readonly webSocket?: WSGateway,
   ) {
-    if (typeof table === 'string') {
-      this.repository = new PostyBirbDatabase(table);
+    if (typeof source === 'string') {
+      this.repository = new PostyBirbDatabase(source);
+    } else if (source instanceof PostyBirbDatabase) {
+      this.repository = source;
     } else {
-      this.repository = table;
+      this.repository = adaptEntityRepository(source);
     }
   }
 
