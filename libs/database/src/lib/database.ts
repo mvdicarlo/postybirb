@@ -2,7 +2,8 @@ import { PostyBirbDirectories } from '@postybirb/fs';
 import { IsTestEnvironment } from '@postybirb/utils/common';
 import { BetterSQLite3Database, drizzle } from 'drizzle-orm/better-sqlite3';
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
-import { join } from 'path';
+import { existsSync, mkdirSync, unlinkSync } from 'fs';
+import { join, dirname } from 'path';
 import { RepositoryRegistry } from './repositories/base/repository-registry';
 import * as schema from './schemas';
 
@@ -17,20 +18,37 @@ const migrationsFolder = IsTestEnvironment()
   ? join(__dirname.split('libs')[0], 'apps', 'postybirb', 'src', 'migrations')
   : join(__dirname, 'migrations');
 let db: PostyBirbDatabaseType | undefined;
+let testDbPath: string | undefined;
+
+/** Monotonic counter to generate unique file-based DB paths per test. */
+let testDbCounter = 0;
 
 /**
  * Get the database instance
- * @param {boolean} newInstance - Whether to get a new instance of the database or force a
- * new instance (mostly for testing)
  */
 export function getDatabase() {
   if (!db) {
-    const path = IsTestEnvironment()
-      ? ':memory:'
-      : join(
-          PostyBirbDirectories.DATA_DIRECTORY,
-          `database-${process.env.POSTYBIRB_ENV}.sqlite`,
-        );
+    let path: string;
+    if (IsTestEnvironment()) {
+      const tempDir = join(
+        __dirname.split('libs')[0],
+        'test',
+        'temp',
+      );
+      if (!existsSync(tempDir)) {
+        mkdirSync(tempDir, { recursive: true });
+      }
+      path = join(
+        tempDir,
+        `test-${process.pid}-${++testDbCounter}.sqlite`,
+      );
+      testDbPath = path;
+    } else {
+      path = join(
+        PostyBirbDirectories.DATA_DIRECTORY,
+        `database-${process.env.POSTYBIRB_ENV}.sqlite`,
+      );
+    }
     db = drizzle(path, { schema });
     migrate(db, { migrationsFolder });
   }
@@ -52,4 +70,12 @@ export function getDatabase() {
 export function clearDatabase() {
   db = undefined;
   RepositoryRegistry.clear();
+  if (testDbPath) {
+    try {
+      unlinkSync(testDbPath);
+    } catch {
+      // File may already be removed
+    }
+    testDbPath = undefined;
+  }
 }
