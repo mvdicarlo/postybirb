@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { Account, clearDatabase, WebsiteDataRepository } from '@postybirb/database';
-import { PostyBirbDatabaseUtil } from '../drizzle/postybirb-database/postybirb-database.util';
+import { Account, AccountRepository, clearDatabase, saveFromEntity, WebsiteDataRepository } from '@postybirb/database';
 import { WebsiteImplProvider } from './implementations/provider';
 import WebsiteDataManager from './website-data-manager';
 
@@ -14,6 +13,7 @@ describe('WebsiteDataManager', () => {
       providers: [WebsiteImplProvider],
     }).compile();
     repository = new WebsiteDataRepository();
+    new AccountRepository();
   });
 
   afterAll(async () => {
@@ -21,7 +21,7 @@ describe('WebsiteDataManager', () => {
   });
 
   function populateAccount(): Promise<Account> {
-    return PostyBirbDatabaseUtil.saveFromEntity(
+    return saveFromEntity(
       new Account({
         name: 'test',
         website: 'test',

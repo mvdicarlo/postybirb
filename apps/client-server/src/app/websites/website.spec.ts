@@ -1,8 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { Account, clearDatabase, WebsiteDataRepository } from '@postybirb/database';
+import { Account, AccountRepository, clearDatabase, saveFromEntity, WebsiteDataRepository } from '@postybirb/database';
 import { PlatformService } from '@postybirb/platform';
 import { eq } from 'drizzle-orm';
-import { PostyBirbDatabaseUtil } from '../drizzle/postybirb-database/postybirb-database.util';
 import { createNoopPlatformContext } from '../platform/testing/noop-platform-context';
 import { noopPlatformProvider } from '../platform/testing/noop-platform-providers';
 import { WebsiteImplProvider } from './implementations/provider';
@@ -26,6 +25,7 @@ describe('Website', () => {
     }).compile();
     const service = module.get(WebsiteRegistryService);
     repository = service.getRepository();
+    new AccountRepository();
     platformContext = createNoopPlatformContext();
   });
 
@@ -38,7 +38,7 @@ describe('Website', () => {
   });
 
   function populateAccount(): Promise<Account> {
-    return PostyBirbDatabaseUtil.saveFromEntity(
+    return saveFromEntity(
       new Account({
         name: 'test',
         website: 'test',
