@@ -128,6 +128,26 @@ export abstract class PostyBirbService<TSchemaKey extends SchemaKey> {
   }
 
   /**
+   * Drizzle table descriptor. Alias of `schema` aligning with the
+   * lib-side `EntityRepository.table` naming. Per-schema services are
+   * being migrated to this name through Phase D Steps 19-20; the
+   * legacy `schema` getter is removed in Phase E Step 24.
+   */
+  protected get table() {
+    return this.repository.schemaEntity;
+  }
+
+  /**
+   * Coalesced subscriber notification. Hides the legacy
+   * `forceNotify` vs. lib `notify` naming difference so transactional
+   * paths in services can call `this.notify(ids, action)` regardless
+   * of which data source backs the repository.
+   */
+  protected notify(ids: EntityId[], action: Action) {
+    this.repository.forceNotify(ids, action);
+  }
+
+  /**
    * Throws exception if a record matching the query already exists.
    *
    * @protected
