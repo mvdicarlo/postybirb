@@ -4,28 +4,25 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-    ActionIcon,
-    Badge,
-    Box,
-    Collapse,
-    Divider,
-    Flex,
-    Group,
-    Paper,
-    Text,
-    Tooltip,
+  ActionIcon,
+  Badge,
+  Box,
+  Collapse,
+  Divider,
+  Flex,
+  Group,
+  Paper,
+  Text,
+  Tooltip,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import {
-    FileType,
-    ISubmissionFileDto,
-} from '@postybirb/types';
+import { FileType, ISubmissionFileDto } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import {
-    IconChevronDown,
-    IconGripVertical,
-    IconPencil,
-    IconTrash
+  IconChevronDown,
+  IconGripVertical,
+  IconPencil,
+  IconTrash,
 } from '@tabler/icons-react';
 import { memo } from 'react';
 import fileSubmissionApi from '../../../../../api/file-submission.api';
@@ -40,144 +37,157 @@ interface SubmissionFileCardProps {
   file: ISubmissionFileDto;
   draggable: boolean;
   totalFiles: number;
+  dragListeners?: Record<string, unknown>;
 }
 
-export const SubmissionFileCard = memo(({
-  file,
-  draggable,
-  totalFiles,
-}: SubmissionFileCardProps) => {
-  const { submission } = useSubmissionEditCardContext();
-  const accounts = useSubmissionAccounts();
-  const [expanded, { toggle }] = useDisclosure(false);
-  const fileType = getFileType(file.fileName);
+export const SubmissionFileCard = memo(
+  ({ file, draggable, totalFiles, dragListeners }: SubmissionFileCardProps) => {
+    const { submission } = useSubmissionEditCardContext();
+    const accounts = useSubmissionAccounts();
+    const [expanded, { toggle }] = useDisclosure(false);
+    const fileType = getFileType(file.fileName);
 
-  const canDelete = totalFiles > 1 && !submission.isArchived;
+    const canDelete = totalFiles > 1 && !submission.isArchived;
 
-  const handleDelete = async () => {
-    if (!canDelete) return;
+    const handleDelete = async () => {
+      if (!canDelete) return;
 
-    try {
-      await fileSubmissionApi.removeFile(submission.id, file.id, 'file');
-    } catch (error) {
-      showErrorWithContext(error, <Trans>Failed to delete file</Trans>);
-    }
-  };
+      try {
+        await fileSubmissionApi.removeFile(submission.id, file.id, 'file');
+      } catch (error) {
+        showErrorWithContext(error, <Trans>Failed to delete file</Trans>);
+      }
+    };
 
-  return (
-    <Paper
-      p="sm"
-      shadow="xs"
-      radius="md"
-      withBorder
-      className={DRAGGABLE_FILE_CLASS}
-      style={{
-        cursor: draggable ? 'grab' : undefined,
-        position: 'relative',
-      }}
-    >
-      {/* Drag handle */}
-      {draggable && (
-        <Box
-          style={{
-            position: 'absolute',
-            left: 8,
-            top: '50%',
-            transform: 'translateY(-50%)',
-            opacity: 0.5,
-            cursor: 'grab',
-          }}
-        >
-          <IconGripVertical size={16} />
-        </Box>
-      )}
+    return (
+      <Paper
+        p="sm"
+        shadow="xs"
+        radius="md"
+        withBorder
+        className={DRAGGABLE_FILE_CLASS}
+        style={{
+          position: 'relative',
+        }}
+      >
+        {/* Drag handle */}
+        {draggable && (
+          <Box
+            {...dragListeners}
+            style={{
+              position: 'absolute',
+              left: 8,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              opacity: 0.5,
+              cursor: 'grab',
+            }}
+          >
+            <IconGripVertical size={16} />
+          </Box>
+        )}
 
-      <Flex gap="md" align="flex-start" ml={draggable ? 'md' : 0}>
-        {/* File Preview with Actions */}
-        <Box
-          style={{
-            // eslint-disable-next-line lingui/no-unlocalized-strings
-            flex: '0 0 auto',
-            padding: 4,
-            borderRadius: 8,
-          }}
-        >
-          <FileActions file={file} submissionId={submission.id} />
-        </Box>
+        <Flex gap="md" align="flex-start" ml={draggable ? 'md' : 0}>
+          {/* File Preview with Actions */}
+          <Box
+            style={{
+              // eslint-disable-next-line lingui/no-unlocalized-strings
+              flex: '0 0 auto',
+              padding: 4,
+              borderRadius: 8,
+            }}
+          >
+            <FileActions file={file} submissionId={submission.id} />
+          </Box>
 
-        {/* File Info */}
-        <Box style={{ flex: 1, minWidth: 0 }}>
-          <Group justify="space-between" wrap="nowrap" mb={4}>
-            <Group gap="xs" wrap="nowrap" style={{ minWidth: 0 }}>
-              <Text size="sm" fw={600} truncate style={{ maxWidth: 200 }}>
-                {file.fileName}
-              </Text>
-              <Badge
-                size="xs"
-                variant="light"
-                color={getFileTypeColor(fileType)}
-              >
-                {fileType}
-              </Badge>
-            </Group>
+          {/* File Info */}
+          <Box style={{ flex: 1, minWidth: 0 }}>
+            <Group justify="space-between" wrap="nowrap" mb={4}>
+              <Group gap="xs" wrap="nowrap" style={{ minWidth: 0 }}>
+                <Text
+                  size="sm"
+                  fw={600}
+                  truncate
+                  style={{ maxWidth: 200 }}
+                  title={file.fileName}
+                >
+                  {file.fileName}
+                </Text>
+                <Badge
+                  size="xs"
+                  variant="light"
+                  color={getFileTypeColor(fileType)}
+                >
+                  {fileType}
+                </Badge>
+              </Group>
 
-            <Group gap="xs">
-              {/* Edit metadata button - more discoverable */}
-              {!submission.isArchived && (
-                <Tooltip label={expanded ? <Trans>Collapse</Trans> : <Trans>Edit metadata</Trans>}>
-                  <ActionIcon 
-                    size="sm" 
-                    variant={expanded ? "filled" : "light"}
-                    color="blue"
-                    onClick={toggle}
+              <Group gap="xs">
+                {/* Edit metadata button - more discoverable */}
+                {!submission.isArchived && (
+                  <Tooltip
+                    label={
+                      expanded ? (
+                        <Trans>Collapse</Trans>
+                      ) : (
+                        <Trans>Edit metadata</Trans>
+                      )
+                    }
                   >
-                    {expanded ? (
-                      <IconChevronDown size={14} />
+                    <ActionIcon
+                      size="sm"
+                      variant={expanded ? 'filled' : 'light'}
+                      color="blue"
+                      onClick={toggle}
+                    >
+                      {expanded ? (
+                        <IconChevronDown size={14} />
+                      ) : (
+                        <IconPencil size={14} />
+                      )}
+                    </ActionIcon>
+                  </Tooltip>
+                )}
+
+                {/* Delete button */}
+                <Tooltip
+                  label={
+                    canDelete ? (
+                      <Trans>Delete file</Trans>
                     ) : (
-                      <IconPencil size={14} />
-                    )}
+                      <Trans>Cannot delete the only file</Trans>
+                    )
+                  }
+                >
+                  <ActionIcon
+                    size="sm"
+                    variant="subtle"
+                    color="red"
+                    disabled={!canDelete}
+                    onClick={handleDelete}
+                  >
+                    <IconTrash size={14} />
                   </ActionIcon>
                 </Tooltip>
-              )}
-
-              {/* Delete button */}
-              <Tooltip
-                label={
-                  canDelete ? (
-                    <Trans>Delete file</Trans>
-                  ) : (
-                    <Trans>Cannot delete the only file</Trans>
-                  )
-                }
-              >
-                <ActionIcon
-                  size="sm"
-                  variant="subtle"
-                  color="red"
-                  disabled={!canDelete}
-                  onClick={handleDelete}
-                >
-                  <IconTrash size={14} />
-                </ActionIcon>
-              </Tooltip>
+              </Group>
             </Group>
-          </Group>
 
-          {/* File size */}
-          <Text size="xs" c="dimmed">
-            {formatFileSize(file.size)} • {file.width}×{file.height}
-          </Text>
-        </Box>
-      </Flex>
+            {/* File size */}
+            <Text size="xs" c="dimmed">
+              {formatFileSize(file.size)} • {file.width}×{file.height}
+            </Text>
+          </Box>
+        </Flex>
 
-      {/* Expandable metadata section */}
-      <Collapse in={expanded} ml="lg">
-        <Divider my="sm" variant="dashed" />
-        <FileMetadata file={file} accounts={accounts} />
-      </Collapse>
-    </Paper>
-  );
-});
+        {/* Expandable metadata section */}
+        <Collapse in={expanded} ml="lg">
+          <Divider my="sm" variant="dashed" />
+          <FileMetadata file={file} accounts={accounts} />
+        </Collapse>
+      </Paper>
+    );
+  },
+);
 
 function getFileTypeColor(fileType: FileType): string {
   switch (fileType) {

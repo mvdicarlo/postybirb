@@ -9,39 +9,39 @@
 import { t } from '@lingui/core/macro';
 import { Trans } from '@lingui/react/macro';
 import {
-    ActionIcon,
-    Badge,
-    Box,
-    Card,
-    Checkbox,
-    Collapse,
-    Combobox,
-    Group,
-    ScrollArea,
-    Stack,
-    Text,
-    TextInput,
-    Tooltip,
-    useCombobox,
+  ActionIcon,
+  Badge,
+  Box,
+  Card,
+  Checkbox,
+  Collapse,
+  Combobox,
+  Group,
+  ScrollArea,
+  Stack,
+  Text,
+  TextInput,
+  Tooltip,
+  useCombobox,
 } from '@mantine/core';
 import { useDebouncedCallback, useDebouncedValue } from '@mantine/hooks';
 import {
-    IconChevronDown,
-    IconChevronRight,
-    IconPlus,
-    IconTrash,
-    IconX,
+  IconChevronDown,
+  IconChevronRight,
+  IconPlus,
+  IconTrash,
+  IconX,
 } from '@tabler/icons-react';
 import { memo, useCallback, useMemo, useState } from 'react';
 import { useWebsites } from '../../../stores/entity/website-store';
 import type { BaseRecord } from '../../../stores/records/base-record';
 import type { WebsiteRecord } from '../../../stores/records/website-record';
 import {
-    showCreatedNotification,
-    showCreateErrorNotification,
-    showDeletedNotification,
-    showDeleteErrorNotification,
-    showUpdateErrorNotification,
+  showCreatedNotification,
+  showCreateErrorNotification,
+  showDeletedNotification,
+  showDeleteErrorNotification,
+  showUpdateErrorNotification,
 } from '../../../utils/notifications';
 import { EmptyState } from '../../empty-state';
 import { HoldToConfirmButton } from '../../hold-to-confirm';
@@ -88,12 +88,12 @@ export interface ConverterDrawerConfig<
   /** Create a DTO for the update API */
   createUpdateDto: (
     primaryValue: string,
-    convertTo: Record<string, string>
+    convertTo: Record<string, string>,
   ) => TUpdateDto;
   /** Create a DTO for the create API */
   createCreateDto: (
     primaryValue: string,
-    convertTo: Record<string, string>
+    convertTo: Record<string, string>,
   ) => TCreateDto;
   /** Entity name for notifications (e.g., "tag converter") */
   entityName: string;
@@ -116,7 +116,7 @@ interface WebsiteOption {
 function useConverterSearch<TRecord extends ConverterRecord>(
   converters: TRecord[],
   getPrimaryValue: (record: TRecord) => string,
-  searchQuery: string
+  searchQuery: string,
 ) {
   const [debouncedSearch] = useDebouncedValue(searchQuery, 200);
 
@@ -130,8 +130,8 @@ function useConverterSearch<TRecord extends ConverterRecord>(
         (converter) =>
           getPrimaryValue(converter).toLowerCase().includes(lowerSearch) ||
           Object.values(converter.convertTo).some((value) =>
-            value.toLowerCase().includes(lowerSearch)
-          )
+            value.toLowerCase().includes(lowerSearch),
+          ),
       );
     }
 
@@ -139,7 +139,7 @@ function useConverterSearch<TRecord extends ConverterRecord>(
     filtered.sort((a, b) =>
       getPrimaryValue(a)
         .toLowerCase()
-        .localeCompare(getPrimaryValue(b).toLowerCase())
+        .localeCompare(getPrimaryValue(b).toLowerCase()),
     );
 
     return filtered;
@@ -232,7 +232,7 @@ function AddWebsiteDropdown({
     if (!search.trim()) return availableWebsites;
     const lowerSearch = search.toLowerCase();
     return availableWebsites.filter((w) =>
-      w.displayName.toLowerCase().includes(lowerSearch)
+      w.displayName.toLowerCase().includes(lowerSearch),
     );
   }, [availableWebsites, search]);
 
@@ -314,7 +314,7 @@ function WebsiteConversionsEditor({
   // Websites that already have conversions
   const activeWebsiteIds = useMemo(
     () => Object.keys(localConvertTo),
-    [localConvertTo]
+    [localConvertTo],
   );
 
   // Websites available to add (sorted alphabetically)
@@ -324,7 +324,7 @@ function WebsiteConversionsEditor({
         .filter((w) => !activeWebsiteIds.includes(w.id))
         .map((w) => ({ id: w.id, displayName: w.displayName }))
         .sort((a, b) => a.displayName.localeCompare(b.displayName)),
-    [websites, activeWebsiteIds]
+    [websites, activeWebsiteIds],
   );
 
   // Debounced save
@@ -333,14 +333,14 @@ function WebsiteConversionsEditor({
       try {
         // Filter out empty values before saving
         const filtered = Object.fromEntries(
-          Object.entries(newConvertTo).filter(([, v]) => v.trim().length > 0)
+          Object.entries(newConvertTo).filter(([, v]) => v.trim().length > 0),
         );
         await onUpdate(converterId, filtered);
       } catch {
         showUpdateErrorNotification(primaryValue);
       }
     },
-    300
+    300,
   );
 
   const handleValueChange = (websiteId: string, value: string) => {
@@ -364,24 +364,22 @@ function WebsiteConversionsEditor({
 
   return (
     <Stack gap="xs" mt="xs">
-      {activeWebsiteIds.length > 0 ? (
-        activeWebsiteIds
-          .sort((a, b) =>
-            (websiteMap.get(a) ?? '').localeCompare(websiteMap.get(b) ?? '')
-          )
-          .map((websiteId) => (
-            <WebsiteConversionRow
-              key={websiteId}
-              websiteId={websiteId}
-              websiteName={websiteMap.get(websiteId) ?? websiteId}
-              value={localConvertTo[websiteId] ?? ''}
-              onValueChange={handleValueChange}
-              onRemove={handleRemove}
-            />
-          ))
-      ) : (
-        <EmptyState preset="no-records" size="sm" />
-      )}
+      {activeWebsiteIds.length > 0
+        ? activeWebsiteIds
+            .sort((a, b) =>
+              (websiteMap.get(a) ?? '').localeCompare(websiteMap.get(b) ?? ''),
+            )
+            .map((websiteId) => (
+              <WebsiteConversionRow
+                key={websiteId}
+                websiteId={websiteId}
+                websiteName={websiteMap.get(websiteId) ?? websiteId}
+                value={localConvertTo[websiteId] ?? ''}
+                onValueChange={handleValueChange}
+                onRemove={handleRemove}
+              />
+            ))
+        : null}
       <AddWebsiteDropdown
         availableWebsites={availableWebsites}
         onAdd={handleAdd}
@@ -399,120 +397,120 @@ function WebsiteConversionsEditor({
  * Memoized to prevent re-rendering unchanged cards when parent state changes
  * (e.g., search query, selection of other cards).
  */
-const ConverterCard = memo(({
-  converter,
-  isSelected,
-  onSelect,
-  isExpanded,
-  onToggleExpand,
-  config,
-  websites,
-  websiteMap,
-}: {
-  converter: ConverterRecord;
-  isSelected: boolean;
-  onSelect: (id: string, selected: boolean) => void;
-  isExpanded: boolean;
-  onToggleExpand: (id: string) => void;
-  config: ConverterDrawerConfig<ConverterRecord, unknown, unknown>;
-  websites: WebsiteRecord[];
-  websiteMap: Map<string, string>;
-}) => {
-  const primaryValue = config.getPrimaryValue(converter);
-  const [localValue, setLocalValue] = useState(primaryValue);
-
-  const handleBlur = async () => {
-    const trimmed = localValue.trim();
-    if (!trimmed) {
-      setLocalValue(primaryValue);
-      return;
-    }
-    if (trimmed === primaryValue) return;
-
-    try {
-      const dto = config.createUpdateDto(trimmed, converter.convertTo);
-      await config.api.update(converter.id, dto);
-    } catch {
-      showUpdateErrorNotification(primaryValue);
-      setLocalValue(primaryValue);
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      (e.target as HTMLInputElement).blur();
-    } else if (e.key === 'Escape') {
-      setLocalValue(primaryValue);
-    }
-  };
-
-  const handleUpdate = useCallback(
-    async (id: string, convertTo: Record<string, string>) => {
-      const dto = config.createUpdateDto(primaryValue, convertTo);
-      await config.api.update(id, dto);
-    },
-    [config, primaryValue]
-  );
-
-  return (
-    <Card padding="xs" withBorder shadow="0" data-tour-id="converter-card">
-      <Group gap="xs" wrap="nowrap">
-        <Checkbox
-          checked={isSelected}
-          onChange={(e) => onSelect(converter.id, e.currentTarget.checked)}
-          // eslint-disable-next-line lingui/no-unlocalized-strings
-          aria-label="Select converter"
-        />
-        <ActionIcon
-          variant="subtle"
-          size="sm"
-          onClick={() => onToggleExpand(converter.id)}
-        >
-          {isExpanded ? (
-            <IconChevronDown size={16} />
-          ) : (
-            <IconChevronRight size={16} />
-          )}
-        </ActionIcon>
-        <TextInput
-          flex={1}
-          size="xs"
-          value={localValue}
-          onChange={(e) => setLocalValue(e.currentTarget.value)}
-          onBlur={handleBlur}
-          onKeyDown={handleKeyDown}
-          styles={{ input: { fontWeight: 500 } }}
-        />
-        <Badge size="sm" variant="light" color="blue">
-          {converter.conversionCount}
-        </Badge>
-      </Group>
-      <Collapse in={isExpanded}>
-        <Box pl={60}>
-          <WebsiteConversionsEditor
-            converterId={converter.id}
-            primaryValue={primaryValue}
-            convertTo={converter.convertTo}
-            onUpdate={handleUpdate}
-            websites={websites}
-            websiteMap={websiteMap}
-          />
-        </Box>
-      </Collapse>
-    </Card>
-  );
-}) as <TRecord extends ConverterRecord, TCreateDto, TUpdateDto>(
-  props: {
-    converter: TRecord;
+const ConverterCard = memo(
+  ({
+    converter,
+    isSelected,
+    onSelect,
+    isExpanded,
+    onToggleExpand,
+    config,
+    websites,
+    websiteMap,
+  }: {
+    converter: ConverterRecord;
     isSelected: boolean;
     onSelect: (id: string, selected: boolean) => void;
     isExpanded: boolean;
     onToggleExpand: (id: string) => void;
-    config: ConverterDrawerConfig<TRecord, TCreateDto, TUpdateDto>;
+    config: ConverterDrawerConfig<ConverterRecord, unknown, unknown>;
     websites: WebsiteRecord[];
     websiteMap: Map<string, string>;
-  }
-) => React.JSX.Element;
+  }) => {
+    const primaryValue = config.getPrimaryValue(converter);
+    const [localValue, setLocalValue] = useState(primaryValue);
+
+    const handleBlur = async () => {
+      const trimmed = localValue.trim();
+      if (!trimmed) {
+        setLocalValue(primaryValue);
+        return;
+      }
+      if (trimmed === primaryValue) return;
+
+      try {
+        const dto = config.createUpdateDto(trimmed, converter.convertTo);
+        await config.api.update(converter.id, dto);
+      } catch {
+        showUpdateErrorNotification(primaryValue);
+        setLocalValue(primaryValue);
+      }
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        (e.target as HTMLInputElement).blur();
+      } else if (e.key === 'Escape') {
+        setLocalValue(primaryValue);
+      }
+    };
+
+    const handleUpdate = useCallback(
+      async (id: string, convertTo: Record<string, string>) => {
+        const dto = config.createUpdateDto(primaryValue, convertTo);
+        await config.api.update(id, dto);
+      },
+      [config, primaryValue],
+    );
+
+    return (
+      <Card padding="xs" withBorder shadow="0" data-tour-id="converter-card">
+        <Group gap="xs" wrap="nowrap">
+          <Checkbox
+            checked={isSelected}
+            onChange={(e) => onSelect(converter.id, e.currentTarget.checked)}
+            // eslint-disable-next-line lingui/no-unlocalized-strings
+            aria-label="Select converter"
+          />
+          <ActionIcon
+            variant="subtle"
+            size="sm"
+            onClick={() => onToggleExpand(converter.id)}
+          >
+            {isExpanded ? (
+              <IconChevronDown size={16} />
+            ) : (
+              <IconChevronRight size={16} />
+            )}
+          </ActionIcon>
+          <TextInput
+            flex={1}
+            size="xs"
+            value={localValue}
+            onChange={(e) => setLocalValue(e.currentTarget.value)}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            styles={{ input: { fontWeight: 500 } }}
+          />
+          <Badge size="sm" variant="light" color="blue">
+            {converter.conversionCount}
+          </Badge>
+        </Group>
+        <Collapse in={isExpanded}>
+          <Box pl={60}>
+            <WebsiteConversionsEditor
+              converterId={converter.id}
+              primaryValue={primaryValue}
+              convertTo={converter.convertTo}
+              onUpdate={handleUpdate}
+              websites={websites}
+              websiteMap={websiteMap}
+            />
+          </Box>
+        </Collapse>
+      </Card>
+    );
+  },
+) as <TRecord extends ConverterRecord, TCreateDto, TUpdateDto>(props: {
+  converter: TRecord;
+  isSelected: boolean;
+  onSelect: (id: string, selected: boolean) => void;
+  isExpanded: boolean;
+  onToggleExpand: (id: string) => void;
+  config: ConverterDrawerConfig<TRecord, TCreateDto, TUpdateDto>;
+  websites: WebsiteRecord[];
+  websiteMap: Map<string, string>;
+}) => React.JSX.Element;
 
 // ============================================================================
 // Action Components
@@ -674,7 +672,7 @@ export function ConverterDrawer<
   const { filteredConverters, allConverters } = useConverterSearch(
     converters,
     config.getPrimaryValue,
-    searchQuery
+    searchQuery,
   );
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -691,8 +689,10 @@ export function ConverterDrawer<
   // Existing values for duplicate check (case-insensitive)
   const existingValues = useMemo(
     () =>
-      new Set(allConverters.map((c) => config.getPrimaryValue(c).toLowerCase())),
-    [allConverters, config]
+      new Set(
+        allConverters.map((c) => config.getPrimaryValue(c).toLowerCase()),
+      ),
+    [allConverters, config],
   );
 
   const handleSelect = useCallback((id: string, selected: boolean) => {
@@ -715,7 +715,7 @@ export function ConverterDrawer<
         setSelectedIds(new Set());
       }
     },
-    [filteredConverters]
+    [filteredConverters],
   );
 
   const handleToggleExpand = useCallback((id: string) => {
@@ -739,7 +739,7 @@ export function ConverterDrawer<
       const dto = config.createCreateDto(primaryValue, {});
       await config.api.create(dto);
     },
-    [config]
+    [config],
   );
 
   const allSelected =
@@ -757,13 +757,12 @@ export function ConverterDrawer<
       <Stack gap="md" h="100%">
         {/* Create form */}
         <Box data-tour-id="converter-create">
-        <CreateConverterForm
-          existingValues={existingValues}
-          onCreate={handleCreate}
-          entityName={config.entityName}
-          duplicateError={config.duplicateError}
-        />
-
+          <CreateConverterForm
+            existingValues={existingValues}
+            onCreate={handleCreate}
+            entityName={config.entityName}
+            duplicateError={config.duplicateError}
+          />
         </Box>
 
         {/* Search and actions */}

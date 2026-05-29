@@ -1,13 +1,10 @@
 /* eslint-disable lingui/no-unlocalized-strings */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable max-classes-per-file */
-// eslint-disable-next-line no-restricted-globals
 
-export const REMOTE_PASSWORD_KEY = 'remote_password';
-export const REMOTE_HOST_KEY = 'remote_host';
-export const REMOTE_MODE_KEY = 'remote_mode';
-
-export const defaultTargetPath = `https://localhost:${window.electron.app_port}`;
+const REMOTE_PASSWORD_KEY = 'remote_password';
+const REMOTE_HOST_KEY = 'remote_host';
+const REMOTE_MODE_KEY = 'remote_mode';
 
 // ---------------------------------------------------------------------------
 // Cached localStorage config
@@ -21,26 +18,48 @@ interface RemoteConfig {
   mode: 'client' | 'host' | null;
 }
 
-let cachedConfig: RemoteConfig = {
-  host: localStorage.getItem(REMOTE_HOST_KEY),
-  password: localStorage.getItem(REMOTE_PASSWORD_KEY),
-  mode: localStorage.getItem(REMOTE_MODE_KEY) as 'client' | 'host' | null,
-};
-
-export const getRemoteConfig = (): RemoteConfig => cachedConfig;
+let cachedConfig: RemoteConfig;
 
 /**
- * Re-read remote host / password from localStorage.
+ * Re-read remote host / password / mode from localStorage.
  * Call this after programmatically writing to localStorage so the cached
- * values stay in sync (the `storage` event only fires for *other* tabs).
+ * values stay in sync
  */
-export const refreshRemoteConfig = () => {
+function refreshRemoteConfig() {
   cachedConfig = {
     host: localStorage.getItem(REMOTE_HOST_KEY),
     password: localStorage.getItem(REMOTE_PASSWORD_KEY),
     mode: localStorage.getItem(REMOTE_MODE_KEY) as 'client' | 'host' | null,
   };
-};
+}
+
+refreshRemoteConfig();
+
+export function getRemoteConfig(): RemoteConfig {
+  return cachedConfig;
+}
+
+export function resetRemoteConfig() {
+  localStorage.removeItem(REMOTE_MODE_KEY);
+  localStorage.removeItem(REMOTE_HOST_KEY);
+  localStorage.removeItem(REMOTE_PASSWORD_KEY);
+}
+
+export function updateRemoteConfig(config: Partial<RemoteConfig>) {
+  if (config.host) {
+    localStorage.setItem(REMOTE_HOST_KEY, config.host.trim());
+  }
+  if (config.password) {
+    localStorage.setItem(REMOTE_PASSWORD_KEY, config.password.trim());
+  }
+  if (config.mode) {
+    localStorage.setItem(REMOTE_MODE_KEY, config.mode);
+  }
+
+  refreshRemoteConfig();
+}
+
+refreshRemoteConfig();
 
 // Keep the cache in sync when another tab/window changes the values.
 window.addEventListener('storage', (e) => {
@@ -49,20 +68,30 @@ window.addEventListener('storage', (e) => {
   }
 });
 
-export const defaultTargetProvider = () => {
-  const remoteUrl = cachedConfig.host;
-  if (remoteUrl?.trim()) {
-    return `https://${remoteUrl}`;
+export function isRemote() {
+  return cachedConfig.mode === 'client' && cachedConfig.host?.trim();
+}
+
+/**
+ * @returns Url of the server app is currently connected to, either local or remote if configured
+ *
+ * @example https://localhost:9487
+ * @example https://mydomain.com
+ * @example https://192.168.3.1:8080
+ */
+export function getBaseUrl() {
+  if (isRemote()) {
+    return `https://${cachedConfig.host}`;
   }
 
-  return defaultTargetPath;
-};
+  return `https://localhost:${window.electron.app_port}`;
+}
 
-export const getRemotePassword = () => {
+export function getRemotePassword() {
   const remotePassword = cachedConfig.password;
   const electronRemotePassword = window.electron?.getRemoteConfig()?.password;
   return remotePassword?.trim() || electronRemotePassword?.trim();
-};
+}
 
 type FetchMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
@@ -126,7 +155,7 @@ export class HttpClient {
 
   constructor(
     private readonly basePath: string,
-    private readonly targetProvider: () => string = defaultTargetProvider,
+    private readonly targetProvider: () => string = getBaseUrl,
   ) {}
 
   public get<T = any>(

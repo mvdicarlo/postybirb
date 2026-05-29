@@ -6,6 +6,7 @@ import {
   Optional,
 } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
+import { PlatformService } from '@postybirb/platform';
 import { WEBSITE_UPDATES } from '@postybirb/socket-events';
 import {
   DynamicObject,
@@ -13,7 +14,7 @@ import {
   IWebsiteInfoDto,
   OAuthRoutes,
 } from '@postybirb/types';
-import { IsTestEnvironment } from '@postybirb/utils/electron';
+import { IsTestEnvironment } from '@postybirb/utils/common';
 import { Class } from 'type-fest';
 import { WEBSITE_IMPLEMENTATIONS } from '../constants';
 import { Account } from '../drizzle/models';
@@ -21,6 +22,7 @@ import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-datab
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { validateWebsiteDecoratorProps } from './decorators/website-decorator-props';
 import { OAuthWebsiteRequestDto } from './dtos/oauth-website-request.dto';
+import DefaultWebsite from './implementations/default/default.website';
 import { FileWebsiteKey } from './models/website-modifiers/file-website';
 import { MessageWebsiteKey } from './models/website-modifiers/message-website';
 import { OAuthWebsite } from './models/website-modifiers/oauth-website';
@@ -54,6 +56,7 @@ export class WebsiteRegistryService {
   constructor(
     @Inject(WEBSITE_IMPLEMENTATIONS)
     private readonly websiteImplementations: Class<UnknownWebsite>[],
+    private readonly platform: PlatformService,
     @Optional() private readonly webSocket?: WSGateway,
   ) {
     this.initializedPromise = new Promise<void>((resolve) => {
@@ -177,7 +180,10 @@ export class WebsiteRegistryService {
 
       if (!this.websiteInstances[website][id]) {
         // this.logger.info(`Creating instance of '${website}' with id '${id}'`);
-        this.websiteInstances[website][id] = new WebsiteCtor(account);
+        this.websiteInstances[website][id] = new WebsiteCtor(
+          account,
+          this.platform,
+        );
         await this.websiteInstances[website][id].onInitialize(
           this.websiteDataRepository,
         );
@@ -316,5 +322,13 @@ export class WebsiteRegistryService {
     }
 
     throw new BadRequestException('Website does not support OAuth operations.');
+  }
+
+  /**
+   * Creates a transient default website instance with platform context wired up.
+   * Used for non-registered (default) website options.
+   */
+  public createDefaultWebsiteInstance(account: Account): DefaultWebsite {
+    return new DefaultWebsite(account, this.platform);
   }
 }

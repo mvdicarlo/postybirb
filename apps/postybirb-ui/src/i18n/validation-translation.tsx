@@ -48,27 +48,25 @@ export const TranslationMessages: TranslationsMap = {
 
   'validation.description.missing-tags': () => (
     <Trans>
-      Tags will not be inserted. Use tags shortcut or enable 'Insert tags at
-      end'
+      Tags won't be inserted. Add tags shortcut or enable 'Insert tags at end'
     </Trans>
   ),
   'validation.description.unexpected-tags': () => (
     <Trans>
-      Tags are not expected in the description of this website because it has
-      dedicated tags field. Remove tags shortcut or disable 'Insert tags at end'
+      Website has a dedicated tags field. Remove tags shortcut or disable
+      'Insert tags at end'
     </Trans>
   ),
   'validation.description.missing-title': () => (
     <Trans>
-      Title will not be inserted. Use title shortcut or enable 'Insert title at
+      Title won't be inserted. Add title shortcut or enable 'Insert title at
       start'
     </Trans>
   ),
   'validation.description.unexpected-title': () => (
     <Trans>
-      Title is not expected in the description of this website because it has
-      dedicated title field. Remove title shortcut or disable 'Insert title at
-      start'
+      Website has a dedicated title field. Remove title shortcut or disable
+      'Insert title at start'
     </Trans>
   ),
 
@@ -307,6 +305,16 @@ export const TranslationMessages: TranslationsMap = {
     </Trans>
   ),
 
+  'validation.description.bluesky.invalid-mentions': ({ mentions }) => {
+    const mentionsList = mentions.join(', ');
+    return (
+      <Trans>
+        These mentioned users don't exist: {mentionsList}. Ensure that their tag
+        is correct (e.g. name.bsky.social instead of name.bluesky.social)
+      </Trans>
+    );
+  },
+
   'validation.file.e621.tags.network-error': () => (
     <Trans>Failed to validate tags. Please check them manually</Trans>
   ),
@@ -398,8 +406,7 @@ export const TranslationMessages: TranslationsMap = {
     return (
       <Trans>
         File &quot;{fileName}&quot; has an unsupported aspect ratio for
-        Instagram. Supported ratios: 1:1 (square), 4:5 (portrait), 1.91:1
-        (landscape).
+        Instagram. Ratio must be between 3:4 and 1.91:1.
       </Trans>
     );
   },

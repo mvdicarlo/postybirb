@@ -187,3 +187,33 @@ export function filterOptions(
 export function countSelectableOptions(options: SelectOption[]): number {
   return flattenSelectableOptions(options).length;
 }
+
+/**
+ * Builds a map from option value to its full ancestor path label.
+ * e.g. "Group A / Sub B / Option C"
+ * Top-level options map to just their own label.
+ */
+export function buildOptionPathMap(
+  options: SelectOption[],
+  separator = ' / ',
+): Map<string, string> {
+  const map = new Map<string, string>();
+
+  const traverse = (opts: SelectOption[], prefix: string) => {
+    for (const opt of opts) {
+      if (isOptionGroup(opt)) {
+        const path = prefix ? `${prefix}${separator}${opt.label}` : opt.label;
+        if (opt.value !== undefined) {
+          map.set(opt.value, path);
+        }
+        traverse(opt.items, path);
+      } else {
+        const path = prefix ? `${prefix}${separator}${opt.label}` : opt.label;
+        map.set(opt.value, path);
+      }
+    }
+  };
+
+  traverse(options, '');
+  return map;
+}

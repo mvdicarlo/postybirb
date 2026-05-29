@@ -16,6 +16,7 @@ import { CustomAccountData } from '@postybirb/types';
 import { IconPlus, IconTrash } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 import accountApi from '../../../api/account.api';
+import { ExternalLink } from '../../shared/external-link/external-link';
 import { notifyLoginFailed, notifyLoginSuccess } from '../helpers';
 import { LoginViewContainer } from '../login-view-container';
 import type { LoginViewProps } from '../types';
@@ -47,7 +48,8 @@ export default function CustomLoginView(
     tagField: 'tags',
     thumbnailField: 'thumbnail',
     titleField: 'title',
-    altTextField: 'alt',
+    altTextField: 'altText',
+    sourceUrlsField: 'sourceUrls',
   });
 
   // Initialize form data from props
@@ -149,6 +151,12 @@ export default function CustomLoginView(
               Custom website is for websites that you own and understand the
               actual backend of.
             </Text>
+            <Text>
+              You can view detailed documentation with examples{' '}
+              <ExternalLink href="https://github.com/mvdicarlo/postybirb/tree/main/docs/CUSTOM_WEBSITE.md">
+                here
+              </ExternalLink>
+            </Text>
           </Alert>
 
           <TextInput
@@ -185,25 +193,29 @@ export default function CustomLoginView(
                 batch
               </Text>
             }
-            value={formData.fileBatchLimit || ''}
-            onChange={(value) =>
+            value={formData.fileBatchLimit || '1'}
+            onChange={(value) => {
               updateFormData(
                 'fileBatchLimit',
-                Number.isNaN(Number(value)) ? 1 : Number(value),
-              )
-            }
+                Number.isNaN(parseInt(value.toString(), 10))
+                  ? 1
+                  : parseInt(value.toString(), 10),
+              );
+            }}
           />
 
           <Group grow>
             <TextInput
               label={<Text>Title Field</Text>}
               value={formData.titleField || ''}
+              description="Default is title"
               onChange={(event) =>
                 updateFormData('titleField', event.currentTarget.value)
               }
             />
             <TextInput
               label={<Text>Description Field</Text>}
+              description="Default is description"
               value={formData.descriptionField || ''}
               onChange={(event) =>
                 updateFormData('descriptionField', event.currentTarget.value)
@@ -233,6 +245,7 @@ export default function CustomLoginView(
           <Group grow>
             <TextInput
               label={<Text>Tag Field</Text>}
+              description="Default is tags"
               value={formData.tagField || ''}
               onChange={(event) =>
                 updateFormData('tagField', event.currentTarget.value)
@@ -240,6 +253,7 @@ export default function CustomLoginView(
             />
             <TextInput
               label={<Text>Rating Field</Text>}
+              description="Default is rating"
               value={formData.ratingField || ''}
               onChange={(event) =>
                 updateFormData('ratingField', event.currentTarget.value)
@@ -250,6 +264,7 @@ export default function CustomLoginView(
           <Group grow>
             <TextInput
               label={<Text>File Field</Text>}
+              description="Default is file"
               value={formData.fileField || ''}
               onChange={(event) =>
                 updateFormData('fileField', event.currentTarget.value)
@@ -257,6 +272,7 @@ export default function CustomLoginView(
             />
             <TextInput
               label={<Text>Thumbnail Field</Text>}
+              description="If left empty thumbnail will not be sent"
               value={formData.thumbnailField || ''}
               onChange={(event) =>
                 updateFormData('thumbnailField', event.currentTarget.value)
@@ -264,13 +280,24 @@ export default function CustomLoginView(
             />
           </Group>
 
-          <TextInput
-            label={<Text>Alt Text Field</Text>}
-            value={formData.altTextField || ''}
-            onChange={(event) =>
-              updateFormData('altTextField', event.currentTarget.value)
-            }
-          />
+          <Group grow>
+            <TextInput
+              label={<Text>Alt Text Field</Text>}
+              description="Default is altText"
+              value={formData.altTextField || ''}
+              onChange={(event) =>
+                updateFormData('altTextField', event.currentTarget.value)
+              }
+            />
+            <TextInput
+              label={<Text>Source urls field</Text>}
+              description="Default is sourceUrls"
+              value={formData.sourceUrlsField || ''}
+              onChange={(event) =>
+                updateFormData('sourceUrlsField', event.currentTarget.value)
+              }
+            />
+          </Group>
 
           <Box>
             <Group justify="space-between" mb="sm">

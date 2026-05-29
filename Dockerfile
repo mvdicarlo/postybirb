@@ -2,21 +2,21 @@
 FROM node:24-bookworm-slim AS builder
 
 # For ca-certificates
-RUN apt-get update && apt-get install -y curl 
+RUN apt-get update && apt-get install -y curl python[latest] build-essential
 
 WORKDIR /source
 
 COPY . .
 
 # Conditional build - only build if release/linux-unpacked doesn't exist
-RUN if [ -d "./release/linux-unpacked" ]; then \
+RUN if [ -d "./release/linux*unpacked" ]; then \
         echo "Found existing build, copying..."; \
-        cp -r ./release/linux-unpacked/ /app;\
+        cp -r ./release/linux*unpacked/ /app;\
     else \
         echo "Building from source..."; rm -rf .nx && \
         CYPRESS_INSTALL_BINARY=0 corepack yarn install --inline-builds && \
         corepack yarn dist:linux --dir && \
-        cp -r ./release/linux-unpacked/ /app;\
+        cp -r ./release/linux*unpacked/ /app;\
     fi 
     
 FROM node:24-bookworm-slim
@@ -47,10 +47,15 @@ VOLUME [ "/root/.config/postybirb" ]
 
 ENV DISPLAY=:99
 
-EXPOSE 8080
+ENV POSTYBIRB_PORT=8080
+
+# Note that this isn't dynamic, so if you use a port
+# Other than 8080 you'll need to map it when you run 
+# the docker image
+EXPOSE $POSTYBIRB_PORT
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=5 \
-    CMD curl http://127.0.0.1:8080 || [ $? -eq 52 ] && exit 0 || exit 1
+    CMD curl http://127.0.0.1:${POSTYBIRB_PORT} || [ $? -eq 52 ] && exit 0 || exit 1
 
 COPY ./entrypoint.sh .
 

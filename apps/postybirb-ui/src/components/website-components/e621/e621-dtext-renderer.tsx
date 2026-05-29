@@ -3,6 +3,8 @@ import reactPreset from '@bbob/preset-react';
 import BBCode from '@bbob/react';
 import { descriptionPreviewRendererByWebsite } from '../../sections/submissions-section/submission-edit-card/account-selection/form/fields/description-preview-panel';
 
+// https://e621.net/help/dtext
+
 // ----------------------------------------------------------------------
 // Custom preset that extends the default React preset with DText‑specific tags
 // ----------------------------------------------------------------------
@@ -32,27 +34,39 @@ export interface E621DtextProps {
 export function E621Dtext({ dtext }: E621DtextProps) {
   let processed = dtext;
 
-  // Plain URLs: https://example.com
+  // Links to a wiki page
   processed = processed.replace(
-    /(https?:\/\/[^\s<]+)/g,
-    (match) => `[url]${match}[/url]`,
+    /\[\[([^\]]+)\]\]/g,
+    '[url=https://e621.net/wiki_pages/show_or_new?title=$1]$1[/url]',
+  );
+
+  // Hyperlinks: "A link":[https://example.com]
+  processed = processed.replace(
+    /"([^"]+)":\[([^\]]+)\]/g,
+    (_, title, url) => `[url=${url}]${title}[/url]`,
   );
 
   // Hyperlinks: "A link":https://example.com
   processed = processed.replace(
-    /"([^"]+)":([^\s\]]+)/g,
+    /"([^"]+)":([^\s]+)/g,
     (_, title, url) => `[url=${url}]${title}[/url]`,
+  );
+
+  // Plain URLs: https://example.com
+  processed = processed.replace(
+    /\s<?(https?:\/\/[^\s<]+)>?\s/g,
+    (match) => `[url]${match}[/url]`,
   );
 
   // Custom header format to bbcode (h1. to [h1][/h1])
   processed = processed.replace(
-    /^(h[1-6])\.\s+(.*)$/gim,
+    /^(h[1-6])\.(.*)$/gim,
     (_, tag, content) => `[${tag}]${content}[/${tag}]`,
   );
 
   return (
     <div style={{ whiteSpace: 'pre-wrap' }}>
-      <BBCode plugins={[dtextPreset()]} options={{ onlyAllowTags: undefined }}>
+      <BBCode plugins={[dtextPreset()]} options={{}}>
         {processed}
       </BBCode>
     </div>

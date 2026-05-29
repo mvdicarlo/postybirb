@@ -1,4 +1,5 @@
 import { Logger, PostyBirbLogger } from '@postybirb/logger';
+import { PlatformCookieDetails, PlatformService } from '@postybirb/platform';
 import {
   DynamicObject,
   ILoginState,
@@ -6,9 +7,7 @@ import {
   LoginState,
   SubmissionType,
 } from '@postybirb/types';
-import { BrowserWindowUtils, getPartitionKey } from '@postybirb/utils/electron';
 import { Mutex } from 'async-mutex';
-import { CookiesSetDetails, session } from 'electron';
 import { Account } from '../drizzle/models';
 import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
 import { SubmissionValidator } from './commons/validator';
@@ -157,21 +156,28 @@ export abstract class Website<
     return new SubmissionValidator<T>();
   }
 
-  constructor(userAccount: Account) {
+  constructor(userAccount: Account, platform: PlatformService) {
     this.account = userAccount;
+    this.platform = platform;
     this.logger = Logger(this.decoratedProps.metadata.displayName);
     this.websiteDataStore = new WebsiteDataManager(userAccount);
     this.loginState = new LoginState();
   }
+
+  /**
+   * Platform services made available to the website (cookies, headless
+   * browser, app metadata, notifications, network). Bundled into a single
+   * facade so adding new platform capabilities does not change every
+   * subclass constructor.
+   */
+  public readonly platform: PlatformService;
 
   // -------------- Externally Accessed Methods --------------
   // Methods intended to be executed by consumers of a Website
 
   public async clearLoginStateAndData(forWebsiteDeletion = false) {
     this.logger.info('Clearing login state and data');
-    await session
-      .fromPartition(getPartitionKey(this.account.id))
-      .clearStorageData();
+    await this.platform.session.clearStorageData(this.account.id);
     await this.websiteDataStore.clearData(!forWebsiteDeletion);
     this.loginState.logout();
   }
@@ -326,11 +332,11 @@ export abstract class Website<
   private async cycleCookies(): Promise<void> {
     if (this.decoratedProps.loginFlow.type === 'user') {
       this.logger.debug('Cycling cookies for user login flow');
-      await BrowserWindowUtils.ping(this.accountId, this.BASE_URL).catch(
-        (err) => {
+      await this.platform.browser
+        .ping(this.accountId, this.BASE_URL)
+        .catch((err) => {
           this.logger.error('Error cycling cookies:', err);
-        },
-      );
+        });
     }
   }
 
@@ -344,10 +350,9 @@ export abstract class Website<
   protected async onBeforeLogin() {
     try {
       if (this.decoratedProps.loginFlow.type === 'user') {
-        const { cookies } = session.fromPartition(
-          getPartitionKey(this.accountId),
+        const cookiesList = await this.platform.session.getCookies(
+          this.accountId,
         );
-        const cookiesList = await cookies.get({});
         for (const cookie of cookiesList) {
           // Check for expired cookies
           if (
@@ -361,7 +366,7 @@ export abstract class Website<
           }
 
           if (cookie.session) {
-            const setCookie: CookiesSetDetails = {
+            const setCookie: PlatformCookieDetails = {
               url: `${cookie.secure ? 'https' : 'http'}://${cookie.domain?.replace(/^\./, '')}${cookie.path}`,
               name: `${CookiePrefix}${cookie.name}`,
               value: cookie.value,
@@ -373,8 +378,8 @@ export abstract class Website<
               expirationDate:
                 Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 365,
             };
-            await cookies.set(setCookie);
-            await cookies.flushStore();
+            await this.platform.session.setCookie(this.accountId, setCookie);
+            await this.platform.session.flushCookies(this.accountId);
           } else if (cookie.name.startsWith(CookiePrefix)) {
             const sessionCookieAlreadyPopulated = cookiesList.some(
               (c) => c.name === cookie.name.replace(CookiePrefix, ''),
@@ -383,7 +388,7 @@ export abstract class Website<
               this.logger.debug(
                 `Rehydrating session cookie: ${cookie.name} (${cookie.domain})`,
               );
-              const setCookie: CookiesSetDetails = {
+              const setCookie: PlatformCookieDetails = {
                 url: `${cookie.secure ? 'https' : 'http'}://${cookie.domain?.replace(/^\./, '')}${cookie.path}`,
                 name: cookie.name.replace(CookiePrefix, ''),
                 value: cookie.value,
@@ -393,8 +398,8 @@ export abstract class Website<
                 httpOnly: cookie.httpOnly,
                 sameSite: cookie.sameSite,
               };
-              await cookies.set(setCookie);
-              await cookies.flushStore();
+              await this.platform.session.setCookie(this.accountId, setCookie);
+              await this.platform.session.flushCookies(this.accountId);
             }
           }
         }

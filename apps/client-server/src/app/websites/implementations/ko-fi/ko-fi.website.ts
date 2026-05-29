@@ -1,5 +1,5 @@
 import { SelectOption } from '@postybirb/form-builder';
-import { Http } from '@postybirb/http';
+
 import {
   ILoginState,
   ImageResizeProps,
@@ -8,7 +8,6 @@ import {
   PostData,
   PostResponse,
 } from '@postybirb/types';
-import { BrowserWindowUtils } from '@postybirb/utils/electron';
 import { parse } from 'node-html-parser';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
@@ -56,12 +55,12 @@ export default class KoFi
   public async onLogin(): Promise<ILoginState> {
     try {
       // Retrieve settings page to check login status
-      const res = await Http.get<string>(`${this.BASE_URL}/settings`, {
+      const res = await this.platform.http.get<string>(`${this.BASE_URL}/settings`, {
         partition: this.accountId,
       });
 
       // Check if logged in by looking for login button
-      if (!res.body.includes('btn-login')) {
+      if (res.body.includes('profile-tab')) {
         const html = parse(res.body);
         const username = html
           .querySelector('input[name="DisplayName"]')
@@ -93,14 +92,14 @@ export default class KoFi
     return undefined;
   }
 
-  private extractId(html: string): string | null {
+  private extractId(html: string): string | undefined {
     const match = html.match(/pageId:\s*'([^']+)'/);
-    return match ? match[1] : null;
+    return match ? match[1] : undefined;
   }
 
   private async retrieveAlbums(id: string): Promise<void> {
     try {
-      const { body } = await Http.get<string>(
+      const { body } = await this.platform.http.get<string>(
         `${this.BASE_URL}/${id}/gallery`,
         {
           partition: this.accountId,
@@ -204,7 +203,7 @@ export default class KoFi
       let sourceUrl: string | undefined;
       try {
         // Try to find the source url
-        sourceUrl = await BrowserWindowUtils.runScriptOnPage(
+        sourceUrl = await this.platform.browser.runScriptOnPage(
           this.accountId,
           `${this.BASE_URL}/${this.sessionData.kofiAccountId}/posts`,
           `return document.querySelector('#postsContainerDiv .feeditem-unit .dropdown-share-list input').value`,

@@ -7,7 +7,7 @@ import { FileType, ISubmissionFileDto } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { IconFileText, IconFileUnknown } from '@tabler/icons-react';
 import { memo } from 'react';
-import { defaultTargetProvider } from '../../../../../transports/http-client';
+import { getBaseUrl } from '../../../../../transports/http-client';
 
 interface FilePreviewProps {
   file: ISubmissionFileDto;
@@ -17,7 +17,7 @@ interface FilePreviewProps {
 export const FilePreview = memo(({ file, size = 80 }: FilePreviewProps) => {
   const { fileName, id, hash } = file;
   const fileType = getFileType(fileName);
-  const src = `${defaultTargetProvider()}/api/file/file/${id}?${hash}`;
+  const src = `${getBaseUrl()}/api/file/file/${id}?${hash}`;
 
   switch (fileType) {
     case FileType.AUDIO:
@@ -91,23 +91,25 @@ interface ThumbnailPreviewProps {
   size?: number;
 }
 
-export const ThumbnailPreview = memo(({ file, size = 60 }: ThumbnailPreviewProps) => {
-  if (!file.hasThumbnail || !file.thumbnailId) {
-    return null;
-  }
+export const ThumbnailPreview = memo(
+  ({ file, size = 60 }: ThumbnailPreviewProps) => {
+    if (!file.hasThumbnail || !file.thumbnailId) {
+      return null;
+    }
 
-  const src = `${defaultTargetProvider()}/api/file/file/${file.thumbnailId}?${file.hash}`;
+    const src = `${getBaseUrl()}/api/file/file/${file.thumbnailId}?${file.hash}`;
 
-  return (
-    <Image
-      radius={4}
-      loading="lazy"
-      h={size}
-      w={size}
-      fit="contain"
-      // eslint-disable-next-line lingui/no-unlocalized-strings
-      alt="Thumbnail"
-      src={src}
-    />
-  );
-});
+    return (
+      <Image
+        radius={4}
+        loading="lazy"
+        h={size}
+        w={size}
+        fit="contain"
+        // eslint-disable-next-line lingui/no-unlocalized-strings
+        alt="Thumbnail"
+        src={src}
+      />
+    );
+  },
+);

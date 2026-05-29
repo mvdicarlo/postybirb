@@ -5,6 +5,7 @@ export { FieldCopyButton } from './field-copy-button';
 export { FieldLabel, getTranslatedLabel } from './field-label';
 export type { FormFieldProps } from './form-field.type';
 export { InputField } from './input-field';
+export { NumberField } from './number-field';
 export { RadioField } from './radio-field';
 export { SelectField } from './select-field';
 export { TagField } from './tag-field';

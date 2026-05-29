@@ -2,6 +2,8 @@ import { Trans } from '@lingui/react/macro';
 import {
   Alert,
   Button,
+  Group,
+  Loader,
   Paper,
   Stack,
   Stepper,
@@ -12,6 +14,7 @@ import {
 import { MegalodonAccountData, MegalodonOAuthRoutes } from '@postybirb/types';
 import { IconCheck, IconExternalLink, IconServer } from '@tabler/icons-react';
 import { useState } from 'react';
+import accountApi from '../../../api/account.api';
 import websitesApi from '../../../api/websites.api';
 import { showSuccessNotification } from '../../../utils';
 import { ExternalLink } from '../../shared/external-link';
@@ -47,6 +50,45 @@ export default function MegalodonLoginView(
     setLoggedInAs(undefined);
     setActiveStep(0);
   };
+
+  const handleTryAgain = () => {
+    accountApi.refreshLogin(account.id);
+  };
+
+  if (loggedInAs && !account.isLoggedIn) {
+    return (
+      <LoginViewContainer>
+        <Stack>
+          <Title order={3}>
+            <Trans>Fediverse Authentication</Trans>
+          </Title>
+
+          <Alert color="red">
+            <Stack>
+              <Trans>
+                Login was not successfull, tried to login as {loggedInAs}
+              </Trans>
+              <Button
+                variant="destructive"
+                onClick={handleTryAgain}
+                disabled={account.isPending}
+              >
+                <Group>
+                  <Trans>Try again</Trans>
+                  {account.isPending && <Loader size="xs" />}
+                </Group>
+              </Button>
+              <Button onClick={handleStartOver}>
+                <Trans>
+                  Reset data and start again or log in to different instance
+                </Trans>
+              </Button>
+            </Stack>
+          </Alert>
+        </Stack>
+      </LoginViewContainer>
+    );
+  }
 
   return (
     <LoginViewContainer>

@@ -85,8 +85,13 @@ export class PostRecordFactory {
     const inProgressRecord = await this.findInProgressRecord(submissionId);
     if (inProgressRecord) {
       this.logger
-        .withMetadata({ existingRecordId: inProgressRecord.id, existingState: inProgressRecord.state })
-        .warn('Cannot create PostRecord: submission already has an in-progress record');
+        .withMetadata({
+          existingRecordId: inProgressRecord.id,
+          existingState: inProgressRecord.state,
+        })
+        .warn(
+          'Cannot create PostRecord: submission already has an in-progress record',
+        );
       throw new InvalidPostChainError(submissionId, resumeMode, 'in_progress');
     }
 
@@ -101,7 +106,11 @@ export class PostRecordFactory {
       }
 
       if (originRecord.state === PostRecordState.DONE) {
-        throw new InvalidPostChainError(submissionId, resumeMode, 'origin_done');
+        throw new InvalidPostChainError(
+          submissionId,
+          resumeMode,
+          'origin_done',
+        );
       }
 
       originPostRecordId = originRecord.id;
@@ -111,6 +120,7 @@ export class PostRecordFactory {
     }
 
     return this.postRecordRepository.insert({
+      version: process.env.POSTYBIRB_VERSION ?? 'Unknown',
       submissionId,
       state: PostRecordState.PENDING,
       resumeMode,

@@ -104,11 +104,13 @@ export function TagField({
   // Build tag group options for dropdown
   const tagGroupsOptions = useMemo(
     () =>
-      tagGroups.map((tagGroup) => ({
-        label: `${TAG_GROUP_LABEL}${JSON.stringify({ name: tagGroup.name, tags: tagGroup.tags })}`,
-        value: `${TAG_GROUP_LABEL}${JSON.stringify({ name: tagGroup.name, tags: tagGroup.tags })}`,
-        disabled: containsAllTagsInGroup(tagValue, tagGroup),
-      })),
+      tagGroups
+        .map((tagGroup) => ({
+          label: `${TAG_GROUP_LABEL}${JSON.stringify({ name: tagGroup.name, tags: tagGroup.tags })}`,
+          value: `${TAG_GROUP_LABEL}${JSON.stringify({ name: tagGroup.name, tags: tagGroup.tags })}`,
+          disabled: containsAllTagsInGroup(tagValue, tagGroup),
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label)),
     [tagGroups, tagValue],
   );
 
@@ -233,7 +235,18 @@ export function TagField({
 
             return <Text inherit>{value}</Text>;
           }}
-          rightSection={<FieldCopyButton value={tagValue.join(', ')} />}
+          rightSection={
+            <Group wrap="nowrap" gap="4" pr={tagValue.length > 0 ? 'md' : 0}>
+              <FieldCopyButton value={tagValue.join(', ')} />
+              {totalTags > 0 && (
+                <div>
+                  <Text c="dimmed" size="xs">
+                    {totalTags}
+                  </Text>
+                </div>
+              )}
+            </Group>
+          }
         />
       </FieldLabel>
     </Box>

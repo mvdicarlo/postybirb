@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import TurndownService from 'turndown';
 import { BaseConverter } from './converters/base-converter';
 import { BBCodeConverter } from './converters/bbcode-converter';
@@ -59,17 +58,17 @@ export class DescriptionNodeTree {
 
   toBBCode(): string {
     const converter = new BBCodeConverter();
-    return converter.convertBlocks(this.withInsertions(), this.context);
+    return converter.convert(this.withInsertions(), this.context);
   }
 
   toPlainText(): string {
     const converter = new PlainTextConverter();
-    return converter.convertBlocks(this.withInsertions(), this.context);
+    return converter.convert(this.withInsertions(), this.context);
   }
 
   toHtml(): string {
     const converter = new HtmlConverter();
-    return converter.convertBlocks(this.withInsertions(), this.context);
+    return converter.convert(this.withInsertions(), this.context);
   }
 
   toMarkdown(turndownService?: TurndownService): string {
@@ -89,11 +88,11 @@ export class DescriptionNodeTree {
 
   parseCustom(blockHandler: CustomNodeHandler): string {
     const converter = new CustomConverter(blockHandler);
-    return converter.convertBlocks(this.withInsertions(), this.context);
+    return converter.convert(this.withInsertions(), this.context);
   }
 
   parseWithConverter(converter: BaseConverter): string {
-    return converter.convertBlocks(this.withInsertions(), this.context);
+    return converter.convert(this.withInsertions(), this.context);
   }
 
   public updateContext(updates: Partial<ConversionContext>): void {
@@ -170,9 +169,7 @@ export class DescriptionNodeTree {
     }
 
     return node.content.every(
-      (child) =>
-        child.type === 'text' &&
-        (!(child as any).text || (child as any).text.trim() === ''),
+      (child) => child.type === 'text' && !child.text?.trim(),
     );
   }
 
@@ -218,6 +215,10 @@ export class DescriptionNodeTree {
     if (insertTags) {
       nodes.push({
         type: 'paragraph',
+        content: [],
+      });
+      nodes.push({
+        type: 'paragraph',
         content: [
           {
             type: 'text',
@@ -244,4 +245,3 @@ export class DescriptionNodeTree {
     return nodes;
   }
 }
-

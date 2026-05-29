@@ -1,3 +1,7 @@
+// MUST run before any module that depends on configured electron paths
+// (e.g. @postybirb/fs evaluates StartupOptionsManager.get() at module load).
+import './bootstrap-electron-config';
+
 // Ensure proxy is imported first to patch fetch before any request is made
 import '@postybirb/http';
 
@@ -10,15 +14,24 @@ import {
   trackException,
 } from '@postybirb/logger';
 import {
-  getRemoteConfig,
-  getRemoteConfigSync,
   PostyBirbEnvConfig,
-} from '@postybirb/utils/electron';
+  RemoteConfigManager,
+  validateEnvConfigOrExit,
+} from '@postybirb/utils/common';
 import { app, BrowserWindow, session } from 'electron';
 import contextMenu from 'electron-context-menu';
 import PostyBirb from './app/app';
 import ElectronEvents from './app/events/electron.events';
 import { environment } from './environments/environment';
+
+// Handle --help and validate --port. Previously this ran implicitly at module
+// load inside the env-config lib; now it must be invoked explicitly so that
+// importing the env config from non-electron processes (e.g. tests) does not
+// pull electron APIs.
+validateEnvConfigOrExit({
+  version: app.getVersion() || '4.0.2',
+  onValidationFailed: () => app.quit(),
+});
 
 const isOnlyInstance = app.requestSingleInstanceLock();
 if (!isOnlyInstance) {
@@ -38,7 +51,7 @@ process.env.POSTYBIRB_ENV =
     ? 'production'
     : 'development';
 
-const remoteConfig = getRemoteConfigSync();
+const remoteConfig = RemoteConfigManager.getSync();
 const entries: [string, string][] = [
   ['Version', environment.version],
   ['Mode', process.env.POSTYBIRB_ENV ?? ''],
@@ -140,13 +153,15 @@ app.on(
 
 export default class Main {
   static async initialize() {
-    process.env.remote = JSON.stringify(await getRemoteConfig());
+    process.env.remote = JSON.stringify(await RemoteConfigManager.get());
   }
 
   static async bootstrapClientServer(): Promise<INestApplication> {
     return (
-      // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
-      (await import('apps/client-server/src/main')).bootstrapClientServer()
+      // eslint-disable-next-line @nx/enforce-module-boundaries
+      (await import('apps/client-server/src/main')).bootstrapClientServer({
+        userDataPath: app.getPath('userData'),
+      })
     );
   }
 

@@ -6,15 +6,14 @@
 import { ScrollArea, Stack } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import { SubmissionType } from '@postybirb/types';
-import { useMemo, useState } from 'react';
-import { SubmissionRecord, useArchivedSubmissions } from '../../../stores';
+import { useMemo } from 'react';
+import { useArchivedSubmissions } from '../../../stores';
 import { useIsCompactView } from '../../../stores/ui/appearance-store';
+import { useSubmissionHistoryDrawerStore } from '../../../stores/ui/submission-history-drawer-store';
 import { useSubmissionsFilter } from '../../../stores/ui/submissions-ui-store';
 import { EmptyState } from '../../empty-state';
 import { useSubmissionsData } from './context';
 import { ArchivedSubmissionCard } from './submission-card/archived-submission-card';
-import { SubmissionHistoryDrawer } from './submission-history-drawer';
-import './submissions-section.css';
 
 interface ArchivedSubmissionListProps {
   /** Type of submissions to display */
@@ -32,8 +31,6 @@ export function ArchivedSubmissionList({
   const [debouncedSearch] = useDebouncedValue(searchQuery, 300);
   const archivedSubmissions = useArchivedSubmissions();
   const isCompact = useIsCompactView();
-  const [historySubmission, setHistorySubmission] =
-    useState<SubmissionRecord | null>(null);
 
   // Filter by type, search query, and sort by last modified (most recent first)
   const filteredSubmissions = useMemo(() => {
@@ -53,12 +50,8 @@ export function ArchivedSubmissionList({
     );
   }, [archivedSubmissions, submissionType, debouncedSearch]);
 
-  const handleViewHistory = (submission: SubmissionRecord) => {
-    setHistorySubmission(submission);
-  };
-
-  const handleCloseHistory = () => {
-    setHistorySubmission(null);
+  const handleViewHistory = (submission: { id: string }) => {
+    useSubmissionHistoryDrawerStore.getState().open(submission.id);
   };
 
   if (filteredSubmissions.length === 0) {
@@ -66,31 +59,22 @@ export function ArchivedSubmissionList({
   }
 
   return (
-    <>
-      <Stack gap="xs" h="100%">
-        {/* Scrollable list */}
-        <ScrollArea style={{ flex: 1 }}>
-          <Stack gap="xs" className="postybirb__submission__list">
-            {filteredSubmissions.map((submission) => (
-              <ArchivedSubmissionCard
-                key={submission.id}
-                submission={submission}
-                submissionType={submissionType}
-                isSelected={selectedIds.includes(submission.id)}
-                isCompact={isCompact}
-                onViewHistory={() => handleViewHistory(submission)}
-              />
-            ))}
-          </Stack>
-        </ScrollArea>
-      </Stack>
-
-      {/* History drawer */}
-      <SubmissionHistoryDrawer
-        opened={historySubmission !== null}
-        onClose={handleCloseHistory}
-        submission={historySubmission}
-      />
-    </>
+    <Stack gap="xs" h="100%">
+      {/* Scrollable list */}
+      <ScrollArea style={{ flex: 1 }}>
+        <Stack gap={0} className="postybirb__submission__list">
+          {filteredSubmissions.map((submission) => (
+            <ArchivedSubmissionCard
+              key={submission.id}
+              submission={submission}
+              submissionType={submissionType}
+              isSelected={selectedIds.includes(submission.id)}
+              isCompact={isCompact}
+              onViewHistory={() => handleViewHistory(submission)}
+            />
+          ))}
+        </Stack>
+      </ScrollArea>
+    </Stack>
   );
 }

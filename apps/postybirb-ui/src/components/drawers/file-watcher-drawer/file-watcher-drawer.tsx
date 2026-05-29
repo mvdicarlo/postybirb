@@ -6,40 +6,43 @@
 import { t } from '@lingui/core/macro';
 import { Trans } from '@lingui/react/macro';
 import {
-    ActionIcon,
-    Box,
-    Card,
-    Group,
-    Input,
-    Select,
-    Stack,
-    Text,
-    Tooltip
+  ActionIcon,
+  Box,
+  Card,
+  Group,
+  Input,
+  Select,
+  Stack,
+  Text,
+  Tooltip,
 } from '@mantine/core';
 import { DirectoryWatcherImportAction, SubmissionType } from '@postybirb/types';
 import {
-    IconDeviceFloppy,
-    IconFolder,
-    IconHelp,
-    IconPlus,
-    IconTrash,
+  IconDeviceFloppy,
+  IconFolder,
+  IconHelp,
+  IconPlus,
+  IconTrash,
 } from '@tabler/icons-react';
 import { useCallback, useMemo, useState } from 'react';
 import directoryWatchersApi, {
-    CheckPathResult,
-    FILE_COUNT_WARNING_THRESHOLD,
+  CheckPathResult,
+  FILE_COUNT_WARNING_THRESHOLD,
 } from '../../../api/directory-watchers.api';
 import { useDirectoryWatchers } from '../../../stores';
 import type { DirectoryWatcherRecord } from '../../../stores/records';
-import { useActiveDrawer, useDrawerActions } from '../../../stores/ui/drawer-store';
+import {
+  useActiveDrawer,
+  useDrawerActions,
+} from '../../../stores/ui/drawer-store';
 import { useTourActions } from '../../../stores/ui/tour-store';
 import {
-    showCreatedNotification,
-    showCreateErrorNotification,
-    showDeletedNotification,
-    showDeleteErrorNotification,
-    showUpdatedNotification,
-    showUpdateErrorNotification,
+  showCreatedNotification,
+  showCreateErrorNotification,
+  showDeletedNotification,
+  showDeleteErrorNotification,
+  showUpdatedNotification,
+  showUpdateErrorNotification,
 } from '../../../utils/notifications';
 import { ConfirmActionModal } from '../../confirm-action-modal';
 import { EmptyState } from '../../empty-state';
@@ -93,7 +96,8 @@ function FolderConfirmModal({
           {pathCheckResult && pathCheckResult.files.length > 0 && (
             <Text size="sm" c="dimmed">
               {pathCheckResult.files.slice(0, 5).join(', ')}
-              {pathCheckResult.files.length > 5 && `, ... ${t`and ${remainingCount} more`}`}
+              {pathCheckResult.files.length > 5 &&
+                `, ... ${t`and ${remainingCount} more`}`}
             </Text>
           )}
           <Text>
@@ -122,13 +126,14 @@ function FileWatcherCard({ watcher }: FileWatcherCardProps) {
   const [path, setPath] = useState(watcher.path ?? '');
   const [importAction, setImportAction] = useState(watcher.importAction);
   const [template, setTemplate] = useState<string | null>(
-    watcher.template ?? null
+    watcher.template ?? null,
   );
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [confirmModalOpened, setConfirmModalOpened] = useState(false);
   const [pendingPath, setPendingPath] = useState<string | null>(null);
-  const [pathCheckResult, setPathCheckResult] = useState<CheckPathResult | null>(null);
+  const [pathCheckResult, setPathCheckResult] =
+    useState<CheckPathResult | null>(null);
 
   // Memoize import action options to avoid re-renders
   const importActionOptions = useMemo(
@@ -138,7 +143,7 @@ function FileWatcherCard({ watcher }: FileWatcherCardProps) {
         value: DirectoryWatcherImportAction.NEW_SUBMISSION,
       },
     ],
-    []
+    [],
   );
 
   // Check if there are unsaved changes
@@ -149,7 +154,7 @@ function FileWatcherCard({ watcher }: FileWatcherCardProps) {
 
   const handlePickFolder = useCallback(async () => {
     if (window?.electron?.pickDirectory) {
-      const folder = await window.electron.pickDirectory();
+      const folder = await window.electron.pickDirectory(path);
       if (folder) {
         try {
           const result = await directoryWatchersApi.checkPath(folder);
@@ -172,7 +177,7 @@ function FileWatcherCard({ watcher }: FileWatcherCardProps) {
         }
       }
     }
-  }, []);
+  }, [path]);
 
   const handleConfirmPath = useCallback(() => {
     if (pendingPath) {
@@ -219,87 +224,91 @@ function FileWatcherCard({ watcher }: FileWatcherCardProps) {
   return (
     <Card padding="md" withBorder data-tour-id="file-watchers-card">
       <ComponentErrorBoundary>
-      <Stack gap="sm">
-        {/* Folder Path */}
-        <Input.Wrapper label={<Trans>Folder Path</Trans>} required>
-          <Input
-            leftSection={<IconFolder size={16} />}
-            value={path || t`No folder selected`}
-            readOnly
-            disabled={!window?.electron?.pickDirectory}
-            styles={{
-              input: {
-                cursor: window?.electron?.pickDirectory
-                  ? 'pointer'
-                  : 'not-allowed',
-                fontFamily: 'monospace',
-                fontSize: 'var(--mantine-font-size-xs)',
-              },
-            }}
-            onClick={handlePickFolder}
-          />
-        </Input.Wrapper>
+        <Stack gap="sm">
+          {/* Folder Path */}
+          <Input.Wrapper label={<Trans>Folder Path</Trans>} required>
+            <Input
+              leftSection={<IconFolder size={16} />}
+              value={path || t`No folder selected`}
+              readOnly
+              disabled={!window?.electron?.pickDirectory}
+              styles={{
+                input: {
+                  cursor: window?.electron?.pickDirectory
+                    ? 'pointer'
+                    : 'not-allowed',
+                  fontFamily: 'monospace',
+                  fontSize: 'var(--mantine-font-size-xs)',
+                },
+              }}
+              onClick={handlePickFolder}
+            />
+          </Input.Wrapper>
 
-        {/* Import Action */}
-        <Select
-          size="sm"
-          label={<Trans>Import Action</Trans>}
-          description={<Trans>What to do when new files are detected</Trans>}
-          data={importActionOptions}
-          value={importAction}
-          onChange={(value) =>
-            setImportAction(
-              (value as DirectoryWatcherImportAction) ??
-                DirectoryWatcherImportAction.NEW_SUBMISSION
-            )
-          }
-        />
-
-        {/* Template Picker - only show for NEW_SUBMISSION action */}
-        {importAction === DirectoryWatcherImportAction.NEW_SUBMISSION && (
-          <TemplatePicker
+          {/* Import Action */}
+          <Select
             size="sm"
-            type={SubmissionType.FILE}
-            value={template ?? undefined}
-            onChange={setTemplate}
-            description={
-              <Trans>Optional template to apply to imported files</Trans>
+            label={<Trans>Import Action</Trans>}
+            description={<Trans>What to do when new files are detected</Trans>}
+            data={importActionOptions}
+            value={importAction}
+            onChange={(value) =>
+              setImportAction(
+                (value as DirectoryWatcherImportAction) ??
+                  DirectoryWatcherImportAction.NEW_SUBMISSION,
+              )
             }
           />
-        )}
 
-        {/* Actions */}
-        <Group justify="space-between" mt="xs">
-          <Tooltip label={<Trans>Hold to delete</Trans>}>
-            <HoldToConfirmButton
-              variant="subtle"
-              color="red"
+          {/* Template Picker - only show for NEW_SUBMISSION action */}
+          {importAction === DirectoryWatcherImportAction.NEW_SUBMISSION && (
+            <TemplatePicker
               size="sm"
-              onConfirm={handleDelete}
-              loading={isDeleting}
-            >
-              <IconTrash size={16} />
-            </HoldToConfirmButton>
-          </Tooltip>
+              type={SubmissionType.FILE}
+              value={template ?? undefined}
+              onChange={setTemplate}
+              description={
+                <Trans>Optional template to apply to imported files</Trans>
+              }
+            />
+          )}
 
-          <Tooltip
-            label={
-              hasChanges ? <Trans>Save changes</Trans> : <Trans>No changes</Trans>
-            }
-          >
-            <ActionIcon
-              variant="filled"
-              color="blue"
-              size="md"
-              onClick={handleSave}
-              disabled={!hasChanges}
-              loading={isSaving}
+          {/* Actions */}
+          <Group justify="space-between" mt="xs">
+            <Tooltip label={<Trans>Hold to delete</Trans>}>
+              <HoldToConfirmButton
+                variant="subtle"
+                color="red"
+                size="sm"
+                onConfirm={handleDelete}
+                loading={isDeleting}
+              >
+                <IconTrash size={16} />
+              </HoldToConfirmButton>
+            </Tooltip>
+
+            <Tooltip
+              label={
+                hasChanges ? (
+                  <Trans>Save changes</Trans>
+                ) : (
+                  <Trans>No changes</Trans>
+                )
+              }
             >
-              <IconDeviceFloppy size={16} />
-            </ActionIcon>
-          </Tooltip>
-        </Group>
-      </Stack>
+              <ActionIcon
+                variant="filled"
+                color="blue"
+                size="md"
+                onClick={handleSave}
+                disabled={!hasChanges}
+                loading={isSaving}
+              >
+                <IconDeviceFloppy size={16} />
+              </ActionIcon>
+            </Tooltip>
+          </Group>
+        </Stack>
       </ComponentErrorBoundary>
 
       {/* Confirmation modal for folders with many files */}
@@ -420,7 +429,11 @@ function FileWatcherDrawerContent({ onClose }: { onClose: () => void }) {
         <Group gap="xs">
           <Trans>File Watchers</Trans>
           <Tooltip label={<Trans>File Watchers Tour</Trans>}>
-            <ActionIcon variant="subtle" size="xs" onClick={() => startTour(FILE_WATCHERS_TOUR_ID)}>
+            <ActionIcon
+              variant="subtle"
+              size="xs"
+              onClick={() => startTour(FILE_WATCHERS_TOUR_ID)}
+            >
               <IconHelp size={16} />
             </ActionIcon>
           </Tooltip>

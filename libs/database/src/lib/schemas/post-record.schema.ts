@@ -1,16 +1,14 @@
+import { PostRecordResumeMode, PostRecordState } from '@postybirb/types';
 import { relations } from 'drizzle-orm';
 import { AnySQLiteColumn, sqliteTable, text } from 'drizzle-orm/sqlite-core';
-// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
-import {
-  PostRecordResumeMode,
-  PostRecordState,
-} from '../../../../types/src/index';
 import { CommonSchema, id } from './common.schema';
 import { PostEventSchema } from './post-event.schema';
 import { SubmissionSchema } from './submission.schema';
 
 export const PostRecordSchema = sqliteTable('post-record', {
   ...CommonSchema(),
+  version: text(),
+
   submissionId: id().references(() => SubmissionSchema.id, {
     onDelete: 'cascade',
   }),

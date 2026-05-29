@@ -1,26 +1,30 @@
+import { FormFile } from '@postybirb/http/types';
 import { IFileBuffer } from '@postybirb/types';
-import { FormFile } from '../../../../../../libs/http/src/lib/form-file'; // Direct import to avoid electron loading
 import { CancellableToken } from '../../post/models/cancellable-token';
 import { PostingFile } from '../../post/models/posting-file';
 import { PostBuilder } from './post-builder';
 
 // Mocks
+const mockHttpPost = jest
+  .fn()
+  .mockResolvedValue({ statusCode: 200, body: { id: '123' } });
+
 const mockWebsite = {
   account: { id: 'test-account' },
   constructor: { name: 'MockWebsite' },
+  platform: {
+    http: {
+      post: mockHttpPost,
+    },
+  },
 };
 
 jest.mock('@postybirb/logger', () => ({
   Logger: () => ({
     withMetadata: () => ({ debug: jest.fn() }),
     debug: jest.fn(),
+    error: jest.fn(),
   }),
-}));
-jest.mock('@postybirb/http', () => ({
-  Http: {
-    post: jest.fn().mockResolvedValue({ statusCode: 200, body: { id: '123' } }),
-  },
-  FormFile: FormFile,
 }));
 
 function createPostingFile(overrides = {}) {
@@ -151,9 +155,10 @@ describe('PostBuilder', () => {
     );
   });
 
-  it('should call Http.post and return value on send', async () => {
+  it('should call platform.http.post and return value on send', async () => {
     const result = await builder.send<{ id: string }>('http://test');
     expect(result.body.id).toBe('123');
+    expect(mockHttpPost).toHaveBeenCalled();
   });
 
   it('should convert PostingFile to FormFile', () => {

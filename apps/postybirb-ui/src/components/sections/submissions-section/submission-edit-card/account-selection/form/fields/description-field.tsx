@@ -4,7 +4,7 @@
  */
 
 import { Trans } from '@lingui/react/macro';
-import { Alert, Box, Checkbox } from '@mantine/core';
+import { Alert, Badge, Box, Checkbox, Group, Text } from '@mantine/core';
 import { useDebouncedCallback, useDisclosure } from '@mantine/hooks';
 import { DescriptionFieldType } from '@postybirb/form-builder';
 import {
@@ -12,8 +12,9 @@ import {
     DefaultDescriptionValue,
     DescriptionValue,
 } from '@postybirb/types';
-import { IconAlertTriangle } from '@tabler/icons-react';
+import { IconAlertTriangle, IconArrowRight } from '@tabler/icons-react';
 import { useMemo } from 'react';
+import { useUserConverters } from '../../../../../../../stores/entity/user-converter-store';
 import { DescriptionEditor } from '../../../../../../shared';
 import { useFormFieldsContext } from '../form-fields-context';
 import { useDefaultOption } from '../hooks/use-default-option';
@@ -55,6 +56,31 @@ const LEGACY_SHORTCUT_PATTERN = /\{[a-zA-Z0-9]+(?:\[[^\]]+\])?(?::[^}]+)?\}/;
 /**
  * Recursively checks if a description contains legacy shortcut syntax in text nodes.
  */
+/**
+ * Extracts all unique usernames from 'username' inline nodes in description blocks.
+ */
+function extractUsernames(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  blocks: any[],
+): string[] {
+  const usernames = new Set<string>();
+  for (const block of blocks) {
+    if (Array.isArray(block?.content)) {
+      for (const inline of block.content) {
+        if (inline?.type === 'username' && inline?.attrs?.username) {
+          usernames.add(inline.attrs.username);
+        }
+      }
+    }
+    if (Array.isArray(block?.children)) {
+      for (const name of extractUsernames(block.children)) {
+        usernames.add(name);
+      }
+    }
+  }
+  return [...usernames];
+}
+
 function hasLegacyShortcuts(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   blocks: any[],
@@ -86,6 +112,7 @@ export function DescriptionField({
   const defaultOption = useDefaultOption<DescriptionValue>(fieldName);
   const validations = useValidations(fieldName);
   const [previewOpened, { toggle: togglePreview }] = useDisclosure(false);
+  const userConverters = useUserConverters();
 
   const fieldValue =
     getValue<DescriptionValue>(fieldName) ??
@@ -117,6 +144,11 @@ export function DescriptionField({
     () => hasLegacyShortcuts(description.content || []),
     [description],
   );
+
+  const activeAliases = useMemo(() => {
+    const usernames = extractUsernames(description.content || []);
+    return userConverters.filter((c) => usernames.includes(c.username));
+  }, [description, userConverters]);
 
   const descriptionChangeEvent = useMemo(() => new EventTarget(), []);
 
@@ -221,6 +253,35 @@ export function DescriptionField({
                 currentOptionId={option.isDefault ? undefined : option.id}
                 changeEvent={descriptionChangeEvent}
               />
+            )}
+            {activeAliases.length > 0 && (
+              <Alert
+                variant="light"
+                color="blue"
+                mt="xs"
+                title={<Trans>Active Username Aliases</Trans>}
+              >
+                {activeAliases.map((alias) => (
+                  <Box key={alias.id} mb={4}>
+                    <Group gap="xs" wrap="wrap">
+                      <Badge variant="outline" size="sm">
+                        {alias.username}
+                      </Badge>
+                      <IconArrowRight size={12} />
+                      {Object.entries(alias.convertTo).map(
+                        ([site, converted]) => (
+                          <Text key={site} size="xs" c="dimmed">
+                            <Text span fw={500}>
+                              {site}
+                            </Text>
+                            : {converted}
+                          </Text>
+                        ),
+                      )}
+                    </Group>
+                  </Box>
+                ))}
+              </Alert>
             )}
           </>
         )}

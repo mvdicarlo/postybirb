@@ -8,6 +8,7 @@ import { Trans } from '@lingui/react/macro';
 import {
   Badge,
   Box,
+  Checkbox,
   Collapse,
   Divider,
   Group,
@@ -27,7 +28,7 @@ import {
   IconLoader,
   IconX,
 } from '@tabler/icons-react';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useAccounts } from '../../../../../stores/entity/account-store';
 import { useWebsites } from '../../../../../stores/entity/website-store';
 import type {
@@ -81,6 +82,12 @@ function AccountStatusIcon({ status, errors }: { status: AccountPostStatus; erro
       return (
         <Tooltip label={<Trans>Posting in progress</Trans>} withArrow>
           <IconLoader size={14} color="var(--mantine-color-blue-6)" style={{ flexShrink: 0 }} />
+        </Tooltip>
+      );
+    case 'rate-limited':
+      return (
+        <Tooltip label={<Trans>Waiting (rate limit)</Trans>} withArrow>
+          <IconLoader size={14} color="var(--mantine-color-orange-6)" style={{ flexShrink: 0 }} />
         </Tooltip>
       );
     default:
@@ -277,6 +284,7 @@ export function SelectedAccountsForms() {
   const { submission } = useSubmissionEditCardContext();
   const accounts = useAccounts();
   const websites = useWebsites();
+  const [hidePosted, setHidePosted] = useState(false);
 
   // Compute per-account post status from latest post record
   // Skip for templates and multi-edit cards (they never have post history)
@@ -376,16 +384,50 @@ export function SelectedAccountsForms() {
     return groups;
   }, [submission.options, accountById, websiteById, validationsByOptionId]);
 
+  // Filter out already-posted accounts when hidePosted is true
+  const visibleGroups = useMemo(() => {
+    if (!hidePosted) return websiteGroups;
+
+    return websiteGroups
+      .map(({ website, options }) => ({
+        website,
+        options: options.filter((entry) => {
+          const status = accountStatusMap.get(entry.option.accountId);
+          return status?.status !== 'success';
+        }),
+      }))
+      .filter(({ options }) => options.length > 0);
+  }, [websiteGroups, hidePosted, accountStatusMap]);
+
+  // Check if there are any posted accounts to show the toggle
+  const hasPostedAccounts = useMemo(
+    () =>
+      Array.from(accountStatusMap.values()).some(
+        (entry) => entry.status === 'success',
+      ),
+    [accountStatusMap],
+  );
+
   if (websiteGroups.length === 0) {
     return null;
   }
 
   return (
     <Stack gap="xs">
-      <Text fw={600} size="sm">
-        <Trans>Website Options</Trans>
-      </Text>
-      {websiteGroups.map(({ website, options }) => (
+      <Group justify="space-between">
+        <Text fw={600} size="sm">
+          <Trans>Website Options</Trans>
+        </Text>
+        {hasPostedAccounts && (
+          <Checkbox
+            size="xs"
+            label={<Trans>Hide posted</Trans>}
+            checked={hidePosted}
+            onChange={(e) => setHidePosted(e.currentTarget.checked)}
+          />
+        )}
+      </Group>
+      {visibleGroups.map(({ website, options }) => (
         <WebsiteFormGroup
           key={website.id}
           website={website}

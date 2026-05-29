@@ -50,15 +50,20 @@ export class ToyhouseFileSubmission extends BaseWebsiteOptions {
   @RatingField({
     options: ToyhouseMaturityOptions,
     required: true,
-    section: 'common',
-    order: 1,
   })
   rating: SubmissionRating;
+
+  @DescriptionField({
+    label: 'description',
+    descriptionType: DescriptionType.PLAINTEXT,
+    required: false,
+    maxDescriptionLength: 255,
+  })
+  description: DescriptionValue;
 
   @BooleanField({
     label: 'nudity',
     span: 4,
-    section: 'common',
     order: 2,
   })
   nudity: boolean;
@@ -66,7 +71,6 @@ export class ToyhouseFileSubmission extends BaseWebsiteOptions {
   @BooleanField({
     label: 'gore',
     span: 4,
-    section: 'common',
     order: 2,
   })
   gore: boolean;
@@ -74,7 +78,6 @@ export class ToyhouseFileSubmission extends BaseWebsiteOptions {
   @BooleanField({
     label: 'sensitiveContent',
     span: 4,
-    section: 'common',
     order: 2,
   })
   sensitiveContent: boolean;
@@ -85,20 +88,9 @@ export class ToyhouseFileSubmission extends BaseWebsiteOptions {
     maxLength: 200,
     hidden: false,
     showWhen: [['sensitiveContent', [true]]],
-    section: 'common',
     order: 3,
   })
   contentWarning: string;
-
-  @DescriptionField({
-    label: 'description',
-    descriptionType: DescriptionType.PLAINTEXT,
-    required: false,
-    maxDescriptionLength: 255,
-    section: 'common',
-    order: 4,
-  })
-  description: DescriptionValue;
 
   @SelectField<ToyhouseAccountData>({
     label: 'characters',

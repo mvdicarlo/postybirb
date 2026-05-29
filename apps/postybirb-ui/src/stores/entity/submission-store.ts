@@ -63,7 +63,7 @@ function submissionHasChanged(existing: SubmissionRecord, dto: ISubmissionDto): 
   if (dtoOptions.length !== existing.options.length) return true;
   if (dtoOptions.length > 0 && maxUpdatedAt(dtoOptions) !== maxUpdatedAt(existing.options)) return true;
 
-  // 4. Posts changed (count, timestamps, or state)
+  // 4. Posts changed (count, timestamps, state, or events)
   const dtoPosts = dto.posts ?? [];
   if (dtoPosts.length !== existing.posts.length) return true;
   if (dtoPosts.length > 0) {
@@ -72,6 +72,21 @@ function submissionHasChanged(existing: SubmissionRecord, dto: ISubmissionDto): 
     const dtoLatestState = dtoPosts[dtoPosts.length - 1]?.state;
     const existingLatestState = existing.posts[existing.posts.length - 1]?.state;
     if (dtoLatestState !== existingLatestState) return true;
+
+    // Events are a separate table and don't bump the parent post's updatedAt,
+    // so we must check them explicitly to detect new POST_ATTEMPT_STARTED /
+    // POST_ATTEMPT_COMPLETED / etc. events streaming in while a post is running.
+    for (let i = 0; i < dtoPosts.length; i++) {
+      const dtoEvents = dtoPosts[i].events ?? [];
+      const existingEvents = existing.posts[i].events ?? [];
+      if (dtoEvents.length !== existingEvents.length) return true;
+      if (
+        dtoEvents.length > 0 &&
+        maxUpdatedAt(dtoEvents) !== maxUpdatedAt(existingEvents)
+      ) {
+        return true;
+      }
+    }
   }
 
   // 5. PostQueueRecord changed

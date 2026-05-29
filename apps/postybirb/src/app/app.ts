@@ -1,12 +1,10 @@
 import { INestApplication } from '@nestjs/common';
 import {
-  PostyBirbEnvConfig,
-  getStartupOptions,
   isLinux,
   isOSX,
-  onStartupOptionsUpdate,
-  setStartupOptions,
-} from '@postybirb/utils/electron';
+  PostyBirbEnvConfig,
+  StartupOptionsManager,
+} from '@postybirb/utils/common';
 import {
   BrowserWindow,
   Menu,
@@ -15,7 +13,7 @@ import {
   app,
   nativeImage,
   nativeTheme,
-  screen
+  screen,
 } from 'electron';
 import { join } from 'path';
 import { environment } from '../environments/environment';
@@ -97,13 +95,19 @@ export default class PostyBirb {
         backgroundThrottling: false,
         preload: join(__dirname, 'preload.js'),
         webviewTag: true,
-        spellcheck: getStartupOptions().spellchecker,
+        spellcheck: StartupOptionsManager.get().spellchecker,
         devTools: true,
       },
     });
     PostyBirb.mainWindow.setMenu(null);
     PostyBirb.mainWindow.center();
     // PostyBirb.mainWindow.webContents.openDevTools({ mode: 'detach' });
+
+    PostyBirb.mainWindow.webContents.on('will-navigate', (event, url) => {
+      if (url.startsWith('file://')) {
+        event.preventDefault();
+      }
+    });
 
     // if main window is ready to show, close the splash window and show the main window
     PostyBirb.mainWindow.once('ready-to-show', () => {
@@ -143,14 +147,14 @@ export default class PostyBirb {
           enabled: !isLinux(),
           label: 'Launch on Startup',
           type: 'checkbox',
-          checked: getStartupOptions().startAppOnSystemStartup,
+          checked: StartupOptionsManager.get().startAppOnSystemStartup,
           click(event) {
             const { checked } = event;
             app.setLoginItemSettings({
               openAtLogin: event.checked,
               path: app.getPath('exe'),
             });
-            setStartupOptions({
+            StartupOptionsManager.set({
               startAppOnSystemStartup: checked,
             });
           },
@@ -175,7 +179,7 @@ export default class PostyBirb {
       tray.setContextMenu(Menu.buildFromTemplate(trayItems));
       tray.setToolTip('PostyBirb');
       tray.on('click', () => PostyBirb.showMainWindow());
-      onStartupOptionsUpdate(PostyBirb.refreshAppTray);
+      StartupOptionsManager.onUpdate(PostyBirb.refreshAppTray);
       PostyBirb.appTray = tray;
     }
   }

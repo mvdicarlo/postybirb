@@ -5,36 +5,43 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-    Accordion,
-    ActionIcon,
-    Badge,
-    Button,
-    Card,
-    Divider,
-    Group,
-    Stack,
-    Table,
-    Text,
-    Textarea,
-    Tooltip,
+  Accordion,
+  ActionIcon,
+  Badge,
+  Button,
+  Card,
+  Divider,
+  Group,
+  Loader,
+  Stack,
+  Table,
+  Text,
+  Textarea,
+  Tooltip,
 } from '@mantine/core';
-import { EntityId, PostRecordDto, PostRecordState } from '@postybirb/types';
 import {
-    IconCheck,
-    IconDeviceFloppy,
-    IconExternalLink,
-    IconInfoCircle,
-    IconLoader,
-    IconX,
+  EntityId,
+  PostRecordDto,
+  PostRecordState,
+  SubmissionType,
+} from '@postybirb/types';
+import {
+  IconCheck,
+  IconDeviceFloppy,
+  IconExternalLink,
+  IconInfoCircle,
+  IconLoader,
+  IconX,
 } from '@tabler/icons-react';
+import { omit } from 'lodash';
 import { useLocale } from '../../../../hooks';
 import type { AccountRecord } from '../../../../stores/records';
+import { isRemote } from '../../../../transports/http-client';
 import { CopyToClipboard } from '../../../shared/copy-to-clipboard';
 import { ExternalLink } from '../../../shared/external-link';
 import {
-    exportPostRecordToFile,
-    extractWebsitePostsFromEvents,
-    formatDuration,
+  exportPostRecordToFile,
+  extractWebsitePostsFromEvents,
 } from './history-utils';
 
 function getStateIcon(state: PostRecordState): React.ReactNode {
@@ -60,8 +67,29 @@ interface PostRecordCardProps {
  * Displays an individual post record as an Accordion.Item.
  */
 export function PostRecordCard({ record, accountsMap }: PostRecordCardProps) {
-  const { formatDateTime } = useLocale();
-  const formattedJson = JSON.stringify(record, null, 2);
+  const { formatDateTime, formatDuration } = useLocale();
+  const errors = record.events
+    ?.map((e) => {
+      if (e.error?.stack) {
+        return `${e.metadata?.accountSnapshot?.website}: ${e.error.stack}`;
+      }
+
+      return '';
+    })
+    .filter((e) => !!e);
+
+  const hasFileId = record.events?.some((e) => e.fileId);
+  const recordWithVersions = {
+    version: record.version ?? 'unknown',
+    submissionType: hasFileId ? SubmissionType.FILE : SubmissionType.MESSAGE,
+    debug: {
+      clientVersion: window.electron.app_version,
+      isRemote: isRemote(),
+      errors,
+    },
+    ...omit(record, 'version'),
+  };
+  const formattedJson = JSON.stringify(recordWithVersions, null, 2);
 
   const handleSaveToFile = () => {
     exportPostRecordToFile(record);
@@ -69,8 +97,16 @@ export function PostRecordCard({ record, accountsMap }: PostRecordCardProps) {
 
   // Extract website posts from events
   const websitePosts = extractWebsitePostsFromEvents(record.events);
-  const successCount = websitePosts.filter((p) => p.isSuccess).length;
-  const failedCount = websitePosts.length - successCount;
+  const successCount = websitePosts.filter(
+    (p) => p.status === 'success',
+  ).length;
+  const failedCount = websitePosts.filter((p) => p.status === 'failed').length;
+  const runningCount = websitePosts.filter(
+    (p) => p.status === 'running',
+  ).length;
+  const pendingCount = websitePosts.filter(
+    (p) => p.status === 'pending',
+  ).length;
 
   // Calculate duration if completed
   const startedAt = new Date(record.createdAt);
@@ -98,6 +134,16 @@ export function PostRecordCard({ record, accountsMap }: PostRecordCardProps) {
             {failedCount > 0 && (
               <Badge size="sm" color="red" variant="light">
                 {failedCount} <Trans>failed</Trans>
+              </Badge>
+            )}
+            {runningCount > 0 && (
+              <Badge size="sm" color="blue" variant="light">
+                {runningCount} <Trans>running</Trans>
+              </Badge>
+            )}
+            {pendingCount > 0 && (
+              <Badge size="sm" color="gray" variant="light">
+                {pendingCount} <Trans>waiting</Trans>
               </Badge>
             )}
             {duration && (
@@ -146,43 +192,73 @@ export function PostRecordCard({ record, accountsMap }: PostRecordCardProps) {
                         </Text>
                       </Table.Td>
                       <Table.Td>
-                        {post.isSuccess ? (
-                          <Group gap="xs">
-                            <IconCheck
-                              size={16}
-                              color="var(--mantine-color-green-6)"
-                            />
-                            <Text size="sm" c="green.7">
-                              <Trans>Success</Trans>
-                            </Text>
-                          </Group>
-                        ) : (
-                          <Group gap="xs">
-                            <IconX
-                              size={16}
-                              color="var(--mantine-color-red-6)"
-                            />
-                            <Text size="sm" c="red.7">
-                              <Trans>Failed</Trans>
-                            </Text>
-                            {post.errors.length > 0 && (
-                              <Tooltip
-                                label={post.errors.join(' | ')}
-                                multiline
-                                w={300}
-                                withArrow
-                              >
-                                <ActionIcon
-                                  size="xs"
-                                  variant="subtle"
-                                  color="red"
-                                >
-                                  <IconInfoCircle size={14} />
-                                </ActionIcon>
-                              </Tooltip>
-                            )}
-                          </Group>
-                        )}
+                        {(() => {
+                          switch (post.status) {
+                            case 'success':
+                              return (
+                                <Group gap="xs">
+                                  <IconCheck
+                                    size={16}
+                                    color="var(--mantine-color-green-6)"
+                                  />
+                                  <Text size="sm" c="green.7">
+                                    <Trans>Success</Trans>
+                                  </Text>
+                                </Group>
+                              );
+                            case 'running':
+                              return (
+                                <Group gap="xs">
+                                  <Loader
+                                    size={16}
+                                    mt={3}
+                                    type="bars"
+                                    color="var(--mantine-color-blue-6)"
+                                  />
+                                  <Text size="sm" c="blue.7">
+                                    <Trans>Posting</Trans>
+                                  </Text>
+                                </Group>
+                              );
+                            case 'pending':
+                              return (
+                                <Group gap="xs">
+                                  <Text size="sm" c="dimmed">
+                                    <Trans>Waiting</Trans>
+                                  </Text>
+                                </Group>
+                              );
+                            case 'failed':
+                            default:
+                              return (
+                                <Group gap="xs">
+                                  <IconX
+                                    size={16}
+                                    color="var(--mantine-color-red-6)"
+                                  />
+                                  <Text size="sm" c="red.7">
+                                    <Trans>Failed</Trans>
+                                  </Text>
+                                  {post.errors.length > 0 && (
+                                    <Tooltip
+                                      label={post.errors.join(' | ')}
+                                      multiline
+                                      w={300}
+                                      withArrow
+                                    >
+                                      <ActionIcon
+                                        size="xs"
+                                        variant="subtle"
+                                        color="red"
+                                      >
+                                        <IconInfoCircle size={14} />
+                                      </ActionIcon>
+                                    </Tooltip>
+                                  )}
+                                </Group>
+                              );
+                          }
+                        })()}
                       </Table.Td>
                       <Table.Td>
                         {post.sourceUrls.length > 0 ? (
@@ -190,10 +266,10 @@ export function PostRecordCard({ record, accountsMap }: PostRecordCardProps) {
                             {post.sourceUrls.map((url) => (
                               <ExternalLink href={url} key={url}>
                                 <Group gap={4}>
-                                  <IconExternalLink size="0.75rem" />
                                   <Text size="xs" c="blue.6" td="underline">
                                     <Trans>View</Trans>
                                   </Text>
+                                  <IconExternalLink size="0.75rem" />
                                 </Group>
                               </ExternalLink>
                             ))}

@@ -4,12 +4,14 @@
  */
 
 import { Trans, useLingui } from '@lingui/react/macro';
-import { Alert, Button, Group, Modal, Radio, Stack, Text } from '@mantine/core';
+import { Alert, Badge, Button, Group, Modal, Pill, Radio, Stack, Text } from '@mantine/core';
 import { PostRecordResumeMode, PostRecordState } from '@postybirb/types';
 import { IconAlertCircle } from '@tabler/icons-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useAccountsMap } from '../../../../stores/entity/account-store';
 import type { SubmissionRecord } from '../../../../stores/records';
 import { ReorderableSubmissionList } from '../../../shared/reorderable-submission-list';
+import { getAccountPostStatusMap } from '../submission-history/history-utils';
 
 export interface PostConfirmModalProps {
   /** Whether the modal is open */
@@ -39,6 +41,7 @@ export function PostConfirmModal({
   loading = false,
 }: PostConfirmModalProps) {
   const { t } = useLingui();
+  const accountsMap = useAccountsMap();
 
   // Filter to only valid submissions that can be posted
   const validSubmissions = selectedSubmissions.filter(
@@ -72,6 +75,55 @@ export function PostConfirmModal({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [opened]);
+
+  const renderExtra = useCallback(
+    (submission: SubmissionRecord) => {
+      const nonDefaultOptions = submission.options.filter((o) => !o.isDefault);
+      if (nonDefaultOptions.length === 0) return null;
+
+      const submissionHasFailedPost =
+        submission.latestPost?.state === PostRecordState.FAILED;
+
+      let accountsToPost = nonDefaultOptions;
+
+      if (submissionHasFailedPost && resumeMode !== PostRecordResumeMode.NEW) {
+        // CONTINUE / CONTINUE_RETRY: skip accounts that already succeeded
+        const statusMap = getAccountPostStatusMap(submission);
+        accountsToPost = nonDefaultOptions.filter(
+          (o) => statusMap.get(o.accountId)?.status !== 'success',
+        );
+      }
+
+      if (accountsToPost.length === 0) {
+        return (
+          <Text size="xs" c="dimmed" mt={4}>
+            <Trans>No websites will post (all previously succeeded)</Trans>
+          </Text>
+        );
+      }
+
+      return (
+        <Pill.Group gap={4} mt={4}>
+          {accountsToPost.map((option) => {
+            const acc = accountsMap.get(option.accountId);
+            return (
+              <Pill key={option.accountId} style={{ maxWidth: 'unset', flex: 'none' }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                  <Badge size="xs" variant="light" radius="sm" px={4} style={{ flexShrink: 0 }}>
+                    {acc?.websiteDisplayName ?? option.account?.website}
+                  </Badge>
+                  <Text size="xs" span>
+                    {acc?.name ?? option.account?.name ?? option.accountId}
+                  </Text>
+                </span>
+              </Pill>
+            );
+          })}
+        </Pill.Group>
+      );
+    },
+    [resumeMode, accountsMap],
+  );
 
   const handleConfirm = useCallback(() => {
     const orderedIds = orderedSubmissions.map((s) => s.id);
@@ -155,6 +207,7 @@ export function PostConfirmModal({
           <ReorderableSubmissionList
             submissions={orderedSubmissions}
             onReorder={setOrderedSubmissions}
+            renderExtra={renderExtra}
             maxHeight="300px"
           />
         )}

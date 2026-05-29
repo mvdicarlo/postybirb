@@ -1,5 +1,5 @@
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
-import { Http } from '@postybirb/http';
+
 import {
   FileType,
   ILoginState,
@@ -150,7 +150,7 @@ export default class Cara
     {};
 
   public async onLogin(): Promise<ILoginState> {
-    const { body, responseUrl } = await Http.get<string>(
+    const { body, responseUrl } = await this.platform.http.get<string>(
       `${this.BASE_URL}/settings`,
       {
         partition: this.accountId,
@@ -182,7 +182,7 @@ export default class Cara
   private async getS3UploadCredentials(
     uploadRequest: S3UploadRequest,
   ): Promise<S3UploadCredentials> {
-    const response = await Http.post<S3UploadCredentials>(
+    const response = await this.platform.http.post<S3UploadCredentials>(
       `${this.BASE_URL}/api/s3-upload`,
       {
         partition: this.accountId,

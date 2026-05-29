@@ -11,32 +11,33 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-    ActionIcon,
-    Box,
-    Checkbox,
-    Group,
-    InputBase,
-    Popover,
-    ScrollArea,
-    Text,
-    TextInput,
+  ActionIcon,
+  Box,
+  Checkbox,
+  Group,
+  InputBase,
+  Popover,
+  ScrollArea,
+  Text,
+  TextInput,
 } from '@mantine/core';
 import { SelectOption } from '@postybirb/form-builder';
 import { IconChevronDown, IconSearch, IconX } from '@tabler/icons-react';
 import React, {
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
 } from 'react';
 import {
-    countSelectableOptions,
-    filterOptions,
-    flattenSelectableOptions,
-    getSelectedOptions,
-    handleMutuallyExclusiveSelection,
-    isOptionGroup,
+  buildOptionPathMap,
+  countSelectableOptions,
+  filterOptions,
+  flattenSelectableOptions,
+  getSelectedOptions,
+  handleMutuallyExclusiveSelection,
+  isOptionGroup,
 } from './select-utils';
 
 const SEARCH_THRESHOLD = 7;
@@ -195,6 +196,8 @@ export function TreeSelect({
 
   const enableSearch = countSelectableOptions(options) >= SEARCH_THRESHOLD;
 
+  const optionPathMap = useMemo(() => buildOptionPathMap(options), [options]);
+
   const filteredOptions = useMemo(
     () => (searchQuery.trim() ? filterOptions(options, searchQuery) : options),
     [options, searchQuery],
@@ -210,8 +213,10 @@ export function TreeSelect({
     if (multiple && selectedOptions.length > 2) {
       return <Trans>{selectedOptions.length} selected</Trans>;
     }
-    return selectedOptions.map((opt) => opt.label).join(', ');
-  }, [selectedOptions, displayPlaceholder, multiple]);
+    return selectedOptions
+      .map((opt) => optionPathMap.get(opt.value) ?? opt.label)
+      .join(', ');
+  }, [selectedOptions, displayPlaceholder, multiple, optionPathMap]);
 
   // ── Callbacks ──────────────────────────────────────────────────────
 
@@ -468,7 +473,18 @@ export function TreeSelect({
           <IconX size={14} />
         </ActionIcon>
       )}
-      <IconChevronDown size={16} style={chevronStyles} />
+      <IconChevronDown
+        size={16}
+        style={chevronStyles}
+        onMouseDown={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+        }}
+        onClick={(e) => {
+          e.stopPropagation();
+          setOpened((o) => !o);
+        }}
+      />
     </Group>
   );
 
@@ -483,6 +499,7 @@ export function TreeSelect({
     >
       <Popover.Target>
         <InputBase
+          className="tree-select"
           ref={triggerRef}
           component="button"
           type="button"

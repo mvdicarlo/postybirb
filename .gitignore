@@ -57,3 +57,8 @@ Thumbs.db
 # Public UI dependencies
 .nx/cache
 .nx/workspace-data
+
+vite.config.*.timestamp*
+vitest.config.*.timestamp*
+.cursor/rules/nx-rules.mdc
+.github/instructions/nx.instructions.md

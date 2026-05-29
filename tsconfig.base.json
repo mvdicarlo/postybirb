@@ -22,11 +22,13 @@
       "@postybirb/form-builder": ["libs/form-builder/src/index.ts"],
       "@postybirb/fs": ["libs/fs/src/index.ts"],
       "@postybirb/http": ["libs/http/src/index.ts"],
+      "@postybirb/http/types": ["libs/http/src/types.ts"],
       "@postybirb/logger": ["libs/logger/src/index.ts"],
+      "@postybirb/platform": ["libs/platform/src/index.ts"],
       "@postybirb/socket-events": ["libs/socket-events/src/index.ts"],
       "@postybirb/translations": ["libs/translations/src/index.ts"],
       "@postybirb/types": ["libs/types/src/index.ts"],
-      "@postybirb/utils/electron": ["libs/utils/electron/src/index.ts"],
+      "@postybirb/utils/common": ["libs/utils/common/src/index.ts"],
       "@postybirb/utils/file-type": ["libs/utils/file-type/src/index.ts"],
       "@tiptap/react/menus": [
         "node_modules/@tiptap/react/dist/menus/index.d.ts"

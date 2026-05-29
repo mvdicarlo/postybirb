@@ -1,5 +1,6 @@
 export * from './account/account.interface';
 export * from './common/dynamic-object';
+export * from './common/preload-bridge';
 export * from './custom-shortcut/custom-shortcut.interface';
 export * from './database/entity-primitive.type';
 export * from './database/entity.interface';
@@ -11,6 +12,7 @@ export * from './post/post-event.interface';
 export * from './post/post-queue-record.interface';
 export * from './post/post-record.interface';
 export * from './post/post-response.type';
+export * from './post/post-wait-state.interface';
 export * from './remote/update-cookies-remote.type';
 export * from './settings/settings-options.interface';
 export * from './settings/settings.constants';

@@ -6,11 +6,7 @@ import {
 } from '@nestjs/common';
 import { SETTINGS_UPDATES } from '@postybirb/socket-events';
 import { EntityId, SettingsConstants } from '@postybirb/types';
-import {
-  StartupOptions,
-  getStartupOptions,
-  setStartupOptions,
-} from '@postybirb/utils/electron';
+import { StartupOptions, StartupOptionsManager } from '@postybirb/utils/common';
 import { eq } from 'drizzle-orm';
 import { PostyBirbService } from '../common/service/postybirb-service';
 import { Settings } from '../drizzle/models';
@@ -142,7 +138,7 @@ export class SettingsService
    * Gets the startup settings.
    */
   public getStartupSettings() {
-    return getStartupOptions();
+    return StartupOptionsManager.get();
   }
 
   /**
@@ -173,7 +169,7 @@ export class SettingsService
       }
     }
 
-    setStartupOptions({ ...startUpOptions });
+    StartupOptionsManager.set({ ...startUpOptions });
   }
 
   /**

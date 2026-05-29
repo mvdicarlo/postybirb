@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { UsernameShortcut } from '@postybirb/types';
 import { TipTapNode } from './description-node.types';
 
@@ -8,6 +7,8 @@ import { TipTapNode } from './description-node.types';
 export interface ConversionContext {
   website: string;
   shortcuts: Record<string, UsernameShortcut>;
+  /** Maps website metadata name to the shortcut ID for that website */
+  websiteToShortcutId?: Record<string, string>;
   customShortcuts: Map<string, TipTapNode[]>;
   defaultDescription: TipTapNode[];
   title?: string;

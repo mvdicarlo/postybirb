@@ -2,7 +2,7 @@
  * InputField - Text input and textarea field.
  */
 
-import { Textarea, TextInput } from '@mantine/core';
+import { Group, Text, Textarea, TextInput } from '@mantine/core';
 import { TextFieldType } from '@postybirb/form-builder';
 import { useFormFieldsContext } from '../form-fields-context';
 import { useDefaultOption } from '../hooks/use-default-option';
@@ -18,7 +18,7 @@ function TextField({
 }: FormFieldProps<TextFieldType> & { defaultValue: string | undefined }) {
   const { getValue, setValue, submission } = useFormFieldsContext();
   const value = getValue<string>(fieldName) ?? field.defaultValue ?? '';
-
+  const inputLength = (value || defaultValue)?.length ?? 0;
   return (
     <TextInput
       value={value}
@@ -27,12 +27,23 @@ function TextField({
       w="100%"
       maxLength={field.maxLength}
       disabled={submission.isArchived}
-      description={
-        field.maxLength
-          ? `${value?.length ?? 0} / ${field.maxLength}`
-          : undefined
+      rightSection={
+        <Group wrap="nowrap" gap="4">
+          <FieldCopyButton value={value} />
+          {inputLength > 0 && (
+            <Text
+              c="dimmed"
+              size="xs"
+              w="max-content"
+              pr={field.maxLength ? 40 : 'md'}
+            >
+              {field.maxLength
+                ? `${inputLength} / ${field.maxLength}`
+                : inputLength}
+            </Text>
+          )}
+        </Group>
       }
-      rightSection={<FieldCopyButton value={value} />}
       onChange={(e) => setValue(fieldName, e.currentTarget.value)}
     />
   );

@@ -1,4 +1,4 @@
-import { IQueuePostRecordRequestDto, PostRecordDto } from '@postybirb/types';
+import { IPostWaitState, IQueuePostRecordRequestDto, PostRecordDto } from '@postybirb/types';
 import { BaseApi } from './base.api';
 
 class PostApi extends BaseApi<
@@ -8,6 +8,10 @@ class PostApi extends BaseApi<
 > {
   constructor() {
     super('post');
+  }
+
+  getWaitStates() {
+    return this.client.get<IPostWaitState[]>('active/wait-states');
   }
 }
 

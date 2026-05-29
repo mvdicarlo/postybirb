@@ -7,10 +7,10 @@
 import { Trans } from '@lingui/react/macro';
 import { notifications } from '@mantine/notifications';
 import {
-  IconAlertTriangle,
-  IconCheck,
-  IconInfoCircle,
-  IconX,
+    IconAlertTriangle,
+    IconCheck,
+    IconInfoCircle,
+    IconX,
 } from '@tabler/icons-react';
 
 // -----------------------------------------------------------------------------
@@ -319,6 +319,17 @@ export function showWarningNotification(
   notifications.show({
     title,
     message,
+    color: 'orange',
+    icon: <IconAlertTriangle size={16} />,
+  });
+}
+
+/**
+ * Show a warning notification when a submission is not found.
+ */
+export function showNotFoundNotification(message?: React.ReactNode) {
+  notifications.show({
+    message: message ?? <Trans>Submission not found</Trans>,
     color: 'orange',
     icon: <IconAlertTriangle size={16} />,
   });

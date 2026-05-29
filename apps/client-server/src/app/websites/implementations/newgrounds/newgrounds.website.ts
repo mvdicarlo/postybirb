@@ -1,4 +1,5 @@
-import { Http } from '@postybirb/http';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import {
   ILoginState,
   ImageResizeProps,
@@ -9,7 +10,6 @@ import {
   SimpleValidationResult,
   SubmissionRating,
 } from '@postybirb/types';
-import { BrowserWindowUtils } from '@postybirb/utils/electron';
 import { parse } from 'node-html-parser';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
@@ -69,7 +69,7 @@ export default class Newgrounds
 
   public async onLogin(): Promise<ILoginState> {
     try {
-      const res = await Http.get<string>(this.BASE_URL, {
+      const res = await this.platform.http.get<string>(this.BASE_URL, {
         partition: this.accountId,
       });
 
@@ -81,7 +81,7 @@ export default class Newgrounds
 
       return this.loginState.logout();
     } catch (e) {
-      this.logger.error('Failed to login', e);
+      this.logger.error('Failed to login', e as any);
       return this.loginState.logout();
     }
   }
@@ -90,7 +90,7 @@ export default class Newgrounds
     return new NewgroundsFileSubmission();
   }
 
-  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
+  calculateImageResize(file: ISubmissionFile): ImageResizeProps | undefined {
     return undefined;
   }
 
@@ -123,7 +123,7 @@ export default class Newgrounds
     userKey: string,
   ): Promise<void> {
     try {
-      await Http.post(`${this.BASE_URL}/projects/art/remove/${projectId}`, {
+      await this.platform.http.post(`${this.BASE_URL}/projects/art/remove/${projectId}`, {
         partition: this.accountId,
         type: 'multipart',
         data: {
@@ -131,7 +131,7 @@ export default class Newgrounds
         },
       });
     } catch (error) {
-      this.logger.error('Failed to clean up project', error);
+      this.logger.error('Failed to clean up project', error as any);
     }
   }
 
@@ -141,7 +141,7 @@ export default class Newgrounds
     cancellationToken: CancellableToken,
   ): Promise<IPostResponse> {
     // Step 1: Get the user key from the page
-    const userKey: string = await BrowserWindowUtils.runScriptOnPage(
+    const userKey: string = await this.platform.browser.runScriptOnPage(
       this.accountId,
       `${this.BASE_URL}/projects/art/new`,
       'return PHP.get("uek")',
@@ -274,7 +274,7 @@ export default class Newgrounds
           .send<NewgroundsPostResponse>(editUrl);
       }
 
-      if (!this.checkIsSaved(contentUpdateRes.body)) {
+      if (contentUpdateRes?.body && !this.checkIsSaved(contentUpdateRes.body)) {
         await this.cleanUpFailedProject(projectId, userKey);
         return PostResponse.fromWebsite(this)
           .withException(new Error('Could not update content'))
@@ -283,8 +283,8 @@ export default class Newgrounds
       }
 
       // Check for errors in the response
-      const resKeys = Object.entries(contentUpdateRes.body).filter(([key]) =>
-        key.endsWith('_error'),
+      const resKeys = Object.entries(contentUpdateRes?.body || {}).filter(
+        ([key]) => key.endsWith('_error'),
       );
       if (resKeys.length > 0) {
         await this.cleanUpFailedProject(projectId, userKey);
@@ -293,14 +293,14 @@ export default class Newgrounds
           .withException(
             new Error(`Could not update content:\n${errorMessages}`),
           )
-          .withAdditionalInfo(contentUpdateRes.body)
+          .withAdditionalInfo(contentUpdateRes?.body)
           .atStage('content validation');
       }
 
       cancellationToken.throwIfCancelled();
 
       // Step 7: Publish the project
-      if (contentUpdateRes.body.can_publish) {
+      if (contentUpdateRes?.body?.can_publish) {
         const publishRes = await new PostBuilder(this, cancellationToken)
           .asMultipart()
           .setField('userkey', userKey)
@@ -322,7 +322,7 @@ export default class Newgrounds
         .withException(
           new Error('Could not publish content. It may be missing data'),
         )
-        .withAdditionalInfo(contentUpdateRes.body)
+        .withAdditionalInfo(contentUpdateRes?.body)
         .atStage('publish check');
     } catch (error) {
       // Clean up on any error
@@ -348,7 +348,7 @@ export default class Newgrounds
     cancellationToken: CancellableToken,
   ): Promise<IPostResponse> {
     // Step 1: Get the page to extract userkey
-    const page = await Http.get<string>(`${this.BASE_URL}/account/news/post`, {
+    const page = await this.platform.http.get<string>(`${this.BASE_URL}/account/news/post`, {
       partition: this.accountId,
     });
 

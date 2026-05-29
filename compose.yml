@@ -2,6 +2,8 @@ services:
   postybirb:
     image: ghcr.io/mvdicarlo/postybirb:latest
     ports:
+      # Please note that if you use mapping with different ports some login
+      # flows won't work. The outbound and inbound ports must match. To change the port PostyBirb is using use POSTYBIRB_PORT enviromentvariable
       - 8080:8080
     volumes:
       # Contains database, submissions, tags etc

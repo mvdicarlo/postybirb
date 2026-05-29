@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
-import { app } from 'electron';
+import { PlatformService } from '@postybirb/platform';
 import { join } from 'path';
 import { AccountService } from '../account/account.service';
 import { LegacyConverter } from './converters/legacy-converter';
 import { LegacyCustomShortcutConverter } from './converters/legacy-custom-shortcut.converter';
+import { LegacySubmissionConverter } from './converters/legacy-submission.converter';
 import { LegacyTagConverterConverter } from './converters/legacy-tag-converter.converter';
 import { LegacyTagGroupConverter } from './converters/legacy-tag-group.converter';
 import { LegacyUserAccountConverter } from './converters/legacy-user-account.converter';
@@ -15,14 +16,21 @@ import { LegacyImportDto } from './dtos/legacy-import.dto';
 export class LegacyDatabaseImporterService {
   private readonly logger = Logger(LegacyDatabaseImporterService.name);
 
-  protected readonly LEGACY_POSTYBIRB_PLUS_PATH = join(
-    app.getPath('documents'),
-    'PostyBirb',
-  );
+  protected readonly LEGACY_POSTYBIRB_PLUS_PATH: string;
 
-  constructor(private readonly accountService: AccountService) {}
+  constructor(
+    private readonly accountService: AccountService,
+    platform: PlatformService,
+  ) {
+    this.LEGACY_POSTYBIRB_PLUS_PATH = join(
+      platform.app.getPath('documents'),
+      'PostyBirb',
+    );
+  }
 
-  async import(importRequest: LegacyImportDto): Promise<{ errors: Error[] }> {
+  async import(
+    importRequest: LegacyImportDto,
+  ): Promise<{ errors: { message: string }[] }> {
     const path = importRequest.customPath || this.LEGACY_POSTYBIRB_PLUS_PATH;
 
     const errors: Error[] = [];
@@ -46,9 +54,11 @@ export class LegacyDatabaseImporterService {
       }
 
       const allAccounts = await this.accountService.findAll();
-      allAccounts.forEach((account) => {
-        this.accountService.manuallyExecuteOnLogin(account.id);
-      });
+      for (const account of allAccounts) {
+        if (account) {
+          await this.accountService.registerAndLogin(account.id);
+        }
+      }
     }
 
     if (importRequest.tagGroups) {
@@ -81,7 +91,25 @@ export class LegacyDatabaseImporterService {
       }
     }
 
-    return { errors };
+    if (importRequest.submissions) {
+      // Import submissions (must be after accounts for FK references)
+      const submissionResult = await this.processSubmissionImport(
+        new LegacySubmissionConverter(path, false),
+      );
+      if (submissionResult.error) {
+        errors.push(submissionResult.error);
+      }
+
+      // Import submission templates
+      const templateResult = await this.processSubmissionImport(
+        new LegacySubmissionConverter(path, true),
+      );
+      if (templateResult.error) {
+        errors.push(templateResult.error);
+      }
+    }
+
+    return { errors: errors.map((e) => ({ message: e.message })) };
   }
 
   private async processImport(
@@ -92,11 +120,27 @@ export class LegacyDatabaseImporterService {
       await converter.import();
       return {};
     } catch (error) {
-      this.logger.error(
-        `Import for ${converter.legacyFileName} failed.`,
-        error,
+      this.logger
+        .withError(error)
+        .error(`Import for ${converter.legacyFileName} failed.`);
+      return { error: error as Error };
+    }
+  }
+
+  private async processSubmissionImport(
+    converter: LegacySubmissionConverter,
+  ): Promise<{ error?: Error }> {
+    try {
+      this.logger.info(
+        `Starting import for ${converter.submissionFileName}...`,
       );
-      return { error };
+      await converter.import();
+      return {};
+    } catch (error) {
+      this.logger
+        .withError(error)
+        .error(`Import for ${converter.submissionFileName} failed.`);
+      return { error: error as Error };
     }
   }
 }

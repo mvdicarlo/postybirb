@@ -6,6 +6,7 @@
 
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
+import duration from 'dayjs/plugin/duration';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { useEffect, useMemo } from 'react';
 import {
@@ -17,6 +18,7 @@ import { useLocaleStore } from '../stores/ui/locale-store';
 
 dayjs.extend(relativeTime);
 dayjs.extend(customParseFormat);
+dayjs.extend(duration);
 
 /**
  * Return type for the useLocale hook.
@@ -37,18 +39,21 @@ export interface UseLocaleResult {
   /** From 0 to 6, Sunday = 0, Monday = 1, Saturday = 6 */
   startOfWeek: number;
 
-  hourCycle: Intl.LocaleHourCycleKey;
+  hourCycle: 'h12' | 'h24';
 
   /** Default value for current locale */
   defaultStartOfWeek: number;
 
   /** Default value for current locale */
-  defaultHourCycle: Intl.LocaleHourCycleKey;
+  defaultHourCycle: 'h12' | 'h24';
 
   dayjsDateTimeFormat: string;
 
   /** Format a date as relative time (e.g., "2 hours ago", "in 3 days") */
   formatRelativeTime: (date: Date | string) => string;
+
+  /** Format a milliseconds as duration (e.g., "2 hours", "3 minutes") */
+  formatDuration: (duration: number) => string;
 
   /** Format a date/time for display using locale-aware formatting */
   formatDateTime: (
@@ -136,6 +141,10 @@ export function useLocale(): UseLocaleResult {
     const formatRelativeTime = (date: Date | string): string =>
       dayjs(date).fromNow();
 
+    const formatDuration = (time: number) =>
+      // eslint-disable-next-line lingui/no-unlocalized-strings
+      dayjs.duration(time).format('HH:mm:ss');
+
     const formatDateTime = (
       date: Date | string,
       options: Intl.DateTimeFormatOptions = {
@@ -166,7 +175,13 @@ export function useLocale(): UseLocaleResult {
       return d.toLocaleTimeString(locale, options);
     };
 
-    return { formatRelativeTime, formatDateTime, formatDate, formatTime };
+    return {
+      formatRelativeTime,
+      formatDateTime,
+      formatDate,
+      formatTime,
+      formatDuration,
+    };
   }, [locale, hourCycle]);
 
   return {
@@ -190,10 +205,16 @@ function getLocaleInfo(locale: string) {
     // @ts-expect-error typings were included into typescript 6.0
     const weekInfo = intlLocale.getWeekInfo() as WeekInfo;
 
+    const rawHourCycle = intlLocale.hourCycle ?? 'h23';
     return {
       // % 7 Converts a first-day-of-week value from Monday-based (1–7) to Sunday-based (0–6)
       startOfWeek: weekInfo.firstDay % 7,
-      hourCycle: intlLocale.hourCycle ?? 'h24',
+      // Normalize h11→h12 and h23→h24: both pairs differ only in zero-padding
+      // which is irrelevant to the app's binary 12h-vs-24h toggle.
+      hourCycle:
+        rawHourCycle === 'h11' || rawHourCycle === 'h12'
+          ? ('h12' as const)
+          : ('h24' as const),
     };
   } catch (e) {
     // eslint-disable-next-line lingui/no-unlocalized-strings, no-console

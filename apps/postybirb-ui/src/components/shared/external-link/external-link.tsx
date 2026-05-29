@@ -3,7 +3,7 @@
  * Handles both Electron and web environments.
  */
 
-import { Anchor, Tooltip } from '@mantine/core';
+import { Anchor, Group, Tooltip } from '@mantine/core';
 import type { AnchorHTMLAttributes, PropsWithChildren } from 'react';
 import { CopyToClipboard } from '../copy-to-clipboard';
 
@@ -33,7 +33,7 @@ export function ExternalLink(
   const { href } = props;
   return (
     <Tooltip label={href} position="top" withArrow>
-      <span>
+      <Group gap={2}>
         <Anchor
           {...props}
           target="_blank"
@@ -46,7 +46,7 @@ export function ExternalLink(
           }}
         />
         <CopyToClipboard value={href} variant="icon" size="xs" color="blue" />
-      </span>
+      </Group>
     </Tooltip>
   );
 }

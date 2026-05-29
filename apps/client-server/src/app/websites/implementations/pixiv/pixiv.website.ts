@@ -1,4 +1,4 @@
-import { Http } from '@postybirb/http';
+
 import {
   FileType,
   ILoginState,
@@ -44,7 +44,7 @@ export default class Pixiv
     {};
 
   public async onLogin(): Promise<ILoginState> {
-    const res = await Http.get<string>(this.BASE_URL, {
+    const res = await this.platform.http.get<string>(this.BASE_URL, {
       partition: this.accountId,
     });
 
@@ -88,7 +88,7 @@ export default class Pixiv
     cancellationToken.throwIfCancelled();
 
     // Get the create page to check for version and get tokens
-    const page = await Http.get<string>(
+    const page = await this.platform.http.get<string>(
       `${this.BASE_URL}/illustration/create`,
       {
         partition: this.accountId,

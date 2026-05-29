@@ -1,15 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import {
-    AccountId,
-    PostData,
-    PostEventType,
-    SubmissionType,
+  AccountId,
+  PostData,
+  PostEventType,
+  SubmissionType,
 } from '@postybirb/types';
 import { PostRecord } from '../../../drizzle/models';
 import { NotificationsService } from '../../../notifications/notifications.service';
 import { PostParsersService } from '../../../post-parsers/post-parsers.service';
 import { ValidationService } from '../../../validation/validation.service';
+import { WSGateway } from '../../../web-socket/web-socket-gateway';
 import { MessageWebsite } from '../../../websites/models/website-modifiers/message-website';
 import { UnknownWebsite } from '../../../websites/website';
 import { WebsiteRegistryService } from '../../../websites/website-registry.service';
@@ -32,6 +33,7 @@ export class MessageSubmissionPostManager extends BasePostManager {
     postParserService: PostParsersService,
     validationService: ValidationService,
     notificationService: NotificationsService,
+    @Optional() webSocket?: WSGateway,
   ) {
     super(
       postEventRepository,
@@ -39,6 +41,7 @@ export class MessageSubmissionPostManager extends BasePostManager {
       postParserService,
       validationService,
       notificationService,
+      webSocket,
     );
   }
 
@@ -98,6 +101,7 @@ export class MessageSubmissionPostManager extends BasePostManager {
           website: instance.decoratedProps.metadata.name,
         },
         responseMessage: result.message,
+        additionalInfo: result.additionalInfo,
       },
     });
 

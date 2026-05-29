@@ -2,7 +2,7 @@ import { Provider } from '@nestjs/common';
 import {
   IsDevelopmentEnvironment,
   IsTestEnvironment,
-} from '@postybirb/utils/electron';
+} from '@postybirb/utils/common';
 import { Class } from 'type-fest';
 import { WEBSITE_IMPLEMENTATIONS } from '../../constants';
 import { UnknownWebsite } from '../website';

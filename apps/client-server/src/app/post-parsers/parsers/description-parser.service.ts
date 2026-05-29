@@ -23,6 +23,7 @@ import { ConversionContext } from '../models/description-node/description-node.b
 @Injectable()
 export class DescriptionParserService {
   private readonly websiteShortcuts: Record<string, UsernameShortcut> = {};
+  private readonly websiteToShortcutId: Record<string, string> = {};
 
   constructor(
     private readonly settingsService: SettingsService,
@@ -36,6 +37,11 @@ export class DescriptionParserService {
         website.prototype.decoratedProps.usernameShortcut;
       if (shortcut) {
         this.websiteShortcuts[shortcut.id] = shortcut;
+        const websiteName: string =
+          website.prototype.decoratedProps.metadata?.name;
+        if (websiteName) {
+          this.websiteToShortcutId[websiteName] = shortcut.id;
+        }
       }
     });
   }
@@ -48,7 +54,7 @@ export class DescriptionParserService {
     title: string,
   ): Promise<string> {
     const mergedOptions = websiteOptions.mergeDefaults(defaultOptions);
-    const { descriptionType, hidden } =
+    const { descriptionType, hidden, maxDescriptionLength } =
       mergedOptions.getFormFieldFor('description');
 
     if (descriptionType === DescriptionType.NONE || hidden) {
@@ -114,6 +120,7 @@ export class DescriptionParserService {
     const context: ConversionContext = {
       website: instance.decoratedProps.metadata.name,
       shortcuts: this.websiteShortcuts,
+      websiteToShortcutId: this.websiteToShortcutId,
       customShortcuts: new Map(),
       defaultDescription,
       title,
@@ -140,21 +147,41 @@ export class DescriptionParserService {
       usernameConversions,
     });
 
-    return this.createDescription(instance, descriptionType, tree);
+    return this.createDescription(
+      instance,
+      descriptionType,
+      tree,
+      maxDescriptionLength,
+    );
   }
 
   private createDescription(
     instance: Website<unknown>,
     descriptionType: DescriptionType,
     tree: DescriptionNodeTree,
+    maxDescriptionLength: number,
   ): string {
     switch (descriptionType) {
       case DescriptionType.MARKDOWN:
         return tree.toMarkdown();
       case DescriptionType.HTML:
         return tree.toHtml();
-      case DescriptionType.PLAINTEXT:
-        return tree.toPlainText();
+      case DescriptionType.PLAINTEXT: {
+        // Truncate the description if it exceeds the maximum length
+        // Generally plaintext descriptions are more likely to have length limits.
+        // This is a bit of a blunt truncation, but it's the most straightforward way to enforce the limit.
+        const plainText = tree.toPlainText();
+        if (
+          maxDescriptionLength &&
+          maxDescriptionLength > 0 &&
+          plainText.length > maxDescriptionLength
+        ) {
+          return plainText
+            .replace('Posted using PostyBirb', '') // Remove the PostyBirb attribution
+            .substring(0, maxDescriptionLength);
+        }
+        return plainText;
+      }
       case DescriptionType.BBCODE:
         return tree.toBBCode();
       case DescriptionType.CUSTOM:
@@ -171,6 +198,7 @@ export class DescriptionParserService {
             instance,
             instance.getRuntimeParser(),
             tree,
+            maxDescriptionLength,
           );
         }
         throw new Error(

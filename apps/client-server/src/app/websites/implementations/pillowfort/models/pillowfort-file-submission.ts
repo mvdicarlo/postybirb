@@ -1,8 +1,4 @@
-import {
-  BooleanField,
-  RadioField,
-  RatingField
-} from '@postybirb/form-builder';
+import { BooleanField, RadioField, RatingField } from '@postybirb/form-builder';
 import { SubmissionRating } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
@@ -23,6 +19,9 @@ export class PillowfortFileSubmission extends BaseWebsiteOptions {
     options: [
       { value: 'public', label: 'Public' },
       { value: 'private', label: 'Private' },
+      { value: 'followers', label: 'Followers' },
+      { value: 'mutuals', label: 'Mutuals' },
+      { value: 'users', label: 'Logged-in users' },
     ],
   })
   privacy: string;

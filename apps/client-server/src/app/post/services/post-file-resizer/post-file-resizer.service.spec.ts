@@ -133,4 +133,46 @@ describe('PostFileResizerService', () => {
     expect(resized.thumbnail?.buffer.length).toBeLessThan(noAlphaFile.length);
     expect(resized.thumbnail?.fileName).toBe('test.png');
   });
+
+  it('should respect both dimension and byte limits simultaneously (HF bug)', async () => {
+    // Reproduces the Hentai Foundry rejection: a large JPEG must fit within
+    // 1500px on each side AND under 2MB. Before the fix, Step 3 (maxBytes
+    // scaling) re-scaled from the original dimensions, undoing the dimensional
+    // resize from Step 2. With JPEG, MozJPEG re-encoding is so effective that
+    // scaleDownImage could fit the file under 2MB WITHOUT reducing dimensions
+    // below 1500px — e.g. returning 1824x1596 at 1.9MB.
+    //
+    // This does NOT reproduce with PNG because PNG is lossless: the only way
+    // to reduce file size is to reduce dimensions, so both constraints end up
+    // satisfied through the secant loop regardless.
+    const MAX_DIMENSION = 1500;
+    const MAX_BYTES = 2 * 1024 * 1024; // 2 MB
+
+    const largeFile = readFileSync(
+      join(__dirname, '../../../../test-files/test_image_large.jpg'),
+    );
+    const tf = createFile(
+      'test.jpg',
+      'image/jpeg',
+      1680,
+      1920,
+      largeFile,
+    );
+
+    const resized = await service.resize({
+      file: tf,
+      resize: {
+        width: MAX_DIMENSION,
+        height: MAX_DIMENSION,
+        maxBytes: MAX_BYTES,
+      },
+    });
+
+    const metadata = await sharpManager.getMetadata(resized.buffer);
+
+    // Both constraints must be satisfied
+    expect(metadata.width).toBeLessThanOrEqual(MAX_DIMENSION);
+    expect(metadata.height).toBeLessThanOrEqual(MAX_DIMENSION);
+    expect(resized.buffer.length).toBeLessThanOrEqual(MAX_BYTES);
+  });
 });
