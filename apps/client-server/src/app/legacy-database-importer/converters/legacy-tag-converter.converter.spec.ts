@@ -1,15 +1,14 @@
-import { clearDatabase } from '@postybirb/database';
+import { clearDatabase, TagConverterRepository } from '@postybirb/database';
 import { ensureDirSync, PostyBirbDirectories, writeSync } from '@postybirb/fs';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { v4 } from 'uuid';
-import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
 import { LegacyTagConverterConverter } from './legacy-tag-converter.converter';
 
 describe('LegacyTagConverterConverter', () => {
   let converter: LegacyTagConverterConverter;
   let testDataPath: string;
-  let repository: PostyBirbDatabase<'TagConverterSchema'>;
+  let repository: TagConverterRepository;
   const ts = Date.now();
 
   beforeEach(async () => {
@@ -29,7 +28,7 @@ describe('LegacyTagConverterConverter', () => {
     writeSync(destFile, testFile);
 
     converter = new LegacyTagConverterConverter(testDataPath);
-    repository = new PostyBirbDatabase('TagConverterSchema');
+    repository = new TagConverterRepository();
   });
 
   it('should import and convert legacy tag converter data', async () => {
