@@ -293,12 +293,12 @@ export class AccountService
       .then((account) => this.injectWebsiteInstance(account));
   }
 
-  async remove(id: AccountId) {
+  async remove(id: AccountId): Promise<void> {
     const account = await this.findById(id);
     if (account) {
       this.websiteRegistry.remove(account);
     }
-    return super.remove(id);
+    await super.remove(id);
   }
 
   /**

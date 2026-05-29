@@ -522,10 +522,9 @@ export class SubmissionService
     }
   }
 
-  public async remove(id: SubmissionId) {
-    const result = await super.remove(id);
+  public async remove(id: SubmissionId): Promise<void> {
+    await super.remove(id);
     this.emit();
-    return result;
   }
 
   async applyMultiSubmission(applyMultiSubmissionDto: ApplyMultiSubmissionDto) {
