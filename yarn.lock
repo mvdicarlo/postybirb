@@ -3504,7 +3504,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@electron/asar@npm:3.4.1, @electron/asar@npm:^3.2.1, @electron/asar@npm:^3.2.7, @electron/asar@npm:^3.3.1":
+"@electron/asar@npm:3.4.1":
   version: 3.4.1
   resolution: "@electron/asar@npm:3.4.1"
   dependencies:
@@ -3514,6 +3514,19 @@ __metadata:
   bin:
     asar: bin/asar.js
   checksum: 10c0/9df7983125faaa29c266e4beec6ceb205e139ede0e8fb81dde84c73ac8114388a99aad21379412a972163d8879ca959621f4e4896214bf8d296ba217e7cf8170
+  languageName: node
+  linkType: hard
+
+"@electron/asar@patch:@electron/asar@npm%3A3.4.1#~/.yarn/patches/@electron-asar-npm-3.4.1-4a96ab90b1.patch":
+  version: 3.4.1
+  resolution: "@electron/asar@patch:@electron/asar@npm%3A3.4.1#~/.yarn/patches/@electron-asar-npm-3.4.1-4a96ab90b1.patch::version=3.4.1&hash=014183"
+  dependencies:
+    commander: "npm:^5.0.0"
+    glob: "npm:^7.1.6"
+    minimatch: "npm:^3.0.4"
+  bin:
+    asar: bin/asar.js
+  checksum: 10c0/238aab8b18c027ceef076c3e47b4f3b05912d0e9faf1fddf403f3064354527e11dee54f5b9b21b01483fb000b6d14e008d29bfce34b6fefa879c5bd559ec8cec
   languageName: node
   linkType: hard
 

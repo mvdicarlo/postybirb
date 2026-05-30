@@ -20,8 +20,6 @@ removePackageScripts: true
 asarUnpack:
   - 'node_modules/better-sqlite3/**/*'
   - 'node_modules/@img/**/*'
-  - 'node_modules/bufferutil/**/*'
-  - 'node_modules/utf-8-validate/**/*'
   - '**/*.node'
   - '**/*.dylib'
   - '**/*.so'
@@ -36,9 +34,18 @@ mac:
   gatekeeperAssess: false
   # This ensures all binaries including native modules are signed
   signIgnore: []
+  singleArchFiles: "Contents/Resources/app.asar.unpacked/node_modules/@img/**"
+  x64ArchFiles: "Contents/Resources/app.asar.unpacked/**/*.{node,dylib}"
+  # mergeASARs requires @electron/asar to work correctly with Node 22+.
+  # A yarn patch on @electron/asar 3.4.1 fixes promisify(glob) and promisify(stream.pipeline)
+  # which hang on Node 22. This flag can be removed (defaults to true) once electron-builder
+  # ships with @electron/universal >=3.0.0 (which uses @electron/asar >=4.0.0).
+  mergeASARs: true
   target:
     - target: dmg
+      arch: universal
     - target: zip
+      arch: universal
   notarize: true
 
 linux:
