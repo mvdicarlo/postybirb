@@ -8,10 +8,12 @@ import { Trans } from '@lingui/react/macro';
 import { Select, type SelectProps } from '@mantine/core';
 import { SubmissionType } from '@postybirb/types';
 import { useMemo } from 'react';
-import { useTemplateSubmissions } from '../../../stores';
+import { useSortedTemplateSubmissions } from '../../../stores/ui/templates-ui-store';
 
-interface TemplatePickerProps
-  extends Omit<SelectProps, 'data' | 'value' | 'onChange'> {
+interface TemplatePickerProps extends Omit<
+  SelectProps,
+  'data' | 'value' | 'onChange'
+> {
   /** Selected template ID */
   value?: string;
   /** Callback when template selection changes */
@@ -31,24 +33,16 @@ export function TemplatePicker({
   label,
   ...selectProps
 }: TemplatePickerProps) {
-  const templates = useTemplateSubmissions();
+  const templates = useSortedTemplateSubmissions(type);
 
-  const options = useMemo(() => {
-    let filtered = templates;
-
-    // Filter by type if specified
-    if (type) {
-      filtered = templates.filter((tmpl) => tmpl.type === type);
-    }
-
-    // Sort alphabetically by name
-    return filtered
-      .sort((a, b) => a.title.localeCompare(b.title))
-      .map((template) => ({
+  const options = useMemo(
+    () =>
+      templates.map((template) => ({
         value: template.id,
         label: template.title,
-      }));
-  }, [templates, type]);
+      })),
+    [templates],
+  );
 
   return (
     <Select

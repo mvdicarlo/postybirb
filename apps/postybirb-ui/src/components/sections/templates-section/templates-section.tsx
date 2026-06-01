@@ -32,12 +32,12 @@ import {
 } from '@tabler/icons-react';
 import { useCallback, useMemo, useState } from 'react';
 import submissionApi from '../../../api/submission.api';
-import {
-  useSubmissionsLoading,
-  useTemplateSubmissions,
-} from '../../../stores/entity/submission-store';
+import { useSubmissionsLoading } from '../../../stores/entity/submission-store';
 import { useNavigationStore } from '../../../stores/ui/navigation-store';
-import { useTemplatesFilter } from '../../../stores/ui/templates-ui-store';
+import {
+  useSortedTemplateSubmissions,
+  useTemplatesFilter,
+} from '../../../stores/ui/templates-ui-store';
 import { useTourActions } from '../../../stores/ui/tour-store';
 import {
   isTemplatesViewState,
@@ -62,7 +62,6 @@ interface TemplatesSectionProps {
  */
 export function TemplatesSection({ viewState }: TemplatesSectionProps) {
   const { t } = useLingui();
-  const templates = useTemplateSubmissions();
   const { isLoading } = useSubmissionsLoading();
   const {
     tabType,
@@ -72,6 +71,8 @@ export function TemplatesSection({ viewState }: TemplatesSectionProps) {
     setSearchQuery,
     toggleSortOrder,
   } = useTemplatesFilter();
+  const templates = useSortedTemplateSubmissions(tabType);
+
   const { startTour } = useTourActions();
   const setViewState = useNavigationStore((state) => state.setViewState);
 
@@ -136,27 +137,17 @@ export function TemplatesSection({ viewState }: TemplatesSectionProps) {
   // Filter and sort templates by type, search query, and name sort order
   const filteredTemplates = useMemo(
     () =>
-      templates
-        .filter((template) => {
-          // Filter by type
-          if (template.type !== tabType) return false;
+      templates.filter((template) => {
+        // Filter by search query
+        if (searchQuery) {
+          const query = searchQuery.toLowerCase();
+          const name = template.title?.toLowerCase() ?? '';
+          if (!name.includes(query)) return false;
+        }
 
-          // Filter by search query
-          if (searchQuery) {
-            const query = searchQuery.toLowerCase();
-            const name = template.title?.toLowerCase() ?? '';
-            if (!name.includes(query)) return false;
-          }
-
-          return true;
-        })
-        .sort((a, b) => {
-          const nameA = (a.title ?? '').toLowerCase();
-          const nameB = (b.title ?? '').toLowerCase();
-          const cmp = nameA.localeCompare(nameB);
-          return sortOrder === 'asc' ? cmp : -cmp;
-        }),
-    [templates, tabType, searchQuery, sortOrder],
+        return true;
+      }),
+    [templates, searchQuery],
   );
 
   return (

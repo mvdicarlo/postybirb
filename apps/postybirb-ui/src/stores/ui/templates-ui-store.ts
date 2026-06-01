@@ -4,9 +4,11 @@
  */
 
 import { SubmissionType } from '@postybirb/types';
+import { useMemo } from 'react';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { useShallow } from 'zustand/react/shallow';
+import { useTemplateSubmissions } from '../entity/submission-store';
 
 // ============================================================================
 // Types
@@ -128,3 +130,23 @@ export const useTemplatesFilter = () =>
       toggleSortOrder: state.toggleTemplatesSortOrder,
     })),
   );
+
+export const useSortedTemplateSubmissions = (type?: SubmissionType) => {
+  const templates = useTemplateSubmissions();
+  const { sortOrder } = useTemplatesFilter();
+
+  return useMemo(() => {
+    let sorted = templates.toSorted((a, b) => {
+      const nameA = (a.title ?? '').toLowerCase();
+      const nameB = (b.title ?? '').toLowerCase();
+      const cmp = nameA.localeCompare(nameB);
+      return sortOrder === 'asc' ? cmp : -cmp;
+    });
+
+    if (type) {
+      sorted = sorted.filter((template) => template.type === type);
+    }
+
+    return sorted;
+  }, [templates, sortOrder, type]);
+};
