@@ -1,4 +1,3 @@
-
 import {
   FileType,
   ILoginState,
@@ -76,7 +75,7 @@ export default class Pixiv
     return new PixivFileSubmission();
   }
 
-  calculateImageResize(): ImageResizeProps {
+  calculateImageResize(): ImageResizeProps | undefined {
     return undefined;
   }
 
@@ -174,9 +173,7 @@ export default class Pixiv
           ),
         );
     } catch (error) {
-      return PostResponse.fromWebsite(this).withException(
-        error instanceof Error ? error : new Error(JSON.stringify(error)),
-      );
+      return PostResponse.fromWebsite(this).withException(error);
     }
   }
 

@@ -8,6 +8,7 @@ import {
 import { ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { EntityId, IFileBuffer } from '@postybirb/types';
 import { SubmissionFile } from '@postybirb/database';
+import { Response } from 'express';
 import { FileService } from './file.service';
 
 @ApiTags('file')
@@ -21,7 +22,7 @@ export class FileController {
   async getThumbnail(
     @Param('fileTarget') fileTarget: 'file' | 'thumbnail' | 'alt',
     @Param('id') id: EntityId,
-    @Res() response,
+    @Res() response: Response,
   ) {
     const submissionFile = await this.service.findFile(id);
     await submissionFile.load(fileTarget);

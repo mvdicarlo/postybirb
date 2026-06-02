@@ -133,7 +133,7 @@ export class BaseWebsiteOptions implements IWebsiteFormFields {
    * Calls the `processTag` method to transform each tag.
    */
   public async getProcessedTags(
-    additionalProcessor?: (tag) => Promise<string>,
+    additionalProcessor?: (tag: string) => Promise<string>,
   ): Promise<Tag[]> {
     const tagsField = this.getFormFieldFor('tags');
     if (tagsField.hidden) {

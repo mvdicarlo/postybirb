@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { Logger, PostyBirbLogger } from '@postybirb/logger';
 import { PostData } from '@postybirb/types';
+import { toError } from '@postybirb/utils/common';
 import {
   InlineErrorV2,
   TweetV2PostTweetResult,
@@ -122,16 +123,14 @@ export class TwitterApiServiceV2 {
             errors.push({
               mediaIds: [mediaId],
               success: false,
-              error: `Failed to set metadata for media ${mediaId}: ${
-                metaErr instanceof Error ? metaErr.message : String(metaErr)
-              }`,
+              error: `Failed to set metadata for media ${mediaId}: ${toError(
+                metaErr,
+              )}`,
             });
           }
         }
       } catch (uploadErr) {
-        throw new Error(
-          `Upload failed: ${uploadErr instanceof Error ? uploadErr.message : String(uploadErr)}`,
-        );
+        throw new Error(`Upload failed: ${toError(uploadErr)}`);
       }
     }
 
@@ -288,7 +287,7 @@ export class TwitterApiServiceV2 {
     } catch (err) {
       return {
         success: false,
-        error: err instanceof Error ? err.message : String(err),
+        error: toError(err).message,
         mediaIds: [],
       };
     }
@@ -301,20 +300,6 @@ export class TwitterApiServiceV2 {
     replyTo?: string,
   ): Promise<TweetResultMeta> {
     try {
-      // Validate credentials
-      if (
-        !auth?.apiKey ||
-        !auth?.apiSecret ||
-        !auth?.accessToken ||
-        !auth?.accessTokenSecret
-      ) {
-        return {
-          success: false,
-          error: 'Missing API credentials',
-          mediaIds: [],
-        };
-      }
-
       const client = this.createClient(auth);
 
       const { contentBlur } = data.options;
@@ -329,7 +314,7 @@ export class TwitterApiServiceV2 {
 
       if (errors.length) {
         errors.forEach((err) => {
-          TwitterApiServiceV2.Logger.withMetadata(err).warn(
+          TwitterApiServiceV2.Logger.withError(err).warn(
             'There was a non-fatal issue posting media',
           );
         });
@@ -367,7 +352,7 @@ export class TwitterApiServiceV2 {
         const errorResult: TweetResultMeta = {
           mediaIds,
           success: false,
-          error: postErr instanceof Error ? postErr.message : String(postErr),
+          error: toError(postErr).message,
         };
 
         return errorResult;
@@ -375,7 +360,7 @@ export class TwitterApiServiceV2 {
     } catch (err) {
       return {
         success: false,
-        error: err instanceof Error ? err.message : String(err),
+        error: toError(err).message,
         mediaIds: [],
       };
     }
@@ -392,16 +377,6 @@ export class TwitterApiServiceV2 {
     const errors: string[] = [];
 
     try {
-      // Validate credentials
-      if (
-        !auth?.apiKey ||
-        !auth?.apiSecret ||
-        !auth?.accessToken ||
-        !auth?.accessTokenSecret
-      ) {
-        throw new Error('Missing API credentials');
-      }
-
       const client = this.createClient(auth);
 
       // Delete tweets in reverse order (most recent first)
@@ -415,9 +390,9 @@ export class TwitterApiServiceV2 {
           deletedIds.push(tweetId);
           this.Logger.debug(`Successfully deleted tweet ${tweetId}`);
         } catch (deleteErr) {
-          const errorMsg = `Failed to delete tweet ${tweetId}: ${
-            deleteErr instanceof Error ? deleteErr.message : String(deleteErr)
-          }`;
+          const errorMsg = `Failed to delete tweet ${tweetId}: ${toError(
+            deleteErr,
+          )}`;
           errors.push(errorMsg);
           this.Logger.error(errorMsg);
         }
@@ -425,9 +400,7 @@ export class TwitterApiServiceV2 {
 
       return { deletedIds, errors };
     } catch (err) {
-      const errorMsg = `Failed to delete reply chain: ${
-        err instanceof Error ? err.message : String(err)
-      }`;
+      const errorMsg = `Failed to delete reply chain: ${toError(err)}`;
       this.Logger.error(errorMsg);
       return { deletedIds, errors: [errorMsg] };
     }

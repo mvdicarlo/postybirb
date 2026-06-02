@@ -85,8 +85,8 @@ describe('AccountsService', () => {
     const instance = registryService.findInstance(record);
     expect(instance).toBeDefined();
 
-    await instance.login();
-    const websiteData = instance.getWebsiteData();
+    await instance?.login();
+    const websiteData = instance?.getWebsiteData();
     expect(websiteData).toEqual({
       test: 'test-mode',
     });
@@ -95,12 +95,12 @@ describe('AccountsService', () => {
       id: record.id,
       data: { test: 'test-mode-2' },
     });
-    expect(instance.getWebsiteData()).toEqual({
+    expect(instance?.getWebsiteData()).toEqual({
       test: 'test-mode-2',
     });
 
     await service.clearAccountData(record.id);
-    expect(instance.getWebsiteData()).toEqual({});
+    expect(instance?.getWebsiteData()).toEqual({});
   }, 10000);
 
   it('should create entities', async () => {

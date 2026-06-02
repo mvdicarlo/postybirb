@@ -1,9 +1,10 @@
 import {
-    forwardRef,
-    Inject,
-    Injectable,
-    NotFoundException,
-    OnModuleInit,
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+  OnModuleInit,
 } from '@nestjs/common';
 import { Account, CustomShortcutRepository, Insert, Submission, SubmissionRepository, UserSpecifiedWebsiteOptionsRepository, WebsiteOptions, WebsiteOptionsRepository } from '@postybirb/database';
 import {
@@ -120,7 +121,7 @@ export class WebsiteOptionsService
         const converted = migrateDescription(desc);
         await customShortcutRepo.update(shortcut.id, {
           shortcut: converted,
-        } as unknown);
+        });
         migrated++;
       }
     }
@@ -143,7 +144,7 @@ export class WebsiteOptionsService
                 description: converted,
               },
             },
-          } as unknown);
+          });
           migrated++;
         }
       }
@@ -415,6 +416,11 @@ export class WebsiteOptionsService
     const websiteOption = submission.options.find(
       (option) => option.id === websiteOptionId,
     );
+    if (!websiteOption)
+      throw new BadRequestException(
+        `Website options with id ${websiteOptionId} not found`,
+      );
+
     return this.validationService.validate(submission, websiteOption);
   }
 
@@ -478,6 +484,8 @@ export class WebsiteOptionsService
 
     // Determine the description output type using the same logic as the parser
     const defaultOptions = submission.options.find((o) => o.isDefault);
+    if (!defaultOptions) throw new Error('No default options found!');
+
     const defaultOpts = Object.assign(new DefaultWebsiteOptions(), {
       ...defaultOptions.data,
     });

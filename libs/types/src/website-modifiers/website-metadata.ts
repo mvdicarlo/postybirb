@@ -9,7 +9,7 @@ export interface IWebsiteMetadata {
    * Display name of the website to be shown.
    * If not provided, will default to capitalized name property.
    */
-  displayName?: string;
+  displayName: string;
 
   /**
    * How often in milliseconds login should be re-checked.

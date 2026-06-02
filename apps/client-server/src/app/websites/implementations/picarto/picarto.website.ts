@@ -1,4 +1,3 @@
-
 import {
   ILoginState,
   ImageResizeProps,
@@ -85,7 +84,7 @@ export default class Picarto
     return new PicartoFileSubmission();
   }
 
-  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
+  calculateImageResize(file: ISubmissionFile): ImageResizeProps | undefined {
     return calculateImageResize(file, {
       maxWidth: 3840,
       maxHeight: 2160,
@@ -240,7 +239,7 @@ export default class Picarto
       });
 
       const res = await this.platform.http.post<{
-        data: { albums: { id: string | null; title: string }[] };
+        data: { albums: { id: string; title: string }[] };
       }>('https://ptvintern.picarto.tv/ptvapi', {
         partition: this.accountId,
         type: 'json',

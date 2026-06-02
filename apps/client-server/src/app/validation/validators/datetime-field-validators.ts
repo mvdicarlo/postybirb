@@ -4,9 +4,9 @@ import { ValidatorParams } from './validator.type';
  * Validates that a datetime field value is a valid ISO date string.
  */
 export async function validateDateTimeFormat({
-  result,
   data,
   mergedWebsiteOptions,
+  validator,
 }: ValidatorParams) {
   const fields = mergedWebsiteOptions.getFormFields();
 
@@ -25,13 +25,11 @@ export async function validateDateTimeFormat({
     // Try to parse as ISO date string
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) {
-      result.errors.push({
-        id: 'validation.datetime.invalid-format',
-        field: fieldName,
-        values: {
-          value,
-        },
-      });
+      validator.error(
+        'validation.datetime.invalid-format',
+        { value },
+        fieldName,
+      );
     }
   }
 }
@@ -40,9 +38,9 @@ export async function validateDateTimeFormat({
  * Validates that a datetime field value is not before the minimum allowed date.
  */
 export async function validateDateTimeMinimum({
-  result,
   data,
   mergedWebsiteOptions,
+  validator,
 }: ValidatorParams) {
   const fields = mergedWebsiteOptions.getFormFields();
 
@@ -68,14 +66,14 @@ export async function validateDateTimeMinimum({
     if (Number.isNaN(date.getTime())) continue;
 
     if (date < minDate) {
-      result.errors.push({
-        id: 'validation.datetime.min',
-        field: fieldName,
-        values: {
+      validator.error(
+        'validation.datetime.min',
+        {
           currentDate: value,
           minDate: field.min,
         },
-      });
+        fieldName,
+      );
     }
   }
 }
@@ -84,9 +82,9 @@ export async function validateDateTimeMinimum({
  * Validates that a datetime field value is not after the maximum allowed date.
  */
 export async function validateDateTimeMaximum({
-  result,
   data,
   mergedWebsiteOptions,
+  validator,
 }: ValidatorParams) {
   const fields = mergedWebsiteOptions.getFormFields();
 
@@ -112,14 +110,14 @@ export async function validateDateTimeMaximum({
     if (Number.isNaN(date.getTime())) continue;
 
     if (date > maxDate) {
-      result.errors.push({
-        id: 'validation.datetime.max',
-        field: fieldName,
-        values: {
+      validator.error(
+        'validation.datetime.max',
+        {
           currentDate: value,
           maxDate: field.max,
         },
-      });
+        fieldName,
+      );
     }
   }
 }
@@ -129,9 +127,9 @@ export async function validateDateTimeMaximum({
  * This is a convenience validator that checks both min and max constraints.
  */
 export async function validateDateTimeRange({
-  result,
   data,
   mergedWebsiteOptions,
+  validator,
 }: ValidatorParams) {
   const fields = mergedWebsiteOptions.getFormFields();
 
@@ -143,9 +141,9 @@ export async function validateDateTimeRange({
     if (field.formField !== 'datetime') continue;
 
     // Skip if no range constraints
-    const hasMin = 'min' in field && field.min;
-    const hasMax = 'max' in field && field.max;
-    if (!hasMin || !hasMax) continue;
+    if (!('min' in field && field.min) || !('max' in field && field.max)) {
+      continue;
+    }
 
     const value = data.options[fieldName] as string;
 
@@ -160,15 +158,15 @@ export async function validateDateTimeRange({
     if (Number.isNaN(date.getTime())) continue;
 
     if (date < minDate || date > maxDate) {
-      result.errors.push({
-        id: 'validation.datetime.range',
-        field: fieldName,
-        values: {
+      validator.error(
+        'validation.datetime.range',
+        {
           currentDate: value,
           minDate: field.min,
           maxDate: field.max,
         },
-      });
+        fieldName,
+      );
     }
   }
 }

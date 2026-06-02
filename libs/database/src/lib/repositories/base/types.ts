@@ -119,3 +119,11 @@ export type { EntityId };
  */
 export type RepoEntity<R> =
   R extends EntityRepository<SchemaKey, infer T> ? T : never;
+
+/**
+ * Options for `findById`. When `failOnMissing` is `true` the repository
+ * throws `EntityNotFoundError` instead of returning `null`.
+ */
+export type FindOptions = {
+  failOnMissing?: boolean;
+};

@@ -1,13 +1,14 @@
+// @ts-expect-error No types on npm
 import * as rtf from '@iarna/rtf-to-html';
 import { Injectable } from '@nestjs/common';
 import { FileBuffer, FileBufferRepository, FileBufferRow, Insert, Select, SubmissionFile, SubmissionFileRepository, SubmissionFileRow, TransactionContext, withTransactionContext } from '@postybirb/database';
 import { removeFile } from '@postybirb/fs';
 import { Logger } from '@postybirb/logger';
 import {
-    DefaultSubmissionFileMetadata,
-    FileSubmission,
-    FileType,
-    IFileBuffer,
+  DefaultSubmissionFileMetadata,
+  FileSubmission,
+  FileType,
+  IFileBuffer,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { eq } from 'drizzle-orm';
@@ -34,19 +35,12 @@ export class CreateFileService {
 
   private readonly fileRepository = new SubmissionFileRepository();
 
-  constructor(
-    private readonly sharpInstanceManager: SharpInstanceManager,
-  ) {}
+  constructor(private readonly sharpInstanceManager: SharpInstanceManager) {}
 
   /**
    * Creates file entity and stores it.
    * @todo extra data (image resize per website)
    * @todo figure out what to do about non-image
-   *
-   * @param {MulterFileInfo} file
-   * @param {MulterFileInfo} submission
-   * @param {Buffer} buf
-   * @return {*}  {Promise<SubmissionFile>}
    */
   public async create(
     file: MulterFileInfo,
@@ -92,9 +86,11 @@ export class CreateFileService {
           return entity;
         },
       );
-      return await this.fileRepository.findById(newSubmission.id);
+      return await this.fileRepository.findById(newSubmission.id, {
+        failOnMissing: true,
+      });
     } catch (err) {
-      this.logger.error(err.message, err.stack);
+      this.logger.error(err);
       throw err;
     } finally {
       if (!file.origin) {
@@ -134,7 +130,15 @@ export class CreateFileService {
       file.originalname.endsWith('.rtf')
     ) {
       this.logger.info('[Mutation] Creating Alt File for Text Document: RTF');
-      const promisifiedRtf = promisify(rtf.fromString);
+      const promisifiedRtf = promisify(
+        rtf.fromString as (
+          input: string,
+          options: {
+            template(_: unknown, __: unknown, content: string): string;
+          },
+          callback: (err: Error, result: string) => void,
+        ) => void,
+      );
       const rtfHtml = await promisifiedRtf(buf.toString(), {
         template(_, __, content: string) {
           return content;
@@ -230,13 +234,8 @@ export class CreateFileService {
     buf: Buffer,
   ): Promise<SubmissionFile> {
     const meta = await this.sharpInstanceManager.getMetadata(buf);
-    const thumbnail = await this.createFileThumbnail(
-      ctx,
-      entity,
-      file,
-      buf,
-    );
-    const update: Select<typeof this.fileRepository.table> = {
+    const thumbnail = await this.createFileThumbnail(ctx, entity, file, buf);
+    const update: Partial<Select<'SubmissionFileSchema'>> = {
       width: meta.width ?? 0,
       height: meta.height ?? 0,
       hasThumbnail: true,
@@ -281,10 +280,7 @@ export class CreateFileService {
       height,
       width,
       mimeType: thumbnailMimeType,
-    } = await this.generateThumbnail(
-      imageBuffer,
-      file.mimetype,
-    );
+    } = await this.generateThumbnail(imageBuffer, file.mimetype);
 
     // Remove existing extension and add the appropriate thumbnail extension
     const fileNameWithoutExt = parse(fileEntity.fileName).name;
@@ -305,7 +301,6 @@ export class CreateFileService {
    * @param {Buffer} imageBuffer - The source image buffer
    * @param {string} sourceMimeType - The mimetype of the source image
    * @param {number} [preferredDimension=400] - The preferred thumbnail dimension
-   * @return {*}  {Promise<{ width: number; height: number; buffer: Buffer; mimeType: string }>}
    */
   public async generateThumbnail(
     imageBuffer: Buffer,
@@ -334,17 +329,12 @@ export class CreateFileService {
 
   /**
    * Creates a file buffer entity for storing blob data of a file.
-   *
-   * @param {File} fileEntity
-   * @param {Buffer} buf
-   * @param {string} type - thumbnail/alt/primary
-   * @return {*}  {IFileBuffer}
    */
   public async createFileBufferEntity(
     ctx: TransactionContext,
     fileEntity: SubmissionFile,
     buf: Buffer,
-    opts: Select<'FileBufferSchema'> = {} as Select<'FileBufferSchema'>,
+    opts: Partial<Select<'FileBufferSchema'>> = {},
   ): Promise<FileBuffer> {
     const { mimeType, height, width, fileName } = fileEntity;
     const data: Insert<'FileBufferSchema'> = {

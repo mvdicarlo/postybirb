@@ -11,13 +11,15 @@ import { injectWebsiteDecoratorProps } from './website-decorator-props';
 
 export function SupportsFiles(
   websiteFileOptions: Omit<WebsiteFileOptions, 'supportedFileTypes'>,
-);
-export function SupportsFiles(acceptedMimeTypes: string[]);
+): (ctr: Class<UnknownWebsite>) => void;
+export function SupportsFiles(
+  acceptedMimeTypes: string[],
+): (ctr: Class<UnknownWebsite>) => void;
 export function SupportsFiles(
   websiteFileOptionsOrMimeTypes:
     | Omit<WebsiteFileOptions, 'supportedFileTypes'>
     | string[],
-) {
+): (ctr: Class<UnknownWebsite>) => void {
   return function website(constructor: Class<UnknownWebsite>) {
     let websiteFileOptions: WebsiteFileOptions = Array.isArray(
       websiteFileOptionsOrMimeTypes,
@@ -30,7 +32,6 @@ export function SupportsFiles(
 
     websiteFileOptions = {
       acceptedFileSizes: {},
-      acceptedMimeTypes: [],
       acceptsExternalSourceUrls: false,
       fileBatchSize: 1,
       ...websiteFileOptions,

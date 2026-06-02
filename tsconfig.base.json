@@ -4,6 +4,9 @@
     "esModuleInterop": true,
     "sourceMap": true,
     "declaration": false,
+
+    "strict": true,
+    "strictPropertyInitialization": false,
     "moduleResolution": "node",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,

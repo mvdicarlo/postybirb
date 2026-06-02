@@ -33,7 +33,7 @@ import {
     SubmissionMetadataType,
     SubmissionType,
 } from '@postybirb/types';
-import { IsTestEnvironment } from '@postybirb/utils/common';
+import { IsTestEnvironment, toError } from '@postybirb/utils/common';
 import { eq } from 'drizzle-orm';
 import * as path from 'path';
 import { PostyBirbService } from '../../common/service/postybirb-service';
@@ -392,7 +392,7 @@ export class SubmissionService
       throw new BadRequestException('Template Id provided is not a template.');
     }
 
-    const defaultOption: WebsiteOptions = submission.options.find(
+    const defaultOption = submission.options.find(
       (option: WebsiteOptions) => option.accountId === NULL_ACCOUNT_ID,
     );
     const defaultTitle = defaultOption?.data?.title;
@@ -667,7 +667,7 @@ export class SubmissionService
         results.failed++;
         results.errors.push({
           submissionId,
-          error: error instanceof Error ? error.message : String(error),
+          error: toError(error).message,
         });
         this.logger
           .withMetadata({ submissionId, error })
@@ -696,6 +696,13 @@ export class SubmissionService
         files: true,
       },
     });
+
+    if (!entityToDuplicate) {
+      throw new BadRequestException(
+        `Cannot duplicate: Submission with id ${id} does not exists`,
+      );
+    }
+
     await withTransactionContext(this.repository.db, async (ctx) => {
       const newSubmission = (
         await ctx
@@ -759,7 +766,7 @@ export class SubmissionService
         )[0];
         ctx.track('FileBufferSchema', primaryFile.id);
 
-        const thumbnail: FileBuffer | undefined = file.thumbnail
+        const thumbnail = file.thumbnail
           ? (
               await ctx
                 .getDb()
@@ -776,7 +783,7 @@ export class SubmissionService
           ctx.track('FileBufferSchema', thumbnail.id);
         }
 
-        const altFile: FileBuffer | undefined = file.altFile
+        const altFile = file.altFile
           ? (
               await ctx
                 .getDb()
@@ -865,8 +872,7 @@ export class SubmissionService
     // Exclude templates and multi-submissions from ordering
     const allOfType = (await this.repository.findAll())
       .filter(
-        (s) =>
-          s.type === moving.type && !s.isTemplate && !s.isMultiSubmission,
+        (s) => s.type === moving.type && !s.isTemplate && !s.isMultiSubmission,
       )
       .sort((a, b) => a.order - b.order);
 
@@ -901,6 +907,12 @@ export class SubmissionService
 
   async unarchive(id: SubmissionId) {
     const submission = await this.findById(id, { failOnMissing: true });
+    if (!submission) {
+      throw new BadRequestException(
+        `Cannot unarchive: Submission with id ${id} does not exists`,
+      );
+    }
+
     if (!submission.isArchived) {
       throw new BadRequestException(`Submission '${id}' is not archived`);
     }

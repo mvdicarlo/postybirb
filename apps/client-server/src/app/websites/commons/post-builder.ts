@@ -567,7 +567,7 @@ export class PostBuilder {
             v instanceof FormFile ? v.toString() : v,
           );
         } else {
-          sanitizedData[key] = value.toString();
+          sanitizedData[key] = value?.toString();
         }
       } else {
         sanitizedData[key] = value;

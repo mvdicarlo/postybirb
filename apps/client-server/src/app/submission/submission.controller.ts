@@ -55,7 +55,6 @@ export class SubmissionController extends PostyBirbController<SubmissionReposito
     @Body() createSubmissionDto: CreateSubmissionDto,
     @UploadedFiles() files: MulterFileInfo[],
   ) {
-    const mapper = (res) => res.toDTO();
     if ((files || []).length) {
       const results = [];
       // !NOTE: Currently this shouldn't be able to happen with the current UI, but may need to be addressed in the future.
@@ -74,11 +73,11 @@ export class SubmissionController extends PostyBirbController<SubmissionReposito
         results.push(await this.service.create(createFileSubmission, file));
       }
 
-      return results.map(mapper);
+      return results.map((res) => res.toDTO());
     }
     return (
       await Promise.all([await this.service.create(createSubmissionDto)])
-    ).map(mapper);
+    ).map((res) => res.toDTO());
   }
 
   @Post('duplicate/:id')
@@ -157,7 +156,9 @@ export class SubmissionController extends PostyBirbController<SubmissionReposito
 
   @Patch('apply/template/:id/:templateId')
   @ApiOkResponse({ description: 'Template applied to submission.' })
-  @ApiNotFoundResponse({ description: 'Submission Id or Template Id not found.' })
+  @ApiNotFoundResponse({
+    description: 'Submission Id or Template Id not found.',
+  })
   async applyTemplate(
     @Param('id') id: SubmissionId,
     @Param('templateId') templateId: SubmissionId,

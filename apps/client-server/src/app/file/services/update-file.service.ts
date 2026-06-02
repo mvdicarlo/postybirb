@@ -1,9 +1,10 @@
 /* eslint-disable no-param-reassign */
+// @ts-expect-error No types on npm
 import * as rtf from '@iarna/rtf-to-html';
 import {
-    BadRequestException,
-    Injectable,
-    NotFoundException,
+  BadRequestException,
+  Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { FileBufferRepository, SubmissionFile, SubmissionFileRepository, TransactionContext, withTransactionContext } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
@@ -196,7 +197,7 @@ export class UpdateFileService {
             .where(
               eq(
                 this.fileBufferRepository.table.id,
-                submissionFile.altFile.id,
+                submissionFile.altFile?.id ?? '',
               ),
             );
           await ctx
@@ -215,7 +216,7 @@ export class UpdateFileService {
     file: MulterFileInfo,
     buf: Buffer,
   ): Promise<Buffer | null> {
-    let altText: string;
+    let altText: string | undefined;
     if (
       file.mimetype ===
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
@@ -230,7 +231,15 @@ export class UpdateFileService {
       file.originalname.endsWith('.rtf')
     ) {
       this.logger.info('[Mutation] Updating Alt File for Text Document: RTF');
-      const promisifiedRtf = promisify(rtf.fromString);
+      const promisifiedRtf = promisify(
+        rtf.fromString as (
+          input: string,
+          options: {
+            template(_: unknown, __: unknown, content: string): string;
+          },
+          callback: (err: Error, result: string) => void,
+        ) => void,
+      );
       const rtfHtml = await promisifiedRtf(buf.toString(), {
         template(_, __, content: string) {
           return content;
@@ -244,9 +253,7 @@ export class UpdateFileService {
       altText = buf.toString();
     }
 
-    return altText
-      ? Buffer.from(altText)
-      : null;
+    return altText ? Buffer.from(altText) : null;
   }
 
   private async updateImageFileProps(
@@ -255,10 +262,7 @@ export class UpdateFileService {
     file: MulterFileInfo,
     buf: Buffer,
   ) {
-    const { width, height } = await this.getImageDetails(
-      file,
-      buf,
-    );
+    const { width, height } = await this.getImageDetails(file, buf);
     await ctx
       .getDb()
       .update(this.fileRepository.table)
@@ -303,10 +307,7 @@ export class UpdateFileService {
         width: thumbnailWidth,
         height: thumbnailHeight,
         mimeType: thumbnailMimeType,
-      } = await this.createFileService.generateThumbnail(
-        buf,
-        file.mimetype,
-      );
+      } = await this.createFileService.generateThumbnail(buf, file.mimetype);
 
       const fileNameWithoutExt = parse(file.filename).name;
       const thumbnailExt = thumbnailMimeType === 'image/jpeg' ? 'jpg' : 'png';
@@ -338,7 +339,8 @@ export class UpdateFileService {
    */
   private async getImageDetails(file: MulterFileInfo, buf: Buffer) {
     if (ImageUtil.isImage(file.mimetype, false)) {
-      const { height, width } = await this.sharpInstanceManager.getMetadata(buf);
+      const { height, width } =
+        await this.sharpInstanceManager.getMetadata(buf);
       return { buffer: buf, width, height };
     }
 
@@ -362,9 +364,10 @@ export class UpdateFileService {
         // },
       });
 
-      return entity;
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      return entity!;
     } catch (e) {
-      this.logger.error(e.message, e.stack);
+      this.logger.error(e);
       throw new NotFoundException(id);
     }
   }

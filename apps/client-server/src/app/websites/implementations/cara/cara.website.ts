@@ -172,7 +172,7 @@ export default class Cara
     return new CaraFileSubmission();
   }
 
-  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
+  calculateImageResize(file: ISubmissionFile): ImageResizeProps | undefined {
     return undefined;
   }
 

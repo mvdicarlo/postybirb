@@ -145,7 +145,7 @@ describe('PostQueueService', () => {
     expect((await service.findAll()).length).toBe(1);
     const top = await service.peek();
     expect(top).toBeDefined();
-    expect(top.submission.id).toBe(submission.id);
+    expect(top?.submission.id).toBe(submission.id);
 
     await service.dequeue([submission.id]);
     expect((await service.findAll()).length).toBe(0);
@@ -184,7 +184,7 @@ describe('PostQueueService', () => {
       }),
     );
     expect(queueRecord).toBeDefined();
-    expect(queueRecord.postRecord).toBeDefined();
+    expect(queueRecord?.postRecord).toBeDefined();
 
     // Now simulate that the manager is posting
     mockPostManagerRegistry.isPostingType.mockReturnValue(true);
@@ -207,7 +207,7 @@ describe('PostQueueService', () => {
 
     queueRecord = await service.peek();
     expect(queueRecord).toBeDefined();
-    expect(queueRecord.postRecord).toBeDefined();
+    expect(queueRecord?.postRecord).toBeDefined();
 
     // We expect the post to be in a terminal state and cleanup of the record.
     // The post record should remain after the queue record is deleted.

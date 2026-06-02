@@ -2,8 +2,8 @@ import { relations } from 'drizzle-orm';
 import { integer, real, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import {
-    ISubmissionMetadata,
-    ISubmissionScheduleInfo,
+  ISubmissionMetadata,
+  ISubmissionScheduleInfo,
 } from '../../../../types/src/index';
 import { CommonSchema, submissionType } from './common.schema';
 import { PostQueueRecordSchema } from './post-queue-record.schema';

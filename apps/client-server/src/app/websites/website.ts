@@ -366,7 +366,7 @@ export abstract class Website<
 
           if (cookie.session) {
             const setCookie: PlatformCookieDetails = {
-              url: `${cookie.secure ? 'https' : 'http'}://${cookie.domain.replace(/^\./, '')}${cookie.path}`,
+              url: `${cookie.secure ? 'https' : 'http'}://${cookie.domain?.replace(/^\./, '')}${cookie.path}`,
               name: `${CookiePrefix}${cookie.name}`,
               value: cookie.value,
               domain: cookie.domain,
@@ -388,7 +388,7 @@ export abstract class Website<
                 `Rehydrating session cookie: ${cookie.name} (${cookie.domain})`,
               );
               const setCookie: PlatformCookieDetails = {
-                url: `${cookie.secure ? 'https' : 'http'}://${cookie.domain.replace(/^\./, '')}${cookie.path}`,
+                url: `${cookie.secure ? 'https' : 'http'}://${cookie.domain?.replace(/^\./, '')}${cookie.path}`,
                 name: cookie.name.replace(CookiePrefix, ''),
                 value: cookie.value,
                 domain: cookie.domain,
@@ -404,7 +404,9 @@ export abstract class Website<
         }
       }
     } catch (err) {
-      this.logger.error('Error during onBeforeLogin cookie handling:', err);
+      this.logger
+        .withError(err)
+        .error('Error during onBeforeLogin cookie handling:');
     }
   }
 

@@ -1,6 +1,6 @@
 import { IFileBuffer } from '@postybirb/types';
 import { htmlToText } from 'html-to-text';
-import { TurndownService } from 'turndown';
+import TurndownService from 'turndown';
 import { IFileConverter } from './file-converter';
 
 const supportedInputMimeTypes = ['text/html', 'text/plain'] as const;
@@ -60,9 +60,7 @@ export class TextFileConverter implements IFileConverter {
     file: IFileBuffer,
   ): Promise<IFileBuffer> => {
     const lines = file.buffer.toString().split(/\n/);
-    const html = lines
-      .map((line) => `<p>${line || '<br>'}</p>`)
-      .join('\n');
+    const html = lines.map((line) => `<p>${line || '<br>'}</p>`).join('\n');
     return this.toMergedBuffer(file, html, 'text/html');
   };
 
@@ -71,7 +69,8 @@ export class TextFileConverter implements IFileConverter {
    */
   private convertPlaintextToMarkdown = async (
     file: IFileBuffer,
-  ): Promise<IFileBuffer> => this.toMergedBuffer(file, file.buffer.toString(), 'text/markdown');
+  ): Promise<IFileBuffer> =>
+    this.toMergedBuffer(file, file.buffer.toString(), 'text/markdown');
 
   private readonly supportConversionMappers: ConversionMap = {
     'text/html': {

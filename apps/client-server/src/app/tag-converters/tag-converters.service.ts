@@ -1,7 +1,7 @@
 import { Injectable, Optional } from '@nestjs/common';
 import { TagConverter, TagConverterRepository } from '@postybirb/database';
 import { TAG_CONVERTER_UPDATES } from '@postybirb/socket-events';
-import { EntityId } from '@postybirb/types';
+import { DynamicObject, EntityId } from '@postybirb/types';
 import { eq } from 'drizzle-orm';
 import { PostyBirbService } from '../common/service/postybirb-service';
 import { WSGateway } from '../web-socket/web-socket-gateway';
@@ -33,15 +33,17 @@ export class TagConvertersService extends PostyBirbService<TagConverterRepositor
 
   /**
    * Converts a list of tags using user defined conversion table.
-   *
-   * @param {Website<unknown>} instance
-   * @param {string[]} tags
-   * @return {*}  {Promise<string[]>}
    */
-  async convert(instance: Website<unknown>, tags: string): Promise<string>;
-  async convert(instance: Website<unknown>, tags: string[]): Promise<string[]>;
   async convert(
-    instance: Website<unknown>,
+    instance: Website<DynamicObject>,
+    tags: string,
+  ): Promise<string>;
+  async convert(
+    instance: Website<DynamicObject>,
+    tags: string[],
+  ): Promise<string[]>;
+  async convert(
+    instance: Website<DynamicObject>,
     tags: string[] | string,
   ): Promise<string[] | string> {
     if (typeof tags === 'string') {

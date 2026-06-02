@@ -2,12 +2,14 @@ import { BadRequestException } from '@nestjs/common';
 import {
   Action,
   EntityRepository,
+  FindOptions,
   RepoEntity,
   SchemaKey,
 } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import { EntityId, IEntity } from '@postybirb/types';
 import { SQL } from 'drizzle-orm';
+import { SetRequired } from 'type-fest';
 import { WSGateway } from '../../web-socket/web-socket-gateway';
 import { WebSocketEvents } from '../../web-socket/web-socket.events';
 
@@ -79,7 +81,8 @@ export abstract class PostyBirbService<
    * @protected
    * @param {SQL} where
    */
-  protected async throwIfExists(where: SQL) {
+  protected async throwIfExists(where: SQL | undefined) {
+    if (!where) return;
     const exists = await this.repository.select(where);
     if (exists.length) {
       this.logger
@@ -93,7 +96,15 @@ export abstract class PostyBirbService<
 
   public findById(
     id: EntityId,
-    options?: { failOnMissing?: boolean },
+    options?: SetRequired<FindOptions, 'failOnMissing'>,
+  ): Promise<TEntity>;
+  public findById(
+    id: EntityId,
+    options?: FindOptions,
+  ): Promise<TEntity | null>;
+  public findById(
+    id: EntityId,
+    options?: FindOptions,
   ): Promise<TEntity | null> {
     return this.repository.findById(id, options) as Promise<TEntity | null>;
   }

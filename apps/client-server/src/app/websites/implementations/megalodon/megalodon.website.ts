@@ -11,6 +11,8 @@ import {
   SimpleValidationResult,
   SubmissionRating,
 } from '@postybirb/types';
+import { toError } from '@postybirb/utils/common';
+import { isObject } from 'lodash';
 import { detector, Entity } from 'megalodon';
 import { Readable } from 'stream';
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -177,7 +179,7 @@ export abstract class MegalodonWebsite
         this.logger.error('Failed to register app', error);
         return {
           success: false,
-          message: `Failed to register with instance: ${error.message}`,
+          message: `Failed to register with instance: ${toError(error).message}`,
         };
       }
     },
@@ -233,7 +235,7 @@ export abstract class MegalodonWebsite
         this.logger.error('Failed to complete OAuth', error);
         return {
           success: false,
-          message: `Failed to authenticate: ${error.message}`,
+          message: `Failed to authenticate: ${toError(error).message}`,
         };
       }
     },
@@ -267,7 +269,7 @@ export abstract class MegalodonWebsite
         await this.fetchInstanceLimits(client);
 
         // Need to manually override decorated prop
-        if (this.decoratedProps.fileOptions) {
+        if (this.decoratedProps.fileOptions && this.instanceLimits) {
           this.decoratedProps.fileOptions.fileBatchSize =
             this.instanceLimits.maxMediaAttachments || 4;
 
@@ -433,7 +435,7 @@ export abstract class MegalodonWebsite
     return new MegalodonMessageSubmission();
   }
 
-  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
+  calculateImageResize(file: ISubmissionFile): ImageResizeProps | undefined {
     const imageSizeLimit = this.getImageSizeLimit();
     const imageMatrixLimit = this.getImageMatrixLimit();
 
@@ -497,6 +499,9 @@ export abstract class MegalodonWebsite
     cancellationToken.throwIfCancelled();
 
     const data = this.websiteDataStore.getData();
+
+    if (!data.accessToken) throw new Error('No accessToken exists');
+
     const client = MegalodonApiService.createClient(
       data.instanceUrl,
       data.accessToken,
@@ -553,7 +558,9 @@ export abstract class MegalodonWebsite
       // Retry loop to handle media still processing (e.g. GIF transcoding)
       const maxRetries = 20;
       const retryDelayMs = 10_000;
-      let statusResult: Awaited<ReturnType<typeof client.postStatus>>;
+      let statusResult:
+        | undefined
+        | Awaited<ReturnType<typeof client.postStatus>>;
 
       for (let attempt = 0; attempt <= maxRetries; attempt++) {
         cancellationToken.throwIfCancelled();
@@ -570,7 +577,14 @@ export abstract class MegalodonWebsite
           );
           break;
         } catch (postError) {
-          if (postError?.response?.status === 422 && attempt < maxRetries) {
+          if (
+            isObject(postError) &&
+            'response' in postError &&
+            isObject(postError.response) &&
+            'status' in postError.response &&
+            postError.response.status === 422 &&
+            attempt < maxRetries
+          ) {
             this.logger
               .withMetadata({ attempt: attempt + 1, maxRetries })
               .info('Media still processing, waiting before retry');
@@ -580,6 +594,8 @@ export abstract class MegalodonWebsite
           throw postError;
         }
       }
+
+      if (!statusResult) throw new Error('No post result');
 
       const status = statusResult.data;
       // Check if it's a Status (not ScheduledStatus)
@@ -597,9 +613,7 @@ export abstract class MegalodonWebsite
       });
     } catch (error) {
       this.logger.error('Failed to post file submission', error);
-      return PostResponse.fromWebsite(this).withException(
-        new Error(`Failed to post: ${error.message}`),
-      );
+      return PostResponse.fromWebsite(this).withException(error);
     }
   }
 
@@ -610,6 +624,8 @@ export abstract class MegalodonWebsite
     cancellationToken.throwIfCancelled();
 
     const data = this.websiteDataStore.getData();
+    if (!data.accessToken) throw new Error('No accessToken exists');
+
     const client = MegalodonApiService.createClient(
       data.instanceUrl,
       data.accessToken,
@@ -645,9 +661,9 @@ export abstract class MegalodonWebsite
       });
     } catch (error) {
       this.logger.error('Failed to post message submission', error);
-      return PostResponse.fromWebsite(this).withException(
-        new Error(`Failed to post: ${error.message}`),
-      );
+      return PostResponse.fromWebsite(this)
+        .withException(error)
+        .atStage('post');
     }
   }
 

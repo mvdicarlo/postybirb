@@ -14,6 +14,9 @@ const migrationsFolder = IsTestEnvironment()
   : join(__dirname, 'migrations');
 let db: PostyBirbDatabaseType | undefined;
 
+/**
+ * Get the database instance
+ */
 export function getDatabase() {
   if (!db) {
     if (IsTestEnvironment()) {

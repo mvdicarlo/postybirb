@@ -1,21 +1,22 @@
 import { PostRecord, PostRecordRepository, Submission, WebsiteOptions ,
 } from '@postybirb/database';
 import {
-    Logger,
-    trackEvent,
-    trackException,
-    trackMetric,
+  Logger,
+  trackEvent,
+  trackException,
+  trackMetric,
 } from '@postybirb/logger';
 import { POST_WAIT_STATE } from '@postybirb/socket-events';
 import {
-    AccountId,
-    EntityId,
-    IPostWaitState,
-    PostData,
-    PostEventType,
-    PostRecordState,
-    PostResponse,
-    SubmissionType,
+  AccountId,
+  DynamicObject,
+  EntityId,
+  IPostWaitState,
+  PostData,
+  PostEventType,
+  PostRecordState,
+  PostResponse,
+  SubmissionType,
 } from '@postybirb/types';
 
 import { NotificationsService } from '../../../notifications/notifications.service';
@@ -33,7 +34,7 @@ import { PostEventRepository, ResumeContext } from '../post-record-factory';
  */
 interface WebsiteInfo {
   accountId: AccountId;
-  instance: Website<unknown>;
+  instance: Website<DynamicObject>;
 }
 
 /**
@@ -170,6 +171,7 @@ export abstract class BasePostManager {
     const { accountId, instance } = websiteInfo;
     let data: PostData | undefined;
     const option = submission.options.find((o) => o.accountId === accountId);
+    if (!option) throw new Error('No website options found');
 
     try {
       await this.ensureLoggedIn(instance);
@@ -304,14 +306,14 @@ export abstract class BasePostManager {
    * @protected
    * @param {EntityId} postRecordId - The post record ID
    * @param {AccountId} accountId - The account ID
-   * @param {Website<unknown>} instance - The website instance
+   * @param {Website<DynamicObject>} instance - The website instance
    * @param {PostData} [data] - The post data
    * @param {WebsiteOptions} [option] - The website options
    */
   protected async emitPostAttemptStarted(
     postRecordId: EntityId,
     accountId: AccountId,
-    instance: Website<unknown>,
+    instance: Website<DynamicObject>,
     data?: PostData,
     option?: WebsiteOptions,
   ): Promise<void> {
@@ -339,7 +341,7 @@ export abstract class BasePostManager {
    * @protected
    * @param {EntityId} postRecordId - The post record ID
    * @param {AccountId} accountId - The account ID
-   * @param {Website<unknown>} instance - The website instance
+   * @param {Website<DynamicObject>} instance - The website instance
    * @param {PostResponse} errorResponse - The error response
    * @param {PostData} [postData] - The post data
    * @param {string} [submissionId] - The submission ID for notification linking
@@ -348,7 +350,7 @@ export abstract class BasePostManager {
   protected async handlePostFailure(
     postRecordId: EntityId,
     accountId: AccountId,
-    instance: Website<unknown>,
+    instance: Website<DynamicObject>,
     errorResponse: PostResponse,
     postData?: PostData,
     submissionId?: string,
@@ -404,14 +406,14 @@ export abstract class BasePostManager {
    * Prepare post data for a website.
    * @protected
    * @param {Submission} submission - The submission
-   * @param {Website<unknown>} instance - The website instance
+   * @param {Website<DynamicObject>} instance - The website instance
    * @param {WebsiteOptions} [option] - The website options
    * @returns {Promise<PostData>} The prepared post data
    */
   protected async preparePostData(
     submission: Submission,
-    instance: Website<unknown>,
-    option?: WebsiteOptions,
+    instance: Website<DynamicObject>,
+    option: WebsiteOptions,
   ): Promise<PostData> {
     return this.postParserService.parse(submission, instance, option);
   }
@@ -531,11 +533,11 @@ export abstract class BasePostManager {
    * Emits an ephemeral WebSocket event so the UI can display a countdown.
    * @protected
    * @param {AccountId} accountId - The account ID
-   * @param {Website<unknown>} instance - The website instance
+   * @param {Website<DynamicObject>} instance - The website instance
    */
   protected async waitForPostingWaitInterval(
     accountId: AccountId,
-    instance: Website<unknown>,
+    instance: Website<DynamicObject>,
   ): Promise<void> {
     const lastTime = this.lastTimePostedToWebsite[accountId];
     if (!lastTime) return;
@@ -610,9 +612,7 @@ export abstract class BasePostManager {
         states.push({
           submissionId,
           accountId: option.accountId,
-          waitUntil: new Date(
-            lastTime.getTime() + waitInterval,
-          ).toISOString(),
+          waitUntil: new Date(lastTime.getTime() + waitInterval).toISOString(),
           websiteName:
             instance.decoratedProps.metadata.displayName ??
             instance.decoratedProps.metadata.name,
@@ -629,18 +629,18 @@ export abstract class BasePostManager {
    * - If a login is already in progress, waits for it to finish.
    * - If not logged in and no login in progress, triggers a fresh login.
    * @protected
-   * @param {Website<unknown>} instance - The website instance
+   * @param {Website<DynamicObject>} instance - The website instance
    * @throws {Error} If the website is still not logged in after the login attempt
    */
-  protected async ensureLoggedIn(instance: Website<unknown>): Promise<void> {
+  protected async ensureLoggedIn(
+    instance: Website<DynamicObject>,
+  ): Promise<void> {
     const state = instance.getLoginState();
     if (state.isLoggedIn) {
       return;
     }
 
-    this.logger.info(
-      `Not logged in for ${instance.id}, triggering login...`,
-    );
+    this.logger.info(`Not logged in for ${instance.id}, triggering login...`);
 
     const result = await instance.login();
 
