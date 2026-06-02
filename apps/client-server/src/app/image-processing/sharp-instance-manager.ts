@@ -116,18 +116,16 @@ export class SharpInstanceManager implements OnModuleDestroy {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { diagnostics } = result as any;
       if (diagnostics) {
-        this.logger
-          .withMetadata(diagnostics)
-          .info('Sharp health check passed');
+        this.logger.withMetadata(diagnostics).info('Sharp health check passed');
       }
     } catch (error) {
       this.logger
         .withError(error)
         .error(
           'Sharp health check FAILED — image processing will not work. ' +
-          'This usually means native sharp bindings failed to load. ' +
-          'On Linux, ensure glibc >= 2.17 is installed. ' +
-          'On Snap/Flatpak, the sandbox may prevent loading native modules.',
+            'This usually means native sharp bindings failed to load. ' +
+            'On Linux, ensure glibc >= 2.17 is installed. ' +
+            'On Snap/Flatpak, the sandbox may prevent loading native modules.',
         );
     }
   }
@@ -205,6 +203,8 @@ export class SharpInstanceManager implements OnModuleDestroy {
       if (this.workerFn) {
         return (await this.workerFn(input)) as SharpWorkerResult;
       }
+
+      if (!this.pool) throw new Error('No pool or workerFn is defined!');
 
       const result = await this.pool.run(input);
 

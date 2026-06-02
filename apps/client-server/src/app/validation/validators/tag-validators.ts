@@ -7,14 +7,14 @@ export async function validateMaxTags({
 }: ValidatorParams) {
   const { hidden, maxTags } = mergedWebsiteOptions.getFormFieldFor('tags');
   if (hidden) return;
+  if (typeof maxTags === 'undefined') return;
 
   const { tags } = data.options;
-  const maxLength = maxTags ?? Number.MAX_SAFE_INTEGER;
 
-  if (tags.length > maxLength) {
+  if (tags.length > maxTags) {
     validator.warning(
       'validation.tags.max-tags',
-      { maxLength, currentLength: tags.length },
+      { maxLength: maxTags, currentLength: tags.length },
       'tags',
     );
   }
@@ -47,15 +47,15 @@ export async function validateMaxTagLength({
 }: ValidatorParams) {
   const { hidden, maxTagLength } = mergedWebsiteOptions.getFormFieldFor('tags');
   if (hidden) return;
+  if (typeof maxTagLength === 'undefined') return;
 
   const { tags } = data.options;
-  const maxLength = maxTagLength ?? Number.MAX_SAFE_INTEGER;
-  const invalidTags = tags.filter((tag) => tag.length > maxLength);
+  const invalidTags = tags.filter((tag) => tag.length > maxTagLength);
 
   if (invalidTags.length > 0) {
     validator.warning(
       'validation.tags.max-tag-length',
-      { tags: invalidTags, maxLength },
+      { tags: invalidTags, maxLength: maxTagLength },
       'tags',
     );
   }

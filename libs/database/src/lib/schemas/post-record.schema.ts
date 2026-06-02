@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm';
-import { sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { AnySQLiteColumn, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import {
   PostRecordResumeMode,
@@ -13,7 +13,7 @@ export const PostRecordSchema = sqliteTable('post-record', {
   ...CommonSchema(),
   version: text(),
 
-  submissionId: id().references(() => SubmissionSchema.id, {
+  submissionId: id().references((): AnySQLiteColumn => SubmissionSchema.id, {
     onDelete: 'cascade',
   }),
 
@@ -23,9 +23,12 @@ export const PostRecordSchema = sqliteTable('post-record', {
    * - Set to the origin's ID for CONTINUE/RETRY records
    * Used to group related posting attempts together.
    */
-  originPostRecordId: id().references(() => PostRecordSchema.id, {
-    onDelete: 'set null',
-  }),
+  originPostRecordId: id().references(
+    (): AnySQLiteColumn => PostRecordSchema.id,
+    {
+      onDelete: 'set null',
+    },
+  ),
 
   completedAt: text(),
   resumeMode: text({

@@ -61,7 +61,10 @@ export default class Discord
       return this.loginState.setLogin(true, this.account.name);
     }
 
-    if (data.serverLevel > 0) {
+    if (
+      this.decoratedProps.fileOptions?.acceptedFileSizes &&
+      data.serverLevel > 0
+    ) {
       // NOTE: Not entirely sure if this is a safe thing to do, but it does
       // avoid having to create additional custom validation logic.
       if (data.serverLevel === 2) {
@@ -85,7 +88,7 @@ export default class Discord
     return new DiscordFileSubmission();
   }
 
-  calculateImageResize(): ImageResizeProps {
+  calculateImageResize(): ImageResizeProps | undefined {
     return undefined;
   }
 
@@ -122,7 +125,7 @@ export default class Discord
             ),
           }
         : {}),
-      attachments: [],
+      attachments: [] as object[],
     };
 
     const formData: {
@@ -144,11 +147,12 @@ export default class Discord
 
     formData.payload_json = JSON.stringify(payload);
     cancellationToken.throwIfCancelled();
-    return this.platform.http.post(webhook, {
-      partition: undefined,
-      type: 'multipart',
-      data: formData,
-    })
+    return this.platform.http
+      .post(webhook, {
+        partition: undefined,
+        type: 'multipart',
+        data: formData,
+      })
       .then((res) => this.handleResponse(res))
       .catch((error) => this.handleError(error, payload));
   }
@@ -168,11 +172,12 @@ export default class Discord
       postData.options.useEmbed,
     );
     cancellationToken.throwIfCancelled();
-    return this.platform.http.post(webhook, {
-      partition: undefined,
-      type: 'json',
-      data: messageData,
-    })
+    return this.platform.http
+      .post(webhook, {
+        partition: undefined,
+        type: 'json',
+        data: messageData,
+      })
       .then((res) => this.handleResponse(res))
       .catch((error) => this.handleError(error, messageData));
   }

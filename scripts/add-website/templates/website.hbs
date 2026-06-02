@@ -65,7 +65,7 @@ export default class {{pascalWebsiteName}} extends Website<{{pascalWebsiteName}}
     return new {{pascalWebsiteName}}FileSubmission();
   }
 
-  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
+  calculateImageResize(file: ISubmissionFile): ImageResizeProps | undefined {
     return undefined;
   }
 
