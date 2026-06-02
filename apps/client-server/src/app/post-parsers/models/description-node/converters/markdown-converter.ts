@@ -7,8 +7,10 @@ export class MarkdownConverter extends HtmlConverter {
   protected createConverter(turndownInstance = new TurndownService()) {
     turndownInstance.addRule('nestedIndent', {
       filter: (node) =>
-        node.nodeName === 'DIV' &&
-        node.getAttribute('style')?.includes('margin-left'),
+        (node.nodeName === 'DIV' &&
+          node.getAttribute('style')?.includes('margin-left')) ??
+        false,
+
       replacement: (content) =>
         `\n\n> ${content.trim().replace(/\n/g, '\n> ')}\n\n`,
     });
