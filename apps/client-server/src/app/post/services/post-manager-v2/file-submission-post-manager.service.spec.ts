@@ -478,7 +478,7 @@ describe('FileSubmissionPostManager', () => {
       // Set batch size to 3 to get all files in one batch
       (
         mockWebsite as unknown as ImplementedFileWebsite
-      ).decoratedProps.fileOptions.fileBatchSize = 3;
+      ).decoratedProps.fileOptions!.fileBatchSize = 3;
 
       let capturedFiles: PostingFile[] = [];
       (mockWebsite as unknown as FileWebsite).onPostFileSubmission = jest
@@ -549,7 +549,7 @@ describe('FileSubmissionPostManager', () => {
       // Set batch size to 2
       (
         mockWebsite as unknown as ImplementedFileWebsite
-      ).decoratedProps.fileOptions.fileBatchSize = 2;
+      ).decoratedProps.fileOptions!.fileBatchSize = 2;
 
       const batchIndices: number[] = [];
       (mockWebsite as unknown as FileWebsite).onPostFileSubmission = jest
@@ -594,7 +594,7 @@ describe('FileSubmissionPostManager', () => {
       // Set invalid batch size
       (
         mockWebsite as unknown as ImplementedFileWebsite
-      ).decoratedProps.fileOptions.fileBatchSize = 0;
+      ).decoratedProps.fileOptions!.fileBatchSize = 0;
 
       (mockWebsite as unknown as FileWebsite).onPostFileSubmission = jest
         .fn()
@@ -639,7 +639,7 @@ describe('FileSubmissionPostManager', () => {
       // Set batch size to 1 to have 3 separate batches
       (
         mockWebsite as unknown as ImplementedFileWebsite
-      ).decoratedProps.fileOptions.fileBatchSize = 1;
+      ).decoratedProps.fileOptions!.fileBatchSize = 1;
 
       let callCount = 0;
       (mockWebsite as unknown as FileWebsite).onPostFileSubmission = jest
@@ -966,7 +966,7 @@ describe('FileSubmissionPostManager', () => {
       // Website only accepts JPEG
       (
         mockWebsite as unknown as ImplementedFileWebsite
-      ).decoratedProps.fileOptions.acceptedMimeTypes = ['image/jpeg'];
+      ).decoratedProps.fileOptions!.acceptedMimeTypes = ['image/jpeg'];
 
       // Resizer returns PNG (which website doesn't accept)
       resizerServiceMock.resize.mockImplementation(async (request) => {
@@ -1002,7 +1002,7 @@ describe('FileSubmissionPostManager', () => {
       // Website accepts all file types
       (
         mockWebsite as unknown as ImplementedFileWebsite
-      ).decoratedProps.fileOptions.acceptedMimeTypes = [];
+      ).decoratedProps.fileOptions!.acceptedMimeTypes = [];
 
       resizerServiceMock.resize.mockImplementation(async (request) => {
         const f = request.file as SubmissionFile;

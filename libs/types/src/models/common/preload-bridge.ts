@@ -1,4 +1,4 @@
-import { RemoteConfig } from '@postybirb/utils/common';
+import type { RemoteConfig } from '@postybirb/utils/common';
 
 export interface PreloadBridge {
   getLanIp(): Promise<string | undefined>;

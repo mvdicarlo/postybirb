@@ -32,9 +32,9 @@ export class PostParsersService {
     instance: UnknownWebsite,
     websiteOptions: IWebsiteOptions,
   ): Promise<PostData<IWebsiteFormFields>> {
-    const defaultOptions: IWebsiteOptions = submission.options.find(
-      (o) => o.isDefault,
-    );
+    const defaultOptions = submission.options.find((o) => o.isDefault);
+    if (!defaultOptions) throw new Error('No defalt website options found');
+
     const defaultOpts = Object.assign(new DefaultWebsiteOptions(), {
       ...defaultOptions.data,
     });
@@ -54,13 +54,13 @@ export class PostParsersService {
         ...defaultOptions.data,
         ...websiteOptions.data,
         tags,
-        description: await this.descriptionParser.parse(
+        description: (await this.descriptionParser.parse(
           instance,
           defaultOpts,
           websiteOpts,
           tags,
           title,
-        ),
+        )) as string,
         title,
         contentWarning,
         rating: this.ratingParser.parse(defaultOpts, websiteOpts),

@@ -4,6 +4,7 @@ import { clearDatabase } from '@postybirb/database';
 import { PostyBirbDirectories, writeSync } from '@postybirb/fs';
 import {
   FileSubmissionMetadata,
+  ISubmissionMetadata,
   IWebsiteFormFields,
   ScheduleType,
   SubmissionRating,
@@ -22,8 +23,8 @@ import { CreateFileService } from '../../file/services/create-file.service';
 import { UpdateFileService } from '../../file/services/update-file.service';
 import { FormGeneratorModule } from '../../form-generator/form-generator.module';
 import { SharpInstanceManager } from '../../image-processing/sharp-instance-manager';
-import { PostParsersModule } from '../../post-parsers/post-parsers.module';
 import { TestPlatformModule } from '../../platform/testing/test-platform.module';
+import { PostParsersModule } from '../../post-parsers/post-parsers.module';
 import { UserSpecifiedWebsiteOptionsModule } from '../../user-specified-website-options/user-specified-website-options.module';
 import { UserSpecifiedWebsiteOptionsService } from '../../user-specified-website-options/user-specified-website-options.service';
 import { waitUntilPromised } from '../../utils/wait.util';
@@ -98,7 +99,7 @@ describe('SubmissionService', () => {
 
   function setup(): string {
     const path = `${PostyBirbDirectories.DATA_DIRECTORY}/${Date.now()}.jpg`;
-    writeSync(path, testFile);
+    writeSync(path, testFile ?? '');
     return path;
   }
 
@@ -125,7 +126,7 @@ describe('SubmissionService', () => {
       originalname: 'small_image.jpg',
       encoding: '',
       mimetype: 'image/jpeg',
-      size: testFile.length,
+      size: testFile?.length ?? 0,
       destination: '',
       filename: 'small_image.jpg',
       path,
@@ -190,6 +191,7 @@ describe('SubmissionService', () => {
 
   it('should create file entities', async () => {
     const createDto = createSubmissionDto();
+    // @ts-expect-error Test
     delete createDto.name; // To ensure file name check
     createDto.type = SubmissionType.FILE;
     const path = setup();
@@ -232,7 +234,7 @@ describe('SubmissionService', () => {
           width: 138,
           id: file.id,
           mimeType: fileInfo.mimetype,
-          size: testFile.length,
+          size: testFile?.length,
           submissionId: record.id,
           altFileId: null,
           thumbnailId: file.thumbnailId,
@@ -303,7 +305,7 @@ describe('SubmissionService', () => {
     updateDto.scheduledFor = '*';
     updateDto.metadata = {
       test: 'test',
-    } as unknown;
+    } as unknown as ISubmissionMetadata;
 
     const updatedRecord = await service.update(record.id, updateDto);
     expect(updatedRecord.isScheduled).toEqual(updateDto.isScheduled);
@@ -397,7 +399,7 @@ describe('SubmissionService', () => {
       name: 'Updated',
     });
 
-    expect(updatedTemplate.metadata.template.name).toEqual('Updated');
+    expect(updatedTemplate.metadata.template?.name).toEqual('Updated');
 
     const updatedRecord = await service.applyOverridingTemplate(
       record.id,
@@ -477,11 +479,11 @@ describe('SubmissionService', () => {
     const defaultOptions = updatedRecord.options.find((o) => o.isDefault);
     const nonDefault = updatedRecord.options.find((o) => !o.isDefault);
     expect(nonDefault).toBeDefined();
-    expect(nonDefault.data).toEqual(multiSubmission.options[1].data);
+    expect(nonDefault?.data).toEqual(multiSubmission.options[1].data);
     expect(defaultOptions).toBeDefined();
-    expect(defaultOptions.data).toEqual({
+    expect(defaultOptions?.data).toEqual({
       ...multiSubmission.options[0].data,
-      title: defaultOptions.data.title,
+      title: defaultOptions?.data.title,
     });
   });
 
@@ -510,21 +512,21 @@ describe('SubmissionService', () => {
     expect(duplicated?.type).toEqual(record.type);
     expect(duplicated?.options).toHaveLength(2);
     expect(duplicated?.files).toHaveLength(1);
-    expect(duplicated.order).toEqual(record.order);
+    expect(duplicated?.order).toEqual(record.order);
 
     // Check that the metadata references the new file IDs
     const duplicatedFileId = duplicated?.files[0].id;
     const duplicatedMetadata = duplicated?.metadata as FileSubmissionMetadata;
     expect(duplicatedFileId).toBeDefined();
 
-    for (const file of duplicated.files) {
+    for (const file of duplicated?.files ?? []) {
       expect(record.files.find((f) => f.id === file.id)).toBeUndefined();
     }
 
     // Check that the original metadata is preserved
     const originalMetadata = record?.metadata as FileSubmissionMetadata;
     for (const file of record.files) {
-      expect(duplicated.files.find((f) => f.id === file.id)).toBeUndefined();
+      expect(duplicated?.files.find((f) => f.id === file.id)).toBeUndefined();
     }
   });
 });

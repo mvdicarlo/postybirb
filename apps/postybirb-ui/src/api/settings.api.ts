@@ -1,5 +1,9 @@
-import { EntityId, IUpdateSettingsDto, SettingsDto } from '@postybirb/types';
-import { StartupOptions } from '@postybirb/utils/common';
+import type {
+  EntityId,
+  IUpdateSettingsDto,
+  SettingsDto,
+} from '@postybirb/types';
+import type { StartupOptions } from '@postybirb/utils/common';
 import { HttpClient } from '../transports/http-client';
 
 class SettingsApi {

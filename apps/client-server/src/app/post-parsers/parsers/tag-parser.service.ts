@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { DynamicObject } from '@postybirb/types';
 import { TagConvertersService } from '../../tag-converters/tag-converters.service';
 import { BaseWebsiteOptions } from '../../websites/models/base-website-options';
 import { DefaultWebsiteOptions } from '../../websites/models/default-website-options';
@@ -9,7 +10,7 @@ export class TagParserService {
   constructor(private readonly tagConvertersService: TagConvertersService) {}
 
   public async parse(
-    instance: Website<unknown>,
+    instance: Website<DynamicObject>,
     defaultOptions: DefaultWebsiteOptions,
     websiteOptions: BaseWebsiteOptions,
   ): Promise<string[]> {

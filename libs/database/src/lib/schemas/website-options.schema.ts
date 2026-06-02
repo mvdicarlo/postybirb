@@ -1,5 +1,10 @@
 import { relations } from 'drizzle-orm';
-import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import {
+  AnySQLiteColumn,
+  integer,
+  sqliteTable,
+  text,
+} from 'drizzle-orm/sqlite-core';
 import { AccountSchema } from './account.schema';
 import { CommonSchema, id } from './common.schema';
 import { SubmissionSchema } from './submission.schema';
@@ -10,12 +15,12 @@ export const WebsiteOptionsSchema = sqliteTable('website-options', {
   ...CommonSchema(),
   accountId: id()
     .notNull()
-    .references(() => AccountSchema.id, {
+    .references((): AnySQLiteColumn => AccountSchema.id, {
       onDelete: 'cascade',
     }),
   submissionId: id()
     .notNull()
-    .references(() => SubmissionSchema.id, {
+    .references((): AnySQLiteColumn => SubmissionSchema.id, {
       onDelete: 'cascade',
     }),
   data: text({ mode: 'json' }).notNull().$type<IWebsiteFormFields>(),

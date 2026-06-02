@@ -50,10 +50,12 @@ const extensions = [
   TextAlign.extend({
     name: 'da-text-align',
     addCommands() {
-      const parentCommands = this.parent?.();
+      // Copy pasted from DeviantArt source code
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const parentCommands = (this as any).parent?.();
       return {
         unsetTextAlign: parentCommands?.unsetTextAlign,
-        setTextAlign: (alignment) => (object) => {
+        setTextAlign: (alignment: unknown) => (object: unknown) => {
           if (!parentCommands || !parentCommands.setTextAlign) {
             return false;
           }

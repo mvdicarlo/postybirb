@@ -50,7 +50,7 @@ export class FormGeneratorService {
     const data = instance.getFormProperties();
 
     // Get form model
-    let formModel: IWebsiteFormFields = null;
+    let formModel: IWebsiteFormFields | null = null;
     if (request.type === SubmissionType.MESSAGE && isMessageWebsite(instance)) {
       formModel = instance.createMessageModel();
     }

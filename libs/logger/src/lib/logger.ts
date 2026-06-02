@@ -6,18 +6,66 @@ import DailyRotateFile from 'winston-daily-rotate-file';
 import { SerializeLog } from './serialize-log';
 import { AppInsightsTransport } from './winston-appinsights-transport';
 
-export type PostyBirbLogger = LogLayer<WinstonLogger>;
+// Offical loglayer types do not support arbitrary types in messages. Our formatter (./serialize-log.ts) does supports them
+// Also PostyBirbLogger strips unused methods such as enablePlugin/disablePlugin/mute/unmute from types
 
-let log: PostyBirbLogger;
+type LogLayerLogger = LogLayer<WinstonLogger>;
+
+type MessageDataType = unknown;
+
+export interface PostyBirbLogger {
+  /**
+   * Sends a log message to the logging library under an info log level.
+   */
+  info(...messages: MessageDataType[]): void;
+  /**
+   * Sends a log message to the logging library under the warn log level
+   */
+  warn(...messages: MessageDataType[]): void;
+  /**
+   * Sends a log message to the logging library under the error log level
+   *
+   */
+  error(...messages: MessageDataType[]): void;
+  /**
+   * Sends a log message to the logging library under the debug log level
+   */
+  debug(...messages: MessageDataType[]): void;
+  /**
+   * Sends a log message to the logging library under the trace log level
+   */
+  trace(...messages: MessageDataType[]): void;
+  /**
+   * Sends a log message to the logging library under the fatal log level
+   */
+  fatal(...messages: MessageDataType[]): void;
+
+  /**
+   * Specifies metadata to include with the log message
+   */
+  withMetadata(metadata: unknown): PostyBirbLogger;
+  /**
+   * Specifies an Error to include with the log message
+   */
+  withError(error: unknown): PostyBirbLogger;
+
+  /**
+   * Appends context data which will be included with
+   * every log entry.
+   */
+  withContext(context: Record<string, unknown>): PostyBirbLogger;
+}
+
+let log: LogLayerLogger;
 
 export function Logger(prefix?: string): PostyBirbLogger {
   initializeLogger();
 
   if (prefix) {
-    return log.withPrefix(`[${prefix}]`);
+    return log.withPrefix(`[${prefix}]`) as unknown as PostyBirbLogger;
   }
 
-  return log.child();
+  return log.child() as unknown as PostyBirbLogger;
 }
 
 export function initializeLogger(): void {

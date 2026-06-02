@@ -6,14 +6,14 @@ import {
   StartupOptionsManager,
 } from '@postybirb/utils/common';
 import {
+  app,
   BrowserWindow,
   Menu,
   NativeImage,
-  Tray,
-  app,
   nativeImage,
   nativeTheme,
   screen,
+  Tray,
 } from 'electron';
 import { join } from 'path';
 import { environment } from '../environments/environment';
@@ -27,13 +27,13 @@ const appIcon = join(__dirname, 'assets/app-icon.png');
 export default class PostyBirb {
   // Keep a global reference of the window object, if you don't, the window will
   // be closed automatically when the JavaScript object is garbage collected.
-  static mainWindow: Electron.BrowserWindow;
+  static mainWindow: Electron.BrowserWindow | null;
 
   static application: Electron.App;
 
-  static BrowserWindow;
+  static BrowserWindow: typeof BrowserWindow;
 
-  static appTray: Tray;
+  static appTray: Tray | null;
 
   static nestApp: INestApplication;
 
@@ -112,7 +112,7 @@ export default class PostyBirb {
     // if main window is ready to show, close the splash window and show the main window
     PostyBirb.mainWindow.once('ready-to-show', () => {
       loader.hide();
-      PostyBirb.mainWindow.show();
+      PostyBirb.mainWindow?.show();
     });
 
     // Emitted when the window is closed.
@@ -124,9 +124,9 @@ export default class PostyBirb {
   private static loadMainWindow() {
     // load the index.html of the app.
     if (this.isDevelopmentMode()) {
-      PostyBirb.mainWindow.loadURL(`http://localhost:${rendererAppPort}`);
+      PostyBirb.mainWindow?.loadURL(`http://localhost:${rendererAppPort}`);
     } else {
-      PostyBirb.mainWindow.loadURL(
+      PostyBirb.mainWindow?.loadURL(
         `https://localhost:${PostyBirbEnvConfig.port}`,
       );
     }

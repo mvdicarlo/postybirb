@@ -23,6 +23,8 @@ export class PostManagerController {
   @Get('is-posting/:submissionType')
   @ApiOkResponse({ description: 'Check if a post is in progress.' })
   async isPosting(@Param('submissionType') submissionType: SubmissionType) {
-    return { isPosting: this.service.getManager(submissionType).isPosting() };
+    return {
+      isPosting: this.service.getManager(submissionType)?.isPosting() ?? false,
+    };
   }
 }

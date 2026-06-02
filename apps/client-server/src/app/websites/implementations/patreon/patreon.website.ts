@@ -1,14 +1,14 @@
 import { SelectOption } from '@postybirb/form-builder';
 import { FormFile } from '@postybirb/http/types';
 import {
-  DynamicObject,
-  FileType,
-  ILoginState,
-  ImageResizeProps,
-  ISubmissionFile,
-  PostData,
-  PostResponse,
-  SimpleValidationResult,
+    DynamicObject,
+    FileType,
+    ILoginState,
+    ImageResizeProps,
+    ISubmissionFile,
+    PostData,
+    PostResponse,
+    SimpleValidationResult,
 } from '@postybirb/types';
 import parse from 'node-html-parser';
 import { parse as parseFileName } from 'path';
@@ -32,9 +32,9 @@ import { PatreonCampaignResponse } from './models/patreon-campaign-types';
 import { PatreonCollectionResponse } from './models/patreon-collection-types';
 import { PatreonFileSubmission } from './models/patreon-file-submission';
 import {
-  PatreonMediaType,
-  PatreonMediaUploadRequest,
-  PatreonMediaUploadResponse,
+    PatreonMediaType,
+    PatreonMediaUploadRequest,
+    PatreonMediaUploadResponse,
 } from './models/patreon-media-upload-types';
 import { PatreonMessageSubmission } from './models/patreon-message-submission';
 import { PatreonNewPostResponse } from './models/patreon-post-types';
@@ -83,6 +83,7 @@ type PatreonTagSegment = Array<{
   acceptedFileSizes: {
     '*': FileSize.megabytes(200),
   },
+  fileBatchSize: 100,
 })
 @SupportsUsernameShortcut({
   id: 'patreon',
@@ -144,10 +145,11 @@ export default class Patreon
         const campaignId = campaignBadge.id.split(':')[1];
         const campaignQueryString =
           '?fields[rewardItem]=title%2Cdescription%2Coffer_id%2Citem_type%2Cis_deleted%2Cis_ended%2Cis_published&fields[accessRule]=access_rule_type%2Camount_cents%2Cpost_count&include=post_aggregation%2Ccreator.campaign%2Ccreator.pledge_to_current_user.null%2Cconnected_socials%2Ccurrent_user_pledge.reward.null%2Ccurrent_user_pledge.campaign.null%2Crewards.items.null%2Crewards.cadence_options.null%2Crss_auth_token%2Caccess_rules.tier.null%2Cactive_offer.rewards.null%2Cscheduled_offer.rewards.null%2Ccreator.pledges.campaign.null%2Creward_items.template%2Crewards.null%2Crewards.reward_recommendations%2Cthanks_embed%2Cthanks_msg&json-api-version=1.0&json-api-use-default-includes=false';
-        const campaignResult = await this.platform.http.get<PatreonCampaignResponse>(
-          `${this.BASE_URL}/api/campaigns/${campaignId}${campaignQueryString}`,
-          { partition: this.accountId },
-        );
+        const campaignResult =
+          await this.platform.http.get<PatreonCampaignResponse>(
+            `${this.BASE_URL}/api/campaigns/${campaignId}${campaignQueryString}`,
+            { partition: this.accountId },
+          );
 
         const username = campaignResult.body.data.attributes.name;
         this.sessionData.username = username;
@@ -174,7 +176,7 @@ export default class Patreon
     return accessRules
       .map((accessRule) => {
         const { id, attributes, relationships } = accessRule;
-        let label: string;
+        let label = 'Unknown tier';
         let mutuallyExclusive = false;
         let cost = 0;
 
@@ -222,15 +224,16 @@ export default class Patreon
   }
 
   private async loadCollections(campaignId: string): Promise<SelectOption[]> {
-    const collectionRes = await this.platform.http.get<PatreonCollectionResponse>(
-      `${this.BASE_URL}/api/collection?filter[campaign_id]=${campaignId}&filter[must_contain_at_least_one_published_post]=false&json-api-version=1.0&json-api-use-default-includes=false`,
-      {
-        partition: this.accountId,
-        headers: {
-          'X-Csrf-Signature': this.sessionData.csrf,
+    const collectionRes =
+      await this.platform.http.get<PatreonCollectionResponse>(
+        `${this.BASE_URL}/api/collection?filter[campaign_id]=${campaignId}&filter[must_contain_at_least_one_published_post]=false&json-api-version=1.0&json-api-use-default-includes=false`,
+        {
+          partition: this.accountId,
+          headers: {
+            'X-Csrf-Signature': this.sessionData.csrf,
+          },
         },
-      },
-    );
+      );
 
     if (
       collectionRes.statusCode >= 400 &&
@@ -268,7 +271,7 @@ export default class Patreon
     return new PatreonFileSubmission();
   }
 
-  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
+  calculateImageResize(file: ISubmissionFile): ImageResizeProps | undefined {
     return undefined;
   }
 
@@ -427,13 +430,11 @@ export default class Patreon
 
     const filesToUpload: { file: FormFile; fileType: FileType }[] = [];
 
-    if (
-      uploadThumbnail &&
-      files[0].thumbnail &&
-      files[0].thumbnail.mimeType.startsWith('image')
-    ) {
+    if (uploadThumbnail && files[0].thumbnail?.mimeType.startsWith('image')) {
       filesToUpload.push({
-        file: files[0].thumbnailToPostFormat(),
+        // Check above covers this
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        file: files[0].thumbnailToPostFormat()!,
         fileType: FileType.IMAGE,
       });
     }
@@ -594,13 +595,11 @@ export default class Patreon
     // Determine if any selected tier is a paid tier.
     // Free tiers ("Everyone", free rewards) have cost === 0.
     const folders = this.getWebsiteData()?.folders ?? [];
-    const selectedTierIds = new Set(
-      rulesSegment.map((rule) => rule.id),
-    );
+    const selectedTierIds = new Set(rulesSegment.map((rule) => rule.id));
     const hasPaidTier = folders.some(
       (folder) =>
         selectedTierIds.has(String(folder.value)) &&
-        (folder.data as { cost?: number })?.cost > 0,
+        (folder.data as { cost: number })?.cost > 0,
     );
 
     const dataAttributes = {

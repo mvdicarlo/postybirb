@@ -14,7 +14,7 @@ let db: PostyBirbDatabaseType;
 
 /**
  * Get the database instance
- * @param {boolean} newInstance - Whether to get a new instance of the database or force a
+ * @param newInstance - Whether to get a new instance of the database or force a
  * new instance (mostly for testing)
  */
 export function getDatabase() {
@@ -37,5 +37,6 @@ export function getDatabase() {
  * Used for testing.
  */
 export function clearDatabase() {
+  // @ts-expect-error For testing only
   db = undefined;
 }

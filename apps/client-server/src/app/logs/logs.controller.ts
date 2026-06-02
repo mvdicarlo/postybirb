@@ -1,5 +1,6 @@
 import { Controller, Get, Res } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { Response } from 'express';
 import { LogsService } from './logs.service';
 
 /**
@@ -13,7 +14,7 @@ export class LogsController {
 
   @Get('download')
   @ApiOkResponse({ description: 'Returns a .tar.gz archive of all log files.' })
-  download(@Res() response) {
+  download(@Res() response: Response) {
     const archive = this.service.getLogsArchive();
     const date = new Date().toISOString().split('T')[0];
     response.set({

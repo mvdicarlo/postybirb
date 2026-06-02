@@ -77,7 +77,7 @@ export class DescriptionNodeTree {
     converter.addRule('nestedIndent', {
       filter: (node) =>
         node.nodeName === 'DIV' &&
-        node.getAttribute('style')?.includes('margin-left'),
+        (node.getAttribute('style')?.includes('margin-left') ?? false),
       replacement: (content) =>
         `\n\n> ${content.trim().replace(/\n/g, '\n> ')}\n\n`,
     });

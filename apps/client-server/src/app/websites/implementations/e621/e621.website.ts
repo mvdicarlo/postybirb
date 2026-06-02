@@ -103,7 +103,7 @@ export default class E621
     return new E621FileSubmission();
   }
 
-  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
+  calculateImageResize(file: ISubmissionFile): ImageResizeProps | undefined {
     return undefined;
   }
 
@@ -124,13 +124,15 @@ export default class E621
     cancellableToken.throwIfCancelled();
 
     if (method === 'get') {
-      return this.platform.http.get<T>(`${this.BASE_URL}${url}`, { partition: '' });
+      return this.platform.http.get<T>(`${this.BASE_URL}${url}`, {
+        partition: '',
+      });
     }
 
     return this.platform.http.post<T>(`${this.BASE_URL}${url}`, {
       partition: '',
       type: 'multipart',
-      data: form,
+      data: form ?? {},
       headers: this.headers,
     });
   }

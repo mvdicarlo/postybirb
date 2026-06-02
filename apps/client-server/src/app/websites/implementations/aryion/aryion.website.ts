@@ -67,9 +67,12 @@ export default class Aryion
     };
 
   public async onLogin(): Promise<ILoginState> {
-    const res = await this.platform.http.get<string>(`${this.BASE_URL}/g4/treeview.php`, {
-      partition: this.accountId,
-    });
+    const res = await this.platform.http.get<string>(
+      `${this.BASE_URL}/g4/treeview.php`,
+      {
+        partition: this.accountId,
+      },
+    );
 
     if (
       res.body.includes('user-link') &&
@@ -147,7 +150,7 @@ export default class Aryion
     return new AryionFileSubmission();
   }
 
-  calculateImageResize(): ImageResizeProps {
+  calculateImageResize(): ImageResizeProps | undefined {
     return undefined;
   }
 

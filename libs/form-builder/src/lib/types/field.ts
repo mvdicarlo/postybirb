@@ -99,6 +99,7 @@ export interface FieldType<
   /**
    * Allow derivation of a field from derived website account data (NOT OPTIONS OR OTHER FIELDS)
    * Selects the key from website account data and sets the populate field inside these options to that value.
+   * Undefined values from website account data are ignored.
    *
    * @example
    * ```js

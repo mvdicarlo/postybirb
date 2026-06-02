@@ -80,13 +80,15 @@ export class SubmissionFile extends DatabaseEntity implements ISubmissionFile {
     if (fileTarget) {
       switch (fileTarget) {
         case 'file':
-          this.file = await db.findById(this.primaryFileId);
+          this.file = await db.findById(this.primaryFileId, {
+            failOnMissing: true,
+          });
           break;
         case 'thumbnail':
-          this.thumbnail = await db.findById(this.thumbnailId);
+          this.thumbnail = (await db.findById(this.thumbnailId)) || undefined;
           break;
         case 'alt':
-          this.altFile = await db.findById(this.altFileId);
+          this.altFile = (await db.findById(this.altFileId)) || undefined;
           break;
         default:
           throw new Error('Invalid file target');
@@ -94,12 +96,12 @@ export class SubmissionFile extends DatabaseEntity implements ISubmissionFile {
       return;
     }
 
-    this.file = await db.findById(this.primaryFileId);
+    this.file = await db.findById(this.primaryFileId, { failOnMissing: true });
     if (this.thumbnailId) {
-      this.thumbnail = await db.findById(this.thumbnailId);
+      this.thumbnail = (await db.findById(this.thumbnailId)) || undefined;
     }
     if (this.altFileId) {
-      this.altFile = await db.findById(this.altFileId);
+      this.altFile = (await db.findById(this.altFileId)) || undefined;
     }
   }
 }

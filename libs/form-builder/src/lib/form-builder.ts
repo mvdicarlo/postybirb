@@ -33,7 +33,9 @@ export function formBuilder(
   for (const [valueKey, value] of Object.entries(metadata)) {
     if (value.defaultFrom) value.defaultValue = data[value.defaultFrom];
     value.derive?.forEach((d) => {
-      (value as PrimitiveRecord)[d.populate] = data[d.key];
+      if (typeof data[d.key] !== 'undefined') {
+        (value as PrimitiveRecord)[d.populate] = data[d.key];
+      }
     });
 
     const customDerive = rawMetadata[valueKey]?.customDerive;

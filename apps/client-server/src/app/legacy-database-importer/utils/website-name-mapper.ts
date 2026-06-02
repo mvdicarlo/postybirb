@@ -4,7 +4,7 @@
  * Legacy uses PascalCase names, V4 uses kebab-case IDs.
  */
 export class WebsiteNameMapper {
-  private static readonly LEGACY_TO_NEW: Record<string, string> = {
+  private static readonly LEGACY_TO_NEW: Record<string, string | null> = {
     // Direct mappings (kebab-case in V4)
     Artconomy: 'artconomy',
     Aryion: 'aryion',
@@ -85,6 +85,8 @@ export class WebsiteNameMapper {
    * Get all new website names
    */
   static getAllNewNames(): string[] {
-    return Array.from(new Set(Object.values(this.LEGACY_TO_NEW)));
+    return Array.from(new Set(Object.values(this.LEGACY_TO_NEW))).filter(
+      ((e) => !!e) as (e: string | null) => e is string,
+    );
   }
 }

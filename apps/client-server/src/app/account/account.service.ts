@@ -1,20 +1,20 @@
 import {
-    BadRequestException,
-    Injectable,
-    OnModuleInit,
-    Optional,
+  BadRequestException,
+  Injectable,
+  OnModuleInit,
+  Optional,
 } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ACCOUNT_UPDATES } from '@postybirb/socket-events';
 import {
-    AccountId,
-    IWebsiteMetadata,
-    NULL_ACCOUNT_ID,
-    NullAccount,
+  AccountId,
+  IWebsiteMetadata,
+  NULL_ACCOUNT_ID,
+  NullAccount,
 } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/common';
 import { ne } from 'drizzle-orm';
-import { Class } from 'type-fest';
+import { Class, SetRequired } from 'type-fest';
 import { PostyBirbService } from '../common/service/postybirb-service';
 import { Account } from '../drizzle/models';
 import { FindOptions } from '../drizzle/postybirb-database/find-options.type';
@@ -51,13 +51,10 @@ export class AccountService
   ) {
     super('AccountSchema', webSocket);
     this.repository.subscribe('AccountSchema', () => this.emit());
-    this.loginStatePoller = new LoginStatePoller(
-      this.websiteRegistry,
-      () => {
-        this.emit();
-        this.websiteRegistry.emit();
-      },
-    );
+    this.loginStatePoller = new LoginStatePoller(this.websiteRegistry, () => {
+      this.emit();
+      this.websiteRegistry.emit();
+    });
   }
 
   /**
@@ -272,10 +269,20 @@ export class AccountService
     return account.withWebsiteInstance(instance);
   }
 
-  public findById(id: AccountId, options?: FindOptions) {
-    return this.repository
-      .findById(id, options)
-      .then((account) => this.injectWebsiteInstance(account));
+  public findById(
+    id: AccountId,
+    options?: SetRequired<FindOptions, 'failOnMissing'>,
+  ): Promise<Account>;
+  public findById(
+    id: AccountId,
+    options?: FindOptions,
+  ): Promise<Account | null>;
+  public async findById(
+    id: AccountId,
+    options?: FindOptions,
+  ): Promise<Account | null> {
+    const account = await this.repository.findById(id, options);
+    return this.injectWebsiteInstance(account);
   }
 
   public async findAll() {
@@ -312,9 +319,21 @@ export class AccountService
     this.logger.info(`Clearing Account data for '${id}'`);
     const account = await this.findById(id);
     if (account) {
-      const instance = this.websiteRegistry.findInstance(account);
+      const instance = this.findWebsiteInstanceOrThrow(account);
       await instance.clearLoginStateAndData();
     }
+  }
+
+  private findWebsiteInstanceOrThrow(account: Account) {
+    const instance = this.websiteRegistry.findInstance(account);
+
+    if (!instance) {
+      throw new Error(
+        `No website instance for account ${account.website} ${account.id}`,
+      );
+    }
+
+    return instance;
   }
 
   /**
@@ -330,16 +349,18 @@ export class AccountService
       setWebsiteDataRequestDto.id,
       { failOnMissing: true },
     );
-    const instance = this.websiteRegistry.findInstance(account);
+
+    const instance = this.findWebsiteInstanceOrThrow(account);
     await instance.setWebsiteData(setWebsiteDataRequestDto.data);
   }
 
-  private injectWebsiteInstance(account?: Account): Account | null {
+  private injectWebsiteInstance<T extends Account | null>(account?: T): T {
     if (!account) {
-      return null;
+      return null as T;
     }
+
     return account.withWebsiteInstance(
       this.websiteRegistry.findInstance(account),
-    );
+    ) as T;
   }
 }
