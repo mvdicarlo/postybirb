@@ -25,7 +25,6 @@ export class UserSpecifiedWebsiteOptionsService extends PostyBirbService<'UserSp
       ),
     );
     return this.repository.insert({
-      accountId: createDto.accountId,
       ...createDto,
     });
   }

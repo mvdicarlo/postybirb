@@ -10,6 +10,7 @@ import {
   PostResponse,
   SimpleValidationResult,
 } from '@postybirb/types';
+import { toError } from '@postybirb/utils/common';
 import { calculateImageResize } from '@postybirb/utils/file-type';
 import { v4 as uuidv4 } from 'uuid';
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -117,7 +118,7 @@ export default class Misskey
         this.logger.error('Failed to generate MiAuth URL', error);
         return {
           success: false,
-          message: `Failed to generate auth URL: ${error.message}`,
+          message: `Failed to generate auth URL: ${toError(error)}`,
         };
       }
     },
@@ -152,7 +153,7 @@ export default class Misskey
         this.logger.error('MiAuth completion failed', error);
         return {
           success: false,
-          message: `Authentication failed: ${error.message}`,
+          message: `Authentication failed: ${toError(error).message}`,
         };
       }
     },
@@ -297,9 +298,7 @@ export default class Misskey
         .withSourceUrl(sourceUrl);
     } catch (error) {
       this.logger.error('Failed to post file submission to Misskey', error);
-      return PostResponse.fromWebsite(this).withException(
-        error instanceof Error ? error : new Error('Failed to post to Misskey'),
-      );
+      return PostResponse.fromWebsite(this).withException(error);
     }
   }
 
@@ -363,9 +362,7 @@ export default class Misskey
       return PostResponse.fromWebsite(this).withSourceUrl(sourceUrl);
     } catch (error) {
       this.logger.error('Failed to post message to Misskey', error);
-      return PostResponse.fromWebsite(this).withException(
-        error instanceof Error ? error : new Error('Failed to post to Misskey'),
-      );
+      return PostResponse.fromWebsite(this).withException(error);
     }
   }
 

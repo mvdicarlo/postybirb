@@ -66,7 +66,7 @@ export default class Custom
     // Check if we have either a file URL or notification URL configured
     if (data?.fileUrl || data?.notificationUrl) {
       const displayName = data.fileUrl || data.notificationUrl;
-      return this.loginState.setLogin(true, displayName);
+      return this.loginState.setLogin(true, displayName || null);
     }
 
     return this.loginState.setLogin(false, null);
@@ -74,17 +74,19 @@ export default class Custom
 
   async onWebsiteDataChange(newData: CustomAccountData): Promise<void> {
     this.logger.info('Website data updated');
-    this.decoratedProps.fileOptions.fileBatchSize = Math.max(
-      newData.fileBatchLimit || 1,
-      1,
-    );
+    if (this.decoratedProps.fileOptions) {
+      this.decoratedProps.fileOptions.fileBatchSize = Math.max(
+        newData.fileBatchLimit || 1,
+        1,
+      );
+    }
   }
 
   createFileModel(): CustomFileSubmission {
     return new CustomFileSubmission();
   }
 
-  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
+  calculateImageResize(file: ISubmissionFile): ImageResizeProps | undefined {
     return undefined;
   }
 
@@ -195,9 +197,7 @@ export default class Custom
           error,
         );
         return PostResponse.fromWebsite(this)
-          .withException(
-            error instanceof Error ? error : new Error(String(error)),
-          )
+          .withException(error)
           .withAdditionalInfo({
             fileCount: files.length,
             batchIndex,
@@ -249,9 +249,7 @@ export default class Custom
         'Unexpected error during custom message submission',
         error,
       );
-      return PostResponse.fromWebsite(this).withException(
-        error instanceof Error ? error : new Error(String(error)),
-      );
+      return PostResponse.fromWebsite(this).withException(error);
     }
   }
 

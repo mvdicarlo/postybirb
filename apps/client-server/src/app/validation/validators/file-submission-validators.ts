@@ -4,7 +4,6 @@ import {
   ISubmission,
   ISubmissionFile,
   SubmissionType,
-  ValidationMessage,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { parse } from 'path';
@@ -41,10 +40,10 @@ function isFileFiltered(
 }
 
 async function validateTextFileRequiresFallback({
-  result,
   websiteInstance,
   submission,
   fileService,
+  validator,
 }: ValidatorParams & { file: ISubmissionFile }) {
   if (
     !isFileHandlingWebsite(websiteInstance) ||
@@ -73,24 +72,24 @@ async function validateTextFileRequiresFallback({
       }
       // Fail validation if the file is not supported and alt file is empty or missing
       if (!supportedMimeTypes.includes(file.mimeType) && !altFileHasContent) {
-        result.errors.push({
-          id: 'validation.file.text-file-no-fallback',
-          field: 'files',
-          values: {
+        validator.error(
+          'validation.file.text-file-no-fallback',
+          {
             fileName: file.fileName,
             fileExtension: parse(file.fileName).ext,
             fileId: file.id,
           },
-        });
+          'files',
+        );
       }
     }
   }
 }
 
 export async function validateNotAllFilesIgnored({
-  result,
   websiteInstance,
   submission,
+  validator,
 }: ValidatorParams) {
   if (
     !isFileHandlingWebsite(websiteInstance) ||
@@ -104,11 +103,7 @@ export async function validateNotAllFilesIgnored({
     (file) => !isFileFiltered(file, submission, websiteInstance),
   ).length;
   if (numFiles === 0) {
-    result.warnings.push({
-      id: 'validation.file.all-ignored',
-      field: 'files',
-      values: {},
-    });
+    validator.warning('validation.file.all-ignored', {}, 'files');
   }
 }
 
@@ -118,6 +113,7 @@ export async function validateAcceptedFiles({
   submission,
   data,
   fileConverterService,
+  validator,
   ...rest
 }: ValidatorParams) {
   if (
@@ -144,15 +140,15 @@ export async function validateAcceptedFiles({
     if (!acceptedMimeTypes.includes(file.mimeType)) {
       const fileType = getFileType(file.fileName);
       if (!supportedFileTypes.includes(fileType)) {
-        result.errors.push({
-          id: 'validation.file.unsupported-file-type',
-          field: 'files',
-          values: {
+        validator.error(
+          'validation.file.unsupported-file-type',
+          {
             fileName: file.fileName,
             fileType: getFileType(file.fileName),
             fileId: file.id,
           },
-        });
+          'files',
+        );
       }
 
       if (fileType === FileType.TEXT) {
@@ -163,30 +159,31 @@ export async function validateAcceptedFiles({
           file,
           data,
           fileConverterService,
+          validator,
           ...rest,
         });
         return;
       }
 
       if (!fileConverterService.canConvert(file.mimeType, acceptedMimeTypes)) {
-        result.errors.push({
-          id: 'validation.file.invalid-mime-type',
-          field: 'files',
-          values: {
+        validator.error(
+          'validation.file.invalid-mime-type',
+          {
             mimeType: file.mimeType,
             acceptedMimeTypes,
             fileId: file.id,
           },
-        });
+          'files',
+        );
       }
     }
   });
 }
 
 export async function validateFileBatchSize({
-  result,
   websiteInstance,
   submission,
+  validator,
 }: ValidatorParams) {
   if (
     !isFileHandlingWebsite(websiteInstance) ||
@@ -203,21 +200,22 @@ export async function validateFileBatchSize({
   ).length;
   if (numFiles > maxBatchSize) {
     const expectedBatchesToCreate = Math.ceil(numFiles / maxBatchSize);
-    result.warnings.push({
-      id: 'validation.file.file-batch-size',
-      field: 'files',
-      values: {
+
+    validator.warning(
+      'validation.file.file-batch-size',
+      {
         maxBatchSize,
         expectedBatchesToCreate,
       },
-    });
+      'files',
+    );
   }
 }
 
 export async function validateFileSize({
-  result,
   websiteInstance,
   submission,
+  validator,
 }: ValidatorParams) {
   if (
     !isFileHandlingWebsite(websiteInstance) ||
@@ -234,21 +232,19 @@ export async function validateFileSize({
 
     const maxFileSize = getSupportedFileSize(websiteInstance, file);
     if (maxFileSize && file.size > maxFileSize) {
-      const issue: ValidationMessage = {
-        id: 'validation.file.file-size',
-        field: 'files',
-        values: {
+      const type =
+        getFileType(file.fileName) === FileType.IMAGE ? 'warning' : 'error';
+
+      validator[type](
+        'validation.file.file-size',
+        {
           maxFileSize,
           fileSize: file.size,
           fileName: file.fileName,
           fileId: file.id,
         },
-      };
-      if (getFileType(file.fileName) === FileType.IMAGE) {
-        result.warnings.push(issue);
-      } else {
-        result.errors.push(issue);
-      }
+        'files',
+      );
     }
   });
 }
@@ -257,6 +253,7 @@ export async function validateImageFileDimensions({
   result,
   websiteInstance,
   submission,
+  validator,
 }: ValidatorParams) {
   if (
     !isFileHandlingWebsite(websiteInstance) ||
@@ -273,15 +270,15 @@ export async function validateImageFileDimensions({
     if (getFileType(file.fileName) === FileType.IMAGE) {
       const resizeProps = websiteInstance.calculateImageResize(file);
       if (resizeProps) {
-        result.warnings.push({
-          id: 'validation.file.image-resize',
-          field: 'files',
-          values: {
+        validator.warning(
+          'validation.file.image-resize',
+          {
             fileName: file.fileName,
             resizeProps,
             fileId: file.id,
           },
-        });
+          'files',
+        );
       }
     }
   });

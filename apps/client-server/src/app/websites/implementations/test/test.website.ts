@@ -62,7 +62,7 @@ export default class TestWebsite
     return new TestMessageSubmission();
   }
 
-  calculateImageResize(): ImageResizeProps {
+  calculateImageResize(): ImageResizeProps | undefined {
     return undefined;
   }
 

@@ -1,7 +1,7 @@
 import { PostyBirbDatabaseType } from './database';
 import * as Schemas from './schemas';
 
-export type SchemaKey = keyof PostyBirbDatabaseType['_']['schema'];
+export type SchemaKey = keyof NonNullable<PostyBirbDatabaseType['_']['schema']>;
 
 export type PostyBirbTransaction = Parameters<
   Parameters<PostyBirbDatabaseType['transaction']>['0']

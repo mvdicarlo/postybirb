@@ -25,12 +25,12 @@ export type ValidationResult<T extends IWebsiteFormFields = never> = {
   /**
    * Non-blocking issues with the validated submission.
    */
-  warnings?: ValidationMessage<T>[];
+  warnings: ValidationMessage<T>[];
 
   /**
    * Blocking issues with the validated submission.
    */
-  errors?: ValidationMessage<T>[];
+  errors: ValidationMessage<T>[];
 };
 
 export type ValidationMessage<

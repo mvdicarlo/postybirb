@@ -63,26 +63,24 @@ export class WebsiteRegistryService {
       this.initializedResolve = resolve;
     });
 
-    Object.values({ ...this.websiteImplementations }).forEach(
-      (website: Class<UnknownWebsite>) => {
-        if (
-          !validateWebsiteDecoratorProps(
-            this.logger,
-            website.name,
-            website.prototype.decoratedProps,
-          )
-        ) {
-          this.logger.error(`Failed to register website: ${website.name}`);
-          return;
-        }
+    this.websiteImplementations.forEach((website) => {
+      if (
+        !validateWebsiteDecoratorProps(
+          this.logger,
+          website.name,
+          website.prototype.decoratedProps,
+        )
+      ) {
+        this.logger.error(`Failed to register website: ${website.name}`);
+        return;
+      }
 
-        // this.logger.debug(
-        //   `Registered website: ${website.prototype.decoratedProps.metadata.name}`,
-        // );
-        this.availableWebsites[website.prototype.decoratedProps.metadata.name] =
-          website;
-      },
-    );
+      // this.logger.debug(
+      //   `Registered website: ${website.prototype.decoratedProps.metadata.name}`,
+      // );
+      this.availableWebsites[website.prototype.decoratedProps.metadata.name] =
+        website;
+    });
 
     this.accountRepository = new PostyBirbDatabase('AccountSchema');
     this.websiteDataRepository = new PostyBirbDatabase('WebsiteDataSchema');
@@ -137,8 +135,7 @@ export class WebsiteRegistryService {
     if (timeoutMs) {
       const timeout = new Promise<void>((_, reject) => {
         setTimeout(
-          () =>
-            reject(new Error('Website registry initialization timed out')),
+          () => reject(new Error('Website registry initialization timed out')),
           timeoutMs,
         );
       });
@@ -270,10 +267,14 @@ export class WebsiteRegistryService {
         usernameShortcut: website.prototype.decoratedProps.usernameShortcut,
         metadata: website.prototype.decoratedProps.metadata,
         fileOptions: website.prototype.decoratedProps.fileOptions,
-        accounts: accounts.map((account) => {
-          const instance = this.findInstance(account);
-          return account.withWebsiteInstance(instance).toDTO();
-        }),
+        accounts: accounts
+          .map((account) => {
+            const instance = this.findInstance(account);
+            if (!instance) return undefined;
+
+            return account.withWebsiteInstance(instance).toDTO();
+          })
+          .filter((e) => !!e),
         supportsFile: FileWebsiteKey in website.prototype,
         supportsMessage: MessageWebsiteKey in website.prototype,
       });

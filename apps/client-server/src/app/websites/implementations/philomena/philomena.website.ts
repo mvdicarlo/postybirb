@@ -55,7 +55,7 @@ export abstract class PhilomenaWebsite<
 
   abstract createFileModel(): TFileSubmission;
 
-  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
+  calculateImageResize(file: ISubmissionFile): ImageResizeProps | undefined {
     return undefined;
   }
 

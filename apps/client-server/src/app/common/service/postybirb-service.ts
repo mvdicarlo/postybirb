@@ -3,8 +3,10 @@ import { SchemaKey } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import { EntityId } from '@postybirb/types';
 import { SQL } from 'drizzle-orm';
+import { SetRequired } from 'type-fest';
 import { FindOptions } from '../../drizzle/postybirb-database/find-options.type';
 import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
+import { DatabaseSchemaEntityMap } from '../../drizzle/postybirb-database/schema-entity-map';
 import { WSGateway } from '../../web-socket/web-socket-gateway';
 import { WebSocketEvents } from '../../web-socket/web-socket.events';
 
@@ -56,7 +58,8 @@ export abstract class PostyBirbService<TSchemaKey extends SchemaKey> {
    * @protected
    * @param {FilterQuery<T>} where
    */
-  protected async throwIfExists(where: SQL) {
+  protected async throwIfExists(where: SQL | undefined) {
+    if (!where) return;
     const exists = await this.repository.select(where);
     if (exists.length) {
       this.logger
@@ -68,7 +71,18 @@ export abstract class PostyBirbService<TSchemaKey extends SchemaKey> {
 
   // Repository Wrappers
 
-  public findById(id: EntityId, options?: FindOptions) {
+  public findById(
+    id: EntityId,
+    options?: SetRequired<FindOptions, 'failOnMissing'>,
+  ): Promise<DatabaseSchemaEntityMap[TSchemaKey]>;
+  public findById(
+    id: EntityId,
+    options?: FindOptions,
+  ): Promise<DatabaseSchemaEntityMap[TSchemaKey] | null>;
+  public findById(
+    id: EntityId,
+    options?: FindOptions,
+  ): Promise<DatabaseSchemaEntityMap[TSchemaKey] | null> {
     return this.repository.findById(id, options);
   }
 

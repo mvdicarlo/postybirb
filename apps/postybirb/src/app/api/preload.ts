@@ -21,8 +21,10 @@ contextBridge.exposeInMainWorld('electron', {
   // Gracefully request app quit from renderer
   quit: (code?: number) => ipcRenderer.send('quit', code),
   platform: process.platform,
-  app_port: process.env.POSTYBIRB_PORT,
-  app_version: process.env.POSTYBIRB_VERSION,
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  app_port: process.env.POSTYBIRB_PORT!,
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  app_version: process.env.POSTYBIRB_VERSION!,
 
   setSpellCheckerEnabled: (value: boolean) =>
     ipcRenderer.invoke('set-spellchecker-enabled', value),

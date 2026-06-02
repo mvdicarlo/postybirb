@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import {
   DescriptionType,
+  DynamicObject,
   TipTapNode,
   UsernameShortcut,
 } from '@postybirb/types';
@@ -47,12 +48,12 @@ export class DescriptionParserService {
   }
 
   public async parse(
-    instance: Website<unknown>,
+    instance: Website<DynamicObject>,
     defaultOptions: DefaultWebsiteOptions,
     websiteOptions: BaseWebsiteOptions,
     tags: string[],
     title: string,
-  ): Promise<string> {
+  ): Promise<string | undefined> {
     const mergedOptions = websiteOptions.mergeDefaults(defaultOptions);
     const { descriptionType, hidden, maxDescriptionLength } =
       mergedOptions.getFormFieldFor('description');
@@ -151,12 +152,12 @@ export class DescriptionParserService {
       instance,
       descriptionType,
       tree,
-      maxDescriptionLength,
+      maxDescriptionLength ?? Number.MAX_SAFE_INTEGER,
     );
   }
 
   private createDescription(
-    instance: Website<unknown>,
+    instance: Website<DynamicObject>,
     descriptionType: DescriptionType,
     tree: DescriptionNodeTree,
     maxDescriptionLength: number,
@@ -237,7 +238,7 @@ export class DescriptionParserService {
    */
   private async resolveUsernamesFromTree(
     tree: DescriptionNodeTree,
-    instance: Website<unknown>,
+    instance: Website<DynamicObject>,
   ): Promise<Map<string, string>> {
     const usernameConversions = new Map<string, string>();
     const usernames = tree.findUsernames();

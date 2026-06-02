@@ -7,14 +7,14 @@ export async function validateTitleMaxLength({
 }: ValidatorParams) {
   const { hidden, maxLength } = mergedWebsiteOptions.getFormFieldFor('title');
   if (hidden) return;
+  if (typeof maxLength === 'undefined') return;
 
   const { title } = data.options;
-  const maxTitleLength = maxLength ?? Number.MAX_SAFE_INTEGER;
 
   if (title.length > maxLength) {
     validator.warning(
       'validation.title.max-length',
-      { currentLength: title.length, maxLength: maxTitleLength },
+      { currentLength: title.length, maxLength },
       'title',
     );
   }

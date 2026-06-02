@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { EntityId, IFileBuffer } from '@postybirb/types';
+import { Response } from 'express';
 import { SubmissionFile } from '../drizzle/models';
 import { FileService } from './file.service';
 
@@ -21,7 +22,7 @@ export class FileController {
   async getThumbnail(
     @Param('fileTarget') fileTarget: 'file' | 'thumbnail' | 'alt',
     @Param('id') id: EntityId,
-    @Res() response,
+    @Res() response: Response,
   ) {
     const submissionFile = await this.service.findFile(id);
     await submissionFile.load(fileTarget);
