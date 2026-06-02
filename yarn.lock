@@ -13128,7 +13128,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:^1.11.0, axios@npm:^1.12.0, axios@npm:^1.16.1":
+"axios@npm:^1.11.0, axios@npm:^1.12.0":
   version: 1.16.1
   resolution: "axios@npm:1.16.1"
   dependencies:
@@ -25061,7 +25061,6 @@ __metadata:
     applicationinsights: "npm:3.12.1"
     async-mutex: "npm:^0.5.0"
     autoprefixer: "npm:10.4.13"
-    axios: "npm:^1.16.1"
     babel-jest: "npm:30.0.5"
     babel-plugin-macros: "npm:^3.1.0"
     better-sqlite3: "npm:^12.10.0"
