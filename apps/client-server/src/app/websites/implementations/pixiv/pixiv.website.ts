@@ -32,6 +32,7 @@ import { PixivFileSubmission } from './models/pixiv-file-submission';
   acceptedFileSizes: {
     [FileType.IMAGE]: FileSize.megabytes(32), // Image limit is 32MB
   },
+  fileBatchSize: 100,
 })
 export default class Pixiv
   extends Website<PixivAccountData>
