@@ -406,7 +406,7 @@ export class DirectoryWatchersService extends PostyBirbService<DirectoryWatcherR
 
   async update(id: EntityId, update: UpdateDirectoryWatcherDto) {
     this.logger.withMetadata(update).info(`Updating DirectoryWatcher '${id}'`);
-    const entity = await this.repository.findById(id, { failOnMissing: true });
+    const entity = await this.repository.findByIdOrThrow(id);
 
     // Validate path if being updated
     if (update.path && update.path !== entity.path) {
@@ -423,9 +423,7 @@ export class DirectoryWatchersService extends PostyBirbService<DirectoryWatcherR
     }
 
     const template = update.templateId
-      ? await this.submissionService.findById(update.templateId, {
-          failOnMissing: true,
-        })
+      ? await this.submissionService.findByIdOrThrow(update.templateId)
       : null;
     if (template && !template.isTemplate) {
       throw new BadRequestException('Template Id provided is not a template.');

@@ -20,8 +20,8 @@ export abstract class PostyBirbController<
   @ApiOkResponse({ description: 'Record by Id.' })
   findOne(@Param('id') id: EntityId) {
     return this.service
-      .findById(id, { failOnMissing: true })
-      .then((record) => record!.toDTO());
+      .findByIdOrThrow(id)
+      .then((record) => record.toDTO());
   }
 
   @Get()

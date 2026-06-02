@@ -42,17 +42,13 @@ export class CustomShortcutsService extends PostyBirbService<CustomShortcutRepos
     this.logger
       .withMetadata(updateCustomShortcutDto)
       .info('Updating custom shortcut');
-    const existing = await this.repository.findById(id, {
-      failOnMissing: true,
-    });
+    const existing = await this.repository.findByIdOrThrow(id);
 
     return this.repository.update(id, updateCustomShortcutDto);
   }
 
   public async remove(id: EntityId): Promise<void> {
-    await this.repository.findById(id, {
-      failOnMissing: true,
-    });
+    await this.repository.findByIdOrThrow(id);
     await super.remove(id);
   }
 }

@@ -39,9 +39,9 @@ describe('EntityRepository (SubmissionRepository)', () => {
 
   // --- reads ---
 
-  it('findById(missing, { failOnMissing: true }) throws EntityNotFoundError', async () => {
+  it('findByIdOrThrow(missing) throws EntityNotFoundError', async () => {
     await expect(
-      repo.findById('does-not-exist', { failOnMissing: true }),
+      repo.findByIdOrThrow('does-not-exist'),
     ).rejects.toBeInstanceOf(EntityNotFoundError);
   });
 

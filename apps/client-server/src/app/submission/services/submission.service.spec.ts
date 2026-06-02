@@ -437,7 +437,7 @@ describe('SubmissionService', () => {
       merge: true,
     });
 
-    const updatedRecord = await service.findById(record.id);
+    const updatedRecord = await service.findByIdOrThrow(record.id);
     const defaultOptions = updatedRecord.options[0];
     const multiDefaultOptions = multi.options.find((o) => o.isDefault);
     // The default title should not be updated
@@ -473,8 +473,8 @@ describe('SubmissionService', () => {
       merge: false,
     });
 
-    const updatedRecord = await service.findById(record.id);
-    const multiSubmission = await service.findById(multi.id);
+    const updatedRecord = await service.findByIdOrThrow(record.id);
+    const multiSubmission = await service.findByIdOrThrow(multi.id);
     expect(updatedRecord.options).toHaveLength(multiSubmission.options.length);
     const defaultOptions = updatedRecord.options.find((o) => o.isDefault);
     const nonDefault = updatedRecord.options.find((o) => !o.isDefault);

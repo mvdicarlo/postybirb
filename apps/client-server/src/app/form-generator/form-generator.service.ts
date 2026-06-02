@@ -35,9 +35,7 @@ export class FormGeneratorService {
   async generateForm(
     request: FormGenerationRequestDto,
   ): Promise<FormBuilderMetadata> {
-    const account = await this.accountService.findById(request.accountId, {
-      failOnMissing: true,
-    });
+    const account = await this.accountService.findByIdOrThrow(request.accountId);
 
     // Get instance for creation
     const instance = await this.websiteRegistryService.findInstance(account);

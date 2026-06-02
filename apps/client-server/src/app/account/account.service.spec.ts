@@ -155,7 +155,7 @@ describe('AccountsService', () => {
 
     // Update
     await service.update(account.id, { name: 'Updated', groups: [] });
-    expect(await (await service.findById(account.id)).name).toEqual('Updated');
+    expect(await (await service.findByIdOrThrow(account.id)).name).toEqual('Updated');
 
     // Remove
     await service.remove(account.id);

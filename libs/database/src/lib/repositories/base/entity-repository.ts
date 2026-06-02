@@ -46,16 +46,16 @@ export interface EntityRepositoryConfig<
  *
  * Behavioural notes:
  *
- *  - `findById({ failOnMissing: true })` throws `EntityNotFoundError` with
- *    the standardised message `'{SchemaKey} with id "{id}" not found'`.
+ *  - `findByIdOrThrow` throws `EntityNotFoundError` with the standardised
+ *    message `'{SchemaKey} with id "{id}" not found'`.
  *  - `find` / `findOne` apply `defaultWith` when the caller's config has no
  *    `with` clause; a caller-supplied `with` always wins.
  *  - `findAll` always applies `defaultWith`. Callers needing a different
  *    eager-load set must use `find({ with: ... })`.
  *  - `insert` returns hydrated entities by re-fetching each inserted id
- *    through `findById`, preserving the default eager-load on the
+ *    through `findByIdOrThrow`, preserving the default eager-load on the
  *    returned entity.
- *  - `update` precondition-checks via `findById({ failOnMissing: true })`
+ *  - `update` precondition-checks via `findByIdOrThrow`
  *    before issuing SQL, then re-fetches and returns the fresh entity.
  *  - All write operations broadcast through `SubscriberBus.notify` after
  *    SQL succeeds (coalesced per `(schemaKey, action)` per tick).
@@ -119,22 +119,24 @@ export abstract class EntityRepository<
 
   public async findById(
     id: EntityId,
-    options?: { failOnMissing?: boolean },
     withOverride?: DefaultWithFor<SchemaKey>,
   ): Promise<TEntity | null> {
     const record = await this.query.findFirst({
       where: eq(this.idColumn, id),
       with: withOverride ?? this.defaultWith ?? {},
     });
+    return record ? this.EntityClass.fromRow(record as never) : null;
+  }
 
-    if (!record) {
-      if (options?.failOnMissing) {
-        throw new EntityNotFoundError(this.schemaKey, id);
-      }
-      return null;
+  public async findByIdOrThrow(
+    id: EntityId,
+    withOverride?: DefaultWithFor<SchemaKey>,
+  ): Promise<TEntity> {
+    const entity = await this.findById(id, withOverride);
+    if (!entity) {
+      throw new EntityNotFoundError(this.schemaKey, id);
     }
-
-    return this.EntityClass.fromRow(record as never);
+    return entity;
   }
 
   public async findAll(): Promise<TEntity[]> {
@@ -144,7 +146,7 @@ export abstract class EntityRepository<
     return this.EntityClass.fromRows(records);
   }
 
-  public async find(config: FindManyConfig<SchemaKey>): Promise<TEntity[]> {
+  public async find(config: FindManyConfig<TKey>): Promise<TEntity[]> {
     const records = (await this.query.findMany({
       ...(config as object),
       with: config.with ?? this.defaultWith ?? {},
@@ -152,7 +154,7 @@ export abstract class EntityRepository<
     return this.EntityClass.fromRows(records);
   }
 
-  public async findOne(config: FindFirstConfig<SchemaKey>): Promise<TEntity | null> {
+  public async findOne(config: FindFirstConfig<TKey>): Promise<TEntity | null> {
     const record = await this.query.findFirst({
       ...(config as object),
       with: config.with ?? this.defaultWith ?? {},
@@ -198,7 +200,7 @@ export abstract class EntityRepository<
     // Re-fetch each row so the returned entity reflects `defaultWith`
     // eager-loads.
     const hydrated = await Promise.all(
-      ids.map((id) => this.findById(id, { failOnMissing: true })),
+      ids.map((id) => this.findByIdOrThrow(id)),
     );
     const nonNull = hydrated as TEntity[];
     return Array.isArray(values) ? nonNull : nonNull[0];
@@ -209,7 +211,7 @@ export abstract class EntityRepository<
     set: Partial<Insert<TKey>>,
   ): Promise<TEntity> {
     // Precondition: row must exist. Throws EntityNotFoundError if not.
-    await this.findById(id, { failOnMissing: true });
+    await this.findByIdOrThrow(id);
 
     await this.db
       .update(this.table as never)
@@ -217,10 +219,7 @@ export abstract class EntityRepository<
       .where(eq(this.idColumn, id));
     this.notify([id], 'update');
 
-    const fresh = await this.findById(id, { failOnMissing: true });
-    // `failOnMissing` guarantees non-null; the cast is safe and the
-    // signature can stay honestly `Promise<TEntity>`.
-    return fresh as TEntity;
+    return this.findByIdOrThrow(id);
   }
 
   public async deleteById(ids: EntityId[]): Promise<RunResult> {

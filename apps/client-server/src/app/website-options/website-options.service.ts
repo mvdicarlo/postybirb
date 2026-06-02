@@ -196,9 +196,7 @@ export class WebsiteOptionsService
     data: DynamicObject,
     title?: string,
   ): Promise<Insert<'WebsiteOptionsSchema'>> {
-    const account = await this.accountService.findById(accountId, {
-      failOnMissing: true,
-    });
+    const account = await this.accountService.findByIdOrThrow(accountId);
     const isDefault = accountId === NULL_ACCOUNT_ID;
 
     const userDefinedDefaultOptions =
@@ -258,15 +256,12 @@ export class WebsiteOptionsService
    * @return {*}
    */
   async create(createDto: CreateWebsiteOptionsDto) {
-    const account = await this.accountService.findById(createDto.accountId, {
-      failOnMissing: true,
-    });
+    const account = await this.accountService.findByIdOrThrow(createDto.accountId);
 
     let submission: ISubmission<SubmissionMetadataType>;
     try {
-      submission = await this.submissionRepository.findById(
+      submission = await this.submissionRepository.findByIdOrThrow(
         createDto.submissionId,
-        { failOnMissing: true },
       );
     } catch (err) {
       throw new NotFoundException(
@@ -410,9 +405,7 @@ export class WebsiteOptionsService
     validate: ValidateWebsiteOptionsDto,
   ): Promise<ValidationResult> {
     const { websiteOptionId, submissionId } = validate;
-    const submission = await this.submissionService.findById(submissionId, {
-      failOnMissing: true,
-    });
+    const submission = await this.submissionService.findByIdOrThrow(submissionId);
     const websiteOption = submission.options.find(
       (option) => option.id === websiteOptionId,
     );
@@ -436,7 +429,7 @@ export class WebsiteOptionsService
   ): Promise<ValidationResult[]> {
     const submission =
       typeof submissionOrId === 'string'
-        ? await this.submissionService.findById(submissionOrId)
+        ? await this.submissionService.findByIdOrThrow(submissionOrId)
         : submissionOrId;
     return this.validationService.validateSubmission(submission);
   }
@@ -452,9 +445,7 @@ export class WebsiteOptionsService
     dto: PreviewDescriptionDto,
   ): Promise<IDescriptionPreviewResult> {
     const { websiteOptionId, submissionId } = dto;
-    const submission = await this.submissionService.findById(submissionId, {
-      failOnMissing: true,
-    });
+    const submission = await this.submissionService.findByIdOrThrow(submissionId);
     const websiteOption = submission.options.find(
       (option) => option.id === websiteOptionId,
     );
@@ -505,9 +496,7 @@ export class WebsiteOptionsService
     submissionId: SubmissionId,
     updateDto: UpdateSubmissionWebsiteOptionsDto,
   ) {
-    const submission = await this.submissionService.findById(submissionId, {
-      failOnMissing: true,
-    });
+    const submission = await this.submissionService.findByIdOrThrow(submissionId);
 
     const { remove, add } = updateDto;
     if (remove?.length) {
@@ -535,7 +524,7 @@ export class WebsiteOptionsService
     }
 
     this.submissionService.emit();
-    return this.submissionService.findById(submissionId);
+    return this.submissionService.findByIdOrThrow(submissionId);
   }
 
   private async onCustomShortcutDelete(id: EntityId) {

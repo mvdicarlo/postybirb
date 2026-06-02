@@ -114,9 +114,7 @@ export class FileSubmissionService
   async appendFile(id: EntityId | FileSubmission, file: MulterFileInfo) {
     const submission = (
       typeof id === 'string'
-        ? await this.repository.findById(id, {
-            failOnMissing: true,
-          })
+        ? await this.repository.findByIdOrThrow(id)
         : id
     ) as FileSubmission;
 

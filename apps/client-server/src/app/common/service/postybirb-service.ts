@@ -2,14 +2,14 @@ import { BadRequestException } from '@nestjs/common';
 import {
   Action,
   EntityRepository,
-  FindOptions,
   RepoEntity,
+  RepoSchemaKey,
   SchemaKey,
+  SchemaTable,
 } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import { EntityId, IEntity } from '@postybirb/types';
 import { SQL } from 'drizzle-orm';
-import { SetRequired } from 'type-fest';
 import { WSGateway } from '../../web-socket/web-socket-gateway';
 import { WebSocketEvents } from '../../web-socket/web-socket.events';
 
@@ -63,8 +63,8 @@ export abstract class PostyBirbService<
    * alias for `this.repository.table` so subclasses can write
    * `eq(this.table.foo, ...)`.
    */
-  protected get table() {
-    return this.repository.table;
+  protected get table(): SchemaTable<RepoSchemaKey<TRepo>> {
+    return this.repository.table as SchemaTable<RepoSchemaKey<TRepo>>;
   }
 
   /**
@@ -94,19 +94,12 @@ export abstract class PostyBirbService<
 
   // Repository Wrappers
 
-  public findById(
-    id: EntityId,
-    options?: SetRequired<FindOptions, 'failOnMissing'>,
-  ): Promise<TEntity>;
-  public findById(
-    id: EntityId,
-    options?: FindOptions,
-  ): Promise<TEntity | null>;
-  public findById(
-    id: EntityId,
-    options?: FindOptions,
-  ): Promise<TEntity | null> {
-    return this.repository.findById(id, options) as Promise<TEntity | null>;
+  public findById(id: EntityId): Promise<TEntity | null> {
+    return this.repository.findById(id) as Promise<TEntity | null>;
+  }
+
+  public findByIdOrThrow(id: EntityId): Promise<TEntity> {
+    return this.repository.findByIdOrThrow(id) as Promise<TEntity>;
   }
 
   public findAll(): Promise<TEntity[]> {

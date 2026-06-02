@@ -2,7 +2,7 @@ import type { EntityId } from '@postybirb/types';
 import type { SchemaKey } from '../../helper-types';
 
 /**
- * Thrown by `EntityRepository.findById({ failOnMissing: true })` and by
+ * Thrown by `EntityRepository.findByIdOrThrow()` and by
  * `EntityRepository.update()` when the target row does not exist.
  *
  * Plain `Error` subclass — `libs/database` is framework-agnostic and does

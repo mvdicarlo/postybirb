@@ -208,7 +208,6 @@ export class PostRecordFactory {
     // This handles crash recovery where the record is RUNNING (not terminal).
     const currentRecord = await this.postRecordRepository.findById(
       currentRecordId,
-      undefined,
       { events: true },
     );
 

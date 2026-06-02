@@ -213,7 +213,7 @@ describe('PostQueueService', () => {
     // The post record should remain after the queue record is deleted.
     await service.execute();
     expect((await service.findAll()).length).toBe(0);
-    postRecord = await postService.findById(postRecord.id);
+    postRecord = await postService.findByIdOrThrow(postRecord.id);
     expect(postRecord.state).toBe(PostRecordState.FAILED);
     expect(postRecord.completedAt).toBeDefined();
   });

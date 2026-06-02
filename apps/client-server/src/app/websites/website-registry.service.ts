@@ -306,9 +306,7 @@ export class WebsiteRegistryService {
   ) {
     this.logger.info(`OAuth website route for '${oauthRequestDto.id}'`);
 
-    const account = await this.accountRepository.findById(oauthRequestDto.id, {
-      failOnMissing: true,
-    });
+    const account = await this.accountRepository.findByIdOrThrow(oauthRequestDto.id);
     const instance = this.findInstance(account);
 
     if (!instance) throw new NotFoundException('Website instance not found.');

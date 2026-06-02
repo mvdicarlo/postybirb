@@ -144,7 +144,7 @@ export class FileService {
    */
   public async findFile(id: EntityId): Promise<SubmissionFile> {
     try {
-      return await this.fileRepository.findById(id, { failOnMissing: true });
+      return await this.fileRepository.findByIdOrThrow(id);
     } catch (err) {
       if (err instanceof EntityNotFoundError) {
         throw new NotFoundException(err.message);
@@ -158,9 +158,7 @@ export class FileService {
    * @param {EntityId} id
    */
   async getAltFileSize(id: EntityId): Promise<number> {
-    const altFile = await this.fileBufferRepository.findById(id, {
-      failOnMissing: false,
-    });
+    const altFile = await this.fileBufferRepository.findById(id);
     return altFile?.size ?? 0;
   }
 
@@ -169,9 +167,7 @@ export class FileService {
    * @param {EntityId} id
    */
   async getAltText(id: EntityId): Promise<string> {
-    const altFile = await this.fileBufferRepository.findById(id, {
-      failOnMissing: true,
-    });
+    const altFile = await this.fileBufferRepository.findByIdOrThrow(id);
     if (altFile.size) {
       return altFile.buffer.toString();
     }

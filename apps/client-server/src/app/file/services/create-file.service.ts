@@ -86,9 +86,7 @@ export class CreateFileService {
           return entity;
         },
       );
-      return await this.fileRepository.findById(newSubmission.id, {
-        failOnMissing: true,
-      });
+      return await this.fileRepository.findByIdOrThrow(newSubmission.id);
     } catch (err) {
       this.logger.error(err);
       throw err;

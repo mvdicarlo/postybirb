@@ -66,11 +66,9 @@ describe('PostyBirbService', () => {
     expect(result).toBeUndefined();
   });
 
-  it('throws EntityNotFoundError for findById({failOnMissing}) on a missing id', async () => {
+  it('throws EntityNotFoundError for findByIdOrThrow on a missing id', async () => {
     await expect(
-      service.findById('00000000-0000-0000-0000-000000000000', {
-        failOnMissing: true,
-      }),
+      service.findByIdOrThrow('00000000-0000-0000-0000-000000000000'),
     ).rejects.toBeInstanceOf(EntityNotFoundError);
   });
 });

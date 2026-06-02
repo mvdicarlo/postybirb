@@ -136,9 +136,7 @@ describe('FileService', () => {
   async function loadBuffers(rec: SubmissionFile) {
     // !bug - https://github.com/drizzle-team/drizzle-orm/issues/3497
     // eslint-disable-next-line no-param-reassign
-    rec.file = await fileBufferRepository.findById(rec.primaryFileId, {
-      failOnMissing: true,
-    });
+    rec.file = await fileBufferRepository.findByIdOrThrow(rec.primaryFileId);
     // eslint-disable-next-line no-param-reassign
     rec.thumbnail = rec.thumbnailId
       ? (await fileBufferRepository.findById(rec.thumbnailId)) || undefined

@@ -1,4 +1,4 @@
-import type { EntityId } from '@postybirb/types';
+import type { EntityId, IEntity } from '@postybirb/types';
 import type { DBQueryConfig, ExtractTablesWithRelations } from 'drizzle-orm';
 import type { PostyBirbDatabaseType } from '../../database';
 import type { SchemaKey } from '../../helper-types';
@@ -121,9 +121,7 @@ export type RepoEntity<R> =
   R extends EntityRepository<SchemaKey, infer T> ? T : never;
 
 /**
- * Options for `findById`. When `failOnMissing` is `true` the repository
- * throws `EntityNotFoundError` instead of returning `null`.
+ * Extracts the schema key type from a repository type.
  */
-export type FindOptions = {
-  failOnMissing?: boolean;
-};
+export type RepoSchemaKey<R> =
+  R extends EntityRepository<infer K, IEntity> ? K : never;

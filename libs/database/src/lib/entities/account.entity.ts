@@ -102,7 +102,7 @@ export class Account extends DatabaseEntity<IAccount> implements IAccount {
     } as IAccountDto;
   }
 
-  withWebsiteInstance(websiteInstance: AccountWebsiteInstanceLike): this {
+  withWebsiteInstance(websiteInstance: AccountWebsiteInstanceLike | undefined): this {
     this.websiteInstance = websiteInstance;
     return this;
   }

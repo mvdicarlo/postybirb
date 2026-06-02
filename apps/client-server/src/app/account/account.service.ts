@@ -5,7 +5,7 @@ import {
   Optional,
 } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { Account, AccountRepository, FindOptions } from '@postybirb/database';
+import { Account, AccountRepository } from '@postybirb/database';
 import { ACCOUNT_UPDATES } from '@postybirb/socket-events';
 import {
   AccountId,
@@ -15,7 +15,7 @@ import {
 } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/common';
 import { ne } from 'drizzle-orm';
-import { Class, SetRequired } from 'type-fest';
+import { Class } from 'type-fest';
 import { PostyBirbService } from '../common/service/postybirb-service';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { UnknownWebsite } from '../websites/website';
@@ -268,20 +268,14 @@ export class AccountService
     return account.withWebsiteInstance(instance);
   }
 
-  public findById(
-    id: AccountId,
-    options?: SetRequired<FindOptions, 'failOnMissing'>,
-  ): Promise<Account>;
-  public findById(
-    id: AccountId,
-    options?: FindOptions,
-  ): Promise<Account | null>;
-  public async findById(
-    id: AccountId,
-    options?: FindOptions,
-  ): Promise<Account | null> {
-    const account = await this.repository.findById(id, options);
+  public async findById(id: AccountId): Promise<Account | null> {
+    const account = await this.repository.findById(id);
     return this.injectWebsiteInstance(account);
+  }
+
+  public async findByIdOrThrow(id: AccountId): Promise<Account> {
+    const account = await this.repository.findByIdOrThrow(id);
+    return this.injectWebsiteInstance(account) as Account;
   }
 
   public async findAll() {
@@ -343,9 +337,8 @@ export class AccountService
     this.logger.info(
       `Setting Account data for '${setWebsiteDataRequestDto.id}'`,
     );
-    const account = await this.repository.findById(
+    const account = await this.repository.findByIdOrThrow(
       setWebsiteDataRequestDto.id,
-      { failOnMissing: true },
     );
 
     const instance = this.findWebsiteInstanceOrThrow(account);
