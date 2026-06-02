@@ -1,4 +1,3 @@
-import TurndownService from 'turndown';
 import { BaseConverter } from './converters/base-converter';
 import { BBCodeConverter } from './converters/bbcode-converter';
 import {
@@ -6,6 +5,7 @@ import {
   CustomNodeHandler,
 } from './converters/custom-converter';
 import { HtmlConverter } from './converters/html-converter';
+import { MarkdownConverter } from './converters/markdown-converter';
 import { PlainTextConverter } from './converters/plaintext-converter';
 import { ConversionContext } from './description-node.base';
 import { TipTapNode } from './description-node.types';
@@ -71,19 +71,9 @@ export class DescriptionNodeTree {
     return converter.convert(this.withInsertions(), this.context);
   }
 
-  toMarkdown(turndownService?: TurndownService): string {
-    const converter = turndownService ?? new TurndownService();
-
-    converter.addRule('nestedIndent', {
-      filter: (node) =>
-        node.nodeName === 'DIV' &&
-        node.getAttribute('style')?.includes('margin-left'),
-      replacement: (content) =>
-        `\n\n> ${content.trim().replace(/\n/g, '\n> ')}\n\n`,
-    });
-
-    const html = this.toHtml();
-    return converter.turndown(html);
+  toMarkdown(): string {
+    const converter = new MarkdownConverter();
+    return converter.convert(this.withInsertions(), this.context);
   }
 
   parseCustom(blockHandler: CustomNodeHandler): string {
