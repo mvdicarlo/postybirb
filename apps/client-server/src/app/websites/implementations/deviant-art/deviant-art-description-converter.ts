@@ -22,7 +22,17 @@ import { ConversionContext } from '../../../post-parsers/models/description-node
 const extensions = [
   Text,
   Document,
-  Paragraph,
+
+  // PostyBirb editor produces divs with align instead of paragaphs, so we need to specify it in order to parse it
+  Paragraph.extend({
+    parseHTML() {
+      return [
+        { tag: 'p' }, // Retain default paragraph parsing
+        { tag: 'div' }, // Map <div> tags to paragraphs to prevent nested JSON levels
+      ];
+    },
+  }),
+
   Bold,
   Italic,
   Strike,
@@ -51,7 +61,7 @@ const extensions = [
     },
   }),
   TextAlign.configure({
-    types: ['heading', 'paragraph'],
+    types: ['heading', 'paragraph', 'divBlock'],
   }),
 ];
 

@@ -4,7 +4,7 @@ describe('deviant-art description converter', () => {
   it('should convert text with alignment', () => {
     expect(
       DeviantArtDescriptionConverter.htmlToJson(
-        '<div></div><div>Left</div><div style="text-align: center">Center</div><div style="text-align: right">Right</div>'
+        '<div>Left</div><div style="text-align: center">Center</div><div style="text-align: right">Right</div>'
       )
     ).toMatchInlineSnapshot(`
       {
@@ -23,7 +23,7 @@ describe('deviant-art description converter', () => {
           },
           {
             "attrs": {
-              "textAlign": null,
+              "textAlign": "center",
             },
             "content": [
               {
@@ -35,7 +35,7 @@ describe('deviant-art description converter', () => {
           },
           {
             "attrs": {
-              "textAlign": null,
+              "textAlign": "right",
             },
             "content": [
               {
