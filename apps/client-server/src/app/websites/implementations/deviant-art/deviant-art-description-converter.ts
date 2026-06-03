@@ -26,10 +26,7 @@ const extensions = [
   // PostyBirb editor produces divs with align instead of paragaphs, so we need to specify it in order to parse it
   Paragraph.extend({
     parseHTML() {
-      return [
-        { tag: 'p' }, // Retain default paragraph parsing
-        { tag: 'div' }, // Map <div> tags to paragraphs to prevent nested JSON levels
-      ];
+      return [{ tag: 'p' }, { tag: 'div' }];
     },
   }),
 
