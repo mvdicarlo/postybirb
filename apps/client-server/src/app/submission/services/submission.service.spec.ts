@@ -1,6 +1,7 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
+import { EntityNotFoundError } from '@postybirb/database';
 import { PostyBirbDirectories, writeSync } from '@postybirb/fs';
 import {
   FileSubmissionMetadata,
@@ -291,7 +292,7 @@ describe('SubmissionService', () => {
     expect(await service.findAll()).toHaveLength(0);
     expect(await optionsService.findAll()).toHaveLength(0);
     await expect(fileService.findFile(fileId)).rejects.toThrow(
-      NotFoundException,
+      EntityNotFoundError,
     );
   });
 
