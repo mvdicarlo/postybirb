@@ -6,11 +6,12 @@ export class DiscordDescriptionConverter extends MarkdownConverter {
   convert(nodes: TipTapNode[], context: ConversionContext): string {
     let markdown = super.convert(nodes, context);
 
-    // Discord does not recognize links that have display text same as the link itself, like [https://example.com](https://example.com)
-    // use https://example.com instead
+    // Discord does not recognize links that have display text with link
+    // replaces them with link istelf instead
     markdown = markdown.replace(
-      /\[([^\]]+)\]\(([^)]+)\)/gm,
-      (original, link, text) => (link === text ? link : original),
+      /\[([^\]]+)\]\([^)]+\)/gm,
+      (original, link: string, text) =>
+        /^https?:\/\//.test(link) ? link : original,
     );
 
     // Don't escape _ in emojis
