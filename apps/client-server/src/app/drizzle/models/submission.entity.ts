@@ -1,10 +1,10 @@
 import {
-    ISubmission,
-    ISubmissionDto,
-    ISubmissionMetadata,
-    ISubmissionScheduleInfo,
-    ScheduleType,
-    SubmissionType,
+  ISubmission,
+  ISubmissionDto,
+  ISubmissionMetadata,
+  ISubmissionScheduleInfo,
+  ScheduleType,
+  SubmissionType,
 } from '@postybirb/types';
 import { instanceToPlain, Type } from 'class-transformer';
 import { DatabaseEntity } from './database-entity';
@@ -74,9 +74,6 @@ export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
   }
 
   getSubmissionName(): string {
-    if (this.options?.length) {
-      return this.options.find((o) => o.isDefault)?.data.title;
-    }
-    return 'Unknown';
+    return this.options.find((o) => o.isDefault)?.data.title ?? 'Unknown';
   }
 }

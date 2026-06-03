@@ -1,5 +1,6 @@
 import { Logger } from '@postybirb/logger';
 import { mkdir, readFile, stat, writeFile } from 'fs/promises';
+import { isObject } from 'lodash';
 import forge from 'node-forge';
 import { join } from 'path';
 
@@ -35,7 +36,7 @@ export class SSL {
       try {
         await mkdir(path, { recursive: true });
       } catch (err) {
-        if (err.code !== 'EEXIST') {
+        if (isObject(err) && 'code' in err && err.code !== 'EEXIST') {
           logger.error(err);
         }
       }

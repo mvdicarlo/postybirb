@@ -88,7 +88,10 @@ export default class DeviantArt
     const res = await this.platform.http.get<string>(this.BASE_URL, {
       partition: this.accountId,
     });
-    const cookies = await this.platform.http.getWebsiteCookies(this.accountId, this.BASE_URL);
+    const cookies = await this.platform.http.getWebsiteCookies(
+      this.accountId,
+      this.BASE_URL,
+    );
     const userInfoCookie = cookies.find((c) => c.name === 'userinfo');
     if (userInfoCookie) {
       const userInfo = JSON.parse(
@@ -113,7 +116,9 @@ export default class DeviantArt
   private async getFolders(username: string) {
     try {
       const csrf = await this.getCSRF();
-      const { body } = await this.platform.http.get<{ results: DeviantArtFolder[] }>(
+      const { body } = await this.platform.http.get<{
+        results: DeviantArtFolder[];
+      }>(
         `${
           this.BASE_URL
         }/_puppy/dashared/gallection/folders?offset=0&limit=250&type=gallery&with_all_folder=true&with_permissions=true&username=${encodeURIComponent(
@@ -174,7 +179,7 @@ export default class DeviantArt
     return new DeviantArtFileSubmission();
   }
 
-  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
+  calculateImageResize(file: ISubmissionFile): ImageResizeProps | undefined {
     return undefined;
   }
 

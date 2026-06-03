@@ -6,7 +6,7 @@ import {
   EntityId,
   SubmissionType,
 } from '@postybirb/types';
-import { IsTestEnvironment } from '@postybirb/utils/common';
+import { IsTestEnvironment, toError } from '@postybirb/utils/common';
 import { mkdir, readdir, rename, writeFile } from 'fs/promises';
 import { getType } from 'mime';
 import { join } from 'path';
@@ -146,6 +146,8 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
    */
   private async recoverOrphanedFiles(watcher: DirectoryWatcher): Promise<void> {
     try {
+      if (!watcher.path) return;
+
       await this.ensureDirectoryStructure(watcher.path);
 
       const processingPath = join(watcher.path, this.SUBFOLDER_PROCESSING);
@@ -164,7 +166,9 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
             await rename(sourcePath, targetPath);
             this.logger.info(`Recovered orphaned file: ${file}`);
           } catch (err) {
-            this.logger.error(err, `Failed to recover orphaned file: ${file}`);
+            this.logger
+              .withError(err)
+              .error(`Failed to recover orphaned file: ${file}`);
           }
         }
 
@@ -180,10 +184,9 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
         });
       }
     } catch (err) {
-      this.logger.error(
-        err,
-        `Failed to recover orphaned files for watcher ${watcher.id}`,
-      );
+      this.logger
+        .withError(err)
+        .error(`Failed to recover orphaned files for watcher ${watcher.id}`);
     }
   }
 
@@ -194,6 +197,8 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
    */
   private async read(watcher: DirectoryWatcher) {
     try {
+      if (!watcher.path) return;
+
       // Ensure directory structure exists
       await this.ensureDirectoryStructure(watcher.path);
 
@@ -210,7 +215,10 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
         return;
       }
 
-      const results = { success: [], failed: [] };
+      const results = {
+        success: [] as string[],
+        failed: [] as { file: string; error: string }[],
+      };
 
       // Process files sequentially
       for (const file of filesInDirectory) {
@@ -218,8 +226,11 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
           await this.processFileWithMove(watcher, file);
           results.success.push(file);
         } catch (err) {
-          this.logger.error(err, `Failed to process file ${file}`);
-          results.failed.push({ file, error: err.message });
+          this.logger.withError(err).error(`Failed to process file ${file}`);
+          results.failed.push({
+            file,
+            error: toError(err).message,
+          });
         }
       }
 
@@ -238,14 +249,16 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
         },
       });
     } catch (e) {
-      this.logger.error(e, `Failed to read directory ${watcher.path}`);
+      this.logger
+        .withError(e)
+        .error(`Failed to read directory ${watcher.path}`);
       this.notificationService.create({
         title: 'Directory Watcher Error',
         message: `Failed to read directory ${watcher.path}`,
         type: 'error',
         tags: ['directory-watcher'],
         data: {
-          error: e.message,
+          error: (e as Error).message,
         },
       });
     }
@@ -262,6 +275,8 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
     watcher: DirectoryWatcher,
     fileName: string,
   ): Promise<void> {
+    if (!watcher.path) return;
+
     const sourcePath = join(watcher.path, fileName);
     const processingPath = join(
       watcher.path,
@@ -290,7 +305,7 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
         origin: 'directory-watcher',
         originalname: fileName,
         encoding: '',
-        mimetype: getType(fileName),
+        mimetype: getType(fileName) ?? '',
         size: 0,
         destination: '',
         filename: fileName,
@@ -327,7 +342,7 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
         `Successfully processed file ${fileName} (submission: ${submissionId})`,
       );
     } catch (err) {
-      this.logger.error(err, `Failed to process file ${fileName}`);
+      this.logger.withError(err).error(`Failed to process file ${fileName}`);
 
       // Cleanup submission if it was created
       if (submissionId) {
@@ -354,16 +369,15 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
         const errorDetails = [
           `File: ${fileName}`,
           `Failed at: ${new Date().toISOString()}`,
-          `Error: ${err.message}`,
-          `Stack: ${err.stack || 'N/A'}`,
+          `Error: ${(err as Error).message}`,
+          `Stack: ${(err as Error).stack || 'N/A'}`,
         ].join('\n');
 
         await writeFile(errorFilePath, errorDetails);
       } catch (moveErr) {
-        this.logger.error(
-          moveErr,
-          `Failed to move file to failed folder: ${fileName}`,
-        );
+        this.logger
+          .withError(moveErr)
+          .error(`Failed to move file to failed folder: ${fileName}`);
       }
 
       throw err;

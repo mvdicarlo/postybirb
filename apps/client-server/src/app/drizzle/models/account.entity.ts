@@ -53,7 +53,7 @@ export class Account extends DatabaseEntity implements IAccount {
     return dto;
   }
 
-  withWebsiteInstance(websiteInstance: UnknownWebsite): this {
+  withWebsiteInstance(websiteInstance?: UnknownWebsite): this {
     this.websiteInstance = websiteInstance;
     return this;
   }

@@ -1,3 +1,4 @@
+import { PostyBirbLogger } from '@postybirb/logger';
 import {
   CustomLoginType,
   IWebsiteMetadata,
@@ -5,7 +6,6 @@ import {
   UsernameShortcut,
   WebsiteFileOptions,
 } from '@postybirb/types';
-import { LogLayer } from 'loglayer';
 import { Class } from 'type-fest';
 import { UnknownWebsite } from '../website';
 
@@ -58,7 +58,9 @@ export type WebsiteDecoratorProps = {
 export function defaultWebsiteDecoratorProps(): WebsiteDecoratorProps {
   return {
     fileOptions: undefined,
+    // @ts-expect-error Set by decorator that always exists (is included in template)
     loginFlow: undefined,
+    // @ts-expect-error Set by decorator that always exists (is included in template)
     metadata: undefined,
     allowAd: true,
   };
@@ -82,6 +84,7 @@ export function injectWebsiteDecoratorProps(
 
   Object.entries(props).forEach(([key, value]) => {
     if (value !== undefined) {
+      // @ts-expect-error Typescript cannot resolve types of keys dynamically
       // eslint-disable-next-line no-param-reassign
       constructor.prototype.decoratedProps[key] = value;
     }
@@ -89,7 +92,7 @@ export function injectWebsiteDecoratorProps(
 }
 
 export function validateWebsiteDecoratorProps(
-  logger: LogLayer,
+  logger: PostyBirbLogger,
   websiteName: string,
   props: WebsiteDecoratorProps,
 ): boolean {

@@ -31,7 +31,8 @@ jobs:
           # grep filters out useless spam in console about not able to access display.
           # pipefail needed because otherwise grep returns exit code 0 and failed tests don't display in ci as failed
           - name: Test
-            command: "set -o pipefail && xvfb-run --auto-servernum --server-args=\"-screen 0
+            command:
+              "set -o pipefail && xvfb-run --auto-servernum --server-args=\"-screen 0
               1280x960x24\" -- yarn nx affected -t test | grep -v -E
               \"ERROR:viz_main_impl\\.cc\\(183\\)|ERROR:object_proxy\\.cc\\(576\
               \\)|ERROR:bus\\.cc\\(408\\)|ERROR:gles2_cmd_decoder_passthrough\\\
@@ -40,38 +41,46 @@ jobs:
 
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           # We need to fetch all branches and commits so that Nx affected has a base to compare against.
           fetch-depth: 0
 
       - name: Use eslint, jest and tsc cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
-          # out-tsc needed because we use incremental in typecheck which uses files from tsc output
+          # out-tsc is needed to speed up tsc --incremental in typecheck which uses files from tsc output
           path: |
             .eslint
             .jest
             dist/out-tsc
 
           key: ${{ runner.os }}-ci
-        # This is needed to be run before node setup, because node setup uses yarn to get cache dir
-      - name: Enable corepack to use Yarn v4
-        run: corepack enable
 
-      - name: Install Node.js and Yarn
-        uses: actions/setup-node@v4
+      # Its required to enable corepack before node install because it uses yarn to get cache dir
+      # https://github.com/actions/setup-node/issues/531#issuecomment-1217094233
+      # On migration to node 26 for actions corepack will need to be installed using npm
+      - name: Enable corepack to use Yarn v4
+        run: |
+          # Replaces yarn in PATH with corepack's yarn shim
+          corepack enable
+          # Downloads yarn
+          corepack prepare --activate
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
         with:
-          node-version: "22"
+          node-version: 24
           cache: yarn
-        # These flags needed to speed up ci
+
       - name: Install dependencies
         run: yarn install --immutable
         env:
           CYPRESS_INSTALL_BINARY: 0 # Skip downloading Cypress binary (not needed for CI)
+
         # Used to calculate affected
       - name: Setup SHAs
-        uses: nrwl/nx-set-shas@v4
+        uses: nrwl/nx-set-shas@v5
 
       - name: Run ${{ matrix.ci.name }}
         run: ${{ matrix.ci.command }}

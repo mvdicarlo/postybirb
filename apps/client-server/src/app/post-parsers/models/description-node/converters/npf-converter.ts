@@ -351,7 +351,7 @@ export class NpfConverter extends BaseConverter {
    * Adds formatting entries for marks on a text node.
    */
   private addFormattingForMarks(
-    marks: TipTapMark[],
+    marks: TipTapMark[] | undefined,
     start: number,
     end: number,
   ): void {

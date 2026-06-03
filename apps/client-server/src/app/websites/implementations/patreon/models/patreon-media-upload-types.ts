@@ -21,7 +21,7 @@ export type PatreonMediaUploadAttributes = {
   owner_id: string;
   owner_type: PatreonMediaOwnerType;
   owner_relationship: PatreonMediaOwnerRelationship;
-  media_type: PatreonMediaType;
+  media_type?: PatreonMediaType;
 };
 
 export type PatreonMediaUpload = {

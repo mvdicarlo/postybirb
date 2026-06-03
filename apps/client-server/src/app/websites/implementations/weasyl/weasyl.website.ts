@@ -140,7 +140,7 @@ export default class Weasyl
     return new WeasylFileSubmission();
   }
 
-  calculateImageResize(): ImageResizeProps {
+  calculateImageResize(): ImageResizeProps | undefined {
     return undefined;
   }
 

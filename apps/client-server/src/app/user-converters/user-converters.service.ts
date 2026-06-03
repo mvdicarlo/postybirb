@@ -1,6 +1,6 @@
 import { Injectable, Optional } from '@nestjs/common';
 import { USER_CONVERTER_UPDATES } from '@postybirb/socket-events';
-import { EntityId } from '@postybirb/types';
+import { DynamicObject, EntityId } from '@postybirb/types';
 import { eq } from 'drizzle-orm';
 import { PostyBirbService } from '../common/service/postybirb-service';
 import { UserConverter } from '../drizzle/models';
@@ -33,12 +33,11 @@ export class UserConvertersService extends PostyBirbService<'UserConverterSchema
 
   /**
    * Converts a username using user defined conversion table.
-   *
-   * @param {Website<unknown>} instance
-   * @param {string} username
-   * @return {*}  {Promise<string>}
    */
-  async convert(instance: Website<unknown>, username: string): Promise<string> {
+  async convert(
+    instance: Website<DynamicObject>,
+    username: string,
+  ): Promise<string> {
     const converter = await this.repository.findOne({
       where: (c, { eq: eqFn }) => eqFn(c.username, username),
     });

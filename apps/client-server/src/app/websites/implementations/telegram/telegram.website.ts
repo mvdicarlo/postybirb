@@ -18,14 +18,14 @@ import {
   calculateImageResize,
   supportsImage,
 } from '@postybirb/utils/file-type';
-import { Api, TelegramClient } from 'telegram';
-import { CustomFile } from 'telegram/client/uploads';
-import { Entity } from 'telegram/define';
-import { HTMLParser as HTMLToTelegram } from 'telegram/extensions/html';
-import { LogLevel } from 'telegram/extensions/Logger';
-import { returnBigInt } from 'telegram/Helpers';
-import { ProxyInterface } from 'telegram/network/connection/TCPMTProxy';
-import { StringSession } from 'telegram/sessions';
+import { Api, TelegramClient } from 'teleproto';
+import { CustomFile } from 'teleproto/client/uploads';
+import { Entity } from 'teleproto/define';
+import { HTMLParser as HTMLToTelegram } from 'teleproto/extensions/html';
+import { LogLevel } from 'teleproto/extensions/Logger';
+import { returnBigInt } from 'teleproto/Helpers';
+import { ProxyInterface } from 'teleproto/network/connection/TCPMTProxy';
+import { StringSession } from 'teleproto/sessions';
 import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
 import { HtmlConverter } from '../../../post-parsers/models/description-node/converters/html-converter';
 import { ConversionContext } from '../../../post-parsers/models/description-node/description-node.base';
@@ -199,7 +199,9 @@ export default class Telegram
 
     if (!telegramProxySettings) {
       const proxies = [
-        ...(await this.platform.http.getParsedProxiesFor('https://telegram.org')),
+        ...(await this.platform.http.getParsedProxiesFor(
+          'https://telegram.org',
+        )),
         ...(await this.platform.http.getParsedProxiesFor('https://t.me/')),
       ];
       const proxy =
@@ -230,17 +232,17 @@ export default class Telegram
 
     for await (const dialog of telegram.iterDialogs()) {
       total++;
-      if (!dialog.id) continue;
+      if (!dialog.id || !dialog.entity) continue;
       if (!this.canSendMediaInChat(dialog.entity)) continue;
 
       const id = dialog.entity.id.toString();
       const hash =
         dialog.entity.className === 'Channel'
-          ? `|${dialog.entity.accessHash.toString()}`
+          ? `|${dialog.entity.accessHash?.toString()}`
           : '';
 
       channels.push({
-        label: dialog.title ?? dialog.name,
+        label: dialog.title ?? dialog.name ?? 'Empty name',
         value: `${id}${hash}`,
       });
       this.setWebsiteData({ ...this.websiteDataStore.getData(), channels });
@@ -292,7 +294,7 @@ export default class Telegram
     return new TelegramFileSubmission();
   }
 
-  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
+  calculateImageResize(file: ISubmissionFile): ImageResizeProps | undefined {
     return calculateImageResize(file, {
       maxWidth: 2560,
       maxHeight: 2560,
@@ -349,7 +351,7 @@ export default class Telegram
     );
 
     let mediaDescription = '';
-    let mediaEntities = [];
+    let mediaEntities: Api.TypeMessageEntity[] = [];
     let messageDescription = '';
 
     if (description.length < 1024) {
@@ -465,7 +467,13 @@ export default class Telegram
 
     const chat = response.chats.find((e) => e.id.equals(peerId.channelId));
 
-    if (!chat || chat.className !== 'Channel' || !chat.username) return '';
+    if (
+      !chat ||
+      chat.className !== 'Channel' ||
+      !chat.username ||
+      !channelUpdate
+    )
+      return '';
 
     return `https://t.me/${chat.username}/${channelUpdate.message.id}`;
   }

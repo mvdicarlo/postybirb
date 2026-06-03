@@ -67,8 +67,8 @@ export class TransactionContext {
         this.logger.debug(`Cleaned up ${String(schemaKey)} entity: ${id}`);
       } catch (err) {
         this.logger.error(
-          `Failed to cleanup ${String(schemaKey)} entity ${id}: ${err.message}`,
-          err.stack,
+          `Failed to cleanup ${String(schemaKey)} entity ${id}:`,
+          err,
         );
       }
     }

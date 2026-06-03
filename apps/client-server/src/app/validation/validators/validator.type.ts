@@ -1,5 +1,7 @@
 import {
+  DynamicObject,
   ISubmission,
+  IWebsiteFormFields,
   PostData,
   ValidationMessage,
   ValidationResult,
@@ -14,7 +16,7 @@ export type ValidatorParams = {
   result: ValidationResult;
   validator: FieldValidator;
   websiteInstance: UnknownWebsite;
-  data: PostData;
+  data: PostData<IWebsiteFormFields & DynamicObject>;
   submission: ISubmission;
   fileConverterService: FileConverterService;
   fileService: FileService;

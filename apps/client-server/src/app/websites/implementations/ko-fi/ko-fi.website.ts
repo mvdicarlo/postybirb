@@ -55,9 +55,12 @@ export default class KoFi
   public async onLogin(): Promise<ILoginState> {
     try {
       // Retrieve settings page to check login status
-      const res = await this.platform.http.get<string>(`${this.BASE_URL}/settings`, {
-        partition: this.accountId,
-      });
+      const res = await this.platform.http.get<string>(
+        `${this.BASE_URL}/settings`,
+        {
+          partition: this.accountId,
+        },
+      );
 
       // Check if logged in by looking for login button
       if (res.body.includes('profile-tab')) {
@@ -117,10 +120,12 @@ export default class KoFi
       for (const match of albumElements) {
         const label = match.innerText.trim();
         const albumId = match.getAttribute('href')?.replace('/album/', '');
-        albums.push({
-          label,
-          value: albumId,
-        });
+        if (albumId) {
+          albums.push({
+            label,
+            value: albumId,
+          });
+        }
       }
 
       await this.websiteDataStore.setData({ folders: albums });

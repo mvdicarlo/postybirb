@@ -1,7 +1,6 @@
 import { FormFile, HttpResponse } from '@postybirb/http/types';
 import {
   ILoginState,
-  ImageResizeProps,
   ISubmissionFile,
   PostData,
   PostFields,
@@ -72,7 +71,7 @@ export default class Toyhouse
 
       return this.loginState.setLogin(true, username);
     } catch (e) {
-      this.logger.error('Failed to login', e);
+      this.logger.withError(e).error('Failed to login');
       return this.loginState.setLogin(false, null);
     }
   }
@@ -109,7 +108,7 @@ export default class Toyhouse
     return new ToyhouseFileSubmission();
   }
 
-  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
+  calculateImageResize(file: ISubmissionFile) {
     return undefined;
   }
 
@@ -200,7 +199,7 @@ export default class Toyhouse
 
     const err = parse(result.body)
       .querySelector('.alert-danger')
-      .textContent.trim();
+      ?.textContent.trim();
 
     return PostResponse.fromWebsite(this)
       .withAdditionalInfo(result.body)
@@ -216,7 +215,9 @@ export default class Toyhouse
   }
 
   private getCharacters($: HTMLElement) {
-    const getCharId = (href: string) => {
+    const getCharId = (href?: string) => {
+      if (!href) return null;
+
       // Extract the rightmost ID from paths like /6669686.name or /6669686.name/6669743.other-name
       const parts = href.split('/').filter(Boolean);
       const match = parts[parts.length - 1]?.match(/^(\d+)\./);
@@ -227,10 +228,12 @@ export default class Toyhouse
       $.querySelectorAll(
         '.characters-gallery .gallery-thumb .character-name-badge',
       ),
-    ).map((e) => ({
-      label: e.textContent.trim(),
-      value: getCharId(e.getAttribute('href')),
-    }));
+    )
+      .map((e) => ({
+        label: e.textContent.trim(),
+        value: getCharId(e.getAttribute('href')),
+      }))
+      .filter((e) => !!e.value) as { label: string; value: string }[];
   }
 }
 

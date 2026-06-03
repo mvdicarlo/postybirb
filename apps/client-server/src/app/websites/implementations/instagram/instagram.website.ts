@@ -258,7 +258,7 @@ export default class Instagram
     return new InstagramFileSubmission();
   }
 
-  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
+  calculateImageResize(file: ISubmissionFile): ImageResizeProps | undefined {
     // Instagram API only accepts JPEG. Convert any input format to JPEG.
     // See: https://developers.facebook.com/docs/instagram-platform/content-publishing#limitations
     const resizeProps = calculateImageResize(file, {
@@ -372,9 +372,7 @@ export default class Instagram
     } catch (e) {
       this.logger.error('Instagram post failed', e);
       return PostResponse.fromWebsite(this)
-        .withException(
-          e instanceof Error ? e : new Error('Failed to post to Instagram'),
-        )
+        .withException(e)
         .withAdditionalInfo(e);
     }
   }

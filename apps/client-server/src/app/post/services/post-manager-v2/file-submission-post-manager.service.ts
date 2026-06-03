@@ -1,22 +1,22 @@
 import { Injectable, Optional } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import {
-    AccountId,
-    FileSubmission,
-    FileSubmissionMetadata,
-    FileType,
-    ImageResizeProps,
-    PostData,
-    PostEventType,
-    SubmissionType
+  AccountId,
+  FileSubmission,
+  FileSubmissionMetadata,
+  FileType,
+  ImageResizeProps,
+  PostData,
+  PostEventType,
+  SubmissionType,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { chunk } from 'lodash';
 import {
-    FileBuffer,
-    PostRecord,
-    Submission,
-    SubmissionFile,
+  FileBuffer,
+  PostRecord,
+  Submission,
+  SubmissionFile,
 } from '../../../drizzle/models';
 import { FileConverterService } from '../../../file-converter/file-converter.service';
 import { NotificationsService } from '../../../notifications/notifications.service';
@@ -25,8 +25,8 @@ import { ValidationService } from '../../../validation/validation.service';
 import { WSGateway } from '../../../web-socket/web-socket-gateway';
 import { getSupportedFileSize } from '../../../websites/decorators/supports-files.decorator';
 import {
-    ImplementedFileWebsite,
-    isFileWebsite,
+  ImplementedFileWebsite,
+  isFileWebsite,
 } from '../../../websites/models/website-modifiers/file-website';
 import { UnknownWebsite } from '../../../websites/website';
 import { WebsiteRegistryService } from '../../../websites/website-registry.service';
@@ -97,11 +97,13 @@ export class FileSubmissionPostManager extends BasePostManager {
       );
     }
 
+    if (!this.cancelToken) throw new Error('No cancel token is defined');
+
     const submission = entity.submission as Submission<FileSubmissionMetadata>;
 
     // Order files based on submission order
     const fileBatchSize = Math.max(
-      instance.decoratedProps.fileOptions.fileBatchSize ?? 1,
+      instance.decoratedProps.fileOptions?.fileBatchSize ?? 1,
       1,
     );
 
@@ -315,7 +317,7 @@ export class FileSubmissionPostManager extends BasePostManager {
     postingFiles: PostingFile[],
   ): void {
     const acceptedMimeTypes =
-      websiteInstance.decoratedProps.fileOptions.acceptedMimeTypes ?? [];
+      websiteInstance.decoratedProps.fileOptions?.acceptedMimeTypes ?? [];
     if (acceptedMimeTypes.length === 0) return;
 
     postingFiles.forEach((f) => {
@@ -345,7 +347,7 @@ export class FileSubmissionPostManager extends BasePostManager {
     }
 
     const { fileOptions } = instance.decoratedProps;
-    const allowedMimeTypes = fileOptions.acceptedMimeTypes ?? [];
+    const allowedMimeTypes = fileOptions?.acceptedMimeTypes ?? [];
     const fileType = getFileType(file.mimeType);
 
     if (fileType === FileType.IMAGE) {
@@ -373,7 +375,7 @@ export class FileSubmissionPostManager extends BasePostManager {
 
     if (
       fileType === FileType.TEXT &&
-      file.hasAltFile &&
+      file.altFile &&
       !mimeTypeIsAccepted(file.mimeType, allowedMimeTypes)
     ) {
       // Use alt file if it exists and is a text file

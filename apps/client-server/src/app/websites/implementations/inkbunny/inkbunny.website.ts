@@ -1,4 +1,3 @@
-
 import {
   ILoginState,
   ImageResizeProps,
@@ -158,7 +157,7 @@ export default class Inkbunny
     return new InkbunnyFileSubmission();
   }
 
-  calculateImageResize(): ImageResizeProps {
+  calculateImageResize(): ImageResizeProps | undefined {
     return undefined;
   }
 
@@ -251,9 +250,7 @@ export default class Inkbunny
     } catch (error) {
       this.logger.error('Unexpected error during Inkbunny submission', error);
       return PostResponse.fromWebsite(this)
-        .withException(
-          error instanceof Error ? error : new Error(String(error)),
-        )
+        .withException(error)
         .withAdditionalInfo({
           fileCount: files.length,
           batchIndex: batch.index,

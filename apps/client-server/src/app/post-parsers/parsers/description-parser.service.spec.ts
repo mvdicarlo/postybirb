@@ -3,11 +3,11 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
 import { DescriptionField } from '@postybirb/form-builder';
 import {
-    Description,
-    DescriptionType,
-    DescriptionValue,
-    IWebsiteOptions,
-    TipTapNode,
+  Description,
+  DescriptionType,
+  DescriptionValue,
+  IWebsiteOptions,
+  TipTapNode,
 } from '@postybirb/types';
 import { WEBSITE_IMPLEMENTATIONS } from '../../constants';
 import { CustomShortcutsService } from '../../custom-shortcuts/custom-shortcuts.service';
@@ -358,7 +358,7 @@ describe('DescriptionParserService', () => {
       ],
     };
     const websiteOptions = createWebsiteOptions(websiteDesc);
-    websiteOptions.data.description.overrideDefault = true;
+    websiteOptions.data.description!.overrideDefault = true;
     const description = await service.parse(
       instance as unknown as UnknownWebsite,
       new DefaultWebsiteOptions(defaultOptions.data),
@@ -666,9 +666,7 @@ describe('DescriptionParserService', () => {
         content: [
           {
             type: 'paragraph',
-            content: [
-              { type: 'customShortcut', attrs: { id: 'cs-link' } },
-            ],
+            content: [{ type: 'customShortcut', attrs: { id: 'cs-link' } }],
           },
         ],
       };
@@ -834,7 +832,7 @@ describe('DescriptionParserService', () => {
       };
 
       const defaultOptions = createWebsiteOptions(descriptionWithTitle);
-      defaultOptions.data.description.insertTitle = true;
+      defaultOptions.data.description!.insertTitle = true;
       const websiteOptions = createWebsiteOptions(undefined);
       const description = await service.parse(
         instance as unknown as UnknownWebsite,
@@ -847,7 +845,7 @@ describe('DescriptionParserService', () => {
       expect(description).toMatchInlineSnapshot(
         `"<div>Title: <span>My Title</span></div>"`,
       );
-      expect((description.match(/My Title/g) || []).length).toBe(1);
+      expect((description!.match(/My Title/g) || []).length).toBe(1);
     });
 
     it('should not double-insert tags when tagsShortcut is present and insertTags is true', async () => {
@@ -874,7 +872,7 @@ describe('DescriptionParserService', () => {
       };
 
       const defaultOptions = createWebsiteOptions(descriptionWithTags);
-      defaultOptions.data.description.insertTags = true;
+      defaultOptions.data.description!.insertTags = true;
       const websiteOptions = createWebsiteOptions(undefined);
       const description = await service.parse(
         instance as unknown as UnknownWebsite,
@@ -887,7 +885,7 @@ describe('DescriptionParserService', () => {
       expect(description).toMatchInlineSnapshot(
         `"<div>Tags: <span>#tag1 #tag2</span></div>"`,
       );
-      expect((description.match(/#tag1 #tag2/g) || []).length).toBe(1);
+      expect((description!.match(/#tag1 #tag2/g) || []).length).toBe(1);
     });
 
     it('should render all system shortcuts together in plaintext', async () => {
