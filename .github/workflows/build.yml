@@ -16,18 +16,22 @@ jobs:
             os: macos-latest
             platform: mac
             arch: x64
+
           - name: macOS (arm64)
             os: macos-latest
             platform: mac
             arch: arm64
+
           - name: Linux (x64)
             os: ubuntu-latest
             platform: linux
             arch: x64
+
           - name: Linux (arm64)
             os: ubuntu-24.04-arm
             platform: linux
             arch: arm64
+
           - name: Windows (x64)
             os: windows-latest
             platform: win
@@ -171,9 +175,11 @@ jobs:
 
       - name: Build and publish a Docker image for '${{github.repository}}'
         uses: macbre/push-to-ghcr@master
-        if: matrix.platform == 'linux' && matrix.arch == 'x64'
+
+        if: matrix.platform == 'linux' && (matrix.arch == 'x64' || matrix.arch == 'arm64')
         with:
           image_name: "${{github.repository}}"
-          extra_args: --tag ghcr.io/${{github.repository}}:${{steps.packageVersion.outputs.result}}
+          image_tag: latest,${{steps.packageVersion.outputs.result}}
+          platforms: "linux/${{ matrix.arch == 'x64' && 'amd64' || 'arm64' }}"
           github_token: ${{ secrets.GITHUB_TOKEN }}
           dockerfile: "./Dockerfile"
