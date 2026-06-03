@@ -79,7 +79,7 @@ type TumblrPostResponse = {
     [FileType.AUDIO]: FileSize.megabytes(10),
     [FileType.VIDEO]: FileSize.megabytes(500),
     [FileType.IMAGE]: FileSize.megabytes(20),
-    'image/gif': FileSize.megabytes(3),
+    'image/gif': FileSize.megabytes(10),
   },
 })
 export default class Tumblr
