@@ -168,6 +168,8 @@ jobs:
         uses: actions/github-script@v8
         id: packageVersion
         with:
+          # Prevent action from using JSON.stringify on result string to remove " wrapping around version
+          result-encoding: string
           script: |
             const fs = require('fs');
             const pkg = JSON.parse(fs.readFileSync("package.json", "utf8"))
