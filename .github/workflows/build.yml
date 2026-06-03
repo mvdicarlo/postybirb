@@ -12,14 +12,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: macOS (x64)
+          - name: macOS (universal)
             os: macos-latest
             platform: mac
-            arch: x64
-          - name: macOS (arm64)
-            os: macos-latest
-            platform: mac
-            arch: arm64
+            arch: universal
           - name: Linux (x64)
             os: ubuntu-latest
             platform: linux
@@ -35,22 +31,28 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-
+      # Its required to enable corepack before node install because it uses yarn to get cache dir
+      # https://github.com/actions/setup-node/issues/531#issuecomment-1217094233
+      # On migration to node 26 for actions corepack will need to be installed using npm
       - name: Enable corepack to use Yarn v4
         run: |
+          # Replaces yarn in PATH with corepack's yarn shim
           corepack enable
+          # Downloads yarn
           corepack prepare --activate
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: yarn
+
       - name: Cache Electron binaries
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.cache/electron
@@ -131,7 +133,7 @@ jobs:
         run: corepack yarn inject:app-insights
 
       - name: Build application
-        run: corepack yarn build:prod
+        run: yarn build:prod
         env:
           NODE_ENV: production
 
@@ -140,13 +142,13 @@ jobs:
 
       - name: Build Electron app (fork)
         if: github.event.repository.fork
-        run: corepack yarn electron-builder --${{ matrix.platform }} --${{ matrix.arch }} --publish=always
+        run: yarn electron-builder --${{ matrix.platform }} --${{ matrix.arch }} --publish=always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Electron app
         if: (!github.event.repository.fork)
-        run: corepack yarn electron-builder --${{ matrix.platform }} --${{ matrix.arch }} --publish=always
+        run: yarn electron-builder --${{ matrix.platform }} --${{ matrix.arch }} --publish=always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           APPLE_ID: ${{ secrets.APPLE_ID }}

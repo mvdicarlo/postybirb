@@ -154,7 +154,3 @@ web-socket and https.
 ### PostyBirb-Cloud-Server
 
 Used for functions that are impossible to implement without having a dedicated server (e.g. hosting images for Instagram uploads)
-
----
-
-This project was generated using [Nx](https://nx.dev).

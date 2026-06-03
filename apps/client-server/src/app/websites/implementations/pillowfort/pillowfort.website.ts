@@ -1,9 +1,9 @@
 import {
-  ILoginState,
-  ImageResizeProps,
-  PostData,
-  PostResponse,
-  SubmissionRating,
+    ILoginState,
+    ImageResizeProps,
+    PostData,
+    PostResponse,
+    SubmissionRating,
 } from '@postybirb/types';
 import { parse } from 'node-html-parser';
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -37,6 +37,7 @@ import { PillowfortMessageSubmission } from './models/pillowfort-message-submiss
   acceptedFileSizes: {
     '*': FileSize.megabytes(2),
   },
+  fileBatchSize: 100,
 })
 export default class Pillowfort
   extends Website<PillowfortAccountData>

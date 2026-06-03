@@ -1,14 +1,14 @@
 import { SelectOption } from '@postybirb/form-builder';
 import { FormFile } from '@postybirb/http/types';
 import {
-  DynamicObject,
-  FileType,
-  ILoginState,
-  ImageResizeProps,
-  ISubmissionFile,
-  PostData,
-  PostResponse,
-  SimpleValidationResult,
+    DynamicObject,
+    FileType,
+    ILoginState,
+    ImageResizeProps,
+    ISubmissionFile,
+    PostData,
+    PostResponse,
+    SimpleValidationResult,
 } from '@postybirb/types';
 import parse from 'node-html-parser';
 import { parse as parseFileName } from 'path';
@@ -32,9 +32,9 @@ import { PatreonCampaignResponse } from './models/patreon-campaign-types';
 import { PatreonCollectionResponse } from './models/patreon-collection-types';
 import { PatreonFileSubmission } from './models/patreon-file-submission';
 import {
-  PatreonMediaType,
-  PatreonMediaUploadRequest,
-  PatreonMediaUploadResponse,
+    PatreonMediaType,
+    PatreonMediaUploadRequest,
+    PatreonMediaUploadResponse,
 } from './models/patreon-media-upload-types';
 import { PatreonMessageSubmission } from './models/patreon-message-submission';
 import { PatreonNewPostResponse } from './models/patreon-post-types';
@@ -83,6 +83,7 @@ type PatreonTagSegment = Array<{
   acceptedFileSizes: {
     '*': FileSize.megabytes(200),
   },
+  fileBatchSize: 100,
 })
 @SupportsUsernameShortcut({
   id: 'patreon',
