@@ -18,14 +18,14 @@ import {
   calculateImageResize,
   supportsImage,
 } from '@postybirb/utils/file-type';
-import { Api, TelegramClient } from 'telegram';
-import { CustomFile } from 'telegram/client/uploads';
-import { Entity } from 'telegram/define';
-import { HTMLParser as HTMLToTelegram } from 'telegram/extensions/html';
-import { LogLevel } from 'telegram/extensions/Logger';
-import { returnBigInt } from 'telegram/Helpers';
-import { ProxyInterface } from 'telegram/network/connection/TCPMTProxy';
-import { StringSession } from 'telegram/sessions';
+import { Api, TelegramClient } from 'teleproto';
+import { CustomFile } from 'teleproto/client/uploads';
+import { Entity } from 'teleproto/define';
+import { HTMLParser as HTMLToTelegram } from 'teleproto/extensions/html';
+import { LogLevel } from 'teleproto/extensions/Logger';
+import { returnBigInt } from 'teleproto/Helpers';
+import { ProxyInterface } from 'teleproto/network/connection/TCPMTProxy';
+import { StringSession } from 'teleproto/sessions';
 import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
 import { HtmlConverter } from '../../../post-parsers/models/description-node/converters/html-converter';
 import { ConversionContext } from '../../../post-parsers/models/description-node/description-node.base';
