@@ -6,15 +6,6 @@ import {
 import 'reflect-metadata';
 import { PostyBirbService } from './postybirb-service';
 
-/**
- * Phase E Step 24 — base service accepts only the lib-side
- * `EntityRepository`. The legacy `PostyBirbDatabase` wrapper, the
- * `adaptEntityRepository` shim, and the `string`-key constructor
- * overload are gone. `EntityNotFoundError` is now surfaced verbatim
- * (a global exception filter remaps it to a 404 at the HTTP boundary).
- *
- * @see docs/DRIZZLE_REPOSITORY_MIGRATION_IMPLEMENTATION.md
- */
 class TagConvertersTestService extends PostyBirbService<TagConverterRepository> {
   constructor(repository: TagConverterRepository) {
     super(repository);
