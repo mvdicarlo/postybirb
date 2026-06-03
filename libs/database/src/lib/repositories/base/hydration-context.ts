@@ -23,6 +23,16 @@ import type { SchemaKey } from '../../helper-types';
  * sequential `repo.findById(x)` calls produce entities that do NOT share
  * identity — separate fetches return separate snapshots.
  */
+/**
+ * Minimal structural shape of an entity class as far as the hydration
+ * context is concerned: a static `fromRow` factory that takes a row and
+ * a context. Used by `hydrateOne` / `hydrateMany` so callers pass the
+ * class itself rather than re-typing `(r) => X.fromRow(r, ctx)`.
+ */
+export interface FromRowable<R extends { id: EntityId }, E> {
+  fromRow(row: R, ctx: HydrationContext): E;
+}
+
 export class HydrationContext {
   private readonly cache = new Map<string, unknown>();
 
@@ -55,6 +65,57 @@ export class HydrationContext {
       populate(instance);
     }
     return instance;
+  }
+
+  /**
+   * Sugar over `getOrCreate` for the common case where the construct
+   * step is just `new EntityClass(row)`. Use this in entity `fromRow`
+   * factories to keep the call site to a single line plus the relation
+   * populator.
+   *
+   * Example:
+   * ```ts
+   * return ctx.hydrate('AccountSchema', row, Account, (e) => {
+   *   if (row.websiteData) e.websiteData = ctx.hydrateOne(WebsiteData, row.websiteData);
+   * });
+   * ```
+   */
+  public hydrate<E>(
+    schemaKey: SchemaKey,
+    row: { id: EntityId },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    EntityClass: new (init: any) => E,
+    populate?: (instance: E) => void,
+  ): E {
+    return this.getOrCreate(
+      schemaKey,
+      row.id,
+      () => new EntityClass(row),
+      populate,
+    );
+  }
+
+  /**
+   * Hydrate a single eager-loaded relation row through the same context.
+   * Caller is responsible for the `if (row.relation)` guard — this helper
+   * exists purely to drop the repeated `EntityClass.fromRow(r, ctx)` form.
+   */
+  public hydrateOne<R extends { id: EntityId }, E>(
+    EntityClass: FromRowable<R, E>,
+    row: R,
+  ): E {
+    return EntityClass.fromRow(row, this);
+  }
+
+  /**
+   * Hydrate an array of eager-loaded relation rows through the same
+   * context. Caller is responsible for the `if (row.relation)` guard.
+   */
+  public hydrateMany<R extends { id: EntityId }, E>(
+    EntityClass: FromRowable<R, E>,
+    rows: readonly R[],
+  ): E[] {
+    return rows.map((r) => EntityClass.fromRow(r, this));
   }
 
   /**

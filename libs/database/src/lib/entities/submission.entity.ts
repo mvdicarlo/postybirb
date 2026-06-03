@@ -131,25 +131,16 @@ export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
       row.id,
       () => new Submission<TM>(row as unknown as Partial<ISubmission<TM>>),
       (e) => {
-        if (row.options)
-          e.options = row.options.map((o) => WebsiteOptions.fromRow(o, ctx));
-        if (row.files)
-          e.files = row.files.map((f) => SubmissionFile.fromRow(f, ctx));
-        if (row.posts)
-          e.posts = row.posts.map((p) => PostRecord.fromRow(p, ctx));
-        if (row.postQueueRecord)
-          e.postQueueRecord = PostQueueRecord.fromRow(
+        if (row.options) e.options = ctx.hydrateMany(WebsiteOptions, row.options);
+        if (row.files) e.files = ctx.hydrateMany(SubmissionFile, row.files);
+        if (row.posts) e.posts = ctx.hydrateMany(PostRecord, row.posts);
+        if (row.postQueueRecord) {
+          e.postQueueRecord = ctx.hydrateOne(
+            PostQueueRecord,
             row.postQueueRecord,
-            ctx,
           );
+        }
       },
     );
-  }
-
-  static fromRows<TM extends ISubmissionMetadata = ISubmissionMetadata>(
-    rows: readonly SubmissionRow[],
-    ctx: HydrationContext = new HydrationContext(),
-  ): Submission<TM>[] {
-    return rows.map((r) => Submission.fromRow<TM>(r, ctx));
   }
 }

@@ -66,13 +66,6 @@ export class Notification
     row: NotificationRow,
     ctx: HydrationContext = new HydrationContext(),
   ): Notification {
-    return ctx.getOrCreate('NotificationSchema', row.id, () => new Notification(row as Partial<INotification>));
-  }
-
-  static fromRows(
-    rows: readonly NotificationRow[],
-    ctx: HydrationContext = new HydrationContext(),
-  ): Notification[] {
-    return rows.map((r) => Notification.fromRow(r, ctx));
+    return ctx.hydrate('NotificationSchema', row, Notification);
   }
 }

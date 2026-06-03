@@ -163,27 +163,16 @@ export class SubmissionFile
     row: SubmissionFileRow,
     ctx: HydrationContext = new HydrationContext(),
   ): SubmissionFile {
-    return ctx.getOrCreate(
-      'SubmissionFileSchema',
-      row.id,
-      () => new SubmissionFile(row as unknown as Partial<ISubmissionFile>),
-      (e) => {
-        if (row.submission)
-          e.submission = Submission.fromRow<FileSubmissionMetadata>(
-            row.submission,
-            ctx,
-          );
-        if (row.file) e.file = FileBuffer.fromRow(row.file, ctx);
-        if (row.thumbnail) e.thumbnail = FileBuffer.fromRow(row.thumbnail, ctx);
-        if (row.altFile) e.altFile = FileBuffer.fromRow(row.altFile, ctx);
-      },
-    );
-  }
-
-  static fromRows(
-    rows: readonly SubmissionFileRow[],
-    ctx: HydrationContext = new HydrationContext(),
-  ): SubmissionFile[] {
-    return rows.map((r) => SubmissionFile.fromRow(r, ctx));
+    return ctx.hydrate('SubmissionFileSchema', row, SubmissionFile, (e) => {
+      if (row.submission) {
+        e.submission = Submission.fromRow<FileSubmissionMetadata>(
+          row.submission,
+          ctx,
+        );
+      }
+      if (row.file) e.file = ctx.hydrateOne(FileBuffer, row.file);
+      if (row.thumbnail) e.thumbnail = ctx.hydrateOne(FileBuffer, row.thumbnail);
+      if (row.altFile) e.altFile = ctx.hydrateOne(FileBuffer, row.altFile);
+    });
   }
 }

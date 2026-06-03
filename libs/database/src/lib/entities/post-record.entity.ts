@@ -104,30 +104,12 @@ export class PostRecord
     row: PostRecordRow,
     ctx: HydrationContext = new HydrationContext(),
   ): PostRecord {
-    return ctx.getOrCreate(
-      'PostRecordSchema',
-      row.id,
-      () => new PostRecord(row as unknown as Partial<IPostRecord>),
-      (e) => {
-        if (row.submission)
-          e.submission = Submission.fromRow(row.submission, ctx);
-        if (row.origin) e.origin = PostRecord.fromRow(row.origin, ctx);
-        if (row.chainedRecords)
-          e.chainedRecords = row.chainedRecords.map((c) =>
-            PostRecord.fromRow(c, ctx),
-          );
-        if (row.events)
-          e.events = row.events.map((ev) => PostEvent.fromRow(ev, ctx));
-        if (row.postQueueRecord)
-          e.postQueueRecord = PostQueueRecord.fromRow(row.postQueueRecord, ctx);
-      },
-    );
-  }
-
-  static fromRows(
-    rows: readonly PostRecordRow[],
-    ctx: HydrationContext = new HydrationContext(),
-  ): PostRecord[] {
-    return rows.map((r) => PostRecord.fromRow(r, ctx));
+    return ctx.hydrate('PostRecordSchema', row, PostRecord, (e) => {
+      if (row.submission) e.submission = ctx.hydrateOne(Submission, row.submission);
+      if (row.origin) e.origin = ctx.hydrateOne(PostRecord, row.origin);
+      if (row.chainedRecords) e.chainedRecords = ctx.hydrateMany(PostRecord, row.chainedRecords);
+      if (row.events) e.events = ctx.hydrateMany(PostEvent, row.events);
+      if (row.postQueueRecord) e.postQueueRecord = ctx.hydrateOne(PostQueueRecord, row.postQueueRecord);
+    });
   }
 }

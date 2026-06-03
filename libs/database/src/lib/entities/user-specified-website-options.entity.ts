@@ -64,20 +64,13 @@ export class UserSpecifiedWebsiteOptions
     row: UserSpecifiedWebsiteOptionsRow,
     ctx: HydrationContext = new HydrationContext(),
   ): UserSpecifiedWebsiteOptions {
-    return ctx.getOrCreate(
+    return ctx.hydrate(
       'UserSpecifiedWebsiteOptionsSchema',
-      row.id,
-      () => new UserSpecifiedWebsiteOptions(row as Partial<IUserSpecifiedWebsiteOptions>),
+      row,
+      UserSpecifiedWebsiteOptions,
       (e) => {
-        if (row.account) e.account = Account.fromRow(row.account, ctx);
+        if (row.account) e.account = ctx.hydrateOne(Account, row.account);
       },
     );
-  }
-
-  static fromRows(
-    rows: readonly UserSpecifiedWebsiteOptionsRow[],
-    ctx: HydrationContext = new HydrationContext(),
-  ): UserSpecifiedWebsiteOptions[] {
-    return rows.map((r) => UserSpecifiedWebsiteOptions.fromRow(r, ctx));
   }
 }

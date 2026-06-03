@@ -85,22 +85,9 @@ export class WebsiteOptions
     row: WebsiteOptionsRow,
     ctx: HydrationContext = new HydrationContext(),
   ): WebsiteOptions {
-    return ctx.getOrCreate(
-      'WebsiteOptionsSchema',
-      row.id,
-      () => new WebsiteOptions(row as unknown as Partial<IWebsiteOptions> & { submissionId?: SubmissionId }),
-      (e) => {
-        if (row.account) e.account = Account.fromRow(row.account, ctx);
-        if (row.submission)
-          e.submission = Submission.fromRow(row.submission, ctx);
-      },
-    );
-  }
-
-  static fromRows(
-    rows: readonly WebsiteOptionsRow[],
-    ctx: HydrationContext = new HydrationContext(),
-  ): WebsiteOptions[] {
-    return rows.map((r) => WebsiteOptions.fromRow(r, ctx));
+    return ctx.hydrate('WebsiteOptionsSchema', row, WebsiteOptions, (e) => {
+      if (row.account) e.account = ctx.hydrateOne(Account, row.account);
+      if (row.submission) e.submission = ctx.hydrateOne(Submission, row.submission);
+    });
   }
 }

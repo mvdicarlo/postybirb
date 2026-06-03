@@ -46,13 +46,6 @@ export class TagConverter
     row: TagConverterRow,
     ctx: HydrationContext = new HydrationContext(),
   ): TagConverter {
-    return ctx.getOrCreate('TagConverterSchema', row.id, () => new TagConverter(row));
-  }
-
-  static fromRows(
-    rows: readonly TagConverterRow[],
-    ctx: HydrationContext = new HydrationContext(),
-  ): TagConverter[] {
-    return rows.map((r) => TagConverter.fromRow(r, ctx));
+    return ctx.hydrate('TagConverterSchema', row, TagConverter);
   }
 }

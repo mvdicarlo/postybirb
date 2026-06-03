@@ -90,22 +90,9 @@ export class PostEvent
     row: PostEventRow,
     ctx: HydrationContext = new HydrationContext(),
   ): PostEvent {
-    return ctx.getOrCreate(
-      'PostEventSchema',
-      row.id,
-      () => new PostEvent(row as Partial<IPostEvent>),
-      (e) => {
-        if (row.postRecord)
-          e.postRecord = PostRecord.fromRow(row.postRecord, ctx);
-        if (row.account) e.account = Account.fromRow(row.account, ctx);
-      },
-    );
-  }
-
-  static fromRows(
-    rows: readonly PostEventRow[],
-    ctx: HydrationContext = new HydrationContext(),
-  ): PostEvent[] {
-    return rows.map((r) => PostEvent.fromRow(r, ctx));
+    return ctx.hydrate('PostEventSchema', row, PostEvent, (e) => {
+      if (row.postRecord) e.postRecord = ctx.hydrateOne(PostRecord, row.postRecord);
+      if (row.account) e.account = ctx.hydrateOne(Account, row.account);
+    });
   }
 }

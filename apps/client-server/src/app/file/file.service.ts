@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign */
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { EntityNotFoundError, FileBufferRepository, SubmissionFile, SubmissionFileRepository } from '@postybirb/database';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { FileBufferRepository, SubmissionFile, SubmissionFileRepository } from '@postybirb/database';
 import { read } from '@postybirb/fs';
 import { Logger } from '@postybirb/logger';
 import {
@@ -143,14 +143,7 @@ export class FileService {
    * @param {EntityId} id
    */
   public async findFile(id: EntityId): Promise<SubmissionFile> {
-    try {
-      return await this.fileRepository.findByIdOrThrow(id);
-    } catch (err) {
-      if (err instanceof EntityNotFoundError) {
-        throw new NotFoundException(err.message);
-      }
-      throw err;
-    }
+    return this.fileRepository.findByIdOrThrow(id);
   }
 
   /**

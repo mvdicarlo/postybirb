@@ -64,23 +64,9 @@ export class PostQueueRecord
     row: PostQueueRecordRow,
     ctx: HydrationContext = new HydrationContext(),
   ): PostQueueRecord {
-    return ctx.getOrCreate(
-      'PostQueueRecordSchema',
-      row.id,
-      () => new PostQueueRecord(row as unknown as Partial<IPostQueueRecord>),
-      (e) => {
-        if (row.postRecord)
-          e.postRecord = PostRecord.fromRow(row.postRecord, ctx);
-        if (row.submission)
-          e.submission = Submission.fromRow(row.submission, ctx);
-      },
-    );
-  }
-
-  static fromRows(
-    rows: readonly PostQueueRecordRow[],
-    ctx: HydrationContext = new HydrationContext(),
-  ): PostQueueRecord[] {
-    return rows.map((r) => PostQueueRecord.fromRow(r, ctx));
+    return ctx.hydrate('PostQueueRecordSchema', row, PostQueueRecord, (e) => {
+      if (row.postRecord) e.postRecord = ctx.hydrateOne(PostRecord, row.postRecord);
+      if (row.submission) e.submission = ctx.hydrateOne(Submission, row.submission);
+    });
   }
 }

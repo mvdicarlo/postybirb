@@ -43,13 +43,6 @@ export class TagGroup extends DatabaseEntity<ITagGroup> implements ITagGroup {
     row: TagGroupRow,
     ctx: HydrationContext = new HydrationContext(),
   ): TagGroup {
-    return ctx.getOrCreate('TagGroupSchema', row.id, () => new TagGroup(row));
-  }
-
-  static fromRows(
-    rows: readonly TagGroupRow[],
-    ctx: HydrationContext = new HydrationContext(),
-  ): TagGroup[] {
-    return rows.map((r) => TagGroup.fromRow(r, ctx));
+    return ctx.hydrate('TagGroupSchema', row, TagGroup);
   }
 }

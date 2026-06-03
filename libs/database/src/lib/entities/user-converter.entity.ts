@@ -46,13 +46,6 @@ export class UserConverter
     row: UserConverterRow,
     ctx: HydrationContext = new HydrationContext(),
   ): UserConverter {
-    return ctx.getOrCreate('UserConverterSchema', row.id, () => new UserConverter(row));
-  }
-
-  static fromRows(
-    rows: readonly UserConverterRow[],
-    ctx: HydrationContext = new HydrationContext(),
-  ): UserConverter[] {
-    return rows.map((r) => UserConverter.fromRow(r, ctx));
+    return ctx.hydrate('UserConverterSchema', row, UserConverter);
   }
 }

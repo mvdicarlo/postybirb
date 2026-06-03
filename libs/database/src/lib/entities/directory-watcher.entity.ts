@@ -65,20 +65,8 @@ export class DirectoryWatcher
     row: DirectoryWatcherRow,
     ctx: HydrationContext = new HydrationContext(),
   ): DirectoryWatcher {
-    return ctx.getOrCreate(
-      'DirectoryWatcherSchema',
-      row.id,
-      () => new DirectoryWatcher(row as unknown as Partial<IDirectoryWatcher>),
-      (e) => {
-        if (row.template) e.template = Submission.fromRow(row.template, ctx);
-      },
-    );
-  }
-
-  static fromRows(
-    rows: readonly DirectoryWatcherRow[],
-    ctx: HydrationContext = new HydrationContext(),
-  ): DirectoryWatcher[] {
-    return rows.map((r) => DirectoryWatcher.fromRow(r, ctx));
+    return ctx.hydrate('DirectoryWatcherSchema', row, DirectoryWatcher, (e) => {
+      if (row.template) e.template = ctx.hydrateOne(Submission, row.template);
+    });
   }
 }

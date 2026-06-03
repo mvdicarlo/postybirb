@@ -58,13 +58,6 @@ export class CustomShortcut
     row: CustomShortcutRow,
     ctx: HydrationContext = new HydrationContext(),
   ): CustomShortcut {
-    return ctx.getOrCreate('CustomShortcutSchema', row.id, () => new CustomShortcut(row));
-  }
-
-  static fromRows(
-    rows: readonly CustomShortcutRow[],
-    ctx: HydrationContext = new HydrationContext(),
-  ): CustomShortcut[] {
-    return rows.map((r) => CustomShortcut.fromRow(r, ctx));
+    return ctx.hydrate('CustomShortcutSchema', row, CustomShortcut);
   }
 }

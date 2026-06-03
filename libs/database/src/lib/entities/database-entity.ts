@@ -1,6 +1,7 @@
 import type { EntityId, IEntity, IEntityDto } from '@postybirb/types';
 import { v4 } from 'uuid';
 import type { SchemaKey } from '../helper-types';
+import { HydrationContext } from '../repositories/base/hydration-context';
 
 /**
  * Abstract base for all database entities in `libs/database`.
@@ -62,5 +63,23 @@ export abstract class DatabaseEntity<
 
   public toJSON(): string {
     return JSON.stringify(this.toDTO());
+  }
+
+  /**
+   * Default implementation of `fromRows` for any subclass that defines a
+   * static `fromRow(row, ctx)`. Hydrates each row through the same
+   * `HydrationContext` so identity dedup and back-reference resolution
+   * work across the batch.
+   *
+   * Subclasses with extra type parameters on `fromRow` (e.g.
+   * `Submission.fromRow<TM>`) override this with their own variant that
+   * threads the parameter through.
+   */
+  static fromRows<R extends { id: EntityId }, E>(
+    this: { fromRow(row: R, ctx: HydrationContext): E },
+    rows: readonly R[],
+    ctx: HydrationContext = new HydrationContext(),
+  ): E[] {
+    return rows.map((r) => this.fromRow(r, ctx));
   }
 }

@@ -52,13 +52,6 @@ export class WebsiteData<T extends DynamicObject = DynamicObject>
     row: WebsiteDataRow,
     ctx: HydrationContext = new HydrationContext(),
   ): WebsiteData {
-    return ctx.getOrCreate('WebsiteDataSchema', row.id, () => new WebsiteData(row as Partial<IWebsiteData>));
-  }
-
-  static fromRows(
-    rows: readonly WebsiteDataRow[],
-    ctx: HydrationContext = new HydrationContext(),
-  ): WebsiteData[] {
-    return rows.map((r) => WebsiteData.fromRow(r, ctx));
+    return ctx.hydrate('WebsiteDataSchema', row, WebsiteData);
   }
 }

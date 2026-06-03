@@ -80,13 +80,6 @@ export class FileBuffer
     row: FileBufferRow,
     ctx: HydrationContext = new HydrationContext(),
   ): FileBuffer {
-    return ctx.getOrCreate('FileBufferSchema', row.id, () => new FileBuffer(row));
-  }
-
-  static fromRows(
-    rows: readonly FileBufferRow[],
-    ctx: HydrationContext = new HydrationContext(),
-  ): FileBuffer[] {
-    return rows.map((r) => FileBuffer.fromRow(r, ctx));
+    return ctx.hydrate('FileBufferSchema', row, FileBuffer);
   }
 }

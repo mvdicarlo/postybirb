@@ -111,22 +111,10 @@ export class Account extends DatabaseEntity<IAccount> implements IAccount {
     row: AccountRow,
     ctx: HydrationContext = new HydrationContext(),
   ): Account {
-    return ctx.getOrCreate(
-      'AccountSchema',
-      row.id,
-      () => new Account(row),
-      (e) => {
-        if (row.websiteData) {
-          e.websiteData = WebsiteData.fromRow(row.websiteData, ctx);
-        }
-      },
-    );
-  }
-
-  static fromRows(
-    rows: readonly AccountRow[],
-    ctx: HydrationContext = new HydrationContext(),
-  ): Account[] {
-    return rows.map((r) => Account.fromRow(r, ctx));
+    return ctx.hydrate('AccountSchema', row, Account, (e) => {
+      if (row.websiteData) {
+        e.websiteData = ctx.hydrateOne(WebsiteData, row.websiteData);
+      }
+    });
   }
 }

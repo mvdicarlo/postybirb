@@ -47,13 +47,6 @@ export class Settings extends DatabaseEntity<ISettings> implements ISettings {
     row: SettingsRow,
     ctx: HydrationContext = new HydrationContext(),
   ): Settings {
-    return ctx.getOrCreate('SettingsSchema', row.id, () => new Settings(row));
-  }
-
-  static fromRows(
-    rows: readonly SettingsRow[],
-    ctx: HydrationContext = new HydrationContext(),
-  ): Settings[] {
-    return rows.map((r) => Settings.fromRow(r, ctx));
+    return ctx.hydrate('SettingsSchema', row, Settings);
   }
 }
