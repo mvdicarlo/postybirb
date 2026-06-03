@@ -6,7 +6,7 @@ export class DiscordDescriptionConverter extends MarkdownConverter {
   convert(nodes: TipTapNode[], context: ConversionContext): string {
     let markdown = super.convert(nodes, context);
 
-    // Discord does not recognize links like [https://example.com](https://example.com)
+    // Discord does not recognize links that have display text same as the link itself, like [https://example.com](https://example.com)
     // use https://example.com instead
     markdown = markdown.replace(
       /\[([^\]]+)\]\(([^)]+)\)/gm,
