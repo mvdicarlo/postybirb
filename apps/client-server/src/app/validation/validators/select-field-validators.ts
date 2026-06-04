@@ -82,9 +82,9 @@ export async function validateSelectFieldValidOptions({
     if (field.allowMultiple) {
       // For multi-select, validate each selected value
       if (Array.isArray(currentValue)) {
-        const invalidOptions = currentValue
-          .filter((value) => !availableOptions.includes(value))
-          .map((e) => e + ' ' + availableOptions.join(' '));
+        const invalidOptions = currentValue.filter(
+          (value) => !availableOptions.includes(value),
+        );
 
         if (invalidOptions.length > 0) {
           validator.error(
@@ -98,7 +98,7 @@ export async function validateSelectFieldValidOptions({
       // For single-select, validate the selected value
       validator.error(
         'validation.select-field.invalid-option',
-        { invalidOptions: [currentValue + ' ' + availableOptions.join(' ')] },
+        { invalidOptions: [currentValue] },
         fieldName,
       );
     }
