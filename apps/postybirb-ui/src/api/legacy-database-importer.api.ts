@@ -6,6 +6,7 @@ export interface LegacyImportDto {
   accounts: boolean;
   tagConverters: boolean;
   submissions: boolean;
+  templates: boolean;
   customPath?: string;
 }
 

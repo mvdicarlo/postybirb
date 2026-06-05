@@ -16,6 +16,9 @@ export class LegacyImportDto {
   @IsBoolean()
   submissions: boolean;
 
+  @IsBoolean()
+  templates: boolean;
+
   @IsOptional()
   @IsString()
   customPath?: string;
