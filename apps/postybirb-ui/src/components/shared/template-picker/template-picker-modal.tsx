@@ -37,8 +37,8 @@ import {
   SubmissionRecord,
   useAccounts,
   useSubmissionsByType,
-  useTemplateSubmissions,
 } from '../../../stores';
+import { useSortedTemplateSubmissions } from '../../../stores/ui/templates-ui-store';
 import {
   showErrorNotification,
   showSuccessNotification,
@@ -108,7 +108,7 @@ export function TemplatePickerModal({
 }: TemplatePickerModalProps) {
   const { t } = useLingui();
   const accounts = useAccounts();
-  const templates = useTemplateSubmissions();
+  const templates = useSortedTemplateSubmissions(type);
   const submissions = useSubmissionsByType(type);
 
   // State for selected source templates/submissions
@@ -121,12 +121,6 @@ export function TemplatePickerModal({
   const [overrideTitle, setOverrideTitle] = useState(false);
   // Loading state
   const [isApplying, setIsApplying] = useState(false);
-
-  // Filter templates by type
-  const filteredTemplates = useMemo(
-    () => templates.filter((tmpl) => tmpl.type === type),
-    [templates, type],
-  );
 
   // Filter submissions (non-archived, not targets, same type)
   const filteredSubmissions = useMemo(
@@ -141,7 +135,7 @@ export function TemplatePickerModal({
 
   // Build options for MultiSelect
   const options: ComboboxItemGroup[] = useMemo(() => {
-    const templateItems: ComboboxItem[] = filteredTemplates.map((tmpl) => ({
+    const templateItems: ComboboxItem[] = templates.map((tmpl) => ({
       label: tmpl.title || t`Untitled Template`,
       value: tmpl.id,
     }));
@@ -155,19 +149,17 @@ export function TemplatePickerModal({
       { group: t`Templates`, items: templateItems },
       { group: t`Submissions`, items: submissionItems },
     ];
-  }, [filteredTemplates, filteredSubmissions, t]);
+  }, [templates, filteredSubmissions, t]);
 
   // Get the selected submissions/templates
   const selectedSources = useMemo(
     () =>
       selected
         .map((id) =>
-          [...filteredTemplates, ...filteredSubmissions].find(
-            (s) => s.id === id,
-          ),
+          [...templates, ...filteredSubmissions].find((s) => s.id === id),
         )
         .filter(Boolean) as SubmissionRecord[],
-    [selected, filteredTemplates, filteredSubmissions],
+    [selected, templates, filteredSubmissions],
   );
 
   // Group selected options by account
@@ -183,7 +175,7 @@ export function TemplatePickerModal({
 
       // Initialize account options on first selection
       if (!selectedWebsiteOptions && newSelected.length) {
-        const firstSource = [...filteredTemplates, ...filteredSubmissions].find(
+        const firstSource = [...templates, ...filteredSubmissions].find(
           (s) => s.id === newSelected[0],
         );
         if (firstSource) {
@@ -200,7 +192,7 @@ export function TemplatePickerModal({
         setSelectedWebsiteOptions(undefined);
       }
     },
-    [selectedWebsiteOptions, filteredTemplates, filteredSubmissions],
+    [selectedWebsiteOptions, templates, filteredSubmissions],
   );
 
   // Handle apply
@@ -214,7 +206,10 @@ export function TemplatePickerModal({
         const data = { ...opt.data };
 
         // Strip description if not overriding or if empty (check array length)
-        if (!overrideDescription || !data.description?.description?.content?.length) {
+        if (
+          !overrideDescription ||
+          !data.description?.description?.content?.length
+        ) {
           delete data.description;
         }
 
@@ -442,7 +437,14 @@ export function TemplatePickerModal({
       </Box>
 
       {/* Middle - Scrollable Content */}
-      <Box style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+      <Box
+        style={{
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: 0,
+        }}
+      >
         {selected.length > 0 && (
           <Box style={{ flexShrink: 0 }}>
             <Divider
