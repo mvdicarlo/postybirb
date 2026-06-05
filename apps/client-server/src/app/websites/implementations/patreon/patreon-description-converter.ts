@@ -31,6 +31,11 @@ const PatreonParagraph = Paragraph.extend({
       style: { default: '' },
     };
   },
+
+  // PostyBirb editor produces divs with align instead of paragaphs, so we need to specify it in order to parse it
+  parseHTML() {
+    return [{ tag: 'p' }, { tag: 'div' }];
+  },
 });
 
 /**

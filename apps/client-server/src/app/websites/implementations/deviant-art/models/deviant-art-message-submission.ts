@@ -9,7 +9,7 @@ export class DeviantArtMessageSubmission extends BaseWebsiteOptions {
   title: string;
 
   @DescriptionField({
-    descriptionType: DescriptionType.HTML,
+    descriptionType: DescriptionType.CUSTOM,
   })
   description: DescriptionValue;
 }

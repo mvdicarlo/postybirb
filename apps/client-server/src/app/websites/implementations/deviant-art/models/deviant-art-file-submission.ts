@@ -31,7 +31,7 @@ export class DeviantArtFileSubmission extends BaseWebsiteOptions {
   tags: TagValue;
 
   @DescriptionField({
-    descriptionType: DescriptionType.HTML,
+    descriptionType: DescriptionType.CUSTOM,
   })
   description: DescriptionValue;
 
