@@ -8,15 +8,18 @@ WORKDIR /source
 
 COPY . .
 
-# Conditional build - only build if release/linux-unpacked doesn't exist
-RUN if [ -d "./release/linux*unpacked" ]; then \
+# Conditional build - only build if release/linux*-unpacked doesn't exist.
+# Note: the directory name varies by arch (linux-unpacked, linux-arm64-unpacked),
+# so we expand the glob via `ls -d` rather than quoting it inside `[ -d ... ]`
+# (a quoted glob is treated as a literal path and never matches).
+RUN if ls -d ./release/linux*unpacked >/dev/null 2>&1; then \
         echo "Found existing build, copying..."; \
-        cp -r ./release/linux*unpacked/ /app;\
+        cp -r ./release/linux*unpacked/. /app;\
     else \
         echo "Building from source..."; rm -rf .nx && \
         CYPRESS_INSTALL_BINARY=0 corepack yarn install --inline-builds && \
         corepack yarn dist:linux --dir && \
-        cp -r ./release/linux*unpacked/ /app;\
+        cp -r ./release/linux*unpacked/. /app;\
     fi 
     
 FROM node:24-bookworm-slim
