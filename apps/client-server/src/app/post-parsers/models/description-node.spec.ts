@@ -1508,4 +1508,267 @@ describe('DescriptionNode', () => {
       expect(tree.toHtml()).toBe('<div><span>:iconNewName:</span></div>');
     });
   });
+
+  describe('expandBlockShortcuts (custom shortcut as sole paragraph child)', () => {
+    const signatureBlocks: TipTapNode[] = [
+      {
+        type: 'paragraph',
+        content: [{ type: 'text', text: 'My signature' }],
+      },
+    ];
+
+    function makeContext(website = 'newgrounds'): ConversionContext {
+      return {
+        website,
+        shortcuts: {},
+        customShortcuts: new Map([['sig-1', signatureBlocks]]),
+        defaultDescription: [],
+      };
+    }
+
+    it('should NOT produce nested block HTML when a shortcut is the sole paragraph child', () => {
+      const nodes: TipTapNode[] = [
+        {
+          type: 'paragraph',
+          content: [{ type: 'text', text: 'Hello world.' }],
+        },
+        {
+          // This is how the editor stores a shortcut on its own line
+          type: 'paragraph',
+          content: [
+            { type: 'customShortcut', attrs: { id: 'sig-1', only: '' } },
+          ],
+        },
+      ];
+
+      const tree = new DescriptionNodeTree(makeContext(), nodes, {
+        insertAd: false,
+      });
+
+      const html = tree.toHtml();
+
+      // Must NOT contain nested block elements
+      expect(html).not.toContain('<div><div>');
+      expect(html).not.toContain('</div></div>');
+
+      // Both the body text and the signature must appear
+      expect(html).toContain('Hello world.');
+      expect(html).toContain('My signature');
+
+      // The signature paragraph should be a sibling <div>, not nested
+      expect(html).toBe('<div>Hello world.</div><div>My signature</div>');
+    });
+
+    it('should expand shortcut blocks even when they contain multiple paragraphs', () => {
+      const multiBlockSignature: TipTapNode[] = [
+        {
+          type: 'paragraph',
+          content: [{ type: 'text', text: 'Line 1' }],
+        },
+        {
+          type: 'paragraph',
+          content: [{ type: 'text', text: 'Line 2' }],
+        },
+      ];
+
+      const nodes: TipTapNode[] = [
+        {
+          type: 'paragraph',
+          content: [{ type: 'text', text: 'Body.' }],
+        },
+        {
+          type: 'paragraph',
+          content: [
+            { type: 'customShortcut', attrs: { id: 'multi-sig', only: '' } },
+          ],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'newgrounds',
+        shortcuts: {},
+        customShortcuts: new Map([['multi-sig', multiBlockSignature]]),
+        defaultDescription: [],
+      };
+
+      const tree = new DescriptionNodeTree(context, nodes, { insertAd: false });
+      const html = tree.toHtml();
+
+      expect(html).not.toContain('<div><div>');
+      expect(html).toBe('<div>Body.</div><div>Line 1</div><div>Line 2</div>');
+    });
+
+    it('should treat whitespace-only text next to shortcut as empty and expand as blocks', () => {
+      const multiBlockSignature: TipTapNode[] = [
+        {
+          type: 'paragraph',
+          content: [{ type: 'text', text: 'Line 1' }],
+        },
+        {
+          type: 'paragraph',
+          content: [{ type: 'text', text: 'Line 2' }],
+        },
+      ];
+
+      const nodes: TipTapNode[] = [
+        {
+          type: 'paragraph',
+          content: [
+            { type: 'text', text: '   ' },
+            { type: 'customShortcut', attrs: { id: 'multi-sig', only: '' } },
+            { type: 'text', text: ' ' },
+          ],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'newgrounds',
+        shortcuts: {},
+        customShortcuts: new Map([['multi-sig', multiBlockSignature]]),
+        defaultDescription: [],
+      };
+
+      const tree = new DescriptionNodeTree(context, nodes, { insertAd: false });
+      const html = tree.toHtml();
+
+      // If rendered inline, this would contain <br>; block expansion must avoid that.
+      expect(html).not.toContain('<br>');
+      expect(html).toBe('<div>Line 1</div><div>Line 2</div>');
+    });
+
+    it('should NOT produce nested block HTML when a shortcut has additional inline siblings', () => {
+      const nodes: TipTapNode[] = [
+        {
+          type: 'paragraph',
+          content: [
+            { type: 'text', text: 'Prefix — ' },
+            { type: 'customShortcut', attrs: { id: 'sig-1', only: '' } },
+          ],
+        },
+      ];
+
+      const tree = new DescriptionNodeTree(makeContext(), nodes, {
+        insertAd: false,
+      });
+
+      const html = tree.toHtml();
+
+      // Must not produce nested block elements
+      expect(html).not.toContain('<div><div>');
+      expect(html).not.toContain('</div></div>');
+
+      // Both the prefix and signature content must appear
+      expect(html).toContain('Prefix');
+      expect(html).toContain('My signature');
+
+      // Everything should be inside a single flat block
+      expect(html).toBe('<div>Prefix — My signature</div>');
+    });
+
+    it('should respect the "only" restriction and keep the paragraph when the website is excluded', () => {
+      const nodes: TipTapNode[] = [
+        {
+          type: 'paragraph',
+          content: [{ type: 'text', text: 'Body.' }],
+        },
+        {
+          type: 'paragraph',
+          content: [
+            {
+              type: 'customShortcut',
+              attrs: { id: 'sig-1', only: 'furaffinity' },
+            },
+          ],
+        },
+      ];
+
+      // Website is 'newgrounds' but shortcut is only='furaffinity'
+      const tree = new DescriptionNodeTree(makeContext('newgrounds'), nodes, {
+        insertAd: false,
+      });
+
+      const html = tree.toHtml();
+
+      // Signature must NOT appear for newgrounds
+      expect(html).not.toContain('My signature');
+      expect(html).toContain('Body.');
+    });
+
+    it('should expand when the "only" restriction matches the current website', () => {
+      const nodes: TipTapNode[] = [
+        {
+          type: 'paragraph',
+          content: [{ type: 'text', text: 'Body.' }],
+        },
+        {
+          type: 'paragraph',
+          content: [
+            {
+              type: 'customShortcut',
+              attrs: { id: 'sig-1', only: 'newgrounds' },
+            },
+          ],
+        },
+      ];
+
+      const tree = new DescriptionNodeTree(makeContext('newgrounds'), nodes, {
+        insertAd: false,
+      });
+
+      const html = tree.toHtml();
+
+      expect(html).not.toContain('<div><div>');
+      expect(html).toBe('<div>Body.</div><div>My signature</div>');
+    });
+
+    it('should leave the paragraph intact when the shortcut ID is not in the context map', () => {
+      const nodes: TipTapNode[] = [
+        {
+          type: 'paragraph',
+          content: [
+            {
+              type: 'customShortcut',
+              attrs: { id: 'unknown-id', only: '' },
+            },
+          ],
+        },
+      ];
+
+      const context: ConversionContext = {
+        website: 'newgrounds',
+        shortcuts: {},
+        customShortcuts: new Map(), // no entries
+        defaultDescription: [],
+      };
+
+      const tree = new DescriptionNodeTree(context, nodes, { insertAd: false });
+
+      // Should not throw; returns empty string (inline converter also returns '')
+      expect(() => tree.toHtml()).not.toThrow();
+    });
+
+    it('should produce valid HTML output for plaintext and bbcode converters too', () => {
+      const nodes: TipTapNode[] = [
+        {
+          type: 'paragraph',
+          content: [{ type: 'text', text: 'Hello.' }],
+        },
+        {
+          type: 'paragraph',
+          content: [
+            { type: 'customShortcut', attrs: { id: 'sig-1', only: '' } },
+          ],
+        },
+      ];
+
+      const tree = new DescriptionNodeTree(makeContext(), nodes, {
+        insertAd: false,
+      });
+
+      expect(tree.toPlainText()).toContain('Hello.');
+      expect(tree.toPlainText()).toContain('My signature');
+      expect(tree.toBBCode()).toContain('Hello.');
+      expect(tree.toBBCode()).toContain('My signature');
+    });
+  });
 });
