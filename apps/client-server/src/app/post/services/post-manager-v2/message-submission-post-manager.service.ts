@@ -6,7 +6,7 @@ import {
   PostEventType,
   SubmissionType,
 } from '@postybirb/types';
-import { PostRecord } from '../../../drizzle/models';
+import { PostRecord } from '@postybirb/database';
 import { NotificationsService } from '../../../notifications/notifications.service';
 import { PostParsersService } from '../../../post-parsers/post-parsers.service';
 import { ValidationService } from '../../../validation/validation.service';
@@ -58,6 +58,8 @@ export class MessageSubmissionPostManager extends BasePostManager {
     this.logger.info(`Posting message to ${instance.id}`);
 
     await this.waitForPostingWaitInterval(accountId, instance);
+
+    if (!this.cancelToken) throw new Error('No cancel token is defined');
     this.cancelToken.throwIfCancelled();
 
     const result = await (

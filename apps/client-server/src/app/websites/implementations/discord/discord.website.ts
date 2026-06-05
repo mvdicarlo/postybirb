@@ -7,6 +7,7 @@ import {
   PostData,
   PostResponse,
 } from '@postybirb/types';
+import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
@@ -21,11 +22,13 @@ import {
   PostBatchData,
 } from '../../models/website-modifiers/file-website';
 import { MessageWebsite } from '../../models/website-modifiers/message-website';
+import { WithCustomDescriptionParser } from '../../models/website-modifiers/with-custom-description-parser';
 import {
   DynamicFileSizeLimits,
   WithDynamicFileSizeLimits,
 } from '../../models/website-modifiers/with-dynamic-file-size-limits';
 import { Website } from '../../website';
+import { DiscordDescriptionConverter } from './discord-description-converter';
 import { DiscordFileSubmission } from './models/discord-file-submission';
 import { DiscordMessageSubmission } from './models/discord-message-submission';
 
@@ -44,7 +47,8 @@ export default class Discord
   implements
     FileWebsite<DiscordFileSubmission>,
     MessageWebsite<DiscordMessageSubmission>,
-    WithDynamicFileSizeLimits
+    WithDynamicFileSizeLimits,
+    WithCustomDescriptionParser
 {
   protected BASE_URL: string;
 
@@ -61,7 +65,10 @@ export default class Discord
       return this.loginState.setLogin(true, this.account.name);
     }
 
-    if (data.serverLevel > 0) {
+    if (
+      this.decoratedProps.fileOptions?.acceptedFileSizes &&
+      data.serverLevel > 0
+    ) {
       // NOTE: Not entirely sure if this is a safe thing to do, but it does
       // avoid having to create additional custom validation logic.
       if (data.serverLevel === 2) {
@@ -77,6 +84,10 @@ export default class Discord
     return this.loginState.setLogin(false, null);
   }
 
+  getDescriptionConverter(): BaseConverter {
+    return new DiscordDescriptionConverter();
+  }
+
   createMessageModel(): DiscordMessageSubmission {
     return new DiscordMessageSubmission();
   }
@@ -85,7 +96,7 @@ export default class Discord
     return new DiscordFileSubmission();
   }
 
-  calculateImageResize(): ImageResizeProps {
+  calculateImageResize(): ImageResizeProps | undefined {
     return undefined;
   }
 
@@ -122,7 +133,7 @@ export default class Discord
             ),
           }
         : {}),
-      attachments: [],
+      attachments: [] as object[],
     };
 
     const formData: {
@@ -144,11 +155,12 @@ export default class Discord
 
     formData.payload_json = JSON.stringify(payload);
     cancellationToken.throwIfCancelled();
-    return this.platform.http.post(webhook, {
-      partition: undefined,
-      type: 'multipart',
-      data: formData,
-    })
+    return this.platform.http
+      .post(webhook, {
+        partition: undefined,
+        type: 'multipart',
+        data: formData,
+      })
       .then((res) => this.handleResponse(res))
       .catch((error) => this.handleError(error, payload));
   }
@@ -168,11 +180,12 @@ export default class Discord
       postData.options.useEmbed,
     );
     cancellationToken.throwIfCancelled();
-    return this.platform.http.post(webhook, {
-      partition: undefined,
-      type: 'json',
-      data: messageData,
-    })
+    return this.platform.http
+      .post(webhook, {
+        partition: undefined,
+        type: 'json',
+        data: messageData,
+      })
       .then((res) => this.handleResponse(res))
       .catch((error) => this.handleError(error, messageData));
   }

@@ -137,7 +137,7 @@ describe('DirectoryWatchersService', () => {
     });
 
     await submissionService.remove(template.id);
-    const rec = await service.findById(updatedRecord.id);
+    const rec = await service.findByIdOrThrow(updatedRecord.id);
     expect(rec.templateId).toBe(null);
   });
 

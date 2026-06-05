@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
+import { toError } from '@postybirb/utils/common';
 import { promises as fs } from 'fs';
 
 export interface ParseResult<T> {
@@ -52,7 +53,7 @@ export class NdjsonParser {
           errors.push({
             line: i + 1,
             content: line.substring(0, 100), // Truncate long lines
-            error: error instanceof Error ? error.message : String(error),
+            error: toError(error).message,
           });
         }
       }

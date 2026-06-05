@@ -95,7 +95,7 @@ describe('UserConvertersService', () => {
       bluesky: 'converted_friend2',
     };
     await service.update(record.id, updateDto);
-    const updatedRec = await service.findById(record.id);
+    const updatedRec = await service.findByIdOrThrow(record.id);
     expect(updatedRec.username).toBe(updateDto.username);
     expect(updatedRec.convertTo).toEqual(updateDto.convertTo);
   });

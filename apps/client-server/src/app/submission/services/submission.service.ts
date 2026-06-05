@@ -1,40 +1,42 @@
 /* eslint-disable no-param-reassign */
 import {
-  BadRequestException,
-  forwardRef,
-  Inject,
-  Injectable,
-  NotFoundException,
-  OnModuleInit,
-  Optional,
+    BadRequestException,
+    forwardRef,
+    Inject,
+    Injectable,
+    NotFoundException,
+    OnModuleInit,
+    Optional,
 } from '@nestjs/common';
 import {
-  FileBufferSchema,
-  Insert,
-  SubmissionFileSchema,
-  SubmissionSchema,
-  WebsiteOptionsSchema,
+    FileBuffer,
+    FileBufferSchema,
+    Insert,
+    Submission,
+    SubmissionFileSchema,
+    SubmissionRepository,
+    SubmissionSchema,
+    WebsiteOptions,
+    WebsiteOptionsSchema,
+    withTransactionContext,
 } from '@postybirb/database';
 import { SUBMISSION_UPDATES } from '@postybirb/socket-events';
 import {
-  FileSubmission,
-  FileSubmissionMetadata,
-  ISubmissionDto,
-  ISubmissionMetadata,
-  MessageSubmission,
-  NULL_ACCOUNT_ID,
-  ScheduleType,
-  SubmissionId,
-  SubmissionMetadataType,
-  SubmissionType,
+    FileSubmission,
+    FileSubmissionMetadata,
+    ISubmissionDto,
+    ISubmissionMetadata,
+    MessageSubmission,
+    NULL_ACCOUNT_ID,
+    ScheduleType,
+    SubmissionId,
+    SubmissionMetadataType,
+    SubmissionType,
 } from '@postybirb/types';
-import { IsTestEnvironment } from '@postybirb/utils/common';
+import { IsTestEnvironment, toError } from '@postybirb/utils/common';
 import { eq } from 'drizzle-orm';
 import * as path from 'path';
 import { PostyBirbService } from '../../common/service/postybirb-service';
-import { FileBuffer, Submission, WebsiteOptions } from '../../drizzle/models';
-import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
-import { withTransactionContext } from '../../drizzle/transaction-context';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { WSGateway } from '../../web-socket/web-socket-gateway';
 import { WebsiteOptionsService } from '../../website-options/website-options.service';
@@ -54,7 +56,7 @@ type SubmissionEntity = Submission<SubmissionMetadataType>;
  */
 @Injectable()
 export class SubmissionService
-  extends PostyBirbService<'SubmissionSchema'>
+  extends PostyBirbService<SubmissionRepository>
   implements OnModuleInit
 {
   private emitDebounceTimer: ReturnType<typeof setTimeout> | null = null;
@@ -68,22 +70,7 @@ export class SubmissionService
     @Optional() webSocket: WSGateway,
   ) {
     super(
-      new PostyBirbDatabase('SubmissionSchema', {
-        options: {
-          with: {
-            account: true,
-          },
-        },
-        posts: {
-          with: {
-            events: {
-              account: true,
-            },
-          },
-        },
-        postQueueRecord: true,
-        files: true,
-      }),
+      new SubmissionRepository(),
       webSocket,
     );
     this.repository.subscribe(
@@ -375,7 +362,7 @@ export class SubmissionService
         isInitialized: true,
       });
       this.emit();
-      return await this.findById(submission.id);
+      return await this.findByIdOrThrow(submission.id);
     } catch (err) {
       // Clean up on error, tx is too much work
       this.logger.error(err, 'Error creating submission');
@@ -396,16 +383,14 @@ export class SubmissionService
     this.logger
       .withMetadata({ id, templateId })
       .info('Applying template to submission');
-    const submission = await this.findById(id, { failOnMissing: true });
-    const template: Submission = await this.findById(templateId, {
-      failOnMissing: true,
-    });
+    const submission = await this.findByIdOrThrow(id);
+    const template: Submission = await this.findByIdOrThrow(templateId);
 
     if (!template.metadata.template) {
       throw new BadRequestException('Template Id provided is not a template.');
     }
 
-    const defaultOption: WebsiteOptions = submission.options.find(
+    const defaultOption = submission.options.find(
       (option: WebsiteOptions) => option.accountId === NULL_ACCOUNT_ID,
     );
     const defaultTitle = defaultOption?.data?.title;
@@ -444,7 +429,7 @@ export class SubmissionService
     });
 
     try {
-      return await this.findById(id);
+      return await this.findByIdOrThrow(id);
     } catch (err) {
       throw new BadRequestException(err);
     }
@@ -458,7 +443,7 @@ export class SubmissionService
    */
   async update(id: SubmissionId, update: UpdateSubmissionDto) {
     this.logger.withMetadata(update).info(`Updating Submission '${id}'`);
-    const submission = await this.findById(id, { failOnMissing: true });
+    const submission = await this.findByIdOrThrow(id);
 
     const scheduleType =
       update.scheduleType ?? submission.schedule.scheduleType;
@@ -529,23 +514,20 @@ export class SubmissionService
       // Update Here
       await this.repository.update(id, updates);
       this.emit();
-      return await this.findById(id);
+      return await this.findByIdOrThrow(id);
     } catch (err) {
       throw new BadRequestException(err);
     }
   }
 
-  public async remove(id: SubmissionId) {
-    const result = await super.remove(id);
+  public async remove(id: SubmissionId): Promise<void> {
+    await super.remove(id);
     this.emit();
-    return result;
   }
 
   async applyMultiSubmission(applyMultiSubmissionDto: ApplyMultiSubmissionDto) {
     const { submissionToApply, submissionIds, merge } = applyMultiSubmissionDto;
-    const origin = await this.repository.findById(submissionToApply, {
-      failOnMissing: true,
-    });
+    const origin = await this.repository.findByIdOrThrow(submissionToApply);
     const submissions = await this.repository.find({
       where: (submission, { inArray }) => inArray(submission.id, submissionIds),
     });
@@ -630,9 +612,7 @@ export class SubmissionService
 
     for (const submissionId of targetSubmissionIds) {
       try {
-        const submission = await this.findById(submissionId, {
-          failOnMissing: true,
-        });
+        const submission = await this.findByIdOrThrow(submissionId);
 
         for (const templateOption of options) {
           // Find existing option for this account
@@ -681,7 +661,7 @@ export class SubmissionService
         results.failed++;
         results.errors.push({
           submissionId,
-          error: error instanceof Error ? error.message : String(error),
+          error: toError(error).message,
         });
         this.logger
           .withMetadata({ submissionId, error })
@@ -710,6 +690,13 @@ export class SubmissionService
         files: true,
       },
     });
+
+    if (!entityToDuplicate) {
+      throw new BadRequestException(
+        `Cannot duplicate: Submission with id ${id} does not exists`,
+      );
+    }
+
     await withTransactionContext(this.repository.db, async (ctx) => {
       const newSubmission = (
         await ctx
@@ -773,7 +760,7 @@ export class SubmissionService
         )[0];
         ctx.track('FileBufferSchema', primaryFile.id);
 
-        const thumbnail: FileBuffer | undefined = file.thumbnail
+        const thumbnail = file.thumbnail
           ? (
               await ctx
                 .getDb()
@@ -790,7 +777,7 @@ export class SubmissionService
           ctx.track('FileBufferSchema', thumbnail.id);
         }
 
-        const altFile: FileBuffer | undefined = file.altFile
+        const altFile = file.altFile
           ? (
               await ctx
                 .getDb()
@@ -837,7 +824,7 @@ export class SubmissionService
     id: SubmissionId,
     updateSubmissionDto: UpdateSubmissionTemplateNameDto,
   ) {
-    const entity = await this.findById(id, { failOnMissing: true });
+    const entity = await this.findByIdOrThrow(id);
 
     if (!entity.isTemplate) {
       throw new BadRequestException(`Submission '${id}' is not a template`);
@@ -865,8 +852,8 @@ export class SubmissionService
     targetId: SubmissionId,
     position: 'before' | 'after',
   ) {
-    const moving = await this.findById(id, { failOnMissing: true });
-    const target = await this.findById(targetId, { failOnMissing: true });
+    const moving = await this.findByIdOrThrow(id);
+    const target = await this.findByIdOrThrow(targetId);
 
     // Ensure same type (FILE or MESSAGE)
     if (moving.type !== target.type) {
@@ -879,8 +866,7 @@ export class SubmissionService
     // Exclude templates and multi-submissions from ordering
     const allOfType = (await this.repository.findAll())
       .filter(
-        (s) =>
-          s.type === moving.type && !s.isTemplate && !s.isMultiSubmission,
+        (s) => s.type === moving.type && !s.isTemplate && !s.isMultiSubmission,
       )
       .sort((a, b) => a.order - b.order);
 
@@ -914,8 +900,8 @@ export class SubmissionService
   }
 
   async unarchive(id: SubmissionId) {
-    const submission = await this.findById(id, { failOnMissing: true });
-    if (!submission.isArchived) {
+    const submission = await this.findByIdOrThrow(id);
+    if (submission.isArchived) {
       throw new BadRequestException(`Submission '${id}' is not archived`);
     }
     await this.repository.update(id, {
@@ -925,7 +911,7 @@ export class SubmissionService
   }
 
   async archive(id: SubmissionId) {
-    const submission = await this.findById(id, { failOnMissing: true });
+    const submission = await this.findByIdOrThrow(id);
     if (submission.isArchived) {
       throw new BadRequestException(`Submission '${id}' is already archived`);
     }

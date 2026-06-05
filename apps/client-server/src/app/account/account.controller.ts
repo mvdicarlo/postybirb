@@ -6,6 +6,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { AccountId } from '@postybirb/types';
+import { AccountRepository } from '@postybirb/database';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
 import { AccountService } from './account.service';
 import { CreateAccountDto } from './dtos/create-account.dto';
@@ -18,7 +19,7 @@ import { UpdateAccountDto } from './dtos/update-account.dto';
  */
 @ApiTags('account')
 @Controller('account')
-export class AccountController extends PostyBirbController<'AccountSchema'> {
+export class AccountController extends PostyBirbController<AccountRepository> {
   constructor(readonly service: AccountService) {
     super(service);
   }

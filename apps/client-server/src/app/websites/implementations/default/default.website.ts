@@ -5,10 +5,10 @@ import {
   IPostResponse,
   ISubmissionFile,
   PostData,
-  SimpleValidationResult,
 } from '@postybirb/types';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
+import { validatorPassthru } from '../../commons/validator-passthru';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { BaseWebsiteOptions } from '../../models/base-website-options';
 import { DefaultWebsiteOptions } from '../../models/default-website-options';
@@ -40,11 +40,7 @@ export default class DefaultWebsite
     throw new Error('Method not implemented.');
   }
 
-  async onValidateMessageSubmission(
-    postData: PostData<DefaultWebsiteOptions>,
-  ): Promise<SimpleValidationResult> {
-    return {};
-  }
+  onValidateMessageSubmission = validatorPassthru;
 
   calculateImageResize(file: ISubmissionFile): ImageResizeProps | undefined {
     throw new Error('Method not implemented.');
@@ -58,11 +54,7 @@ export default class DefaultWebsite
     throw new Error('Method not implemented.');
   }
 
-  async onValidateFileSubmission(
-    postData: PostData<DefaultWebsiteOptions>,
-  ): Promise<SimpleValidationResult> {
-    return {};
-  }
+  onValidateFileSubmission = validatorPassthru;
 
   protected BASE_URL: string;
 

@@ -7,6 +7,7 @@ import {
   ILoginState,
   ImageResizeProps,
   ISubmissionFile,
+  NPFContentBlock,
   PostData,
   PostResponse,
   SimpleValidationResult,
@@ -78,7 +79,7 @@ type TumblrPostResponse = {
     [FileType.AUDIO]: FileSize.megabytes(10),
     [FileType.VIDEO]: FileSize.megabytes(500),
     [FileType.IMAGE]: FileSize.megabytes(20),
-    'image/gif': FileSize.megabytes(3),
+    'image/gif': FileSize.megabytes(10),
   },
 })
 export default class Tumblr
@@ -122,7 +123,7 @@ export default class Tumblr
     this.sessionData.apiToken = apiToken;
     this.sessionData.state = data;
     this.sessionData.csrf = data.csrfToken;
-    const userInfo = data.queries.queries.find((query) =>
+    const userInfo = data.queries.queries.find((query: { queryHash: string }) =>
       query.queryHash.includes('user-info'),
     );
 
@@ -134,11 +135,13 @@ export default class Tumblr
     const userName = userInfo.state.data.user.name;
 
     await this.setWebsiteData({
-      blogs: userInfo.state.data.user.blogs.map((blog) => ({
-        label: blog.name,
-        value: blog.uuid,
-        data: blog,
-      })),
+      blogs: userInfo.state.data.user.blogs.map(
+        (blog: { name: string; uuid: string }) => ({
+          label: blog.name,
+          value: blog.uuid,
+          data: blog,
+        }),
+      ),
     });
     return this.loginState.setLogin(true, userName);
   }
@@ -147,7 +150,7 @@ export default class Tumblr
     return new TumblrFileSubmission();
   }
 
-  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
+  calculateImageResize(file: ISubmissionFile): ImageResizeProps | undefined {
     return undefined;
   }
 
@@ -262,7 +265,9 @@ export default class Tumblr
     await this.onLogin();
 
     // Description is a JSON string of NPF blocks from the NpfConverter
-    const npfBlocks = JSON.parse(postData.options.description);
+    const npfBlocks = JSON.parse(
+      postData.options.description,
+    ) as NPFContentBlock[];
 
     const builder = new PostBuilder(this, cancellationToken)
       .asJson()

@@ -16,6 +16,7 @@ import {
 import {
   PostyBirbEnvConfig,
   RemoteConfigManager,
+  toError,
   validateEnvConfigOrExit,
 } from '@postybirb/utils/common';
 import { app, BrowserWindow, session } from 'electron';
@@ -116,7 +117,7 @@ process.on('uncaughtException', (error: Error) => {
 
 // Handle unhandled promise rejections in main process
 process.on('unhandledRejection', (reason: unknown) => {
-  const error = reason instanceof Error ? reason : new Error(String(reason));
+  const error = toError(reason);
   // eslint-disable-next-line no-console
   logger.withError(error).error('Unhandled Rejection in Main Process:');
   trackException(error, {

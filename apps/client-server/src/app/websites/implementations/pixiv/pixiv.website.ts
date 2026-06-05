@@ -1,4 +1,3 @@
-
 import {
   FileType,
   ILoginState,
@@ -33,6 +32,7 @@ import { PixivFileSubmission } from './models/pixiv-file-submission';
   acceptedFileSizes: {
     [FileType.IMAGE]: FileSize.megabytes(32), // Image limit is 32MB
   },
+  fileBatchSize: 100,
 })
 export default class Pixiv
   extends Website<PixivAccountData>
@@ -76,7 +76,7 @@ export default class Pixiv
     return new PixivFileSubmission();
   }
 
-  calculateImageResize(): ImageResizeProps {
+  calculateImageResize(): ImageResizeProps | undefined {
     return undefined;
   }
 
@@ -174,9 +174,7 @@ export default class Pixiv
           ),
         );
     } catch (error) {
-      return PostResponse.fromWebsite(this).withException(
-        error instanceof Error ? error : new Error(JSON.stringify(error)),
-      );
+      return PostResponse.fromWebsite(this).withException(error);
     }
   }
 

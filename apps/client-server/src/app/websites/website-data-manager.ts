@@ -1,7 +1,6 @@
+import { WebsiteData, WebsiteDataRepository } from '@postybirb/database';
 import { Logger, PostyBirbLogger } from '@postybirb/logger';
 import { DynamicObject, IAccount } from '@postybirb/types';
-import { WebsiteData } from '../drizzle/models';
-import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
 
 /**
  * Saves website specific data associated with an account.
@@ -17,7 +16,7 @@ export default class WebsiteDataManager<T extends DynamicObject> {
 
   private initialized: boolean;
 
-  private repository: PostyBirbDatabase<'WebsiteDataSchema'>;
+  private repository: WebsiteDataRepository;
 
   constructor(userAccount: IAccount) {
     this.account = userAccount;
@@ -26,7 +25,7 @@ export default class WebsiteDataManager<T extends DynamicObject> {
   }
 
   private async createOrLoadWebsiteData() {
-    let entity: WebsiteData = await this.repository.findById(this.account.id);
+    let entity = await this.repository.findById(this.account.id);
 
     if (!entity) {
       entity = await this.repository.insert({
@@ -34,7 +33,7 @@ export default class WebsiteDataManager<T extends DynamicObject> {
       });
     }
 
-    this.entity = entity;
+    this.entity = entity as WebsiteData<T>;
   }
 
   private async saveData() {
@@ -45,9 +44,9 @@ export default class WebsiteDataManager<T extends DynamicObject> {
 
   /**
    * Initializes the internal WebsiteData entity.
-   * @param {PostyBirbDatabase<'WebsiteDataSchema'>} repository
+   * @param {WebsiteDataRepository} repository
    */
-  public async initialize(repository: PostyBirbDatabase<'WebsiteDataSchema'>) {
+  public async initialize(repository: WebsiteDataRepository) {
     if (!this.initialized) {
       this.repository = repository;
       await this.createOrLoadWebsiteData();

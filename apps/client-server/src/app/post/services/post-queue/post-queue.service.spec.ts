@@ -1,19 +1,18 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { clearDatabase } from '@postybirb/database';
+import { clearDatabase, PostRecordRepository } from '@postybirb/database';
 import {
-  AccountId,
-  DefaultDescription,
-  PostRecordState,
-  SubmissionId,
-  SubmissionRating,
-  SubmissionType,
+    AccountId,
+    DefaultDescription,
+    PostRecordState,
+    SubmissionId,
+    SubmissionRating,
+    SubmissionType,
 } from '@postybirb/types';
 import { AccountModule } from '../../../account/account.module';
 import { AccountService } from '../../../account/account.service';
 import { CreateAccountDto } from '../../../account/dtos/create-account.dto';
-import { PostyBirbDatabase } from '../../../drizzle/postybirb-database/postybirb-database';
-import { SettingsService } from '../../../settings/settings.service';
 import { TestPlatformModule } from '../../../platform/testing/test-platform.module';
+import { SettingsService } from '../../../settings/settings.service';
 import { CreateSubmissionDto } from '../../../submission/dtos/create-submission.dto';
 import { SubmissionService } from '../../../submission/services/submission.service';
 import { SubmissionModule } from '../../../submission/submission.module';
@@ -146,7 +145,7 @@ describe('PostQueueService', () => {
     expect((await service.findAll()).length).toBe(1);
     const top = await service.peek();
     expect(top).toBeDefined();
-    expect(top.submission.id).toBe(submission.id);
+    expect(top?.submission.id).toBe(submission.id);
 
     await service.dequeue([submission.id]);
     expect((await service.findAll()).length).toBe(0);
@@ -185,7 +184,7 @@ describe('PostQueueService', () => {
       }),
     );
     expect(queueRecord).toBeDefined();
-    expect(queueRecord.postRecord).toBeDefined();
+    expect(queueRecord?.postRecord).toBeDefined();
 
     // Now simulate that the manager is posting
     mockPostManagerRegistry.isPostingType.mockReturnValue(true);
@@ -197,7 +196,7 @@ describe('PostQueueService', () => {
     );
 
     // Simulate the post completing (with failure) - manually update the record
-    const database = new PostyBirbDatabase('PostRecordSchema');
+    const database = new PostRecordRepository();
     await database.update(postRecord.id, {
       state: PostRecordState.FAILED,
       completedAt: new Date().toISOString(),
@@ -208,13 +207,13 @@ describe('PostQueueService', () => {
 
     queueRecord = await service.peek();
     expect(queueRecord).toBeDefined();
-    expect(queueRecord.postRecord).toBeDefined();
+    expect(queueRecord?.postRecord).toBeDefined();
 
     // We expect the post to be in a terminal state and cleanup of the record.
     // The post record should remain after the queue record is deleted.
     await service.execute();
     expect((await service.findAll()).length).toBe(0);
-    postRecord = await postService.findById(postRecord.id);
+    postRecord = await postService.findByIdOrThrow(postRecord.id);
     expect(postRecord.state).toBe(PostRecordState.FAILED);
     expect(postRecord.completedAt).toBeDefined();
   });

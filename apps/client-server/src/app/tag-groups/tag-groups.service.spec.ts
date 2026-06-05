@@ -79,7 +79,7 @@ describe('TagGroupsService', () => {
     updateDto.name = 'test';
     updateDto.tags = ['test', 'updated'];
     await service.update(record.id, updateDto);
-    const updatedRec = await service.findById(record.id);
+    const updatedRec = await service.findByIdOrThrow(record.id);
     expect(updatedRec.name).toBe(updateDto.name);
     expect(updatedRec.tags).toEqual(updateDto.tags);
   });

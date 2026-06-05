@@ -18,6 +18,7 @@ import {
 } from '@nestjs/swagger';
 import { ISubmissionDto, SubmissionId, SubmissionType } from '@postybirb/types';
 import { parse } from 'path';
+import { SubmissionRepository } from '@postybirb/database';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
 import { MulterFileInfo } from '../file/models/multer-file-info';
 import { ApplyMultiSubmissionDto } from './dtos/apply-multi-submission.dto';
@@ -35,7 +36,7 @@ import { SubmissionService } from './services/submission.service';
  */
 @ApiTags('submissions')
 @Controller('submissions')
-export class SubmissionController extends PostyBirbController<'SubmissionSchema'> {
+export class SubmissionController extends PostyBirbController<SubmissionRepository> {
   constructor(readonly service: SubmissionService) {
     super(service);
   }
@@ -54,7 +55,6 @@ export class SubmissionController extends PostyBirbController<'SubmissionSchema'
     @Body() createSubmissionDto: CreateSubmissionDto,
     @UploadedFiles() files: MulterFileInfo[],
   ) {
-    const mapper = (res) => res.toDTO();
     if ((files || []).length) {
       const results = [];
       // !NOTE: Currently this shouldn't be able to happen with the current UI, but may need to be addressed in the future.
@@ -73,11 +73,11 @@ export class SubmissionController extends PostyBirbController<'SubmissionSchema'
         results.push(await this.service.create(createFileSubmission, file));
       }
 
-      return results.map(mapper);
+      return results.map((res) => res.toDTO());
     }
     return (
       await Promise.all([await this.service.create(createSubmissionDto)])
-    ).map(mapper);
+    ).map((res) => res.toDTO());
   }
 
   @Post('duplicate/:id')
@@ -156,7 +156,9 @@ export class SubmissionController extends PostyBirbController<'SubmissionSchema'
 
   @Patch('apply/template/:id/:templateId')
   @ApiOkResponse({ description: 'Template applied to submission.' })
-  @ApiNotFoundResponse({ description: 'Submission Id or Template Id not found.' })
+  @ApiNotFoundResponse({
+    description: 'Submission Id or Template Id not found.',
+  })
   async applyTemplate(
     @Param('id') id: SubmissionId,
     @Param('templateId') templateId: SubmissionId,

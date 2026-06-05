@@ -1,0 +1,49 @@
+diff --git a/lib/crawlfs.js b/lib/crawlfs.js
+index bc614aba8e5bd1a59df20d2e4b82287f4d0dd506..5cc8a8fa91c0774f7343761086509622478901dc 100644
+--- a/lib/crawlfs.js
++++ b/lib/crawlfs.js
+@@ -28,11 +28,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
+ Object.defineProperty(exports, "__esModule", { value: true });
+ exports.determineFileType = determineFileType;
+ exports.crawl = crawl;
+-const util_1 = require("util");
+ const glob_1 = require("glob");
+ const wrapped_fs_1 = __importDefault(require("./wrapped-fs"));
+ const path = __importStar(require("path"));
+-const glob = (0, util_1.promisify)(glob_1.glob);
++const glob = glob_1.glob;
+ async function determineFileType(filename) {
+     const stat = await wrapped_fs_1.default.lstat(filename);
+     if (stat.isFile()) {
+diff --git a/lib/disk.js b/lib/disk.js
+index 2a477720ef1ae97015829ff7192672433453bfb7..e46f10252203047433e918299abee07c4b5f6a33 100644
+--- a/lib/disk.js
++++ b/lib/disk.js
+@@ -44,9 +44,8 @@ const path = __importStar(require("path"));
+ const wrapped_fs_1 = __importDefault(require("./wrapped-fs"));
+ const pickle_1 = require("./pickle");
+ const filesystem_1 = require("./filesystem");
+-const util_1 = require("util");
+ const stream = __importStar(require("stream"));
+-const pipeline = (0, util_1.promisify)(stream.pipeline);
++const { pipeline } = require("stream/promises");
+ let filesystemCache = Object.create(null);
+ async function copyFile(dest, src, filename) {
+     const srcFile = path.join(src, filename);
+diff --git a/lib/integrity.js b/lib/integrity.js
+index cdcd9602b9c144cd7d5c22ae37f267891eabbb5c..23c3fa2e516e48fad84ba479f16005b552bc2988 100644
+--- a/lib/integrity.js
++++ b/lib/integrity.js
+@@ -26,11 +26,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
+ exports.getFileIntegrity = getFileIntegrity;
+ const crypto = __importStar(require("crypto"));
+ const stream = __importStar(require("stream"));
+-const util_1 = require("util");
+ const ALGORITHM = 'SHA256';
+ // 4MB default block size
+ const BLOCK_SIZE = 4 * 1024 * 1024;
+-const pipeline = (0, util_1.promisify)(stream.pipeline);
++const { pipeline } = require("stream/promises");
+ function hashBlock(block) {
+     return crypto.createHash(ALGORITHM).update(block).digest('hex');
+ }

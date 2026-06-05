@@ -6,6 +6,7 @@ import {
     ApiTags,
 } from '@nestjs/swagger';
 import { EntityId } from '@postybirb/types';
+import { DirectoryWatcherRepository } from '@postybirb/database';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
 import { DirectoryWatchersService } from './directory-watchers.service';
 import { CheckPathDto } from './dtos/check-path.dto';
@@ -18,7 +19,7 @@ import { UpdateDirectoryWatcherDto } from './dtos/update-directory-watcher.dto';
  */
 @ApiTags('directory-watchers')
 @Controller('directory-watchers')
-export class DirectoryWatchersController extends PostyBirbController<'DirectoryWatcherSchema'> {
+export class DirectoryWatchersController extends PostyBirbController<DirectoryWatcherRepository> {
   constructor(readonly service: DirectoryWatchersService) {
     super(service);
   }

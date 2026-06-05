@@ -1,4 +1,3 @@
-import TurndownService from 'turndown';
 import { BaseConverter } from './converters/base-converter';
 import { BBCodeConverter } from './converters/bbcode-converter';
 import {
@@ -6,6 +5,7 @@ import {
   CustomNodeHandler,
 } from './converters/custom-converter';
 import { HtmlConverter } from './converters/html-converter';
+import { MarkdownConverter } from './converters/markdown-converter';
 import { PlainTextConverter } from './converters/plaintext-converter';
 import { ConversionContext } from './description-node.base';
 import { TipTapNode } from './description-node.types';
@@ -71,19 +71,9 @@ export class DescriptionNodeTree {
     return converter.convert(this.withInsertions(), this.context);
   }
 
-  toMarkdown(turndownService?: TurndownService): string {
-    const converter = turndownService ?? new TurndownService();
-
-    converter.addRule('nestedIndent', {
-      filter: (node) =>
-        node.nodeName === 'DIV' &&
-        node.getAttribute('style')?.includes('margin-left'),
-      replacement: (content) =>
-        `\n\n> ${content.trim().replace(/\n/g, '\n> ')}\n\n`,
-    });
-
-    const html = this.toHtml();
-    return converter.turndown(html);
+  toMarkdown(): string {
+    const converter = new MarkdownConverter();
+    return converter.convert(this.withInsertions(), this.context);
   }
 
   parseCustom(blockHandler: CustomNodeHandler): string {
@@ -194,9 +184,71 @@ export class DescriptionNodeTree {
     return nodes.slice(start, end + 1);
   }
 
+  /**
+   * Expands custom shortcut nodes that appear as the sole content of a
+   * paragraph into their resolved block-level content. This is necessary
+   * because `customShortcut` is a TipTap inline atom but its content is
+   * block-level. Without expansion, the converter embeds block HTML inside
+   * a parent block (e.g. `<div><div>…</div></div>`), which becomes nested
+   * `<p>` tags after post-processing and is rejected as invalid HTML by
+   * sites like Newgrounds.
+   *
+   * Only expands shortcuts that are both resolved in the context AND should
+   * be rendered for the current website (respects the `only` restriction).
+   *
+   * Note: when a shortcut sits next to other meaningful text in the same
+   * paragraph, the converter renders it inline and any block-level
+   * formatting on the shortcut's blocks (headings, alignment, lists, etc.)
+   * is intentionally lost. This keeps the surrounding text on a single
+   * line and avoids forcing a structural split that users find unexpected.
+   */
+  private expandBlockShortcuts(nodes: TipTapNode[]): TipTapNode[] {
+    const result: TipTapNode[] = [];
+
+    for (const node of nodes) {
+      const effectiveContent = (node.content ?? []).filter(
+        (child) => !(child.type === 'text' && !child.text?.trim()),
+      );
+
+      if (
+        node.type === 'paragraph' &&
+        effectiveContent.length === 1 &&
+        effectiveContent[0].type === 'customShortcut'
+      ) {
+        const shortcutNode = effectiveContent[0];
+        const id = shortcutNode.attrs?.id as string | undefined;
+
+        // Respect the `only` visibility restriction
+        const onlyRaw: string = shortcutNode.attrs?.only ?? '';
+        const onlyTo = onlyRaw
+          .split(',')
+          .map((s: string) => s.trim().toLowerCase())
+          .filter((s: string) => s.length > 0);
+        const visible =
+          onlyTo.length === 0 ||
+          onlyTo.includes(this.context.website.toLowerCase());
+
+        if (id && visible) {
+          const shortcutBlocks = this.context.customShortcuts.get(id);
+          if (shortcutBlocks?.length) {
+            result.push(...shortcutBlocks);
+            continue;
+          }
+        }
+      }
+
+      result.push(node);
+    }
+
+    return result;
+  }
+
   private withInsertions(): TipTapNode[] {
     // Trim empty edge nodes before insertions so converters receive clean input
-    const nodes = this.trimEmptyEdgeNodes([...this.nodes]);
+    const trimmed = this.trimEmptyEdgeNodes([...this.nodes]);
+    // Promote block-shortcut-only paragraphs into real block siblings so
+    // converters never produce nested block elements (e.g. <p><p>…</p></p>).
+    const nodes = this.expandBlockShortcuts(trimmed);
     const { insertAd, insertTags, insertTitle } = this.insertionOptions;
 
     if (insertTitle) {

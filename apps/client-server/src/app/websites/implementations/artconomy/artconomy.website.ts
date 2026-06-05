@@ -1,4 +1,3 @@
-
 import {
   ILoginState,
   ImageResizeProps,
@@ -62,15 +61,15 @@ export default class Artconomy
 
   public async onLogin(): Promise<ILoginState> {
     try {
-      const authCheck = await this.platform.http.get<{ username: string; id: number }>(
-        `${this.BASE_URL}/api/profiles/data/requester/`,
-        {
-          partition: this.accountId,
-          headers: {
-            'Content-Type': 'application/json',
-          },
+      const authCheck = await this.platform.http.get<{
+        username: string;
+        id: number;
+      }>(`${this.BASE_URL}/api/profiles/data/requester/`, {
+        partition: this.accountId,
+        headers: {
+          'Content-Type': 'application/json',
         },
-      );
+      });
 
       if (authCheck.statusCode === 200 && authCheck.body.username !== '_') {
         // Get CSRF token from cookies
@@ -97,7 +96,7 @@ export default class Artconomy
     return new ArtconomyFileSubmission();
   }
 
-  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
+  calculateImageResize(file: ISubmissionFile): ImageResizeProps | undefined {
     return undefined;
   }
 

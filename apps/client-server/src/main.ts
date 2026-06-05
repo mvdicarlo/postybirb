@@ -10,8 +10,9 @@ import { NestFactory, Reflector } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { IsTestEnvironment, PostyBirbEnvConfig } from '@postybirb/utils/common';
 import compression from 'compression';
+import { DatabaseEntity } from '@postybirb/database';
 import { AppModule } from './app/app.module';
-import { DatabaseEntity } from './app/drizzle/models';
+import { EntityNotFoundExceptionFilter } from './app/common/filters/entity-not-found.filter';
 import { SSL } from './app/security-and-authentication/ssl';
 import { WebSocketAdapter } from './app/web-socket/web-socket-adapter';
 
@@ -62,6 +63,9 @@ async function bootstrap(options: BootstrapOptions = {}) {
   app.useWebSocketAdapter(new WebSocketAdapter(app));
   app.setGlobalPrefix(globalPrefix);
   app.useGlobalInterceptors(new CustomClassSerializer(app.get(Reflector)));
+  app.useGlobalFilters(
+    new EntityNotFoundExceptionFilter(app.getHttpAdapter()),
+  );
   app.useGlobalPipes(
     new ValidationPipe({
       forbidUnknownValues: true,

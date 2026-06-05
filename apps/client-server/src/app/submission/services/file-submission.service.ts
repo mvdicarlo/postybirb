@@ -1,22 +1,22 @@
 import {
-  BadRequestException,
-  forwardRef,
-  Inject,
-  Injectable,
+    BadRequestException,
+    forwardRef,
+    Inject,
+    Injectable,
 } from '@nestjs/common';
+import { SubmissionRepository } from '@postybirb/database';
 import {
-  EntityId,
-  FileSubmission,
-  FileType,
-  isFileSubmission,
-  ISubmission,
-  SubmissionFileMetadata,
-  SubmissionId,
-  SubmissionType,
+    EntityId,
+    FileSubmission,
+    FileType,
+    isFileSubmission,
+    ISubmission,
+    SubmissionFileMetadata,
+    SubmissionId,
+    SubmissionType,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { PostyBirbService } from '../../common/service/postybirb-service';
-import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
 import { FileService } from '../../file/file.service';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
@@ -34,7 +34,7 @@ import { SubmissionService } from './submission.service';
  */
 @Injectable()
 export class FileSubmissionService
-  extends PostyBirbService<'SubmissionSchema'>
+  extends PostyBirbService<SubmissionRepository>
   implements ISubmissionService<FileSubmission>
 {
   constructor(
@@ -42,11 +42,7 @@ export class FileSubmissionService
     @Inject(forwardRef(() => SubmissionService))
     private readonly submissionService: SubmissionService,
   ) {
-    super(
-      new PostyBirbDatabase('SubmissionSchema', {
-        files: true,
-      }),
-    );
+    super(new SubmissionRepository());
   }
 
   async populate(
@@ -118,9 +114,7 @@ export class FileSubmissionService
   async appendFile(id: EntityId | FileSubmission, file: MulterFileInfo) {
     const submission = (
       typeof id === 'string'
-        ? await this.repository.findById(id, {
-            failOnMissing: true,
-          })
+        ? await this.repository.findByIdOrThrow(id)
         : id
     ) as FileSubmission;
 

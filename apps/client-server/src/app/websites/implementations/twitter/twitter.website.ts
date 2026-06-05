@@ -177,7 +177,7 @@ export default class Twitter
     return new TwitterFileSubmission();
   }
 
-  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
+  calculateImageResize(file: ISubmissionFile): ImageResizeProps | undefined {
     return undefined;
   }
 
@@ -190,6 +190,12 @@ export default class Twitter
     const filePartitions = chunk(files, 4);
     const { accessToken, accessTokenSecret, apiKey, apiSecret } =
       this.getWebsiteData();
+
+    // Validate credentials
+    if (!apiKey || !apiSecret || !accessToken || !accessTokenSecret) {
+      throw new Error('Missing API credentials');
+    }
+
     const results: TweetResultMeta[] = [];
     for (const partition of filePartitions) {
       const result = await TwitterApiServiceV2.postMedia(
@@ -239,7 +245,7 @@ export default class Twitter
 
         if (deleteResult.errors.length > 0) {
           this.logger
-            .withMetadata(deleteResult.errors)
+            .withMetadata(deleteResult)
             .warn('Some tweets could not be deleted');
         }
 
@@ -287,6 +293,11 @@ export default class Twitter
     cancellationToken.throwIfCancelled();
     const { accessToken, accessTokenSecret, apiKey, apiSecret } =
       this.getWebsiteData();
+
+    // Validate credentials
+    if (!apiKey || !apiSecret || !accessToken || !accessTokenSecret) {
+      throw new Error('Missing API credentials');
+    }
 
     const result = await TwitterApiServiceV2.postStatus(
       {

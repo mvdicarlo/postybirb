@@ -1,10 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { clearDatabase } from '@postybirb/database';
+import { Account, AccountRepository, clearDatabase, saveFromEntity, WebsiteDataRepository } from '@postybirb/database';
 import { PlatformService } from '@postybirb/platform';
 import { eq } from 'drizzle-orm';
-import { Account } from '../drizzle/models';
-import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
-import { PostyBirbDatabaseUtil } from '../drizzle/postybirb-database/postybirb-database.util';
 import { createNoopPlatformContext } from '../platform/testing/noop-platform-context';
 import { noopPlatformProvider } from '../platform/testing/noop-platform-providers';
 import { WebsiteImplProvider } from './implementations/provider';
@@ -14,7 +11,7 @@ import { WebsiteRegistryService } from './website-registry.service';
 describe('Website', () => {
   let module: TestingModule;
 
-  let repository: PostyBirbDatabase<'WebsiteDataSchema'>;
+  let repository: WebsiteDataRepository;
   let platformContext: PlatformService;
 
   beforeEach(async () => {
@@ -28,6 +25,7 @@ describe('Website', () => {
     }).compile();
     const service = module.get(WebsiteRegistryService);
     repository = service.getRepository();
+    new AccountRepository();
     platformContext = createNoopPlatformContext();
   });
 
@@ -40,7 +38,7 @@ describe('Website', () => {
   });
 
   function populateAccount(): Promise<Account> {
-    return PostyBirbDatabaseUtil.saveFromEntity(
+    return saveFromEntity(
       new Account({
         name: 'test',
         website: 'test',
@@ -55,7 +53,7 @@ describe('Website', () => {
     await website.onInitialize(repository);
     await website.login();
     const entity = (
-      await repository.select(eq(repository.schemaEntity.id, website.accountId))
+      await repository.select(eq(repository.table.id, website.accountId))
     )[0];
     expect(entity.data).toEqual({ test: 'test-mode' });
   }, 10000);

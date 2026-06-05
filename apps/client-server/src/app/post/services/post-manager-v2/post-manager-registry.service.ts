@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import { EntityId, IPostWaitState, SubmissionType } from '@postybirb/types';
-import { PostRecord } from '../../../drizzle/models';
+import { PostRecord } from '@postybirb/database';
 import { PostRecordFactory } from '../post-record-factory';
 import { BasePostManager } from './base-post-manager.service';
 import { FileSubmissionPostManager } from './file-submission-post-manager.service';

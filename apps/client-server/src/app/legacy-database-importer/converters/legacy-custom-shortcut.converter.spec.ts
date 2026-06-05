@@ -1,16 +1,15 @@
-import { clearDatabase } from '@postybirb/database';
+import { clearDatabase, CustomShortcutRepository } from '@postybirb/database';
 import { ensureDirSync, PostyBirbDirectories, writeSync } from '@postybirb/fs';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { v4 } from 'uuid';
-import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
 import { LegacyCustomShortcut } from '../legacy-entities/legacy-custom-shortcut';
 import { LegacyCustomShortcutConverter } from './legacy-custom-shortcut.converter';
 
 describe('LegacyCustomShortcutConverter', () => {
   let converter: LegacyCustomShortcutConverter;
   let testDataPath: string;
-  let repository: PostyBirbDatabase<'CustomShortcutSchema'>;
+  let repository: CustomShortcutRepository;
   const ts = Date.now();
 
   beforeEach(async () => {
@@ -30,7 +29,7 @@ describe('LegacyCustomShortcutConverter', () => {
     writeSync(destFile, testFile);
 
     converter = new LegacyCustomShortcutConverter(testDataPath);
-    repository = new PostyBirbDatabase('CustomShortcutSchema');
+    repository = new CustomShortcutRepository();
   });
 
   it('should be defined', () => {

@@ -33,6 +33,7 @@ import {
   calculateImageResize,
   getFileTypeFromMimeType,
 } from '@postybirb/utils/file-type';
+import { SetNonNullable } from 'type-fest';
 import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
@@ -52,6 +53,8 @@ import { Website } from '../../website';
 import { BlueskyConverter } from './bluesky-description-converter';
 import { BlueskyFileSubmission } from './models/bluesky-file-submission';
 import { BlueskyMessageSubmission } from './models/bluesky-message-submission';
+
+type LoggedInAgent = SetNonNullable<AtpAgent, 'session' | 'pdsUrl'>;
 
 @WebsiteMetadata({ name: 'bluesky', displayName: 'BlueSky' })
 @CustomLoginFlow()
@@ -107,9 +110,10 @@ export default class Bluesky
 
   private agent?: AtpAgent;
 
-  private getLoggedInAgent(): AtpAgent {
-    if (!this.agent.hasSession) throw new Error('Not logged in');
-    return this.agent;
+  private getLoggedInAgent(): LoggedInAgent {
+    if (!this.agent?.hasSession) throw new Error('Not logged in');
+
+    return this.agent as LoggedInAgent;
   }
 
   public async onLogin(): Promise<ILoginState> {
@@ -136,7 +140,7 @@ export default class Bluesky
     return new BlueskyFileSubmission();
   }
 
-  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
+  calculateImageResize(file: ISubmissionFile): ImageResizeProps | undefined {
     // https://github.com/bluesky-social/social-app/blob/main/src/lib/constants.ts
     return calculateImageResize(file, {
       maxWidth: 4000,
@@ -181,12 +185,12 @@ export default class Bluesky
 
   private async post(
     postData: PostData<BlueskyFileSubmission>,
-    agent: AtpAgent,
+    agent: LoggedInAgent,
     embed:
       | undefined
       | $Typed<AppBskyEmbedImages.Main>
       | $Typed<AppBskyEmbedVideo.Main>,
-    reply: ReplyRef,
+    reply: ReplyRef | null,
   ) {
     let labels: $Typed<ComAtprotoLabelDefs.SelfLabels> | undefined;
     if (postData.options.labelRating) {
@@ -214,7 +218,7 @@ export default class Bluesky
     postResult: { uri: string },
     profile: AppBskyActorGetProfile.Response,
     postData: PostData<BlueskyMessageSubmission | BlueskyFileSubmission>,
-    agent: AtpAgent,
+    agent: LoggedInAgent,
   ) {
     if (postResult && postResult.uri) {
       // Generate a permanent URL
@@ -338,12 +342,12 @@ export default class Bluesky
 
     // When RichText.detectFacets encounters invalid mention (user does not exists) it sets did to empty string
     const invalidMentions = rt.facets
-      .filter((e) =>
+      ?.filter((e) =>
         e.features.find((feature) => isMention(feature) && feature.did === ''),
       )
       .map((e) => rt.unicodeText.slice(e.index.byteStart, e.index.byteEnd));
 
-    if (invalidMentions.length) {
+    if (invalidMentions?.length) {
       validator.error(
         'validation.description.bluesky.invalid-mentions',
         { mentions: invalidMentions },
@@ -369,7 +373,7 @@ export default class Bluesky
   }
 
   private async getReplyRef(
-    agent: AtpAgent,
+    agent: LoggedInAgent,
     url?: string,
   ): Promise<ReplyRef | null> {
     if (!url?.trim()) return null;
@@ -427,7 +431,7 @@ export default class Bluesky
   }
 
   private createThreadgate(
-    agent: AtpAgent,
+    agent: LoggedInAgent,
     postUri: string,
     whoCanReply: NonNullable<BlueskyFileSubmission['whoCanReply']>,
   ) {
@@ -459,7 +463,7 @@ export default class Bluesky
   }
 
   private async uploadEmbeds(
-    agent: AtpAgent,
+    agent: LoggedInAgent,
     files: PostingFile[],
     cancellationToken: CancellableToken,
   ): Promise<$Typed<AppBskyEmbedImages.Main> | $Typed<AppBskyEmbedVideo.Main>> {
@@ -504,9 +508,9 @@ export default class Bluesky
   }
 
   private async uploadImage(
-    agent: AtpAgent,
+    agent: LoggedInAgent,
     file: PostingFile,
-  ): Promise<BlobRef | undefined> {
+  ): Promise<BlobRef> {
     const blobUpload = await agent.uploadBlob(file.buffer, {
       encoding: file.mimeType,
     });
@@ -531,7 +535,7 @@ export default class Bluesky
   // path) and not doing the proper service authentication dance. So we instead
   // follow what the website does here, which is the way that actually works.
   // We also use the same inconsistent header capitalization as they do.
-  private async checkVideoUploadLimits(agent: AtpAgent): Promise<void> {
+  private async checkVideoUploadLimits(agent: LoggedInAgent): Promise<void> {
     const token = await this.getAuthToken(
       agent,
       'did:web:video.bsky.app',
@@ -562,7 +566,7 @@ export default class Bluesky
   }
 
   private async uploadVideo(
-    agent: AtpAgent,
+    agent: LoggedInAgent,
     file: PostingFile,
   ): Promise<BlobRef> {
     const token = await this.getAuthToken(
@@ -570,7 +574,7 @@ export default class Bluesky
       `did:web:${agent.pdsUrl.hostname}`,
       'com.atproto.repo.uploadBlob',
     );
-    const did = encodeURIComponent(agent.did);
+    const did = encodeURIComponent(agent.session.did);
     const name = encodeURIComponent(this.generateVideoName());
     const url = `https://video.bsky.app/xrpc/app.bsky.video.uploadVideo?did=${did}&name=${name}`;
     const req: RequestInit = {
@@ -674,7 +678,7 @@ export default class Bluesky
   }
 
   private async getAuthToken(
-    agent: AtpAgent,
+    agent: LoggedInAgent,
     aud: string,
     lxm: string,
   ): Promise<string> {

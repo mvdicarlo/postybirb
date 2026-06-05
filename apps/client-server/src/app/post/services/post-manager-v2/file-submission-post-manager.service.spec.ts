@@ -1,4 +1,10 @@
-import { clearDatabase } from '@postybirb/database';
+import {
+  clearDatabase,
+  FileBuffer,
+  PostRecord,
+  Submission,
+  SubmissionFile,
+} from '@postybirb/database';
 import {
   AccountId,
   DefaultSubmissionFileMetadata,
@@ -13,12 +19,6 @@ import {
   SubmissionType,
 } from '@postybirb/types';
 import 'reflect-metadata';
-import {
-  FileBuffer,
-  PostRecord,
-  Submission,
-  SubmissionFile,
-} from '../../../drizzle/models';
 import { FileConverterService } from '../../../file-converter/file-converter.service';
 import { NotificationsService } from '../../../notifications/notifications.service';
 import { PostParsersService } from '../../../post-parsers/post-parsers.service';
@@ -113,7 +113,7 @@ describe('FileSubmissionPostManager', () => {
     order: number = 1,
   ): SubmissionFile {
     const fileBuffer = createFileBuffer();
-    return new SubmissionFile({
+    const sf = new SubmissionFile({
       id,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -126,43 +126,46 @@ describe('FileSubmissionPostManager', () => {
       hasAltFile: false,
       hasThumbnail: false,
       hasCustomThumbnail: false,
-      file: fileBuffer,
       order,
       metadata: DefaultSubmissionFileMetadata(),
     });
+    sf.file = fileBuffer;
+    return sf;
   }
 
   function createSubmission(
     files: SubmissionFile[] = [],
   ): Submission<FileSubmissionMetadata> {
-    return new Submission<FileSubmissionMetadata>({
+    const s = new Submission<FileSubmissionMetadata>({
       id: 'test-submission',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       metadata: {},
       type: SubmissionType.FILE,
-      files,
-      options: [],
       isScheduled: false,
       schedule: {} as never,
       order: 1,
-      posts: [] as never,
       isTemplate: false,
       isMultiSubmission: false,
       isArchived: false,
     });
+    s.files = files;
+    s.options = [];
+    s.posts = [] as never;
+    return s;
   }
 
   function createPostRecord(
     submission: Submission<FileSubmissionMetadata>,
   ): PostRecord {
-    return new PostRecord({
+    const pr = new PostRecord({
       id: 'test-post-record' as EntityId,
-      submission,
       state: PostRecordState.PENDING,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     });
+    pr.submission = submission;
+    return pr;
   }
 
   function createMockFileWebsite(accountId: AccountId): UnknownWebsite {
@@ -478,7 +481,7 @@ describe('FileSubmissionPostManager', () => {
       // Set batch size to 3 to get all files in one batch
       (
         mockWebsite as unknown as ImplementedFileWebsite
-      ).decoratedProps.fileOptions.fileBatchSize = 3;
+      ).decoratedProps.fileOptions!.fileBatchSize = 3;
 
       let capturedFiles: PostingFile[] = [];
       (mockWebsite as unknown as FileWebsite).onPostFileSubmission = jest
@@ -549,7 +552,7 @@ describe('FileSubmissionPostManager', () => {
       // Set batch size to 2
       (
         mockWebsite as unknown as ImplementedFileWebsite
-      ).decoratedProps.fileOptions.fileBatchSize = 2;
+      ).decoratedProps.fileOptions!.fileBatchSize = 2;
 
       const batchIndices: number[] = [];
       (mockWebsite as unknown as FileWebsite).onPostFileSubmission = jest
@@ -594,7 +597,7 @@ describe('FileSubmissionPostManager', () => {
       // Set invalid batch size
       (
         mockWebsite as unknown as ImplementedFileWebsite
-      ).decoratedProps.fileOptions.fileBatchSize = 0;
+      ).decoratedProps.fileOptions!.fileBatchSize = 0;
 
       (mockWebsite as unknown as FileWebsite).onPostFileSubmission = jest
         .fn()
@@ -639,7 +642,7 @@ describe('FileSubmissionPostManager', () => {
       // Set batch size to 1 to have 3 separate batches
       (
         mockWebsite as unknown as ImplementedFileWebsite
-      ).decoratedProps.fileOptions.fileBatchSize = 1;
+      ).decoratedProps.fileOptions!.fileBatchSize = 1;
 
       let callCount = 0;
       (mockWebsite as unknown as FileWebsite).onPostFileSubmission = jest
@@ -966,7 +969,7 @@ describe('FileSubmissionPostManager', () => {
       // Website only accepts JPEG
       (
         mockWebsite as unknown as ImplementedFileWebsite
-      ).decoratedProps.fileOptions.acceptedMimeTypes = ['image/jpeg'];
+      ).decoratedProps.fileOptions!.acceptedMimeTypes = ['image/jpeg'];
 
       // Resizer returns PNG (which website doesn't accept)
       resizerServiceMock.resize.mockImplementation(async (request) => {
@@ -1002,7 +1005,7 @@ describe('FileSubmissionPostManager', () => {
       // Website accepts all file types
       (
         mockWebsite as unknown as ImplementedFileWebsite
-      ).decoratedProps.fileOptions.acceptedMimeTypes = [];
+      ).decoratedProps.fileOptions!.acceptedMimeTypes = [];
 
       resizerServiceMock.resize.mockImplementation(async (request) => {
         const f = request.file as SubmissionFile;

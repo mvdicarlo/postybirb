@@ -5,6 +5,7 @@ import {
     Optional,
 } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { PostQueueRecord, PostQueueRecordRepository, PostRecord, PostRecordRepository, SubmissionRepository } from '@postybirb/database';
 import {
     EntityId,
     PostRecordResumeMode,
@@ -16,8 +17,6 @@ import { IsTestEnvironment } from '@postybirb/utils/common';
 import { Mutex } from 'async-mutex';
 import { Cron as CronGenerator } from 'croner';
 import { PostyBirbService } from '../../../common/service/postybirb-service';
-import { PostQueueRecord, PostRecord } from '../../../drizzle/models';
-import { PostyBirbDatabase } from '../../../drizzle/postybirb-database/postybirb-database';
 import { NotificationsService } from '../../../notifications/notifications.service';
 import { SettingsService } from '../../../settings/settings.service';
 import { SubmissionService } from '../../../submission/services/submission.service';
@@ -34,7 +33,7 @@ import { PostRecordFactory } from '../post-record-factory';
  */
 @Injectable()
 export class PostQueueService
-  extends PostyBirbService<'PostQueueRecordSchema'>
+  extends PostyBirbService<PostQueueRecordRepository>
   implements OnModuleInit
 {
   private readonly queueModificationMutex = new Mutex();
@@ -43,13 +42,9 @@ export class PostQueueService
 
   private initTime = Date.now();
 
-  private readonly postRecordRepository = new PostyBirbDatabase(
-    'PostRecordSchema',
-  );
+  private readonly postRecordRepository = new PostRecordRepository();
 
-  private readonly submissionRepository = new PostyBirbDatabase(
-    'SubmissionSchema',
-  );
+  private readonly submissionRepository = new SubmissionRepository();
 
   /**
    * Maximum time (in ms) a post can be RUNNING without any activity before being considered stuck.
@@ -65,7 +60,7 @@ export class PostQueueService
     private readonly websiteRegistryService: WebsiteRegistryService,
     @Optional() webSocket?: WSGateway,
   ) {
-    super('PostQueueRecordSchema', webSocket);
+    super(new PostQueueRecordRepository(), webSocket);
   }
 
   /**
@@ -189,7 +184,9 @@ export class PostQueueService
     if (orphanedRecords.length > 0) {
       this.logger
         .withMetadata({ count: orphanedRecords.length })
-        .warn('Found orphaned PostRecords (PENDING/RUNNING with no queue record), marking as FAILED');
+        .warn(
+          'Found orphaned PostRecords (PENDING/RUNNING with no queue record), marking as FAILED',
+        );
 
       for (const record of orphanedRecords) {
         this.logger
@@ -229,8 +226,8 @@ export class PostQueueService
     });
   }
 
-  public override remove(id: EntityId) {
-    return this.dequeue([id]);
+  public override async remove(id: EntityId): Promise<void> {
+    await this.dequeue([id]);
   }
 
   /**
@@ -423,8 +420,8 @@ export class PostQueueService
         // If existing, do nothing (first-in-wins)
       }
     } catch (error) {
-      this.logger.withMetadata({ error }).error('Failed to enqueue posts');
-      throw new InternalServerErrorException(error.message);
+      this.logger.withError(error).error('Failed to enqueue posts');
+      throw new InternalServerErrorException((error as Error).message);
     } finally {
       release();
       this.initTime -= 61_000; // Ensure queue processing starts after next cycle
@@ -447,8 +444,8 @@ export class PostQueueService
 
       return await this.repository.deleteById(records.map((r) => r.id));
     } catch (error) {
-      this.logger.withMetadata({ error }).error('Failed to dequeue posts');
-      throw new InternalServerErrorException(error.message);
+      this.logger.withError(error).error('Failed to dequeue posts');
+      throw new InternalServerErrorException((error as Error).message);
     } finally {
       release();
     }
@@ -464,25 +461,31 @@ export class PostQueueService
     }
 
     const entities = await this.submissionRepository.find({
-      where: (queueRecord, { eq, and }) =>
+      where: (submission, { eq, and }) =>
         and(
-          eq(queueRecord.isScheduled, true),
-          eq(queueRecord.isArchived, false),
+          eq(submission.isScheduled, true),
+          eq(submission.isArchived, false),
         ),
     });
     const now = Date.now();
     const sorted = entities
-      .filter((e) => new Date(e.schedule.scheduledFor).getTime() <= now) // Only those that are ready to be posted.
+      .filter(
+        (e) =>
+          e.schedule.scheduledFor &&
+          new Date(e.schedule.scheduledFor).getTime() <= now,
+      ) // Only those that are ready to be posted.
       .sort(
         (a, b) =>
-          new Date(a.schedule.scheduledFor).getTime() -
-          new Date(b.schedule.scheduledFor).getTime(),
+          new Date(a.schedule.scheduledFor as string).getTime() -
+          new Date(b.schedule.scheduledFor as string).getTime(),
       ); // Sort by oldest first.
     await this.enqueue(sorted.map((s) => s.id));
     sorted
       .filter((s) => s.schedule.cron)
       .forEach((s) => {
-        const next = CronGenerator(s.schedule.cron).nextRun()?.toISOString();
+        const next = CronGenerator(s.schedule.cron as string)
+          .nextRun()
+          ?.toISOString();
         if (next) {
           // eslint-disable-next-line no-param-reassign
           s.schedule.scheduledFor = next;
@@ -640,14 +643,13 @@ export class PostQueueService
    * Peeks at the next item in the queue.
    * Based on the createdAt date.
    */
-  public async peek(): Promise<PostQueueRecord | undefined> {
+  public async peek(): Promise<PostQueueRecord | null> {
     return this.repository.findOne({
       orderBy: (queueRecord, { asc }) => asc(queueRecord.createdAt),
       with: {
         submission: true,
         postRecord: {
           with: {
-            events: true,
             submission: {
               with: {
                 files: true,

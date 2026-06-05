@@ -84,7 +84,7 @@ describe('TagConvertersService', () => {
     updateDto.tag = 'test';
     updateDto.convertTo = { default: 'converted', test: 'converted2' };
     await service.update(record.id, updateDto);
-    const updatedRec = await service.findById(record.id);
+    const updatedRec = await service.findByIdOrThrow(record.id);
     expect(updatedRec.tag).toBe(updateDto.tag);
     expect(updatedRec.convertTo).toEqual(updateDto.convertTo);
   });

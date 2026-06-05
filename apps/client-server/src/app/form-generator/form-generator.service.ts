@@ -35,9 +35,7 @@ export class FormGeneratorService {
   async generateForm(
     request: FormGenerationRequestDto,
   ): Promise<FormBuilderMetadata> {
-    const account = await this.accountService.findById(request.accountId, {
-      failOnMissing: true,
-    });
+    const account = await this.accountService.findByIdOrThrow(request.accountId);
 
     // Get instance for creation
     const instance = await this.websiteRegistryService.findInstance(account);
@@ -50,7 +48,7 @@ export class FormGeneratorService {
     const data = instance.getFormProperties();
 
     // Get form model
-    let formModel: IWebsiteFormFields = null;
+    let formModel: IWebsiteFormFields | null = null;
     if (request.type === SubmissionType.MESSAGE && isMessageWebsite(instance)) {
       formModel = instance.createMessageModel();
     }

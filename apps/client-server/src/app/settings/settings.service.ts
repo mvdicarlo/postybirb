@@ -1,28 +1,25 @@
 import {
-    BadRequestException,
-    Injectable,
-    OnModuleInit,
-    Optional,
+  BadRequestException,
+  Injectable,
+  OnModuleInit,
+  Optional,
 } from '@nestjs/common';
+import { Settings, SettingsRepository } from '@postybirb/database';
 import { SETTINGS_UPDATES } from '@postybirb/socket-events';
 import { EntityId, SettingsConstants } from '@postybirb/types';
-import {
-    StartupOptions,
-    StartupOptionsManager,
-} from '@postybirb/utils/common';
+import { StartupOptions, StartupOptionsManager } from '@postybirb/utils/common';
 import { eq } from 'drizzle-orm';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { Settings } from '../drizzle/models';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { UpdateSettingsDto } from './dtos/update-settings.dto';
 
 @Injectable()
 export class SettingsService
-  extends PostyBirbService<'SettingsSchema'>
+  extends PostyBirbService<SettingsRepository>
   implements OnModuleInit
 {
   constructor(@Optional() webSocket: WSGateway) {
-    super('SettingsSchema', webSocket);
+    super(new SettingsRepository(), webSocket);
     this.repository.subscribe('SettingsSchema', () => this.emit());
   }
 
@@ -33,7 +30,7 @@ export class SettingsService
    */
   async onModuleInit() {
     const defaultSettingsCount = await this.repository.count(
-      eq(this.schema.profile, SettingsConstants.DEFAULT_PROFILE_NAME),
+      eq(this.table.profile, SettingsConstants.DEFAULT_PROFILE_NAME),
     );
 
     if (!defaultSettingsCount) {
@@ -50,8 +47,13 @@ export class SettingsService
           const updatedSettings = { ...existingSettings.settings };
 
           // Recursively merge missing fields
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const mergeObjects = (target: any, source: any, path = ''): boolean => {
+          const mergeObjects = (
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            target: any,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            source: any,
+            path = '',
+          ): boolean => {
             let changed = false;
 
             Object.keys(source).forEach((key) => {
@@ -146,7 +148,7 @@ export class SettingsService
     return this.repository.findOne({
       where: (setting, { eq: equals }) =>
         equals(setting.profile, SettingsConstants.DEFAULT_PROFILE_NAME),
-    });
+    }) as Promise<Settings>;
   }
 
   /**
@@ -224,7 +226,8 @@ export class SettingsService
         if (result === true) {
           return {
             success: true,
-            message: 'Connection successful! Host is reachable and password is correct.',
+            message:
+              'Connection successful! Host is reachable and password is correct.',
           };
         }
       }
@@ -244,7 +247,8 @@ export class SettingsService
         case 500:
           return {
             success: false,
-            message: 'Host server error. The remote host may not be configured properly.',
+            message:
+              'Host server error. The remote host may not be configured properly.',
           };
         default:
           return {
@@ -258,11 +262,12 @@ export class SettingsService
       if (error instanceof TypeError && error.message.includes('fetch')) {
         return {
           success: false,
-          message: 'Network error. Please check the host URL and ensure the host is running.',
+          message:
+            'Network error. Please check the host URL and ensure the host is running.',
         };
       }
 
-      if (error.name === 'AbortError') {
+      if (error instanceof Error && error.name === 'AbortError') {
         return {
           success: false,
           message: 'Connection timeout. The host may be unreachable.',
@@ -271,7 +276,7 @@ export class SettingsService
 
       return {
         success: false,
-        message: `Connection test failed: ${error.message}`,
+        message: `Connection test failed: ${(error as Error).message}`,
       };
     }
   }

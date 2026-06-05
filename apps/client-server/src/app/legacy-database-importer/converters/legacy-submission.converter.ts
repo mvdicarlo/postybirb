@@ -1,19 +1,19 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-continue */
+import { AccountRepository, FileBufferRepository, SubmissionFileRepository, SubmissionRepository, WebsiteOptionsRepository } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import {
-  DefaultSubmissionFileMetadata,
-  ISubmissionMetadata,
-  ISubmissionScheduleInfo,
-  NULL_ACCOUNT_ID,
-  ScheduleType,
-  SubmissionType,
+    DefaultSubmissionFileMetadata,
+    ISubmissionMetadata,
+    ISubmissionScheduleInfo,
+    NULL_ACCOUNT_ID,
+    ScheduleType,
+    SubmissionType,
 } from '@postybirb/types';
 import { createHash } from 'crypto';
 import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { v4 } from 'uuid';
-import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
 import { LegacyFileRecord, LegacySubmission } from '../legacy-entities/legacy-submission';
 import { LegacySubmissionPart } from '../legacy-entities/legacy-submission-part';
 import { SubmissionPartTransformerRegistry } from '../transformers/submission-part/submission-part-transformer-registry';
@@ -121,11 +121,11 @@ export class LegacySubmissionConverter {
   }
 
   public async import(): Promise<void> {
-    const submissionDb = new PostyBirbDatabase('SubmissionSchema');
-    const websiteOptionsDb = new PostyBirbDatabase('WebsiteOptionsSchema');
-    const accountDb = new PostyBirbDatabase('AccountSchema');
-    const submissionFileDb = new PostyBirbDatabase('SubmissionFileSchema');
-    const fileBufferDb = new PostyBirbDatabase('FileBufferSchema');
+    const submissionDb = new SubmissionRepository();
+    const websiteOptionsDb = new WebsiteOptionsRepository();
+    const accountDb = new AccountRepository();
+    const submissionFileDb = new SubmissionFileRepository();
+    const fileBufferDb = new FileBufferRepository();
 
     // Step 1: Parse submissions
     const submissionFilePath = join(

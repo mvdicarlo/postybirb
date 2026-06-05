@@ -10,6 +10,7 @@ import {
   SimpleValidationResult,
   SubmissionRating,
 } from '@postybirb/types';
+import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
@@ -23,6 +24,7 @@ import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
 import { FileWebsite } from '../../models/website-modifiers/file-website';
 import { MessageWebsite } from '../../models/website-modifiers/message-website';
+import { WithCustomDescriptionParser } from '../../models/website-modifiers/with-custom-description-parser';
 import { Website } from '../../website';
 import { DeviantArtDescriptionConverter } from './deviant-art-description-converter';
 import { DeviantArtAccountData } from './models/deviant-art-account-data';
@@ -73,7 +75,8 @@ export default class DeviantArt
   extends Website<DeviantArtAccountData>
   implements
     FileWebsite<DeviantArtFileSubmission>,
-    MessageWebsite<DeviantArtMessageSubmission>
+    MessageWebsite<DeviantArtMessageSubmission>,
+    WithCustomDescriptionParser
 {
   protected BASE_URL = 'https://www.deviantart.com';
 
@@ -88,7 +91,10 @@ export default class DeviantArt
     const res = await this.platform.http.get<string>(this.BASE_URL, {
       partition: this.accountId,
     });
-    const cookies = await this.platform.http.getWebsiteCookies(this.accountId, this.BASE_URL);
+    const cookies = await this.platform.http.getWebsiteCookies(
+      this.accountId,
+      this.BASE_URL,
+    );
     const userInfoCookie = cookies.find((c) => c.name === 'userinfo');
     if (userInfoCookie) {
       const userInfo = JSON.parse(
@@ -103,6 +109,10 @@ export default class DeviantArt
     return this.loginState.setLogin(false, null);
   }
 
+  getDescriptionConverter(): BaseConverter {
+    return new DeviantArtDescriptionConverter();
+  }
+
   private async getCSRF(accountId = this.accountId) {
     const url = await this.platform.http.get<string>(this.BASE_URL, {
       partition: accountId,
@@ -113,7 +123,9 @@ export default class DeviantArt
   private async getFolders(username: string) {
     try {
       const csrf = await this.getCSRF();
-      const { body } = await this.platform.http.get<{ results: DeviantArtFolder[] }>(
+      const { body } = await this.platform.http.get<{
+        results: DeviantArtFolder[];
+      }>(
         `${
           this.BASE_URL
         }/_puppy/dashared/gallection/folders?offset=0&limit=250&type=gallery&with_all_folder=true&with_permissions=true&username=${encodeURIComponent(
@@ -174,7 +186,7 @@ export default class DeviantArt
     return new DeviantArtFileSubmission();
   }
 
-  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
+  calculateImageResize(file: ISubmissionFile): ImageResizeProps | undefined {
     return undefined;
   }
 
@@ -259,7 +271,7 @@ export default class DeviantArt
         deviationid: fileUpload.body.deviationId,
         da_minor_version: this.DA_API_VERSION,
         display_resolution: 0,
-        editorRaw: DeviantArtDescriptionConverter.convert(
+        editorRaw: DeviantArtDescriptionConverter.getDocument(
           postData.options.description,
         ),
         editor_v3: '',
@@ -360,7 +372,7 @@ export default class DeviantArt
 
     const builder = new PostBuilder(this, cancellationToken).asJson().withData({
       ...commonFormData,
-      editorRaw: DeviantArtDescriptionConverter.convert(
+      editorRaw: DeviantArtDescriptionConverter.getDocument(
         postData.options.description,
       ),
       title: this.stripInvalidCharacters(postData.options.title),

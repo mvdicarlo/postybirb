@@ -1,17 +1,18 @@
 import { Injectable } from '@nestjs/common';
+import { Account, Submission, WebsiteOptions } from '@postybirb/database';
 import { formBuilder } from '@postybirb/form-builder';
 import { Logger } from '@postybirb/logger';
 import {
-  EntityId,
-  ISubmission,
-  IWebsiteOptions,
-  PostData,
-  SimpleValidationResult,
-  SubmissionId,
-  SubmissionType,
-  ValidationResult,
+    EntityId,
+    ISubmission,
+    IWebsiteOptions,
+    PostData,
+    SimpleValidationResult,
+    SubmissionId,
+    SubmissionType,
+    ValidationResult,
 } from '@postybirb/types';
-import { Account, Submission, WebsiteOptions } from '../drizzle/models';
+import { toError } from '@postybirb/utils/common';
 import { FileConverterService } from '../file-converter/file-converter.service';
 import { FileService } from '../file/file.service';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
@@ -22,9 +23,9 @@ import { UnknownWebsite } from '../websites/website';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { validators } from './validators';
 import {
-  FieldValidator,
-  Validator,
-  ValidatorParams,
+    FieldValidator,
+    Validator,
+    ValidatorParams,
 } from './validators/validator.type';
 
 type ValidationCacheRecord = {
@@ -184,9 +185,9 @@ export class ValidationService {
         websiteOption,
       );
 
-      const defaultOptions: IWebsiteOptions = submission.options.find(
-        (o) => o.isDefault,
-      );
+      const defaultOptions = submission.options.find((o) => o.isDefault);
+      if (!defaultOptions) throw new Error('No default options found');
+
       const defaultOpts = Object.assign(new DefaultWebsiteOptions(), {
         ...defaultOptions.data,
       });
@@ -240,10 +241,11 @@ export class ValidationService {
           {
             id: 'validation.failed',
             values: {
-              message: error.message,
+              message: toError(error).message,
             },
           },
         ],
+        errors: [],
       };
     }
   }
@@ -254,7 +256,7 @@ export class ValidationService {
     website: UnknownWebsite,
     postData: PostData,
   ): Promise<ValidationResult> {
-    let result: SimpleValidationResult;
+    let result: SimpleValidationResult | undefined;
     try {
       if (submission.type === SubmissionType.FILE && isFileWebsite(website)) {
         result = await website.onValidateFileSubmission(postData);
@@ -270,8 +272,8 @@ export class ValidationService {
       return {
         id: websiteId,
         account: website.account.toDTO(),
-        warnings: result?.warnings,
-        errors: result?.errors,
+        warnings: result?.warnings ?? [],
+        errors: result?.errors ?? [],
       };
     } catch (error) {
       this.logger.warn(
@@ -285,10 +287,11 @@ export class ValidationService {
           {
             id: 'validation.failed',
             values: {
-              message: error.message,
+              message: toError(error).message,
             },
           },
         ],
+        errors: [],
       };
     }
   }

@@ -1,23 +1,22 @@
 import {
-    BadRequestException,
-    Injectable,
-    OnModuleInit,
-    Optional,
+  BadRequestException,
+  Injectable,
+  OnModuleInit,
+  Optional,
 } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { Account, AccountRepository } from '@postybirb/database';
 import { ACCOUNT_UPDATES } from '@postybirb/socket-events';
 import {
-    AccountId,
-    IWebsiteMetadata,
-    NULL_ACCOUNT_ID,
-    NullAccount,
+  AccountId,
+  IWebsiteMetadata,
+  NULL_ACCOUNT_ID,
+  NullAccount,
 } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/common';
 import { ne } from 'drizzle-orm';
 import { Class } from 'type-fest';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { Account } from '../drizzle/models';
-import { FindOptions } from '../drizzle/postybirb-database/find-options.type';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { UnknownWebsite } from '../websites/website';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
@@ -32,7 +31,7 @@ import { LoginStatePoller } from './login-state-poller';
  */
 @Injectable()
 export class AccountService
-  extends PostyBirbService<'AccountSchema'>
+  extends PostyBirbService<AccountRepository>
   implements OnModuleInit
 {
   private readonly loginRefreshTimers: Record<
@@ -49,15 +48,12 @@ export class AccountService
     private readonly websiteRegistry: WebsiteRegistryService,
     @Optional() webSocket?: WSGateway,
   ) {
-    super('AccountSchema', webSocket);
+    super(new AccountRepository(), webSocket);
     this.repository.subscribe('AccountSchema', () => this.emit());
-    this.loginStatePoller = new LoginStatePoller(
-      this.websiteRegistry,
-      () => {
-        this.emit();
-        this.websiteRegistry.emit();
-      },
-    );
+    this.loginStatePoller = new LoginStatePoller(this.websiteRegistry, () => {
+      this.emit();
+      this.websiteRegistry.emit();
+    });
   }
 
   /**
@@ -96,7 +92,7 @@ export class AccountService
 
   private async deleteUnregisteredAccounts() {
     const accounts = await this.repository.find({
-      where: ne(this.repository.schemaEntity.id, NULL_ACCOUNT_ID),
+      where: ne(this.table.id, NULL_ACCOUNT_ID),
     });
     const unregisteredAccounts = accounts.filter(
       (account) => !this.websiteRegistry.canCreate(account.website),
@@ -132,7 +128,7 @@ export class AccountService
    */
   private async initWebsiteRegistry(): Promise<void> {
     const accounts = await this.repository.find({
-      where: ne(this.repository.schemaEntity.id, NULL_ACCOUNT_ID),
+      where: ne(this.table.id, NULL_ACCOUNT_ID),
     });
     await Promise.all(
       accounts.map((account) => this.websiteRegistry.create(account)),
@@ -272,20 +268,23 @@ export class AccountService
     return account.withWebsiteInstance(instance);
   }
 
-  public findById(id: AccountId, options?: FindOptions) {
-    return this.repository
-      .findById(id, options)
-      .then((account) => this.injectWebsiteInstance(account));
+  public async findById(id: AccountId): Promise<Account | null> {
+    const account = await this.repository.findById(id);
+    return this.injectWebsiteInstance(account);
+  }
+
+  public async findByIdOrThrow(id: AccountId): Promise<Account> {
+    const account = await this.repository.findByIdOrThrow(id);
+    return this.injectWebsiteInstance(account) as Account;
   }
 
   public async findAll() {
-    return this.repository
-      .find({
-        where: ne(this.repository.schemaEntity.id, NULL_ACCOUNT_ID),
-      })
-      .then((accounts) =>
-        accounts.map((account) => this.injectWebsiteInstance(account)),
-      );
+    const accounts = await this.repository.find({
+      where: ne(this.table.id, NULL_ACCOUNT_ID),
+    });
+    return accounts.map(
+      (account) => this.injectWebsiteInstance(account) as Account,
+    );
   }
 
   async update(id: AccountId, update: UpdateAccountDto) {
@@ -295,12 +294,12 @@ export class AccountService
       .then((account) => this.injectWebsiteInstance(account));
   }
 
-  async remove(id: AccountId) {
+  async remove(id: AccountId): Promise<void> {
     const account = await this.findById(id);
     if (account) {
       this.websiteRegistry.remove(account);
     }
-    return super.remove(id);
+    await super.remove(id);
   }
 
   /**
@@ -312,9 +311,21 @@ export class AccountService
     this.logger.info(`Clearing Account data for '${id}'`);
     const account = await this.findById(id);
     if (account) {
-      const instance = this.websiteRegistry.findInstance(account);
+      const instance = this.findWebsiteInstanceOrThrow(account);
       await instance.clearLoginStateAndData();
     }
+  }
+
+  private findWebsiteInstanceOrThrow(account: Account) {
+    const instance = this.websiteRegistry.findInstance(account);
+
+    if (!instance) {
+      throw new Error(
+        `No website instance for account ${account.website} ${account.id}`,
+      );
+    }
+
+    return instance;
   }
 
   /**
@@ -326,20 +337,21 @@ export class AccountService
     this.logger.info(
       `Setting Account data for '${setWebsiteDataRequestDto.id}'`,
     );
-    const account = await this.repository.findById(
+    const account = await this.repository.findByIdOrThrow(
       setWebsiteDataRequestDto.id,
-      { failOnMissing: true },
     );
-    const instance = this.websiteRegistry.findInstance(account);
+
+    const instance = this.findWebsiteInstanceOrThrow(account);
     await instance.setWebsiteData(setWebsiteDataRequestDto.data);
   }
 
-  private injectWebsiteInstance(account?: Account): Account | null {
+  private injectWebsiteInstance<T extends Account | null>(account?: T): T {
     if (!account) {
-      return null;
+      return null as T;
     }
+
     return account.withWebsiteInstance(
       this.websiteRegistry.findInstance(account),
-    );
+    ) as T;
   }
 }

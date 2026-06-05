@@ -1,13 +1,14 @@
+// @ts-expect-error No types on npm
 import * as rtf from '@iarna/rtf-to-html';
 import { Injectable } from '@nestjs/common';
-import { Insert, Select } from '@postybirb/database';
+import { FileBuffer, FileBufferRepository, FileBufferRow, Insert, Select, SubmissionFile, SubmissionFileRepository, SubmissionFileRow, TransactionContext, withTransactionContext } from '@postybirb/database';
 import { removeFile } from '@postybirb/fs';
 import { Logger } from '@postybirb/logger';
 import {
-    DefaultSubmissionFileMetadata,
-    FileSubmission,
-    FileType,
-    IFileBuffer,
+  DefaultSubmissionFileMetadata,
+  FileSubmission,
+  FileType,
+  IFileBuffer,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { eq } from 'drizzle-orm';
@@ -18,16 +19,6 @@ import { parse } from 'path';
 import { promisify } from 'util';
 import { v4 as uuid } from 'uuid';
 
-import {
-    FileBuffer,
-    fromDatabaseRecord,
-    SubmissionFile,
-} from '../../drizzle/models';
-import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
-import {
-    TransactionContext,
-    withTransactionContext,
-} from '../../drizzle/transaction-context';
 import { SharpInstanceManager } from '../../image-processing/sharp-instance-manager';
 import { MulterFileInfo } from '../models/multer-file-info';
 import { ImageUtil } from '../utils/image.util';
@@ -40,27 +31,16 @@ import { ImageUtil } from '../utils/image.util';
 export class CreateFileService {
   private readonly logger = Logger();
 
-  private readonly fileBufferRepository = new PostyBirbDatabase(
-    'FileBufferSchema',
-  );
+  private readonly fileBufferRepository = new FileBufferRepository();
 
-  private readonly fileRepository = new PostyBirbDatabase(
-    'SubmissionFileSchema',
-  );
+  private readonly fileRepository = new SubmissionFileRepository();
 
-  constructor(
-    private readonly sharpInstanceManager: SharpInstanceManager,
-  ) {}
+  constructor(private readonly sharpInstanceManager: SharpInstanceManager) {}
 
   /**
    * Creates file entity and stores it.
    * @todo extra data (image resize per website)
    * @todo figure out what to do about non-image
-   *
-   * @param {MulterFileInfo} file
-   * @param {MulterFileInfo} submission
-   * @param {Buffer} buf
-   * @return {*}  {Promise<SubmissionFile>}
    */
   public async create(
     file: MulterFileInfo,
@@ -96,9 +76,9 @@ export class CreateFileService {
           );
           await ctx
             .getDb()
-            .update(this.fileRepository.schemaEntity)
+            .update(this.fileRepository.table)
             .set({ primaryFileId: primaryFile.id })
-            .where(eq(this.fileRepository.schemaEntity.id, entity.id));
+            .where(eq(this.fileRepository.table.id, entity.id));
           this.logger
             .withMetadata({ id: entity.id })
             .info('SubmissionFile Created');
@@ -106,9 +86,9 @@ export class CreateFileService {
           return entity;
         },
       );
-      return await this.fileRepository.findById(newSubmission.id);
+      return await this.fileRepository.findByIdOrThrow(newSubmission.id);
     } catch (err) {
-      this.logger.error(err.message, err.stack);
+      this.logger.error(err);
       throw err;
     } finally {
       if (!file.origin) {
@@ -148,7 +128,15 @@ export class CreateFileService {
       file.originalname.endsWith('.rtf')
     ) {
       this.logger.info('[Mutation] Creating Alt File for Text Document: RTF');
-      const promisifiedRtf = promisify(rtf.fromString);
+      const promisifiedRtf = promisify(
+        rtf.fromString as (
+          input: string,
+          options: {
+            template(_: unknown, __: unknown, content: string): string;
+          },
+          callback: (err: Error, result: string) => void,
+        ) => void,
+      );
       const rtfHtml = await promisifiedRtf(buf.toString(), {
         template(_, __, content: string) {
           return content;
@@ -179,12 +167,12 @@ export class CreateFileService {
     );
     await ctx
       .getDb()
-      .update(this.fileRepository.schemaEntity)
+      .update(this.fileRepository.table)
       .set({
         altFileId: altFile.id,
         hasAltFile: true,
       })
-      .where(eq(this.fileRepository.schemaEntity.id, entity.id));
+      .where(eq(this.fileRepository.table.id, entity.id));
     this.logger.withMetadata({ id: altFile.id }).info('Alt File Created');
   }
 
@@ -215,13 +203,12 @@ export class CreateFileService {
       metadata: DefaultSubmissionFileMetadata(),
       order: Date.now(),
     };
-    const sf = fromDatabaseRecord(
-      SubmissionFile,
-      await ctx
+    const sf = SubmissionFile.fromRows(
+      (await ctx
         .getDb()
-        .insert(this.fileRepository.schemaEntity)
+        .insert(this.fileRepository.table)
         .values(submissionFile)
-        .returning(),
+        .returning()) as SubmissionFileRow[],
     );
 
     const entity = sf[0];
@@ -245,13 +232,8 @@ export class CreateFileService {
     buf: Buffer,
   ): Promise<SubmissionFile> {
     const meta = await this.sharpInstanceManager.getMetadata(buf);
-    const thumbnail = await this.createFileThumbnail(
-      ctx,
-      entity,
-      file,
-      buf,
-    );
-    const update: Select<typeof this.fileRepository.schemaEntity> = {
+    const thumbnail = await this.createFileThumbnail(ctx, entity, file, buf);
+    const update: Partial<Select<'SubmissionFileSchema'>> = {
       width: meta.width ?? 0,
       height: meta.height ?? 0,
       hasThumbnail: true,
@@ -267,14 +249,13 @@ export class CreateFileService {
       },
     };
 
-    return fromDatabaseRecord(
-      SubmissionFile,
-      await ctx
+    return SubmissionFile.fromRows(
+      (await ctx
         .getDb()
-        .update(this.fileRepository.schemaEntity)
+        .update(this.fileRepository.table)
         .set(update)
-        .where(eq(this.fileRepository.schemaEntity.id, entity.id))
-        .returning(),
+        .where(eq(this.fileRepository.table.id, entity.id))
+        .returning()) as SubmissionFileRow[],
     )[0];
   }
 
@@ -297,10 +278,7 @@ export class CreateFileService {
       height,
       width,
       mimeType: thumbnailMimeType,
-    } = await this.generateThumbnail(
-      imageBuffer,
-      file.mimetype,
-    );
+    } = await this.generateThumbnail(imageBuffer, file.mimetype);
 
     // Remove existing extension and add the appropriate thumbnail extension
     const fileNameWithoutExt = parse(fileEntity.fileName).name;
@@ -321,7 +299,6 @@ export class CreateFileService {
    * @param {Buffer} imageBuffer - The source image buffer
    * @param {string} sourceMimeType - The mimetype of the source image
    * @param {number} [preferredDimension=400] - The preferred thumbnail dimension
-   * @return {*}  {Promise<{ width: number; height: number; buffer: Buffer; mimeType: string }>}
    */
   public async generateThumbnail(
     imageBuffer: Buffer,
@@ -350,17 +327,12 @@ export class CreateFileService {
 
   /**
    * Creates a file buffer entity for storing blob data of a file.
-   *
-   * @param {File} fileEntity
-   * @param {Buffer} buf
-   * @param {string} type - thumbnail/alt/primary
-   * @return {*}  {IFileBuffer}
    */
   public async createFileBufferEntity(
     ctx: TransactionContext,
     fileEntity: SubmissionFile,
     buf: Buffer,
-    opts: Select<'FileBufferSchema'> = {} as Select<'FileBufferSchema'>,
+    opts: Partial<Select<'FileBufferSchema'>> = {},
   ): Promise<FileBuffer> {
     const { mimeType, height, width, fileName } = fileEntity;
     const data: Insert<'FileBufferSchema'> = {
@@ -375,13 +347,12 @@ export class CreateFileService {
       ...opts,
     };
 
-    const result = fromDatabaseRecord(
-      FileBuffer,
-      await ctx
+    const result = FileBuffer.fromRows(
+      (await ctx
         .getDb()
-        .insert(this.fileBufferRepository.schemaEntity)
+        .insert(this.fileBufferRepository.table)
         .values(data)
-        .returning(),
+        .returning()) as FileBufferRow[],
     )[0];
 
     ctx.track('FileBufferSchema', result.id);
