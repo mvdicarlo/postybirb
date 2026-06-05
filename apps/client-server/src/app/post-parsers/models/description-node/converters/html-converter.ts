@@ -77,7 +77,13 @@ export class HtmlConverter extends BaseConverter {
       if (!this.shouldRenderShortcut(node, context)) return '';
       const shortcutBlocks = context.customShortcuts.get(attrs.id);
       if (shortcutBlocks) {
-        return this.convertBlocks(shortcutBlocks, context);
+        // Render inline: extract inner content from each block without block
+        // wrapper tags. This prevents nested block elements (e.g. <div><div>)
+        // when the shortcut sits alongside other inline content in a paragraph.
+        return shortcutBlocks
+          .map((block) => this.convertContent(block.content, context))
+          .filter((s) => s.length > 0)
+          .join('<br>');
       }
       return '';
     }
