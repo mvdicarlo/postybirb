@@ -28,10 +28,31 @@ if (os.platform() === 'linux' && !process.env.MALLOC_ARENA_MAX) {
  * Sharp's default limit (268 megapixels) rejects large images
  * that artists commonly work with (e.g. 50MB+ high-res JPEGs).
  * @param {Buffer} buffer
+ * @param {Object} [opts] - Additional sharp input options
+ * @param {boolean} [opts.animated] - Whether to load all frames (for GIF/WebP)
  * @returns {import('sharp').Sharp}
  */
-function load(buffer) {
-  return sharp(buffer, { limitInputPixels: false });
+function load(buffer, opts) {
+  return sharp(buffer, { limitInputPixels: false, ...opts });
+}
+
+/**
+ * Check if the given MIME type is an animated-capable format.
+ * @param {string} mimeType
+ * @returns {boolean}
+ */
+function isAnimatedFormat(mimeType) {
+  return mimeType === 'image/gif' || mimeType === 'image/webp';
+}
+
+/**
+ * Check if a buffer contains multiple frames (animated).
+ * @param {Buffer} buffer
+ * @returns {Promise<boolean>}
+ */
+async function isAnimated(buffer) {
+  const metadata = await sharp(buffer, { limitInputPixels: false }).metadata();
+  return (metadata.pages || 1) > 1;
 }
 
 /**
@@ -90,6 +111,8 @@ function applyOutputFormat(instance, outputMimeType) {
       return instance.png();
     case 'image/webp':
       return instance.webp({ quality: 100 });
+    case 'image/gif':
+      return instance.gif();
     default:
       return instance;
   }
@@ -104,12 +127,13 @@ function applyOutputFormat(instance, outputMimeType) {
  * @param {number} height
  * @returns {Promise<{buffer: Buffer, width: number, height: number, format: string}>}
  */
-async function resizeImage(inputBuffer, width, height) {
-  const metadata = await load(inputBuffer).metadata();
+async function resizeImage(inputBuffer, width, height, animated) {
+  const loadOpts = animated ? { animated: true } : undefined;
+  const metadata = await load(inputBuffer, loadOpts).metadata();
 
   if (metadata.width > width || metadata.height > height) {
     // Use resolveWithObject to get output info without re-decoding
-    const { data, info } = await load(inputBuffer)
+    const { data, info } = await load(inputBuffer, loadOpts)
       .resize({ width, height, fit: 'inside', withoutEnlargement: true })
       .toBuffer({ resolveWithObject: true });
     return {
@@ -177,6 +201,7 @@ async function scaleDownImage(
   originalHeight,
   maxBytes,
   mimeType,
+  animated,
 ) {
   // Step 1: Re-encode at full size.
   // For JPEG, MozJPEG alone often reduces the file by 20%+ without any
@@ -197,6 +222,7 @@ async function scaleDownImage(
       originalHeight,
       1.0,
       mimeType,
+      animated,
     );
   }
 
@@ -228,6 +254,7 @@ async function scaleDownImage(
     originalHeight,
     scale,
     mimeType,
+    animated,
   );
 
   // Track data points for secant interpolation
@@ -271,6 +298,7 @@ async function scaleDownImage(
       originalHeight,
       nextScale,
       mimeType,
+      animated,
     );
 
     prevScale = currScale;
@@ -307,8 +335,10 @@ async function encodeAtScale(
   originalHeight,
   scale,
   mimeType,
+  animated,
 ) {
-  let pipeline = load(originalBuffer);
+  const loadOpts = animated ? { animated: true } : undefined;
+  let pipeline = load(originalBuffer, loadOpts);
 
   if (scale < 0.999) {
     const targetW = Math.round(originalWidth * scale);
@@ -322,7 +352,9 @@ async function encodeAtScale(
   }
 
   // Apply format-specific encoding and get output info in one call
-  if (mimeType === 'image/png') {
+  if (mimeType === 'image/gif') {
+    pipeline = pipeline.gif();
+  } else if (mimeType === 'image/png') {
     pipeline = pipeline.png();
   } else if (mimeType === 'image/webp') {
     pipeline = pipeline.webp({ quality: 100 });
@@ -475,11 +507,26 @@ module.exports = async function processImage(input) {
         ? input.mimeType.replace('image/', '')
         : 'jpeg';
 
+      // Detect if the source is animated (multi-frame GIF/WebP)
+      const sourceIsAnimated =
+        isAnimatedFormat(input.mimeType) &&
+        (await isAnimated(input.buffer));
+
+      // Determine the effective output MIME type
+      const effectiveOutputMime = resize.outputMimeType || input.mimeType;
+
+      // If the source is animated, preserve animation only if the output
+      // format supports it. Otherwise we still proceed (the user or website
+      // requested a format change), but animation will be lost.
+      const keepAnimated =
+        sourceIsAnimated && isAnimatedFormat(effectiveOutputMime);
+
       // Step 1: Apply format conversion if requested
       if (resize.outputMimeType && input.mimeType !== resize.outputMimeType) {
         modified = true;
+        const loadOpts = keepAnimated ? { animated: true } : undefined;
         buffer = await applyOutputFormat(
-          load(buffer),
+          load(buffer, loadOpts),
           resize.outputMimeType,
         ).toBuffer();
       }
@@ -499,7 +546,7 @@ module.exports = async function processImage(input) {
           (resize.height && resize.height < srcHeight)
         ) {
           modified = true;
-          const result = await resizeImage(buffer, resize.width, resize.height);
+          const result = await resizeImage(buffer, resize.width, resize.height, keepAnimated);
           buffer = result.buffer;
           finalWidth = result.width;
           finalHeight = result.height;
@@ -525,6 +572,7 @@ module.exports = async function processImage(input) {
             origHeight,
             resize.maxBytes,
             resize.outputMimeType || input.mimeType,
+            keepAnimated,
           );
           buffer = scaleResult.buffer;
           finalWidth = scaleResult.width;
