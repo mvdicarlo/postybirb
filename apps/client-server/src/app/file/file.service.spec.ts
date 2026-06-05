@@ -1,13 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { clearDatabase } from '@postybirb/database';
+import { clearDatabase, FileBufferRepository, SubmissionFile, SubmissionFileRepository } from '@postybirb/database';
 import { PostyBirbDirectories, writeSync } from '@postybirb/fs';
 import { FileSubmission, SubmissionType } from '@postybirb/types';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { AccountService } from '../account/account.service';
 import { CustomShortcutsService } from '../custom-shortcuts/custom-shortcuts.service';
-import { SubmissionFile } from '../drizzle/models';
-import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
 import { FileConverterService } from '../file-converter/file-converter.service';
 import { FormGeneratorService } from '../form-generator/form-generator.service';
 import { SharpInstanceManager } from '../image-processing/sharp-instance-manager';
@@ -39,7 +37,7 @@ describe('FileService', () => {
   let service: FileService;
   let submissionService: SubmissionService;
   let module: TestingModule;
-  let fileBufferRepository: PostyBirbDatabase<'FileBufferSchema'>;
+  let fileBufferRepository: FileBufferRepository;
 
   async function createSubmission() {
     const dto = new CreateSubmissionDto();
@@ -127,7 +125,7 @@ describe('FileService', () => {
         ...[noopPlatformProvider],
       ],
     }).compile();
-    fileBufferRepository = new PostyBirbDatabase('FileBufferSchema');
+    fileBufferRepository = new FileBufferRepository();
     service = module.get<FileService>(FileService);
     submissionService = module.get<SubmissionService>(SubmissionService);
 
@@ -138,9 +136,7 @@ describe('FileService', () => {
   async function loadBuffers(rec: SubmissionFile) {
     // !bug - https://github.com/drizzle-team/drizzle-orm/issues/3497
     // eslint-disable-next-line no-param-reassign
-    rec.file = await fileBufferRepository.findById(rec.primaryFileId, {
-      failOnMissing: true,
-    });
+    rec.file = await fileBufferRepository.findByIdOrThrow(rec.primaryFileId);
     // eslint-disable-next-line no-param-reassign
     rec.thumbnail = rec.thumbnailId
       ? (await fileBufferRepository.findById(rec.thumbnailId)) || undefined
@@ -259,9 +255,7 @@ describe('FileService', () => {
     const fileInfo = createMulterData(path[0]);
 
     // Get initial count of entities
-    const initialFiles = await new PostyBirbDatabase(
-      'SubmissionFileSchema',
-    ).findAll();
+    const initialFiles = await new SubmissionFileRepository().findAll();
     const initialBuffers = await fileBufferRepository.findAll();
     const initialFileCount = initialFiles.length;
     const initialBufferCount = initialBuffers.length;
@@ -287,9 +281,7 @@ describe('FileService', () => {
     ).rejects.toThrow('Simulated error during buffer creation');
 
     // Verify that entities were cleaned up
-    const finalFiles = await new PostyBirbDatabase(
-      'SubmissionFileSchema',
-    ).findAll();
+    const finalFiles = await new SubmissionFileRepository().findAll();
     const finalBuffers = await fileBufferRepository.findAll();
 
     expect(finalFiles.length).toBe(initialFileCount);

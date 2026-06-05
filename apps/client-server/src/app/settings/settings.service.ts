@@ -4,22 +4,22 @@ import {
   OnModuleInit,
   Optional,
 } from '@nestjs/common';
+import { Settings, SettingsRepository } from '@postybirb/database';
 import { SETTINGS_UPDATES } from '@postybirb/socket-events';
 import { EntityId, SettingsConstants } from '@postybirb/types';
 import { StartupOptions, StartupOptionsManager } from '@postybirb/utils/common';
 import { eq } from 'drizzle-orm';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { Settings } from '../drizzle/models';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { UpdateSettingsDto } from './dtos/update-settings.dto';
 
 @Injectable()
 export class SettingsService
-  extends PostyBirbService<'SettingsSchema'>
+  extends PostyBirbService<SettingsRepository>
   implements OnModuleInit
 {
   constructor(@Optional() webSocket: WSGateway) {
-    super('SettingsSchema', webSocket);
+    super(new SettingsRepository(), webSocket);
     this.repository.subscribe('SettingsSchema', () => this.emit());
   }
 
@@ -30,7 +30,7 @@ export class SettingsService
    */
   async onModuleInit() {
     const defaultSettingsCount = await this.repository.count(
-      eq(this.schema.profile, SettingsConstants.DEFAULT_PROFILE_NAME),
+      eq(this.table.profile, SettingsConstants.DEFAULT_PROFILE_NAME),
     );
 
     if (!defaultSettingsCount) {

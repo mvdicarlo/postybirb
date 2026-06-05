@@ -78,7 +78,7 @@ describe('NotificationsService', () => {
 
     await service.update(notification.id, updateDto);
 
-    const updatedNotification = await service.findById(notification.id);
+    const updatedNotification = await service.findByIdOrThrow(notification.id);
     expect(updatedNotification.message).toBe(createDto.message); // unchanged
     expect(updatedNotification.isRead).toBe(true);
   });

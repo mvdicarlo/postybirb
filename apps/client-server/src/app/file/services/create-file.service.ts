@@ -1,7 +1,7 @@
 // @ts-expect-error No types on npm
 import * as rtf from '@iarna/rtf-to-html';
 import { Injectable } from '@nestjs/common';
-import { Insert, Select } from '@postybirb/database';
+import { FileBuffer, FileBufferRepository, FileBufferRow, Insert, Select, SubmissionFile, SubmissionFileRepository, SubmissionFileRow, TransactionContext, withTransactionContext } from '@postybirb/database';
 import { removeFile } from '@postybirb/fs';
 import { Logger } from '@postybirb/logger';
 import {
@@ -19,16 +19,6 @@ import { parse } from 'path';
 import { promisify } from 'util';
 import { v4 as uuid } from 'uuid';
 
-import {
-  FileBuffer,
-  fromDatabaseRecord,
-  SubmissionFile,
-} from '../../drizzle/models';
-import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
-import {
-  TransactionContext,
-  withTransactionContext,
-} from '../../drizzle/transaction-context';
 import { SharpInstanceManager } from '../../image-processing/sharp-instance-manager';
 import { MulterFileInfo } from '../models/multer-file-info';
 import { ImageUtil } from '../utils/image.util';
@@ -41,13 +31,9 @@ import { ImageUtil } from '../utils/image.util';
 export class CreateFileService {
   private readonly logger = Logger();
 
-  private readonly fileBufferRepository = new PostyBirbDatabase(
-    'FileBufferSchema',
-  );
+  private readonly fileBufferRepository = new FileBufferRepository();
 
-  private readonly fileRepository = new PostyBirbDatabase(
-    'SubmissionFileSchema',
-  );
+  private readonly fileRepository = new SubmissionFileRepository();
 
   constructor(private readonly sharpInstanceManager: SharpInstanceManager) {}
 
@@ -90,9 +76,9 @@ export class CreateFileService {
           );
           await ctx
             .getDb()
-            .update(this.fileRepository.schemaEntity)
+            .update(this.fileRepository.table)
             .set({ primaryFileId: primaryFile.id })
-            .where(eq(this.fileRepository.schemaEntity.id, entity.id));
+            .where(eq(this.fileRepository.table.id, entity.id));
           this.logger
             .withMetadata({ id: entity.id })
             .info('SubmissionFile Created');
@@ -100,9 +86,7 @@ export class CreateFileService {
           return entity;
         },
       );
-      return await this.fileRepository.findById(newSubmission.id, {
-        failOnMissing: true,
-      });
+      return await this.fileRepository.findByIdOrThrow(newSubmission.id);
     } catch (err) {
       this.logger.error(err);
       throw err;
@@ -183,12 +167,12 @@ export class CreateFileService {
     );
     await ctx
       .getDb()
-      .update(this.fileRepository.schemaEntity)
+      .update(this.fileRepository.table)
       .set({
         altFileId: altFile.id,
         hasAltFile: true,
       })
-      .where(eq(this.fileRepository.schemaEntity.id, entity.id));
+      .where(eq(this.fileRepository.table.id, entity.id));
     this.logger.withMetadata({ id: altFile.id }).info('Alt File Created');
   }
 
@@ -219,13 +203,12 @@ export class CreateFileService {
       metadata: DefaultSubmissionFileMetadata(),
       order: Date.now(),
     };
-    const sf = fromDatabaseRecord(
-      SubmissionFile,
-      await ctx
+    const sf = SubmissionFile.fromRows(
+      (await ctx
         .getDb()
-        .insert(this.fileRepository.schemaEntity)
+        .insert(this.fileRepository.table)
         .values(submissionFile)
-        .returning(),
+        .returning()) as SubmissionFileRow[],
     );
 
     const entity = sf[0];
@@ -266,14 +249,13 @@ export class CreateFileService {
       },
     };
 
-    return fromDatabaseRecord(
-      SubmissionFile,
-      await ctx
+    return SubmissionFile.fromRows(
+      (await ctx
         .getDb()
-        .update(this.fileRepository.schemaEntity)
+        .update(this.fileRepository.table)
         .set(update)
-        .where(eq(this.fileRepository.schemaEntity.id, entity.id))
-        .returning(),
+        .where(eq(this.fileRepository.table.id, entity.id))
+        .returning()) as SubmissionFileRow[],
     )[0];
   }
 
@@ -365,13 +347,12 @@ export class CreateFileService {
       ...opts,
     };
 
-    const result = fromDatabaseRecord(
-      FileBuffer,
-      await ctx
+    const result = FileBuffer.fromRows(
+      (await ctx
         .getDb()
-        .insert(this.fileBufferRepository.schemaEntity)
+        .insert(this.fileBufferRepository.table)
         .values(data)
-        .returning(),
+        .returning()) as FileBufferRow[],
     )[0];
 
     ctx.track('FileBufferSchema', result.id);

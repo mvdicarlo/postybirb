@@ -1,6 +1,7 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
+import { EntityNotFoundError } from '@postybirb/database';
 import { PostyBirbDirectories, writeSync } from '@postybirb/fs';
 import {
   FileSubmissionMetadata,
@@ -291,7 +292,7 @@ describe('SubmissionService', () => {
     expect(await service.findAll()).toHaveLength(0);
     expect(await optionsService.findAll()).toHaveLength(0);
     await expect(fileService.findFile(fileId)).rejects.toThrow(
-      NotFoundException,
+      EntityNotFoundError,
     );
   });
 
@@ -437,7 +438,7 @@ describe('SubmissionService', () => {
       merge: true,
     });
 
-    const updatedRecord = await service.findById(record.id);
+    const updatedRecord = await service.findByIdOrThrow(record.id);
     const defaultOptions = updatedRecord.options[0];
     const multiDefaultOptions = multi.options.find((o) => o.isDefault);
     // The default title should not be updated
@@ -473,8 +474,8 @@ describe('SubmissionService', () => {
       merge: false,
     });
 
-    const updatedRecord = await service.findById(record.id);
-    const multiSubmission = await service.findById(multi.id);
+    const updatedRecord = await service.findByIdOrThrow(record.id);
+    const multiSubmission = await service.findByIdOrThrow(multi.id);
     expect(updatedRecord.options).toHaveLength(multiSubmission.options.length);
     const defaultOptions = updatedRecord.options.find((o) => o.isDefault);
     const nonDefault = updatedRecord.options.find((o) => !o.isDefault);

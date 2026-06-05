@@ -5,6 +5,7 @@ import {
     Optional,
 } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { PostQueueRecord, PostQueueRecordRepository, PostRecord, PostRecordRepository, SubmissionRepository } from '@postybirb/database';
 import {
     EntityId,
     PostRecordResumeMode,
@@ -16,8 +17,6 @@ import { IsTestEnvironment } from '@postybirb/utils/common';
 import { Mutex } from 'async-mutex';
 import { Cron as CronGenerator } from 'croner';
 import { PostyBirbService } from '../../../common/service/postybirb-service';
-import { PostQueueRecord, PostRecord } from '../../../drizzle/models';
-import { PostyBirbDatabase } from '../../../drizzle/postybirb-database/postybirb-database';
 import { NotificationsService } from '../../../notifications/notifications.service';
 import { SettingsService } from '../../../settings/settings.service';
 import { SubmissionService } from '../../../submission/services/submission.service';
@@ -34,7 +33,7 @@ import { PostRecordFactory } from '../post-record-factory';
  */
 @Injectable()
 export class PostQueueService
-  extends PostyBirbService<'PostQueueRecordSchema'>
+  extends PostyBirbService<PostQueueRecordRepository>
   implements OnModuleInit
 {
   private readonly queueModificationMutex = new Mutex();
@@ -43,13 +42,9 @@ export class PostQueueService
 
   private initTime = Date.now();
 
-  private readonly postRecordRepository = new PostyBirbDatabase(
-    'PostRecordSchema',
-  );
+  private readonly postRecordRepository = new PostRecordRepository();
 
-  private readonly submissionRepository = new PostyBirbDatabase(
-    'SubmissionSchema',
-  );
+  private readonly submissionRepository = new SubmissionRepository();
 
   /**
    * Maximum time (in ms) a post can be RUNNING without any activity before being considered stuck.
@@ -65,7 +60,7 @@ export class PostQueueService
     private readonly websiteRegistryService: WebsiteRegistryService,
     @Optional() webSocket?: WSGateway,
   ) {
-    super('PostQueueRecordSchema', webSocket);
+    super(new PostQueueRecordRepository(), webSocket);
   }
 
   /**
@@ -231,8 +226,8 @@ export class PostQueueService
     });
   }
 
-  public override remove(id: EntityId) {
-    return this.dequeue([id]);
+  public override async remove(id: EntityId): Promise<void> {
+    await this.dequeue([id]);
   }
 
   /**
@@ -466,10 +461,10 @@ export class PostQueueService
     }
 
     const entities = await this.submissionRepository.find({
-      where: (queueRecord, { eq, and }) =>
+      where: (submission, { eq, and }) =>
         and(
-          eq(queueRecord.isScheduled, true),
-          eq(queueRecord.isArchived, false),
+          eq(submission.isScheduled, true),
+          eq(submission.isArchived, false),
         ),
     });
     const now = Date.now();

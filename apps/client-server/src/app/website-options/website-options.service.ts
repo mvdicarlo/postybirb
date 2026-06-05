@@ -6,36 +6,35 @@ import {
   NotFoundException,
   OnModuleInit,
 } from '@nestjs/common';
-import { Insert } from '@postybirb/database';
+import { Account, CustomShortcutRepository, Insert, Submission, SubmissionRepository, UserSpecifiedWebsiteOptionsRepository, WebsiteOptions, WebsiteOptionsRepository } from '@postybirb/database';
 import {
-  AccountId,
-  Description,
-  DescriptionType,
-  DescriptionValue,
-  DynamicObject,
-  EntityId,
-  IDescriptionPreviewResult,
-  ISubmission,
-  ISubmissionMetadata,
-  IWebsiteFormFields,
-  NULL_ACCOUNT_ID,
-  SubmissionId,
-  SubmissionMetadataType,
-  SubmissionType,
-  TipTapNode,
-  ValidationResult,
+    AccountId,
+    Description,
+    DescriptionType,
+    DescriptionValue,
+    DynamicObject,
+    EntityId,
+    IDescriptionPreviewResult,
+    ISubmission,
+    ISubmissionMetadata,
+    IWebsiteFormFields,
+    NULL_ACCOUNT_ID,
+    SubmissionId,
+    SubmissionMetadataType,
+    SubmissionType,
+    TipTapNode,
+    ValidationResult,
 } from '@postybirb/types';
 import { AccountService } from '../account/account.service';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { Account, Submission, WebsiteOptions } from '../drizzle/models';
-import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
+
 import { FormGeneratorService } from '../form-generator/form-generator.service';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
 import { SubmissionService } from '../submission/services/submission.service';
 import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
 import {
-  isBlockNoteFormat,
-  migrateDescription,
+    isBlockNoteFormat,
+    migrateDescription,
 } from '../utils/blocknote-to-tiptap';
 import { ValidationService } from '../validation/validation.service';
 import { DefaultWebsiteOptions } from '../websites/models/default-website-options';
@@ -48,12 +47,10 @@ import { ValidateWebsiteOptionsDto } from './dtos/validate-website-options.dto';
 
 @Injectable()
 export class WebsiteOptionsService
-  extends PostyBirbService<'WebsiteOptionsSchema'>
+  extends PostyBirbService<WebsiteOptionsRepository>
   implements OnModuleInit
 {
-  private readonly submissionRepository = new PostyBirbDatabase(
-    'SubmissionSchema',
-  );
+  private readonly submissionRepository = new SubmissionRepository();
 
   constructor(
     @Inject(forwardRef(() => SubmissionService))
@@ -65,12 +62,7 @@ export class WebsiteOptionsService
     private readonly postParsersService: PostParsersService,
     private readonly websiteRegistry: WebsiteRegistryService,
   ) {
-    super(
-      new PostyBirbDatabase('WebsiteOptionsSchema', {
-        account: true,
-        submission: true,
-      }),
-    );
+    super(new WebsiteOptionsRepository());
 
     this.repository.subscribe('CustomShortcutSchema', (ids, action) => {
       if (action === 'delete') {
@@ -121,7 +113,7 @@ export class WebsiteOptionsService
     }
 
     // 2. Migrate custom shortcuts
-    const customShortcutRepo = new PostyBirbDatabase('CustomShortcutSchema');
+    const customShortcutRepo = new CustomShortcutRepository();
     const shortcuts = await customShortcutRepo.findAll();
     for (const shortcut of shortcuts) {
       const desc = (shortcut as DynamicObject).shortcut;
@@ -135,9 +127,7 @@ export class WebsiteOptionsService
     }
 
     // 3. Migrate user-specified website options
-    const userOptsRepo = new PostyBirbDatabase(
-      'UserSpecifiedWebsiteOptionsSchema',
-    );
+    const userOptsRepo = new UserSpecifiedWebsiteOptionsRepository();
     const userOpts = await userOptsRepo.findAll();
     for (const userOpt of userOpts) {
       const opts = (userOpt as DynamicObject).options as DynamicObject;
@@ -206,9 +196,7 @@ export class WebsiteOptionsService
     data: DynamicObject,
     title?: string,
   ): Promise<Insert<'WebsiteOptionsSchema'>> {
-    const account = await this.accountService.findById(accountId, {
-      failOnMissing: true,
-    });
+    const account = await this.accountService.findByIdOrThrow(accountId);
     const isDefault = accountId === NULL_ACCOUNT_ID;
 
     const userDefinedDefaultOptions =
@@ -268,15 +256,12 @@ export class WebsiteOptionsService
    * @return {*}
    */
   async create(createDto: CreateWebsiteOptionsDto) {
-    const account = await this.accountService.findById(createDto.accountId, {
-      failOnMissing: true,
-    });
+    const account = await this.accountService.findByIdOrThrow(createDto.accountId);
 
     let submission: ISubmission<SubmissionMetadataType>;
     try {
-      submission = await this.submissionRepository.findById(
+      submission = await this.submissionRepository.findByIdOrThrow(
         createDto.submissionId,
-        { failOnMissing: true },
       );
     } catch (err) {
       throw new NotFoundException(
@@ -420,9 +405,7 @@ export class WebsiteOptionsService
     validate: ValidateWebsiteOptionsDto,
   ): Promise<ValidationResult> {
     const { websiteOptionId, submissionId } = validate;
-    const submission = await this.submissionService.findById(submissionId, {
-      failOnMissing: true,
-    });
+    const submission = await this.submissionService.findByIdOrThrow(submissionId);
     const websiteOption = submission.options.find(
       (option) => option.id === websiteOptionId,
     );
@@ -446,7 +429,7 @@ export class WebsiteOptionsService
   ): Promise<ValidationResult[]> {
     const submission =
       typeof submissionOrId === 'string'
-        ? await this.submissionService.findById(submissionOrId)
+        ? await this.submissionService.findByIdOrThrow(submissionOrId)
         : submissionOrId;
     return this.validationService.validateSubmission(submission);
   }
@@ -462,9 +445,7 @@ export class WebsiteOptionsService
     dto: PreviewDescriptionDto,
   ): Promise<IDescriptionPreviewResult> {
     const { websiteOptionId, submissionId } = dto;
-    const submission = await this.submissionService.findById(submissionId, {
-      failOnMissing: true,
-    });
+    const submission = await this.submissionService.findByIdOrThrow(submissionId);
     const websiteOption = submission.options.find(
       (option) => option.id === websiteOptionId,
     );
@@ -515,9 +496,7 @@ export class WebsiteOptionsService
     submissionId: SubmissionId,
     updateDto: UpdateSubmissionWebsiteOptionsDto,
   ) {
-    const submission = await this.submissionService.findById(submissionId, {
-      failOnMissing: true,
-    });
+    const submission = await this.submissionService.findByIdOrThrow(submissionId);
 
     const { remove, add } = updateDto;
     if (remove?.length) {
@@ -545,7 +524,7 @@ export class WebsiteOptionsService
     }
 
     this.submissionService.emit();
-    return this.submissionService.findById(submissionId);
+    return this.submissionService.findByIdOrThrow(submissionId);
   }
 
   private async onCustomShortcutDelete(id: EntityId) {

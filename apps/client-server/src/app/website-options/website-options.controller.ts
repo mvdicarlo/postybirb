@@ -6,6 +6,7 @@ import {
     ApiTags,
 } from '@nestjs/swagger';
 import { EntityId, SubmissionId } from '@postybirb/types';
+import { WebsiteOptionsRepository } from '@postybirb/database';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
 import { CreateWebsiteOptionsDto } from './dtos/create-website-options.dto';
 import { PreviewDescriptionDto } from './dtos/preview-description.dto';
@@ -21,7 +22,7 @@ import { WebsiteOptionsService } from './website-options.service';
  */
 @ApiTags('website-option')
 @Controller('website-option')
-export class WebsiteOptionsController extends PostyBirbController<'WebsiteOptionsSchema'> {
+export class WebsiteOptionsController extends PostyBirbController<WebsiteOptionsRepository> {
   constructor(readonly service: WebsiteOptionsService) {
     super(service);
   }

@@ -1,17 +1,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { clearDatabase } from '@postybirb/database';
+import { clearDatabase, PostRecordRepository } from '@postybirb/database';
 import {
-  AccountId,
-  DefaultDescription,
-  PostRecordState,
-  SubmissionId,
-  SubmissionRating,
-  SubmissionType,
+    AccountId,
+    DefaultDescription,
+    PostRecordState,
+    SubmissionId,
+    SubmissionRating,
+    SubmissionType,
 } from '@postybirb/types';
 import { AccountModule } from '../../../account/account.module';
 import { AccountService } from '../../../account/account.service';
 import { CreateAccountDto } from '../../../account/dtos/create-account.dto';
-import { PostyBirbDatabase } from '../../../drizzle/postybirb-database/postybirb-database';
 import { TestPlatformModule } from '../../../platform/testing/test-platform.module';
 import { SettingsService } from '../../../settings/settings.service';
 import { CreateSubmissionDto } from '../../../submission/dtos/create-submission.dto';
@@ -197,7 +196,7 @@ describe('PostQueueService', () => {
     );
 
     // Simulate the post completing (with failure) - manually update the record
-    const database = new PostyBirbDatabase('PostRecordSchema');
+    const database = new PostRecordRepository();
     await database.update(postRecord.id, {
       state: PostRecordState.FAILED,
       completedAt: new Date().toISOString(),
@@ -214,7 +213,7 @@ describe('PostQueueService', () => {
     // The post record should remain after the queue record is deleted.
     await service.execute();
     expect((await service.findAll()).length).toBe(0);
-    postRecord = await postService.findById(postRecord.id);
+    postRecord = await postService.findByIdOrThrow(postRecord.id);
     expect(postRecord.state).toBe(PostRecordState.FAILED);
     expect(postRecord.completedAt).toBeDefined();
   });

@@ -1,17 +1,17 @@
 import { BadRequestException, Injectable, Optional } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { DirectoryWatcher, DirectoryWatcherRepository } from '@postybirb/database';
 import { DIRECTORY_WATCHER_UPDATES } from '@postybirb/socket-events';
 import {
-  DirectoryWatcherImportAction,
-  EntityId,
-  SubmissionType,
+    DirectoryWatcherImportAction,
+    EntityId,
+    SubmissionType,
 } from '@postybirb/types';
 import { IsTestEnvironment, toError } from '@postybirb/utils/common';
 import { mkdir, readdir, rename, writeFile } from 'fs/promises';
 import { getType } from 'mime';
 import { join } from 'path';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { DirectoryWatcher } from '../drizzle/models';
 import { MulterFileInfo } from '../file/models/multer-file-info';
 import { NotificationsService } from '../notifications/notifications.service';
 import { SubmissionService } from '../submission/services/submission.service';
@@ -59,7 +59,7 @@ export interface CheckPathResult {
 }
 
 @Injectable()
-export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcherSchema'> {
+export class DirectoryWatchersService extends PostyBirbService<DirectoryWatcherRepository> {
   private runningWatchers = new Set<EntityId>();
 
   private recoveredWatchers = new Set<EntityId>();
@@ -75,7 +75,7 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
     private readonly notificationService: NotificationsService,
     @Optional() webSocket?: WSGateway,
   ) {
-    super('DirectoryWatcherSchema', webSocket);
+    super(new DirectoryWatcherRepository(), webSocket);
     this.repository.subscribe('DirectoryWatcherSchema', () =>
       this.emitUpdates(),
     );
@@ -406,7 +406,7 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
 
   async update(id: EntityId, update: UpdateDirectoryWatcherDto) {
     this.logger.withMetadata(update).info(`Updating DirectoryWatcher '${id}'`);
-    const entity = await this.repository.findById(id, { failOnMissing: true });
+    const entity = await this.repository.findByIdOrThrow(id);
 
     // Validate path if being updated
     if (update.path && update.path !== entity.path) {
@@ -423,9 +423,7 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
     }
 
     const template = update.templateId
-      ? await this.submissionService.findById(update.templateId, {
-          failOnMissing: true,
-        })
+      ? await this.submissionService.findByIdOrThrow(update.templateId)
       : null;
     if (template && !template.isTemplate) {
       throw new BadRequestException('Template Id provided is not a template.');

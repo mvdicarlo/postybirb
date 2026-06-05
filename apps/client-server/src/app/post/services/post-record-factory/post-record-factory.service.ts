@@ -1,14 +1,13 @@
 import { Injectable } from '@nestjs/common';
+import { PostEvent, PostRecord, PostRecordRepository } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import {
-  AccountId,
-  EntityId,
-  PostEventType,
-  PostRecordResumeMode,
-  PostRecordState,
+    AccountId,
+    EntityId,
+    PostEventType,
+    PostRecordResumeMode,
+    PostRecordState,
 } from '@postybirb/types';
-import { PostEvent, PostRecord } from '../../../drizzle/models';
-import { PostyBirbDatabase } from '../../../drizzle/postybirb-database/postybirb-database';
 import { InvalidPostChainError } from '../../errors';
 import { PostEventRepository } from './post-event.repository';
 
@@ -55,10 +54,10 @@ export interface ResumeContext {
 export class PostRecordFactory {
   private readonly logger = Logger(this.constructor.name);
 
-  private readonly postRecordRepository: PostyBirbDatabase<'PostRecordSchema'>;
+  private readonly postRecordRepository: PostRecordRepository;
 
   constructor(private readonly postEventRepository: PostEventRepository) {
-    this.postRecordRepository = new PostyBirbDatabase('PostRecordSchema');
+    this.postRecordRepository = new PostRecordRepository();
   }
 
   /**
@@ -209,7 +208,6 @@ export class PostRecordFactory {
     // This handles crash recovery where the record is RUNNING (not terminal).
     const currentRecord = await this.postRecordRepository.findById(
       currentRecordId,
-      undefined,
       { events: true },
     );
 

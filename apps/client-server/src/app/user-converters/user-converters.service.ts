@@ -1,18 +1,18 @@
 import { Injectable, Optional } from '@nestjs/common';
+import { UserConverter, UserConverterRepository } from '@postybirb/database';
 import { USER_CONVERTER_UPDATES } from '@postybirb/socket-events';
 import { DynamicObject, EntityId } from '@postybirb/types';
 import { eq } from 'drizzle-orm';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { UserConverter } from '../drizzle/models';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { Website } from '../websites/website';
 import { CreateUserConverterDto } from './dtos/create-user-converter.dto';
 import { UpdateUserConverterDto } from './dtos/update-user-converter.dto';
 
 @Injectable()
-export class UserConvertersService extends PostyBirbService<'UserConverterSchema'> {
+export class UserConvertersService extends PostyBirbService<UserConverterRepository> {
   constructor(@Optional() webSocket?: WSGateway) {
-    super('UserConverterSchema', webSocket);
+    super(new UserConverterRepository(), webSocket);
     this.repository.subscribe('UserConverterSchema', () => {
       this.emit();
     });
@@ -22,7 +22,7 @@ export class UserConvertersService extends PostyBirbService<'UserConverterSchema
     this.logger
       .withMetadata(createDto)
       .info(`Creating UserConverter '${createDto.username}'`);
-    await this.throwIfExists(eq(this.schema.username, createDto.username));
+    await this.throwIfExists(eq(this.table.username, createDto.username));
     return this.repository.insert(createDto);
   }
 

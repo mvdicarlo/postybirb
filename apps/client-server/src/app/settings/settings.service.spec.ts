@@ -49,7 +49,7 @@ describe('SettingsService', () => {
       queuePaused: false,
     };
     await service.update(record.id, updateDto);
-    const updatedRec = await service.findById(record.id);
+    const updatedRec = await service.findByIdOrThrow(record.id);
     expect(updatedRec.settings).toEqual(updateDto.settings);
   });
 });

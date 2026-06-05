@@ -1,4 +1,10 @@
-import { clearDatabase } from '@postybirb/database';
+import {
+  clearDatabase,
+  FileBuffer,
+  PostRecord,
+  Submission,
+  SubmissionFile,
+} from '@postybirb/database';
 import {
   AccountId,
   DefaultSubmissionFileMetadata,
@@ -13,12 +19,6 @@ import {
   SubmissionType,
 } from '@postybirb/types';
 import 'reflect-metadata';
-import {
-  FileBuffer,
-  PostRecord,
-  Submission,
-  SubmissionFile,
-} from '../../../drizzle/models';
 import { FileConverterService } from '../../../file-converter/file-converter.service';
 import { NotificationsService } from '../../../notifications/notifications.service';
 import { PostParsersService } from '../../../post-parsers/post-parsers.service';
@@ -113,7 +113,7 @@ describe('FileSubmissionPostManager', () => {
     order: number = 1,
   ): SubmissionFile {
     const fileBuffer = createFileBuffer();
-    return new SubmissionFile({
+    const sf = new SubmissionFile({
       id,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -126,43 +126,46 @@ describe('FileSubmissionPostManager', () => {
       hasAltFile: false,
       hasThumbnail: false,
       hasCustomThumbnail: false,
-      file: fileBuffer,
       order,
       metadata: DefaultSubmissionFileMetadata(),
     });
+    sf.file = fileBuffer;
+    return sf;
   }
 
   function createSubmission(
     files: SubmissionFile[] = [],
   ): Submission<FileSubmissionMetadata> {
-    return new Submission<FileSubmissionMetadata>({
+    const s = new Submission<FileSubmissionMetadata>({
       id: 'test-submission',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       metadata: {},
       type: SubmissionType.FILE,
-      files,
-      options: [],
       isScheduled: false,
       schedule: {} as never,
       order: 1,
-      posts: [] as never,
       isTemplate: false,
       isMultiSubmission: false,
       isArchived: false,
     });
+    s.files = files;
+    s.options = [];
+    s.posts = [] as never;
+    return s;
   }
 
   function createPostRecord(
     submission: Submission<FileSubmissionMetadata>,
   ): PostRecord {
-    return new PostRecord({
+    const pr = new PostRecord({
       id: 'test-post-record' as EntityId,
-      submission,
       state: PostRecordState.PENDING,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     });
+    pr.submission = submission;
+    return pr;
   }
 
   function createMockFileWebsite(accountId: AccountId): UnknownWebsite {

@@ -1,18 +1,17 @@
 /* eslint-disable no-param-reassign */
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { FileBufferRepository, SubmissionFile, SubmissionFileRepository } from '@postybirb/database';
 import { read } from '@postybirb/fs';
 import { Logger } from '@postybirb/logger';
 import {
-  EntityId,
-  FileSubmission,
-  SubmissionFileMetadata,
+    EntityId,
+    FileSubmission,
+    SubmissionFileMetadata,
 } from '@postybirb/types';
 import type { queueAsPromised } from 'fastq';
 import fastq from 'fastq';
 import { readFile } from 'fs/promises';
 import { cpus } from 'os';
-import { SubmissionFile } from '../drizzle/models';
-import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
 import { ReorderSubmissionFilesDto } from '../submission/dtos/reorder-submission-files.dto';
 import { UpdateAltFileDto } from '../submission/dtos/update-alt-file.dto';
 import { MulterFileInfo, TaskOrigin } from './models/multer-file-info';
@@ -34,13 +33,9 @@ export class FileService {
     Task
   >(this, this.doTask, Math.min(cpus().length, 5));
 
-  private readonly fileBufferRepository = new PostyBirbDatabase(
-    'FileBufferSchema',
-  );
+  private readonly fileBufferRepository = new FileBufferRepository();
 
-  private readonly fileRepository = new PostyBirbDatabase(
-    'SubmissionFileSchema',
-  );
+  private readonly fileRepository = new SubmissionFileRepository();
 
   constructor(
     private readonly createFileService: CreateFileService,
@@ -148,7 +143,7 @@ export class FileService {
    * @param {EntityId} id
    */
   public async findFile(id: EntityId): Promise<SubmissionFile> {
-    return this.fileRepository.findById(id, { failOnMissing: true });
+    return this.fileRepository.findByIdOrThrow(id);
   }
 
   /**
@@ -156,9 +151,7 @@ export class FileService {
    * @param {EntityId} id
    */
   async getAltFileSize(id: EntityId): Promise<number> {
-    const altFile = await this.fileBufferRepository.findById(id, {
-      failOnMissing: false,
-    });
+    const altFile = await this.fileBufferRepository.findById(id);
     return altFile?.size ?? 0;
   }
 
@@ -167,9 +160,7 @@ export class FileService {
    * @param {EntityId} id
    */
   async getAltText(id: EntityId): Promise<string> {
-    const altFile = await this.fileBufferRepository.findById(id, {
-      failOnMissing: true,
-    });
+    const altFile = await this.fileBufferRepository.findByIdOrThrow(id);
     if (altFile.size) {
       return altFile.buffer.toString();
     }

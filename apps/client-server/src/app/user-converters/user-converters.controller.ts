@@ -6,6 +6,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { EntityId } from '@postybirb/types';
+import { UserConverterRepository } from '@postybirb/database';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
 import { CreateUserConverterDto } from './dtos/create-user-converter.dto';
 import { UpdateUserConverterDto } from './dtos/update-user-converter.dto';
@@ -17,7 +18,7 @@ import { UserConvertersService } from './user-converters.service';
  */
 @ApiTags('user-converters')
 @Controller('user-converters')
-export class UserConvertersController extends PostyBirbController<'UserConverterSchema'> {
+export class UserConvertersController extends PostyBirbController<UserConverterRepository> {
   constructor(readonly service: UserConvertersService) {
     super(service);
   }

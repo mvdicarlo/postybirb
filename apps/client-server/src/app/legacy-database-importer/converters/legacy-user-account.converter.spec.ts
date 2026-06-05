@@ -1,15 +1,14 @@
-import { clearDatabase } from '@postybirb/database';
+import { AccountRepository, clearDatabase } from '@postybirb/database';
 import { ensureDirSync, PostyBirbDirectories, writeSync } from '@postybirb/fs';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { v4 } from 'uuid';
-import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
 import { LegacyUserAccountConverter } from './legacy-user-account.converter';
 
 describe('LegacyUserAccountConverter', () => {
   let converter: LegacyUserAccountConverter;
   let testDataPath: string;
-  let repository: PostyBirbDatabase<'AccountSchema'>;
+  let repository: AccountRepository;
   const ts = Date.now();
 
   beforeEach(async () => {
@@ -29,7 +28,7 @@ describe('LegacyUserAccountConverter', () => {
     writeSync(destFile, testFile);
 
     converter = new LegacyUserAccountConverter(testDataPath);
-    repository = new PostyBirbDatabase('AccountSchema');
+    repository = new AccountRepository();
   });
 
   it('should import and convert legacy user account data', async () => {

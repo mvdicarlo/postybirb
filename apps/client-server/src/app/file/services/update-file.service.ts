@@ -6,6 +6,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { FileBufferRepository, SubmissionFile, SubmissionFileRepository, TransactionContext, withTransactionContext } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import { EntityId, FileType } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
@@ -15,12 +16,6 @@ import { htmlToText } from 'html-to-text';
 import * as mammoth from 'mammoth';
 import { parse } from 'path';
 import { promisify } from 'util';
-import { SubmissionFile } from '../../drizzle/models';
-import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
-import {
-  TransactionContext,
-  withTransactionContext,
-} from '../../drizzle/transaction-context';
 import { SharpInstanceManager } from '../../image-processing/sharp-instance-manager';
 import { MulterFileInfo } from '../models/multer-file-info';
 import { ImageUtil } from '../utils/image.util';
@@ -33,13 +28,9 @@ import { CreateFileService } from './create-file.service';
 export class UpdateFileService {
   private readonly logger = Logger();
 
-  private readonly fileRepository = new PostyBirbDatabase(
-    'SubmissionFileSchema',
-  );
+  private readonly fileRepository = new SubmissionFileRepository();
 
-  private readonly fileBufferRepository = new PostyBirbDatabase(
-    'FileBufferSchema',
-  );
+  private readonly fileBufferRepository = new FileBufferRepository();
 
   constructor(
     private readonly createFileService: CreateFileService,
@@ -72,8 +63,8 @@ export class UpdateFileService {
     });
 
     // Notify subscribers so SubmissionService emits a websocket update
-    this.fileRepository.forceNotify([submissionFileId], 'update');
-    this.fileBufferRepository.forceNotify([submissionFileId], 'update');
+    this.fileRepository.notify([submissionFileId], 'update');
+    this.fileBufferRepository.notify([submissionFileId], 'update');
 
     // return the latest
     return this.findFile(submissionFileId);
@@ -105,7 +96,7 @@ export class UpdateFileService {
       // Update existing thumbnail buffer
       await ctx
         .getDb()
-        .update(this.fileBufferRepository.schemaEntity)
+        .update(this.fileBufferRepository.table)
         .set({
           buffer: thumbnailDetails.buffer,
           size: thumbnailDetails.buffer.length,
@@ -113,7 +104,7 @@ export class UpdateFileService {
           width: thumbnailDetails.width,
           height: thumbnailDetails.height,
         })
-        .where(eq(this.fileBufferRepository.schemaEntity.id, thumbnailId));
+        .where(eq(this.fileBufferRepository.table.id, thumbnailId));
     }
 
     // Recompute hash from thumbnail buffer so the frontend cache-buster updates
@@ -123,14 +114,14 @@ export class UpdateFileService {
 
     await ctx
       .getDb()
-      .update(this.fileRepository.schemaEntity)
+      .update(this.fileRepository.table)
       .set({
         thumbnailId,
         hasCustomThumbnail: true,
         hasThumbnail: true,
         hash: thumbnailHash,
       })
-      .where(eq(this.fileRepository.schemaEntity.id, submissionFile.id));
+      .where(eq(this.fileRepository.table.id, submissionFile.id));
   }
 
   async replacePrimaryFile(
@@ -160,21 +151,21 @@ export class UpdateFileService {
       // Update submission file entity
       await ctx
         .getDb()
-        .update(this.fileRepository.schemaEntity)
+        .update(this.fileRepository.table)
         .set({
           hash: fileHash,
           size: buf.length,
           fileName: file.filename,
           mimeType: file.mimetype,
         })
-        .where(eq(this.fileRepository.schemaEntity.id, submissionFile.id));
+        .where(eq(this.fileRepository.table.id, submissionFile.id));
 
       // Just to get the latest data
 
       // Duplicate props to primary file
       await ctx
         .getDb()
-        .update(this.fileBufferRepository.schemaEntity)
+        .update(this.fileBufferRepository.table)
         .set({
           buffer: buf,
           size: buf.length,
@@ -183,7 +174,7 @@ export class UpdateFileService {
         })
         .where(
           eq(
-            this.fileBufferRepository.schemaEntity.id,
+            this.fileBufferRepository.table.id,
             submissionFile.primaryFileId,
           ),
         );
@@ -198,24 +189,24 @@ export class UpdateFileService {
         if (altFileText) {
           await ctx
             .getDb()
-            .update(this.fileBufferRepository.schemaEntity)
+            .update(this.fileBufferRepository.table)
             .set({
               buffer: altFileText,
               size: altFileText.length,
             })
             .where(
               eq(
-                this.fileBufferRepository.schemaEntity.id,
+                this.fileBufferRepository.table.id,
                 submissionFile.altFile?.id ?? '',
               ),
             );
           await ctx
             .getDb()
-            .update(this.fileRepository.schemaEntity)
+            .update(this.fileRepository.table)
             .set({
               hasAltFile: true,
             })
-            .where(eq(this.fileRepository.schemaEntity.id, submissionFile.id));
+            .where(eq(this.fileRepository.table.id, submissionFile.id));
         }
       }
     }
@@ -274,23 +265,23 @@ export class UpdateFileService {
     const { width, height } = await this.getImageDetails(file, buf);
     await ctx
       .getDb()
-      .update(this.fileRepository.schemaEntity)
+      .update(this.fileRepository.table)
       .set({
         width,
         height,
       })
-      .where(eq(this.fileRepository.schemaEntity.id, submissionFile.id));
+      .where(eq(this.fileRepository.table.id, submissionFile.id));
 
     await ctx
       .getDb()
-      .update(this.fileBufferRepository.schemaEntity)
+      .update(this.fileBufferRepository.table)
       .set({
         width,
         height,
       })
       .where(
         eq(
-          this.fileBufferRepository.schemaEntity.id,
+          this.fileBufferRepository.table.id,
           submissionFile.primaryFileId,
         ),
       );
@@ -305,9 +296,9 @@ export class UpdateFileService {
     }
     await ctx
       .getDb()
-      .update(this.fileRepository.schemaEntity)
+      .update(this.fileRepository.table)
       .set({ metadata: updatedMetadata })
-      .where(eq(this.fileRepository.schemaEntity.id, submissionFile.id));
+      .where(eq(this.fileRepository.table.id, submissionFile.id));
 
     if (submissionFile.hasThumbnail && !submissionFile.hasCustomThumbnail) {
       // Regenerate auto-thumbnail;
@@ -323,7 +314,7 @@ export class UpdateFileService {
 
       await ctx
         .getDb()
-        .update(this.fileBufferRepository.schemaEntity)
+        .update(this.fileBufferRepository.table)
         .set({
           buffer: thumbnailBuf,
           width: thumbnailWidth,
@@ -334,7 +325,7 @@ export class UpdateFileService {
         })
         .where(
           eq(
-            this.fileBufferRepository.schemaEntity.id,
+            this.fileBufferRepository.table.id,
             submissionFile.thumbnailId,
           ),
         );

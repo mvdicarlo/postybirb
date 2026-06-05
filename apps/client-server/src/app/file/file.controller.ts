@@ -7,8 +7,8 @@ import {
 } from '@nestjs/common';
 import { ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { EntityId, IFileBuffer } from '@postybirb/types';
+import { SubmissionFile } from '@postybirb/database';
 import { Response } from 'express';
-import { SubmissionFile } from '../drizzle/models';
 import { FileService } from './file.service';
 
 @ApiTags('file')

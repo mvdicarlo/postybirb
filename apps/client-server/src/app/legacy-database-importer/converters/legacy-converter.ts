@@ -1,9 +1,8 @@
 /* eslint-disable no-underscore-dangle */
-import { SchemaKey } from '@postybirb/database';
+import { RepositoryRegistry, SchemaKey } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import { join } from 'path';
 import { Class } from 'type-fest';
-import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
 import { LegacyConverterEntity } from '../legacy-entities/legacy-converter-entity';
 import { NdjsonParser } from '../utils/ndjson-parser';
 
@@ -22,7 +21,7 @@ export abstract class LegacyConverter {
   }
 
   private getModernDatabase() {
-    return new PostyBirbDatabase(this.modernSchemaKey);
+    return RepositoryRegistry.get(this.modernSchemaKey);
   }
 
   public async import(): Promise<void> {

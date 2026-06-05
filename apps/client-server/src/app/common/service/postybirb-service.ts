@@ -1,35 +1,45 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { SchemaKey } from '@postybirb/database';
+import { BadRequestException } from '@nestjs/common';
+import {
+  Action,
+  EntityRepository,
+  RepoEntity,
+  RepoSchemaKey,
+  SchemaKey,
+  SchemaTable,
+} from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
-import { EntityId } from '@postybirb/types';
+import { EntityId, IEntity } from '@postybirb/types';
 import { SQL } from 'drizzle-orm';
-import { SetRequired } from 'type-fest';
-import { FindOptions } from '../../drizzle/postybirb-database/find-options.type';
-import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
-import { DatabaseSchemaEntityMap } from '../../drizzle/postybirb-database/schema-entity-map';
 import { WSGateway } from '../../web-socket/web-socket-gateway';
 import { WebSocketEvents } from '../../web-socket/web-socket.events';
 
 /**
- * Base class that implements simple CRUD logic
+ * Abstract base for NestJS CRUD services. Delegates reads and writes to
+ * a concrete `EntityRepository` from `@postybirb/database`.
+ *
+ * Generic over the *repository class*: subclasses write
+ * `extends PostyBirbService<AccountRepository>` and `this.repository`
+ * is typed as the concrete `AccountRepository`, exposing any
+ * subclass-specific query helpers without a cast.
+ *
+ * `EntityNotFoundError` → 404 translation is handled globally by
+ * `EntityNotFoundExceptionFilter` (registered in `main.ts`).
  *
  * @class PostyBirbService
  */
-@Injectable()
-export abstract class PostyBirbService<TSchemaKey extends SchemaKey> {
+export abstract class PostyBirbService<
+  TRepo extends EntityRepository<SchemaKey, IEntity>,
+  TEntity extends IEntity = RepoEntity<TRepo>,
+> {
   protected readonly logger = Logger(this.constructor.name);
 
-  protected readonly repository: PostyBirbDatabase<TSchemaKey>;
+  protected readonly repository: TRepo;
 
   constructor(
-    private readonly table: TSchemaKey | PostyBirbDatabase<TSchemaKey>,
+    repository: TRepo,
     private readonly webSocket?: WSGateway,
   ) {
-    if (typeof table === 'string') {
-      this.repository = new PostyBirbDatabase(table);
-    } else {
-      this.repository = table;
-    }
+    this.repository = repository;
   }
 
   /**
@@ -48,15 +58,28 @@ export abstract class PostyBirbService<TSchemaKey extends SchemaKey> {
     }
   }
 
-  protected get schema() {
-    return this.repository.schemaEntity;
+  /**
+   * Drizzle table descriptor for the underlying schema. Convenience
+   * alias for `this.repository.table` so subclasses can write
+   * `eq(this.table.foo, ...)`.
+   */
+  protected get table(): SchemaTable<RepoSchemaKey<TRepo>> {
+    return this.repository.table as SchemaTable<RepoSchemaKey<TRepo>>;
+  }
+
+  /**
+   * Coalesced subscriber notification. Pass-through to
+   * `this.repository.notify(ids, action)`.
+   */
+  protected notify(ids: EntityId[], action: Action) {
+    this.repository.notify(ids, action);
   }
 
   /**
    * Throws exception if a record matching the query already exists.
    *
    * @protected
-   * @param {FilterQuery<T>} where
+   * @param {SQL} where
    */
   protected async throwIfExists(where: SQL | undefined) {
     if (!where) return;
@@ -71,28 +94,21 @@ export abstract class PostyBirbService<TSchemaKey extends SchemaKey> {
 
   // Repository Wrappers
 
-  public findById(
-    id: EntityId,
-    options?: SetRequired<FindOptions, 'failOnMissing'>,
-  ): Promise<DatabaseSchemaEntityMap[TSchemaKey]>;
-  public findById(
-    id: EntityId,
-    options?: FindOptions,
-  ): Promise<DatabaseSchemaEntityMap[TSchemaKey] | null>;
-  public findById(
-    id: EntityId,
-    options?: FindOptions,
-  ): Promise<DatabaseSchemaEntityMap[TSchemaKey] | null> {
-    return this.repository.findById(id, options);
+  public findById(id: EntityId): Promise<TEntity | null> {
+    return this.repository.findById(id) as Promise<TEntity | null>;
   }
 
-  public findAll() {
-    return this.repository.findAll();
+  public findByIdOrThrow(id: EntityId): Promise<TEntity> {
+    return this.repository.findByIdOrThrow(id) as Promise<TEntity>;
   }
 
-  public remove(id: EntityId) {
+  public findAll(): Promise<TEntity[]> {
+    return this.repository.findAll() as Promise<TEntity[]>;
+  }
+
+  public async remove(id: EntityId): Promise<void> {
     this.logger.withMetadata({ id }).info(`Removing entity '${id}'`);
-    return this.repository.deleteById([id]);
+    await this.repository.deleteById([id]);
   }
 
   // END Repository Wrappers

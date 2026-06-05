@@ -1,18 +1,18 @@
 import { Injectable, Optional } from '@nestjs/common';
+import { TagConverter, TagConverterRepository } from '@postybirb/database';
 import { TAG_CONVERTER_UPDATES } from '@postybirb/socket-events';
 import { DynamicObject, EntityId } from '@postybirb/types';
 import { eq } from 'drizzle-orm';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { TagConverter } from '../drizzle/models';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { Website } from '../websites/website';
 import { CreateTagConverterDto } from './dtos/create-tag-converter.dto';
 import { UpdateTagConverterDto } from './dtos/update-tag-converter.dto';
 
 @Injectable()
-export class TagConvertersService extends PostyBirbService<'TagConverterSchema'> {
+export class TagConvertersService extends PostyBirbService<TagConverterRepository> {
   constructor(@Optional() webSocket?: WSGateway) {
-    super('TagConverterSchema', webSocket);
+    super(new TagConverterRepository(), webSocket);
     this.repository.subscribe('TagConverterSchema', () => {
       this.emit();
     });
@@ -22,7 +22,7 @@ export class TagConvertersService extends PostyBirbService<'TagConverterSchema'>
     this.logger
       .withMetadata(createDto)
       .info(`Creating TagConverter '${createDto.tag}'`);
-    await this.throwIfExists(eq(this.schema.tag, createDto.tag));
+    await this.throwIfExists(eq(this.table.tag, createDto.tag));
     return this.repository.insert(createDto);
   }
 
