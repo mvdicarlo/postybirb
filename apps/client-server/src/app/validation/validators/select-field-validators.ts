@@ -77,6 +77,7 @@ export async function validateSelectFieldValidOptions({
 
     // Flatten all available options to a simple array of values
     const availableOptions = flattenSelectOptions(field.options);
+    if (!availableOptions.length) continue;
 
     if (field.allowMultiple) {
       // For multi-select, validate each selected value
