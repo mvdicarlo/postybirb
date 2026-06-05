@@ -99,7 +99,9 @@ export class LegacyDatabaseImporterService {
       if (submissionResult.error) {
         errors.push(submissionResult.error);
       }
+    }
 
+    if (importRequest.templates) {
       // Import submission templates
       const templateResult = await this.processSubmissionImport(
         new LegacySubmissionConverter(path, true),
