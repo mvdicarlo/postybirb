@@ -8,7 +8,6 @@ const basePath = __dirname.split(/(app|lib)/)[0];
 const config = {
   ...nxPreset,
   setupFiles: [join(basePath, 'jest.setup.ts')],
-  prettierPath: require.resolve('prettier-2'),
   reporters: ['summary', join(basePath, 'jest.reporter.js')],
   slowTestThreshold: 7000,
   cacheDirectory: join(process.cwd(), '.jest'),
