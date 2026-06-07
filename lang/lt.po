@@ -12,12 +12,15 @@ msgstr ""
 "Plural-Forms: \n"
 
 #: apps/postybirb-ui/src/i18n/validation-translation.tsx
-msgid "({fileName}) Alt text length is greater then maximum ({currentLength} / {maxLength}) and will be trimmed."
+msgid "({fileName}) Alt text length is greater then maximum ({currentLength} / "
+"{maxLength}) and will be trimmed."
 msgstr ""
 
 #: apps/postybirb-ui/src/i18n/validation-translation.tsx
-msgid "({fileSizeString}) is too large (max {maxFileSizeString}) and an attempt will be made to reduce size when posting"
-msgstr "({fileSizeString}) yra per didelis (didžiausias {maxFileSizeString}) ir bus bandoma sumažinti jo dydį siunčiant."
+msgid "({fileSizeString}) is too large (max {maxFileSizeString}) and an attempt "
+"will be made to reduce size when posting"
+msgstr "({fileSizeString}) yra per didelis (didžiausias {maxFileSizeString}) ir "
+"bus bandoma sumažinti jo dydį siunčiant."
 
 #. placeholder {0}: tag.post_count
 #: apps/postybirb-ui/src/components/website-components/e621/e621-tag-search-provider.tsx
@@ -56,7 +59,9 @@ msgid "{selectedCount} of {totalCount} selected"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/post-confirm-modal.tsx
-msgid "{validCount} of {totalSelectedCount} selected submission(s) are ready to post. Submissions without websites or with validation errors will be skipped."
+msgid "{validCount} of {totalSelectedCount} selected submission(s) are ready to "
+"post. Submissions without websites or with validation errors will be "
+"skipped."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/post-confirm-modal.tsx
@@ -64,7 +69,8 @@ msgid "{validCount} submission(s) will be posted in the order shown below."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/bluesky/bluesky-login-view.tsx
-msgid "<0>Tip:</0> If your handle doesn't work, try using the email linked to your account"
+msgid "<0>Tip:</0> If your handle doesn't work, try using the email linked to "
+"your account"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/telegram/telegram-login-view.tsx
@@ -72,7 +78,8 @@ msgid "2FA enabled, password required. It won't be stored."
 msgstr "2FA įjungtas, slaptažodis privalomas. Jis nebus saugomas."
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/home-tour.tsx
-msgid "A mini calendar showing which days have scheduled posts. Click on a highlighted day to see what's planned."
+msgid "A mini calendar showing which days have scheduled posts. Click on a "
+"highlighted day to see what's planned."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/drawers/custom-shortcuts-drawer/custom-shortcuts-drawer.tsx
@@ -176,7 +183,6 @@ msgid "Add an account to start posting"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/drawers/custom-shortcuts-drawer/custom-shortcuts-drawer.tsx
-#: apps/postybirb-ui/src/components/drawers/custom-shortcuts-drawer/custom-shortcuts-drawer.tsx
 msgid "Add shortcut"
 msgstr ""
 
@@ -218,7 +224,8 @@ msgid "After authorizing, copy the code and paste it below"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/misskey/misskey-login-view.tsx
-msgid "After clicking \"Allow\" on your instance, come back here and click \"Complete Login\""
+msgid "After clicking \"Allow\" on your instance, come back here and click "
+"\"Complete Login\""
 msgstr ""
 
 #: libs/translations/src/lib/field-translations.ts
@@ -229,7 +236,6 @@ msgstr ""
 msgid "Alias Card"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/drawers/notifications-drawer/notifications-drawer.tsx
 #: apps/postybirb-ui/src/components/drawers/notifications-drawer/notifications-drawer.tsx
 #: apps/postybirb-ui/src/components/sections/accounts-section/account-section-header.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/form/save-defaults-popover.tsx
@@ -385,7 +391,6 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/file-submission-modal/image-editor.tsx
 #: apps/postybirb-ui/src/components/shared/submission-picker/submission-picker-modal.tsx
-#: apps/postybirb-ui/src/components/shared/submission-picker/submission-picker-modal.tsx
 #: apps/postybirb-ui/src/components/shared/template-picker/template-picker-modal.tsx
 msgid "Apply"
 msgstr "Taikyti"
@@ -414,11 +419,13 @@ msgstr ""
 
 #. placeholder {0}: selectedIds.length
 #: apps/postybirb-ui/src/components/sections/submissions-section/submissions-section.tsx
-msgid "Are you sure you want to delete {0} submission(s)? This action cannot be undone."
+msgid "Are you sure you want to delete {0} submission(s)? This action cannot be "
+"undone."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/remote-settings-section.tsx
-msgid "Are you sure you want to reset all remote connection settings to their defaults? This will clear the saved host URL and password."
+msgid "Are you sure you want to reset all remote connection settings to their "
+"defaults? This will clear the saved host URL and password."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/drawers/file-watcher-drawer/file-watcher-drawer.tsx
@@ -481,7 +488,8 @@ msgid "Auto"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/layout-tour.tsx
-msgid "Automatically import files from watched folders on your computer. New files are picked up and turned into submissions."
+msgid "Automatically import files from watched folders on your computer. New "
+"files are picked up and turned into submissions."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/drawers/file-watcher-drawer/file-watcher-drawer.tsx
@@ -489,11 +497,13 @@ msgid "Automatically import new files from specified folders"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/layout-tour.tsx
-msgid "Automatically replace tags on a per-website basis. Useful when different sites use different names for the same tag."
+msgid "Automatically replace tags on a per-website basis. Useful when different "
+"sites use different names for the same tag."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/layout-tour.tsx
-msgid "Automatically replace usernames on a per-website basis. Useful when the same person has different usernames across sites."
+msgid "Automatically replace usernames on a per-website basis. Useful when the "
+"same person has different usernames across sites."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/mantine-tooltip.tsx
@@ -527,7 +537,11 @@ msgid "Bulk edit files"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/disclaimer/disclaimer.tsx
-msgid "By using this application, you acknowledge that you are solely responsible for how you use it and for any content you create, upload, distribute, or interact with. The authors and maintainers provide this software as is without warranties of any kind and are not liable for any damages or losses resulting from its use."
+msgid "By using this application, you acknowledge that you are solely "
+"responsible for how you use it and for any content you create, upload, "
+"distribute, or interact with. The authors and maintainers provide this "
+"software as is without warranties of any kind and are not liable for any "
+"damages or losses resulting from its use."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/schedule-tour.tsx
@@ -536,7 +550,6 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/confirm-action-modal/confirm-action-modal.tsx
 #: apps/postybirb-ui/src/components/drawers/custom-shortcuts-drawer/custom-shortcuts-drawer.tsx
-#: apps/postybirb-ui/src/components/sections/accounts-section/website-account-card.tsx
 #: apps/postybirb-ui/src/components/sections/accounts-section/website-account-card.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/file-submission-modal/image-editor.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/post-confirm-modal.tsx
@@ -560,7 +573,8 @@ msgstr ""
 #. placeholder {0}: getFileTypeLabel(newFileType)
 #. placeholder {1}: getFileTypeLabel(existingFileType)
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/file-management/file-uploader.tsx
-msgid "Cannot add {0} files to a submission containing {1} files. All files in a submission must be of the same type."
+msgid "Cannot add {0} files to a submission containing {1} files. All files in "
+"a submission must be of the same type."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/file-management/submission-file-card.tsx
@@ -576,7 +590,8 @@ msgid "Category"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/layout-tour.tsx
-msgid "Change the application language. PostyBirb is available in multiple languages thanks to community translations."
+msgid "Change the application language. PostyBirb is available in multiple "
+"languages thanks to community translations."
 msgstr ""
 
 #: libs/translations/src/lib/field-translations.ts
@@ -596,7 +611,8 @@ msgid "Check login status"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/bluesky/bluesky-login-view.tsx
-msgid "Check that handle and password are valid or try using email instead of handle."
+msgid "Check that handle and password are valid or try using email instead of "
+"handle."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/telegram/telegram-login-view.tsx
@@ -617,15 +633,19 @@ msgid "Choose Templates"
 msgstr "Pasirinkite šablonus"
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/submission-edit-tour.tsx
-msgid "Choose which accounts to post to. Click to open the dropdown, then select individual accounts or entire website groups."
+msgid "Choose which accounts to post to. Click to open the dropdown, then "
+"select individual accounts or entire website groups."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/accounts-tour.tsx
-msgid "Click \"Add account\" to create a new account for a website. You can have multiple accounts per website for posting to different profiles."
+msgid "Click \"Add account\" to create a new account for a website. You can "
+"have multiple accounts per website for posting to different profiles."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/instagram/instagram-login-view.tsx
-msgid "Click below to start authorization. An Instagram login window will appear — log in and grant permissions. The code will be captured automatically."
+msgid "Click below to start authorization. An Instagram login window will "
+"appear — log in and grant permissions. The code will be captured "
+"automatically."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/megalodon/megalodon-login-view.tsx
@@ -634,15 +654,18 @@ msgid "Click here to authorize PostyBirb"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/custom-shortcuts-tour.tsx
-msgid "Click here to create a new shortcut. Give it a unique name that you'll use to reference it in your descriptions."
+msgid "Click here to create a new shortcut. Give it a unique name that you'll "
+"use to reference it in your descriptions."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/submissions-tour.tsx
-msgid "Click here to create a new submission. For file submissions, this opens a file picker. For messages, enter a title to get started."
+msgid "Click here to create a new submission. For file submissions, this opens "
+"a file picker. For messages, enter a title to get started."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/templates-tour.tsx
-msgid "Click here to create a new template. Give it a name, then configure the submission settings you want to reuse."
+msgid "Click here to create a new template. Give it a name, then configure the "
+"submission settings you want to reuse."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/twitter/twitter-login-view.tsx
@@ -654,7 +677,8 @@ msgid "Click the link above, authorize the app, and copy the PIN code below"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/file-watchers-tour.tsx
-msgid "Click to create a new file watcher. You'll then configure which folder to watch and what to do with new files."
+msgid "Click to create a new file watcher. You'll then configure which folder "
+"to watch and what to do with new files."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/remote-settings-section.tsx
@@ -712,7 +736,6 @@ msgid "Completing authorization..."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/remote-settings-section.tsx
-#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/remote-settings-section.tsx
 msgid "Configuration Error"
 msgstr ""
 
@@ -721,7 +744,8 @@ msgid "Configure API Keys"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/layout-tour.tsx
-msgid "Configure application preferences, manage your data, and customize your PostyBirb experience."
+msgid "Configure application preferences, manage your data, and customize your "
+"PostyBirb experience."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/instagram/instagram-login-view.tsx
@@ -780,7 +804,6 @@ msgid "Copied to clipboard"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/shared/copy-to-clipboard/copy-to-clipboard.tsx
-#: apps/postybirb-ui/src/components/shared/copy-to-clipboard/copy-to-clipboard.tsx
 msgid "Copy"
 msgstr "Kopijuoti"
 
@@ -811,7 +834,8 @@ msgid "Create an app password in Bluesky Settings"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/layout-tour.tsx
-msgid "Create and manage file submissions — images, videos, and other media you want to post across your accounts."
+msgid "Create and manage file submissions — images, videos, and other media you "
+"want to post across your accounts."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/tag-converters-tour.tsx
@@ -835,12 +859,12 @@ msgid "Create new submission"
 msgstr "Kurti naują pateikimą"
 
 #: apps/postybirb-ui/src/components/sections/templates-section/templates-section.tsx
-#: apps/postybirb-ui/src/components/sections/templates-section/templates-section.tsx
 msgid "Create New Template"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/layout-tour.tsx
-msgid "Create reusable sets of tags that you can quickly apply to any submission. Saves time when you use the same tags often."
+msgid "Create reusable sets of tags that you can quickly apply to any "
+"submission. Saves time when you use the same tags often."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/custom-shortcuts-tour.tsx
@@ -915,7 +939,9 @@ msgid "Custom Shortcuts"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/custom-shortcuts-tour.tsx
-msgid "Custom shortcuts let you define reusable text snippets with rich formatting. Use them in description fields by typing their shortcut name to quickly insert common content."
+msgid "Custom shortcuts let you define reusable text snippets with rich "
+"formatting. Use them in description fields by typing their shortcut name "
+"to quickly insert common content."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/custom-shortcuts-tour.tsx
@@ -934,7 +960,6 @@ msgstr ""
 msgid "Dark"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/theme-picker/theme-picker.tsx
 #: apps/postybirb-ui/src/components/theme-picker/theme-picker.tsx
 msgid "Dark Mode"
 msgstr ""
@@ -993,7 +1018,6 @@ msgstr ""
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/form/fields/radio-field.tsx
 #: apps/postybirb-ui/src/components/shared/description-editor/extensions/default-shortcut.tsx
 #: apps/postybirb-ui/src/components/shared/template-picker/template-picker-modal.tsx
-#: apps/postybirb-ui/src/components/shared/template-picker/template-picker-modal.tsx
 msgid "Default"
 msgstr "Numatytasis"
 
@@ -1011,7 +1035,8 @@ msgid "Defaults saved successfully"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/layout-tour.tsx
-msgid "Define text shortcuts to use in descriptions. Type a short code and it expands into your full text."
+msgid "Define text shortcuts to use in descriptions. Type a short code and it "
+"expands into your full text."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/file-submission-modal/file-preview.tsx
@@ -1022,7 +1047,8 @@ msgid "Delete"
 msgstr "Ištrinti"
 
 #: apps/postybirb-ui/src/components/shared/submission-picker/submission-picker-modal.tsx
-msgid "Delete all existing website options and use only those specified in the source."
+msgid "Delete all existing website options and use only those specified in the "
+"source."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/file-management/submission-file-card.tsx
@@ -1053,7 +1079,8 @@ msgid "Description Editor"
 msgstr ""
 
 #: apps/postybirb-ui/src/i18n/validation-translation.tsx
-msgid "Description length is greater then maximum ({currentLength} / {maxLength})"
+msgid "Description length is greater then maximum ({currentLength} / "
+"{maxLength})"
 msgstr ""
 
 #: apps/postybirb-ui/src/i18n/validation-translation.tsx
@@ -1094,7 +1121,8 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/post-confirm-modal.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/resume-mode-modal/resume-mode-modal.tsx
-msgid "Discard all progress from the previous attempt and start as if this were the first time posting."
+msgid "Discard all progress from the previous attempt and start as if this were "
+"the first time posting."
 msgstr ""
 
 #: apps/postybirb-ui/src/config/nav-items.tsx
@@ -1110,7 +1138,8 @@ msgid "Double-click to toggle crop/move mode"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/data-settings-section.tsx
-msgid "Download application logs as a compressed archive. This is useful for troubleshooting issues or sharing logs with developers."
+msgid "Download application logs as a compressed archive. This is useful for "
+"troubleshooting issues or sharing logs with developers."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/data-settings-section.tsx
@@ -1122,12 +1151,12 @@ msgid "Download Update"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/update-button/update-modal.tsx
-#: apps/postybirb-ui/src/components/update-button/update-modal.tsx
 msgid "Downloading..."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/submissions-tour.tsx
-msgid "Drag and drop files here to quickly create new file submissions. You can also click to browse your file system."
+msgid "Drag and drop files here to quickly create new file submissions. You can "
+"also click to browse your file system."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/shared/reorderable-submission-list/reorderable-submission-list.tsx
@@ -1162,19 +1191,27 @@ msgid "Duplicated successfully"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/e621/e621-login-view.tsx
-msgid "e621 requires API credentials for posting. You'll need to generate an API key from your account settings to authenticate PostyBirb."
+msgid "e621 requires API credentials for posting. You'll need to generate an "
+"API key from your account settings to authenticate PostyBirb."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/accounts-tour.tsx
-msgid "Each account shows its name, username, and login status. Click the name to rename it. Use the action buttons to log in, reset, or delete the account."
+msgid "Each account shows its name, username, and login status. Click the name "
+"to rename it. Use the action buttons to log in, reset, or delete the "
+"account."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/tag-converters-tour.tsx
-msgid "Each card shows a tag and how many website conversions it has. Click the arrow to expand and see the per-website replacements. Add new websites using the dropdown inside."
+msgid "Each card shows a tag and how many website conversions it has. Click the "
+"arrow to expand and see the per-website replacements. Add new websites "
+"using the dropdown inside."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/user-converters-tour.tsx
-msgid "Each card shows a username and how many website conversions it has. Click the arrow to expand and see the per-website replacements. Add new websites using the dropdown inside. You can also set a \"default\" conversion that applies to any website without a specific entry."
+msgid "Each card shows a username and how many website conversions it has. "
+"Click the arrow to expand and see the per-website replacements. Add new "
+"websites using the dropdown inside. You can also set a \"default\" "
+"conversion that applies to any website without a specific entry."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/file-submission-modal/file-dropzone.tsx
@@ -1182,35 +1219,48 @@ msgid "Each file becomes a separate submission"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/notifications-tour.tsx
-msgid "Each notification shows its type, message, and time. Select notifications with checkboxes to mark them as read or delete them in bulk."
+msgid "Each notification shows its type, message, and time. Select "
+"notifications with checkboxes to mark them as read or delete them in "
+"bulk."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/tag-groups-tour.tsx
-msgid "Each row shows a tag group with its name and tags. Click the name to rename it. Add or remove tags directly in the tags column."
+msgid "Each row shows a tag group with its name and tags. Click the name to "
+"rename it. Add or remove tags directly in the tags column."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/submission-edit-tour.tsx
-msgid "Each selected website gets its own form where you can override the defaults. Customize titles, descriptions, tags, and site-specific fields like folders or ratings per website."
+msgid "Each selected website gets its own form where you can override the "
+"defaults. Customize titles, descriptions, tags, and site-specific fields "
+"like folders or ratings per website."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/custom-shortcuts-tour.tsx
-msgid "Each shortcut shows its name. Click the arrow to expand it and edit the rich text content. Click the name to rename it. Use the delete button to remove it."
+msgid "Each shortcut shows its name. Click the arrow to expand it and edit the "
+"rich text content. Click the name to rename it. Use the delete button to "
+"remove it."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/submissions-tour.tsx
-msgid "Each submission appears as a card showing its title, status badges, and action buttons. Click to select it and open the editor. Drag to reorder your submissions."
+msgid "Each submission appears as a card showing its title, status badges, and "
+"action buttons. Click to select it and open the editor. Drag to reorder "
+"your submissions."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/templates-tour.tsx
-msgid "Each template appears as a card. Click to select it and open the editor. Use the action buttons to rename, duplicate, or delete a template."
+msgid "Each template appears as a card. Click to select it and open the editor. "
+"Use the action buttons to rename, duplicate, or delete a template."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/file-watchers-tour.tsx
-msgid "Each watcher card lets you pick a folder path, choose an import action, and optionally apply a template to imported files. Save your changes or delete the watcher using the buttons at the bottom."
+msgid "Each watcher card lets you pick a folder path, choose an import action, "
+"and optionally apply a template to imported files. Save your changes or "
+"delete the watcher using the buttons at the bottom."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/accounts-tour.tsx
-msgid "Each website has its own card. Click the header to expand or collapse it. The badge shows how many accounts are logged in out of the total."
+msgid "Each website has its own card. Click the header to expand or collapse "
+"it. The badge shows how many accounts are logged in out of the total."
 msgstr ""
 
 #: libs/translations/src/lib/field-translations.ts
@@ -1269,7 +1319,8 @@ msgid "Enter Instance URL"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/remote-settings-section.tsx
-msgid "Enter the host URL and password to connect to a remote PostyBirb instance."
+msgid "Enter the host URL and password to connect to a remote PostyBirb "
+"instance."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/twitter/twitter-login-view.tsx
@@ -1277,11 +1328,13 @@ msgid "Enter the PIN from Twitter"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/megalodon/megalodon-login-view.tsx
-msgid "Enter the URL of your Mastodon, Pleroma, or Pixelfed instance (e.g., \"mastodon.social\" or \"pixelfed.social\")"
+msgid "Enter the URL of your Mastodon, Pleroma, or Pixelfed instance (e.g., "
+"\"mastodon.social\" or \"pixelfed.social\")"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/misskey/misskey-login-view.tsx
-msgid "Enter the URL of your Misskey instance (e.g., \"misskey.io\" or \"sharkey.example.com\"). Works with Misskey and compatible forks."
+msgid "Enter the URL of your Misskey instance (e.g., \"misskey.io\" or "
+"\"sharkey.example.com\"). Works with Misskey and compatible forks."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-section-header.tsx
@@ -1493,7 +1546,6 @@ msgid "Feature"
 msgstr "Rodyti"
 
 #: apps/postybirb-ui/src/components/website-login-views/megalodon/megalodon-login-view.tsx
-#: apps/postybirb-ui/src/components/website-login-views/megalodon/megalodon-login-view.tsx
 msgid "Fediverse Authentication"
 msgstr ""
 
@@ -1503,13 +1555,13 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/drawers/schedule-drawer/schedule-calendar.tsx
 #: apps/postybirb-ui/src/components/sections/home-section/posting-activity-panel.tsx
-#: apps/postybirb-ui/src/components/sections/home-section/posting-activity-panel.tsx
 #: apps/postybirb-ui/src/components/sections/templates-section/templates-section.tsx
 msgid "File"
 msgstr ""
 
 #: apps/postybirb-ui/src/i18n/validation-translation.tsx
-msgid "File \"{fileName}\" has an unsupported aspect ratio for Instagram. Ratio must be between 3:4 and 1.91:1."
+msgid "File \"{fileName}\" has an unsupported aspect ratio for Instagram. Ratio "
+"must be between 3:4 and 1.91:1."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/submissions-tour.tsx
@@ -1545,7 +1597,9 @@ msgid "File Watchers"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/file-watchers-tour.tsx
-msgid "File watchers monitor folders on your computer and automatically create submissions when new files appear. Great for streamlining your upload workflow."
+msgid "File watchers monitor folders on your computer and automatically create "
+"submissions when new files appear. Great for streamlining your upload "
+"workflow."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/file-watchers-tour.tsx
@@ -1570,31 +1624,39 @@ msgid "Files uploaded successfully"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/notifications-tour.tsx
-msgid "Filter by notification type — errors, warnings, successes, or info messages. Helps you focus on what matters most."
+msgid "Filter by notification type — errors, warnings, successes, or info "
+"messages. Helps you focus on what matters most."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/notifications-tour.tsx
-msgid "Filter notifications by their read status. Quickly find unread notifications that need your attention."
+msgid "Filter notifications by their read status. Quickly find unread "
+"notifications that need your attention."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/submissions-tour.tsx
-msgid "Filter submissions by status — view all, only queued, or only scheduled submissions. Use the icon on the right to toggle between compact and detailed views."
+msgid "Filter submissions by status — view all, only queued, or only scheduled "
+"submissions. Use the icon on the right to toggle between compact and "
+"detailed views."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/accounts-tour.tsx
-msgid "Filter the list by typing a website name or account name. Useful when you have many accounts set up."
+msgid "Filter the list by typing a website name or account name. Useful when "
+"you have many accounts set up."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/custom-shortcuts-tour.tsx
-msgid "Filter your shortcuts by name. Useful when you have many shortcuts defined."
+msgid "Filter your shortcuts by name. Useful when you have many shortcuts "
+"defined."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/submissions-tour.tsx
-msgid "Filter your submissions by title. Useful when you have many submissions in your list."
+msgid "Filter your submissions by title. Useful when you have many submissions "
+"in your list."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/templates-tour.tsx
-msgid "Filter your templates by name. Useful when you have many templates saved."
+msgid "Filter your templates by name. Useful when you have many templates "
+"saved."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/mantine-tooltip.tsx
@@ -1631,7 +1693,8 @@ msgstr ""
 
 #. Bluesky login form
 #: apps/postybirb-ui/src/components/website-login-views/bluesky/bluesky-login-view.tsx
-msgid "Format should be <0>handle.bsky.social</0> or <1>domain.ext</1> for custom domains"
+msgid "Format should be <0>handle.bsky.social</0> or <1>domain.ext</1> for "
+"custom domains"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/shared/schedule-popover/cron-picker.tsx
@@ -1745,7 +1808,8 @@ msgid "Hide unselected"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/accounts-tour.tsx
-msgid "Hide websites you don't use to keep the list clean. Hidden websites won't appear in the accounts list or when creating submissions."
+msgid "Hide websites you don't use to keep the list clean. Hidden websites "
+"won't appear in the accounts list or when creating submissions."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/discord/discord-login-view.tsx
@@ -1759,10 +1823,7 @@ msgstr ""
 #: apps/postybirb-ui/src/components/drawers/custom-shortcuts-drawer/custom-shortcuts-drawer.tsx
 #: apps/postybirb-ui/src/components/drawers/file-watcher-drawer/file-watcher-drawer.tsx
 #: apps/postybirb-ui/src/components/drawers/notifications-drawer/notifications-drawer.tsx
-#: apps/postybirb-ui/src/components/drawers/notifications-drawer/notifications-drawer.tsx
 #: apps/postybirb-ui/src/components/sections/accounts-section/website-account-card.tsx
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/actions/submission-edit-card-actions.tsx
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/actions/submission-edit-card-actions.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/actions/submission-edit-card-actions.tsx
 #: apps/postybirb-ui/src/components/sections/templates-section/template-card.tsx
 msgid "Hold to delete"
@@ -1820,7 +1881,8 @@ msgid "If you are using pds other then bsky.social"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/disclaimer/disclaimer.tsx
-msgid "If you do not agree with these terms, you must decline and exit the application."
+msgid "If you do not agree with these terms, you must decline and exit the "
+"application."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/form/fields/tag-field.tsx
@@ -1862,7 +1924,8 @@ msgid "Import from PostyBirb Plus"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/import-settings-section.tsx
-msgid "Import your data from PostyBirb Plus. Select which types of data you want to import."
+msgid "Import your data from PostyBirb Plus. Select which types of data you "
+"want to import."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/schedule-form/schedule-form.tsx
@@ -1926,7 +1989,8 @@ msgid "Invalid url. Format should be <0>https://bsky.social/</0>"
 msgstr ""
 
 #: apps/postybirb-ui/src/i18n/validation-translation.tsx
-msgid "It is recommended to add at least 10 general tags <0>( {generalTags} / 10 )</0>. See <1>tagging checklist</1>"
+msgid "It is recommended to add at least 10 general tags <0>( {generalTags} / "
+"10 )</0>. See <1>tagging checklist</1>"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/instagram/instagram-login-view.tsx
@@ -1965,7 +2029,8 @@ msgid "Legal Notice & Disclaimer"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/layout-tour.tsx
-msgid "Let's take a quick tour of the interface. We'll walk you through the main features so you can start posting right away."
+msgid "Let's take a quick tour of the interface. We'll walk you through the "
+"main features so you can start posting right away."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/appearance-settings-section.tsx
@@ -1973,12 +2038,12 @@ msgid "Light"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/theme-picker/theme-picker.tsx
-#: apps/postybirb-ui/src/components/theme-picker/theme-picker.tsx
 msgid "Light Mode"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/home-tour.tsx
-msgid "Lists your next scheduled submissions with their planned times. Click a post to jump to its editor."
+msgid "Lists your next scheduled submissions with their planned times. Click a "
+"post to jump to its editor."
 msgstr ""
 
 #: apps/postybirb-ui/src/i18n/languages.tsx
@@ -2027,7 +2092,6 @@ msgid "Login check in progress..."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/helpers.tsx
-#: apps/postybirb-ui/src/components/website-login-views/helpers.tsx
 msgid "Login failed"
 msgstr ""
 
@@ -2060,7 +2124,6 @@ msgstr ""
 msgid "Manage accounts"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/drawers/notifications-drawer/notifications-drawer.tsx
 #: apps/postybirb-ui/src/components/drawers/notifications-drawer/notifications-drawer.tsx
 msgid "Mark as read"
 msgstr ""
@@ -2104,7 +2167,6 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/drawers/schedule-drawer/schedule-calendar.tsx
 #: apps/postybirb-ui/src/components/sections/home-section/posting-activity-panel.tsx
-#: apps/postybirb-ui/src/components/sections/home-section/posting-activity-panel.tsx
 #: apps/postybirb-ui/src/components/sections/templates-section/templates-section.tsx
 msgid "Message"
 msgstr ""
@@ -2119,7 +2181,6 @@ msgstr "Žinutės pateikimai"
 msgid "Minutes"
 msgstr "Minutės (-čių)"
 
-#: apps/postybirb-ui/src/components/website-login-views/misskey/misskey-login-view.tsx
 #: apps/postybirb-ui/src/components/website-login-views/misskey/misskey-login-view.tsx
 msgid "Misskey Authentication"
 msgstr ""
@@ -2292,6 +2353,7 @@ msgstr ""
 msgid "Not logged in"
 msgstr "Neprisijungta"
 
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-section-header.tsx
 #: apps/postybirb-ui/src/components/shared/schedule-popover/schedule-popover.tsx
 msgid "Not scheduled"
 msgstr ""
@@ -2312,7 +2374,8 @@ msgid "Notifications"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/notifications-tour.tsx
-msgid "Notifications keep you informed about posting results, errors, and other important events. Review them here to stay on top of your activity."
+msgid "Notifications keep you informed about posting results, errors, and other "
+"important events. Review them here to stay on top of your activity."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/notifications-tour.tsx
@@ -2389,7 +2452,8 @@ msgid "Other"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/shared/submission-picker/submission-picker-modal.tsx
-msgid "Overwrite overlapping website options only. Keeps existing website options that are not specified in the source."
+msgid "Overwrite overlapping website options only. Keeps existing website "
+"options that are not specified in the source."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/layout-tour.tsx
@@ -2400,7 +2464,6 @@ msgstr ""
 msgid "Parent ID"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/remote-settings-section.tsx
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/remote-settings-section.tsx
 #: apps/postybirb-ui/src/components/website-login-views/inkbunny/inkbunny-login-view.tsx
 msgid "Password"
@@ -2423,7 +2486,8 @@ msgid "Pause"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/home-tour.tsx
-msgid "Pause or resume your post queue. When paused, no submissions will be sent until you resume."
+msgid "Pause or resume your post queue. When paused, no submissions will be "
+"sent until you resume."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/home-section/queue-control-card.tsx
@@ -2516,12 +2580,13 @@ msgid "Posting Activity"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/selected-accounts-forms.tsx
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/selected-accounts-forms.tsx
 msgid "Posting in progress"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/discord/discord-login-view.tsx
-msgid "PostyBirb uses Discord webhooks to post content to your server. Make sure you have the necessary permissions to create webhooks in your target channel."
+msgid "PostyBirb uses Discord webhooks to post content to your server. Make "
+"sure you have the necessary permissions to create webhooks in your "
+"target channel."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/form/fields/description-preview-panel.tsx
@@ -2572,7 +2637,8 @@ msgid "Queued"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/home-tour.tsx
-msgid "Quick counts of your file and message submissions, plus how many are queued or scheduled. Click any card to navigate to that section."
+msgid "Quick counts of your file and message submissions, plus how many are "
+"queued or scheduled. Click any card to navigate to that section."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/home-section/home-content.tsx
@@ -2580,7 +2646,8 @@ msgid "Quick tips to get started:"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/accounts-tour.tsx
-msgid "Quickly find accounts that need attention. Filter by All, Logged in, or Not logged in status."
+msgid "Quickly find accounts that need attention. Filter by All, Logged in, or "
+"Not logged in status."
 msgstr ""
 
 #: libs/translations/src/lib/field-translations.ts
@@ -2727,14 +2794,15 @@ msgid "Required tag"
 msgstr ""
 
 #: apps/postybirb-ui/src/i18n/validation-translation.tsx
-msgid "Requires at least {minLength} {minLength, plural, one {tag} other {tags}}"
+msgid "Requires at least {minLength} {minLength, plural, one {tag} other "
+"{tags}}"
 msgstr ""
 
 #: apps/postybirb-ui/src/i18n/validation-translation.tsx
-msgid "Requires at least {minSelected} {minSelected, plural, one {option selected} other {options selected}} ({currentSelected} / {minSelected})"
+msgid "Requires at least {minSelected} {minSelected, plural, one {option "
+"selected} other {options selected}} ({currentSelected} / {minSelected})"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/remote-settings-section.tsx
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/remote-settings-section.tsx
 #: apps/postybirb-ui/src/components/sections/accounts-section/website-account-card.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/file-submission-modal/image-editor.tsx
@@ -2764,7 +2832,6 @@ msgid "Restart Now"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/archived-submission-card.tsx
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/archived-submission-card.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/actions/submission-edit-card-actions.tsx
 msgid "Restore"
 msgstr ""
@@ -2788,7 +2855,8 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/post-confirm-modal.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/resume-mode-modal/resume-mode-modal.tsx
-msgid "Retry posting to all websites that failed or were not attempted. All files will be re-uploaded."
+msgid "Retry posting to all websites that failed or were not attempted. All "
+"files will be re-uploaded."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/file-submission-modal/image-editor.tsx
@@ -2833,7 +2901,6 @@ msgid "Save API Keys"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/form/save-defaults-popover.tsx
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/form/save-defaults-popover.tsx
 msgid "Save as default"
 msgstr ""
 
@@ -2850,14 +2917,14 @@ msgid "Save Selected"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/layout-tour.tsx
-msgid "Save submission settings as reusable templates. Great for repeated posts with the same tags, description, or account selection."
+msgid "Save submission settings as reusable templates. Great for repeated posts "
+"with the same tags, description, or account selection."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-record-card.tsx
 msgid "Save to file"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/actions/save-to-many-action.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/actions/save-to-many-action.tsx
 msgid "Save to submissions"
 msgstr ""
@@ -2884,9 +2951,6 @@ msgid "Schedule Calendar"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/schedule-form/schedule-form.tsx
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/schedule-form/schedule-form.tsx
-#: apps/postybirb-ui/src/components/shared/schedule-popover/schedule-popover.tsx
-#: apps/postybirb-ui/src/components/shared/schedule-popover/schedule-popover.tsx
 #: apps/postybirb-ui/src/components/shared/schedule-popover/schedule-popover.tsx
 msgid "Schedule configured (inactive)"
 msgstr ""
@@ -2916,7 +2980,9 @@ msgid "Schedule updated"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/submission-edit-tour.tsx
-msgid "Schedule when your submission should be posted. Choose a one-time date or set up a recurring schedule with a CRON expression. Toggle scheduling on or off with the switch."
+msgid "Schedule when your submission should be posted. Choose a one-time date "
+"or set up a recurring schedule with a CRON expression. Toggle scheduling "
+"on or off with the switch."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/home-section/home-content.tsx
@@ -2944,15 +3010,18 @@ msgid "Search Accounts"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/user-converters-tour.tsx
-msgid "Search for aliases by username or conversion value. Select items with checkboxes and hold the delete button to remove them."
+msgid "Search for aliases by username or conversion value. Select items with "
+"checkboxes and hold the delete button to remove them."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/tag-converters-tour.tsx
-msgid "Search for converters by name or conversion value. Select items with checkboxes and hold the delete button to remove them."
+msgid "Search for converters by name or conversion value. Select items with "
+"checkboxes and hold the delete button to remove them."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/tag-groups-tour.tsx
-msgid "Search for tag groups by name. Select rows using the checkboxes, then hold the delete button to remove them."
+msgid "Search for tag groups by name. Select rows using the checkboxes, then "
+"hold the delete button to remove them."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/custom-shortcuts-tour.tsx
@@ -3058,7 +3127,8 @@ msgid "Send Messages"
 msgstr "Siųsti žinutes"
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/layout-tour.tsx
-msgid "Send text-only posts like journals, status updates, or announcements to your accounts."
+msgid "Send text-only posts like journals, status updates, or announcements to "
+"your accounts."
 msgstr ""
 
 #: libs/translations/src/lib/field-translations.ts
@@ -3078,7 +3148,9 @@ msgid "Server unreachable"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/submission-edit-tour.tsx
-msgid "Set the default title, description, tags, and content rating here. These values are inherited by all website-specific options unless you override them individually."
+msgid "Set the default title, description, tags, and content rating here. These "
+"values are inherited by all website-specific options unless you override "
+"them individually."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/shared/multi-scheduler-modal/multi-scheduler-modal.tsx
@@ -3086,10 +3158,10 @@ msgid "Set the interval between each submission."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/layout-tour.tsx
-msgid "Set up your website accounts here. Log in to the sites you want to post to before creating submissions."
+msgid "Set up your website accounts here. Log in to the sites you want to post "
+"to before creating submissions."
 msgstr ""
 
-#: apps/postybirb-ui/src/components/dialogs/settings-dialog/settings-dialog.tsx
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/settings-dialog.tsx
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/layout-tour.tsx
 #: apps/postybirb-ui/src/config/nav-items.tsx
@@ -3112,9 +3184,6 @@ msgstr ""
 msgid "Share your LAN IP and password with clients to allow them to connect."
 msgstr ""
 
-#: apps/postybirb-ui/src/components/drawers/custom-shortcuts-drawer/custom-shortcuts-drawer.tsx
-#: apps/postybirb-ui/src/components/drawers/custom-shortcuts-drawer/custom-shortcuts-drawer.tsx
-#: apps/postybirb-ui/src/components/drawers/custom-shortcuts-drawer/custom-shortcuts-drawer.tsx
 #: apps/postybirb-ui/src/components/drawers/custom-shortcuts-drawer/custom-shortcuts-drawer.tsx
 msgid "shortcut"
 msgstr ""
@@ -3140,11 +3209,13 @@ msgid "Show/Hide Websites"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/home-tour.tsx
-msgid "Shows how many of your accounts are logged in. If any accounts need attention, you'll see a warning here."
+msgid "Shows how many of your accounts are logged in. If any accounts need "
+"attention, you'll see a warning here."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/home-tour.tsx
-msgid "Shows your latest notifications — successful posts, errors, and warnings. Helps you stay on top of what's happening."
+msgid "Shows your latest notifications — successful posts, errors, and "
+"warnings. Helps you stay on top of what's happening."
 msgstr ""
 
 #: libs/translations/src/lib/field-translations.ts
@@ -3165,11 +3236,13 @@ msgid "Skip Accounts"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/post-confirm-modal.tsx
-msgid "Skip websites that posted successfully and only attempt failed or unattempted ones."
+msgid "Skip websites that posted successfully and only attempt failed or "
+"unattempted ones."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/resume-mode-modal/resume-mode-modal.tsx
-msgid "Skip websites that posted successfully and only attempt failed or unattempted ones. Continues from the last successful batch of files."
+msgid "Skip websites that posted successfully and only attempt failed or "
+"unattempted ones. Continues from the last successful batch of files."
 msgstr ""
 
 #: libs/translations/src/lib/field-translations.ts
@@ -3189,10 +3262,10 @@ msgid "Some posts failed"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/post-confirm-modal.tsx
-msgid "Some submissions have failed posting attempts. Choose how to handle them:"
+msgid "Some submissions have failed posting attempts. Choose how to handle "
+"them:"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/error-boundary/error-boundary.tsx
 #: apps/postybirb-ui/src/components/error-boundary/error-boundary.tsx
 msgid "Something went wrong"
 msgstr ""
@@ -3267,8 +3340,6 @@ msgid "Start of week"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/instagram/instagram-login-view.tsx
-#: apps/postybirb-ui/src/components/website-login-views/instagram/instagram-login-view.tsx
-#: apps/postybirb-ui/src/components/website-login-views/twitter/twitter-login-view.tsx
 #: apps/postybirb-ui/src/components/website-login-views/twitter/twitter-login-view.tsx
 msgid "Start Over"
 msgstr ""
@@ -3322,13 +3393,14 @@ msgid "Submission unscheduled"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/schedule-form/schedule-form.tsx
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/schedule-form/schedule-form.tsx
 #: apps/postybirb-ui/src/components/shared/schedule-popover/schedule-popover.tsx
 msgid "Submission will be posted automatically"
 msgstr ""
 
 #: apps/postybirb-ui/src/i18n/validation-translation.tsx
-msgid "Submission will be split into {expectedBatchesToCreate} different submissions with {maxBatchSize} {maxBatchSize, plural, one {file each} other {files each}}."
+msgid "Submission will be split into {expectedBatchesToCreate} different "
+"submissions with {maxBatchSize} {maxBatchSize, plural, one {file each} "
+"other {files each}}."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/import-settings-section.tsx
@@ -3346,11 +3418,14 @@ msgid "Submissions Tour"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/home-tour.tsx
-msgid "Submissions with errors or warnings appear here. Fix any issues before posting to avoid failed submissions."
+msgid "Submissions with errors or warnings appear here. Fix any issues before "
+"posting to avoid failed submissions."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/subscribe-star-adult/subscribe-star-adult-login-view.tsx
-msgid "SubscribeStar Adult requires you to be logged in to both subscribestar.com AND subscribestar.adult. Please log in to both sites below."
+msgid "SubscribeStar Adult requires you to be logged in to both "
+"subscribestar.com AND subscribestar.adult. Please log in to both sites "
+"below."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-record-card.tsx
@@ -3387,7 +3462,8 @@ msgid "Supports either a set of images, a single video, or a single GIF."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/templates-tour.tsx
-msgid "Switch between File and Message templates. File templates are for image or file uploads, while Message templates are for text-only posts."
+msgid "Switch between File and Message templates. File templates are for image "
+"or file uploads, while Message templates are for text-only posts."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/layout-tour.tsx
@@ -3403,7 +3479,9 @@ msgid "Tag <0>{tag}</0> does not exist yet or is invalid."
 msgstr ""
 
 #: apps/postybirb-ui/src/i18n/validation-translation.tsx
-msgid "Tag <0>{tag}</0> does not exist yet or is invalid. If you want to create a new tag, make a post with it, then go <1>here</1>, press edit and select tag category"
+msgid "Tag <0>{tag}</0> does not exist yet or is invalid. If you want to create "
+"a new tag, make a post with it, then go <1>here</1>, press edit and "
+"select tag category"
 msgstr ""
 
 #: apps/postybirb-ui/src/i18n/validation-translation.tsx
@@ -3422,7 +3500,8 @@ msgid "Tag Converters"
 msgstr "Žymių konverteriai"
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/tag-converters-tour.tsx
-msgid "Tag converters automatically replace tags on a per-website basis. Useful when different sites use different tag names for the same concept."
+msgid "Tag converters automatically replace tags on a per-website basis. Useful "
+"when different sites use different tag names for the same concept."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/tag-converters-tour.tsx
@@ -3441,7 +3520,8 @@ msgid "Tag Groups"
 msgstr "Žymių grupės"
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/tag-groups-tour.tsx
-msgid "Tag groups let you save collections of tags under a name. When creating a submission, pick a tag group to quickly add all its tags at once."
+msgid "Tag groups let you save collections of tags under a name. When creating "
+"a submission, pick a tag group to quickly add all its tags at once."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/tag-groups-tour.tsx
@@ -3497,7 +3577,6 @@ msgid "Take the tour"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/layout/side-nav.tsx
-#: apps/postybirb-ui/src/components/layout/side-nav.tsx
 #: apps/postybirb-ui/src/components/sections/home-section/home-content.tsx
 msgid "Take the Tour"
 msgstr ""
@@ -3511,7 +3590,8 @@ msgid "Teaser"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/telegram/telegram-login-view.tsx
-msgid "Telegram requires API credentials and phone number authentication. You'll need to create a Telegram app and verify your phone number."
+msgid "Telegram requires API credentials and phone number authentication. "
+"You'll need to create a Telegram app and verify your phone number."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/file-submission-modal/submission-options.tsx
@@ -3550,7 +3630,8 @@ msgid "Templates"
 msgstr "Šablonai"
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/templates-tour.tsx
-msgid "Templates let you save submission settings that you reuse often. Create a template once and apply it to new submissions to save time."
+msgid "Templates let you save submission settings that you reuse often. Create "
+"a template once and apply it to new submissions to save time."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/templates-tour.tsx
@@ -3574,7 +3655,9 @@ msgid "Th"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/schedule-tour.tsx
-msgid "The calendar shows all your scheduled submissions. Switch between month, week, and day views. Click an event to reschedule or unschedule it. Drag events to move them to a different time."
+msgid "The calendar shows all your scheduled submissions. Switch between month, "
+"week, and day views. Click an event to reschedule or unschedule it. Drag "
+"events to move them to a different time."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/drawers/file-watcher-drawer/file-watcher-drawer.tsx
@@ -3586,7 +3669,9 @@ msgid "The form encountered an error and couldn't be displayed properly."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/submission-edit-tour.tsx
-msgid "The header shows the submission title and action buttons. Use the template button to apply saved settings, the send button to post, and the trash button to delete."
+msgid "The header shows the submission title and action buttons. Use the "
+"template button to apply saved settings, the send button to post, and "
+"the trash button to delete."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/resume-mode-modal/resume-mode-modal.tsx
@@ -3594,11 +3679,14 @@ msgid "The last posting attempt failed. How would you like to proceed?"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/schedule-tour.tsx
-msgid "The schedule view lets you plan when your submissions will be posted. Drag submissions onto the calendar to schedule them, or click existing events to manage them."
+msgid "The schedule view lets you plan when your submissions will be posted. "
+"Drag submissions onto the calendar to schedule them, or click existing "
+"events to manage them."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/update-button/update-modal.tsx
-msgid "The update has been downloaded and is ready to install. Click \"Restart Now\" to apply the update."
+msgid "The update has been downloaded and is ready to install. Click \"Restart "
+"Now\" to apply the update."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/layout-tour.tsx
@@ -3611,7 +3699,8 @@ msgid "These defaults apply to future submissions."
 msgstr ""
 
 #: apps/postybirb-ui/src/i18n/validation-translation.tsx
-msgid "These mentioned users don't exist: {mentionsList}. Ensure that their tag is correct (e.g. name.bsky.social instead of name.bluesky.social)"
+msgid "These mentioned users don't exist: {mentionsList}. Ensure that their tag "
+"is correct (e.g. name.bsky.social instead of name.bluesky.social)"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/error-boundary/error-boundary.tsx
@@ -3623,31 +3712,39 @@ msgid "This is a forum channel"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/submission-edit-tour.tsx
-msgid "This is the submission editor where you configure all the details for your post. Set up files, scheduling, descriptions, tags, and per-website options."
+msgid "This is the submission editor where you configure all the details for "
+"your post. Set up files, scheduling, descriptions, tags, and per-website "
+"options."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/submissions-tour.tsx
-msgid "This is where you create and manage your submissions. Build your posts, configure per-website options, and send them out to all your accounts."
+msgid "This is where you create and manage your submissions. Build your posts, "
+"configure per-website options, and send them out to all your accounts."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/accounts-tour.tsx
-msgid "This is where you manage your website accounts. Add accounts, log in, and track your login status across all supported sites."
+msgid "This is where you manage your website accounts. Add accounts, log in, "
+"and track your login status across all supported sites."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/layout-tour.tsx
-msgid "This is your dashboard. View submission status, control the post queue, and see an overview of your activity."
+msgid "This is your dashboard. View submission status, control the post queue, "
+"and see an overview of your activity."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/home-tour.tsx
-msgid "This is your home dashboard. It gives you a quick overview of your submissions, schedule, and account health at a glance."
+msgid "This is your home dashboard. It gives you a quick overview of your "
+"submissions, schedule, and account health at a glance."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-record-card.tsx
-msgid "This post record has no events or is still processing. Check the JSON data below for more details."
+msgid "This post record has no events or is still processing. Check the JSON "
+"data below for more details."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/schedule-tour.tsx
-msgid "This sidebar lists your unscheduled submissions. Drag any submission from here onto the calendar to schedule it for a specific date and time."
+msgid "This sidebar lists your unscheduled submissions. Drag any submission "
+"from here onto the calendar to schedule it for a specific date and time."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/accounts-section/accounts-content.tsx
@@ -3696,7 +3793,8 @@ msgid "Title is too short"
 msgstr "Pavadinimas per trumpas."
 
 #: apps/postybirb-ui/src/i18n/validation-translation.tsx
-msgid "Title won't be inserted. Add title shortcut or enable 'Insert title at start'"
+msgid "Title won't be inserted. Add title shortcut or enable 'Insert title at "
+"start'"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/accounts-section/website-visibility-picker.tsx
@@ -3721,7 +3819,6 @@ msgid "Translation {id} not found"
 msgstr "Vertimas {id} nerastas."
 
 #: apps/postybirb-ui/src/components/error-boundary/error-boundary.tsx
-#: apps/postybirb-ui/src/components/error-boundary/error-boundary.tsx
 #: apps/postybirb-ui/src/components/error-boundary/specialized-error-boundaries.tsx
 #: apps/postybirb-ui/src/components/website-login-views/megalodon/megalodon-login-view.tsx
 #: apps/postybirb-ui/src/components/website-login-views/misskey/misskey-login-view.tsx
@@ -3741,11 +3838,13 @@ msgid "Type / for commands or @, ` or '{' for shortcuts"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/tag-groups-tour.tsx
-msgid "Type a name and click the button to create a new tag group. You can then add tags to it in the table below."
+msgid "Type a name and click the button to create a new tag group. You can then "
+"add tags to it in the table below."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/tag-converters-tour.tsx
-msgid "Type a tag name and click the button to create a new converter. Then expand it to set up website-specific replacements."
+msgid "Type a tag name and click the button to create a new converter. Then "
+"expand it to set up website-specific replacements."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/notifications-tour.tsx
@@ -3753,7 +3852,10 @@ msgid "Type Filter"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/user-converters-tour.tsx
-msgid "Type the username as you write it in your descriptions (e.g. \"ArtistJohn\") and click the button to create a new alias. Then expand it to add website-specific replacements — for example, set Twitter to \"@JohnDraws\" and DeviantArt to \"John_Art\"."
+msgid "Type the username as you write it in your descriptions (e.g. "
+"\"ArtistJohn\") and click the button to create a new alias. Then expand "
+"it to add website-specific replacements — for example, set Twitter to "
+"\"@JohnDraws\" and DeviantArt to \"John_Art\"."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/shared/description-editor/custom-blocks/website-only-selector.tsx
@@ -3800,13 +3902,11 @@ msgid "Unsupported submission type: {fileTypeString}"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/home-section/posting-activity-panel.tsx
-#: apps/postybirb-ui/src/components/sections/home-section/posting-activity-panel.tsx
 #: apps/postybirb-ui/src/components/sections/home-section/upcoming-posts-panel.tsx
 #: apps/postybirb-ui/src/components/sections/home-section/validation-issues-panel.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/header/submission-edit-card-header.tsx
 #: apps/postybirb-ui/src/components/sections/templates-section/template-card.tsx
 #: apps/postybirb-ui/src/components/shared/reorderable-submission-list/reorderable-submission-list.tsx
-#: apps/postybirb-ui/src/components/shared/template-picker/template-picker-modal.tsx
 #: apps/postybirb-ui/src/components/shared/template-picker/template-picker-modal.tsx
 msgid "Untitled"
 msgstr ""
@@ -3828,7 +3928,6 @@ msgstr ""
 msgid "Update API Keys"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/update-button/update-button.tsx
 #: apps/postybirb-ui/src/components/update-button/update-button.tsx
 #: apps/postybirb-ui/src/components/update-button/update-modal.tsx
 msgid "Update available"
@@ -3855,7 +3954,8 @@ msgid "Updated successfully"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/submission-edit-tour.tsx
-msgid "Upload and manage files for your submission. Drag to reorder, click to preview, and edit alt text or metadata."
+msgid "Upload and manage files for your submission. Drag to reorder, click to "
+"preview, and edit alt text or metadata."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/file-management/file-actions.tsx
@@ -3880,7 +3980,9 @@ msgid "Use templates to save time on repeated posts"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/submissions-tour.tsx
-msgid "Use this checkbox to select or deselect all submissions at once. When items are selected, bulk actions like delete, post, and apply template become available."
+msgid "Use this checkbox to select or deselect all submissions at once. When "
+"items are selected, bulk actions like delete, post, and apply template "
+"become available."
 msgstr ""
 
 #: libs/translations/src/lib/field-translations.ts
@@ -3892,11 +3994,14 @@ msgid "Use title"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/bluesky/bluesky-login-view.tsx
-msgid "Use your Bluesky handle or email along with an app password. App passwords are more secure than your main password and can be revoked at any time."
+msgid "Use your Bluesky handle or email along with an app password. App "
+"passwords are more secure than your main password and can be revoked at "
+"any time."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/bluesky/bluesky-login-view.tsx
-msgid "Used for other sites (like e621) as source url base. Independent from custom pds."
+msgid "Used for other sites (like e621) as source url base. Independent from "
+"custom pds."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/e621/e621-login-view.tsx
@@ -3915,7 +4020,11 @@ msgid "Username Aliases"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/user-converters-tour.tsx
-msgid "Username aliases automatically replace usernames in your submissions on a per-website basis. For example, if you mention \"@ArtistJohn\" in a description but that person goes by \"@JohnDraws\" on Twitter and \"@John_Art\" on DeviantArt, a username alias will automatically swap in the correct username for each site when posting."
+msgid "Username aliases automatically replace usernames in your submissions on "
+"a per-website basis. For example, if you mention \"@ArtistJohn\" in a "
+"description but that person goes by \"@JohnDraws\" on Twitter and "
+"\"@John_Art\" on DeviantArt, a username alias will automatically swap in "
+"the correct username for each site when posting."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/user-converters-tour.tsx
@@ -3944,7 +4053,8 @@ msgid "View"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/layout-tour.tsx
-msgid "View and manage scheduled posts on a calendar. Plan your posting schedule in advance."
+msgid "View and manage scheduled posts on a calendar. Plan your posting "
+"schedule in advance."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/drawers/notifications-drawer/notifications-drawer.tsx
@@ -3952,8 +4062,6 @@ msgid "View Error"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/archived-submission-card.tsx
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/archived-submission-card.tsx
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/submission-actions.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/submission-actions.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/actions/submission-edit-card-actions.tsx
 msgid "View history"
@@ -3964,7 +4072,8 @@ msgid "View permissions"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/layout-tour.tsx
-msgid "View posting results, errors, and other important events. The badge shows how many unread notifications you have."
+msgid "View posting results, errors, and other important events. The badge "
+"shows how many unread notifications you have."
 msgstr ""
 
 #: libs/translations/src/lib/field-translations.ts
@@ -4026,11 +4135,13 @@ msgid "Website Cards"
 msgstr ""
 
 #: apps/postybirb-ui/src/i18n/validation-translation.tsx
-msgid "Website has a dedicated tags field. Remove tags shortcut or disable 'Insert tags at end'"
+msgid "Website has a dedicated tags field. Remove tags shortcut or disable "
+"'Insert tags at end'"
 msgstr ""
 
 #: apps/postybirb-ui/src/i18n/validation-translation.tsx
-msgid "Website has a dedicated title field. Remove title shortcut or disable 'Insert title at start'"
+msgid "Website has a dedicated title field. Remove title shortcut or disable "
+"'Insert title at start'"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/selected-accounts-forms.tsx
@@ -4071,11 +4182,15 @@ msgid "What's New"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/submissions-tour.tsx
-msgid "When a submission is selected, its full editor appears here. Configure titles, descriptions, tags, file options, and website-specific settings. Use the Mass Edit toggle to edit multiple submissions at once."
+msgid "When a submission is selected, its full editor appears here. Configure "
+"titles, descriptions, tags, file options, and website-specific settings. "
+"Use the Mass Edit toggle to edit multiple submissions at once."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/templates-tour.tsx
-msgid "When a template is selected, its settings appear here. Configure titles, descriptions, tags, and website-specific options just like a regular submission."
+msgid "When a template is selected, its settings appear here. Configure titles, "
+"descriptions, tags, and website-specific options just like a regular "
+"submission."
 msgstr ""
 
 #: libs/translations/src/lib/field-translations.ts
@@ -4089,31 +4204,43 @@ msgid "Width"
 msgstr "Plotis"
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/submission-edit-tour.tsx
-msgid "Write your post description with rich text formatting. Type @ to insert username shortcuts, { to insert custom text shortcuts, or use the / slash menu for headings, lists, and more. Shortcuts are automatically expanded per website when posting."
+msgid "Write your post description with rich text formatting. Type @ to insert "
+"username shortcuts, {curlyBrace} to insert custom text shortcuts, or use "
+"the / slash menu for headings, lists, and more. Shortcuts are "
+"automatically expanded per website when posting."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/disclaimer/disclaimer.tsx
-msgid "You agree to comply with all applicable laws, terms of service, and policies of any third party platforms you connect to or interact with through this application. Do not use this software to infringe intellectual property rights, violate privacy, or circumvent platform rules."
+msgid "You agree to comply with all applicable laws, terms of service, and "
+"policies of any third party platforms you connect to or interact with "
+"through this application. Do not use this software to infringe "
+"intellectual property rights, violate privacy, or circumvent platform "
+"rules."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/layout-tour.tsx
-msgid "You can restart this tour anytime from here. Also look for the ? buttons on each page — they provide a guided tour of that specific section."
+msgid "You can restart this tour anytime from here. Also look for the ? buttons "
+"on each page — they provide a guided tour of that specific section."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/twitter/twitter-login-view.tsx
-msgid "You have existing API keys. You can modify them above or proceed to the next step."
+msgid "You have existing API keys. You can modify them above or proceed to the "
+"next step."
 msgstr ""
 
 #: apps/postybirb-ui/src/i18n/validation-translation.tsx
-msgid "You have recent {negativeOrNeutral} feedback: {feedback}, you can view it<0>here</0>"
+msgid "You have recent {negativeOrNeutral} feedback: {feedback}, you can view "
+"it<0>here</0>"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/inkbunny/inkbunny-login-view.tsx
-msgid "You must first enable API access in your account settings under \"API (External Scripting)\" before you can authenticate with PostyBirb."
+msgid "You must first enable API access in your account settings under \"API "
+"(External Scripting)\" before you can authenticate with PostyBirb."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/twitter/twitter-login-view.tsx
-msgid "You need to create a Twitter app to get API keys. <0>Visit Twitter Developer Portal</0>"
+msgid "You need to create a Twitter app to get API keys. <0>Visit Twitter "
+"Developer Portal</0>"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/twitter/twitter-login-view.tsx
@@ -4121,11 +4248,14 @@ msgid "You'll get this PIN after authorizing on Twitter"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/form/fields/description-field.tsx
-msgid "Your description contains legacy shortcut syntax. These are no longer supported. Please use the new shortcut menu (type @, &lbrace; or `) to insert shortcuts."
+msgid "Your description contains legacy shortcut syntax. These are no longer "
+"supported. Please use the new shortcut menu (type @, &lbrace; or `) to "
+"insert shortcuts."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/bluesky/bluesky-login-view.tsx
-msgid "Your handle (e.g. <0>yourname.bsky.social</0>) or custom domain (e.g. <1>username.ext</1>)"
+msgid "Your handle (e.g. <0>yourname.bsky.social</0>) or custom domain (e.g. "
+"<1>username.ext</1>)"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/inkbunny/inkbunny-login-view.tsx

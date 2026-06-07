@@ -2,13 +2,13 @@
   "compileOnSave": false,
   "compilerOptions": {
     "esModuleInterop": true,
-    "sourceMap": true,
+    "inlineSourceMap": true,
     "declaration": false,
 
     "strict": true,
     "strictPropertyInitialization": false,
-    "moduleResolution": "bundler",
-    "module": "preserve",
+    "moduleResolution": "node16",
+    "module": "node20",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "importHelpers": true,
