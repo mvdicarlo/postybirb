@@ -191,9 +191,9 @@
   "devDependencies": {
     "@commitlint/cli": "^19.5.0",
     "@commitlint/config-conventional": "^19.5.0",
-    "@lingui/cli": "^6.2.0",
-    "@lingui/swc-plugin": "^6.3.0",
-    "@lingui/vite-plugin": "^6.2.0",
+    "@lingui/cli": "^5",
+    "@lingui/swc-plugin": "^5",
+    "@lingui/vite-plugin": "^5",
     "@nestjs/schematics": "11.0.0",
     "@nestjs/testing": "^10.4.16",
     "@nx/cypress": "21.6.11",
