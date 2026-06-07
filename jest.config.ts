@@ -4,6 +4,7 @@ import type { Config } from 'jest';
 export default async (): Promise<Config> => ({
   projects: await getJestProjectsAsync(),
   collectCoverage: true,
+  testEnvironment: 'node',
   coverageDirectory: '<rootDir>/coverage',
   coverageReporters: ['html', 'text', 'lcov'],
 });
