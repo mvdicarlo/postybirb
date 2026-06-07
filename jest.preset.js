@@ -14,7 +14,7 @@ const config = {
   cacheDirectory: join(process.cwd(), '.jest'),
   transformIgnorePatterns: [
     // These packages are CJS already and give warnings about swc not being able to read source maps for them in CI
-    '/diagnostic-channel-publishers/',
+    '/diagnostic-channel/',
     '/cron/',
   ], // There is a lot of ESM packages and swc is fast enough to transform everything
   transform: {
