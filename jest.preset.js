@@ -13,7 +13,9 @@ const config = {
   slowTestThreshold: 7000,
   cacheDirectory: join(process.cwd(), '.jest'),
   transformIgnorePatterns: [
-    'node_modules/diagnostic-channel-publishers', // This package is CJS already and gives errors about swc not being able to read source maps for it
+    // These packages are CJS already and give warnings about swc not being able to read source maps for them in CI
+    '/diagnostic-channel-publishers/',
+    '/cron/',
   ], // There is a lot of ESM packages and swc is fast enough to transform everything
   transform: {
     '^.+\\.(ts|tsx|jsx|js|html)$': [

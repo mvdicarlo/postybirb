@@ -431,7 +431,7 @@ describe('DescriptionParserService', () => {
 
       expect(customShortcutsService.findById).toHaveBeenCalledWith('cs-1');
       expect(description).toMatchInlineSnapshot(
-        `"<div>Check out my <div><span><b>Commission Info</b></span></div></div>"`,
+        `"<div>Check out my <span><b>Commission Info</b></span></div>"`,
       );
     });
 
@@ -510,7 +510,7 @@ describe('DescriptionParserService', () => {
       expect(customShortcutsService.findById).toHaveBeenCalledWith('cs-1');
       expect(customShortcutsService.findById).toHaveBeenCalledWith('cs-2');
       expect(description).toMatchInlineSnapshot(
-        `"<div><div>Commissions Open!</div> - <div>$50 per hour</div></div>"`,
+        `"<div>Commissions Open! - $50 per hour</div>"`,
       );
     });
 
@@ -682,7 +682,7 @@ describe('DescriptionParserService', () => {
       );
 
       expect(description).toMatchInlineSnapshot(
-        `"<div><div>Visit my <a target="_blank" href="https://portfolio.example.com"><span><b>portfolio</b></span></a></div></div>"`,
+        `"<div>Visit my <a target="_blank" href="https://portfolio.example.com"><span><b>portfolio</b></span></a></div>"`,
       );
     });
   });
