@@ -6,10 +6,10 @@ export class DeviantArtMessageSubmission extends BaseWebsiteOptions {
   @TitleField({
     maxLength: 50,
   })
-  title: string;
+  declare title: string;
 
   @DescriptionField({
     descriptionType: DescriptionType.CUSTOM,
   })
-  description: DescriptionValue;
+  declare description: DescriptionValue;
 }

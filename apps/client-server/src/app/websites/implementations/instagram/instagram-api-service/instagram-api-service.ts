@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { Logger, PostyBirbLogger } from '@postybirb/logger';
+import { DynamicObject } from '@postybirb/types';
 
 const GRAPH_API_BASE = 'https://graph.instagram.com/v21.0';
 
@@ -147,7 +148,7 @@ export class InstagramApiService {
         body: params.toString(),
       },
     );
-    const data = await response.json();
+    const data = (await response.json()) as DynamicObject;
 
     if (data.error) {
       InstagramApiService.logger.error('Token exchange failed', data.error);
@@ -178,7 +179,7 @@ export class InstagramApiService {
       `&access_token=${encodeURIComponent(shortLivedToken)}`;
 
     const response = await fetch(url);
-    const data = await response.json();
+    const data = (await response.json()) as DynamicObject;
 
     if (data.error) {
       InstagramApiService.logger.error(
@@ -208,7 +209,7 @@ export class InstagramApiService {
       `&access_token=${encodeURIComponent(accessToken)}`;
 
     const response = await fetch(url);
-    const data = await response.json();
+    const data = (await response.json()) as DynamicObject;
 
     if (data.error) {
       InstagramApiService.logger.error('Token refresh failed', data.error);
@@ -236,7 +237,7 @@ export class InstagramApiService {
     const url = `${GRAPH_API_BASE}/me?fields=user_id,username&access_token=${encodeURIComponent(accessToken)}`;
 
     const response = await fetch(url);
-    const data = await response.json();
+    const data = (await response.json()) as DynamicObject;
 
     if (data.error) {
       throw new Error(
@@ -265,7 +266,7 @@ export class InstagramApiService {
     try {
       const url = `${GRAPH_API_BASE}/me?fields=username&access_token=${encodeURIComponent(accessToken)}`;
       const response = await fetch(url);
-      const data = await response.json();
+      const data = (await response.json()) as DynamicObject;
 
       if (data.error) {
         return null;
@@ -314,7 +315,7 @@ export class InstagramApiService {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: params.toString(),
     });
-    const data = await response.json();
+    const data = (await response.json()) as DynamicObject;
 
     if (data.error) {
       InstagramApiService.logger.error(
@@ -352,7 +353,7 @@ export class InstagramApiService {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: params.toString(),
     });
-    const data = await response.json();
+    const data = (await response.json()) as DynamicObject;
 
     if (data.error) {
       InstagramApiService.logger.error(
@@ -376,7 +377,7 @@ export class InstagramApiService {
   ): Promise<InstagramContainerStatus> {
     const url = `${GRAPH_API_BASE}/${containerId}?fields=status_code&access_token=${encodeURIComponent(accessToken)}`;
     const response = await fetch(url);
-    const data = await response.json();
+    const data = (await response.json()) as DynamicObject;
 
     if (data.error) {
       throw new Error(data.error.message || 'Failed to check container status');
@@ -454,7 +455,7 @@ export class InstagramApiService {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: params.toString(),
     });
-    const data = await response.json();
+    const data = (await response.json()) as DynamicObject;
 
     if (data.error) {
       InstagramApiService.logger.error('Failed to publish media', data.error);
@@ -474,7 +475,7 @@ export class InstagramApiService {
     try {
       const url = `${GRAPH_API_BASE}/${mediaId}?fields=permalink&access_token=${encodeURIComponent(accessToken)}`;
       const response = await fetch(url);
-      const data = await response.json();
+      const data = (await response.json()) as DynamicObject;
 
       if (data.error) {
         InstagramApiService.logger.warn(
@@ -500,7 +501,7 @@ export class InstagramApiService {
     try {
       const url = `${GRAPH_API_BASE}/${igUserId}/content_publishing_limit?fields=quota_usage,config&access_token=${encodeURIComponent(accessToken)}`;
       const response = await fetch(url);
-      const data = await response.json();
+      const data = (await response.json()) as DynamicObject;
 
       if (data.error || !data.data?.length) {
         return null;

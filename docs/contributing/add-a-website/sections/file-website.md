@@ -11,13 +11,13 @@ class FooFileSubmission extends BaseWebsiteOptions {
   title: string;
 
   @TagField({ row: 2, col: 1 })
-  tags: TagValue;
+  declare declare tags: TagValue;
 
   @DescriptionField({ row: 3, col: 1 })
-  description: DescriptionValue;
+  declare declare description: DescriptionValue;
 
   @RatingField({ required: true, row: 0, col: 0 })
-  rating: SubmissionRating;
+  declare rating: SubmissionRating;
 }
 
 @WebsiteMetadata({

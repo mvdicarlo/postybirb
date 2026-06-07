@@ -3,20 +3,14 @@
  */
 
 import { Trans, useLingui } from '@lingui/react/macro';
+import { Box, ScrollArea, SegmentedControl, Stack, Text } from '@mantine/core';
 import {
-    Box,
-    ScrollArea,
-    SegmentedControl,
-    Stack,
-    Text
-} from '@mantine/core';
-import {
-    DefaultDescription,
-    Description,
-    SubmissionId,
-    SubmissionRating,
-    SubmissionType,
-    Tag,
+  DefaultDescription,
+  Description,
+  SubmissionId,
+  SubmissionRating,
+  SubmissionType,
+  Tag,
 } from '@postybirb/types';
 import { IconFileText, IconTemplate } from '@tabler/icons-react';
 import { useState } from 'react';

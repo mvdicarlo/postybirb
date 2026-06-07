@@ -8,7 +8,7 @@ export class WeasylFileSubmission extends BaseWebsiteOptions {
     required: true,
     minTags: 2,
   })
-  tags: TagValue;
+  declare tags: TagValue;
 
   @SelectField({
     label: 'category',

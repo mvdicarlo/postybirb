@@ -24322,7 +24322,7 @@ __metadata:
     swagger-ui-express: "npm:^4.1.6"
     tailwindcss: "npm:3.4.3"
     teleproto: "npm:^1.225.3"
-    tinykeys: "npm:^3.0.0"
+    tinykeys: "npm:^4.0.0"
     tippy.js: "npm:^6.3.7"
     tslib: "npm:2.5.2"
     turndown: "npm:^7.2.0"
@@ -27846,10 +27846,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tinykeys@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "tinykeys@npm:3.0.0"
-  checksum: 10c0/75eef480b3008cb1085da37ea1d33b162adb2237e1f6af4360679a7af4b8b75638c6f46b8d019745aae982e84d6ff24ac476299c1680e578859d87584d3e583c
+"tinykeys@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "tinykeys@npm:4.0.0"
+  checksum: 10c0/e7ccb4e4930b91d5412afddf7bdfc93909d3e69517c249ade4374ca8945ec05771c72b8d2af4e62944e29f59a7b7d87957322240740d54f0c2a77ec217f41dc5
   languageName: node
   linkType: hard
 

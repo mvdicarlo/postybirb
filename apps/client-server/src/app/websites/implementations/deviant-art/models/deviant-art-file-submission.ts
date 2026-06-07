@@ -18,22 +18,22 @@ export class DeviantArtFileSubmission extends BaseWebsiteOptions {
   @RatingField({
     hidden: true,
   })
-  rating: SubmissionRating;
+  declare rating: SubmissionRating;
 
   @TitleField({
     maxLength: 50,
   })
-  title: string;
+  declare title: string;
 
   @TagField({
     maxTags: 30,
   })
-  tags: TagValue;
+  declare tags: TagValue;
 
   @DescriptionField({
     descriptionType: DescriptionType.CUSTOM,
   })
-  description: DescriptionValue;
+  declare description: DescriptionValue;
 
   @SelectField({
     section: 'website',
