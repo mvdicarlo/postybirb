@@ -9,7 +9,7 @@ export class PillowfortFileSubmission extends BaseWebsiteOptions {
       { value: SubmissionRating.ADULT, label: 'NSFW' },
     ],
   })
-  rating: SubmissionRating;
+  declare rating: SubmissionRating;
 
   @RadioField({
     label: 'visibility',

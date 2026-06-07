@@ -12,7 +12,7 @@ export class TwitterMessageSubmission extends BaseWebsiteOptions {
     expectsInlineTags: true,
     expectsInlineTitle: true,
   })
-  description: DescriptionValue;
+  declare description: DescriptionValue;
 
   @RatingField({
     options: [
@@ -26,5 +26,5 @@ export class TwitterMessageSubmission extends BaseWebsiteOptions {
       },
     ],
   })
-  rating: SubmissionRating;
+  declare rating: SubmissionRating;
 }

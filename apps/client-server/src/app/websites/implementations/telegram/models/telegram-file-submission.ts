@@ -18,10 +18,10 @@ export class TelegramFileSubmission extends BaseWebsiteOptions {
     expectsInlineTitle: true,
     expectsInlineTags: true,
   })
-  description: DescriptionValue;
+  declare description: DescriptionValue;
 
   @TagField({})
-  tags: TagValue;
+  declare tags: TagValue;
 
   @SelectField<TelegramAccountData>({
     label: 'channel',

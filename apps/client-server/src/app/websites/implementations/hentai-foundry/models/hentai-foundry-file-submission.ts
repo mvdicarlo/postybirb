@@ -18,7 +18,7 @@ export class HentaiFoundryFileSubmission extends BaseWebsiteOptions {
   @DescriptionField({
     descriptionType: DescriptionType.BBCODE,
   })
-  description: DescriptionValue;
+  declare description: DescriptionValue;
 
   @RatingField({
     options: [
@@ -27,7 +27,7 @@ export class HentaiFoundryFileSubmission extends BaseWebsiteOptions {
       { value: SubmissionRating.ADULT, label: 'Adult' },
     ],
   })
-  rating: SubmissionRating;
+  declare rating: SubmissionRating;
 
   @SelectField({
     label: 'category',

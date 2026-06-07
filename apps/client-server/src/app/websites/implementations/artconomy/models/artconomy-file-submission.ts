@@ -17,12 +17,12 @@ export class ArtconomyFileSubmission extends BaseWebsiteOptions {
     descriptionType: DescriptionType.MARKDOWN,
     maxDescriptionLength: 2000,
   })
-  description: DescriptionValue;
+  declare description: DescriptionValue;
 
   @TagField({
     minTags: 5,
   })
-  tags: TagValue;
+  declare tags: TagValue;
 
   @RatingField({
     options: [
@@ -32,7 +32,7 @@ export class ArtconomyFileSubmission extends BaseWebsiteOptions {
       { value: SubmissionRating.EXTREME, label: 'Offensive/Disturbing' },
     ],
   })
-  rating: SubmissionRating;
+  declare rating: SubmissionRating;
 
   @BooleanField({
     label: 'private',

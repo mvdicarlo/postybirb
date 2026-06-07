@@ -6,13 +6,13 @@ export class NewgroundsBaseSubmission extends BaseWebsiteOptions {
   @DescriptionField({
     descriptionType: DescriptionType.HTML,
   })
-  description: DescriptionValue;
+  declare description: DescriptionValue;
 
   @TagField({
     maxTags: 12,
     spaceReplacer: '-',
   })
-  tags: TagValue;
+  declare tags: TagValue;
 
   protected processTag(tag: string): string {
     return tag
