@@ -6,6 +6,7 @@ import {
   TextField,
 } from '@postybirb/form-builder';
 import {
+  DefaultDescriptionValue,
   DefaultTagValue,
   DescriptionType,
   DescriptionValue,
@@ -21,7 +22,7 @@ export class MegalodonFileSubmission extends BaseWebsiteOptions {
     expectsInlineTags: true,
     expectsInlineTitle: true,
   })
-  declare description: DescriptionValue;
+  description: DescriptionValue = DefaultDescriptionValue();
 
   @RatingField({
     options: [
@@ -29,7 +30,7 @@ export class MegalodonFileSubmission extends BaseWebsiteOptions {
       { value: SubmissionRating.ADULT, label: 'Sensitive' },
     ],
   })
-  declare rating: SubmissionRating;
+  rating: SubmissionRating = SubmissionRating.GENERAL;
 
   @TagField({
     spaceReplacer: '_',

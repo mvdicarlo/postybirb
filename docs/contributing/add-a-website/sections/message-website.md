@@ -11,10 +11,10 @@ class FooMessageSubmission implements IWebsiteFormFields {
   title: string;
 
   @DescriptionField({ row: 3, col: 1 })
-  declare description: DescriptionValue;
+  description: DescriptionValue = DefaultDescriptionValue();
 
   @RatingField({ required: true, row: 0, col: 0 })
-  declare rating: SubmissionRating;
+  rating: SubmissionRating = SubmissionRating.GENERAL;
 }
 
 @WebsiteMetadata({

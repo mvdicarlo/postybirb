@@ -4,6 +4,7 @@ import {
   SelectField,
 } from '@postybirb/form-builder';
 import {
+  DefaultDescriptionValue,
   DescriptionType,
   DescriptionValue,
   SubmissionRating,
@@ -14,7 +15,7 @@ export class PiczelFileSubmission extends BaseWebsiteOptions {
   @DescriptionField({
     descriptionType: DescriptionType.MARKDOWN,
   })
-  declare description: DescriptionValue;
+  description: DescriptionValue = DefaultDescriptionValue();
 
   @SelectField({
     label: 'folder',
@@ -36,5 +37,5 @@ export class PiczelFileSubmission extends BaseWebsiteOptions {
       { value: SubmissionRating.ADULT, label: 'NSFW' },
     ],
   })
-  declare rating: SubmissionRating;
+  rating: SubmissionRating = SubmissionRating.GENERAL;
 }

@@ -5,6 +5,8 @@ import {
   TagField,
 } from '@postybirb/form-builder';
 import {
+  DefaultDescriptionValue,
+  DefaultTagValue,
   DescriptionType,
   DescriptionValue,
   TagValue,
@@ -18,10 +20,10 @@ export class TelegramFileSubmission extends BaseWebsiteOptions {
     expectsInlineTitle: true,
     expectsInlineTags: true,
   })
-  declare description: DescriptionValue;
+  description: DescriptionValue = DefaultDescriptionValue();
 
   @TagField({})
-  declare tags: TagValue;
+  tags: TagValue = DefaultTagValue();
 
   @SelectField<TelegramAccountData>({
     label: 'channel',

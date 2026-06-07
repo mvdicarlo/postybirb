@@ -7,6 +7,7 @@ import {
   TextField,
 } from '@postybirb/form-builder';
 import {
+  DefaultDescriptionValue,
   DescriptionType,
   DescriptionValue,
   SubmissionRating,
@@ -18,7 +19,7 @@ export class HentaiFoundryFileSubmission extends BaseWebsiteOptions {
   @DescriptionField({
     descriptionType: DescriptionType.BBCODE,
   })
-  declare description: DescriptionValue;
+  description: DescriptionValue = DefaultDescriptionValue();
 
   @RatingField({
     options: [
@@ -27,7 +28,7 @@ export class HentaiFoundryFileSubmission extends BaseWebsiteOptions {
       { value: SubmissionRating.ADULT, label: 'Adult' },
     ],
   })
-  declare rating: SubmissionRating;
+  rating: SubmissionRating = SubmissionRating.GENERAL;
 
   @SelectField({
     label: 'category',

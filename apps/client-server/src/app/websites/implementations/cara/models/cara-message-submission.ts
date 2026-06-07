@@ -1,5 +1,6 @@
 import { DescriptionField, TagField } from '@postybirb/form-builder';
 import {
+  DefaultDescriptionValue,
   DefaultTagValue,
   DescriptionType,
   DescriptionValue,
@@ -14,7 +15,7 @@ export class CaraMessageSubmission extends BaseWebsiteOptions {
     expectsInlineTags: true,
     expectsInlineTitle: true,
   })
-  declare description: DescriptionValue;
+  description: DescriptionValue = DefaultDescriptionValue();
 
   @TagField({
     section: 'common',

@@ -6,6 +6,7 @@ import {
   TextField,
 } from '@postybirb/form-builder';
 import {
+  DefaultDescriptionValue,
   DefaultTagValue,
   DescriptionType,
   DescriptionValue,
@@ -19,7 +20,7 @@ export class MisskeyFileSubmission extends BaseWebsiteOptions {
     expectsInlineTags: true,
     expectsInlineTitle: true,
   })
-  declare description: DescriptionValue;
+  description: DescriptionValue = DefaultDescriptionValue();
 
   @TagField({
     spaceReplacer: '_',

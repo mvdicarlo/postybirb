@@ -165,7 +165,7 @@ describe('BaseWebsiteOptions', () => {
         minTagLength: 2,
         maxTags: 3,
       })
-      declare tags: TagValue;
+      tags: TagValue = DefaultTagValue();
 
       protected processTag(tag: string): string {
         return super.processTag(tag).toUpperCase();

@@ -4,22 +4,28 @@ import {
   TagField,
   TitleField,
 } from '@postybirb/form-builder';
-import { DescriptionType, DescriptionValue, TagValue } from '@postybirb/types';
+import {
+  DefaultDescriptionValue,
+  DefaultTagValue,
+  DescriptionType,
+  DescriptionValue,
+  TagValue,
+} from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
 export class FurAffinityMessageSubmission extends BaseWebsiteOptions {
   @TitleField({ maxLength: 60 })
-  declare title: string;
+  title = '';
 
   @DescriptionField({
     descriptionType: DescriptionType.BBCODE,
   })
-  declare description: DescriptionValue;
+  description: DescriptionValue = DefaultDescriptionValue();
 
   @TagField({
     hidden: true,
   })
-  declare tags: TagValue;
+  tags: TagValue = DefaultTagValue();
 
   @BooleanField({
     section: 'website',

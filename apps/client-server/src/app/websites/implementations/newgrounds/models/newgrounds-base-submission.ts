@@ -1,18 +1,24 @@
 import { DescriptionField, TagField } from '@postybirb/form-builder';
-import { DescriptionType, DescriptionValue, TagValue } from '@postybirb/types';
+import {
+  DefaultDescriptionValue,
+  DefaultTagValue,
+  DescriptionType,
+  DescriptionValue,
+  TagValue,
+} from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
 export class NewgroundsBaseSubmission extends BaseWebsiteOptions {
   @DescriptionField({
     descriptionType: DescriptionType.HTML,
   })
-  declare description: DescriptionValue;
+  description: DescriptionValue = DefaultDescriptionValue();
 
   @TagField({
     maxTags: 12,
     spaceReplacer: '-',
   })
-  declare tags: TagValue;
+  tags: TagValue = DefaultTagValue();
 
   protected processTag(tag: string): string {
     return tag

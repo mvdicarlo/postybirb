@@ -3,7 +3,13 @@ import {
   DescriptionField,
   TagField,
 } from '@postybirb/form-builder';
-import { DescriptionType, DescriptionValue, TagValue } from '@postybirb/types';
+import {
+  DefaultDescriptionValue,
+  DefaultTagValue,
+  DescriptionType,
+  DescriptionValue,
+  TagValue,
+} from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
 export class DiscordMessageSubmission extends BaseWebsiteOptions {
@@ -19,12 +25,12 @@ export class DiscordMessageSubmission extends BaseWebsiteOptions {
       }
     },
   })
-  declare description: DescriptionValue;
+  description: DescriptionValue = DefaultDescriptionValue();
 
   @TagField({
     hidden: true,
   })
-  declare tags: TagValue;
+  tags: TagValue = DefaultTagValue();
 
   @BooleanField<DiscordMessageSubmission>({
     label: 'useTitle',

@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
 import { DescriptionField } from '@postybirb/form-builder';
 import {
+  DefaultDescriptionValue,
   Description,
   DescriptionType,
   DescriptionValue,
@@ -132,7 +133,7 @@ describe('DescriptionParserService', () => {
 
     class PlaintextBaseWebsiteOptions extends BaseWebsiteOptions {
       @DescriptionField({ descriptionType: DescriptionType.PLAINTEXT })
-      declare description: DescriptionValue;
+      description: DescriptionValue = DefaultDescriptionValue();
     }
 
     const defaultOptions = createWebsiteOptions(testDescription);
@@ -186,7 +187,7 @@ describe('DescriptionParserService', () => {
 
     class MarkdownBaseWebsiteOptions extends BaseWebsiteOptions {
       @DescriptionField({ descriptionType: DescriptionType.MARKDOWN })
-      declare description: DescriptionValue;
+      description: DescriptionValue = DefaultDescriptionValue();
     }
 
     const defaultOptions = createWebsiteOptions(testDescription);
@@ -214,7 +215,7 @@ describe('DescriptionParserService', () => {
 
     class NoneBaseWebsiteOptions extends BaseWebsiteOptions {
       @DescriptionField({ descriptionType: DescriptionType.NONE })
-      declare description: DescriptionValue;
+      description: DescriptionValue = DefaultDescriptionValue();
     }
 
     const defaultOptions = createWebsiteOptions(testDescription);
@@ -341,7 +342,7 @@ describe('DescriptionParserService', () => {
 
     class PlaintextBaseWebsiteOptions extends BaseWebsiteOptions {
       @DescriptionField({ descriptionType: DescriptionType.PLAINTEXT })
-      declare description: DescriptionValue;
+      description: DescriptionValue = DefaultDescriptionValue();
     }
 
     const defaultOptions = createWebsiteOptions(testDescription);
@@ -571,7 +572,7 @@ describe('DescriptionParserService', () => {
 
       class PlaintextBaseWebsiteOptions extends BaseWebsiteOptions {
         @DescriptionField({ descriptionType: DescriptionType.PLAINTEXT })
-        declare description: DescriptionValue;
+        description: DescriptionValue = DefaultDescriptionValue();
       }
 
       const shortcutContent: Description = {
@@ -900,7 +901,7 @@ describe('DescriptionParserService', () => {
 
       class PlaintextBaseWebsiteOptions extends BaseWebsiteOptions {
         @DescriptionField({ descriptionType: DescriptionType.PLAINTEXT })
-        declare description: DescriptionValue;
+        description: DescriptionValue = DefaultDescriptionValue();
       }
 
       const descriptionWithAll: Description = {

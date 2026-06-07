@@ -20,7 +20,7 @@ export class PixivFileSubmission extends BaseWebsiteOptions {
   @TitleField({
     maxLength: 32,
   })
-  declare title: string;
+  title = '';
 
   @DescriptionField({
     descriptionType: DescriptionType.PLAINTEXT,
@@ -39,7 +39,7 @@ export class PixivFileSubmission extends BaseWebsiteOptions {
       { value: SubmissionRating.EXTREME, label: 'R-18G' },
     ],
   })
-  declare rating: SubmissionRating;
+  rating: SubmissionRating = SubmissionRating.GENERAL;
 
   @SelectField({
     label: 'matureContent',

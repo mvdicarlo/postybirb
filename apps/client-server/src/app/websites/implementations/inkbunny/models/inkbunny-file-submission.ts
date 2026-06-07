@@ -6,6 +6,8 @@ import {
   TagField,
 } from '@postybirb/form-builder';
 import {
+  DefaultDescriptionValue,
+  DefaultTagValue,
   DescriptionType,
   DescriptionValue,
   SubmissionRating,
@@ -50,17 +52,17 @@ export class InkbunnyFileSubmission extends BaseWebsiteOptions {
       },
     ],
   })
-  declare rating: SubmissionRating;
+  rating: SubmissionRating = SubmissionRating.GENERAL;
 
   @DescriptionField({
     descriptionType: DescriptionType.CUSTOM,
   })
-  declare description: DescriptionValue;
+  description: DescriptionValue = DefaultDescriptionValue();
 
   @TagField({
     minTags: 4,
   })
-  declare tags: TagValue;
+  tags: TagValue = DefaultTagValue();
 
   @SelectField({
     label: 'category',

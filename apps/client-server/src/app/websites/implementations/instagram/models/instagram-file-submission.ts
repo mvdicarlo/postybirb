@@ -4,6 +4,7 @@ import {
   TagField,
 } from '@postybirb/form-builder';
 import {
+  DefaultDescriptionValue,
   DefaultTagValue,
   DescriptionType,
   DescriptionValue,
@@ -19,7 +20,7 @@ export class InstagramFileSubmission extends BaseWebsiteOptions {
     expectsInlineTags: true,
     expectsInlineTitle: true,
   })
-  declare description: DescriptionValue;
+  description: DescriptionValue = DefaultDescriptionValue();
 
   @TagField({
     maxTags: 30,
@@ -38,7 +39,7 @@ export class InstagramFileSubmission extends BaseWebsiteOptions {
       },
     ],
   })
-  declare rating: SubmissionRating;
+  rating: SubmissionRating = SubmissionRating.GENERAL;
 
   /**
    * Process tags into Instagram hashtag format.

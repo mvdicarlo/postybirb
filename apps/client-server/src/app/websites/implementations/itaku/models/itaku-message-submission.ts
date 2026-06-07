@@ -4,7 +4,13 @@ import {
   TagField,
   TextField,
 } from '@postybirb/form-builder';
-import { DescriptionType, DescriptionValue, TagValue } from '@postybirb/types';
+import {
+  DefaultDescriptionValue,
+  DefaultTagValue,
+  DescriptionType,
+  DescriptionValue,
+  TagValue,
+} from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 import { ItakuAccountData } from './itaku-account-data';
 
@@ -12,14 +18,14 @@ export class ItakuMessageSubmission extends BaseWebsiteOptions {
   @TagField({
     maxTagLength: 59,
   })
-  declare tags: TagValue;
+  tags: TagValue = DefaultTagValue();
 
   @DescriptionField({
     descriptionType: DescriptionType.PLAINTEXT,
     maxDescriptionLength: 5000,
     required: true,
   })
-  declare description: DescriptionValue;
+  description: DescriptionValue = DefaultDescriptionValue();
 
   @TextField({
     label: 'contentWarning',

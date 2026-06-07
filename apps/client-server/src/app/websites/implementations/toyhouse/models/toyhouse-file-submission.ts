@@ -8,6 +8,7 @@ import {
   TitleField,
 } from '@postybirb/form-builder';
 import {
+  DefaultDescriptionValue,
   DescriptionType,
   DescriptionValue,
   SubmissionRating,
@@ -40,18 +41,18 @@ export class ToyhouseFileSubmission extends BaseWebsiteOptions {
     required: false,
     hidden: true,
   })
-  declare title: never;
+  title: never = null as never;
 
   @TagField({
     hidden: true,
   })
-  declare tags: never;
+  tags: never = null as never;
 
   @RatingField({
     options: ToyhouseMaturityOptions,
     required: true,
   })
-  declare rating: SubmissionRating;
+  rating: SubmissionRating = SubmissionRating.GENERAL;
 
   @DescriptionField({
     label: 'description',
@@ -59,7 +60,7 @@ export class ToyhouseFileSubmission extends BaseWebsiteOptions {
     required: false,
     maxDescriptionLength: 255,
   })
-  declare description: DescriptionValue;
+  description: DescriptionValue = DefaultDescriptionValue();
 
   @BooleanField({
     label: 'nudity',
@@ -90,7 +91,7 @@ export class ToyhouseFileSubmission extends BaseWebsiteOptions {
     showWhen: [['sensitiveContent', [true]]],
     order: 3,
   })
-  declare contentWarning: string;
+  contentWarning = '';
 
   @SelectField<ToyhouseAccountData>({
     label: 'characters',

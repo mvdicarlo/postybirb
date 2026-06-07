@@ -7,6 +7,8 @@ import {
   TitleField,
 } from '@postybirb/form-builder';
 import {
+  DefaultDescriptionValue,
+  DefaultTagValue,
   DescriptionType,
   DescriptionValue,
   SubmissionRating,
@@ -20,17 +22,17 @@ import { FurAffinityThemes } from './fur-affinity-themes';
 
 export class FurAffinityFileSubmission extends BaseWebsiteOptions {
   @TitleField({ maxLength: 60 })
-  declare title: string;
+  title = '';
 
   @DescriptionField({
     descriptionType: DescriptionType.BBCODE,
   })
-  declare description: DescriptionValue;
+  description: DescriptionValue = DefaultDescriptionValue();
 
   @TagField({
     spaceReplacer: '_',
   })
-  declare tags: TagValue;
+  tags: TagValue = DefaultTagValue();
 
   @RatingField({
     options: [
@@ -39,7 +41,7 @@ export class FurAffinityFileSubmission extends BaseWebsiteOptions {
       { value: SubmissionRating.ADULT, label: 'Adult' },
     ],
   })
-  declare rating: SubmissionRating;
+  rating: SubmissionRating = SubmissionRating.GENERAL;
 
   @SelectField({
     required: true,

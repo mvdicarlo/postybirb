@@ -1,5 +1,5 @@
 import { BooleanField, SelectField, TagField } from '@postybirb/form-builder';
-import { TagValue } from '@postybirb/types';
+import { DefaultTagValue, TagValue } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 import { WeasylCategories } from './weasyl-categories';
 
@@ -8,7 +8,7 @@ export class WeasylFileSubmission extends BaseWebsiteOptions {
     required: true,
     minTags: 2,
   })
-  declare tags: TagValue;
+  tags: TagValue = DefaultTagValue();
 
   @SelectField({
     label: 'category',

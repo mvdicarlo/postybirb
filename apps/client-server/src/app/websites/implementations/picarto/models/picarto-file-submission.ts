@@ -4,7 +4,13 @@ import {
   SelectField,
   TagField,
 } from '@postybirb/form-builder';
-import { DescriptionType, DescriptionValue, TagValue } from '@postybirb/types';
+import {
+  DefaultDescriptionValue,
+  DefaultTagValue,
+  DescriptionType,
+  DescriptionValue,
+  TagValue,
+} from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 import { PicartoCategories } from './picarto-categories';
 import { PicartoSoftware } from './picarto-software';
@@ -13,7 +19,7 @@ export class PicartoFileSubmission extends BaseWebsiteOptions {
   @DescriptionField({
     descriptionType: DescriptionType.PLAINTEXT,
   })
-  declare description: DescriptionValue;
+  description: DescriptionValue = DefaultDescriptionValue();
 
   @TagField({
     minTagLength: 1,
@@ -21,7 +27,7 @@ export class PicartoFileSubmission extends BaseWebsiteOptions {
     maxTagLength: 30,
     spaceReplacer: '_',
   })
-  declare tags: TagValue;
+  tags: TagValue = DefaultTagValue();
 
   @SelectField({
     label: 'visibility',

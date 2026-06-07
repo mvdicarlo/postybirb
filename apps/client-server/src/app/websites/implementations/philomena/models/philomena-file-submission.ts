@@ -1,5 +1,11 @@
 import { DescriptionField, TagField } from '@postybirb/form-builder';
-import { DescriptionType, DescriptionValue, TagValue } from '@postybirb/types';
+import {
+  DefaultDescriptionValue,
+  DefaultTagValue,
+  DescriptionType,
+  DescriptionValue,
+  TagValue,
+} from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
 /**
@@ -11,7 +17,7 @@ export class PhilomenaFileSubmission extends BaseWebsiteOptions {
     descriptionType: DescriptionType.MARKDOWN,
     expectsInlineTitle: true,
   })
-  declare description: DescriptionValue;
+  description: DescriptionValue = DefaultDescriptionValue();
 
   @TagField({
     minTags: 3,
@@ -19,5 +25,5 @@ export class PhilomenaFileSubmission extends BaseWebsiteOptions {
     minTagLength: 1,
     maxTagLength: 100,
   })
-  declare tags: TagValue;
+  tags: TagValue = DefaultTagValue();
 }

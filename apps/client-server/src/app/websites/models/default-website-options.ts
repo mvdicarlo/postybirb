@@ -9,15 +9,8 @@ export class DefaultWebsiteOptions extends BaseWebsiteOptions {
     span: 12,
     hidden: false,
   })
-  declare contentWarning: string;
+  contentWarning = '';
 
   @RatingField({})
-  declare rating: SubmissionRating;
-
-  constructor(options: Partial<DefaultWebsiteOptions> = {}) {
-    super(options);
-    // Apply defaults after parent constructor to avoid field initializer overwrite
-    this.contentWarning = this.contentWarning ?? '';
-    this.rating = this.rating ?? SubmissionRating.GENERAL;
-  }
+  rating: SubmissionRating = SubmissionRating.GENERAL;
 }

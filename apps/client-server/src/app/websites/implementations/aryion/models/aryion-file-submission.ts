@@ -23,7 +23,7 @@ export class AryionFileSubmission extends BaseWebsiteOptions {
     required: false,
     hidden: true,
   })
-  declare rating: SubmissionRating;
+  rating: SubmissionRating = SubmissionRating.GENERAL;
 
   @SelectField({
     label: 'folder',
