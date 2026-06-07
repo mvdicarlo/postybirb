@@ -5,7 +5,7 @@
     "useDefineForClassFields": true,
     "module": "ESNext",
     "strict": true,
-    "moduleResolution": "bundler",
+    "moduleResolution": "Node",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "types": ["vite/client"],
