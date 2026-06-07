@@ -11,6 +11,7 @@ const config = {
   reporters: ['summary', join(basePath, 'jest.reporter.js')],
   slowTestThreshold: 7000,
   cacheDirectory: join(process.cwd(), '.jest'),
+  testEnvironment: 'node',
   transformIgnorePatterns: [
     // These packages are CJS already and give warnings about swc not being able to read source maps for them in CI
     '/diagnostic-channel/',
