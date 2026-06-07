@@ -5585,7 +5585,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@lingui/cli@npm:5.9.5, @lingui/cli@npm:^5":
+"@lingui/cli@npm:5.9.5, @lingui/cli@npm:^5.5":
   version: 5.9.5
   resolution: "@lingui/cli@npm:5.9.5"
   dependencies:
@@ -5635,7 +5635,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@lingui/core@npm:5.9.5, @lingui/core@npm:^5":
+"@lingui/core@npm:5.9.5, @lingui/core@npm:^5.5":
   version: 5.9.5
   resolution: "@lingui/core@npm:5.9.5"
   dependencies:
@@ -5675,7 +5675,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@lingui/react@npm:^5":
+"@lingui/react@npm:^5.5":
   version: 5.9.5
   resolution: "@lingui/react@npm:5.9.5"
   dependencies:
@@ -5694,7 +5694,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@lingui/swc-plugin@npm:^5":
+"@lingui/swc-plugin@npm:^5.5.2":
   version: 5.11.0
   resolution: "@lingui/swc-plugin@npm:5.11.0"
   peerDependencies:
@@ -5708,7 +5708,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@lingui/vite-plugin@npm:^5":
+"@lingui/vite-plugin@npm:^5.5":
   version: 5.9.5
   resolution: "@lingui/vite-plugin@npm:5.9.5"
   dependencies:
@@ -9743,6 +9743,16 @@ __metadata:
     "@svgr/plugin-jsx": "npm:8.1.0"
     "@svgr/plugin-svgo": "npm:8.1.0"
   checksum: 10c0/4c1cac45bd5890de8643e5a7bfb71f3bcd8b85ae5bbacf10b8ad9f939b7a98e8d601c3ada204ffb95223abf4a24beeac5a2a0d6928a52a1ab72a29da3c015c22
+  languageName: node
+  linkType: hard
+
+"@swc-contrib/mut-cjs-exports@npm:^14.12.0":
+  version: 14.12.0
+  resolution: "@swc-contrib/mut-cjs-exports@npm:14.12.0"
+  peerDependencies:
+    "@swc/core": ^1.10.0
+    "@swc/jest": ^0.2.37
+  checksum: 10c0/172a9b387c77fcfb46eb71ef35f708d3a430596a9c9766a6a9765698a683f05abda1745a03b9c22114943a267419317e6850096e83661a79902ffaf5ac90ee24
   languageName: node
   linkType: hard
 
@@ -24134,11 +24144,11 @@ __metadata:
     "@fullcalendar/react": "npm:^6.1.15"
     "@fullcalendar/timegrid": "npm:^6.1.15"
     "@iarna/rtf-to-html": "npm:^1.1.0"
-    "@lingui/cli": "npm:^5"
-    "@lingui/core": "npm:^5"
-    "@lingui/react": "npm:^5"
-    "@lingui/swc-plugin": "npm:^5"
-    "@lingui/vite-plugin": "npm:^5"
+    "@lingui/cli": "npm:^5.5"
+    "@lingui/core": "npm:^5.5"
+    "@lingui/react": "npm:^5.5"
+    "@lingui/swc-plugin": "npm:^5.5.2"
+    "@lingui/vite-plugin": "npm:^5.5"
     "@mantine/core": "npm:^8.3.12"
     "@mantine/dates": "npm:^8.3.12"
     "@mantine/dropzone": "npm:^8.3.12"
@@ -24169,6 +24179,7 @@ __metadata:
     "@nx/vite": "npm:21.6.11"
     "@nx/web": "npm:21.6.11"
     "@nx/workspace": "npm:21.6.11"
+    "@swc-contrib/mut-cjs-exports": "npm:^14.12.0"
     "@swc/jest": "npm:0.2.39"
     "@tabler/icons-react": "npm:^3.19.0"
     "@tanstack/react-virtual": "npm:^3.13.18"
@@ -24322,7 +24333,6 @@ __metadata:
     socket.io-client: "npm:^4.8.0"
     socks-proxy-agent: "npm:^8.0.5"
     swagger-ui-express: "npm:^4.1.6"
-    swc_mut_cjs_exports: "npm:^10.7.0"
     tailwindcss: "npm:3.4.3"
     teleproto: "npm:^1.225.3"
     tinykeys: "npm:^3.0.0"
@@ -24332,7 +24342,7 @@ __metadata:
     twitter-api-v2: "npm:^1.27.0"
     twitter-text: "npm:^3.1.0"
     type-fest: "npm:^4.26.1"
-    typescript: "npm:5"
+    typescript: "npm:^5.8.3"
     uuid: "npm:^11.1.1"
     vite: "npm:^7.3.2"
     webpack: "npm:^5.104.1"
@@ -27447,16 +27457,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"swc_mut_cjs_exports@npm:^10.7.0":
-  version: 10.7.0
-  resolution: "swc_mut_cjs_exports@npm:10.7.0"
-  peerDependencies:
-    "@swc/core": ^1.10.0
-    "@swc/jest": ^0.2.37
-  checksum: 10c0/8fe9c054d95b2973dc589d3ee48d5d445adf15c522d1cd9de19c0bab2526894637d8b327657bf07ad0db6767c4e28d3055fb7800670b6882725e82b9ff1577b1
-  languageName: node
-  linkType: hard
-
 "synckit@npm:^0.11.7":
   version: 0.11.11
   resolution: "synckit@npm:0.11.11"
@@ -28288,7 +28288,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:5, typescript@npm:^5.3.3, typescript@npm:^5.4.3, typescript@npm:~5.9.2":
+"typescript@npm:^5.3.3, typescript@npm:^5.4.3, typescript@npm:^5.8.3, typescript@npm:~5.9.2":
   version: 5.9.3
   resolution: "typescript@npm:5.9.3"
   bin:
@@ -28298,7 +28298,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@npm%3A5#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5.3.3#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5.4.3#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A~5.9.2#optional!builtin<compat/typescript>":
+"typescript@patch:typescript@npm%3A^5.3.3#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5.4.3#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5.8.3#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A~5.9.2#optional!builtin<compat/typescript>":
   version: 5.9.3
   resolution: "typescript@patch:typescript@npm%3A5.9.3#optional!builtin<compat/typescript>::version=5.9.3&hash=5786d5"
   bin:

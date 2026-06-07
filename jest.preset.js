@@ -24,9 +24,9 @@ const config = {
       {
         jsc: {
           // https://github.com/swc-project/swc/discussions/5151#discussioncomment-3149154
-          experimental: { plugins: [['swc_mut_cjs_exports', {}]] },
+          experimental: { plugins: [['@swc-contrib/mut-cjs-exports', {}]] },
           loose: true,
-          target: 'es2020',
+          target: 'es2024', 
           parser: {
             syntax: 'typescript',
             tsx: true,
