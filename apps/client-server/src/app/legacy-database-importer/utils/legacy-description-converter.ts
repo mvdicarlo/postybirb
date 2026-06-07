@@ -15,7 +15,7 @@ import { Paragraph } from '@tiptap/extension-paragraph';
 import { Strike } from '@tiptap/extension-strike';
 import { Text } from '@tiptap/extension-text';
 import { Underline } from '@tiptap/extension-underline';
-import { generateJSON } from '@tiptap/html/dist/server';
+import { generateJSON } from '@tiptap/html/server';
 
 const tiptapExtensions = [
   Text,
