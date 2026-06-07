@@ -9694,6 +9694,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@swc-contrib/mut-cjs-exports@npm:^14.12.0":
+  version: 14.12.0
+  resolution: "@swc-contrib/mut-cjs-exports@npm:14.12.0"
+  peerDependencies:
+    "@swc/core": ^1.10.0
+    "@swc/jest": ^0.2.37
+  checksum: 10c0/172a9b387c77fcfb46eb71ef35f708d3a430596a9c9766a6a9765698a683f05abda1745a03b9c22114943a267419317e6850096e83661a79902ffaf5ac90ee24
+  languageName: node
+  linkType: hard
+
 "@swc/core-darwin-arm64@npm:1.15.40":
   version: 1.15.40
   resolution: "@swc/core-darwin-arm64@npm:1.15.40"
@@ -9846,7 +9856,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@swc/jest@npm:0.2.39":
+"@swc/jest@npm:^0.2.39":
   version: 0.2.39
   resolution: "@swc/jest@npm:0.2.39"
   dependencies:
@@ -24156,7 +24166,8 @@ __metadata:
     "@nx/vite": "npm:21.6.11"
     "@nx/web": "npm:21.6.11"
     "@nx/workspace": "npm:21.6.11"
-    "@swc/jest": "npm:0.2.39"
+    "@swc-contrib/mut-cjs-exports": "npm:^14.12.0"
+    "@swc/jest": "npm:^0.2.39"
     "@tabler/icons-react": "npm:^3.19.0"
     "@tanstack/react-virtual": "npm:^3.13.18"
     "@testing-library/react": "npm:16.1.0"
@@ -24309,7 +24320,6 @@ __metadata:
     socket.io-client: "npm:^4.8.0"
     socks-proxy-agent: "npm:^8.0.5"
     swagger-ui-express: "npm:^4.1.6"
-    swc_mut_cjs_exports: "npm:^10.7.0"
     tailwindcss: "npm:3.4.3"
     teleproto: "npm:^1.225.3"
     tinykeys: "npm:^3.0.0"
@@ -27465,16 +27475,6 @@ __metadata:
   peerDependencies:
     express: ">=4.0.0 || >=5.0.0-beta"
   checksum: 10c0/208eb1483209ee63d3c6036e1dfbaac5405a37ddf13105e1e3da2352f1bfa398cf5f7356f926743e8c9e99b04db4e42573690eb6d4985fd8340912910d3203c0
-  languageName: node
-  linkType: hard
-
-"swc_mut_cjs_exports@npm:^10.7.0":
-  version: 10.7.0
-  resolution: "swc_mut_cjs_exports@npm:10.7.0"
-  peerDependencies:
-    "@swc/core": ^1.10.0
-    "@swc/jest": ^0.2.37
-  checksum: 10c0/8fe9c054d95b2973dc589d3ee48d5d445adf15c522d1cd9de19c0bab2526894637d8b327657bf07ad0db6767c4e28d3055fb7800670b6882725e82b9ff1577b1
   languageName: node
   linkType: hard
 
