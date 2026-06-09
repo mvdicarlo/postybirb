@@ -43,6 +43,8 @@ jobs:
       # On migration to node 26 for actions corepack will need to be installed using npm
       - name: Enable corepack to use Yarn v4
         run: |
+          # Remove any globally installed yarn v1 that may conflict with corepack's shim (especially on Windows)
+          npm uninstall -g yarn
           # Replaces yarn in PATH with corepack's yarn shim
           corepack enable
           # Downloads yarn
