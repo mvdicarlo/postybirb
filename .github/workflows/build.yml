@@ -147,13 +147,13 @@ jobs:
 
       - name: Build Electron app (fork)
         if: github.event.repository.fork
-        run: yarn electron-builder --${{ matrix.platform }} --${{ matrix.arch }} --publish=always
+        run: DEBUG=electron-builder yarn electron-builder --${{ matrix.platform }} --${{ matrix.arch }} --publish=always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Electron app
         if: (!github.event.repository.fork)
-        run: yarn electron-builder --${{ matrix.platform }} --${{ matrix.arch }} --publish=always
+        run: DEBUG=electron-builder yarn electron-builder --${{ matrix.platform }} --${{ matrix.arch }} --publish=always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
