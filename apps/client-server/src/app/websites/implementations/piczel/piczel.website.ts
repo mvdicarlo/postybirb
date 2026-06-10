@@ -62,14 +62,21 @@ export default class Piczel
 
     try {
       const $ = parse(res.body);
-      const preloadState = $.getElementById('_R_')?.textContent.split(
-        'window.__PRELOADED_STATE__ = ',
-      )[1];
-      if (!preloadState) {
+      const jsonMatches =
+        $.getElementById('_R_')?.textContent.match(
+          /JSON\.parse\(\s*(["'])((?:\\.|(?!\1).)*)\1\s*\)/gs,
+        ) ?? [];
+      const stateJson =
+        jsonMatches.find((match) => match.includes('username')) ?? '';
+      const preloadedData = JSON.parse(
+        stateJson
+          .match(/JSON\.parse\(\s*(["'])((?:\\.|(?!\1).)*)\1\s*\)/)?.[2]
+          .replace(/\\/g, '') ?? '',
+      );
+
+      if (!preloadedData.currentUser) {
         return this.loginState.logout();
       }
-      const preloadedData = JSON.parse(preloadState);
-
       const { username } = preloadedData.currentUser.data;
       if (!username) {
         return this.loginState.logout();
