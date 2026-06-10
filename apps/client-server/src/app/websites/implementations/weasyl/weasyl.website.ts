@@ -316,7 +316,7 @@ export default class Weasyl
       .setField('rating', this.convertRating(rating))
       .setField('content', this.modifyDescription(description))
       .setField('tags', tags.join(' '))
-      .send<string>(`${this.BASE_URL}/submit`);
+      .send<string>(`${this.BASE_URL}/submit/journal`);
 
     return PostResponse.fromWebsite(this).withAdditionalInfo({
       body: result,

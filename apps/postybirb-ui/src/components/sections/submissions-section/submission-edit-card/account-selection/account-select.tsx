@@ -20,7 +20,7 @@ import {
   Text,
   useCombobox,
 } from '@mantine/core';
-import { SubmissionRating, SubmissionType } from '@postybirb/types';
+import { SubmissionType } from '@postybirb/types';
 import {
   IconCircleFilled,
   IconSquare,
@@ -133,12 +133,6 @@ export function AccountSelect() {
     return map;
   }, [allEligibleAccounts]);
 
-  // Get default rating for new options
-  const getDefaultRating = useCallback(() => {
-    const defaultOption = submission.options.find((opt) => opt.isDefault);
-    return defaultOption?.data?.rating ?? SubmissionRating.GENERAL;
-  }, [submission.options]);
-
   // Handle individual account toggle
   const handleAccountToggle = useCallback(
     async (accountId: string) => {
@@ -151,11 +145,10 @@ export function AccountSelect() {
           }
         } else {
           // Add
-          const rating = getDefaultRating();
           await websiteOptionsApi.create({
             submissionId: submission.id,
             accountId,
-            data: { rating },
+            data: {},
           });
         }
       } catch (error) {
@@ -163,7 +156,7 @@ export function AccountSelect() {
         console.error('Failed to toggle account:', error);
       }
     },
-    [selectedAccountIds, optionsByAccount, submission.id, getDefaultRating],
+    [selectedAccountIds, optionsByAccount, submission.id],
   );
 
   // Handle website group header click - toggle all accounts in this group
@@ -184,7 +177,6 @@ export function AccountSelect() {
           }
         } else {
           // Select all unselected in group
-          const rating = getDefaultRating();
           const unselected = group.accounts.filter(
             (acc) => !selectedAccountIds.has(acc.accountId),
           );
@@ -193,7 +185,7 @@ export function AccountSelect() {
               websiteOptionsApi.create({
                 submissionId: submission.id,
                 accountId: acc.accountId,
-                data: { rating },
+                data: {},
               }),
             ),
           );
@@ -203,7 +195,7 @@ export function AccountSelect() {
         console.error('Failed to toggle website group:', error);
       }
     },
-    [selectedAccountIds, optionsByAccount, submission.id, getDefaultRating],
+    [selectedAccountIds, optionsByAccount, submission.id],
   );
 
   // Handle pill remove (deselect from pills area)
@@ -231,13 +223,12 @@ export function AccountSelect() {
 
     setIsSelectingAll(true);
     try {
-      const rating = getDefaultRating();
       await Promise.all(
         unselected.map((acc) =>
           websiteOptionsApi.create({
             submissionId: submission.id,
             accountId: acc.accountId,
-            data: { rating },
+            data: {},
           }),
         ),
       );
@@ -247,12 +238,7 @@ export function AccountSelect() {
     } finally {
       setIsSelectingAll(false);
     }
-  }, [
-    allEligibleAccounts,
-    selectedAccountIds,
-    submission.id,
-    getDefaultRating,
-  ]);
+  }, [allEligibleAccounts, selectedAccountIds, submission.id]);
 
   // Deselect all accounts
   const handleDeselectAll = useCallback(async () => {
