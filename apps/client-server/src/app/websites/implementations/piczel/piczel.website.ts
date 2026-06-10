@@ -64,7 +64,7 @@ export default class Piczel
       const $ = parse(res.body);
       const jsonMatches =
         $.getElementById('_R_')?.textContent.match(
-          /JSON\.parse\(\s*(["'])((?:\\.|(?!\1).)*)\1\s*\)/gs,
+          /JSON\.parse\(\s*(["'])((?:\\.|(?!\1).)*)\1\s*\)/gm,
         ) ?? [];
       const stateJson =
         jsonMatches.find((match) => match.includes('username')) ?? '';
