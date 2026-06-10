@@ -53,8 +53,11 @@ function showUINotification(notification: INotification): void {
   const color = getNotificationColor(notification.type);
 
   const submissionId = notification.data?.submissionId as string | undefined;
+  const hasSubmissionLink = typeof submissionId === 'string' && submissionId.length > 0;
+  // eslint-disable-next-line lingui/no-unlocalized-strings
+  const viewLinkText = notification.type === 'error' ? 'View Error →' : 'View →';
 
-  const message = submissionId ? (
+  const message = hasSubmissionLink ? (
     <div>
       <div>{notification.message}</div>
       <Anchor
@@ -68,7 +71,7 @@ function showUINotification(notification: INotification): void {
       >
         {
           // eslint-disable-next-line lingui/no-unlocalized-strings
-          'View Error →'
+          viewLinkText
         }
       </Anchor>
     </div>

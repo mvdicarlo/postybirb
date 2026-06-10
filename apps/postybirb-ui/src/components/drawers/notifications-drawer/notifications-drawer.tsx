@@ -349,7 +349,8 @@ const NotificationCard = React.memo(({
   const icon = getTypeIcon(notification.type);
 
   const submissionId = notification.data?.submissionId as string | undefined;
-  const hasSubmissionLink = Boolean(submissionId);
+  const hasSubmissionLink = typeof submissionId === 'string' && submissionId.length > 0;
+  const linkLabel = notification.type === 'error' ? <Trans>View Error</Trans> : <Trans>View</Trans>;
 
   const handleViewError = useCallback(() => {
     if (submissionId) {
@@ -420,7 +421,7 @@ const NotificationCard = React.memo(({
             <Anchor size="xs" onClick={handleViewError}>
               <Group gap={4} wrap="nowrap">
                 <IconExternalLink size={12} />
-                <Trans>View Error</Trans>
+                {linkLabel}
               </Group>
             </Anchor>
           )}

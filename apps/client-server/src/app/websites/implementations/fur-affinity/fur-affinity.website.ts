@@ -182,12 +182,15 @@ export default class FurAffinity
     files: PostingFile[],
     cancellationToken: CancellableToken,
   ): Promise<IPostResponse> {
-    const part1 = await this.platform.http.get<string>(`${this.BASE_URL}/submit/`, {
-      partition: this.accountId,
-      headers: {
-        Referer: 'https://www.furaffinity.net/submit/',
+    const part1 = await this.platform.http.get<string>(
+      `${this.BASE_URL}/submit/`,
+      {
+        partition: this.accountId,
+        headers: {
+          Referer: 'https://www.furaffinity.net/submit/',
+        },
       },
-    });
+    );
 
     PostResponse.validateBody(this, part1);
     const err = this.processForError(part1.body);
@@ -319,9 +322,12 @@ export default class FurAffinity
     postData: PostData<FurAffinityMessageSubmission>,
     cancellationToken: CancellableToken,
   ): Promise<IPostResponse> {
-    const page = await this.platform.http.get<string>(`${this.BASE_URL}/controls/journal`, {
-      partition: this.accountId,
-    });
+    const page = await this.platform.http.get<string>(
+      `${this.BASE_URL}/controls/journal`,
+      {
+        partition: this.accountId,
+      },
+    );
     PostResponse.validateBody(this, page);
 
     const key = parse(page.body)
@@ -347,7 +353,9 @@ export default class FurAffinity
       `${this.BASE_URL}/controls/journal/`,
     );
 
-    if (post.body.includes('journal-title')) {
+    if (
+      /^https:\/\/www\.furaffinity\.net\/journal\/\d+\/$/.test(post.responseUrl)
+    ) {
       return PostResponse.fromWebsite(this)
         .withAdditionalInfo(post.body)
         .withSourceUrl(post.responseUrl);
