@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "797f18eb-2c05-412a-9e64-37e430750181",
+  "id": "02a328d9-3587-4117-95c9-9198f9511271",
   "prevId": "6af56456-1e43-4ecd-8547-74e3c3d18924",
   "tables": {
     "account": {
@@ -392,131 +392,6 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "post-event": {
-      "name": "post-event",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "postRecordId": {
-          "name": "postRecordId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "accountId": {
-          "name": "accountId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "eventType": {
-          "name": "eventType",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "fileId": {
-          "name": "fileId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "sourceUrl": {
-          "name": "sourceUrl",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "error": {
-          "name": "error",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "metadata": {
-          "name": "metadata",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        }
-      },
-      "indexes": {
-        "post-event_id_unique": {
-          "name": "post-event_id_unique",
-          "columns": [
-            "id"
-          ],
-          "isUnique": true
-        },
-        "idx_post_event_type": {
-          "name": "idx_post_event_type",
-          "columns": [
-            "postRecordId",
-            "eventType"
-          ],
-          "isUnique": false
-        },
-        "idx_post_event_account": {
-          "name": "idx_post_event_account",
-          "columns": [
-            "postRecordId",
-            "accountId",
-            "eventType"
-          ],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {
-        "post-event_postRecordId_post-record_id_fk": {
-          "name": "post-event_postRecordId_post-record_id_fk",
-          "tableFrom": "post-event",
-          "tableTo": "post-record",
-          "columnsFrom": [
-            "postRecordId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "post-event_accountId_account_id_fk": {
-          "name": "post-event_accountId_account_id_fk",
-          "tableFrom": "post-event",
-          "tableTo": "account",
-          "columnsFrom": [
-            "accountId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
     "post-job": {
       "name": "post-job",
       "columns": {
@@ -681,13 +556,6 @@
           "notNull": true,
           "autoincrement": false
         },
-        "postRecordId": {
-          "name": "postRecordId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "submissionId": {
           "name": "submissionId",
           "type": "text",
@@ -706,19 +574,6 @@
         }
       },
       "foreignKeys": {
-        "post-queue_postRecordId_post-record_id_fk": {
-          "name": "post-queue_postRecordId_post-record_id_fk",
-          "tableFrom": "post-queue",
-          "tableTo": "post-record",
-          "columnsFrom": [
-            "postRecordId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        },
         "post-queue_submissionId_submission_id_fk": {
           "name": "post-queue_submissionId_submission_id_fk",
           "tableFrom": "post-queue",
@@ -793,116 +648,6 @@
         }
       },
       "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "post-record": {
-      "name": "post-record",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "updatedAt": {
-          "name": "updatedAt",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "version": {
-          "name": "version",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "submissionId": {
-          "name": "submissionId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "originPostRecordId": {
-          "name": "originPostRecordId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "completedAt": {
-          "name": "completedAt",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "resumeMode": {
-          "name": "resumeMode",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'CONTINUE'"
-        },
-        "state": {
-          "name": "state",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'PENDING'"
-        }
-      },
-      "indexes": {
-        "post-record_id_unique": {
-          "name": "post-record_id_unique",
-          "columns": [
-            "id"
-          ],
-          "isUnique": true
-        }
-      },
-      "foreignKeys": {
-        "post-record_submissionId_submission_id_fk": {
-          "name": "post-record_submissionId_submission_id_fk",
-          "tableFrom": "post-record",
-          "tableTo": "submission",
-          "columnsFrom": [
-            "submissionId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "post-record_originPostRecordId_post-record_id_fk": {
-          "name": "post-record_originPostRecordId_post-record_id_fk",
-          "tableFrom": "post-record",
-          "tableTo": "post-record",
-          "columnsFrom": [
-            "originPostRecordId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        }
-      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
