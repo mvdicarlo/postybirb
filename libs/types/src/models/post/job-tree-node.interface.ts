@@ -13,6 +13,12 @@ export interface JobTreeNode {
   /** Which level of the tree this node is. */
   kind: 'job' | 'task' | 'unit';
 
+  /**
+   * The submission this node belongs to (present on job nodes). Lets the UI
+   * correlate a job tree back to its submission.
+   */
+  submissionId?: string;
+
   /** Human-readable label (submission title / account / batch number). */
   label: string;
 

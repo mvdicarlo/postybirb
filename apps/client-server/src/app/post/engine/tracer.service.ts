@@ -166,6 +166,7 @@ export function projectJob(job: RelayJob): JobTreeNode {
   return {
     id: job.id,
     kind: 'job',
+    submissionId: job.submissionId,
     label: `${job.submissionId}`,
     status: computeJobStatus(job),
     progress: { done, total },

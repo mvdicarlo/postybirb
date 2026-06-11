@@ -108,6 +108,35 @@ AppSocket.on(POST_STATE_DELTA, (data: JobTreeNode) => {
 export const useActiveJobs = (): JobTreeNode[] =>
   usePostingStateStore(useShallow((state) => Object.values(state.jobs)));
 
+/** Set of submission ids that currently have an active (non-terminal) job. */
+export const useActivePostingSubmissionIds = (): Set<string> =>
+  usePostingStateStore(
+    useShallow(
+      (state) =>
+        new Set(
+          Object.values(state.jobs)
+            .map((j) => j.submissionId)
+            .filter((id): id is string => !!id),
+        ),
+    ),
+  );
+
+/** Whether a specific submission currently has an active job. */
+export const useIsSubmissionPosting = (submissionId: string): boolean =>
+  usePostingStateStore((state) =>
+    Object.values(state.jobs).some((j) => j.submissionId === submissionId),
+  );
+
+/** The active job tree for a submission, if any. */
+export const useSubmissionActiveJob = (
+  submissionId: string,
+): JobTreeNode | undefined =>
+  usePostingStateStore(
+    useShallow((state) =>
+      Object.values(state.jobs).find((j) => j.submissionId === submissionId),
+    ),
+  );
+
 /** Actions (fetch snapshot). */
 export const usePostingStateActions = () =>
   usePostingStateStore(

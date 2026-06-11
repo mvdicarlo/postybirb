@@ -5,19 +5,20 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-  Avatar,
-  Checkbox,
-  Group,
-  Image,
-  MultiSelect,
-  type MultiSelectProps,
-  Stack,
-  Text,
+    Avatar,
+    Checkbox,
+    Group,
+    Image,
+    MultiSelect,
+    type MultiSelectProps,
+    Stack,
+    Text,
 } from '@mantine/core';
 import { SubmissionType } from '@postybirb/types';
 import { IconFile, IconMessage } from '@tabler/icons-react';
 import { useMemo } from 'react';
 import { useSubmissionsByType } from '../../../stores/entity/submission-store';
+import { useActivePostingSubmissionIds } from '../../../stores/ui/posting-state-store';
 import { getThumbnailUrl } from '../../sections/submissions-section/submission-card/utils';
 
 export interface SubmissionPickerProps extends Omit<
@@ -55,6 +56,7 @@ export function SubmissionPicker({
   ...selectProps
 }: SubmissionPickerProps) {
   const allSubmissions = useSubmissionsByType(type);
+  const postingIds = useActivePostingSubmissionIds();
 
   // Build options and metadata map
   const { options, metaMap } = useMemo(() => {
@@ -63,7 +65,7 @@ export function SubmissionPicker({
       (s) =>
         !s.isTemplate &&
         !s.isMultiSubmission &&
-        !s.isPosting &&
+        !postingIds.has(s.id) &&
         !s.isArchived &&
         !excludeIds.includes(s.id),
     );
@@ -86,7 +88,7 @@ export function SubmissionPicker({
     });
 
     return { options: opts, metaMap: meta };
-  }, [allSubmissions, excludeIds]);
+  }, [allSubmissions, excludeIds, postingIds]);
 
   // Custom render option with thumbnail preview
   const renderOption = (input: {

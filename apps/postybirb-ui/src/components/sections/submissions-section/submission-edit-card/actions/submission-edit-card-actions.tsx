@@ -15,6 +15,7 @@ import {
 import postManagerApi from '../../../../../api/post-manager.api';
 import postQueueApi from '../../../../../api/post-queue.api';
 import submissionApi from '../../../../../api/submission.api';
+import { useIsSubmissionPosting } from '../../../../../stores/ui/posting-state-store';
 import { useSubmissionHistoryDrawerStore } from '../../../../../stores/ui/submission-history-drawer-store';
 import { useTourActions } from '../../../../../stores/ui/tour-store';
 import {
@@ -36,6 +37,7 @@ import { SaveToManyAction } from './save-to-many-action';
 export function SubmissionEditCardActions() {
   const { submission } = useSubmissionEditCardContext();
   const { startTour } = useTourActions();
+  const isPosting = useIsSubmissionPosting(submission.id);
 
   const handlePost = async () => {
     try {
@@ -139,7 +141,7 @@ export function SubmissionEditCardActions() {
   }
 
   // If currently posting, show cancel button
-  if (submission.isPosting) {
+  if (isPosting) {
     return (
       <Group gap={4} wrap="nowrap" onClick={(e) => e.stopPropagation()}>
         <Tooltip label={<Trans>Cancel posting</Trans>}>
