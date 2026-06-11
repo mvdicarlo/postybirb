@@ -5,7 +5,6 @@
 
 import { Trans } from '@lingui/react/macro';
 import { Box, Paper, ScrollArea, Stack, Text } from '@mantine/core';
-import { PostRecordState } from '@postybirb/types';
 import { IconGripVertical } from '@tabler/icons-react';
 import { useCallback, useEffect, useRef } from 'react';
 import {
@@ -187,9 +186,7 @@ function SortableReorderableItem({
   };
 
   const title = submission.getDefaultOptions()?.data?.title;
-  const lastPost = submission.latestPost;
-  const hasFailedPost =
-    lastPost && lastPost.state === PostRecordState.FAILED;
+  const hasFailedPost = false;
 
   return (
     <Paper

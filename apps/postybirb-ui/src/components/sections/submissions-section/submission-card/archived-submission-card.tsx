@@ -191,18 +191,16 @@ export const ArchivedSubmissionCard = memo(({
           {/* Action buttons */}
           <Group gap={4}>
             {/* View history button */}
-            {submission.posts.length > 0 && (
-              <Tooltip label={<Trans>View history</Trans>}>
-                <ActionIcon
-                  variant="subtle"
-                  size="sm"
-                  onClick={handleViewHistory}
-                  onKeyDown={(e) => e.stopPropagation()}
-                >
-                  <IconHistory size={16} />
-                </ActionIcon>
-              </Tooltip>
-            )}
+            <Tooltip label={<Trans>View history</Trans>}>
+              <ActionIcon
+                variant="subtle"
+                size="sm"
+                onClick={handleViewHistory}
+                onKeyDown={(e) => e.stopPropagation()}
+              >
+                <IconHistory size={16} />
+              </ActionIcon>
+            </Tooltip>
 
             {/* Unarchive button */}
             <Tooltip label={<Trans>Restore</Trans>}>
@@ -231,14 +229,12 @@ export const ArchivedSubmissionCard = memo(({
                 </ActionIcon>
               </Menu.Target>
               <Menu.Dropdown>
-                {submission.posts.length > 0 && (
-                  <Menu.Item
-                    leftSection={<IconHistory size={14} />}
-                    onClick={handleViewHistory}
-                  >
-                    <Trans>View history</Trans>
-                  </Menu.Item>
-                )}
+                <Menu.Item
+                  leftSection={<IconHistory size={14} />}
+                  onClick={handleViewHistory}
+                >
+                  <Trans>View history</Trans>
+                </Menu.Item>
                 <Menu.Item
                   leftSection={<IconArchiveOff size={14} />}
                   onClick={handleUnarchive}

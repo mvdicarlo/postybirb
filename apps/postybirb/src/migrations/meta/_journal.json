@@ -64,6 +64,13 @@
       "when": 1781136054829,
       "tag": "0008_ambiguous_grandmaster",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1781174601409,
+      "tag": "0009_slow_blonde_phantom",
+      "breakpoints": true
     }
   ]
 }

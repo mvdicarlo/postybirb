@@ -6,7 +6,7 @@
 
 import { Trans } from '@lingui/react/macro';
 import { ActionIcon, Group, Menu, Tooltip } from '@mantine/core';
-import { ISubmissionScheduleInfo, PostRecordState } from '@postybirb/types';
+import { ISubmissionScheduleInfo } from '@postybirb/types';
 import {
     IconArchive,
     IconCancel,
@@ -32,8 +32,6 @@ interface SubmissionActionsProps {
   isQueued?: boolean;
   /** Whether the submission has post history */
   hasHistory?: boolean;
-  /** The state of the most recent post record for history button coloring */
-  mostRecentPostState?: PostRecordState | null;
   /** Handler for posting the submission */
   onPost?: () => void;
   /** Handler for canceling a queued submission */
@@ -64,7 +62,6 @@ export function SubmissionActions({
   isScheduled,
   isQueued,
   hasHistory,
-  mostRecentPostState,
   onPost,
   onCancel,
   onScheduleChange,
@@ -151,13 +148,7 @@ export function SubmissionActions({
           <ActionIcon
             variant="subtle"
             size="sm"
-            color={
-              mostRecentPostState === PostRecordState.DONE
-                ? 'green'
-                : mostRecentPostState === PostRecordState.FAILED
-                ? 'red'
-                : 'gray'
-            }
+            color="gray"
             disabled={!onViewHistory}
             onClick={handleViewHistory}
             // eslint-disable-next-line lingui/no-unlocalized-strings

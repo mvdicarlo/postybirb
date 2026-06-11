@@ -1,31 +1,24 @@
 import { Controller, Get, Param } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { PostRecordRepository } from '@postybirb/database';
 import { EntityId } from '@postybirb/types';
-import { PostyBirbController } from '../common/controller/postybirb-controller';
 import { RelayPostManager } from './engine/post-manager.service';
 import { RelayPreviewService } from './engine/preview.service';
-import { PostService } from './post.service';
 
 /**
- * Queue operations for Post data.
- * @class PostController
+ * Read + preview endpoints for the Relay posting engine.
  */
 @ApiTags('post')
 @Controller('post')
-export class PostController extends PostyBirbController<PostRecordRepository> {
+export class PostController {
   constructor(
-    readonly service: PostService,
     private readonly previewService: RelayPreviewService,
     private readonly relayPostManager: RelayPostManager,
-  ) {
-    super(service);
-  }
+  ) {}
 
   /**
-   * Get a snapshot of all currently-active Relay job trees.
-   * The UI seeds its posting-state store with this on load/reconnect; live
-   * updates then arrive via POST_STATE_DELTA WebSocket events.
+   * Snapshot of all currently-active Relay job trees. The UI seeds its
+   * posting-state store with this on load/reconnect; live updates then arrive
+   * via POST_STATE_DELTA WebSocket events.
    */
   @Get('jobs/active')
   @ApiOkResponse({ description: 'Currently active posting job trees.' })
@@ -34,23 +27,8 @@ export class PostController extends PostyBirbController<PostRecordRepository> {
   }
 
   /**
-   * Get all events for a specific post record.
-   * Returns the immutable event ledger showing all posting actions.
-   *
-   * @param {EntityId} id - The post record ID
-   * @returns {Promise<PostEventDto[]>} Array of post events
-   */
-  @Get(':id/events')
-  @ApiOkResponse({ description: 'Events for the post record.' })
-  async getEvents(@Param('id') id: EntityId) {
-    return this.service.getEvents(id);
-  }
-
-  /**
-   * Dry-run preview (Relay engine): runs plan + validate + transform for a
-   * submission without posting. Returns per-website parsed/resize results.
-   *
-   * @param {EntityId} id - The submission ID
+   * Dry-run preview: runs resolve + file processing for a submission without
+   * posting. Returns per-website resize results.
    */
   @Get(':id/preview')
   @ApiOkResponse({ description: 'Dry-run preview of a submission post.' })
@@ -61,8 +39,6 @@ export class PostController extends PostyBirbController<PostRecordRepository> {
   /**
    * Relay posting history for a submission: every persisted job tree (newest
    * first), with any in-flight job overlaid from memory.
-   *
-   * @param {EntityId} id - The submission ID
    */
   @Get(':id/jobs')
   @ApiOkResponse({ description: 'Posting job-tree history for the submission.' })

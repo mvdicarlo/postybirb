@@ -17,7 +17,6 @@ import { RelayPreviewService } from './engine/preview.service';
 import { RelayTracer } from './engine/tracer.service';
 import { SharpEncoder } from './engine/sharp-encoder';
 import { PostController } from './post.controller';
-import { PostService } from './post.service';
 import { PostFileResizerService } from './services/post-file-resizer/post-file-resizer.service';
 import { PostManagerController } from './services/post-manager/post-manager.controller';
 import { PostQueueController } from './services/post-queue/post-queue.controller';
@@ -40,7 +39,6 @@ import { PostQueueService } from './services/post-queue/post-queue.service';
   ],
   controllers: [PostController, PostQueueController, PostManagerController],
   providers: [
-    PostService,
     PostFileResizerService,
     WebsiteImplProvider,
     PostQueueService,

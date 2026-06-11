@@ -21,20 +21,20 @@ describe('EntityNotFoundError', () => {
 
 describe('OptimisticConcurrencyError', () => {
   it('formats a descriptive message', () => {
-    const err = new OptimisticConcurrencyError('PostRecordSchema', 'id-1');
+    const err = new OptimisticConcurrencyError('PostJobSchema', 'id-1');
     expect(err.message).toBe(
-      'Optimistic concurrency conflict on PostRecordSchema id "id-1"',
+      'Optimistic concurrency conflict on PostJobSchema id "id-1"',
     );
   });
 
   it('exposes schemaKey and entityId', () => {
-    const err = new OptimisticConcurrencyError('PostRecordSchema', 'id-1');
-    expect(err.schemaKey).toBe('PostRecordSchema');
+    const err = new OptimisticConcurrencyError('PostJobSchema', 'id-1');
+    expect(err.schemaKey).toBe('PostJobSchema');
     expect(err.entityId).toBe('id-1');
   });
 
   it('is an instance of Error and named OptimisticConcurrencyError', () => {
-    const err = new OptimisticConcurrencyError('PostRecordSchema', 'id-1');
+    const err = new OptimisticConcurrencyError('PostJobSchema', 'id-1');
     expect(err).toBeInstanceOf(Error);
     expect(err.name).toBe('OptimisticConcurrencyError');
   });

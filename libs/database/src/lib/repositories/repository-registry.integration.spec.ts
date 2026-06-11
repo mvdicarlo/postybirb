@@ -5,9 +5,8 @@ import type {
 } from '@postybirb/types';
 import {
     DirectoryWatcherImportAction,
-    PostEventType,
+    NodeStatus,
     PostRecordResumeMode,
-    PostRecordState,
     ScheduleType,
     SettingsConstants,
     SubmissionType,
@@ -20,9 +19,8 @@ import { CustomShortcutRepository } from './custom-shortcut.repository';
 import { DirectoryWatcherRepository } from './directory-watcher.repository';
 import { FileBufferRepository } from './file-buffer.repository';
 import { NotificationRepository } from './notification.repository';
-import { PostEventRepository } from './post-event.repository';
+import { PostJobRepository } from './post-job.repository';
 import { PostQueueRecordRepository } from './post-queue-record.repository';
-import { PostRecordRepository } from './post-record.repository';
 import { SettingsRepository } from './settings.repository';
 import { SubmissionFileRepository } from './submission-file.repository';
 import { SubmissionRepository } from './submission.repository';
@@ -40,9 +38,8 @@ describe('RepositoryRegistry + saveFromEntity integration', () => {
     directoryWatcher: DirectoryWatcherRepository,
     fileBuffer: FileBufferRepository,
     notification: NotificationRepository,
-    postEvent: PostEventRepository,
     postQueueRecord: PostQueueRecordRepository,
-    postRecord: PostRecordRepository,
+    postJob: PostJobRepository,
     settings: SettingsRepository,
     submission: SubmissionRepository,
     submissionFile: SubmissionFileRepository,
@@ -62,9 +59,8 @@ describe('RepositoryRegistry + saveFromEntity integration', () => {
     ['directoryWatcher', 'DirectoryWatcherSchema'],
     ['fileBuffer', 'FileBufferSchema'],
     ['notification', 'NotificationSchema'],
-    ['postEvent', 'PostEventSchema'],
     ['postQueueRecord', 'PostQueueRecordSchema'],
-    ['postRecord', 'PostRecordSchema'],
+    ['postJob', 'PostJobSchema'],
     ['settings', 'SettingsSchema'],
     ['submission', 'SubmissionSchema'],
     ['submissionFile', 'SubmissionFileSchema'],
@@ -123,19 +119,13 @@ describe('RepositoryRegistry + saveFromEntity integration', () => {
       width: 1,
       height: 1,
     });
-    const postRecord = await repos.postRecord.insert({
+    const postJob = await repos.postJob.insert({
       submissionId: submission.id,
-      state: PostRecordState.PENDING,
+      status: NodeStatus.QUEUED,
       resumeMode: PostRecordResumeMode.NEW,
-    });
-    const postEvent = await repos.postEvent.insert({
-      postRecordId: postRecord.id,
-      accountId: account.id,
-      eventType: PostEventType.POST_ATTEMPT_STARTED,
     });
     const postQueueRecord = await repos.postQueueRecord.insert({
       submissionId: submission.id,
-      postRecordId: postRecord.id,
     });
     const websiteData = await repos.websiteData.insert({
       id: account.id,
@@ -185,17 +175,12 @@ describe('RepositoryRegistry + saveFromEntity integration', () => {
       convertTo: {},
     });
 
-    // PostEvent is an append-only ledger (no `updatedAt` column in its
-    // schema), so `saveFromEntity` — which is designed for mutable rows
-    // and uses `updatedAt` for optimistic concurrency — is not applicable
-    // to it. The registry assertion above still covers PostEventSchema.
-    void postEvent;
     const allEntities = [
       account,
       submission,
       submissionFile,
       fileBuffer,
-      postRecord,
+      postJob,
       postQueueRecord,
       websiteData,
       websiteOptions,

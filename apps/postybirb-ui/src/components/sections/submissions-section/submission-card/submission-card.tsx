@@ -5,7 +5,7 @@
  */
 
 import { Box, Card, Checkbox, Group, Stack, Text } from '@mantine/core';
-import { PostRecordState, SubmissionType } from '@postybirb/types';
+import { SubmissionType } from '@postybirb/types';
 import { IconClock, IconGripVertical } from '@tabler/icons-react';
 import { memo, useCallback, useMemo } from 'react';
 import { useLocale } from '../../../../hooks';
@@ -87,42 +87,17 @@ export const SubmissionCard = memo(({
   // Only show thumbnail for FILE type submissions
   const showThumbnail = submissionType === SubmissionType.FILE;
 
-  // Check if the most recent post record failed
-  const mostRecentPostHasErrors = useMemo(() => {
-    if (submission.posts.length === 0) return false;
-    // Get the most recent post record (last in the array or sort by date)
-    const sortedPosts = [...submission.posts].sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-    );
-    const mostRecentPost = sortedPosts[0];
-    // Check if the state is FAILED
-    return mostRecentPost.state === PostRecordState.FAILED;
-  }, [submission.posts]);
-
-  // Get the most recent post record state for history button coloring
-  const mostRecentPostState = useMemo(() => {
-    if (submission.posts.length === 0) return null;
-    const sortedPosts = [...submission.posts].sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-    );
-    return sortedPosts[0].state;
-  }, [submission.posts]);
-
   // Build className list
   const cardClassName = useMemo(
     () =>
       cn(['postybirb__submission__card', className], {
         'postybirb__submission__card--selected': isSelected,
         'postybirb__submission__card--scheduled': submission.isScheduled,
-        'postybirb__submission__card--has-errors': mostRecentPostHasErrors,
         'postybirb__submission__card--compact': isCompact,
       }),
     [
       isSelected,
       submission.isScheduled,
-      mostRecentPostHasErrors,
       isCompact,
       className,
     ],
@@ -271,8 +246,7 @@ export const SubmissionCard = memo(({
               schedule={submission.schedule}
               isScheduled={submission.isScheduled}
               isQueued={submission.isQueued}
-              hasHistory={submission.posts.length > 0}
-              mostRecentPostState={mostRecentPostState}
+              hasHistory
               onPost={handlePost}
               onCancel={handleCancel}
               onScheduleChange={handleScheduleChange}

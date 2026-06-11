@@ -1,19 +1,12 @@
 import type { ISubmissionMetadata } from '@postybirb/types';
-import {
-    PostRecordResumeMode,
-    PostRecordState,
-    ScheduleType,
-    SubmissionType,
-} from '@postybirb/types';
+import { ScheduleType, SubmissionType } from '@postybirb/types';
 import { createTestRepositories } from './base/test-utils';
 import { PostQueueRecordRepository } from './post-queue-record.repository';
-import { PostRecordRepository } from './post-record.repository';
 import { SubmissionRepository } from './submission.repository';
 
 describe('PostQueueRecordRepository', () => {
   const repos = createTestRepositories({
     submission: SubmissionRepository,
-    record: PostRecordRepository,
     queue: PostQueueRecordRepository,
   });
 
@@ -36,22 +29,6 @@ describe('PostQueueRecordRepository', () => {
     const subId = await seedSubmission();
     const e = await repos.queue.insert({ submissionId: subId });
     expect((await repos.queue.findById(e.id))?.submissionId).toBe(subId);
-  });
-
-  it('postRecordId FK uses ON DELETE SET NULL', async () => {
-    const subId = await seedSubmission();
-    const rec = await repos.record.insert({
-      submissionId: subId,
-      state: PostRecordState.PENDING,
-      resumeMode: PostRecordResumeMode.NEW,
-    });
-    const q = await repos.queue.insert({
-      submissionId: subId,
-      postRecordId: rec.id,
-    });
-    await repos.record.deleteById([rec.id]);
-    const reread = await repos.queue.findById(q.id);
-    expect(reread?.postRecordId).toBeNull();
   });
 
   it('submissionId FK cascades on delete', async () => {

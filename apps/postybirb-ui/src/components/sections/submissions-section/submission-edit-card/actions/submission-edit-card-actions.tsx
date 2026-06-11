@@ -84,7 +84,7 @@ export function SubmissionEditCardActions() {
 
   // Archived submissions: show history (if available), unarchive and delete
   if (submission.isArchived) {
-    const hasHistory = submission.posts.length > 0;
+    const hasHistory = true;
     return (
       <Group gap={4} wrap="nowrap" onClick={(e) => e.stopPropagation()}>
           {hasHistory && (

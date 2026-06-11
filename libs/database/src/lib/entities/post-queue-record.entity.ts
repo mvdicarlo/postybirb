@@ -1,20 +1,17 @@
 import type {
-    EntityId,
-    IPostQueueRecord,
-    PostQueueRecordDto,
-    SubmissionId,
+  IPostQueueRecord,
+  PostQueueRecordDto,
+  SubmissionId,
 } from '@postybirb/types';
 import type { InferSelectModel } from 'drizzle-orm';
 import { HydrationContext } from '../repositories/base/hydration-context';
 import type { PostQueueRecordSchema } from '../schemas';
 import { DatabaseEntity } from './database-entity';
-import { PostRecord, type PostRecordRow } from './post-record.entity';
 import { Submission, type SubmissionRow } from './submission.entity';
 
 export type PostQueueRecordRow = InferSelectModel<
   typeof PostQueueRecordSchema
 > & {
-  postRecord?: PostRecordRow;
   submission?: SubmissionRow;
 };
 
@@ -24,11 +21,7 @@ export class PostQueueRecord
 {
   public readonly entitySchemaKey!: 'PostQueueRecordSchema';
 
-  public postRecordId: EntityId;
-
   public submissionId: SubmissionId;
-
-  public postRecord!: PostRecord;
 
   public submission!: Submission;
 
@@ -40,7 +33,6 @@ export class PostQueueRecord
       writable: false,
       configurable: false,
     });
-    this.postRecordId = (init.postRecordId === undefined ? null : init.postRecordId) as EntityId;
     this.submissionId = init.submissionId ?? '';
   }
 
@@ -49,9 +41,7 @@ export class PostQueueRecord
       id: this.id,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
-      postRecordId: this.postRecordId,
       submissionId: this.submissionId,
-      postRecord: this.postRecord,
       submission: this.submission,
     };
   }
@@ -65,7 +55,6 @@ export class PostQueueRecord
     ctx: HydrationContext = new HydrationContext(),
   ): PostQueueRecord {
     return ctx.hydrate('PostQueueRecordSchema', row, PostQueueRecord, (e) => {
-      if (row.postRecord) e.postRecord = ctx.hydrateOne(PostRecord, row.postRecord);
       if (row.submission) e.submission = ctx.hydrateOne(Submission, row.submission);
     });
   }

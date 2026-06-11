@@ -1,52 +1,32 @@
 import type {
-    ISubmissionMetadata,
-    IWebsiteFormFields,
-    SubmissionFileMetadata,
+  ISubmissionMetadata,
+  IWebsiteFormFields,
+  SubmissionFileMetadata,
 } from '@postybirb/types';
-import {
-    PostEventType,
-    PostRecordResumeMode,
-    PostRecordState,
-    ScheduleType,
-    SubmissionType,
-} from '@postybirb/types';
+import { ScheduleType, SubmissionType } from '@postybirb/types';
 import { Account } from '../entities/account.entity';
-import { PostEvent } from '../entities/post-event.entity';
 import { PostQueueRecord } from '../entities/post-queue-record.entity';
-import { PostRecord } from '../entities/post-record.entity';
 import { SubmissionFile } from '../entities/submission-file.entity';
 import { Submission } from '../entities/submission.entity';
 import { WebsiteOptions } from '../entities/website-options.entity';
 import { AccountRepository } from './account.repository';
 import { createTestRepositories } from './base/test-utils';
-import { PostEventRepository } from './post-event.repository';
 import { PostQueueRecordRepository } from './post-queue-record.repository';
-import { PostRecordRepository } from './post-record.repository';
 import { SubmissionFileRepository } from './submission-file.repository';
 import { SubmissionRepository } from './submission.repository';
 import { WebsiteOptionsRepository } from './website-options.repository';
 
 /**
- * Submission-specific integration spec covering the **entire expected
- * dependency tree**.
- *
- * The generic EntityRepository surface (findById/find/insert/update/
- * deleteById/subscribers/count/select/notify) is covered by
- * `base/entity-repository.spec.ts`, which uses SubmissionRepository as
- * its vehicle. This file complements that with assertions that only
- * make sense for Submission's full `defaultWith` graph:
+ * Submission-specific integration spec covering its dependency tree:
  *
  *   Submission
- *     ├── files: SubmissionFile[]
- *     ├── options: WebsiteOptions[]
- *     │      └── account: Account
- *     ├── posts: PostRecord[]
- *     │      └── events: PostEvent[]
- *     │             └── account: Account
- *     └── postQueueRecord: PostQueueRecord
+ files: SubmissionFile[] *     
+ options: WebsiteOptions[] *     
+ account: Account       *     
+ postQueueRecord: PostQueueRecord *     
  *
- * It also exercises cascade behaviour on delete across every dependent
- * schema and verifies the scalar override path.
+ * (Posting state lives in the Relay job tables and is not part of the
+ * submission graph.)
  */
 describe('SubmissionRepository (full dependency tree)', () => {
   const repos = createTestRepositories({
@@ -54,8 +34,6 @@ describe('SubmissionRepository (full dependency tree)', () => {
     submission: SubmissionRepository,
     file: SubmissionFileRepository,
     options: WebsiteOptionsRepository,
-    record: PostRecordRepository,
-    event: PostEventRepository,
     queue: PostQueueRecordRepository,
   });
 
@@ -65,24 +43,9 @@ describe('SubmissionRepository (full dependency tree)', () => {
     accountBId: string;
     fileIds: string[];
     optionsIds: { default: string; secondary: string };
-    recordIds: { origin: string; chained: string };
-    eventIds: {
-      originStarted: string;
-      originFinished: string;
-      chainedStarted: string;
-    };
     queueId: string;
   };
 
-  /**
-   * Seeds a single Submission with the full dependency tree wired up:
-   *   - 2 Accounts (so we can verify per-account hydration in nested rows)
-   *   - 2 SubmissionFiles
-   *   - 2 WebsiteOptions (one default → Account A, one secondary → Account B)
-   *   - 2 PostRecords (origin + chained-via-originPostRecordId)
-   *   - 3 PostEvents (two on origin, one on chained; mixed account FKs)
-   *   - 1 PostQueueRecord (pointing at the origin PostRecord)
-   */
   async function seedFullGraph(): Promise<Seed> {
     const accountA = await repos.account.insert({
       name: 'account-a',
@@ -143,39 +106,7 @@ describe('SubmissionRepository (full dependency tree)', () => {
       isDefault: false,
     });
 
-    const originRecord = await repos.record.insert({
-      submissionId: submission.id,
-      state: PostRecordState.DONE,
-      resumeMode: PostRecordResumeMode.NEW,
-    });
-    const chainedRecord = await repos.record.insert({
-      submissionId: submission.id,
-      state: PostRecordState.PENDING,
-      resumeMode: PostRecordResumeMode.CONTINUE,
-      originPostRecordId: originRecord.id,
-    });
-
-    const originStarted = await repos.event.insert({
-      postRecordId: originRecord.id,
-      accountId: accountA.id,
-      eventType: PostEventType.POST_ATTEMPT_STARTED,
-    });
-    const originFinished = await repos.event.insert({
-      postRecordId: originRecord.id,
-      accountId: accountA.id,
-      eventType: PostEventType.POST_ATTEMPT_COMPLETED,
-      sourceUrl: 'https://example.test/post/1',
-    });
-    const chainedStarted = await repos.event.insert({
-      postRecordId: chainedRecord.id,
-      accountId: accountB.id,
-      eventType: PostEventType.POST_ATTEMPT_STARTED,
-    });
-
-    const queue = await repos.queue.insert({
-      submissionId: submission.id,
-      postRecordId: originRecord.id,
-    });
+    const queue = await repos.queue.insert({ submissionId: submission.id });
 
     return {
       submissionId: submission.id,
@@ -186,35 +117,23 @@ describe('SubmissionRepository (full dependency tree)', () => {
         default: defaultOptions.id,
         secondary: secondaryOptions.id,
       },
-      recordIds: { origin: originRecord.id, chained: chainedRecord.id },
-      eventIds: {
-        originStarted: originStarted.id,
-        originFinished: originFinished.id,
-        chainedStarted: chainedStarted.id,
-      },
       queueId: queue.id,
     };
   }
 
-  // ---------------------------------------------------------------------
-  // defaultWith graph
-  // ---------------------------------------------------------------------
-
   describe('defaultWith hydration', () => {
-    it('findById hydrates every level of the dependency tree', async () => {
+    it('findById hydrates files, options+account, and queue', async () => {
       const seed = await seedFullGraph();
       const fetched = await repos.submission.findById(seed.submissionId);
 
       expect(fetched).toBeInstanceOf(Submission);
 
-      // --- files ---
       expect(fetched?.files).toHaveLength(2);
       fetched?.files.forEach((f) => expect(f).toBeInstanceOf(SubmissionFile));
       expect(fetched?.files.map((f) => f.id).sort()).toEqual(
         [...seed.fileIds].sort(),
       );
 
-      // --- options + nested account ---
       expect(fetched?.options).toHaveLength(2);
       fetched?.options.forEach((o) => {
         expect(o).toBeInstanceOf(WebsiteOptions);
@@ -225,34 +144,8 @@ describe('SubmissionRepository (full dependency tree)', () => {
       expect(defaultOpt?.account?.id).toBe(seed.accountAId);
       expect(secondaryOpt?.account?.id).toBe(seed.accountBId);
 
-      // --- posts + nested events + nested account on each event ---
-      expect(fetched?.posts).toHaveLength(2);
-      fetched?.posts.forEach((p) => expect(p).toBeInstanceOf(PostRecord));
-
-      const origin = fetched?.posts.find((p) => p.id === seed.recordIds.origin);
-      const chained = fetched?.posts.find(
-        (p) => p.id === seed.recordIds.chained,
-      );
-      expect(origin).toBeDefined();
-      expect(chained).toBeDefined();
-      expect(chained?.originPostRecordId).toBe(seed.recordIds.origin);
-
-      expect(origin?.events).toHaveLength(2);
-      origin?.events.forEach((e) => {
-        expect(e).toBeInstanceOf(PostEvent);
-        expect(e.account).toBeInstanceOf(Account);
-        expect(e.account?.id).toBe(seed.accountAId);
-      });
-
-      expect(chained?.events).toHaveLength(1);
-      expect(chained?.events[0].account?.id).toBe(seed.accountBId);
-
-      // --- queue ---
       expect(fetched?.postQueueRecord).toBeInstanceOf(PostQueueRecord);
       expect(fetched?.postQueueRecord?.id).toBe(seed.queueId);
-      expect(fetched?.postQueueRecord?.postRecordId).toBe(
-        seed.recordIds.origin,
-      );
     });
 
     it('findAll hydrates the same graph for every row', async () => {
@@ -261,7 +154,6 @@ describe('SubmissionRepository (full dependency tree)', () => {
       expect(all).toHaveLength(1);
       expect(all[0].files).toHaveLength(2);
       expect(all[0].options).toHaveLength(2);
-      expect(all[0].posts).toHaveLength(2);
       expect(all[0].postQueueRecord).toBeDefined();
     });
 
@@ -279,7 +171,6 @@ describe('SubmissionRepository (full dependency tree)', () => {
       });
       expect(empty.files).toEqual([]);
       expect(empty.options).toEqual([]);
-      expect(empty.posts).toEqual([]);
       expect(empty.postQueueRecord).toBeUndefined();
     });
 
@@ -290,17 +181,12 @@ describe('SubmissionRepository (full dependency tree)', () => {
     });
   });
 
-  // ---------------------------------------------------------------------
-  // override path
-  // ---------------------------------------------------------------------
-
   describe('relation overrides', () => {
     it('find({ with: {} }) returns scalar-only rows (no relations loaded)', async () => {
       await seedFullGraph();
       const [row] = await repos.submission.find({ with: {} });
       expect(row.files).toBeUndefined();
       expect(row.options).toBeUndefined();
-      expect(row.posts).toBeUndefined();
       expect(row.postQueueRecord).toBeUndefined();
     });
 
@@ -309,7 +195,6 @@ describe('SubmissionRepository (full dependency tree)', () => {
       const [row] = await repos.submission.find({ with: { files: true } });
       expect(row.files).toHaveLength(2);
       expect(row.options).toBeUndefined();
-      expect(row.posts).toBeUndefined();
       expect(row.postQueueRecord).toBeUndefined();
       expect(row.files.map((f) => f.id).sort()).toEqual(
         [...seed.fileIds].sort(),
@@ -317,49 +202,27 @@ describe('SubmissionRepository (full dependency tree)', () => {
     });
   });
 
-  // ---------------------------------------------------------------------
-  // cascade deletes
-  // ---------------------------------------------------------------------
-
   describe('cascade behaviour on delete', () => {
-    it('deleting a submission cascades to files, options, posts, events, and queue', async () => {
+    it('deleting a submission cascades to files, options, and queue', async () => {
       const seed = await seedFullGraph();
 
       await repos.submission.deleteById([seed.submissionId]);
 
       expect(await repos.submission.findById(seed.submissionId)).toBeNull();
 
-      // files cascade directly off submission
       for (const id of seed.fileIds) {
         // eslint-disable-next-line no-await-in-loop
         expect(await repos.file.findById(id)).toBeNull();
       }
 
-      // options cascade directly off submission
       expect(await repos.options.findById(seed.optionsIds.default)).toBeNull();
       expect(
         await repos.options.findById(seed.optionsIds.secondary),
       ).toBeNull();
 
-      // post records cascade directly off submission
-      expect(await repos.record.findById(seed.recordIds.origin)).toBeNull();
-      expect(await repos.record.findById(seed.recordIds.chained)).toBeNull();
-
-      // events cascade transitively through the deleted post records
-      expect(
-        await repos.event.findById(seed.eventIds.originStarted),
-      ).toBeNull();
-      expect(
-        await repos.event.findById(seed.eventIds.originFinished),
-      ).toBeNull();
-      expect(
-        await repos.event.findById(seed.eventIds.chainedStarted),
-      ).toBeNull();
-
-      // queue cascades directly off submission
       expect(await repos.queue.findById(seed.queueId)).toBeNull();
 
-      // accounts are NOT cascaded — they exist independently of submissions
+      // accounts are NOT  they exist independently of submissionscascaded 
       expect(await repos.account.findById(seed.accountAId)).not.toBeNull();
       expect(await repos.account.findById(seed.accountBId)).not.toBeNull();
     });

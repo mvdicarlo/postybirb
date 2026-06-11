@@ -1,17 +1,11 @@
 import type { ISubmissionMetadata } from '@postybirb/types';
-import {
-    PostRecordResumeMode,
-    PostRecordState,
-    ScheduleType,
-    SubmissionType,
-} from '@postybirb/types';
+import { ScheduleType, SubmissionType } from '@postybirb/types';
 import { HydrationContext } from '../repositories/base/hydration-context';
 import { assertRowRoundtrips } from '../repositories/base/test-utils';
 import {
-    PostQueueRecord,
-    type PostQueueRecordRow,
+  PostQueueRecord,
+  type PostQueueRecordRow,
 } from './post-queue-record.entity';
-import { PostRecord } from './post-record.entity';
 import { Submission } from './submission.entity';
 
 function buildRow(
@@ -21,7 +15,6 @@ function buildRow(
     id: 'pq-1',
     createdAt: '2025-01-01T00:00:00.000Z',
     updatedAt: '2025-01-01T00:00:00.000Z',
-    postRecordId: 'pr-1',
     submissionId: 'sub-1',
     ...overrides,
   } as PostQueueRecordRow;
@@ -35,21 +28,12 @@ describe('PostQueueRecord.fromRow', () => {
     assertRowRoundtrips(
       row,
       entity as unknown as Record<string, unknown> & { id: string },
-      ['postRecord', 'submission'],
+      ['submission'],
     );
   });
 
-  it('hydrates both relations when present', () => {
+  it('hydrates the submission relation when present', () => {
     const row = buildRow({
-      postRecord: {
-        id: 'pr-1',
-        createdAt: '2025-01-01T00:00:00.000Z',
-        updatedAt: '2025-01-01T00:00:00.000Z',
-        postQueueRecordId: 'pq-1',
-        submissionId: 'sub-1',
-        state: PostRecordState.PENDING,
-        resumeMode: PostRecordResumeMode.NEW,
-      } as any,
       submission: {
         id: 'sub-1',
         createdAt: '2025-01-01T00:00:00.000Z',
@@ -66,7 +50,6 @@ describe('PostQueueRecord.fromRow', () => {
       },
     });
     const entity = PostQueueRecord.fromRow(row);
-    expect(entity.postRecord).toBeInstanceOf(PostRecord);
     expect(entity.submission).toBeInstanceOf(Submission);
   });
 

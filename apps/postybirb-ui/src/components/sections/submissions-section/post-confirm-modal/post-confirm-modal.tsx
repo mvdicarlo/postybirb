@@ -5,9 +5,9 @@
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import { Alert, Badge, Button, Group, Modal, Pill, Radio, Stack, Text } from '@mantine/core';
-import { PostRecordResumeMode, PostRecordState } from '@postybirb/types';
+import { PostRecordResumeMode } from '@postybirb/types';
 import { IconAlertCircle } from '@tabler/icons-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useAccountsMap } from '../../../../stores/entity/account-store';
 import type { SubmissionRecord } from '../../../../stores/records';
 import { ReorderableSubmissionList } from '../../../shared/reorderable-submission-list';
@@ -47,15 +47,8 @@ export function PostConfirmModal({
     (s) => s.hasWebsiteOptions && !s.hasErrors,
   );
 
-  // Check if any submission has a failed last post
-  const hasFailedPosts = useMemo(
-    () =>
-      validSubmissions.some((s) => {
-        const lastPost = s.latestPost;
-        return lastPost && lastPost.state === PostRecordState.FAILED;
-      }),
-    [validSubmissions],
-  );
+  // Resume-mode prompting is handled by the relay engine; no failed-post detection here.
+  const hasFailedPosts = false;
 
   // Track the ordered list (reset when modal opens with new submissions)
   const [orderedSubmissions, setOrderedSubmissions] = useState<

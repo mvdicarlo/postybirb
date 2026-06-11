@@ -5,7 +5,6 @@ export * from './node-status.enum';
 export * from './post-error-kind.enum';
 export * from './post-event-type.enum';
 export * from './post-record-resume-mode.enum';
-export * from './post-record-state.enum';
 export * from './schedule-type.enum';
 export * from './submission-rating.enum';
 export * from './submission-type.enum';
