@@ -7,6 +7,7 @@ export class SettingsConstants {
     hiddenWebsites: [],
     allowAd: true,
     queuePaused: false,
+    useRelayEngine: false,
     desktopNotifications: {
       enabled: true,
       showOnPostSuccess: true,

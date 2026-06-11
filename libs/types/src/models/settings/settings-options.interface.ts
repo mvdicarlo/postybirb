@@ -20,6 +20,12 @@ export interface ISettingsOptions {
   queuePaused: boolean;
 
   /**
+   * Feature flag: use the new Relay posting engine instead of the legacy
+   * post-manager. Off by default during rollout.
+   */
+  useRelayEngine?: boolean;
+
+  /**
    * Desktop notification settings.
    */
   desktopNotifications: DesktopNotificationSettings;

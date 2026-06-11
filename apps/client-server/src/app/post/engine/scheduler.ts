@@ -1,0 +1,275 @@
+/**
+ * Relay engine — scheduler + job runner.
+ *
+ * Owns the queue, concurrency, dependency gating, WAITING handling and the
+ * typed-error retry policy. Operates over the in-memory job tree; PR #4 wires
+ * persistence (load/save through the Post* repositories) and crash recovery.
+ *
+ * Time is injectable (`wait`) so tests run deterministically.
+ */
+
+/* eslint-disable no-param-reassign */ // the scheduler mutates the job tree in place
+
+import { NodeStatus, PostErrorKind, PostRecordResumeMode } from '@postybirb/types';
+import { CancellableToken } from '../models/cancellable-token';
+import { StageError, classify, decideRetry, toTaskError } from './errors';
+import {
+    RelayJob,
+    RelayTask,
+    TERMINAL_ALL,
+    computeJobStatus,
+    evaluateDependency,
+} from './model';
+import { PipelineDeps, planJob, resetForResume, runTaskPass } from './pipeline';
+
+export interface SchedulerOptions {
+  maxConcurrentJobs: number;
+  maxConcurrentTasks: number;
+  /** real wait by default; override for deterministic tests */
+  wait?: (ms: number) => Promise<void>;
+}
+
+const realWait = (ms: number) =>
+  new Promise<void>((r) => {
+    setTimeout(r, ms);
+  });
+
+export class RelayScheduler {
+  private readonly deps: PipelineDeps;
+
+  private readonly opts: Required<Omit<SchedulerOptions, 'wait'>>;
+
+  private readonly wait: (ms: number) => Promise<void>;
+
+  private readonly jobs = new Map<string, RelayJob>();
+
+  private readonly tokens = new Map<string, CancellableToken>();
+
+  constructor(deps: PipelineDeps, opts?: Partial<SchedulerOptions>) {
+    this.deps = deps;
+    this.opts = {
+      maxConcurrentJobs: opts?.maxConcurrentJobs ?? 2,
+      maxConcurrentTasks: opts?.maxConcurrentTasks ?? 4,
+    };
+    this.wait = opts?.wait ?? realWait;
+  }
+
+  enqueue(
+    submissionId: string,
+    opts?: {
+      priority?: number;
+      scheduledFor?: number;
+      resumeMode?: PostRecordResumeMode;
+    },
+  ): RelayJob {
+    const job = new RelayJob({
+      submissionId,
+      priority: opts?.priority,
+      scheduledFor: opts?.scheduledFor,
+      resumeMode: opts?.resumeMode ?? PostRecordResumeMode.NEW,
+    });
+    planJob(job, this.deps);
+    this.jobs.set(job.id, job);
+    this.deps.tracer.emit({
+      jobId: job.id,
+      level: 'info',
+      event: 'job.enqueued',
+      data: {
+        submissionId,
+        tasks: job.tasks.map((t) => ({
+          id: t.id,
+          units: t.units.length,
+          status: t.status,
+        })),
+      },
+    });
+    return job;
+  }
+
+  resume(jobId: string, mode: PostRecordResumeMode): RelayJob {
+    const job = this.jobs.get(jobId);
+    if (!job) throw new Error(`unknown job ${jobId}`);
+    job.resumeMode = mode;
+    resetForResume(job, mode);
+    job.completedAt = undefined;
+    job.status = NodeStatus.QUEUED;
+    this.deps.tracer.emit({
+      jobId,
+      level: 'info',
+      event: 'job.resume',
+      data: { mode },
+    });
+    return job;
+  }
+
+  cancel(jobId: string): void {
+    this.tokens.get(jobId)?.cancel();
+  }
+
+  getJob(jobId: string): RelayJob | undefined {
+    return this.jobs.get(jobId);
+  }
+
+  /** Run all due jobs to completion (or terminal failure). */
+  async runToIdle(startNow = Date.now()): Promise<void> {
+    let now = startNow;
+    for (;;) {
+      const cutoff = now;
+      const due = [...this.jobs.values()]
+        .filter(
+          (j) =>
+            !TERMINAL_ALL.has(j.status) &&
+            (j.scheduledFor === undefined || j.scheduledFor <= cutoff),
+        )
+        .sort((a, b) => b.priority - a.priority || a.createdAt - b.createdAt);
+
+      if (due.length === 0) return;
+
+      const batch = due.slice(0, this.opts.maxConcurrentJobs);
+      // eslint-disable-next-line no-await-in-loop
+      await Promise.all(batch.map((job) => this.runJob(job)));
+      now = Date.now();
+    }
+  }
+
+  private async runJob(job: RelayJob): Promise<void> {
+    job.status = NodeStatus.RUNNING;
+    const token = new CancellableToken();
+    this.tokens.set(job.id, token);
+
+    for (;;) {
+      if (token.isCancelled) break;
+
+      const pending = job.tasks.filter((t) => !TERMINAL_ALL.has(t.status));
+      if (pending.length === 0) break;
+
+      const runnable = pending.filter((t) => this.isRunnable(job, t, Date.now()));
+
+      if (runnable.length === 0) {
+        const soonest = this.soonestWakeup(job);
+        if (soonest === undefined) {
+          this.skipBlockedDependents(job);
+          continue;
+        }
+        // eslint-disable-next-line no-await-in-loop
+        await this.wait(Math.max(0, soonest - Date.now()));
+        continue;
+      }
+
+      const slice = runnable.slice(0, this.opts.maxConcurrentTasks);
+      // eslint-disable-next-line no-await-in-loop
+      await Promise.all(
+        slice.map((t) => this.runTaskWithRetries(job, t, token)),
+      );
+    }
+
+    job.status = computeJobStatus(job);
+    job.completedAt = Date.now();
+    this.tokens.delete(job.id);
+    this.deps.tracer.pushJobDelta(job);
+    this.deps.tracer.emit({
+      jobId: job.id,
+      level: job.status === NodeStatus.SUCCEEDED ? 'info' : 'warn',
+      event: 'job.completed',
+      data: { result: job.status },
+    });
+  }
+
+  private isRunnable(job: RelayJob, task: RelayTask, now: number): boolean {
+    if (TERMINAL_ALL.has(task.status)) return false;
+    if (task.waitingUntil !== undefined && task.waitingUntil > now) return false;
+    const dep = evaluateDependency(job, task);
+    return dep === 'satisfied' || dep === 'none';
+  }
+
+  private soonestWakeup(job: RelayJob): number | undefined {
+    let soonest: number | undefined;
+    let anyDepPending = false;
+    for (const t of job.tasks) {
+      if (TERMINAL_ALL.has(t.status)) continue;
+      if (t.waitingUntil !== undefined) {
+        soonest =
+          soonest === undefined ? t.waitingUntil : Math.min(soonest, t.waitingUntil);
+      } else if (evaluateDependency(job, t) === 'pending') {
+        anyDepPending = true;
+      }
+    }
+    if (soonest !== undefined) return soonest;
+    return anyDepPending ? Date.now() + 5 : undefined;
+  }
+
+  private skipBlockedDependents(job: RelayJob): void {
+    for (const t of job.tasks) {
+      if (TERMINAL_ALL.has(t.status)) continue;
+      if (evaluateDependency(job, t) === 'blocked') {
+        t.status = NodeStatus.SKIPPED;
+        this.deps.tracer.emit({
+          jobId: job.id,
+          taskId: t.id,
+          level: 'warn',
+          event: 'task.skipped',
+          data: { reason: 'dependency unreachable' },
+        });
+      }
+    }
+  }
+
+  private async runTaskWithRetries(
+    job: RelayJob,
+    task: RelayTask,
+    token: CancellableToken,
+  ): Promise<void> {
+    task.status = NodeStatus.RUNNING;
+    task.waitingUntil = undefined;
+    this.deps.tracer.emit({
+      jobId: job.id,
+      taskId: task.id,
+      account: task.accountId,
+      website: task.websiteId,
+      level: 'info',
+      event: 'task.started',
+      data: { attempt: task.attempts + 1 },
+    });
+
+    try {
+      await runTaskPass(this.deps, job, task, token);
+    } catch (err) {
+      const se: StageError =
+        err instanceof StageError ? err : classify('unknown', err);
+
+      if (se.kind === PostErrorKind.RATE_LIMITED) {
+        task.status = NodeStatus.WAITING; // waitingUntil set in the gate stage
+        this.deps.tracer.pushTaskDelta(job, task);
+        return;
+      }
+
+      const decision = decideRetry(se, task.attempts, task.maxAttempts);
+      if (decision.action === 'retry') {
+        if (decision.consumesAttempt) task.attempts++;
+        this.deps.tracer.emit({
+          jobId: job.id,
+          taskId: task.id,
+          level: 'warn',
+          event: 'task.retry',
+          data: { kind: se.kind, delayMs: decision.delayMs, attempt: task.attempts },
+        });
+        await this.wait(decision.delayMs);
+        await this.runTaskWithRetries(job, task, token);
+        return;
+      }
+
+      task.status = token.isCancelled ? NodeStatus.CANCELLED : NodeStatus.FAILED;
+      task.error = toTaskError(se);
+      this.deps.tracer.emit({
+        jobId: job.id,
+        taskId: task.id,
+        account: task.accountId,
+        website: task.websiteId,
+        level: 'error',
+        event: 'task.failed',
+        data: { kind: se.kind, stage: se.stage, message: se.message },
+      });
+      this.deps.tracer.pushTaskDelta(job, task);
+    }
+  }
+}

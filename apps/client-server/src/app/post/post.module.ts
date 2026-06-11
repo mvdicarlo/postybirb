@@ -10,18 +10,21 @@ import { WebsiteImplProvider } from '../websites/implementations/provider';
 import { WebsitesModule } from '../websites/websites.module';
 import { PostController } from './post.controller';
 import { PostService } from './post.service';
+import { RateLimiter } from './engine/rate-limiter';
+import { RelayTracer } from './engine/tracer.service';
+import { SharpEncoder } from './engine/sharp-encoder';
 import { PostFileResizerService } from './services/post-file-resizer/post-file-resizer.service';
 import {
-  FileSubmissionPostManager,
-  MessageSubmissionPostManager,
-  PostManagerRegistry,
+    FileSubmissionPostManager,
+    MessageSubmissionPostManager,
+    PostManagerRegistry,
 } from './services/post-manager-v2';
 import { PostManagerController } from './services/post-manager/post-manager.controller';
 import { PostQueueController } from './services/post-queue/post-queue.controller';
 import { PostQueueService } from './services/post-queue/post-queue.service';
 import {
-  PostEventRepository,
-  PostRecordFactory,
+    PostEventRepository,
+    PostRecordFactory,
 } from './services/post-record-factory';
 
 @Module({
@@ -46,6 +49,12 @@ import {
     FileSubmissionPostManager,
     MessageSubmissionPostManager,
     PostManagerRegistry,
+    // Relay engine (PR #2) — building-block services, registered behind the
+    // `useRelayEngine` settings flag. The scheduler/persistence wiring lands in
+    // a later PR; these providers do not change posting behavior yet.
+    RelayTracer,
+    RateLimiter,
+    SharpEncoder,
   ],
   exports: [PostEventRepository, PostRecordFactory, PostManagerRegistry],
 })
