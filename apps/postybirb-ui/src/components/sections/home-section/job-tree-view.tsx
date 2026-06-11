@@ -6,7 +6,6 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-    Anchor,
     Badge,
     Box,
     Group,
@@ -20,11 +19,13 @@ import { JobTreeNode } from '@postybirb/types';
 import {
     IconCheck,
     IconClock,
+    IconExternalLink,
     IconLoader,
     IconMinus,
     IconX,
 } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
+import { ExternalLink } from '../../shared/external-link';
 
 type NodeStatus = JobTreeNode['status'];
 
@@ -118,9 +119,14 @@ function NodeRow({ node }: { node: JobTreeNode }) {
       )}
       {node.waitingUntil && <WaitCountdown waitUntil={node.waitingUntil} />}
       {node.sourceUrl && (
-        <Anchor href={node.sourceUrl} target="_blank" size="xs" truncate>
-          <Trans>link</Trans>
-        </Anchor>
+        <ExternalLink href={node.sourceUrl}>
+          <Group gap={4} wrap="nowrap">
+            <Text size="xs" c="blue.6" td="underline">
+              <Trans>View</Trans>
+            </Text>
+            <IconExternalLink size="0.75rem" />
+          </Group>
+        </ExternalLink>
       )}
       {node.error && (
         <Tooltip

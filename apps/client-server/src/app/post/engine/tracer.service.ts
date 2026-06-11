@@ -12,7 +12,7 @@ import { Injectable, Optional } from '@nestjs/common';
 import { PostyBirbDirectories } from '@postybirb/fs';
 import { POST_STATE_DELTA } from '@postybirb/socket-events';
 import { JobTreeNode, NodeStatus, UnitKind } from '@postybirb/types';
-import { appendFile, mkdir } from 'node:fs/promises';
+import { appendFile, mkdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { WSGateway } from '../../web-socket/web-socket-gateway';
 import { RelayJob, RelayTask, RelayUnit, computeJobStatus } from './model';
@@ -103,6 +103,24 @@ export class RelayTracer {
   /** Filtered projection for the post-history view. */
   getLedger(jobId: string): TraceEntry[] {
     return this.getEntries(jobId).filter((e) => LEDGER_EVENTS.has(e.event));
+  }
+
+  /** Absolute path to the NDJSON file for a job (may not yet exist). */
+  getLogPath(jobId: string): string {
+    return join(this.dir, `${jobId}.ndjson`);
+  }
+
+  /**
+   * Read the persisted NDJSON for a job from disk. Returns the raw NDJSON
+   * text (one JSON entry per line). Returns empty string if the file does
+   * not exist or cannot be read — tracing must never break the caller.
+   */
+  async readDiskLog(jobId: string): Promise<string> {
+    try {
+      return await readFile(this.getLogPath(jobId), 'utf-8');
+    } catch {
+      return '';
+    }
   }
 }
 
