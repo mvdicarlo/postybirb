@@ -174,6 +174,27 @@ export class RelayScheduler {
     }
   }
 
+  /**
+   * Sleep for `ms`, but resolve early if the token is cancelled so a pending
+   * rate-limit/backoff wait does not force the user to sit through a long
+   * window after pressing cancel. Returns the (possibly shortened) actual
+   * elapsed intent; callers re-check `token.isCancelled` after awaiting.
+   */
+  private async interruptibleWait(
+    ms: number,
+    token: CancellableToken,
+  ): Promise<void> {
+    if (token.isCancelled || ms <= 0) return;
+    let unsubscribe: (() => void) | undefined;
+    await Promise.race([
+      this.wait(ms),
+      new Promise<void>((resolve) => {
+        unsubscribe = token.onCancel(resolve);
+      }),
+    ]);
+    unsubscribe?.();
+  }
+
   private async runJob(job: RelayJob): Promise<void> {
     job.status = NodeStatus.RUNNING;
     await this.persistJob(job);
@@ -197,7 +218,7 @@ export class RelayScheduler {
           continue;
         }
         // eslint-disable-next-line no-await-in-loop
-        await this.wait(Math.max(0, soonest - Date.now()));
+        await this.interruptibleWait(Math.max(0, soonest - Date.now()), token);
         continue;
       }
 
@@ -207,6 +228,12 @@ export class RelayScheduler {
         slice.map((t) => this.runTaskWithRetries(job, t, token)),
       );
     }
+
+    // A cancel can break the loop with tasks still parked in WAITING/QUEUED
+    // (e.g. mid rate-limit window). Mark every remaining non-terminal task
+    // CANCELLED so the job settles to a terminal state instead of being
+    // computed as still WAITING/RUNNING.
+    if (token.isCancelled) this.cancelRemainingTasks(job);
 
     job.status = computeJobStatus(job);
     job.completedAt = Date.now();
@@ -260,6 +287,26 @@ export class RelayScheduler {
     }
   }
 
+  /** Mark every non-terminal task CANCELLED (used on a cancelled job exit). */
+  private cancelRemainingTasks(job: RelayJob): void {
+    for (const t of job.tasks) {
+      if (TERMINAL_ALL.has(t.status)) continue;
+      t.status = NodeStatus.CANCELLED;
+      t.waitingUntil = undefined;
+      for (const unit of t.units) {
+        if (!TERMINAL_ALL.has(unit.status)) unit.status = NodeStatus.CANCELLED;
+      }
+      this.deps.tracer.emit({
+        jobId: job.id,
+        taskId: t.id,
+        account: t.accountId,
+        website: t.websiteId,
+        level: 'warn',
+        event: 'task.cancelled',
+      });
+    }
+  }
+
   private async runTaskWithRetries(
     job: RelayJob,
     task: RelayTask,
@@ -302,7 +349,14 @@ export class RelayScheduler {
           data: { kind: se.kind, delayMs: decision.delayMs, attempt: task.attempts },
         });
         await this.persistTask(job, task);
-        await this.wait(decision.delayMs);
+        await this.interruptibleWait(decision.delayMs, token);
+        if (token.isCancelled) {
+          task.status = NodeStatus.CANCELLED;
+          task.error = toTaskError(se);
+          await this.persistTask(job, task);
+          this.deps.tracer.pushTaskDelta(job, task);
+          return;
+        }
         await this.runTaskWithRetries(job, task, token);
         return;
       }

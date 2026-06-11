@@ -13,10 +13,10 @@
 
 import { Injectable } from '@nestjs/common';
 import {
-    PostJob,
-    PostJobRepository,
-    PostTaskRepository,
-    PostUnitRepository,
+  PostJob,
+  PostJobRepository,
+  PostTaskRepository,
+  PostUnitRepository,
 } from '@postybirb/database';
 import { NodeStatus } from '@postybirb/types';
 import { RelayJob, RelayTask, RelayUnit } from './model';

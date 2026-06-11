@@ -237,6 +237,43 @@ describe('Relay pipeline + scheduler (integration)', () => {
     expect(urls.size).toBe(3);
   });
 
+  it('cancels a job parked on a long rate-limit wait without waiting it out', async () => {
+    const submission = fileSubmission();
+    submission.options = [{ accountId: 'a_fa', websiteId: 'furaffinity' }];
+    const h = new Harness(submission);
+    // 3 batches; first posts immediately, the rest park for ~5 minutes.
+    h.register(
+      fileWebsite({
+        id: 'furaffinity',
+        fileBatchSize: 1,
+        minimumPostWaitInterval: 300_000,
+      }),
+    );
+
+    // A wait that never resolves on its own: the only way out of the parked
+    // sleep is the cancellation signal racing inside interruptibleWait.
+    const neverWait = () => new Promise<void>(() => undefined);
+    const sched = new RelayScheduler(h, { wait: neverWait });
+    const job = sched.enqueue(submission.id);
+
+    const run = sched.runToIdle();
+    // Let the first batch post and the task park in WAITING.
+    await new Promise((r) => {
+      setTimeout(r, 10);
+    });
+    expect(job.tasks[0].status).toBe(NodeStatus.WAITING);
+
+    sched.cancel(job.id);
+    await run; // resolves promptly rather than hanging on the 5-minute wait
+
+    expect(job.status).toBe(NodeStatus.CANCELLED);
+    expect(job.tasks[0].status).toBe(NodeStatus.CANCELLED);
+    // The first batch had already posted before the cancel landed.
+    expect(job.tasks[0].units[0].status).toBe(NodeStatus.SUCCEEDED);
+    // Remaining batches are cancelled, not left dangling.
+    expect(job.tasks[0].units.slice(1).every((u) => u.status === NodeStatus.CANCELLED)).toBe(true);
+  });
+
   it('resume (CONTINUE) re-runs only non-done units', async () => {
     const submission = fileSubmission();
     submission.options = [{ accountId: 'a_dt', websiteId: 'downthenup' }];
