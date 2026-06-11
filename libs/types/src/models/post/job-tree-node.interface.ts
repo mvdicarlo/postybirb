@@ -19,6 +19,9 @@ export interface JobTreeNode {
    */
   submissionId?: string;
 
+  /** The account this node targets (present on task nodes). */
+  accountId?: string;
+
   /** Human-readable label (submission title / account / batch number). */
   label: string;
 

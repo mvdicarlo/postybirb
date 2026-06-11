@@ -3,11 +3,12 @@
  */
 
 import {
-  EntityId,
-  PostEventDto,
-  PostEventType,
-  PostRecordDto,
-  PostRecordState,
+    EntityId,
+    JobTreeNode,
+    PostEventDto,
+    PostEventType,
+    PostRecordDto,
+    PostRecordState
 } from '@postybirb/types';
 import type { SubmissionRecord } from '../../../../stores/records';
 
@@ -284,6 +285,60 @@ export function getAccountPostStatusMap(
     if (!option.isDefault && !result.has(option.accountId)) {
       result.set(option.accountId, { status: 'waiting', errors: [] });
     }
+  }
+
+  return result;
+}
+
+// =============================================================================
+// Per-account post status derivation from a Relay job tree
+// =============================================================================
+
+/**
+ task
+ unit). Each task node targets one account; its status maps directly:
+ *
+ * | Task status            | AccountPostStatus |
+ * |------------------------|-------------------|
+ * | SUCCEEDED              | 'success'         |
+ * | FAILED / CANCELLED     | 'failed'          |
+ * | RUNNING                | 'running'         |
+ * | WAITING                | 'rate-limited'    |
+ * | QUEUED / READY / other | 'waiting'         |
+ *
+ * Returns an empty map when no job is provided.
+ */
+export function getAccountStatusFromJob(
+  job: JobTreeNode | undefined,
+): Map<EntityId, AccountPostStatusEntry> {
+  const result = new Map<EntityId, AccountPostStatusEntry>();
+  if (!job?.children) return result;
+
+  for (const task of job.children) {
+    if (!task.accountId) continue;
+    let status: AccountPostStatus;
+    switch (task.status) {
+      case 'SUCCEEDED':
+        status = 'success';
+        break;
+      case 'FAILED':
+      case 'CANCELLED':
+        status = 'failed';
+        break;
+      case 'RUNNING':
+        status = 'running';
+        break;
+      case 'WAITING':
+        status = 'rate-limited';
+        break;
+      default:
+        status = 'waiting';
+    }
+    result.set(task.accountId, {
+      status,
+      errors: task.error ? [task.error.message] : [],
+      waitUntil: task.waitingUntil,
+    });
   }
 
   return result;

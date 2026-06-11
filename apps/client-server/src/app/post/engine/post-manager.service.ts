@@ -8,9 +8,7 @@
  *   - onModuleInit: crash recovery — load active (non-terminal) jobs from the
  *     database and resume them once the website registry is ready.
  *
- * This is only driven when the `useRelayEngine` settings flag is on (the
- * PostQueueService gates the cutover); the legacy post-manager is otherwise
- * untouched.
+ * Driven by the PostQueueService, which is the sole posting executor.
  */
 
 import { Injectable, OnModuleInit, Optional } from '@nestjs/common';

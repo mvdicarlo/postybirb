@@ -140,6 +140,7 @@ export function projectTask(task: RelayTask): JobTreeNode {
   return {
     id: task.id,
     kind: 'task',
+    accountId: task.accountId,
     label: `${task.websiteId}:${task.accountId}`,
     status: task.status,
     progress: total > 0 ? { done, total } : undefined,

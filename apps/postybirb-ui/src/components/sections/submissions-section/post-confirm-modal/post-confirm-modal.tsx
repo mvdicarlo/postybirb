@@ -11,7 +11,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAccountsMap } from '../../../../stores/entity/account-store';
 import type { SubmissionRecord } from '../../../../stores/records';
 import { ReorderableSubmissionList } from '../../../shared/reorderable-submission-list';
-import { getAccountPostStatusMap } from '../submission-history/history-utils';
 
 export interface PostConfirmModalProps {
   /** Whether the modal is open */
@@ -81,30 +80,9 @@ export function PostConfirmModal({
       const nonDefaultOptions = submission.options.filter((o) => !o.isDefault);
       if (nonDefaultOptions.length === 0) return null;
 
-      const submissionHasFailedPost =
-        submission.latestPost?.state === PostRecordState.FAILED;
-
-      let accountsToPost = nonDefaultOptions;
-
-      if (submissionHasFailedPost && resumeMode !== PostRecordResumeMode.NEW) {
-        // CONTINUE / CONTINUE_RETRY: skip accounts that already succeeded
-        const statusMap = getAccountPostStatusMap(submission);
-        accountsToPost = nonDefaultOptions.filter(
-          (o) => statusMap.get(o.accountId)?.status !== 'success',
-        );
-      }
-
-      if (accountsToPost.length === 0) {
-        return (
-          <Text size="xs" c="dimmed" mt={4}>
-            <Trans>No websites will post (all previously succeeded)</Trans>
-          </Text>
-        );
-      }
-
       return (
         <Pill.Group gap={4} mt={4}>
-          {accountsToPost.map((option) => {
+          {nonDefaultOptions.map((option) => {
             const acc = accountsMap.get(option.accountId);
             return (
               <Pill key={option.accountId} style={{ maxWidth: 'unset', flex: 'none' }}>
@@ -122,7 +100,7 @@ export function PostConfirmModal({
         </Pill.Group>
       );
     },
-    [resumeMode, accountsMap],
+    [accountsMap],
   );
 
   const handleConfirm = useCallback(() => {
