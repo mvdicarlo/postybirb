@@ -81,12 +81,33 @@ export class RelayPostManager implements OnModuleInit {
 
       await this.websiteRegistry.waitForInitialization(60_000);
 
+      // Each job's recovery is isolated so a single bad job (e.g. its
+      // submission was deleted while the app was closed, or its website
+      // implementation no longer exists) cannot prevent the rest of the
+      // active jobs from being adopted. A poison job is force-marked
+      // terminal-FAILED in the DB so it leaves the active set forever and
+      // cannot become a stuck row the user is unable to clear.
       for (const job of active) {
-        // eslint-disable-next-line no-await-in-loop
-        await this.deps.prepare(job);
-        resetForResume(job, PostRecordResumeMode.CONTINUE);
-        this.scheduler.adopt(job);
-        this.activeBySubmission.set(job.submissionId, job.id);
+        try {
+          // eslint-disable-next-line no-await-in-loop
+          await this.deps.prepare(job);
+          resetForResume(job, PostRecordResumeMode.CONTINUE);
+          this.scheduler.adopt(job);
+          this.activeBySubmission.set(job.submissionId, job.id);
+        } catch (error) {
+          this.logger
+            .withError(error)
+            .withMetadata({ jobId: job.id, submissionId: job.submissionId })
+            .error('Failed to recover job; marking it FAILED');
+          // eslint-disable-next-line no-await-in-loop
+          await this.persistence
+            .failJob(job.id, (error as Error)?.message ?? 'recovery failed')
+            .catch((e) =>
+              this.logger
+                .withError(e)
+                .error('Failed to mark unrecoverable job FAILED'),
+            );
+        }
       }
       this.drain().catch((error) =>
         this.logger.withError(error).error('Relay run failed'),
@@ -129,12 +150,36 @@ export class RelayPostManager implements OnModuleInit {
     return job.id;
   }
 
-  /** Cancel any in-flight job for a submission. */
+  /**
+   * Cancel any in-flight job for a submission. If no live job is registered
+   * (e.g. a previous recovery silently dropped the job, or the scheduler
+   * never adopted it), fall back to a DB sweep that marks every non-terminal
+   * `post_job` row for the submission as CANCELLED. This guarantees the user
+   * always has a way to clear a stuck record.
+   */
   cancel(submissionId: SubmissionId): boolean {
     const jobId = this.activeBySubmission.get(submissionId);
-    if (!jobId) return false;
-    this.scheduler.cancel(jobId);
-    return true;
+    if (jobId) {
+      this.scheduler.cancel(jobId);
+      return true;
+    }
+    // Background: persistence writes errors must not block the UI cancel.
+    this.persistence
+      .cancelNonTerminalForSubmission(submissionId)
+      .then((cleared) => {
+        if (cleared > 0) {
+          this.logger
+            .withMetadata({ submissionId, cleared })
+            .info('Force-cleared stuck post-job rows on cancel');
+        }
+      })
+      .catch((error) =>
+        this.logger
+          .withError(error)
+          .withMetadata({ submissionId })
+          .error('Failed to force-clear stuck post-job rows'),
+      );
+    return false;
   }
 
   isPosting(submissionId: SubmissionId): boolean {

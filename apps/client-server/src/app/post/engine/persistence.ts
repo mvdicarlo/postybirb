@@ -18,8 +18,15 @@ import {
   PostTaskRepository,
   PostUnitRepository,
 } from '@postybirb/database';
-import { NodeStatus } from '@postybirb/types';
+import { NodeStatus, PostErrorKind } from '@postybirb/types';
 import { RelayJob, RelayTask, RelayUnit } from './model';
+
+const TERMINAL_DB_STATUSES: ReadonlySet<NodeStatus> = new Set([
+  NodeStatus.SUCCEEDED,
+  NodeStatus.FAILED,
+  NodeStatus.SKIPPED,
+  NodeStatus.CANCELLED,
+]);
 
 @Injectable()
 export class RelayPersistence {
@@ -103,6 +110,72 @@ export class RelayPersistence {
   async loadBySubmission(submissionId: string): Promise<RelayJob[]> {
     const rows = await this.jobs.findBySubmission(submissionId);
     return rows.map((row) => this.toRelayJob(row));
+  }
+
+  /**
+   * Force-mark every non-terminal job/task/unit for a submission as CANCELLED.
+   * Used as a fallback when a user cancels a submission whose job is not live
+   * in the scheduler (e.g. recovery silently dropped it after a crash). Returns
+   * the number of jobs that were transitioned so the caller can tell whether
+   * anything actually needed clearing.
+   */
+  async cancelNonTerminalForSubmission(submissionId: string): Promise<number> {
+    const rows = await this.jobs.findBySubmission(submissionId);
+    const nowIso = new Date().toISOString();
+    let cleared = 0;
+    for (const row of rows) {
+      if (TERMINAL_DB_STATUSES.has(row.status as NodeStatus)) continue;
+      cleared += 1;
+      // eslint-disable-next-line no-await-in-loop
+      await this.jobs.update(row.id, {
+        status: NodeStatus.CANCELLED,
+        completedAt: nowIso,
+      });
+      for (const task of row.tasks ?? []) {
+        if (TERMINAL_DB_STATUSES.has(task.status as NodeStatus)) continue;
+        // eslint-disable-next-line no-await-in-loop
+        await this.tasks.update(task.id, {
+          status: NodeStatus.CANCELLED,
+          waitingUntil: null,
+        });
+        for (const unit of task.units ?? []) {
+          if (TERMINAL_DB_STATUSES.has(unit.status as NodeStatus)) continue;
+          // eslint-disable-next-line no-await-in-loop
+          await this.units.update(unit.id, { status: NodeStatus.CANCELLED });
+        }
+      }
+    }
+    return cleared;
+  }
+
+  /** Force-mark a single job (and its tasks/units) terminal-FAILED. */
+  async failJob(jobId: string, message: string): Promise<void> {
+    const row = await this.jobs.findById(jobId);
+    if (!row) return;
+    const nowIso = new Date().toISOString();
+    await this.jobs.update(row.id, {
+      status: NodeStatus.FAILED,
+      completedAt: nowIso,
+    });
+    for (const task of row.tasks ?? []) {
+      if (TERMINAL_DB_STATUSES.has(task.status as NodeStatus)) continue;
+      // eslint-disable-next-line no-await-in-loop
+      await this.tasks.update(task.id, {
+        status: NodeStatus.FAILED,
+        waitingUntil: null,
+        error: {
+          kind: PostErrorKind.FATAL,
+          stage: 'recover',
+          message,
+          retryable: false,
+        },
+      });
+      for (const unit of task.units ?? []) {
+        if (TERMINAL_DB_STATUSES.has(unit.status as NodeStatus)) continue;
+        // eslint-disable-next-line no-await-in-loop
+        await this.units.update(unit.id, { status: NodeStatus.FAILED });
+      }
+    }
   }
 
   private taskValues(task: RelayTask) {

@@ -131,4 +131,68 @@ describe('RelayPersistence', () => {
     expect(history[0].status).toBe(NodeStatus.SUCCEEDED);
     expect(history[0].submissionId).toBe(submissionId);
   });
+
+  it('cancelNonTerminalForSubmission clears stuck rows even when no live job exists', async () => {
+    // Simulates a crash recovery that silently dropped a job: the DB row is
+    // still non-terminal but nothing is registered in memory. The user must
+    // still be able to clear the stuck record via the cancel UI.
+    const { submissionId, accountId } = await seed();
+    const persistence = new RelayPersistence();
+    const job = buildJob(submissionId, accountId);
+    await persistence.create(job);
+
+    // Pretend the scheduler had it RUNNING when the app crashed.
+    job.status = NodeStatus.RUNNING;
+    job.tasks[0].status = NodeStatus.WAITING;
+    job.tasks[0].waitingUntil = Date.now() + 5 * 60_000;
+    await persistence.save(job);
+
+    const cleared = await persistence.cancelNonTerminalForSubmission(
+      submissionId,
+    );
+    expect(cleared).toBe(1);
+
+    expect(await persistence.loadActive()).toHaveLength(0);
+
+    const history = await persistence.loadBySubmission(submissionId);
+    expect(history).toHaveLength(1);
+    expect(history[0].status).toBe(NodeStatus.CANCELLED);
+    expect(history[0].tasks[0].status).toBe(NodeStatus.CANCELLED);
+    expect(history[0].tasks[0].units[0].status).toBe(NodeStatus.CANCELLED);
+    expect(history[0].tasks[0].waitingUntil).toBeUndefined();
+  });
+
+  it('cancelNonTerminalForSubmission leaves already-terminal jobs alone', async () => {
+    const { submissionId, accountId } = await seed();
+    const persistence = new RelayPersistence();
+    const job = buildJob(submissionId, accountId);
+    await persistence.create(job);
+    job.status = NodeStatus.SUCCEEDED;
+    job.completedAt = Date.now();
+    job.tasks[0].status = NodeStatus.SUCCEEDED;
+    await persistence.save(job);
+
+    const cleared = await persistence.cancelNonTerminalForSubmission(
+      submissionId,
+    );
+    expect(cleared).toBe(0);
+
+    const history = await persistence.loadBySubmission(submissionId);
+    expect(history[0].status).toBe(NodeStatus.SUCCEEDED);
+  });
+
+  it('failJob force-marks an unrecoverable job FAILED', async () => {
+    const { submissionId, accountId } = await seed();
+    const persistence = new RelayPersistence();
+    const job = buildJob(submissionId, accountId);
+    await persistence.create(job);
+
+    await persistence.failJob(job.id, 'submission deleted');
+
+    expect(await persistence.loadActive()).toHaveLength(0);
+    const history = await persistence.loadBySubmission(submissionId);
+    expect(history[0].status).toBe(NodeStatus.FAILED);
+    expect(history[0].tasks[0].status).toBe(NodeStatus.FAILED);
+    expect(history[0].tasks[0].error?.message).toBe('submission deleted');
+  });
 });
