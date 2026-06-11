@@ -3,6 +3,7 @@ import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { PostRecordRepository } from '@postybirb/database';
 import { EntityId } from '@postybirb/types';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
+import { RelayPostManager } from './engine/post-manager.service';
 import { RelayPreviewService } from './engine/preview.service';
 import { PostService } from './post.service';
 import { PostManagerRegistry } from './services/post-manager-v2/post-manager-registry.service';
@@ -18,6 +19,7 @@ export class PostController extends PostyBirbController<PostRecordRepository> {
     readonly service: PostService,
     private readonly postManagerRegistry: PostManagerRegistry,
     private readonly previewService: RelayPreviewService,
+    private readonly relayPostManager: RelayPostManager,
   ) {
     super(service);
   }
@@ -31,6 +33,17 @@ export class PostController extends PostyBirbController<PostRecordRepository> {
   @ApiOkResponse({ description: 'Currently active rate-limit wait states.' })
   getWaitStates() {
     return this.postManagerRegistry.getWaitStates();
+  }
+
+  /**
+   * Get a snapshot of all currently-active Relay job trees.
+   * The UI seeds its posting-state store with this on load/reconnect; live
+   * updates then arrive via POST_STATE_DELTA WebSocket events.
+   */
+  @Get('jobs/active')
+  @ApiOkResponse({ description: 'Currently active posting job trees.' })
+  getActiveJobs() {
+    return this.relayPostManager.getActiveTrees();
   }
 
   /**

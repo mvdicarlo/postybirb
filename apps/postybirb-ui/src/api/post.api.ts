@@ -1,4 +1,9 @@
-import { IPostWaitState, IQueuePostRecordRequestDto, PostRecordDto } from '@postybirb/types';
+import {
+    IPostWaitState,
+    IQueuePostRecordRequestDto,
+    JobTreeNode,
+    PostRecordDto,
+} from '@postybirb/types';
 import { BaseApi } from './base.api';
 
 class PostApi extends BaseApi<
@@ -12,6 +17,11 @@ class PostApi extends BaseApi<
 
   getWaitStates() {
     return this.client.get<IPostWaitState[]>('active/wait-states');
+  }
+
+  /** Snapshot of currently-active Relay job trees (UI store seed). */
+  getActiveJobs() {
+    return this.client.get<JobTreeNode[]>('jobs/active');
   }
 }
 

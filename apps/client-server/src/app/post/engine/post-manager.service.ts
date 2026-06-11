@@ -16,6 +16,7 @@
 import { Injectable, OnModuleInit, Optional } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import {
+    JobTreeNode,
     NodeStatus,
     PostRecordResumeMode,
     ScheduleType,
@@ -31,6 +32,7 @@ import { RelayPersistence } from './persistence';
 import { resetForResume } from './pipeline';
 import { RelayPipelineDeps } from './pipeline-deps';
 import { RelayScheduler } from './scheduler';
+import { projectJob } from './tracer.service';
 
 @Injectable()
 export class RelayPostManager implements OnModuleInit {
@@ -136,6 +138,19 @@ export class RelayPostManager implements OnModuleInit {
     if (!jobId) return false;
     const job = this.scheduler.getJob(jobId);
     return !!job && !TERMINAL_ALL.has(job.status);
+  }
+
+  /**
+   * Snapshot of all currently-active job trees as UI projections. Used by the
+   * UI on load/reconnect to seed its store (deltas keep it live thereafter).
+   */
+  getActiveTrees(): JobTreeNode[] {
+    const trees: JobTreeNode[] = [];
+    for (const jobId of this.activeBySubmission.values()) {
+      const job = this.scheduler.getJob(jobId);
+      if (job && !TERMINAL_ALL.has(job.status)) trees.push(projectJob(job));
+    }
+    return trees;
   }
 
   /** Terminal outcome awaiting queue acknowledgement (undefined if none). */
