@@ -1,216 +1,46 @@
 import {
-    Injectable,
-    InternalServerErrorException,
-    OnModuleInit,
-    Optional,
+  Injectable,
+  InternalServerErrorException,
+  Optional,
 } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { PostQueueRecord, PostQueueRecordRepository, PostRecord, PostRecordRepository, SubmissionRepository } from '@postybirb/database';
 import {
-    EntityId,
-    PostRecordResumeMode,
-    PostRecordState,
-    ScheduleType,
-    SubmissionId,
-} from '@postybirb/types';
+  PostQueueRecord,
+  PostQueueRecordRepository,
+  SubmissionRepository,
+} from '@postybirb/database';
+import { EntityId, ScheduleType, SubmissionId } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/common';
 import { Mutex } from 'async-mutex';
 import { Cron as CronGenerator } from 'croner';
 import { PostyBirbService } from '../../../common/service/postybirb-service';
-import { NotificationsService } from '../../../notifications/notifications.service';
 import { SettingsService } from '../../../settings/settings.service';
-import { SubmissionService } from '../../../submission/services/submission.service';
 import { WSGateway } from '../../../web-socket/web-socket-gateway';
-import { WebsiteRegistryService } from '../../../websites/website-registry.service';
 import { RelayPostManager } from '../../engine/post-manager.service';
-import { PostManagerRegistry } from '../post-manager-v2';
-import { PostRecordFactory } from '../post-record-factory';
 
 /**
- * Handles the queue of posts to be posted.
- * This service is responsible for managing the queue of posts to be posted.
- * It will create post records and start the post manager when a post is ready to be posted.
+ * Owns the persisted post queue. The post-queue table records *what* to post;
+ * the {@link RelayPostManager} owns *running*. Each cycle starts a Relay job for
+ * a queued submission, dequeues finished ones, and leaves running ones alone.
+ *
  * @class PostQueueService
  */
 @Injectable()
-export class PostQueueService
-  extends PostyBirbService<PostQueueRecordRepository>
-  implements OnModuleInit
-{
+export class PostQueueService extends PostyBirbService<PostQueueRecordRepository> {
   private readonly queueModificationMutex = new Mutex();
 
   private readonly queueMutex = new Mutex();
 
   private initTime = Date.now();
 
-  private readonly postRecordRepository = new PostRecordRepository();
-
   private readonly submissionRepository = new SubmissionRepository();
 
-  /**
-   * Maximum time (in ms) a post can be RUNNING without any activity before being considered stuck.
-   */
-  private readonly maxPostIdleTime = 30 * 60 * 1000; // 30 minutes
-
   constructor(
-    private readonly postManagerRegistry: PostManagerRegistry,
-    private readonly postRecordFactory: PostRecordFactory,
     private readonly settingsService: SettingsService,
-    private readonly notificationService: NotificationsService,
-    private readonly submissionService: SubmissionService,
-    private readonly websiteRegistryService: WebsiteRegistryService,
     private readonly relayPostManager: RelayPostManager,
     @Optional() webSocket?: WSGateway,
   ) {
     super(new PostQueueRecordRepository(), webSocket);
-  }
-
-  /** Whether the new Relay engine should own posting (feature flag). */
-  private async useRelayEngine(): Promise<boolean> {
-    const settings = await this.settingsService.getDefaultSettings();
-    return settings.settings.useRelayEngine === true;
-  }
-
-  /**
-   * Crash recovery: Resume any PostRecords that were left in RUNNING state.
-   * This handles cases where the application was forcefully shut down or crashed
-   * while a post was in progress.
-   *
-   * Also handles orphaned records - PENDING/RUNNING records that have no queue record
-   * (can happen if queue record was deleted but post record state wasn't updated).
-   */
-  async onModuleInit() {
-    if (IsTestEnvironment()) {
-      return;
-    }
-
-    try {
-      // First, handle orphaned post records (PENDING/RUNNING without a queue record)
-      await this.failOrphanedPostRecords();
-
-      // Find all RUNNING post records
-      const runningRecords = await this.postRecordRepository.find({
-        where: (record, { eq }) => eq(record.state, PostRecordState.RUNNING),
-        with: {
-          submission: {
-            with: {
-              files: true,
-              options: {
-                with: {
-                  account: true,
-                },
-              },
-            },
-          },
-        },
-      });
-
-      if (runningRecords.length > 0) {
-        this.logger
-          .withMetadata({ count: runningRecords.length })
-          .info(
-            'Detected interrupted PostRecords from crash/shutdown, scheduling resume',
-          );
-
-        // Resume in the background so onModuleInit does not block server startup
-        this.resumeInterruptedPosts(runningRecords);
-      }
-    } catch (error) {
-      this.logger
-        .withMetadata({ error })
-        .error('Failed to recover interrupted posts on startup');
-      // Don't throw - allow the app to start even if crash recovery fails
-    }
-  }
-
-  /**
-   * Resume interrupted posts in the background.
-   * This is intentionally not awaited so it does not block server startup.
-   */
-  private async resumeInterruptedPosts(
-    runningRecords: PostRecord[],
-  ): Promise<void> {
-    try {
-      this.logger.info(
-        'Waiting for website registry initialization before crash recovery...',
-      );
-      await this.websiteRegistryService.waitForInitialization(60_000);
-      this.logger.info(
-        'Website registry initialized, proceeding with crash recovery',
-      );
-
-      for (const record of runningRecords) {
-        this.logger
-          .withMetadata({
-            recordId: record.id,
-            resumeMode: record.resumeMode,
-          })
-          .info('Resuming interrupted PostRecord');
-
-        await this.postManagerRegistry.startPost(record);
-      }
-    } catch (error) {
-      this.logger
-        .withMetadata({ error })
-        .error('Failed to resume interrupted posts');
-    }
-  }
-
-  /**
-   * Find and fail orphaned post records.
-   * An orphaned record is one in PENDING or RUNNING state that has no corresponding queue record.
-   * This can happen if the queue record was deleted (dequeue/cancel) but the post record
-   * state wasn't properly updated to FAILED.
-   */
-  private async failOrphanedPostRecords(): Promise<void> {
-    // Find all PENDING or RUNNING post records
-    const inProgressRecords = await this.postRecordRepository.find({
-      where: (record, { or, eq }) =>
-        or(
-          eq(record.state, PostRecordState.PENDING),
-          eq(record.state, PostRecordState.RUNNING),
-        ),
-    });
-
-    if (inProgressRecords.length === 0) {
-      return;
-    }
-
-    // Get all queue records to check which post records have a corresponding queue entry
-    const allQueueRecords = await this.repository.findAll();
-    const queuedPostRecordIds = new Set(
-      allQueueRecords
-        .map((qr) => qr.postRecordId)
-        .filter((id): id is string => id != null),
-    );
-
-    // Find orphaned records (in-progress but not in queue)
-    const orphanedRecords = inProgressRecords.filter(
-      (record) => !queuedPostRecordIds.has(record.id),
-    );
-
-    if (orphanedRecords.length > 0) {
-      this.logger
-        .withMetadata({ count: orphanedRecords.length })
-        .warn(
-          'Found orphaned PostRecords (PENDING/RUNNING with no queue record), marking as FAILED',
-        );
-
-      for (const record of orphanedRecords) {
-        this.logger
-          .withMetadata({
-            recordId: record.id,
-            submissionId: record.submissionId,
-            state: record.state,
-          })
-          .warn('Marking orphaned PostRecord as FAILED');
-
-        await this.postRecordRepository.update(record.id, {
-          state: PostRecordState.FAILED,
-          completedAt: new Date().toISOString(),
-        });
-      }
-    }
   }
 
   public async isPaused(): Promise<boolean> {
@@ -238,131 +68,16 @@ export class PostQueueService
     await this.dequeue([id]);
   }
 
-  /**
-   * Get the most recent terminal PostRecord for a submission.
-   * @param {SubmissionId} submissionId - The submission ID
-   * @returns {Promise<PostRecord | null>} The most recent terminal record, or null if none
-   */
-  private async getMostRecentTerminalPostRecord(
-    submissionId: SubmissionId,
-  ): Promise<PostRecord | null> {
-    const records = await this.postRecordRepository.find({
-      where: (record, { eq, and, inArray }) =>
-        and(
-          eq(record.submissionId, submissionId),
-          inArray(record.state, [PostRecordState.DONE, PostRecordState.FAILED]),
-        ),
-      orderBy: (record, { desc }) => desc(record.createdAt),
-      limit: 1,
-    });
-
-    return records.length > 0 ? records[0] : null;
-  }
-
-  /**
-   * Handle terminal state for a completed post record.
-   * Archives the submission if successful and non-recurring.
-   * Emits appropriate notifications.
-   * @param {PostRecord} record - The completed post record
-   */
-  private async handleTerminalState(record: PostRecord): Promise<void> {
-    const { submission } = record;
-    const submissionName = submission.getSubmissionName() ?? 'Submission';
-
-    if (record.state === PostRecordState.DONE) {
-      this.logger
-        .withMetadata({ submissionId: record.submissionId })
-        .info('Post completed successfully');
-
-      // Archive submission if non-recurring schedule
-      if (submission.schedule.scheduleType !== ScheduleType.RECURRING) {
-        await this.submissionService.archive(record.submissionId);
-        this.logger
-          .withMetadata({ submissionId: record.submissionId })
-          .info('Submission archived after successful post');
-      }
-
-      // Emit success notification
-      await this.notificationService.create({
-        type: 'success',
-        title: 'Post Completed',
-        message: `Successfully posted "${submissionName}" to all websites`,
-        tags: ['post-success'],
-        data: {
-          submissionId: record.submissionId,
-          submissionType: submission.type,
-        },
-      });
-    } else if (record.state === PostRecordState.FAILED) {
-      this.logger
-        .withMetadata({ submissionId: record.submissionId })
-        .error('Post failed');
-
-      // Clear isScheduled for non-recurring submissions so they don't retry indefinitely
-      if (
-        submission.isScheduled &&
-        submission.schedule.scheduleType !== ScheduleType.RECURRING
-      ) {
-        await this.submissionService.update(record.submissionId, {
-          isScheduled: false,
-        });
-        this.logger
-          .withMetadata({ submissionId: record.submissionId })
-          .info('Cleared isScheduled flag after post failure');
-      }
-
-      // Count failed events for the message
-      const failedEventCount =
-        record.events?.filter((e) => e.eventType === 'POST_ATTEMPT_FAILED')
-          .length ?? 0;
-
-      // Emit failure notification (summary - individual failures already notified)
-      await this.notificationService.create({
-        type: 'warning',
-        title: 'Post Incomplete',
-        message:
-          failedEventCount > 0
-            ? `"${submissionName}" failed to post to ${failedEventCount} website(s)`
-            : `"${submissionName}" failed to post`,
-        tags: ['post-incomplete'],
-        data: {
-          submissionId: record.submissionId,
-          submissionType: submission.type,
-          failedCount: failedEventCount,
-        },
-      });
-    }
-  }
-
-  /**
-   * Enqueue submissions for posting.
-   * If resumeMode is provided and the submission has a terminal PostRecord,
-   * a new PostRecord will be created using the specified resume mode.
-   *
-   * Smart handling: If the most recent PostRecord is DONE (successful completion),
-   * we always create a fresh record (restart) regardless of the provided resumeMode,
-   * since the user is starting a new posting session.
-   *
-   * @param {SubmissionId[]} submissionIds - The submissions to enqueue
-   * @param {PostRecordResumeMode} resumeMode - Optional resume mode for re-queuing terminal records
-   */
-  public async enqueue(
-    submissionIds: SubmissionId[],
-    resumeMode?: PostRecordResumeMode,
-  ) {
-    if (!submissionIds.length) {
-      return;
-    }
+  /** Enqueue submissions for posting (creates a queue record per submission). */
+  public async enqueue(submissionIds: SubmissionId[]) {
+    if (!submissionIds.length) return;
     const release = await this.queueModificationMutex.acquire();
-    this.logger
-      .withMetadata({ submissionIds, resumeMode })
-      .info('Enqueueing posts');
+    this.logger.withMetadata({ submissionIds }).info('Enqueueing posts');
 
     try {
       for (const submissionId of submissionIds) {
-        // Check if submission exists and is not archived before doing anything
-        const submission =
-          await this.submissionRepository.findById(submissionId);
+        // eslint-disable-next-line no-await-in-loop
+        const submission = await this.submissionRepository.findById(submissionId);
         if (!submission) {
           this.logger
             .withMetadata({ submissionId })
@@ -376,63 +91,23 @@ export class PostQueueService
           continue;
         }
 
+        // eslint-disable-next-line no-await-in-loop
         const existing = await this.repository.findOne({
           where: (queueRecord, { eq }) =>
             eq(queueRecord.submissionId, submissionId),
-          with: {
-            postRecord: true,
-          },
         });
-
         if (!existing) {
-          // No queue entry exists - determine resume mode based on most recent PostRecord
-          const mostRecentRecord =
-            await this.getMostRecentTerminalPostRecord(submissionId);
-
-          let effectiveResumeMode: PostRecordResumeMode;
-
-          if (!mostRecentRecord) {
-            // No prior post record - fresh start
-            this.logger
-              .withMetadata({ submissionId })
-              .info('No prior PostRecord - creating fresh');
-            effectiveResumeMode = PostRecordResumeMode.NEW;
-          } else if (mostRecentRecord.state === PostRecordState.DONE) {
-            // Prior was successful - always restart fresh regardless of provided mode
-            this.logger
-              .withMetadata({ submissionId })
-              .info('Prior PostRecord was DONE - creating fresh (restart)');
-            effectiveResumeMode = PostRecordResumeMode.NEW;
-          } else {
-            // Prior was FAILED - use provided mode or default to CONTINUE
-            effectiveResumeMode = resumeMode ?? PostRecordResumeMode.CONTINUE;
-            this.logger
-              .withMetadata({
-                submissionId,
-                priorRecordId: mostRecentRecord.id,
-                resumeMode: effectiveResumeMode,
-              })
-              .info('Prior PostRecord was FAILED - using resume mode');
-          }
-
-          const newRecord = await this.postRecordFactory.create(
-            submissionId,
-            effectiveResumeMode,
-          );
-
-          await this.repository.insert({
-            submissionId,
-            postRecordId: newRecord.id,
-          });
+          // eslint-disable-next-line no-await-in-loop
+          await this.repository.insert({ submissionId });
         }
-        // If existing, do nothing (first-in-wins)
+        // If existing, do nothing (first-in-wins).
       }
     } catch (error) {
       this.logger.withError(error).error('Failed to enqueue posts');
       throw new InternalServerErrorException((error as Error).message);
     } finally {
       release();
-      this.initTime -= 61_000; // Ensure queue processing starts after next cycle
+      this.initTime -= 61_000; // ensure the next cycle processes promptly
     }
   }
 
@@ -446,9 +121,10 @@ export class PostQueueService
           inArray(queueRecord.submissionId, submissionIds),
       });
 
-      submissionIds.forEach((id) =>
-        this.postManagerRegistry.cancelIfRunning(id),
-      );
+      submissionIds.forEach((id) => {
+        this.relayPostManager.cancel(id);
+        this.relayPostManager.acknowledge(id);
+      });
 
       return await this.repository.deleteById(records.map((r) => r.id));
     } catch (error) {
@@ -459,14 +135,10 @@ export class PostQueueService
     }
   }
 
-  /**
-   * CRON based enqueueing of scheduled submissions.
-   */
+  /** CRON-based enqueueing of scheduled submissions. */
   @Cron(CronExpression.EVERY_30_SECONDS)
   public async checkForScheduledSubmissions() {
-    if (IsTestEnvironment()) {
-      return;
-    }
+    if (IsTestEnvironment()) return;
 
     const entities = await this.submissionRepository.find({
       where: (submission, { eq, and }) =>
@@ -481,15 +153,19 @@ export class PostQueueService
         (e) =>
           e.schedule.scheduledFor &&
           new Date(e.schedule.scheduledFor).getTime() <= now,
-      ) // Only those that are ready to be posted.
+      )
       .sort(
         (a, b) =>
           new Date(a.schedule.scheduledFor as string).getTime() -
           new Date(b.schedule.scheduledFor as string).getTime(),
-      ); // Sort by oldest first.
+      );
+    if (sorted.length === 0) return;
+
     await this.enqueue(sorted.map((s) => s.id));
+
+    // Advance recurring schedules to their next run.
     sorted
-      .filter((s) => s.schedule.cron)
+      .filter((s) => s.schedule.scheduleType === ScheduleType.RECURRING && s.schedule.cron)
       .forEach((s) => {
         const next = CronGenerator(s.schedule.cron as string)
           .nextRun()
@@ -497,153 +173,58 @@ export class PostQueueService
         if (next) {
           // eslint-disable-next-line no-param-reassign
           s.schedule.scheduledFor = next;
-          this.submissionRepository.update(s.id, {
-            schedule: s.schedule,
-          });
+          this.submissionRepository.update(s.id, { schedule: s.schedule });
         }
       });
   }
 
-  /**
-   * This runs a check every second on the state of queue items.
-   * This aims to have simple logic. Each run will either create a post record and start the post manager,
-   * or remove a submission from the queue if it is in a terminal state.
-   * Nothing happens if the queue is empty.
-   */
+  /** Per-second queue tick (after a startup grace period). */
   @Cron(CronExpression.EVERY_SECOND)
   public async run() {
-    if (!(this.initTime + 60_000 <= Date.now())) {
-      // Only run after 1 minute to allow the application to start up.
-      return;
-    }
-
-    if (IsTestEnvironment()) {
-      return;
-    }
-
+    if (!(this.initTime + 60_000 <= Date.now())) return;
+    if (IsTestEnvironment()) return;
     await this.execute();
   }
 
   /**
-   * Check if a RUNNING post record appears to be stuck (no activity for too long).
-   * Uses both record update time and last event time to determine activity.
-   *
-   * @param {PostRecord} record - The post record to check
-   * @returns {boolean} True if the record appears to be stuck
+   * Run one queue cycle: start Relay jobs for queued submissions, dequeue any
+   * that finished, and leave running ones alone. Public for testing.
    */
-  private isStuck(record: PostRecord): boolean {
-    if (record.state !== PostRecordState.RUNNING) {
-      return false;
-    }
-
-    // Find the most recent activity: either record update or last event
-    const recordUpdatedAt = new Date(record.updatedAt).getTime();
-    const lastEventAt = record.events?.length
-      ? Math.max(...record.events.map((e) => new Date(e.createdAt).getTime()))
-      : 0;
-    const lastActivityAt = Math.max(recordUpdatedAt, lastEventAt);
-    const idleTime = Date.now() - lastActivityAt;
-
-    return idleTime > this.maxPostIdleTime;
-  }
-
-  /**
-   * Manages the queue by peeking at the top of the queue and deciding what to do based on the
-   * state of the queue.
-   *
-   * Made public for testing purposes.
-   */
-  public async execute() {
-    if (this.queueMutex.isLocked()) {
-      return;
-    }
-
+  public async execute(): Promise<void> {
+    if (this.queueMutex.isLocked()) return;
     const release = await this.queueMutex.acquire();
-
     try {
-      const isPaused = await this.isPaused();
-      if (isPaused) {
-        this.logger.info('Queue is paused, skipping execution cycle');
-        return;
+      if (await this.isPaused()) return;
+
+      const records = await this.repository.find({
+        orderBy: (queueRecord, { asc }) => asc(queueRecord.createdAt),
+        with: { submission: true },
+      });
+
+      for (const record of records) {
+        const { submissionId, submission } = record;
+
+        if (submission?.isArchived) {
+          this.relayPostManager.cancel(submissionId);
+          this.relayPostManager.acknowledge(submissionId);
+          // eslint-disable-next-line no-await-in-loop
+          await this.dequeue([submissionId]);
+          continue;
+        }
+
+        if (this.relayPostManager.getOutcome(submissionId)) {
+          //  manager already handled archive/notify; clear the queue.Terminal 
+          this.relayPostManager.acknowledge(submissionId);
+          // eslint-disable-next-line no-await-in-loop
+          await this.dequeue([submissionId]);
+          continue;
+        }
+
+        if (!this.relayPostManager.isPosting(submissionId)) {
+          // eslint-disable-next-line no-await-in-loop
+          await this.relayPostManager.enqueue(submissionId);
+        }
       }
-
-      if (await this.useRelayEngine()) {
-        await this.executeRelay();
-        return;
-      }
-
-      const top = await this.peek();
-      // Queue Empty
-      if (!top) {
-        return;
-      }
-
-      const { postRecord: record, submissionId, submission } = top;
-      if (submission.isArchived) {
-        // Submission is archived, remove from queue
-        this.logger
-          .withMetadata({ submissionId })
-          .info('Submission is archived, removing from queue');
-        await this.dequeue([submissionId]);
-        return;
-      }
-
-      if (!record) {
-        // PostRecord should always exist since enqueue() creates it
-        // If missing, something is wrong - log error and remove from queue
-        this.logger
-          .withMetadata({ submissionId })
-          .error('Queue entry has no PostRecord - removing invalid entry');
-        await this.dequeue([submissionId]);
-        return;
-      }
-
-      if (
-        record.state === PostRecordState.DONE ||
-        record.state === PostRecordState.FAILED
-      ) {
-        // Post is in a terminal state - handle completion actions and remove from queue
-        await this.handleTerminalState(record);
-        await this.dequeue([submissionId]);
-      } else if (!this.postManagerRegistry.isPostingType(submission.type)) {
-        // Post is not in a terminal state, but the manager for this type is not posting, so restart it.
-        this.logger
-          .withMetadata({ record })
-          .info(
-            'PostManager is not posting, but record is not in terminal state. Resuming record.',
-          );
-
-        // Start the post - the manager will build resume context from the record
-        await this.postManagerRegistry.startPost(record);
-      } else if (this.isStuck(record)) {
-        // Manager is posting but record shows no activity - it's stuck
-        const recordUpdatedAt = new Date(record.updatedAt).getTime();
-        const lastEventAt = record.events?.length
-          ? Math.max(
-              ...record.events.map((e) => new Date(e.createdAt).getTime()),
-            )
-          : 0;
-        const lastActivityAt = Math.max(recordUpdatedAt, lastEventAt);
-
-        this.logger
-          .withMetadata({
-            submissionId,
-            recordId: record.id,
-            idleTime: Date.now() - lastActivityAt,
-            lastActivityAt: new Date(lastActivityAt).toISOString(),
-            eventCount: record.events?.length ?? 0,
-          })
-          .warn(
-            'PostRecord has been RUNNING without activity - marking as failed',
-          );
-
-        await this.postRecordRepository.update(record.id, {
-          state: PostRecordState.FAILED,
-          completedAt: new Date().toISOString(),
-        });
-        // Next cycle will handle terminal state
-      }
-      // else: manager is actively posting and making progress - do nothing
     } catch (error) {
       this.logger.withMetadata({ error }).error('Failed to run queue');
       throw error;
@@ -652,69 +233,11 @@ export class PostQueueService
     }
   }
 
-  /**
-   * Relay-engine execution cycle (feature-flagged). The post-queue table stays
-   * the source of truth for "what to post"; the RelayPostManager owns running.
-   * For each queued submission we either start a Relay job, dequeue a finished
-   * one, or leave a running one alone.
-   */
-  private async executeRelay(): Promise<void> {
-    const records = await this.repository.find({
-      orderBy: (queueRecord, { asc }) => asc(queueRecord.createdAt),
-      with: { submission: true },
-    });
-
-    for (const record of records) {
-      const { submissionId, submission } = record;
-
-      if (submission?.isArchived) {
-        this.relayPostManager.cancel(submissionId);
-        this.relayPostManager.acknowledge(submissionId);
-        // eslint-disable-next-line no-await-in-loop
-        await this.dequeue([submissionId]);
-        continue;
-      }
-
-      const outcome = this.relayPostManager.getOutcome(submissionId);
-      if (outcome) {
-        // Terminal — manager already handled archive/notify; clear the queue.
-        this.relayPostManager.acknowledge(submissionId);
-        // eslint-disable-next-line no-await-in-loop
-        await this.dequeue([submissionId]);
-        continue;
-      }
-
-      if (!this.relayPostManager.isPosting(submissionId)) {
-        // eslint-disable-next-line no-await-in-loop
-        await this.relayPostManager.enqueue(submissionId);
-      }
-    }
-  }
-
-  /**
-   * Peeks at the next item in the queue.
-   * Based on the createdAt date.
-   */
+  /** Peeks at the next item in the queue (oldest first). */
   public async peek(): Promise<PostQueueRecord | null> {
     return this.repository.findOne({
       orderBy: (queueRecord, { asc }) => asc(queueRecord.createdAt),
-      with: {
-        submission: true,
-        postRecord: {
-          with: {
-            submission: {
-              with: {
-                files: true,
-                options: {
-                  with: {
-                    account: true,
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
+      with: { submission: true },
     });
   }
 }

@@ -47,6 +47,11 @@ export class RelayTracer {
 
   private readonly entries: TraceEntry[] = [];
 
+  /** Cap the in-memory buffer so a long-running process can't leak. The full
+   * record always lives on disk (per-job NDJSON); this buffer only backs the
+   * recent-history/ledger projection. */
+  private readonly maxEntries = 5000;
+
   private dirReady = false;
 
   constructor(@Optional() private readonly webSocket?: WSGateway) {}
@@ -55,6 +60,9 @@ export class RelayTracer {
   emit(entry: Omit<TraceEntry, 'ts'>): void {
     const full: TraceEntry = { ts: new Date().toISOString(), ...entry };
     this.entries.push(full);
+    if (this.entries.length > this.maxEntries) {
+      this.entries.splice(0, this.entries.length - this.maxEntries);
+    }
     this.writeLine(full).catch(() => {
       /* best-effort: tracing must never break posting */
     });

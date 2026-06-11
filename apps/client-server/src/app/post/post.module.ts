@@ -8,8 +8,6 @@ import { ValidationModule } from '../validation/validation.module';
 import { WebsiteOptionsModule } from '../website-options/website-options.module';
 import { WebsiteImplProvider } from '../websites/implementations/provider';
 import { WebsitesModule } from '../websites/websites.module';
-import { PostController } from './post.controller';
-import { PostService } from './post.service';
 import { RateLimiter } from './engine/rate-limiter';
 import { RelayFileProcessor } from './engine/file-processor';
 import { RelayPersistence } from './engine/persistence';
@@ -18,20 +16,17 @@ import { RelayPostManager } from './engine/post-manager.service';
 import { RelayPreviewService } from './engine/preview.service';
 import { RelayTracer } from './engine/tracer.service';
 import { SharpEncoder } from './engine/sharp-encoder';
+import { PostController } from './post.controller';
+import { PostService } from './post.service';
 import { PostFileResizerService } from './services/post-file-resizer/post-file-resizer.service';
-import {
-    FileSubmissionPostManager,
-    MessageSubmissionPostManager,
-    PostManagerRegistry,
-} from './services/post-manager-v2';
 import { PostManagerController } from './services/post-manager/post-manager.controller';
 import { PostQueueController } from './services/post-queue/post-queue.controller';
 import { PostQueueService } from './services/post-queue/post-queue.service';
-import {
-    PostEventRepository,
-    PostRecordFactory,
-} from './services/post-record-factory';
 
+/**
+ * Posting module. The Relay engine is the sole posting executor; the post
+ * queue records what to post and the RelayPostManager owns running it.
+ */
 @Module({
   imports: [
     WebsiteOptionsModule,
@@ -49,14 +44,6 @@ import {
     PostFileResizerService,
     WebsiteImplProvider,
     PostQueueService,
-    PostEventRepository,
-    PostRecordFactory,
-    FileSubmissionPostManager,
-    MessageSubmissionPostManager,
-    PostManagerRegistry,
-    // Relay engine — building-block services, registered behind the
-    // `useRelayEngine` settings flag. The scheduler/persistence wiring lands in
-    // a later PR; these providers do not change the default posting path.
     RelayTracer,
     RateLimiter,
     SharpEncoder,
@@ -66,6 +53,6 @@ import {
     RelayPersistence,
     RelayPostManager,
   ],
-  exports: [PostEventRepository, PostRecordFactory, PostManagerRegistry],
+  exports: [RelayPostManager],
 })
 export class PostModule {}

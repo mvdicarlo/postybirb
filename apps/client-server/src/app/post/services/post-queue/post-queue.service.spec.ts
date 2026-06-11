@@ -1,12 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { clearDatabase, PostRecordRepository } from '@postybirb/database';
+import { clearDatabase } from '@postybirb/database';
 import {
-    AccountId,
-    DefaultDescription,
-    PostRecordState,
-    SubmissionId,
-    SubmissionRating,
-    SubmissionType,
+  AccountId,
+  DefaultDescription,
+  SubmissionId,
+  SubmissionRating,
+  SubmissionType,
 } from '@postybirb/types';
 import { AccountModule } from '../../../account/account.module';
 import { AccountService } from '../../../account/account.service';
@@ -19,11 +18,9 @@ import { SubmissionModule } from '../../../submission/submission.module';
 import { CreateWebsiteOptionsDto } from '../../../website-options/dtos/create-website-options.dto';
 import { WebsiteOptionsModule } from '../../../website-options/website-options.module';
 import { WebsiteOptionsService } from '../../../website-options/website-options.service';
-import { WebsiteRegistryService } from '../../../websites/website-registry.service';
 import { WebsitesModule } from '../../../websites/websites.module';
+import { RelayPostManager } from '../../engine/post-manager.service';
 import { PostModule } from '../../post.module';
-import { PostService } from '../../post.service';
-import { PostManagerRegistry } from '../post-manager-v2';
 import { PostQueueService } from './post-queue.service';
 
 describe('PostQueueService', () => {
@@ -32,52 +29,45 @@ describe('PostQueueService', () => {
   let submissionService: SubmissionService;
   let accountService: AccountService;
   let websiteOptionsService: WebsiteOptionsService;
-  let registryService: WebsiteRegistryService;
-  let postService: PostService;
-  let mockPostManagerRegistry: jest.Mocked<PostManagerRegistry>;
+  let mockRelayPostManager: jest.Mocked<RelayPostManager>;
 
   beforeEach(async () => {
     clearDatabase();
 
-    // Create mock PostManagerRegistry
-    mockPostManagerRegistry = {
-      startPost: jest.fn().mockResolvedValue(undefined),
-      cancelIfRunning: jest.fn().mockResolvedValue(true),
-      isPostingType: jest.fn().mockReturnValue(false),
-      getManager: jest.fn(),
-    } as any;
+    mockRelayPostManager = {
+      enqueue: jest.fn().mockResolvedValue('job_1'),
+      cancel: jest.fn().mockReturnValue(true),
+      acknowledge: jest.fn(),
+      isPosting: jest.fn().mockReturnValue(false),
+      getOutcome: jest.fn().mockReturnValue(undefined),
+      getActiveTrees: jest.fn().mockReturnValue([]),
+      getHistory: jest.fn().mockResolvedValue([]),
+      recover: jest.fn().mockResolvedValue(undefined),
+    } as unknown as jest.Mocked<RelayPostManager>;
 
-    try {
-      module = await Test.createTestingModule({
-        imports: [
-          TestPlatformModule,
-          SubmissionModule,
-          AccountModule,
-          WebsiteOptionsModule,
-          WebsitesModule,
-          PostModule,
-        ],
-      })
-        .overrideProvider(PostManagerRegistry)
-        .useValue(mockPostManagerRegistry)
-        .compile();
+    module = await Test.createTestingModule({
+      imports: [
+        TestPlatformModule,
+        SubmissionModule,
+        AccountModule,
+        WebsiteOptionsModule,
+        WebsitesModule,
+        PostModule,
+      ],
+    })
+      .overrideProvider(RelayPostManager)
+      .useValue(mockRelayPostManager)
+      .compile();
 
-      service = module.get<PostQueueService>(PostQueueService);
-      submissionService = module.get<SubmissionService>(SubmissionService);
-      accountService = module.get<AccountService>(AccountService);
-      const settingsService = module.get<SettingsService>(SettingsService);
-      websiteOptionsService = module.get<WebsiteOptionsService>(
-        WebsiteOptionsService,
-      );
-      registryService = module.get<WebsiteRegistryService>(
-        WebsiteRegistryService,
-      );
-      postService = module.get<PostService>(PostService);
-      await accountService.onModuleInit();
-      await settingsService.onModuleInit();
-    } catch (err) {
-      console.log(err);
-    }
+    service = module.get<PostQueueService>(PostQueueService);
+    submissionService = module.get<SubmissionService>(SubmissionService);
+    accountService = module.get<AccountService>(AccountService);
+    const settingsService = module.get<SettingsService>(SettingsService);
+    websiteOptionsService = module.get<WebsiteOptionsService>(
+      WebsiteOptionsService,
+    );
+    await accountService.onModuleInit();
+    await settingsService.onModuleInit();
   });
 
   function createSubmissionDto(): CreateSubmissionDto {
@@ -103,14 +93,8 @@ describe('PostQueueService', () => {
     dto.accountId = accountId;
     dto.data = {
       title: 'Test Title',
-      tags: {
-        overrideDefault: true,
-        tags: ['test'],
-      },
-      description: {
-        overrideDefault: true,
-        description: DefaultDescription(),
-      },
+      tags: { overrideDefault: true, tags: ['test'] },
+      description: { overrideDefault: true, description: DefaultDescription() },
       rating: SubmissionRating.GENERAL,
     };
     return dto;
@@ -124,97 +108,48 @@ describe('PostQueueService', () => {
     expect(service).toBeDefined();
   });
 
-  it('should handle pausing and resuming the queue', async () => {
+  it('pauses and resumes the queue', async () => {
     await service.pause();
     expect(await service.isPaused()).toBe(true);
     await service.resume();
     expect(await service.isPaused()).toBe(false);
   });
 
-  it('should handle enqueue and dequeue of submissions', async () => {
-    await service.pause(); // Just to test the function
+  it('enqueues and dequeues submissions', async () => {
     const submission = await submissionService.create(createSubmissionDto());
-    const account = await accountService.create(createAccountDto());
-    expect(registryService.findInstance(account)).toBeDefined();
-
-    await websiteOptionsService.create(
-      createWebsiteOptionsDto(submission.id, account.id),
-    );
 
     await service.enqueue([submission.id, submission.id]);
-    expect((await service.findAll()).length).toBe(1);
     const top = await service.peek();
-    expect(top).toBeDefined();
-    expect(top?.submission.id).toBe(submission.id);
+    expect(top).not.toBeNull();
+    expect(top?.submissionId).toBe(submission.id);
 
     await service.dequeue([submission.id]);
-    expect((await service.findAll()).length).toBe(0);
     expect(await service.peek()).toBeNull();
+    expect(mockRelayPostManager.cancel).toHaveBeenCalledWith(submission.id);
   });
 
-  it('should insert posts into the post manager', async () => {
-    const submission = await submissionService.create(createSubmissionDto());
+  it('starts a Relay job for a queued submission on execute', async () => {
     const account = await accountService.create(createAccountDto());
-    expect(registryService.findInstance(account)).toBeDefined();
-
+    const submission = await submissionService.create(createSubmissionDto());
     await websiteOptionsService.create(
       createWebsiteOptionsDto(submission.id, account.id),
     );
 
-    // Enqueue now creates the PostRecord immediately
     await service.enqueue([submission.id]);
-    expect((await service.findAll()).length).toBe(1);
+    mockRelayPostManager.isPosting.mockReturnValue(false);
 
-    // PostRecord should already exist after enqueue
-    let postRecord = (await postService.findAll())[0];
-    expect(postRecord).toBeDefined();
-    expect(postRecord.submissionId).toBe(submission.id);
-    expect(postRecord.state).toBe(PostRecordState.PENDING);
-
-    // Initially, no manager is posting (so execute will start the post)
-    mockPostManagerRegistry.isPostingType.mockReturnValue(false);
-
-    // Execute should start the post manager
     await service.execute();
-    let queueRecord = await service.peek();
-    expect(mockPostManagerRegistry.startPost).toHaveBeenCalledWith(
-      expect.objectContaining({
-        id: postRecord.id,
-        submissionId: submission.id,
-      }),
-    );
-    expect(queueRecord).toBeDefined();
-    expect(queueRecord?.postRecord).toBeDefined();
+    expect(mockRelayPostManager.enqueue).toHaveBeenCalledWith(submission.id);
+  });
 
-    // Now simulate that the manager is posting
-    mockPostManagerRegistry.isPostingType.mockReturnValue(true);
+  it('dequeues a submission whose Relay job has finished', async () => {
+    const submission = await submissionService.create(createSubmissionDto());
+    await service.enqueue([submission.id]);
 
-    // Simulate cancellation
-    await mockPostManagerRegistry.cancelIfRunning(submission.id);
-    expect(mockPostManagerRegistry.cancelIfRunning).toHaveBeenCalledWith(
-      submission.id,
-    );
-
-    // Simulate the post completing (with failure) - manually update the record
-    const database = new PostRecordRepository();
-    await database.update(postRecord.id, {
-      state: PostRecordState.FAILED,
-      completedAt: new Date().toISOString(),
-    });
-
-    // Simulate posting finished
-    mockPostManagerRegistry.isPostingType.mockReturnValue(false);
-
-    queueRecord = await service.peek();
-    expect(queueRecord).toBeDefined();
-    expect(queueRecord?.postRecord).toBeDefined();
-
-    // We expect the post to be in a terminal state and cleanup of the record.
-    // The post record should remain after the queue record is deleted.
+    mockRelayPostManager.getOutcome.mockReturnValue('SUCCEEDED' as never);
     await service.execute();
-    expect((await service.findAll()).length).toBe(0);
-    postRecord = await postService.findByIdOrThrow(postRecord.id);
-    expect(postRecord.state).toBe(PostRecordState.FAILED);
-    expect(postRecord.completedAt).toBeDefined();
+
+    expect(mockRelayPostManager.acknowledge).toHaveBeenCalledWith(submission.id);
+    expect(await service.peek()).toBeNull();
   });
 });
