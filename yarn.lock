@@ -24334,7 +24334,7 @@ __metadata:
     socks-proxy-agent: "npm:^8.0.5"
     swagger-ui-express: "npm:^4.1.6"
     tailwindcss: "npm:3.4.3"
-    teleproto: "npm:^1.225.3"
+    teleproto: "npm:^1.225.4"
     tinykeys: "npm:^3.0.0"
     tippy.js: "npm:^6.3.7"
     tslib: "npm:2.5.2"
@@ -27604,9 +27604,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"teleproto@npm:^1.225.3":
-  version: 1.225.3
-  resolution: "teleproto@npm:1.225.3"
+"teleproto@npm:^1.225.4":
+  version: 1.225.4
+  resolution: "teleproto@npm:1.225.4"
   dependencies:
     async-mutex: "npm:^0.3.0"
     big-integer: "npm:^1.6.48"
@@ -27615,7 +27615,7 @@ __metadata:
     socks: "npm:^2.6.2"
     store2: "npm:^2.13.0"
     ts-custom-error: "npm:^3.2.0"
-  checksum: 10c0/bc6b84345d4f3744169ccf287049ce4a49d1701affbe21840f065b0ac1f511c567d336a2439ba33ad1dc134bdfe50cb6da5904068cd8682b38266502bc158231
+  checksum: 10c0/3d323a497c7c3108ca7dae62684925023f9d8cd368eb4e79207142682c239f78c64bf114a4ead2e816e219fa8caf6bc90412e98cd38cea3579d405fa327c534e
   languageName: node
   linkType: hard
 

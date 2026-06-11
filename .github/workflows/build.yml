@@ -7,6 +7,7 @@ jobs:
   build:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
 
     strategy:
       fail-fast: false
@@ -16,21 +17,28 @@ jobs:
             os: macos-latest
             platform: mac
             arch: universal
+            # mac uploads via softprops because electron-builder's own
+            # uploader stalls on large universal DMGs
+            publish: never
 
           - name: Linux (x64)
             os: ubuntu-latest
             platform: linux
             arch: x64
+            # linux publishes natively so the Snap Store upload still runs
+            publish: always
 
           - name: Linux (arm64)
             os: ubuntu-24.04-arm
             platform: linux
             arch: arm64
+            publish: always
 
           - name: Windows (x64)
             os: windows-latest
             platform: win
             arch: x64
+            publish: never
 
     steps:
       - name: Checkout repository
@@ -43,6 +51,8 @@ jobs:
       # On migration to node 26 for actions corepack will need to be installed using npm
       - name: Enable corepack to use Yarn v4
         run: |
+          # Remove any globally installed yarn v1 that may conflict with corepack's shim (especially on Windows)
+          npm uninstall -g yarn
           # Replaces yarn in PATH with corepack's yarn shim
           corepack enable
           # Downloads yarn
@@ -145,13 +155,13 @@ jobs:
 
       - name: Build Electron app (fork)
         if: github.event.repository.fork
-        run: yarn electron-builder --${{ matrix.platform }} --${{ matrix.arch }} --publish=always
+        run: yarn electron-builder --${{ matrix.platform }} --${{ matrix.arch }} --publish ${{ matrix.publish }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Electron app
         if: (!github.event.repository.fork)
-        run: yarn electron-builder --${{ matrix.platform }} --${{ matrix.arch }} --publish=always
+        run: yarn electron-builder --${{ matrix.platform }} --${{ matrix.arch }} --publish ${{ matrix.publish }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
@@ -164,6 +174,36 @@ jobs:
           SNAPCRAFT_BUILD_ENVIRONMENT: host
           # ✅ Use system fpm for Linux only
           USE_SYSTEM_FPM: ${{ matrix.platform == 'linux' && 'true' || '' }}
+
+      # electron-builder uploads can stall at the end of large macOS universal
+      # DMG publishing, so mac/windows build with `--publish never` above and
+      # upload the generated artifacts (including the latest*.yml autoupdate
+      # metadata) here. Linux publishes natively (matrix.publish == always) so
+      # the Snap Store upload still happens and this step is skipped.
+      - name: Get app version
+        if: matrix.publish == 'never'
+        id: appVersion
+        shell: bash
+        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Publish artifacts to GitHub Release
+        if: matrix.publish == 'never'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.appVersion.outputs.version }}
+          name: v${{ steps.appVersion.outputs.version }}
+          draft: true
+          fail_on_unmatched_files: false
+          files: |
+            release/*.dmg
+            release/*.dmg.blockmap
+            release/*.zip
+            release/*.zip.blockmap
+            release/*.exe
+            release/*.blockmap
+            release/latest*.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract version from package.json for docker tag
         uses: actions/github-script@v8

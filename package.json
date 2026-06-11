@@ -5,7 +5,7 @@
   },
   "description": "PostyBirb is a desktop application used for posting to multiple websites from one simple form.",
   "name": "postybirb",
-  "version": "4.0.36",
+  "version": "4.0.37",
   "repository": {
     "type": "git",
     "url": "git+https://mvdicarlo@github.com/mvdicarlo/postybirb.git"
@@ -174,7 +174,7 @@
     "socket.io": "^4.8.0",
     "socket.io-client": "^4.8.0",
     "socks-proxy-agent": "^8.0.5",
-    "teleproto": "^1.225.3",
+    "teleproto": "^1.225.4",
     "tinykeys": "^3.0.0",
     "tippy.js": "^6.3.7",
     "tslib": "2.5.2",
