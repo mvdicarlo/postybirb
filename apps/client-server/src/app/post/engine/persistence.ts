@@ -99,6 +99,12 @@ export class RelayPersistence {
     return rows.map((row) => this.toRelayJob(row));
   }
 
+  /** Load all jobs for a submission (newest first) as RelayJob trees. */
+  async loadBySubmission(submissionId: string): Promise<RelayJob[]> {
+    const rows = await this.jobs.findBySubmission(submissionId);
+    return rows.map((row) => this.toRelayJob(row));
+  }
+
   private taskValues(task: RelayTask) {
     return {
       id: task.id,

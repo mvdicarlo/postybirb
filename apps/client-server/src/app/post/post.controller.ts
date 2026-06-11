@@ -70,4 +70,16 @@ export class PostController extends PostyBirbController<PostRecordRepository> {
   async preview(@Param('id') id: EntityId) {
     return this.previewService.preview(id);
   }
+
+  /**
+   * Relay posting history for a submission: every persisted job tree (newest
+   * first), with any in-flight job overlaid from memory.
+   *
+   * @param {EntityId} id - The submission ID
+   */
+  @Get(':id/jobs')
+  @ApiOkResponse({ description: 'Posting job-tree history for the submission.' })
+  async getJobHistory(@Param('id') id: EntityId) {
+    return this.relayPostManager.getHistory(id);
+  }
 }

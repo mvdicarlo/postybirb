@@ -113,4 +113,22 @@ describe('RelayPersistence', () => {
     const active = await persistence.loadActive();
     expect(active.map((j) => j.submissionId)).toContain(submissionId);
   });
+
+  it('loadBySubmission returns all jobs incl. terminal ones', async () => {
+    const { submissionId, accountId } = await seed();
+    const persistence = new RelayPersistence();
+    const job = buildJob(submissionId, accountId);
+    await persistence.create(job);
+    job.status = NodeStatus.SUCCEEDED;
+    job.completedAt = Date.now();
+    await persistence.save(job);
+
+    // Not active anymore...
+    expect(await persistence.loadActive()).toHaveLength(0);
+    // ...but still present in history.
+    const history = await persistence.loadBySubmission(submissionId);
+    expect(history).toHaveLength(1);
+    expect(history[0].status).toBe(NodeStatus.SUCCEEDED);
+    expect(history[0].submissionId).toBe(submissionId);
+  });
 });

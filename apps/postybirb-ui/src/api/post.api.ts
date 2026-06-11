@@ -23,6 +23,11 @@ class PostApi extends BaseApi<
   getActiveJobs() {
     return this.client.get<JobTreeNode[]>('jobs/active');
   }
+
+  /** Relay posting history (job trees, newest first) for a submission. */
+  getJobHistory(submissionId: string) {
+    return this.client.get<JobTreeNode[]>(`${submissionId}/jobs`);
+  }
 }
 
 export default new PostApi();

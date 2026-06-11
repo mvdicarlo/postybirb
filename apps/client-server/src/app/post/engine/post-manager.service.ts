@@ -153,6 +153,19 @@ export class RelayPostManager implements OnModuleInit {
     return trees;
   }
 
+  /**
+   * Posting history for a submission: every persisted job tree (newest first),
+   * with any currently in-flight job overlaid from memory so it reflects the
+   * latest live state rather than the last-persisted snapshot.
+   */
+  async getHistory(submissionId: SubmissionId): Promise<JobTreeNode[]> {
+    const jobs = await this.persistence.loadBySubmission(submissionId);
+    return jobs.map((job) => {
+      const live = this.scheduler.getJob(job.id);
+      return projectJob(live ?? job);
+    });
+  }
+
   /** Terminal outcome awaiting queue acknowledgement (undefined if none). */
   getOutcome(submissionId: SubmissionId): NodeStatus | undefined {
     return this.outcomes.get(submissionId);
