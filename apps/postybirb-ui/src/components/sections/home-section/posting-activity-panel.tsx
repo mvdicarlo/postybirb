@@ -8,15 +8,15 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-  ActionIcon,
-  Badge,
-  Box,
-  Group,
-  Paper,
-  Stack,
-  Text,
-  ThemeIcon,
-  Tooltip,
+    ActionIcon,
+    Badge,
+    Box,
+    Group,
+    Paper,
+    Stack,
+    Text,
+    ThemeIcon,
+    Tooltip,
 } from '@mantine/core';
 import { SubmissionType } from '@postybirb/types';
 import { IconPlayerStop, IconSend } from '@tabler/icons-react';
@@ -26,13 +26,13 @@ import { useQueuedSubmissions } from '../../../stores/entity/submission-store';
 import type { SubmissionRecord } from '../../../stores/records';
 import { useViewStateActions } from '../../../stores/ui/navigation-store';
 import {
-  useActivePostingSubmissionIds,
-  useActiveJobs,
-  usePostingStateActions,
+    useActiveJobs,
+    useActivePostingSubmissionIds,
+    usePostingStateActions,
 } from '../../../stores/ui/posting-state-store';
 import {
-  createFileSubmissionsViewState,
-  createMessageSubmissionsViewState,
+    createFileSubmissionsViewState,
+    createMessageSubmissionsViewState,
 } from '../../../types/view-state';
 import { JobTreeView } from './job-tree-view';
 

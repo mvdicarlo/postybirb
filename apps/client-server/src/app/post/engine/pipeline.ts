@@ -24,6 +24,7 @@ import {
     UnitKind,
 } from '@postybirb/types';
 import { CancellableToken } from '../models/cancellable-token';
+import { PostingFile } from '../models/posting-file';
 import { StageError, toTaskError } from './errors';
 import {
     RelayJob,
@@ -36,7 +37,6 @@ import { RateLimiter, rateKey } from './rate-limiter';
 import { RelayTracer } from './tracer.service';
 import { RelaySourceFile } from './transform';
 import { RelayPostResult, RelayWebsite } from './websites';
-import { PostingFile } from '../models/posting-file';
 
 /** Submission shape the engine needs to plan and run a job. */
 export interface RelaySubmission {

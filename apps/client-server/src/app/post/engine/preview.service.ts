@@ -11,33 +11,16 @@
 import { Injectable } from '@nestjs/common';
 import { Submission, SubmissionRepository } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
-import { FileSubmission, SubmissionType } from '@postybirb/types';
-import { WebsiteRegistryService } from '../../websites/website-registry.service';
+import {
+    FileSubmission,
+    PreviewResult,
+    PreviewTaskResult,
+    SubmissionType,
+} from '@postybirb/types';
 import { isFileWebsite } from '../../websites/models/website-modifiers/file-website';
 import { isMessageWebsite } from '../../websites/models/website-modifiers/message-website';
+import { WebsiteRegistryService } from '../../websites/website-registry.service';
 import { RelayFileProcessor } from './file-processor';
-
-export type PreviewFileResult = {
-  fileId: string;
-  fileName: string;
-  from: { width: number; height: number; bytes: number; mimeType: string };
-  to?: { width: number; height: number; bytes: number; mimeType: string };
-  excluded?: boolean;
-  error?: string;
-};
-
-export type PreviewTaskResult = {
-  websiteId: string;
-  accountId: string;
-  supported: boolean;
-  files: PreviewFileResult[];
-};
-
-export type PreviewResult = {
-  submissionId: string;
-  type: SubmissionType;
-  tasks: PreviewTaskResult[];
-};
 
 @Injectable()
 export class RelayPreviewService {

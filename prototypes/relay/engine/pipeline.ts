@@ -28,7 +28,7 @@ import {
     UnitKind,
     WebsiteTask,
 } from './model.ts';
-import { RateLimiter, rateKey } from './rate-limit.ts';
+import { rateKey, RateLimiter } from './rate-limit.ts';
 import { Tracer } from './trace.ts';
 import {
     buildTransformPlan,

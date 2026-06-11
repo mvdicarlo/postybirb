@@ -19,7 +19,7 @@ import {
     SubmissionType,
     WebsiteTask,
 } from './engine/model.ts';
-import { RateLimiter, rateKey } from './engine/rate-limit.ts';
+import { rateKey, RateLimiter } from './engine/rate-limit.ts';
 import { Scheduler } from './engine/scheduler.ts';
 import { projectJob, Tracer } from './engine/trace.ts';
 import {

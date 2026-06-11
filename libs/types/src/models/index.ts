@@ -11,6 +11,7 @@ export * from './notification/notification.interface';
 export * from './post/dependency.type';
 export * from './post/job-tree-node.interface';
 export * from './post/post-job.interface';
+export * from './post/post-preview.interface';
 export * from './post/post-queue-record.interface';
 export * from './post/post-rate-window.interface';
 export * from './post/post-response.type';

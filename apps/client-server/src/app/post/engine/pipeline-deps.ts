@@ -17,10 +17,10 @@
 
 import { Injectable } from '@nestjs/common';
 import {
-  Submission,
-  SubmissionFile,
-  SubmissionRepository,
-  WebsiteOptions,
+    Submission,
+    SubmissionFile,
+    SubmissionRepository,
+    WebsiteOptions,
 } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import { FileSubmission, IWebsiteOptions } from '@postybirb/types';

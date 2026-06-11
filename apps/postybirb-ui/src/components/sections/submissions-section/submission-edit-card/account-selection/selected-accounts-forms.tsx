@@ -35,8 +35,8 @@ import type {
     AccountRecord,
     WebsiteRecord,
 } from '../../../../../stores/records';
-import { ComponentErrorBoundary } from '../../../../error-boundary';
 import { useSubmissionActiveJob } from '../../../../../stores/ui/posting-state-store';
+import { ComponentErrorBoundary } from '../../../../error-boundary';
 import {
     type AccountPostStatus,
     type AccountPostStatusEntry,

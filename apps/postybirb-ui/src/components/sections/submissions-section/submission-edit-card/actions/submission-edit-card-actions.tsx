@@ -7,11 +7,13 @@ import { ActionIcon, Group, Tooltip } from '@mantine/core';
 import {
     IconArchiveOff,
     IconCancel,
+    IconEye,
     IconHelp,
     IconHistory,
     IconSend,
     IconTrash,
 } from '@tabler/icons-react';
+import { useState } from 'react';
 import postManagerApi from '../../../../../api/post-manager.api';
 import postQueueApi from '../../../../../api/post-queue.api';
 import submissionApi from '../../../../../api/submission.api';
@@ -27,6 +29,7 @@ import {
 } from '../../../../../utils/notifications';
 import { HoldToConfirmButton } from '../../../../hold-to-confirm';
 import { SUBMISSION_EDIT_TOUR_ID } from '../../../../onboarding-tour/tours/submission-edit-tour';
+import { PostPreviewModal } from '../../post-preview-modal';
 import { useSubmissionEditCardContext } from '../context';
 import { ApplyTemplateAction } from './apply-template-action';
 import { SaveToManyAction } from './save-to-many-action';
@@ -38,6 +41,7 @@ export function SubmissionEditCardActions() {
   const { submission } = useSubmissionEditCardContext();
   const { startTour } = useTourActions();
   const isPosting = useIsSubmissionPosting(submission.id);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   const handlePost = async () => {
     try {
@@ -188,6 +192,16 @@ export function SubmissionEditCardActions() {
         </ActionIcon>
       </Tooltip>
       <ApplyTemplateAction />
+      <Tooltip label={<Trans>Preview (dry run)</Trans>}>
+        <ActionIcon
+          variant="subtle"
+          size="sm"
+          disabled={!submission.hasWebsiteOptions}
+          onClick={() => setPreviewOpen(true)}
+        >
+          <IconEye size={16} />
+        </ActionIcon>
+      </Tooltip>
       <Tooltip label={postTooltip}>
         <HoldToConfirmButton
           variant="subtle"
@@ -209,6 +223,11 @@ export function SubmissionEditCardActions() {
           <IconTrash size={16} />
         </HoldToConfirmButton>
       </Tooltip>
+      <PostPreviewModal
+        opened={previewOpen}
+        onClose={() => setPreviewOpen(false)}
+        submissionId={submission.id}
+      />
     </Group>
   );
 }
