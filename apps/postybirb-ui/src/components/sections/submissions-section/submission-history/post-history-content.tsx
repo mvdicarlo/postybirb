@@ -26,6 +26,7 @@ import {
 } from '@tabler/icons-react';
 import { useEffect, useMemo, useState } from 'react';
 import postApi from '../../../../api/post.api';
+import { isRemote } from '../../../../transports/http-client';
 import type { SubmissionRecord } from '../../../../stores';
 import { useSubmissionActiveJob } from '../../../../stores/ui/posting-state-store';
 import { EmptyState } from '../../../empty-state';
@@ -52,8 +53,31 @@ function saveStringToFile(filename: string, content: string, mime: string) {
   URL.revokeObjectURL(url);
 }
 
-function JobJsonPanel({ job }: { job: JobTreeNode }) {
-  const formatted = useMemo(() => JSON.stringify(job, null, 2), [job]);
+function JobJsonPanel({
+  job,
+  submission,
+}: {
+  job: JobTreeNode;
+  submission: SubmissionRecord;
+}) {
+  const formatted = useMemo(() => {
+    const payload = {
+      exportedAt: new Date().toISOString(),
+      app: {
+        version: window.electron?.app_version ?? 'unknown',
+        isRemote: isRemote(),
+      },
+      submission: {
+        id: submission.id,
+        type: submission.type,
+        isTemplate: submission.isTemplate,
+        isMultiSubmission: submission.isMultiSubmission,
+        isArchived: submission.isArchived,
+      },
+      job,
+    };
+    return JSON.stringify(payload, null, 2);
+  }, [job, submission]);
   return (
     <Accordion variant="contained">
       <Accordion.Item value="json-data">
@@ -224,7 +248,7 @@ export function PostHistoryContent({ submission }: PostHistoryContentProps) {
             <Card key={job.id} withBorder p="sm">
               <Stack gap="sm">
                 <JobTreeView job={job} />
-                <JobJsonPanel job={job} />
+                <JobJsonPanel job={job} submission={submission} />
               </Stack>
             </Card>
           ))}
