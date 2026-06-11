@@ -11,31 +11,31 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-  ActionIcon,
-  Badge,
-  Box,
-  Group,
-  Paper,
-  Progress,
-  Stack,
-  Text,
-  ThemeIcon,
-  Tooltip,
+    ActionIcon,
+    Badge,
+    Box,
+    Group,
+    Paper,
+    Progress,
+    Stack,
+    Text,
+    ThemeIcon,
+    Tooltip,
 } from '@mantine/core';
 import {
-  EntityId,
-  IPostWaitState,
-  PostEventType,
-  PostRecordState,
-  SubmissionType,
+    EntityId,
+    IPostWaitState,
+    PostEventType,
+    PostRecordState,
+    SubmissionType,
 } from '@postybirb/types';
 import {
-  IconCheck,
-  IconClock,
-  IconLoader,
-  IconPlayerStop,
-  IconSend,
-  IconX,
+    IconCheck,
+    IconClock,
+    IconLoader,
+    IconPlayerStop,
+    IconSend,
+    IconX,
 } from '@tabler/icons-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import postQueueApi from '../../../api/post-queue.api';
@@ -44,17 +44,22 @@ import { useQueuedSubmissions } from '../../../stores/entity/submission-store';
 import type { SubmissionRecord } from '../../../stores/records';
 import { useViewStateActions } from '../../../stores/ui/navigation-store';
 import {
-  useWaitStateActions,
-  useWaitStates,
+    useWaitStateActions,
+    useWaitStates,
 } from '../../../stores/ui/wait-state-store';
 import {
-  createFileSubmissionsViewState,
-  createMessageSubmissionsViewState,
+    useActiveJobs,
+    usePostingStateActions,
+} from '../../../stores/ui/posting-state-store';
+import {
+    createFileSubmissionsViewState,
+    createMessageSubmissionsViewState,
 } from '../../../types/view-state';
 import {
-  type AccountPostStatusEntry,
-  getAccountPostStatusMap,
+    type AccountPostStatusEntry,
+    getAccountPostStatusMap,
 } from '../submissions-section/submission-history';
+import { JobTreeView } from './job-tree-view';
 
 // =============================================================================
 // Helpers
@@ -478,11 +483,14 @@ export function PostingActivityPanel() {
   const queuedSubmissions = useQueuedSubmissions();
   const waitStates = useWaitStates();
   const { fetchWaitStates, pruneExpired } = useWaitStateActions();
+  const relayJobs = useActiveJobs();
+  const { fetchActive } = usePostingStateActions();
 
-  // Fetch wait states on mount (for page reload resilience)
+  // Fetch wait states + relay job snapshot on mount (page reload resilience)
   useEffect(() => {
     fetchWaitStates();
-  }, [fetchWaitStates]);
+    fetchActive();
+  }, [fetchWaitStates, fetchActive]);
 
   // Prune expired wait states periodically
   useEffect(() => {
@@ -508,9 +516,11 @@ export function PostingActivityPanel() {
   }, [queuedSubmissions]);
 
   // Don't render if nothing to show
-  if (active.length === 0 && queued.length === 0) {
+  if (active.length === 0 && queued.length === 0 && relayJobs.length === 0) {
     return null;
   }
+
+  const totalCount = active.length + queued.length + relayJobs.length;
 
   return (
     <Paper withBorder p="md" radius="md" data-tour-id="home-posting-activity">
@@ -522,12 +532,29 @@ export function PostingActivityPanel() {
           <Text size="sm" fw={500}>
             <Trans>Posting Activity</Trans>
           </Text>
-          {active.length + queued.length > 0 && (
+          {totalCount > 0 && (
             <Badge size="xs" variant="light" color="blue">
-              {active.length + queued.length}
+              {totalCount}
             </Badge>
           )}
         </Group>
+
+        {/* Relay engine job trees (only present when the engine is active) */}
+        {relayJobs.length > 0 && (
+          <Stack gap="xs">
+            {relayJobs.map((job) => (
+              <Paper
+                key={job.id}
+                withBorder
+                p="xs"
+                radius="sm"
+                bg="var(--mantine-color-default)"
+              >
+                <JobTreeView job={job} />
+              </Paper>
+            ))}
+          </Stack>
+        )}
 
         {/* Active posts */}
         {active.length > 0 && (
@@ -545,7 +572,7 @@ export function PostingActivityPanel() {
         {/* Queued posts */}
         {queued.length > 0 && (
           <Box>
-            {active.length > 0 && (
+            {(active.length > 0 || relayJobs.length > 0) && (
               <Text size="xs" c="dimmed" mb="xs" fw={500}>
                 <Trans>Queue</Trans>
               </Text>
