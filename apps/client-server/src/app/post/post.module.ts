@@ -11,7 +11,9 @@ import { WebsitesModule } from '../websites/websites.module';
 import { PostController } from './post.controller';
 import { PostService } from './post.service';
 import { RateLimiter } from './engine/rate-limiter';
+import { RelayPersistence } from './engine/persistence';
 import { RelayPipelineDeps } from './engine/pipeline-deps';
+import { RelayPostManager } from './engine/post-manager.service';
 import { RelayPreviewService } from './engine/preview.service';
 import { RelayTracer } from './engine/tracer.service';
 import { SharpEncoder } from './engine/sharp-encoder';
@@ -59,6 +61,8 @@ import {
     SharpEncoder,
     RelayPipelineDeps,
     RelayPreviewService,
+    RelayPersistence,
+    RelayPostManager,
   ],
   exports: [PostEventRepository, PostRecordFactory, PostManagerRegistry],
 })

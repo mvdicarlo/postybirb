@@ -27,6 +27,10 @@ export interface SchedulerOptions {
   maxConcurrentTasks: number;
   /** real wait by default; override for deterministic tests */
   wait?: (ms: number) => Promise<void>;
+  /** invoked after a task transition so callers can persist the subtree */
+  onTaskChanged?: (job: RelayJob, task: RelayTask) => void | Promise<void>;
+  /** invoked after a job transition (enqueue/complete) */
+  onJobChanged?: (job: RelayJob) => void | Promise<void>;
 }
 
 const realWait = (ms: number) =>
@@ -37,9 +41,13 @@ const realWait = (ms: number) =>
 export class RelayScheduler {
   private readonly deps: PipelineDeps;
 
-  private readonly opts: Required<Omit<SchedulerOptions, 'wait'>>;
+  private readonly opts: Required<Omit<SchedulerOptions, 'wait' | 'onTaskChanged' | 'onJobChanged'>>;
 
   private readonly wait: (ms: number) => Promise<void>;
+
+  private readonly onTaskChanged?: (job: RelayJob, task: RelayTask) => void | Promise<void>;
+
+  private readonly onJobChanged?: (job: RelayJob) => void | Promise<void>;
 
   private readonly jobs = new Map<string, RelayJob>();
 
@@ -52,6 +60,21 @@ export class RelayScheduler {
       maxConcurrentTasks: opts?.maxConcurrentTasks ?? 4,
     };
     this.wait = opts?.wait ?? realWait;
+    this.onTaskChanged = opts?.onTaskChanged;
+    this.onJobChanged = opts?.onJobChanged;
+  }
+
+  /** Register an already-planned (or recovered) job without re-planning it. */
+  adopt(job: RelayJob): void {
+    this.jobs.set(job.id, job);
+  }
+
+  private async persistTask(job: RelayJob, task: RelayTask): Promise<void> {
+    if (this.onTaskChanged) await this.onTaskChanged(job, task);
+  }
+
+  private async persistJob(job: RelayJob): Promise<void> {
+    if (this.onJobChanged) await this.onJobChanged(job);
   }
 
   enqueue(
@@ -134,6 +157,7 @@ export class RelayScheduler {
 
   private async runJob(job: RelayJob): Promise<void> {
     job.status = NodeStatus.RUNNING;
+    await this.persistJob(job);
     const token = new CancellableToken();
     this.tokens.set(job.id, token);
 
@@ -149,6 +173,8 @@ export class RelayScheduler {
         const soonest = this.soonestWakeup(job);
         if (soonest === undefined) {
           this.skipBlockedDependents(job);
+          // eslint-disable-next-line no-await-in-loop
+          await this.persistJob(job);
           continue;
         }
         // eslint-disable-next-line no-await-in-loop
@@ -166,6 +192,7 @@ export class RelayScheduler {
     job.status = computeJobStatus(job);
     job.completedAt = Date.now();
     this.tokens.delete(job.id);
+    await this.persistJob(job);
     this.deps.tracer.pushJobDelta(job);
     this.deps.tracer.emit({
       jobId: job.id,
@@ -233,12 +260,14 @@ export class RelayScheduler {
 
     try {
       await runTaskPass(this.deps, job, task, token);
+      await this.persistTask(job, task);
     } catch (err) {
       const se: StageError =
         err instanceof StageError ? err : classify('unknown', err);
 
       if (se.kind === PostErrorKind.RATE_LIMITED) {
         task.status = NodeStatus.WAITING; // waitingUntil set in the gate stage
+        await this.persistTask(job, task);
         this.deps.tracer.pushTaskDelta(job, task);
         return;
       }
@@ -253,6 +282,7 @@ export class RelayScheduler {
           event: 'task.retry',
           data: { kind: se.kind, delayMs: decision.delayMs, attempt: task.attempts },
         });
+        await this.persistTask(job, task);
         await this.wait(decision.delayMs);
         await this.runTaskWithRetries(job, task, token);
         return;
@@ -260,6 +290,7 @@ export class RelayScheduler {
 
       task.status = token.isCancelled ? NodeStatus.CANCELLED : NodeStatus.FAILED;
       task.error = toTaskError(se);
+      await this.persistTask(job, task);
       this.deps.tracer.emit({
         jobId: job.id,
         taskId: task.id,

@@ -1,5 +1,5 @@
 /**
- * Relay  production Encoder backed by the existing sharp worker pool.engine 
+ * Relay engine — production Encoder backed by the existing sharp worker pool.
  *
  * Relay's transform planner/verifier owns the policy (target mime, max
  * dimensions/bytes) and the verify loop; the actual pixel work is delegated to

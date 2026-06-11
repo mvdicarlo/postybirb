@@ -22,6 +22,7 @@ import { SettingsService } from '../../../settings/settings.service';
 import { SubmissionService } from '../../../submission/services/submission.service';
 import { WSGateway } from '../../../web-socket/web-socket-gateway';
 import { WebsiteRegistryService } from '../../../websites/website-registry.service';
+import { RelayPostManager } from '../../engine/post-manager.service';
 import { PostManagerRegistry } from '../post-manager-v2';
 import { PostRecordFactory } from '../post-record-factory';
 
@@ -58,9 +59,16 @@ export class PostQueueService
     private readonly notificationService: NotificationsService,
     private readonly submissionService: SubmissionService,
     private readonly websiteRegistryService: WebsiteRegistryService,
+    private readonly relayPostManager: RelayPostManager,
     @Optional() webSocket?: WSGateway,
   ) {
     super(new PostQueueRecordRepository(), webSocket);
+  }
+
+  /** Whether the new Relay engine should own posting (feature flag). */
+  private async useRelayEngine(): Promise<boolean> {
+    const settings = await this.settingsService.getDefaultSettings();
+    return settings.settings.useRelayEngine === true;
   }
 
   /**
@@ -559,6 +567,11 @@ export class PostQueueService
         return;
       }
 
+      if (await this.useRelayEngine()) {
+        await this.executeRelay();
+        return;
+      }
+
       const top = await this.peek();
       // Queue Empty
       if (!top) {
@@ -636,6 +649,45 @@ export class PostQueueService
       throw error;
     } finally {
       release();
+    }
+  }
+
+  /**
+   * Relay-engine execution cycle (feature-flagged). The post-queue table stays
+   * the source of truth for "what to post"; the RelayPostManager owns running.
+   * For each queued submission we either start a Relay job, dequeue a finished
+   * one, or leave a running one alone.
+   */
+  private async executeRelay(): Promise<void> {
+    const records = await this.repository.find({
+      orderBy: (queueRecord, { asc }) => asc(queueRecord.createdAt),
+      with: { submission: true },
+    });
+
+    for (const record of records) {
+      const { submissionId, submission } = record;
+
+      if (submission?.isArchived) {
+        this.relayPostManager.cancel(submissionId);
+        this.relayPostManager.acknowledge(submissionId);
+        // eslint-disable-next-line no-await-in-loop
+        await this.dequeue([submissionId]);
+        continue;
+      }
+
+      const outcome = this.relayPostManager.getOutcome(submissionId);
+      if (outcome) {
+        // Terminal — manager already handled archive/notify; clear the queue.
+        this.relayPostManager.acknowledge(submissionId);
+        // eslint-disable-next-line no-await-in-loop
+        await this.dequeue([submissionId]);
+        continue;
+      }
+
+      if (!this.relayPostManager.isPosting(submissionId)) {
+        // eslint-disable-next-line no-await-in-loop
+        await this.relayPostManager.enqueue(submissionId);
+      }
     }
   }
 

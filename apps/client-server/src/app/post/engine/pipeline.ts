@@ -110,7 +110,7 @@ export function planJob(job: RelayJob, deps: PipelineDeps): void {
         : site.supportsMessage;
 
     const task = new RelayTask({
-      id: `t_${opt.websiteId}_${opt.accountId}`,
+      id: `${job.id}:t:${opt.websiteId}:${opt.accountId}`,
       jobId: job.id,
       accountId: opt.accountId,
       websiteId: opt.websiteId,
@@ -136,7 +136,7 @@ export function planJob(job: RelayJob, deps: PipelineDeps): void {
           const batch = files.slice(i, i + size);
           task.units.push(
             new RelayUnit({
-              id: `u_${task.id}_b${ordinal}`,
+              id: `${task.id}:b${ordinal}`,
               taskId: task.id,
               kind: UnitKind.BATCH,
               ordinal,
@@ -149,7 +149,7 @@ export function planJob(job: RelayJob, deps: PipelineDeps): void {
     } else {
       task.units.push(
         new RelayUnit({
-          id: `u_${task.id}_m`,
+          id: `${task.id}:m`,
           taskId: task.id,
           kind: UnitKind.MESSAGE,
           ordinal: 0,
