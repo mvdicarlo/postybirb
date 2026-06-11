@@ -156,6 +156,14 @@ export class RelayPipelineDeps implements PipelineDeps {
     return new WebsiteInstanceAdapter(instance);
   }
 
+  async authenticate(task: RelayTask): Promise<void> {
+    const instance = this.context(task.jobId).instances.get(task.accountId);
+    if (!instance) {
+      throw new Error(`No website instance for ${task.websiteId}:${task.accountId}`);
+    }
+    await new WebsiteInstanceAdapter(instance).ensureLoggedIn();
+  }
+
   async buildPostData(
     task: RelayTask,
     upstreamSourceUrls: string[],

@@ -60,8 +60,17 @@ class Harness implements PipelineDeps {
 
   constructor(private readonly submission: RelaySubmission) {}
 
+  /** Account ids that should fail authentication. */
+  readonly authFailures = new Set<string>();
+
   register(site: RelayWebsite): void {
     this.websites.set(site.id, site);
+  }
+
+  async authenticate(task: RelayTask): Promise<void> {
+    if (this.authFailures.has(task.accountId)) {
+      throw new Error(`Not logged in to ${task.websiteId}`);
+    }
   }
 
   getWebsite(_jobId: string, websiteId: string): RelayWebsite {
@@ -187,6 +196,27 @@ describe('Relay pipeline + scheduler (integration)', () => {
 
     expect(job.status).toBe(NodeStatus.SUCCEEDED);
     expect(job.tasks[0].attempts).toBe(1);
+  });
+
+  it('fails a task whose account cannot authenticate, without dispatching', async () => {
+    const submission = fileSubmission();
+    submission.options = [{ accountId: 'a_fa', websiteId: 'furaffinity' }];
+    const h = new Harness(submission);
+    h.register(fileWebsite({ id: 'furaffinity', fileBatchSize: 1 }));
+    h.authFailures.add('a_fa');
+    let dispatched = 0;
+    h.behavior = () => {
+      dispatched += 1;
+      return { sourceUrl: 'https://furaffinity/0' };
+    };
+
+    const sched = new RelayScheduler(h, instant);
+    const job = sched.enqueue(submission.id);
+    await sched.runToIdle();
+
+    expect(dispatched).toBe(0);
+    expect(job.tasks[0].status).toBe(NodeStatus.FAILED);
+    expect(job.status).toBe(NodeStatus.FAILED);
   });
 
   it('parks on a rate limit then resumes without re-posting completed units', async () => {

@@ -112,6 +112,19 @@ export class WebsiteInstanceAdapter implements RelayWebsite {
     return this.instance.getSupportedTypes().includes(type);
   }
 
+  /**
+   * Ensure the website session is authenticated, re-logging in if the cached
+   * session is not currently logged in. Mirrors the legacy ensureLoggedIn:
+   * `login()` is mutex-guarded inside the website instance.
+   */
+  async ensureLoggedIn(): Promise<void> {
+    if (this.instance.getLoginState().isLoggedIn) return;
+    const result = await this.instance.login();
+    if (!result.isLoggedIn) {
+      throw new Error(`Not logged in to ${this.displayName}`);
+    }
+  }
+
   async postFile(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     postData: any,

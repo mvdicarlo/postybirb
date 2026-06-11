@@ -65,6 +65,12 @@ export interface RelayDispatchData {
 export interface PipelineDeps {
   getWebsite(jobId: string, websiteId: string, accountId: string): RelayWebsite;
   getSubmission(jobId: string): RelaySubmission;
+  /**
+   * Ensure the task's website/account session is authenticated before posting.
+   * Optional so test mocks can omit it; production logs in (re-logging in if a
+   * session has expired) and throws if it cannot establish a session.
+   */
+  authenticate?(task: RelayTask): Promise<void>;
   /** Build the parsed post data for a task, injecting upstream source URLs. */
   buildPostData(
     task: RelayTask,
@@ -266,8 +272,9 @@ export async function runTaskPass(
   const site = deps.getWebsite(job.id, task.websiteId, task.accountId);
   tracer.emit({ ...base, level: 'debug', stage: 'resolve', event: 'stage.ok' });
 
-  // 2. Authenticate (delegated to dispatch in production; placeholder here)
+  // 2. Authenticate — ensure the account session is live (re-login if expired).
   throwIfAborted(token, 'authenticate');
+  await deps.authenticate?.(task);
   tracer.emit({ ...base, level: 'debug', stage: 'authenticate', event: 'stage.ok' });
 
   // 3. Parse — build post data and inject upstream source URLs.
