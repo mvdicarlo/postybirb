@@ -1,10 +1,11 @@
 import { Controller, Get, Param } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { EntityId } from '@postybirb/types';
 import { PostRecordRepository } from '@postybirb/database';
+import { EntityId } from '@postybirb/types';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
-import { PostManagerRegistry } from './services/post-manager-v2/post-manager-registry.service';
+import { RelayPreviewService } from './engine/preview.service';
 import { PostService } from './post.service';
+import { PostManagerRegistry } from './services/post-manager-v2/post-manager-registry.service';
 
 /**
  * Queue operations for Post data.
@@ -16,6 +17,7 @@ export class PostController extends PostyBirbController<PostRecordRepository> {
   constructor(
     readonly service: PostService,
     private readonly postManagerRegistry: PostManagerRegistry,
+    private readonly previewService: RelayPreviewService,
   ) {
     super(service);
   }
@@ -42,5 +44,17 @@ export class PostController extends PostyBirbController<PostRecordRepository> {
   @ApiOkResponse({ description: 'Events for the post record.' })
   async getEvents(@Param('id') id: EntityId) {
     return this.service.getEvents(id);
+  }
+
+  /**
+   * Dry-run preview (Relay engine): runs plan + validate + transform for a
+   * submission without posting. Returns per-website parsed/resize results.
+   *
+   * @param {EntityId} id - The submission ID
+   */
+  @Get(':id/preview')
+  @ApiOkResponse({ description: 'Dry-run preview of a submission post.' })
+  async preview(@Param('id') id: EntityId) {
+    return this.previewService.preview(id);
   }
 }

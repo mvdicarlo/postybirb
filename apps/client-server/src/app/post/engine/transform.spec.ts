@@ -87,7 +87,7 @@ describe('Relay transform — plan + verify', () => {
 
   it('uses a swappable encoder and still enforces the verify gate', async () => {
     const cache = new TransformCache();
-    const tiny = { encode: () => 1000 };
+    const tiny = { encode: () => ({ bytes: 1000 }) };
     const f = img();
     const plan = buildTransformPlan(f, 'acct', {
       acceptedMimeTypes: ['image/jpeg'],

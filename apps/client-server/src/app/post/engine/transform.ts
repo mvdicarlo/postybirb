@@ -28,6 +28,11 @@ export type RelaySourceFile = {
   hash: string;
   altText?: string;
   dimensionOverrides?: Record<string, { width?: number; height?: number }>;
+  /**
+   * The raw source bytes. Required for real encoding/dispatch; optional so the
+   * planner and unit tests can operate on metadata alone.
+   */
+  buffer?: Buffer;
 };
 
 export type WebsiteFileConstraints = {
@@ -62,6 +67,8 @@ export type TransformedFile = {
   altText?: string;
   appliedSteps: string[];
   fromCache: boolean;
+  /** The final encoded bytes (present when a real encoder produced them). */
+  buffer?: Buffer;
 };
 
 function mimeAccepted(mime: string, patterns: string[]): boolean {
@@ -164,6 +171,30 @@ export function planCacheKey(plan: TransformPlan): string {
 // Encoder seam — SharpEncoder (production) wraps SharpInstanceManager.
 // ---------------------------------------------------------------------------
 
+/** The encode request the verifier issues. */
+export interface EncodeRequest {
+  width: number;
+  height: number;
+  quality: number;
+  mime: string;
+  /** Source bytes + metadata, when a real encoder needs them. */
+  source?: {
+    buffer: Buffer;
+    mimeType: string;
+    width: number;
+    height: number;
+    fileName: string;
+    fileId: string;
+  };
+}
+
+/** Result of an encode pass. */
+export interface EncodeResult {
+  bytes: number;
+  /** The encoded bytes (present for real encoders). */
+  buffer?: Buffer;
+}
+
 /**
  * The single point that rescales/encodes pixels and reports byte size.
  * The verifier drives it; it owns no policy. {@link SimulatedEncoder} is used
@@ -171,12 +202,7 @@ export function planCacheKey(plan: TransformPlan): string {
  * sharp worker pool.
  */
 export interface Encoder {
-  encode(req: {
-    width: number;
-    height: number;
-    quality: number;
-    mime: string;
-  }): number | Promise<number>;
+  encode(req: EncodeRequest): EncodeResult | Promise<EncodeResult>;
 }
 
 /**
@@ -185,11 +211,14 @@ export interface Encoder {
  * without native deps.
  */
 export class SimulatedEncoder implements Encoder {
-  encode(req: { width: number; height: number; quality: number; mime: string }) {
+  encode(req: EncodeRequest): EncodeResult {
     const mimeFactor =
       req.mime === 'image/png' ? 4 : req.mime === 'image/jpeg' ? 1 : 2;
     const area = req.width * req.height;
-    return Math.round(area * mimeFactor * (0.2 + 0.8 * (req.quality / 100)) * 0.05);
+    const bytes = Math.round(
+      area * mimeFactor * (0.2 + 0.8 * (req.quality / 100)) * 0.05,
+    );
+    return { bytes };
   }
 }
 
@@ -270,7 +299,19 @@ export async function runTransform(
     appliedSteps.push(`scale:${scale.toFixed(3)}`);
   }
 
-  let bytes = await encoder.encode({ width, height, quality, mime });
+  const source = file.buffer
+    ? {
+        buffer: file.buffer,
+        mimeType: file.mimeType,
+        width: file.width,
+        height: file.height,
+        fileName: file.fileName,
+        fileId: file.id,
+      }
+    : undefined;
+
+  let enc = await encoder.encode({ width, height, quality, mime, source });
+  let { bytes } = enc;
   iterations.push({ width, height, quality, bytes });
 
   if (plan.maxBytes !== undefined) {
@@ -287,7 +328,8 @@ export async function runTransform(
         quality = plan.allowQualityLoss ? 85 : 100;
       }
       // eslint-disable-next-line no-await-in-loop
-      bytes = await encoder.encode({ width, height, quality, mime });
+      enc = await encoder.encode({ width, height, quality, mime, source });
+      bytes = enc.bytes;
       iterations.push({ width, height, quality, bytes });
       if (width < 16 || height < 16) break;
     }
@@ -345,6 +387,7 @@ export async function runTransform(
     altText,
     appliedSteps,
     fromCache: false,
+    buffer: enc.buffer,
   };
   cache.set(key, output);
   return { output, iterations };

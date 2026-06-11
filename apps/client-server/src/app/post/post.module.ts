@@ -11,6 +11,8 @@ import { WebsitesModule } from '../websites/websites.module';
 import { PostController } from './post.controller';
 import { PostService } from './post.service';
 import { RateLimiter } from './engine/rate-limiter';
+import { RelayPipelineDeps } from './engine/pipeline-deps';
+import { RelayPreviewService } from './engine/preview.service';
 import { RelayTracer } from './engine/tracer.service';
 import { SharpEncoder } from './engine/sharp-encoder';
 import { PostFileResizerService } from './services/post-file-resizer/post-file-resizer.service';
@@ -49,12 +51,14 @@ import {
     FileSubmissionPostManager,
     MessageSubmissionPostManager,
     PostManagerRegistry,
-    // Relay engine (PR #2) — building-block services, registered behind the
+    // Relay engine — building-block services, registered behind the
     // `useRelayEngine` settings flag. The scheduler/persistence wiring lands in
-    // a later PR; these providers do not change posting behavior yet.
+    // a later PR; these providers do not change the default posting path.
     RelayTracer,
     RateLimiter,
     SharpEncoder,
+    RelayPipelineDeps,
+    RelayPreviewService,
   ],
   exports: [PostEventRepository, PostRecordFactory, PostManagerRegistry],
 })
