@@ -25,6 +25,7 @@ import {
     IconX,
 } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
+import { useAccountsMap } from '../../../stores/entity/account-store';
 import { ExternalLink } from '../../shared/external-link';
 
 type NodeStatus = JobTreeNode['status'];
@@ -101,6 +102,17 @@ function WaitCountdown({ waitUntil }: { waitUntil: string }) {
 function NodeRow({ node }: { node: JobTreeNode }) {
   const color = statusColor(node.status);
   const icon = statusIcon(node.status);
+  const accountsMap = useAccountsMap();
+  const { label: nodeLabel } = node;
+  let label: string = nodeLabel;
+  if (node.kind === 'task' && node.accountId) {
+    const account = accountsMap.get(node.accountId);
+    if (account) {
+      const { websiteDisplayName, name } = account;
+      // eslint-disable-next-line lingui/no-unlocalized-strings
+      label = `${websiteDisplayName} - ${name}`;
+    }
+  }
   return (
     <Group gap="xs" wrap="nowrap" align="center">
       {icon && (
@@ -109,7 +121,7 @@ function NodeRow({ node }: { node: JobTreeNode }) {
         </ThemeIcon>
       )}
       <Text size="xs" style={{ flex: 1, minWidth: 0 }} truncate>
-        {node.label}
+        {label}
       </Text>
       {node.progress && (
         <Text size="xs" c="dimmed">
