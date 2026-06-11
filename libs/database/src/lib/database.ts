@@ -29,7 +29,10 @@ export function getDatabase() {
         PostyBirbDirectories.DATA_DIRECTORY,
         `database-${process.env.POSTYBIRB_ENV}.sqlite`,
       );
-      db = drizzle(path, { schema });
+      const sqlite = new Database(path);
+      sqlite.pragma('foreign_keys = ON');
+      db = drizzle(sqlite, { schema });
+      migrate(db, { migrationsFolder });
     }
   }
 
