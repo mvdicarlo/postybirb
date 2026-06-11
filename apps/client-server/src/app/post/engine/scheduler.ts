@@ -77,7 +77,8 @@ export class RelayScheduler {
     if (this.onJobChanged) await this.onJobChanged(job);
   }
 
-  enqueue(
+  /** Create and register a job WITHOUT planning it (caller must prepare deps). */
+  createJob(
     submissionId: string,
     opts?: {
       priority?: number;
@@ -91,14 +92,19 @@ export class RelayScheduler {
       scheduledFor: opts?.scheduledFor,
       resumeMode: opts?.resumeMode ?? PostRecordResumeMode.NEW,
     });
-    planJob(job, this.deps);
     this.jobs.set(job.id, job);
+    return job;
+  }
+
+  /** Plan an already-created job (build its task/unit tree). */
+  plan(job: RelayJob): void {
+    planJob(job, this.deps);
     this.deps.tracer.emit({
       jobId: job.id,
       level: 'info',
       event: 'job.enqueued',
       data: {
-        submissionId,
+        submissionId: job.submissionId,
         tasks: job.tasks.map((t) => ({
           id: t.id,
           units: t.units.length,
@@ -106,6 +112,19 @@ export class RelayScheduler {
         })),
       },
     });
+  }
+
+  /** Convenience: create + plan in one step (used by tests). */
+  enqueue(
+    submissionId: string,
+    opts?: {
+      priority?: number;
+      scheduledFor?: number;
+      resumeMode?: PostRecordResumeMode;
+    },
+  ): RelayJob {
+    const job = this.createJob(submissionId, opts);
+    this.plan(job);
     return job;
   }
 

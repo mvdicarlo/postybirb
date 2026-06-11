@@ -11,6 +11,7 @@ import { WebsitesModule } from '../websites/websites.module';
 import { PostController } from './post.controller';
 import { PostService } from './post.service';
 import { RateLimiter } from './engine/rate-limiter';
+import { RelayFileProcessor } from './engine/file-processor';
 import { RelayPersistence } from './engine/persistence';
 import { RelayPipelineDeps } from './engine/pipeline-deps';
 import { RelayPostManager } from './engine/post-manager.service';
@@ -59,6 +60,7 @@ import {
     RelayTracer,
     RateLimiter,
     SharpEncoder,
+    RelayFileProcessor,
     RelayPipelineDeps,
     RelayPreviewService,
     RelayPersistence,

@@ -1,5 +1,6 @@
 import { NodeStatus, PostErrorKind, PostRecordResumeMode, SubmissionType } from '@postybirb/types';
 import { CancellableToken } from '../models/cancellable-token';
+import { PostingFile } from '../models/posting-file';
 import { StageError } from './errors';
 import { RelayTask } from './model';
 import {
@@ -10,7 +11,6 @@ import {
 import { MemoryRateStore, RateLimiter } from './rate-limiter';
 import { RelayScheduler } from './scheduler';
 import { RelayTracer } from './tracer.service';
-import { SimulatedEncoder, TransformCache } from './transform';
 import { RelayPostResult, RelayWebsite } from './websites';
 
 // ---------------------------------------------------------------------------
@@ -48,10 +48,6 @@ type DispatchBehavior = (
 class Harness implements PipelineDeps {
   rateLimiter = new RateLimiter(new MemoryRateStore());
 
-  cache = new TransformCache();
-
-  encoder = new SimulatedEncoder();
-
   tracer = new RelayTracer();
 
   private readonly websites = new Map<string, RelayWebsite>();
@@ -62,19 +58,13 @@ class Harness implements PipelineDeps {
     sourceUrl: `https://${w.id}/${batchIndex}-${Math.random().toString(36).slice(2)}`,
   });
 
-  constructor(private readonly submission: RelaySubmission) {
-    for (const opt of submission.options) {
-      if (!this.websites.has(opt.websiteId)) {
-        // default created lazily in register()
-      }
-    }
-  }
+  constructor(private readonly submission: RelaySubmission) {}
 
   register(site: RelayWebsite): void {
     this.websites.set(site.id, site);
   }
 
-  getWebsite(websiteId: string): RelayWebsite {
+  getWebsite(_jobId: string, websiteId: string): RelayWebsite {
     const site = this.websites.get(websiteId);
     if (!site) throw new Error(`no mock website ${websiteId}`);
     return site;
@@ -95,10 +85,21 @@ class Harness implements PipelineDeps {
     return [];
   }
 
+  async processBatch(
+    _task: RelayTask,
+    fileIds: string[],
+  ): Promise<PostingFile[]> {
+    // Mock: produce a posting file per id without real bytes.
+    return fileIds.map(
+      (id) =>
+        ({ id, fileName: `${id}.jpg`, mimeType: 'image/jpeg' }) as unknown as PostingFile,
+    );
+  }
+
   async dispatchFile(
     website: RelayWebsite,
     data: RelayDispatchData,
-    files: unknown[],
+    files: PostingFile[],
     _token: CancellableToken,
     batch: { index: number; totalBatches: number },
   ): Promise<RelayPostResult> {

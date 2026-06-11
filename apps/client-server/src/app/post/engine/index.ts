@@ -1,4 +1,5 @@
 export * from './errors';
+export * from './file-processor';
 export * from './model';
 export * from './persistence';
 export * from './pipeline';

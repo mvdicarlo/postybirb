@@ -1,28 +1,27 @@
 /**
- * Relay engine — dry-run preview.
+ * Relay  dry-run preview.engine 
  *
- * Runs the front half of the pipeline (plan + validate + transform) for a
- * submission WITHOUT dispatching to any website. This is the built-in
- * validation/test harness: it shows, per website, the parsed post data, any
- * validation errors, and exactly how each file would be resized/converted.
- *
- * No network calls are made and no job tree is persisted.
+ * Runs the front half of the pipeline (resolve + process files) for a
+ * submission WITHOUT dispatching to any website. Built-in validation/test
+ * harness: shows, per website, whether it is supported and exactly how each
+ * file would be converted/resized (real RelayFileProcessor output). No network
+ * calls and nothing persisted.
  */
 
 import { Injectable } from '@nestjs/common';
+import { Submission, SubmissionRepository } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
-import { SubmissionType } from '@postybirb/types';
-import { RelaySubmission } from './pipeline';
-import { RelayPipelineDeps } from './pipeline-deps';
-import { buildTransformPlan, runTransform, TransformPlan } from './transform';
+import { FileSubmission, SubmissionType } from '@postybirb/types';
+import { WebsiteRegistryService } from '../../websites/website-registry.service';
+import { isFileWebsite } from '../../websites/models/website-modifiers/file-website';
+import { isMessageWebsite } from '../../websites/models/website-modifiers/message-website';
+import { RelayFileProcessor } from './file-processor';
 
 export type PreviewFileResult = {
   fileId: string;
   fileName: string;
   from: { width: number; height: number; bytes: number; mimeType: string };
   to?: { width: number; height: number; bytes: number; mimeType: string };
-  appliedSteps: string[];
-  verifyIterations: number;
   excluded?: boolean;
   error?: string;
 };
@@ -31,7 +30,6 @@ export type PreviewTaskResult = {
   websiteId: string;
   accountId: string;
   supported: boolean;
-  validationErrors: string[];
   files: PreviewFileResult[];
 };
 
@@ -45,110 +43,90 @@ export type PreviewResult = {
 export class RelayPreviewService {
   private readonly logger = Logger(this.constructor.name);
 
-  constructor(private readonly deps: RelayPipelineDeps) {}
+  private readonly submissionRepository = new SubmissionRepository();
+
+  constructor(
+    private readonly websiteRegistry: WebsiteRegistryService,
+    private readonly fileProcessor: RelayFileProcessor,
+  ) {}
 
   async preview(submissionId: string): Promise<PreviewResult> {
-    const submission = await this.deps.loadSubmission(submissionId);
+    const submission = await this.submissionRepository.findById(submissionId);
+    if (!submission) throw new Error(`Submission ${submissionId} not found`);
+
     this.logger
       .withMetadata({ submissionId, type: submission.type })
       .info('Running dry-run preview');
 
     const tasks: PreviewTaskResult[] = [];
-    for (const opt of submission.options) {
+    for (const option of submission.options ?? []) {
+      if (option.isDefault) continue;
       // eslint-disable-next-line no-await-in-loop
-      tasks.push(await this.previewTask(submission, opt));
+      tasks.push(await this.previewOption(submission, option));
     }
 
     return { submissionId, type: submission.type, tasks };
   }
 
-  private async previewTask(
-    submission: RelaySubmission,
-    opt: { accountId: string; websiteId: string },
+  private async previewOption(
+    submission: Submission,
+    option: Submission['options'][number],
   ): Promise<PreviewTaskResult> {
-    const site = this.deps.getWebsite(opt.websiteId, opt.accountId);
-    const supported =
-      submission.type === SubmissionType.FILE
-        ? site.supportsFile
-        : site.supportsMessage;
+    const instance = this.websiteRegistry.findInstance(option.account);
+    const websiteId = option.account.website;
+    const { accountId } = option;
 
     const result: PreviewTaskResult = {
-      websiteId: opt.websiteId,
-      accountId: opt.accountId,
-      supported,
-      validationErrors: [],
+      websiteId,
+      accountId,
+      supported: false,
       files: [],
     };
+    if (!instance) return result;
 
-    if (!supported) return result;
+    result.supported =
+      submission.type === SubmissionType.FILE
+        ? isFileWebsite(instance)
+        : isMessageWebsite(instance);
+    if (!result.supported || submission.type !== SubmissionType.FILE) {
+      return result;
+    }
 
-    if (submission.type === SubmissionType.FILE && site.fileConstraints) {
-      for (const file of submission.files) {
-        if (file.ignoredWebsites?.includes(opt.accountId)) {
-          result.files.push({
-            fileId: file.id,
-            fileName: file.fileName,
-            from: {
-              width: file.width,
-              height: file.height,
-              bytes: file.bytes,
-              mimeType: file.mimeType,
-            },
-            appliedSteps: [],
-            verifyIterations: 0,
-            excluded: true,
-          });
-          continue;
-        }
-
-        try {
-          const websiteResize = site.calculateImageResize?.(file);
-          const plan: TransformPlan = buildTransformPlan(
-            file,
-            opt.accountId,
-            site.fileConstraints,
-            websiteResize,
-          );
-          // eslint-disable-next-line no-await-in-loop
-          const { output, iterations } = await runTransform(
-            file,
-            plan,
-            this.deps.cache,
-            this.deps.encoder,
-          );
-          result.files.push({
-            fileId: file.id,
-            fileName: file.fileName,
-            from: {
-              width: file.width,
-              height: file.height,
-              bytes: file.bytes,
-              mimeType: file.mimeType,
-            },
-            to: {
-              width: output.width,
-              height: output.height,
-              bytes: output.bytes,
-              mimeType: output.mimeType,
-            },
-            appliedSteps: output.appliedSteps,
-            verifyIterations: iterations.length,
-          });
-        } catch (err) {
-          result.files.push({
-            fileId: file.id,
-            fileName: file.fileName,
-            from: {
-              width: file.width,
-              height: file.height,
-              bytes: file.bytes,
-              mimeType: file.mimeType,
-            },
-            appliedSteps: [],
-            verifyIterations: 0,
-            error: (err as Error).message,
-          });
-        }
+    const files = submission.files ?? [];
+    for (const file of files) {
+      const excluded = file.metadata.ignoredWebsites?.includes(accountId);
+      const from = {
+        width: file.width,
+        height: file.height,
+        bytes: file.size,
+        mimeType: file.mimeType,
+      };
+      if (excluded) {
+        result.files.push({ fileId: file.id, fileName: file.fileName, from, excluded: true });
+        continue;
+      }
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        const { info } = await this.fileProcessor.processBatch(
+          instance,
+          [file],
+          submission as unknown as FileSubmission,
+          accountId,
+          [],
+        );
+        result.files.push({
+          fileId: file.id,
+          fileName: file.fileName,
+          from,
+          to: info[0]?.to,
+        });
+      } catch (err) {
+        result.files.push({
+          fileId: file.id,
+          fileName: file.fileName,
+          from,
+          error: (err as Error).message,
+        });
       }
     }
 

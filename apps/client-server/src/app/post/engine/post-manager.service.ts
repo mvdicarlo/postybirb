@@ -85,7 +85,7 @@ export class RelayPostManager implements OnModuleInit {
 
       for (const job of active) {
         // eslint-disable-next-line no-await-in-loop
-        await this.deps.loadSubmission(job.submissionId);
+        await this.deps.prepare(job);
         resetForResume(job, PostRecordResumeMode.CONTINUE);
         this.scheduler.adopt(job);
         this.activeBySubmission.set(job.submissionId, job.id);
@@ -99,20 +99,26 @@ export class RelayPostManager implements OnModuleInit {
   }
 
   /**
-   * Enqueue a submission: load it, plan a job, persist the tree, then run.
-   * Returns the created job id.
+   * Enqueue a submission: prepare context, plan a job, persist the tree, run.
+   * Returns the created job id. `schedule` carries optional priority/scheduledFor.
    */
   async enqueue(
     submissionId: SubmissionId,
     resumeMode: PostRecordResumeMode = PostRecordResumeMode.NEW,
+    schedule?: { priority?: number; scheduledFor?: number },
   ): Promise<string> {
     // Guard against duplicate jobs (e.g. the queue cron re-driving enqueue
     // while a job is briefly between states).
     const existing = this.activeBySubmission.get(submissionId);
     if (existing) return existing;
 
-    await this.deps.loadSubmission(submissionId);
-    const job = this.scheduler.enqueue(submissionId, { resumeMode });
+    const job = this.scheduler.createJob(submissionId, {
+      resumeMode,
+      priority: schedule?.priority,
+      scheduledFor: schedule?.scheduledFor,
+    });
+    await this.deps.prepare(job);
+    this.scheduler.plan(job);
     await this.persistence.create(
       job,
       process.env.POSTYBIRB_VERSION ?? undefined,
@@ -199,6 +205,7 @@ export class RelayPostManager implements OnModuleInit {
       this.outcomes.set(submissionId, computeJobStatus(job));
       // eslint-disable-next-line no-await-in-loop
       await this.onTerminal(job);
+      this.deps.release(job.id);
     }
   }
 
@@ -206,7 +213,7 @@ export class RelayPostManager implements OnModuleInit {
     const status = computeJobStatus(job);
     if (status === NodeStatus.SUCCEEDED) {
       try {
-        const submission = this.deps.getSubmission(job.submissionId);
+        const submission = this.deps.getSubmission(job.id);
         const isRecurring =
           // schedule lives on the raw submission; recurring jobs re-spawn
           (submission as unknown as { scheduleType?: ScheduleType })

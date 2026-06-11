@@ -34,15 +34,9 @@ import {
 } from './model';
 import { RateLimiter, rateKey } from './rate-limiter';
 import { RelayTracer } from './tracer.service';
-import {
-    Encoder,
-    RelaySourceFile,
-    TransformCache,
-    TransformedFile,
-    buildTransformPlan,
-    runTransform,
-} from './transform';
+import { RelaySourceFile } from './transform';
 import { RelayPostResult, RelayWebsite } from './websites';
+import { PostingFile } from '../models/posting-file';
 
 /** Submission shape the engine needs to plan and run a job. */
 export interface RelaySubmission {
@@ -62,12 +56,15 @@ export interface RelayDispatchData {
 
 /**
  * Seams the pipeline needs. The scheduler provides production implementations
- * (registry via WebsiteRegistryService + adapter, builder via
- * PostParsersService, etc.); tests provide mocks.
+ * (registry via WebsiteRegistryService + adapter, parser via PostParsersService,
+ * file processing via RelayFileProcessor, etc.); tests provide mocks.
+ *
+ * Context-bearing lookups take the owning jobId so concurrent jobs that share
+ * an account resolve the correct per-job submission context.
  */
 export interface PipelineDeps {
-  getWebsite(websiteId: string, accountId: string): RelayWebsite;
-  getSubmission(submissionId: string): RelaySubmission;
+  getWebsite(jobId: string, websiteId: string, accountId: string): RelayWebsite;
+  getSubmission(jobId: string): RelaySubmission;
   /** Build the parsed post data for a task, injecting upstream source URLs. */
   buildPostData(
     task: RelayTask,
@@ -75,11 +72,21 @@ export interface PipelineDeps {
   ): Promise<RelayDispatchData>;
   /** Validate the parsed data; return error messages (empty = ok). */
   validate(task: RelayTask, data: RelayDispatchData): Promise<string[]>;
+  /**
+   * Process a batch of files (convert/resize/thumbnail/verify) into
+   * ready-to-post PostingFiles, injecting the given source URLs into metadata.
+   */
+  processBatch(
+    task: RelayTask,
+    fileIds: string[],
+    sourceUrls: string[],
+    token: CancellableToken,
+  ): Promise<PostingFile[]>;
   /** Dispatch a batch of files. */
   dispatchFile(
     website: RelayWebsite,
     data: RelayDispatchData,
-    files: TransformedFile[],
+    files: PostingFile[],
     token: CancellableToken,
     batch: { index: number; totalBatches: number },
   ): Promise<RelayPostResult>;
@@ -90,8 +97,6 @@ export interface PipelineDeps {
     token: CancellableToken,
   ): Promise<RelayPostResult>;
   rateLimiter: RateLimiter;
-  cache: TransformCache;
-  encoder: Encoder;
   tracer: RelayTracer;
 }
 
@@ -100,10 +105,10 @@ export interface PipelineDeps {
 // ---------------------------------------------------------------------------
 
 export function planJob(job: RelayJob, deps: PipelineDeps): void {
-  const submission = deps.getSubmission(job.submissionId);
+  const submission = deps.getSubmission(job.id);
 
   for (const opt of submission.options) {
-    const site = deps.getWebsite(opt.websiteId, opt.accountId);
+    const site = deps.getWebsite(job.id, opt.websiteId, opt.accountId);
     const supports =
       submission.type === SubmissionType.FILE
         ? site.supportsFile
@@ -164,13 +169,13 @@ export function planJob(job: RelayJob, deps: PipelineDeps): void {
   const standard = job.tasks.filter(
     (t) =>
       t.status !== NodeStatus.SKIPPED &&
-      !deps.getWebsite(t.websiteId, t.accountId).acceptsExternalSourceUrls,
+      !deps.getWebsite(job.id, t.websiteId, t.accountId).acceptsExternalSourceUrls,
   );
   const standardIds = standard.map((s) => s.id);
 
   for (const t of job.tasks) {
     if (t.status === NodeStatus.SKIPPED || standardIds.length === 0) continue;
-    const site = deps.getWebsite(t.websiteId, t.accountId);
+    const site = deps.getWebsite(job.id, t.websiteId, t.accountId);
     if (!site.acceptsExternalSourceUrls) continue;
 
     const mode = site.sourceDependencyMode;
@@ -249,7 +254,6 @@ export async function runTaskPass(
   token: CancellableToken,
 ): Promise<void> {
   const { tracer } = deps;
-  const submission = deps.getSubmission(job.submissionId);
   const base = {
     jobId: job.id,
     taskId: task.id,
@@ -259,7 +263,7 @@ export async function runTaskPass(
 
   // 1. Resolve
   throwIfAborted(token, 'resolve');
-  const site = deps.getWebsite(task.websiteId, task.accountId);
+  const site = deps.getWebsite(job.id, task.websiteId, task.accountId);
   tracer.emit({ ...base, level: 'debug', stage: 'resolve', event: 'stage.ok' });
 
   // 2. Authenticate (delegated to dispatch in production; placeholder here)
@@ -290,85 +294,33 @@ export async function runTaskPass(
   }
   tracer.emit({ ...base, level: 'debug', stage: 'validate', event: 'stage.ok' });
 
-  // 5. Plan (files only)
-  const plans = new Map<string, ReturnType<typeof buildTransformPlan>>();
-  if (submission.type === SubmissionType.FILE && site.fileConstraints) {
-    for (const file of submission.files) {
-      if (file.ignoredWebsites?.includes(task.accountId)) continue;
-      const websiteResize = site.calculateImageResize?.(file);
-      const plan = buildTransformPlan(
-        file,
-        task.accountId,
-        site.fileConstraints,
-        websiteResize,
-      );
-      plans.set(file.id, plan);
-      tracer.emit({
-        ...base,
-        level: 'debug',
-        stage: 'plan',
-        event: 'file.planned',
-        data: { fileId: file.id, plan },
-      });
-    }
-  }
-
   // ---- per-unit dispatch loop ----
   for (const unit of task.units) {
     if (TERMINAL_DONE.has(unit.status)) continue;
     throwIfAborted(token, 'dispatch');
     unit.status = NodeStatus.RUNNING;
 
-    // 6. Transform (files only)
-    const transformed: TransformedFile[] = [];
+    // 5. Transform — convert/resize/thumbnail/verify into PostingFiles.
+    let postingFiles: PostingFile[] = [];
     if (unit.kind === UnitKind.BATCH) {
-      for (const fileId of unit.fileIds) {
-        const file = submission.files.find((f) => f.id === fileId);
-        const plan = plans.get(fileId);
-        if (!file || !plan) {
-          throw new StageError({
-            kind: PostErrorKind.FATAL,
-            stage: 'transform',
-            message: `file ${fileId} not found`,
-          });
-        }
-        // eslint-disable-next-line no-await-in-loop
-        const { output, iterations } = await runTransform(
-          file,
-          plan,
-          deps.cache,
-          deps.encoder,
-        );
-        transformed.push(output);
-        tracer.emit({
-          ...base,
-          level: 'info',
-          stage: 'transform',
-          event: 'file.resized',
-          unitId: unit.id,
-          data: {
-            fileId,
-            from: {
-              w: file.width,
-              h: file.height,
-              bytes: file.bytes,
-              mime: file.mimeType,
-            },
-            to: {
-              w: output.width,
-              h: output.height,
-              bytes: output.bytes,
-              mime: output.mimeType,
-            },
-            steps: output.appliedSteps,
-            iterations: iterations.length,
-            fromCache: output.fromCache,
-          },
-        });
-      }
+      // eslint-disable-next-line no-await-in-loop
+      postingFiles = await deps.processBatch(
+        task,
+        unit.fileIds,
+        upstream,
+        token,
+      );
+      tracer.emit({
+        ...base,
+        level: 'info',
+        stage: 'transform',
+        event: 'files.processed',
+        unitId: unit.id,
+        data: { fileIds: unit.fileIds, count: postingFiles.length },
+      });
     }
 
-    // 7. Gate (rate limit, keyed by the website's scope)
+    // 6. Gate (rate limit, keyed by the website's scope)
     const bucket = rateKey(site.rateLimitScope, task.websiteId, task.accountId);
     // eslint-disable-next-line no-await-in-loop
     const waitMs = await deps.rateLimiter.waitMs(
@@ -394,13 +346,13 @@ export async function runTaskPass(
       });
     }
 
-    // 8. Dispatch
+    // 7. Dispatch
     let result: RelayPostResult;
     try {
       if (unit.kind === UnitKind.BATCH) {
         const batchUnits = task.units.filter((u) => u.kind === UnitKind.BATCH);
         // eslint-disable-next-line no-await-in-loop
-        result = await deps.dispatchFile(site, data, transformed, token, {
+        result = await deps.dispatchFile(site, data, postingFiles, token, {
           index: unit.ordinal,
           totalBatches: batchUnits.length,
         });
@@ -431,7 +383,7 @@ export async function runTaskPass(
       throw se;
     }
 
-    // 9. Capture
+    // 8. Capture
     // eslint-disable-next-line no-await-in-loop
     await deps.rateLimiter.markPosted(bucket);
     unit.sourceUrl = result.sourceUrl;
