@@ -13,12 +13,13 @@
 
 import { Injectable } from '@nestjs/common';
 import {
-  PostJob,
-  PostJobRepository,
-  PostTaskRepository,
-  PostUnitRepository,
+    PostJob,
+    PostJobRepository,
+    PostTaskRepository,
+    PostUnitRepository,
 } from '@postybirb/database';
 import { NodeStatus, PostErrorKind } from '@postybirb/types';
+import { PIPELINE_STAGES } from './constants';
 import { RelayJob, RelayTask, RelayUnit } from './model';
 
 const TERMINAL_DB_STATUSES: ReadonlySet<NodeStatus> = new Set([
@@ -165,7 +166,7 @@ export class RelayPersistence {
         waitingUntil: null,
         error: {
           kind: PostErrorKind.FATAL,
-          stage: 'recover',
+          stage: PIPELINE_STAGES.RECOVER,
           message,
           retryable: false,
         },

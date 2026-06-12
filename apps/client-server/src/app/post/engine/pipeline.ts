@@ -16,22 +16,30 @@
 /* eslint-disable no-param-reassign */ // the engine mutates the job tree in place
 
 import {
-    Dependency,
-    NodeStatus,
-    PostErrorKind,
-    PostRecordResumeMode,
-    SubmissionType,
-    UnitKind,
+  Dependency,
+  NodeStatus,
+  PostErrorKind,
+  PostRecordResumeMode,
+  SubmissionType,
+  UnitKind,
 } from '@postybirb/types';
 import { CancellableToken } from '../models/cancellable-token';
 import { PostingFile } from '../models/posting-file';
-import { StageError, classify, toTaskError } from './errors';
 import {
-    RelayJob,
-    RelayTask,
-    RelayUnit,
-    TERMINAL_DONE,
-    depTaskIds,
+  PIPELINE_STAGES,
+  SOURCE_DEPENDENCY_MODES,
+  TRACER_FILE_EVENTS,
+  TRACER_RATE_EVENTS,
+  TRACER_STAGE_EVENTS,
+  TRACER_TASK_EVENTS,
+} from './constants';
+import { StageError, classify, isDeliveryUncertainError, toTaskError } from './errors';
+import {
+  RelayJob,
+  RelayTask,
+  RelayUnit,
+  TERMINAL_DONE,
+  depTaskIds,
 } from './model';
 import { RateLimiter, rateKey } from './rate-limiter';
 import { RelayTracer } from './tracer.service';
@@ -192,11 +200,14 @@ export function planJob(job: RelayJob, deps: PipelineDeps): void {
 
     const mode = site.sourceDependencyMode;
     let dependency: Dependency;
-    if (mode === 'all') dependency = { mode: 'all', tasks: standardIds };
-    else if (mode === 'any') dependency = { mode: 'any', tasks: standardIds };
+    if (mode === SOURCE_DEPENDENCY_MODES.ALL) {
+      dependency = { mode: SOURCE_DEPENDENCY_MODES.ALL, tasks: standardIds };
+    } else if (mode === SOURCE_DEPENDENCY_MODES.ANY) {
+      dependency = { mode: SOURCE_DEPENDENCY_MODES.ANY, tasks: standardIds };
+    }
     else
       dependency = {
-        mode: 'count',
+        mode: SOURCE_DEPENDENCY_MODES.COUNT,
         tasks: standardIds,
         n: Math.min(mode.count, standardIds.length),
       };
@@ -274,84 +285,75 @@ export async function runTaskPass(
   };
 
   // 1. Resolve
-  throwIfAborted(token, 'resolve');
+  throwIfAborted(token, PIPELINE_STAGES.RESOLVE);
   const site = deps.getWebsite(job.id, task.websiteId, task.accountId);
-  tracer.emit({ ...base, level: 'debug', stage: 'resolve', event: 'stage.ok' });
+  tracer.emit({
+    ...base,
+    level: 'debug',
+    stage: PIPELINE_STAGES.RESOLVE,
+    event: TRACER_STAGE_EVENTS.OK,
+  });
 
   // 2. Authenticate — ensure the account session is live (re-login if expired).
-  throwIfAborted(token, 'authenticate');
+  throwIfAborted(token, PIPELINE_STAGES.AUTHENTICATE);
   try {
     await deps.authenticate?.(task);
   } catch (err) {
-    throw classify('authenticate', err);
+    throw classify(PIPELINE_STAGES.AUTHENTICATE, err);
   }
-  tracer.emit({ ...base, level: 'debug', stage: 'authenticate', event: 'stage.ok' });
+  tracer.emit({
+    ...base,
+    level: 'debug',
+    stage: PIPELINE_STAGES.AUTHENTICATE,
+    event: TRACER_STAGE_EVENTS.OK,
+  });
 
   // 3. Parse — build post data and inject upstream source URLs.
-  throwIfAborted(token, 'parse');
+  throwIfAborted(token, PIPELINE_STAGES.PARSE);
   const upstream = collectUpstreamSourceUrls(job, task);
   let data: RelayDispatchData;
   try {
     data = await deps.buildPostData(task, upstream);
   } catch (err) {
-    throw classify('parse', err);
+    throw classify(PIPELINE_STAGES.PARSE, err);
   }
   tracer.emit({
     ...base,
     level: 'debug',
-    stage: 'parse',
-    event: 'stage.ok',
+    stage: PIPELINE_STAGES.PARSE,
+    event: TRACER_STAGE_EVENTS.OK,
     data: { upstreamSourceUrls: upstream },
   });
 
   // 4. Validate
-  throwIfAborted(token, 'validate');
+  throwIfAborted(token, PIPELINE_STAGES.VALIDATE);
   let errors: string[];
   try {
     errors = await deps.validate(task, data);
   } catch (err) {
-    throw classify('validate', err);
+    throw classify(PIPELINE_STAGES.VALIDATE, err);
   }
   if (errors.length > 0) {
     throw new StageError({
       kind: PostErrorKind.VALIDATION_FAILED,
-      stage: 'validate',
+      stage: PIPELINE_STAGES.VALIDATE,
       message: errors.join('; '),
     });
   }
-  tracer.emit({ ...base, level: 'debug', stage: 'validate', event: 'stage.ok' });
+  tracer.emit({
+    ...base,
+    level: 'debug',
+    stage: PIPELINE_STAGES.VALIDATE,
+    event: TRACER_STAGE_EVENTS.OK,
+  });
 
   // ---- per-unit dispatch loop ----
   for (const unit of task.units) {
     if (TERMINAL_DONE.has(unit.status)) continue;
-    throwIfAborted(token, 'dispatch');
+    throwIfAborted(token, PIPELINE_STAGES.DISPATCH);
     unit.status = NodeStatus.RUNNING;
 
-    // 5. Transform — convert/resize/thumbnail/verify into PostingFiles.
-    let postingFiles: PostingFile[] = [];
-    if (unit.kind === UnitKind.BATCH) {
-      try {
-        // eslint-disable-next-line no-await-in-loop
-        postingFiles = await deps.processBatch(
-          task,
-          unit.fileIds,
-          upstream,
-          token,
-        );
-      } catch (err) {
-        throw classify('transform', err);
-      }
-      tracer.emit({
-        ...base,
-        level: 'info',
-        stage: 'transform',
-        event: 'files.processed',
-        unitId: unit.id,
-        data: { fileIds: unit.fileIds, count: postingFiles.length },
-      });
-    }
-
-    // 6. Gate (rate limit, keyed by the website's scope)
+    // 5. Gate (rate limit, keyed by the website's scope)
     const bucket = rateKey(site.rateLimitScope, task.websiteId, task.accountId);
     // eslint-disable-next-line no-await-in-loop
     const waitMs = await deps.rateLimiter.waitMs(
@@ -368,7 +370,7 @@ export async function runTaskPass(
       if (now - task.parkedSince + waitMs > RATE_LIMIT_WAIT_CEILING_MS) {
         throw new StageError({
           kind: PostErrorKind.FATAL,
-          stage: 'gate',
+          stage: PIPELINE_STAGES.GATE,
           message: `rate-limit wait ceiling exceeded (parked ${Math.round(
             (now - task.parkedSince) / 1000,
           )}s)`,
@@ -378,17 +380,41 @@ export async function runTaskPass(
       tracer.emit({
         ...base,
         level: 'info',
-        stage: 'gate',
-        event: 'rate.wait',
+        stage: PIPELINE_STAGES.GATE,
+        event: TRACER_RATE_EVENTS.WAIT,
         unitId: unit.id,
         data: { waitMs, bucket, scope: site.rateLimitScope },
       });
       unit.status = NodeStatus.QUEUED;
       throw new StageError({
         kind: PostErrorKind.RATE_LIMITED,
-        stage: 'gate',
+        stage: PIPELINE_STAGES.GATE,
         message: `rate-limited; wait ${waitMs}ms`,
         retryAfterMs: waitMs,
+      });
+    }
+
+    // 6. Transform — convert/resize/thumbnail/verify into PostingFiles.
+    let postingFiles: PostingFile[] = [];
+    if (unit.kind === UnitKind.BATCH) {
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        postingFiles = await deps.processBatch(
+          task,
+          unit.fileIds,
+          upstream,
+          token,
+        );
+      } catch (err) {
+        throw classify(PIPELINE_STAGES.TRANSFORM, err);
+      }
+      tracer.emit({
+        ...base,
+        level: 'info',
+        stage: PIPELINE_STAGES.TRANSFORM,
+        event: TRACER_FILE_EVENTS.PROCESSED,
+        unitId: unit.id,
+        data: { fileIds: unit.fileIds, count: postingFiles.length },
       });
     }
 
@@ -407,22 +433,33 @@ export async function runTaskPass(
         result = await deps.dispatchMessage(site, data, token);
       }
     } catch (err) {
-      const se =
+      const classified =
         err instanceof StageError
           ? err
-          : new StageError({
-              kind: PostErrorKind.TRANSIENT,
-              stage: 'dispatch',
-              message: String((err as Error)?.message ?? err),
+          : classify(PIPELINE_STAGES.DISPATCH, err);
+      // Fail closed on uncertain-dispatch outcomes (timeout/reset/abort style)
+      // to avoid duplicate posts from automatic retries.
+      const se =
+        classified.kind === PostErrorKind.TRANSIENT &&
+        isDeliveryUncertainError(err)
+          ? new StageError({
+              kind: PostErrorKind.FATAL,
+              stage: PIPELINE_STAGES.DISPATCH,
+              message: `delivery uncertain; retries disabled to prevent duplicates: ${classified.message}`,
+              additionalInfo: {
+                retryPolicy: 'fail_closed_on_dispatch_uncertainty',
+                originalKind: classified.kind,
+              },
               cause: err,
-            });
+            })
+          : classified;
       unit.status = NodeStatus.FAILED;
       unit.error = toTaskError(se);
       tracer.emit({
         ...base,
         level: 'error',
-        stage: 'dispatch',
-        event: 'unit.failed',
+        stage: PIPELINE_STAGES.DISPATCH,
+        event: TRACER_FILE_EVENTS.UNIT_FAILED,
         unitId: unit.id,
         data: { kind: se.kind, message: se.message },
       });
@@ -441,8 +478,8 @@ export async function runTaskPass(
     tracer.emit({
       ...base,
       level: 'info',
-      stage: 'capture',
-      event: 'unit.posted',
+      stage: PIPELINE_STAGES.CAPTURE,
+      event: TRACER_FILE_EVENTS.UNIT_POSTED,
       unitId: unit.id,
       data: { sourceUrl: result.sourceUrl, message: result.message },
     });
@@ -454,8 +491,8 @@ export async function runTaskPass(
   tracer.emit({
     ...base,
     level: 'info',
-    stage: 'settle',
-    event: 'task.succeeded',
+    stage: PIPELINE_STAGES.SETTLE,
+    event: TRACER_TASK_EVENTS.SUCCEEDED,
     data: { sourceUrl: task.sourceUrl },
   });
 }

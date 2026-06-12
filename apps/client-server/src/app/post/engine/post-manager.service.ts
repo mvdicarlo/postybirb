@@ -14,11 +14,11 @@
 import { Injectable, OnModuleInit, Optional } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import {
-    JobTreeNode,
-    NodeStatus,
-    PostRecordResumeMode,
-    ScheduleType,
-    SubmissionId,
+  JobTreeNode,
+  NodeStatus,
+  PostRecordResumeMode,
+  ScheduleType,
+  SubmissionId,
 } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/common';
 import { Mutex } from 'async-mutex';
@@ -38,7 +38,11 @@ export class RelayPostManager implements OnModuleInit {
 
   private readonly scheduler: RelayScheduler;
 
+  private readonly recoveryMutex = new Mutex();
+
   private readonly runMutex = new Mutex();
+
+  private recoveryAttempt: Promise<void> | undefined;
 
   /** submissionId -> active jobId, so cancel/dedup can find the running job. */
   private readonly activeBySubmission = new Map<SubmissionId, string>();
@@ -47,7 +51,10 @@ export class RelayPostManager implements OnModuleInit {
   private readonly outcomes = new Map<SubmissionId, NodeStatus>();
 
   /** jobId -> timer that re-drives drain() when a future scheduledFor arrives. */
-  private readonly scheduleTimers = new Map<string, ReturnType<typeof setTimeout>>();
+  private readonly scheduleTimers = new Map<
+    string,
+    ReturnType<typeof setTimeout>
+  >();
 
   constructor(
     private readonly deps: RelayPipelineDeps,
@@ -67,7 +74,8 @@ export class RelayPostManager implements OnModuleInit {
   async onModuleInit(): Promise<void> {
     if (IsTestEnvironment()) return;
     // Recover in the background so startup is not blocked.
-    this.recover().catch((error) =>
+    this.recoveryAttempt = this.recover();
+    this.recoveryAttempt.catch((error) =>
       this.logger.withError(error).error('Relay crash recovery failed'),
     );
     // Prune old on-disk trace logs so they don't accumulate unbounded.
@@ -87,6 +95,7 @@ export class RelayPostManager implements OnModuleInit {
 
   /** Resume any active (non-terminal) jobs left over from a crash/shutdown. */
   async recover(): Promise<void> {
+    const release = await this.recoveryMutex.acquire();
     try {
       const active = await this.persistence.loadActive();
       if (active.length === 0) return;
@@ -140,7 +149,23 @@ export class RelayPostManager implements OnModuleInit {
       );
     } catch (error) {
       this.logger.withError(error).error('Relay crash recovery failed');
+    } finally {
+      release();
     }
+  }
+
+  /** Ensure startup recovery has had a chance to reconcile persisted jobs. */
+  private async waitForRecoveryAttempt(): Promise<void> {
+    if (!this.recoveryAttempt) return;
+    await this.recoveryAttempt;
+  }
+
+  private isTerminalStatus(status: NodeStatus): boolean {
+    return TERMINAL_ALL.has(status);
+  }
+
+  private isActiveJob(job: RelayJob | undefined): job is RelayJob {
+    return !!job && !this.isTerminalStatus(job.status);
   }
 
   /** Wait for the website registry, retrying a few times before giving up. */
@@ -169,6 +194,8 @@ export class RelayPostManager implements OnModuleInit {
     resumeMode: PostRecordResumeMode = PostRecordResumeMode.NEW,
     schedule?: { priority?: number; scheduledFor?: number },
   ): Promise<string> {
+    await this.waitForRecoveryAttempt();
+
     // Guard against duplicate jobs (e.g. the queue cron re-driving enqueue
     // while a job is briefly between states).
     const existing = this.activeBySubmission.get(submissionId);
@@ -186,22 +213,36 @@ export class RelayPostManager implements OnModuleInit {
       priority: schedule?.priority,
       scheduledFor: schedule?.scheduledFor,
     });
-    await this.deps.prepare(job);
-    this.scheduler.plan(job);
-    await this.persistence.create(
-      job,
-      process.env.POSTYBIRB_VERSION ?? undefined,
-    );
-    this.activeBySubmission.set(submissionId, job.id);
-    this.outcomes.delete(submissionId);
-    // If the job is scheduled for the future, runToIdle won't pick it up yet
-    // and nothing else re-drives the scheduler. Arm a timer so the job runs
-    // when its time arrives even with no other queue activity.
-    this.armScheduleTimer(job.id, schedule?.scheduledFor);
-    this.drain().catch((error) =>
-      this.logger.withError(error).error('Relay run failed'),
-    );
-    return job.id;
+
+    try {
+      await this.deps.prepare(job);
+      this.scheduler.plan(job);
+      await this.persistence.create(
+        job,
+        process.env.POSTYBIRB_VERSION ?? undefined,
+      );
+      this.activeBySubmission.set(submissionId, job.id);
+      this.outcomes.delete(submissionId);
+      // If the job is scheduled for the future, runToIdle won't pick it up yet
+      // and nothing else re-drives the scheduler. Arm a timer so the job runs
+      // when its time arrives even with no other queue activity.
+      this.armScheduleTimer(job.id, schedule?.scheduledFor);
+      this.drain().catch((error) =>
+        this.logger
+          .withError(error)
+          .error(`Relay run failed for job ${job.id}`),
+      );
+      return job.id;
+    } catch (error) {
+      this.deps.release(job.id);
+      this.clearScheduleTimer(job.id);
+      this.scheduler.discard(job.id);
+      this.logger
+        .withError(error)
+        .withMetadata({ jobId: job.id, submissionId })
+        .error('Relay enqueue failed; rolled back in-memory job state');
+      throw error;
+    }
   }
 
   /** Arm (or replace) a one-shot timer to re-drive drain() at `scheduledFor`. */
@@ -245,12 +286,12 @@ export class RelayPostManager implements OnModuleInit {
     submissionId: SubmissionId,
   ): Promise<string | undefined> {
     const jobs = await this.persistence.loadBySubmission(submissionId);
-    const orphan = jobs.find((j) => !TERMINAL_ALL.has(j.status));
+    const orphan = jobs.find((job) => !this.isTerminalStatus(job.status));
     if (!orphan) return undefined;
 
     // Already tracked by the scheduler (race) — just re-link and drive it.
     const tracked = this.scheduler.getJob(orphan.id);
-    if (tracked && !TERMINAL_ALL.has(tracked.status)) {
+    if (this.isActiveJob(tracked)) {
       this.activeBySubmission.set(submissionId, tracked.id);
       this.drain().catch((error) =>
         this.logger.withError(error).error('Relay run failed'),
@@ -323,7 +364,7 @@ export class RelayPostManager implements OnModuleInit {
     const jobId = this.activeBySubmission.get(submissionId);
     if (!jobId) return false;
     const job = this.scheduler.getJob(jobId);
-    return !!job && !TERMINAL_ALL.has(job.status);
+    return this.isActiveJob(job);
   }
 
   /**
@@ -334,7 +375,7 @@ export class RelayPostManager implements OnModuleInit {
     const trees: JobTreeNode[] = [];
     for (const jobId of this.activeBySubmission.values()) {
       const job = this.scheduler.getJob(jobId);
-      if (job && !TERMINAL_ALL.has(job.status)) trees.push(projectJob(job));
+      if (this.isActiveJob(job)) trees.push(projectJob(job));
     }
     return trees;
   }
@@ -380,18 +421,18 @@ export class RelayPostManager implements OnModuleInit {
   private async handleCompletions(): Promise<void> {
     for (const [submissionId, jobId] of [...this.activeBySubmission]) {
       const job = this.scheduler.getJob(jobId);
-      if (!job || !TERMINAL_ALL.has(job.status)) continue;
+      if (this.isActiveJob(job) || !job) continue;
       this.activeBySubmission.delete(submissionId);
       this.clearScheduleTimer(jobId);
       this.outcomes.set(submissionId, computeJobStatus(job));
       // eslint-disable-next-line no-await-in-loop
       await this.onTerminal(job);
-      this.deps.release(job.id);
+      this.deps.release(jobId);
       // Drop the finished job tree from the scheduler's live working set so a
       // long-running process doesn't retain every job ever posted. Persistent
       // history is served from the database (getHistory); the scheduler keeps
       // only a small bounded cache of the most recent completions.
-      this.scheduler.forget(job.id);
+      this.scheduler.forget(jobId);
     }
   }
 

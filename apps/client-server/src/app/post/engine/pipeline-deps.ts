@@ -30,6 +30,7 @@ import { UnknownWebsite } from '../../websites/website';
 import { WebsiteRegistryService } from '../../websites/website-registry.service';
 import { CancellableToken } from '../models/cancellable-token';
 import { PostingFile } from '../models/posting-file';
+import { PIPELINE_STAGES, TRACER_FILE_EVENTS } from './constants';
 import { RelayFileProcessor } from './file-processor';
 import { RelayJob, RelayTask } from './model';
 import { PipelineDeps, RelayDispatchData, RelaySubmission } from './pipeline';
@@ -102,12 +103,24 @@ export class RelayPipelineDeps implements PipelineDeps {
     };
 
     this.contexts.set(job.id, { relay, raw, files, instances, options });
+    this.logger
+      .withMetadata({
+        jobId: job.id,
+        submissionId: job.submissionId,
+        fileCount: files.size,
+        accountCount: options.size,
+      })
+      .debug('Prepared Relay pipeline context');
     return relay;
   }
 
   /** Drop a job's context once it has finished. */
   release(jobId: string): void {
+    const hadContext = this.contexts.has(jobId);
     this.contexts.delete(jobId);
+    if (hadContext) {
+      this.logger.withMetadata({ jobId }).debug('Released Relay pipeline context');
+    }
   }
 
   private toSourceMeta(
@@ -135,6 +148,9 @@ export class RelayPipelineDeps implements PipelineDeps {
   private context(jobId: string): LoadedContext {
     const ctx = this.contexts.get(jobId);
     if (!ctx) {
+      this.logger
+        .withMetadata({ jobId, activeContextCount: this.contexts.size })
+        .error('Relay pipeline context missing');
       throw new Error(`Job ${jobId} not prepared; call prepare(job) first`);
     }
     return ctx;
@@ -219,8 +235,8 @@ export class RelayPipelineDeps implements PipelineDeps {
         account: task.accountId,
         website: task.websiteId,
         level: 'info',
-        stage: 'transform',
-        event: 'file.resized',
+        stage: PIPELINE_STAGES.TRANSFORM,
+        event: TRACER_FILE_EVENTS.RESIZED,
         data: { fileId: i.fileId, from: i.from, to: i.to },
       });
     }

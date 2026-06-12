@@ -12,13 +12,14 @@
 
 import { NodeStatus, PostErrorKind, PostRecordResumeMode } from '@postybirb/types';
 import { CancellableToken } from '../models/cancellable-token';
+import { DEPENDENCY_STATES, SKIP_REASONS, TRACER_JOB_EVENTS, TRACER_TASK_EVENTS } from './constants';
 import { StageError, classify, decideRetry, toTaskError } from './errors';
 import {
-    RelayJob,
-    RelayTask,
-    TERMINAL_ALL,
-    computeJobStatus,
-    evaluateDependency,
+  RelayJob,
+  RelayTask,
+  TERMINAL_ALL,
+  computeJobStatus,
+  evaluateDependency,
 } from './model';
 import { PipelineDeps, planJob, resetForResume, runTaskPass } from './pipeline';
 
@@ -81,6 +82,21 @@ export class RelayScheduler {
   adopt(job: RelayJob): void {
     this.recentlyCompleted.delete(job.id);
     this.jobs.set(job.id, job);
+    // Adopted jobs come from the database without a token (they didn't go through
+    // createJob). Create one now so cancel() works and runJob has a token to use.
+    if (!this.tokens.has(job.id)) {
+      this.tokens.set(job.id, new CancellableToken());
+    }
+  }
+
+  /**
+   * Drop a non-terminal or partially-initialized job from scheduler memory.
+   * Used to roll back enqueue failures before a job has been durably created.
+   */
+  discard(jobId: string): void {
+    this.jobs.delete(jobId);
+    this.tokens.delete(jobId);
+    this.recentlyCompleted.delete(jobId);
   }
 
   /**
@@ -132,7 +148,7 @@ export class RelayScheduler {
             account: task.accountId,
             website: task.websiteId,
             level: 'error',
-            event: 'task.persist_failed',
+            event: TRACER_TASK_EVENTS.PERSIST_FAILED,
             data: {
               message: String((err as Error)?.message ?? err),
               taskStatus: task.status,
@@ -165,6 +181,10 @@ export class RelayScheduler {
     });
     this.recentlyCompleted.delete(job.id);
     this.jobs.set(job.id, job);
+    // Create the cancellation token immediately so cancel() can interrupt the job
+    // even before runJob is invoked, eliminating the race window.
+    const token = new CancellableToken();
+    this.tokens.set(job.id, token);
     return job;
   }
 
@@ -174,7 +194,7 @@ export class RelayScheduler {
     this.deps.tracer.emit({
       jobId: job.id,
       level: 'info',
-      event: 'job.enqueued',
+      event: TRACER_JOB_EVENTS.ENQUEUED,
       data: {
         submissionId: job.submissionId,
         tasks: job.tasks.map((t) => ({
@@ -206,6 +226,9 @@ export class RelayScheduler {
     // A resumed job is live again: pull it back out of the completed cache.
     this.recentlyCompleted.delete(jobId);
     this.jobs.set(jobId, job);
+    // The previous token was deleted when the job completed; create a fresh one
+    // so the job can be cancelled again during this execution.
+    this.tokens.set(jobId, new CancellableToken());
     job.resumeMode = mode;
     resetForResume(job, mode);
     job.completedAt = undefined;
@@ -213,7 +236,7 @@ export class RelayScheduler {
     this.deps.tracer.emit({
       jobId,
       level: 'info',
-      event: 'job.resume',
+      event: TRACER_JOB_EVENTS.RESUME,
       data: { mode },
     });
     return job;
@@ -273,61 +296,68 @@ export class RelayScheduler {
   private async runJob(job: RelayJob): Promise<void> {
     job.status = NodeStatus.RUNNING;
     await this.persistJob(job);
-    const token = new CancellableToken();
-    this.tokens.set(job.id, token);
-
-    for (;;) {
-      if (token.isCancelled) break;
-
-      const pending = job.tasks.filter((t) => !TERMINAL_ALL.has(t.status));
-      if (pending.length === 0) break;
-
-      const runnable = pending.filter((t) => this.isRunnable(job, t, Date.now()));
-
-      if (runnable.length === 0) {
-        const soonest = this.soonestWakeup(job);
-        if (soonest === undefined) {
-          this.skipBlockedDependents(job);
-          // eslint-disable-next-line no-await-in-loop
-          await this.persistJob(job);
-          continue;
-        }
-        // eslint-disable-next-line no-await-in-loop
-        await this.interruptibleWait(Math.max(0, soonest - Date.now()), token);
-        continue;
-      }
-
-      const slice = runnable.slice(0, this.opts.maxConcurrentTasks);
-      // eslint-disable-next-line no-await-in-loop
-      await Promise.all(
-        slice.map((t) => this.runTaskWithRetries(job, t, token)),
-      );
+    const token = this.tokens.get(job.id);
+    if (!token) {
+      throw new Error(`Job ${job.id} has no cancellation token; createJob was not called`);
     }
 
-    // A cancel can break the loop with tasks still parked in WAITING/QUEUED
-    // (e.g. mid rate-limit window). Mark every remaining non-terminal task
-    // CANCELLED so the job settles to a terminal state instead of being
-    // computed as still WAITING/RUNNING.
-    if (token.isCancelled) this.cancelRemainingTasks(job);
+    try {
+      for (;;) {
+        if (token.isCancelled) break;
 
-    job.status = computeJobStatus(job);
-    job.completedAt = Date.now();
-    this.tokens.delete(job.id);
-    await this.persistJob(job);
-    this.deps.tracer.pushJobDelta(job);
-    this.deps.tracer.emit({
-      jobId: job.id,
-      level: job.status === NodeStatus.SUCCEEDED ? 'info' : 'warn',
-      event: 'job.completed',
-      data: { result: job.status },
-    });
+        const pending = job.tasks.filter((t) => !TERMINAL_ALL.has(t.status));
+        if (pending.length === 0) break;
+
+        const runnable = pending.filter((t) => this.isRunnable(job, t, Date.now()));
+
+        if (runnable.length === 0) {
+          const soonest = this.soonestWakeup(job);
+          if (soonest === undefined) {
+            this.skipBlockedDependents(job);
+            // eslint-disable-next-line no-await-in-loop
+            await this.persistJob(job);
+            continue;
+          }
+          // eslint-disable-next-line no-await-in-loop
+          await this.interruptibleWait(Math.max(0, soonest - Date.now()), token);
+          continue;
+        }
+
+        const slice = runnable.slice(0, this.opts.maxConcurrentTasks);
+        // eslint-disable-next-line no-await-in-loop
+        await Promise.all(
+          slice.map((t) => this.runTaskWithRetries(job, t, token)),
+        );
+      }
+
+      // A cancel can break the loop with tasks still parked in WAITING/QUEUED
+      // (e.g. mid rate-limit window). Mark every remaining non-terminal task
+      // CANCELLED so the job settles to a terminal state instead of being
+      // computed as still WAITING/RUNNING.
+      if (token.isCancelled) this.cancelRemainingTasks(job);
+
+      job.status = computeJobStatus(job);
+      job.completedAt = Date.now();
+      await this.persistJob(job);
+      this.deps.tracer.pushJobDelta(job);
+      this.deps.tracer.emit({
+        jobId: job.id,
+        level: job.status === NodeStatus.SUCCEEDED ? 'info' : 'warn',
+        event: TRACER_JOB_EVENTS.COMPLETED,
+        data: { result: job.status },
+      });
+    } finally {
+      // Guarantee the token is cleaned up even if an error is thrown, so it
+      // doesn't leak in memory and prevent a subsequent resume from working.
+      this.tokens.delete(job.id);
+    }
   }
 
   private isRunnable(job: RelayJob, task: RelayTask, now: number): boolean {
     if (TERMINAL_ALL.has(task.status)) return false;
     if (task.waitingUntil !== undefined && task.waitingUntil > now) return false;
     const dep = evaluateDependency(job, task);
-    return dep === 'satisfied' || dep === 'none';
+    return dep === DEPENDENCY_STATES.SATISFIED || dep === DEPENDENCY_STATES.NONE;
   }
 
   private soonestWakeup(job: RelayJob): number | undefined {
@@ -338,7 +368,7 @@ export class RelayScheduler {
       if (t.waitingUntil !== undefined) {
         soonest =
           soonest === undefined ? t.waitingUntil : Math.min(soonest, t.waitingUntil);
-      } else if (evaluateDependency(job, t) === 'pending') {
+      } else if (evaluateDependency(job, t) === DEPENDENCY_STATES.PENDING) {
         anyDepPending = true;
       }
     }
@@ -349,14 +379,14 @@ export class RelayScheduler {
   private skipBlockedDependents(job: RelayJob): void {
     for (const t of job.tasks) {
       if (TERMINAL_ALL.has(t.status)) continue;
-      if (evaluateDependency(job, t) === 'blocked') {
+      if (evaluateDependency(job, t) === DEPENDENCY_STATES.BLOCKED) {
         t.status = NodeStatus.SKIPPED;
         this.deps.tracer.emit({
           jobId: job.id,
           taskId: t.id,
           level: 'warn',
-          event: 'task.skipped',
-          data: { reason: 'dependency unreachable' },
+          event: TRACER_TASK_EVENTS.SKIPPED,
+          data: { reason: SKIP_REASONS.DEPENDENCY_UNREACHABLE },
         });
       }
     }
@@ -377,7 +407,7 @@ export class RelayScheduler {
         account: t.accountId,
         website: t.websiteId,
         level: 'warn',
-        event: 'task.cancelled',
+        event: TRACER_TASK_EVENTS.CANCELLED,
       });
     }
   }
@@ -395,7 +425,7 @@ export class RelayScheduler {
       account: task.accountId,
       website: task.websiteId,
       level: 'info',
-      event: 'task.started',
+      event: TRACER_TASK_EVENTS.STARTED,
       data: { attempt: task.attempts + 1 },
     });
 
@@ -434,7 +464,7 @@ export class RelayScheduler {
         jobId: job.id,
         taskId: task.id,
         level: 'warn',
-        event: 'task.retry',
+        event: TRACER_TASK_EVENTS.RETRY,
         data: { kind: se.kind, delayMs: decision.delayMs, attempt: task.attempts },
       });
       await this.persistTaskDurable(job, task);
@@ -459,7 +489,7 @@ export class RelayScheduler {
       account: task.accountId,
       website: task.websiteId,
       level: 'error',
-      event: 'task.failed',
+      event: TRACER_TASK_EVENTS.FAILED,
       data: { kind: se.kind, stage: se.stage, message: se.message },
     });
     this.deps.tracer.pushTaskDelta(job, task);

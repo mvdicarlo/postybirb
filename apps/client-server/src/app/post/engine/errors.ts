@@ -51,11 +51,45 @@ const TRANSIENT_ERROR_CODES: ReadonlySet<string> = new Set([
 const TRANSIENT_MESSAGE_RE =
   /socket hang up|network|timeout|timed out|fetch failed|ECONNRESET|ETIMEDOUT|ENOTFOUND|EAI_AGAIN|temporar/i;
 
+/**
+ * Errors that imply dispatch delivery uncertainty: the remote may have
+ * accepted the post, but the caller did not receive a definitive response.
+ * Retrying these can create duplicate posts, so callers may choose to fail
+ * closed instead of retrying.
+ */
+const DELIVERY_UNCERTAIN_ERROR_CODES: ReadonlySet<string> = new Set([
+  'ETIMEDOUT',
+  'ECONNABORTED',
+  'ECONNRESET',
+  'EPIPE',
+]);
+
+const DELIVERY_UNCERTAIN_MESSAGE_RE =
+  /timeout|timed out|socket hang up|aborted|connection reset|broken pipe|premature close|eof/i;
+
 function looksTransient(err: unknown): boolean {
   if (!err || typeof err !== 'object') return false;
   const { code, message } = err as { code?: unknown; message?: unknown };
   if (typeof code === 'string' && TRANSIENT_ERROR_CODES.has(code)) return true;
   if (typeof message === 'string' && TRANSIENT_MESSAGE_RE.test(message)) {
+    return true;
+  }
+  return false;
+}
+
+export function isDeliveryUncertainError(err: unknown): boolean {
+  if (!err || typeof err !== 'object') return false;
+  const { code, message } = err as { code?: unknown; message?: unknown };
+  if (
+    typeof code === 'string' &&
+    DELIVERY_UNCERTAIN_ERROR_CODES.has(code)
+  ) {
+    return true;
+  }
+  if (
+    typeof message === 'string' &&
+    DELIVERY_UNCERTAIN_MESSAGE_RE.test(message)
+  ) {
     return true;
   }
   return false;

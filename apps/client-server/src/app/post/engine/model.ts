@@ -20,6 +20,7 @@ import {
     UnitKind,
 } from '@postybirb/types';
 import { v4 } from 'uuid';
+import { DEPENDENCY_STATES, SOURCE_DEPENDENCY_MODES } from './constants';
 
 // ---------------------------------------------------------------------------
 // State machine
@@ -190,28 +191,28 @@ export function evaluateDependency(
   task: RelayTask,
 ): DependencyState {
   const dep = task.dependency;
-  if (!dep || dep.tasks.length === 0) return 'none';
+  if (!dep || dep.tasks.length === 0) return DEPENDENCY_STATES.NONE;
 
   const deps = dep.tasks
     .map((id) => job.tasks.find((t) => t.id === id))
     .filter((t): t is RelayTask => !!t);
-  if (deps.length === 0) return 'none';
+  if (deps.length === 0) return DEPENDENCY_STATES.NONE;
 
   const succeeded = deps.filter((t) => t.status === NodeStatus.SUCCEEDED).length;
   const skipped = deps.filter((t) => t.status === NodeStatus.SKIPPED).length;
   const terminal = deps.filter((t) => TERMINAL_ALL.has(t.status)).length;
   const total = deps.length;
 
-  if (dep.mode === 'all') {
-    if (succeeded + skipped === total) return 'satisfied';
+  if (dep.mode === SOURCE_DEPENDENCY_MODES.ALL) {
+    if (succeeded + skipped === total) return DEPENDENCY_STATES.SATISFIED;
     const terminalNotDone = terminal - succeeded - skipped;
-    if (terminalNotDone > 0) return 'blocked';
-    return 'pending';
+    if (terminalNotDone > 0) return DEPENDENCY_STATES.BLOCKED;
+    return DEPENDENCY_STATES.PENDING;
   }
 
-  const need = dep.mode === 'count' ? dep.n : 1; // 'any' === count 1
-  if (succeeded >= need) return 'satisfied';
+  const need = dep.mode === SOURCE_DEPENDENCY_MODES.COUNT ? dep.n : 1; // 'any' === count 1
+  if (succeeded >= need) return DEPENDENCY_STATES.SATISFIED;
   const stillPossible = total - (terminal - succeeded);
-  if (stillPossible < need) return 'blocked';
-  return 'pending';
+  if (stillPossible < need) return DEPENDENCY_STATES.BLOCKED;
+  return DEPENDENCY_STATES.PENDING;
 }

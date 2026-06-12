@@ -18,10 +18,14 @@ import { isMessageWebsite } from '../../websites/models/website-modifiers/messag
 import { UnknownWebsite } from '../../websites/website';
 import { CancellableToken } from '../models/cancellable-token';
 import { PostingFile } from '../models/posting-file';
+import { SOURCE_DEPENDENCY_MODES } from './constants';
 
 export type RelayPostResult = { sourceUrl?: string; message?: string };
 
-export type RelaySourceDependencyMode = 'all' | 'any' | { count: number };
+export type RelaySourceDependencyMode =
+  | typeof SOURCE_DEPENDENCY_MODES.ALL
+  | typeof SOURCE_DEPENDENCY_MODES.ANY
+  | { count: number };
 
 /**
  * Engine-facing view of a website. Implemented for real by
@@ -92,7 +96,8 @@ export class WebsiteInstanceAdapter implements RelayWebsite {
 
   get sourceDependencyMode(): RelaySourceDependencyMode {
     return (
-      this.instance.decoratedProps.fileOptions?.sourceDependencyMode ?? 'all'
+      this.instance.decoratedProps.fileOptions?.sourceDependencyMode ??
+      SOURCE_DEPENDENCY_MODES.ALL
     );
   }
 
