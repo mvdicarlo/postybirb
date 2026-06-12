@@ -278,7 +278,6 @@ async function start() {
     if (PostyBirbEnvConfig.headless) {
       // eslint-disable-next-line no-console
       console.log('[PostyBirb] Running in headless mode (no UI)');
-      hideLoaderSafely('headless-start');
     } else {
       Main.bootstrapApp(nestApp);
       Main.bootstrapAppEvents();
