@@ -12,10 +12,10 @@ import {
   validatorPassthru,
   PostBatchData,
   CancellableToken,
-  DynamicObject,
   Website,
   DataPropertyAccessibility,
 } from '@postybirb/types';
+import { SelectOption } from '@postybirb/form-builder';
 import { TJAAccountData } from './models/tja-account-data';
 import { TJAFileSubmission } from './models/tja-file-submission';
 
@@ -52,12 +52,10 @@ export default class TheJabArchives
       username:    true,
       displayName: true,
       isArtist:    true,
+      galleries:   true,
     };
 
   // ── Login ──────────────────────────────────────────────────────────────────
-  // PostyBirb opens the login URL in a webview; once the user logs in the
-  // PHP session cookie is captured automatically.  We verify by hitting the
-  // userinfo endpoint.
   public async onLogin(): Promise<ILoginState> {
     try {
       const res = await this.httpClient.get<{
@@ -67,10 +65,12 @@ export default class TheJabArchives
       }>(`${this.BASE_URL}/api/v1/userinfo.php`);
 
       if (res.body?.username) {
+        const galleries = await this.retrieveGalleries();
         await this.setWebsiteData({
           username:    res.body.username,
           displayName: res.body.displayName,
           isArtist:    res.body.isArtist,
+          galleries,
         });
         return this.loginState.setLogin(true, res.body.username);
       }
@@ -80,8 +80,8 @@ export default class TheJabArchives
     return this.loginState.setLogin(false, null);
   }
 
-  // ── Gallery list (populates the gallery dropdown in the submission form) ───
-  public async getGalleries(): Promise<Array<{ value: string; label: string }>> {
+  // ── Gallery list ───────────────────────────────────────────────────────────
+  private async retrieveGalleries(): Promise<SelectOption[]> {
     try {
       const res = await this.httpClient.get<{
         galleries: Array<{ id: number; title: string }>;
@@ -102,7 +102,7 @@ export default class TheJabArchives
   }
 
   calculateImageResize(): ImageResizeProps | undefined {
-    return undefined; // TJA handles resizing server-side via Imagick
+    return undefined;
   }
 
   // ── Post ───────────────────────────────────────────────────────────────────
