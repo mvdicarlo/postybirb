@@ -33,7 +33,12 @@ import {
   TRACER_STAGE_EVENTS,
   TRACER_TASK_EVENTS,
 } from './constants';
-import { StageError, classify, isDeliveryUncertainError, toTaskError } from './errors';
+import {
+  StageError,
+  classify,
+  isDeliveryUncertainError,
+  toTaskError,
+} from './errors';
 import {
   RelayJob,
   RelayTask,
@@ -189,7 +194,8 @@ export function planJob(job: RelayJob, deps: PipelineDeps): void {
   const standard = job.tasks.filter(
     (t) =>
       t.status !== NodeStatus.SKIPPED &&
-      !deps.getWebsite(job.id, t.websiteId, t.accountId).acceptsExternalSourceUrls,
+      !deps.getWebsite(job.id, t.websiteId, t.accountId)
+        .acceptsExternalSourceUrls,
   );
   const standardIds = standard.map((s) => s.id);
 
@@ -204,8 +210,7 @@ export function planJob(job: RelayJob, deps: PipelineDeps): void {
       dependency = { mode: SOURCE_DEPENDENCY_MODES.ALL, tasks: standardIds };
     } else if (mode === SOURCE_DEPENDENCY_MODES.ANY) {
       dependency = { mode: SOURCE_DEPENDENCY_MODES.ANY, tasks: standardIds };
-    }
-    else
+    } else
       dependency = {
         mode: SOURCE_DEPENDENCY_MODES.COUNT,
         tasks: standardIds,
@@ -221,7 +226,10 @@ export function planJob(job: RelayJob, deps: PipelineDeps): void {
  *  - CONTINUE_RETRY: also re-run SUCCEEDED units (full re-upload).
  *  - NEW handled by the caller (builds a fresh job).
  */
-export function resetForResume(job: RelayJob, mode: PostRecordResumeMode): void {
+export function resetForResume(
+  job: RelayJob,
+  mode: PostRecordResumeMode,
+): void {
   for (const task of job.tasks) {
     if (task.status === NodeStatus.SKIPPED) continue;
     let hasWork = false;
@@ -252,7 +260,11 @@ export function resetForResume(job: RelayJob, mode: PostRecordResumeMode): void 
 
 function throwIfAborted(token: CancellableToken, stage: string): void {
   if (token.isCancelled) {
-    throw new StageError({ kind: PostErrorKind.FATAL, stage, message: 'cancelled' });
+    throw new StageError({
+      kind: PostErrorKind.FATAL,
+      stage,
+      message: 'cancelled',
+    });
   }
 }
 
@@ -322,7 +334,7 @@ export async function runTaskPass(
     level: 'debug',
     stage: PIPELINE_STAGES.PARSE,
     event: TRACER_STAGE_EVENTS.OK,
-    data: { upstreamSourceUrls: upstream },
+    data: { upstreamSourceUrls: upstream, data },
   });
 
   // 4. Validate

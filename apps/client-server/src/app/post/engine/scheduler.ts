@@ -191,12 +191,27 @@ export class RelayScheduler {
   /** Plan an already-created job (build its task/unit tree). */
   plan(job: RelayJob): void {
     planJob(job, this.deps);
+    let submissionOptions:
+      | Array<{ accountId: string; websiteId: string }>
+      | undefined;
+    try {
+      submissionOptions = this.deps
+        .getSubmission(job.id)
+        .options.map((opt) => ({
+          accountId: opt.accountId,
+          websiteId: opt.websiteId,
+        }));
+    } catch {
+      submissionOptions = undefined;
+    }
     this.deps.tracer.emit({
       jobId: job.id,
       level: 'info',
       event: TRACER_JOB_EVENTS.ENQUEUED,
       data: {
         submissionId: job.submissionId,
+        optionCount: submissionOptions?.length,
+        options: submissionOptions,
         tasks: job.tasks.map((t) => ({
           id: t.id,
           units: t.units.length,
@@ -300,6 +315,10 @@ export class RelayScheduler {
     if (!token) {
       throw new Error(`Job ${job.id} has no cancellation token; createJob was not called`);
     }
+    // Seed the UI posting-state store with the active job immediately. Without
+    // this, early task/unit deltas can arrive before the client knows the job
+    // root and get dropped.
+    this.deps.tracer.pushJobDelta(job);
 
     try {
       for (;;) {

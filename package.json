@@ -15,7 +15,7 @@
   "main": "dist/apps/postybirb/main.js",
   "scripts": {
     "nx": "nx",
-    "start": "electron-builder install-app-deps && nx run-many -t serve --projects=postybirb,postybirb-ui --parallel",
+    "start": "nx run-many -t serve --projects=postybirb,postybirb-ui --parallel",
     "build": "nx run-many -t build --projects=postybirb,postybirb-ui --parallel",
     "build:prod": "nx run-many -t build --configuration=production --projects=postybirb,postybirb-ui --parallel",
     "lingui:extract": "lingui extract --clean",
