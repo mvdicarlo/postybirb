@@ -105,7 +105,7 @@ initializeAppInsights({
 });
 
 const logger = Logger('MainProcess');
-const BOOTSTRAP_TIMEOUT_MS = 60_000;
+const BOOTSTRAP_TIMEOUT_MS = 180_000;
 
 type LoaderModule = {
   show: () => void;
