@@ -1,10 +1,15 @@
 /**
  * Sharp Worker Script
  *
- * Runs in a separate worker thread via piscina to isolate sharp/libvips
- * native code from the main process. If libvips segfaults (e.g. after
- * long idle), only this worker dies — the main process survives and
- * piscina automatically spawns a replacement.
+ * Runs in a dedicated Electron utilityProcess (a real OS child process) to
+ * isolate sharp/libvips native code from the main process. If libvips
+ * segfaults, aborts, or runs out of memory (e.g. on a pathological image or
+ * after long idle), only this child process dies — the main process survives,
+ * spawns a replacement on the next request, and rejects the in-flight request
+ * with a normal catchable error.
+ *
+ * In test mode this same file is required in-process and its exported
+ * `processImage` function is called directly (no child process).
  *
  * All sharp imports are confined to this file.
  */
@@ -13,9 +18,9 @@
 const sharp = require('sharp');
 const os = require('os');
 
-// Configure sharp for worker thread
+// Configure sharp for this process
 sharp.cache({ files: 0 });
-sharp.concurrency(1); // Limit per-worker thread count to reduce native memory pressure
+sharp.concurrency(1); // Limit native thread count to reduce memory pressure
 
 // On glibc-based Linux, reduce memory arena count to prevent
 // the fragmentation that causes crashes after long idle.
@@ -418,11 +423,17 @@ async function generateThumbnail(
 }
 
 /**
- * Main worker function dispatched by piscina.
+ * Main image-processing entry point.
+ *
+ * Invoked either:
+ *  - directly in-process (test mode), via the exported function, or
+ *  - inside an Electron utilityProcess child, via the parentPort wiring at
+ *    the bottom of this file.
+ *
  * @param {SharpWorkerInput} input
  * @returns {Promise<SharpWorkerResult>}
  */
-module.exports = async function processImage(input) {
+async function processImage(input) {
   const { operation } = input;
 
   switch (operation) {
@@ -628,4 +639,63 @@ module.exports = async function processImage(input) {
     default:
       throw new Error(`Unknown operation: ${operation}`);
   }
-};
+}
+
+/**
+ * Worker message protocol handler.
+ *
+ * Transforms a request envelope `{ id, input }` into a response envelope
+ * `{ id, result }` on success or `{ id, error }` on failure. This is the
+ * single source of truth for the request/response shape, shared by both:
+ *  - the real Electron utility-process wiring below, and
+ *  - the in-process test worker (which calls `module.exports.dispatch`).
+ *
+ * @param {{ id: number, input: unknown }} message
+ * @returns {Promise<{ id: number, result?: unknown, error?: { message: string, stack?: string } }>}
+ */
+async function dispatch(message) {
+  const { id, input } = message || {};
+  try {
+    const result = await processImage(input);
+    return { id, result };
+  } catch (error) {
+    return {
+      id,
+      error: {
+        message: error && error.message ? error.message : String(error),
+        stack: error && error.stack ? error.stack : undefined,
+      },
+    };
+  }
+}
+
+// `processImage` is the raw operation entry point; `dispatch` is the
+// envelope-aware handler used by the platform process abstraction (real and
+// in-process/test implementations alike).
+module.exports = processImage;
+module.exports.dispatch = dispatch;
+
+/**
+ * Electron utility-process wiring.
+ *
+ * When this file is launched via `utilityProcess.fork()` (see
+ * ElectronProcessService), `process.parentPort` is defined and we run as a
+ * dedicated OS process. THIS is what isolates native libvips crashes:
+ * a segfault / abort / OOM in here terminates ONLY this child process —
+ * the main Electron process survives, spawns a replacement, and rejects
+ * the in-flight request with a normal, catchable JavaScript error.
+ *
+ * Worker threads (the previous piscina approach) could NOT provide this
+ * guarantee: threads share the parent's process and address space, so a
+ * native crash took the entire app down with it, with no catchable error.
+ *
+ * When this module is required in-process (test mode), `process.parentPort`
+ * is undefined, this block is skipped, and callers invoke `dispatch`
+ * (or the exported `processImage`) directly.
+ */
+if (process.parentPort) {
+  process.parentPort.on('message', async (event) => {
+    process.parentPort.postMessage(await dispatch(event.data));
+  });
+}
+
