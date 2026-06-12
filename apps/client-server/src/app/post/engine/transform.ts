@@ -230,13 +230,27 @@ export const simulatedEncoder = new SimulatedEncoder();
 
 export class TransformCache {
   private readonly store = new Map<string, TransformedFile>();
+
   hits = 0;
+
   misses = 0;
+
+  /**
+   * Bound the number of retained entries. Each entry can hold a fully-encoded
+   * image {@link TransformedFile.buffer} (potentially several MB), so an
+   * unbounded cache would be a serious memory leak in a long-running process.
+   * The map is insertion-ordered, so we evict the oldest entry once the cap is
+   * exceeded (simple LRU-by-insertion).
+   */
+  constructor(private readonly maxEntries = 100) {}
 
   get(key: string): TransformedFile | undefined {
     const v = this.store.get(key);
     if (v) {
       this.hits++;
+      // Refresh recency: re-insert so frequently-used entries survive eviction.
+      this.store.delete(key);
+      this.store.set(key, v);
       return { ...v, fromCache: true };
     }
     this.misses++;
@@ -244,7 +258,13 @@ export class TransformCache {
   }
 
   set(key: string, value: TransformedFile): void {
+    this.store.delete(key);
     this.store.set(key, { ...value, fromCache: false });
+    while (this.store.size > this.maxEntries) {
+      const oldest = this.store.keys().next().value;
+      if (oldest === undefined) break;
+      this.store.delete(oldest);
+    }
   }
 }
 

@@ -97,4 +97,27 @@ describe('Relay transform — plan + verify', () => {
     expect(output.bytes).toBe(1000);
     expect(iterations).toHaveLength(1);
   });
+
+  it('bounds the cache (LRU) so encoded buffers cannot accumulate forever', async () => {
+    const cache = new TransformCache(2); // tiny cap to exercise eviction
+    const noop = { encode: () => ({ bytes: 1000 }) };
+    const mk = async (id: string) => {
+      const f = img({ id, hash: `hash-${id}` });
+      const plan = buildTransformPlan(f, 'acct', {
+        acceptedMimeTypes: ['image/jpeg'],
+        maxBytes: { '*': 2000 },
+      });
+      return runTransform(f, plan, cache, noop);
+    };
+
+    await mk('a'); // miss -> cache [a]
+    await mk('b'); // miss -> cache [a,b]
+    await mk('c'); // miss -> evicts oldest (a) -> cache [b,c]
+
+    // 'a' was evicted: re-running it is a miss (re-encoded), not a cache hit.
+    const again = await mk('a');
+    expect(again.output.fromCache).toBe(false);
+    expect(cache.misses).toBe(4);
+    expect(cache.hits).toBe(0);
+  });
 });

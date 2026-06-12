@@ -70,6 +70,19 @@ export class RelayPostManager implements OnModuleInit {
     this.recover().catch((error) =>
       this.logger.withError(error).error('Relay crash recovery failed'),
     );
+    // Prune old on-disk trace logs so they don't accumulate unbounded.
+    this.deps.tracer
+      .pruneOldLogs()
+      .then((deleted) => {
+        if (deleted > 0) {
+          this.logger
+            .withMetadata({ deleted })
+            .info('Pruned old Relay trace logs');
+        }
+      })
+      .catch((error) =>
+        this.logger.withError(error).warn('Failed to prune Relay trace logs'),
+      );
   }
 
   /** Resume any active (non-terminal) jobs left over from a crash/shutdown. */
@@ -374,6 +387,11 @@ export class RelayPostManager implements OnModuleInit {
       // eslint-disable-next-line no-await-in-loop
       await this.onTerminal(job);
       this.deps.release(job.id);
+      // Drop the finished job tree from the scheduler's live working set so a
+      // long-running process doesn't retain every job ever posted. Persistent
+      // history is served from the database (getHistory); the scheduler keeps
+      // only a small bounded cache of the most recent completions.
+      this.scheduler.forget(job.id);
     }
   }
 

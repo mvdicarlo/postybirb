@@ -53,6 +53,19 @@ export class RelayScheduler {
 
   private readonly tokens = new Map<string, CancellableToken>();
 
+  /**
+   * Small, insertion-ordered LRU of recently-completed job trees. Once a job
+   * reaches a terminal state the manager calls {@link forget} to drop it from
+   * the live `jobs` map (otherwise it would be retained for the life of the
+   * process — an unbounded leak). We keep the most recent few here so a
+   * just-finished job is still resolvable by {@link getJob} (e.g. a UI request
+   * landing right after completion) without re-reading the database; older
+   * entries are evicted. Persistent history always comes from the DB.
+   */
+  private readonly recentlyCompleted = new Map<string, RelayJob>();
+
+  private readonly maxRecentlyCompleted = 50;
+
   constructor(deps: PipelineDeps, opts?: Partial<SchedulerOptions>) {
     this.deps = deps;
     this.opts = {
@@ -66,7 +79,26 @@ export class RelayScheduler {
 
   /** Register an already-planned (or recovered) job without re-planning it. */
   adopt(job: RelayJob): void {
+    this.recentlyCompleted.delete(job.id);
     this.jobs.set(job.id, job);
+  }
+
+  /**
+   * Drop a terminal job from the live working set to bound memory. The job is
+   * moved into the bounded recently-completed cache so a brief follow-up lookup
+   * still resolves it. No-op if the job is unknown or still non-terminal.
+   */
+  forget(jobId: string): void {
+    const job = this.jobs.get(jobId);
+    if (!job || !TERMINAL_ALL.has(job.status)) return;
+    this.jobs.delete(jobId);
+    this.tokens.delete(jobId);
+    this.recentlyCompleted.set(jobId, job);
+    while (this.recentlyCompleted.size > this.maxRecentlyCompleted) {
+      const oldest = this.recentlyCompleted.keys().next().value;
+      if (oldest === undefined) break;
+      this.recentlyCompleted.delete(oldest);
+    }
   }
 
   private async persistJob(job: RelayJob): Promise<void> {
@@ -131,6 +163,7 @@ export class RelayScheduler {
       scheduledFor: opts?.scheduledFor,
       resumeMode: opts?.resumeMode ?? PostRecordResumeMode.NEW,
     });
+    this.recentlyCompleted.delete(job.id);
     this.jobs.set(job.id, job);
     return job;
   }
@@ -168,8 +201,11 @@ export class RelayScheduler {
   }
 
   resume(jobId: string, mode: PostRecordResumeMode): RelayJob {
-    const job = this.jobs.get(jobId);
+    const job = this.jobs.get(jobId) ?? this.recentlyCompleted.get(jobId);
     if (!job) throw new Error(`unknown job ${jobId}`);
+    // A resumed job is live again: pull it back out of the completed cache.
+    this.recentlyCompleted.delete(jobId);
+    this.jobs.set(jobId, job);
     job.resumeMode = mode;
     resetForResume(job, mode);
     job.completedAt = undefined;
@@ -188,7 +224,7 @@ export class RelayScheduler {
   }
 
   getJob(jobId: string): RelayJob | undefined {
-    return this.jobs.get(jobId);
+    return this.jobs.get(jobId) ?? this.recentlyCompleted.get(jobId);
   }
 
   /** Run all due jobs to completion (or terminal failure). */

@@ -411,6 +411,44 @@ describe('Relay pipeline + scheduler (integration)', () => {
     expect(job.status).toBe(NodeStatus.FAILED);
   });
 
+  it('forget() evicts a terminal job and keeps a bounded recent cache', async () => {
+    const submission = fileSubmission();
+    submission.options = [{ accountId: 'a_fa', websiteId: 'furaffinity' }];
+    const h = new Harness(submission);
+    h.register(fileWebsite({ id: 'furaffinity', fileBatchSize: 3 }));
+
+    const sched = new RelayScheduler(h, instant);
+    const job = sched.enqueue(submission.id);
+    await sched.runToIdle();
+    expect(job.status).toBe(NodeStatus.SUCCEEDED);
+
+    // Still resolvable while live.
+    expect(sched.getJob(job.id)).toBe(job);
+    // forget moves it into the bounded recent cache (still resolvable briefly).
+    sched.forget(job.id);
+    expect(sched.getJob(job.id)).toBe(job);
+
+    // Overflow the recent cache (cap 50) with terminal jobs; the original is
+    // evicted and no longer resolvable from memory.
+    for (let i = 0; i < 60; i++) {
+      const j = sched.createJob(`s_overflow_${i}`);
+      j.status = NodeStatus.SUCCEEDED; // terminal so forget() accepts it
+      sched.forget(j.id);
+    }
+    expect(sched.getJob(job.id)).toBeUndefined();
+  });
+
+  it('forget() ignores a still-running (non-terminal) job', async () => {
+    const submission = fileSubmission();
+    submission.options = [{ accountId: 'a_fa', websiteId: 'furaffinity' }];
+    const h = new Harness(submission);
+    h.register(fileWebsite({ id: 'furaffinity', fileBatchSize: 3 }));
+    const sched = new RelayScheduler(h, instant);
+    const job = sched.enqueue(submission.id); // QUEUED, not terminal
+    sched.forget(job.id);
+    expect(sched.getJob(job.id)).toBe(job); // retained
+  });
+
   it('any-mode external site posts after the first upstream URL', async () => {
     const submission = fileSubmission();
     submission.options = [

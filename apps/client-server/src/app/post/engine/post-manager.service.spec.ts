@@ -209,4 +209,32 @@ describe('RelayPostManager hardening', () => {
     expect(manager.getOutcome(submissionId)).toBe(NodeStatus.SUCCEEDED);
     expect(jobId).toBeDefined();
   });
+
+  it('evicts the finished job tree from the scheduler on completion (memory)', async () => {
+    // Regression: terminal jobs must not be retained in the scheduler's live
+    // working set forever. After completion the job is dropped (served from
+    // the bounded recent cache / DB), so isPosting() is false and history
+    // still resolves.
+    const submissionId = 'sub-evict';
+    const deps = makeDeps(submissionId);
+    const persistence = makePersistence();
+    const manager = new RelayPostManager(
+      deps,
+      persistence,
+      makeRegistry(true),
+      { archive: jest.fn().mockResolvedValue(undefined) } as never,
+      { create: jest.fn().mockResolvedValue(undefined) } as never,
+    );
+
+    const jobId = await manager.enqueue(submissionId);
+    await flush();
+
+    expect(deps.dispatchMessage).toHaveBeenCalledTimes(1);
+    // The submission is no longer tracked as active/posting once terminal.
+    expect(manager.isPosting(submissionId)).toBe(false);
+    // The live active-tree snapshot no longer includes the finished job.
+    expect(manager.getActiveTrees()).toHaveLength(0);
+    // The per-job context was released.
+    expect(deps.release).toHaveBeenCalledWith(jobId);
+  });
 });
