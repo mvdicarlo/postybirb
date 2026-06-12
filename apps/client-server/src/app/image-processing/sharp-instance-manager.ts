@@ -48,7 +48,7 @@ export interface SharpWorkerResult {
  * rejected and the child is restarted so the next request gets a fresh,
  * healthy process. Generous so legitimately large images are not killed.
  */
-const REQUEST_TIMEOUT_MS = 120_000;
+const REQUEST_TIMEOUT_MS = 180_000;
 
 type PendingRequest = {
   resolve: (value: SharpWorkerResult) => void;
@@ -155,6 +155,15 @@ export class SharpInstanceManager implements OnModuleDestroy {
     this.child = null;
     this.childReady = null;
 
+    const inFlight = this.pending.size;
+    if (inFlight > 0) {
+      this.logger
+        .withMetadata({ inFlightRequests: inFlight })
+        .warn(
+          `Sharp instance manager shutting down with ${inFlight} request(s) still in flight — they will be rejected`,
+        );
+    }
+
     // Reject anything still in flight so awaiting callers settle.
     const shutdownError = new Error(
       'Sharp instance manager is shutting down',
@@ -166,12 +175,20 @@ export class SharpInstanceManager implements OnModuleDestroy {
     }
 
     if (child) {
-      this.logger.info('Destroying sharp utility process');
+      this.logger
+        .withMetadata({ pid: child.pid })
+        .info('Terminating sharp worker process (module destroy)');
       try {
         child.kill();
-      } catch {
+        this.logger.info('Sharp worker process terminated');
+      } catch (err) {
         // kill() may throw if the process is already gone — safe to ignore
+        this.logger
+          .withError(err)
+          .warn('Failed to terminate sharp worker process (may already be gone)');
       }
+    } else {
+      this.logger.info('Sharp instance manager destroyed (no worker was running)');
     }
   }
 
@@ -192,6 +209,11 @@ export class SharpInstanceManager implements OnModuleDestroy {
       this.childReady = this.spawnChild().catch((err) => {
         // Allow a future request to retry the spawn.
         this.childReady = null;
+        this.logger
+          .withError(err)
+          .error(
+            'Sharp worker process failed to spawn; next request will retry',
+          );
         throw err;
       });
     }
@@ -212,11 +234,18 @@ export class SharpInstanceManager implements OnModuleDestroy {
         workerPath: this.workerPath,
         isolatesCrashes: this.platform.process.isolatesCrashes,
       })
-      .info('Spawning sharp worker process');
+      .info('Spawning sharp worker process…');
 
     const child = await this.platform.process.fork(this.workerPath, {
       serviceName: 'PostyBirb Sharp Image Processor',
     });
+
+    this.logger
+      .withMetadata({
+        pid: child.pid,
+        isolatesCrashes: this.platform.process.isolatesCrashes,
+      })
+      .info('Sharp worker process ready');
 
     child.onMessage((message) => this.handleChildMessage(message));
     child.onExit((code) => this.handleChildExit(code));
@@ -232,16 +261,31 @@ export class SharpInstanceManager implements OnModuleDestroy {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private handleChildMessage(message: any): void {
     if (!message || typeof message.id !== 'number') {
+      this.logger
+        .withMetadata({ message })
+        .warn('Sharp worker sent an unrecognised message (no id); ignoring');
       return;
     }
     const request = this.pending.get(message.id);
     if (!request) {
+      this.logger
+        .withMetadata({ id: message.id })
+        .warn(
+          'Sharp worker replied to an unknown or already-settled request id; ignoring',
+        );
       return;
     }
     this.pending.delete(message.id);
     clearTimeout(request.timer);
 
     if (message.error) {
+      this.logger
+        .withMetadata({
+          id: message.id,
+          operation: request.operation,
+          workerError: message.error.message,
+        })
+        .warn('Sharp worker returned an error for operation');
       request.reject(
         new Error(message.error.message || 'Sharp worker error'),
       );
@@ -271,27 +315,48 @@ export class SharpInstanceManager implements OnModuleDestroy {
    */
   private handleChildExit(code: number): void {
     const hadChild = this.child !== null;
+    const pid = this.child?.pid;
     this.child = null;
     this.childReady = null;
 
     if (this.destroyed) {
-      return; // Deliberate shutdown — already handled in onModuleDestroy.
+      // Deliberate shutdown — already handled in onModuleDestroy.
+      this.logger
+        .withMetadata({ pid, exitCode: code })
+        .info('Sharp worker process exited after deliberate shutdown');
+      return;
     }
 
+    const pendingCount = this.pending.size;
+
     if (hadChild) {
-      const level = code === 0 ? 'warn' : 'error';
+      if (code === 0) {
+        this.logger
+          .withMetadata({ pid, exitCode: code, pendingRequests: pendingCount })
+          .warn(
+            'Sharp worker process exited cleanly but unexpectedly; ' +
+              'it will be respawned on the next request',
+          );
+      } else {
+        this.logger
+          .withMetadata({ pid, exitCode: code, pendingRequests: pendingCount })
+          .error(
+            'Sharp worker process crashed (likely a native libvips fault or out-of-memory). ' +
+              'The main process survived; it will be respawned on the next request.',
+          );
+      }
+    }
+
+    if (pendingCount > 0) {
       this.logger
-        .withMetadata({ exitCode: code, pendingRequests: this.pending.size })
-        [level](
-          code === 0
-            ? 'Sharp utility process exited; it will be respawned on the next request'
-            : 'Sharp utility process crashed (likely a native libvips crash or out-of-memory). ' +
-                'The main process survived; it will be respawned on the next request.',
+        .withMetadata({ pid, exitCode: code, pendingRequests: pendingCount })
+        .error(
+          `Rejecting ${pendingCount} in-flight sharp request(s) due to worker exit`,
         );
     }
 
     const crashError = new Error(
-      `Sharp utility process exited unexpectedly (code ${code}). ` +
+      `Sharp worker process exited unexpectedly (code ${code}). ` +
         'This usually indicates a native libvips crash or out-of-memory ' +
         'while processing an image.',
     );
@@ -308,13 +373,24 @@ export class SharpInstanceManager implements OnModuleDestroy {
    */
   private restartChild(): void {
     const { child } = this;
+    const pid = child?.pid;
     this.child = null;
     this.childReady = null;
     if (child) {
+      this.logger
+        .withMetadata({ pid })
+        .warn(
+          'Forcefully terminating sharp worker process due to a request timeout; ' +
+            'it will be respawned on the next request',
+        );
       try {
         child.kill();
-      } catch {
+        this.logger.withMetadata({ pid }).info('Sharp worker process terminated after timeout');
+      } catch (err) {
         // Already gone — safe to ignore.
+        this.logger
+          .withError(err)
+          .warn('Failed to terminate timed-out sharp worker (may already be gone)');
       }
     }
   }
@@ -357,13 +433,19 @@ export class SharpInstanceManager implements OnModuleDestroy {
     for (const candidate of candidates) {
       if (existsSync(candidate)) {
         SharpInstanceManager.resolvedWorkerPath = candidate;
+        this.logger
+          .withMetadata({ resolvedPath: candidate })
+          .info('Resolved sharp worker path');
         return candidate;
       }
     }
 
-    this.logger.warn(
-      `Sharp worker not found in any candidate path. Checked: ${candidates.join(', ')}`,
-    );
+    this.logger
+      .withMetadata({ checked: candidates })
+      .warn(
+        'Sharp worker not found in any candidate path; falling back to first candidate. ' +
+          'Image processing will likely fail.',
+      );
     return candidates[0];
   }
 
