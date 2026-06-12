@@ -1,16 +1,15 @@
 import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { clearDatabase } from '@postybirb/database';
-import { EntityNotFoundError } from '@postybirb/database';
+import { clearDatabase, EntityNotFoundError } from '@postybirb/database';
 import { PostyBirbDirectories, writeSync } from '@postybirb/fs';
 import {
-  FileSubmissionMetadata,
-  ISubmissionMetadata,
-  IWebsiteFormFields,
-  ScheduleType,
-  SubmissionRating,
-  SubmissionType,
-  WebsiteOptionsDto,
+    FileSubmissionMetadata,
+    ISubmissionMetadata,
+    IWebsiteFormFields,
+    ScheduleType,
+    SubmissionRating,
+    SubmissionType,
+    WebsiteOptionsDto,
 } from '@postybirb/types';
 import { readFileSync } from 'fs';
 import { join } from 'path';
@@ -163,7 +162,6 @@ describe('SubmissionService', () => {
       metadata: {},
       files: [],
       order: 1,
-      posts: [],
       postQueueRecord: undefined,
       options: [record.options[0].toDTO()],
       validations: [],
@@ -255,7 +253,6 @@ describe('SubmissionService', () => {
           order: file.order,
         },
       ],
-      posts: [],
       order: 1,
       options: [defaultOptions.toObject()],
       validations: [],

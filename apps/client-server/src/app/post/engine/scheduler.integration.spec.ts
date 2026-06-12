@@ -320,6 +320,97 @@ describe('Relay pipeline + scheduler (integration)', () => {
     expect(job.status).toBe(NodeStatus.SUCCEEDED);
   });
 
+  it('keeps a posted unit SUCCEEDED when the success-persist fails (no double-post)', async () => {
+    // Regression: a DB write failure after a unit has already posted must NOT
+    // flip the unit back to a re-postable state, or resume would double-post.
+    const submission = fileSubmission();
+    submission.options = [{ accountId: 'a_fa', websiteId: 'furaffinity' }];
+    const h = new Harness(submission);
+    h.register(fileWebsite({ id: 'furaffinity', fileBatchSize: 3 }));
+
+    let dispatches = 0;
+    h.behavior = (w, _d, batchIndex) => {
+      dispatches += 1;
+      return { sourceUrl: `https://furaffinity/${batchIndex}` };
+    };
+
+    const persistErr = new Error('SQLITE_BUSY: database is locked');
+    const onTaskChanged = jest.fn().mockRejectedValue(persistErr);
+    const sched = new RelayScheduler(h, {
+      ...instant,
+      onTaskChanged,
+    });
+    const job = sched.enqueue(submission.id);
+    await sched.runToIdle();
+
+    const fa = job.tasks[0];
+    // The post went out and the in-memory state stays SUCCEEDED despite the
+    // persist failure — it is NOT downgraded to FAILED/QUEUED.
+    expect(fa.status).toBe(NodeStatus.SUCCEEDED);
+    expect(fa.units.every((u) => u.status === NodeStatus.SUCCEEDED)).toBe(true);
+    expect(job.status).toBe(NodeStatus.SUCCEEDED);
+    // Persist was attempted (and retried) but the dispatch ran exactly once.
+    expect(dispatches).toBe(1);
+    expect(onTaskChanged).toHaveBeenCalled();
+    // The durable-persist failure is logged loudly for diagnosis.
+    const persistFailed = h.tracer
+      .getEntries(job.id)
+      .find((e) => e.event === 'task.persist_failed');
+    expect(persistFailed).toBeTruthy();
+  });
+
+  it('retries a network/IO blip during authenticate (transient outside dispatch)', async () => {
+    // Regression: transient errors in non-dispatch stages (auth/parse/etc.)
+    // must retry rather than failing the task terminally.
+    const submission = fileSubmission();
+    submission.options = [{ accountId: 'a_fa', websiteId: 'furaffinity' }];
+    const h = new Harness(submission);
+    h.register(fileWebsite({ id: 'furaffinity', fileBatchSize: 3 }));
+
+    let authCalls = 0;
+    h.authenticate = async () => {
+      authCalls += 1;
+      if (authCalls === 1) {
+        throw Object.assign(new Error('socket hang up'), { code: 'ECONNRESET' });
+      }
+    };
+
+    const sched = new RelayScheduler(h, instant);
+    const job = sched.enqueue(submission.id);
+    await sched.runToIdle();
+
+    expect(job.status).toBe(NodeStatus.SUCCEEDED);
+    expect(authCalls).toBe(2); // failed once, retried, succeeded
+    expect(job.tasks[0].attempts).toBe(1); // the transient retry consumed one
+  });
+
+  it('fails terminally when the cumulative rate-limit wait ceiling is exceeded', async () => {
+    // Regression: a task on a busy shared bucket must not park forever. A
+    // single park whose wait exceeds the ceiling fails the task terminally.
+    const submission = fileSubmission();
+    submission.options = [{ accountId: 'a_fa', websiteId: 'furaffinity' }];
+    const h = new Harness(submission);
+    // Interval just over the 1h ceiling: batch 0 posts, batch 1's required
+    // wait alone blows the ceiling and fails the task.
+    h.register(
+      fileWebsite({
+        id: 'furaffinity',
+        fileBatchSize: 1,
+        minimumPostWaitInterval: 60 * 60 * 1000 + 1,
+      }),
+    );
+
+    const sched = new RelayScheduler(h, instant);
+    const job = sched.enqueue(submission.id);
+    await sched.runToIdle();
+
+    const fa = job.tasks[0];
+    expect(fa.status).toBe(NodeStatus.FAILED);
+    expect(fa.units[0].status).toBe(NodeStatus.SUCCEEDED); // first batch posted
+    expect(fa.error?.message).toMatch(/ceiling/i);
+    expect(job.status).toBe(NodeStatus.FAILED);
+  });
+
   it('any-mode external site posts after the first upstream URL', async () => {
     const submission = fileSubmission();
     submission.options = [
