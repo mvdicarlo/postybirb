@@ -18,16 +18,9 @@ import {
     PostTaskRepository,
     PostUnitRepository,
 } from '@postybirb/database';
-import { NodeStatus, PostErrorKind } from '@postybirb/types';
+import { ITaskError, NodeStatus, PostErrorKind } from '@postybirb/types';
 import { PIPELINE_STAGES } from './constants';
-import { RelayJob, RelayTask, RelayUnit } from './model';
-
-const TERMINAL_DB_STATUSES: ReadonlySet<NodeStatus> = new Set([
-  NodeStatus.SUCCEEDED,
-  NodeStatus.FAILED,
-  NodeStatus.SKIPPED,
-  NodeStatus.CANCELLED,
-]);
+import { RelayJob, RelayTask, RelayUnit, isTerminal } from './model';
 
 @Injectable()
 export class RelayPersistence {
@@ -125,26 +118,15 @@ export class RelayPersistence {
     const nowIso = new Date().toISOString();
     let cleared = 0;
     for (const row of rows) {
-      if (TERMINAL_DB_STATUSES.has(row.status as NodeStatus)) continue;
+      if (isTerminal(row.status as NodeStatus)) continue;
       cleared += 1;
       // eslint-disable-next-line no-await-in-loop
       await this.jobs.update(row.id, {
         status: NodeStatus.CANCELLED,
         completedAt: nowIso,
       });
-      for (const task of row.tasks ?? []) {
-        if (TERMINAL_DB_STATUSES.has(task.status as NodeStatus)) continue;
-        // eslint-disable-next-line no-await-in-loop
-        await this.tasks.update(task.id, {
-          status: NodeStatus.CANCELLED,
-          waitingUntil: null,
-        });
-        for (const unit of task.units ?? []) {
-          if (TERMINAL_DB_STATUSES.has(unit.status as NodeStatus)) continue;
-          // eslint-disable-next-line no-await-in-loop
-          await this.units.update(unit.id, { status: NodeStatus.CANCELLED });
-        }
-      }
+      // eslint-disable-next-line no-await-in-loop
+      await this.terminateRowSubtree(row, NodeStatus.CANCELLED);
     }
     return cleared;
   }
@@ -158,23 +140,38 @@ export class RelayPersistence {
       status: NodeStatus.FAILED,
       completedAt: nowIso,
     });
+    await this.terminateRowSubtree(row, NodeStatus.FAILED, {
+      kind: PostErrorKind.FATAL,
+      stage: PIPELINE_STAGES.RECOVER,
+      message,
+      retryable: false,
+    });
+  }
+
+  /**
+   * Transition every still-running task (and its still-running units) of a
+   * persisted job row to a terminal `status`, optionally stamping a task error.
+   * Already-terminal nodes are left untouched. Shared by the cancel- and fail-
+   * sweep paths so the "walk the subtree and close out open work" logic lives
+   * in one place.
+   */
+  private async terminateRowSubtree(
+    row: PostJob,
+    status: NodeStatus,
+    error?: ITaskError,
+  ): Promise<void> {
     for (const task of row.tasks ?? []) {
-      if (TERMINAL_DB_STATUSES.has(task.status as NodeStatus)) continue;
+      if (isTerminal(task.status as NodeStatus)) continue;
       // eslint-disable-next-line no-await-in-loop
       await this.tasks.update(task.id, {
-        status: NodeStatus.FAILED,
+        status,
         waitingUntil: null,
-        error: {
-          kind: PostErrorKind.FATAL,
-          stage: PIPELINE_STAGES.RECOVER,
-          message,
-          retryable: false,
-        },
+        ...(error ? { error } : {}),
       });
       for (const unit of task.units ?? []) {
-        if (TERMINAL_DB_STATUSES.has(unit.status as NodeStatus)) continue;
+        if (isTerminal(unit.status as NodeStatus)) continue;
         // eslint-disable-next-line no-await-in-loop
-        await this.units.update(unit.id, { status: NodeStatus.FAILED });
+        await this.units.update(unit.id, { status });
       }
     }
   }

@@ -25,7 +25,7 @@ import { Mutex } from 'async-mutex';
 import { NotificationsService } from '../../notifications/notifications.service';
 import { SubmissionService } from '../../submission/services/submission.service';
 import { WebsiteRegistryService } from '../../websites/website-registry.service';
-import { RelayJob, TERMINAL_ALL, computeJobStatus } from './model';
+import { RelayJob, computeJobStatus, isTerminal } from './model';
 import { RelayPersistence } from './persistence';
 import { resetForResume } from './pipeline';
 import { RelayPipelineDeps } from './pipeline-deps';
@@ -161,7 +161,7 @@ export class RelayPostManager implements OnModuleInit {
   }
 
   private isTerminalStatus(status: NodeStatus): boolean {
-    return TERMINAL_ALL.has(status);
+    return isTerminal(status);
   }
 
   private isActiveJob(job: RelayJob | undefined): job is RelayJob {

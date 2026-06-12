@@ -22,7 +22,7 @@ import {
 } from 'node:fs/promises';
 import { join } from 'node:path';
 import { WSGateway } from '../../web-socket/web-socket-gateway';
-import { RelayJob, RelayTask, RelayUnit, computeJobStatus } from './model';
+import { RelayJob, RelayTask, RelayUnit, computeJobStatus, isDone } from './model';
 
 export type TraceLevel = 'debug' | 'info' | 'warn' | 'error';
 
@@ -47,6 +47,28 @@ const LEDGER_EVENTS: ReadonlySet<string> = new Set([
   'unit.failed',
   'file.resized',
 ]);
+
+/**
+ * Common trace fields that identify a task within its job. Centralizes the
+ * jobId/taskId/account/website quartet that every task-scoped trace line and
+ * UI delta carries, so call sites stay terse and consistent.
+ */
+export function taskTraceFields(
+  job: RelayJob,
+  task: RelayTask,
+): { jobId: string; taskId: string; account: string; website: string } {
+  return {
+    jobId: job.id,
+    taskId: task.id,
+    account: task.accountId,
+    website: task.websiteId,
+  };
+}
+
+/** Count the child nodes that are "done" (succeeded or skipped). */
+function countDone(nodes: ReadonlyArray<{ status: NodeStatus }>): number {
+  return nodes.filter((n) => isDone(n)).length;
+}
 
 @Injectable()
 export class RelayTracer {
@@ -229,9 +251,7 @@ function projectUnit(unit: RelayUnit): JobTreeNode {
 
 export function projectTask(task: RelayTask): JobTreeNode {
   const total = task.units.length;
-  const done = task.units.filter(
-    (u) => u.status === NodeStatus.SUCCEEDED || u.status === NodeStatus.SKIPPED,
-  ).length;
+  const done = countDone(task.units);
   return {
     id: task.id,
     kind: 'task',
@@ -256,9 +276,7 @@ export function projectTask(task: RelayTask): JobTreeNode {
 
 export function projectJob(job: RelayJob): JobTreeNode {
   const total = job.tasks.length;
-  const done = job.tasks.filter(
-    (t) => t.status === NodeStatus.SUCCEEDED || t.status === NodeStatus.SKIPPED,
-  ).length;
+  const done = countDone(job.tasks);
   return {
     id: job.id,
     kind: 'job',

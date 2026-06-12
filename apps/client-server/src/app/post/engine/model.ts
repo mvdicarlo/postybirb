@@ -40,6 +40,29 @@ export const TERMINAL_ALL: ReadonlySet<NodeStatus> = new Set([
   NodeStatus.CANCELLED,
 ]);
 
+/** A status, or any node (job/task/unit) that carries one. */
+type StatusLike = NodeStatus | { status: NodeStatus };
+
+function statusOf(value: StatusLike): NodeStatus {
+  return typeof value === 'string' ? value : value.status;
+}
+
+/**
+ * True when a node has reached a fully-terminal state (succeeded, skipped,
+ * failed or cancelled) — there is no further work to do for it.
+ */
+export function isTerminal(value: StatusLike): boolean {
+  return TERMINAL_ALL.has(statusOf(value));
+}
+
+/**
+ * True when a node is "done" for resume purposes (succeeded or skipped) and so
+ * must not be re-run on a CONTINUE resume.
+ */
+export function isDone(value: StatusLike): boolean {
+  return TERMINAL_DONE.has(statusOf(value));
+}
+
 // ---------------------------------------------------------------------------
 // Working-tree nodes
 // ---------------------------------------------------------------------------
@@ -200,7 +223,7 @@ export function evaluateDependency(
 
   const succeeded = deps.filter((t) => t.status === NodeStatus.SUCCEEDED).length;
   const skipped = deps.filter((t) => t.status === NodeStatus.SKIPPED).length;
-  const terminal = deps.filter((t) => TERMINAL_ALL.has(t.status)).length;
+  const terminal = deps.filter((t) => isTerminal(t)).length;
   const total = deps.length;
 
   if (dep.mode === SOURCE_DEPENDENCY_MODES.ALL) {

@@ -43,11 +43,11 @@ import {
   RelayJob,
   RelayTask,
   RelayUnit,
-  TERMINAL_DONE,
   depTaskIds,
+  isDone,
 } from './model';
 import { RateLimiter, rateKey } from './rate-limiter';
-import { RelayTracer } from './tracer.service';
+import { RelayTracer, taskTraceFields } from './tracer.service';
 import { RelaySourceFile } from './transform';
 import { RelayPostResult, RelayWebsite } from './websites';
 
@@ -238,11 +238,11 @@ export function resetForResume(
         unit.status = NodeStatus.QUEUED;
         unit.sourceUrl = undefined;
         unit.error = undefined;
-      } else if (!TERMINAL_DONE.has(unit.status)) {
+      } else if (!isDone(unit)) {
         unit.status = NodeStatus.QUEUED;
         unit.error = undefined;
       }
-      if (!TERMINAL_DONE.has(unit.status)) hasWork = true;
+      if (!isDone(unit)) hasWork = true;
     }
     if (hasWork || task.units.length === 0) {
       task.status = NodeStatus.QUEUED;
@@ -268,6 +268,20 @@ function throwIfAborted(token: CancellableToken, stage: string): void {
   }
 }
 
+/**
+ * Run a stage's async body, normalizing any thrown value into a StageError
+ * tagged with the stage (network/IO blips become TRANSIENT, everything else
+ * FATAL). Keeps each stage call site to a single readable line instead of a
+ * repeated try/catch + classify block.
+ */
+async function runStage<T>(stage: string, body: () => Promise<T>): Promise<T> {
+  try {
+    return await body();
+  } catch (err) {
+    throw classify(stage, err);
+  }
+}
+
 function collectUpstreamSourceUrls(job: RelayJob, task: RelayTask): string[] {
   const urls: string[] = [];
   for (const depId of depTaskIds(task)) {
@@ -289,62 +303,47 @@ export async function runTaskPass(
   token: CancellableToken,
 ): Promise<void> {
   const { tracer } = deps;
-  const base = {
-    jobId: job.id,
-    taskId: task.id,
-    account: task.accountId,
-    website: task.websiteId,
+  const base = taskTraceFields(job, task);
+
+  /** Emit the standard "stage completed OK" debug trace line. */
+  const emitStageOk = (
+    stage: string,
+    data?: Record<string, unknown>,
+  ): void => {
+    tracer.emit({
+      ...base,
+      level: 'debug',
+      stage,
+      event: TRACER_STAGE_EVENTS.OK,
+      data,
+    });
   };
 
   // 1. Resolve
   throwIfAborted(token, PIPELINE_STAGES.RESOLVE);
   const site = deps.getWebsite(job.id, task.websiteId, task.accountId);
-  tracer.emit({
-    ...base,
-    level: 'debug',
-    stage: PIPELINE_STAGES.RESOLVE,
-    event: TRACER_STAGE_EVENTS.OK,
-  });
+  emitStageOk(PIPELINE_STAGES.RESOLVE);
 
   // 2. Authenticate — ensure the account session is live (re-login if expired).
   throwIfAborted(token, PIPELINE_STAGES.AUTHENTICATE);
-  try {
-    await deps.authenticate?.(task);
-  } catch (err) {
-    throw classify(PIPELINE_STAGES.AUTHENTICATE, err);
-  }
-  tracer.emit({
-    ...base,
-    level: 'debug',
-    stage: PIPELINE_STAGES.AUTHENTICATE,
-    event: TRACER_STAGE_EVENTS.OK,
-  });
+  await runStage(PIPELINE_STAGES.AUTHENTICATE, () =>
+    Promise.resolve(deps.authenticate?.(task)),
+  );
+  emitStageOk(PIPELINE_STAGES.AUTHENTICATE);
 
   // 3. Parse — build post data and inject upstream source URLs.
   throwIfAborted(token, PIPELINE_STAGES.PARSE);
   const upstream = collectUpstreamSourceUrls(job, task);
-  let data: RelayDispatchData;
-  try {
-    data = await deps.buildPostData(task, upstream);
-  } catch (err) {
-    throw classify(PIPELINE_STAGES.PARSE, err);
-  }
-  tracer.emit({
-    ...base,
-    level: 'debug',
-    stage: PIPELINE_STAGES.PARSE,
-    event: TRACER_STAGE_EVENTS.OK,
-    data: { upstreamSourceUrls: upstream, data },
-  });
+  const data = await runStage(PIPELINE_STAGES.PARSE, () =>
+    deps.buildPostData(task, upstream),
+  );
+  emitStageOk(PIPELINE_STAGES.PARSE, { upstreamSourceUrls: upstream, data });
 
   // 4. Validate
   throwIfAborted(token, PIPELINE_STAGES.VALIDATE);
-  let errors: string[];
-  try {
-    errors = await deps.validate(task, data);
-  } catch (err) {
-    throw classify(PIPELINE_STAGES.VALIDATE, err);
-  }
+  const errors = await runStage(PIPELINE_STAGES.VALIDATE, () =>
+    deps.validate(task, data),
+  );
   if (errors.length > 0) {
     throw new StageError({
       kind: PostErrorKind.VALIDATION_FAILED,
@@ -352,16 +351,11 @@ export async function runTaskPass(
       message: errors.join('; '),
     });
   }
-  tracer.emit({
-    ...base,
-    level: 'debug',
-    stage: PIPELINE_STAGES.VALIDATE,
-    event: TRACER_STAGE_EVENTS.OK,
-  });
+  emitStageOk(PIPELINE_STAGES.VALIDATE);
 
   // ---- per-unit dispatch loop ----
   for (const unit of task.units) {
-    if (TERMINAL_DONE.has(unit.status)) continue;
+    if (isDone(unit)) continue;
     throwIfAborted(token, PIPELINE_STAGES.DISPATCH);
     unit.status = NodeStatus.RUNNING;
 
@@ -409,17 +403,10 @@ export async function runTaskPass(
     // 6. Transform — convert/resize/thumbnail/verify into PostingFiles.
     let postingFiles: PostingFile[] = [];
     if (unit.kind === UnitKind.BATCH) {
-      try {
-        // eslint-disable-next-line no-await-in-loop
-        postingFiles = await deps.processBatch(
-          task,
-          unit.fileIds,
-          upstream,
-          token,
-        );
-      } catch (err) {
-        throw classify(PIPELINE_STAGES.TRANSFORM, err);
-      }
+      // eslint-disable-next-line no-await-in-loop
+      postingFiles = await runStage(PIPELINE_STAGES.TRANSFORM, () =>
+        deps.processBatch(task, unit.fileIds, upstream, token),
+      );
       tracer.emit({
         ...base,
         level: 'info',

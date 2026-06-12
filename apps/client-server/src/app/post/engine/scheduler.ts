@@ -17,11 +17,12 @@ import { StageError, classify, decideRetry, toTaskError } from './errors';
 import {
   RelayJob,
   RelayTask,
-  TERMINAL_ALL,
   computeJobStatus,
   evaluateDependency,
+  isTerminal,
 } from './model';
 import { PipelineDeps, planJob, resetForResume, runTaskPass } from './pipeline';
+import { taskTraceFields } from './tracer.service';
 
 export interface SchedulerOptions {
   maxConcurrentJobs: number;
@@ -106,7 +107,7 @@ export class RelayScheduler {
    */
   forget(jobId: string): void {
     const job = this.jobs.get(jobId);
-    if (!job || !TERMINAL_ALL.has(job.status)) return;
+    if (!job || !isTerminal(job)) return;
     this.jobs.delete(jobId);
     this.tokens.delete(jobId);
     this.recentlyCompleted.set(jobId, job);
@@ -143,10 +144,7 @@ export class RelayScheduler {
       } catch (err) {
         if (attempt === maxAttempts) {
           this.deps.tracer.emit({
-            jobId: job.id,
-            taskId: task.id,
-            account: task.accountId,
-            website: task.websiteId,
+            ...taskTraceFields(job, task),
             level: 'error',
             event: TRACER_TASK_EVENTS.PERSIST_FAILED,
             data: {
@@ -273,7 +271,7 @@ export class RelayScheduler {
       const due = [...this.jobs.values()]
         .filter(
           (j) =>
-            !TERMINAL_ALL.has(j.status) &&
+            !isTerminal(j) &&
             (j.scheduledFor === undefined || j.scheduledFor <= cutoff),
         )
         .sort((a, b) => b.priority - a.priority || a.createdAt - b.createdAt);
@@ -324,7 +322,7 @@ export class RelayScheduler {
       for (;;) {
         if (token.isCancelled) break;
 
-        const pending = job.tasks.filter((t) => !TERMINAL_ALL.has(t.status));
+        const pending = job.tasks.filter((t) => !isTerminal(t));
         if (pending.length === 0) break;
 
         const runnable = pending.filter((t) => this.isRunnable(job, t, Date.now()));
@@ -373,7 +371,7 @@ export class RelayScheduler {
   }
 
   private isRunnable(job: RelayJob, task: RelayTask, now: number): boolean {
-    if (TERMINAL_ALL.has(task.status)) return false;
+    if (isTerminal(task)) return false;
     if (task.waitingUntil !== undefined && task.waitingUntil > now) return false;
     const dep = evaluateDependency(job, task);
     return dep === DEPENDENCY_STATES.SATISFIED || dep === DEPENDENCY_STATES.NONE;
@@ -383,7 +381,7 @@ export class RelayScheduler {
     let soonest: number | undefined;
     let anyDepPending = false;
     for (const t of job.tasks) {
-      if (TERMINAL_ALL.has(t.status)) continue;
+      if (isTerminal(t)) continue;
       if (t.waitingUntil !== undefined) {
         soonest =
           soonest === undefined ? t.waitingUntil : Math.min(soonest, t.waitingUntil);
@@ -397,7 +395,7 @@ export class RelayScheduler {
 
   private skipBlockedDependents(job: RelayJob): void {
     for (const t of job.tasks) {
-      if (TERMINAL_ALL.has(t.status)) continue;
+      if (isTerminal(t)) continue;
       if (evaluateDependency(job, t) === DEPENDENCY_STATES.BLOCKED) {
         t.status = NodeStatus.SKIPPED;
         this.deps.tracer.emit({
@@ -414,17 +412,14 @@ export class RelayScheduler {
   /** Mark every non-terminal task CANCELLED (used on a cancelled job exit). */
   private cancelRemainingTasks(job: RelayJob): void {
     for (const t of job.tasks) {
-      if (TERMINAL_ALL.has(t.status)) continue;
+      if (isTerminal(t)) continue;
       t.status = NodeStatus.CANCELLED;
       t.waitingUntil = undefined;
       for (const unit of t.units) {
-        if (!TERMINAL_ALL.has(unit.status)) unit.status = NodeStatus.CANCELLED;
+        if (!isTerminal(unit)) unit.status = NodeStatus.CANCELLED;
       }
       this.deps.tracer.emit({
-        jobId: job.id,
-        taskId: t.id,
-        account: t.accountId,
-        website: t.websiteId,
+        ...taskTraceFields(job, t),
         level: 'warn',
         event: TRACER_TASK_EVENTS.CANCELLED,
       });
@@ -439,10 +434,7 @@ export class RelayScheduler {
     task.status = NodeStatus.RUNNING;
     task.waitingUntil = undefined;
     this.deps.tracer.emit({
-      jobId: job.id,
-      taskId: task.id,
-      account: task.accountId,
-      website: task.websiteId,
+      ...taskTraceFields(job, task),
       level: 'info',
       event: TRACER_TASK_EVENTS.STARTED,
       data: { attempt: task.attempts + 1 },
@@ -503,10 +495,7 @@ export class RelayScheduler {
     task.error = toTaskError(se);
     await this.persistTaskDurable(job, task);
     this.deps.tracer.emit({
-      jobId: job.id,
-      taskId: task.id,
-      account: task.accountId,
-      website: task.websiteId,
+      ...taskTraceFields(job, task),
       level: 'error',
       event: TRACER_TASK_EVENTS.FAILED,
       data: { kind: se.kind, stage: se.stage, message: se.message },
