@@ -39,41 +39,6 @@ export const TERMINAL_ALL: ReadonlySet<NodeStatus> = new Set([
   NodeStatus.CANCELLED,
 ]);
 
-const ALLOWED_TRANSITIONS: Record<NodeStatus, ReadonlySet<NodeStatus>> = {
-  [NodeStatus.QUEUED]: new Set([
-    NodeStatus.READY,
-    NodeStatus.RUNNING,
-    NodeStatus.CANCELLED,
-    NodeStatus.SKIPPED,
-  ]),
-  [NodeStatus.READY]: new Set([
-    NodeStatus.RUNNING,
-    NodeStatus.WAITING,
-    NodeStatus.CANCELLED,
-    NodeStatus.SKIPPED,
-  ]),
-  [NodeStatus.RUNNING]: new Set([
-    NodeStatus.SUCCEEDED,
-    NodeStatus.FAILED,
-    NodeStatus.WAITING,
-    NodeStatus.CANCELLED,
-  ]),
-  [NodeStatus.WAITING]: new Set([
-    NodeStatus.READY,
-    NodeStatus.RUNNING,
-    NodeStatus.CANCELLED,
-  ]),
-  [NodeStatus.SUCCEEDED]: new Set([NodeStatus.QUEUED]),
-  [NodeStatus.FAILED]: new Set([NodeStatus.QUEUED]),
-  [NodeStatus.SKIPPED]: new Set([NodeStatus.QUEUED]),
-  [NodeStatus.CANCELLED]: new Set([NodeStatus.QUEUED]),
-};
-
-export function canTransition(from: NodeStatus, to: NodeStatus): boolean {
-  if (from === to) return true;
-  return ALLOWED_TRANSITIONS[from]?.has(to) ?? false;
-}
-
 // ---------------------------------------------------------------------------
 // Working-tree nodes
 // ---------------------------------------------------------------------------

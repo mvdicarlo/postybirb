@@ -8,7 +8,6 @@ export * from './post-manager.service';
 export * from './preview.service';
 export * from './rate-limiter';
 export * from './scheduler';
-export * from './sharp-encoder';
 export * from './tracer.service';
 export * from './transform';
 export * from './websites';

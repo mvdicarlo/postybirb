@@ -18,7 +18,6 @@ import { isMessageWebsite } from '../../websites/models/website-modifiers/messag
 import { UnknownWebsite } from '../../websites/website';
 import { CancellableToken } from '../models/cancellable-token';
 import { PostingFile } from '../models/posting-file';
-import { WebsiteFileConstraints } from './transform';
 
 export type RelayPostResult = { sourceUrl?: string; message?: string };
 
@@ -38,7 +37,6 @@ export interface RelayWebsite {
   fileBatchSize: number;
   acceptsExternalSourceUrls: boolean;
   sourceDependencyMode: RelaySourceDependencyMode;
-  fileConstraints?: WebsiteFileConstraints;
 
   calculateImageResize?(file: {
     width: number;
@@ -96,16 +94,6 @@ export class WebsiteInstanceAdapter implements RelayWebsite {
     return (
       this.instance.decoratedProps.fileOptions?.sourceDependencyMode ?? 'all'
     );
-  }
-
-  get fileConstraints(): WebsiteFileConstraints | undefined {
-    const { fileOptions } = this.instance.decoratedProps;
-    if (!fileOptions) return undefined;
-    return {
-      acceptedMimeTypes: fileOptions.acceptedMimeTypes ?? [],
-      maxBytes: fileOptions.acceptedFileSizes,
-      maxAltTextLength: fileOptions.maxAltTextLength,
-    };
   }
 
   supportsType(type: SubmissionType): boolean {

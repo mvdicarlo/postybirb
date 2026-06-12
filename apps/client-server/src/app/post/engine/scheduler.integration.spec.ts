@@ -17,12 +17,6 @@ import { RelayPostResult, RelayWebsite } from './websites';
 // Mock websites + harness
 // ---------------------------------------------------------------------------
 
-const IMAGE_ONLY = {
-  acceptedMimeTypes: ['image/jpeg', 'image/png'],
-  maxBytes: { '*': 10_000_000 },
-  conversion: { 'image/webp': 'image/png' },
-};
-
 function fileWebsite(over: Partial<RelayWebsite> = {}): RelayWebsite {
   return {
     id: over.id ?? 'site',
@@ -34,7 +28,6 @@ function fileWebsite(over: Partial<RelayWebsite> = {}): RelayWebsite {
     fileBatchSize: over.fileBatchSize ?? 1,
     acceptsExternalSourceUrls: over.acceptsExternalSourceUrls ?? false,
     sourceDependencyMode: over.sourceDependencyMode ?? 'all',
-    fileConstraints: over.fileConstraints ?? IMAGE_ONLY,
   };
 }
 

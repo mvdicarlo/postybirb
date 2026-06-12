@@ -14,7 +14,6 @@ import { RelayPipelineDeps } from './engine/pipeline-deps';
 import { RelayPostManager } from './engine/post-manager.service';
 import { RelayPreviewService } from './engine/preview.service';
 import { RateLimiter } from './engine/rate-limiter';
-import { SharpEncoder } from './engine/sharp-encoder';
 import { RelayTracer } from './engine/tracer.service';
 import { PostController } from './post.controller';
 import { PostFileResizerService } from './services/post-file-resizer/post-file-resizer.service';
@@ -44,7 +43,6 @@ import { PostQueueService } from './services/post-queue/post-queue.service';
     PostQueueService,
     RelayTracer,
     RateLimiter,
-    SharpEncoder,
     RelayFileProcessor,
     RelayPipelineDeps,
     RelayPreviewService,
