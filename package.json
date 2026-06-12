@@ -156,7 +156,6 @@
     "multer": "^2.0.2",
     "node-forge": "^1.4.0",
     "node-html-parser": "^7.0.1",
-    "piscina": "^5.1.4",
     "postcss": "^8.5.10",
     "postcss-import": "^14.0.2",
     "postcss-inline-svg": "^6.0.0",

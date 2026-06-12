@@ -1,14 +1,13 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
+import { PlatformService, PlatformWorkerProcess } from '@postybirb/platform';
 import { ImageResizeProps } from '@postybirb/types';
-import { IsTestEnvironment } from '@postybirb/utils/common';
+import { toError } from '@postybirb/utils/common';
 import { existsSync } from 'fs';
-import { cpus } from 'os';
 import { join, resolve } from 'path';
-import Piscina from 'piscina';
 
 /**
- * Input sent to the sharp worker thread.
+ * Input sent to the sharp worker process.
  */
 export interface SharpWorkerInput {
   operation: 'resize' | 'metadata' | 'thumbnail' | 'healthcheck';
@@ -26,7 +25,7 @@ export interface SharpWorkerInput {
 }
 
 /**
- * Result returned from the sharp worker thread.
+ * Result returned from the sharp worker process.
  */
 export interface SharpWorkerResult {
   buffer?: Buffer;
@@ -44,11 +43,42 @@ export interface SharpWorkerResult {
 }
 
 /**
- * Manages a pool of worker threads that run sharp image processing.
+ * Per-request timeout. Acts as a safety net against a native call that
+ * hangs (rather than crashes) the child — after this, the request is
+ * rejected and the child is restarted so the next request gets a fresh,
+ * healthy process. Generous so legitimately large images are not killed.
+ */
+const REQUEST_TIMEOUT_MS = 180_000;
+
+type PendingRequest = {
+  resolve: (value: SharpWorkerResult) => void;
+  reject: (reason: Error) => void;
+  timer: ReturnType<typeof setTimeout>;
+  operation: string;
+};
+
+/**
+ * Manages a dedicated worker process that runs sharp image processing,
+ * obtained through the {@link PlatformService} process abstraction.
  *
- * This isolates sharp/libvips native code from the main process so that
- * if libvips segfaults (e.g. after long idle periods), only the worker
- * dies — the main process survives and piscina spawns a replacement.
+ * In production (Electron) the worker is a real, separate OS process, which
+ * isolates sharp/libvips native code from the main process: if libvips
+ * segfaults, aborts, or runs out of memory (e.g. on a pathological image or
+ * after long idle), only the child process dies. The main process survives,
+ * a fresh child is spawned on the next request, and any in-flight requests
+ * are rejected with a normal catchable error so posting fails gracefully
+ * instead of taking the whole app down.
+ *
+ * Under test, the platform supplies an in-process worker (no real process is
+ * spawned); the sharp logic is still fully exercised, only the OS-level
+ * crash isolation is bypassed.
+ *
+ * NOTE: This deliberately replaces the previous piscina worker-thread
+ * pool. Worker threads share the host process's address space, so a
+ * native crash there killed the entire application with no catchable
+ * JavaScript error — which is the root cause of the "crash while posting"
+ * reports. A separate process is the only way to truly contain native
+ * crashes.
  *
  * @class SharpInstanceManager
  */
@@ -56,43 +86,32 @@ export interface SharpWorkerResult {
 export class SharpInstanceManager implements OnModuleDestroy {
   private readonly logger = Logger();
 
-  private pool: Piscina | null = null;
+  /** The current sharp worker process, or null if not yet spawned/crashed. */
+  private child: PlatformWorkerProcess | null = null;
 
-  /**
-   * In test mode, we call the worker function directly in-process to avoid
-   * thread contention issues with the electron test runner. The sharp logic
-   * is still fully exercised — only the threading is bypassed.
-   */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private workerFn: ((input: any) => Promise<any>) | null = null;
+  /** In-flight spawn, so concurrent callers share a single child. */
+  private childReady: Promise<PlatformWorkerProcess> | null = null;
 
-  constructor() {
-    const workerPath = this.resolveWorkerPath();
+  /** Outstanding requests keyed by id, awaiting a response from the child. */
+  private readonly pending = new Map<number, PendingRequest>();
 
-    if (IsTestEnvironment()) {
-      // In tests: call the worker function directly (no threads)
-      // eslint-disable-next-line @typescript-eslint/no-require-imports, import/no-dynamic-require, global-require
-      this.workerFn = require(workerPath);
-    } else {
-      // Production: use piscina for crash isolation
-      const maxThreads = Math.min(cpus().length, 4);
+  /** Monotonic request id used to correlate responses from the child. */
+  private requestId = 0;
 
-      this.logger
-        .withMetadata({ workerPath, maxThreads })
-        .info('Initializing sharp worker pool');
+  /** Set during shutdown so a deliberate kill is not treated as a crash. */
+  private destroyed = false;
 
-      this.pool = new Piscina({
-        filename: workerPath,
-        maxThreads,
-        minThreads: 0, // Allow ALL workers to be reaped after idle
-        idleTimeout: 60_000, // Kill idle workers after 60s
-      });
-    }
+  /** Resolved absolute path to sharp-worker.js. */
+  private readonly workerPath: string;
 
-    // Run health check asynchronously — don't block construction,
-    // but log warnings if sharp is broken on this system.
-    // The .catch() is a safety net to prevent unhandled rejection
-    // if something unexpected escapes the try/catch inside runHealthCheck.
+  constructor(private readonly platform: PlatformService) {
+    this.workerPath = this.resolveWorkerPath();
+
+    // Run health check asynchronously — don't block construction, but log
+    // warnings if sharp is broken on this system. In production this also
+    // eagerly spawns (and validates) the child so the first post is fast.
+    // The .catch() is a safety net to prevent unhandled rejection if
+    // something unexpected escapes the try/catch inside runHealthCheck.
     this.runHealthCheck().catch((err) => {
       this.logger
         .withError(err)
@@ -131,12 +150,247 @@ export class SharpInstanceManager implements OnModuleDestroy {
   }
 
   async onModuleDestroy() {
-    if (this.pool) {
-      this.logger.info('Destroying sharp worker pool');
+    this.destroyed = true;
+    const { child } = this;
+    this.child = null;
+    this.childReady = null;
+
+    const inFlight = this.pending.size;
+    if (inFlight > 0) {
+      this.logger
+        .withMetadata({ inFlightRequests: inFlight })
+        .warn(
+          `Sharp instance manager shutting down with ${inFlight} request(s) still in flight — they will be rejected`,
+        );
+    }
+
+    // Reject anything still in flight so awaiting callers settle.
+    const shutdownError = new Error(
+      'Sharp instance manager is shutting down',
+    );
+    for (const [id, request] of this.pending) {
+      clearTimeout(request.timer);
+      request.reject(shutdownError);
+      this.pending.delete(id);
+    }
+
+    if (child) {
+      this.logger
+        .withMetadata({ pid: child.pid })
+        .info('Terminating sharp worker process (module destroy)');
       try {
-        await this.pool.destroy();
-      } catch {
-        // pool.destroy() throws for in-flight tasks — safe to ignore
+        child.kill();
+        this.logger.info('Sharp worker process terminated');
+      } catch (err) {
+        // kill() may throw if the process is already gone — safe to ignore
+        this.logger
+          .withError(err)
+          .warn('Failed to terminate sharp worker process (may already be gone)');
+      }
+    } else {
+      this.logger.info('Sharp instance manager destroyed (no worker was running)');
+    }
+  }
+
+  /**
+   * Ensure a live child process exists, spawning one if necessary.
+   * Concurrent callers share a single in-flight spawn.
+   */
+  private ensureChild(): Promise<PlatformWorkerProcess> {
+    if (this.destroyed) {
+      return Promise.reject(
+        new Error('Sharp instance manager has been destroyed'),
+      );
+    }
+    if (this.child) {
+      return Promise.resolve(this.child);
+    }
+    if (!this.childReady) {
+      this.childReady = this.spawnChild().catch((err) => {
+        // Allow a future request to retry the spawn.
+        this.childReady = null;
+        this.logger
+          .withError(err)
+          .error(
+            'Sharp worker process failed to spawn; next request will retry',
+          );
+        throw err;
+      });
+    }
+    return this.childReady;
+  }
+
+  /**
+   * Fork the sharp worker process via the platform abstraction and wait
+   * until it is ready, then wire up message/exit handlers.
+   *
+   * The platform decides how the worker is hosted: a real Electron
+   * utilityProcess in production (true crash isolation) or an in-process
+   * stand-in under test.
+   */
+  private async spawnChild(): Promise<PlatformWorkerProcess> {
+    this.logger
+      .withMetadata({
+        workerPath: this.workerPath,
+        isolatesCrashes: this.platform.process.isolatesCrashes,
+      })
+      .info('Spawning sharp worker process…');
+
+    const child = await this.platform.process.fork(this.workerPath, {
+      serviceName: 'PostyBirb Sharp Image Processor',
+    });
+
+    this.logger
+      .withMetadata({
+        pid: child.pid,
+        isolatesCrashes: this.platform.process.isolatesCrashes,
+      })
+      .info('Sharp worker process ready');
+
+    child.onMessage((message) => this.handleChildMessage(message));
+    child.onExit((code) => this.handleChildExit(code));
+
+    this.child = child;
+    return child;
+  }
+
+  /**
+   * Handle a response message from the child, resolving/rejecting the
+   * matching pending request.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private handleChildMessage(message: any): void {
+    if (!message || typeof message.id !== 'number') {
+      this.logger
+        .withMetadata({ message })
+        .warn('Sharp worker sent an unrecognised message (no id); ignoring');
+      return;
+    }
+    const request = this.pending.get(message.id);
+    if (!request) {
+      this.logger
+        .withMetadata({ id: message.id })
+        .warn(
+          'Sharp worker replied to an unknown or already-settled request id; ignoring',
+        );
+      return;
+    }
+    this.pending.delete(message.id);
+    clearTimeout(request.timer);
+
+    if (message.error) {
+      this.logger
+        .withMetadata({
+          id: message.id,
+          operation: request.operation,
+          workerError: message.error.message,
+        })
+        .warn('Sharp worker returned an error for operation');
+      request.reject(
+        new Error(message.error.message || 'Sharp worker error'),
+      );
+      return;
+    }
+
+    const result = message.result as SharpWorkerResult;
+
+    // Structured clone converts Node.js Buffers into plain Uint8Arrays.
+    // Re-wrap them so downstream consumers (e.g. form-data) that rely on
+    // Buffer methods/stream semantics work.
+    if (result?.buffer && !Buffer.isBuffer(result.buffer)) {
+      result.buffer = Buffer.from(result.buffer);
+    }
+    if (result?.thumbnailBuffer && !Buffer.isBuffer(result.thumbnailBuffer)) {
+      result.thumbnailBuffer = Buffer.from(result.thumbnailBuffer);
+    }
+
+    request.resolve(result);
+  }
+
+  /**
+   * Handle the child process exiting. This is the crash-isolation path:
+   * instead of the whole app dying, we observe the exit, reject every
+   * in-flight request with a catchable error, and let the next request
+   * spawn a fresh child.
+   */
+  private handleChildExit(code: number): void {
+    const hadChild = this.child !== null;
+    const pid = this.child?.pid;
+    this.child = null;
+    this.childReady = null;
+
+    if (this.destroyed) {
+      // Deliberate shutdown — already handled in onModuleDestroy.
+      this.logger
+        .withMetadata({ pid, exitCode: code })
+        .info('Sharp worker process exited after deliberate shutdown');
+      return;
+    }
+
+    const pendingCount = this.pending.size;
+
+    if (hadChild) {
+      if (code === 0) {
+        this.logger
+          .withMetadata({ pid, exitCode: code, pendingRequests: pendingCount })
+          .warn(
+            'Sharp worker process exited cleanly but unexpectedly; ' +
+              'it will be respawned on the next request',
+          );
+      } else {
+        this.logger
+          .withMetadata({ pid, exitCode: code, pendingRequests: pendingCount })
+          .error(
+            'Sharp worker process crashed (likely a native libvips fault or out-of-memory). ' +
+              'The main process survived; it will be respawned on the next request.',
+          );
+      }
+    }
+
+    if (pendingCount > 0) {
+      this.logger
+        .withMetadata({ pid, exitCode: code, pendingRequests: pendingCount })
+        .error(
+          `Rejecting ${pendingCount} in-flight sharp request(s) due to worker exit`,
+        );
+    }
+
+    const crashError = new Error(
+      `Sharp worker process exited unexpectedly (code ${code}). ` +
+        'This usually indicates a native libvips crash or out-of-memory ' +
+        'while processing an image.',
+    );
+    for (const [id, request] of this.pending) {
+      clearTimeout(request.timer);
+      request.reject(crashError);
+      this.pending.delete(id);
+    }
+  }
+
+  /**
+   * Forcefully restart the child (used when a request times out, which
+   * may indicate a hung native call).
+   */
+  private restartChild(): void {
+    const { child } = this;
+    const pid = child?.pid;
+    this.child = null;
+    this.childReady = null;
+    if (child) {
+      this.logger
+        .withMetadata({ pid })
+        .warn(
+          'Forcefully terminating sharp worker process due to a request timeout; ' +
+            'it will be respawned on the next request',
+        );
+      try {
+        child.kill();
+        this.logger.withMetadata({ pid }).info('Sharp worker process terminated after timeout');
+      } catch (err) {
+        // Already gone — safe to ignore.
+        this.logger
+          .withError(err)
+          .warn('Failed to terminate timed-out sharp worker (may already be gone)');
       }
     }
   }
@@ -179,52 +433,75 @@ export class SharpInstanceManager implements OnModuleDestroy {
     for (const candidate of candidates) {
       if (existsSync(candidate)) {
         SharpInstanceManager.resolvedWorkerPath = candidate;
+        this.logger
+          .withMetadata({ resolvedPath: candidate })
+          .info('Resolved sharp worker path');
         return candidate;
       }
     }
 
-    this.logger.warn(
-      `Sharp worker not found in any candidate path. Checked: ${candidates.join(', ')}`,
-    );
+    this.logger
+      .withMetadata({ checked: candidates })
+      .warn(
+        'Sharp worker not found in any candidate path; falling back to first candidate. ' +
+          'Image processing will likely fail.',
+      );
     return candidates[0];
   }
 
   /**
-   * Process an image using the worker pool.
+   * Process an image using the sharp utility process.
    *
-   * Buffers are copied to the worker via structured clone — the caller's
+   * Buffers are copied to the child via structured clone — the caller's
    * original buffers are NOT detached and remain usable after the call.
    * This means peak memory for a single operation is roughly
-   * 2× the input size (original + worker copy).
+   * 2× the input size (original + child copy).
+   *
+   * If the child crashes (native libvips fault / OOM) the returned promise
+   * rejects with a normal Error rather than crashing the main process.
    */
   async processImage(input: SharpWorkerInput): Promise<SharpWorkerResult> {
-    try {
-      // In test mode, call the worker function directly (no threads)
-      if (this.workerFn) {
-        return (await this.workerFn(input)) as SharpWorkerResult;
+    const child = await this.ensureChild();
+    this.requestId += 1;
+    const id = this.requestId;
+
+    return new Promise<SharpWorkerResult>((resolvePromise, rejectPromise) => {
+      const timer = setTimeout(() => {
+        this.pending.delete(id);
+        this.logger
+          .withMetadata({
+            operation: input.operation,
+            timeoutMs: REQUEST_TIMEOUT_MS,
+          })
+          .error('Sharp operation timed out; restarting the utility process');
+        rejectPromise(
+          new Error(
+            `Sharp ${input.operation} operation timed out after ${REQUEST_TIMEOUT_MS}ms`,
+          ),
+        );
+        // The child may be wedged on a hung native call — restart it so the
+        // next request gets a healthy process.
+        this.restartChild();
+      }, REQUEST_TIMEOUT_MS);
+
+      this.pending.set(id, {
+        resolve: resolvePromise,
+        reject: rejectPromise,
+        timer,
+        operation: input.operation,
+      });
+
+      try {
+        child.postMessage({ id, input });
+      } catch (error) {
+        clearTimeout(timer);
+        this.pending.delete(id);
+        this.logger
+          .withError(error)
+          .error('Failed to dispatch image to sharp utility process');
+        rejectPromise(toError(error));
       }
-
-      if (!this.pool) throw new Error('No pool or workerFn is defined!');
-
-      const result = await this.pool.run(input);
-
-      // Structured clone across worker threads converts Node.js Buffers
-      // into plain Uint8Arrays. Re-wrap them so downstream consumers
-      // (e.g. form-data) that rely on Buffer methods/stream semantics work.
-      if (result.buffer && !Buffer.isBuffer(result.buffer)) {
-        result.buffer = Buffer.from(result.buffer);
-      }
-      if (result.thumbnailBuffer && !Buffer.isBuffer(result.thumbnailBuffer)) {
-        result.thumbnailBuffer = Buffer.from(result.thumbnailBuffer);
-      }
-
-      return result as SharpWorkerResult;
-    } catch (error) {
-      this.logger
-        .withError(error)
-        .error('Sharp worker error — worker may have crashed');
-      throw error;
-    }
+    });
   }
 
   /**
@@ -319,15 +596,14 @@ export class SharpInstanceManager implements OnModuleDestroy {
   }
 
   /**
-   * Get pool statistics for monitoring.
+   * Get utility-process statistics for monitoring.
    */
   getStats() {
-    if (!this.pool) return null;
+    if (!this.child) return null;
     return {
-      completed: this.pool.completed,
-      duration: this.pool.duration,
-      utilization: this.pool.utilization,
-      queueSize: this.pool.queueSize,
+      pid: this.child.pid,
+      pendingRequests: this.pending.size,
+      alive: true,
     };
   }
 }
