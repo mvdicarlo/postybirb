@@ -25,7 +25,7 @@ import {
 } from '@postybirb/types';
 import { CancellableToken } from '../models/cancellable-token';
 import { PostingFile } from '../models/posting-file';
-import { StageError, toTaskError } from './errors';
+import { StageError, classify, toTaskError } from './errors';
 import {
     RelayJob,
     RelayTask,
@@ -37,6 +37,12 @@ import { RateLimiter, rateKey } from './rate-limiter';
 import { RelayTracer } from './tracer.service';
 import { RelaySourceFile } from './transform';
 import { RelayPostResult, RelayWebsite } from './websites';
+
+/**
+ * Maximum cumulative time a single task may stay parked on rate-limit gates in
+ * one run before it is failed terminally. Prevents shared-bucket starvation.
+ */
+const RATE_LIMIT_WAIT_CEILING_MS = 60 * 60 * 1000; // 1 hour
 
 /** Submission shape the engine needs to plan and run a job. */
 export interface RelaySubmission {
@@ -274,13 +280,22 @@ export async function runTaskPass(
 
   // 2. Authenticate — ensure the account session is live (re-login if expired).
   throwIfAborted(token, 'authenticate');
-  await deps.authenticate?.(task);
+  try {
+    await deps.authenticate?.(task);
+  } catch (err) {
+    throw classify('authenticate', err);
+  }
   tracer.emit({ ...base, level: 'debug', stage: 'authenticate', event: 'stage.ok' });
 
   // 3. Parse — build post data and inject upstream source URLs.
   throwIfAborted(token, 'parse');
   const upstream = collectUpstreamSourceUrls(job, task);
-  const data = await deps.buildPostData(task, upstream);
+  let data: RelayDispatchData;
+  try {
+    data = await deps.buildPostData(task, upstream);
+  } catch (err) {
+    throw classify('parse', err);
+  }
   tracer.emit({
     ...base,
     level: 'debug',
@@ -291,7 +306,12 @@ export async function runTaskPass(
 
   // 4. Validate
   throwIfAborted(token, 'validate');
-  const errors = await deps.validate(task, data);
+  let errors: string[];
+  try {
+    errors = await deps.validate(task, data);
+  } catch (err) {
+    throw classify('validate', err);
+  }
   if (errors.length > 0) {
     throw new StageError({
       kind: PostErrorKind.VALIDATION_FAILED,
@@ -310,13 +330,17 @@ export async function runTaskPass(
     // 5. Transform — convert/resize/thumbnail/verify into PostingFiles.
     let postingFiles: PostingFile[] = [];
     if (unit.kind === UnitKind.BATCH) {
-      // eslint-disable-next-line no-await-in-loop
-      postingFiles = await deps.processBatch(
-        task,
-        unit.fileIds,
-        upstream,
-        token,
-      );
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        postingFiles = await deps.processBatch(
+          task,
+          unit.fileIds,
+          upstream,
+          token,
+        );
+      } catch (err) {
+        throw classify('transform', err);
+      }
       tracer.emit({
         ...base,
         level: 'info',
@@ -335,7 +359,22 @@ export async function runTaskPass(
       site.minimumPostWaitInterval,
     );
     if (waitMs > 0) {
-      task.waitingUntil = Date.now() + waitMs;
+      const now = Date.now();
+      if (task.parkedSince === undefined) task.parkedSince = now;
+      // Cumulative-wait ceiling: on a busy shared bucket a steady stream of
+      // other tasks can keep pushing nextAllowedAt out, starving this one. Cap
+      // the total time a task may stay parked before failing it terminally so
+      // it can't wait forever.
+      if (now - task.parkedSince + waitMs > RATE_LIMIT_WAIT_CEILING_MS) {
+        throw new StageError({
+          kind: PostErrorKind.FATAL,
+          stage: 'gate',
+          message: `rate-limit wait ceiling exceeded (parked ${Math.round(
+            (now - task.parkedSince) / 1000,
+          )}s)`,
+        });
+      }
+      task.waitingUntil = now + waitMs;
       tracer.emit({
         ...base,
         level: 'info',
@@ -397,6 +436,7 @@ export async function runTaskPass(
     unit.status = NodeStatus.SUCCEEDED;
     unit.error = undefined;
     task.waitingUntil = undefined;
+    task.parkedSince = undefined;
     if (!task.sourceUrl && result.sourceUrl) task.sourceUrl = result.sourceUrl;
     tracer.emit({
       ...base,

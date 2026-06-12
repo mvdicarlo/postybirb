@@ -46,6 +46,9 @@ export class RelayPostManager implements OnModuleInit {
   /** submissionId -> terminal status, awaiting the queue to acknowledge/dequeue. */
   private readonly outcomes = new Map<SubmissionId, NodeStatus>();
 
+  /** jobId -> timer that re-drives drain() when a future scheduledFor arrives. */
+  private readonly scheduleTimers = new Map<string, ReturnType<typeof setTimeout>>();
+
   constructor(
     private readonly deps: RelayPipelineDeps,
     private readonly persistence: RelayPersistence,
@@ -79,7 +82,17 @@ export class RelayPostManager implements OnModuleInit {
         .withMetadata({ count: active.length })
         .info('Recovering interrupted Relay jobs');
 
-      await this.websiteRegistry.waitForInitialization(60_000);
+      const ready = await this.waitForRegistry();
+      if (!ready) {
+        // The website registry never came up. Do NOT leave the active rows
+        // dangling RUNNING (the queue would create duplicates): the enqueue
+        // reconcile path will adopt or fail them on the next queue cycle. Log
+        // and bail rather than half-recovering.
+        this.logger.error(
+          'Website registry not ready; deferring Relay recovery to enqueue reconcile',
+        );
+        return;
+      }
 
       // Each job's recovery is isolated so a single bad job (e.g. its
       // submission was deleted while the app was closed, or its website
@@ -117,6 +130,23 @@ export class RelayPostManager implements OnModuleInit {
     }
   }
 
+  /** Wait for the website registry, retrying a few times before giving up. */
+  private async waitForRegistry(): Promise<boolean> {
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        await this.websiteRegistry.waitForInitialization(60_000);
+        return true;
+      } catch (error) {
+        this.logger
+          .withError(error)
+          .withMetadata({ attempt })
+          .warn('Website registry not yet ready; retrying');
+      }
+    }
+    return false;
+  }
+
   /**
    * Enqueue a submission: prepare context, plan a job, persist the tree, run.
    * Returns the created job id. `schedule` carries optional priority/scheduledFor.
@@ -131,6 +161,13 @@ export class RelayPostManager implements OnModuleInit {
     const existing = this.activeBySubmission.get(submissionId);
     if (existing) return existing;
 
+    // Reconcile against the DB: a non-terminal job may exist on disk but not
+    // be tracked in memory (e.g. crash recovery couldn't bring up the website
+    // registry, so the job was never adopted). Adopt + resume it instead of
+    // creating a duplicate post_job row that would race the orphan.
+    const adopted = await this.adoptOrphanJob(submissionId);
+    if (adopted) return adopted;
+
     const job = this.scheduler.createJob(submissionId, {
       resumeMode,
       priority: schedule?.priority,
@@ -144,10 +181,96 @@ export class RelayPostManager implements OnModuleInit {
     );
     this.activeBySubmission.set(submissionId, job.id);
     this.outcomes.delete(submissionId);
+    // If the job is scheduled for the future, runToIdle won't pick it up yet
+    // and nothing else re-drives the scheduler. Arm a timer so the job runs
+    // when its time arrives even with no other queue activity.
+    this.armScheduleTimer(job.id, schedule?.scheduledFor);
     this.drain().catch((error) =>
       this.logger.withError(error).error('Relay run failed'),
     );
     return job.id;
+  }
+
+  /** Arm (or replace) a one-shot timer to re-drive drain() at `scheduledFor`. */
+  private armScheduleTimer(jobId: string, scheduledFor?: number): void {
+    const existing = this.scheduleTimers.get(jobId);
+    if (existing) {
+      clearTimeout(existing);
+      this.scheduleTimers.delete(jobId);
+    }
+    if (scheduledFor === undefined) return;
+    const delay = scheduledFor - Date.now();
+    if (delay <= 0) return; // already due; the immediate drain() handles it
+    const timer = setTimeout(() => {
+      this.scheduleTimers.delete(jobId);
+      this.drain().catch((error) =>
+        this.logger.withError(error).error('Relay scheduled run failed'),
+      );
+    }, delay);
+    // Don't keep the event loop / app alive solely for a scheduled post.
+    timer.unref?.();
+    this.scheduleTimers.set(jobId, timer);
+  }
+
+  /** Cancel any pending scheduled-run timer for a job. */
+  private clearScheduleTimer(jobId: string): void {
+    const timer = this.scheduleTimers.get(jobId);
+    if (timer) {
+      clearTimeout(timer);
+      this.scheduleTimers.delete(jobId);
+    }
+  }
+
+  /**
+   * Look for an untracked non-terminal job for the submission in the DB and
+   * adopt it (resume) rather than creating a duplicate. If the orphan cannot
+   * be brought back (e.g. its website registry/submission is gone) it is
+   * force-failed so it stops blocking and a fresh job can be created.
+   * Returns the adopted job id, or undefined if there was nothing to adopt.
+   */
+  private async adoptOrphanJob(
+    submissionId: SubmissionId,
+  ): Promise<string | undefined> {
+    const jobs = await this.persistence.loadBySubmission(submissionId);
+    const orphan = jobs.find((j) => !TERMINAL_ALL.has(j.status));
+    if (!orphan) return undefined;
+
+    // Already tracked by the scheduler (race) — just re-link and drive it.
+    const tracked = this.scheduler.getJob(orphan.id);
+    if (tracked && !TERMINAL_ALL.has(tracked.status)) {
+      this.activeBySubmission.set(submissionId, tracked.id);
+      this.drain().catch((error) =>
+        this.logger.withError(error).error('Relay run failed'),
+      );
+      return tracked.id;
+    }
+
+    try {
+      const ready = await this.waitForRegistry();
+      if (!ready) throw new Error('website registry not ready');
+      await this.deps.prepare(orphan);
+      resetForResume(orphan, PostRecordResumeMode.CONTINUE);
+      this.scheduler.adopt(orphan);
+      this.activeBySubmission.set(submissionId, orphan.id);
+      this.logger
+        .withMetadata({ jobId: orphan.id, submissionId })
+        .info('Adopted orphaned Relay job on enqueue');
+      this.drain().catch((error) =>
+        this.logger.withError(error).error('Relay run failed'),
+      );
+      return orphan.id;
+    } catch (error) {
+      this.logger
+        .withError(error)
+        .withMetadata({ jobId: orphan.id, submissionId })
+        .error('Could not adopt orphaned job; marking it FAILED');
+      await this.persistence
+        .failJob(orphan.id, (error as Error)?.message ?? 'adopt failed')
+        .catch((e) =>
+          this.logger.withError(e).error('Failed to mark orphan job FAILED'),
+        );
+      return undefined;
+    }
   }
 
   /**
@@ -160,6 +283,7 @@ export class RelayPostManager implements OnModuleInit {
   cancel(submissionId: SubmissionId): boolean {
     const jobId = this.activeBySubmission.get(submissionId);
     if (jobId) {
+      this.clearScheduleTimer(jobId);
       this.scheduler.cancel(jobId);
       return true;
     }
@@ -245,6 +369,7 @@ export class RelayPostManager implements OnModuleInit {
       const job = this.scheduler.getJob(jobId);
       if (!job || !TERMINAL_ALL.has(job.status)) continue;
       this.activeBySubmission.delete(submissionId);
+      this.clearScheduleTimer(jobId);
       this.outcomes.set(submissionId, computeJobStatus(job));
       // eslint-disable-next-line no-await-in-loop
       await this.onTerminal(job);

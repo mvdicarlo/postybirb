@@ -118,6 +118,13 @@ export class RelayTask {
   message?: string;
   error?: ITaskError;
   waitingUntil?: number;
+  /**
+   * Wall-clock time (ms) at which this task first parked on a rate-limit gate
+   * in the current run. Used to enforce a cumulative wait ceiling so a task on
+   * a busy shared bucket cannot be starved indefinitely. In-memory only; reset
+   * once the task makes forward progress (a unit posts).
+   */
+  parkedSince?: number;
   units: RelayUnit[];
 
   constructor(init: {

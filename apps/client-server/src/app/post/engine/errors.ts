@@ -35,19 +35,51 @@ export class StageError extends Error {
   }
 }
 
-/** Coerce any thrown value into a StageError tagged with a stage. */
+/** Heuristic: does a raw error look like a retryable network/IO blip? */
+const TRANSIENT_ERROR_CODES: ReadonlySet<string> = new Set([
+  'ECONNRESET',
+  'ECONNREFUSED',
+  'ECONNABORTED',
+  'ETIMEDOUT',
+  'ENOTFOUND',
+  'EAI_AGAIN',
+  'EPIPE',
+  'ENETUNREACH',
+  'EHOSTUNREACH',
+]);
+
+const TRANSIENT_MESSAGE_RE =
+  /socket hang up|network|timeout|timed out|fetch failed|ECONNRESET|ETIMEDOUT|ENOTFOUND|EAI_AGAIN|temporar/i;
+
+function looksTransient(err: unknown): boolean {
+  if (!err || typeof err !== 'object') return false;
+  const { code, message } = err as { code?: unknown; message?: unknown };
+  if (typeof code === 'string' && TRANSIENT_ERROR_CODES.has(code)) return true;
+  if (typeof message === 'string' && TRANSIENT_MESSAGE_RE.test(message)) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Coerce any thrown value into a StageError tagged with a stage. Network/IO
+ * blips (in any stage — login, parse, file processing, dispatch) are tagged
+ * TRANSIENT so they retry rather than failing the task permanently; everything
+ * else defaults to FATAL.
+ */
 export function classify(stage: string, err: unknown): StageError {
   if (err instanceof StageError) return err;
+  const kind = looksTransient(err) ? PostErrorKind.TRANSIENT : PostErrorKind.FATAL;
   if (err instanceof Error) {
     return new StageError({
-      kind: PostErrorKind.FATAL,
+      kind,
       stage,
       message: err.message,
       cause: err,
     });
   }
   return new StageError({
-    kind: PostErrorKind.FATAL,
+    kind,
     stage,
     message: String(err),
   });

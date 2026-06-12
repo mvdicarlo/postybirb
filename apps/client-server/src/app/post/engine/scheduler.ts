@@ -69,12 +69,51 @@ export class RelayScheduler {
     this.jobs.set(job.id, job);
   }
 
-  private async persistTask(job: RelayJob, task: RelayTask): Promise<void> {
-    if (this.onTaskChanged) await this.onTaskChanged(job, task);
-  }
-
   private async persistJob(job: RelayJob): Promise<void> {
     if (this.onJobChanged) await this.onJobChanged(job);
+  }
+
+  /**
+   * Persist a task, retrying a few times on failure (SQLite write locks are
+   * common under concurrency). Crucially this NEVER throws: a persistence
+   * failure must not propagate into the task error-handling path, because the
+   * post may already have gone out — letting a DB error flip a SUCCEEDED unit
+   * back to a re-postable state would cause a duplicate post on resume.
+   * Returns true if the write ultimately succeeded.
+   */
+  private async persistTaskDurable(
+    job: RelayJob,
+    task: RelayTask,
+  ): Promise<boolean> {
+    if (!this.onTaskChanged) return true;
+    const maxAttempts = 5;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        await this.onTaskChanged(job, task);
+        return true;
+      } catch (err) {
+        if (attempt === maxAttempts) {
+          this.deps.tracer.emit({
+            jobId: job.id,
+            taskId: task.id,
+            account: task.accountId,
+            website: task.websiteId,
+            level: 'error',
+            event: 'task.persist_failed',
+            data: {
+              message: String((err as Error)?.message ?? err),
+              taskStatus: task.status,
+              units: task.units.map((u) => ({ id: u.id, status: u.status })),
+            },
+          });
+          return false;
+        }
+        // eslint-disable-next-line no-await-in-loop
+        await this.wait(50 * 2 ** (attempt - 1));
+      }
+    }
+    return false;
   }
 
   /** Create and register a job WITHOUT planning it (caller must prepare deps). */
@@ -324,56 +363,69 @@ export class RelayScheduler {
       data: { attempt: task.attempts + 1 },
     });
 
+    let passError: unknown;
     try {
       await runTaskPass(this.deps, job, task, token);
-      await this.persistTask(job, task);
     } catch (err) {
-      const se: StageError =
-        err instanceof StageError ? err : classify('unknown', err);
+      passError = err;
+    }
 
-      if (se.kind === PostErrorKind.RATE_LIMITED) {
-        task.status = NodeStatus.WAITING; // waitingUntil set in the gate stage
-        await this.persistTask(job, task);
-        this.deps.tracer.pushTaskDelta(job, task);
-        return;
-      }
+    // Success path: the units are SUCCEEDED in memory and the post(s) already
+    // went out. Persist durably, but a persistence failure here must NOT be
+    // treated as a task failure (that would re-open the unit and double-post
+    // on resume). Keep the SUCCEEDED state; persist_failed is logged loudly.
+    if (passError === undefined) {
+      await this.persistTaskDurable(job, task);
+      return;
+    }
 
-      const decision = decideRetry(se, task.attempts, task.maxAttempts);
-      if (decision.action === 'retry') {
-        if (decision.consumesAttempt) task.attempts++;
-        this.deps.tracer.emit({
-          jobId: job.id,
-          taskId: task.id,
-          level: 'warn',
-          event: 'task.retry',
-          data: { kind: se.kind, delayMs: decision.delayMs, attempt: task.attempts },
-        });
-        await this.persistTask(job, task);
-        await this.interruptibleWait(decision.delayMs, token);
-        if (token.isCancelled) {
-          task.status = NodeStatus.CANCELLED;
-          task.error = toTaskError(se);
-          await this.persistTask(job, task);
-          this.deps.tracer.pushTaskDelta(job, task);
-          return;
-        }
-        await this.runTaskWithRetries(job, task, token);
-        return;
-      }
+    const se: StageError =
+      passError instanceof StageError
+        ? passError
+        : classify('unknown', passError);
 
-      task.status = token.isCancelled ? NodeStatus.CANCELLED : NodeStatus.FAILED;
-      task.error = toTaskError(se);
-      await this.persistTask(job, task);
+    if (se.kind === PostErrorKind.RATE_LIMITED) {
+      task.status = NodeStatus.WAITING; // waitingUntil set in the gate stage
+      await this.persistTaskDurable(job, task);
+      this.deps.tracer.pushTaskDelta(job, task);
+      return;
+    }
+
+    const decision = decideRetry(se, task.attempts, task.maxAttempts);
+    if (decision.action === 'retry') {
+      if (decision.consumesAttempt) task.attempts++;
       this.deps.tracer.emit({
         jobId: job.id,
         taskId: task.id,
-        account: task.accountId,
-        website: task.websiteId,
-        level: 'error',
-        event: 'task.failed',
-        data: { kind: se.kind, stage: se.stage, message: se.message },
+        level: 'warn',
+        event: 'task.retry',
+        data: { kind: se.kind, delayMs: decision.delayMs, attempt: task.attempts },
       });
-      this.deps.tracer.pushTaskDelta(job, task);
+      await this.persistTaskDurable(job, task);
+      await this.interruptibleWait(decision.delayMs, token);
+      if (token.isCancelled) {
+        task.status = NodeStatus.CANCELLED;
+        task.error = toTaskError(se);
+        await this.persistTaskDurable(job, task);
+        this.deps.tracer.pushTaskDelta(job, task);
+        return;
+      }
+      await this.runTaskWithRetries(job, task, token);
+      return;
     }
+
+    task.status = token.isCancelled ? NodeStatus.CANCELLED : NodeStatus.FAILED;
+    task.error = toTaskError(se);
+    await this.persistTaskDurable(job, task);
+    this.deps.tracer.emit({
+      jobId: job.id,
+      taskId: task.id,
+      account: task.accountId,
+      website: task.websiteId,
+      level: 'error',
+      event: 'task.failed',
+      data: { kind: se.kind, stage: se.stage, message: se.message },
+    });
+    this.deps.tracer.pushTaskDelta(job, task);
   }
 }
