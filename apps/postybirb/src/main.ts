@@ -19,7 +19,7 @@ import {
   toError,
   validateEnvConfigOrExit,
 } from '@postybirb/utils/common';
-import { app, BrowserWindow, session } from 'electron';
+import { app, BrowserWindow, crashReporter, session } from 'electron';
 import contextMenu from 'electron-context-menu';
 import PostyBirb from './app/app';
 import ElectronEvents from './app/events/electron.events';
@@ -33,6 +33,15 @@ validateEnvConfigOrExit({
   version: app.getVersion() || '4.0.2',
   onValidationFailed: () => app.quit(),
 });
+
+// Initialize crash reporter
+crashReporter.start({
+  productName: 'PostyBirb',
+  companyName: 'PostyBirb',
+  uploadToServer: false,
+});
+
+crashReporter
 
 const isOnlyInstance = app.requestSingleInstanceLock();
 if (!isOnlyInstance) {
@@ -204,6 +213,17 @@ app.on('ready', () => {
     const loader = require('./app/loader/loader');
     loader.show();
   }
+
+  setInterval(() => {
+    const allMetrics = app.getAppMetrics();
+    allMetrics.forEach((proc) => {
+      logger.info(`Process ID: ${proc.pid}`);
+      logger.info(`Type: ${proc.type}`); // e.g., 'Browser', 'Tab', 'GPU'
+      logger.info(`CPU \%: ${proc.cpu.percentCPUUsage}%`);
+      logger.info(`Memory (Private Bytes): ${proc.memory.privateBytes} KB`);
+      logger.info('---');
+    });
+  }, 5 * 60_000);
 
   session.defaultSession.setCertificateVerifyProc((request, callback) => {
     if (request.errorCode === 0) {

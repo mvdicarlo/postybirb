@@ -5,6 +5,7 @@ import { ElectronBrowserService } from './electron-browser.service';
 import { ElectronHttpService } from './electron-http.service';
 import { ElectronNetworkService } from './electron-network.service';
 import { ElectronNotificationService } from './electron-notification.service';
+import { ElectronProcessService } from './electron-process.service';
 import { ElectronSessionService } from './electron-session.service';
 
 /**
@@ -24,4 +25,6 @@ export class ElectronPlatformService extends PlatformService {
   readonly network = new ElectronNetworkService();
 
   readonly http = new ElectronHttpService();
+
+  readonly process = new ElectronProcessService();
 }

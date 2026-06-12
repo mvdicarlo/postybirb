@@ -7,6 +7,7 @@ import {
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { SharpInstanceManager } from '../../../image-processing/sharp-instance-manager';
+import { TestPlatformModule } from '../../../platform/testing/test-platform.module';
 import { PostFileResizerService } from './post-file-resizer.service';
 
 describe('PostFileResizerService', () => {
@@ -63,6 +64,7 @@ describe('PostFileResizerService', () => {
     file = createFile('test.jpg', 'image/jpeg', 202, 138, testFile);
 
     module = await Test.createTestingModule({
+      imports: [TestPlatformModule],
       providers: [PostFileResizerService, SharpInstanceManager],
     }).compile();
 
