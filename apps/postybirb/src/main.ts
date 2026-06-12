@@ -105,6 +105,91 @@ initializeAppInsights({
 });
 
 const logger = Logger('MainProcess');
+const BOOTSTRAP_TIMEOUT_MS = 180_000;
+
+type LoaderModule = {
+  show: () => void;
+  hide: () => void;
+};
+
+let loaderModule: LoaderModule | null = null;
+let isQuittingDueToStartupFailure = false;
+
+function getLoaderModule(): LoaderModule | null {
+  if (PostyBirbEnvConfig.headless) {
+    return null;
+  }
+
+  if (loaderModule) {
+    return loaderModule;
+  }
+
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+    loaderModule = require('./app/loader/loader');
+    return loaderModule;
+  } catch (error) {
+    logger
+      .withError(toError(error))
+      .warn('Failed to load startup loader module.');
+    return null;
+  }
+}
+
+function hideLoaderSafely(reason: string) {
+  const loader = getLoaderModule();
+  if (!loader) {
+    return;
+  }
+
+  try {
+    loader.hide();
+  } catch (error) {
+    logger
+      .withError(toError(error))
+      .warn(`Failed to hide startup loader window (${reason}).`);
+  }
+}
+
+async function bootstrapClientServerWithTimeout(): Promise<INestApplication> {
+  return Promise.race([
+    Main.bootstrapClientServer(),
+    new Promise<never>((_, reject) => {
+      setTimeout(() => {
+        reject(
+          new Error(
+            `Timed out bootstrapping client server after ${BOOTSTRAP_TIMEOUT_MS}ms.`,
+          ),
+        );
+      }, BOOTSTRAP_TIMEOUT_MS);
+    }),
+  ]);
+}
+
+function quitOnStartupFailure(error: unknown) {
+  if (isQuittingDueToStartupFailure) {
+    return;
+  }
+
+  isQuittingDueToStartupFailure = true;
+  const startupError = toError(error);
+  logger.withError(startupError).error('Fatal startup failure. Quitting app.');
+  trackException(startupError, {
+    source: 'electron-main',
+    type: 'startupFailure',
+  });
+
+  hideLoaderSafely('startup-failure');
+
+  const forceExitTimer = setTimeout(() => {
+    app.exit(1);
+  }, 5_000);
+  forceExitTimer.unref();
+
+  flushAppInsights().finally(() => {
+    app.quit();
+  });
+}
 
 // Handle uncaught exceptions in main process
 process.on('uncaughtException', (error: Error) => {
@@ -189,7 +274,7 @@ async function start() {
     await Main.initialize();
 
     // bootstrap app
-    const nestApp = await Main.bootstrapClientServer();
+    const nestApp = await bootstrapClientServerWithTimeout();
     if (PostyBirbEnvConfig.headless) {
       // eslint-disable-next-line no-console
       console.log('[PostyBirb] Running in headless mode (no UI)');
@@ -198,18 +283,19 @@ async function start() {
       Main.bootstrapAppEvents();
     }
   } catch (e) {
-    // eslint-disable-next-line no-console
-    console.error('Error during startup:', e);
-    app.quit();
+    quitOnStartupFailure(e);
   }
 }
 
 // Suppress SSL error messages
 app.on('ready', () => {
   if (!PostyBirbEnvConfig.headless) {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
-    const loader = require('./app/loader/loader');
-    loader.show();
+    const loader = getLoaderModule();
+    try {
+      loader?.show();
+    } catch (error) {
+      logger.withError(toError(error)).warn('Failed to show startup loader.');
+    }
   }
 
   setInterval(() => {
@@ -242,4 +328,8 @@ app.on('ready', () => {
 
   contextMenu();
   start();
+});
+
+app.on('before-quit', () => {
+  hideLoaderSafely('before-quit');
 });
