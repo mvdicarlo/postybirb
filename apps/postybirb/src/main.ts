@@ -41,8 +41,6 @@ crashReporter.start({
   uploadToServer: false,
 });
 
-crashReporter
-
 const isOnlyInstance = app.requestSingleInstanceLock();
 if (!isOnlyInstance) {
   app.quit();
@@ -219,7 +217,7 @@ app.on('ready', () => {
     allMetrics.forEach((proc) => {
       logger.info(`Process ID: ${proc.pid}`);
       logger.info(`Type: ${proc.type}`); // e.g., 'Browser', 'Tab', 'GPU'
-      logger.info(`CPU \%: ${proc.cpu.percentCPUUsage}%`);
+      logger.info(`CPU %: ${proc.cpu.percentCPUUsage}%`);
       logger.info(`Memory (Private Bytes): ${proc.memory.privateBytes} KB`);
       logger.info('---');
     });
