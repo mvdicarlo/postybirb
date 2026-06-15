@@ -1,21 +1,20 @@
+import { SelectOption } from '@postybirb/form-builder';
 import {
-  FileWebsite,
   ILoginState,
-  IPostResponse,
   ImageResizeProps,
   PostData,
   PostResponse,
-  PostingFile,
-  SupportsFiles,
-  UserLoginFlow,
-  WebsiteMetadata,
-  validatorPassthru,
-  PostBatchData,
-  CancellableToken,
-  Website,
-  DataPropertyAccessibility,
 } from '@postybirb/types';
-import { SelectOption } from '@postybirb/form-builder';
+import { CancellableToken } from '../../../post/models/cancellable-token';
+import { PostingFile } from '../../../post/models/posting-file';
+import { PostBuilder } from '../../commons/post-builder';
+import { validatorPassthru } from '../../commons/validator-passthru';
+import { UserLoginFlow } from '../../decorators/login-flow.decorator';
+import { SupportsFiles } from '../../decorators/supports-files.decorator';
+import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
+import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
+import { FileWebsite } from '../../models/website-modifiers/file-website';
+import { Website } from '../../website';
 import { TJAAccountData } from './models/tja-account-data';
 import { TJAFileSubmission } from './models/tja-file-submission';
 
@@ -34,9 +33,9 @@ import { TJAFileSubmission } from './models/tja-file-submission';
   ],
   acceptedFileSizes: {
     'image/jpeg': 50 * 1024 * 1024,
-    'image/png':  50 * 1024 * 1024,
-    'image/gif':  50 * 1024 * 1024,
-    'video/mp4':  200 * 1024 * 1024,
+    'image/png': 50 * 1024 * 1024,
+    'image/gif': 50 * 1024 * 1024,
+    'video/mp4': 200 * 1024 * 1024,
     'video/webm': 200 * 1024 * 1024,
   },
   fileBatchSize: 1,
@@ -49,27 +48,28 @@ export default class TheJabArchives
 
   public readonly externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<TJAAccountData> =
     {
-      username:    true,
+      username: true,
       displayName: true,
-      isArtist:    true,
-      galleries:   true,
+      isArtist: true,
+      galleries: true,
     };
 
-  // ── Login ──────────────────────────────────────────────────────────────────
   public async onLogin(): Promise<ILoginState> {
     try {
-      const res = await this.httpClient.get<{
+      const res = await this.platform.http.get<{
         username: string;
         displayName: string;
         isArtist: boolean;
-      }>(`${this.BASE_URL}/api/v1/userinfo.php`);
+      }>(`${this.BASE_URL}/api/v1/userinfo.php`, {
+        partition: this.accountId,
+      });
 
       if (res.body?.username) {
         const galleries = await this.retrieveGalleries();
         await this.setWebsiteData({
-          username:    res.body.username,
+          username: res.body.username,
           displayName: res.body.displayName,
-          isArtist:    res.body.isArtist,
+          isArtist: res.body.isArtist,
           galleries,
         });
         return this.loginState.setLogin(true, res.body.username);
@@ -80,23 +80,24 @@ export default class TheJabArchives
     return this.loginState.setLogin(false, null);
   }
 
-  // ── Gallery list ───────────────────────────────────────────────────────────
   private async retrieveGalleries(): Promise<SelectOption[]> {
     try {
-      const res = await this.httpClient.get<{
+      const res = await this.platform.http.get<{
         galleries: Array<{ id: number; title: string }>;
-      }>(`${this.BASE_URL}/api/v1/galleries.php`);
+      }>(`${this.BASE_URL}/api/v1/galleries.php`, {
+        partition: this.accountId,
+      });
 
       return (res.body?.galleries ?? []).map((g) => ({
         value: String(g.id),
         label: g.title,
       }));
-    } catch {
+    } catch (error) {
+      this.logger.error('Failed to retrieve galleries', error);
       return [];
     }
   }
 
-  // ── File submission model ──────────────────────────────────────────────────
   createFileModel(): TJAFileSubmission {
     return new TJAFileSubmission();
   }
@@ -105,43 +106,33 @@ export default class TheJabArchives
     return undefined;
   }
 
-  // ── Post ───────────────────────────────────────────────────────────────────
   async onPostFileSubmission(
     postData: PostData<TJAFileSubmission>,
     files: PostingFile[],
     cancellationToken: CancellableToken,
-    _batch: PostBatchData,
-  ): Promise<IPostResponse> {
+  ): Promise<PostResponse> {
     const { options } = postData;
-    const file = files[0];
 
-    const form = new FormData();
-    form.append('file',        file.buffer, {
-      filename:    file.fileName,
-      contentType: file.mimeType,
-    } as any);
-    form.append('gallery_id',  options.galleryId ?? '');
-    form.append('title',       postData.submission.metadata?.title ?? file.fileName);
-    form.append('tags',        (postData.submission.metadata?.tags ?? []).join(', '));
-    form.append('description', postData.submission.metadata?.description ?? '');
+    const submit = await new PostBuilder(this, cancellationToken)
+      .asMultipart()
+      .setField('gallery_id', options.galleryId ?? '')
+      .setField('title', options.title)
+      .setField('tags', options.tags.join(', '))
+      .setField('description', options.description ?? '')
+      .addFile('file', files[0])
+      .send<{ success: boolean; id: number; url: string }>(
+        `${this.BASE_URL}/api/v1/submit.php`,
+      );
 
-    const res = await this.httpClient.post<{
-      success: boolean;
-      id: number;
-      url: string;
-    }>(
-      `${this.BASE_URL}/api/v1/submit.php`,
-      form,
-      { type: 'multipart' },
-    );
-
-    if (!res.body?.success) {
-      throw new Error(`TJA submit failed: ${JSON.stringify(res.body)}`);
+    if (!submit.body?.success) {
+      return PostResponse.fromWebsite(this)
+        .withMessage('Submit failed')
+        .withAdditionalInfo(submit.body);
     }
 
-    return PostResponse.fromWebsite(this)
-      .withSourceUrl(`https://www.jabarchives.com${res.body.url}`)
-      .build();
+    return PostResponse.fromWebsite(this).withSourceUrl(
+      `https://www.jabarchives.com${submit.body.url}`,
+    );
   }
 
   onValidateFileSubmission = validatorPassthru;
