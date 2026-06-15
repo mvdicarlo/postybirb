@@ -32,9 +32,6 @@ export class RepositoryRegistry {
     repo: EntityRepository<K, never>,
   ): void {
     if (RepositoryRegistry.map.has(key)) {
-      RepositoryRegistry.logger.warn(
-        `Repository for "${String(key)}" already registered; ignoring (first-registration-wins).`,
-      );
       return;
     }
     RepositoryRegistry.map.set(key, repo as unknown as AnyRepo);
