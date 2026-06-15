@@ -22,7 +22,7 @@ import { SubmissionType } from '@postybirb/types';
 import { IconPlayerStop, IconSend } from '@tabler/icons-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import postQueueApi from '../../../api/post-queue.api';
-import { useQueuedSubmissions } from '../../../stores/entity/submission-store';
+import { useQueuedSubmissions, useSubmissionsMap } from '../../../stores/entity/submission-store';
 import type { SubmissionRecord } from '../../../stores/records';
 import { useViewStateActions } from '../../../stores/ui/navigation-store';
 import {
@@ -124,6 +124,7 @@ export function PostingActivityPanel() {
   const relayJobs = useActiveJobs();
   const activePostingIds = useActivePostingSubmissionIds();
   const { fetchActive } = usePostingStateActions();
+  const submissionsMap = useSubmissionsMap();
 
   // Seed the posting-state store on mount (page reload resilience).
   useEffect(() => {
@@ -171,7 +172,12 @@ export function PostingActivityPanel() {
                 radius="sm"
                 bg="var(--mantine-color-default)"
               >
-                <JobTreeView job={job} />
+                <JobTreeView
+                  job={job}
+                  headerLabel={
+                    submissionsMap.get(job.submissionId ?? '')?.title
+                  }
+                />
               </Paper>
             ))}
           </Stack>

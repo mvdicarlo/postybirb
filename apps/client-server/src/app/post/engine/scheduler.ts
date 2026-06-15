@@ -15,11 +15,11 @@ import { CancellableToken } from '../models/cancellable-token';
 import { DEPENDENCY_STATES, SKIP_REASONS, TRACER_JOB_EVENTS, TRACER_TASK_EVENTS } from './constants';
 import { StageError, classify, decideRetry, toTaskError } from './errors';
 import {
-  RelayJob,
-  RelayTask,
-  computeJobStatus,
-  evaluateDependency,
-  isTerminal,
+    RelayJob,
+    RelayTask,
+    computeJobStatus,
+    evaluateDependency,
+    isTerminal,
 } from './model';
 import { PipelineDeps, planJob, resetForResume, runTaskPass } from './pipeline';
 import { taskTraceFields } from './tracer.service';
@@ -319,6 +319,9 @@ export class RelayScheduler {
     this.deps.tracer.pushJobDelta(job);
 
     try {
+      // Main run loop. Each iteration either runs a batch of tasks, sleeps
+      // until something becomes runnable, or terminates the loop because all
+      // tasks are terminal or the job has been cancelled.
       for (;;) {
         if (token.isCancelled) break;
 
@@ -328,6 +331,11 @@ export class RelayScheduler {
         const runnable = pending.filter((t) => this.isRunnable(job, t, Date.now()));
 
         if (runnable.length === 0) {
+          // Nothing can run right now. Either everyone is parked on a
+          // wait/dependency gate (sleep until the soonest gate releases) or
+          // some tasks are dependency-BLOCKED (their upstreams can never
+          // satisfy them) — mark those SKIPPED and loop so any newly-unblocked
+          // dependents can be evaluated.
           const soonest = this.soonestWakeup(job);
           if (soonest === undefined) {
             this.skipBlockedDependents(job);
@@ -390,6 +398,11 @@ export class RelayScheduler {
       }
     }
     if (soonest !== undefined) return soonest;
+    // A dependency is pending but no task has an absolute wakeup time — the
+    // gate will only release when another task completes. Return a near-zero
+    // "nudge" so the outer loop yields to the event loop (giving the
+    // currently-running tasks a chance to finish) and then re-evaluates,
+    // rather than spinning hot on a tight while-true.
     return anyDepPending ? Date.now() + 5 : undefined;
   }
 
@@ -426,6 +439,13 @@ export class RelayScheduler {
     }
   }
 
+  /**
+   * Drive one task through a pipeline pass and apply the typed-error retry
+   * policy. Recurses (a "trampoline" tail-call) on a TRANSIENT retry so the
+   * second attempt re-uses this same method and benefits from the same
+   * persistence/cancel-on-wait handling — the recursion depth is bounded by
+   * `task.maxAttempts` (default 3) so stack growth is not a concern.
+   */
   private async runTaskWithRetries(
     job: RelayJob,
     task: RelayTask,
@@ -446,7 +466,6 @@ export class RelayScheduler {
     } catch (err) {
       passError = err;
     }
-
     // Success path: the units are SUCCEEDED in memory and the post(s) already
     // went out. Persist durably, but a persistence failure here must NOT be
     // treated as a task failure (that would re-open the unit and double-post

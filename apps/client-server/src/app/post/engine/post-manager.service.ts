@@ -14,11 +14,11 @@
 import { Injectable, OnModuleInit, Optional } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import {
-  JobTreeNode,
-  NodeStatus,
-  PostRecordResumeMode,
-  ScheduleType,
-  SubmissionId,
+    JobTreeNode,
+    NodeStatus,
+    PostRecordResumeMode,
+    ScheduleType,
+    SubmissionId,
 } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/common';
 import { Mutex } from 'async-mutex';
@@ -403,7 +403,14 @@ export class RelayPostManager implements OnModuleInit {
     this.outcomes.delete(submissionId);
   }
 
-  /** Drive the scheduler to idle, then run terminal handling. Serialized. */
+  /**
+   * Drive the scheduler to idle, then run terminal handling. Serialized via
+   * `runMutex`: if a drain is already in flight we bail rather than queueing
+   * up. This is safe because the in-flight drain will pick up whatever new
+   * jobs were enqueued before it loops back to `runToIdle` \u2014 queueing a
+   * second drain would only re-enter `runToIdle` with the same job set and
+   * waste a turn.
+   */
   private async drain(): Promise<void> {
     if (this.runMutex.isLocked()) return; // a drain is already running
     const release = await this.runMutex.acquire();

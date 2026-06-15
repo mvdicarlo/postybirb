@@ -16,35 +16,35 @@
 /* eslint-disable no-param-reassign */ // the engine mutates the job tree in place
 
 import {
-  Dependency,
-  NodeStatus,
-  PostErrorKind,
-  PostRecordResumeMode,
-  SubmissionType,
-  UnitKind,
+    Dependency,
+    NodeStatus,
+    PostErrorKind,
+    PostRecordResumeMode,
+    SubmissionType,
+    UnitKind,
 } from '@postybirb/types';
 import { CancellableToken } from '../models/cancellable-token';
 import { PostingFile } from '../models/posting-file';
 import {
-  PIPELINE_STAGES,
-  SOURCE_DEPENDENCY_MODES,
-  TRACER_FILE_EVENTS,
-  TRACER_RATE_EVENTS,
-  TRACER_STAGE_EVENTS,
-  TRACER_TASK_EVENTS,
+    PIPELINE_STAGES,
+    SOURCE_DEPENDENCY_MODES,
+    TRACER_FILE_EVENTS,
+    TRACER_RATE_EVENTS,
+    TRACER_STAGE_EVENTS,
+    TRACER_TASK_EVENTS,
 } from './constants';
 import {
-  StageError,
-  classify,
-  isDeliveryUncertainError,
-  toTaskError,
+    StageError,
+    classify,
+    isDeliveryUncertainError,
+    toTaskError,
 } from './errors';
 import {
-  RelayJob,
-  RelayTask,
-  RelayUnit,
-  depTaskIds,
-  isDone,
+    RelayJob,
+    RelayTask,
+    RelayUnit,
+    depTaskIds,
+    isDone,
 } from './model';
 import { RateLimiter, rateKey } from './rate-limiter';
 import { RelayTracer, taskTraceFields } from './tracer.service';
@@ -129,6 +129,21 @@ export interface PipelineDeps {
 // Job planning
 // ---------------------------------------------------------------------------
 
+/**
+ * Build the job's task/unit tree from its submission. Runs in two phases:
+ *
+ *  1. For every selected (website, account) option, create a RelayTask.
+ *     Unsupported pairings (e.g. message submission on a file-only site) and
+ *     file submissions with every file excluded are immediately marked
+ *     SKIPPED. File tasks are sharded into BATCH units of `fileBatchSize`;
+ *     message tasks get one MESSAGE unit.
+ *
+ *  2. Wire source-URL dependencies. Sites that accept external source URLs
+ *     (think: cross-poster bookmark sites) declare a dependency on every
+ *     "standard" site so they post after them and can quote their URLs. The
+ *     mode (ALL/ANY/COUNT) decides how many upstreams must be done first;
+ *     COUNT is clamped to the actual upstream count to stay satisfiable.
+ */
 export function planJob(job: RelayJob, deps: PipelineDeps): void {
   const submission = deps.getSubmission(job.id);
 
@@ -392,6 +407,10 @@ export async function runTaskPass(
         data: { waitMs, bucket, scope: site.rateLimitScope },
       });
       unit.status = NodeStatus.QUEUED;
+      // RATE_LIMITED is signalling, not a true failure: the scheduler catches
+      // it, parks the task in WAITING until `retryAfterMs`, then resumes the
+      // pass. Because already-SUCCEEDED units are skipped on the next pass
+      // we never re-post a batch that already went out.
       throw new StageError({
         kind: PostErrorKind.RATE_LIMITED,
         stage: PIPELINE_STAGES.GATE,

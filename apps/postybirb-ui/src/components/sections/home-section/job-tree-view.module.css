@@ -1,0 +1,37 @@
+/**
+ * Styles for JobTreeView — adds hover affordances, tree guide lines and a
+ * spinning indicator for in-progress nodes.
+ */
+
+.row {
+  padding: 3px 6px;
+  border-radius: var(--mantine-radius-sm);
+  transition: background-color 120ms ease;
+}
+
+.row:hover {
+  background-color: var(--mantine-color-default-hover);
+}
+
+/* Indentation guide line connecting nested tasks/units to their parent. */
+.children {
+  margin-left: 9px;
+  padding-left: 11px;
+  border-left: 1px solid var(--mantine-color-default-border);
+}
+
+.spin {
+  display: inline-flex;
+  transform-origin: center;
+  animation: job-tree-spin 0.9s linear infinite;
+}
+
+@keyframes job-tree-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}

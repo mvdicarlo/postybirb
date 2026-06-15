@@ -10,25 +10,30 @@
 import { Trans } from '@lingui/react/macro';
 import {
     Accordion,
+    Badge,
     Button,
     Card,
     Group,
     Loader,
+    RingProgress,
     Stack,
     Text,
     Textarea,
+    Tooltip,
 } from '@mantine/core';
 import { JobTreeNode } from '@postybirb/types';
 import {
+    IconCircleCheck,
+    IconCircleX,
     IconDeviceFloppy,
     IconDownload,
     IconFileCode,
 } from '@tabler/icons-react';
 import { useEffect, useMemo, useState } from 'react';
 import postApi from '../../../../api/post.api';
-import { isRemote } from '../../../../transports/http-client';
 import type { SubmissionRecord } from '../../../../stores';
 import { useSubmissionActiveJob } from '../../../../stores/ui/posting-state-store';
+import { isRemote } from '../../../../transports/http-client';
 import { EmptyState } from '../../../empty-state';
 import { CopyToClipboard } from '../../../shared/copy-to-clipboard';
 import { JobTreeView } from '../../home-section/job-tree-view';
@@ -175,6 +180,13 @@ export function PostHistoryContent({ submission }: PostHistoryContentProps) {
     return { total: merged.length, succeeded, failed };
   }, [merged]);
 
+  // Success rate across resolved (succeeded + failed) attempts; in-flight jobs
+  // are excluded so the ring reflects settled outcomes only.
+  const successRate = useMemo(() => {
+    const resolved = stats.succeeded + stats.failed;
+    return resolved === 0 ? 0 : Math.round((stats.succeeded / resolved) * 100);
+  }, [stats]);
+
   const handleDownloadLogs = async () => {
     setDownloading(true);
     try {
@@ -199,33 +211,64 @@ export function PostHistoryContent({ submission }: PostHistoryContentProps) {
   return (
     <Stack gap="md">
       {stats.total > 0 && (
-        <Card withBorder p="sm">
+        <Card withBorder p="sm" radius="md">
           <Group justify="space-between" wrap="nowrap">
-            <Group gap="lg">
-              <Stack gap={0} align="center">
-                <Text size="xl" fw={700}>
-                  {stats.total}
-                </Text>
-                <Text size="xs" c="dimmed">
-                  <Trans>Total</Trans>
-                </Text>
-              </Stack>
-              <Stack gap={0} align="center">
-                <Text size="xl" fw={700} c="green">
-                  {stats.succeeded}
-                </Text>
-                <Text size="xs" c="dimmed">
-                  <Trans>Successful</Trans>
-                </Text>
-              </Stack>
-              <Stack gap={0} align="center">
-                <Text size="xl" fw={700} c="red">
-                  {stats.failed}
-                </Text>
-                <Text size="xs" c="dimmed">
-                  <Trans>Failed</Trans>
-                </Text>
-              </Stack>
+            <Group gap="md" wrap="nowrap">
+              <RingProgress
+                size={64}
+                thickness={6}
+                roundCaps
+                label={
+                  <Text size="xs" ta="center" fw={700}>
+                    {/* eslint-disable-next-line lingui/no-unlocalized-strings */}
+                    {`${successRate}%`}
+                  </Text>
+                }
+                sections={[
+                  { value: successRate, color: 'green' },
+                  ...(successRate < 100
+                    ? [{ value: 100 - successRate, color: 'red' }]
+                    : []),
+                ]}
+              />
+              <Group gap="lg">
+                <Stack gap={0} align="center">
+                  <Text size="xl" fw={700}>
+                    {stats.total}
+                  </Text>
+                  <Text size="xs" c="dimmed">
+                    <Trans>Total</Trans>
+                  </Text>
+                </Stack>
+                <Stack gap={0} align="center">
+                  <Group gap={4} wrap="nowrap">
+                    <IconCircleCheck
+                      size={16}
+                      color="var(--mantine-color-green-6)"
+                    />
+                    <Text size="xl" fw={700} c="green">
+                      {stats.succeeded}
+                    </Text>
+                  </Group>
+                  <Text size="xs" c="dimmed">
+                    <Trans>Successful</Trans>
+                  </Text>
+                </Stack>
+                <Stack gap={0} align="center">
+                  <Group gap={4} wrap="nowrap">
+                    <IconCircleX
+                      size={16}
+                      color="var(--mantine-color-red-6)"
+                    />
+                    <Text size="xl" fw={700} c="red">
+                      {stats.failed}
+                    </Text>
+                  </Group>
+                  <Text size="xs" c="dimmed">
+                    <Trans>Failed</Trans>
+                  </Text>
+                </Stack>
+              </Group>
             </Group>
             <Button
               size="xs"
@@ -244,10 +287,29 @@ export function PostHistoryContent({ submission }: PostHistoryContentProps) {
         <EmptyState preset="no-records" size="sm" />
       ) : (
         <Stack gap="sm">
-          {merged.map((job) => (
-            <Card key={job.id} withBorder p="sm">
+          {merged.map((job, index) => (
+            <Card key={job.id} withBorder p="sm" radius="md">
               <Stack gap="sm">
-                <JobTreeView job={job} />
+                <JobTreeView
+                  job={job}
+                  headerLabel={
+                    <Group gap={6} wrap="nowrap">
+                      <Text size="sm" fw={500}>
+                        <Trans>Attempt {merged.length - index}</Trans>
+                      </Text>
+                      {index === 0 && merged.length > 1 && (
+                        <Tooltip
+                          label={<Trans>Most recent attempt</Trans>}
+                          withArrow
+                        >
+                          <Badge size="xs" variant="light" color="blue">
+                            <Trans>Latest</Trans>
+                          </Badge>
+                        </Tooltip>
+                      )}
+                    </Group>
+                  }
+                />
                 <JobJsonPanel job={job} submission={submission} />
               </Stack>
             </Card>

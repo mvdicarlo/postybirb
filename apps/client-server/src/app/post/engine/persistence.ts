@@ -207,6 +207,10 @@ export class RelayPersistence {
     };
   }
 
+  /** Project a recovered DB row back into the in-memory job tree the
+   *  scheduler/pipeline operate on. Inverse of {@link taskValues} +
+   *  {@link unitValues}; the scheduler then calls {@link resetForResume} to
+   *  re-open any non-done nodes before running them again. */
   private toRelayJob(row: PostJob): RelayJob {
     const job = new RelayJob({
       id: row.id,

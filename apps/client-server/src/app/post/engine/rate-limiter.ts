@@ -13,6 +13,12 @@ import { Injectable, Optional } from '@nestjs/common';
 import { PostRateWindowRepository } from '@postybirb/database';
 import { RateLimitScope } from '@postybirb/types';
 
+/**
+ * Storage seam for the per-bucket "last posted at" timestamp. Abstracted so
+ * tests can use the in-memory implementation while production persists to
+ * SQLite (the legacy in-memory map lost its windows on restart, which made
+ * back-to-back restarts hammer site rate limits).
+ */
 export interface RateStore {
   get(key: string): Promise<number | undefined>; // last posted epoch ms
   set(key: string, ts: number): Promise<void>;
@@ -71,6 +77,14 @@ export function rateKey(
   }
 }
 
+/**
+ * Per-bucket minimum-interval gate. Given a key (computed by {@link rateKey})
+ * and the website's `minimumPostWaitInterval`, answers "how long must this
+ * key wait before its next post?" and records the moment a post actually
+ * went out. Shared across concurrent jobs through the underlying store, so a
+ * busy account on one job correctly throttles a second job that uses the
+ * same account.
+ */
 @Injectable()
 export class RateLimiter {
   private readonly store: RateStore;

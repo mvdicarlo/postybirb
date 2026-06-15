@@ -8,6 +8,13 @@
 
 import { ITaskError, PostErrorKind } from '@postybirb/types';
 
+/**
+ * The engine's canonical error type. Every pipeline stage that fails throws
+ * one of these, tagged with the stage name and a {@link PostErrorKind} that
+ * tells the scheduler how to react (retry, park, fail). The constructor
+ * inherits a cause's stack so the original throw site stays inspectable in
+ * logs even after re-wrapping.
+ */
 export class StageError extends Error {
   kind: PostErrorKind;
   stage: string;
@@ -134,7 +141,10 @@ export type RetryDecision =
 
 /**
  * Decide what to do after a task fails.
- *  - RATE_LIMITED: wait (does not consume an attempt).
+ *  - RATE_LIMITED: wait (does not consume an attempt — being throttled by a
+ *    site is not a failure of *this* task, so a single rate-limited window
+ *    shouldn't burn through the retry budget that exists to absorb real
+ *    network/IO blips).
  *  - TRANSIENT: exponential backoff with jitter, consumes an attempt.
  *  - everything else: terminal failure.
  */
