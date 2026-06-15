@@ -1,18 +1,1 @@
-import { SelectField } from '@postybirb/form-builder';
-import { BaseWebsiteOptions } from '../../../models/base-website-options';
-import { TJAAccountData } from './tja-account-data';
-
-export class TJAFileSubmission extends BaseWebsiteOptions {
-  @SelectField<TJAAccountData>({
-    label: 'gallery',
-    section: 'website',
-    derive: [
-      {
-        key: 'galleries',
-        populate: 'options',
-      },
-    ],
-    options: [],
-  })
-  galleryId: string = '';
-}
+aW1wb3J0IHsgU2VsZWN0RmllbGQgfSBmcm9tICdAcG9zdHliaXJiL2Zvcm0tYnVpbGRlcic7CmltcG9ydCB7IEJhc2VXZWJzaXRlT3B0aW9ucyB9IGZyb20gJy4uLy4uLy4uL21vZGVscy9iYXNlLXdlYnNpdGUtb3B0aW9ucyc7CmltcG9ydCB7IFRKQUFjY291bnREYXRhIH0gZnJvbSAnLi90amEtYWNjb3VudC1kYXRhJzsKCmV4cG9ydCBjbGFzcyBUSkFGaWxlU3VibWlzc2lvbiBleHRlbmRzIEJhc2VXZWJzaXRlT3B0aW9ucyB7CiAgQFNlbGVjdEZpZWxkPFRKQUFjY291bnREYXRhPih7CiAgICBsYWJlbDogJ2ZvbGRlcicsCiAgICBzZWN0aW9uOiAnd2Vic2l0ZScsCiAgICBkZXJpdmU6IFsKICAgICAgewogICAgICAgIGtleTogJ2dhbGxlcmllcycsCiAgICAgICAgcG9wdWxhdGU6ICdvcHRpb25zJywKICAgICAgfSwKICAgIF0sCiAgICBvcHRpb25zOiBbXSwKICB9KQogIGdhbGxlcnlJZDogc3RyaW5nID0gJyc7Cn0K
