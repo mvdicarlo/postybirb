@@ -22,11 +22,6 @@ import { DataPropertyAccessibility } from '../../models/data-property-accessibil
 import { FileWebsite } from '../../models/website-modifiers/file-website';
 import { OAuthWebsite } from '../../models/website-modifiers/oauth-website';
 import { Website } from '../../website';
-import {
-  getCategorySlug,
-  getPrivacySlug,
-  getTypeSlug,
-} from './models/sofurry-categories';
 import { SofurryFileSubmission } from './models/sofurry-file-submission';
 
 interface SofurrySubmissionResponse {
@@ -178,44 +173,33 @@ export default class Sofurry
     return undefined;
   }
 
-  private getRating(rating: SubmissionRating): string {
+  private getRating(rating: SubmissionRating): number {
     switch (rating) {
       case SubmissionRating.EXTREME:
       case SubmissionRating.ADULT:
-        return 'adult';
+        return 20; // Adult
       case SubmissionRating.MATURE:
-        return 'mature';
+        return 10; // Mature
       case SubmissionRating.GENERAL:
       default:
-        return 'clean';
+        return 0; // Clean
     }
   }
 
-  private getDefaultCategorySlug(fileType: FileType): string {
+  private getDefaultCategoryAndType(fileType: FileType): {
+    category: number;
+    type: number;
+  } {
     switch (fileType) {
       case FileType.AUDIO:
-        return 'music';
+        return { category: 40, type: 41 }; // Music -> Track
       case FileType.TEXT:
-        return 'writing';
+        return { category: 20, type: 21 }; // Writing -> Short Story
       case FileType.VIDEO:
-        return 'animation';
+        return { category: 50, type: 59 }; // Video -> Other
       case FileType.IMAGE:
       default:
-        return 'artwork';
-    }
-  }
-
-  private getDefaultTypeSlug(fileType: FileType): string {
-    switch (fileType) {
-      case FileType.AUDIO:
-        return 'music';
-      case FileType.TEXT:
-        return 'story';
-      case FileType.VIDEO:
-        return 'animation';
-      case FileType.IMAGE:
-      default:
-        return 'image';
+        return { category: 10, type: 11 }; // Artwork -> Drawing
     }
   }
 
@@ -279,14 +263,13 @@ export default class Sofurry
       contentIds.push(uploadRes.body.contentId);
     }
 
-    // Resolve category/type slugs from the (numeric) form values, falling back
-    // to file-type defaults when not provided.
+    const defaults = this.getDefaultCategoryAndType(files[0].fileType);
     const category = postData.options.category
-      ? getCategorySlug(postData.options.category)
-      : this.getDefaultCategorySlug(files[0].fileType);
+      ? parseInt(postData.options.category, 10)
+      : defaults.category;
     const type = postData.options.type
-      ? getTypeSlug(postData.options.type)
-      : this.getDefaultTypeSlug(files[0].fileType);
+      ? parseInt(postData.options.type, 10)
+      : defaults.type;
 
     // Step 3: Finalize the submission with metadata.
     cancellationToken.throwIfCancelled();
@@ -298,7 +281,7 @@ export default class Sofurry
       .setField('category', category)
       .setField('type', type)
       .setField('rating', this.getRating(postData.options.rating))
-      .setField('privacy', getPrivacySlug(postData.options.privacy))
+      .setField('privacy', postData.options.privacy)
       .setField('allowComments', postData.options.allowComments ?? true)
       .setField('allowDownloads', postData.options.allowDownloads ?? true)
       .setField('isWip', postData.options.markAsWorkInProgress ?? false)
