@@ -12,7 +12,6 @@ import {
   TagValue,
 } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
-import { SofurryAccountData } from './sofurry-account-data';
 import {
   SofurryCategoriesByFileType,
   SofurryPrivacyOptions,
@@ -69,21 +68,6 @@ export class SofurryFileSubmission extends BaseWebsiteOptions {
     span: 6,
   })
   privacy: string;
-
-  @SelectField<SofurryAccountData>({
-    label: 'folder',
-    defaultValue: '0',
-    options: [],
-    derive: [
-      {
-        key: 'folders',
-        populate: 'options',
-      },
-    ],
-    section: 'website',
-    span: 6,
-  })
-  folder: string;
 
   @BooleanField({
     label: 'allowComments',
