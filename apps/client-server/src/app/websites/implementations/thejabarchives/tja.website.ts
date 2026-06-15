@@ -92,8 +92,7 @@ export default class TheJabArchives
         value: String(g.id),
         label: g.title,
       }));
-    } catch (error) {
-      this.logger.error('Failed to retrieve galleries', error);
+    } catch {
       return [];
     }
   }
@@ -117,8 +116,8 @@ export default class TheJabArchives
       .asMultipart()
       .setField('gallery_id', options.galleryId ?? '')
       .setField('title', options.title)
-      .setField('tags', options.tags.join(', '))
-      .setField('description', options.description ?? '')
+      .setField('tags', options.tags.tags.join(', '))
+      .setField('description', options.description.description ?? '')
       .addFile('file', files[0])
       .send<{ success: boolean; id: number; url: string }>(
         `${this.BASE_URL}/api/v1/submit.php`,
