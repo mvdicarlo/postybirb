@@ -69,8 +69,8 @@ class NoopPlatformNetworkService implements PlatformNetworkService {
     return true;
   }
 
-  async fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
-    return fetch(input as RequestInfo, init);
+  async fetch(input: string | URL, init?: RequestInit): Promise<Response> {
+    return fetch(input, init);
   }
 }
 

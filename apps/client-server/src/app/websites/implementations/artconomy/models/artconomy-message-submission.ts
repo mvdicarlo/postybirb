@@ -4,7 +4,7 @@ import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
 export class ArtconomyMessageSubmission extends BaseWebsiteOptions {
   @DescriptionField({
-    descriptionType: DescriptionType.HTML
+    descriptionType: DescriptionType.HTML,
   })
-  description: DescriptionValue;
+  declare description: DescriptionValue;
 }

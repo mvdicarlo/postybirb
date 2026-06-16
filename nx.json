@@ -3,8 +3,7 @@
     "@nx/react": {
       "application": {
         "style": "css",
-        "linter": "eslint",
-        "babel": true
+        "linter": "eslint"
       },
       "component": {
         "style": "css"
@@ -42,10 +41,7 @@
   },
   "namedInputs": {
     "default": ["{projectRoot}/**/*", "sharedGlobals"],
-    "sharedGlobals": [
-      "{workspaceRoot}/babel.config.json",
-      "{workspaceRoot}/.github/workflows/ci.yml"
-    ],
+    "sharedGlobals": ["{workspaceRoot}/.github/workflows/ci.yml"],
     "production": [
       "default",
       "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",

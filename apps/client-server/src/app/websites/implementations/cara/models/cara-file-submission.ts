@@ -18,7 +18,7 @@ export class CaraFileSubmission extends BaseWebsiteOptions {
     expectsInlineTags: true,
     expectsInlineTitle: true,
   })
-  description: DescriptionValue;
+  declare description: DescriptionValue;
 
   @BooleanField({
     label: 'addToPortfolio',
