@@ -14,5 +14,5 @@ export class TJAFileSubmission extends BaseWebsiteOptions {
     ],
     options: [],
   })
-  galleryId: string = '';
+  galleryId = '';
 }
