@@ -10,17 +10,24 @@ COPY . .
 
 # Conditional build - only build if release/linux*-unpacked doesn't exist.
 # Note: the directory name varies by arch (linux-unpacked, linux-arm64-unpacked),
-# so we expand the glob via `ls -d` rather than quoting it inside `[ -d ... ]`
-# (a quoted glob is treated as a literal path and never matches).
-RUN if ls -d ./release/linux*unpacked >/dev/null 2>&1; then \
-        echo "Found existing build, copying..."; \
-        cp -r ./release/linux*unpacked/. /app;\
+# Make TARGETARCH available (BuildKit sets this automatically when building with --platform)
+ARG TARGETARCH
+
+# Map Docker's TARGETARCH to Electron Builder's Linux output directory name
+RUN ARCH_DIR=$(case "$TARGETARCH" in \
+      amd64)   echo "linux-unpacked" ;; \
+      arm64)   echo "linux-arm64-unpacked" ;; \
+      *)       echo "linux-${TARGETARCH}-unpacked" ;; \
+    esac) \
+    && if [ -d "./release/$ARCH_DIR" ]; then \
+        echo "Found existing build for $TARGETARCH, copying..."; \
+        cp -r "./release/$ARCH_DIR/." /app; \
     else \
         echo "Building from source..."; rm -rf .nx && \
         CYPRESS_INSTALL_BINARY=0 corepack yarn install --inline-builds && \
         corepack yarn dist:linux --dir && \
-        cp -r ./release/linux*unpacked/. /app;\
-    fi 
+        cp -r "./release/$ARCH_DIR/." /app; \
+    fi
     
 FROM node:24-bookworm-slim
 

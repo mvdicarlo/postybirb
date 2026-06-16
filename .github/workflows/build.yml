@@ -220,14 +220,12 @@ jobs:
       - name: Build and publish a Docker image for '${{github.repository}}'
         uses: macbre/push-to-ghcr@master
 
-        if: matrix.platform == 'linux' && (matrix.arch == 'x64' || matrix.arch == 'arm64')
+        # Building on target arch and then pushing to ghcr.io results in one of the arches having unknown/unknown tag
+        # So instead we build for two arches on the x64
+        if: matrix.platform == 'linux' && matrix.arch == 'x64'
         with:
           image_name: "${{github.repository}}"
           image_tag: latest,${{steps.packageVersion.outputs.result}}
-          platforms: "linux/${{ matrix.arch == 'x64' && 'amd64' || 'arm64' }}"
+          platforms: "linux/amd64,linux/arm64"
           github_token: ${{ secrets.GITHUB_TOKEN }}
           dockerfile: "./Dockerfile"
-
-          # Fixes linux/amd64 turning into unknown/unknown
-          # https://github.com/orgs/community/discussions/45969#discussioncomment-13352049
-          extra_args: "--provenance=false --sbom=false"
