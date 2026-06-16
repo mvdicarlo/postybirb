@@ -9,6 +9,9 @@ import type { Step } from 'react-joyride';
 
 export const SUBMISSION_EDIT_TOUR_ID = 'submission-edit';
 
+// Lingui does not escape curly braces and it causes syntax error on compile
+const curlyBrace = '{';
+
 /**
  * Returns the submission edit card tour steps with translated content.
  */
@@ -99,9 +102,9 @@ export function useSubmissionEditTourSteps(): Step[] {
         <Text size="sm" c="dimmed">
           <Trans>
             Write your post description with rich text formatting. Type @ to
-            insert username shortcuts, &#123; to insert custom text shortcuts,
-            or use the / slash menu for headings, lists, and more. Shortcuts are
-            automatically expanded per website when posting.
+            insert username shortcuts, {curlyBrace} to insert custom text
+            shortcuts, or use the / slash menu for headings, lists, and more.
+            Shortcuts are automatically expanded per website when posting.
           </Trans>
         </Text>
       ),

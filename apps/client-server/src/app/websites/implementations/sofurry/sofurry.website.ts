@@ -100,6 +100,7 @@ export default class Sofurry
   public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<SofurryAccountData> =
     {
       token: false,
+      folders: true,
     };
 
   public async onLogin(): Promise<ILoginState> {
@@ -118,6 +119,7 @@ export default class Sofurry
       );
 
       if (res.statusCode === 200 && res.body?.username) {
+        await this.getFolders(token);
         return this.loginState.setLogin(true, res.body.username);
       }
 
@@ -125,6 +127,26 @@ export default class Sofurry
     } catch (e) {
       this.logger.error('Failed to login', e);
       return this.loginState.logout();
+    }
+  }
+
+  private async getFolders(token: string): Promise<void> {
+    try {
+      const res = await this.platform.http.get<
+        Array<{ id: string; name: string }>
+      >(`${this.BASE_URL}/v1/folders`, {
+        partition: this.accountId,
+        headers: this.getAuthHeaders(token),
+      });
+
+      if (res.statusCode === 200 && Array.isArray(res.body)) {
+        await this.setWebsiteData({
+          ...this.websiteDataStore.getData(),
+          folders: res.body.map((f) => ({ value: f.id, label: f.name })),
+        });
+      }
+    } catch (e) {
+      this.logger.withError(e).error('Failed to fetch folders');
     }
   }
 
@@ -148,7 +170,10 @@ export default class Sofurry
           return { result: false };
         }
 
-        await this.setWebsiteData({ token });
+        await this.setWebsiteData({
+          ...this.websiteDataStore.getData(),
+          token,
+        });
         const result = await this.onLogin();
         return { result: result.isLoggedIn };
       } catch (e) {
@@ -300,6 +325,25 @@ export default class Sofurry
       return PostResponse.fromWebsite(this)
         .withException(new Error('Failed to finalize submission'))
         .withAdditionalInfo(JSON.stringify(finalizeRes.body));
+    }
+
+    // Step 4: Insert submission into each selected folder.
+    for (const folderId of postData.options.folders ?? []) {
+      try {
+        await this.platform.http.post(
+          `${this.BASE_URL}/v1/folder/${folderId}/${submissionId}`,
+          {
+            partition: this.accountId,
+            type: 'urlencoded',
+            data: {},
+            headers: this.getAuthHeaders(token),
+          },
+        );
+      } catch (e) {
+        this.logger
+          .withError(e)
+          .warn(`Failed to add submission to folder "${folderId}"`);
+      }
     }
 
     return PostResponse.fromWebsite(this)

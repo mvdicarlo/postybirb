@@ -25,7 +25,10 @@ class SettingsApi {
   updateSystemStartupSettings(
     startAppOnSystemStartup: Partial<StartupOptions>,
   ) {
-    return this.client.patch(`startup/system-startup`, startAppOnSystemStartup);
+    return this.client.patch<StartupOptions>(
+      `startup/system-startup`,
+      startAppOnSystemStartup,
+    );
   }
 }
 

@@ -132,7 +132,7 @@ describe('DescriptionParserService', () => {
 
     class PlaintextBaseWebsiteOptions extends BaseWebsiteOptions {
       @DescriptionField({ descriptionType: DescriptionType.PLAINTEXT })
-      description: DescriptionValue;
+      declare description: DescriptionValue;
     }
 
     const defaultOptions = createWebsiteOptions(testDescription);
@@ -186,7 +186,7 @@ describe('DescriptionParserService', () => {
 
     class MarkdownBaseWebsiteOptions extends BaseWebsiteOptions {
       @DescriptionField({ descriptionType: DescriptionType.MARKDOWN })
-      description: DescriptionValue;
+      declare description: DescriptionValue;
     }
 
     const defaultOptions = createWebsiteOptions(testDescription);
@@ -214,7 +214,7 @@ describe('DescriptionParserService', () => {
 
     class NoneBaseWebsiteOptions extends BaseWebsiteOptions {
       @DescriptionField({ descriptionType: DescriptionType.NONE })
-      description: DescriptionValue;
+      declare description: DescriptionValue;
     }
 
     const defaultOptions = createWebsiteOptions(testDescription);
@@ -341,7 +341,7 @@ describe('DescriptionParserService', () => {
 
     class PlaintextBaseWebsiteOptions extends BaseWebsiteOptions {
       @DescriptionField({ descriptionType: DescriptionType.PLAINTEXT })
-      description: DescriptionValue;
+      declare description: DescriptionValue;
     }
 
     const defaultOptions = createWebsiteOptions(testDescription);
@@ -571,7 +571,7 @@ describe('DescriptionParserService', () => {
 
       class PlaintextBaseWebsiteOptions extends BaseWebsiteOptions {
         @DescriptionField({ descriptionType: DescriptionType.PLAINTEXT })
-        description: DescriptionValue;
+        declare description: DescriptionValue;
       }
 
       const shortcutContent: Description = {
@@ -900,7 +900,7 @@ describe('DescriptionParserService', () => {
 
       class PlaintextBaseWebsiteOptions extends BaseWebsiteOptions {
         @DescriptionField({ descriptionType: DescriptionType.PLAINTEXT })
-        description: DescriptionValue;
+        declare description: DescriptionValue;
       }
 
       const descriptionWithAll: Description = {

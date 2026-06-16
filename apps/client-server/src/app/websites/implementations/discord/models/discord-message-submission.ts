@@ -19,12 +19,12 @@ export class DiscordMessageSubmission extends BaseWebsiteOptions {
       }
     },
   })
-  description: DescriptionValue;
+  declare description: DescriptionValue;
 
   @TagField({
     hidden: true,
   })
-  tags: TagValue;
+  declare tags: TagValue;
 
   @BooleanField<DiscordMessageSubmission>({
     label: 'useTitle',

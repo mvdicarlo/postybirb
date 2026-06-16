@@ -8,6 +8,7 @@ import {
 import {
   DescriptionType,
   DescriptionValue,
+  SofurryAccountData,
   SubmissionRating,
   TagValue,
 } from '@postybirb/types';
@@ -22,12 +23,12 @@ export class SofurryFileSubmission extends BaseWebsiteOptions {
   @DescriptionField({
     descriptionType: DescriptionType.PLAINTEXT,
   })
-  description: DescriptionValue;
+  declare description: DescriptionValue;
 
   @TagField({
     minTags: 2,
   })
-  tags: TagValue;
+  declare tags: TagValue;
 
   @RatingField({
     options: [
@@ -36,7 +37,22 @@ export class SofurryFileSubmission extends BaseWebsiteOptions {
       { value: SubmissionRating.EXTREME, label: 'Adult' },
     ],
   })
-  rating: SubmissionRating;
+  declare rating: SubmissionRating;
+
+  @SelectField<SofurryAccountData>({
+    label: 'folder',
+    allowMultiple: true,
+    options: [],
+    derive: [
+      {
+        key: 'folders',
+        populate: 'options',
+      },
+    ],
+    section: 'website',
+    span: 12,
+  })
+  folders: string[] = [];
 
   @SelectField({
     label: 'category',

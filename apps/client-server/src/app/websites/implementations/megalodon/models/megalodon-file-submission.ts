@@ -21,7 +21,7 @@ export class MegalodonFileSubmission extends BaseWebsiteOptions {
     expectsInlineTags: true,
     expectsInlineTitle: true,
   })
-  description: DescriptionValue;
+  declare description: DescriptionValue;
 
   @RatingField({
     options: [
@@ -29,7 +29,7 @@ export class MegalodonFileSubmission extends BaseWebsiteOptions {
       { value: SubmissionRating.ADULT, label: 'Sensitive' },
     ],
   })
-  rating: SubmissionRating;
+  declare rating: SubmissionRating;
 
   @TagField({
     spaceReplacer: '_',
