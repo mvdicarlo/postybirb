@@ -127,7 +127,8 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y snapd
-          sudo snap install snapcraft --classic
+          # Snapcraft 9 dropped support for the core20 base used by electron-builder snaps.
+          sudo snap install snapcraft --classic --channel=8.x/stable
 
       - name: Install Ruby + fpm (system) for Linux packaging
         if: matrix.platform == 'linux' && !github.event.repository.fork
