@@ -7,7 +7,11 @@ import {
 import { Settings, SettingsRepository } from '@postybirb/database';
 import { SETTINGS_UPDATES } from '@postybirb/socket-events';
 import { EntityId, SettingsConstants } from '@postybirb/types';
-import { StartupOptions, StartupOptionsManager } from '@postybirb/utils/common';
+import {
+  isLinux,
+  StartupOptions,
+  StartupOptionsManager,
+} from '@postybirb/utils/common';
 import { eq } from 'drizzle-orm';
 import { PostyBirbService } from '../common/service/postybirb-service';
 import { WSGateway } from '../web-socket/web-socket-gateway';
@@ -160,6 +164,15 @@ export class SettingsService
       startUpOptions.appDataPath = startUpOptions.appDataPath.trim();
     }
 
+    if (isLinux() && startUpOptions.startAppOnSystemStartup) {
+      // eslint-disable-next-line no-param-reassign
+      startUpOptions.startAppOnSystemStartup = false;
+      this.logger.warn('Startup on system startup is not supported on Linux');
+      throw new BadRequestException(
+        'Startup on system startup is not supported on Linux',
+      );
+    }
+
     if (startUpOptions.port) {
       // eslint-disable-next-line no-param-reassign
       startUpOptions.port = startUpOptions.port.trim();
@@ -170,6 +183,7 @@ export class SettingsService
     }
 
     StartupOptionsManager.set({ ...startUpOptions });
+    return StartupOptionsManager.get();
   }
 
   /**
