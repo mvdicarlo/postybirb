@@ -8,6 +8,7 @@ import {
 import {
   DescriptionType,
   DescriptionValue,
+  SofurryAccountData,
   SubmissionRating,
   TagValue,
 } from '@postybirb/types';
@@ -37,6 +38,21 @@ export class SofurryFileSubmission extends BaseWebsiteOptions {
     ],
   })
   rating: SubmissionRating;
+
+  @SelectField<SofurryAccountData>({
+    label: 'folder',
+    allowMultiple: true,
+    options: [],
+    derive: [
+      {
+        key: 'folders',
+        populate: 'options',
+      },
+    ],
+    section: 'website',
+    span: 12,
+  })
+  folders: string[] = [];
 
   @SelectField({
     label: 'category',
