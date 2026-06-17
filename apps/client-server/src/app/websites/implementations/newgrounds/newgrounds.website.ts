@@ -390,7 +390,7 @@ export default class Newgrounds
       .setField('comments_pref', '1')
       .setField('tag', '')
       .setField('tags[]', postData.options.tags)
-      .setField('body', `<p>${postData.options.description}</p>`)
+      .setField('body', this.parseDescription(postData.options.description))
       .setField(
         'suitability',
         this.getSuitabilityRating(postData.options.rating),
