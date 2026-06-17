@@ -92,7 +92,7 @@ export default class FurAffinity
 
       if (res.body.includes('logout-link')) {
         const $ = parse(res.body);
-        this.getFolders($);
+        await this.getFolders($);
         const username = $.querySelector('.loggedin_user_avatar')?.getAttribute(
           'alt',
         );
@@ -111,46 +111,54 @@ export default class FurAffinity
     }
   }
 
-  private getFolders($: HTMLElement) {
-    const folders: SelectOption[] = [];
-    const flatFolders: SelectOption[] = [];
-
+  private async getFolders($: HTMLElement) {
     const folderSelect = $.querySelector('select[name=assign_folder_id]');
     if (!folderSelect) {
       this.logger.warn('Failed to find folder select element during login');
       return;
     }
-    folderSelect.children.forEach((el) => {
-      if (el.tagName === 'OPTION') {
-        if (el.getAttribute('value') === '0') {
-          return;
-        }
-        const folder: SelectOption = {
-          value: el.getAttribute('value') || '',
-          label: el.textContent || 'Unknown',
-        };
-        folders.push(folder);
-        flatFolders.push(folder);
-      } else {
-        const optgroup: SelectOption = {
-          label: el.getAttribute('label') || 'Unknown',
-          items: [],
-        };
-        [...el.children].forEach((opt) => {
-          const f: SelectOption = {
-            value: opt.getAttribute('value') || '',
-            label: opt.textContent || 'Unknown',
-          };
-          optgroup.items.push(f);
-          flatFolders.push(f);
-        });
-        folders.push(optgroup);
-      }
-    });
 
-    this.setWebsiteData({
-      folders: flatFolders,
+    await this.setWebsiteData({
+      folders: this.getFolderOptions(folderSelect.children),
     });
+  }
+
+  private getFolderOptions(elements: HTMLElement[]): SelectOption[] {
+    return elements.reduce<SelectOption[]>((options, el) => {
+      const option = this.getFolderOption(el);
+      if (option) {
+        options.push(option);
+      }
+      return options;
+    }, []);
+  }
+
+  private getFolderOption(el: HTMLElement): SelectOption | undefined {
+    if (el.tagName === 'OPTION') {
+      const value = el.getAttribute('value') || '';
+      if (value === '0') {
+        return undefined;
+      }
+
+      return {
+        value,
+        label: el.textContent.trim() || 'Unknown',
+      };
+    }
+
+    if (el.tagName === 'OPTGROUP') {
+      const items = this.getFolderOptions(el.children);
+      if (!items.length) {
+        return undefined;
+      }
+
+      return {
+        label: el.getAttribute('label')?.trim() || 'Unknown',
+        items,
+      };
+    }
+
+    return undefined;
   }
 
   createFileModel(): FurAffinityFileSubmission {
