@@ -176,17 +176,17 @@ jobs:
           # ✅ Use system fpm for Linux only
           USE_SYSTEM_FPM: ${{ matrix.platform == 'linux' && 'true' || '' }}
 
+      
+      - name: Get app version
+        id: appVersion
+        shell: bash
+        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
       # electron-builder uploads can stall at the end of large macOS universal
       # DMG publishing, so mac/windows build with `--publish never` above and
       # upload the generated artifacts (including the latest*.yml autoupdate
       # metadata) here. Linux publishes natively (matrix.publish == always) so
       # the Snap Store upload still happens and this step is skipped.
-      - name: Get app version
-        if: matrix.publish == 'never'
-        id: appVersion
-        shell: bash
-        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
-
       - name: Publish artifacts to GitHub Release
         if: matrix.publish == 'never'
         uses: softprops/action-gh-release@v2
@@ -206,24 +206,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract version from package.json for docker tag
-        uses: actions/github-script@v8
-        id: packageVersion
-        with:
-          # Prevent action from using JSON.stringify on result string to remove " wrapping around version
-          result-encoding: string
-          script: |
-            const fs = require('fs');
-            const pkg = JSON.parse(fs.readFileSync("package.json", "utf8"))
-            return pkg.version
-
       - name: Build and publish a Docker image for '${{github.repository}}'
         uses: macbre/push-to-ghcr@master
 
-        if: matrix.platform == 'linux' && (matrix.arch == 'x64' || matrix.arch == 'arm64')
+        # Building on target arch and then pushing to ghcr.io results in one of the arches having unknown/unknown tag
+        # So instead we build for two arches on the x64
+        if: matrix.platform == 'linux' && matrix.arch == 'x64'
         with:
           image_name: "${{github.repository}}"
-          image_tag: latest,${{steps.packageVersion.outputs.result}}
-          platforms: "linux/${{ matrix.arch == 'x64' && 'amd64' || 'arm64' }}"
+          image_tag: latest,${{steps.appVersion.outputs.version}}
+          platforms: "linux/amd64,linux/arm64"
           github_token: ${{ secrets.GITHUB_TOKEN }}
           dockerfile: "./Dockerfile"
