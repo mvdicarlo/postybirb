@@ -95,7 +95,12 @@ export default class Newgrounds
   }
 
   private parseDescription(text: string): string {
-    return text.replace(/<div/gm, '<p').replace(/<\/div>/gm, '</p>');
+    return text
+      .replace(/<div/gm, '<p')
+      .replace(/<\/div>/gm, '</p>')
+      .replace(/<span[^>]*>/gm, '')
+      .replace(/<\/span>/gm, '')
+      .replace(/<p><\/p>/gm, '<p><br /></p>');
   }
 
   private getSuitabilityRating(rating: SubmissionRating | string): string {
@@ -123,13 +128,16 @@ export default class Newgrounds
     userKey: string,
   ): Promise<void> {
     try {
-      await this.platform.http.post(`${this.BASE_URL}/projects/art/remove/${projectId}`, {
-        partition: this.accountId,
-        type: 'multipart',
-        data: {
-          userkey: userKey,
+      await this.platform.http.post(
+        `${this.BASE_URL}/projects/art/remove/${projectId}`,
+        {
+          partition: this.accountId,
+          type: 'multipart',
+          data: {
+            userkey: userKey,
+          },
         },
-      });
+      );
     } catch (error) {
       this.logger.error('Failed to clean up project', error as any);
     }
@@ -348,9 +356,12 @@ export default class Newgrounds
     cancellationToken: CancellableToken,
   ): Promise<IPostResponse> {
     // Step 1: Get the page to extract userkey
-    const page = await this.platform.http.get<string>(`${this.BASE_URL}/account/news/post`, {
-      partition: this.accountId,
-    });
+    const page = await this.platform.http.get<string>(
+      `${this.BASE_URL}/account/news/post`,
+      {
+        partition: this.accountId,
+      },
+    );
 
     PostResponse.validateBody(this, page);
 
@@ -379,7 +390,7 @@ export default class Newgrounds
       .setField('comments_pref', '1')
       .setField('tag', '')
       .setField('tags[]', postData.options.tags)
-      .setField('body', `<p>${postData.options.description}</p>`)
+      .setField('body', this.parseDescription(postData.options.description))
       .setField(
         'suitability',
         this.getSuitabilityRating(postData.options.rating),
