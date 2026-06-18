@@ -144,10 +144,11 @@ export function FormFieldsProvider({
         clearTimeout(saveTimerRef.current);
       }
 
-      // Determine debounce time based on value type
-      // Booleans/selects: 150ms (quick confirmation)
-      // Text fields: 500ms (wait for typing to stop)
-      const debounceTime = typeof value === 'string' ? 500 : 150;
+      // Determine debounce time based on field characteristics.
+      // Description editor emits object values while typing, so it needs
+      // a longer debounce to avoid excessive backend updates.
+      const debounceTime =
+        name === 'description' ? 1250 : typeof value === 'string' ? 500 : 150;
 
       // Schedule the save with debounce
       saveTimerRef.current = setTimeout(async () => {

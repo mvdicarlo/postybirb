@@ -1,5 +1,5 @@
 import { HttpResponse } from '@postybirb/http/types';
-
+import { DynamicObject } from '@postybirb/types';
 // Required by drizzle which does not support custom paths like this
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { toError } from '../../../../utils/common/src/lib/common';
@@ -68,6 +68,7 @@ export class PostResponse implements IPostResponse {
     res: HttpResponse<unknown>,
     stage?: string,
     url?: string,
+    extraInfo?: DynamicObject,
   ): void {
     if (res.statusCode > 303) {
       // eslint-disable-next-line @typescript-eslint/no-throw-literal
@@ -78,7 +79,7 @@ export class PostResponse implements IPostResponse {
           ),
         )
         .atStage(stage || 'Unknown')
-        .withAdditionalInfo(res.body);
+        .withAdditionalInfo({ body: res.body, ...(extraInfo || {}) });
     }
   }
 
