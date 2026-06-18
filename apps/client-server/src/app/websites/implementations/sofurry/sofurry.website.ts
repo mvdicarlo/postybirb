@@ -347,7 +347,7 @@ export default class Sofurry
     }
 
     return PostResponse.fromWebsite(this)
-      .withSourceUrl(`https://sofurry.com/view/${submissionId}`)
+      .withSourceUrl(`https://sofurry.com/s/${submissionId}`)
       .withMessage('File posted successfully');
   }
 
