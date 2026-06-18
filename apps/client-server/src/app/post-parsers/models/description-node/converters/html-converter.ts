@@ -69,7 +69,7 @@ export class HtmlConverter extends BaseConverter {
       if (!this.shouldRenderShortcut(node, context)) return '';
       const sc = this.getUsernameShortcutLink(node, context);
       if (!sc) return '';
-      if (!sc.url.startsWith('http')) return `<span>${sc.url}</span>`;
+      if (!sc.url.startsWith('http')) return sc.url;
       return `<a target="_blank" href="${sc.url}">${sc.username}</a>`;
     }
 
@@ -90,30 +90,27 @@ export class HtmlConverter extends BaseConverter {
 
     if (node.type === 'titleShortcut') {
       if (!this.shouldRenderShortcut(node, context)) return '';
-      return context.title
-        ? `<span>${encode(context.title, { level: 'html5' })}</span>`
-        : '';
+      return context.title ? encode(context.title, { level: 'html5' }) : '';
     }
 
     if (node.type === 'tagsShortcut') {
       if (!this.shouldRenderShortcut(node, context)) return '';
       return context.tags?.length
-        ? `<span>${context.tags.map((t) => encode(`#${t}`, { level: 'html5' })).join(' ')}</span>`
+        ? context.tags.map((t) => encode(`#${t}`, { level: 'html5' })).join(' ')
         : '';
     }
 
     if (node.type === 'contentWarningShortcut') {
       if (!this.shouldRenderShortcut(node, context)) return '';
       return context.contentWarningText
-        ? `<span>${encode(context.contentWarningText, { level: 'html5' })}</span>`
+        ? encode(context.contentWarningText, { level: 'html5' })
         : '';
     }
 
     if (node.type === 'hardBreak') return '<br>';
 
     // Fallback: render content
-    const content = this.convertContent(node.content, context);
-    return content ? `<span>${content}</span>` : '';
+    return this.convertContent(node.content, context);
   }
 
   convertTextNode(node: TipTapNode, context: ConversionContext): string {
@@ -177,17 +174,21 @@ export class HtmlConverter extends BaseConverter {
       '<br />',
     );
 
-    if (!segments.length && !styles.length) {
-      return encodedText;
-    }
-
-    const stylesString = styles.join(';');
-    return `<span${
-      stylesString.length ? ` style="${stylesString}"` : ''
-    }>${segments.map((s) => `<${s}>`).join('')}${encodedText}${segments
+    const openTags = segments.map((s) => `<${s}>`).join('');
+    const closeTags = segments
+      .slice()
       .reverse()
       .map((s) => `</${s}>`)
-      .join('')}</span>`;
+      .join('');
+    const formattedText = `${openTags}${encodedText}${closeTags}`;
+
+    // A span is only required to carry an inline color style; there is no
+    // dedicated HTML element for applying color to inline text.
+    if (styles.length) {
+      return `<span style="${styles.join(';')}">${formattedText}</span>`;
+    }
+
+    return formattedText;
   }
 
   private getBlockTag(node: TipTapNode): string {

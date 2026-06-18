@@ -170,7 +170,7 @@ describe('DescriptionParserService', () => {
       '',
     );
     expect(description).toMatchInlineSnapshot(
-      `"<div><span><b>Hello, </b></span>World!</div><div><a target=\"_blank\" href=\"https://postybirb.com\">A link</a></div>"`,
+      `"<div><b>Hello, </b>World!</div><div><a target=\"_blank\" href=\"https://postybirb.com\">A link</a></div>"`,
     );
   });
 
@@ -257,7 +257,7 @@ describe('DescriptionParserService', () => {
     );
 
     expect(description).toMatchInlineSnapshot(
-      `"<div><span><b>Hello, </b></span>World!</div><div><a target=\"_blank\" href=\"https://postybirb.com\">A link</a></div><div></div><div><a target=\"_blank\" href=\"https://postybirb.com\">Posted using PostyBirb</a></div>"`,
+      `"<div><b>Hello, </b>World!</div><div><a target=\"_blank\" href=\"https://postybirb.com\">A link</a></div><div></div><div><a target=\"_blank\" href=\"https://postybirb.com\">Posted using PostyBirb</a></div>"`,
     );
   });
 
@@ -289,7 +289,7 @@ describe('DescriptionParserService', () => {
     );
 
     expect(description).toMatchInlineSnapshot(
-      `"<div><span><b>Hello, </b></span>World!</div><div><a target=\"_blank\" href=\"https://postybirb.com\">A link</a></div>"`,
+      `"<div><b>Hello, </b>World!</div><div><a target=\"_blank\" href=\"https://postybirb.com\">A link</a></div>"`,
     );
   });
 
@@ -431,7 +431,7 @@ describe('DescriptionParserService', () => {
 
       expect(customShortcutsService.findById).toHaveBeenCalledWith('cs-1');
       expect(description).toMatchInlineSnapshot(
-        `"<div>Check out my <span><b>Commission Info</b></span></div>"`,
+        `"<div>Check out my <b>Commission Info</b></div>"`,
       );
     });
 
@@ -682,7 +682,7 @@ describe('DescriptionParserService', () => {
       );
 
       expect(description).toMatchInlineSnapshot(
-        `"<div>Visit my <a target="_blank" href="https://portfolio.example.com"><span><b>portfolio</b></span></a></div>"`,
+        `"<div>Visit my <a target="_blank" href="https://portfolio.example.com"><b>portfolio</b></a></div>"`,
       );
     });
   });
@@ -722,7 +722,7 @@ describe('DescriptionParserService', () => {
       );
 
       expect(description).toMatchInlineSnapshot(
-        `"<div>Artwork: <span>My Amazing Art</span></div>"`,
+        `"<div>Artwork: My Amazing Art</div>"`,
       );
     });
 
@@ -760,7 +760,7 @@ describe('DescriptionParserService', () => {
       );
 
       expect(description).toMatchInlineSnapshot(
-        `"<div>Tags: <span>#art #digital #fantasy</span></div>"`,
+        `"<div>Tags: #art #digital #fantasy</div>"`,
       );
     });
 
@@ -804,7 +804,7 @@ describe('DescriptionParserService', () => {
       );
 
       expect(description).toMatchInlineSnapshot(
-        `"<div>Content Warning: <span>Mild Violence</span></div>"`,
+        `"<div>Content Warning: Mild Violence</div>"`,
       );
     });
 
@@ -842,9 +842,7 @@ describe('DescriptionParserService', () => {
         'My Title',
       );
 
-      expect(description).toMatchInlineSnapshot(
-        `"<div>Title: <span>My Title</span></div>"`,
-      );
+      expect(description).toMatchInlineSnapshot(`"<div>Title: My Title</div>"`);
       expect((description!.match(/My Title/g) || []).length).toBe(1);
     });
 
@@ -883,7 +881,7 @@ describe('DescriptionParserService', () => {
       );
 
       expect(description).toMatchInlineSnapshot(
-        `"<div>Tags: <span>#tag1 #tag2</span></div>"`,
+        `"<div>Tags: #tag1 #tag2</div>"`,
       );
       expect((description!.match(/#tag1 #tag2/g) || []).length).toBe(1);
     });

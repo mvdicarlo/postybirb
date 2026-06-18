@@ -5,7 +5,7 @@
   },
   "description": "PostyBirb is a desktop application used for posting to multiple websites from one simple form.",
   "name": "postybirb",
-  "version": "4.0.38",
+  "version": "4.0.39",
   "repository": {
     "type": "git",
     "url": "git+https://mvdicarlo@github.com/mvdicarlo/postybirb.git"
@@ -119,7 +119,7 @@
     "applicationinsights": "3.12.1",
     "async-mutex": "^0.5.0",
     "axios": "^1.16.1",
-    "better-sqlite3": "^12.10.0",
+    "better-sqlite3": "^12.11.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "clsx": "^2.1.1",
