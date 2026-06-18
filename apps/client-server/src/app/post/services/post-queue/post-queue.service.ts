@@ -1,13 +1,13 @@
 import {
-    Injectable,
-    InternalServerErrorException,
-    Optional,
+  Injectable,
+  InternalServerErrorException,
+  Optional,
 } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import {
-    PostQueueRecord,
-    PostQueueRecordRepository,
-    SubmissionRepository,
+  PostQueueRecord,
+  PostQueueRecordRepository,
+  SubmissionRepository,
 } from '@postybirb/database';
 import { EntityId, ScheduleType, SubmissionId } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/common';
@@ -221,6 +221,16 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
         }
 
         if (!this.relayPostManager.isPosting(submissionId)) {
+          // Gate on cross-submission dependencies: a submission that declares
+          // `metadata.dependsOn` is held back until every dependency has a
+          // successfully-completed post job. This enforces user-specified
+          // posting order (e.g. comic pages) without serializing the whole
+          // queue. Leave the queue record in place so the submission is
+          // re-evaluated on the next cycle once its dependencies finish.
+          // eslint-disable-next-line no-await-in-loop
+          if (!(await this.areDependenciesSatisfied(submission))) {
+            continue;
+          }
           // eslint-disable-next-line no-await-in-loop
           await this.relayPostManager.enqueue(submissionId);
         }
@@ -231,6 +241,68 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
     } finally {
       release();
     }
+  }
+
+  /**
+   * True when every submission listed in `metadata.dependsOn` has a
+   * successfully-completed post job. Submissions with no declared dependencies
+   * are always satisfied. A dependency that has not yet posted (or failed)
+   * keeps the dependent blocked until it succeeds.
+   *
+   * A dependency that no longer exists can never be satisfied, so blocking on
+   * it would leave the dependent stuck forever. Instead we self-heal: stale ids
+   * are stripped from `metadata.dependsOn` (mirroring the deletion path's
+   * {@link unqueueDependents}) and satisfaction is decided from the remaining,
+   * still-existing dependencies. This guards against stale references that slip
+   * past the normal deletion cleanup (races, imports, manual edits).
+   */
+  private async areDependenciesSatisfied(
+    submission: PostQueueRecord['submission'] | undefined,
+  ): Promise<boolean> {
+    const dependsOn = submission?.metadata?.dependsOn;
+    if (!submission || !dependsOn || dependsOn.length === 0) return true;
+
+    const staleIds: SubmissionId[] = [];
+    let blocked = false;
+    for (const dependencyId of dependsOn) {
+      // eslint-disable-next-line no-await-in-loop
+      const dependency = await this.submissionRepository.findById(dependencyId);
+      if (!dependency) {
+        staleIds.push(dependencyId);
+        continue;
+      }
+      // eslint-disable-next-line no-await-in-loop
+      if (!(await this.relayPostManager.hasSucceeded(dependencyId))) {
+        blocked = true;
+      }
+    }
+
+    if (staleIds.length > 0) {
+      await this.stripStaleDependencies(submission, staleIds);
+    }
+
+    return !blocked;
+  }
+
+  /**
+   * Remove references to deleted dependency submissions from a submission's
+   * `metadata.dependsOn`. Used by {@link areDependenciesSatisfied} to self-heal
+   * a dependent that points at a submission which no longer exists, so it is no
+   * longer blocked forever by an unsatisfiable dependency.
+   */
+  private async stripStaleDependencies(
+    submission: NonNullable<PostQueueRecord['submission']>,
+    staleIds: SubmissionId[],
+  ): Promise<void> {
+    this.logger
+      .withMetadata({ submissionId: submission.id, staleIds })
+      .warn('Stripping references to deleted dependency submissions');
+    const remaining = (submission.metadata?.dependsOn ?? []).filter(
+      (depId) => !staleIds.includes(depId),
+    );
+    await this.submissionRepository.update(submission.id, {
+      metadata: { ...submission.metadata, dependsOn: remaining },
+    });
   }
 
   /** Peeks at the next item in the queue (oldest first). */

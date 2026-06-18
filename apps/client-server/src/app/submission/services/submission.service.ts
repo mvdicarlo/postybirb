@@ -11,6 +11,7 @@ import {
 import {
     FileBufferSchema,
     Insert,
+    PostQueueRecordRepository,
     Submission,
     SubmissionFileSchema,
     SubmissionRepository,
@@ -59,6 +60,8 @@ export class SubmissionService
   implements OnModuleInit
 {
   private emitDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+
+  private readonly postQueueRepository = new PostQueueRecordRepository();
 
   constructor(
     @Inject(forwardRef(() => WebsiteOptionsService))
@@ -442,6 +445,10 @@ export class SubmissionService
     this.logger.withMetadata(update).info(`Updating Submission '${id}'`);
     const submission = await this.findByIdOrThrow(id);
 
+    if (update.metadata?.dependsOn !== undefined) {
+      await this.assertValidDependencies(id, update.metadata.dependsOn);
+    }
+
     const scheduleType =
       update.scheduleType ?? submission.schedule.scheduleType;
     const updates: Pick<
@@ -518,8 +525,97 @@ export class SubmissionService
   }
 
   public async remove(id: SubmissionId): Promise<void> {
+    await this.unqueueDependents(id);
     await super.remove(id);
     this.emit();
+  }
+
+  /**
+   * Validate a proposed `dependsOn` set for a submission: reject self-references
+   * and any dependency that would introduce a cycle (A depends on B which
+   * depends on A). A cycle would deadlock the post queue — each submission
+   * permanently blocked waiting on the other — so it is rejected at edit time.
+   */
+  private async assertValidDependencies(
+    id: SubmissionId,
+    dependsOn: SubmissionId[],
+  ): Promise<void> {
+    const deps = [...new Set(dependsOn)];
+    if (deps.includes(id)) {
+      throw new BadRequestException('A submission cannot depend on itself.');
+    }
+    if (deps.length === 0) return;
+
+    // Build the dependency graph from all submissions (scalar rows only),
+    // override the edited submission's edges with the proposed set, then ensure
+    // no dependency can transitively reach back to `id`.
+    const all = await this.repository.find({ with: {} });
+    const graph = new Map<SubmissionId, SubmissionId[]>();
+    for (const s of all) {
+      graph.set(s.id, s.metadata?.dependsOn ?? []);
+    }
+    graph.set(id, deps);
+
+    const reaches = (from: SubmissionId, target: SubmissionId): boolean => {
+      const seen = new Set<SubmissionId>();
+      const stack: SubmissionId[] = [from];
+      while (stack.length) {
+        const current = stack.pop() as SubmissionId;
+        if (current === target) return true;
+        if (seen.has(current)) continue;
+        seen.add(current);
+        const next = graph.get(current);
+        if (next) stack.push(...next);
+      }
+      return false;
+    };
+
+    for (const dep of deps) {
+      if (reaches(dep, id)) {
+        throw new BadRequestException(
+          `Dependency '${dep}' would create a circular dependency.`,
+        );
+      }
+    }
+  }
+
+  /**
+   * When a submission is deleted, every submission that depended on it must stop
+   * referencing and waiting on it. For each dependent: strip the deleted id from
+   * its `dependsOn`, and remove it from the post queue so a now-unblocked
+   * dependent does not silently start posting merely because its dependency was
+   * deleted — the user must re-queue it deliberately. Called before the row is
+   * deleted; the deleted submission's own queue record is removed by the schema
+   * cascade.
+   */
+  private async unqueueDependents(id: SubmissionId): Promise<void> {
+    const all = await this.repository.find({ with: {} });
+    const dependents = all.filter((s) =>
+      (s.metadata?.dependsOn ?? []).includes(id),
+    );
+    if (dependents.length === 0) return;
+
+    await Promise.allSettled(
+      dependents.map((s) =>
+        this.repository.update(s.id, {
+          metadata: {
+            ...s.metadata,
+            dependsOn: (s.metadata?.dependsOn ?? []).filter(
+              (depId) => depId !== id,
+            ),
+          },
+        }),
+      ),
+    );
+
+    const dependentIds = dependents.map((s) => s.id);
+    const queueRecords = await this.postQueueRepository.find({
+      where: (queueRecord, { inArray }) =>
+        inArray(queueRecord.submissionId, dependentIds),
+    });
+    if (queueRecords.length > 0) {
+      await this.postQueueRepository.deleteById(queueRecords.map((r) => r.id));
+    }
   }
 
   async applyMultiSubmission(applyMultiSubmissionDto: ApplyMultiSubmissionDto) {

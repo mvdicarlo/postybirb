@@ -398,6 +398,28 @@ export class RelayPostManager implements OnModuleInit {
     return this.outcomes.get(submissionId);
   }
 
+  /**
+   * True when the submission's most recent post job completed successfully.
+   * Used by the post queue to gate dependent submissions: a submission that
+   * declares a `dependsOn` is only handed to the engine once every dependency
+   * reports success here. Reads the durable persisted job (newest first), with
+   * any in-flight job overlaid from memory so a just-finished run is reflected
+   * immediately. Returns false when the submission has never been posted.
+   */
+  async hasSucceeded(submissionId: SubmissionId): Promise<boolean> {
+    // Prefer the live job if one is tracked (most up-to-date state).
+    const activeJobId = this.activeBySubmission.get(submissionId);
+    if (activeJobId) {
+      const live = this.scheduler.getJob(activeJobId);
+      if (live) return computeJobStatus(live) === NodeStatus.SUCCEEDED;
+    }
+    const jobs = await this.persistence.loadBySubmission(submissionId);
+    if (jobs.length === 0) return false;
+    const newest = jobs[0];
+    const live = this.scheduler.getJob(newest.id);
+    return computeJobStatus(live ?? newest) === NodeStatus.SUCCEEDED;
+  }
+
   /** Queue acknowledges a terminal outcome (after dequeue). */
   acknowledge(submissionId: SubmissionId): void {
     this.outcomes.delete(submissionId);
