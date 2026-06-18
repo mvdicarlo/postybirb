@@ -4,6 +4,7 @@ import { TJAAccountData } from './tja-account-data';
 
 export class TJAFileSubmission extends BaseWebsiteOptions {
   @SelectField<TJAAccountData>({
+    required: true,
     label: 'folder',
     section: 'website',
     derive: [
