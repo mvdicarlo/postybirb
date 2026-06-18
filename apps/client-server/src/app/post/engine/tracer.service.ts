@@ -13,12 +13,12 @@ import { PostyBirbDirectories } from '@postybirb/fs';
 import { POST_STATE_DELTA } from '@postybirb/socket-events';
 import { JobTreeNode, NodeStatus, UnitKind } from '@postybirb/types';
 import {
-    appendFile,
-    mkdir,
-    readFile,
-    readdir,
-    stat,
-    unlink,
+  appendFile,
+  mkdir,
+  readFile,
+  readdir,
+  stat,
+  unlink,
 } from 'node:fs/promises';
 import { join } from 'node:path';
 import { WSGateway } from '../../web-socket/web-socket-gateway';
@@ -38,15 +38,6 @@ export type TraceEntry = {
   event: string;
   data?: Record<string, unknown>;
 };
-
-const LEDGER_EVENTS: ReadonlySet<string> = new Set([
-  'task.started',
-  'task.succeeded',
-  'task.failed',
-  'unit.posted',
-  'unit.failed',
-  'file.resized',
-]);
 
 /**
  * Common trace fields that identify a task within its job. Centralizes the
@@ -152,11 +143,6 @@ export class RelayTracer {
     const all: TraceEntry[] = [];
     for (const buf of this.buffers.values()) all.push(...buf);
     return all;
-  }
-
-  /** Filtered projection for the post-history view. */
-  getLedger(jobId: string): TraceEntry[] {
-    return this.getEntries(jobId).filter((e) => LEDGER_EVENTS.has(e.event));
   }
 
   /** Absolute path to the NDJSON file for a job (may not yet exist). */

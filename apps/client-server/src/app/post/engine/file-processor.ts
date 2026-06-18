@@ -18,9 +18,9 @@
 import { Injectable } from '@nestjs/common';
 import { FileBuffer, type SubmissionFile } from '@postybirb/database';
 import {
-    FileType,
-    type FileSubmission,
-    type ImageResizeProps,
+  FileType,
+  type FileSubmission,
+  type ImageResizeProps,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { FileConverterService } from '../../file-converter/file-converter.service';
@@ -31,7 +31,7 @@ import { PostingFile } from '../models/posting-file';
 import { PostFileResizerService } from '../services/post-file-resizer/post-file-resizer.service';
 
 /** Returns true if `mimeType` is accepted by any entry in `patterns`. */
-export function mimeTypeIsAccepted(
+function mimeTypeIsAccepted(
   mimeType: string,
   patterns: string[],
 ): boolean {

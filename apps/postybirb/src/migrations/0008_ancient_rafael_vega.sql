@@ -7,8 +7,6 @@ CREATE TABLE `post-job` (
 	`attemptOf` text,
 	`status` text DEFAULT 'QUEUED' NOT NULL,
 	`resumeMode` text DEFAULT 'NEW' NOT NULL,
-	`priority` real DEFAULT 0 NOT NULL,
-	`scheduledFor` text,
 	`completedAt` text,
 	FOREIGN KEY (`submissionId`) REFERENCES `submission`(`id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`attemptOf`) REFERENCES `post-job`(`id`) ON UPDATE no action ON DELETE set null

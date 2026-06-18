@@ -39,11 +39,6 @@ export class RelayPersistence {
       attemptOf: job.attemptOf,
       status: job.status,
       resumeMode: job.resumeMode,
-      priority: job.priority,
-      scheduledFor:
-        job.scheduledFor !== undefined
-          ? new Date(job.scheduledFor).toISOString()
-          : undefined,
     });
 
     for (const task of job.tasks) {
@@ -61,7 +56,6 @@ export class RelayPersistence {
     await this.jobs.update(job.id, {
       status: job.status,
       resumeMode: job.resumeMode,
-      priority: job.priority,
       completedAt:
         job.completedAt !== undefined
           ? new Date(job.completedAt).toISOString()
@@ -216,10 +210,6 @@ export class RelayPersistence {
       id: row.id,
       submissionId: row.submissionId,
       resumeMode: row.resumeMode,
-      priority: row.priority,
-      scheduledFor: row.scheduledFor
-        ? new Date(row.scheduledFor).getTime()
-        : undefined,
       attemptOf: row.attemptOf,
     });
     job.status = row.status as NodeStatus;

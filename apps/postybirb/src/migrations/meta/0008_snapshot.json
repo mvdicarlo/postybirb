@@ -453,21 +453,6 @@
           "autoincrement": false,
           "default": "'NEW'"
         },
-        "priority": {
-          "name": "priority",
-          "type": "real",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 0
-        },
-        "scheduledFor": {
-          "name": "scheduledFor",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "completedAt": {
           "name": "completedAt",
           "type": "text",

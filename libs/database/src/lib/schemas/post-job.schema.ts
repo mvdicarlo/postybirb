@@ -1,15 +1,14 @@
 import { relations } from 'drizzle-orm';
 import {
-    AnySQLiteColumn,
-    index,
-    real,
-    sqliteTable,
-    text,
+  AnySQLiteColumn,
+  index,
+  sqliteTable,
+  text,
 } from 'drizzle-orm/sqlite-core';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import {
-    NodeStatus,
-    PostRecordResumeMode,
+  NodeStatus,
+  PostRecordResumeMode,
 } from '../../../../types/src/index';
 import { CommonSchema, id } from './common.schema';
 import { PostTaskSchema } from './post-task.schema';
@@ -65,8 +64,6 @@ export const PostJobSchema = sqliteTable(
       .notNull()
       .default(PostRecordResumeMode.NEW),
 
-    priority: real().notNull().default(0),
-    scheduledFor: text(),
     completedAt: text(),
   },
   (table) => [

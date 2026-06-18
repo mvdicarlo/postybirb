@@ -1,4 +1,4 @@
-import { NodeStatus, PostRecordResumeMode, SubmissionType, UnitKind } from '@postybirb/types';
+import { NodeStatus, SubmissionType, UnitKind } from '@postybirb/types';
 import { RelayJob, RelayTask, RelayUnit } from './model';
 import { RelayPersistence } from './persistence';
 import { RelayPipelineDeps } from './pipeline-deps';
@@ -172,42 +172,6 @@ describe('RelayPostManager hardening', () => {
     expect(persistence.create).toHaveBeenCalled();
     expect(jobId).toBeDefined();
     expect(jobId).not.toBe('job-bad');
-  });
-
-  it('defers a future-scheduled job and runs it when the timer fires', async () => {
-    // Regression (#5): a scheduledFor in the future must still run even with
-    // no other queue activity, via an armed one-shot timer.
-    // Keep setImmediate real so flush() still works under fake timers.
-    jest.useFakeTimers({ doNotFake: ['setImmediate', 'nextTick'] });
-    const submissionId = 'sub-sched';
-    const deps = makeDeps(submissionId);
-    const persistence = makePersistence();
-    const manager = new RelayPostManager(
-      deps,
-      persistence,
-      makeRegistry(true),
-      { archive: jest.fn().mockResolvedValue(undefined) } as never,
-      { create: jest.fn().mockResolvedValue(undefined) } as never,
-    );
-
-    const scheduledFor = Date.now() + 60_000;
-    const jobId = await manager.enqueue(submissionId, PostRecordResumeMode.NEW, {
-      scheduledFor,
-    });
-    await Promise.resolve();
-
-    // Created + persisted, but not yet dispatched (its time has not arrived).
-    expect(persistence.create).toHaveBeenCalled();
-    expect(deps.dispatchMessage).not.toHaveBeenCalled();
-    expect(manager.isPosting(submissionId)).toBe(true);
-
-    // Advance past the scheduled time; the armed timer re-drives the run.
-    await jest.advanceTimersByTimeAsync(60_001);
-    await flush();
-
-    expect(deps.dispatchMessage).toHaveBeenCalledTimes(1);
-    expect(manager.getOutcome(submissionId)).toBe(NodeStatus.SUCCEEDED);
-    expect(jobId).toBeDefined();
   });
 
   it('evicts the finished job tree from the scheduler on completion (memory)', async () => {

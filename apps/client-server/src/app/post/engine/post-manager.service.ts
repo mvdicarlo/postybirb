@@ -50,12 +50,6 @@ export class RelayPostManager implements OnModuleInit {
   /** submissionId -> terminal status, awaiting the queue to acknowledge/dequeue. */
   private readonly outcomes = new Map<SubmissionId, NodeStatus>();
 
-  /** jobId -> timer that re-drives drain() when a future scheduledFor arrives. */
-  private readonly scheduleTimers = new Map<
-    string,
-    ReturnType<typeof setTimeout>
-  >();
-
   constructor(
     private readonly deps: RelayPipelineDeps,
     private readonly persistence: RelayPersistence,
@@ -187,12 +181,11 @@ export class RelayPostManager implements OnModuleInit {
 
   /**
    * Enqueue a submission: prepare context, plan a job, persist the tree, run.
-   * Returns the created job id. `schedule` carries optional priority/scheduledFor.
+   * Returns the created job id.
    */
   async enqueue(
     submissionId: SubmissionId,
     resumeMode: PostRecordResumeMode = PostRecordResumeMode.NEW,
-    schedule?: { priority?: number; scheduledFor?: number },
   ): Promise<string> {
     await this.waitForRecoveryAttempt();
 
@@ -210,8 +203,6 @@ export class RelayPostManager implements OnModuleInit {
 
     const job = this.scheduler.createJob(submissionId, {
       resumeMode,
-      priority: schedule?.priority,
-      scheduledFor: schedule?.scheduledFor,
     });
 
     try {
@@ -223,10 +214,6 @@ export class RelayPostManager implements OnModuleInit {
       );
       this.activeBySubmission.set(submissionId, job.id);
       this.outcomes.delete(submissionId);
-      // If the job is scheduled for the future, runToIdle won't pick it up yet
-      // and nothing else re-drives the scheduler. Arm a timer so the job runs
-      // when its time arrives even with no other queue activity.
-      this.armScheduleTimer(job.id, schedule?.scheduledFor);
       this.drain().catch((error) =>
         this.logger
           .withError(error)
@@ -235,43 +222,12 @@ export class RelayPostManager implements OnModuleInit {
       return job.id;
     } catch (error) {
       this.deps.release(job.id);
-      this.clearScheduleTimer(job.id);
       this.scheduler.discard(job.id);
       this.logger
         .withError(error)
         .withMetadata({ jobId: job.id, submissionId })
         .error('Relay enqueue failed; rolled back in-memory job state');
       throw error;
-    }
-  }
-
-  /** Arm (or replace) a one-shot timer to re-drive drain() at `scheduledFor`. */
-  private armScheduleTimer(jobId: string, scheduledFor?: number): void {
-    const existing = this.scheduleTimers.get(jobId);
-    if (existing) {
-      clearTimeout(existing);
-      this.scheduleTimers.delete(jobId);
-    }
-    if (scheduledFor === undefined) return;
-    const delay = scheduledFor - Date.now();
-    if (delay <= 0) return; // already due; the immediate drain() handles it
-    const timer = setTimeout(() => {
-      this.scheduleTimers.delete(jobId);
-      this.drain().catch((error) =>
-        this.logger.withError(error).error('Relay scheduled run failed'),
-      );
-    }, delay);
-    // Don't keep the event loop / app alive solely for a scheduled post.
-    timer.unref?.();
-    this.scheduleTimers.set(jobId, timer);
-  }
-
-  /** Cancel any pending scheduled-run timer for a job. */
-  private clearScheduleTimer(jobId: string): void {
-    const timer = this.scheduleTimers.get(jobId);
-    if (timer) {
-      clearTimeout(timer);
-      this.scheduleTimers.delete(jobId);
     }
   }
 
@@ -337,7 +293,6 @@ export class RelayPostManager implements OnModuleInit {
   cancel(submissionId: SubmissionId): boolean {
     const jobId = this.activeBySubmission.get(submissionId);
     if (jobId) {
-      this.clearScheduleTimer(jobId);
       this.scheduler.cancel(jobId);
       return true;
     }
@@ -452,7 +407,6 @@ export class RelayPostManager implements OnModuleInit {
       const job = this.scheduler.getJob(jobId);
       if (this.isActiveJob(job) || !job) continue;
       this.activeBySubmission.delete(submissionId);
-      this.clearScheduleTimer(jobId);
       this.outcomes.set(submissionId, computeJobStatus(job));
       // eslint-disable-next-line no-await-in-loop
       await this.onTerminal(job);

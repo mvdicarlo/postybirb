@@ -36,7 +36,7 @@ export class PostJobRepository extends EntityRepository<
   findActive(): Promise<PostJob[]> {
     return this.find({
       where: (job, { notInArray }) => notInArray(job.status, TERMINAL_STATUSES),
-      orderBy: (job, { desc, asc }) => [desc(job.priority), asc(job.createdAt)],
+      orderBy: (job, { asc }) => asc(job.createdAt),
       with: { submission: true, tasks: { with: { units: true } } },
     });
   }

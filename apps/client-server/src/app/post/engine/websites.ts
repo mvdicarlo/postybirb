@@ -8,11 +8,7 @@
  * website implementation needs to change.
  */
 
-import {
-    RateLimitScope,
-    SimpleValidationResult,
-    SubmissionType,
-} from '@postybirb/types';
+import { RateLimitScope } from '@postybirb/types';
 import { isFileWebsite } from '../../websites/models/website-modifiers/file-website';
 import { isMessageWebsite } from '../../websites/models/website-modifiers/message-website';
 import { UnknownWebsite } from '../../websites/website';
@@ -101,10 +97,6 @@ export class WebsiteInstanceAdapter implements RelayWebsite {
     );
   }
 
-  supportsType(type: SubmissionType): boolean {
-    return this.instance.getSupportedTypes().includes(type);
-  }
-
   /**
    * Ensure the website session is authenticated, re-logging in if the cached
    * session is not currently logged in. Mirrors the legacy ensureLoggedIn:
@@ -151,19 +143,5 @@ export class WebsiteInstanceAdapter implements RelayWebsite {
     // eslint-disable-next-line @typescript-eslint/no-throw-literal
     if (result.exception) throw result;
     return { sourceUrl: result.sourceUrl, message: result.message };
-  }
-
-  async validate(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    postData: any,
-    type: SubmissionType,
-  ): Promise<SimpleValidationResult> {
-    if (type === SubmissionType.FILE && isFileWebsite(this.instance)) {
-      return this.instance.onValidateFileSubmission(postData);
-    }
-    if (type === SubmissionType.MESSAGE && isMessageWebsite(this.instance)) {
-      return this.instance.onValidateMessageSubmission(postData);
-    }
-    return {} as SimpleValidationResult;
   }
 }

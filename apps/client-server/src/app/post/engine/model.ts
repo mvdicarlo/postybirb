@@ -10,14 +10,14 @@
 
 /* eslint-disable max-classes-per-file */
 import {
-  AccountId,
-  Dependency,
-  EntityId,
-  ITaskError,
-  NodeStatus,
-  PostRecordResumeMode,
-  SubmissionFileId,
-  UnitKind,
+    AccountId,
+    Dependency,
+    EntityId,
+    ITaskError,
+    NodeStatus,
+    PostRecordResumeMode,
+    SubmissionFileId,
+    UnitKind,
 } from '@postybirb/types';
 import { v4 } from 'uuid';
 import { DEPENDENCY_STATES, SOURCE_DEPENDENCY_MODES } from './constants';
@@ -159,8 +159,8 @@ export class RelayTask {
 /**
  * Top-level unit of work tracked by the scheduler: one posting attempt of one
  * submission. Owns the full tree of tasks/units that materialize the post and
- * carries scheduling metadata (priority, scheduledFor) plus the resume mode
- * that controls how a re-run treats previously-succeeded units.
+ * carries the resume mode that controls how a re-run treats previously-
+ * succeeded units.
  */
 export class RelayJob {
   id: EntityId;
@@ -168,8 +168,6 @@ export class RelayJob {
   attemptOf?: EntityId;
   resumeMode: PostRecordResumeMode;
   status: NodeStatus;
-  priority: number;
-  scheduledFor?: number;
   createdAt: number;
   completedAt?: number;
   tasks: RelayTask[];
@@ -178,15 +176,11 @@ export class RelayJob {
     id?: EntityId;
     submissionId: EntityId;
     resumeMode?: PostRecordResumeMode;
-    priority?: number;
-    scheduledFor?: number;
     attemptOf?: EntityId;
   }) {
     this.id = init.id ?? v4();
     this.submissionId = init.submissionId;
     this.resumeMode = init.resumeMode ?? PostRecordResumeMode.NEW;
-    this.priority = init.priority ?? 0;
-    this.scheduledFor = init.scheduledFor;
     this.attemptOf = init.attemptOf;
     this.status = NodeStatus.QUEUED;
     this.createdAt = Date.now();

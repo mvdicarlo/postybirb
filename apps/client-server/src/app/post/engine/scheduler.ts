@@ -166,15 +166,11 @@ export class RelayScheduler {
   createJob(
     submissionId: string,
     opts?: {
-      priority?: number;
-      scheduledFor?: number;
       resumeMode?: PostRecordResumeMode;
     },
   ): RelayJob {
     const job = new RelayJob({
       submissionId,
-      priority: opts?.priority,
-      scheduledFor: opts?.scheduledFor,
       resumeMode: opts?.resumeMode ?? PostRecordResumeMode.NEW,
     });
     this.recentlyCompleted.delete(job.id);
@@ -223,8 +219,6 @@ export class RelayScheduler {
   enqueue(
     submissionId: string,
     opts?: {
-      priority?: number;
-      scheduledFor?: number;
       resumeMode?: PostRecordResumeMode;
     },
   ): RelayJob {
@@ -264,24 +258,17 @@ export class RelayScheduler {
   }
 
   /** Run all due jobs to completion (or terminal failure). */
-  async runToIdle(startNow = Date.now()): Promise<void> {
-    let now = startNow;
+  async runToIdle(): Promise<void> {
     for (;;) {
-      const cutoff = now;
       const due = [...this.jobs.values()]
-        .filter(
-          (j) =>
-            !isTerminal(j) &&
-            (j.scheduledFor === undefined || j.scheduledFor <= cutoff),
-        )
-        .sort((a, b) => b.priority - a.priority || a.createdAt - b.createdAt);
+        .filter((j) => !isTerminal(j))
+        .sort((a, b) => a.createdAt - b.createdAt);
 
       if (due.length === 0) return;
 
       const batch = due.slice(0, this.opts.maxConcurrentJobs);
       // eslint-disable-next-line no-await-in-loop
       await Promise.all(batch.map((job) => this.runJob(job)));
-      now = Date.now();
     }
   }
 
