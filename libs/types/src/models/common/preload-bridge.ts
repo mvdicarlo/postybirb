@@ -6,6 +6,10 @@ export interface PreloadBridge {
   pickDirectory?(defaultPath?: string): Promise<string | undefined>;
   openExternalLink(url: string): void;
   getCookiesForAccount(accountId: string): Promise<string>;
+  getLocalStorageForAccount(
+    accountId: string,
+    url: string,
+  ): Promise<Record<string, unknown>>;
   quit(code?: number): void;
   platform: NodeJS.Platform;
   app_port: string;

@@ -38,7 +38,7 @@ export default function E621LoginView(
             })
             .then(({ result }) => {
               if (result) {
-                notifyLoginSuccess(undefined, account);
+                notifyLoginSuccess(account);
                 setKey('');
               } else {
                 notifyLoginFailed();
