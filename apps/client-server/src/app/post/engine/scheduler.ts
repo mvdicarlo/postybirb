@@ -10,18 +10,18 @@
 
 /* eslint-disable no-param-reassign */ // the scheduler mutates the job tree in place
 
-import { NodeStatus, PostErrorKind, PostRecordResumeMode } from '@postybirb/types';
+import { NodeStatus, PostRecordResumeMode } from '@postybirb/types';
 import { CancellableToken } from '../models/cancellable-token';
 import { DEPENDENCY_STATES, SKIP_REASONS, TRACER_JOB_EVENTS, TRACER_TASK_EVENTS } from './constants';
 import { StageError, classify, decideRetry, toTaskError } from './errors';
 import {
-    RelayJob,
-    RelayTask,
-    computeJobStatus,
-    evaluateDependency,
-    isTerminal,
+  RelayJob,
+  RelayTask,
+  computeJobStatus,
+  evaluateDependency,
+  isTerminal,
 } from './model';
-import { PipelineDeps, planJob, resetForResume, runTaskPass } from './pipeline';
+import { PipelineDeps, TaskPassResult, planJob, resetForResume, runTaskPass } from './pipeline';
 import { taskTraceFields } from './tracer.service';
 
 export interface SchedulerOptions {
@@ -447,17 +447,25 @@ export class RelayScheduler {
       data: { attempt: task.attempts + 1 },
     });
 
+    let passResult: TaskPassResult | undefined;
     let passError: unknown;
     try {
-      await runTaskPass(this.deps, job, task, token);
+      passResult = await runTaskPass(this.deps, job, task, token);
     } catch (err) {
       passError = err;
     }
-    // Success path: the units are SUCCEEDED in memory and the post(s) already
-    // went out. Persist durably, but a persistence failure here must NOT be
-    // treated as a task failure (that would re-open the unit and double-post
-    // on resume). Keep the SUCCEEDED state; persist_failed is logged loudly.
+    // No error thrown: the pass either completed (units SUCCEEDED, post(s)
+    // already went out) or asked to park on a rate-limit gate. In both cases a
+    // persistence failure must NOT be treated as a task failure (that would
+    // re-open the unit and double-post on resume) — keep the in-memory state;
+    // persist_failed is logged loudly.
     if (passError === undefined) {
+      if (passResult?.outcome === 'rate_limited') {
+        task.status = NodeStatus.WAITING; // waitingUntil set in the gate stage
+        await this.persistTaskDurable(job, task);
+        this.deps.tracer.pushTaskDelta(job, task);
+        return;
+      }
       await this.persistTaskDurable(job, task);
       return;
     }
@@ -466,13 +474,6 @@ export class RelayScheduler {
       passError instanceof StageError
         ? passError
         : classify('unknown', passError);
-
-    if (se.kind === PostErrorKind.RATE_LIMITED) {
-      task.status = NodeStatus.WAITING; // waitingUntil set in the gate stage
-      await this.persistTaskDurable(job, task);
-      this.deps.tracer.pushTaskDelta(job, task);
-      return;
-    }
 
     const decision = decideRetry(se, task.attempts, task.maxAttempts);
     if (decision.action === 'retry') {

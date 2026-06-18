@@ -44,6 +44,16 @@ export class RelayPostManager implements OnModuleInit {
 
   private recoveryAttempt: Promise<void> | undefined;
 
+  /**
+   * Set whenever {@link drain} is invoked. A drain that finds another already
+   * in flight sets this instead of queueing a second run; the in-flight drain
+   * checks it after each `runToIdle` pass and loops again if set. This closes
+   * the window where a job enqueued *after* `runToIdle` returned but *before*
+   * the mutex released would otherwise sit idle (and be masked by isPosting)
+   * until an unrelated submission triggered the next drain.
+   */
+  private drainRerunRequested = false;
+
   /** submissionId -> active jobId, so cancel/dedup can find the running job. */
   private readonly activeBySubmission = new Map<SubmissionId, string>();
 
@@ -382,18 +392,24 @@ export class RelayPostManager implements OnModuleInit {
 
   /**
    * Drive the scheduler to idle, then run terminal handling. Serialized via
-   * `runMutex`: if a drain is already in flight we bail rather than queueing
-   * up. This is safe because the in-flight drain will pick up whatever new
-   * jobs were enqueued before it loops back to `runToIdle` \u2014 queueing a
-   * second drain would only re-enter `runToIdle` with the same job set and
-   * waste a turn.
+   * `runMutex`: if a drain is already in flight we flag a rerun rather than
+   * queueing a second one. The in-flight drain re-checks the flag after each
+   * pass and loops again if set, so a job enqueued in the tiny window between
+   * the scheduler going idle and the mutex releasing is still picked up
+   * promptly instead of waiting for the next cron tick.
    */
   private async drain(): Promise<void> {
+    this.drainRerunRequested = true;
     if (this.runMutex.isLocked()) return; // a drain is already running
     const release = await this.runMutex.acquire();
     try {
-      await this.scheduler.runToIdle();
-      await this.handleCompletions();
+      while (this.drainRerunRequested) {
+        this.drainRerunRequested = false;
+        // eslint-disable-next-line no-await-in-loop
+        await this.scheduler.runToIdle();
+        // eslint-disable-next-line no-await-in-loop
+        await this.handleCompletions();
+      }
     } catch (error) {
       this.logger.withError(error).error('Relay run failed');
     } finally {

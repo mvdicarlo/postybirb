@@ -18,15 +18,12 @@ import { ITaskError, PostErrorKind } from '@postybirb/types';
 export class StageError extends Error {
   kind: PostErrorKind;
   stage: string;
-  /** for RATE_LIMITED: explicit wait hint in ms */
-  retryAfterMs?: number;
   additionalInfo?: unknown;
 
   constructor(init: {
     kind: PostErrorKind;
     stage: string;
     message: string;
-    retryAfterMs?: number;
     additionalInfo?: unknown;
     cause?: unknown;
   }) {
@@ -34,7 +31,6 @@ export class StageError extends Error {
     this.name = 'StageError';
     this.kind = init.kind;
     this.stage = init.stage;
-    this.retryAfterMs = init.retryAfterMs;
     this.additionalInfo = init.additionalInfo;
     if (init.cause instanceof Error && init.cause.stack) {
       this.stack = init.cause.stack;
@@ -127,7 +123,6 @@ export function classify(stage: string, err: unknown): StageError {
 }
 
 const RETRYABLE: ReadonlySet<PostErrorKind> = new Set([
-  PostErrorKind.RATE_LIMITED,
   PostErrorKind.TRANSIENT,
 ]);
 
@@ -141,25 +136,18 @@ export type RetryDecision =
 
 /**
  * Decide what to do after a task fails.
- *  - RATE_LIMITED: wait (does not consume an attempt — being throttled by a
- *    site is not a failure of *this* task, so a single rate-limited window
- *    shouldn't burn through the retry budget that exists to absorb real
- *    network/IO blips).
  *  - TRANSIENT: exponential backoff with jitter, consumes an attempt.
  *  - everything else: terminal failure.
+ *
+ * Rate-limit parking is handled before this point as expected control flow
+ * (the pipeline returns a `rate_limited` outcome rather than throwing), so it
+ * never reaches the retry policy.
  */
 export function decideRetry(
   err: StageError,
   attemptsUsed: number,
   maxAttempts: number,
 ): RetryDecision {
-  if (err.kind === PostErrorKind.RATE_LIMITED) {
-    return {
-      action: 'retry',
-      delayMs: err.retryAfterMs ?? 1000,
-      consumesAttempt: false,
-    };
-  }
   if (!isRetryable(err.kind)) return { action: 'fail' };
   if (attemptsUsed >= maxAttempts) return { action: 'fail' };
 

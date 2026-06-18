@@ -6,8 +6,10 @@
  *        -> Settle
  *
  * Each stage emits a trace line and short-circuits with a typed StageError.
- * Rate-limit gating throws RATE_LIMITED so the scheduler parks the task in
- * WAITING and resumes the pass without re-posting completed units.
+ * Rate-limit gating is expected control flow, not a failure: instead of
+ * throwing, the pass returns a `rate_limited` outcome so the scheduler parks
+ * the task in WAITING and resumes the pass without re-posting completed units.
+ * Only genuine failures throw a StageError.
  *
  * The pipeline depends only on the abstract {@link PipelineDeps} seams so it is
  * unit-testable with mocks; the scheduler supplies production implementations.
@@ -65,6 +67,16 @@ export interface RelaySubmission {
   files: Array<RelaySourceFile & { order: number; ignoredWebsites?: string[] }>;
   options: Array<{ accountId: string; websiteId: string }>;
 }
+
+/**
+ * Outcome of a single {@link runTaskPass}. A pass either runs the task to
+ * completion (every non-done unit dispatched) or stops early because a unit hit
+ * a rate-limit gate and the task must be parked in WAITING. Genuine failures
+ * are signalled by a thrown {@link StageError}, never by this result.
+ */
+export type TaskPassResult =
+  | { outcome: 'completed' }
+  | { outcome: 'rate_limited'; retryAfterMs: number };
 
 /** Source-URL-bearing data dispatched to a website. */
 export interface RelayDispatchData {
@@ -307,16 +319,18 @@ function collectUpstreamSourceUrls(job: RelayJob, task: RelayTask): string[] {
 }
 
 /**
- * Run a single pass of the pipeline for one task. Throws StageError on failure
- * (including RATE_LIMITED to request a WAITING re-queue). Idempotent w.r.t.
- * already-SUCCEEDED units.
+ * Run a single pass of the pipeline for one task. Returns a {@link
+ * TaskPassResult}: `completed` when the task ran to the end, or `rate_limited`
+ * when a unit hit a rate-limit gate and the task should be parked in WAITING.
+ * Throws StageError only on a genuine failure. Idempotent w.r.t. already-
+ * SUCCEEDED units.
  */
 export async function runTaskPass(
   deps: PipelineDeps,
   job: RelayJob,
   task: RelayTask,
   token: CancellableToken,
-): Promise<void> {
+): Promise<TaskPassResult> {
   const { tracer } = deps;
   const base = taskTraceFields(job, task);
 
@@ -407,16 +421,12 @@ export async function runTaskPass(
         data: { waitMs, bucket, scope: site.rateLimitScope },
       });
       unit.status = NodeStatus.QUEUED;
-      // RATE_LIMITED is signalling, not a true failure: the scheduler catches
-      // it, parks the task in WAITING until `retryAfterMs`, then resumes the
-      // pass. Because already-SUCCEEDED units are skipped on the next pass
-      // we never re-post a batch that already went out.
-      throw new StageError({
-        kind: PostErrorKind.RATE_LIMITED,
-        stage: PIPELINE_STAGES.GATE,
-        message: `rate-limited; wait ${waitMs}ms`,
-        retryAfterMs: waitMs,
-      });
+      // Parking is expected control flow, not a failure: returning a
+      // `rate_limited` outcome tells the scheduler to park the task in WAITING
+      // until `retryAfterMs`, then resume the pass. Because already-SUCCEEDED
+      // units are skipped on the next pass we never re-post a batch that
+      // already went out.
+      return { outcome: 'rate_limited', retryAfterMs: waitMs };
     }
 
     // 6. Transform — convert/resize/thumbnail/verify into PostingFiles.
@@ -513,4 +523,5 @@ export async function runTaskPass(
     event: TRACER_TASK_EVENTS.SUCCEEDED,
     data: { sourceUrl: task.sourceUrl },
   });
+  return { outcome: 'completed' };
 }
