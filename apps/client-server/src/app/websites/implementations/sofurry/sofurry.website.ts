@@ -174,7 +174,7 @@ export default class Sofurry
       try {
         const result = await this.onLogin(token);
 
-        if (result.isLoggedIn) {
+        if (!result.isLoggedIn) {
           return { result: false };
         }
 
