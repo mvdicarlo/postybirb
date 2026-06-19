@@ -1,10 +1,10 @@
 import {
-  BadRequestException,
-  forwardRef,
-  Inject,
-  Injectable,
-  NotFoundException,
-  OnModuleInit,
+    BadRequestException,
+    forwardRef,
+    Inject,
+    Injectable,
+    NotFoundException,
+    OnModuleInit,
 } from '@nestjs/common';
 import { Account, CustomShortcutRepository, Insert, Submission, SubmissionRepository, UserSpecifiedWebsiteOptionsRepository, WebsiteOptions, WebsiteOptionsRepository } from '@postybirb/database';
 import {
@@ -270,8 +270,7 @@ export class WebsiteOptionsService
     }
 
     const exists = await this.repository.findOne({
-      where: (wo, { and, eq }) =>
-        and(eq(wo.submissionId, submission.id), eq(wo.accountId, account.id)),
+      where: { submissionId: submission.id, accountId: account.id },
     });
     if (exists) {
       // Opt to just update the existing option

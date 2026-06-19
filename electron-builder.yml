@@ -18,7 +18,6 @@ removePackageScripts: true
 
 # Unpack native dependencies
 asarUnpack:
-  - 'node_modules/better-sqlite3/**/*'
   - 'node_modules/@img/**/*'
   - '**/*.node'
   - '**/*.dylib'

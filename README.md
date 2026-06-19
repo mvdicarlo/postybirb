@@ -68,7 +68,7 @@ Follow [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/)
 3. Ensure corepack is installed: `npm --global install corepack` (This is tool used for managing package manager's versions)
 4. `corepack enable` Makes NodeJS use the yarn version specific to the project (from package.json)
 5. `yarn install` Installs dependencies
-6. If it fails with `➤ YN0009: │ better-sqlite3@npm:11.8.0 couldn't be built successfully`: <summary>
+6. If install fails while building a native dependency (for example sharp-related optional packages): <summary>
 
   <details>
        If you're on windows run
@@ -93,12 +93,12 @@ If you're on linux or other OS please create an issue with log from the unsucess
 
 ### Native module mismatch after packaging
 
-Running `yarn dist` (or any `dist:*` variant) calls `electron-builder install-app-deps` as part of the packaging step. This rebuilds native modules (e.g. `better-sqlite3`) for **Electron's embedded Node.js**, which has a different `NODE_MODULE_VERSION` than your system Node.
+Running `yarn dist` (or any `dist:*` variant) calls `electron-builder install-app-deps` as part of the packaging step. This rebuilds native modules used by the app for **Electron's embedded Node.js**, which can differ from your system Node.
 
 After packaging, if you run `yarn test` and get an error like:
 
 ```txt
-The module '...better_sqlite3.node' was compiled against a different Node.js version using NODE_MODULE_VERSION 133. This version of Node.js requires NODE_MODULE_VERSION 137.
+The module '...<some_native_module>.node' was compiled against a different Node.js version using NODE_MODULE_VERSION X. This version of Node.js requires NODE_MODULE_VERSION Y.
 ```
 
 the fix is to reinstall dependencies, which restores the system-Node-compatible binary:

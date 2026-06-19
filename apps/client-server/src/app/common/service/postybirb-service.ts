@@ -4,7 +4,6 @@ import {
   EntityRepository,
   RepoEntity,
   RepoSchemaKey,
-  SchemaKey,
   SchemaTable,
 } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
@@ -28,7 +27,8 @@ import { WebSocketEvents } from '../../web-socket/web-socket.events';
  * @class PostyBirbService
  */
 export abstract class PostyBirbService<
-  TRepo extends EntityRepository<SchemaKey, IEntity>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  TRepo extends EntityRepository<any, IEntity>,
   TEntity extends IEntity = RepoEntity<TRepo>,
 > {
   protected readonly logger = Logger(this.constructor.name);

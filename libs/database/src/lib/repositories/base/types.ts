@@ -1,19 +1,25 @@
-import type { EntityId, IEntity } from '@postybirb/types';
-import type { DBQueryConfig, ExtractTablesWithRelations } from 'drizzle-orm';
+import type { EntityId } from '@postybirb/types';
+import type { DBQueryConfig } from 'drizzle-orm';
 import type { PostyBirbDatabaseType } from '../../database';
 import type { SchemaKey } from '../../helper-types';
+import type { relations } from '../../relations';
 import type * as schemas from '../../schemas';
 import type { EntityRepository } from './entity-repository';
 import type { HydrationContext } from './hydration-context';
 
 /**
- * The schemas barrel exports both table definitions and co-located
- * `relations()` bindings. This type is used to extract the
- * `ExtractedRelations` map drizzle's `DBQueryConfig` needs.
+ * The schemas barrel exports the drizzle table definitions. Relations now
+ * live in a single `defineRelations()` binding (`../../relations`) per
+ * Relational Queries v2.
  */
 export type AllSchemas = typeof schemas;
 
-export type ExtractedRelations = ExtractTablesWithRelations<AllSchemas>;
+/**
+ * The Relational Queries v2 config produced by `defineRelations`. This is a
+ * `TablesRelationalConfig` keyed by the schema export names (e.g.
+ * `SubmissionSchema`), which is exactly how `db.query[K]` is keyed.
+ */
+export type ExtractedRelations = typeof relations;
 
 /**
  * Subset of `SchemaKey` that names a drizzle *table* (as opposed to a
@@ -37,34 +43,38 @@ export type SchemaTable<K extends SchemaKey> =
   (typeof schemas)[K & TableSchemaKey];
 
 /**
- * A subset of relations to eager-load. Used for `defaultWith` on a
- * repository and for per-call `with` overrides on `find` / `findOne` /
- * `findById`.
- */
-export type DefaultWithFor<K extends SchemaKey> = DBQueryConfig<
-  'many',
-  true,
-  ExtractedRelations,
-  ExtractedRelations[K]
->['with'];
-
-/**
- * Full `findMany` config (where / with / orderBy / limit / offset / etc.).
+ * Full `findMany` config (where / with / orderBy / limit / offset / etc.)
+ * for Relational Queries v2. Precise per-table `K`, so concrete repository
+ * call sites get fully-typed `where` / `with` clauses.
+ *
+ * NOTE: this type is invariant in `K` (the v2 `with` / `where` shapes differ
+ * per table). The base-class generic constraint therefore uses
+ * `EntityRepository<any, …>` (see `RepoEntity` / `PostyBirbService` /
+ * `PostyBirbController`) so concrete repositories still satisfy it while
+ * keeping this precision at call sites.
  */
 export type FindManyConfig<K extends SchemaKey> = DBQueryConfig<
   'many',
-  true,
   ExtractedRelations,
   ExtractedRelations[K]
 >;
 
 /**
- * `findFirst` config — `findMany` minus `limit`.
+ * `findFirst` config — the v2 `one` query config (no `limit`).
  */
-export type FindFirstConfig<K extends SchemaKey> = Omit<
-  FindManyConfig<K>,
-  'limit'
+export type FindFirstConfig<K extends SchemaKey> = DBQueryConfig<
+  'one',
+  ExtractedRelations,
+  ExtractedRelations[K]
 >;
+
+/**
+ * A subset of relations to eager-load. Used for `defaultWith` on a
+ * repository and for per-call `with` overrides on `find` / `findOne` /
+ * `findById`. Extracted from the v2 `with` clause shape.
+ */
+export type DefaultWithFor<K extends SchemaKey> =
+  FindManyConfig<K> extends { with?: infer W } ? W : never;
 
 /**
  * The drizzle relational-query handle for a given schema key. Indexing
@@ -118,10 +128,10 @@ export type { EntityId };
  * `PostyBirbService` to type `findById`/`findAll` return values.
  */
 export type RepoEntity<R> =
-  R extends EntityRepository<SchemaKey, infer T> ? T : never;
+  R extends EntityRepository<any, infer T> ? T : never;
 
 /**
  * Extracts the schema key type from a repository type.
  */
 export type RepoSchemaKey<R> =
-  R extends EntityRepository<infer K, IEntity> ? K : never;
+  R extends EntityRepository<infer K, any> ? K : never;

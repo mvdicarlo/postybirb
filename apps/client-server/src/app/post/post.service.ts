@@ -24,7 +24,7 @@ export class PostService extends PostyBirbService<PostRecordRepository> {
    */
   async getEvents(postRecordId: EntityId): Promise<PostEventDto[]> {
     const events = await this.postEventRepository.find({
-      where: (event, { eq }) => eq(event.postRecordId, postRecordId),
+      where: { postRecordId },
       orderBy: (event, { asc }) => asc(event.createdAt),
       with: {
         account: true,

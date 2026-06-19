@@ -1,36 +1,36 @@
 /* eslint-disable no-param-reassign */
 import {
-  BadRequestException,
-  forwardRef,
-  Inject,
-  Injectable,
-  NotFoundException,
-  OnModuleInit,
-  Optional,
+    BadRequestException,
+    forwardRef,
+    Inject,
+    Injectable,
+    NotFoundException,
+    OnModuleInit,
+    Optional,
 } from '@nestjs/common';
 import {
-  FileBufferSchema,
-  Insert,
-  Submission,
-  SubmissionFileSchema,
-  SubmissionRepository,
-  SubmissionSchema,
-  WebsiteOptions,
-  WebsiteOptionsSchema,
-  withTransactionContext
+    FileBufferSchema,
+    Insert,
+    Submission,
+    SubmissionFileSchema,
+    SubmissionRepository,
+    SubmissionSchema,
+    WebsiteOptions,
+    WebsiteOptionsSchema,
+    withTransactionContext
 } from '@postybirb/database';
 import { SUBMISSION_UPDATES } from '@postybirb/socket-events';
 import {
-  FileSubmission,
-  FileSubmissionMetadata,
-  ISubmissionDto,
-  ISubmissionMetadata,
-  MessageSubmission,
-  NULL_ACCOUNT_ID,
-  ScheduleType,
-  SubmissionId,
-  SubmissionMetadataType,
-  SubmissionType,
+    FileSubmission,
+    FileSubmissionMetadata,
+    ISubmissionDto,
+    ISubmissionMetadata,
+    MessageSubmission,
+    NULL_ACCOUNT_ID,
+    ScheduleType,
+    SubmissionId,
+    SubmissionMetadataType,
+    SubmissionType,
 } from '@postybirb/types';
 import { IsTestEnvironment, toError } from '@postybirb/utils/common';
 import { eq } from 'drizzle-orm';
@@ -220,11 +220,7 @@ export class SubmissionService
 
   private async populateMultiSubmission(type: SubmissionType) {
     const existing = await this.repository.findOne({
-      where: (submission, { eq: equals, and }) =>
-        and(
-          eq(submission.type, type),
-          equals(submission.isMultiSubmission, true),
-        ),
+      where: { type, isMultiSubmission: true },
     });
     if (existing) {
       return;
@@ -528,7 +524,7 @@ export class SubmissionService
     const { submissionToApply, submissionIds, merge } = applyMultiSubmissionDto;
     const origin = await this.repository.findByIdOrThrow(submissionToApply);
     const submissions = await this.repository.find({
-      where: (submission, { inArray }) => inArray(submission.id, submissionIds),
+      where: { id: { in: submissionIds } },
     });
     if (merge) {
       // Keeps unique options, overwrites overlapping options
@@ -679,7 +675,7 @@ export class SubmissionService
   public async duplicate(id: SubmissionId) {
     this.logger.info(`Duplicating Submission '${id}'`);
     const entityToDuplicate = await this.repository.findOne({
-      where: (submission, { eq: equals }) => equals(submission.id, id),
+      where: { id },
       with: {
         options: {
           with: {

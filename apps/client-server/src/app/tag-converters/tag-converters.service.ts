@@ -52,7 +52,7 @@ export class TagConvertersService extends PostyBirbService<TagConverterRepositor
 
     // { tag: { $in: tags } }
     const converters = await this.repository.find({
-      where: (converter, { inArray }) => inArray(converter.tag, tags),
+      where: { tag: { in: tags } },
     });
     return tags.map((tag) => {
       const converter = converters.find((c) => c.tag === tag);

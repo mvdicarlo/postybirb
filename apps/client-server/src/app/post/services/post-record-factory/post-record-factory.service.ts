@@ -138,11 +138,7 @@ export class PostRecordFactory {
     submissionId: EntityId,
   ): Promise<PostRecord | null> {
     const records = await this.postRecordRepository.find({
-      where: (record, { eq, and }) =>
-        and(
-          eq(record.submissionId, submissionId),
-          eq(record.resumeMode, PostRecordResumeMode.NEW),
-        ),
+      where: { submissionId, resumeMode: PostRecordResumeMode.NEW },
       orderBy: (record, { desc }) => desc(record.createdAt),
       limit: 1,
     });
@@ -161,14 +157,10 @@ export class PostRecordFactory {
     submissionId: EntityId,
   ): Promise<PostRecord | null> {
     const records = await this.postRecordRepository.find({
-      where: (record, { eq, and, or }) =>
-        and(
-          eq(record.submissionId, submissionId),
-          or(
-            eq(record.state, PostRecordState.PENDING),
-            eq(record.state, PostRecordState.RUNNING),
-          ),
-        ),
+      where: {
+        submissionId,
+        state: { in: [PostRecordState.PENDING, PostRecordState.RUNNING] },
+      },
       limit: 1,
     });
 
@@ -343,11 +335,12 @@ export class PostRecordFactory {
 
     // Query all records in this chain: the origin + all records referencing it
     const chainRecords = await this.postRecordRepository.find({
-      where: (record, { eq, or }) =>
-        or(
-          eq(record.id, effectiveOriginId),
-          eq(record.originPostRecordId, effectiveOriginId),
-        ),
+      where: {
+        OR: [
+          { id: effectiveOriginId },
+          { originPostRecordId: effectiveOriginId },
+        ],
+      },
       orderBy: (record, { asc }) => asc(record.createdAt),
       with: {
         events: true,

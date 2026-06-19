@@ -1,5 +1,18 @@
 // @ts-check
-// @ts-expect-error No types for this import
+// The database lib uses Node's built-in `node:sqlite`, which is gated behind
+// `--experimental-sqlite` on Node < 23.4 (jest runs under the *system* Node,
+// not Electron's bundled Node 24+). Set the flag on the runner process so the
+// forked jest workers inherit it at startup, where the driver is loaded.
+if (!process.env.NODE_OPTIONS?.includes('--experimental-sqlite')) {
+  process.env.NODE_OPTIONS = [
+    process.env.NODE_OPTIONS,
+    '--experimental-sqlite',
+    '--disable-warning=ExperimentalWarning',
+  ]
+    .filter(Boolean)
+    .join(' ');
+}
+
 const { transform: _, ...nxPreset } = require('@nx/jest/preset').default;
 const { join } = require('path');
 const basePath = __dirname.split(/(app|lib)/)[0];

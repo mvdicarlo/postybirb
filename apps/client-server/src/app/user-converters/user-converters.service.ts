@@ -39,7 +39,7 @@ export class UserConvertersService extends PostyBirbService<UserConverterReposit
     username: string,
   ): Promise<string> {
     const converter = await this.repository.findOne({
-      where: (c, { eq: eqFn }) => eqFn(c.username, username),
+      where: { username },
     });
 
     if (!converter) {

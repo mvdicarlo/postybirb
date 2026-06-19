@@ -1,8 +1,8 @@
 import type { EntityId, IEntity } from '@postybirb/types';
 import { NULL_ACCOUNT_ID } from '@postybirb/types';
-import type { RunResult } from 'better-sqlite3';
 import { eq, inArray, SQL } from 'drizzle-orm';
 import type { AnySQLiteColumn } from 'drizzle-orm/sqlite-core';
+import type { StatementResultingChanges } from 'node:sqlite';
 import { getDatabase, type PostyBirbDatabaseType } from '../../database';
 import type { Insert, SchemaKey } from '../../helper-types';
 import { EntityNotFoundError } from './entity-not-found.error';
@@ -122,8 +122,8 @@ export abstract class EntityRepository<
     withOverride?: DefaultWithFor<SchemaKey>,
   ): Promise<TEntity | null> {
     const record = await this.query.findFirst({
-      where: eq(this.idColumn, id),
-      with: withOverride ?? this.defaultWith ?? {},
+      where: { id } as never,
+      with: (withOverride ?? this.defaultWith ?? {}) as never,
     });
     return record ? this.EntityClass.fromRow(record as never) : null;
   }
@@ -141,23 +141,25 @@ export abstract class EntityRepository<
 
   public async findAll(): Promise<TEntity[]> {
     const records = (await this.query.findMany({
-      with: this.defaultWith ?? {},
+      with: (this.defaultWith ?? {}) as never,
     })) as unknown as readonly never[];
     return this.EntityClass.fromRows(records);
   }
 
   public async find(config: FindManyConfig<TKey>): Promise<TEntity[]> {
+    const cfg = config as { with?: unknown };
     const records = (await this.query.findMany({
       ...(config as object),
-      with: config.with ?? this.defaultWith ?? {},
+      with: (cfg.with ?? this.defaultWith ?? {}) as never,
     })) as unknown as readonly never[];
     return this.EntityClass.fromRows(records);
   }
 
   public async findOne(config: FindFirstConfig<TKey>): Promise<TEntity | null> {
+    const cfg = config as { with?: unknown };
     const record = await this.query.findFirst({
       ...(config as object),
-      with: config.with ?? this.defaultWith ?? {},
+      with: (cfg.with ?? this.defaultWith ?? {}) as never,
     });
     return record ? this.EntityClass.fromRow(record as never) : null;
   }
@@ -222,13 +224,13 @@ export abstract class EntityRepository<
     return this.findByIdOrThrow(id);
   }
 
-  public async deleteById(ids: EntityId[]): Promise<RunResult> {
+  public async deleteById(ids: EntityId[]): Promise<StatementResultingChanges> {
     if (ids.some((id) => id === NULL_ACCOUNT_ID)) {
       throw new Error('Cannot delete the null account');
     }
     const result = (await this.db
       .delete(this.table as never)
-      .where(inArray(this.idColumn, ids))) as RunResult;
+      .where(inArray(this.idColumn, ids))) as StatementResultingChanges;
     this.notify(ids, 'delete');
     return result;
   }

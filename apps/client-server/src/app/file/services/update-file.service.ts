@@ -2,9 +2,9 @@
 // @ts-expect-error No types on npm
 import * as rtf from '@iarna/rtf-to-html';
 import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
+    BadRequestException,
+    Injectable,
+    NotFoundException,
 } from '@nestjs/common';
 import { FileBufferRepository, SubmissionFile, SubmissionFileRepository, TransactionContext, withTransactionContext } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
@@ -355,7 +355,7 @@ export class UpdateFileService {
   private async findFile(id: EntityId): Promise<SubmissionFile> {
     try {
       const entity = await this.fileRepository.findOne({
-        where: (f, { eq: equals }) => equals(f.id, id),
+        where: { id },
         // !bug - https://github.com/drizzle-team/drizzle-orm/issues/3497
         // with: {
         //   thumbnail: true,

@@ -1,16 +1,16 @@
 import {
-  BadRequestException,
-  Injectable,
-  OnModuleInit,
-  Optional,
+    BadRequestException,
+    Injectable,
+    OnModuleInit,
+    Optional,
 } from '@nestjs/common';
 import { Settings, SettingsRepository } from '@postybirb/database';
 import { SETTINGS_UPDATES } from '@postybirb/socket-events';
 import { EntityId, SettingsConstants } from '@postybirb/types';
 import {
-  isLinux,
-  StartupOptions,
-  StartupOptionsManager,
+    isLinux,
+    StartupOptions,
+    StartupOptionsManager,
 } from '@postybirb/utils/common';
 import { eq } from 'drizzle-orm';
 import { PostyBirbService } from '../common/service/postybirb-service';
@@ -150,8 +150,7 @@ export class SettingsService
    */
   public getDefaultSettings() {
     return this.repository.findOne({
-      where: (setting, { eq: equals }) =>
-        equals(setting.profile, SettingsConstants.DEFAULT_PROFILE_NAME),
+      where: { profile: SettingsConstants.DEFAULT_PROFILE_NAME },
     }) as Promise<Settings>;
   }
 
