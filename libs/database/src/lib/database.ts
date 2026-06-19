@@ -1,14 +1,14 @@
 import { PostyBirbDirectories } from '@postybirb/fs';
 import { IsTestEnvironment } from '@postybirb/utils/common';
-import Database from 'better-sqlite3';
-import { BetterSQLite3Database, drizzle } from 'drizzle-orm/better-sqlite3';
-import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
+import { NodeSQLiteDatabase, drizzle } from 'drizzle-orm/node-sqlite';
+import { migrate } from 'drizzle-orm/node-sqlite/migrator';
+import { DatabaseSync } from 'node:sqlite';
 import { join } from 'path';
 import { relations } from './relations';
 import { RepositoryRegistry } from './repositories/base/repository-registry';
 import * as schema from './schemas';
 
-export type PostyBirbDatabaseType = BetterSQLite3Database<
+export type PostyBirbDatabaseType = NodeSQLiteDatabase<
   typeof schema,
   typeof relations
 >;
@@ -24,8 +24,8 @@ let db: PostyBirbDatabaseType | undefined;
 export function getDatabase() {
   if (!db) {
     if (IsTestEnvironment()) {
-      const sqlite = new Database(':memory:');
-      sqlite.pragma('foreign_keys = ON');
+      const sqlite = new DatabaseSync(':memory:');
+      sqlite.exec('PRAGMA foreign_keys = ON');
       db = drizzle({ client: sqlite, schema, relations });
       migrate(db, { migrationsFolder });
     } else {
@@ -33,8 +33,8 @@ export function getDatabase() {
         PostyBirbDirectories.DATA_DIRECTORY,
         `database-${process.env.POSTYBIRB_ENV}.sqlite`,
       );
-      const sqlite = new Database(path);
-      sqlite.pragma('foreign_keys = ON');
+      const sqlite = new DatabaseSync(path);
+      sqlite.exec('PRAGMA foreign_keys = ON');
       db = drizzle({ client: sqlite, schema, relations });
       migrate(db, { migrationsFolder });
     }

@@ -1,16 +1,16 @@
 import {
-  BadRequestException,
-  Injectable,
-  OnModuleInit,
-  Optional,
+    BadRequestException,
+    Injectable,
+    OnModuleInit,
+    Optional,
 } from '@nestjs/common';
 import { Settings, SettingsRepository } from '@postybirb/database';
 import { SETTINGS_UPDATES } from '@postybirb/socket-events';
 import { EntityId, SettingsConstants } from '@postybirb/types';
 import {
-  isLinux,
-  StartupOptions,
-  StartupOptionsManager,
+    isLinux,
+    StartupOptions,
+    StartupOptionsManager,
 } from '@postybirb/utils/common';
 import { eq } from 'drizzle-orm';
 import { PostyBirbService } from '../common/service/postybirb-service';

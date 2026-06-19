@@ -1,4 +1,4 @@
-import type { EntityId, IEntity } from '@postybirb/types';
+import type { EntityId } from '@postybirb/types';
 import type { DBQueryConfig } from 'drizzle-orm';
 import type { PostyBirbDatabaseType } from '../../database';
 import type { SchemaKey } from '../../helper-types';

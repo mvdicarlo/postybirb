@@ -15,7 +15,7 @@ interface TrackedEntity {
 /**
  * A transaction-like wrapper that tracks created entities and provides
  * automatic cleanup on failure. This works around drizzle-orm's synchronous
- * transaction requirement with better-sqlite3.
+ * transaction requirement with the synchronous `node:sqlite` driver.
  *
  * `commit()` broadcasts inserts through `SubscriberBus.notifyImmediate`
  * (bypassing coalescing, since `commit()` is itself a coalescing point).
