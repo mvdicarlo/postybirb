@@ -103,8 +103,9 @@ export default class Sofurry
       folders: true,
     };
 
-  public async onLogin(): Promise<ILoginState> {
-    const { token } = this.websiteDataStore.getData();
+  public async onLogin(
+    token = this.websiteDataStore.getData().token,
+  ): Promise<ILoginState> {
     if (!token) {
       return this.loginState.logout();
     }
@@ -123,6 +124,12 @@ export default class Sofurry
         return this.loginState.setLogin(true, res.body.username);
       }
 
+      this.logger.error(
+        'Login status code is ',
+        res.statusCode,
+        res.statusMessage,
+        res.body,
+      );
       return this.loginState.logout();
     } catch (e) {
       this.logger.error('Failed to login', e);
@@ -144,6 +151,13 @@ export default class Sofurry
           ...this.websiteDataStore.getData(),
           folders: res.body.map((f) => ({ value: f.id, label: f.name })),
         });
+      } else {
+        this.logger.error(
+          'Folder fetch status code is ',
+          res.statusCode,
+          res.statusMessage,
+          res.body,
+        );
       }
     } catch (e) {
       this.logger.withError(e).error('Failed to fetch folders');
@@ -158,15 +172,9 @@ export default class Sofurry
       }
 
       try {
-        const res = await this.platform.http.get<SofurryUserResponse>(
-          `${this.BASE_URL}/v1/user/me`,
-          {
-            partition: this.accountId,
-            headers: this.getAuthHeaders(token),
-          },
-        );
+        const result = await this.onLogin(token);
 
-        if (res.statusCode !== 200 || !res.body?.username) {
+        if (result.isLoggedIn) {
           return { result: false };
         }
 
@@ -174,8 +182,7 @@ export default class Sofurry
           ...this.websiteDataStore.getData(),
           token,
         });
-        const result = await this.onLogin();
-        return { result: result.isLoggedIn };
+        return { result: true };
       } catch (e) {
         this.logger.withError(e).error('onAuthRoute.login failed');
         return { result: false };
