@@ -122,8 +122,8 @@ export abstract class EntityRepository<
     withOverride?: DefaultWithFor<SchemaKey>,
   ): Promise<TEntity | null> {
     const record = await this.query.findFirst({
-      where: eq(this.idColumn, id),
-      with: withOverride ?? this.defaultWith ?? {},
+      where: { id } as never,
+      with: (withOverride ?? this.defaultWith ?? {}) as never,
     });
     return record ? this.EntityClass.fromRow(record as never) : null;
   }
@@ -141,23 +141,25 @@ export abstract class EntityRepository<
 
   public async findAll(): Promise<TEntity[]> {
     const records = (await this.query.findMany({
-      with: this.defaultWith ?? {},
+      with: (this.defaultWith ?? {}) as never,
     })) as unknown as readonly never[];
     return this.EntityClass.fromRows(records);
   }
 
   public async find(config: FindManyConfig<TKey>): Promise<TEntity[]> {
+    const cfg = config as { with?: unknown };
     const records = (await this.query.findMany({
       ...(config as object),
-      with: config.with ?? this.defaultWith ?? {},
+      with: (cfg.with ?? this.defaultWith ?? {}) as never,
     })) as unknown as readonly never[];
     return this.EntityClass.fromRows(records);
   }
 
   public async findOne(config: FindFirstConfig<TKey>): Promise<TEntity | null> {
+    const cfg = config as { with?: unknown };
     const record = await this.query.findFirst({
       ...(config as object),
-      with: config.with ?? this.defaultWith ?? {},
+      with: (cfg.with ?? this.defaultWith ?? {}) as never,
     });
     return record ? this.EntityClass.fromRow(record as never) : null;
   }

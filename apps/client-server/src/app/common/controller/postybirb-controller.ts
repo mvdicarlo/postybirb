@@ -1,6 +1,6 @@
 import { Delete, Get, Param, Query } from '@nestjs/common';
 import { ApiOkResponse } from '@nestjs/swagger';
-import { DatabaseEntity, EntityRepository, SchemaKey } from '@postybirb/database';
+import { DatabaseEntity, EntityRepository } from '@postybirb/database';
 import { EntityId } from '@postybirb/types';
 import { PostyBirbService } from '../service/postybirb-service';
 
@@ -12,7 +12,8 @@ import { PostyBirbService } from '../service/postybirb-service';
  * @class PostyBirbController
  */
 export abstract class PostyBirbController<
-  TRepo extends EntityRepository<SchemaKey, DatabaseEntity>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  TRepo extends EntityRepository<any, DatabaseEntity>,
 > {
   constructor(protected readonly service: PostyBirbService<TRepo>) {}
 

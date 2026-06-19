@@ -82,7 +82,7 @@ export class PostQueueService
 
       // Find all RUNNING post records
       const runningRecords = await this.postRecordRepository.find({
-        where: (record, { eq }) => eq(record.state, PostRecordState.RUNNING),
+        where: { state: PostRecordState.RUNNING },
         with: {
           submission: {
             with: {
@@ -157,11 +157,9 @@ export class PostQueueService
   private async failOrphanedPostRecords(): Promise<void> {
     // Find all PENDING or RUNNING post records
     const inProgressRecords = await this.postRecordRepository.find({
-      where: (record, { or, eq }) =>
-        or(
-          eq(record.state, PostRecordState.PENDING),
-          eq(record.state, PostRecordState.RUNNING),
-        ),
+      where: {
+        state: { in: [PostRecordState.PENDING, PostRecordState.RUNNING] },
+      },
     });
 
     if (inProgressRecords.length === 0) {
@@ -239,11 +237,10 @@ export class PostQueueService
     submissionId: SubmissionId,
   ): Promise<PostRecord | null> {
     const records = await this.postRecordRepository.find({
-      where: (record, { eq, and, inArray }) =>
-        and(
-          eq(record.submissionId, submissionId),
-          inArray(record.state, [PostRecordState.DONE, PostRecordState.FAILED]),
-        ),
+      where: {
+        submissionId,
+        state: { in: [PostRecordState.DONE, PostRecordState.FAILED] },
+      },
       orderBy: (record, { desc }) => desc(record.createdAt),
       limit: 1,
     });
@@ -369,8 +366,7 @@ export class PostQueueService
         }
 
         const existing = await this.repository.findOne({
-          where: (queueRecord, { eq }) =>
-            eq(queueRecord.submissionId, submissionId),
+          where: { submissionId },
           with: {
             postRecord: true,
           },
@@ -434,8 +430,7 @@ export class PostQueueService
 
     try {
       const records = await this.repository.find({
-        where: (queueRecord, { inArray }) =>
-          inArray(queueRecord.submissionId, submissionIds),
+        where: { submissionId: { in: submissionIds } },
       });
 
       submissionIds.forEach((id) =>
@@ -461,11 +456,7 @@ export class PostQueueService
     }
 
     const entities = await this.submissionRepository.find({
-      where: (submission, { eq, and }) =>
-        and(
-          eq(submission.isScheduled, true),
-          eq(submission.isArchived, false),
-        ),
+      where: { isScheduled: true, isArchived: false },
     });
     const now = Date.now();
     const sorted = entities

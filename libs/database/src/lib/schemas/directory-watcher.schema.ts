@@ -1,4 +1,3 @@
-import { relations } from 'drizzle-orm';
 import { AnySQLiteColumn, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { DirectoryWatcherImportAction } from '../../../../types/src/index';
@@ -17,13 +16,3 @@ export const DirectoryWatcherSchema = sqliteTable('directory-watcher', {
     .default(DirectoryWatcherImportAction.NEW_SUBMISSION),
   path: text(),
 });
-
-export const DirectoryWatcherRelations = relations(
-  DirectoryWatcherSchema,
-  ({ one }) => ({
-    template: one(SubmissionSchema, {
-      fields: [DirectoryWatcherSchema.templateId],
-      references: [SubmissionSchema.id],
-    }),
-  }),
-);

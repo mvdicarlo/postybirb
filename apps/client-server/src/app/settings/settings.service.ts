@@ -150,8 +150,7 @@ export class SettingsService
    */
   public getDefaultSettings() {
     return this.repository.findOne({
-      where: (setting, { eq: equals }) =>
-        equals(setting.profile, SettingsConstants.DEFAULT_PROFILE_NAME),
+      where: { profile: SettingsConstants.DEFAULT_PROFILE_NAME },
     }) as Promise<Settings>;
   }
 

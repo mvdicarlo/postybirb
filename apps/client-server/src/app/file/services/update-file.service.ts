@@ -355,7 +355,7 @@ export class UpdateFileService {
   private async findFile(id: EntityId): Promise<SubmissionFile> {
     try {
       const entity = await this.fileRepository.findOne({
-        where: (f, { eq: equals }) => equals(f.id, id),
+        where: { id },
         // !bug - https://github.com/drizzle-team/drizzle-orm/issues/3497
         // with: {
         //   thumbnail: true,

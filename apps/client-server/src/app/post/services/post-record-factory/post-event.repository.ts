@@ -31,14 +31,12 @@ export class PostEventRepository {
     excludeAccountId: AccountId,
   ): Promise<string[]> {
     const events = await this.repository.find({
-      where: (event, { eq, and, inArray }) =>
-        and(
-          eq(event.postRecordId, postRecordId),
-          inArray(event.eventType, [
-            PostEventType.FILE_POSTED,
-            PostEventType.MESSAGE_POSTED,
-          ]),
-        ),
+      where: {
+        postRecordId,
+        eventType: {
+          in: [PostEventType.FILE_POSTED, PostEventType.MESSAGE_POSTED],
+        },
+      },
     });
 
     return events
@@ -58,15 +56,16 @@ export class PostEventRepository {
    */
   async getFailedEvents(postRecordId: EntityId): Promise<PostEvent[]> {
     return this.repository.find({
-      where: (event, { eq, and, inArray }) =>
-        and(
-          eq(event.postRecordId, postRecordId),
-          inArray(event.eventType, [
+      where: {
+        postRecordId,
+        eventType: {
+          in: [
             PostEventType.POST_ATTEMPT_FAILED,
             PostEventType.FILE_FAILED,
             PostEventType.MESSAGE_FAILED,
-          ]),
-        ),
+          ],
+        },
+      },
     });
   }
 

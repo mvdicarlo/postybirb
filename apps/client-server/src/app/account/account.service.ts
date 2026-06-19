@@ -14,7 +14,6 @@ import {
   NullAccount,
 } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/common';
-import { ne } from 'drizzle-orm';
 import { Class } from 'type-fest';
 import { PostyBirbService } from '../common/service/postybirb-service';
 import { WSGateway } from '../web-socket/web-socket-gateway';
@@ -92,7 +91,7 @@ export class AccountService
 
   private async deleteUnregisteredAccounts() {
     const accounts = await this.repository.find({
-      where: ne(this.table.id, NULL_ACCOUNT_ID),
+      where: { id: { ne: NULL_ACCOUNT_ID } },
     });
     const unregisteredAccounts = accounts.filter(
       (account) => !this.websiteRegistry.canCreate(account.website),
@@ -128,7 +127,7 @@ export class AccountService
    */
   private async initWebsiteRegistry(): Promise<void> {
     const accounts = await this.repository.find({
-      where: ne(this.table.id, NULL_ACCOUNT_ID),
+      where: { id: { ne: NULL_ACCOUNT_ID } },
     });
     await Promise.all(
       accounts.map((account) => this.websiteRegistry.create(account)),
@@ -280,7 +279,7 @@ export class AccountService
 
   public async findAll() {
     const accounts = await this.repository.find({
-      where: ne(this.table.id, NULL_ACCOUNT_ID),
+      where: { id: { ne: NULL_ACCOUNT_ID } },
     });
     return accounts.map(
       (account) => this.injectWebsiteInstance(account) as Account,
