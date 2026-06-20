@@ -5,35 +5,37 @@ import {
   Session,
   type ProxyConfig,
 } from 'electron';
-import { HttpProxyAgent } from 'http-proxy-agent';
-import { HttpsProxyAgent } from 'https-proxy-agent';
 import http from 'node:http';
 import nodeHttps from 'node:https';
-import { SocksProxyAgent } from 'socks-proxy-agent';
-import { WebsiteId } from '@postybirb/types';
+import { Logger } from '@postybirb/logger';
 import {
   buildProxyAgentUrl,
   buildSessionProxyRules,
-  DEFAULT_PROXY_CONFIGURATION,
-  normalizeProxyProfile,
+  createProxyAgent,
   ProxyConfiguration,
   ProxyProfile,
   resolveProfileForWebsite,
   StartupOptionsManager,
 } from '@postybirb/utils/common';
-import { getProxyContext } from './proxy-context';
+import { ProxyAuthStore } from './proxy-auth-store';
+import {
+  collectManagedPartitionIds,
+  resolveWebsiteFromPartition,
+  type PartitionEntry,
+} from './proxy-partitions';
+import {
+  BrowserSessionRoute,
+  collectWebsiteIdsWithEnabledProfiles,
+  createPartitionWebsiteResolver,
+  ProxyRequestContext,
+  ProxyRoute,
+  resolveBrowserSessionRoute,
+  resolveHttpRoute,
+  resolveProfileForPartition,
+} from './proxy-route';
 
-export type PartitionEntry = {
-  partitionId: string;
-  websiteId: WebsiteId;
-};
-
-type ProxyCredentials = {
-  username: string;
-  password: string;
-};
-
-type PartitionIdProvider = () => Promise<PartitionEntry[]> | PartitionEntry[];
+export type { PartitionEntry } from './proxy-partitions';
+export type { ProxyRequestContext, ProxyRoute } from './proxy-route';
 
 type ProbeOptions = {
   method?: 'GET' | 'HEAD';
@@ -44,37 +46,43 @@ type ProbeResult = {
   statusCode: number;
 };
 
+type PartitionIdProvider = () => Promise<PartitionEntry[]> | PartitionEntry[];
+
 type ProxyConfigurationListener = () => void | Promise<void>;
 
-const PROXY_LOG_LEVEL = (process.env.LOG_LEVEL ?? 'debug').toLowerCase();
-
-function proxyManagerInfo(
-  message: string,
-  context?: Record<string, unknown>,
-): void {
-  if (PROXY_LOG_LEVEL === 'error' || PROXY_LOG_LEVEL === 'warn') {
-    return;
-  }
-
-  if (context) {
-    // eslint-disable-next-line no-console
-    console.info(message, context);
-    return;
-  }
-
-  // eslint-disable-next-line no-console
-  console.info(message);
-}
+const logger = Logger('ProxyManager');
+const proxyAuthStore = new ProxyAuthStore();
 
 let getPartitionEntries: PartitionIdProvider = () => [];
-let activeProxyConfiguration: ProxyConfiguration = {
-  ...DEFAULT_PROXY_CONFIGURATION,
-  profiles: [],
-};
-const partitionAuthCredentials = new Map<string, ProxyCredentials>();
-const sessionPartitionIds = new WeakMap<Session, string>();
+let activeProxyConfiguration: ProxyConfiguration = { profiles: [] };
 const proxyConfigurationListeners = new Set<ProxyConfigurationListener>();
 let appProxyLoginHandlerRegistered = false;
+const appliedPartitionProxies = new Map<string, string>();
+
+function buildPartitionProxyFingerprint(profile: ProxyProfile | null): string {
+  if (!profile?.enabled) {
+    return 'system';
+  }
+
+  return [
+    profile.id,
+    profile.type,
+    profile.host,
+    profile.port,
+    profile.username,
+    profile.password,
+  ].join('\0');
+}
+
+export function clearPartitionProxyCache(): void {
+  appliedPartitionProxies.clear();
+}
+
+export function resolveActiveProfileForWebsite(
+  websiteId: string,
+): ProxyProfile | null {
+  return resolveProfileForWebsite(websiteId, activeProxyConfiguration);
+}
 
 function readStartupProxyConfiguration(): ProxyConfiguration {
   try {
@@ -86,7 +94,7 @@ function readStartupProxyConfiguration(): ProxyConfiguration {
       })),
     };
   } catch {
-    return { ...DEFAULT_PROXY_CONFIGURATION, profiles: [] };
+    return { profiles: [] };
   }
 }
 
@@ -109,45 +117,14 @@ function getFixedProxyConfig(profile: ProxyProfile): ProxyConfig {
   };
 }
 
-function storePartitionAuth(partitionId: string, profile: ProxyProfile): void {
-  if (profile.username && profile.password) {
-    partitionAuthCredentials.set(partitionId, {
-      username: profile.username,
-      password: profile.password,
-    });
-    return;
-  }
-
-  partitionAuthCredentials.delete(partitionId);
-}
-
-function getPartitionIdFromSession(targetSession: Session): string | null {
-  const mapped = sessionPartitionIds.get(targetSession);
-  if (mapped) {
-    return mapped;
-  }
-
-  for (const partitionId of partitionAuthCredentials.keys()) {
+function findPartitionIdForSession(targetSession: Session): string | null {
+  for (const partitionId of proxyAuthStore.getPartitionIds()) {
     if (session.fromPartition(`persist:${partitionId}`) === targetSession) {
-      sessionPartitionIds.set(targetSession, partitionId);
       return partitionId;
     }
   }
 
   return null;
-}
-
-function resolveStoredProxyCredentials(
-  partitionId?: string | null,
-): ProxyCredentials | null {
-  if (partitionId) {
-    const partitionCredentials = partitionAuthCredentials.get(partitionId);
-    if (partitionCredentials) {
-      return partitionCredentials;
-    }
-  }
-
-  return getProfileAuthFromContext();
 }
 
 if (!appProxyLoginHandlerRegistered) {
@@ -157,10 +134,12 @@ if (!appProxyLoginHandlerRegistered) {
       return;
     }
 
-    const partitionId = webContents
-      ? getPartitionIdFromSession(webContents.session)
+    const credentials = webContents
+      ? proxyAuthStore.getForSession(
+          webContents.session,
+          findPartitionIdForSession,
+        )
       : null;
-    const credentials = resolveStoredProxyCredentials(partitionId);
     if (!credentials) {
       return;
     }
@@ -170,20 +149,43 @@ if (!appProxyLoginHandlerRegistered) {
   });
 }
 
+/** @deprecated Use resolveWebsiteFromPartition via proxy-partitions */
 export function resolveWebsiteForPartition(
   partitionId: string,
   entries: PartitionEntry[],
-): WebsiteId | null {
-  if (!partitionId?.trim()) {
-    return null;
-  }
+) {
+  return resolveWebsiteFromPartition(partitionId, entries);
+}
 
-  const oauthMatch = partitionId.match(/^instagram-oauth-(.+)$/);
-  if (oauthMatch) {
-    return 'instagram';
-  }
+async function getAccountPartitionEntries(): Promise<PartitionEntry[]> {
+  return Promise.resolve(getPartitionEntries());
+}
 
-  return entries.find((entry) => entry.partitionId === partitionId)?.websiteId ?? null;
+async function createActivePartitionWebsiteResolver() {
+  const entries = await getAccountPartitionEntries();
+  return createPartitionWebsiteResolver(entries);
+}
+
+export async function resolveHttpRequestRoute(
+  context: ProxyRequestContext,
+): Promise<ProxyRoute> {
+  const resolvePartitionWebsite = await createActivePartitionWebsiteResolver();
+  return resolveHttpRoute(
+    context,
+    resolvePartitionWebsite,
+    activeProxyConfiguration,
+  );
+}
+
+export async function resolveBrowserProxySession(
+  context: ProxyRequestContext,
+): Promise<BrowserSessionRoute> {
+  const resolvePartitionWebsite = await createActivePartitionWebsiteResolver();
+  return resolveBrowserSessionRoute(
+    context,
+    resolvePartitionWebsite,
+    activeProxyConfiguration,
+  );
 }
 
 async function applyProfileToSession(
@@ -191,21 +193,16 @@ async function applyProfileToSession(
   profile: ProxyProfile | null,
   partitionId?: string,
 ): Promise<void> {
-  const normalized = profile ? normalizeProxyProfile(profile) : null;
   const config =
-    normalized && normalized.enabled
-      ? getFixedProxyConfig(normalized)
+    profile && profile.enabled
+      ? getFixedProxyConfig(profile)
       : getSystemProxyConfig();
 
   await targetSession.setProxy(config);
 
   if (partitionId) {
-    sessionPartitionIds.set(targetSession, partitionId);
-    if (normalized?.enabled) {
-      storePartitionAuth(partitionId, normalized);
-    } else {
-      partitionAuthCredentials.delete(partitionId);
-    }
+    proxyAuthStore.bindSession(partitionId, targetSession);
+    proxyAuthStore.syncPartitionProfile(partitionId, profile);
   }
 
   targetSession.closeAllConnections();
@@ -237,34 +234,6 @@ export function getActiveProxyConfiguration(): ProxyConfiguration {
   };
 }
 
-export function resolveProfileForContext(): ProxyProfile | null {
-  const context = getProxyContext();
-  if (!context.websiteId) {
-    return null;
-  }
-
-  return resolveProfileForWebsite(
-    context.websiteId,
-    getActiveProxyConfiguration(),
-  );
-}
-
-export function getProfileAuthFromContext(): ProxyCredentials | null {
-  const profile = resolveProfileForContext();
-  if (
-    !profile?.enabled ||
-    !profile.username.trim() ||
-    !profile.password.trim()
-  ) {
-    return null;
-  }
-
-  return {
-    username: profile.username,
-    password: profile.password,
-  };
-}
-
 export function attachProxyAuthToRequest(
   request: ClientRequest,
   partitionId?: string,
@@ -275,7 +244,7 @@ export function attachProxyAuthToRequest(
       return;
     }
 
-    const credentials = resolveStoredProxyCredentials(partitionId);
+    const credentials = proxyAuthStore.getForPartition(partitionId);
     if (!credentials) {
       callback();
       return;
@@ -288,6 +257,7 @@ export function attachProxyAuthToRequest(
 export async function ensurePartitionProxy(
   partitionId: string,
   profile?: ProxyProfile,
+  force = false,
 ): Promise<void> {
   if (!partitionId?.trim()) {
     return;
@@ -295,21 +265,31 @@ export async function ensurePartitionProxy(
 
   let resolvedProfile = profile ?? null;
   if (!resolvedProfile) {
-    const entries = await Promise.resolve(getPartitionEntries());
-    const websiteId = resolveWebsiteForPartition(partitionId, entries);
-    resolvedProfile = websiteId
-      ? resolveProfileForWebsite(websiteId, activeProxyConfiguration)
-      : null;
+    const entries = await getAccountPartitionEntries();
+    const resolvePartitionWebsite = createPartitionWebsiteResolver(entries);
+    resolvedProfile = resolveProfileForPartition(
+      partitionId,
+      resolvePartitionWebsite,
+      activeProxyConfiguration,
+    );
   }
 
-  proxyManagerInfo('[ProxyManager.applyPartition]', {
-    partitionId,
-    profileId: resolvedProfile?.id ?? null,
-    enabled: resolvedProfile?.enabled ?? false,
-  });
+  const fingerprint = buildPartitionProxyFingerprint(resolvedProfile);
+  if (!force && appliedPartitionProxies.get(partitionId) === fingerprint) {
+    return;
+  }
+
+  logger
+    .withMetadata({
+      partitionId,
+      profileId: resolvedProfile?.id ?? null,
+      enabled: resolvedProfile?.enabled ?? false,
+    })
+    .info('applyPartition');
 
   const partition = session.fromPartition(`persist:${partitionId}`);
   await applyProfileToSession(partition, resolvedProfile, partitionId);
+  appliedPartitionProxies.set(partitionId, fingerprint);
 }
 
 export async function applyProxySettings(
@@ -325,15 +305,25 @@ export async function applyProxySettings(
         }
       : readStartupProxyConfiguration();
 
+  clearPartitionProxyCache();
+  proxyAuthStore.clear();
+
   if (!app.isReady()) {
     return;
   }
 
   await applyProfileToSession(session.defaultSession, null);
 
-  const entries = await Promise.resolve(getPartitionEntries());
+  const entries = await getAccountPartitionEntries();
+  const websiteIds = collectWebsiteIdsWithEnabledProfiles(
+    activeProxyConfiguration,
+  );
+  const partitionIds = collectManagedPartitionIds(entries, websiteIds);
+
   await Promise.all(
-    entries.map(({ partitionId }) => ensurePartitionProxy(partitionId)),
+    partitionIds.map((partitionId) =>
+      ensurePartitionProxy(partitionId, undefined, true),
+    ),
   );
 
   await notifyProxyConfigurationApplied();
@@ -345,27 +335,23 @@ export async function resolveProxyForUrl(url: string): Promise<string> {
 
 /**
  * Probes outbound connectivity through a specific profile using Node proxy agents.
- * This matches Path B routing and supports HTTP(S) auth embedded in the agent URL.
  */
 export async function probeProfileConnection(
   profile: ProxyProfile,
   url: string,
   options: ProbeOptions = {},
 ): Promise<ProbeResult> {
-  const normalized = normalizeProxyProfile(profile);
-  const agentUrl = buildProxyAgentUrl(normalized);
+  const agentUrl = buildProxyAgentUrl(profile);
   if (!agentUrl) {
     throw new Error('Proxy host and port are required');
   }
 
   const parsedUrl = new URL(url);
   const secure = parsedUrl.protocol === 'https:';
-  const agent =
-    normalized.type === 'socks5'
-      ? new SocksProxyAgent(agentUrl)
-      : secure
-        ? new HttpsProxyAgent(agentUrl)
-        : new HttpProxyAgent(agentUrl);
+  const agent = createProxyAgent(profile, secure);
+  if (!agent) {
+    throw new Error('Proxy host and port are required');
+  }
   const lib = secure ? nodeHttps : http;
   const method = options.method ?? 'HEAD';
   const timeoutMs = options.timeoutMs ?? 15_000;
@@ -404,8 +390,6 @@ export async function probeProfileConnection(
 }
 
 export async function onSessionCreated(createdSession: Session): Promise<void> {
-  // Partition sessions get their proxy from ensurePartitionProxy. Applying
-  // system mode here races with that call and breaks login webviews.
   if (createdSession !== session.defaultSession) {
     return;
   }

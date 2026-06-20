@@ -1,4 +1,4 @@
-// Ensure proxy is imported first to patch fetch before any request is made
+// Loads proxy bootstrap (startup applyProxySettings) before Http is used.
 export * from './lib/proxy';
 
 export * from './lib/form-file';

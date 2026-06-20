@@ -1,10 +1,8 @@
 /* eslint-disable no-console */
 import { Logger } from '@nestjs/common';
 import { trackDependency, trackException } from '@postybirb/logger';
-import {
-  getPartitionKey,
-  resolveProfileForWebsite,
-} from '@postybirb/utils/common';
+import { getPartitionKey } from '@postybirb/utils/common';
+import { ProxyProfile } from '@postybirb/utils/common';
 import {
   BrowserWindow,
   ClientRequest,
@@ -19,12 +17,12 @@ import { FormFile } from './form-file';
 import {
   attachProxyAuthToRequest,
   ensurePartitionProxy,
-  getActiveProxyConfiguration,
+  resolveBrowserProxySession,
+  resolveHttpRequestRoute,
 } from './electron-proxy-manager';
 import {
-  getEphemeralProxyPartitionId,
-  getProxyContext,
-} from './proxy-context';
+  requestViaProfileAgent,
+} from './profile-agent-request';
 import {
   BinaryPostOptions,
   HttpOptions,
@@ -63,23 +61,84 @@ interface CreateBodyData {
   buffer: Buffer;
 }
 
-async function ensureRequestProxy(options: HttpOptions) {
-  if (options.partition?.trim()) {
-    await ensurePartitionProxy(options.partition);
+type RequestProxyRoute =
+  | { kind: 'partition' }
+  | { kind: 'profile-agent'; profile: ProxyProfile }
+  | { kind: 'system' };
+
+async function resolveRequestProxyRoute(
+  options: HttpOptions,
+): Promise<RequestProxyRoute> {
+  const route = await resolveHttpRequestRoute(options);
+
+  if (route.transport === 'chromium-session') {
+    await ensurePartitionProxy(route.partitionId, route.profile ?? undefined);
+    return { kind: 'partition' };
+  }
+
+  if (route.transport === 'node-agent') {
+    return { kind: 'profile-agent', profile: route.profile };
+  }
+
+  return { kind: 'system' };
+}
+
+async function ensureBrowserPartitionProxy(options: HttpOptions): Promise<void> {
+  const sessionRoute = await resolveBrowserProxySession(options);
+  if (!sessionRoute.partitionId) {
     return;
   }
 
-  const context = getProxyContext();
-  if (context.websiteId) {
-    const profile = resolveProfileForWebsite(
-      context.websiteId,
-      getActiveProxyConfiguration(),
-    );
-    const ephemeralPartition = getEphemeralProxyPartitionId(context.websiteId);
-    await ensurePartitionProxy(ephemeralPartition, profile ?? undefined);
-    // eslint-disable-next-line no-param-reassign
-    options.partition = ephemeralPartition;
+  await ensurePartitionProxy(
+    sessionRoute.partitionId,
+    sessionRoute.profile ?? undefined,
+  );
+  // eslint-disable-next-line no-param-reassign
+  options.partition = sessionRoute.partitionId;
+}
+
+function buildProfileAgentHeaders(
+  options: HttpOptions,
+  contentType?: string,
+): Record<string, string> {
+  const headers: Record<string, string> = {
+    ...DEFAULT_HEADERS,
+    ...(options.headers ?? {}),
+  };
+
+  if (contentType) {
+    headers['Content-Type'] = contentType;
   }
+
+  return headers;
+}
+
+function sendViaProfileAgent<T>(
+  profile: ProxyProfile,
+  method: string,
+  url: string,
+  options: HttpOptions,
+  body?: Buffer,
+  contentType?: string,
+): Promise<HttpResponse<T>> {
+  if (options.queryParameters) {
+    const parsed = new URL(url);
+    parsed.search = new URLSearchParams(
+      encodeQueryString(options.queryParameters),
+    ).toString();
+    url = parsed.toString();
+  }
+
+  return requestViaProfileAgent<T>(profile, url, {
+    method: method.toUpperCase(),
+    headers: buildProfileAgentHeaders(options, contentType),
+    body,
+  }).then((response) => ({
+    statusCode: response.statusCode,
+    statusMessage: response.statusMessage,
+    body: response.body as T,
+    responseUrl: response.responseUrl ?? '',
+  }));
 }
 
 /**
@@ -378,7 +437,19 @@ export class Http {
     let error: Error | undefined;
 
     try {
-      await ensureRequestProxy(options);
+      const route = await resolveRequestProxyRoute(options);
+
+      if (route.kind === 'profile-agent') {
+        const response = await sendViaProfileAgent<T>(
+          route.profile,
+          'GET',
+          url,
+          options,
+        );
+        statusCode = response.statusCode ?? 0;
+        success = statusCode >= 200 && statusCode < 400;
+        return response;
+      }
 
       const response = await new Promise<HttpResponse<T>>((resolve, reject) => {
         const req = Http.createClientRequest(options, {
@@ -493,7 +564,22 @@ export class Http {
         return response;
       }
 
-      await ensureRequestProxy(options);
+      const route = await resolveRequestProxyRoute(options);
+
+      if (route.kind === 'profile-agent') {
+        const { contentType, buffer } = Http.createPostBody(options);
+        const response = await sendViaProfileAgent<T>(
+          route.profile,
+          method,
+          url,
+          options,
+          buffer,
+          contentType,
+        );
+        statusCode = response.statusCode ?? 0;
+        success = statusCode >= 200 && statusCode < 400;
+        return response;
+      }
 
       const response = await new Promise<HttpResponse<T>>((resolve, reject) => {
         const req = Http.createClientRequest(options, {
@@ -544,7 +630,7 @@ export class Http {
     options: HttpOptions,
     crOptions?: ClientRequestConstructorOptions,
   ): Promise<HttpResponse<T>> {
-    await ensureRequestProxy(options);
+    await ensureBrowserPartitionProxy(options);
 
     const window = new BrowserWindow({
       show: false,
@@ -571,7 +657,7 @@ export class Http {
     options: PostOptions | BinaryPostOptions,
     crOptions: ClientRequestConstructorOptions,
   ): Promise<HttpResponse<T>> {
-    await ensureRequestProxy(options);
+    await ensureBrowserPartitionProxy(options);
 
     const { contentType, buffer } = Http.createPostBody(options);
     const headers = Object.entries({
