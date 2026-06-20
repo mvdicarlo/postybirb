@@ -1,3 +1,7 @@
+import { HttpProxyAgent } from 'http-proxy-agent';
+import { HttpsProxyAgent } from 'https-proxy-agent';
+import { SocksProxyAgent } from 'socks-proxy-agent';
+
 export type ProxyType = 'http' | 'socks5';
 
 export type ProxyProfile = {
@@ -14,10 +18,6 @@ export type ProxyProfile = {
 
 export type ProxyConfiguration = {
   profiles: ProxyProfile[];
-};
-
-export const DEFAULT_PROXY_CONFIGURATION: ProxyConfiguration = {
-  profiles: [],
 };
 
 export type ShouldBypassProxyOptions = {
@@ -72,8 +72,7 @@ export function normalizeProxyProfile(
   };
 }
 
-export function buildProxyRules(input?: Partial<ProxyProfile>): string {
-  const profile = normalizeProxyProfile(input);
+export function buildProxyRules(profile: ProxyProfile): string {
   if (!profile.enabled || !profile.host || !profile.port) {
     return '';
   }
@@ -92,8 +91,7 @@ export function buildProxyRules(input?: Partial<ProxyProfile>): string {
  * Proxy rules for Electron `session.setProxy`. Chromium webviews ignore
  * credentials embedded in proxyRules; auth is supplied via app `login`.
  */
-export function buildSessionProxyRules(input?: Partial<ProxyProfile>): string {
-  const profile = normalizeProxyProfile(input);
+export function buildSessionProxyRules(profile: ProxyProfile): string {
   if (!profile.enabled || !profile.host || !profile.port) {
     return '';
   }
@@ -107,10 +105,37 @@ export function buildSessionProxyRules(input?: Partial<ProxyProfile>): string {
 }
 
 export function buildProxyAgentUrl(
-  input?: Partial<ProxyProfile>,
+  profile?: ProxyProfile | null,
 ): string | null {
-  const rules = buildProxyRules(input);
+  if (!profile) {
+    return null;
+  }
+
+  const rules = buildProxyRules(profile);
   return rules.length > 0 ? rules : null;
+}
+
+export type ProxyHttpAgent =
+  | SocksProxyAgent
+  | HttpProxyAgent<string>
+  | HttpsProxyAgent<string>;
+
+export function createProxyAgent(
+  profile: ProxyProfile,
+  secure: boolean,
+): ProxyHttpAgent | null {
+  const agentUrl = buildProxyAgentUrl(profile);
+  if (!agentUrl) {
+    return null;
+  }
+
+  if (profile.type === 'socks5') {
+    return new SocksProxyAgent(agentUrl);
+  }
+
+  return secure
+    ? new HttpsProxyAgent(agentUrl)
+    : new HttpProxyAgent(agentUrl);
 }
 
 function parseRemoteHostInput(remoteHost: string): string | null {

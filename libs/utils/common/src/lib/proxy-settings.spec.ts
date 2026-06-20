@@ -2,7 +2,7 @@ import {
   buildProxyAgentUrl,
   buildProxyRules,
   buildSessionProxyRules,
-  DEFAULT_PROXY_CONFIGURATION,
+  createProxyAgent,
   isProxiedResolution,
   isProxyConfiguration,
   normalizeProxyProfile,
@@ -71,6 +71,8 @@ describe('buildProxyRules', () => {
         type: 'socks5',
         host: '127.0.0.1',
         port: '7890',
+        username: '',
+        password: '',
         websites: ['telegram'],
       }),
     ).toBe('socks5://127.0.0.1:7890');
@@ -84,6 +86,8 @@ describe('buildProxyRules', () => {
         type: 'http',
         host: 'proxy.example.com',
         port: '8080',
+        username: '',
+        password: '',
         websites: [],
       }),
     ).toBe('');
@@ -109,22 +113,45 @@ describe('buildSessionProxyRules', () => {
 
 describe('buildProxyAgentUrl', () => {
   it('returns null when profile cannot produce rules', () => {
-    expect(buildProxyAgentUrl(undefined)).toBeNull();
+    expect(buildProxyAgentUrl(null)).toBeNull();
+  });
+});
+
+describe('createProxyAgent', () => {
+  it('returns null for disabled profiles', () => {
+    expect(
+      createProxyAgent(
+        {
+          id: 'disabled',
+          enabled: false,
+          type: 'http',
+          host: 'proxy.example.com',
+          port: '8080',
+          username: '',
+          password: '',
+          websites: [],
+        },
+        true,
+      ),
+    ).toBeNull();
   });
 
-  it('returns the same URL as buildProxyRules for enabled profiles', () => {
-    const profile = {
-      id: 'agent',
-      enabled: true,
-      type: 'socks5' as const,
-      host: '127.0.0.1',
-      port: '1080',
-      username: '',
-      password: '',
-      websites: [] as const,
-    };
-
-    expect(buildProxyAgentUrl(profile)).toBe(buildProxyRules(profile));
+  it('creates an agent for enabled HTTP profiles', () => {
+    expect(
+      createProxyAgent(
+        {
+          id: 'http-profile',
+          enabled: true,
+          type: 'http',
+          host: 'proxy.example.com',
+          port: '8080',
+          username: '',
+          password: '',
+          websites: [],
+        },
+        true,
+      ),
+    ).not.toBeNull();
   });
 });
 
@@ -176,7 +203,7 @@ describe('shouldBypassProxyForUrl', () => {
 
 describe('isProxyConfiguration', () => {
   it('accepts configuration with profiles array', () => {
-    expect(isProxyConfiguration(DEFAULT_PROXY_CONFIGURATION)).toBe(true);
+    expect(isProxyConfiguration({ profiles: [] })).toBe(true);
   });
 
   it('rejects invalid flat proxy objects', () => {

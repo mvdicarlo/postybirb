@@ -2,7 +2,6 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { StartupOptions, StartupOptionsStore } from './startup-options';
-import { DEFAULT_PROXY_CONFIGURATION } from './proxy-settings';
 
 let tmpDir: string;
 let store: StartupOptionsStore;
@@ -12,7 +11,7 @@ const DEFAULTS: StartupOptions = {
   spellchecker: true,
   appDataPath: '/default/path',
   port: '9487',
-  proxy: { ...DEFAULT_PROXY_CONFIGURATION, profiles: [] },
+  proxy: { profiles: [] },
 };
 
 function makeStore(overrides: Partial<typeof DEFAULTS> = {}): StartupOptionsStore {
@@ -198,19 +197,42 @@ describe('StartupOptionsStore — set()', () => {
     });
   });
 
-  it('defaults proxy object without profiles array to empty profiles', () => {
+  it('normalizes proxy profiles when loading from disk', () => {
     const path = join(tmpDir, 'startup.json');
     writeFileSync(
       path,
       JSON.stringify({
         proxy: {
-          enabled: true,
+          profiles: [
+            {
+              id: ' profile-1 ',
+              enabled: true,
+              type: 'http',
+              host: '  proxy.example.com ',
+              port: ' 3128 ',
+              username: ' user ',
+              password: 'secret',
+              websites: ['discord'],
+            },
+          ],
         },
       }),
     );
     const s = makeStore();
     expect(s.get().proxy).toEqual({
-      profiles: [],
+      profiles: [
+        {
+          id: 'profile-1',
+          enabled: true,
+          label: undefined,
+          type: 'http',
+          host: 'proxy.example.com',
+          port: '3128',
+          username: 'user',
+          password: 'secret',
+          websites: ['discord'],
+        },
+      ],
     });
   });
 

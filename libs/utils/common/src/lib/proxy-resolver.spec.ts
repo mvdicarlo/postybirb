@@ -1,6 +1,4 @@
 import {
-  getAssignedWebsiteIds,
-  resolveProfileForAccount,
   resolveProfileForWebsite,
   validateProfiles,
 } from './proxy-resolver';
@@ -154,53 +152,5 @@ describe('resolveProfileForWebsite', () => {
     });
 
     expect(profile?.id).toBe('pixiv-only');
-  });
-});
-
-describe('resolveProfileForAccount', () => {
-  it('resolves profile via account website map', () => {
-    const profile = resolveProfileForAccount(
-      'account-1',
-      { 'account-1': 'discord' },
-      {
-        profiles: [
-          {
-            id: 'profile-1',
-            enabled: true,
-            type: 'socks5',
-            host: '127.0.0.1',
-            port: '7890',
-            username: '',
-            password: '',
-            websites: ['discord'],
-          },
-        ],
-      },
-    );
-
-    expect(profile?.type).toBe('socks5');
-  });
-});
-
-describe('getAssignedWebsiteIds', () => {
-  it('returns all websites assigned across profiles', () => {
-    expect(
-      Array.from(
-        getAssignedWebsiteIds({
-          profiles: [
-            {
-              id: 'profile-1',
-              enabled: true,
-              type: 'http',
-              host: 'proxy.example.com',
-              port: '8080',
-              username: '',
-              password: '',
-              websites: ['pixiv', 'discord'],
-            },
-          ],
-        }),
-      ),
-    ).toEqual(['pixiv', 'discord']);
   });
 });

@@ -1,8 +1,4 @@
-import {
-  normalizeProxyProfile,
-  ProxyConfiguration,
-  ProxyProfile,
-} from './proxy-settings';
+import { ProxyConfiguration, ProxyProfile } from './proxy-settings';
 
 export type ValidateProfilesResult = {
   ok: boolean;
@@ -64,45 +60,44 @@ export function validateProfiles(
   let wildcardProfileId: string | null = null;
 
   profiles.forEach((profile, index) => {
-    const normalized = normalizeProxyProfile(profile);
-    const label = normalized.label || normalized.id || `profile-${index + 1}`;
+    const label = profile.label || profile.id || `profile-${index + 1}`;
 
-    if (normalized.enabled) {
-      if (!normalized.host.trim()) {
+    if (profile.enabled) {
+      if (!profile.host.trim()) {
         errors.push(`Profile "${label}" requires host when enabled.`);
       }
 
-      if (parsePort(normalized.port) === null) {
+      if (parsePort(profile.port) === null) {
         errors.push(
           `Profile "${label}" requires port between 1 and 65535 when enabled.`,
         );
       }
 
       if (
-        normalized.websites.length === 0 &&
-        normalized.host.trim() &&
-        parsePort(normalized.port) !== null
+        profile.websites.length === 0 &&
+        profile.host.trim() &&
+        parsePort(profile.port) !== null
       ) {
-        if (wildcardProfileId && wildcardProfileId !== normalized.id) {
+        if (wildcardProfileId && wildcardProfileId !== profile.id) {
           errors.push(
             'Only one enabled profile can apply to all websites (leave Websites empty).',
           );
         } else {
-          wildcardProfileId = normalized.id;
+          wildcardProfileId = profile.id;
         }
       }
     }
 
-    normalized.websites.forEach((websiteId) => {
+    profile.websites.forEach((websiteId) => {
       const owner = websiteOwners.get(websiteId);
-      if (owner && owner !== normalized.id) {
+      if (owner && owner !== profile.id) {
         errors.push(
-          `Website "${websiteId}" is assigned to multiple profiles (${owner}, ${normalized.id}).`,
+          `Website "${websiteId}" is assigned to multiple profiles (${owner}, ${profile.id}).`,
         );
         return;
       }
 
-      websiteOwners.set(websiteId, normalized.id);
+      websiteOwners.set(websiteId, profile.id);
     });
   });
 
@@ -118,17 +113,6 @@ export function validateProfiles(
   };
 }
 
-export function getAssignedWebsiteIds(config: ProxyConfiguration): Set<string> {
-  const assigned = new Set<string>();
-  config.profiles.forEach((profile) => {
-    normalizeProxyProfile(profile).websites.forEach((websiteId) => {
-      assigned.add(websiteId);
-    });
-  });
-
-  return assigned;
-}
-
 function isResolvableProfile(profile: ProxyProfile): boolean {
   return (
     profile.enabled &&
@@ -141,11 +125,7 @@ export function resolveProfileForWebsite(
   websiteId: string,
   config: ProxyConfiguration,
 ): ProxyProfile | null {
-  const profiles = config.profiles.map((profile) =>
-    normalizeProxyProfile(profile),
-  );
-
-  const explicitMatch = profiles.find(
+  const explicitMatch = config.profiles.find(
     (profile) =>
       isResolvableProfile(profile) && profile.websites.includes(websiteId),
   );
@@ -159,7 +139,7 @@ export function resolveProfileForWebsite(
     return explicitMatch;
   }
 
-  const wildcardMatch = profiles.find(
+  const wildcardMatch = config.profiles.find(
     (profile) => isResolvableProfile(profile) && profile.websites.length === 0,
   );
 
@@ -171,22 +151,4 @@ export function resolveProfileForWebsite(
   });
 
   return wildcardMatch ?? null;
-}
-
-export function resolveProfileForAccount(
-  accountId: string,
-  accountWebsiteMap: Record<string, string | undefined>,
-  config: ProxyConfiguration,
-): ProxyProfile | null {
-  const websiteId = accountWebsiteMap[accountId];
-  if (!websiteId) {
-    resolverDebug('[ProxyResolver.resolve]', {
-      accountId,
-      websiteId: null,
-      profileId: null,
-    });
-    return null;
-  }
-
-  return resolveProfileForWebsite(websiteId, config);
 }

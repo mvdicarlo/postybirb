@@ -6,11 +6,7 @@ import {
   writeFileSync,
 } from 'fs';
 import { dirname } from 'path';
-import {
-  DEFAULT_PROXY_CONFIGURATION,
-  isProxyConfiguration,
-  ProxyConfiguration,
-} from './proxy-settings';
+import { isProxyConfiguration, normalizeProxyProfile, ProxyConfiguration } from './proxy-settings';
 
 export type StartupOptions = {
   startAppOnSystemStartup: boolean;
@@ -49,7 +45,7 @@ function startupInfo(message: string, context?: Record<string, unknown>): void {
 function parseProxyFromDisk(rawProxy: unknown): ProxyConfiguration {
   if (isProxyConfiguration(rawProxy)) {
     return {
-      profiles: rawProxy.profiles.map((profile) => ({ ...profile })),
+      profiles: rawProxy.profiles.map((profile) => normalizeProxyProfile(profile)),
     };
   }
 
@@ -57,7 +53,7 @@ function parseProxyFromDisk(rawProxy: unknown): ProxyConfiguration {
     reason: 'invalid-proxy-shape',
   });
 
-  return { ...DEFAULT_PROXY_CONFIGURATION, profiles: [] };
+  return { profiles: [] };
 }
 
 /**
@@ -89,7 +85,7 @@ export class StartupOptionsStore {
       spellchecker: true,
       port: '9487',
       appDataPath: config.defaultAppDataPath,
-      proxy: { ...DEFAULT_PROXY_CONFIGURATION, profiles: [] },
+      proxy: { profiles: [] },
     };
     // Drop memoized state so a reconfigure (mostly tests) takes effect.
     this.current = null;
