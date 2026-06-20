@@ -16,7 +16,6 @@ import {
 import {
   applyProxySettings,
   ensurePartitionProxy,
-  runWithProxyContextAsync,
   setPartitionIdProvider,
 } from '@postybirb/http';
 import { IsTestEnvironment } from '@postybirb/utils/common';
@@ -201,14 +200,7 @@ export class AccountService
     const { websites } = this.loginRefreshTimers[interval];
     websites.forEach((website) => {
       this.websiteRegistry.getInstancesOf(website).forEach((instance) => {
-        const websiteId = instance.decoratedProps.metadata.name;
-        this.logger.info(
-          `[ProxyContext] login refresh websiteId=${websiteId} accountId=${instance.account.id}`,
-        );
-        runWithProxyContextAsync(
-          { websiteId, accountId: instance.account.id },
-          () => instance.login(),
-        ).catch((e) => {
+        instance.login().catch((e) => {
           this.logger.withError(e).error(`Login failed for ${instance.id}`);
         });
       });
@@ -222,13 +214,7 @@ export class AccountService
    * @param {UnknownWebsite} website
    */
   private afterCreate(account: Account, website: UnknownWebsite) {
-    this.logger.info(
-      `[ProxyContext] afterCreate websiteId=${account.website} accountId=${account.id}`,
-    );
-    runWithProxyContextAsync(
-      { websiteId: account.website, accountId: account.id },
-      () => website.login(),
-    ).catch((e) => {
+    website.login().catch((e) => {
       this.logger.withError(e).error(`Initial login failed for ${website.id}`);
     });
   }
@@ -257,15 +243,7 @@ export class AccountService
       instance = await this.websiteRegistry.create(account);
     }
 
-    this.logger.info(
-      `[ProxyContext] registerAndLogin websiteId=${account.website} accountId=${account.id}`,
-    );
-    await runWithProxyContextAsync(
-      { websiteId: account.website, accountId: account.id },
-      async () => {
-        await instance.login();
-      },
-    ).catch((e) => {
+    await instance.login().catch((e) => {
       this.logger.withError(e).error(`Login failed for ${instance.id}`);
     });
   }
@@ -281,13 +259,7 @@ export class AccountService
     if (account) {
       const instance = this.websiteRegistry.findInstance(account);
       if (instance) {
-        this.logger.info(
-          `[ProxyContext] manuallyExecuteOnLogin websiteId=${account.website} accountId=${account.id}`,
-        );
-        await runWithProxyContextAsync(
-          { websiteId: account.website, accountId: account.id },
-          () => instance.login(),
-        );
+        await instance.login();
         // Force an immediate UI update for this instance
         this.loginStatePoller.checkInstance(instance);
       }

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { runWithProxyContextAsync } from '@postybirb/http';
+import { fetchForWebsite } from '@postybirb/http';
 import { Logger, PostyBirbLogger } from '@postybirb/logger';
 import { DynamicObject } from '@postybirb/types';
 
@@ -9,9 +9,7 @@ function fetchWithInstagramProxy(
   input: string | URL | Request,
   init?: RequestInit,
 ): Promise<Response> {
-  return runWithProxyContextAsync({ websiteId: 'instagram' }, () =>
-    fetch(input, init),
-  );
+  return fetchForWebsite('instagram', input, init);
 }
 
 /**

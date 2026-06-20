@@ -1,6 +1,7 @@
 import { Account, WebsiteDataRepository } from '@postybirb/database';
 import { Logger, PostyBirbLogger } from '@postybirb/logger';
 import { PlatformCookieDetails, PlatformService } from '@postybirb/platform';
+import { createWebsiteScopedPlatform } from '../platform/website-scoped-platform';
 import {
     DynamicObject,
     ILoginState,
@@ -157,7 +158,7 @@ export abstract class Website<
 
   constructor(userAccount: Account, platform: PlatformService) {
     this.account = userAccount;
-    this.platform = platform;
+    this.platform = createWebsiteScopedPlatform(platform, userAccount.website);
     this.logger = Logger(this.decoratedProps.metadata.displayName);
     this.websiteDataStore = new WebsiteDataManager(userAccount);
     this.loginState = new LoginState();

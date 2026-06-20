@@ -23,7 +23,6 @@ import {
   supportsImage,
 } from '@postybirb/utils/file-type';
 import {
-  normalizeProxyProfile,
   resolveProfileForWebsite,
 } from '@postybirb/utils/common';
 import { Api, TelegramClient } from 'teleproto';
@@ -247,13 +246,12 @@ export default class Telegram
 
       if (profile?.enabled) {
         if (profile.type === 'socks5') {
-          const normalized = normalizeProxyProfile(profile);
           telegramProxySettings = {
-            ip: normalized.host,
-            port: parseInt(normalized.port, 10),
+            ip: profile.host,
+            port: parseInt(profile.port, 10),
             socksType: 5,
-            ...(normalized.username ? { username: normalized.username } : {}),
-            ...(normalized.password ? { password: normalized.password } : {}),
+            ...(profile.username ? { username: profile.username } : {}),
+            ...(profile.password ? { password: profile.password } : {}),
           };
           this.logger
             .withMetadata({ proxy: telegramProxySettings })
