@@ -1,6 +1,7 @@
 import {
   buildProxyAgentUrl,
   buildProxyRules,
+  buildSessionProxyRules,
   DEFAULT_PROXY_CONFIGURATION,
   isProxiedResolution,
   isProxyConfiguration,
@@ -86,6 +87,23 @@ describe('buildProxyRules', () => {
         websites: [],
       }),
     ).toBe('');
+  });
+});
+
+describe('buildSessionProxyRules', () => {
+  it('omits credentials for Electron session.setProxy', () => {
+    expect(
+      buildSessionProxyRules({
+        id: 'http-profile',
+        enabled: true,
+        type: 'http',
+        host: 'proxy.example.com',
+        port: '8080',
+        username: 'user',
+        password: 'pass',
+        websites: [],
+      }),
+    ).toBe('http://proxy.example.com:8080');
   });
 });
 

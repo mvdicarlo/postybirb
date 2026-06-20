@@ -7,7 +7,7 @@ import { SocksProxyAgent } from 'socks-proxy-agent';
 import { WebsiteId } from '@postybirb/types';
 import {
   buildProxyAgentUrl,
-  buildProxyRules,
+  buildSessionProxyRules,
   DEFAULT_PROXY_CONFIGURATION,
   normalizeProxyProfile,
   ProxyConfiguration,
@@ -64,6 +64,7 @@ const partitionAuthCredentials = new Map<
   string,
   { username: string; password: string }
 >();
+const partitionSessionLoginHandlers = new WeakSet<Session>();
 const proxyConfigurationListeners = new Set<ProxyConfigurationListener>();
 
 function readStartupProxyConfiguration(): ProxyConfiguration {
@@ -87,7 +88,7 @@ function getSystemProxyConfig(): Electron.ProxyConfig {
 }
 
 function getFixedProxyConfig(profile: ProxyProfile): Electron.ProxyConfig {
-  const proxyRules = buildProxyRules(profile);
+  const proxyRules = buildSessionProxyRules(profile);
   if (!proxyRules) {
     return getSystemProxyConfig();
   }
@@ -109,6 +110,30 @@ function storePartitionAuth(partitionId: string, profile: ProxyProfile): void {
   }
 
   partitionAuthCredentials.delete(partitionId);
+}
+
+function attachPartitionSessionLoginHandler(
+  targetSession: Session,
+  partitionId: string,
+): void {
+  if (partitionSessionLoginHandlers.has(targetSession)) {
+    return;
+  }
+
+  partitionSessionLoginHandlers.add(targetSession);
+  targetSession.on('login', (event, _webContents, _request, authInfo, callback) => {
+    if (!authInfo?.isProxy) {
+      return;
+    }
+
+    const credentials = partitionAuthCredentials.get(partitionId);
+    if (!credentials) {
+      return;
+    }
+
+    event.preventDefault();
+    callback(credentials.username, credentials.password);
+  });
 }
 
 export function resolveWebsiteForPartition(
@@ -143,6 +168,7 @@ async function applyProfileToSession(
   if (partitionId) {
     if (normalized?.enabled) {
       storePartitionAuth(partitionId, normalized);
+      attachPartitionSessionLoginHandler(targetSession, partitionId);
     } else {
       partitionAuthCredentials.delete(partitionId);
     }
@@ -356,5 +382,11 @@ export async function probeProfileConnection(
 }
 
 export async function onSessionCreated(createdSession: Session): Promise<void> {
+  // Partition sessions get their proxy from ensurePartitionProxy. Applying
+  // system mode here races with that call and breaks login webviews.
+  if (createdSession !== session.defaultSession) {
+    return;
+  }
+
   await createdSession.setProxy(getSystemProxyConfig());
 }

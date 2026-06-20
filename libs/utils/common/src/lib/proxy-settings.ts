@@ -88,6 +88,19 @@ export function buildProxyRules(input?: Partial<ProxyProfile>): string {
   return `${profile.type}://${auth}${profile.host}:${profile.port}`;
 }
 
+/**
+ * Proxy rules for Electron `session.setProxy`. Chromium webviews ignore
+ * credentials embedded in proxyRules; auth is supplied via session `login`.
+ */
+export function buildSessionProxyRules(input?: Partial<ProxyProfile>): string {
+  const profile = normalizeProxyProfile(input);
+  if (!profile.enabled || !profile.host || !profile.port) {
+    return '';
+  }
+
+  return `${profile.type}://${profile.host}:${profile.port}`;
+}
+
 export function buildProxyAgentUrl(
   input?: Partial<ProxyProfile>,
 ): string | null {
