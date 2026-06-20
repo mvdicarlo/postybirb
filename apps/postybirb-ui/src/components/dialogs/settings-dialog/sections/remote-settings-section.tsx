@@ -43,6 +43,7 @@ export function RemoteSettingsSection() {
   const [isConnectionValid, setIsConnectionValid] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showLanIp, setShowLanIp] = useState(false);
   const [lanIp, setLanIp] = useState<string>('localhost:9487');
   const electronRemoteConfig = window.electron?.getRemoteConfig() ?? {
     enabled: true,
@@ -204,13 +205,26 @@ export function RemoteSettingsSection() {
                 <TextInput
                   label={<Trans>LAN IP</Trans>}
                   leftSection={<IconPlug size={18} />}
-                  value={lanIp}
+                  value={showLanIp ? lanIp : '•••••••••••'}
                   readOnly
                   style={{ flex: 1 }}
                   rightSection={
-                    <CopyToClipboard value={lanIp} size="xs" />
+                    <Group gap={4}>
+                      <Button
+                        variant="subtle"
+                        size="compact-sm"
+                        onClick={() => setShowLanIp(!showLanIp)}
+                      >
+                        {showLanIp ? (
+                          <IconEyeOff size={16} />
+                        ) : (
+                          <IconEye size={16} />
+                        )}
+                      </Button>
+                      <CopyToClipboard value={lanIp} size="xs" />
+                    </Group>
                   }
-                  rightSectionWidth={44}
+                  rightSectionWidth={80}
                 />
               </Group>
 

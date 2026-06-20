@@ -41,10 +41,6 @@ import {
   showConnectionSuccessNotification,
 } from '../../../../utils/notifications';
 
-const DEFAULT_PROXY_CONFIGURATION: ProxyConfiguration = {
-  profiles: [],
-};
-
 const PROXY_TYPE_OPTIONS: { value: ProxyType; label: string }[] = [
   { value: 'http', label: 'HTTP(S)' },
   { value: 'socks5', label: 'SOCKS5' },
@@ -113,7 +109,7 @@ export function ProxySettingsSection() {
   const proxy =
     startupSettings?.proxy && Array.isArray(startupSettings.proxy.profiles)
       ? startupSettings.proxy
-      : DEFAULT_PROXY_CONFIGURATION;
+      : { profiles: [] };
 
   return <ProxySettingsForm proxy={proxy} refetch={refetch} />;
 }
