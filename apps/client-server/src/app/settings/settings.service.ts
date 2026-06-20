@@ -4,17 +4,25 @@ import {
   OnModuleInit,
   Optional,
 } from '@nestjs/common';
+import { applyProxySettings, probeProfileConnection } from '@postybirb/http';
 import { Settings, SettingsRepository } from '@postybirb/database';
 import { SETTINGS_UPDATES } from '@postybirb/socket-events';
 import { EntityId, SettingsConstants } from '@postybirb/types';
+import { net } from 'electron';
 import {
-  isLinux,
+  buildProxyRules,
+  IsTestEnvironment,
+  normalizeProxyProfile,
+  PostyBirbEnvConfig,
+  shouldBypassProxyForUrl,
   StartupOptions,
   StartupOptionsManager,
+  validateProfiles,
 } from '@postybirb/utils/common';
 import { eq } from 'drizzle-orm';
 import { PostyBirbService } from '../common/service/postybirb-service';
 import { WSGateway } from '../web-socket/web-socket-gateway';
+import { TestProxyProfileDto } from './dtos/update-proxy-settings.dto';
 import { UpdateSettingsDto } from './dtos/update-settings.dto';
 
 @Injectable()
@@ -156,21 +164,94 @@ export class SettingsService
   }
 
   /**
+   * Tests whether outbound requests work through the provided proxy settings.
+   * Applies the given config temporarily, verifies traffic is routed through a
+   * proxy, then restores the persisted startup proxy settings.
+   */
+  async testProxyConnection(
+    profileDto: TestProxyProfileDto,
+  ): Promise<{ success: boolean; message: string }> {
+    const saved = StartupOptionsManager.get().proxy;
+    const existing = saved.profiles.find((profile) => profile.id === profileDto.id);
+    const profile = normalizeProxyProfile({
+      ...profileDto,
+      password: profileDto.password?.trim()
+        ? profileDto.password
+        : existing?.password ?? '',
+    });
+
+    if (!profile.enabled) {
+      return {
+        success: false,
+        message: 'Enable the proxy before testing',
+      };
+    }
+
+    if (!profile.host) {
+      return {
+        success: false,
+        message: 'Proxy host is required',
+      };
+    }
+
+    const proxyPort = parseInt(profile.port, 10);
+    if (Number.isNaN(proxyPort) || proxyPort < 1 || proxyPort > 65535) {
+      return {
+        success: false,
+        message: 'Invalid proxy port',
+      };
+    }
+
+    if (!buildProxyRules(profile)) {
+      return {
+        success: false,
+        message: 'Proxy host and port are required',
+      };
+    }
+
+    const testUrl = 'https://www.google.com/generate_204';
+
+    try {
+      const { statusCode } = await probeProfileConnection(profile, testUrl, {
+        method: 'HEAD',
+        timeoutMs: 15_000,
+      });
+
+      if (statusCode === 407) {
+        return {
+          success: false,
+          message:
+            'Proxy authentication failed. Check username and password.',
+        };
+      }
+
+      if (statusCode >= 200 && statusCode < 400) {
+        return {
+          success: true,
+          message: 'Proxy connection test succeeded',
+        };
+      }
+
+      return {
+        success: false,
+        message: `Unexpected response status: ${statusCode}`,
+      };
+    } catch (error) {
+      this.logger.withError(error).warn('Proxy connection test failed');
+      return {
+        success: false,
+        message: 'Could not reach the test URL through the configured proxy',
+      };
+    }
+  }
+
+  /**
    * Updates app startup settings.
    */
-  public updateStartupSettings(startUpOptions: Partial<StartupOptions>) {
+  public async updateStartupSettings(startUpOptions: Partial<StartupOptions>) {
     if (startUpOptions.appDataPath) {
       // eslint-disable-next-line no-param-reassign
       startUpOptions.appDataPath = startUpOptions.appDataPath.trim();
-    }
-
-    if (isLinux() && startUpOptions.startAppOnSystemStartup) {
-      // eslint-disable-next-line no-param-reassign
-      startUpOptions.startAppOnSystemStartup = false;
-      this.logger.warn('Startup on system startup is not supported on Linux');
-      throw new BadRequestException(
-        'Startup on system startup is not supported on Linux',
-      );
     }
 
     if (startUpOptions.port) {
@@ -182,8 +263,42 @@ export class SettingsService
       }
     }
 
+    let proxyUpdated = false;
+
+    if (startUpOptions.proxy) {
+      const current = StartupOptionsManager.get();
+      const profiles = startUpOptions.proxy.profiles.map((profile) => {
+        const existing = current.proxy.profiles.find(
+          (savedProfile) => savedProfile.id === profile.id,
+        );
+        return normalizeProxyProfile({
+          ...profile,
+          password: profile.password?.trim()
+            ? profile.password
+            : existing?.password ?? '',
+        });
+      });
+
+      const validation = validateProfiles(profiles);
+      if (!validation.ok) {
+        this.logger
+          .withMetadata({ errors: validation.errors })
+          .warn('Proxy profile validation failed');
+        throw new BadRequestException(validation.errors.join(' '));
+      }
+
+      // eslint-disable-next-line no-param-reassign
+      startUpOptions.proxy = {
+        profiles,
+      };
+      proxyUpdated = true;
+    }
+
     StartupOptionsManager.set({ ...startUpOptions });
-    return StartupOptionsManager.get();
+
+    if (proxyUpdated && !IsTestEnvironment()) {
+      await applyProxySettings();
+    }
   }
 
   /**
@@ -220,20 +335,29 @@ export class SettingsService
         };
       }
 
-      // Clean up the URL
-      const cleanUrl = hostUrl.trim().replace(/\/$/, '');
+      const cleanUrl = this.normalizeRemoteHostUrl(hostUrl);
       const testUrl = `${cleanUrl}/api/remote/ping/${encodeURIComponent(password)}`;
+      const bypass = shouldBypassProxyForUrl(testUrl, {
+        remoteHost: hostUrl,
+        appPort: PostyBirbEnvConfig.port,
+      });
 
-      this.logger.debug(`Testing remote connection to: ${cleanUrl}`);
+      this.logger.debug('[Settings.testRemote]', {
+        cleanUrl,
+        bypass,
+      });
 
-      const response = await fetch(testUrl, {
+      const fetchOptions: RequestInit = {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
-        // Set a reasonable timeout
-        signal: AbortSignal.timeout(10000), // 10 seconds
-      });
+        signal: AbortSignal.timeout(10000),
+      };
+
+      const response = bypass
+        ? await net.fetch(testUrl, fetchOptions)
+        : await fetch(testUrl, fetchOptions);
 
       if (response.ok) {
         const result = await response.json();
@@ -293,5 +417,18 @@ export class SettingsService
         message: `Connection test failed: ${(error as Error).message}`,
       };
     }
+  }
+
+  private normalizeRemoteHostUrl(hostUrl: string): string {
+    const trimmed = hostUrl.trim().replace(/\/$/, '');
+    if (!trimmed) {
+      return trimmed;
+    }
+
+    if (/^https?:\/\//i.test(trimmed)) {
+      return trimmed;
+    }
+
+    return `https://${trimmed}`;
   }
 }

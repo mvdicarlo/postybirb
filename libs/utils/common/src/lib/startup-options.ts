@@ -6,12 +6,18 @@ import {
   writeFileSync,
 } from 'fs';
 import { dirname } from 'path';
+import {
+  DEFAULT_PROXY_CONFIGURATION,
+  isProxyConfiguration,
+  ProxyConfiguration,
+} from './proxy-settings';
 
 export type StartupOptions = {
   startAppOnSystemStartup: boolean;
   spellchecker: boolean;
   appDataPath: string;
   port: string;
+  proxy: ProxyConfiguration;
 };
 
 export type StartupOptionsConfig = {
@@ -22,6 +28,37 @@ export type StartupOptionsConfig = {
 };
 
 export type StartupOptionsListener = (opts: StartupOptions) => void;
+
+const PROXY_LOG_LEVEL = (process.env.LOG_LEVEL ?? 'debug').toLowerCase();
+
+function startupInfo(message: string, context?: Record<string, unknown>): void {
+  if (PROXY_LOG_LEVEL === 'error' || PROXY_LOG_LEVEL === 'warn') {
+    return;
+  }
+
+  if (context) {
+    // eslint-disable-next-line no-console
+    console.info(message, context);
+    return;
+  }
+
+  // eslint-disable-next-line no-console
+  console.info(message);
+}
+
+function parseProxyFromDisk(rawProxy: unknown): ProxyConfiguration {
+  if (isProxyConfiguration(rawProxy)) {
+    return {
+      profiles: rawProxy.profiles.map((profile) => ({ ...profile })),
+    };
+  }
+
+  startupInfo('[StartupOptions.load] Defaulting proxy to empty configuration', {
+    reason: 'invalid-proxy-shape',
+  });
+
+  return { ...DEFAULT_PROXY_CONFIGURATION, profiles: [] };
+}
 
 /**
  * Persists and exposes the application's startup options. Holds no host
@@ -52,6 +89,7 @@ export class StartupOptionsStore {
       spellchecker: true,
       port: '9487',
       appDataPath: config.defaultAppDataPath,
+      proxy: { ...DEFAULT_PROXY_CONFIGURATION, profiles: [] },
     };
     // Drop memoized state so a reconfigure (mostly tests) takes effect.
     this.current = null;
@@ -71,14 +109,42 @@ export class StartupOptionsStore {
         this.persist(this.current);
       }
     }
-    return { ...this.current };
+    return {
+      ...this.current,
+      proxy: {
+        profiles: this.current.proxy.profiles.map((profile) => ({
+          ...profile,
+          websites: [...profile.websites],
+        })),
+      },
+    };
   }
 
   public set(opts: Partial<StartupOptions>): void {
     if (!this.current) {
       this.current = this.load();
     }
-    this.current = { ...this.current, ...opts };
+    const { proxy, ...rest } = opts;
+    this.current = {
+      ...this.current,
+      ...rest,
+      ...(proxy
+        ? {
+            proxy: {
+              profiles:
+                proxy.profiles !== undefined
+                  ? proxy.profiles.map((profile) => ({
+                      ...profile,
+                      websites: [...profile.websites],
+                    }))
+                  : this.current.proxy.profiles.map((profile) => ({
+                      ...profile,
+                      websites: [...profile.websites],
+                    })),
+            },
+          }
+        : undefined),
+    };
     this.persist(this.current);
     const snapshot = this.current;
     this.listeners.forEach((listener) => listener(snapshot));
@@ -113,15 +179,19 @@ export class StartupOptionsStore {
     const fallback = this.requireDefaults();
     try {
       if (!existsSync(path)) {
-        return { ...fallback };
+        return { ...fallback, proxy: { ...fallback.proxy, profiles: [] } };
       }
       const raw = JSON.parse(readFileSync(path, 'utf-8'));
       if (raw) {
-        return { ...fallback, ...raw };
+        return {
+          ...fallback,
+          ...raw,
+          proxy: parseProxyFromDisk(raw.proxy),
+        };
       }
-      return { ...fallback };
+      return { ...fallback, proxy: { ...fallback.proxy, profiles: [] } };
     } catch {
-      return { ...fallback };
+      return { ...fallback, proxy: { ...fallback.proxy, profiles: [] } };
     }
   }
 

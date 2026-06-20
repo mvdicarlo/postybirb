@@ -29,6 +29,7 @@ import {
   SimpleValidationResult,
   SubmissionRating,
 } from '@postybirb/types';
+import { runWithProxyContextAsync } from '@postybirb/http';
 import {
   calculateImageResize,
   getFileTypeFromMimeType,
@@ -536,71 +537,75 @@ export default class Bluesky
   // follow what the website does here, which is the way that actually works.
   // We also use the same inconsistent header capitalization as they do.
   private async checkVideoUploadLimits(agent: LoggedInAgent): Promise<void> {
-    const token = await this.getAuthToken(
-      agent,
-      'did:web:video.bsky.app',
-      'app.bsky.video.getUploadLimits',
-    );
+    return runWithProxyContextAsync({ websiteId: 'bluesky' }, async () => {
+      const token = await this.getAuthToken(
+        agent,
+        'did:web:video.bsky.app',
+        'app.bsky.video.getUploadLimits',
+      );
 
-    const url = 'https://video.bsky.app/xrpc/app.bsky.video.getUploadLimits';
-    const req: RequestInit = {
-      method: 'GET',
-      headers: {
-        Accept: '*/*',
-        authorization: `Bearer ${token}`,
-        'atproto-accept-labelers': 'did:plc:ar7c4by46qjdydhdevvrndac;redact',
-      },
-    };
-    const uploadLimits =
-      await this.checkFetchResult<AppBskyVideoGetUploadLimits.OutputSchema>(
-        fetch(url, req),
-      ).catch((err) => {
-        this.logger.error(err);
-        throw new Error('Getting video upload limits failed', { cause: err });
-      });
+      const url = 'https://video.bsky.app/xrpc/app.bsky.video.getUploadLimits';
+      const req: RequestInit = {
+        method: 'GET',
+        headers: {
+          Accept: '*/*',
+          authorization: `Bearer ${token}`,
+          'atproto-accept-labelers': 'did:plc:ar7c4by46qjdydhdevvrndac;redact',
+        },
+      };
+      const uploadLimits =
+        await this.checkFetchResult<AppBskyVideoGetUploadLimits.OutputSchema>(
+          fetch(url, req),
+        ).catch((err) => {
+          this.logger.error(err);
+          throw new Error('Getting video upload limits failed', { cause: err });
+        });
 
-    this.logger.debug(`Upload limits: ${JSON.stringify(uploadLimits)}`);
-    if (!uploadLimits.canUpload) {
-      throw new Error(`Not allowed to upload: ${uploadLimits.message}`);
-    }
+      this.logger.debug(`Upload limits: ${JSON.stringify(uploadLimits)}`);
+      if (!uploadLimits.canUpload) {
+        throw new Error(`Not allowed to upload: ${uploadLimits.message}`);
+      }
+    });
   }
 
   private async uploadVideo(
     agent: LoggedInAgent,
     file: PostingFile,
   ): Promise<BlobRef> {
-    const token = await this.getAuthToken(
-      agent,
-      `did:web:${agent.pdsUrl.hostname}`,
-      'com.atproto.repo.uploadBlob',
-    );
-    const did = encodeURIComponent(agent.session.did);
-    const name = encodeURIComponent(this.generateVideoName());
-    const url = `https://video.bsky.app/xrpc/app.bsky.video.uploadVideo?did=${did}&name=${name}`;
-    const req: RequestInit = {
-      method: 'POST',
-      body: file.buffer as RequestInit['body'],
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': file.mimeType,
-      },
-    };
-    // Uploading an already-processed video returns 409 conflict, but a valid
-    // response that contains a job id at top level.
-    const videoUpload = await this.checkFetchResult<
-      JobStatus | AppBskyVideoUploadVideo.OutputSchema
-    >(fetch(url, req), true).catch((err) => {
-      this.logger.error(err);
-      throw new Error('Checking video processing status failed', {
-        cause: err,
+    return runWithProxyContextAsync({ websiteId: 'bluesky' }, async () => {
+      const token = await this.getAuthToken(
+        agent,
+        `did:web:${agent.pdsUrl.hostname}`,
+        'com.atproto.repo.uploadBlob',
+      );
+      const did = encodeURIComponent(agent.session.did);
+      const name = encodeURIComponent(this.generateVideoName());
+      const url = `https://video.bsky.app/xrpc/app.bsky.video.uploadVideo?did=${did}&name=${name}`;
+      const req: RequestInit = {
+        method: 'POST',
+        body: file.buffer as RequestInit['body'],
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': file.mimeType,
+        },
+      };
+      // Uploading an already-processed video returns 409 conflict, but a valid
+      // response that contains a job id at top level.
+      const videoUpload = await this.checkFetchResult<
+        JobStatus | AppBskyVideoUploadVideo.OutputSchema
+      >(fetch(url, req), true).catch((err) => {
+        this.logger.error(err);
+        throw new Error('Checking video processing status failed', {
+          cause: err,
+        });
       });
+      this.logger.debug(`Video upload: ${JSON.stringify(videoUpload)}`);
+      return this.waitForVideoProcessing(
+        'jobStatus' in videoUpload
+          ? videoUpload?.jobStatus?.jobId
+          : videoUpload?.jobId,
+      );
     });
-    this.logger.debug(`Video upload: ${JSON.stringify(videoUpload)}`);
-    return this.waitForVideoProcessing(
-      'jobStatus' in videoUpload
-        ? videoUpload?.jobStatus?.jobId
-        : videoUpload?.jobId,
-    );
   }
 
   private generateVideoName(): string {
@@ -614,44 +619,47 @@ export default class Bluesky
   }
 
   private async waitForVideoProcessing(jobId: string): Promise<BlobRef> {
-    const encodedJobId = encodeURIComponent(jobId);
-    const url = `https://video.bsky.app/xrpc/app.bsky.video.getJobStatus?jobId=${encodedJobId}`;
-    let jobStatus: JobStatus;
-    do {
-      await new Promise((r) => {
-        setTimeout(r, 4000);
-      });
-      this.logger.debug(`Polling video processing status at ${url}`);
-      const req: RequestInit = {
-        method: 'GET',
-        headers: {
-          'atproto-accept-labelers': 'did:plc:ar7c4by46qjdydhdevvrndac;redact',
-        },
-      };
-      const res =
-        await this.checkFetchResult<AppBskyVideoGetJobStatus.OutputSchema>(
-          fetch(url, req),
-        ).catch((err) => {
-          this.logger.error(err);
-          throw new Error('Checking video processing status failed', {
-            cause: err,
-          });
+    return runWithProxyContextAsync({ websiteId: 'bluesky' }, async () => {
+      const encodedJobId = encodeURIComponent(jobId);
+      const url = `https://video.bsky.app/xrpc/app.bsky.video.getJobStatus?jobId=${encodedJobId}`;
+      let jobStatus: JobStatus;
+      do {
+        await new Promise((r) => {
+          setTimeout(r, 4000);
         });
+        this.logger.debug(`Polling video processing status at ${url}`);
+        const req: RequestInit = {
+          method: 'GET',
+          headers: {
+            'atproto-accept-labelers':
+              'did:plc:ar7c4by46qjdydhdevvrndac;redact',
+          },
+        };
+        const res =
+          await this.checkFetchResult<AppBskyVideoGetJobStatus.OutputSchema>(
+            fetch(url, req),
+          ).catch((err) => {
+            this.logger.error(err);
+            throw new Error('Checking video processing status failed', {
+              cause: err,
+            });
+          });
 
-      this.logger.debug(`Job status: ${JSON.stringify(res)}`);
-      jobStatus = res.jobStatus;
-    } while (
-      jobStatus.state !== 'JOB_STATE_COMPLETED' &&
-      jobStatus.state !== 'JOB_STATE_FAILED'
-    );
+        this.logger.debug(`Job status: ${JSON.stringify(res)}`);
+        jobStatus = res.jobStatus;
+      } while (
+        jobStatus.state !== 'JOB_STATE_COMPLETED' &&
+        jobStatus.state !== 'JOB_STATE_FAILED'
+      );
 
-    if (jobStatus.state === 'JOB_STATE_COMPLETED') {
-      if (jobStatus.blob) return jobStatus.blob;
+      if (jobStatus.state === 'JOB_STATE_COMPLETED') {
+        if (jobStatus.blob) return jobStatus.blob;
 
-      throw new Error('No blob ref after video processing');
-    }
+        throw new Error('No blob ref after video processing');
+      }
 
-    throw new Error(`Video processing failed: ${jobStatus.message}`);
+      throw new Error(`Video processing failed: ${jobStatus.message}`);
+    });
   }
 
   private async checkFetchResult<T>(

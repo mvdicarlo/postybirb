@@ -3,7 +3,6 @@ import {
   isLinux,
   isOSX,
   PostyBirbEnvConfig,
-  StartupOptions,
   StartupOptionsManager,
 } from '@postybirb/utils/common';
 import {
@@ -151,6 +150,10 @@ export default class PostyBirb {
           checked: StartupOptionsManager.get().startAppOnSystemStartup,
           click(event) {
             const { checked } = event;
+            app.setLoginItemSettings({
+              openAtLogin: event.checked,
+              path: app.getPath('exe'),
+            });
             StartupOptionsManager.set({
               startAppOnSystemStartup: checked,
             });
@@ -176,25 +179,9 @@ export default class PostyBirb {
       tray.setContextMenu(Menu.buildFromTemplate(trayItems));
       tray.setToolTip('PostyBirb');
       tray.on('click', () => PostyBirb.showMainWindow());
-      StartupOptionsManager.onUpdate(PostyBirb.onStartupOptionsUpdate);
+      StartupOptionsManager.onUpdate(PostyBirb.refreshAppTray);
       PostyBirb.appTray = tray;
     }
-  }
-
-  private static onStartupOptionsUpdate(opts: StartupOptions) {
-    PostyBirb.syncLoginItemSettings(opts);
-    PostyBirb.refreshAppTray();
-  }
-
-  private static syncLoginItemSettings(opts: StartupOptions) {
-    if (isLinux()) {
-      return;
-    }
-
-    app.setLoginItemSettings({
-      openAtLogin: opts.startAppOnSystemStartup,
-      path: app.getPath('exe'),
-    });
   }
 
   private static refreshAppTray() {
@@ -234,8 +221,6 @@ export default class PostyBirb {
     if (PostyBirb.application.isReady()) {
       PostyBirb.onReady();
     }
-
-    PostyBirb.syncLoginItemSettings(StartupOptionsManager.get());
   }
 
   static registerNestApp(nestApp: INestApplication) {

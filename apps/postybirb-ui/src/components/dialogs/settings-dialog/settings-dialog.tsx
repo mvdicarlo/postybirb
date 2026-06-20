@@ -25,6 +25,7 @@ import {
   IconPalette,
   IconRouter,
   IconTags,
+  IconWorld,
 } from '@tabler/icons-react';
 import { useCallback, useState } from 'react';
 import { useActiveDrawer, useDrawerActions } from '../../../stores';
@@ -35,6 +36,7 @@ import {
   DescriptionSettingsSection,
   ImportSettingsSection,
   NotificationsSettingsSection,
+  ProxySettingsSection,
   RemoteSettingsSection,
   TagsSettingsSection,
 } from './sections';
@@ -51,6 +53,7 @@ type SettingsSection =
   | 'data'
   | 'description'
   | 'notifications'
+  | 'proxy'
   | 'remote'
   | 'tags'
   | 'spellchecker'
@@ -86,6 +89,11 @@ const NAV_ITEMS: NavItem[] = [
     id: 'notifications',
     label: <Trans>Notifications</Trans>,
     icon: <IconBell size={18} />,
+  },
+  {
+    id: 'proxy',
+    label: <Trans>Proxy</Trans>,
+    icon: <IconWorld size={18} />,
   },
   {
     id: 'remote',
@@ -136,6 +144,8 @@ export function SettingsDialog() {
         return <DescriptionSettingsSection />;
       case 'notifications':
         return <NotificationsSettingsSection />;
+      case 'proxy':
+        return <ProxySettingsSection />;
       case 'remote':
         return <RemoteSettingsSection />;
       case 'tags':

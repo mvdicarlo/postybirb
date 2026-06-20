@@ -18,6 +18,8 @@ contextBridge.exposeInMainWorld('electron', {
   getRemoteConfig: () => JSON.parse(process.env.remote || '{}'),
   getCookiesForAccount: (accountId: string) =>
     ipcRenderer.invoke('get-cookies-for-account', accountId),
+  ensurePartitionProxy: (accountId: string) =>
+    ipcRenderer.invoke('ensure-partition-proxy', accountId),
   // Gracefully request app quit from renderer
   quit: (code?: number) => ipcRenderer.send('quit', code),
   platform: process.platform,

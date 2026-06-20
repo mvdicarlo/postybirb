@@ -1,10 +1,14 @@
-import { Body, Controller, Get, Param, Patch } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import { ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { EntityId } from '@postybirb/types';
 import { SettingsRepository } from '@postybirb/database';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
 import { UpdateSettingsDto } from './dtos/update-settings.dto';
 import { UpdateStartupSettingsDto } from './dtos/update-startup-settings.dto';
+import {
+  TestProxyProfileDto,
+  TestRemoteConnectionDto,
+} from './dtos/update-proxy-settings.dto';
 import { SettingsService } from './settings.service';
 
 /**
@@ -33,6 +37,19 @@ export class SettingsController extends PostyBirbController<SettingsRepository> 
   @Get('startup')
   getStartupSettings() {
     return this.service.getStartupSettings();
+  }
+
+  @Post('startup/proxy/test')
+  testProxyConnection(@Body() proxyProfile: TestProxyProfileDto) {
+    return this.service.testProxyConnection(proxyProfile);
+  }
+
+  @Post('startup/remote/test')
+  testRemoteConnection(@Body() remoteConnection: TestRemoteConnectionDto) {
+    return this.service.testRemoteConnection(
+      remoteConnection.hostUrl,
+      remoteConnection.password,
+    );
   }
 
   @Patch('startup/system-startup')

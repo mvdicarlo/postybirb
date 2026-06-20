@@ -3,7 +3,7 @@ import type {
   IUpdateSettingsDto,
   SettingsDto,
 } from '@postybirb/types';
-import type { StartupOptions } from '@postybirb/utils/common';
+import type { ProxyProfile, StartupOptions } from '@postybirb/utils/common';
 import { HttpClient } from '../transports/http-client';
 
 class SettingsApi {
@@ -25,9 +25,22 @@ class SettingsApi {
   updateSystemStartupSettings(
     startAppOnSystemStartup: Partial<StartupOptions>,
   ) {
-    return this.client.patch<StartupOptions>(
-      `startup/system-startup`,
-      startAppOnSystemStartup,
+    return this.client.patch(`startup/system-startup`, startAppOnSystemStartup);
+  }
+
+  testProxyConnection(
+    proxy: ProxyProfile & { websiteId?: string },
+  ) {
+    return this.client.post<{ success: boolean; message: string }>(
+      'startup/proxy/test',
+      proxy,
+    );
+  }
+
+  testRemoteConnection(hostUrl: string, password: string) {
+    return this.client.post<{ success: boolean; message: string }>(
+      'startup/remote/test',
+      { hostUrl, password },
     );
   }
 }

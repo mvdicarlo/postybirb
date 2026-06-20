@@ -13,6 +13,12 @@ import {
   NULL_ACCOUNT_ID,
   NullAccount,
 } from '@postybirb/types';
+import {
+  applyProxySettings,
+  ensurePartitionProxy,
+  runWithProxyContextAsync,
+  setPartitionIdProvider,
+} from '@postybirb/http';
 import { IsTestEnvironment } from '@postybirb/utils/common';
 import { ne } from 'drizzle-orm';
 import { Class } from 'type-fest';
@@ -61,12 +67,27 @@ export class AccountService
    * Heavy operations are deferred to avoid blocking application startup.
    */
   async onModuleInit() {
+    setPartitionIdProvider(async () => {
+      const accounts = await this.repository.find({
+        where: ne(this.table.id, NULL_ACCOUNT_ID),
+      });
+      return accounts.map((account) => ({
+        partitionId: account.id,
+        websiteId: account.website,
+      }));
+    });
+
     // Critical path: only populate null account to ensure database is ready
     await this.populateNullAccount();
 
     // Defer heavy operations to avoid blocking NestJS initialization
     setImmediate(async () => {
       await this.deleteUnregisteredAccounts();
+
+      if (!IsTestEnvironment()) {
+        await applyProxySettings();
+      }
+
       await this.initWebsiteRegistry();
       this.websiteRegistry.markAsInitialized();
       this.initWebsiteLoginRefreshTimers();
@@ -180,8 +201,14 @@ export class AccountService
     const { websites } = this.loginRefreshTimers[interval];
     websites.forEach((website) => {
       this.websiteRegistry.getInstancesOf(website).forEach((instance) => {
-        // Fire-and-forget — the poller will detect state changes
-        instance.login().catch((e) => {
+        const websiteId = instance.decoratedProps.metadata.name;
+        this.logger.info(
+          `[ProxyContext] login refresh websiteId=${websiteId} accountId=${instance.account.id}`,
+        );
+        runWithProxyContextAsync(
+          { websiteId, accountId: instance.account.id },
+          () => instance.login(),
+        ).catch((e) => {
           this.logger.withError(e).error(`Login failed for ${instance.id}`);
         });
       });
@@ -195,8 +222,13 @@ export class AccountService
    * @param {UnknownWebsite} website
    */
   private afterCreate(account: Account, website: UnknownWebsite) {
-    // Fire-and-forget — poller picks up the state change
-    website.login().catch((e) => {
+    this.logger.info(
+      `[ProxyContext] afterCreate websiteId=${account.website} accountId=${account.id}`,
+    );
+    runWithProxyContextAsync(
+      { websiteId: account.website, accountId: account.id },
+      () => website.login(),
+    ).catch((e) => {
       this.logger.withError(e).error(`Initial login failed for ${website.id}`);
     });
   }
@@ -225,7 +257,15 @@ export class AccountService
       instance = await this.websiteRegistry.create(account);
     }
 
-    instance.login().catch((e) => {
+    this.logger.info(
+      `[ProxyContext] registerAndLogin websiteId=${account.website} accountId=${account.id}`,
+    );
+    await runWithProxyContextAsync(
+      { websiteId: account.website, accountId: account.id },
+      async () => {
+        await instance.login();
+      },
+    ).catch((e) => {
       this.logger.withError(e).error(`Login failed for ${instance.id}`);
     });
   }
@@ -241,7 +281,13 @@ export class AccountService
     if (account) {
       const instance = this.websiteRegistry.findInstance(account);
       if (instance) {
-        await instance.login();
+        this.logger.info(
+          `[ProxyContext] manuallyExecuteOnLogin websiteId=${account.website} accountId=${account.id}`,
+        );
+        await runWithProxyContextAsync(
+          { websiteId: account.website, accountId: account.id },
+          () => instance.login(),
+        );
         // Force an immediate UI update for this instance
         this.loginStatePoller.checkInstance(instance);
       }
@@ -263,6 +309,9 @@ export class AccountService
       );
     }
     const account = await this.repository.insert(new Account(createDto));
+    if (!IsTestEnvironment()) {
+      await ensurePartitionProxy(account.id);
+    }
     const instance = await this.websiteRegistry.create(account);
     this.afterCreate(account, instance);
     return account.withWebsiteInstance(instance);
@@ -289,9 +338,15 @@ export class AccountService
 
   async update(id: AccountId, update: UpdateAccountDto) {
     this.logger.withMetadata(update).info(`Updating Account '${id}'`);
-    return this.repository
+    const account = await this.repository
       .update(id, update)
-      .then((account) => this.injectWebsiteInstance(account));
+      .then((entity) => this.injectWebsiteInstance(entity));
+
+    if (!IsTestEnvironment()) {
+      await applyProxySettings();
+    }
+
+    return account;
   }
 
   async remove(id: AccountId): Promise<void> {
@@ -300,6 +355,10 @@ export class AccountService
       this.websiteRegistry.remove(account);
     }
     await super.remove(id);
+
+    if (!IsTestEnvironment()) {
+      await applyProxySettings();
+    }
   }
 
   /**

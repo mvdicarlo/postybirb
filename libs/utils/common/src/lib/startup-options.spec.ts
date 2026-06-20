@@ -2,6 +2,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { StartupOptions, StartupOptionsStore } from './startup-options';
+import { DEFAULT_PROXY_CONFIGURATION } from './proxy-settings';
 
 let tmpDir: string;
 let store: StartupOptionsStore;
@@ -11,6 +12,7 @@ const DEFAULTS: StartupOptions = {
   spellchecker: true,
   appDataPath: '/default/path',
   port: '9487',
+  proxy: { ...DEFAULT_PROXY_CONFIGURATION, profiles: [] },
 };
 
 function makeStore(overrides: Partial<typeof DEFAULTS> = {}): StartupOptionsStore {
@@ -133,6 +135,138 @@ describe('StartupOptionsStore — set()', () => {
     const opts = store.get();
     expect(opts.port).toBe('4444');
     expect(opts.spellchecker).toBe(false);
+  });
+
+  it('replaces profiles array when proxy.profiles is provided', () => {
+    const firstProfile = {
+      id: 'profile-1',
+      enabled: true,
+      type: 'http' as const,
+      host: '10.0.0.1',
+      port: '8080',
+      username: 'user',
+      password: 'secret',
+      websites: ['pixiv' as const],
+    };
+
+    store.set({
+      proxy: {
+        profiles: [firstProfile],
+      },
+    });
+
+    store.set({
+      proxy: {
+        profiles: [
+          {
+            ...firstProfile,
+            enabled: false,
+          },
+        ],
+      },
+    });
+
+    const opts = store.get();
+    expect(opts.proxy).toEqual({
+      profiles: [
+        {
+          ...firstProfile,
+          enabled: false,
+        },
+      ],
+    });
+
+    const raw = JSON.parse(readFileSync(join(tmpDir, 'startup.json'), 'utf-8'));
+    expect(raw.proxy).toEqual(opts.proxy);
+  });
+
+  it('defaults invalid flat proxy on disk to empty profiles', () => {
+    const path = join(tmpDir, 'startup.json');
+    writeFileSync(
+      path,
+      JSON.stringify({
+        proxy: {
+          enabled: true,
+          host: 'proxy.example.com',
+          port: '3128',
+        },
+      }),
+    );
+    const s = makeStore();
+    expect(s.get().proxy).toEqual({
+      profiles: [],
+    });
+  });
+
+  it('defaults proxy object without profiles array to empty profiles', () => {
+    const path = join(tmpDir, 'startup.json');
+    writeFileSync(
+      path,
+      JSON.stringify({
+        proxy: {
+          enabled: true,
+        },
+      }),
+    );
+    const s = makeStore();
+    expect(s.get().proxy).toEqual({
+      profiles: [],
+    });
+  });
+
+  it('loads valid proxy configuration from disk', () => {
+    const path = join(tmpDir, 'startup.json');
+    writeFileSync(
+      path,
+      JSON.stringify({
+        proxy: {
+          profiles: [
+            {
+              id: 'profile-1',
+              enabled: true,
+              type: 'http',
+              host: 'proxy.example.com',
+              port: '3128',
+              username: '',
+              password: '',
+              websites: ['discord'],
+            },
+          ],
+        },
+      }),
+    );
+    const s = makeStore();
+    expect(s.get().proxy).toMatchObject({
+      profiles: [
+        expect.objectContaining({
+          host: 'proxy.example.com',
+          port: '3128',
+        }),
+      ],
+    });
+  });
+
+  it('returns a deep copy of proxy profiles — mutations do not affect stored state', () => {
+    store.set({
+      proxy: {
+        profiles: [
+          {
+            id: 'profile-1',
+            enabled: false,
+            type: 'http',
+            host: '',
+            port: '',
+            username: '',
+            password: '',
+            websites: [],
+          },
+        ],
+      },
+    });
+
+    const opts = store.get();
+    opts.proxy.profiles[0].enabled = true;
+    expect(store.get().proxy.profiles[0].enabled).toBe(false);
   });
 });
 

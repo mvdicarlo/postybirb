@@ -2,6 +2,10 @@
 import { Logger } from '@nestjs/common';
 import { trackDependency, trackException } from '@postybirb/logger';
 import {
+  getPartitionKey,
+  resolveProfileForWebsite,
+} from '@postybirb/utils/common';
+import {
   BrowserWindow,
   ClientRequest,
   ClientRequestConstructorOptions,
@@ -12,6 +16,15 @@ import FormData from 'form-data';
 import urlEncoded from 'form-urlencoded';
 import { encode as encodeQueryString } from 'querystring';
 import { FormFile } from './form-file';
+import {
+  attachProxyAuthToRequest,
+  ensurePartitionProxy,
+  getActiveProxyConfiguration,
+} from './electron-proxy-manager';
+import {
+  getEphemeralProxyPartitionId,
+  getProxyContext,
+} from './proxy-context';
 import {
   BinaryPostOptions,
   HttpOptions,
@@ -50,8 +63,23 @@ interface CreateBodyData {
   buffer: Buffer;
 }
 
-function getPartitionKey(partition: string): string {
-  return `persist:${partition}`;
+async function ensureRequestProxy(options: HttpOptions) {
+  if (options.partition?.trim()) {
+    await ensurePartitionProxy(options.partition);
+    return;
+  }
+
+  const context = getProxyContext();
+  if (context.websiteId) {
+    const profile = resolveProfileForWebsite(
+      context.websiteId,
+      getActiveProxyConfiguration(),
+    );
+    const ephemeralPartition = getEphemeralProxyPartitionId(context.websiteId);
+    await ensurePartitionProxy(ephemeralPartition, profile ?? undefined);
+    // eslint-disable-next-line no-param-reassign
+    options.partition = ephemeralPartition;
+  }
 }
 
 /**
@@ -142,6 +170,7 @@ export class Http {
     }
 
     const req = net.request(clientRequestOptions);
+    attachProxyAuthToRequest(req, options.partition);
     if (
       clientRequestOptions.method === 'POST' ||
       clientRequestOptions.method === 'PATCH' ||
@@ -320,7 +349,9 @@ export class Http {
     partitionId: string,
     url: string,
   ): Promise<Electron.Cookie[]> {
-    return session.fromPartition(`persist:${partitionId}`).cookies.get({
+    await ensurePartitionProxy(partitionId);
+    const sess = session.fromPartition(getPartitionKey(partitionId));
+    return sess.cookies.get({
       url: new URL(url).origin,
     });
   }
@@ -347,6 +378,8 @@ export class Http {
     let error: Error | undefined;
 
     try {
+      await ensureRequestProxy(options);
+
       const response = await new Promise<HttpResponse<T>>((resolve, reject) => {
         const req = Http.createClientRequest(options, {
           ...(crOptions ?? {}),
@@ -460,6 +493,8 @@ export class Http {
         return response;
       }
 
+      await ensureRequestProxy(options);
+
       const response = await new Promise<HttpResponse<T>>((resolve, reject) => {
         const req = Http.createClientRequest(options, {
           ...(crOptions ?? {}),
@@ -509,6 +544,8 @@ export class Http {
     options: HttpOptions,
     crOptions?: ClientRequestConstructorOptions,
   ): Promise<HttpResponse<T>> {
+    await ensureRequestProxy(options);
+
     const window = new BrowserWindow({
       show: false,
       webPreferences: {
@@ -534,6 +571,8 @@ export class Http {
     options: PostOptions | BinaryPostOptions,
     crOptions: ClientRequestConstructorOptions,
   ): Promise<HttpResponse<T>> {
+    await ensureRequestProxy(options);
+
     const { contentType, buffer } = Http.createPostBody(options);
     const headers = Object.entries({
       ...(options.headers ?? {}),

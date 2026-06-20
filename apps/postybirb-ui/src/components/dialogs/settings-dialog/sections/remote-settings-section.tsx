@@ -25,6 +25,7 @@ import {
   IconServer,
 } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
+import settingsApi from '../../../../api/settings.api';
 import {
   getRemoteConfig,
   resetRemoteConfig,
@@ -42,7 +43,6 @@ export function RemoteSettingsSection() {
   const [isConnectionValid, setIsConnectionValid] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [showLanIp, setShowLanIp] = useState(false);
   const [lanIp, setLanIp] = useState<string>('localhost:9487');
   const electronRemoteConfig = window.electron?.getRemoteConfig() ?? {
     enabled: true,
@@ -92,26 +92,24 @@ export function RemoteSettingsSection() {
     setIsConnectionValid(false);
 
     try {
-      const url = `https://${hostUrl.trim()}/api/remote/ping/${encodeURIComponent(remotePassword.trim())}`;
-      const res = await fetch(url);
-      const response = await res.json();
+      const result = await settingsApi.testRemoteConnection(
+        hostUrl.trim(),
+        remotePassword.trim(),
+      );
 
-      if (!res.ok) {
-        const errorInfo = {
-          error: response.error || t`Connection Failed`,
-          statusCode: response.statusCode || res.status,
-          message: response.message || t`Failed to connect to remote host`,
-        };
-        showConnectionErrorNotification(
-          `${errorInfo.error} (${errorInfo.statusCode})`,
-          errorInfo.message,
+      if (result.body.success) {
+        setIsConnectionValid(true);
+        showConnectionSuccessNotification(
+          result.body.message || (
+            <Trans>Successfully connected to the remote host</Trans>
+          ),
         );
         return;
       }
 
-      setIsConnectionValid(true);
-      showConnectionSuccessNotification(
-        <Trans>Successfully connected to the remote host</Trans>,
+      showConnectionErrorNotification(
+        <Trans>Connection Failed</Trans>,
+        result.body.message || t`Failed to connect to remote host`,
       );
     } catch (error) {
       if (error instanceof TypeError) {
@@ -206,26 +204,13 @@ export function RemoteSettingsSection() {
                 <TextInput
                   label={<Trans>LAN IP</Trans>}
                   leftSection={<IconPlug size={18} />}
-                  value={showLanIp ? lanIp : '•••••••••••'}
+                  value={lanIp}
                   readOnly
                   style={{ flex: 1 }}
                   rightSection={
-                    <Group gap={4}>
-                      <Button
-                        variant="subtle"
-                        size="compact-sm"
-                        onClick={() => setShowLanIp(!showLanIp)}
-                      >
-                        {showLanIp ? (
-                          <IconEyeOff size={16} />
-                        ) : (
-                          <IconEye size={16} />
-                        )}
-                      </Button>
-                      <CopyToClipboard value={lanIp} size="xs" />
-                    </Group>
+                    <CopyToClipboard value={lanIp} size="xs" />
                   }
-                  rightSectionWidth={80}
+                  rightSectionWidth={44}
                 />
               </Group>
 

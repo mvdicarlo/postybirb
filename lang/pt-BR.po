@@ -175,6 +175,10 @@ msgstr ""
 msgid "Add an account to start posting"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "Add profile"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/drawers/custom-shortcuts-drawer/custom-shortcuts-drawer.tsx
 #: apps/postybirb-ui/src/components/drawers/custom-shortcuts-drawer/custom-shortcuts-drawer.tsx
 msgid "Add shortcut"
@@ -579,6 +583,10 @@ msgstr ""
 msgid "Change the application language. PostyBirb is available in multiple languages thanks to community translations."
 msgstr ""
 
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/app-settings-section.tsx
+msgid "Changing storage folder does not automatically move app data. You need to change location, quit using button below and then manually move files."
+msgstr ""
+
 #: libs/translations/src/lib/field-translations.ts
 msgid "Channel"
 msgstr ""
@@ -597,6 +605,10 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/bluesky/bluesky-login-view.tsx
 msgid "Check that handle and password are valid or try using email instead of handle."
+msgstr ""
+
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "Check that profiles are valid and websites are not duplicated"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/telegram/telegram-login-view.tsx
@@ -711,6 +723,7 @@ msgstr ""
 msgid "Completing authorization..."
 msgstr ""
 
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/remote-settings-section.tsx
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/remote-settings-section.tsx
 msgid "Configuration Error"
@@ -745,6 +758,8 @@ msgstr ""
 msgid "Connection error"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/remote-settings-section.tsx
 msgid "Connection Failed"
 msgstr ""
@@ -782,6 +797,10 @@ msgstr ""
 #: apps/postybirb-ui/src/components/shared/copy-to-clipboard/copy-to-clipboard.tsx
 #: apps/postybirb-ui/src/components/shared/copy-to-clipboard/copy-to-clipboard.tsx
 msgid "Copy"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "Could not reach the test URL through the configured proxy"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/drawers/converter-drawer/converter-drawer.tsx
@@ -837,6 +856,10 @@ msgstr ""
 #: apps/postybirb-ui/src/components/sections/templates-section/templates-section.tsx
 #: apps/postybirb-ui/src/components/sections/templates-section/templates-section.tsx
 msgid "Create New Template"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "Create proxy profiles and assign websites to each profile."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/layout-tour.tsx
@@ -1243,6 +1266,10 @@ msgstr ""
 msgid "Editor Tour"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "Enable"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/notifications-settings-section.tsx
 msgid "Enable desktop notifications"
 msgstr ""
@@ -1446,6 +1473,10 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/file-management/file-metadata.tsx
 msgid "Failed to save metadata"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "Failed to save proxy settings"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/shared/multi-scheduler-modal/multi-scheduler-modal.tsx
@@ -1667,6 +1698,11 @@ msgstr ""
 msgid "General"
 msgstr ""
 
+#. SoFurry login form
+#: apps/postybirb-ui/src/components/website-login-views/sofurry/sofurry-login-view.tsx
+msgid "Generate a Personal Access Token from your <0>account settings</0>"
+msgstr ""
+
 #. E621 login form
 #: apps/postybirb-ui/src/components/website-login-views/e621/e621-login-view.tsx
 msgid "Generate an API key from your <0>account settings</0>"
@@ -1790,6 +1826,7 @@ msgstr ""
 msgid "Home Dashboard"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/remote-settings-section.tsx
 msgid "Host"
 msgstr ""
@@ -1811,12 +1848,20 @@ msgctxt "discord.webhook-help"
 msgid "How to create a webhook"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "HTTP(S) profiles cannot be used for Teleproto."
+msgstr ""
+
 #: apps/postybirb-ui/src/components/disclaimer/disclaimer.tsx
 msgid "I have read, understand, and accept the disclaimer."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/bluesky/bluesky-login-view.tsx
 msgid "If you are using pds other then bsky.social"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/app-settings-section.tsx
+msgid "If you change these settings you will need to restart the app using the Quit button to apply them."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/disclaimer/disclaimer.tsx
@@ -1936,6 +1981,10 @@ msgstr ""
 
 #: apps/postybirb-ui/src/config/nav-items.tsx
 msgid "Ko-fi"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "Label (optional)"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/remote-settings-section.tsx
@@ -2217,6 +2266,10 @@ msgstr ""
 msgid "No preview available"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "No proxy profiles configured."
+msgstr ""
+
 #: apps/postybirb-ui/src/components/empty-state/empty-state.tsx
 msgid "No records yet"
 msgstr ""
@@ -2353,6 +2406,10 @@ msgstr ""
 msgid "Only set scheduled date (don't activate)"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "Only SOCKS5 type or use POSTYBIRB_TELEGRAM_MTPROXY."
+msgstr ""
+
 #: apps/postybirb-ui/src/components/shared/schedule-popover/cron-picker.tsx
 msgid "Open CRON helper"
 msgstr ""
@@ -2405,6 +2462,10 @@ msgstr ""
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/remote-settings-section.tsx
 #: apps/postybirb-ui/src/components/website-login-views/inkbunny/inkbunny-login-view.tsx
 msgid "Password"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "Password (optional)"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/telegram/telegram-login-view.tsx
@@ -2466,6 +2527,10 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/helpers.tsx
 msgid "Please check your credentials and try again"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "Port"
 msgstr ""
 
 #: apps/postybirb-ui/src/i18n/languages.tsx
@@ -2554,6 +2619,32 @@ msgstr ""
 msgid "Profanity"
 msgstr ""
 
+#. placeholder {0}: index + 1
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "Profile {0}"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/settings-dialog.tsx
+msgid "Proxy"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "Proxy connection test succeeded"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "Proxy host and port are required"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "Proxy settings saved and applied"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "Proxy type"
+msgstr ""
+
 #: libs/translations/src/lib/field-translations.ts
 msgid "Public viewers"
 msgstr ""
@@ -2582,6 +2673,10 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/accounts-tour.tsx
 msgid "Quickly find accounts that need attention. Filter by All, Logged in, or Not logged in status."
+msgstr ""
+
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/app-settings-section.tsx
+msgid "Quit"
 msgstr ""
 
 #: libs/translations/src/lib/field-translations.ts
@@ -2820,12 +2915,14 @@ msgstr ""
 msgid "Sa"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/remote-settings-section.tsx
 #: apps/postybirb-ui/src/components/sections/templates-section/template-card.tsx
 #: apps/postybirb-ui/src/components/website-login-views/bluesky/bluesky-login-view.tsx
 #: apps/postybirb-ui/src/components/website-login-views/discord/discord-login-view.tsx
 #: apps/postybirb-ui/src/components/website-login-views/e621/e621-login-view.tsx
 #: apps/postybirb-ui/src/components/website-login-views/inkbunny/inkbunny-login-view.tsx
+#: apps/postybirb-ui/src/components/website-login-views/sofurry/sofurry-login-view.tsx
 msgid "Save"
 msgstr ""
 
@@ -2861,6 +2958,10 @@ msgstr ""
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/actions/save-to-many-action.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/actions/save-to-many-action.tsx
 msgid "Save to submissions"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "Saved settings apply right away. Reload any open login pages."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/drawers/schedule-drawer/schedule-drawer.tsx
@@ -3175,6 +3276,10 @@ msgstr ""
 
 #: libs/translations/src/lib/field-translations.ts
 msgid "Software"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/website-login-views/sofurry/sofurry-login-view.tsx
+msgid "SoFurry uses a Personal Access Token (PAT) to authenticate PostyBirb with its public API."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/home-section/account-health-panel.tsx
@@ -3562,6 +3667,7 @@ msgstr ""
 msgid "Templates Tour"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/remote-settings-section.tsx
 msgid "Test Connection"
 msgstr ""
@@ -3905,6 +4011,10 @@ msgstr ""
 msgid "Username"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "Username (optional)"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/drawers/user-converter-drawer/user-converter-drawer.tsx
 msgid "username alias"
 msgstr ""
@@ -3940,6 +4050,7 @@ msgstr ""
 msgid "Video"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/drawers/notifications-drawer/notifications-drawer.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-record-card.tsx
 msgid "View"
 msgstr ""
@@ -4046,6 +4157,7 @@ msgstr ""
 msgid "Website-Specific Options"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/account-select.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/account-selection-form.tsx
 #: apps/postybirb-ui/src/components/shared/account-picker/account-picker.tsx
@@ -4090,7 +4202,7 @@ msgid "Width"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/submission-edit-tour.tsx
-msgid "Write your post description with rich text formatting. Type @ to insert username shortcuts, {curlyBrace} to insert custom text shortcuts, or use the / slash menu for headings, lists, and more. Shortcuts are automatically expanded per website when posting."
+msgid "Write your post description with rich text formatting. Type @ to insert username shortcuts, { to insert custom text shortcuts, or use the / slash menu for headings, lists, and more. Shortcuts are automatically expanded per website when posting."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/disclaimer/disclaimer.tsx

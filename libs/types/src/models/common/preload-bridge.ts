@@ -6,6 +6,7 @@ export interface PreloadBridge {
   pickDirectory?(defaultPath?: string): Promise<string | undefined>;
   openExternalLink(url: string): void;
   getCookiesForAccount(accountId: string): Promise<string>;
+  ensurePartitionProxy(accountId: string): Promise<void>;
   quit(code?: number): void;
   platform: NodeJS.Platform;
   app_port: string;

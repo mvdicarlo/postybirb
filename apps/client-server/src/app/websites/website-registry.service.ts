@@ -246,6 +246,16 @@ export class WebsiteRegistryService {
   }
 
   /**
+   * Returns website ids registered in the website registry.
+   * Used by proxy settings UI for exclusive website assignment.
+   */
+  public getAvailableWebsiteIds(): string[] {
+    return Object.keys(this.availableWebsites).sort((a, b) =>
+      a.localeCompare(b),
+    );
+  }
+
+  /**
    * Returns a list of all available websites for UI.
    * @return {*}  {Promise<IWebsiteInfoDto[]>}
    */
