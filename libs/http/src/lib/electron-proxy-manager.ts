@@ -1,4 +1,10 @@
-import { app, ClientRequest, session, Session } from 'electron';
+import {
+  app,
+  ClientRequest,
+  session,
+  Session,
+  type ProxyConfig,
+} from 'electron';
 import { HttpProxyAgent } from 'http-proxy-agent';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import http from 'node:http';
@@ -20,6 +26,11 @@ import { getProxyContext } from './proxy-context';
 export type PartitionEntry = {
   partitionId: string;
   websiteId: WebsiteId;
+};
+
+type ProxyCredentials = {
+  username: string;
+  password: string;
 };
 
 type PartitionIdProvider = () => Promise<PartitionEntry[]> | PartitionEntry[];
@@ -60,12 +71,10 @@ let activeProxyConfiguration: ProxyConfiguration = {
   ...DEFAULT_PROXY_CONFIGURATION,
   profiles: [],
 };
-const partitionAuthCredentials = new Map<
-  string,
-  { username: string; password: string }
->();
-const partitionSessionLoginHandlers = new WeakSet<Session>();
+const partitionAuthCredentials = new Map<string, ProxyCredentials>();
+const sessionPartitionIds = new WeakMap<Session, string>();
 const proxyConfigurationListeners = new Set<ProxyConfigurationListener>();
+let appProxyLoginHandlerRegistered = false;
 
 function readStartupProxyConfiguration(): ProxyConfiguration {
   try {
@@ -83,11 +92,11 @@ function readStartupProxyConfiguration(): ProxyConfiguration {
 
 activeProxyConfiguration = readStartupProxyConfiguration();
 
-function getSystemProxyConfig(): Electron.ProxyConfig {
+function getSystemProxyConfig(): ProxyConfig {
   return { mode: 'system' };
 }
 
-function getFixedProxyConfig(profile: ProxyProfile): Electron.ProxyConfig {
+function getFixedProxyConfig(profile: ProxyProfile): ProxyConfig {
   const proxyRules = buildSessionProxyRules(profile);
   if (!proxyRules) {
     return getSystemProxyConfig();
@@ -112,21 +121,46 @@ function storePartitionAuth(partitionId: string, profile: ProxyProfile): void {
   partitionAuthCredentials.delete(partitionId);
 }
 
-function attachPartitionSessionLoginHandler(
-  targetSession: Session,
-  partitionId: string,
-): void {
-  if (partitionSessionLoginHandlers.has(targetSession)) {
-    return;
+function getPartitionIdFromSession(targetSession: Session): string | null {
+  const mapped = sessionPartitionIds.get(targetSession);
+  if (mapped) {
+    return mapped;
   }
 
-  partitionSessionLoginHandlers.add(targetSession);
-  targetSession.on('login', (event, _webContents, _request, authInfo, callback) => {
-    if (!authInfo?.isProxy) {
+  for (const partitionId of partitionAuthCredentials.keys()) {
+    if (session.fromPartition(`persist:${partitionId}`) === targetSession) {
+      sessionPartitionIds.set(targetSession, partitionId);
+      return partitionId;
+    }
+  }
+
+  return null;
+}
+
+function resolveStoredProxyCredentials(
+  partitionId?: string | null,
+): ProxyCredentials | null {
+  if (partitionId) {
+    const partitionCredentials = partitionAuthCredentials.get(partitionId);
+    if (partitionCredentials) {
+      return partitionCredentials;
+    }
+  }
+
+  return getProfileAuthFromContext();
+}
+
+if (!appProxyLoginHandlerRegistered) {
+  appProxyLoginHandlerRegistered = true;
+  app.on('login', (event, webContents, _details, authInfo, callback) => {
+    if (!authInfo.isProxy) {
       return;
     }
 
-    const credentials = partitionAuthCredentials.get(partitionId);
+    const partitionId = webContents
+      ? getPartitionIdFromSession(webContents.session)
+      : null;
+    const credentials = resolveStoredProxyCredentials(partitionId);
     if (!credentials) {
       return;
     }
@@ -166,9 +200,9 @@ async function applyProfileToSession(
   await targetSession.setProxy(config);
 
   if (partitionId) {
+    sessionPartitionIds.set(targetSession, partitionId);
     if (normalized?.enabled) {
       storePartitionAuth(partitionId, normalized);
-      attachPartitionSessionLoginHandler(targetSession, partitionId);
     } else {
       partitionAuthCredentials.delete(partitionId);
     }
@@ -215,9 +249,7 @@ export function resolveProfileForContext(): ProxyProfile | null {
   );
 }
 
-export function getProfileAuthFromContext():
-  | { username: string; password: string }
-  | null {
+export function getProfileAuthFromContext(): ProxyCredentials | null {
   const profile = resolveProfileForContext();
   if (
     !profile?.enabled ||
@@ -237,23 +269,13 @@ export function attachProxyAuthToRequest(
   request: ClientRequest,
   partitionId?: string,
 ): void {
-  type LoginCallback = (username?: string, password?: string) => void;
-  type ProxyLoginRequest = {
-    on: (
-      event: 'login',
-      listener: (authInfo: Electron.AuthInfo, callback: LoginCallback) => void,
-    ) => ClientRequest;
-  };
-  const proxyLoginRequest = request as unknown as ProxyLoginRequest;
-  proxyLoginRequest.on('login', (authInfo, callback) => {
-    if (!authInfo?.isProxy) {
+  request.on('login', (authInfo, callback) => {
+    if (!authInfo.isProxy) {
       callback();
       return;
     }
 
-    const credentials =
-      (partitionId ? partitionAuthCredentials.get(partitionId) : undefined) ??
-      getProfileAuthFromContext();
+    const credentials = resolveStoredProxyCredentials(partitionId);
     if (!credentials) {
       callback();
       return;

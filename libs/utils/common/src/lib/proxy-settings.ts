@@ -90,7 +90,7 @@ export function buildProxyRules(input?: Partial<ProxyProfile>): string {
 
 /**
  * Proxy rules for Electron `session.setProxy`. Chromium webviews ignore
- * credentials embedded in proxyRules; auth is supplied via session `login`.
+ * credentials embedded in proxyRules; auth is supplied via app `login`.
  */
 export function buildSessionProxyRules(input?: Partial<ProxyProfile>): string {
   const profile = normalizeProxyProfile(input);
@@ -98,7 +98,12 @@ export function buildSessionProxyRules(input?: Partial<ProxyProfile>): string {
     return '';
   }
 
-  return `${profile.type}://${profile.host}:${profile.port}`;
+  if (profile.type === 'socks5') {
+    return `socks5://${profile.host}:${profile.port}`;
+  }
+
+  // Chromium PAC-style rules for HTTP CONNECT proxies in webviews.
+  return `http=${profile.host}:${profile.port};https=${profile.host}:${profile.port}`;
 }
 
 export function buildProxyAgentUrl(

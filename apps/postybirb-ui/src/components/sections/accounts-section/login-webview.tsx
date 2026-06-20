@@ -266,7 +266,24 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
     }
   }, [lastAccount, accountId, resetWebview, src]);
 
-  if (resetWebview || !proxyReady) return null;
+  if (resetWebview) {
+    return null;
+  }
+
+  if (!proxyReady) {
+    return (
+      <Box
+        h="100%"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Loader size="lg" />
+      </Box>
+    );
+  }
 
   return (
     <Box

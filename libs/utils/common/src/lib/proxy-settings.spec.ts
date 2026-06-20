@@ -103,7 +103,7 @@ describe('buildSessionProxyRules', () => {
         password: 'pass',
         websites: [],
       }),
-    ).toBe('http://proxy.example.com:8080');
+    ).toBe('http=proxy.example.com:8080;https=proxy.example.com:8080');
   });
 });
 
