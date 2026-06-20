@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { runWithProxyContextAsync } from '@postybirb/http';
 import { Logger, PostyBirbLogger } from '@postybirb/logger';
+import { DynamicObject } from '@postybirb/types';
 
 const GRAPH_API_BASE = 'https://graph.instagram.com/v21.0';
 
@@ -11,39 +12,6 @@ function fetchWithInstagramProxy(
   return runWithProxyContextAsync({ websiteId: 'instagram' }, () =>
     fetch(input, init),
   );
-}
-
-type InstagramApiError = {
-  message?: string;
-  [key: string]: unknown;
-};
-
-type InstagramApiPayload = {
-  error?: InstagramApiError;
-  [key: string]: unknown;
-};
-
-function toApiPayload(value: unknown): InstagramApiPayload {
-  if (value && typeof value === 'object') {
-    return value as InstagramApiPayload;
-  }
-  return {};
-}
-
-function readString(
-  payload: Record<string, unknown>,
-  key: string,
-): string | undefined {
-  const value = payload[key];
-  return typeof value === 'string' ? value : undefined;
-}
-
-function readNumber(
-  payload: Record<string, unknown>,
-  key: string,
-): number | undefined {
-  const value = payload[key];
-  return typeof value === 'number' ? value : undefined;
 }
 
 /**
@@ -190,26 +158,19 @@ export class InstagramApiService {
         body: params.toString(),
       },
     );
-    const data = toApiPayload(await response.json());
+    const data = (await response.json()) as DynamicObject;
 
     if (data.error) {
       InstagramApiService.logger.error('Token exchange failed', data.error);
       throw new Error(
-        readString(data.error, 'message') || 'Failed to exchange code for token',
+        data.error.message || 'Failed to exchange code for token',
       );
     }
 
-    const accessToken = readString(data, 'access_token');
-    const tokenType = readString(data, 'token_type');
-    const expiresIn = readNumber(data, 'expires_in');
-    if (!accessToken || !tokenType || expiresIn === undefined) {
-      throw new Error('Instagram token response is missing required fields');
-    }
-
     return {
-      accessToken,
-      tokenType,
-      expiresIn,
+      accessToken: data.access_token,
+      tokenType: data.token_type,
+      expiresIn: data.expires_in,
     };
   }
 
@@ -228,29 +189,20 @@ export class InstagramApiService {
       `&access_token=${encodeURIComponent(shortLivedToken)}`;
 
     const response = await fetchWithInstagramProxy(url);
-    const data = toApiPayload(await response.json());
+    const data = (await response.json()) as DynamicObject;
 
     if (data.error) {
       InstagramApiService.logger.error(
         'Long-lived token exchange failed',
         data.error,
       );
-      throw new Error(
-        readString(data.error, 'message') || 'Failed to get long-lived token',
-      );
-    }
-
-    const accessToken = readString(data, 'access_token');
-    const tokenType = readString(data, 'token_type');
-    const expiresIn = readNumber(data, 'expires_in');
-    if (!accessToken || !tokenType || expiresIn === undefined) {
-      throw new Error('Instagram long-lived token response is invalid');
+      throw new Error(data.error.message || 'Failed to get long-lived token');
     }
 
     return {
-      accessToken,
-      tokenType,
-      expiresIn,
+      accessToken: data.access_token,
+      tokenType: data.token_type,
+      expiresIn: data.expires_in,
     };
   }
 
@@ -267,26 +219,17 @@ export class InstagramApiService {
       `&access_token=${encodeURIComponent(accessToken)}`;
 
     const response = await fetchWithInstagramProxy(url);
-    const data = toApiPayload(await response.json());
+    const data = (await response.json()) as DynamicObject;
 
     if (data.error) {
       InstagramApiService.logger.error('Token refresh failed', data.error);
-      throw new Error(
-        readString(data.error, 'message') || 'Failed to refresh token',
-      );
-    }
-
-    const refreshedAccessToken = readString(data, 'access_token');
-    const tokenType = readString(data, 'token_type');
-    const expiresIn = readNumber(data, 'expires_in');
-    if (!refreshedAccessToken || !tokenType || expiresIn === undefined) {
-      throw new Error('Instagram refreshed token response is invalid');
+      throw new Error(data.error.message || 'Failed to refresh token');
     }
 
     return {
-      accessToken: refreshedAccessToken,
-      tokenType,
-      expiresIn,
+      accessToken: data.access_token,
+      tokenType: data.token_type,
+      expiresIn: data.expires_in,
     };
   }
 
@@ -304,25 +247,23 @@ export class InstagramApiService {
     const url = `${GRAPH_API_BASE}/me?fields=user_id,username&access_token=${encodeURIComponent(accessToken)}`;
 
     const response = await fetchWithInstagramProxy(url);
-    const data = toApiPayload(await response.json());
+    const data = (await response.json()) as DynamicObject;
 
     if (data.error) {
       throw new Error(
-        readString(data.error, 'message') ||
-          'Failed to get Instagram account info',
+        data.error.message || 'Failed to get Instagram account info',
       );
     }
 
-    const userId = readString(data, 'user_id');
-    if (!userId) {
+    if (!data.user_id) {
       throw new Error(
         'Could not retrieve Instagram user ID. Please ensure your account is a Business or Creator account.',
       );
     }
 
     return {
-      igUserId: userId,
-      igUsername: readString(data, 'username') || userId,
+      igUserId: data.user_id,
+      igUsername: data.username || data.user_id,
     };
   }
 
@@ -335,14 +276,13 @@ export class InstagramApiService {
     try {
       const url = `${GRAPH_API_BASE}/me?fields=username&access_token=${encodeURIComponent(accessToken)}`;
       const response = await fetchWithInstagramProxy(url);
-      const data = toApiPayload(await response.json());
+      const data = (await response.json()) as DynamicObject;
 
       if (data.error) {
         return null;
       }
 
-      const username = readString(data, 'username');
-      return username ? { username } : null;
+      return { username: data.username };
     } catch {
       return null;
     }
@@ -385,23 +325,17 @@ export class InstagramApiService {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: params.toString(),
     });
-    const data = toApiPayload(await response.json());
+    const data = (await response.json()) as DynamicObject;
 
     if (data.error) {
       InstagramApiService.logger.error(
         'Failed to create image container',
         data.error,
       );
-      throw new Error(
-        readString(data.error, 'message') || 'Failed to create image container',
-      );
+      throw new Error(data.error.message || 'Failed to create image container');
     }
 
-    const id = readString(data, 'id');
-    if (!id) {
-      throw new Error('Instagram did not return media container id');
-    }
-    return { id };
+    return { id: data.id };
   }
 
   /**
@@ -429,7 +363,7 @@ export class InstagramApiService {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: params.toString(),
     });
-    const data = toApiPayload(await response.json());
+    const data = (await response.json()) as DynamicObject;
 
     if (data.error) {
       InstagramApiService.logger.error(
@@ -437,16 +371,11 @@ export class InstagramApiService {
         data.error,
       );
       throw new Error(
-        readString(data.error, 'message') ||
-          'Failed to create carousel container',
+        data.error.message || 'Failed to create carousel container',
       );
     }
 
-    const id = readString(data, 'id');
-    if (!id) {
-      throw new Error('Instagram did not return carousel container id');
-    }
-    return { id };
+    return { id: data.id };
   }
 
   /**
@@ -458,21 +387,13 @@ export class InstagramApiService {
   ): Promise<InstagramContainerStatus> {
     const url = `${GRAPH_API_BASE}/${containerId}?fields=status_code&access_token=${encodeURIComponent(accessToken)}`;
     const response = await fetchWithInstagramProxy(url);
-    const data = toApiPayload(await response.json());
+    const data = (await response.json()) as DynamicObject;
 
     if (data.error) {
-      throw new Error(
-        readString(data.error, 'message') || 'Failed to check container status',
-      );
+      throw new Error(data.error.message || 'Failed to check container status');
     }
 
-    const status = readString(data, 'status_code') as
-      | InstagramContainerStatus
-      | undefined;
-    if (!status) {
-      throw new Error('Instagram did not return container status');
-    }
-    return status;
+    return data.status_code as InstagramContainerStatus;
   }
 
   /**
@@ -544,20 +465,14 @@ export class InstagramApiService {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: params.toString(),
     });
-    const data = toApiPayload(await response.json());
+    const data = (await response.json()) as DynamicObject;
 
     if (data.error) {
       InstagramApiService.logger.error('Failed to publish media', data.error);
-      throw new Error(
-        readString(data.error, 'message') || 'Failed to publish media',
-      );
+      throw new Error(data.error.message || 'Failed to publish media');
     }
 
-    const id = readString(data, 'id');
-    if (!id) {
-      throw new Error('Instagram did not return published media id');
-    }
-    return { id };
+    return { id: data.id };
   }
 
   /**
@@ -570,7 +485,7 @@ export class InstagramApiService {
     try {
       const url = `${GRAPH_API_BASE}/${mediaId}?fields=permalink&access_token=${encodeURIComponent(accessToken)}`;
       const response = await fetchWithInstagramProxy(url);
-      const data = toApiPayload(await response.json());
+      const data = (await response.json()) as DynamicObject;
 
       if (data.error) {
         InstagramApiService.logger.warn(
@@ -580,7 +495,7 @@ export class InstagramApiService {
         return undefined;
       }
 
-      return readString(data, 'permalink');
+      return data.permalink;
     } catch {
       return undefined;
     }
@@ -596,14 +511,13 @@ export class InstagramApiService {
     try {
       const url = `${GRAPH_API_BASE}/${igUserId}/content_publishing_limit?fields=quota_usage,config&access_token=${encodeURIComponent(accessToken)}`;
       const response = await fetchWithInstagramProxy(url);
-      const data = toApiPayload(await response.json());
+      const data = (await response.json()) as DynamicObject;
 
-      const items = Array.isArray(data.data) ? data.data : [];
-      if (data.error || !items.length) {
+      if (data.error || !data.data?.length) {
         return null;
       }
 
-      return items[0] as InstagramPublishingLimit;
+      return data.data[0];
     } catch {
       return null;
     }
