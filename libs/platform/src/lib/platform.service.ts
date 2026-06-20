@@ -1,7 +1,6 @@
 import { PlatformAppService } from './platform-app.service';
 import { PlatformBrowserService } from './platform-browser.service';
 import { PlatformHttpService } from './platform-http.service';
-import { PlatformNetworkService } from './platform-network.service';
 import { PlatformNotificationService } from './platform-notification.service';
 import { PlatformProcessService } from './platform-process.service';
 import { PlatformSessionService } from './platform-session.service';
@@ -21,7 +20,6 @@ export abstract class PlatformService {
   abstract readonly session: PlatformSessionService;
   abstract readonly browser: PlatformBrowserService;
   abstract readonly notification: PlatformNotificationService;
-  abstract readonly network: PlatformNetworkService;
   abstract readonly http: PlatformHttpService;
   abstract readonly process: PlatformProcessService;
 }

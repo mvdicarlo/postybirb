@@ -15,9 +15,17 @@ import {
   TipTapNode,
 } from '@postybirb/types';
 import {
+  getActiveProxyConfiguration,
+  onProxyConfigurationApplied,
+} from '@postybirb/http';
+import {
   calculateImageResize,
   supportsImage,
 } from '@postybirb/utils/file-type';
+import {
+  normalizeProxyProfile,
+  resolveProfileForWebsite,
+} from '@postybirb/utils/common';
 import { Api, TelegramClient } from 'teleproto';
 import { CustomFile } from 'teleproto/client/uploads';
 import { Entity } from 'teleproto/define';
@@ -88,9 +96,43 @@ export default class Telegram
 
   private clients = new Map<number, TelegramClient>();
 
+  private static proxyInvalidationRegistered = false;
+
+  private registerProxyInvalidation(): void {
+    if (Telegram.proxyInvalidationRegistered) {
+      return;
+    }
+
+    Telegram.proxyInvalidationRegistered = true;
+    onProxyConfigurationApplied(async () => {
+      await this.invalidateTelegramClients();
+    });
+  }
+
+  private async invalidateTelegramClients(): Promise<void> {
+    for (const [appId, client] of this.clients.entries()) {
+      try {
+        if (client.connected) {
+          await client.disconnect();
+        }
+      } catch (error) {
+        this.logger
+          .withError(error)
+          .warn(`Failed to disconnect Telegram client ${appId}`);
+      }
+    }
+
+    this.clients.clear();
+    this.logger.info(
+      '[Telegram.proxy] Cleared cached clients after proxy configuration change',
+    );
+  }
+
   private async getTelegramClient(
     account: TelegramAccountData = this.websiteDataStore.getData(),
   ) {
+    this.registerProxyInvalidation();
+
     let client = this.clients.get(account.appId);
     if (!client) {
       this.logger.info(
@@ -198,16 +240,42 @@ export default class Telegram
     }
 
     if (!telegramProxySettings) {
+      const profile = resolveProfileForWebsite(
+        'telegram',
+        getActiveProxyConfiguration(),
+      );
+
+      if (profile?.enabled) {
+        if (profile.type === 'socks5') {
+          const normalized = normalizeProxyProfile(profile);
+          telegramProxySettings = {
+            ip: normalized.host,
+            port: parseInt(normalized.port, 10),
+            socksType: 5,
+            ...(normalized.username ? { username: normalized.username } : {}),
+            ...(normalized.password ? { password: normalized.password } : {}),
+          };
+          this.logger
+            .withMetadata({ proxy: telegramProxySettings })
+            .info('[Telegram.proxy] Using PostyBirb SOCKS5 profile');
+        } else {
+          this.logger.warn(
+            '[Telegram.proxy] Profile type http (HTTP CONNECT) cannot be used for Teleproto; assign telegram to a socks5 profile, use system SOCKS, or POSTYBIRB_TELEGRAM_MTPROXY',
+          );
+        }
+      }
+    }
+
+    if (!telegramProxySettings) {
       const proxies = [
         ...(await this.platform.http.getParsedProxiesFor(
           'https://telegram.org',
         )),
         ...(await this.platform.http.getParsedProxiesFor('https://t.me/')),
       ];
-      const proxy =
-        proxies.find((e) => e?.type === 'SOCKS') ??
-        proxies.find((e) => e?.type === 'PROXY') ??
-        proxies[0];
+      const proxy = proxies.find(
+        (entry) => entry?.type === 'SOCKS' || entry?.type === 'SOCKS5',
+      );
 
       if (proxy && proxy.type !== 'DIRECT') {
         telegramProxySettings = {
@@ -217,11 +285,10 @@ export default class Telegram
         };
         this.logger
           .withMetadata({ proxy: telegramProxySettings, proxies })
-          .info(
-            'Using SOCKS5 proxy resolved for hostname t.me or telegram.org',
-          );
+          .info('[Telegram.proxy] Using system SOCKS proxy');
       }
     }
+
     return telegramProxySettings;
   }
 

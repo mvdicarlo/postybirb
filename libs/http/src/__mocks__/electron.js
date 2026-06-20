@@ -5,6 +5,41 @@
 const http = require('http');
 const https = require('https');
 
+const partitionSessions = new Map();
+
+function createSession(partitionId) {
+  const sessionState = {
+    proxyConfig: { mode: 'system' },
+    resolveProxyResult: 'DIRECT',
+  };
+
+  return {
+    setProxy: async function (config) {
+      sessionState.proxyConfig = config || { mode: 'system' };
+    },
+    resolveProxy: async function () {
+      return sessionState.resolveProxyResult;
+    },
+    closeAllConnections: function () {},
+    cookies: {
+      get: async function () {
+        return [];
+      },
+      set: async function () {},
+      remove: async function () {},
+    },
+    __state: sessionState,
+    __partitionId: partitionId,
+  };
+}
+
+function getSession(partitionId) {
+  if (!partitionSessions.has(partitionId)) {
+    partitionSessions.set(partitionId, createSession(partitionId));
+  }
+  return partitionSessions.get(partitionId);
+}
+
 function performRequest(url, method, headers, body, eventHandlers, redirectCount) {
   if (redirectCount === undefined) redirectCount = 0;
 
@@ -42,7 +77,6 @@ function performRequest(url, method, headers, body, eventHandlers, redirectCount
           nodeRes.headers,
         );
       }
-      // Consume redirect response body before following
       nodeRes.resume();
       performRequest(redirectUrl, method, headers, body, eventHandlers, redirectCount + 1);
       return;
@@ -104,25 +138,42 @@ function makeElectronNetRequest(options) {
   return clientRequest;
 }
 
+const defaultSession = createSession('default');
+
+const appHandlers = {
+  ready: [],
+  'session-created': [],
+};
+
 module.exports = {
+  app: {
+    on: function (event, handler) {
+      if (appHandlers[event]) {
+        appHandlers[event].push(handler);
+      }
+    },
+    isReady: function () {
+      return true;
+    },
+  },
+
   net: {
     isOnline: function () {
       return true;
     },
     request: makeElectronNetRequest,
+    fetch: async function (input, init) {
+      return fetch(input, init);
+    },
   },
 
   session: {
-    fromPartition: function () {
-      return {
-        cookies: {
-          get: async function () {
-            return [];
-          },
-          set: async function () {},
-          remove: async function () {},
-        },
-      };
+    defaultSession: defaultSession,
+    resolveProxy: async function () {
+      return defaultSession.resolveProxy();
+    },
+    fromPartition: function (partitionId) {
+      return getSession(partitionId || 'default');
     },
   },
 

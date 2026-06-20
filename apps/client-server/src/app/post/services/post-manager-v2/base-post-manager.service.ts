@@ -20,6 +20,7 @@ import {
 } from '@postybirb/types';
 
 import { NotificationsService } from '../../../notifications/notifications.service';
+import { runWithProxyContextAsync } from '@postybirb/http';
 import { PostParsersService } from '../../../post-parsers/post-parsers.service';
 import { ValidationService } from '../../../validation/validation.service';
 import { WSGateway } from '../../../web-socket/web-socket-gateway';
@@ -169,12 +170,20 @@ export abstract class BasePostManager {
   ): Promise<void> {
     const { submission } = entity;
     const { accountId, instance } = websiteInfo;
-    let data: PostData | undefined;
     const option = submission.options.find((o) => o.accountId === accountId);
     if (!option) throw new Error('No website options found');
 
-    try {
-      await this.ensureLoggedIn(instance);
+    this.logger.info(
+      `[ProxyContext] postToWebsite websiteId=${option.account.website} accountId=${accountId}`,
+    );
+
+    await runWithProxyContextAsync(
+      { websiteId: option.account.website, accountId },
+      async () => {
+        let data: PostData | undefined;
+
+        try {
+          await this.ensureLoggedIn(instance);
 
       const supportedTypes = instance.getSupportedTypes();
       if (!supportedTypes.includes(submission.type)) {
@@ -299,6 +308,7 @@ export abstract class BasePostManager {
         }
       }
     }
+    });
   }
 
   /**

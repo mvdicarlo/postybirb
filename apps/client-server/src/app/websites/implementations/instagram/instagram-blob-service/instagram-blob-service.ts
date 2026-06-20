@@ -1,3 +1,4 @@
+import { runWithProxyContextAsync } from '@postybirb/http';
 import { Logger, PostyBirbLogger } from '@postybirb/logger';
 
 const FUNCTION_BASE_URL =
@@ -32,27 +33,29 @@ export class InstagramBlobService {
     buffer: Buffer,
     mimeType: string,
   ): Promise<UploadResponse> {
-    const response = await fetch(`${FUNCTION_BASE_URL}/upload`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': mimeType,
-      },
-      body: new Uint8Array(buffer),
+    return runWithProxyContextAsync({ websiteId: 'instagram' }, async () => {
+      const response = await fetch(`${FUNCTION_BASE_URL}/upload`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': mimeType,
+        },
+        body: new Uint8Array(buffer),
+      });
+
+      if (!response.ok) {
+        const errorBody = await response.text();
+        throw new Error(
+          `Failed to upload to cloud server: ${response.status} ${errorBody}`,
+        );
+      }
+
+      const data = (await response.json()) as UploadResponse;
+      if (!data.url) {
+        throw new Error('Cloud server did not return a URL');
+      }
+
+      InstagramBlobService.logger.info(`Uploaded blob: ${data.blobName}`);
+      return data;
     });
-
-    if (!response.ok) {
-      const errorBody = await response.text();
-      throw new Error(
-        `Failed to upload to cloud server: ${response.status} ${errorBody}`,
-      );
-    }
-
-    const data = (await response.json()) as UploadResponse;
-    if (!data.url) {
-      throw new Error('Cloud server did not return a URL');
-    }
-
-    InstagramBlobService.logger.info(`Uploaded blob: ${data.blobName}`);
-    return data;
   }
 }

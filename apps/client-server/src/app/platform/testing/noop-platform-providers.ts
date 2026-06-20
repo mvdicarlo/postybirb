@@ -6,7 +6,6 @@ import {
   PlatformBrowserService,
   PlatformForkOptions,
   PlatformHttpService,
-  PlatformNetworkService,
   PlatformNotificationService,
   PlatformProcessService,
   PlatformService,
@@ -62,16 +61,6 @@ class NoopPlatformNotificationService implements PlatformNotificationService {
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   show(): void {}
-}
-
-class NoopPlatformNetworkService implements PlatformNetworkService {
-  isOnline(): boolean {
-    return true;
-  }
-
-  async fetch(input: string | URL, init?: RequestInit): Promise<Response> {
-    return fetch(input, init);
-  }
 }
 
 class NoopPlatformHttpService implements PlatformHttpService {
@@ -190,8 +179,6 @@ export class NoopPlatformService extends PlatformService {
   readonly browser = new NoopPlatformBrowserService();
 
   readonly notification = new NoopPlatformNotificationService();
-
-  readonly network = new NoopPlatformNetworkService();
 
   readonly http = new NoopPlatformHttpService();
 

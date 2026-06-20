@@ -24,6 +24,7 @@ import {
 } from '@tabler/icons-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import accountApi from '../../../api/account.api';
+import { usePartitionProxyReady } from '../../../hooks';
 import { useAccount } from '../../../stores';
 import { notifyLoginSuccess } from '../../website-login-views/helpers';
 import type { WebviewTag } from './webview-tag';
@@ -35,14 +36,32 @@ interface LoginWebviewProps {
   accountId: AccountId;
 }
 
+function readMainFrameLoading(webview: WebviewTag): boolean {
+  try {
+    return webview.isLoadingMainFrame();
+  } catch {
+    return false;
+  }
+}
+
+function isWebviewDomReady(webview: WebviewTag): boolean {
+  try {
+    webview.isLoadingMainFrame();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * A polished webview component for website login.
  * Features a toolbar with refresh button, login check button, URL display,
  * login status indicator, plus a loading overlay while the page loads.
  */
 export function LoginWebview({ src, accountId }: LoginWebviewProps) {
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [currentUrl, setCurrentUrl] = useState(src);
+  const proxyReady = usePartitionProxyReady(accountId);
   const webviewRef = useRef<WebviewTag | null>(null);
 
   // Subscribe to account state for real-time login status updates
@@ -106,19 +125,42 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
     }
   }, [isLoggedIn, username, account?.name, accountId, account]);
 
+  useEffect(() => {
+    setIsLoading(false);
+  }, [accountId]);
+
   // Handle webview events
   useEffect(() => {
+    if (!proxyReady) {
+      return undefined;
+    }
+
     const webview = webviewRef.current;
-    if (!webview) return undefined;
+    if (!webview) {
+      return undefined;
+    }
+
+    let listenersAttached = false;
 
     const handleStartLoading = () => {
-      setIsLoading(true);
+      if (readMainFrameLoading(webview)) {
+        setIsLoading(true);
+      }
     };
 
     const handleStopLoading = () => {
-      setIsLoading(false);
-      // Automatic check after page finishes loading — debounced
-      triggerLoginCheck(false);
+      const loading = readMainFrameLoading(webview);
+      setIsLoading(loading);
+      if (!loading) {
+        // Automatic check after page finishes loading — debounced
+        triggerLoginCheck(false);
+      }
+    };
+
+    const handleFailLoad = (event: Electron.DidFailLoadEvent) => {
+      if (event.isMainFrame) {
+        setIsLoading(false);
+      }
     };
 
     const handleDidNavigate = (event: Electron.DidNavigateEvent) => {
@@ -145,27 +187,57 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
       triggerLoginCheck(false);
     };
 
-    webview.addEventListener('did-start-loading', handleStartLoading);
-    webview.addEventListener('did-stop-loading', handleStopLoading);
-    webview.addEventListener('did-navigate', handleDidNavigate);
-    webview.addEventListener('did-navigate-in-page', handleDidNavigateInPage);
-    webview.addEventListener('did-frame-navigate', handleFrameNavigation);
-    webview.addEventListener('did-redirect-navigation', handleRedirect);
+    const attachListeners = () => {
+      if (listenersAttached) {
+        return;
+      }
+      listenersAttached = true;
+
+      setIsLoading(readMainFrameLoading(webview));
+
+      webview.addEventListener('did-start-loading', handleStartLoading);
+      webview.addEventListener('did-stop-loading', handleStopLoading);
+      webview.addEventListener('did-fail-load', handleFailLoad);
+      webview.addEventListener('did-navigate', handleDidNavigate);
+      webview.addEventListener('did-navigate-in-page', handleDidNavigateInPage);
+      webview.addEventListener('did-frame-navigate', handleFrameNavigation);
+      webview.addEventListener('did-redirect-navigation', handleRedirect);
+    };
+
+    const handleDomReady = () => {
+      attachListeners();
+    };
+
+    webview.addEventListener('dom-ready', handleDomReady);
+    if (isWebviewDomReady(webview)) {
+      attachListeners();
+    }
 
     return () => {
-      webview.removeEventListener('did-start-loading', handleStartLoading);
-      webview.removeEventListener('did-stop-loading', handleStopLoading);
-      webview.removeEventListener('did-navigate', handleDidNavigate);
-      webview.removeEventListener(
-        'did-navigate-in-page',
-        handleDidNavigateInPage,
-      );
-      webview.removeEventListener('did-frame-navigate', handleFrameNavigation);
-      webview.removeEventListener('did-redirect-navigation', handleRedirect);
-      // Fire a final login check when the webview closes (user is done)
-      triggerLoginCheck(true);
+      webview.removeEventListener('dom-ready', handleDomReady);
+
+      if (listenersAttached) {
+        webview.removeEventListener('did-start-loading', handleStartLoading);
+        webview.removeEventListener('did-stop-loading', handleStopLoading);
+        webview.removeEventListener('did-fail-load', handleFailLoad);
+        webview.removeEventListener('did-navigate', handleDidNavigate);
+        webview.removeEventListener(
+          'did-navigate-in-page',
+          handleDidNavigateInPage,
+        );
+        webview.removeEventListener(
+          'did-frame-navigate',
+          handleFrameNavigation,
+        );
+        webview.removeEventListener(
+          'did-redirect-navigation',
+          handleRedirect,
+        );
+        // Fire a final login check when the webview closes (user is done)
+        triggerLoginCheck(true);
+      }
     };
-  }, [triggerLoginCheck, accountId]);
+  }, [triggerLoginCheck, accountId, proxyReady]);
 
   // Handle refresh button click
   const handleRefresh = () => {
@@ -194,7 +266,7 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
     }
   }, [lastAccount, accountId, resetWebview, src]);
 
-  if (resetWebview) return null;
+  if (resetWebview || !proxyReady) return null;
 
   return (
     <Box
