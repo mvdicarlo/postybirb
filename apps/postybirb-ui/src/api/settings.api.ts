@@ -1,12 +1,10 @@
 import type {
   EntityId,
   IUpdateSettingsDto,
-  SettingsDto,
-} from '@postybirb/types';
-import type {
   ProxyConfiguration,
   ProxyPoolEntry,
-} from '@postybirb/utils/common/proxy-settings';
+  SettingsDto,
+} from '@postybirb/types';
 import {
   getLocalBaseUrl,
   getLocalServerPassword,

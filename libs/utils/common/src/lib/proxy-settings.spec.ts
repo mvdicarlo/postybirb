@@ -218,7 +218,7 @@ describe('shouldBypassProxyForUrl', () => {
 });
 
 describe('isProxyConfiguration', () => {
-  it('accepts v3 configuration shape', () => {
+  it('accepts configuration shape', () => {
     expect(
       isProxyConfiguration({
         mode: 'system',
@@ -228,7 +228,7 @@ describe('isProxyConfiguration', () => {
     ).toBe(true);
   });
 
-  it('rejects legacy profiles configuration', () => {
+  it('rejects profiles-only configuration', () => {
     expect(isProxyConfiguration({ profiles: [] })).toBe(false);
   });
 

@@ -1,7 +1,15 @@
-/**
- * Proxy Settings Section - v3 global proxy configuration.
- */
-
+import type {
+  ProxyConfiguration,
+  ProxyMode,
+  ProxyPoolEntry,
+  ProxyType,
+  WebsiteProxyChoice,
+} from '@postybirb/types';
+import {
+  defaultProxyConfiguration,
+  isProxyConfiguration,
+  validateProxyConfiguration,
+} from '@postybirb/types';
 import { Trans } from '@lingui/react/macro';
 import {
   ActionIcon,
@@ -19,19 +27,6 @@ import {
   TextInput,
   Title,
 } from '@mantine/core';
-import type {
-  ProxyConfiguration,
-  ProxyMode,
-  ProxyPoolEntry,
-  ProxyType,
-  WebsiteProxyChoice,
-} from '@postybirb/utils/common/proxy-settings';
-import {
-  defaultProxyConfiguration,
-  isLegacyProxyConfiguration,
-  isProxyConfiguration,
-  validateProxyConfiguration,
-} from '@postybirb/utils/common/proxy-settings';
 import {
   IconDeviceFloppy,
   IconEye,
@@ -87,10 +82,6 @@ function cloneProxyConfiguration(config: ProxyConfiguration): ProxyConfiguration
 function normalizeStartupProxy(raw: unknown): ProxyConfiguration {
   if (isProxyConfiguration(raw)) {
     return cloneProxyConfiguration(raw);
-  }
-
-  if (isLegacyProxyConfiguration(raw)) {
-    return defaultProxyConfiguration();
   }
 
   return defaultProxyConfiguration();
@@ -175,14 +166,9 @@ export function ProxySettingsSection() {
 
   if (!remoteMode) {
     const proxy = normalizeStartupProxy(localStartupSettings?.proxy);
-    const hadLegacyProfiles =
-      localStartupSettings?.proxy !== undefined &&
-      isLegacyProxyConfiguration(localStartupSettings.proxy);
-
     return (
       <ProxySettingsForm
         proxy={proxy}
-        hadLegacyProfiles={hadLegacyProfiles}
         scope={null}
         refetch={refetchLocal}
       />
@@ -192,9 +178,6 @@ export function ProxySettingsSection() {
   const activeStartupSettings =
     scope === 'client' ? localStartupSettings : serverStartupSettings;
   const proxy = normalizeStartupProxy(activeStartupSettings?.proxy);
-  const hadLegacyProfiles =
-    activeStartupSettings?.proxy !== undefined &&
-    isLegacyProxyConfiguration(activeStartupSettings.proxy);
 
   return (
     <Stack gap="md">
@@ -229,7 +212,6 @@ export function ProxySettingsSection() {
       <ProxySettingsForm
         key={scope}
         proxy={proxy}
-        hadLegacyProfiles={hadLegacyProfiles}
         scope={scope}
         refetch={scope === 'client' ? refetchLocal : refetchServer}
       />
@@ -239,12 +221,10 @@ export function ProxySettingsSection() {
 
 function ProxySettingsForm({
   proxy,
-  hadLegacyProfiles,
   scope,
   refetch,
 }: {
   proxy: ProxyConfiguration;
-  hadLegacyProfiles: boolean;
   scope: ProxySettingsScope | null;
   refetch: () => Promise<unknown>;
 }) {
@@ -486,15 +466,6 @@ function ProxySettingsForm({
             an internal PAC script — you never configure domains manually.
           </Trans>
         </Text>
-
-        {hadLegacyProfiles && (
-          <Alert color="yellow" mb="md">
-            <Trans>
-              Older multi-profile proxy settings were replaced with the new
-              routing model. Reconfigure your proxies below.
-            </Trans>
-          </Alert>
-        )}
 
         <Stack gap="md">
           <Select

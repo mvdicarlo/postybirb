@@ -10,10 +10,6 @@ export default defineConfig({
 
   resolve: {
     alias: {
-      '@postybirb/utils/common/proxy-settings': path.resolve(
-        __dirname,
-        '../../libs/utils/common/src/lib/proxy-settings.model.ts',
-      ),
       // The @tiptap/react/menus subpath export causes a circular import
       // that Vite's dev server can't resolve. Point directly at the file.
       '@tiptap/react/menus': path.resolve(
