@@ -9,6 +9,11 @@ import {
     LoginState,
     SubmissionType,
 } from '@postybirb/types';
+import {
+  extractHostname,
+  mergeDomainLists,
+  normalizeDomain,
+} from '@postybirb/utils/common';
 import { Mutex } from 'async-mutex';
 import { SubmissionValidator } from './commons/validator';
 import { WebsiteDecoratorProps } from './decorators/website-decorator-props';
@@ -197,6 +202,36 @@ export abstract class Website<
       });
 
     return { ...data };
+  }
+
+  /**
+   * Hostnames used for automatic PAC routing (static sources only).
+   * Subclasses may override to append per-account runtime URLs.
+   */
+  public collectProxyDomains(): string[] {
+    const lists: string[][] = [];
+
+    if (this.BASE_URL?.trim()) {
+      const host = extractHostname(this.BASE_URL);
+      if (host) {
+        lists.push([host]);
+      }
+    }
+
+    const loginFlow = this.decoratedProps.loginFlow;
+    if (loginFlow.type === 'user' && loginFlow.url?.trim()) {
+      const host = extractHostname(loginFlow.url);
+      if (host) {
+        lists.push([host]);
+      }
+    }
+
+    const additional = this.decoratedProps.metadata.additionalDomains;
+    if (Array.isArray(additional) && additional.length > 0) {
+      lists.push(additional.map((domain) => normalizeDomain(domain)));
+    }
+
+    return mergeDomainLists(...lists);
   }
 
   /**

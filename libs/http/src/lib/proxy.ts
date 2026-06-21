@@ -15,6 +15,7 @@ import {
 } from './electron-proxy-manager';
 import {
   isProxiedResolution,
+  LegacyProxyConfiguration,
   PostyBirbEnvConfig,
   shouldBypassProxyForUrl,
   StartupOptionsManager,
@@ -36,7 +37,7 @@ export {
 } from './proxy-partitions';
 
 export async function applyProxySettings(
-  configuration?: import('@postybirb/utils/common').ProxyConfiguration,
+  configuration?: LegacyProxyConfiguration,
 ) {
   await applyProxySettingsInternal(configuration);
 }

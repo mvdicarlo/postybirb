@@ -202,8 +202,18 @@ describe('shouldBypassProxyForUrl', () => {
 });
 
 describe('isProxyConfiguration', () => {
-  it('accepts configuration with profiles array', () => {
-    expect(isProxyConfiguration({ profiles: [] })).toBe(true);
+  it('accepts v3 configuration shape', () => {
+    expect(
+      isProxyConfiguration({
+        mode: 'system',
+        pool: [],
+        routing: {},
+      }),
+    ).toBe(true);
+  });
+
+  it('rejects legacy profiles configuration', () => {
+    expect(isProxyConfiguration({ profiles: [] })).toBe(false);
   });
 
   it('rejects invalid flat proxy objects', () => {

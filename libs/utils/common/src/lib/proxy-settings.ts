@@ -4,20 +4,36 @@ import { SocksProxyAgent } from 'socks-proxy-agent';
 
 export type ProxyType = 'http' | 'socks5';
 
-export type ProxyProfile = {
+export type ProxyMode = 'system' | 'direct' | 'fixed_servers' | 'pac_routing';
+
+export type ProxyPoolEntry = {
   id: string;
-  enabled: boolean;
   label?: string;
   type: ProxyType;
   host: string;
   port: string;
   username: string;
   password: string;
-  websites: string[];
 };
 
+export type WebsiteProxyChoice = 'direct' | 'system' | string;
+
 export type ProxyConfiguration = {
+  mode: ProxyMode;
+  pool: ProxyPoolEntry[];
+  fixedProxyId?: string;
+  routing: Record<string, WebsiteProxyChoice>;
+  pacAccessToken?: string;
+};
+
+/** @deprecated v2 partition routing — removed in global-proxy-manager */
+export type LegacyProxyConfiguration = {
   profiles: ProxyProfile[];
+};
+
+export type ProxyProfile = ProxyPoolEntry & {
+  enabled: boolean;
+  websites: string[];
 };
 
 export type ShouldBypassProxyOptions = {
@@ -42,13 +58,155 @@ function proxyDebug(message: string, context?: Record<string, unknown>): void {
   console.debug(message);
 }
 
+const PROXY_MODES: ProxyMode[] = [
+  'system',
+  'direct',
+  'fixed_servers',
+  'pac_routing',
+];
+
+function isProxyMode(value: unknown): value is ProxyMode {
+  return typeof value === 'string' && PROXY_MODES.includes(value as ProxyMode);
+}
+
+export function defaultProxyConfiguration(): ProxyConfiguration {
+  return {
+    mode: 'system',
+    pool: [],
+    routing: {},
+  };
+}
+
+export function isLegacyProxyConfiguration(
+  value: unknown,
+): value is LegacyProxyConfiguration {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+
+  return Array.isArray((value as LegacyProxyConfiguration).profiles);
+}
+
 export function isProxyConfiguration(value: unknown): value is ProxyConfiguration {
   if (typeof value !== 'object' || value === null) {
     return false;
   }
 
+  if (isLegacyProxyConfiguration(value)) {
+    return false;
+  }
+
   const candidate = value as ProxyConfiguration;
-  return Array.isArray(candidate.profiles);
+  return (
+    isProxyMode(candidate.mode) &&
+    Array.isArray(candidate.pool) &&
+    typeof candidate.routing === 'object' &&
+    candidate.routing !== null
+  );
+}
+
+export function normalizeProxyPoolEntry(
+  entry?: Partial<ProxyPoolEntry>,
+): ProxyPoolEntry {
+  const type: ProxyType =
+    entry?.type === 'socks5' || entry?.type === 'http' ? entry.type : 'http';
+
+  return {
+    id: entry?.id?.trim() ?? '',
+    label: entry?.label?.trim() || undefined,
+    type,
+    host: entry?.host?.trim() ?? '',
+    port: entry?.port?.trim() ?? '',
+    username: entry?.username?.trim() ?? '',
+    password: entry?.password ?? '',
+  };
+}
+
+export function normalizeProxyConfiguration(
+  config?: Partial<ProxyConfiguration>,
+): ProxyConfiguration {
+  return {
+    mode: isProxyMode(config?.mode) ? config.mode : 'system',
+    pool: Array.isArray(config?.pool)
+      ? config.pool.map((entry) => normalizeProxyPoolEntry(entry))
+      : [],
+    fixedProxyId: config?.fixedProxyId?.trim() || undefined,
+    routing:
+      config?.routing && typeof config.routing === 'object'
+        ? { ...config.routing }
+        : {},
+    pacAccessToken: config?.pacAccessToken?.trim() || undefined,
+  };
+}
+
+export type ValidateProxyConfigurationResult = {
+  ok: boolean;
+  errors: string[];
+};
+
+function parsePoolPort(port: string): number | null {
+  const parsed = Number.parseInt(port.trim(), 10);
+  if (!Number.isInteger(parsed) || parsed < 1 || parsed > 65535) {
+    return null;
+  }
+
+  return parsed;
+}
+
+export function validateProxyConfiguration(
+  config: ProxyConfiguration,
+): ValidateProxyConfigurationResult {
+  const errors: string[] = [];
+  const poolIds = new Set<string>();
+
+  config.pool.forEach((entry, index) => {
+    const label = entry.label || entry.id || `pool-${index + 1}`;
+
+    if (!entry.id.trim()) {
+      errors.push(`Pool entry "${label}" requires an id.`);
+    } else if (poolIds.has(entry.id)) {
+      errors.push(`Duplicate pool id "${entry.id}".`);
+    } else {
+      poolIds.add(entry.id);
+    }
+
+    if (!entry.host.trim()) {
+      errors.push(`Pool entry "${label}" requires host.`);
+    }
+
+    if (parsePoolPort(entry.port) === null) {
+      errors.push(
+        `Pool entry "${label}" requires port between 1 and 65535.`,
+      );
+    }
+  });
+
+  if (config.mode === 'fixed_servers') {
+    if (!config.fixedProxyId?.trim()) {
+      errors.push('fixed_servers mode requires fixedProxyId.');
+    } else if (!poolIds.has(config.fixedProxyId)) {
+      errors.push(
+        `fixedProxyId "${config.fixedProxyId}" does not match a pool entry.`,
+      );
+    }
+  }
+
+  Object.entries(config.routing).forEach(([websiteId, choice]) => {
+    if (choice === 'direct' || choice === 'system') {
+      return;
+    }
+
+    if (!poolIds.has(choice)) {
+      errors.push(
+        `Website "${websiteId}" routes to unknown pool id "${choice}".`,
+      );
+    }
+  });
+
+  return {
+    ok: errors.length === 0,
+    errors,
+  };
 }
 
 export function normalizeProxyProfile(

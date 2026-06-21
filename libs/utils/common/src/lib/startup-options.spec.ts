@@ -2,6 +2,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { StartupOptions, StartupOptionsStore } from './startup-options';
+import { defaultProxyConfiguration } from './proxy-settings';
 
 let tmpDir: string;
 let store: StartupOptionsStore;
@@ -11,7 +12,7 @@ const DEFAULTS: StartupOptions = {
   spellchecker: true,
   appDataPath: '/default/path',
   port: '9487',
-  proxy: { profiles: [] },
+  proxy: defaultProxyConfiguration(),
 };
 
 function makeStore(overrides: Partial<typeof DEFAULTS> = {}): StartupOptionsStore {
@@ -136,50 +137,49 @@ describe('StartupOptionsStore — set()', () => {
     expect(opts.spellchecker).toBe(false);
   });
 
-  it('replaces profiles array when proxy.profiles is provided', () => {
-    const firstProfile = {
-      id: 'profile-1',
-      enabled: true,
+  it('replaces pool when proxy.pool is provided', () => {
+    const firstEntry = {
+      id: 'pool-1',
       type: 'http' as const,
       host: '10.0.0.1',
       port: '8080',
       username: 'user',
       password: 'secret',
-      websites: ['pixiv' as const],
     };
 
     store.set({
       proxy: {
-        profiles: [firstProfile],
+        mode: 'fixed_servers',
+        pool: [firstEntry],
+        fixedProxyId: 'pool-1',
+        routing: {},
       },
     });
 
     store.set({
       proxy: {
-        profiles: [
+        pool: [
           {
-            ...firstProfile,
-            enabled: false,
+            ...firstEntry,
+            host: '10.0.0.2',
           },
         ],
       },
     });
 
     const opts = store.get();
-    expect(opts.proxy).toEqual({
-      profiles: [
-        {
-          ...firstProfile,
-          enabled: false,
-        },
-      ],
-    });
+    expect(opts.proxy.pool).toEqual([
+      {
+        ...firstEntry,
+        host: '10.0.0.2',
+      },
+    ]);
 
     const raw = JSON.parse(readFileSync(join(tmpDir, 'startup.json'), 'utf-8'));
-    expect(raw.proxy).toEqual(opts.proxy);
+    expect(raw.proxy.pool).toEqual(opts.proxy.pool);
   });
 
-  it('defaults invalid flat proxy on disk to empty profiles', () => {
+  it('defaults invalid flat proxy on disk to system mode', () => {
     const path = join(tmpDir, 'startup.json');
     writeFileSync(
       path,
@@ -192,12 +192,10 @@ describe('StartupOptionsStore — set()', () => {
       }),
     );
     const s = makeStore();
-    expect(s.get().proxy).toEqual({
-      profiles: [],
-    });
+    expect(s.get().proxy).toEqual(defaultProxyConfiguration());
   });
 
-  it('normalizes proxy profiles when loading from disk', () => {
+  it('defaults legacy profiles on disk to system mode', () => {
     const path = join(tmpDir, 'startup.json');
     writeFileSync(
       path,
@@ -205,34 +203,61 @@ describe('StartupOptionsStore — set()', () => {
         proxy: {
           profiles: [
             {
-              id: ' profile-1 ',
+              id: 'legacy',
               enabled: true,
               type: 'http',
-              host: '  proxy.example.com ',
-              port: ' 3128 ',
-              username: ' user ',
-              password: 'secret',
-              websites: ['discord'],
+              host: '127.0.0.1',
+              port: '8080',
+              username: '',
+              password: '',
+              websites: [],
             },
           ],
         },
       }),
     );
     const s = makeStore();
+    expect(s.get().proxy).toEqual(defaultProxyConfiguration());
+  });
+
+  it('normalizes proxy configuration when loading from disk', () => {
+    const path = join(tmpDir, 'startup.json');
+    writeFileSync(
+      path,
+      JSON.stringify({
+        proxy: {
+          mode: 'pac_routing',
+          pool: [
+            {
+              id: ' pool-1 ',
+              type: 'http',
+              host: '  proxy.example.com ',
+              port: ' 3128 ',
+              username: ' user ',
+              password: 'secret',
+            },
+          ],
+          routing: { discord: ' pool-1 ' },
+        },
+      }),
+    );
+    const s = makeStore();
     expect(s.get().proxy).toEqual({
-      profiles: [
+      mode: 'pac_routing',
+      pool: [
         {
-          id: 'profile-1',
-          enabled: true,
+          id: 'pool-1',
           label: undefined,
           type: 'http',
           host: 'proxy.example.com',
           port: '3128',
           username: 'user',
           password: 'secret',
-          websites: ['discord'],
         },
       ],
+      fixedProxyId: undefined,
+      routing: { discord: ' pool-1 ' },
+      pacAccessToken: undefined,
     });
   });
 
@@ -242,24 +267,26 @@ describe('StartupOptionsStore — set()', () => {
       path,
       JSON.stringify({
         proxy: {
-          profiles: [
+          mode: 'fixed_servers',
+          pool: [
             {
-              id: 'profile-1',
-              enabled: true,
+              id: 'pool-1',
               type: 'http',
               host: 'proxy.example.com',
               port: '3128',
               username: '',
               password: '',
-              websites: ['discord'],
             },
           ],
+          fixedProxyId: 'pool-1',
+          routing: {},
         },
       }),
     );
     const s = makeStore();
     expect(s.get().proxy).toMatchObject({
-      profiles: [
+      mode: 'fixed_servers',
+      pool: [
         expect.objectContaining({
           host: 'proxy.example.com',
           port: '3128',
@@ -268,27 +295,28 @@ describe('StartupOptionsStore — set()', () => {
     });
   });
 
-  it('returns a deep copy of proxy profiles — mutations do not affect stored state', () => {
+  it('returns a deep copy of proxy pool — mutations do not affect stored state', () => {
     store.set({
       proxy: {
-        profiles: [
+        mode: 'fixed_servers',
+        pool: [
           {
-            id: 'profile-1',
-            enabled: false,
+            id: 'pool-1',
             type: 'http',
-            host: '',
-            port: '',
+            host: '127.0.0.1',
+            port: '8080',
             username: '',
             password: '',
-            websites: [],
           },
         ],
+        fixedProxyId: 'pool-1',
+        routing: {},
       },
     });
 
     const opts = store.get();
-    opts.proxy.profiles[0].enabled = true;
-    expect(store.get().proxy.profiles[0].enabled).toBe(false);
+    opts.proxy.pool[0].host = '10.0.0.99';
+    expect(store.get().proxy.pool[0].host).toBe('127.0.0.1');
   });
 });
 

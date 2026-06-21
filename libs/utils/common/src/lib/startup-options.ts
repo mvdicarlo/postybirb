@@ -6,7 +6,13 @@ import {
   writeFileSync,
 } from 'fs';
 import { dirname } from 'path';
-import { isProxyConfiguration, normalizeProxyProfile, ProxyConfiguration } from './proxy-settings';
+import {
+  defaultProxyConfiguration,
+  isLegacyProxyConfiguration,
+  isProxyConfiguration,
+  normalizeProxyConfiguration,
+  ProxyConfiguration,
+} from './proxy-settings';
 
 export type StartupOptions = {
   startAppOnSystemStartup: boolean;
@@ -44,16 +50,30 @@ function startupInfo(message: string, context?: Record<string, unknown>): void {
 
 function parseProxyFromDisk(rawProxy: unknown): ProxyConfiguration {
   if (isProxyConfiguration(rawProxy)) {
-    return {
-      profiles: rawProxy.profiles.map((profile) => normalizeProxyProfile(profile)),
-    };
+    return normalizeProxyConfiguration(rawProxy);
   }
 
-  startupInfo('[StartupOptions.load] Defaulting proxy to empty configuration', {
+  if (isLegacyProxyConfiguration(rawProxy)) {
+    startupInfo('[StartupOptions.load] Defaulting proxy to system mode', {
+      reason: 'legacy-profiles-ignored',
+      profileCount: rawProxy.profiles.length,
+    });
+    return defaultProxyConfiguration();
+  }
+
+  startupInfo('[StartupOptions.load] Defaulting proxy to system mode', {
     reason: 'invalid-proxy-shape',
   });
 
-  return { profiles: [] };
+  return defaultProxyConfiguration();
+}
+
+function cloneProxyConfiguration(proxy: ProxyConfiguration): ProxyConfiguration {
+  return {
+    ...proxy,
+    pool: proxy.pool.map((entry) => ({ ...entry })),
+    routing: { ...proxy.routing },
+  };
 }
 
 /**
@@ -85,7 +105,7 @@ export class StartupOptionsStore {
       spellchecker: true,
       port: '9487',
       appDataPath: config.defaultAppDataPath,
-      proxy: { profiles: [] },
+      proxy: defaultProxyConfiguration(),
     };
     // Drop memoized state so a reconfigure (mostly tests) takes effect.
     this.current = null;
@@ -107,12 +127,7 @@ export class StartupOptionsStore {
     }
     return {
       ...this.current,
-      proxy: {
-        profiles: this.current.proxy.profiles.map((profile) => ({
-          ...profile,
-          websites: [...profile.websites],
-        })),
-      },
+      proxy: cloneProxyConfiguration(this.current.proxy),
     };
   }
 
@@ -126,18 +141,12 @@ export class StartupOptionsStore {
       ...rest,
       ...(proxy
         ? {
-            proxy: {
-              profiles:
-                proxy.profiles !== undefined
-                  ? proxy.profiles.map((profile) => ({
-                      ...profile,
-                      websites: [...profile.websites],
-                    }))
-                  : this.current.proxy.profiles.map((profile) => ({
-                      ...profile,
-                      websites: [...profile.websites],
-                    })),
-            },
+            proxy: normalizeProxyConfiguration({
+              ...this.current.proxy,
+              ...proxy,
+              pool: proxy.pool ?? this.current.proxy.pool,
+              routing: proxy.routing ?? this.current.proxy.routing,
+            }),
           }
         : undefined),
     };
@@ -175,7 +184,10 @@ export class StartupOptionsStore {
     const fallback = this.requireDefaults();
     try {
       if (!existsSync(path)) {
-        return { ...fallback, proxy: { ...fallback.proxy, profiles: [] } };
+        return {
+          ...fallback,
+          proxy: cloneProxyConfiguration(fallback.proxy),
+        };
       }
       const raw = JSON.parse(readFileSync(path, 'utf-8'));
       if (raw) {
@@ -185,9 +197,15 @@ export class StartupOptionsStore {
           proxy: parseProxyFromDisk(raw.proxy),
         };
       }
-      return { ...fallback, proxy: { ...fallback.proxy, profiles: [] } };
+      return {
+        ...fallback,
+        proxy: cloneProxyConfiguration(fallback.proxy),
+      };
     } catch {
-      return { ...fallback, proxy: { ...fallback.proxy, profiles: [] } };
+      return {
+        ...fallback,
+        proxy: cloneProxyConfiguration(fallback.proxy),
+      };
     }
   }
 

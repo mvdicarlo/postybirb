@@ -1,4 +1,4 @@
-import { ProxyConfiguration, ProxyProfile } from './proxy-settings';
+import { ProxyConfiguration, ProxyProfile, LegacyProxyConfiguration } from './proxy-settings';
 
 export type ValidateProfilesResult = {
   ok: boolean;
@@ -123,7 +123,7 @@ function isResolvableProfile(profile: ProxyProfile): boolean {
 
 export function resolveProfileForWebsite(
   websiteId: string,
-  config: ProxyConfiguration,
+  config: LegacyProxyConfiguration,
 ): ProxyProfile | null {
   const explicitMatch = config.profiles.find(
     (profile) =>

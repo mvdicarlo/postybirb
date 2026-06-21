@@ -5,5 +5,6 @@ export * from './lib/platform';
 export * from './lib/postybirb-env-config';
 export * from './lib/proxy-resolver';
 export * from './lib/proxy-settings';
+export * from './lib/website-domains';
 export * from './lib/remote-config';
 export * from './lib/startup-options';

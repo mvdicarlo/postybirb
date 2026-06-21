@@ -58,6 +58,7 @@ import { TelegramMessageSubmission } from './models/telegram-message-submission'
 @WebsiteMetadata({
   name: 'telegram',
   displayName: 'Telegram',
+  additionalDomains: ['telegram.org'],
 })
 @CustomLoginFlow()
 @SupportsFiles({

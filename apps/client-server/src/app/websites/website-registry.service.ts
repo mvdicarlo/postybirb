@@ -17,6 +17,8 @@ import {
 } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/common';
 import { Class } from 'type-fest';
+import { ProxyModule } from '../proxy/proxy.module';
+import { WebsiteDomainService } from '../proxy/website-domain.service';
 import { WEBSITE_IMPLEMENTATIONS } from '../constants';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { validateWebsiteDecoratorProps } from './decorators/website-decorator-props';
@@ -56,6 +58,7 @@ export class WebsiteRegistryService {
     @Inject(WEBSITE_IMPLEMENTATIONS)
     private readonly websiteImplementations: Class<UnknownWebsite>[],
     private readonly platform: PlatformService,
+    private readonly websiteDomainService: WebsiteDomainService,
     @Optional() private readonly webSocket?: WSGateway,
   ) {
     this.initializedPromise = new Promise<void>((resolve) => {
@@ -79,6 +82,7 @@ export class WebsiteRegistryService {
       // );
       this.availableWebsites[website.prototype.decoratedProps.metadata.name] =
         website;
+      this.registerStaticDomainsForWebsite(website);
     });
 
     this.accountRepository = new AccountRepository();
@@ -337,5 +341,31 @@ export class WebsiteRegistryService {
    */
   public createDefaultWebsiteInstance(account: Account): DefaultWebsite {
     return new DefaultWebsite(account, this.platform);
+  }
+
+  private registerStaticDomainsForWebsite(
+    WebsiteCtor: Class<UnknownWebsite>,
+  ): void {
+    const websiteId = WebsiteCtor.prototype.decoratedProps.metadata.name;
+
+    try {
+      const probeAccount = new Account({
+        id: `__domain-probe-${websiteId}__`,
+        name: '__probe__',
+        website: websiteId,
+        groups: [],
+      });
+      const probe = new WebsiteCtor(probeAccount, this.platform);
+      this.websiteDomainService.registerStaticDomains(
+        websiteId,
+        probe.collectProxyDomains(),
+      );
+    } catch (error) {
+      this.logger
+        .withError(error)
+        .withMetadata({ websiteId })
+        .warn('Failed static domain registration');
+      this.websiteDomainService.registerStaticDomains(websiteId, []);
+    }
   }
 }

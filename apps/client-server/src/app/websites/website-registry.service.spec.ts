@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Account, AccountRepository, clearDatabase } from '@postybirb/database';
+import { ProxyModule } from '../proxy/proxy.module';
 import { noopPlatformProvider } from '../platform/testing/noop-platform-providers';
 import { WebsiteImplProvider } from './implementations/provider';
 import TestWebsite from './implementations/test/test.website';
@@ -13,6 +14,7 @@ describe('WebsiteRegistryService', () => {
   beforeEach(async () => {
     clearDatabase();
     module = await Test.createTestingModule({
+      imports: [ProxyModule],
       providers: [
         WebsiteRegistryService,
         WebsiteImplProvider,

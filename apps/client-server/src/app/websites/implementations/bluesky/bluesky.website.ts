@@ -57,7 +57,7 @@ import { BlueskyMessageSubmission } from './models/bluesky-message-submission';
 
 type LoggedInAgent = SetNonNullable<AtpAgent, 'session' | 'pdsUrl'>;
 
-@WebsiteMetadata({ name: 'bluesky', displayName: 'BlueSky' })
+@WebsiteMetadata({ name: 'bluesky', displayName: 'BlueSky', additionalDomains: ['bsky.social', 'video.bsky.app'] })
 @CustomLoginFlow()
 @SupportsUsernameShortcut({
   id: 'bluesky',

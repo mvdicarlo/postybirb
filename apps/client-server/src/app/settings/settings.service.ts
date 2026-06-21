@@ -11,6 +11,7 @@ import { EntityId, SettingsConstants } from '@postybirb/types';
 import { net } from 'electron';
 import {
   buildProxyRules,
+  isLegacyProxyConfiguration,
   IsTestEnvironment,
   normalizeProxyProfile,
   PostyBirbEnvConfig,
@@ -24,6 +25,7 @@ import { PostyBirbService } from '../common/service/postybirb-service';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { TestProxyProfileDto } from './dtos/update-proxy-settings.dto';
 import { UpdateSettingsDto } from './dtos/update-settings.dto';
+import { UpdateStartupSettingsDto } from './dtos/update-startup-settings.dto';
 
 @Injectable()
 export class SettingsService
@@ -172,7 +174,7 @@ export class SettingsService
     profileDto: TestProxyProfileDto,
   ): Promise<{ success: boolean; message: string }> {
     const saved = StartupOptionsManager.get().proxy;
-    const existing = saved.profiles.find((profile) => profile.id === profileDto.id);
+    const existing = saved.pool.find((entry) => entry.id === profileDto.id);
     const profile = normalizeProxyProfile({
       ...profileDto,
       password: profileDto.password?.trim()
@@ -248,7 +250,7 @@ export class SettingsService
   /**
    * Updates app startup settings.
    */
-  public async updateStartupSettings(startUpOptions: Partial<StartupOptions>) {
+  public async updateStartupSettings(startUpOptions: UpdateStartupSettingsDto) {
     if (startUpOptions.appDataPath) {
       // eslint-disable-next-line no-param-reassign
       startUpOptions.appDataPath = startUpOptions.appDataPath.trim();
@@ -266,10 +268,14 @@ export class SettingsService
     let proxyUpdated = false;
 
     if (startUpOptions.proxy) {
+      if (!isLegacyProxyConfiguration(startUpOptions.proxy)) {
+        throw new BadRequestException('Unsupported proxy configuration shape');
+      }
+
       const current = StartupOptionsManager.get();
       const profiles = startUpOptions.proxy.profiles.map((profile) => {
-        const existing = current.proxy.profiles.find(
-          (savedProfile) => savedProfile.id === profile.id,
+        const existing = current.proxy.pool.find(
+          (savedEntry) => savedEntry.id === profile.id,
         );
         return normalizeProxyProfile({
           ...profile,
@@ -287,14 +293,26 @@ export class SettingsService
         throw new BadRequestException(validation.errors.join(' '));
       }
 
-      // eslint-disable-next-line no-param-reassign
-      startUpOptions.proxy = {
-        profiles,
-      };
-      proxyUpdated = true;
+      this.logger.warn(
+        'Legacy proxy profiles save ignored until proxy settings API migration',
+      );
     }
 
-    StartupOptionsManager.set({ ...startUpOptions });
+    const patch: Partial<StartupOptions> = {};
+    if (startUpOptions.appDataPath !== undefined) {
+      patch.appDataPath = startUpOptions.appDataPath;
+    }
+    if (startUpOptions.port !== undefined) {
+      patch.port = startUpOptions.port;
+    }
+    if (startUpOptions.spellchecker !== undefined) {
+      patch.spellchecker = startUpOptions.spellchecker;
+    }
+    if (startUpOptions.startAppOnSystemStartup !== undefined) {
+      patch.startAppOnSystemStartup = startUpOptions.startAppOnSystemStartup;
+    }
+
+    StartupOptionsManager.set(patch);
 
     if (proxyUpdated && !IsTestEnvironment()) {
       await applyProxySettings();

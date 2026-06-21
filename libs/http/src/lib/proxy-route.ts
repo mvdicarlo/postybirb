@@ -1,7 +1,7 @@
 import { WebsiteId } from '@postybirb/types';
 import {
   buildProxyAgentUrl,
-  ProxyConfiguration,
+  LegacyProxyConfiguration,
   ProxyProfile,
   resolveProfileForWebsite,
 } from '@postybirb/utils/common';
@@ -45,7 +45,7 @@ export function createPartitionWebsiteResolver(
 export function resolveProfileForPartition(
   partitionId: string,
   resolvePartitionWebsite: PartitionWebsiteResolver,
-  configuration: ProxyConfiguration,
+  configuration: LegacyProxyConfiguration,
 ): ProxyProfile | null {
   const websiteId = resolvePartitionWebsite(partitionId);
   if (!websiteId) {
@@ -69,7 +69,7 @@ export function supportsNodeAgentProfile(
 export function resolveHttpRoute(
   context: ProxyRequestContext,
   resolvePartitionWebsite: PartitionWebsiteResolver,
-  configuration: ProxyConfiguration,
+  configuration: LegacyProxyConfiguration,
 ): ProxyRoute {
   const partitionId = context.partition?.trim();
   if (partitionId) {
@@ -102,7 +102,7 @@ export function resolveHttpRoute(
 export function resolveBrowserSessionRoute(
   context: ProxyRequestContext,
   resolvePartitionWebsite: PartitionWebsiteResolver,
-  configuration: ProxyConfiguration,
+  configuration: LegacyProxyConfiguration,
 ): BrowserSessionRoute {
   const partitionId = context.partition?.trim();
   if (partitionId) {
@@ -131,7 +131,7 @@ export function resolveBrowserSessionRoute(
 }
 
 export function collectWebsiteIdsWithEnabledProfiles(
-  configuration: ProxyConfiguration,
+  configuration: LegacyProxyConfiguration,
 ): string[] {
   const websiteIds = new Set<string>();
 

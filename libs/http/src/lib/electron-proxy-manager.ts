@@ -12,10 +12,9 @@ import {
   buildProxyAgentUrl,
   buildSessionProxyRules,
   createProxyAgent,
-  ProxyConfiguration,
+  LegacyProxyConfiguration,
   ProxyProfile,
   resolveProfileForWebsite,
-  StartupOptionsManager,
 } from '@postybirb/utils/common';
 import { ProxyAuthStore } from './proxy-auth-store';
 import {
@@ -54,7 +53,7 @@ const logger = Logger('ProxyManager');
 const proxyAuthStore = new ProxyAuthStore();
 
 let getPartitionEntries: PartitionIdProvider = () => [];
-let activeProxyConfiguration: ProxyConfiguration = { profiles: [] };
+let activeProxyConfiguration: LegacyProxyConfiguration = { profiles: [] };
 const proxyConfigurationListeners = new Set<ProxyConfigurationListener>();
 let appProxyLoginHandlerRegistered = false;
 const appliedPartitionProxies = new Map<string, string>();
@@ -84,18 +83,10 @@ export function resolveActiveProfileForWebsite(
   return resolveProfileForWebsite(websiteId, activeProxyConfiguration);
 }
 
-function readStartupProxyConfiguration(): ProxyConfiguration {
-  try {
-    const { proxy } = StartupOptionsManager.get();
-    return {
-      profiles: proxy.profiles.map((profile) => ({
-        ...profile,
-        websites: [...profile.websites],
-      })),
-    };
-  } catch {
-    return { profiles: [] };
-  }
+function readStartupProxyConfiguration(): LegacyProxyConfiguration {
+  // v3 startup proxy has no profiles[]; legacy routing stays empty until
+  // global-proxy-manager maps pac_routing / fixed_servers to session apply.
+  return { profiles: [] };
 }
 
 activeProxyConfiguration = readStartupProxyConfiguration();
@@ -209,7 +200,7 @@ export function setPartitionIdProvider(provider: PartitionIdProvider): void {
   getPartitionEntries = provider;
 }
 
-export function getActiveProxyConfiguration(): ProxyConfiguration {
+export function getActiveProxyConfiguration(): LegacyProxyConfiguration {
   return {
     profiles: activeProxyConfiguration.profiles.map((profile) => ({
       ...profile,
@@ -277,7 +268,7 @@ export async function ensurePartitionProxy(
 }
 
 export async function applyProxySettings(
-  configuration?: ProxyConfiguration,
+  configuration?: LegacyProxyConfiguration,
 ): Promise<void> {
   activeProxyConfiguration =
     configuration !== undefined
