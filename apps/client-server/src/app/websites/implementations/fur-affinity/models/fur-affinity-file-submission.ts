@@ -29,6 +29,7 @@ export class FurAffinityFileSubmission extends BaseWebsiteOptions {
 
   @TagField({
     spaceReplacer: '_',
+    minTags: 3,
   })
   declare tags: TagValue;
 
