@@ -33,7 +33,7 @@ describe('DiscordDescriptionConverter', () => {
     ).toMatchInlineSnapshot(`"Visit [PostyBirb](https://postybirb.com)"`);
   });
 
-  it('should convert links', () => {
+  it('should convert links with the same text', () => {
     expect(
       new DiscordDescriptionConverter().convert(
         [
