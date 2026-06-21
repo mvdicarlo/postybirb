@@ -3,12 +3,23 @@ import type {
   IUpdateSettingsDto,
   SettingsDto,
 } from '@postybirb/types';
-import type { ProxyPoolEntry, StartupOptions } from '@postybirb/utils/common';
+import type {
+  ProxyConfiguration,
+  ProxyPoolEntry,
+} from '@postybirb/utils/common/proxy-settings';
 import {
   getLocalBaseUrl,
   getLocalServerPassword,
   HttpClient,
 } from '../transports/http-client';
+
+type StartupOptions = {
+  startAppOnSystemStartup?: boolean;
+  spellchecker?: boolean;
+  appDataPath?: string;
+  port?: string;
+  proxy?: Partial<ProxyConfiguration> | unknown;
+};
 
 class SettingsApi {
   private readonly client: HttpClient = new HttpClient('settings');

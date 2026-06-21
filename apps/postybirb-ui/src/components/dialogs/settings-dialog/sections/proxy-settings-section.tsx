@@ -25,13 +25,13 @@ import type {
   ProxyPoolEntry,
   ProxyType,
   WebsiteProxyChoice,
-} from '@postybirb/utils/common';
+} from '@postybirb/utils/common/proxy-settings';
 import {
   defaultProxyConfiguration,
   isLegacyProxyConfiguration,
   isProxyConfiguration,
   validateProxyConfiguration,
-} from '@postybirb/utils/common';
+} from '@postybirb/utils/common/proxy-settings';
 import {
   IconDeviceFloppy,
   IconEye,

@@ -68,8 +68,8 @@ window.addEventListener('storage', (e) => {
   }
 });
 
-export function isRemote() {
-  return cachedConfig.mode === 'client' && cachedConfig.host?.trim();
+export function isRemote(): boolean {
+  return cachedConfig.mode === 'client' && !!cachedConfig.host?.trim();
 }
 
 /**
