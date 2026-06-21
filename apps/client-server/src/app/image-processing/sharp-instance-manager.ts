@@ -3,7 +3,10 @@ import { Logger } from '@postybirb/logger';
 import { PlatformService, PlatformWorkerProcess } from '@postybirb/platform';
 import { ImageResizeProps } from '@postybirb/types';
 import { toError } from '@postybirb/utils/common';
+import type { queueAsPromised } from 'fastq';
+import fastq from 'fastq';
 import { existsSync } from 'fs';
+import { cpus } from 'os';
 import { join, resolve } from 'path';
 
 /**
@@ -43,42 +46,50 @@ export interface SharpWorkerResult {
 }
 
 /**
- * Per-request timeout. Acts as a safety net against a native call that
- * hangs (rather than crashes) the child — after this, the request is
- * rejected and the child is restarted so the next request gets a fresh,
- * healthy process. Generous so legitimately large images are not killed.
+ * Per-job timeout. Acts as a safety net against a native call that hangs
+ * (rather than crashes) the worker — after this, the job is rejected and the
+ * worker is terminated. Generous so legitimately large images are not killed.
  */
 const REQUEST_TIMEOUT_MS = 180_000;
 
-type PendingRequest = {
-  resolve: (value: SharpWorkerResult) => void;
-  reject: (reason: Error) => void;
-  timer: ReturnType<typeof setTimeout>;
-  operation: string;
-};
+/**
+ * Maximum number of sharp worker processes allowed to run concurrently.
+ *
+ * Each job forks its own throwaway process, so without a limit a submission
+ * with many files could spawn a burst of libvips processes at once, spiking
+ * memory and CPU. Jobs beyond this limit queue and start as workers free up.
+ * Capped well below the core count because every worker is a full OS process
+ * running native image processing — a small ceiling keeps peak resource use
+ * predictable on the light desktop workload.
+ */
+const MAX_CONCURRENT_WORKERS = Math.min(cpus().length, 3);
 
 /**
- * Manages a dedicated worker process that runs sharp image processing,
+ * Runs sharp image processing in a throwaway worker process, one per job,
  * obtained through the {@link PlatformService} process abstraction.
  *
- * In production (Electron) the worker is a real, separate OS process, which
- * isolates sharp/libvips native code from the main process: if libvips
- * segfaults, aborts, or runs out of memory (e.g. on a pathological image or
- * after long idle), only the child process dies. The main process survives,
- * a fresh child is spawned on the next request, and any in-flight requests
- * are rejected with a normal catchable error so posting fails gracefully
- * instead of taking the whole app down.
+ * Each call to {@link SharpInstanceManager.processImage} forks a fresh worker,
+ * sends it a single job, awaits the reply, and then terminates the worker.
+ * This keeps the manager extremely simple — there is no shared state, request
+ * multiplexing, or reuse to reason about — and gives two properties for free:
+ *
+ *  - **Crash isolation.** In production (Electron) the worker is a real,
+ *    separate OS process. If libvips segfaults, aborts, or runs out of memory,
+ *    only that worker dies; the job rejects with a normal catchable error so
+ *    posting fails gracefully instead of taking the whole app down.
+ *  - **Zero memory retention.** Because the worker is torn down after every
+ *    job, all libvips native memory is released immediately and the glibc heap
+ *    fragmentation that builds up in a long-lived native process never
+ *    accumulates. The trade-off is a per-job spawn cost (~100-300ms), which is
+ *    negligible for PostyBirb's light desktop workload (1-2 users).
+ *
+ * Concurrency is bounded by a {@link MAX_CONCURRENT_WORKERS}-wide queue so a
+ * batch of images never spawns an unbounded burst of worker processes at once;
+ * excess jobs wait and start as earlier workers finish.
  *
  * Under test, the platform supplies an in-process worker (no real process is
- * spawned); the sharp logic is still fully exercised, only the OS-level
- * crash isolation is bypassed.
- *
- * NOTE: This deliberately replaces the previous piscina worker-thread
- * pool. Worker threads share the host process's address space, so a
- * native crash there killed the entire application with no catchable
- * JavaScript error — which is the root cause of the "crash while posting"
- * reports. A separate process is the only way to truly contain native
- * crashes.
+ * spawned); the sharp logic is still fully exercised, only the OS-level crash
+ * isolation is bypassed.
  *
  * @class SharpInstanceManager
  */
@@ -86,19 +97,21 @@ type PendingRequest = {
 export class SharpInstanceManager implements OnModuleDestroy {
   private readonly logger = Logger();
 
-  /** The current sharp worker process, or null if not yet spawned/crashed. */
-  private child: PlatformWorkerProcess | null = null;
+  /** Live worker processes, one per in-flight job. Tracked so they can all
+   * be terminated on shutdown. */
+  private readonly activeChildren = new Set<PlatformWorkerProcess>();
 
-  /** In-flight spawn, so concurrent callers share a single child. */
-  private childReady: Promise<PlatformWorkerProcess> | null = null;
+  /**
+   * Concurrency limiter: caps how many worker processes run at once. Jobs
+   * pushed beyond {@link MAX_CONCURRENT_WORKERS} queue until a slot frees up.
+   */
+  private readonly queue: queueAsPromised<SharpWorkerInput, SharpWorkerResult> =
+    fastq.promise(
+      (input: SharpWorkerInput) => this.runJob(input),
+      MAX_CONCURRENT_WORKERS,
+    );
 
-  /** Outstanding requests keyed by id, awaiting a response from the child. */
-  private readonly pending = new Map<number, PendingRequest>();
-
-  /** Monotonic request id used to correlate responses from the child. */
-  private requestId = 0;
-
-  /** Set during shutdown so a deliberate kill is not treated as a crash. */
+  /** Set during shutdown so no further jobs are accepted. */
   private destroyed = false;
 
   /** Resolved absolute path to sharp-worker.js. */
@@ -108,10 +121,9 @@ export class SharpInstanceManager implements OnModuleDestroy {
     this.workerPath = this.resolveWorkerPath();
 
     // Run health check asynchronously — don't block construction, but log
-    // warnings if sharp is broken on this system. In production this also
-    // eagerly spawns (and validates) the child so the first post is fast.
-    // The .catch() is a safety net to prevent unhandled rejection if
-    // something unexpected escapes the try/catch inside runHealthCheck.
+    // warnings if sharp is broken on this system. The .catch() is a safety net
+    // to prevent unhandled rejection if something unexpected escapes the
+    // try/catch inside runHealthCheck.
     this.runHealthCheck().catch((err) => {
       this.logger
         .withError(err)
@@ -151,91 +163,49 @@ export class SharpInstanceManager implements OnModuleDestroy {
 
   async onModuleDestroy() {
     this.destroyed = true;
-    const { child } = this;
-    this.child = null;
-    this.childReady = null;
 
-    const inFlight = this.pending.size;
-    if (inFlight > 0) {
+    const active = this.activeChildren.size;
+    if (active > 0) {
       this.logger
-        .withMetadata({ inFlightRequests: inFlight })
+        .withMetadata({ activeWorkers: active })
         .warn(
-          `Sharp instance manager shutting down with ${inFlight} request(s) still in flight — they will be rejected`,
+          `Sharp instance manager shutting down with ${active} worker(s) still running — terminating them`,
         );
     }
 
-    // Reject anything still in flight so awaiting callers settle.
-    const shutdownError = new Error(
-      'Sharp instance manager is shutting down',
-    );
-    for (const [id, request] of this.pending) {
-      clearTimeout(request.timer);
-      request.reject(shutdownError);
-      this.pending.delete(id);
-    }
-
-    if (child) {
-      this.logger
-        .withMetadata({ pid: child.pid })
-        .info('Terminating sharp worker process (module destroy)');
+    // Terminate any still-running workers. Each kill triggers the worker's
+    // onExit handler, which rejects its in-flight job with a catchable error.
+    for (const child of this.activeChildren) {
       try {
         child.kill();
-        this.logger.info('Sharp worker process terminated');
       } catch (err) {
-        // kill() may throw if the process is already gone — safe to ignore
+        // kill() may throw if the process is already gone — safe to ignore.
         this.logger
           .withError(err)
-          .warn('Failed to terminate sharp worker process (may already be gone)');
+          .warn(
+            'Failed to terminate sharp worker process during shutdown (may already be gone)',
+          );
       }
-    } else {
-      this.logger.info('Sharp instance manager destroyed (no worker was running)');
     }
-  }
+    this.activeChildren.clear();
 
-  /**
-   * Ensure a live child process exists, spawning one if necessary.
-   * Concurrent callers share a single in-flight spawn.
-   */
-  private ensureChild(): Promise<PlatformWorkerProcess> {
-    if (this.destroyed) {
-      return Promise.reject(
-        new Error('Sharp instance manager has been destroyed'),
+    if (active === 0) {
+      this.logger.info(
+        'Sharp instance manager destroyed (no workers were running)',
       );
     }
-    if (this.child) {
-      return Promise.resolve(this.child);
-    }
-    if (!this.childReady) {
-      this.childReady = this.spawnChild().catch((err) => {
-        // Allow a future request to retry the spawn.
-        this.childReady = null;
-        this.logger
-          .withError(err)
-          .error(
-            'Sharp worker process failed to spawn; next request will retry',
-          );
-        throw err;
-      });
-    }
-    return this.childReady;
   }
 
   /**
-   * Fork the sharp worker process via the platform abstraction and wait
-   * until it is ready, then wire up message/exit handlers.
+   * Fork a fresh sharp worker process via the platform abstraction.
    *
    * The platform decides how the worker is hosted: a real Electron
    * utilityProcess in production (true crash isolation) or an in-process
    * stand-in under test.
    */
-  private async spawnChild(): Promise<PlatformWorkerProcess> {
-    this.logger
-      .withMetadata({
-        workerPath: this.workerPath,
-        isolatesCrashes: this.platform.process.isolatesCrashes,
-      })
-      .info('Spawning sharp worker process…');
-
+  private async spawnWorker(
+    operation: string,
+  ): Promise<PlatformWorkerProcess> {
     const child = await this.platform.process.fork(this.workerPath, {
       serviceName: 'PostyBirb Sharp Image Processor',
     });
@@ -243,156 +213,12 @@ export class SharpInstanceManager implements OnModuleDestroy {
     this.logger
       .withMetadata({
         pid: child.pid,
+        operation,
         isolatesCrashes: this.platform.process.isolatesCrashes,
       })
-      .info('Sharp worker process ready');
+      .info('Spawned sharp worker process');
 
-    child.onMessage((message) => this.handleChildMessage(message));
-    child.onExit((code) => this.handleChildExit(code));
-
-    this.child = child;
     return child;
-  }
-
-  /**
-   * Handle a response message from the child, resolving/rejecting the
-   * matching pending request.
-   */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private handleChildMessage(message: any): void {
-    if (!message || typeof message.id !== 'number') {
-      this.logger
-        .withMetadata({ message })
-        .warn('Sharp worker sent an unrecognised message (no id); ignoring');
-      return;
-    }
-    const request = this.pending.get(message.id);
-    if (!request) {
-      this.logger
-        .withMetadata({ id: message.id })
-        .warn(
-          'Sharp worker replied to an unknown or already-settled request id; ignoring',
-        );
-      return;
-    }
-    this.pending.delete(message.id);
-    clearTimeout(request.timer);
-
-    if (message.error) {
-      this.logger
-        .withMetadata({
-          id: message.id,
-          operation: request.operation,
-          workerError: message.error.message,
-        })
-        .warn('Sharp worker returned an error for operation');
-      request.reject(
-        new Error(message.error.message || 'Sharp worker error'),
-      );
-      return;
-    }
-
-    const result = message.result as SharpWorkerResult;
-
-    // Structured clone converts Node.js Buffers into plain Uint8Arrays.
-    // Re-wrap them so downstream consumers (e.g. form-data) that rely on
-    // Buffer methods/stream semantics work.
-    if (result?.buffer && !Buffer.isBuffer(result.buffer)) {
-      result.buffer = Buffer.from(result.buffer);
-    }
-    if (result?.thumbnailBuffer && !Buffer.isBuffer(result.thumbnailBuffer)) {
-      result.thumbnailBuffer = Buffer.from(result.thumbnailBuffer);
-    }
-
-    request.resolve(result);
-  }
-
-  /**
-   * Handle the child process exiting. This is the crash-isolation path:
-   * instead of the whole app dying, we observe the exit, reject every
-   * in-flight request with a catchable error, and let the next request
-   * spawn a fresh child.
-   */
-  private handleChildExit(code: number): void {
-    const hadChild = this.child !== null;
-    const pid = this.child?.pid;
-    this.child = null;
-    this.childReady = null;
-
-    if (this.destroyed) {
-      // Deliberate shutdown — already handled in onModuleDestroy.
-      this.logger
-        .withMetadata({ pid, exitCode: code })
-        .info('Sharp worker process exited after deliberate shutdown');
-      return;
-    }
-
-    const pendingCount = this.pending.size;
-
-    if (hadChild) {
-      if (code === 0) {
-        this.logger
-          .withMetadata({ pid, exitCode: code, pendingRequests: pendingCount })
-          .warn(
-            'Sharp worker process exited cleanly but unexpectedly; ' +
-              'it will be respawned on the next request',
-          );
-      } else {
-        this.logger
-          .withMetadata({ pid, exitCode: code, pendingRequests: pendingCount })
-          .error(
-            'Sharp worker process crashed (likely a native libvips fault or out-of-memory). ' +
-              'The main process survived; it will be respawned on the next request.',
-          );
-      }
-    }
-
-    if (pendingCount > 0) {
-      this.logger
-        .withMetadata({ pid, exitCode: code, pendingRequests: pendingCount })
-        .error(
-          `Rejecting ${pendingCount} in-flight sharp request(s) due to worker exit`,
-        );
-    }
-
-    const crashError = new Error(
-      `Sharp worker process exited unexpectedly (code ${code}). ` +
-        'This usually indicates a native libvips crash or out-of-memory ' +
-        'while processing an image.',
-    );
-    for (const [id, request] of this.pending) {
-      clearTimeout(request.timer);
-      request.reject(crashError);
-      this.pending.delete(id);
-    }
-  }
-
-  /**
-   * Forcefully restart the child (used when a request times out, which
-   * may indicate a hung native call).
-   */
-  private restartChild(): void {
-    const { child } = this;
-    const pid = child?.pid;
-    this.child = null;
-    this.childReady = null;
-    if (child) {
-      this.logger
-        .withMetadata({ pid })
-        .warn(
-          'Forcefully terminating sharp worker process due to a request timeout; ' +
-            'it will be respawned on the next request',
-        );
-      try {
-        child.kill();
-        this.logger.withMetadata({ pid }).info('Sharp worker process terminated after timeout');
-      } catch (err) {
-        // Already gone — safe to ignore.
-        this.logger
-          .withError(err)
-          .warn('Failed to terminate timed-out sharp worker (may already be gone)');
-      }
-    }
   }
 
   /**
@@ -450,56 +276,149 @@ export class SharpInstanceManager implements OnModuleDestroy {
   }
 
   /**
-   * Process an image using the sharp utility process.
+   * Process an image, bounded by the concurrency queue.
    *
-   * Buffers are copied to the child via structured clone — the caller's
-   * original buffers are NOT detached and remain usable after the call.
-   * This means peak memory for a single operation is roughly
-   * 2× the input size (original + child copy).
-   *
-   * If the child crashes (native libvips fault / OOM) the returned promise
-   * rejects with a normal Error rather than crashing the main process.
+   * Public entry point: enqueues the job so that no more than
+   * {@link MAX_CONCURRENT_WORKERS} worker processes run at once. The actual
+   * spawn/await/kill happens in {@link SharpInstanceManager.runJob}.
    */
   async processImage(input: SharpWorkerInput): Promise<SharpWorkerResult> {
-    const child = await this.ensureChild();
-    this.requestId += 1;
-    const id = this.requestId;
+    if (this.destroyed) {
+      throw new Error('Sharp instance manager has been destroyed');
+    }
+    return this.queue.push(input);
+  }
+
+  /**
+   * Run a single image-processing job in a throwaway worker process.
+   *
+   * Forks a fresh worker, sends it the job, awaits the reply, then always
+   * terminates the worker — whether the job succeeded, failed, timed out, or
+   * the worker crashed. One process per job means there is no shared state to
+   * corrupt and all native memory is released as soon as the job completes.
+   *
+   * Buffers are copied to the worker via structured clone — the caller's
+   * original buffers are NOT detached and remain usable after the call. This
+   * means peak memory for a single operation is roughly 2× the input size
+   * (original + worker copy).
+   *
+   * If the worker crashes (native libvips fault / OOM) the returned promise
+   * rejects with a normal Error rather than crashing the main process.
+   */
+  private async runJob(input: SharpWorkerInput): Promise<SharpWorkerResult> {
+    if (this.destroyed) {
+      throw new Error('Sharp instance manager has been destroyed');
+    }
+
+    const child = await this.spawnWorker(input.operation);
+    this.activeChildren.add(child);
 
     return new Promise<SharpWorkerResult>((resolvePromise, rejectPromise) => {
+      let settled = false;
+
+      // Settle the job exactly once and tear the worker down. Any later
+      // event (e.g. the onExit triggered by our own kill()) is ignored.
+      const finish = (settleFn: () => void) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        this.activeChildren.delete(child);
+        try {
+          child.kill();
+        } catch {
+          // Already gone (e.g. it crashed) — safe to ignore.
+        }
+        settleFn();
+      };
+
       const timer = setTimeout(() => {
-        this.pending.delete(id);
-        this.logger
-          .withMetadata({
-            operation: input.operation,
-            timeoutMs: REQUEST_TIMEOUT_MS,
-          })
-          .error('Sharp operation timed out; restarting the utility process');
-        rejectPromise(
-          new Error(
-            `Sharp ${input.operation} operation timed out after ${REQUEST_TIMEOUT_MS}ms`,
-          ),
-        );
-        // The child may be wedged on a hung native call — restart it so the
-        // next request gets a healthy process.
-        this.restartChild();
+        finish(() => {
+          this.logger
+            .withMetadata({
+              operation: input.operation,
+              timeoutMs: REQUEST_TIMEOUT_MS,
+              pid: child.pid,
+            })
+            .error(
+              'Sharp operation timed out; terminating the worker process',
+            );
+          rejectPromise(
+            new Error(
+              `Sharp ${input.operation} operation timed out after ${REQUEST_TIMEOUT_MS}ms`,
+            ),
+          );
+        });
       }, REQUEST_TIMEOUT_MS);
 
-      this.pending.set(id, {
-        resolve: resolvePromise,
-        reject: rejectPromise,
-        timer,
-        operation: input.operation,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      child.onMessage((message: any) => {
+        finish(() => {
+          if (message?.error) {
+            this.logger
+              .withMetadata({
+                operation: input.operation,
+                workerError: message.error.message,
+              })
+              .warn('Sharp worker returned an error for operation');
+            rejectPromise(
+              new Error(message.error.message || 'Sharp worker error'),
+            );
+            return;
+          }
+
+          const result = message?.result as SharpWorkerResult;
+
+          // Structured clone converts Node.js Buffers into plain Uint8Arrays.
+          // Re-wrap them so downstream consumers (e.g. form-data) that rely on
+          // Buffer methods/stream semantics work.
+          if (result?.buffer && !Buffer.isBuffer(result.buffer)) {
+            result.buffer = Buffer.from(result.buffer);
+          }
+          if (
+            result?.thumbnailBuffer &&
+            !Buffer.isBuffer(result.thumbnailBuffer)
+          ) {
+            result.thumbnailBuffer = Buffer.from(result.thumbnailBuffer);
+          }
+
+          resolvePromise(result);
+        });
+      });
+
+      child.onExit((code: number) => {
+        // If we've already settled, this is the onExit from our own kill() —
+        // ignored by finish(). Otherwise the worker died before replying: a
+        // native libvips crash or OOM. Reject with a catchable error.
+        finish(() => {
+          this.logger
+            .withMetadata({
+              operation: input.operation,
+              exitCode: code,
+              pid: child.pid,
+            })
+            .error(
+              'Sharp worker process exited before returning a result ' +
+                '(likely a native libvips crash or out-of-memory)',
+            );
+          rejectPromise(
+            new Error(
+              `Sharp worker process exited unexpectedly (code ${code}) during ` +
+                `${input.operation}. This usually indicates a native libvips ` +
+                'crash or out-of-memory while processing an image.',
+            ),
+          );
+        });
       });
 
       try {
-        child.postMessage({ id, input });
+        child.postMessage({ id: 1, input });
       } catch (error) {
-        clearTimeout(timer);
-        this.pending.delete(id);
-        this.logger
-          .withError(error)
-          .error('Failed to dispatch image to sharp utility process');
-        rejectPromise(toError(error));
+        finish(() => {
+          this.logger
+            .withError(error)
+            .error('Failed to dispatch image to sharp worker process');
+          rejectPromise(toError(error));
+        });
       }
     });
   }
@@ -596,14 +515,13 @@ export class SharpInstanceManager implements OnModuleDestroy {
   }
 
   /**
-   * Get utility-process statistics for monitoring.
+   * Get worker statistics for monitoring.
    */
   getStats() {
-    if (!this.child) return null;
     return {
-      pid: this.child.pid,
-      pendingRequests: this.pending.size,
-      alive: true,
+      activeWorkers: this.activeChildren.size,
+      queuedJobs: this.queue.length(),
+      maxConcurrentWorkers: MAX_CONCURRENT_WORKERS,
     };
   }
 }

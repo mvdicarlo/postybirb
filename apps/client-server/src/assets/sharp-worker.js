@@ -3,10 +3,9 @@
  *
  * Runs in a dedicated Electron utilityProcess (a real OS child process) to
  * isolate sharp/libvips native code from the main process. If libvips
- * segfaults, aborts, or runs out of memory (e.g. on a pathological image or
- * after long idle), only this child process dies — the main process survives,
- * spawns a replacement on the next request, and rejects the in-flight request
- * with a normal catchable error.
+ * segfaults, aborts, or runs out of memory on a pathological image, only this
+ * child process dies — the main process survives and rejects the in-flight
+ * job with a normal catchable error.
  *
  * In test mode this same file is required in-process and its exported
  * `processImage` function is called directly (no child process).
@@ -29,16 +28,50 @@ if (os.platform() === 'linux' && !process.env.MALLOC_ARENA_MAX) {
 }
 
 /**
- * Create a sharp instance with the pixel limit disabled.
- * Sharp's default limit (268 megapixels) rejects large images
- * that artists commonly work with (e.g. 50MB+ high-res JPEGs).
+ * Upper bound on input pixels (width × height) we will decode.
+ *
+ * Sharp's own default is ~268 megapixels, which rejects large images that
+ * artists legitimately work with. Rather than disable the guard entirely
+ * (which would let a pathological/malicious image exhaust memory and crash
+ * the worker), we raise it to 500 megapixels.
+ *
+ * libvips decodes to raw RGBA at 4 bytes/pixel, so this caps a single frame's
+ * worst-case raw decode at ~2GB — survivable for the utility process — while
+ * still comfortably covering real artwork/photos (8K ≈ 33MP, 16K ≈ 133MP, a
+ * 300 DPI 24"×36" print ≈ 78MP). A decompression bomb such as a 30000×30000
+ * PNG (~900MP, ~3.6GB raw) is rejected before decode.
+ */
+const MAX_INPUT_PIXELS = 500_000_000;
+
+/**
+ * Per-pipeline native timeout, in seconds.
+ *
+ * Aborts a runaway libvips operation from inside the native layer before the
+ * coarser-grained per-request timeout in SharpInstanceManager (180s) has to
+ * kill and respawn the whole worker. Kept comfortably below that so a wedged
+ * native call fails as a normal error instead of a process restart.
+ */
+const PIPELINE_TIMEOUT_SECONDS = 120;
+
+/**
+ * Create a sharp instance with a high (but finite) pixel limit and a native
+ * operation timeout already applied, so every pipeline derived from this
+ * helper inherits both safety guards.
  * @param {Buffer} buffer
  * @param {Object} [opts] - Additional sharp input options
  * @param {boolean} [opts.animated] - Whether to load all frames (for GIF/WebP)
  * @returns {import('sharp').Sharp}
  */
 function load(buffer, opts) {
-  return sharp(buffer, { limitInputPixels: false, ...opts });
+  // failOn: 'none' makes decoding resilient to mildly corrupt or
+  // progressively-truncated images that browsers render fine — sharp's
+  // default ('warning') would otherwise throw on them. Callers can still
+  // override via opts.
+  return sharp(buffer, {
+    limitInputPixels: MAX_INPUT_PIXELS,
+    failOn: 'none',
+    ...opts,
+  }).timeout({ seconds: PIPELINE_TIMEOUT_SECONDS });
 }
 
 /**
@@ -56,7 +89,7 @@ function isAnimatedFormat(mimeType) {
  * @returns {Promise<boolean>}
  */
 async function isAnimated(buffer) {
-  const metadata = await sharp(buffer, { limitInputPixels: false }).metadata();
+  const metadata = await load(buffer).metadata();
   return (metadata.pages || 1) > 1;
 }
 
@@ -401,7 +434,7 @@ async function generateThumbnail(
 
   pipeline = isJpeg
     ? pipeline.jpeg({ quality: 99, force: true })
-    : pipeline.png({ quality: 99, force: true });
+    : pipeline.png({ quality: 90, palette: true, force: true });
 
   // Get buffer + output dimensions in one call — no re-decode needed
   const { data, info } = await pipeline.toBuffer({ resolveWithObject: true });
@@ -682,12 +715,8 @@ module.exports.dispatch = dispatch;
  * ElectronProcessService), `process.parentPort` is defined and we run as a
  * dedicated OS process. THIS is what isolates native libvips crashes:
  * a segfault / abort / OOM in here terminates ONLY this child process —
- * the main Electron process survives, spawns a replacement, and rejects
- * the in-flight request with a normal, catchable JavaScript error.
- *
- * Worker threads (the previous piscina approach) could NOT provide this
- * guarantee: threads share the parent's process and address space, so a
- * native crash took the entire app down with it, with no catchable error.
+ * the main Electron process survives and rejects the in-flight job with a
+ * normal, catchable JavaScript error.
  *
  * When this module is required in-process (test mode), `process.parentPort`
  * is undefined, this block is skipped, and callers invoke `dispatch`
