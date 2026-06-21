@@ -11,6 +11,7 @@ import {
   Card,
   Group,
   Loader,
+  SegmentedControl,
   Select,
   Stack,
   Table,
@@ -39,12 +40,13 @@ import {
   IconPlus,
   IconTrash,
 } from '@tabler/icons-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from 'react-query';
 import settingsApi from '../../../../api/settings.api';
 import { resetGlobalProxyReadyCache } from '../../../../hooks/use-global-proxy-ready';
 import { useAccounts } from '../../../../stores/entity/account-store';
 import { useWebsites } from '../../../../stores/entity/website-store';
+import { isRemote } from '../../../../transports/http-client';
 import {
   showConnectionErrorNotification,
   showConnectionSuccessNotification,
@@ -106,6 +108,30 @@ function poolEntryLabel(entry: ProxyPoolEntry): string {
   return entry.id.slice(0, 8);
 }
 
+const PROXY_SCOPE_STORAGE_KEY = 'proxy_settings_scope';
+
+type ProxySettingsScope = 'client' | 'server';
+
+function readStoredProxyScope(): ProxySettingsScope {
+  const stored = localStorage.getItem(PROXY_SCOPE_STORAGE_KEY);
+  return stored === 'server' ? 'server' : 'client';
+}
+
+function buildProxyPatch(config: ProxyConfiguration) {
+  return {
+    mode: config.mode,
+    pool: config.pool.map((entry) => ({
+      ...entry,
+      label: entry.label?.trim() || undefined,
+      host: entry.host.trim(),
+      port: entry.port.trim(),
+      username: entry.username.trim(),
+    })),
+    fixedProxyId: config.fixedProxyId,
+    routing: config.routing,
+  };
+}
+
 function serializeProxyForCompare(config: ProxyConfiguration): string {
   return JSON.stringify({
     mode: config.mode,
@@ -116,41 +142,110 @@ function serializeProxyForCompare(config: ProxyConfiguration): string {
 }
 
 export function ProxySettingsSection() {
+  const remoteMode = isRemote();
+
   const {
-    data: startupSettings,
-    isLoading,
-    refetch,
+    data: serverStartupSettings,
+    isLoading: isServerLoading,
+    refetch: refetchServer,
   } = useQuery(
-    'startup-settings',
+    'startup-settings-server',
     () => settingsApi.getStartupOptions().then((res) => res.body),
+    { cacheTime: 0, enabled: remoteMode },
+  );
+
+  const {
+    data: localStartupSettings,
+    isLoading: isLocalLoading,
+    refetch: refetchLocal,
+  } = useQuery(
+    'startup-settings-local',
+    () =>
+      remoteMode
+        ? settingsApi.getLocalStartupOptions().then((res) => res.body)
+        : settingsApi.getStartupOptions().then((res) => res.body),
     { cacheTime: 0 },
   );
 
-  if (isLoading) {
+  const [scope, setScope] = useState<ProxySettingsScope>(readStoredProxyScope);
+
+  if (isLocalLoading || (remoteMode && isServerLoading)) {
     return <Loader />;
   }
 
-  const proxy = normalizeStartupProxy(startupSettings?.proxy);
+  if (!remoteMode) {
+    const proxy = normalizeStartupProxy(localStartupSettings?.proxy);
+    const hadLegacyProfiles =
+      localStartupSettings?.proxy !== undefined &&
+      isLegacyProxyConfiguration(localStartupSettings.proxy);
+
+    return (
+      <ProxySettingsForm
+        proxy={proxy}
+        hadLegacyProfiles={hadLegacyProfiles}
+        scope={null}
+        refetch={refetchLocal}
+      />
+    );
+  }
+
+  const activeStartupSettings =
+    scope === 'client' ? localStartupSettings : serverStartupSettings;
+  const proxy = normalizeStartupProxy(activeStartupSettings?.proxy);
   const hadLegacyProfiles =
-    startupSettings?.proxy !== undefined &&
-    isLegacyProxyConfiguration(startupSettings.proxy);
+    activeStartupSettings?.proxy !== undefined &&
+    isLegacyProxyConfiguration(activeStartupSettings.proxy);
 
   return (
-    <ProxySettingsForm
-      proxy={proxy}
-      hadLegacyProfiles={hadLegacyProfiles}
-      refetch={refetch}
-    />
+    <Stack gap="md">
+      <SegmentedControl
+        value={scope}
+        onChange={(value) => {
+          const nextScope = value as ProxySettingsScope;
+          localStorage.setItem(PROXY_SCOPE_STORAGE_KEY, nextScope);
+          setScope(nextScope);
+        }}
+        data={[
+          { value: 'client', label: 'Client (this device)' },
+          { value: 'server', label: 'Server (remote host)' },
+        ]}
+      />
+
+      <Alert color="blue">
+        {scope === 'client' ? (
+          <Trans>
+            Applies to login webviews and other traffic on this computer.
+            Remote posting still uses the server proxy below unless you configure
+            it separately.
+          </Trans>
+        ) : (
+          <Trans>
+            Applies to posting and background tasks on the remote host. Does not
+            change proxy settings on this device.
+          </Trans>
+        )}
+      </Alert>
+
+      <ProxySettingsForm
+        key={scope}
+        proxy={proxy}
+        hadLegacyProfiles={hadLegacyProfiles}
+        scope={scope}
+        refetch={scope === 'client' ? refetchLocal : refetchServer}
+      />
+    </Stack>
   );
 }
 
 function ProxySettingsForm({
   proxy,
   hadLegacyProfiles,
+  scope,
   refetch,
 }: {
   proxy: ProxyConfiguration;
   hadLegacyProfiles: boolean;
+  scope: ProxySettingsScope | null;
   refetch: () => Promise<unknown>;
 }) {
   const websites = useWebsites();
@@ -165,6 +260,12 @@ function ProxySettingsForm({
   const [testingPoolEntryId, setTestingPoolEntryId] = useState<string | null>(
     null,
   );
+
+  useEffect(() => {
+    setConfig(cloneProxyConfiguration(proxy));
+  }, [proxy]);
+
+  const usesLocalProxyTarget = scope === null || scope === 'client';
 
   const websitesWithAccounts = useMemo(() => {
     const websiteIds = new Set(accounts.map((account) => account.website));
@@ -292,25 +393,27 @@ function ProxySettingsForm({
 
     setIsSaving(true);
     try {
-      await settingsApi.updateSystemStartupSettings({
-        proxy: {
-          mode: config.mode,
-          pool: config.pool.map((entry) => ({
-            ...entry,
-            label: entry.label?.trim() || undefined,
-            host: entry.host.trim(),
-            port: entry.port.trim(),
-            username: entry.username.trim(),
-          })),
-          fixedProxyId: config.fixedProxyId,
-          routing: config.routing,
-        },
-      });
-      resetGlobalProxyReadyCache();
-      await window.electron?.applyProxyConfig();
+      const proxyPatch = buildProxyPatch(config);
+
+      if (usesLocalProxyTarget) {
+        await settingsApi.updateLocalSystemStartupSettings({
+          proxy: proxyPatch,
+        });
+        resetGlobalProxyReadyCache();
+        await window.electron?.applyProxyConfig();
+      } else {
+        await settingsApi.updateSystemStartupSettings({
+          proxy: proxyPatch,
+        });
+      }
+
       await refetch();
       showConnectionSuccessNotification(
-        <Trans>Proxy settings saved and applied</Trans>,
+        usesLocalProxyTarget ? (
+          <Trans>Proxy settings saved and applied on this device</Trans>
+        ) : (
+          <Trans>Proxy settings saved on the remote server</Trans>
+        ),
       );
     } catch {
       showConnectionErrorNotification(
@@ -333,12 +436,15 @@ function ProxySettingsForm({
 
     setTestingPoolEntryId(entry.id);
     try {
-      const result = await settingsApi.testProxyConnection({
+      const payload = {
         ...entry,
         host: entry.host.trim(),
         port: entry.port.trim(),
         username: entry.username.trim(),
-      });
+      };
+      const result = usesLocalProxyTarget
+        ? await settingsApi.testLocalProxyConnection(payload)
+        : await settingsApi.testProxyConnection(payload);
 
       if (result.body.success) {
         showConnectionSuccessNotification(
@@ -656,9 +762,17 @@ function ProxySettingsForm({
           </Group>
 
           <Alert color="blue">
-            <Trans>
-              Saved settings apply right away. Reload any open login pages.
-            </Trans>
+            {usesLocalProxyTarget ? (
+              <Trans>
+                Saved settings apply on this device right away. Reload any open
+                login pages.
+              </Trans>
+            ) : (
+              <Trans>
+                Saved settings apply on the remote server for posting and
+                background tasks.
+              </Trans>
+            )}
           </Alert>
         </Stack>
       </Box>

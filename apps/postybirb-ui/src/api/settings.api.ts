@@ -4,32 +4,56 @@ import type {
   SettingsDto,
 } from '@postybirb/types';
 import type { ProxyPoolEntry, StartupOptions } from '@postybirb/utils/common';
-import { HttpClient } from '../transports/http-client';
+import {
+  getLocalBaseUrl,
+  getLocalServerPassword,
+  HttpClient,
+} from '../transports/http-client';
 
 class SettingsApi {
-  // Settings should only ever update local settings
   private readonly client: HttpClient = new HttpClient('settings');
+
+  /** Local Electron Nest — used for client-scope proxy when connected to a remote host. */
+  private readonly localClient: HttpClient = new HttpClient(
+    'settings',
+    getLocalBaseUrl,
+    getLocalServerPassword,
+  );
 
   getAll() {
     return this.client.get<SettingsDto[]>();
   }
 
+  /** Startup options for the active API target (remote host when in remote client mode). */
   getStartupOptions() {
     return this.client.get<StartupOptions>('startup');
+  }
+
+  getLocalStartupOptions() {
+    return this.localClient.get<StartupOptions>('startup');
   }
 
   update(id: EntityId, dto: IUpdateSettingsDto) {
     return this.client.patch(id, dto);
   }
 
-  updateSystemStartupSettings(
-    startAppOnSystemStartup: Partial<StartupOptions>,
-  ) {
-    return this.client.patch(`startup/system-startup`, startAppOnSystemStartup);
+  updateSystemStartupSettings(startUpOptions: Partial<StartupOptions>) {
+    return this.client.patch(`startup/system-startup`, startUpOptions);
+  }
+
+  updateLocalSystemStartupSettings(startUpOptions: Partial<StartupOptions>) {
+    return this.localClient.patch(`startup/system-startup`, startUpOptions);
   }
 
   testProxyConnection(poolEntry: ProxyPoolEntry) {
     return this.client.post<{ success: boolean; message: string }>(
+      'startup/proxy/test',
+      poolEntry,
+    );
+  }
+
+  testLocalProxyConnection(poolEntry: ProxyPoolEntry) {
+    return this.localClient.post<{ success: boolean; message: string }>(
       'startup/proxy/test',
       poolEntry,
     );
