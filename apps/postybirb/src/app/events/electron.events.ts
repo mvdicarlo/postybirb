@@ -3,7 +3,8 @@
  * between the frontend to the electron backend.
  */
 
-import { app, dialog, ipcMain, session, shell } from 'electron';
+import { getPartitionKey } from '@postybirb/utils/common';
+import { app, BrowserWindow, dialog, ipcMain, session, shell } from 'electron';
 
 export default class ElectronEvents {
   static bootstrapElectronEvents(): Electron.IpcMain {
@@ -19,6 +20,29 @@ ipcMain.handle('get-cookies-for-account', async (event, accountId: string) => {
 
   return Buffer.from(JSON.stringify(cookies)).toString('base64');
 });
+
+ipcMain.handle(
+  'get-local-storage-for-account',
+  async (event, accountId: string, url: string) => {
+    // Its easier to duplicate code then get access to ElectronBrowserService in this context
+
+    const bw = new BrowserWindow({
+      show: false,
+      webPreferences: { partition: getPartitionKey(accountId) },
+    });
+
+    try {
+      await bw.loadURL(url);
+      return await bw.webContents.executeJavaScript(
+        'JSON.parse(JSON.stringify(localStorage))',
+      );
+    } finally {
+      if (!bw.isDestroyed()) {
+        bw.destroy();
+      }
+    }
+  },
+);
 
 ipcMain.handle('get-lan-ip', async () => {
   const os = await import('os');

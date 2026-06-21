@@ -24,15 +24,12 @@ export function notifyInfo(title: React.ReactNode, message: React.ReactNode) {
 /**
  * Show a success notification for successful login and close login form for current website.
  */
-export function notifyLoginSuccess(
-  message: React.ReactNode | undefined,
-  account: AccountRecord | undefined,
-) {
-  if (account) accountApi.refreshLogin(account?.id);
+export function notifyLoginSuccess(account: AccountRecord) {
+  accountApi.refreshLogin(account.id);
   notifications.show({
-    title: <Trans>{account?.websiteDisplayName}: Login successful</Trans>,
+    title: <Trans>{account.websiteDisplayName}: Login successful</Trans>,
     color: 'green',
-    message,
+    message: account.name,
     icon: <IconCheck size={16} />,
   });
 }
