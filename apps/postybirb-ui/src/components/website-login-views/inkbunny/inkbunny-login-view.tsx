@@ -13,15 +13,15 @@ import {
   Text,
   TextInput,
 } from '@mantine/core';
-import type { InkbunnyAccountData, InkbunnyOAuthRoutes } from '@postybirb/types';
+import type {
+  InkbunnyAccountData,
+  InkbunnyOAuthRoutes,
+} from '@postybirb/types';
 import { IconInfoCircle } from '@tabler/icons-react';
 import { useState } from 'react';
 import websitesApi from '../../../api/websites.api';
 import { ExternalLink } from '../../shared/external-link';
-import {
-  createLoginHttpErrorHandler,
-  notifyLoginSuccess,
-} from '../helpers';
+import { createLoginHttpErrorHandler, notifyLoginSuccess } from '../helpers';
 import { LoginViewContainer } from '../login-view-container';
 import type { LoginViewProps } from '../types';
 
@@ -51,7 +51,7 @@ export function InkbunnyLoginView({
         password,
       })
       .then(() => {
-        notifyLoginSuccess(undefined, account);
+        notifyLoginSuccess(account);
       })
       .catch(createLoginHttpErrorHandler())
       .finally(() => {

@@ -38,7 +38,7 @@ export class RemoteService {
   async setCookies(updateCookies: UpdateCookiesRemoteDto) {
     this.logger
       .withMetadata({ accountId: updateCookies.accountId })
-      .info('Updating cookies from remote client');
+      .info('Updating cookies and local storage from remote client');
 
     const clientCookies = Buffer.from(updateCookies.cookies, 'base64').toString(
       'utf-8',
@@ -51,17 +51,31 @@ export class RemoteService {
     }
     if (cookies.length === 0) {
       this.logger.warn('No cookies provided for account, skipping update');
-      return;
-    }
-    await this.platform.session.clearStorageData(updateCookies.accountId);
-    await Promise.all(
-      cookies.map((cookie) =>
-        this.platform.session.setCookie(
-          updateCookies.accountId,
-          this.convertCookie(cookie),
+    } else {
+      await this.platform.session.clearStorageData(updateCookies.accountId);
+      await Promise.all(
+        cookies.map((cookie) =>
+          this.platform.session.setCookie(
+            updateCookies.accountId,
+            this.convertCookie(cookie),
+          ),
         ),
-      ),
-    );
+      );
+    }
+
+    if (!updateCookies.localStorage) {
+      this.logger.warn(
+        'No local storage provided for account, skipping update',
+      );
+    } else {
+      await this.platform.browser.runScriptOnPage(
+        updateCookies.accountId,
+        updateCookies.localStorage.url,
+        `for (const [key, value] of Object.entries(JSON.parse(${JSON.stringify(JSON.stringify(updateCookies.localStorage.data))}))) {
+            localStorage.setItem(key, value)
+         }`,
+      );
+    }
   }
 
   private convertCookie(cookie: PlatformCookie): PlatformCookieDetails {

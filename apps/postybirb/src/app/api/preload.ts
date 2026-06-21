@@ -18,6 +18,9 @@ contextBridge.exposeInMainWorld('electron', {
   getRemoteConfig: () => JSON.parse(process.env.remote || '{}'),
   getCookiesForAccount: (accountId: string) =>
     ipcRenderer.invoke('get-cookies-for-account', accountId),
+  getLocalStorageForAccount: (accountId: string, url: string) =>
+    ipcRenderer.invoke('get-local-storage-for-account', accountId, url),
+
   // Gracefully request app quit from renderer
   quit: (code?: number) => ipcRenderer.send('quit', code),
   platform: process.platform,
