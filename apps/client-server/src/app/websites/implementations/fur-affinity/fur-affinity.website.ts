@@ -185,11 +185,36 @@ export default class FurAffinity
     return undefined;
   }
 
+  private lastPostTime = 0;
+
+  private async waitForFloodProtection(
+    cancellationToken: CancellableToken,
+  ): Promise<void> {
+    const elapsed = Date.now() - this.lastPostTime;
+    const floodCooldown = 15 * 1000;
+
+    if (elapsed < floodCooldown) {
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, floodCooldown - elapsed + 1000);
+      });
+      cancellationToken.throwIfCancelled();
+
+      // Ensure that concurent calls have flood protection too
+      // (e.g. schedule & manual post at the same time)
+      return this.waitForFloodProtection(cancellationToken);
+    }
+
+    this.lastPostTime = Date.now();
+    return Promise.resolve();
+  }
+
   async onPostFileSubmission(
     postData: PostData<FurAffinityFileSubmission>,
     files: PostingFile[],
     cancellationToken: CancellableToken,
   ): Promise<IPostResponse> {
+    await this.waitForFloodProtection(cancellationToken);
+
     const part1 = await this.platform.http.get<string>(
       `${this.BASE_URL}/submit/`,
       {
@@ -293,9 +318,6 @@ export default class FurAffinity
         .withAdditionalInfo(postResponse.body);
     }
 
-    const $ = parse(postResponse.body);
-    const submissionUrl =
-      $.querySelector('#submissionImg')?.getAttribute('src');
     return PostResponse.fromWebsite(this)
       .withSourceUrl(postResponse.responseUrl.replace('?upload-successful', ''))
       .withMessage('File posted successfully')
@@ -306,18 +328,6 @@ export default class FurAffinity
     postData: PostData<FurAffinityFileSubmission>,
   ): Promise<SimpleValidationResult> {
     const validator = this.createValidator<FurAffinityFileSubmission>();
-
-    const tags = postData.options.tags.filter((t) => t.length > 0);
-    if (tags.length < 3) {
-      validator.error(
-        'validation.tags.min-tags',
-        {
-          currentLength: tags.length,
-          minLength: 3,
-        },
-        'tags',
-      );
-    }
 
     return validator.result;
   }
