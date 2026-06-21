@@ -31,7 +31,7 @@ class SettingsApi {
   testProxyConnection(poolEntry: ProxyPoolEntry) {
     return this.client.post<{ success: boolean; message: string }>(
       'startup/proxy/test',
-      proxy,
+      poolEntry,
     );
   }
 

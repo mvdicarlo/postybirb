@@ -1,5 +1,5 @@
 /**
- * Proxy Settings Section - Multi-profile proxy configuration.
+ * Proxy Settings Section - v3 global proxy configuration.
  */
 
 import { Trans } from '@lingui/react/macro';
@@ -11,18 +11,25 @@ import {
   Card,
   Group,
   Loader,
-  MultiSelect,
   Select,
   Stack,
-  Switch,
+  Table,
   Text,
   TextInput,
   Title,
 } from '@mantine/core';
 import type {
   ProxyConfiguration,
-  ProxyProfile,
+  ProxyMode,
+  ProxyPoolEntry,
   ProxyType,
+  WebsiteProxyChoice,
+} from '@postybirb/utils/common';
+import {
+  defaultProxyConfiguration,
+  isLegacyProxyConfiguration,
+  isProxyConfiguration,
+  validateProxyConfiguration,
 } from '@postybirb/utils/common';
 import {
   IconDeviceFloppy,
@@ -35,6 +42,8 @@ import {
 import { useMemo, useState } from 'react';
 import { useQuery } from 'react-query';
 import settingsApi from '../../../../api/settings.api';
+import { resetGlobalProxyReadyCache } from '../../../../hooks/use-global-proxy-ready';
+import { useAccounts } from '../../../../stores/entity/account-store';
 import { useWebsites } from '../../../../stores/entity/website-store';
 import {
   showConnectionErrorNotification,
@@ -46,49 +55,64 @@ const PROXY_TYPE_OPTIONS: { value: ProxyType; label: string }[] = [
   { value: 'socks5', label: 'SOCKS5' },
 ];
 
-function createEmptyProfile(): ProxyProfile {
+const PROXY_MODE_OPTIONS: { value: ProxyMode; label: string }[] = [
+  { value: 'system', label: 'System proxy' },
+  { value: 'direct', label: 'Direct (no proxy)' },
+  { value: 'fixed_servers', label: 'Fixed proxy (all traffic)' },
+  { value: 'pac_routing', label: 'Per-website routing (PAC)' },
+];
+
+function createEmptyPoolEntry(): ProxyPoolEntry {
   return {
     id: crypto.randomUUID(),
-    enabled: false,
     label: '',
     type: 'http',
     host: '',
     port: '',
     username: '',
     password: '',
-    websites: [],
   };
 }
 
-function cloneProfiles(profiles: ProxyProfile[]): ProxyProfile[] {
-  return profiles.map((profile) => ({ ...profile, websites: [...profile.websites] }));
+function cloneProxyConfiguration(config: ProxyConfiguration): ProxyConfiguration {
+  return {
+    ...config,
+    pool: config.pool.map((entry) => ({ ...entry })),
+    routing: { ...config.routing },
+  };
 }
 
-function getWebsiteOptionsForProfile(
-  profiles: ProxyProfile[],
-  profileId: string,
-  websites: { id: string; displayName: string }[],
-) {
-  const assignedElsewhere = new Set<string>();
-  for (const profile of profiles) {
-    if (profile.id === profileId) {
-      continue;
-    }
-    profile.websites.forEach((websiteId) => assignedElsewhere.add(websiteId));
+function normalizeStartupProxy(raw: unknown): ProxyConfiguration {
+  if (isProxyConfiguration(raw)) {
+    return cloneProxyConfiguration(raw);
   }
 
-  const currentProfile = profiles.find((profile) => profile.id === profileId);
-  const currentWebsites = new Set(currentProfile?.websites ?? []);
+  if (isLegacyProxyConfiguration(raw)) {
+    return defaultProxyConfiguration();
+  }
 
-  return websites
-    .filter(
-      (website) =>
-        currentWebsites.has(website.id) || !assignedElsewhere.has(website.id),
-    )
-    .map((website) => ({
-      value: website.id,
-      label: website.displayName,
-    }));
+  return defaultProxyConfiguration();
+}
+
+function poolEntryLabel(entry: ProxyPoolEntry): string {
+  if (entry.label?.trim()) {
+    return entry.label.trim();
+  }
+
+  if (entry.host.trim() && entry.port.trim()) {
+    return `${entry.host.trim()}:${entry.port.trim()}`;
+  }
+
+  return entry.id.slice(0, 8);
+}
+
+function serializeProxyForCompare(config: ProxyConfiguration): string {
+  return JSON.stringify({
+    mode: config.mode,
+    fixedProxyId: config.fixedProxyId ?? null,
+    pool: config.pool.map(({ password: _password, ...entry }) => entry),
+    routing: config.routing,
+  });
 }
 
 export function ProxySettingsSection() {
@@ -106,80 +130,184 @@ export function ProxySettingsSection() {
     return <Loader />;
   }
 
-  const proxy =
-    startupSettings?.proxy && Array.isArray(startupSettings.proxy.profiles)
-      ? startupSettings.proxy
-      : { profiles: [] };
+  const proxy = normalizeStartupProxy(startupSettings?.proxy);
+  const hadLegacyProfiles =
+    startupSettings?.proxy !== undefined &&
+    isLegacyProxyConfiguration(startupSettings.proxy);
 
-  return <ProxySettingsForm proxy={proxy} refetch={refetch} />;
+  return (
+    <ProxySettingsForm
+      proxy={proxy}
+      hadLegacyProfiles={hadLegacyProfiles}
+      refetch={refetch}
+    />
+  );
 }
 
 function ProxySettingsForm({
   proxy,
+  hadLegacyProfiles,
   refetch,
 }: {
   proxy: ProxyConfiguration;
+  hadLegacyProfiles: boolean;
   refetch: () => Promise<unknown>;
 }) {
   const websites = useWebsites();
-  const [profiles, setProfiles] = useState<ProxyProfile[]>(() =>
-    cloneProfiles(proxy.profiles),
+  const accounts = useAccounts();
+  const [config, setConfig] = useState<ProxyConfiguration>(() =>
+    cloneProxyConfiguration(proxy),
   );
   const [showPasswordById, setShowPasswordById] = useState<
     Record<string, boolean>
   >({});
   const [isSaving, setIsSaving] = useState(false);
-  const [testingProfileId, setTestingProfileId] = useState<string | null>(null);
+  const [testingPoolEntryId, setTestingPoolEntryId] = useState<string | null>(
+    null,
+  );
 
-  const isDirty = useMemo(() => {
-    return JSON.stringify(profiles) !== JSON.stringify(proxy.profiles);
-  }, [profiles, proxy.profiles]);
+  const websitesWithAccounts = useMemo(() => {
+    const websiteIds = new Set(accounts.map((account) => account.website));
+    return websites
+      .filter((website) => websiteIds.has(website.id))
+      .sort((left, right) => left.displayName.localeCompare(right.displayName));
+  }, [accounts, websites]);
 
-  const canSave = useMemo(() => {
-    if (!isDirty) {
-      return false;
+  const routingChoiceOptions = useMemo(() => {
+    const options = [
+      { value: 'system', label: 'System proxy' },
+      { value: 'direct', label: 'Direct (no proxy)' },
+      ...config.pool.map((entry) => ({
+        value: entry.id,
+        label: poolEntryLabel(entry),
+      })),
+    ];
+
+    return options;
+  }, [config.pool]);
+
+  const fixedProxyOptions = useMemo(
+    () =>
+      config.pool
+        .filter((entry) => entry.host.trim() && entry.port.trim())
+        .map((entry) => ({
+          value: entry.id,
+          label: poolEntryLabel(entry),
+        })),
+    [config.pool],
+  );
+
+  const validation = useMemo(() => validateProxyConfiguration(config), [config]);
+
+  const isDirty =
+    serializeProxyForCompare(config) !== serializeProxyForCompare(proxy);
+
+  const canSave = isDirty && validation.ok;
+
+  const updateConfig = (patch: Partial<ProxyConfiguration>): void => {
+    setConfig((current) => ({ ...current, ...patch }));
+  };
+
+  const updatePoolEntry = (
+    entryId: string,
+    patch: Partial<ProxyPoolEntry>,
+  ): void => {
+    setConfig((current) => ({
+      ...current,
+      pool: current.pool.map((entry) =>
+        entry.id === entryId ? { ...entry, ...patch } : entry,
+      ),
+    }));
+  };
+
+  const removePoolEntry = (entryId: string): void => {
+    setConfig((current) => {
+      const routing = { ...current.routing };
+      for (const [websiteId, choice] of Object.entries(routing)) {
+        if (choice === entryId) {
+          routing[websiteId] = 'system';
+        }
+      }
+
+      return {
+        ...current,
+        pool: current.pool.filter((entry) => entry.id !== entryId),
+        fixedProxyId:
+          current.fixedProxyId === entryId ? undefined : current.fixedProxyId,
+        routing,
+      };
+    });
+  };
+
+  const addPoolEntry = (): void => {
+    setConfig((current) => ({
+      ...current,
+      pool: [...current.pool, createEmptyPoolEntry()],
+    }));
+  };
+
+  const updateRouting = (
+    websiteId: string,
+    choice: WebsiteProxyChoice,
+  ): void => {
+    setConfig((current) => ({
+      ...current,
+      routing: {
+        ...current.routing,
+        [websiteId]: choice,
+      },
+    }));
+  };
+
+  const handleModeChange = (mode: ProxyMode | null): void => {
+    if (!mode) {
+      return;
     }
 
-    return profiles.every(
-      (profile) =>
-        !profile.enabled ||
-        (profile.host.trim().length > 0 && profile.port.trim().length > 0),
-    );
-  }, [isDirty, profiles]);
+    setConfig((current) => {
+      const next: ProxyConfiguration = { ...current, mode };
 
-  const updateProfile = (
-    profileId: string,
-    patch: Partial<ProxyProfile>,
-  ): void => {
-    setProfiles((current) =>
-      current.map((profile) =>
-        profile.id === profileId ? { ...profile, ...patch } : profile,
-      ),
-    );
-  };
+      if (mode === 'pac_routing') {
+        const routing = { ...current.routing };
+        for (const website of websitesWithAccounts) {
+          if (!routing[website.id]) {
+            routing[website.id] = 'system';
+          }
+        }
+        next.routing = routing;
+      }
 
-  const removeProfile = (profileId: string): void => {
-    setProfiles((current) => current.filter((profile) => profile.id !== profileId));
-  };
-
-  const addProfile = (): void => {
-    setProfiles((current) => [...current, createEmptyProfile()]);
+      return next;
+    });
   };
 
   const handleSave = async (): Promise<void> => {
+    if (!validation.ok) {
+      showConnectionErrorNotification(
+        <Trans>Configuration Error</Trans>,
+        validation.errors.join(' '),
+      );
+      return;
+    }
+
     setIsSaving(true);
     try {
       await settingsApi.updateSystemStartupSettings({
         proxy: {
-          profiles: profiles.map((profile) => ({
-            ...profile,
-            label: profile.label?.trim() || undefined,
-            host: profile.host.trim(),
-            port: profile.port.trim(),
-            username: profile.username.trim(),
+          mode: config.mode,
+          pool: config.pool.map((entry) => ({
+            ...entry,
+            label: entry.label?.trim() || undefined,
+            host: entry.host.trim(),
+            port: entry.port.trim(),
+            username: entry.username.trim(),
           })),
+          fixedProxyId: config.fixedProxyId,
+          routing: config.routing,
         },
       });
+      resetGlobalProxyReadyCache();
+      await window.electron?.applyProxyConfig();
       await refetch();
       showConnectionSuccessNotification(
         <Trans>Proxy settings saved and applied</Trans>,
@@ -187,19 +315,15 @@ function ProxySettingsForm({
     } catch {
       showConnectionErrorNotification(
         <Trans>Failed to save proxy settings</Trans>,
-        <Trans>Check that profiles are valid and websites are not duplicated</Trans>,
+        <Trans>Check that pool entries and routing choices are valid</Trans>,
       );
     } finally {
       setIsSaving(false);
     }
   };
 
-  const testConnection = async (profile: ProxyProfile): Promise<void> => {
-    if (!profile.enabled) {
-      return;
-    }
-
-    if (!profile.host.trim() || !profile.port.trim()) {
+  const testPoolEntry = async (entry: ProxyPoolEntry): Promise<void> => {
+    if (!entry.host.trim() || !entry.port.trim()) {
       showConnectionErrorNotification(
         <Trans>Configuration Error</Trans>,
         <Trans>Proxy host and port are required</Trans>,
@@ -207,14 +331,13 @@ function ProxySettingsForm({
       return;
     }
 
-    setTestingProfileId(profile.id);
+    setTestingPoolEntryId(entry.id);
     try {
       const result = await settingsApi.testProxyConnection({
-        ...profile,
-        host: profile.host.trim(),
-        port: profile.port.trim(),
-        username: profile.username.trim(),
-        websiteId: profile.websites[0],
+        ...entry,
+        host: entry.host.trim(),
+        port: entry.port.trim(),
+        username: entry.username.trim(),
       });
 
       if (result.body.success) {
@@ -235,9 +358,14 @@ function ProxySettingsForm({
         </Trans>,
       );
     } finally {
-      setTestingProfileId(null);
+      setTestingPoolEntryId(null);
     }
   };
+
+  const showPoolEditor =
+    config.mode === 'fixed_servers' || config.mode === 'pac_routing';
+  const showFixedProxyPicker = config.mode === 'fixed_servers';
+  const showRoutingTable = config.mode === 'pac_routing';
 
   return (
     <Stack gap="lg">
@@ -248,87 +376,103 @@ function ProxySettingsForm({
 
         <Text size="sm" c="dimmed" mb="md">
           <Trans>
-            Create proxy profiles and assign websites to each profile.
+            Choose how PostyBirb routes HTTP traffic. Per-website routing uses
+            an internal PAC script — you never configure domains manually.
           </Trans>
         </Text>
 
+        {hadLegacyProfiles && (
+          <Alert color="yellow" mb="md">
+            <Trans>
+              Older multi-profile proxy settings were replaced with the new
+              routing model. Reconfigure your proxies below.
+            </Trans>
+          </Alert>
+        )}
+
         <Stack gap="md">
-          {profiles.length === 0 && (
+          <Select
+            label={<Trans>Routing mode</Trans>}
+            data={PROXY_MODE_OPTIONS}
+            value={config.mode}
+            onChange={(value) => handleModeChange(value as ProxyMode | null)}
+          />
+
+          {config.mode === 'system' && (
             <Alert color="gray">
               <Trans>
-                No proxy profiles configured.
+                Uses the operating system proxy settings for all traffic.
               </Trans>
             </Alert>
           )}
 
-          {profiles.map((profile, index) => {
-            const showPassword = showPasswordById[profile.id] ?? false;
-            const websiteOptions = getWebsiteOptionsForProfile(
-              profiles,
-              profile.id,
-              websites,
-            );
-            const showsTelegramHttpHint =
-              profile.websites.includes('telegram') && profile.type === 'http';
+          {config.mode === 'direct' && (
+            <Alert color="gray">
+              <Trans>All traffic connects directly without a proxy.</Trans>
+            </Alert>
+          )}
 
-            return (
-              <Card key={profile.id} withBorder padding="md">
-                <Stack gap="md">
-                  <Group justify="space-between" align="flex-start">
-                    <Text fw={600}>
-                      <Trans>Profile {index + 1}</Trans>
-                    </Text>
-                    <ActionIcon
-                      variant="subtle"
-                      color="red"
-                      aria-label="Remove profile"
-                      onClick={() => removeProfile(profile.id)}
-                    >
-                      <IconTrash size={16} />
-                    </ActionIcon>
-                  </Group>
+          {showPoolEditor && (
+            <Stack gap="md">
+              <Text fw={600}>
+                <Trans>Proxy pool</Trans>
+              </Text>
 
-                  <Switch
-                    label={<Trans>Enable</Trans>}
-                    checked={profile.enabled}
-                    onChange={(event) =>
-                      updateProfile(profile.id, {
-                        enabled: event.currentTarget.checked,
-                      })
-                    }
-                  />
+              {config.pool.length === 0 && (
+                <Alert color="gray">
+                  <Trans>Add at least one proxy entry to use this mode.</Trans>
+                </Alert>
+              )}
 
-                  <TextInput
-                    label={<Trans>Label (optional)</Trans>}
-                    value={profile.label ?? ''}
-                    onChange={(event) =>
-                      updateProfile(profile.id, {
-                        label: event.currentTarget.value,
-                      })
-                    }
-                  />
+              {config.pool.map((entry, index) => {
+                const showPassword = showPasswordById[entry.id] ?? false;
 
-                  <Select
-                    label={<Trans>Proxy type</Trans>}
-                    data={PROXY_TYPE_OPTIONS}
-                    value={profile.type}
-                    onChange={(value) =>
-                      updateProfile(profile.id, {
-                        type: (value as ProxyType) ?? 'http',
-                      })
-                    }
-                  />
+                return (
+                  <Card key={entry.id} withBorder padding="md">
+                    <Stack gap="md">
+                      <Group justify="space-between" align="flex-start">
+                        <Text fw={600}>
+                          <Trans>Proxy {index + 1}</Trans>
+                        </Text>
+                        <ActionIcon
+                          variant="subtle"
+                          color="red"
+                          aria-label="Remove proxy"
+                          onClick={() => removePoolEntry(entry.id)}
+                        >
+                          <IconTrash size={16} />
+                        </ActionIcon>
+                      </Group>
 
-                  {profile.enabled && (
-                    <>
+                      <TextInput
+                        label={<Trans>Label (optional)</Trans>}
+                        value={entry.label ?? ''}
+                        onChange={(event) =>
+                          updatePoolEntry(entry.id, {
+                            label: event.currentTarget.value,
+                          })
+                        }
+                      />
+
+                      <Select
+                        label={<Trans>Proxy type</Trans>}
+                        data={PROXY_TYPE_OPTIONS}
+                        value={entry.type}
+                        onChange={(value) =>
+                          updatePoolEntry(entry.id, {
+                            type: (value as ProxyType) ?? 'http',
+                          })
+                        }
+                      />
+
                       <Group grow align="flex-start">
                         <TextInput
                           label={<Trans>Host</Trans>}
                           leftSection={<IconPlug size={18} />}
                           placeholder="proxy.example.com"
-                          value={profile.host}
+                          value={entry.host}
                           onChange={(event) =>
-                            updateProfile(profile.id, {
+                            updatePoolEntry(entry.id, {
                               host: event.currentTarget.value,
                             })
                           }
@@ -336,9 +480,9 @@ function ProxySettingsForm({
                         <TextInput
                           label={<Trans>Port</Trans>}
                           placeholder="8080"
-                          value={profile.port}
+                          value={entry.port}
                           onChange={(event) =>
-                            updateProfile(profile.id, {
+                            updatePoolEntry(entry.id, {
                               port: event.currentTarget.value,
                             })
                           }
@@ -351,9 +495,9 @@ function ProxySettingsForm({
                       <Group grow align="flex-start">
                         <TextInput
                           label={<Trans>Username (optional)</Trans>}
-                          value={profile.username}
+                          value={entry.username}
                           onChange={(event) =>
-                            updateProfile(profile.id, {
+                            updatePoolEntry(entry.id, {
                               username: event.currentTarget.value,
                             })
                           }
@@ -361,9 +505,9 @@ function ProxySettingsForm({
                         <TextInput
                           label={<Trans>Password (optional)</Trans>}
                           type={showPassword ? 'text' : 'password'}
-                          value={profile.password}
+                          value={entry.password}
                           onChange={(event) =>
-                            updateProfile(profile.id, {
+                            updatePoolEntry(entry.id, {
                               password: event.currentTarget.value,
                             })
                           }
@@ -374,7 +518,7 @@ function ProxySettingsForm({
                               onClick={() =>
                                 setShowPasswordById((current) => ({
                                   ...current,
-                                  [profile.id]: !showPassword,
+                                  [entry.id]: !showPassword,
                                 }))
                               }
                             >
@@ -387,66 +531,118 @@ function ProxySettingsForm({
                           }
                         />
                       </Group>
-                    </>
-                  )}
 
-                  <MultiSelect
-                    label={<Trans>Websites</Trans>}
-                    placeholder={
-                      profile.websites.length === 0 || !websiteOptions.length
-                        ? 'All websites assigned'
-                        : undefined
-                    }
-                    data={websiteOptions}
-                    value={profile.websites}
-                    searchable
-                    onChange={(value) =>
-                      updateProfile(profile.id, { websites: value })
-                    }
-                  />
+                      <Button
+                        variant="outline"
+                        leftSection={<IconPlug size={16} />}
+                        loading={testingPoolEntryId === entry.id}
+                        disabled={!entry.host.trim() || !entry.port.trim()}
+                        onClick={() => testPoolEntry(entry)}
+                      >
+                        <Trans>Test Connection</Trans>
+                      </Button>
+                    </Stack>
+                  </Card>
+                );
+              })}
 
-                  {showsTelegramHttpHint && (
-                    <Alert color="yellow">
-                      <Stack gap={4}>
-                        <Text size="sm">
-                          <Trans>
-                            Only SOCKS5 type or use POSTYBIRB_TELEGRAM_MTPROXY.
-                          </Trans>
-                        </Text>
-                        <Text size="sm">
-                          <Trans>
-                            HTTP(S) profiles cannot be used for Teleproto.
-                          </Trans>
-                        </Text>
-                      </Stack>
-                    </Alert>
-                  )}
+              <Button
+                variant="light"
+                leftSection={<IconPlus size={16} />}
+                onClick={addPoolEntry}
+              >
+                <Trans>Add proxy</Trans>
+              </Button>
+            </Stack>
+          )}
 
-                  {profile.enabled && (
-                    <Button
-                      variant="outline"
-                      leftSection={<IconPlug size={16} />}
-                      loading={testingProfileId === profile.id}
-                      disabled={!profile.host.trim() || !profile.port.trim()}
-                      onClick={() => testConnection(profile)}
-                    >
-                      <Trans>Test Connection</Trans>
-                    </Button>
-                  )}
-                </Stack>
-              </Card>
-            );
-          })}
+          {showFixedProxyPicker && (
+            <Select
+              label={<Trans>Proxy for all traffic</Trans>}
+              placeholder="Select a pool entry"
+              data={fixedProxyOptions}
+              value={config.fixedProxyId ?? null}
+              onChange={(value) =>
+                updateConfig({ fixedProxyId: value ?? undefined })
+              }
+            />
+          )}
 
-          <Group>
-            <Button
-              variant="light"
-              leftSection={<IconPlus size={16} />}
-              onClick={addProfile}
-            >
-              <Trans>Add profile</Trans>
-            </Button>
-          </Group>
+          {showRoutingTable && (
+            <Stack gap="sm">
+              <Text fw={600}>
+                <Trans>Website routing</Trans>
+              </Text>
+
+              {websitesWithAccounts.length === 0 ? (
+                <Alert color="gray">
+                  <Trans>
+                    Add an account to configure per-website proxy routing.
+                  </Trans>
+                </Alert>
+              ) : (
+                <Table striped highlightOnHover withTableBorder>
+                  <Table.Thead>
+                    <Table.Tr>
+                      <Table.Th>
+                        <Trans>Website</Trans>
+                      </Table.Th>
+                      <Table.Th>
+                        <Trans>Route via</Trans>
+                      </Table.Th>
+                    </Table.Tr>
+                  </Table.Thead>
+                  <Table.Tbody>
+                    {websitesWithAccounts.map((website) => {
+                      const choice = config.routing[website.id] ?? 'system';
+                      const showsTelegramHttpHint =
+                        website.id === 'telegram' &&
+                        config.pool.some(
+                          (entry) =>
+                            entry.id === choice && entry.type === 'http',
+                        );
+
+                      return (
+                        <Table.Tr key={website.id}>
+                          <Table.Td>{website.displayName}</Table.Td>
+                          <Table.Td>
+                            <Stack gap="xs">
+                              <Select
+                                data={routingChoiceOptions}
+                                value={choice}
+                                onChange={(value) => {
+                                  if (value) {
+                                    updateRouting(website.id, value);
+                                  }
+                                }}
+                              />
+                              {showsTelegramHttpHint && (
+                                <Text size="xs" c="yellow">
+                                  <Trans>
+                                    Telegram requires a SOCKS5 proxy entry.
+                                  </Trans>
+                                </Text>
+                              )}
+                            </Stack>
+                          </Table.Td>
+                        </Table.Tr>
+                      );
+                    })}
+                  </Table.Tbody>
+                </Table>
+              )}
+            </Stack>
+          )}
+
+          {!validation.ok && isDirty && (
+            <Alert color="red">
+              {validation.errors.map((error) => (
+                <Text key={error} size="sm">
+                  {error}
+                </Text>
+              ))}
+            </Alert>
+          )}
 
           <Group>
             <Button
