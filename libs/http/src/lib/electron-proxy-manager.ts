@@ -117,29 +117,14 @@ function getFixedProxyConfig(profile: ProxyProfile): ProxyConfig {
   };
 }
 
-function findPartitionIdForSession(targetSession: Session): string | null {
-  for (const partitionId of proxyAuthStore.getPartitionIds()) {
-    if (session.fromPartition(`persist:${partitionId}`) === targetSession) {
-      return partitionId;
-    }
-  }
-
-  return null;
-}
-
 if (!appProxyLoginHandlerRegistered) {
   appProxyLoginHandlerRegistered = true;
-  app.on('login', (event, webContents, _details, authInfo, callback) => {
+  app.on('login', (event, _webContents, _details, authInfo, callback) => {
     if (!authInfo.isProxy) {
       return;
     }
 
-    const credentials = webContents
-      ? proxyAuthStore.getForSession(
-          webContents.session,
-          findPartitionIdForSession,
-        )
-      : null;
+    const credentials = proxyAuthStore.resolveForProxyChallenge(authInfo);
     if (!credentials) {
       return;
     }
@@ -201,7 +186,6 @@ async function applyProfileToSession(
   await targetSession.setProxy(config);
 
   if (partitionId) {
-    proxyAuthStore.bindSession(partitionId, targetSession);
     proxyAuthStore.syncPartitionProfile(partitionId, profile);
   }
 
@@ -236,7 +220,7 @@ export function getActiveProxyConfiguration(): ProxyConfiguration {
 
 export function attachProxyAuthToRequest(
   request: ClientRequest,
-  partitionId?: string,
+  _partitionId?: string,
 ): void {
   request.on('login', (authInfo, callback) => {
     if (!authInfo.isProxy) {
@@ -244,7 +228,7 @@ export function attachProxyAuthToRequest(
       return;
     }
 
-    const credentials = proxyAuthStore.getForPartition(partitionId);
+    const credentials = proxyAuthStore.resolveForProxyChallenge(authInfo);
     if (!credentials) {
       callback();
       return;
