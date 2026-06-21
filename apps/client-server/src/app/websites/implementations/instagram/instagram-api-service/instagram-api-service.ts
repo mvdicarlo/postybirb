@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { fetchForWebsite } from '@postybirb/http';
+import { netFetch } from '@postybirb/http';
 import { Logger, PostyBirbLogger } from '@postybirb/logger';
 import { DynamicObject } from '@postybirb/types';
 
@@ -9,7 +9,7 @@ function fetchWithInstagramProxy(
   input: string | URL | Request,
   init?: RequestInit,
 ): Promise<Response> {
-  return fetchForWebsite('instagram', input, init);
+  return netFetch(input, init);
 }
 
 /**

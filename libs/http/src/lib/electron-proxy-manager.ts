@@ -1,15 +1,14 @@
 import { session, Session, type ProxyConfig } from 'electron';
 import { Logger } from '@postybirb/logger';
 import {
+  buildChromiumProxyBypassRules,
   buildSessionProxyRules,
   LegacyProxyConfiguration,
   ProxyProfile,
-  resolveProfileForWebsite,
 } from '@postybirb/utils/common';
 import {
   applyGlobalProxyConfig,
   attachProxyAuthToRequest,
-  clearProxyAuthStore,
   getProxyConfiguration,
   onProxyConfigurationApplied,
   onSessionCreated,
@@ -23,19 +22,15 @@ import {
   getManagedPartitionEntries,
 } from './global-proxy-manager';
 import {
-  collectManagedPartitionIds,
   resolveWebsiteFromPartition,
   type PartitionEntry,
 } from './proxy-partitions';
 import {
   BrowserSessionRoute,
-  collectWebsiteIdsWithEnabledProfiles,
-  createPartitionWebsiteResolver,
   ProxyRequestContext,
   ProxyRoute,
   resolveBrowserSessionRoute,
   resolveHttpRoute,
-  resolveProfileForPartition,
 } from './proxy-route';
 
 export type { PartitionEntry } from './proxy-partitions';
@@ -58,7 +53,6 @@ export {
 
 const logger = Logger('ProxyManager');
 
-let activeProxyConfiguration: LegacyProxyConfiguration = { profiles: [] };
 const appliedPartitionProxies = new Map<string, string>();
 
 function buildPartitionProxyFingerprint(profile: ProxyProfile | null): string {
@@ -80,10 +74,16 @@ export function clearPartitionProxyCache(): void {
   appliedPartitionProxies.clear();
 }
 
+/** @deprecated Use getProxyConfiguration(); kept for Telegram until telegram-socks-only lands */
+export function getActiveProxyConfiguration(): LegacyProxyConfiguration {
+  return { profiles: [] };
+}
+
+/** @deprecated Legacy v2 helper; always returns null under global proxy routing */
 export function resolveActiveProfileForWebsite(
-  websiteId: string,
+  _websiteId: string,
 ): ProxyProfile | null {
-  return resolveProfileForWebsite(websiteId, activeProxyConfiguration);
+  return null;
 }
 
 function getSystemProxyConfig(): ProxyConfig {
@@ -99,7 +99,7 @@ function getFixedProxyConfig(profile: ProxyProfile): ProxyConfig {
   return {
     mode: 'fixed_servers',
     proxyRules,
-    proxyBypassRules: '<-loopback>',
+    proxyBypassRules: buildChromiumProxyBypassRules(),
   };
 }
 
@@ -111,35 +111,16 @@ export function resolveWebsiteForPartition(
   return resolveWebsiteFromPartition(partitionId, entries);
 }
 
-async function getAccountPartitionEntries(): Promise<PartitionEntry[]> {
-  return getManagedPartitionEntries();
-}
-
-async function createActivePartitionWebsiteResolver() {
-  const entries = await getAccountPartitionEntries();
-  return createPartitionWebsiteResolver(entries);
-}
-
-export async function resolveHttpRequestRoute(
+export function resolveHttpRequestRoute(
   context: ProxyRequestContext,
-): Promise<ProxyRoute> {
-  const resolvePartitionWebsite = await createActivePartitionWebsiteResolver();
-  return resolveHttpRoute(
-    context,
-    resolvePartitionWebsite,
-    activeProxyConfiguration,
-  );
+): ProxyRoute {
+  return resolveHttpRoute(context);
 }
 
-export async function resolveBrowserProxySession(
+export function resolveBrowserProxySession(
   context: ProxyRequestContext,
-): Promise<BrowserSessionRoute> {
-  const resolvePartitionWebsite = await createActivePartitionWebsiteResolver();
-  return resolveBrowserSessionRoute(
-    context,
-    resolvePartitionWebsite,
-    activeProxyConfiguration,
-  );
+): BrowserSessionRoute {
+  return resolveBrowserSessionRoute(context);
 }
 
 async function applyProfileToSession(
@@ -161,15 +142,6 @@ async function applyProfileToSession(
   targetSession.closeAllConnections();
 }
 
-export function getActiveProxyConfiguration(): LegacyProxyConfiguration {
-  return {
-    profiles: activeProxyConfiguration.profiles.map((profile) => ({
-      ...profile,
-      websites: [...profile.websites],
-    })),
-  };
-}
-
 export async function ensurePartitionProxy(
   partitionId: string,
   profile?: ProxyProfile,
@@ -185,25 +157,14 @@ export async function ensurePartitionProxy(
 
 async function ensureLegacyPartitionProxy(
   partitionId: string,
-  profile?: ProxyProfile,
+  profile: ProxyProfile,
   force = false,
 ): Promise<void> {
   if (!partitionId?.trim()) {
     return;
   }
 
-  let resolvedProfile = profile ?? null;
-  if (!resolvedProfile) {
-    const entries = await getAccountPartitionEntries();
-    const resolvePartitionWebsite = createPartitionWebsiteResolver(entries);
-    resolvedProfile = resolveProfileForPartition(
-      partitionId,
-      resolvePartitionWebsite,
-      activeProxyConfiguration,
-    );
-  }
-
-  const fingerprint = buildPartitionProxyFingerprint(resolvedProfile);
+  const fingerprint = buildPartitionProxyFingerprint(profile);
   if (!force && appliedPartitionProxies.get(partitionId) === fingerprint) {
     return;
   }
@@ -211,50 +172,16 @@ async function ensureLegacyPartitionProxy(
   logger
     .withMetadata({
       partitionId,
-      profileId: resolvedProfile?.id ?? null,
-      enabled: resolvedProfile?.enabled ?? false,
+      profileId: profile.id,
+      enabled: profile.enabled,
     })
     .info('applyPartition');
 
   const partition = session.fromPartition(`persist:${partitionId}`);
-  await applyProfileToSession(partition, resolvedProfile, partitionId);
+  await applyProfileToSession(partition, profile, partitionId);
   appliedPartitionProxies.set(partitionId, fingerprint);
 }
 
-export async function applyProxySettings(
-  configuration?: LegacyProxyConfiguration,
-): Promise<void> {
-  if (configuration === undefined) {
-    await applyGlobalProxyConfig();
-    return;
-  }
-
-  activeProxyConfiguration = {
-    profiles: configuration.profiles.map((profile) => ({
-      ...profile,
-      websites: [...profile.websites],
-    })),
-  };
-
-  clearPartitionProxyCache();
-  clearProxyAuthStore();
-
-  const { app } = await import('electron');
-  if (!app.isReady()) {
-    return;
-  }
-
-  await applyProfileToSession(session.defaultSession, null);
-
-  const entries = await getAccountPartitionEntries();
-  const websiteIds = collectWebsiteIdsWithEnabledProfiles(
-    activeProxyConfiguration,
-  );
-  const partitionIds = collectManagedPartitionIds(entries, websiteIds);
-
-  await Promise.all(
-    partitionIds.map((partitionId) =>
-      ensurePartitionProxy(partitionId, undefined, true),
-    ),
-  );
+export async function applyProxySettings(): Promise<void> {
+  await applyGlobalProxyConfig();
 }

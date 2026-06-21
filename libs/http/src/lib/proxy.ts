@@ -1,39 +1,26 @@
-// Proxy bootstrap: applies settings on startup and exposes explicit fetch helpers.
-// Do not patch global.fetch — use fetchForWebsite(websiteId, ...) in the main process.
+// Proxy bootstrap: applies settings on startup and exposes Electron net.fetch helpers.
 
 import { app, net } from 'electron';
 import {
-  applyProxySettings as applyProxySettingsInternal,
   applyGlobalProxyConfig,
-  ensurePartitionProxy,
-  getActiveProxyConfiguration,
+  applyProxySettings as applyProxySettingsInternal,
   getProxyConfiguration,
   onProxyConfigurationApplied,
   onSessionCreated,
   probePoolEntryConnection,
   probeProfileConnection,
-  resolveHttpRequestRoute,
   resolveProxyForUrl,
   setPartitionIdProvider,
 } from './electron-proxy-manager';
-import {
-  isProxiedResolution,
-  LegacyProxyConfiguration,
-  PostyBirbEnvConfig,
-  shouldBypassProxyForUrl,
-  StartupOptionsManager,
-} from '@postybirb/utils/common';
-import { requestViaProfileAgent } from './profile-agent-request';
+import { isProxiedResolution, StartupOptionsManager } from '@postybirb/utils/common';
 
 export {
   applyGlobalProxyConfig,
-  ensurePartitionProxy,
-  getActiveProxyConfiguration,
   getProxyConfiguration,
   onProxyConfigurationApplied,
   probePoolEntryConnection,
   probeProfileConnection,
-  resolveHttpRequestRoute,
+  resolveProxyForUrl,
   setPartitionIdProvider,
 };
 export { isProxiedResolution } from '@postybirb/utils/common';
@@ -42,10 +29,8 @@ export {
   getInstagramOAuthPartitionId,
 } from './proxy-partitions';
 
-export async function applyProxySettings(
-  configuration?: LegacyProxyConfiguration,
-) {
-  await applyProxySettingsInternal(configuration);
+export async function applyProxySettings(): Promise<void> {
+  await applyProxySettingsInternal();
 }
 
 export async function applyGlobalProxyFromStartup(): Promise<void> {
@@ -58,29 +43,6 @@ type ParsedProxyEntry = {
   hostname: string;
   port: string;
 };
-
-function resolveFetchUrl(input: FetchInput): string {
-  if (input instanceof Request) {
-    return input.url;
-  }
-  if (input instanceof URL) {
-    return input.toString();
-  }
-  return input;
-}
-
-function resolveFetchMethod(
-  input: FetchInput,
-  init?: RequestInit,
-): string {
-  if (init?.method) {
-    return init.method.toUpperCase();
-  }
-  if (input instanceof Request) {
-    return input.method.toUpperCase();
-  }
-  return 'GET';
-}
 
 function fetchThroughElectronNet(
   input: FetchInput,
@@ -96,84 +58,11 @@ function fetchThroughElectronNet(
   return net.fetch(input.toString(), init);
 }
 
-function fetchThroughProfileAgent(
-  input: FetchInput,
-  init: RequestInit | undefined,
-  profile: import('@postybirb/utils/common').ProxyProfile,
-): Promise<Response> {
-  const url = resolveFetchUrl(input);
-  const method = resolveFetchMethod(input, init);
-  const headerSource =
-    init?.headers ?? (input instanceof Request ? input.headers : undefined);
-  const headers: Record<string, string> = {};
-  if (headerSource) {
-    new Headers(headerSource).forEach((value, key) => {
-      headers[key] = value;
-    });
-  }
-
-  const body = readFetchBody(input, init);
-
-  return requestViaProfileAgent<ArrayBuffer>(profile, url, {
-    method,
-    headers,
-    body: body ?? undefined,
-  }).then((response) => {
-    const responseBody =
-      typeof response.body === 'string'
-        ? response.body
-        : Buffer.from(response.body as unknown as ArrayBuffer);
-
-    return new Response(responseBody, {
-      status: response.statusCode,
-      statusText: response.statusMessage,
-    });
-  });
-}
-
-function readFetchBody(
-  input: FetchInput,
-  init?: RequestInit,
-): Buffer | null {
-  const body = init?.body ?? (input instanceof Request ? input.body : null);
-  if (body === null || body === undefined) {
-    return null;
-  }
-  if (typeof body === 'string') {
-    return Buffer.from(body);
-  }
-  if (body instanceof ArrayBuffer) {
-    return Buffer.from(body);
-  }
-  if (ArrayBuffer.isView(body)) {
-    return Buffer.from(body.buffer, body.byteOffset, body.byteLength);
-  }
-  if (body instanceof URLSearchParams) {
-    return Buffer.from(body.toString());
-  }
-
-  return null;
-}
-
-export async function fetchForWebsite(
-  websiteId: string,
+/** Fetch via defaultSession; inherits global proxy/PAC from applyGlobalProxyConfig. */
+export async function netFetch(
   input: FetchInput,
   init?: RequestInit,
 ): Promise<Response> {
-  const url = resolveFetchUrl(input);
-  if (
-    shouldBypassProxyForUrl(url, {
-      appPort: PostyBirbEnvConfig.port,
-    })
-  ) {
-    return fetchThroughElectronNet(input, init);
-  }
-
-  const route = await resolveHttpRequestRoute({ websiteId });
-  if (route.transport === 'node-agent') {
-    return fetchThroughProfileAgent(input, init, route.profile);
-  }
-
   return fetchThroughElectronNet(input, init);
 }
 

@@ -1,4 +1,4 @@
-import { fetchForWebsite } from '@postybirb/http';
+import { netFetch } from '@postybirb/http';
 import { Logger, PostyBirbLogger } from '@postybirb/logger';
 
 const FUNCTION_BASE_URL =
@@ -33,7 +33,7 @@ export class InstagramBlobService {
     buffer: Buffer,
     mimeType: string,
   ): Promise<UploadResponse> {
-    const response = await fetchForWebsite('instagram', `${FUNCTION_BASE_URL}/upload`, {
+    const response = await netFetch(`${FUNCTION_BASE_URL}/upload`, {
       method: 'POST',
       headers: {
         'Content-Type': mimeType,

@@ -35,8 +35,9 @@ function createWebsiteScopedHttp(
 }
 
 /**
- * Binds {@link PlatformService.http} to a website so partition-less requests
- * (e.g. Discord) still resolve the correct proxy profile.
+ * Binds {@link PlatformService.http} to a website id for call-site context.
+ * Proxy routing is handled globally by applyGlobalProxyConfig — websiteId does
+ * not select a per-site proxy profile.
  */
 export function createWebsiteScopedPlatform(
   platform: PlatformService,

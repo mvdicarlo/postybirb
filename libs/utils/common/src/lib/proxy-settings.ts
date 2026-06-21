@@ -337,6 +337,24 @@ function resolveUrlPort(url: URL): string {
   return '';
 }
 
+export function buildChromiumProxyBypassRules(
+  cloudApiUrl = process.env.POSTYBIRB_CLOUD_URL ||
+    'https://postybirb.azurewebsites.net/api',
+): string {
+  const rules = ['<-loopback>'];
+
+  try {
+    const host = new URL(cloudApiUrl).hostname.toLowerCase();
+    if (host) {
+      rules.push(host);
+    }
+  } catch {
+    // Ignore invalid cloud URL configuration.
+  }
+
+  return rules.join(';');
+}
+
 export function shouldBypassProxyForUrl(
   rawUrl: string,
   options?: ShouldBypassProxyOptions,
@@ -376,6 +394,24 @@ export function shouldBypassProxyForUrl(
         remoteHost,
       });
       return true;
+    }
+
+    const cloudApiUrl =
+      process.env.POSTYBIRB_CLOUD_URL ||
+      'https://postybirb.azurewebsites.net/api';
+    try {
+      const cloudHost = new URL(cloudApiUrl).hostname.toLowerCase();
+      if (cloudHost && host === cloudHost) {
+        proxyDebug('[ProxySettings.bypass]', {
+          rawUrl,
+          reason: 'cloud-api',
+          host,
+          cloudHost,
+        });
+        return true;
+      }
+    } catch {
+      // Ignore invalid cloud URL configuration.
     }
   } catch {
     // If URL cannot be parsed we should not bypass proxy automatically.

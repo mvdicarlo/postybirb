@@ -13,6 +13,7 @@ import {
   asEnabledProxyProfile,
   buildProxyAgentUrl,
   buildSessionProxyRules,
+  buildChromiumProxyBypassRules,
   createProxyAgent,
   defaultProxyConfiguration,
   normalizeProxyConfiguration,
@@ -97,7 +98,7 @@ function resolveSessionProxyConfig(config: ProxyConfiguration): ProxyConfig {
       return {
         mode: 'fixed_servers',
         proxyRules,
-        proxyBypassRules: '<-loopback>',
+        proxyBypassRules: buildChromiumProxyBypassRules(),
       };
     }
     case 'pac_routing': {

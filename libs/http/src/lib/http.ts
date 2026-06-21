@@ -2,7 +2,6 @@
 import { Logger } from '@nestjs/common';
 import { trackDependency, trackException } from '@postybirb/logger';
 import { getPartitionKey } from '@postybirb/utils/common';
-import { ProxyProfile } from '@postybirb/utils/common';
 import {
   BrowserWindow,
   ClientRequest,
@@ -20,9 +19,6 @@ import {
   resolveBrowserProxySession,
   resolveHttpRequestRoute,
 } from './electron-proxy-manager';
-import {
-  requestViaProfileAgent,
-} from './profile-agent-request';
 import {
   BinaryPostOptions,
   HttpOptions,
@@ -61,84 +57,26 @@ interface CreateBodyData {
   buffer: Buffer;
 }
 
-type RequestProxyRoute =
-  | { kind: 'partition' }
-  | { kind: 'profile-agent'; profile: ProxyProfile }
-  | { kind: 'system' };
-
-async function resolveRequestProxyRoute(
+async function ensurePartitionProxyForRequest(
   options: HttpOptions,
-): Promise<RequestProxyRoute> {
-  const route = await resolveHttpRequestRoute(options);
-
-  if (route.transport === 'chromium-session') {
-    await ensurePartitionProxy(route.partitionId, route.profile ?? undefined);
-    return { kind: 'partition' };
+): Promise<void> {
+  const route = resolveHttpRequestRoute(options);
+  if (route.transport !== 'chromium-session') {
+    return;
   }
 
-  if (route.transport === 'node-agent') {
-    return { kind: 'profile-agent', profile: route.profile };
-  }
-
-  return { kind: 'system' };
+  await ensurePartitionProxy(route.partitionId);
 }
 
 async function ensureBrowserPartitionProxy(options: HttpOptions): Promise<void> {
-  const sessionRoute = await resolveBrowserProxySession(options);
+  const sessionRoute = resolveBrowserProxySession(options);
   if (!sessionRoute.partitionId) {
     return;
   }
 
-  await ensurePartitionProxy(
-    sessionRoute.partitionId,
-    sessionRoute.profile ?? undefined,
-  );
+  await ensurePartitionProxy(sessionRoute.partitionId);
   // eslint-disable-next-line no-param-reassign
   options.partition = sessionRoute.partitionId;
-}
-
-function buildProfileAgentHeaders(
-  options: HttpOptions,
-  contentType?: string,
-): Record<string, string> {
-  const headers: Record<string, string> = {
-    ...DEFAULT_HEADERS,
-    ...(options.headers ?? {}),
-  };
-
-  if (contentType) {
-    headers['Content-Type'] = contentType;
-  }
-
-  return headers;
-}
-
-function sendViaProfileAgent<T>(
-  profile: ProxyProfile,
-  method: string,
-  url: string,
-  options: HttpOptions,
-  body?: Buffer,
-  contentType?: string,
-): Promise<HttpResponse<T>> {
-  if (options.queryParameters) {
-    const parsed = new URL(url);
-    parsed.search = new URLSearchParams(
-      encodeQueryString(options.queryParameters),
-    ).toString();
-    url = parsed.toString();
-  }
-
-  return requestViaProfileAgent<T>(profile, url, {
-    method: method.toUpperCase(),
-    headers: buildProfileAgentHeaders(options, contentType),
-    body,
-  }).then((response) => ({
-    statusCode: response.statusCode,
-    statusMessage: response.statusMessage,
-    body: response.body as T,
-    responseUrl: response.responseUrl ?? '',
-  }));
 }
 
 /**
@@ -437,19 +375,7 @@ export class Http {
     let error: Error | undefined;
 
     try {
-      const route = await resolveRequestProxyRoute(options);
-
-      if (route.kind === 'profile-agent') {
-        const response = await sendViaProfileAgent<T>(
-          route.profile,
-          'GET',
-          url,
-          options,
-        );
-        statusCode = response.statusCode ?? 0;
-        success = statusCode >= 200 && statusCode < 400;
-        return response;
-      }
+      await ensurePartitionProxyForRequest(options);
 
       const response = await new Promise<HttpResponse<T>>((resolve, reject) => {
         const req = Http.createClientRequest(options, {
@@ -564,22 +490,7 @@ export class Http {
         return response;
       }
 
-      const route = await resolveRequestProxyRoute(options);
-
-      if (route.kind === 'profile-agent') {
-        const { contentType, buffer } = Http.createPostBody(options);
-        const response = await sendViaProfileAgent<T>(
-          route.profile,
-          method,
-          url,
-          options,
-          buffer,
-          contentType,
-        );
-        statusCode = response.statusCode ?? 0;
-        success = statusCode >= 200 && statusCode < 400;
-        return response;
-      }
+      await ensurePartitionProxyForRequest(options);
 
       const response = await new Promise<HttpResponse<T>>((resolve, reject) => {
         const req = Http.createClientRequest(options, {
