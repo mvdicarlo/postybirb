@@ -64,6 +64,23 @@ export function normalizeProxyPoolEntry(
   };
 }
 
+/** Keeps saved pool passwords when the client omits blank password fields on save. */
+export function mergeProxyPoolPasswords(
+  incoming: Partial<ProxyPoolEntry>[],
+  saved: ProxyPoolEntry[],
+): ProxyPoolEntry[] {
+  return incoming.map((entry) => {
+    const existing = saved.find((savedEntry) => savedEntry.id === entry.id);
+
+    return normalizeProxyPoolEntry({
+      ...entry,
+      password: entry.password?.trim()
+        ? entry.password
+        : existing?.password ?? '',
+    });
+  });
+}
+
 function inferFixedProxyIdFromRouting(
   config: ProxyConfiguration,
 ): string | undefined {
@@ -125,10 +142,21 @@ export function sanitizeProxyConfigurationForMode(
   }
 }
 
+export function cloneProxyConfiguration(
+  config: ProxyConfiguration,
+): ProxyConfiguration {
+  return {
+    ...config,
+    pool: config.pool.map((entry) => ({ ...entry })),
+    routing: { ...config.routing },
+  };
+}
+
+/** Trims fields and coerces types. Does not drop mode-specific properties. */
 export function normalizeProxyConfiguration(
   config?: Partial<ProxyConfiguration>,
 ): ProxyConfiguration {
-  const normalized: ProxyConfiguration = {
+  return {
     mode: isProxyMode(config?.mode) ? config.mode : 'system',
     pool: Array.isArray(config?.pool)
       ? config.pool.map((entry) => normalizeProxyPoolEntry(entry))
@@ -140,8 +168,13 @@ export function normalizeProxyConfiguration(
         : {},
     pacAccessToken: config?.pacAccessToken?.trim() || undefined,
   };
+}
 
-  return sanitizeProxyConfigurationForMode(normalized);
+/** Normalize then drop fields that do not apply to the active mode. Use on load/save/apply. */
+export function prepareProxyConfiguration(
+  config?: Partial<ProxyConfiguration>,
+): ProxyConfiguration {
+  return sanitizeProxyConfigurationForMode(normalizeProxyConfiguration(config));
 }
 
 function parsePoolPort(port: string): number | null {

@@ -15,8 +15,9 @@ import {
   buildSessionProxyRules,
   buildChromiumProxyBypassRules,
   createProxyAgent,
+  cloneProxyConfiguration,
   defaultProxyConfiguration,
-  normalizeProxyConfiguration,
+  prepareProxyConfiguration,
   PostyBirbEnvConfig,
   ProxyConfiguration,
   ProxyPoolEntry,
@@ -66,7 +67,7 @@ let appliedGlobalFingerprint = '';
 
 function readStartupProxyConfiguration(): ProxyConfiguration {
   try {
-    return normalizeProxyConfiguration(StartupOptionsManager.get().proxy);
+    return cloneProxyConfiguration(StartupOptionsManager.get().proxy);
   } catch {
     return defaultProxyConfiguration();
   }
@@ -293,11 +294,7 @@ export async function getManagedPartitionEntries(): Promise<PartitionEntry[]> {
 }
 
 export function getProxyConfiguration(): ProxyConfiguration {
-  return normalizeProxyConfiguration({
-    ...activeProxyConfiguration,
-    pool: activeProxyConfiguration.pool.map((entry) => ({ ...entry })),
-    routing: { ...activeProxyConfiguration.routing },
-  });
+  return cloneProxyConfiguration(activeProxyConfiguration);
 }
 
 export function attachProxyAuthToRequest(
@@ -351,7 +348,7 @@ export async function applyGlobalProxyConfig(
 
   let resolvedConfiguration =
     configuration !== undefined
-      ? normalizeProxyConfiguration(configuration)
+      ? prepareProxyConfiguration(configuration)
       : readStartupProxyConfiguration();
 
   resolvedConfiguration = ensurePacAccessToken(resolvedConfiguration);

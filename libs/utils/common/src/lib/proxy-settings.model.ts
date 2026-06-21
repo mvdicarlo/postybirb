@@ -9,10 +9,13 @@ export type {
 } from '@postybirb/types';
 
 export {
+  cloneProxyConfiguration,
   defaultProxyConfiguration,
   isProxyConfiguration,
+  mergeProxyPoolPasswords,
   normalizeProxyConfiguration,
   normalizeProxyPoolEntry,
+  prepareProxyConfiguration,
   sanitizeProxyConfigurationForMode,
   validateProxyConfiguration,
 } from '@postybirb/types';

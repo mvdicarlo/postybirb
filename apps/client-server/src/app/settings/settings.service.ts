@@ -18,8 +18,9 @@ import {
   IsTestEnvironment,
   isLegacyProxyConfiguration,
   isProxyConfiguration,
-  normalizeProxyConfiguration,
+  mergeProxyPoolPasswords,
   normalizeProxyPoolEntry,
+  prepareProxyConfiguration,
   PostyBirbEnvConfig,
   shouldBypassProxyForUrl,
   StartupOptions,
@@ -305,19 +306,12 @@ export class SettingsService
             current.proxy.pacAccessToken
           : undefined;
 
-      const proxy = normalizeProxyConfiguration({
+      const proxy = prepareProxyConfiguration({
         ...startUpOptions.proxy,
-        pool: startUpOptions.proxy.pool.map((entry) => {
-          const existing = current.proxy.pool.find(
-            (savedEntry) => savedEntry.id === entry.id,
-          );
-          return normalizeProxyPoolEntry({
-            ...entry,
-            password: entry.password?.trim()
-              ? entry.password
-              : existing?.password ?? '',
-          });
-        }),
+        pool: mergeProxyPoolPasswords(
+          startUpOptions.proxy.pool,
+          current.proxy.pool,
+        ),
         pacAccessToken: mergedPacAccessToken,
       });
 

@@ -7,10 +7,11 @@ import {
 } from 'fs';
 import { dirname } from 'path';
 import {
+  cloneProxyConfiguration,
   defaultProxyConfiguration,
   isLegacyProxyConfiguration,
   isProxyConfiguration,
-  normalizeProxyConfiguration,
+  prepareProxyConfiguration,
   ProxyConfiguration,
 } from './proxy-settings';
 
@@ -50,7 +51,7 @@ function startupInfo(message: string, context?: Record<string, unknown>): void {
 
 function parseProxyFromDisk(rawProxy: unknown): ProxyConfiguration {
   if (isProxyConfiguration(rawProxy)) {
-    return normalizeProxyConfiguration(rawProxy);
+    return prepareProxyConfiguration(rawProxy);
   }
 
   if (isLegacyProxyConfiguration(rawProxy)) {
@@ -66,14 +67,6 @@ function parseProxyFromDisk(rawProxy: unknown): ProxyConfiguration {
   });
 
   return defaultProxyConfiguration();
-}
-
-function cloneProxyConfiguration(proxy: ProxyConfiguration): ProxyConfiguration {
-  return {
-    ...proxy,
-    pool: proxy.pool.map((entry) => ({ ...entry })),
-    routing: { ...proxy.routing },
-  };
 }
 
 /**
@@ -141,7 +134,7 @@ export class StartupOptionsStore {
       ...rest,
       ...(proxy
         ? {
-            proxy: normalizeProxyConfiguration({
+            proxy: prepareProxyConfiguration({
               ...this.current.proxy,
               ...proxy,
               pool: proxy.pool ?? this.current.proxy.pool,

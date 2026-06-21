@@ -8,8 +8,9 @@ import type {
 import {
   defaultProxyConfiguration,
   isProxyConfiguration,
-  normalizeProxyConfiguration,
+  prepareProxyConfiguration,
   validateProxyConfiguration,
+  cloneProxyConfiguration,
 } from '@postybirb/types';
 import { Trans } from '@lingui/react/macro';
 import {
@@ -72,14 +73,6 @@ function createEmptyPoolEntry(): ProxyPoolEntry {
   };
 }
 
-function cloneProxyConfiguration(config: ProxyConfiguration): ProxyConfiguration {
-  return {
-    ...config,
-    pool: config.pool.map((entry) => ({ ...entry })),
-    routing: { ...config.routing },
-  };
-}
-
 function normalizeStartupProxy(raw: unknown): ProxyConfiguration {
   if (isProxyConfiguration(raw)) {
     return cloneProxyConfiguration(raw);
@@ -128,24 +121,13 @@ function readStoredProxyScope(): ProxySettingsScope {
 }
 
 function buildProxyPatch(config: ProxyConfiguration) {
-  const normalized = normalizeProxyConfiguration({
-    mode: config.mode,
-    pool: config.pool.map((entry) => ({
-      ...entry,
-      label: entry.label?.trim() || undefined,
-      host: entry.host.trim(),
-      port: entry.port.trim(),
-      username: entry.username.trim(),
-    })),
-    fixedProxyId: config.fixedProxyId,
-    routing: config.routing,
-  });
+  const prepared = prepareProxyConfiguration(config);
 
   return {
-    mode: normalized.mode,
-    pool: normalized.pool,
-    fixedProxyId: normalized.fixedProxyId,
-    routing: normalized.routing,
+    mode: prepared.mode,
+    pool: prepared.pool,
+    fixedProxyId: prepared.fixedProxyId,
+    routing: prepared.routing,
   };
 }
 
@@ -514,9 +496,10 @@ function ProxySettingsForm({
     setIsSaving(true);
     try {
       const proxyPatch = buildProxyPatch(config);
-      const savedConfig = cloneProxyConfiguration(
-        normalizeProxyConfiguration(proxyPatch),
-      );
+      const savedConfig = cloneProxyConfiguration({
+        ...config,
+        ...proxyPatch,
+      });
 
       if (usesLocalProxyTarget) {
         await settingsApi.updateLocalSystemStartupSettings({

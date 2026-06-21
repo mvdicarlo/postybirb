@@ -6,7 +6,7 @@ import {
   createProxyAgent,
   isProxiedResolution,
   isProxyConfiguration,
-  normalizeProxyConfiguration,
+  prepareProxyConfiguration,
   normalizeProxyProfile,
   shouldBypassProxyForUrl,
   validateProxyConfiguration,
@@ -325,10 +325,10 @@ describe('validateProxyConfiguration', () => {
   });
 });
 
-describe('normalizeProxyConfiguration', () => {
+describe('prepareProxyConfiguration', () => {
   it('clears PAC routing state when switching to fixed_servers', () => {
     expect(
-      normalizeProxyConfiguration({
+      prepareProxyConfiguration({
         mode: 'fixed_servers',
         pool: [
           {
@@ -364,7 +364,7 @@ describe('normalizeProxyConfiguration', () => {
 
   it('infers fixedProxyId from a single routed pool entry', () => {
     expect(
-      normalizeProxyConfiguration({
+      prepareProxyConfiguration({
         mode: 'fixed_servers',
         pool: [
           {
