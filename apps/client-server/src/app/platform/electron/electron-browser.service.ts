@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { PlatformBrowserService } from '@postybirb/platform';
-import { ensurePartitionProxy } from '@postybirb/http';
 import { BrowserWindow } from 'electron';
 
 function delay(ms: number): Promise<void> {
@@ -13,8 +12,6 @@ async function createWindow(
   partition: string,
   url: string,
 ): Promise<Electron.BrowserWindow> {
-  await ensurePartitionProxy(partition);
-
   const bw = new BrowserWindow({
     show: false,
     webPreferences: {

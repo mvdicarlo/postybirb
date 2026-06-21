@@ -3,7 +3,7 @@
  * between the frontend to the electron backend.
  */
 
-import { ensurePartitionProxy } from '@postybirb/http';
+import { applyGlobalProxyConfig } from '@postybirb/http';
 import { app, dialog, ipcMain, session, shell } from 'electron';
 
 export default class ElectronEvents {
@@ -14,15 +14,19 @@ export default class ElectronEvents {
 
 // Return cookies for account, bundled as base64
 ipcMain.handle('get-cookies-for-account', async (event, accountId: string) => {
-  await ensurePartitionProxy(accountId);
+  await applyGlobalProxyConfig();
   const sess = session.fromPartition(`persist:${accountId}`);
   const cookies = await sess.cookies.get({});
 
   return Buffer.from(JSON.stringify(cookies)).toString('base64');
 });
 
-ipcMain.handle('ensure-partition-proxy', async (_event, accountId: string) => {
-  await ensurePartitionProxy(accountId);
+ipcMain.handle('apply-proxy-config', async () => {
+  await applyGlobalProxyConfig();
+});
+
+ipcMain.handle('ensure-partition-proxy', async () => {
+  await applyGlobalProxyConfig();
 });
 
 ipcMain.handle('get-lan-ip', async () => {

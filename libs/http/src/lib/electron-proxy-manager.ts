@@ -175,6 +175,19 @@ export async function ensurePartitionProxy(
   profile?: ProxyProfile,
   force = false,
 ): Promise<void> {
+  if (profile) {
+    await ensureLegacyPartitionProxy(partitionId, profile, force);
+    return;
+  }
+
+  await applyGlobalProxyConfig();
+}
+
+async function ensureLegacyPartitionProxy(
+  partitionId: string,
+  profile?: ProxyProfile,
+  force = false,
+): Promise<void> {
   if (!partitionId?.trim()) {
     return;
   }

@@ -14,8 +14,8 @@ import {
   NullAccount,
 } from '@postybirb/types';
 import {
+  applyGlobalProxyConfig,
   applyProxySettings,
-  ensurePartitionProxy,
   setPartitionIdProvider,
 } from '@postybirb/http';
 import { IsTestEnvironment } from '@postybirb/utils/common';
@@ -282,7 +282,7 @@ export class AccountService
     }
     const account = await this.repository.insert(new Account(createDto));
     if (!IsTestEnvironment()) {
-      await ensurePartitionProxy(account.id);
+      await applyGlobalProxyConfig();
     }
     const instance = await this.websiteRegistry.create(account);
     this.afterCreate(account, instance);

@@ -24,7 +24,7 @@ import {
 } from '@tabler/icons-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import accountApi from '../../../api/account.api';
-import { usePartitionProxyReady } from '../../../hooks';
+import { useGlobalProxyReady } from '../../../hooks';
 import { useAccount } from '../../../stores';
 import { notifyLoginSuccess } from '../../website-login-views/helpers';
 import type { WebviewTag } from './webview-tag';
@@ -61,7 +61,7 @@ function isWebviewDomReady(webview: WebviewTag): boolean {
 export function LoginWebview({ src, accountId }: LoginWebviewProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [currentUrl, setCurrentUrl] = useState(src);
-  const proxyReady = usePartitionProxyReady(accountId);
+  const proxyReady = useGlobalProxyReady();
   const webviewRef = useRef<WebviewTag | null>(null);
 
   // Subscribe to account state for real-time login status updates
