@@ -262,6 +262,14 @@ export function buildSessionProxyRules(profile: ProxyProfile): string {
   return `http=${profile.host}:${profile.port};https=${profile.host}:${profile.port}`;
 }
 
+export function asEnabledProxyProfile(entry: ProxyPoolEntry): ProxyProfile {
+  return {
+    ...entry,
+    enabled: true,
+    websites: [],
+  };
+}
+
 export function buildProxyAgentUrl(
   profile?: ProxyProfile | null,
 ): string | null {

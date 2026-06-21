@@ -3,6 +3,7 @@ import {
   clearPartitionProxyCache,
   ensurePartitionProxy,
   onSessionCreated,
+  resetGlobalProxyStateForTests,
 } from './electron-proxy-manager';
 import type { ProxyProfile } from '@postybirb/utils/common';
 
@@ -46,38 +47,31 @@ describe('ensurePartitionProxy cache', () => {
 });
 
 describe('onSessionCreated', () => {
-  it('applies system proxy mode to the default session only', async () => {
+  beforeEach(() => {
+    resetGlobalProxyStateForTests();
+  });
+
+  it('applies the active global proxy config to the default session', async () => {
     const setProxy = jest.fn().mockResolvedValue(undefined);
     const createdSession = {
       setProxy,
+      closeAllConnections: jest.fn(),
     } as unknown as Session;
-
-    Object.defineProperty(session, 'defaultSession', {
-      configurable: true,
-      value: createdSession,
-    });
 
     await onSessionCreated(createdSession);
 
     expect(setProxy).toHaveBeenCalledWith({ mode: 'system' });
   });
 
-  it('does not override proxy on partition sessions', async () => {
+  it('applies the active global proxy config to partition sessions', async () => {
     const setProxy = jest.fn().mockResolvedValue(undefined);
     const partitionSession = {
       setProxy,
+      closeAllConnections: jest.fn(),
     } as unknown as Session;
-    const defaultSession = {
-      setProxy: jest.fn().mockResolvedValue(undefined),
-    } as unknown as Session;
-
-    Object.defineProperty(session, 'defaultSession', {
-      configurable: true,
-      value: defaultSession,
-    });
 
     await onSessionCreated(partitionSession);
 
-    expect(setProxy).not.toHaveBeenCalled();
+    expect(setProxy).toHaveBeenCalledWith({ mode: 'system' });
   });
 });

@@ -25,6 +25,11 @@ export class RemotePasswordMiddleware implements NestMiddleware {
         return;
       }
 
+      if (req.baseUrl.startsWith('/api/proxy/pac')) {
+        next();
+        return;
+      }
+
       const remotePassword = req.headers['x-remote-password'] as string;
 
       if (!remotePassword) {

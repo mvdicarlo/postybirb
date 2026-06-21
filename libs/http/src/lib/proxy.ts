@@ -4,10 +4,13 @@
 import { app, net } from 'electron';
 import {
   applyProxySettings as applyProxySettingsInternal,
+  applyGlobalProxyConfig,
   ensurePartitionProxy,
   getActiveProxyConfiguration,
+  getProxyConfiguration,
   onProxyConfigurationApplied,
   onSessionCreated,
+  probePoolEntryConnection,
   probeProfileConnection,
   resolveHttpRequestRoute,
   resolveProxyForUrl,
@@ -23,9 +26,12 @@ import {
 import { requestViaProfileAgent } from './profile-agent-request';
 
 export {
+  applyGlobalProxyConfig,
   ensurePartitionProxy,
   getActiveProxyConfiguration,
+  getProxyConfiguration,
   onProxyConfigurationApplied,
+  probePoolEntryConnection,
   probeProfileConnection,
   resolveHttpRequestRoute,
   setPartitionIdProvider,
@@ -40,6 +46,10 @@ export async function applyProxySettings(
   configuration?: LegacyProxyConfiguration,
 ) {
   await applyProxySettingsInternal(configuration);
+}
+
+export async function applyGlobalProxyFromStartup(): Promise<void> {
+  await applyGlobalProxyConfig();
 }
 
 type FetchInput = Request | URL | string;
@@ -226,13 +236,13 @@ app.on('session-created', (sess) => {
 });
 
 app.on('ready', () => {
-  applyProxySettings().catch((error) => {
+  applyGlobalProxyConfig().catch((error) => {
     // eslint-disable-next-line no-console
     console.error('Failed to apply proxy settings on startup', error);
   });
 
   StartupOptionsManager.onUpdate(() => {
-    applyProxySettings().catch((error) => {
+    applyGlobalProxyConfig().catch((error) => {
       // eslint-disable-next-line no-console
       console.error('Failed to apply proxy settings', error);
     });

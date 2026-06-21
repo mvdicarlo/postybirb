@@ -66,10 +66,12 @@ export function resolveWebsiteFromPartition(
 
 /**
  * All partition ids that should be refreshed when proxy settings change.
+ * Includes account partitions, instagram OAuth partitions, and headless
+ * website partitions for websites with accounts or explicit routing entries.
  */
 export function collectManagedPartitionIds(
   accountEntries: PartitionEntry[],
-  websiteIdsWithProfiles: string[],
+  websiteIdsToRefresh: string[],
 ): string[] {
   const ids = new Set<string>();
 
@@ -80,7 +82,7 @@ export function collectManagedPartitionIds(
     }
   }
 
-  for (const websiteId of websiteIdsWithProfiles) {
+  for (const websiteId of websiteIdsToRefresh) {
     ids.add(getHeadlessWebsitePartitionId(websiteId));
   }
 

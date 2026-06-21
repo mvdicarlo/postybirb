@@ -31,6 +31,7 @@ import { ValidationModule } from './validation/validation.module';
 import { WebSocketModule } from './web-socket/web-socket.module';
 import { WebsiteOptionsModule } from './website-options/website-options.module';
 import { WebsitesModule } from './websites/websites.module';
+import { ProxyModule } from './proxy/proxy.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { WebsitesModule } from './websites/websites.module';
     AccountModule,
     WebSocketModule,
     WebsitesModule,
+    ProxyModule,
     FileModule,
     SubmissionModule,
     SettingsModule,

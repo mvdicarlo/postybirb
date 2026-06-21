@@ -1,22 +1,27 @@
-import {
-  app,
-  ClientRequest,
-  session,
-  Session,
-  type ProxyConfig,
-} from 'electron';
-import http from 'node:http';
-import nodeHttps from 'node:https';
+import { session, Session, type ProxyConfig } from 'electron';
 import { Logger } from '@postybirb/logger';
 import {
-  buildProxyAgentUrl,
   buildSessionProxyRules,
-  createProxyAgent,
   LegacyProxyConfiguration,
   ProxyProfile,
   resolveProfileForWebsite,
 } from '@postybirb/utils/common';
-import { ProxyAuthStore } from './proxy-auth-store';
+import {
+  applyGlobalProxyConfig,
+  attachProxyAuthToRequest,
+  clearProxyAuthStore,
+  getProxyConfiguration,
+  onProxyConfigurationApplied,
+  onSessionCreated,
+  probePoolEntryConnection,
+  probeProfileConnection,
+  refreshAllPartitionSessions,
+  resolveProxyForUrl,
+  resetGlobalProxyStateForTests,
+  setPartitionIdProvider,
+  syncLegacyPartitionProfile,
+  getManagedPartitionEntries,
+} from './global-proxy-manager';
 import {
   collectManagedPartitionIds,
   resolveWebsiteFromPartition,
@@ -36,26 +41,24 @@ import {
 export type { PartitionEntry } from './proxy-partitions';
 export type { ProxyRequestContext, ProxyRoute } from './proxy-route';
 
-type ProbeOptions = {
-  method?: 'GET' | 'HEAD';
-  timeoutMs?: number;
+export {
+  applyGlobalProxyConfig,
+  attachProxyAuthToRequest,
+  getProxyConfiguration,
+  onProxyConfigurationApplied,
+  onSessionCreated,
+  probePoolEntryConnection,
+  probeProfileConnection,
+  refreshAllPartitionSessions,
+  resolveProxyForUrl,
+  resetGlobalProxyStateForTests,
+  setPartitionIdProvider,
+  getManagedPartitionEntries,
 };
-
-type ProbeResult = {
-  statusCode: number;
-};
-
-type PartitionIdProvider = () => Promise<PartitionEntry[]> | PartitionEntry[];
-
-type ProxyConfigurationListener = () => void | Promise<void>;
 
 const logger = Logger('ProxyManager');
-const proxyAuthStore = new ProxyAuthStore();
 
-let getPartitionEntries: PartitionIdProvider = () => [];
 let activeProxyConfiguration: LegacyProxyConfiguration = { profiles: [] };
-const proxyConfigurationListeners = new Set<ProxyConfigurationListener>();
-let appProxyLoginHandlerRegistered = false;
 const appliedPartitionProxies = new Map<string, string>();
 
 function buildPartitionProxyFingerprint(profile: ProxyProfile | null): string {
@@ -83,14 +86,6 @@ export function resolveActiveProfileForWebsite(
   return resolveProfileForWebsite(websiteId, activeProxyConfiguration);
 }
 
-function readStartupProxyConfiguration(): LegacyProxyConfiguration {
-  // v3 startup proxy has no profiles[]; legacy routing stays empty until
-  // global-proxy-manager maps pac_routing / fixed_servers to session apply.
-  return { profiles: [] };
-}
-
-activeProxyConfiguration = readStartupProxyConfiguration();
-
 function getSystemProxyConfig(): ProxyConfig {
   return { mode: 'system' };
 }
@@ -108,23 +103,6 @@ function getFixedProxyConfig(profile: ProxyProfile): ProxyConfig {
   };
 }
 
-if (!appProxyLoginHandlerRegistered) {
-  appProxyLoginHandlerRegistered = true;
-  app.on('login', (event, _webContents, _details, authInfo, callback) => {
-    if (!authInfo.isProxy) {
-      return;
-    }
-
-    const credentials = proxyAuthStore.resolveForProxyChallenge(authInfo);
-    if (!credentials) {
-      return;
-    }
-
-    event.preventDefault();
-    callback(credentials.username, credentials.password);
-  });
-}
-
 /** @deprecated Use resolveWebsiteFromPartition via proxy-partitions */
 export function resolveWebsiteForPartition(
   partitionId: string,
@@ -134,7 +112,7 @@ export function resolveWebsiteForPartition(
 }
 
 async function getAccountPartitionEntries(): Promise<PartitionEntry[]> {
-  return Promise.resolve(getPartitionEntries());
+  return getManagedPartitionEntries();
 }
 
 async function createActivePartitionWebsiteResolver() {
@@ -177,27 +155,10 @@ async function applyProfileToSession(
   await targetSession.setProxy(config);
 
   if (partitionId) {
-    proxyAuthStore.syncPartitionProfile(partitionId, profile);
+    syncLegacyPartitionProfile(partitionId, profile);
   }
 
   targetSession.closeAllConnections();
-}
-
-export function onProxyConfigurationApplied(
-  listener: ProxyConfigurationListener,
-): () => void {
-  proxyConfigurationListeners.add(listener);
-  return () => proxyConfigurationListeners.delete(listener);
-}
-
-async function notifyProxyConfigurationApplied(): Promise<void> {
-  await Promise.all(
-    [...proxyConfigurationListeners].map((listener) => listener()),
-  );
-}
-
-export function setPartitionIdProvider(provider: PartitionIdProvider): void {
-  getPartitionEntries = provider;
 }
 
 export function getActiveProxyConfiguration(): LegacyProxyConfiguration {
@@ -207,26 +168,6 @@ export function getActiveProxyConfiguration(): LegacyProxyConfiguration {
       websites: [...profile.websites],
     })),
   };
-}
-
-export function attachProxyAuthToRequest(
-  request: ClientRequest,
-  _partitionId?: string,
-): void {
-  request.on('login', (authInfo, callback) => {
-    if (!authInfo.isProxy) {
-      callback();
-      return;
-    }
-
-    const credentials = proxyAuthStore.resolveForProxyChallenge(authInfo);
-    if (!credentials) {
-      callback();
-      return;
-    }
-
-    callback(credentials.username, credentials.password);
-  });
 }
 
 export async function ensurePartitionProxy(
@@ -270,19 +211,22 @@ export async function ensurePartitionProxy(
 export async function applyProxySettings(
   configuration?: LegacyProxyConfiguration,
 ): Promise<void> {
-  activeProxyConfiguration =
-    configuration !== undefined
-      ? {
-          profiles: configuration.profiles.map((profile) => ({
-            ...profile,
-            websites: [...profile.websites],
-          })),
-        }
-      : readStartupProxyConfiguration();
+  if (configuration === undefined) {
+    await applyGlobalProxyConfig();
+    return;
+  }
+
+  activeProxyConfiguration = {
+    profiles: configuration.profiles.map((profile) => ({
+      ...profile,
+      websites: [...profile.websites],
+    })),
+  };
 
   clearPartitionProxyCache();
-  proxyAuthStore.clear();
+  clearProxyAuthStore();
 
+  const { app } = await import('electron');
   if (!app.isReady()) {
     return;
   }
@@ -300,74 +244,4 @@ export async function applyProxySettings(
       ensurePartitionProxy(partitionId, undefined, true),
     ),
   );
-
-  await notifyProxyConfigurationApplied();
-}
-
-export async function resolveProxyForUrl(url: string): Promise<string> {
-  return session.defaultSession.resolveProxy(url);
-}
-
-/**
- * Probes outbound connectivity through a specific profile using Node proxy agents.
- */
-export async function probeProfileConnection(
-  profile: ProxyProfile,
-  url: string,
-  options: ProbeOptions = {},
-): Promise<ProbeResult> {
-  const agentUrl = buildProxyAgentUrl(profile);
-  if (!agentUrl) {
-    throw new Error('Proxy host and port are required');
-  }
-
-  const parsedUrl = new URL(url);
-  const secure = parsedUrl.protocol === 'https:';
-  const agent = createProxyAgent(profile, secure);
-  if (!agent) {
-    throw new Error('Proxy host and port are required');
-  }
-  const lib = secure ? nodeHttps : http;
-  const method = options.method ?? 'HEAD';
-  const timeoutMs = options.timeoutMs ?? 15_000;
-
-  return new Promise((resolve, reject) => {
-    let timeout: NodeJS.Timeout | undefined;
-
-    const req = lib.request(
-      parsedUrl,
-      {
-        method,
-        agent,
-      },
-      (response) => {
-        if (timeout) {
-          clearTimeout(timeout);
-        }
-        response.resume();
-        resolve({ statusCode: response.statusCode ?? 0 });
-      },
-    );
-
-    timeout = setTimeout(() => {
-      req.destroy(new Error('Probe timed out'));
-    }, timeoutMs);
-
-    req.on('error', (error) => {
-      if (timeout) {
-        clearTimeout(timeout);
-      }
-      reject(error);
-    });
-
-    req.end();
-  });
-}
-
-export async function onSessionCreated(createdSession: Session): Promise<void> {
-  if (createdSession !== session.defaultSession) {
-    return;
-  }
-
-  await createdSession.setProxy(getSystemProxyConfig());
 }
