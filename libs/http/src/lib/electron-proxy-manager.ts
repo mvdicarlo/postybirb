@@ -10,6 +10,7 @@ import {
   applyGlobalProxyConfig,
   attachProxyAuthToRequest,
   getProxyConfiguration,
+  invalidateAppliedGlobalProxyFingerprint,
   onProxyConfigurationApplied,
   onSessionCreated,
   probePoolEntryConnection,
@@ -40,6 +41,7 @@ export {
   applyGlobalProxyConfig,
   attachProxyAuthToRequest,
   getProxyConfiguration,
+  invalidateAppliedGlobalProxyFingerprint,
   onProxyConfigurationApplied,
   onSessionCreated,
   probePoolEntryConnection,
@@ -99,7 +101,10 @@ function getFixedProxyConfig(profile: ProxyProfile): ProxyConfig {
   return {
     mode: 'fixed_servers',
     proxyRules,
-    proxyBypassRules: buildChromiumProxyBypassRules(),
+    proxyBypassRules: buildChromiumProxyBypassRules(
+      undefined,
+      process.env.POSTYBIRB_PORT,
+    ),
   };
 }
 

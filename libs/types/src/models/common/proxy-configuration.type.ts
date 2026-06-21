@@ -27,7 +27,25 @@ export type ProxyProfile = ProxyPoolEntry & {
   websites: string[];
 };
 
+export type ProxyValidationField =
+  | 'host'
+  | 'port'
+  | 'fixedProxyId'
+  | 'routing';
+
+export type ProxyValidationIssue = {
+  message: string;
+  field?: ProxyValidationField;
+  entryId?: string;
+  websiteId?: string;
+};
+
+export type ValidateProxyConfigurationOptions = {
+  websiteDisplayNames?: Record<string, string>;
+};
+
 export type ValidateProxyConfigurationResult = {
   ok: boolean;
   errors: string[];
+  issues: ProxyValidationIssue[];
 };

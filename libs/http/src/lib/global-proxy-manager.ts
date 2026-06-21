@@ -22,12 +22,19 @@ import {
   ProxyPoolEntry,
   ProxyProfile,
   StartupOptionsManager,
+  toError,
 } from '@postybirb/utils/common';
+import {
+  encodePacScriptAsDataUrl,
+  fetchLocalPacScript,
+  isPacDataUrl,
+} from './pac-script-materializer';
 import { ProxyAuthStore, ProxyPoolAuthEntry } from './proxy-auth-store';
 import {
   collectManagedPartitionIds,
   type PartitionEntry,
 } from './proxy-partitions';
+import { trustPostyBirbLocalCertificate } from './local-certificate-trust';
 
 type ProbeOptions = {
   method?: 'GET' | 'HEAD';
@@ -42,11 +49,17 @@ type PartitionIdProvider = () => Promise<PartitionEntry[]> | PartitionEntry[];
 
 type ProxyConfigurationListener = () => void | Promise<void>;
 
+export type ApplyGlobalProxyConfigOptions = {
+  /** Re-runs setProxy even when the configuration fingerprint is unchanged. */
+  force?: boolean;
+};
+
 const logger = Logger('GlobalProxyManager');
 const proxyAuthStore = new ProxyAuthStore();
 
 let getPartitionEntries: PartitionIdProvider = () => [];
 let activeProxyConfiguration: ProxyConfiguration = defaultProxyConfiguration();
+let materializedProxyConfigCache: ProxyConfig | null = null;
 const proxyConfigurationListeners = new Set<ProxyConfigurationListener>();
 let appProxyLoginHandlerRegistered = false;
 let appliedGlobalFingerprint = '';
@@ -62,8 +75,10 @@ function readStartupProxyConfiguration(): ProxyConfiguration {
 function buildGlobalProxyFingerprint(config: ProxyConfiguration): string {
   return JSON.stringify({
     mode: config.mode,
-    fixedProxyId: config.fixedProxyId ?? null,
-    pacAccessToken: config.pacAccessToken ?? null,
+    fixedProxyId:
+      config.mode === 'fixed_servers' ? (config.fixedProxyId ?? null) : null,
+    pacAccessToken:
+      config.mode === 'pac_routing' ? (config.pacAccessToken ?? null) : null,
     pool: config.pool.map((entry) => ({
       id: entry.id,
       type: entry.type,
@@ -71,13 +86,13 @@ function buildGlobalProxyFingerprint(config: ProxyConfiguration): string {
       port: entry.port,
       username: entry.username,
     })),
-    routing: config.routing,
+    routing: config.mode === 'pac_routing' ? config.routing : {},
   });
 }
 
 function buildPacScriptUrl(config: ProxyConfiguration): string {
   const port = PostyBirbEnvConfig.port;
-  return `http://127.0.0.1:${port}/api/proxy/pac/${config.pacAccessToken}`;
+  return `https://127.0.0.1:${port}/api/proxy/pac/${config.pacAccessToken}`;
 }
 
 function resolveSessionProxyConfig(config: ProxyConfiguration): ProxyConfig {
@@ -98,7 +113,10 @@ function resolveSessionProxyConfig(config: ProxyConfiguration): ProxyConfig {
       return {
         mode: 'fixed_servers',
         proxyRules,
-        proxyBypassRules: buildChromiumProxyBypassRules(),
+        proxyBypassRules: buildChromiumProxyBypassRules(
+          undefined,
+          PostyBirbEnvConfig.port,
+        ),
       };
     }
     case 'pac_routing': {
@@ -136,6 +154,53 @@ function ensurePacAccessToken(config: ProxyConfiguration): ProxyConfiguration {
   return updated;
 }
 
+async function materializeSessionProxyConfig(
+  config: ProxyConfiguration,
+  baseConfig: ProxyConfig,
+): Promise<ProxyConfig> {
+  if (config.mode !== 'pac_routing' || baseConfig.mode !== 'pac_script') {
+    materializedProxyConfigCache = null;
+    return baseConfig;
+  }
+
+  const pacScript =
+    typeof baseConfig.pacScript === 'string' ? baseConfig.pacScript : '';
+  if (!pacScript) {
+    materializedProxyConfigCache = baseConfig;
+    return baseConfig;
+  }
+
+  if (isPacDataUrl(pacScript)) {
+    materializedProxyConfigCache = baseConfig;
+    return baseConfig;
+  }
+
+  try {
+    const script = await fetchLocalPacScript(pacScript);
+    const materialized: ProxyConfig = {
+      mode: 'pac_script',
+      pacScript: encodePacScriptAsDataUrl(script),
+    };
+    materializedProxyConfigCache = materialized;
+    logger.debug('materialized PAC script as data URL');
+    return materialized;
+  } catch (error) {
+    logger
+      .withError(toError(error))
+      .warn('Failed to materialize PAC script; falling back to PAC URL');
+    materializedProxyConfigCache = baseConfig;
+    return baseConfig;
+  }
+}
+
+function resolveCachedSessionProxyConfig(): ProxyConfig {
+  if (materializedProxyConfigCache) {
+    return materializedProxyConfigCache;
+  }
+
+  return resolveSessionProxyConfig(activeProxyConfiguration);
+}
+
 function toPoolAuthEntries(pool: ProxyPoolEntry[]): ProxyPoolAuthEntry[] {
   return pool.map((entry) => ({
     id: entry.id,
@@ -151,6 +216,7 @@ async function applyProxyConfigToSession(
   targetSession: Session,
   config: ProxyConfig,
 ): Promise<void> {
+  trustPostyBirbLocalCertificate(targetSession);
   await targetSession.setProxy(config);
   targetSession.closeAllConnections();
 }
@@ -259,10 +325,10 @@ async function getAccountPartitionEntries(): Promise<PartitionEntry[]> {
 }
 
 export async function refreshAllPartitionSessions(
-  config: ProxyConfiguration,
   accountEntries: PartitionEntry[],
+  proxyConfig: ProxyConfig,
+  config: ProxyConfiguration,
 ): Promise<void> {
-  const proxyConfig = resolveSessionProxyConfig(config);
   const websiteIds = collectWebsiteIdsForPartitionRefresh(
     config,
     accountEntries,
@@ -279,6 +345,7 @@ export async function refreshAllPartitionSessions(
 
 export async function applyGlobalProxyConfig(
   configuration?: ProxyConfiguration,
+  options?: ApplyGlobalProxyConfigOptions,
 ): Promise<void> {
   ensureAppProxyLoginHandler();
 
@@ -299,12 +366,29 @@ export async function applyGlobalProxyConfig(
     return;
   }
 
-  if (fingerprint === appliedGlobalFingerprint) {
+  if (!options?.force && fingerprint === appliedGlobalFingerprint) {
     logger.withMetadata({ mode: resolvedConfiguration.mode }).debug('unchanged');
+
+    if (
+      resolvedConfiguration.mode === 'pac_routing' &&
+      materializedProxyConfigCache
+    ) {
+      const accountEntries = await getAccountPartitionEntries();
+      await refreshAllPartitionSessions(
+        accountEntries,
+        materializedProxyConfigCache,
+        resolvedConfiguration,
+      );
+    }
+
     return;
   }
 
-  const proxyConfig = resolveSessionProxyConfig(resolvedConfiguration);
+  let proxyConfig = resolveSessionProxyConfig(resolvedConfiguration);
+  proxyConfig = await materializeSessionProxyConfig(
+    resolvedConfiguration,
+    proxyConfig,
+  );
   const accountEntries = await getAccountPartitionEntries();
 
   logger
@@ -315,12 +399,24 @@ export async function applyGlobalProxyConfig(
         accountEntries,
         collectWebsiteIdsForPartitionRefresh(resolvedConfiguration, accountEntries),
       ).length,
+      pacMaterialized:
+        resolvedConfiguration.mode === 'pac_routing' &&
+        typeof proxyConfig.pacScript === 'string' &&
+        isPacDataUrl(proxyConfig.pacScript),
+      pacScript:
+        resolvedConfiguration.mode === 'pac_routing'
+          ? buildPacScriptUrl(resolvedConfiguration)
+          : undefined,
     })
     .info('applyGlobal');
 
   await applyProxyConfigToSession(session.defaultSession, proxyConfig);
   await applyAppLevelProxy(proxyConfig);
-  await refreshAllPartitionSessions(resolvedConfiguration, accountEntries);
+  await refreshAllPartitionSessions(
+    accountEntries,
+    proxyConfig,
+    resolvedConfiguration,
+  );
 
   appliedGlobalFingerprint = fingerprint;
   await notifyProxyConfigurationApplied();
@@ -397,14 +493,32 @@ export async function onSessionCreated(createdSession: Session): Promise<void> {
     return;
   }
 
-  const proxyConfig = resolveSessionProxyConfig(activeProxyConfiguration);
+  let proxyConfig = resolveCachedSessionProxyConfig();
+  if (
+    activeProxyConfiguration.mode === 'pac_routing' &&
+    proxyConfig.mode === 'pac_script' &&
+    typeof proxyConfig.pacScript === 'string' &&
+    !isPacDataUrl(proxyConfig.pacScript)
+  ) {
+    proxyConfig = await materializeSessionProxyConfig(
+      activeProxyConfiguration,
+      proxyConfig,
+    );
+  }
+
   await applyProxyConfigToSession(createdSession, proxyConfig);
 }
 
 export function resetGlobalProxyStateForTests(): void {
   appliedGlobalFingerprint = '';
+  materializedProxyConfigCache = null;
   activeProxyConfiguration = defaultProxyConfiguration();
   proxyAuthStore.clear();
+}
+
+/** Clears the apply fingerprint so the next applyGlobalProxyConfig re-runs setProxy. */
+export function invalidateAppliedGlobalProxyFingerprint(): void {
+  appliedGlobalFingerprint = '';
 }
 
 export function syncLegacyPartitionProfile(

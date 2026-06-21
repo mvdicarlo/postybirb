@@ -19,6 +19,13 @@ contextBridge.exposeInMainWorld('electron', {
   getCookiesForAccount: (accountId: string) =>
     ipcRenderer.invoke('get-cookies-for-account', accountId),
   applyProxyConfig: () => ipcRenderer.invoke('apply-proxy-config'),
+  onProxyConfigApplied: (callback: () => void) => {
+    const listener = () => callback();
+    ipcRenderer.on('proxy-config-applied', listener);
+    return () => {
+      ipcRenderer.removeListener('proxy-config-applied', listener);
+    };
+  },
   ensurePartitionProxy: (accountId: string) =>
     ipcRenderer.invoke('ensure-partition-proxy', accountId),
   // Gracefully request app quit from renderer

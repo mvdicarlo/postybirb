@@ -3,8 +3,22 @@
  * between the frontend to the electron backend.
  */
 
-import { applyGlobalProxyConfig } from '@postybirb/http';
-import { app, dialog, ipcMain, session, shell } from 'electron';
+import {
+  applyGlobalProxyConfig,
+  invalidateAppliedGlobalProxyFingerprint,
+  onProxyConfigurationApplied,
+} from '@postybirb/http';
+import { app, BrowserWindow, dialog, ipcMain, session, shell } from 'electron';
+
+onProxyConfigurationApplied(() => {
+  for (const window of BrowserWindow.getAllWindows()) {
+    if (window.isDestroyed()) {
+      continue;
+    }
+
+    window.webContents.send('proxy-config-applied');
+  }
+});
 
 export default class ElectronEvents {
   static bootstrapElectronEvents(): Electron.IpcMain {
@@ -22,11 +36,13 @@ ipcMain.handle('get-cookies-for-account', async (event, accountId: string) => {
 });
 
 ipcMain.handle('apply-proxy-config', async () => {
-  await applyGlobalProxyConfig();
+  invalidateAppliedGlobalProxyFingerprint();
+  await applyGlobalProxyConfig(undefined, { force: true });
 });
 
 ipcMain.handle('ensure-partition-proxy', async () => {
-  await applyGlobalProxyConfig();
+  invalidateAppliedGlobalProxyFingerprint();
+  await applyGlobalProxyConfig(undefined, { force: true });
 });
 
 ipcMain.handle('get-lan-ip', async () => {

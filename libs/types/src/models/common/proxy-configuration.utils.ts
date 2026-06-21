@@ -3,6 +3,8 @@ import type {
   ProxyMode,
   ProxyPoolEntry,
   ProxyType,
+  ProxyValidationIssue,
+  ValidateProxyConfigurationOptions,
   ValidateProxyConfigurationResult,
 } from './proxy-configuration.type';
 
@@ -62,10 +64,71 @@ export function normalizeProxyPoolEntry(
   };
 }
 
+function inferFixedProxyIdFromRouting(
+  config: ProxyConfiguration,
+): string | undefined {
+  const poolIds = new Set(config.pool.map((entry) => entry.id));
+  const usedPoolIds = new Set<string>();
+
+  for (const choice of Object.values(config.routing)) {
+    if (choice === 'direct' || choice === 'system') {
+      continue;
+    }
+
+    if (poolIds.has(choice)) {
+      usedPoolIds.add(choice);
+    }
+  }
+
+  if (usedPoolIds.size === 1) {
+    return [...usedPoolIds][0];
+  }
+
+  if (config.pool.length === 1 && config.pool[0]?.id) {
+    return config.pool[0].id;
+  }
+
+  return undefined;
+}
+
+/** Drops mode-specific fields that must not affect runtime for the active mode. */
+export function sanitizeProxyConfigurationForMode(
+  config: ProxyConfiguration,
+): ProxyConfiguration {
+  switch (config.mode) {
+    case 'fixed_servers': {
+      const fixedProxyId =
+        config.fixedProxyId?.trim() ||
+        inferFixedProxyIdFromRouting(config);
+
+      return {
+        ...config,
+        fixedProxyId,
+        routing: {},
+        pacAccessToken: undefined,
+      };
+    }
+    case 'pac_routing':
+      return {
+        ...config,
+        fixedProxyId: undefined,
+      };
+    case 'system':
+    case 'direct':
+      return {
+        ...config,
+        fixedProxyId: undefined,
+        pacAccessToken: undefined,
+      };
+    default:
+      return config;
+  }
+}
+
 export function normalizeProxyConfiguration(
   config?: Partial<ProxyConfiguration>,
 ): ProxyConfiguration {
-  return {
+  const normalized: ProxyConfiguration = {
     mode: isProxyMode(config?.mode) ? config.mode : 'system',
     pool: Array.isArray(config?.pool)
       ? config.pool.map((entry) => normalizeProxyPoolEntry(entry))
@@ -77,6 +140,8 @@ export function normalizeProxyConfiguration(
         : {},
     pacAccessToken: config?.pacAccessToken?.trim() || undefined,
   };
+
+  return sanitizeProxyConfigurationForMode(normalized);
 }
 
 function parsePoolPort(port: string): number | null {
@@ -88,58 +153,105 @@ function parsePoolPort(port: string): number | null {
   return parsed;
 }
 
+function formatPoolEntryName(entry: ProxyPoolEntry, index: number): string {
+  const label = entry.label?.trim();
+  if (label) {
+    return label;
+  }
+
+  return `Proxy ${index + 1}`;
+}
+
+function formatWebsiteName(
+  websiteId: string,
+  options?: ValidateProxyConfigurationOptions,
+): string {
+  return options?.websiteDisplayNames?.[websiteId]?.trim() || websiteId;
+}
+
+function pushIssue(
+  issues: ProxyValidationIssue[],
+  issue: ProxyValidationIssue,
+): void {
+  issues.push(issue);
+}
+
 export function validateProxyConfiguration(
   config: ProxyConfiguration,
+  options?: ValidateProxyConfigurationOptions,
 ): ValidateProxyConfigurationResult {
-  const errors: string[] = [];
+  const issues: ProxyValidationIssue[] = [];
   const poolIds = new Set<string>();
 
   config.pool.forEach((entry, index) => {
-    const label = entry.label || entry.id || `pool-${index + 1}`;
+    const name = formatPoolEntryName(entry, index);
 
     if (!entry.id.trim()) {
-      errors.push(`Pool entry "${label}" requires an id.`);
+      pushIssue(issues, {
+        message: `${name}: Proxy entry is invalid.`,
+        entryId: entry.id || undefined,
+      });
     } else if (poolIds.has(entry.id)) {
-      errors.push(`Duplicate pool id "${entry.id}".`);
+      pushIssue(issues, {
+        message: `${name}: Duplicate proxy entry.`,
+        entryId: entry.id,
+      });
     } else {
       poolIds.add(entry.id);
     }
 
     if (!entry.host.trim()) {
-      errors.push(`Pool entry "${label}" requires host.`);
+      pushIssue(issues, {
+        message: `${name}: Host is required.`,
+        field: 'host',
+        entryId: entry.id,
+      });
     }
 
     if (parsePoolPort(entry.port) === null) {
-      errors.push(
-        `Pool entry "${label}" requires port between 1 and 65535.`,
-      );
+      pushIssue(issues, {
+        message: `${name}: Port must be a number between 1 and 65535.`,
+        field: 'port',
+        entryId: entry.id,
+      });
     }
   });
 
   if (config.mode === 'fixed_servers') {
     if (!config.fixedProxyId?.trim()) {
-      errors.push('fixed_servers mode requires fixedProxyId.');
+      pushIssue(issues, {
+        message: 'Select a proxy for all traffic.',
+        field: 'fixedProxyId',
+      });
     } else if (!poolIds.has(config.fixedProxyId)) {
-      errors.push(
-        `fixedProxyId "${config.fixedProxyId}" does not match a pool entry.`,
-      );
+      pushIssue(issues, {
+        message:
+          'The selected proxy is no longer in the pool. Choose another one.',
+        field: 'fixedProxyId',
+      });
     }
   }
 
-  Object.entries(config.routing).forEach(([websiteId, choice]) => {
-    if (choice === 'direct' || choice === 'system') {
-      return;
-    }
+  if (config.mode === 'pac_routing') {
+    Object.entries(config.routing).forEach(([websiteId, choice]) => {
+      if (choice === 'direct' || choice === 'system') {
+        return;
+      }
 
-    if (!poolIds.has(choice)) {
-      errors.push(
-        `Website "${websiteId}" routes to unknown pool id "${choice}".`,
-      );
-    }
-  });
+      if (!poolIds.has(choice)) {
+        const websiteName = formatWebsiteName(websiteId, options);
+        pushIssue(issues, {
+          message: `${websiteName}: Selected proxy is missing from the pool.`,
+          field: 'routing',
+          websiteId,
+        });
+      }
+    });
+  }
 
   return {
-    ok: errors.length === 0,
-    errors,
+    ok: issues.length === 0,
+    errors: issues.map((issue) => issue.message),
+    issues,
   };
 }

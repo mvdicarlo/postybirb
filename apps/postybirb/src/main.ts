@@ -5,6 +5,11 @@ import './bootstrap-electron-config';
 // Loads proxy bootstrap (applyProxySettings on ready) before Http is used.
 import '@postybirb/http';
 
+import {
+  applyGlobalProxyConfig,
+  invalidateAppliedGlobalProxyFingerprint,
+  trustPostyBirbLocalCertificate,
+} from '@postybirb/http';
 import { INestApplication } from '@nestjs/common';
 import { PostyBirbDirectories } from '@postybirb/fs';
 import {
@@ -275,6 +280,8 @@ async function start() {
 
     // bootstrap app
     const nestApp = await bootstrapClientServerWithTimeout();
+    invalidateAppliedGlobalProxyFingerprint();
+    await applyGlobalProxyConfig();
     if (PostyBirbEnvConfig.headless) {
       // eslint-disable-next-line no-console
       console.log('[PostyBirb] Running in headless mode (no UI)');
@@ -309,22 +316,7 @@ app.on('ready', () => {
     });
   }, 5 * 60_000);
 
-  session.defaultSession.setCertificateVerifyProc((request, callback) => {
-    if (request.errorCode === 0) {
-      callback(0); // Allow the certificate
-    } else {
-      const { certificate } = request;
-      if (
-        certificate.issuerName === 'postybirb.com' &&
-        certificate.subject.organizations[0] === 'PostyBirb' &&
-        certificate.issuer.country === 'US'
-      ) {
-        callback(0);
-      } else {
-        callback(-2);
-      }
-    }
-  });
+  trustPostyBirbLocalCertificate(session.defaultSession);
 
   contextMenu();
   start();

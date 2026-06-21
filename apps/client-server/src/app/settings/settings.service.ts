@@ -4,7 +4,11 @@ import {
   OnModuleInit,
   Optional,
 } from '@nestjs/common';
-import { applyGlobalProxyConfig, probePoolEntryConnection } from '@postybirb/http';
+import {
+  applyGlobalProxyConfig,
+  invalidateAppliedGlobalProxyFingerprint,
+  probePoolEntryConnection,
+} from '@postybirb/http';
 import { Settings, SettingsRepository } from '@postybirb/database';
 import { SETTINGS_UPDATES } from '@postybirb/socket-events';
 import { EntityId, SettingsConstants } from '@postybirb/types';
@@ -236,6 +240,24 @@ export class SettingsService
       };
     } catch (error) {
       this.logger.withError(error).warn('Proxy connection test failed');
+      const message = error instanceof Error ? error.message : String(error);
+
+      if (entry.type === 'socks5') {
+        return {
+          success: false,
+          message:
+            'SOCKS5 connection failed. Check host, port, and credentials. If your provider gives an HTTP proxy URL, switch the type to HTTP(S).',
+        };
+      }
+
+      if (/SOCKS/i.test(message)) {
+        return {
+          success: false,
+          message:
+            'Connection failed over SOCKS. Try HTTP(S) as the proxy type if your provider uses an HTTP proxy endpoint.',
+        };
+      }
+
       return {
         success: false,
         message: 'Could not reach the test URL through the configured proxy',
@@ -276,6 +298,13 @@ export class SettingsService
       }
 
       const current = StartupOptionsManager.get();
+      const incomingMode = startUpOptions.proxy.mode;
+      const mergedPacAccessToken =
+        incomingMode === 'pac_routing'
+          ? startUpOptions.proxy.pacAccessToken?.trim() ||
+            current.proxy.pacAccessToken
+          : undefined;
+
       const proxy = normalizeProxyConfiguration({
         ...startUpOptions.proxy,
         pool: startUpOptions.proxy.pool.map((entry) => {
@@ -289,9 +318,7 @@ export class SettingsService
               : existing?.password ?? '',
           });
         }),
-        pacAccessToken:
-          startUpOptions.proxy.pacAccessToken?.trim() ||
-          current.proxy.pacAccessToken,
+        pacAccessToken: mergedPacAccessToken,
       });
 
       const validation = validateProxyConfiguration(proxy);
@@ -322,7 +349,8 @@ export class SettingsService
     StartupOptionsManager.set(patch);
 
     if (proxyUpdated && !IsTestEnvironment()) {
-      await applyGlobalProxyConfig();
+      invalidateAppliedGlobalProxyFingerprint();
+      await applyGlobalProxyConfig(undefined, { force: true });
     }
   }
 

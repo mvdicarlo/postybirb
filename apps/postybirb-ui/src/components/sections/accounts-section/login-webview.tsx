@@ -129,6 +129,25 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
     setIsLoading(false);
   }, [accountId]);
 
+  useEffect(() => {
+    const unsubscribe = window.electron?.onProxyConfigApplied?.(() => {
+      const webview = webviewRef.current;
+      if (!webview || !proxyReady) {
+        return;
+      }
+
+      try {
+        webview.reload();
+      } catch {
+        // Webview may not be ready yet.
+      }
+    });
+
+    return () => {
+      unsubscribe?.();
+    };
+  }, [proxyReady]);
+
   // Handle webview events
   useEffect(() => {
     if (!proxyReady) {

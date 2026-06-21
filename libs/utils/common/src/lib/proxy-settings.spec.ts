@@ -1,12 +1,15 @@
 import {
+  buildChromiumProxyBypassRules,
   buildProxyAgentUrl,
   buildProxyRules,
   buildSessionProxyRules,
   createProxyAgent,
   isProxiedResolution,
   isProxyConfiguration,
+  normalizeProxyConfiguration,
   normalizeProxyProfile,
   shouldBypassProxyForUrl,
+  validateProxyConfiguration,
 } from './proxy-settings';
 
 describe('normalizeProxyProfile', () => {
@@ -240,5 +243,152 @@ describe('isProxyConfiguration', () => {
         port: '8080',
       }),
     ).toBe(false);
+  });
+});
+
+describe('validateProxyConfiguration', () => {
+  it('uses human-readable pool entry names in errors', () => {
+    const result = validateProxyConfiguration({
+      mode: 'fixed_servers',
+      pool: [
+        {
+          id: '5469b6c4-73b3-4eba-bf7b-b9c0e0e3cb1c',
+          type: 'http',
+          host: '',
+          port: '',
+          username: '',
+          password: '',
+        },
+      ],
+      routing: {},
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.errors).toEqual([
+      'Proxy 1: Host is required.',
+      'Proxy 1: Port must be a number between 1 and 65535.',
+      'Select a proxy for all traffic.',
+    ]);
+  });
+
+  it('uses website display names for routing errors', () => {
+    const result = validateProxyConfiguration(
+      {
+        mode: 'pac_routing',
+        pool: [
+          {
+            id: 'pool-1',
+            type: 'http',
+            host: 'proxy.example.com',
+            port: '8080',
+            username: '',
+            password: '',
+          },
+        ],
+        routing: {
+          instagram: 'missing-pool-id',
+        },
+      },
+      {
+        websiteDisplayNames: {
+          instagram: 'Instagram',
+        },
+      },
+    );
+
+    expect(result.ok).toBe(false);
+    expect(result.errors).toEqual([
+      'Instagram: Selected proxy is missing from the pool.',
+    ]);
+  });
+
+  it('ignores stale per-website routing when mode is fixed_servers', () => {
+    const result = validateProxyConfiguration({
+      mode: 'fixed_servers',
+      fixedProxyId: 'pool-1',
+      pool: [
+        {
+          id: 'pool-1',
+          type: 'http',
+          host: 'proxy.example.com',
+          port: '8080',
+          username: '',
+          password: '',
+        },
+      ],
+      routing: {
+        instagram: 'missing-pool-id',
+      },
+    });
+
+    expect(result.ok).toBe(true);
+  });
+});
+
+describe('normalizeProxyConfiguration', () => {
+  it('clears PAC routing state when switching to fixed_servers', () => {
+    expect(
+      normalizeProxyConfiguration({
+        mode: 'fixed_servers',
+        pool: [
+          {
+            id: 'pool-1',
+            type: 'http',
+            host: 'proxy.example.com',
+            port: '8080',
+            username: '',
+            password: '',
+          },
+        ],
+        routing: { instagram: 'pool-1' },
+        pacAccessToken: 'stale-token',
+      }),
+    ).toEqual({
+      mode: 'fixed_servers',
+      pool: [
+        {
+          id: 'pool-1',
+          label: undefined,
+          type: 'http',
+          host: 'proxy.example.com',
+          port: '8080',
+          username: '',
+          password: '',
+        },
+      ],
+      fixedProxyId: 'pool-1',
+      routing: {},
+      pacAccessToken: undefined,
+    });
+  });
+
+  it('infers fixedProxyId from a single routed pool entry', () => {
+    expect(
+      normalizeProxyConfiguration({
+        mode: 'fixed_servers',
+        pool: [
+          {
+            id: 'pool-1',
+            type: 'http',
+            host: 'proxy.example.com',
+            port: '8080',
+            username: '',
+            password: '',
+          },
+        ],
+        routing: { instagram: 'pool-1' },
+      }).fixedProxyId,
+    ).toBe('pool-1');
+  });
+});
+
+describe('buildChromiumProxyBypassRules', () => {
+  it('includes loopback hosts and the app port', () => {
+    expect(buildChromiumProxyBypassRules(undefined, '9487')).toContain(
+      'localhost:9487',
+    );
+    expect(buildChromiumProxyBypassRules(undefined, '9487')).toContain(
+      '<-loopback>',
+    );
   });
 });

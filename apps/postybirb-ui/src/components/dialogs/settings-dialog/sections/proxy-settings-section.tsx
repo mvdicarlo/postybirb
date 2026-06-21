@@ -8,6 +8,7 @@ import type {
 import {
   defaultProxyConfiguration,
   isProxyConfiguration,
+  normalizeProxyConfiguration,
   validateProxyConfiguration,
 } from '@postybirb/types';
 import { Trans } from '@lingui/react/macro';
@@ -87,16 +88,34 @@ function normalizeStartupProxy(raw: unknown): ProxyConfiguration {
   return defaultProxyConfiguration();
 }
 
-function poolEntryLabel(entry: ProxyPoolEntry): string {
+function isValidPoolEntry(entry: ProxyPoolEntry): boolean {
+  const parsed = Number.parseInt(entry.port.trim(), 10);
+
+  return (
+    Boolean(entry.id.trim() && entry.host.trim()) &&
+    Number.isInteger(parsed) &&
+    parsed >= 1 &&
+    parsed <= 65535
+  );
+}
+
+function poolEntryLabel(entry: ProxyPoolEntry, index: number): string {
   if (entry.label?.trim()) {
     return entry.label.trim();
   }
 
-  if (entry.host.trim() && entry.port.trim()) {
-    return `${entry.host.trim()}:${entry.port.trim()}`;
+  return `Proxy ${index + 1}`;
+}
+
+function resolveRoutingChoice(
+  choice: WebsiteProxyChoice,
+  validPoolIds: Set<string>,
+): WebsiteProxyChoice {
+  if (choice === 'system' || choice === 'direct') {
+    return choice;
   }
 
-  return entry.id.slice(0, 8);
+  return validPoolIds.has(choice) ? choice : 'system';
 }
 
 const PROXY_SCOPE_STORAGE_KEY = 'proxy_settings_scope';
@@ -109,7 +128,7 @@ function readStoredProxyScope(): ProxySettingsScope {
 }
 
 function buildProxyPatch(config: ProxyConfiguration) {
-  return {
+  const normalized = normalizeProxyConfiguration({
     mode: config.mode,
     pool: config.pool.map((entry) => ({
       ...entry,
@@ -120,6 +139,13 @@ function buildProxyPatch(config: ProxyConfiguration) {
     })),
     fixedProxyId: config.fixedProxyId,
     routing: config.routing,
+  });
+
+  return {
+    mode: normalized.mode,
+    pool: normalized.pool,
+    fixedProxyId: normalized.fixedProxyId,
+    routing: normalized.routing,
   };
 }
 
@@ -242,8 +268,21 @@ function ProxySettingsForm({
   );
 
   useEffect(() => {
-    setConfig(cloneProxyConfiguration(proxy));
-  }, [proxy]);
+    if (isSaving) {
+      return;
+    }
+
+    setConfig((current) => {
+      const incoming = cloneProxyConfiguration(proxy);
+      if (
+        serializeProxyForCompare(current) === serializeProxyForCompare(incoming)
+      ) {
+        return current;
+      }
+
+      return incoming;
+    });
+  }, [proxy, isSaving]);
 
   const usesLocalProxyTarget = scope === null || scope === 'client';
 
@@ -254,14 +293,27 @@ function ProxySettingsForm({
       .sort((left, right) => left.displayName.localeCompare(right.displayName));
   }, [accounts, websites]);
 
+  const validPoolIds = useMemo(
+    () =>
+      new Set(
+        config.pool
+          .filter((entry) => isValidPoolEntry(entry))
+          .map((entry) => entry.id),
+      ),
+    [config.pool],
+  );
+
   const routingChoiceOptions = useMemo(() => {
     const options = [
       { value: 'system', label: 'System proxy' },
       { value: 'direct', label: 'Direct (no proxy)' },
-      ...config.pool.map((entry) => ({
-        value: entry.id,
-        label: poolEntryLabel(entry),
-      })),
+      ...config.pool
+        .map((entry, index) => ({ entry, index }))
+        .filter(({ entry }) => isValidPoolEntry(entry))
+        .map(({ entry, index }) => ({
+          value: entry.id,
+          label: poolEntryLabel(entry, index),
+        })),
     ];
 
     return options;
@@ -270,18 +322,78 @@ function ProxySettingsForm({
   const fixedProxyOptions = useMemo(
     () =>
       config.pool
-        .filter((entry) => entry.host.trim() && entry.port.trim())
-        .map((entry) => ({
+        .map((entry, index) => ({ entry, index }))
+        .filter(({ entry }) => isValidPoolEntry(entry))
+        .map(({ entry, index }) => ({
           value: entry.id,
-          label: poolEntryLabel(entry),
+          label: poolEntryLabel(entry, index),
         })),
     [config.pool],
   );
 
-  const validation = useMemo(() => validateProxyConfiguration(config), [config]);
+  const websiteDisplayNames = useMemo(
+    () =>
+      Object.fromEntries(
+        websitesWithAccounts.map((website) => [
+          website.id,
+          website.displayName,
+        ]),
+      ),
+    [websitesWithAccounts],
+  );
+
+  const validation = useMemo(
+    () => validateProxyConfiguration(config, { websiteDisplayNames }),
+    [config, websiteDisplayNames],
+  );
 
   const isDirty =
     serializeProxyForCompare(config) !== serializeProxyForCompare(proxy);
+
+  const poolEntryFieldErrors = useMemo(() => {
+    const map = new Map<string, { host?: string; port?: string }>();
+
+    if (!isDirty) {
+      return map;
+    }
+
+    for (const issue of validation.issues) {
+      if (!issue.entryId || !issue.field) {
+        continue;
+      }
+
+      if (issue.field !== 'host' && issue.field !== 'port') {
+        continue;
+      }
+
+      const current = map.get(issue.entryId) ?? {};
+      current[issue.field] = issue.message;
+      map.set(issue.entryId, current);
+    }
+
+    return map;
+  }, [isDirty, validation.issues]);
+
+  const fixedProxyError = isDirty
+    ? validation.issues.find((issue) => issue.field === 'fixedProxyId')
+        ?.message
+    : undefined;
+
+  const routingErrorsByWebsiteId = useMemo(() => {
+    const map = new Map<string, string>();
+
+    if (!isDirty) {
+      return map;
+    }
+
+    for (const issue of validation.issues) {
+      if (issue.field === 'routing' && issue.websiteId) {
+        map.set(issue.websiteId, issue.message);
+      }
+    }
+
+    return map;
+  }, [isDirty, validation.issues]);
 
   const canSave = isDirty && validation.ok;
 
@@ -356,6 +468,34 @@ function ProxySettingsForm({
           }
         }
         next.routing = routing;
+        next.fixedProxyId = undefined;
+      }
+
+      if (mode === 'fixed_servers') {
+        next.routing = {};
+        next.pacAccessToken = undefined;
+
+        if (!current.fixedProxyId?.trim()) {
+          const poolIds = new Set(current.pool.map((entry) => entry.id));
+          const usedPoolIds = new Set<string>();
+
+          for (const choice of Object.values(current.routing)) {
+            if (choice !== 'direct' && choice !== 'system' && poolIds.has(choice)) {
+              usedPoolIds.add(choice);
+            }
+          }
+
+          if (usedPoolIds.size === 1) {
+            next.fixedProxyId = [...usedPoolIds][0];
+          } else if (current.pool.length === 1) {
+            next.fixedProxyId = current.pool[0]?.id;
+          }
+        }
+      }
+
+      if (mode === 'system' || mode === 'direct') {
+        next.fixedProxyId = undefined;
+        next.pacAccessToken = undefined;
       }
 
       return next;
@@ -374,6 +514,9 @@ function ProxySettingsForm({
     setIsSaving(true);
     try {
       const proxyPatch = buildProxyPatch(config);
+      const savedConfig = cloneProxyConfiguration(
+        normalizeProxyConfiguration(proxyPatch),
+      );
 
       if (usesLocalProxyTarget) {
         await settingsApi.updateLocalSystemStartupSettings({
@@ -388,6 +531,7 @@ function ProxySettingsForm({
       }
 
       await refetch();
+      setConfig(savedConfig);
       showConnectionSuccessNotification(
         usesLocalProxyTarget ? (
           <Trans>Proxy settings saved and applied on this device</Trans>
@@ -462,8 +606,10 @@ function ProxySettingsForm({
 
         <Text size="sm" c="dimmed" mb="md">
           <Trans>
-            Choose how PostyBirb routes HTTP traffic. Per-website routing uses
-            an internal PAC script — you never configure domains manually.
+            Choose how all outbound traffic is routed.
+            <br />
+            Per-website mode assigns a proxy to each site — domains are detected
+            automatically.
           </Trans>
         </Text>
 
@@ -503,6 +649,7 @@ function ProxySettingsForm({
 
               {config.pool.map((entry, index) => {
                 const showPassword = showPasswordById[entry.id] ?? false;
+                const fieldErrors = poolEntryFieldErrors.get(entry.id);
 
                 return (
                   <Card key={entry.id} withBorder padding="md">
@@ -548,6 +695,7 @@ function ProxySettingsForm({
                           leftSection={<IconPlug size={18} />}
                           placeholder="proxy.example.com"
                           value={entry.host}
+                          error={fieldErrors?.host}
                           onChange={(event) =>
                             updatePoolEntry(entry.id, {
                               host: event.currentTarget.value,
@@ -558,6 +706,7 @@ function ProxySettingsForm({
                           label={<Trans>Port</Trans>}
                           placeholder="8080"
                           value={entry.port}
+                          error={fieldErrors?.port}
                           onChange={(event) =>
                             updatePoolEntry(entry.id, {
                               port: event.currentTarget.value,
@@ -639,6 +788,7 @@ function ProxySettingsForm({
               placeholder="Select a pool entry"
               data={fixedProxyOptions}
               value={config.fixedProxyId ?? null}
+              error={fixedProxyError}
               onChange={(value) =>
                 updateConfig({ fixedProxyId: value ?? undefined })
               }
@@ -671,7 +821,15 @@ function ProxySettingsForm({
                   </Table.Thead>
                   <Table.Tbody>
                     {websitesWithAccounts.map((website) => {
-                      const choice = config.routing[website.id] ?? 'system';
+                      const storedChoice =
+                        config.routing[website.id] ?? 'system';
+                      const choice = resolveRoutingChoice(
+                        storedChoice,
+                        validPoolIds,
+                      );
+                      const routingError = routingErrorsByWebsiteId.get(
+                        website.id,
+                      );
                       const showsTelegramHttpHint =
                         website.id === 'telegram' &&
                         config.pool.some(
@@ -687,6 +845,7 @@ function ProxySettingsForm({
                               <Select
                                 data={routingChoiceOptions}
                                 value={choice}
+                                error={routingError}
                                 onChange={(value) => {
                                   if (value) {
                                     updateRouting(website.id, value);
@@ -712,12 +871,14 @@ function ProxySettingsForm({
           )}
 
           {!validation.ok && isDirty && (
-            <Alert color="red">
-              {validation.errors.map((error) => (
-                <Text key={error} size="sm">
-                  {error}
-                </Text>
-              ))}
+            <Alert color="red" title={<Trans>Fix these issues before saving</Trans>}>
+              <Stack gap={4}>
+                {validation.issues.map((issue, index) => (
+                  <Text key={`${issue.field ?? 'general'}-${issue.entryId ?? issue.websiteId ?? index}`} size="sm">
+                    {issue.message}
+                  </Text>
+                ))}
+              </Stack>
             </Alert>
           )}
 

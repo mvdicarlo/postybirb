@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Account, AccountRepository } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import {
+  buildPacProxyDirective,
   extractHostname,
   normalizeDomain,
   PostyBirbEnvConfig,
@@ -143,16 +144,12 @@ export class PacScriptService {
     }
 
     const entry = poolById.get(choice);
-    if (!entry?.host?.trim() || !entry.port?.trim()) {
+    if (!entry) {
       return null;
     }
 
-    const hostPort = `${this.escapePacString(entry.host)}:${this.escapePacString(entry.port)}`;
-    if (entry.type === 'socks5') {
-      return `SOCKS5 ${hostPort}`;
-    }
-
-    return `PROXY ${hostPort}`;
+    const pacReturn = buildPacProxyDirective(entry);
+    return pacReturn === 'DIRECT' ? null : pacReturn;
   }
 
   private buildDomainRule(domain: string, pacReturn: string): string[] {

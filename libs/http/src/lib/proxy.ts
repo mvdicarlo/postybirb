@@ -5,6 +5,7 @@ import {
   applyGlobalProxyConfig,
   applyProxySettings as applyProxySettingsInternal,
   getProxyConfiguration,
+  invalidateAppliedGlobalProxyFingerprint,
   onProxyConfigurationApplied,
   onSessionCreated,
   probePoolEntryConnection,
@@ -17,6 +18,7 @@ import { isProxiedResolution, StartupOptionsManager } from '@postybirb/utils/com
 export {
   applyGlobalProxyConfig,
   getProxyConfiguration,
+  invalidateAppliedGlobalProxyFingerprint,
   onProxyConfigurationApplied,
   probePoolEntryConnection,
   probeProfileConnection,
@@ -126,16 +128,10 @@ app.on('session-created', (sess) => {
   onSessionCreated(sess);
 });
 
-app.on('ready', () => {
+StartupOptionsManager.onUpdate(() => {
+  invalidateAppliedGlobalProxyFingerprint();
   applyGlobalProxyConfig().catch((error) => {
     // eslint-disable-next-line no-console
-    console.error('Failed to apply proxy settings on startup', error);
-  });
-
-  StartupOptionsManager.onUpdate(() => {
-    applyGlobalProxyConfig().catch((error) => {
-      // eslint-disable-next-line no-console
-      console.error('Failed to apply proxy settings', error);
-    });
+    console.error('Failed to apply proxy settings', error);
   });
 });

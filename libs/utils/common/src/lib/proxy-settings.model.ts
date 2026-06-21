@@ -13,6 +13,7 @@ export {
   isProxyConfiguration,
   normalizeProxyConfiguration,
   normalizeProxyPoolEntry,
+  sanitizeProxyConfigurationForMode,
   validateProxyConfiguration,
 } from '@postybirb/types';
 
@@ -151,11 +152,37 @@ function resolveUrlPort(url: URL): string {
   return '';
 }
 
+export function escapePacScriptString(value: string): string {
+  return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+}
+
+/** PAC `FindProxyForURL` return token for a pool entry (no surrounding quotes). */
+export function buildPacProxyDirective(entry: ProxyPoolEntry): string {
+  const host = entry.host?.trim() ?? '';
+  const port = entry.port?.trim() ?? '';
+  if (!host || !port) {
+    return 'DIRECT';
+  }
+
+  const hostPort = `${escapePacScriptString(host)}:${escapePacScriptString(port)}`;
+  if (entry.type === 'socks5') {
+    return `SOCKS5 ${hostPort}`;
+  }
+
+  return `PROXY ${hostPort}`;
+}
+
 export function buildChromiumProxyBypassRules(
   cloudApiUrl = process.env.POSTYBIRB_CLOUD_URL ||
     'https://postybirb.azurewebsites.net/api',
+  appPort?: string | number,
 ): string {
-  const rules = ['<-loopback>'];
+  const rules = ['<-loopback>', 'localhost', '127.0.0.1', '[::1]'];
+  const port = appPort?.toString().trim();
+
+  if (port) {
+    rules.push(`localhost:${port}`, `127.0.0.1:${port}`);
+  }
 
   try {
     const host = new URL(cloudApiUrl).hostname.toLowerCase();
