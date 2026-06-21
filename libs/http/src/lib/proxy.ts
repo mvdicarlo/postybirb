@@ -23,6 +23,8 @@ export {
   resolveProxyForUrl,
   setPartitionIdProvider,
 };
+export { resolveTelegramSocksProxy } from './telegram-proxy';
+export type { TelegramSocksProxySettings } from './telegram-proxy';
 export { isProxiedResolution } from '@postybirb/utils/common';
 export {
   getHeadlessWebsitePartitionId,

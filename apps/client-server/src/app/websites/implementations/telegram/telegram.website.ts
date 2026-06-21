@@ -15,23 +15,19 @@ import {
   TipTapNode,
 } from '@postybirb/types';
 import {
-  getActiveProxyConfiguration,
   onProxyConfigurationApplied,
+  resolveTelegramSocksProxy,
 } from '@postybirb/http';
 import {
   calculateImageResize,
   supportsImage,
 } from '@postybirb/utils/file-type';
-import {
-  resolveProfileForWebsite,
-} from '@postybirb/utils/common';
 import { Api, TelegramClient } from 'teleproto';
 import { CustomFile } from 'teleproto/client/uploads';
 import { Entity } from 'teleproto/define';
 import { HTMLParser as HTMLToTelegram } from 'teleproto/extensions/html';
 import { LogLevel } from 'teleproto/extensions/Logger';
 import { returnBigInt } from 'teleproto/Helpers';
-import { ProxyInterface } from 'teleproto/network/connection/TCPMTProxy';
 import { StringSession } from 'teleproto/sessions';
 import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
 import { HtmlConverter } from '../../../post-parsers/models/description-node/converters/html-converter';
@@ -139,7 +135,7 @@ export default class Telegram
         `Creating client for ${account.appId} with session present ${!!account.session}`,
       );
 
-      const telegramProxySettings = await this.resolveProxySettings();
+      const telegramProxySettings = await resolveTelegramSocksProxy();
 
       client = new TelegramClient(
         new StringSession(account.session ?? ''),
@@ -207,89 +203,6 @@ export default class Telegram
       }
     },
   };
-
-  private async resolveProxySettings() {
-    let telegramProxySettings: ProxyInterface | undefined;
-
-    // Example:
-    // tg://proxy?server=127.0.0.1&port=1080&secret=dda7e716f615266d980bf8e2e41acc36b0
-    const env = process.env.POSTYBIRB_TELEGRAM_MTPROXY;
-    if (env) {
-      try {
-        const parsed = new URL(env);
-        if (
-          parsed.protocol === 'tg:' &&
-          parsed.host === 'proxy' &&
-          parsed.search
-        ) {
-          telegramProxySettings = {
-            MTProxy: true,
-            ip: parsed.searchParams.get('ip') ?? '',
-            secret: parsed.searchParams.get('secret') ?? '',
-            port: parseInt(parsed.searchParams.get('port') ?? '', 10),
-          };
-          this.logger.info('Using', env);
-        }
-      } catch (e) {
-        this.logger
-          .withError(e)
-          .error(
-            'Failed to parse env POSTYBIRB_TELEGRAM_MTPROXY, falling back to other proxy settings...',
-          );
-      }
-    }
-
-    if (!telegramProxySettings) {
-      const profile = resolveProfileForWebsite(
-        'telegram',
-        getActiveProxyConfiguration(),
-      );
-
-      if (profile?.enabled) {
-        if (profile.type === 'socks5') {
-          telegramProxySettings = {
-            ip: profile.host,
-            port: parseInt(profile.port, 10),
-            socksType: 5,
-            ...(profile.username ? { username: profile.username } : {}),
-            ...(profile.password ? { password: profile.password } : {}),
-          };
-          this.logger
-            .withMetadata({ proxy: telegramProxySettings })
-            .info('[Telegram.proxy] Using PostyBirb SOCKS5 profile');
-        } else {
-          this.logger.warn(
-            '[Telegram.proxy] Profile type http (HTTP CONNECT) cannot be used for Teleproto; assign telegram to a socks5 profile, use system SOCKS, or POSTYBIRB_TELEGRAM_MTPROXY',
-          );
-        }
-      }
-    }
-
-    if (!telegramProxySettings) {
-      const proxies = [
-        ...(await this.platform.http.getParsedProxiesFor(
-          'https://telegram.org',
-        )),
-        ...(await this.platform.http.getParsedProxiesFor('https://t.me/')),
-      ];
-      const proxy = proxies.find(
-        (entry) => entry?.type === 'SOCKS' || entry?.type === 'SOCKS5',
-      );
-
-      if (proxy && proxy.type !== 'DIRECT') {
-        telegramProxySettings = {
-          ip: proxy.hostname,
-          port: parseInt(proxy.port, 10),
-          socksType: 5,
-        };
-        this.logger
-          .withMetadata({ proxy: telegramProxySettings, proxies })
-          .info('[Telegram.proxy] Using system SOCKS proxy');
-      }
-    }
-
-    return telegramProxySettings;
-  }
 
   private async loadChannels(telegram: TelegramClient) {
     this.logger.info('Loading folders...');
