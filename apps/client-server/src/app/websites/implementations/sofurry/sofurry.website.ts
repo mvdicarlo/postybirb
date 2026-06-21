@@ -147,6 +147,8 @@ export default class Sofurry
       });
 
       if (res.statusCode === 200 && Array.isArray(res.body)) {
+        this.logger.info('Loaded', res.body.length, 'folders');
+
         await this.setWebsiteData({
           ...this.websiteDataStore.getData(),
           folders: res.body.map((f) => ({ value: f.id, label: f.name })),
