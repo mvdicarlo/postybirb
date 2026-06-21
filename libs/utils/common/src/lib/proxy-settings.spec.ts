@@ -199,6 +199,22 @@ describe('shouldBypassProxyForUrl', () => {
   it('does not bypass unrelated hosts', () => {
     expect(shouldBypassProxyForUrl('https://pixiv.net/')).toBe(false);
   });
+
+  it('bypasses the configured cloud API host', () => {
+    const previous = process.env.POSTYBIRB_CLOUD_URL;
+    process.env.POSTYBIRB_CLOUD_URL =
+      'https://postybirb.azurewebsites.net/api';
+
+    expect(
+      shouldBypassProxyForUrl('https://postybirb.azurewebsites.net/api/upload'),
+    ).toBe(true);
+
+    if (previous === undefined) {
+      delete process.env.POSTYBIRB_CLOUD_URL;
+    } else {
+      process.env.POSTYBIRB_CLOUD_URL = previous;
+    }
+  });
 });
 
 describe('isProxyConfiguration', () => {
