@@ -4,26 +4,29 @@ import {
   OnModuleInit,
   Optional,
 } from '@nestjs/common';
-import { applyProxySettings, probeProfileConnection } from '@postybirb/http';
+import { applyGlobalProxyConfig, probePoolEntryConnection } from '@postybirb/http';
 import { Settings, SettingsRepository } from '@postybirb/database';
 import { SETTINGS_UPDATES } from '@postybirb/socket-events';
 import { EntityId, SettingsConstants } from '@postybirb/types';
 import { net } from 'electron';
 import {
   buildProxyRules,
-  isLegacyProxyConfiguration,
   IsTestEnvironment,
-  normalizeProxyProfile,
+  isLegacyProxyConfiguration,
+  isProxyConfiguration,
+  normalizeProxyConfiguration,
+  normalizeProxyPoolEntry,
   PostyBirbEnvConfig,
   shouldBypassProxyForUrl,
   StartupOptions,
   StartupOptionsManager,
-  validateProfiles,
+  validateProxyConfiguration,
+  asEnabledProxyProfile,
 } from '@postybirb/utils/common';
 import { eq } from 'drizzle-orm';
 import { PostyBirbService } from '../common/service/postybirb-service';
 import { WSGateway } from '../web-socket/web-socket-gateway';
-import { TestProxyProfileDto } from './dtos/update-proxy-settings.dto';
+import { TestProxyPoolEntryDto } from './dtos/update-proxy-settings.dto';
 import { UpdateSettingsDto } from './dtos/update-settings.dto';
 import { UpdateStartupSettingsDto } from './dtos/update-startup-settings.dto';
 
@@ -171,32 +174,25 @@ export class SettingsService
    * proxy, then restores the persisted startup proxy settings.
    */
   async testProxyConnection(
-    profileDto: TestProxyProfileDto,
+    poolEntryDto: TestProxyPoolEntryDto,
   ): Promise<{ success: boolean; message: string }> {
     const saved = StartupOptionsManager.get().proxy;
-    const existing = saved.pool.find((entry) => entry.id === profileDto.id);
-    const profile = normalizeProxyProfile({
-      ...profileDto,
-      password: profileDto.password?.trim()
-        ? profileDto.password
+    const existing = saved.pool.find((entry) => entry.id === poolEntryDto.id);
+    const entry = normalizeProxyPoolEntry({
+      ...poolEntryDto,
+      password: poolEntryDto.password?.trim()
+        ? poolEntryDto.password
         : existing?.password ?? '',
     });
 
-    if (!profile.enabled) {
-      return {
-        success: false,
-        message: 'Enable the proxy before testing',
-      };
-    }
-
-    if (!profile.host) {
+    if (!entry.host) {
       return {
         success: false,
         message: 'Proxy host is required',
       };
     }
 
-    const proxyPort = parseInt(profile.port, 10);
+    const proxyPort = parseInt(entry.port, 10);
     if (Number.isNaN(proxyPort) || proxyPort < 1 || proxyPort > 65535) {
       return {
         success: false,
@@ -204,7 +200,7 @@ export class SettingsService
       };
     }
 
-    if (!buildProxyRules(profile)) {
+    if (!buildProxyRules(asEnabledProxyProfile(entry))) {
       return {
         success: false,
         message: 'Proxy host and port are required',
@@ -214,7 +210,7 @@ export class SettingsService
     const testUrl = 'https://www.google.com/generate_204';
 
     try {
-      const { statusCode } = await probeProfileConnection(profile, testUrl, {
+      const { statusCode } = await probePoolEntryConnection(entry, testUrl, {
         method: 'HEAD',
         timeoutMs: 15_000,
       });
@@ -266,39 +262,50 @@ export class SettingsService
     }
 
     let proxyUpdated = false;
+    const patch: Partial<StartupOptions> = {};
 
     if (startUpOptions.proxy) {
-      if (!isLegacyProxyConfiguration(startUpOptions.proxy)) {
+      if (isLegacyProxyConfiguration(startUpOptions.proxy)) {
+        throw new BadRequestException(
+          'Legacy proxy profiles are no longer supported. Update the client.',
+        );
+      }
+
+      if (!isProxyConfiguration(startUpOptions.proxy)) {
         throw new BadRequestException('Unsupported proxy configuration shape');
       }
 
       const current = StartupOptionsManager.get();
-      const profiles = startUpOptions.proxy.profiles.map((profile) => {
-        const existing = current.proxy.pool.find(
-          (savedEntry) => savedEntry.id === profile.id,
-        );
-        return normalizeProxyProfile({
-          ...profile,
-          password: profile.password?.trim()
-            ? profile.password
-            : existing?.password ?? '',
-        });
+      const proxy = normalizeProxyConfiguration({
+        ...startUpOptions.proxy,
+        pool: startUpOptions.proxy.pool.map((entry) => {
+          const existing = current.proxy.pool.find(
+            (savedEntry) => savedEntry.id === entry.id,
+          );
+          return normalizeProxyPoolEntry({
+            ...entry,
+            password: entry.password?.trim()
+              ? entry.password
+              : existing?.password ?? '',
+          });
+        }),
+        pacAccessToken:
+          startUpOptions.proxy.pacAccessToken?.trim() ||
+          current.proxy.pacAccessToken,
       });
 
-      const validation = validateProfiles(profiles);
+      const validation = validateProxyConfiguration(proxy);
       if (!validation.ok) {
         this.logger
           .withMetadata({ errors: validation.errors })
-          .warn('Proxy profile validation failed');
+          .warn('Proxy configuration validation failed');
         throw new BadRequestException(validation.errors.join(' '));
       }
 
-      this.logger.warn(
-        'Legacy proxy profiles save ignored until proxy settings API migration',
-      );
+      patch.proxy = proxy;
+      proxyUpdated = true;
     }
 
-    const patch: Partial<StartupOptions> = {};
     if (startUpOptions.appDataPath !== undefined) {
       patch.appDataPath = startUpOptions.appDataPath;
     }
@@ -315,7 +322,7 @@ export class SettingsService
     StartupOptionsManager.set(patch);
 
     if (proxyUpdated && !IsTestEnvironment()) {
-      await applyProxySettings();
+      await applyGlobalProxyConfig();
     }
   }
 

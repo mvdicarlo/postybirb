@@ -1,23 +1,19 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ProxyType } from '@postybirb/utils/common';
+import { ProxyMode, ProxyType } from '@postybirb/utils/common';
 import { Type } from 'class-transformer';
 import {
   IsArray,
-  IsBoolean,
   IsIn,
+  IsObject,
   IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator';
 
-export class UpdateProxyProfileDto {
+export class UpdateProxyPoolEntryDto {
   @ApiProperty()
   @IsString()
   id: string;
-
-  @ApiProperty()
-  @IsBoolean()
-  enabled: boolean;
 
   @ApiProperty({ required: false })
   @IsOptional()
@@ -43,27 +39,37 @@ export class UpdateProxyProfileDto {
   @ApiProperty()
   @IsString()
   password: string;
-
-  @ApiProperty({ type: [String] })
-  @IsArray()
-  @IsString({ each: true })
-  websites: string[];
 }
 
 export class UpdateProxyConfigurationDto {
-  @ApiProperty({ type: [UpdateProxyProfileDto] })
+  @ApiProperty({
+    enum: ['system', 'direct', 'fixed_servers', 'pac_routing'],
+  })
+  @IsIn(['system', 'direct', 'fixed_servers', 'pac_routing'])
+  mode: ProxyMode;
+
+  @ApiProperty({ type: [UpdateProxyPoolEntryDto] })
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => UpdateProxyProfileDto)
-  profiles: UpdateProxyProfileDto[];
-}
+  @Type(() => UpdateProxyPoolEntryDto)
+  pool: UpdateProxyPoolEntryDto[];
 
-export class TestProxyProfileDto extends UpdateProxyProfileDto {
   @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
-  websiteId?: string;
+  fixedProxyId?: string;
+
+  @ApiProperty({ type: 'object', additionalProperties: { type: 'string' } })
+  @IsObject()
+  routing: Record<string, string>;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  pacAccessToken?: string;
 }
+
+export class TestProxyPoolEntryDto extends UpdateProxyPoolEntryDto {}
 
 export class TestRemoteConnectionDto {
   @ApiProperty()
@@ -73,4 +79,21 @@ export class TestRemoteConnectionDto {
   @ApiProperty()
   @IsString()
   password: string;
+}
+
+/** @deprecated v2 profile shape — kept for transitional API clients */
+export class UpdateProxyProfileDto extends UpdateProxyPoolEntryDto {
+  @ApiProperty()
+  enabled: boolean;
+
+  @ApiProperty({ type: [String] })
+  websites: string[];
+}
+
+/** @deprecated v2 profile shape */
+export class TestProxyProfileDto extends UpdateProxyProfileDto {
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  websiteId?: string;
 }

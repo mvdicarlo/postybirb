@@ -6,7 +6,7 @@ import { PostyBirbController } from '../common/controller/postybirb-controller';
 import { UpdateSettingsDto } from './dtos/update-settings.dto';
 import { UpdateStartupSettingsDto } from './dtos/update-startup-settings.dto';
 import {
-  TestProxyProfileDto,
+  TestProxyPoolEntryDto,
   TestRemoteConnectionDto,
 } from './dtos/update-proxy-settings.dto';
 import { SettingsService } from './settings.service';
@@ -40,8 +40,8 @@ export class SettingsController extends PostyBirbController<SettingsRepository> 
   }
 
   @Post('startup/proxy/test')
-  testProxyConnection(@Body() proxyProfile: TestProxyProfileDto) {
-    return this.service.testProxyConnection(proxyProfile);
+  testProxyConnection(@Body() poolEntry: TestProxyPoolEntryDto) {
+    return this.service.testProxyConnection(poolEntry);
   }
 
   @Post('startup/remote/test')

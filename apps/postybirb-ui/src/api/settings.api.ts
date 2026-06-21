@@ -3,7 +3,7 @@ import type {
   IUpdateSettingsDto,
   SettingsDto,
 } from '@postybirb/types';
-import type { ProxyProfile, StartupOptions } from '@postybirb/utils/common';
+import type { ProxyPoolEntry, StartupOptions } from '@postybirb/utils/common';
 import { HttpClient } from '../transports/http-client';
 
 class SettingsApi {
@@ -28,9 +28,7 @@ class SettingsApi {
     return this.client.patch(`startup/system-startup`, startAppOnSystemStartup);
   }
 
-  testProxyConnection(
-    proxy: ProxyProfile & { websiteId?: string },
-  ) {
+  testProxyConnection(poolEntry: ProxyPoolEntry) {
     return this.client.post<{ success: boolean; message: string }>(
       'startup/proxy/test',
       proxy,
