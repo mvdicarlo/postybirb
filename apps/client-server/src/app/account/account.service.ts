@@ -15,7 +15,6 @@ import {
 } from '@postybirb/types';
 import {
   applyGlobalProxyConfig,
-  applyProxySettings,
   setPartitionIdProvider,
 } from '@postybirb/http';
 import { IsTestEnvironment } from '@postybirb/utils/common';
@@ -84,7 +83,7 @@ export class AccountService
       await this.deleteUnregisteredAccounts();
 
       if (!IsTestEnvironment()) {
-        await applyProxySettings();
+        await applyGlobalProxyConfig();
       }
 
       await this.initWebsiteRegistry();
@@ -315,7 +314,7 @@ export class AccountService
       .then((entity) => this.injectWebsiteInstance(entity));
 
     if (!IsTestEnvironment()) {
-      await applyProxySettings();
+      await applyGlobalProxyConfig();
     }
 
     return account;
@@ -329,7 +328,7 @@ export class AccountService
     await super.remove(id);
 
     if (!IsTestEnvironment()) {
-      await applyProxySettings();
+      await applyGlobalProxyConfig();
     }
   }
 

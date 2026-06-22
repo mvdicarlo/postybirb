@@ -81,20 +81,3 @@ export class TestRemoteConnectionDto {
   @IsString()
   password: string;
 }
-
-/** @deprecated v2 profile shape — kept for transitional API clients */
-export class UpdateProxyProfileDto extends UpdateProxyPoolEntryDto {
-  @ApiProperty()
-  enabled: boolean;
-
-  @ApiProperty({ type: [String] })
-  websites: string[];
-}
-
-/** @deprecated v2 profile shape */
-export class TestProxyProfileDto extends UpdateProxyProfileDto {
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsString()
-  websiteId?: string;
-}

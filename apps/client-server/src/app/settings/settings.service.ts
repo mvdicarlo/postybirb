@@ -22,7 +22,6 @@ import {
 import {
   buildProxyRules,
   IsTestEnvironment,
-  isLegacyProxyConfiguration,
   PostyBirbEnvConfig,
   shouldBypassProxyForUrl,
   StartupOptions,
@@ -248,7 +247,7 @@ export class SettingsService
         return {
           success: false,
           message:
-            'SOCKS5 connection failed. Check host, port, and credentials. If your provider gives an HTTP proxy URL, switch the type to HTTP(S).',
+            'SOCKS5 connection failed. Check host and port. If your provider gives an HTTP proxy URL, switch the type to HTTP(S).',
         };
       }
 
@@ -289,12 +288,6 @@ export class SettingsService
     const patch: Partial<StartupOptions> = {};
 
     if (startUpOptions.proxy) {
-      if (isLegacyProxyConfiguration(startUpOptions.proxy)) {
-        throw new BadRequestException(
-          'Legacy proxy profiles are no longer supported. Update the client.',
-        );
-      }
-
       if (!isProxyConfiguration(startUpOptions.proxy)) {
         throw new BadRequestException('Unsupported proxy configuration shape');
       }
