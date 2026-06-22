@@ -4,34 +4,20 @@ import {
   OnModuleInit,
   Optional,
 } from '@nestjs/common';
-import {
-  applyGlobalProxyConfig,
-  invalidateAppliedGlobalProxyFingerprint,
-  probePoolEntryConnection,
-} from '@postybirb/http';
 import { Settings, SettingsRepository } from '@postybirb/database';
 import { SETTINGS_UPDATES } from '@postybirb/socket-events';
 import { EntityId, SettingsConstants } from '@postybirb/types';
 import {
-  isProxyConfiguration,
-  mergeProxyPoolPasswords,
-  normalizeProxyPoolEntry,
-  prepareProxyConfiguration,
-  validateProxyConfiguration,
-} from '@postybirb/types';
-import {
-  buildProxyRules,
-  IsTestEnvironment,
   PostyBirbEnvConfig,
   shouldBypassProxyForUrl,
   StartupOptions,
   StartupOptionsManager,
-  asEnabledProxyProfile,
 } from '@postybirb/utils/common';
 import { eq } from 'drizzle-orm';
 import { PostyBirbService } from '../common/service/postybirb-service';
+import { ProxyService } from '../proxy/proxy.service';
 import { WSGateway } from '../web-socket/web-socket-gateway';
-import { TestProxyPoolEntryDto } from './dtos/update-proxy-settings.dto';
+import { TestRemoteConnectionDto } from './dtos/update-proxy-settings.dto';
 import { UpdateSettingsDto } from './dtos/update-settings.dto';
 import { UpdateStartupSettingsDto } from './dtos/update-startup-settings.dto';
 
@@ -40,7 +26,10 @@ export class SettingsService
   extends PostyBirbService<SettingsRepository>
   implements OnModuleInit
 {
-  constructor(@Optional() webSocket: WSGateway) {
+  constructor(
+    private readonly proxyService: ProxyService,
+    @Optional() webSocket?: WSGateway,
+  ) {
     super(new SettingsRepository(), webSocket);
     this.repository.subscribe('SettingsSchema', () => this.emit());
   }
@@ -174,99 +163,6 @@ export class SettingsService
   }
 
   /**
-   * Tests whether outbound requests work through the provided proxy settings.
-   * Applies the given config temporarily, verifies traffic is routed through a
-   * proxy, then restores the persisted startup proxy settings.
-   */
-  async testProxyConnection(
-    poolEntryDto: TestProxyPoolEntryDto,
-  ): Promise<{ success: boolean; message: string }> {
-    const saved = StartupOptionsManager.get().proxy;
-    const existing = saved.pool.find((entry) => entry.id === poolEntryDto.id);
-    const entry = normalizeProxyPoolEntry({
-      ...poolEntryDto,
-      password: poolEntryDto.password?.trim()
-        ? poolEntryDto.password
-        : existing?.password ?? '',
-    });
-
-    if (!entry.host) {
-      return {
-        success: false,
-        message: 'Proxy host is required',
-      };
-    }
-
-    const proxyPort = parseInt(entry.port, 10);
-    if (Number.isNaN(proxyPort) || proxyPort < 1 || proxyPort > 65535) {
-      return {
-        success: false,
-        message: 'Invalid proxy port',
-      };
-    }
-
-    if (!buildProxyRules(asEnabledProxyProfile(entry))) {
-      return {
-        success: false,
-        message: 'Proxy host and port are required',
-      };
-    }
-
-    const testUrl = 'https://www.google.com/generate_204';
-
-    try {
-      const { statusCode } = await probePoolEntryConnection(entry, testUrl, {
-        method: 'HEAD',
-        timeoutMs: 15_000,
-      });
-
-      if (statusCode === 407) {
-        return {
-          success: false,
-          message:
-            'Proxy authentication failed. Check username and password.',
-        };
-      }
-
-      if (statusCode >= 200 && statusCode < 400) {
-        return {
-          success: true,
-          message: 'Proxy connection test succeeded',
-        };
-      }
-
-      return {
-        success: false,
-        message: `Unexpected response status: ${statusCode}`,
-      };
-    } catch (error) {
-      this.logger.withError(error).warn('Proxy connection test failed');
-      const message = error instanceof Error ? error.message : String(error);
-
-      if (entry.type === 'socks5') {
-        return {
-          success: false,
-          message:
-            'SOCKS5 connection failed. Check host and port. If your provider gives an HTTP proxy URL, switch the type to HTTP(S).',
-        };
-      }
-
-      if (/SOCKS/i.test(message)) {
-        return {
-          success: false,
-          message:
-            'Connection failed over SOCKS. Try HTTP(S) as the proxy type if your provider uses an HTTP proxy endpoint.',
-        };
-      }
-
-      return {
-        success: false,
-        message: 'Could not reach the test URL through the configured proxy',
-      };
-    }
-  }
-
-  /**
    * Updates app startup settings.
    */
   public async updateStartupSettings(startUpOptions: UpdateStartupSettingsDto) {
@@ -284,41 +180,10 @@ export class SettingsService
       }
     }
 
-    let proxyUpdated = false;
     const patch: Partial<StartupOptions> = {};
 
     if (startUpOptions.proxy) {
-      if (!isProxyConfiguration(startUpOptions.proxy)) {
-        throw new BadRequestException('Unsupported proxy configuration shape');
-      }
-
-      const current = StartupOptionsManager.get();
-      const incomingMode = startUpOptions.proxy.mode;
-      const mergedPacAccessToken =
-        incomingMode === 'pac_routing'
-          ? startUpOptions.proxy.pacAccessToken?.trim() ||
-            current.proxy.pacAccessToken
-          : undefined;
-
-      const proxy = prepareProxyConfiguration({
-        ...startUpOptions.proxy,
-        pool: mergeProxyPoolPasswords(
-          startUpOptions.proxy.pool,
-          current.proxy.pool,
-        ),
-        pacAccessToken: mergedPacAccessToken,
-      });
-
-      const validation = validateProxyConfiguration(proxy);
-      if (!validation.ok) {
-        this.logger
-          .withMetadata({ errors: validation.errors })
-          .warn('Proxy configuration validation failed');
-        throw new BadRequestException(validation.errors.join(' '));
-      }
-
-      patch.proxy = proxy;
-      proxyUpdated = true;
+      await this.proxyService.saveConfiguration(startUpOptions.proxy);
     }
 
     if (startUpOptions.appDataPath !== undefined) {
@@ -334,11 +199,8 @@ export class SettingsService
       patch.startAppOnSystemStartup = startUpOptions.startAppOnSystemStartup;
     }
 
-    StartupOptionsManager.set(patch);
-
-    if (proxyUpdated && !IsTestEnvironment()) {
-      invalidateAppliedGlobalProxyFingerprint();
-      await applyGlobalProxyConfig(undefined, { force: true });
+    if (Object.keys(patch).length > 0) {
+      StartupOptionsManager.set(patch);
     }
   }
 

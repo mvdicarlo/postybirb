@@ -2,7 +2,6 @@ import type {
   EntityId,
   IUpdateSettingsDto,
   ProxyConfiguration,
-  ProxyPoolEntry,
   SettingsDto,
 } from '@postybirb/types';
 import {
@@ -52,20 +51,6 @@ class SettingsApi {
 
   updateLocalSystemStartupSettings(startUpOptions: Partial<StartupOptions>) {
     return this.localClient.patch(`startup/system-startup`, startUpOptions);
-  }
-
-  testProxyConnection(poolEntry: ProxyPoolEntry) {
-    return this.client.post<{ success: boolean; message: string }>(
-      'startup/proxy/test',
-      poolEntry,
-    );
-  }
-
-  testLocalProxyConnection(poolEntry: ProxyPoolEntry) {
-    return this.localClient.post<{ success: boolean; message: string }>(
-      'startup/proxy/test',
-      poolEntry,
-    );
   }
 
   testRemoteConnection(hostUrl: string, password: string) {

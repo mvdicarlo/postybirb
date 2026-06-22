@@ -39,6 +39,7 @@ import {
 } from '@tabler/icons-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from 'react-query';
+import proxyApi from '../../../../api/proxy.api';
 import settingsApi from '../../../../api/settings.api';
 import { resetGlobalProxyReadyCache } from '../../../../hooks/use-global-proxy-ready';
 import { useAccounts } from '../../../../stores/entity/account-store';
@@ -577,8 +578,8 @@ function ProxySettingsForm({
         username: entry.username.trim(),
       };
       const result = usesLocalProxyTarget
-        ? await settingsApi.testLocalProxyConnection(payload)
-        : await settingsApi.testProxyConnection(payload);
+        ? await proxyApi.testLocalPoolEntryConnection(payload)
+        : await proxyApi.testPoolEntryConnection(payload);
 
       if (result.body.success) {
         showConnectionSuccessNotification(

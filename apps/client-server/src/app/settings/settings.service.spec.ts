@@ -3,6 +3,14 @@ import { clearDatabase } from '@postybirb/database';
 import { UpdateSettingsDto } from './dtos/update-settings.dto';
 import { SettingsService } from './settings.service';
 
+jest.mock('../proxy/proxy.service', () => ({
+  ProxyService: class MockProxyService {
+    saveConfiguration = jest.fn();
+  },
+}));
+
+import { ProxyService } from '../proxy/proxy.service';
+
 describe('SettingsService', () => {
   let service: SettingsService;
   let module: TestingModule;
@@ -10,7 +18,15 @@ describe('SettingsService', () => {
   beforeEach(async () => {
     clearDatabase();
     module = await Test.createTestingModule({
-      providers: [SettingsService],
+      providers: [
+        SettingsService,
+        {
+          provide: ProxyService,
+          useValue: {
+            saveConfiguration: jest.fn(),
+          },
+        },
+      ],
     }).compile();
 
     service = module.get<SettingsService>(SettingsService);

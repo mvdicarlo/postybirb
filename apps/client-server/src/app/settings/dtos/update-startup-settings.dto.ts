@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsBoolean, IsOptional, IsString, ValidateNested } from 'class-validator';
-import { UpdateProxyConfigurationDto } from './update-proxy-settings.dto';
+import { UpdateProxyConfigurationDto } from '../../proxy/dtos/proxy-configuration.dto';
 
 export class UpdateStartupSettingsDto {
   @ApiProperty()
