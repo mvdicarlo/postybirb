@@ -41,11 +41,6 @@ ipcMain.handle('apply-proxy-config', async () => {
   await applyGlobalProxyConfig(undefined, { force: true });
 });
 
-ipcMain.handle('ensure-partition-proxy', async () => {
-  invalidateAppliedGlobalProxyFingerprint();
-  await applyGlobalProxyConfig(undefined, { force: true });
-});
-
 ipcMain.handle(
   'get-local-storage-for-account',
   async (event, accountId: string, url: string) => {

@@ -9,8 +9,6 @@ export interface PreloadBridge {
   applyProxyConfig(): Promise<void>;
   /** Subscribe to proxy re-applies after settings save (returns unsubscribe). */
   onProxyConfigApplied(callback: () => void): () => void;
-  /** @deprecated Use applyProxyConfig() — global config applies to all partitions */
-  ensurePartitionProxy(accountId: string): Promise<void>;
   getLocalStorageForAccount(
     accountId: string,
     url: string,

@@ -26,8 +26,6 @@ contextBridge.exposeInMainWorld('electron', {
       ipcRenderer.removeListener('proxy-config-applied', listener);
     };
   },
-  ensurePartitionProxy: (accountId: string) =>
-    ipcRenderer.invoke('ensure-partition-proxy', accountId),
   getLocalStorageForAccount: (accountId: string, url: string) =>
     ipcRenderer.invoke('get-local-storage-for-account', accountId, url),
   // Gracefully request app quit from renderer
