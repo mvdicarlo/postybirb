@@ -1,10 +1,12 @@
 import { INestApplication } from '@nestjs/common';
+import { Logger, trackException } from '@postybirb/logger';
 import {
   isLinux,
   isOSX,
   PostyBirbEnvConfig,
   StartupOptions,
   StartupOptionsManager,
+  toError,
 } from '@postybirb/utils/common';
 import {
   app,
@@ -25,6 +27,13 @@ const loader = require('./loader/loader');
 
 const appIcon = join(__dirname, 'assets/app-icon.png');
 
+const logger = Logger('MainWindow');
+
+// Cap how many times we auto-reload a dead renderer in a short window so a
+// renderer that crashes immediately on load does not become a reload loop.
+const MAX_RENDERER_RELOADS = 3;
+const RENDERER_RELOAD_WINDOW_MS = 60_000;
+
 export default class PostyBirb {
   // Keep a global reference of the window object, if you don't, the window will
   // be closed automatically when the JavaScript object is garbage collected.
@@ -39,6 +48,8 @@ export default class PostyBirb {
   static nestApp: INestApplication;
 
   static appImage: NativeImage;
+
+  private static rendererReloadTimestamps: number[] = [];
 
   public static isDevelopmentMode() {
     return !environment.production;
@@ -58,6 +69,15 @@ export default class PostyBirb {
     // initialization and is ready to create browser windows.
     // Some APIs can only be used after this event occurs.
     PostyBirb.initAppTray();
+
+    // If a window already exists (e.g. a relaunch / second-instance), reuse it
+    // instead of creating a duplicate BrowserWindow that would orphan the old
+    // renderer and GPU surface.
+    if (PostyBirb.mainWindow && !PostyBirb.mainWindow.isDestroyed()) {
+      PostyBirb.showMainWindow();
+      return;
+    }
+
     PostyBirb.initMainWindow();
     PostyBirb.loadMainWindow();
   }
@@ -67,6 +87,42 @@ export default class PostyBirb {
     // dock icon is clicked and there are no other windows open.
     if (PostyBirb.mainWindow === null) {
       PostyBirb.onReady();
+    }
+  }
+
+  /**
+   * Attempt to recover a window whose renderer or graphics context died.
+   * Reloads in place unless we have reloaded too many times recently, in
+   * which case the window is left as-is to avoid a crash/reload loop.
+   */
+  private static recoverRenderer(reason: string) {
+    const window = PostyBirb.mainWindow;
+    if (!window || window.isDestroyed()) {
+      return;
+    }
+
+    const now = Date.now();
+    PostyBirb.rendererReloadTimestamps = PostyBirb.rendererReloadTimestamps.filter(
+      (ts) => now - ts < RENDERER_RELOAD_WINDOW_MS,
+    );
+
+    if (PostyBirb.rendererReloadTimestamps.length >= MAX_RENDERER_RELOADS) {
+      logger.error(
+        `Renderer recovery suppressed after ${MAX_RENDERER_RELOADS} reloads ` +
+          `within ${RENDERER_RELOAD_WINDOW_MS}ms (reason: ${reason}); ` +
+          'leaving window as-is to avoid a reload loop.',
+      );
+      return;
+    }
+
+    PostyBirb.rendererReloadTimestamps.push(now);
+    logger.warn(`Reloading main window to recover renderer (reason: ${reason}).`);
+    try {
+      window.webContents.reload();
+    } catch (error) {
+      logger
+        .withError(toError(error))
+        .error('Failed to reload main window during renderer recovery.');
     }
   }
 
@@ -109,6 +165,57 @@ export default class PostyBirb {
         event.preventDefault();
       }
     });
+
+    // The renderer process died (crash, OOM, or a lost GPU/graphics context).
+    // Without this the window would be left blank/frozen forever; instead we
+    // log, track, and attempt an in-place reload to recover the UI.
+    PostyBirb.mainWindow.webContents.on('render-process-gone', (_event, details) => {
+      const message =
+        `Main window renderer gone — reason: ${details.reason}, ` +
+        `exitCode: ${details.exitCode}`;
+      logger.error(message);
+      trackException(new Error(message), {
+        source: 'electron-main',
+        type: 'renderProcessGone',
+        reason: details.reason,
+        exitCode: String(details.exitCode),
+      });
+
+      // A clean exit is not a crash and needs no recovery.
+      if (details.reason !== 'clean-exit') {
+        PostyBirb.recoverRenderer(details.reason);
+      }
+    });
+
+    // The renderer's JS event loop is blocked. Log so freezes can be told
+    // apart from GPU/renderer crashes; recovery requires user input so we do
+    // not force a reload here.
+    PostyBirb.mainWindow.webContents.on('unresponsive', () => {
+      logger.warn('Main window became unresponsive (renderer event loop blocked).');
+      trackException(new Error('Main window unresponsive'), {
+        source: 'electron-main',
+        type: 'windowUnresponsive',
+      });
+    });
+
+    PostyBirb.mainWindow.webContents.on('responsive', () => {
+      logger.info('Main window became responsive again.');
+    });
+
+    // The window failed to load its URL (e.g. after a recovery reload). Ignore
+    // user-initiated aborts (errorCode -3).
+    PostyBirb.mainWindow.webContents.on(
+      'did-fail-load',
+      (_event, errorCode, errorDescription, validatedURL) => {
+        if (errorCode === -3) {
+          return;
+        }
+        logger.error(
+          `Main window failed to load (${errorCode} ${errorDescription}) ` +
+            `for ${validatedURL}.`,
+        );
+      },
+    );
 
     // if main window is ready to show, close the splash window and show the main window
     PostyBirb.mainWindow.once('ready-to-show', () => {
@@ -226,7 +333,8 @@ export default class PostyBirb {
     PostyBirb.application.on('activate', PostyBirb.onActivate); // App is activated
     PostyBirb.application.on('second-instance', () => {
       if (PostyBirb.application.isReady()) {
-        PostyBirb.onReady();
+        // Focus/restore the existing window rather than spawning a new one.
+        PostyBirb.showMainWindow();
       }
     });
     PostyBirb.application.on('quit', PostyBirb.onQuit);

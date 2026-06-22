@@ -8,16 +8,16 @@ import '@postybirb/http';
 import { INestApplication } from '@nestjs/common';
 import { PostyBirbDirectories } from '@postybirb/fs';
 import {
-  flushAppInsights,
-  initializeAppInsights,
-  Logger,
-  trackException,
+    flushAppInsights,
+    initializeAppInsights,
+    Logger,
+    trackException,
 } from '@postybirb/logger';
 import {
-  PostyBirbEnvConfig,
-  RemoteConfigManager,
-  toError,
-  validateEnvConfigOrExit,
+    PostyBirbEnvConfig,
+    RemoteConfigManager,
+    toError,
+    validateEnvConfigOrExit,
 } from '@postybirb/utils/common';
 import { app, BrowserWindow, crashReporter, session } from 'electron';
 import contextMenu from 'electron-context-menu';
@@ -244,6 +244,41 @@ app.on(
   },
 );
 
+// Observe crashes of child processes (GPU, utility, renderer-host, etc.). A GPU
+// process crash is the classic cause of a "graphics context lost" frozen window
+// on long-running sessions; logging it here makes that diagnosable. Electron
+// usually relaunches the GPU process automatically, so this is diagnostic only —
+// renderer recovery is handled per-window in app.ts.
+app.on('child-process-gone', (_event, details) => {
+  const { type, reason, exitCode, serviceName, name } = details;
+  const parts = [`type: ${type}`, `reason: ${reason}`, `exitCode: ${exitCode}`];
+  if (serviceName) {
+    parts.push(`service: ${serviceName}`);
+  }
+  if (name) {
+    parts.push(`name: ${name}`);
+  }
+  const message = `Child process gone — ${parts.join(', ')}`;
+
+  // 'clean-exit' is a normal shutdown of a child (e.g. the sharp worker); only
+  // treat abnormal terminations as problems worth tracking.
+  if (reason === 'clean-exit') {
+    logger.info(message);
+    return;
+  }
+
+  logger.error(message);
+  trackException(new Error(message), {
+    source: 'electron-main',
+    type: 'childProcessGone',
+    childType: type,
+    reason,
+    exitCode: String(exitCode),
+    ...(serviceName ? { serviceName } : {}),
+    ...(name ? { childName: name } : {}),
+  });
+});
+
 export default class Main {
   static async initialize() {
     process.env.remote = JSON.stringify(await RemoteConfigManager.get());
@@ -297,17 +332,6 @@ app.on('ready', () => {
       logger.withError(toError(error)).warn('Failed to show startup loader.');
     }
   }
-
-  setInterval(() => {
-    const allMetrics = app.getAppMetrics();
-    allMetrics.forEach((proc) => {
-      logger.info(`Process ID: ${proc.pid}`);
-      logger.info(`Type: ${proc.type}`); // e.g., 'Browser', 'Tab', 'GPU'
-      logger.info(`CPU %: ${proc.cpu.percentCPUUsage}%`);
-      logger.info(`Memory (Private Bytes): ${proc.memory.privateBytes} KB`);
-      logger.info('---');
-    });
-  }, 5 * 60_000);
 
   session.defaultSession.setCertificateVerifyProc((request, callback) => {
     if (request.errorCode === 0) {
