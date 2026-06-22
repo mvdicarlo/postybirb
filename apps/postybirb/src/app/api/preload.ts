@@ -1,46 +1,68 @@
-import { PreloadBridge } from '@postybirb/types';
+import type { PreloadBridge } from '@postybirb/types';
+import type { RemoteConfig } from '@postybirb/utils/common';
 import { contextBridge, ipcRenderer } from 'electron';
+import { type AppMetadata, IPC_CHANNELS } from '../constants';
 
-// Implementation at electron.events.ts, typings for ui at main.tsx
+// Implementation at electron.events.ts, typings for ui at main.tsx.
+//
+// This preload runs sandboxed, so it cannot read process.env. App metadata
+// (port, version, platform) is fetched synchronously over IPC at load time so
+// the exposed bridge can keep the same synchronous shape the UI relies on.
 
-contextBridge.exposeInMainWorld('electron', {
+const metadata: AppMetadata = (ipcRenderer.sendSync(
+  IPC_CHANNELS.getAppMetadata,
+) as AppMetadata | null) ?? {
+  platform: process.platform,
+  app_port: '',
+  app_version: '',
+};
+
+const bridge: PreloadBridge = {
   pickDirectory: (defaultPath) =>
-    ipcRenderer.invoke('pick-directory', defaultPath),
+    ipcRenderer.invoke(IPC_CHANNELS.pickDirectory, defaultPath),
   openExternalLink: (url: string) => {
-    // Prevent app crash from trying to open undefined link
+    // Prevent app crash from trying to open undefined link.
     if (!url) {
       throw new TypeError(`openExternalLink: url cannot be empty! Got: ${url}`);
     }
 
-    ipcRenderer.send('open-external-link', url);
+    ipcRenderer.send(IPC_CHANNELS.openExternalLink, url);
   },
-  getLanIp: () => ipcRenderer.invoke('get-lan-ip'),
-  getRemoteConfig: () => JSON.parse(process.env.remote || '{}'),
+  getLanIp: () => ipcRenderer.invoke(IPC_CHANNELS.getLanIp),
+  getRemoteConfig: (): RemoteConfig =>
+    (ipcRenderer.sendSync(IPC_CHANNELS.getRemoteConfig) as RemoteConfig | null) ?? {
+      enabled: false,
+      password: '',
+    },
   getCookiesForAccount: (accountId: string) =>
-    ipcRenderer.invoke('get-cookies-for-account', accountId),
+    ipcRenderer.invoke(IPC_CHANNELS.getCookiesForAccount, accountId),
   getLocalStorageForAccount: (accountId: string, url: string) =>
-    ipcRenderer.invoke('get-local-storage-for-account', accountId, url),
+    ipcRenderer.invoke(IPC_CHANNELS.getLocalStorageForAccount, accountId, url),
 
-  // Gracefully request app quit from renderer
-  quit: (code?: number) => ipcRenderer.send('quit', code),
-  platform: process.platform,
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  app_port: process.env.POSTYBIRB_PORT!,
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  app_version: process.env.POSTYBIRB_VERSION!,
+  // Gracefully request app quit from renderer.
+  quit: (code?: number) => ipcRenderer.send(IPC_CHANNELS.quit, code),
+  platform: metadata.platform,
+  app_port: metadata.app_port,
+  app_version: metadata.app_version,
 
   setSpellCheckerEnabled: (value: boolean) =>
-    ipcRenderer.invoke('set-spellchecker-enabled', value),
+    ipcRenderer.invoke(IPC_CHANNELS.setSpellcheckerEnabled, value),
   setSpellcheckerLanguages: (languages: string[]) =>
-    ipcRenderer.invoke('set-spellchecker-languages', languages),
+    ipcRenderer.invoke(IPC_CHANNELS.setSpellcheckerLanguages, languages),
   getSpellcheckerLanguages: () =>
-    ipcRenderer.invoke('get-spellchecker-languages') as Promise<string[]>,
+    ipcRenderer.invoke(IPC_CHANNELS.getSpellcheckerLanguages) as Promise<
+      string[]
+    >,
 
   getAllSpellcheckerLanguages: () =>
-    ipcRenderer.invoke('get-all-spellchecker-languages') as Promise<string[]>,
+    ipcRenderer.invoke(IPC_CHANNELS.getAllSpellcheckerLanguages) as Promise<
+      string[]
+    >,
 
   getSpellcheckerWords: () =>
-    ipcRenderer.invoke('get-spellchecker-words') as Promise<string[]>,
+    ipcRenderer.invoke(IPC_CHANNELS.getSpellcheckerWords) as Promise<string[]>,
   setSpellcheckerWords: (words: string[]) =>
-    ipcRenderer.invoke('set-spellchecker-words', words),
-} satisfies PreloadBridge);
+    ipcRenderer.invoke(IPC_CHANNELS.setSpellcheckerWords, words),
+};
+
+contextBridge.exposeInMainWorld('electron', bridge);
