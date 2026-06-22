@@ -1,5 +1,5 @@
-import { HttpResponse } from '@postybirb/http/types';
-import { DynamicObject } from '@postybirb/types';
+import { DynamicObject } from '../common/dynamic-object';
+import type { HttpResponse } from '@postybirb/http/types';
 // Required by drizzle which does not support custom paths like this
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { toError } from '../../../../utils/common/src/lib/common';

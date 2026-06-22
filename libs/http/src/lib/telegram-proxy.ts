@@ -1,9 +1,6 @@
 import { Logger } from '@postybirb/logger';
-import {
-  isProxiedResolution,
-  ProxyConfiguration,
-  ProxyPoolEntry,
-} from '@postybirb/utils/common';
+import type { ProxyConfiguration, ProxyPoolEntry } from '@postybirb/types';
+import { isProxiedResolution } from '@postybirb/utils/common';
 import { getProxyConfiguration, resolveProxyForUrl } from './electron-proxy-manager';
 
 const TELEGRAM_WEBSITE_ID = 'telegram';

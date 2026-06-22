@@ -1,5 +1,6 @@
+/* eslint-disable max-classes-per-file */
 import { ApiProperty } from '@nestjs/swagger';
-import { ProxyMode, ProxyType } from '@postybirb/utils/common';
+import { ProxyMode, ProxyType } from '@postybirb/types';
 import { Type } from 'class-transformer';
 import {
   IsArray,

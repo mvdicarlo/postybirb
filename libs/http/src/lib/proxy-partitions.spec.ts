@@ -1,4 +1,4 @@
-import { ProxyProfile } from '@postybirb/utils/common';
+import type { ProxyProfile } from '@postybirb/types';
 import {
   collectManagedPartitionIds,
   getHeadlessWebsitePartitionId,

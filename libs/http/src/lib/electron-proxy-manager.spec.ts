@@ -5,7 +5,7 @@ import {
   onSessionCreated,
   resetGlobalProxyStateForTests,
 } from './electron-proxy-manager';
-import type { ProxyProfile } from '@postybirb/utils/common';
+import type { ProxyProfile } from '@postybirb/types';
 
 describe('ensurePartitionProxy cache', () => {
   const profile: ProxyProfile = {

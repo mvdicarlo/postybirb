@@ -1,5 +1,5 @@
 import { Logger } from '@postybirb/logger';
-import { ProxyProfile, ProxyType } from '@postybirb/utils/common';
+import { ProxyProfile, ProxyType } from '@postybirb/types';
 
 export type ProxyCredentials = {
   username: string;
@@ -85,7 +85,7 @@ export class ProxyAuthStore {
     }
 
     const host = authInfo.host?.trim();
-    const port = authInfo.port;
+    const {port} = authInfo;
     if (!host || !port) {
       logger
         .withMetadata({ host: authInfo.host, port: authInfo.port })
