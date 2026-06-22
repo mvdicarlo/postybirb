@@ -1,7 +1,7 @@
-import { resolveProxyForUrl } from './electron-proxy-manager';
+import { resolveProxyForUrl } from './electron-proxy';
 import { resolveTelegramSocksProxy } from './telegram-proxy';
 
-jest.mock('./electron-proxy-manager', () => ({
+jest.mock('./electron-proxy', () => ({
   getProxyConfiguration: jest.fn(),
   resolveProxyForUrl: jest.fn(),
 }));

@@ -13,10 +13,7 @@ import FormData from 'form-data';
 import urlEncoded from 'form-urlencoded';
 import { encode as encodeQueryString } from 'querystring';
 import { FormFile } from './form-file';
-import {
-  attachProxyAuthToRequest,
-  resolveBrowserProxySession,
-} from './electron-proxy-manager';
+import { attachProxyAuthToRequest } from './electron-proxy';
 import {
   BinaryPostOptions,
   HttpOptions,
@@ -56,10 +53,10 @@ interface CreateBodyData {
 }
 
 function assignBrowserPartition(options: HttpOptions): void {
-  const sessionRoute = resolveBrowserProxySession(options);
-  if (sessionRoute.partitionId) {
+  const partitionId = options.partition?.trim();
+  if (partitionId) {
     // eslint-disable-next-line no-param-reassign
-    options.partition = sessionRoute.partitionId;
+    options.partition = partitionId;
   }
 }
 
@@ -151,7 +148,7 @@ export class Http {
     }
 
     const req = net.request(clientRequestOptions);
-    attachProxyAuthToRequest(req, options.partition);
+    attachProxyAuthToRequest(req);
     if (
       clientRequestOptions.method === 'POST' ||
       clientRequestOptions.method === 'PATCH' ||

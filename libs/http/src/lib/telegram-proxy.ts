@@ -1,7 +1,8 @@
 import { Logger } from '@postybirb/logger';
 import type { ProxyConfiguration, ProxyPoolEntry } from '@postybirb/types';
 import { isProxiedResolution } from '@postybirb/utils/common';
-import { getProxyConfiguration, resolveProxyForUrl } from './electron-proxy-manager';
+import { getProxyConfiguration, resolveProxyForUrl } from './electron-proxy';
+import { parseProxyResolution } from './proxy-resolution';
 
 const TELEGRAM_WEBSITE_ID = 'telegram';
 
@@ -15,52 +16,6 @@ export type TelegramSocksProxySettings = {
 
 const logger = Logger('TelegramProxy');
 
-type ParsedProxyEntry = {
-  type: string;
-  hostname: string;
-  port: string;
-};
-
-function parseProxySection(section: string): ParsedProxyEntry | null {
-  const trimmed = section.trim();
-  if (!trimmed || trimmed.toUpperCase() === 'DIRECT') {
-    return null;
-  }
-
-  const spaceIndex = trimmed.indexOf(' ');
-  if (spaceIndex === -1) {
-    return null;
-  }
-
-  const type = trimmed.slice(0, spaceIndex).trim();
-  const proxyUrl = trimmed.slice(spaceIndex + 1).trim();
-  if (!proxyUrl) {
-    return null;
-  }
-
-  try {
-    const parsed = new URL(
-      proxyUrl.includes('://') ? proxyUrl : `http://${proxyUrl}`,
-    );
-    return {
-      type,
-      hostname: parsed.hostname,
-      port: parsed.port,
-    };
-  } catch {
-    const hostPort = proxyUrl.match(/^([^:]+):(\d+)$/);
-    if (hostPort) {
-      return {
-        type,
-        hostname: hostPort[1],
-        port: hostPort[2],
-      };
-    }
-  }
-
-  return null;
-}
-
 async function resolveSystemSocksProxy(): Promise<
   TelegramSocksProxySettings | undefined
 > {
@@ -71,12 +26,7 @@ async function resolveSystemSocksProxy(): Promise<
 
   const proxies = resolutions
     .filter(isProxiedResolution)
-    .flatMap((resolution) =>
-      resolution
-        .split(';')
-        .map((section) => parseProxySection(section))
-        .filter((entry): entry is ParsedProxyEntry => entry !== null),
-    );
+    .flatMap((resolution) => parseProxyResolution(resolution));
 
   const proxy = proxies.find(
     (entry) => entry.type === 'SOCKS' || entry.type === 'SOCKS5',

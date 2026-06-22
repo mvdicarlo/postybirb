@@ -16,4 +16,19 @@ describe('proxy-partitions', () => {
       ]),
     );
   });
+
+  it('collects managed partitions for mixed accounts', () => {
+    const ids = collectManagedPartitionIds([
+      { partitionId: 'account-1', websiteId: 'pixiv' },
+      { partitionId: 'account-2', websiteId: 'instagram' },
+    ]);
+
+    expect(ids).toEqual(
+      expect.arrayContaining([
+        'account-1',
+        'account-2',
+        getInstagramOAuthPartitionId('account-2'),
+      ]),
+    );
+  });
 });

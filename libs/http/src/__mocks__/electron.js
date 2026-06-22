@@ -21,6 +21,8 @@ function createSession(partitionId) {
       return sessionState.resolveProxyResult;
     },
     closeAllConnections: function () {},
+    forceReloadProxyConfig: async function () {},
+    setCertificateVerifyProc: function () {},
     cookies: {
       get: async function () {
         return [];
@@ -139,10 +141,14 @@ function makeElectronNetRequest(options) {
 }
 
 const defaultSession = createSession('default');
+defaultSession.__partitionId = 'default';
+
+let appProxyConfig = null;
 
 const appHandlers = {
   ready: [],
   'session-created': [],
+  login: [],
 };
 
 module.exports = {
@@ -155,6 +161,17 @@ module.exports = {
     isReady: function () {
       return true;
     },
+    setProxy: async function (config) {
+      appProxyConfig = config || { mode: 'system' };
+    },
+  },
+
+  __getAppProxyConfig: function () {
+    return appProxyConfig;
+  },
+
+  __resetAppProxyConfig: function () {
+    appProxyConfig = null;
   },
 
   net: {
@@ -173,7 +190,9 @@ module.exports = {
       return defaultSession.resolveProxy();
     },
     fromPartition: function (partitionId) {
-      return getSession(partitionId || 'default');
+      const sess = getSession(partitionId || 'default');
+      sess.__partitionId = partitionId || 'default';
+      return sess;
     },
   },
 

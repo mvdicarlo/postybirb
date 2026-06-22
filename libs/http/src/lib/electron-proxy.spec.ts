@@ -1,0 +1,155 @@
+import { app, session } from 'electron';
+import {
+  __resolveSessionProxyConfigForTests,
+  applyProxy,
+  onSessionCreated,
+  resetProxyStateForTests,
+} from './electron-proxy';
+
+jest.mock('@postybirb/utils/common', () => {
+  const actual = jest.requireActual('@postybirb/utils/common');
+  return {
+    ...actual,
+    PostyBirbEnvConfig: { port: '9247' },
+  };
+});
+
+type ElectronTestModule = typeof import('electron') & {
+  __getAppProxyConfig: () => unknown;
+  __resetAppProxyConfig: () => void;
+};
+
+const electronMock = require('electron') as ElectronTestModule;
+
+describe('electron-proxy', () => {
+  beforeEach(() => {
+    resetProxyStateForTests();
+    electronMock.__resetAppProxyConfig();
+  });
+
+  describe('resolveSessionProxyConfig', () => {
+    it('maps direct mode', () => {
+      expect(
+        __resolveSessionProxyConfigForTests({
+          mode: 'direct',
+          pool: [],
+          routing: {},
+        }),
+      ).toEqual({ mode: 'direct' });
+    });
+
+    it('maps system mode', () => {
+      expect(
+        __resolveSessionProxyConfigForTests({
+          mode: 'system',
+          pool: [],
+          routing: {},
+        }),
+      ).toEqual({ mode: 'system' });
+    });
+
+    it('maps fixed_servers mode with pool entry', () => {
+      expect(
+        __resolveSessionProxyConfigForTests({
+          mode: 'fixed_servers',
+          fixedProxyId: 'pool-1',
+          pool: [
+            {
+              id: 'pool-1',
+              type: 'http',
+              host: '10.0.0.1',
+              port: '8080',
+              username: '',
+              password: '',
+            },
+          ],
+          routing: {},
+        }),
+      ).toEqual({
+        mode: 'fixed_servers',
+        proxyRules: 'http=10.0.0.1:8080;https=10.0.0.1:8080',
+        proxyBypassRules: expect.any(String),
+      });
+    });
+
+    it('maps pac_routing mode to HTTPS PAC URL', () => {
+      expect(
+        __resolveSessionProxyConfigForTests({
+          mode: 'pac_routing',
+          pacAccessToken: 'secret-token',
+          pool: [],
+          routing: {},
+        }),
+      ).toEqual({
+        mode: 'pac_script',
+        pacScript:
+          'https://127.0.0.1:9247/api/proxy/pac/secret-token',
+      });
+    });
+
+    it('falls back to system when PAC token is missing', () => {
+      expect(
+        __resolveSessionProxyConfigForTests({
+          mode: 'pac_routing',
+          pool: [],
+          routing: {},
+        }),
+      ).toEqual({ mode: 'system' });
+    });
+  });
+
+  describe('applyProxy', () => {
+    it('applies direct mode to default session, app proxy, and partitions', async () => {
+      await applyProxy(
+        { mode: 'direct', pool: [], routing: {} },
+        ['account-1'],
+      );
+
+      expect(session.defaultSession.__state.proxyConfig).toEqual({
+        mode: 'direct',
+      });
+      expect(
+        (app as typeof app & { setProxy?: (config: unknown) => Promise<void> })
+          .setProxy,
+      ).toEqual(expect.any(Function));
+      expect(electronMock.__getAppProxyConfig()).toEqual({ mode: 'direct' });
+
+      const partition = session.fromPartition('persist:account-1');
+      expect(partition.__state.proxyConfig).toEqual({ mode: 'direct' });
+    });
+  });
+
+  describe('onSessionCreated', () => {
+    it('reuses the active session proxy config from the last apply', async () => {
+      await applyProxy(
+        { mode: 'direct', pool: [], routing: {} },
+        [],
+      );
+
+      const createdSession = session.fromPartition('persist:new-account');
+      createdSession.__state.proxyConfig = { mode: 'system' };
+
+      await onSessionCreated(createdSession);
+
+      expect(createdSession.__state.proxyConfig).toEqual({ mode: 'direct' });
+    });
+  });
+
+  describe('resetProxyStateForTests', () => {
+    it('clears cached proxy configuration', async () => {
+      await applyProxy(
+        { mode: 'direct', pool: [], routing: {} },
+        [],
+      );
+
+      resetProxyStateForTests();
+
+      const createdSession = session.fromPartition('persist:after-reset');
+      createdSession.__state.proxyConfig = { mode: 'direct' };
+
+      await onSessionCreated(createdSession);
+
+      expect(createdSession.__state.proxyConfig).toEqual({ mode: 'system' });
+    });
+  });
+});
