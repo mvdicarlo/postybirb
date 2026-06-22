@@ -155,6 +155,12 @@ function resolveUrlPort(url: URL): string {
   return '';
 }
 
+const DEFAULT_CLOUD_API_URL = 'https://postybirb.azurewebsites.net/api';
+
+export function resolveCloudApiUrl(): string {
+  return process.env.POSTYBIRB_CLOUD_URL || DEFAULT_CLOUD_API_URL;
+}
+
 export function escapePacScriptString(value: string): string {
   return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
 }
@@ -176,8 +182,6 @@ export function buildPacProxyDirective(entry: ProxyPoolEntry): string {
 }
 
 export function buildChromiumProxyBypassRules(
-  cloudApiUrl = process.env.POSTYBIRB_CLOUD_URL ||
-    'https://postybirb.azurewebsites.net/api',
   appPort?: string | number,
 ): string {
   const rules = ['<-loopback>', 'localhost', '127.0.0.1', '[::1]'];
@@ -188,7 +192,7 @@ export function buildChromiumProxyBypassRules(
   }
 
   try {
-    const host = new URL(cloudApiUrl).hostname.toLowerCase();
+    const host = new URL(resolveCloudApiUrl()).hostname.toLowerCase();
     if (host) {
       rules.push(host);
     }
@@ -227,9 +231,7 @@ export function shouldBypassProxyForUrl(
       return true;
     }
 
-    const cloudApiUrl =
-      process.env.POSTYBIRB_CLOUD_URL ||
-      'https://postybirb.azurewebsites.net/api';
+    const cloudApiUrl = resolveCloudApiUrl();
     try {
       const cloudHost = new URL(cloudApiUrl).hostname.toLowerCase();
       if (cloudHost && host === cloudHost) {

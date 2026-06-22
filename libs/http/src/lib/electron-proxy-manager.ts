@@ -1,10 +1,10 @@
 import { session, Session, type ProxyConfig } from 'electron';
 import { Logger } from '@postybirb/logger';
+import type { ProxyProfile } from '@postybirb/types';
 import {
   buildChromiumProxyBypassRules,
   buildSessionProxyRules,
   LegacyProxyConfiguration,
-  ProxyProfile,
 } from '@postybirb/utils/common';
 import {
   applyGlobalProxyConfig,
@@ -101,10 +101,7 @@ function getFixedProxyConfig(profile: ProxyProfile): ProxyConfig {
   return {
     mode: 'fixed_servers',
     proxyRules,
-    proxyBypassRules: buildChromiumProxyBypassRules(
-      undefined,
-      process.env.POSTYBIRB_PORT,
-    ),
+    proxyBypassRules: buildChromiumProxyBypassRules(process.env.POSTYBIRB_PORT),
   };
 }
 

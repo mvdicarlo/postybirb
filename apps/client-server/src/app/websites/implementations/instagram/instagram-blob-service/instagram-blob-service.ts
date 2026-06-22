@@ -1,8 +1,7 @@
-import { netFetch } from '@postybirb/http';
 import { Logger, PostyBirbLogger } from '@postybirb/logger';
+import { resolveCloudApiUrl } from '@postybirb/utils/common';
 
-const FUNCTION_BASE_URL =
-  process.env.POSTYBIRB_CLOUD_URL || 'https://postybirb.azurewebsites.net/api';
+const FUNCTION_BASE_URL = resolveCloudApiUrl();
 
 interface UploadResponse {
   url: string;
@@ -33,7 +32,7 @@ export class InstagramBlobService {
     buffer: Buffer,
     mimeType: string,
   ): Promise<UploadResponse> {
-    const response = await netFetch(`${FUNCTION_BASE_URL}/upload`, {
+    const response = await fetch(`${FUNCTION_BASE_URL}/upload`, {
       method: 'POST',
       headers: {
         'Content-Type': mimeType,

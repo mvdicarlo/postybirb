@@ -9,6 +9,11 @@ import {
 import http from 'node:http';
 import nodeHttps from 'node:https';
 import { Logger } from '@postybirb/logger';
+import type {
+  ProxyConfiguration,
+  ProxyPoolEntry,
+  ProxyProfile,
+} from '@postybirb/types';
 import {
   asEnabledProxyProfile,
   buildProxyAgentUrl,
@@ -19,9 +24,6 @@ import {
   defaultProxyConfiguration,
   prepareProxyConfiguration,
   PostyBirbEnvConfig,
-  ProxyConfiguration,
-  ProxyPoolEntry,
-  ProxyProfile,
   StartupOptionsManager,
   toError,
 } from '@postybirb/utils/common';
@@ -92,7 +94,7 @@ function buildGlobalProxyFingerprint(config: ProxyConfiguration): string {
 }
 
 function buildPacScriptUrl(config: ProxyConfiguration): string {
-  const port = PostyBirbEnvConfig.port;
+  const { port } = PostyBirbEnvConfig;
   return `https://127.0.0.1:${port}/api/proxy/pac/${config.pacAccessToken}`;
 }
 
@@ -114,10 +116,7 @@ function resolveSessionProxyConfig(config: ProxyConfiguration): ProxyConfig {
       return {
         mode: 'fixed_servers',
         proxyRules,
-        proxyBypassRules: buildChromiumProxyBypassRules(
-          undefined,
-          PostyBirbEnvConfig.port,
-        ),
+        proxyBypassRules: buildChromiumProxyBypassRules(PostyBirbEnvConfig.port),
       };
     }
     case 'pac_routing': {

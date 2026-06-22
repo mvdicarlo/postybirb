@@ -1,19 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { Account, AccountRepository } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
+import type {
+  ProxyConfiguration,
+  ProxyPoolEntry,
+  WebsiteProxyChoice,
+} from '@postybirb/types';
 import {
   buildPacProxyDirective,
   extractHostname,
   normalizeDomain,
   PostyBirbEnvConfig,
-  ProxyConfiguration,
-  ProxyPoolEntry,
-  WebsiteProxyChoice,
+  resolveCloudApiUrl,
 } from '@postybirb/utils/common';
 import { WebsiteDomainService } from './website-domain.service';
-
-const DEFAULT_CLOUD_API_URL =
-  process.env.POSTYBIRB_CLOUD_URL || 'https://postybirb.azurewebsites.net/api';
 
 @Injectable()
 export class PacScriptService {
@@ -101,7 +101,7 @@ export class PacScriptService {
 
   private buildBypassRules(): string[] {
     const hosts = new Set<string>(['127.0.0.1', 'localhost', '::1']);
-    const cloudHost = extractHostname(DEFAULT_CLOUD_API_URL);
+    const cloudHost = extractHostname(resolveCloudApiUrl());
     if (cloudHost) {
       hosts.add(normalizeDomain(cloudHost));
     }

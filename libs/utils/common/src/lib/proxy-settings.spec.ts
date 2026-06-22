@@ -384,10 +384,10 @@ describe('prepareProxyConfiguration', () => {
 
 describe('buildChromiumProxyBypassRules', () => {
   it('includes loopback hosts and the app port', () => {
-    expect(buildChromiumProxyBypassRules(undefined, '9487')).toContain(
+    expect(buildChromiumProxyBypassRules('9487')).toContain(
       'localhost:9487',
     );
-    expect(buildChromiumProxyBypassRules(undefined, '9487')).toContain(
+    expect(buildChromiumProxyBypassRules('9487')).toContain(
       '<-loopback>',
     );
   });
