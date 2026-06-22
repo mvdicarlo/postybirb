@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PlatformBrowserService } from '@postybirb/platform';
+import { getPartitionKey } from '@postybirb/utils/common';
 import { BrowserWindow } from 'electron';
 
 function delay(ms: number): Promise<void> {
@@ -14,9 +15,7 @@ async function createWindow(
 ): Promise<Electron.BrowserWindow> {
   const bw = new BrowserWindow({
     show: false,
-    webPreferences: {
-      partition: `persist:${partition}`,
-    },
+    webPreferences: { partition: getPartitionKey(partition) },
   });
 
   try {

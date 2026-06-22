@@ -11,6 +11,10 @@ export interface PreloadBridge {
   onProxyConfigApplied(callback: () => void): () => void;
   /** @deprecated Use applyProxyConfig() — global config applies to all partitions */
   ensurePartitionProxy(accountId: string): Promise<void>;
+  getLocalStorageForAccount(
+    accountId: string,
+    url: string,
+  ): Promise<Record<string, unknown>>;
   quit(code?: number): void;
   platform: NodeJS.Platform;
   app_port: string;

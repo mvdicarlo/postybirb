@@ -25,8 +25,12 @@ import {
 import { useCallback, useEffect, useRef, useState } from 'react';
 import accountApi from '../../../api/account.api';
 import { useGlobalProxyReady } from '../../../hooks';
+import remoteApi from '../../../api/remote.api';
 import { useAccount } from '../../../stores';
-import { notifyLoginSuccess } from '../../website-login-views/helpers';
+import {
+  createLoginHttpErrorHandler,
+  notifyLoginSuccess,
+} from '../../website-login-views/helpers';
 import type { WebviewTag } from './webview-tag';
 
 interface LoginWebviewProps {
@@ -104,12 +108,13 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
       lastLoginCheckTime.current = now;
 
       try {
+        await remoteApi.setCookiesAndLocalStorage(accountId, currentUrl);
         await accountApi.refreshLogin(accountId);
       } finally {
         loginInFlight.current = false;
       }
     },
-    [accountId],
+    [accountId, currentUrl],
   );
 
   // Manual login check handler — always forces, shows spinner via isPending
@@ -119,11 +124,18 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
 
   // Show notification on first successful login
   useEffect(() => {
-    if (isLoggedIn && hasShownSuccessNotification.current !== accountId) {
+    if (
+      isLoggedIn &&
+      hasShownSuccessNotification.current !== accountId &&
+      account
+    ) {
       hasShownSuccessNotification.current = accountId;
-      notifyLoginSuccess(username || account?.name || '', account);
+      notifyLoginSuccess(account);
+      remoteApi
+        .setCookiesAndLocalStorage(accountId, currentUrl)
+        .catch(createLoginHttpErrorHandler());
     }
-  }, [isLoggedIn, username, account?.name, accountId, account]);
+  }, [isLoggedIn, username, account?.name, accountId, account, currentUrl]);
 
   useEffect(() => {
     setIsLoading(false);

@@ -66,7 +66,7 @@ export default function DiscordLoginView(
               data: { webhook: webhook.trim(), serverLevel, isForum },
             })
             .then(() => {
-              notifyLoginSuccess(undefined, account);
+              notifyLoginSuccess(account);
             })
             .catch(createLoginHttpErrorHandler())
             .finally(() => {

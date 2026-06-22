@@ -36,7 +36,7 @@ export default function SofurryLoginView(
             })
             .then(({ result }) => {
               if (result) {
-                notifyLoginSuccess(undefined, account);
+                notifyLoginSuccess(account);
               } else {
                 notifyLoginFailed();
               }

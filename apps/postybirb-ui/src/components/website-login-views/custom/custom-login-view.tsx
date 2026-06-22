@@ -93,7 +93,7 @@ export default function CustomLoginView(
         data: cleanedData,
       });
 
-      notifyLoginSuccess(undefined, account);
+      notifyLoginSuccess(account);
     } catch (error) {
       notifyLoginFailed((error as Error).message);
     } finally {

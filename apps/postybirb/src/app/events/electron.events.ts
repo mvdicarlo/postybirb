@@ -8,6 +8,7 @@ import {
   invalidateAppliedGlobalProxyFingerprint,
   onProxyConfigurationApplied,
 } from '@postybirb/http';
+import { getPartitionKey } from '@postybirb/utils/common';
 import { app, BrowserWindow, dialog, ipcMain, session, shell } from 'electron';
 
 onProxyConfigurationApplied(() => {
@@ -44,6 +45,29 @@ ipcMain.handle('ensure-partition-proxy', async () => {
   invalidateAppliedGlobalProxyFingerprint();
   await applyGlobalProxyConfig(undefined, { force: true });
 });
+
+ipcMain.handle(
+  'get-local-storage-for-account',
+  async (event, accountId: string, url: string) => {
+    // Its easier to duplicate code then get access to ElectronBrowserService in this context
+
+    const bw = new BrowserWindow({
+      show: false,
+      webPreferences: { partition: getPartitionKey(accountId) },
+    });
+
+    try {
+      await bw.loadURL(url);
+      return await bw.webContents.executeJavaScript(
+        'JSON.parse(JSON.stringify(localStorage))',
+      );
+    } finally {
+      if (!bw.isDestroyed()) {
+        bw.destroy();
+      }
+    }
+  },
+);
 
 ipcMain.handle('get-lan-ip', async () => {
   const os = await import('os');

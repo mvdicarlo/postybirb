@@ -338,12 +338,13 @@ export default function TwitterLoginView(
                         )
                         .then((res) => {
                           if (res.success) {
-                            notifyLoginSuccess(undefined, account);
+                            notifyLoginSuccess(account);
                             setPin('');
                             setAuthorizationUrl('');
                             setRequestToken(undefined);
                             setActiveStep(3); // Advance to completion step
-                            if (res.screenName) setLoggedInAs(`@${res.screenName}`);
+                            if (res.screenName)
+                              setLoggedInAs(`@${res.screenName}`);
                           } else {
                             notifyLoginFailed(res.message);
                           }

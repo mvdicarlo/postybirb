@@ -28,6 +28,8 @@ contextBridge.exposeInMainWorld('electron', {
   },
   ensurePartitionProxy: (accountId: string) =>
     ipcRenderer.invoke('ensure-partition-proxy', accountId),
+  getLocalStorageForAccount: (accountId: string, url: string) =>
+    ipcRenderer.invoke('get-local-storage-for-account', accountId, url),
   // Gracefully request app quit from renderer
   quit: (code?: number) => ipcRenderer.send('quit', code),
   platform: process.platform,
