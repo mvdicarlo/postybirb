@@ -7,6 +7,8 @@ import {
   normalizeDomain,
 } from '@postybirb/utils/common';
 
+export type StaticWebsiteDomainProvider = (websiteId: string) => string[];
+
 @Injectable()
 export class WebsiteDomainService {
   private readonly logger = Logger('WebsiteDomainService');
@@ -14,6 +16,12 @@ export class WebsiteDomainService {
   private readonly websiteDomainMap = new Map<string, string[]>();
 
   private readonly websiteDataRepository = new WebsiteDataRepository();
+
+  private staticDomainProvider: StaticWebsiteDomainProvider | null = null;
+
+  setStaticDomainProvider(provider: StaticWebsiteDomainProvider): void {
+    this.staticDomainProvider = provider;
+  }
 
   registerStaticDomains(websiteId: string, domains: string[]): void {
     const normalized = mergeDomainLists(domains);
@@ -38,7 +46,11 @@ export class WebsiteDomainService {
     websiteId: string,
     accounts: Account[],
   ): Promise<string[]> {
-    const staticDomains = this.getStaticDomains(websiteId);
+    if (accounts.length === 0) {
+      return [];
+    }
+
+    const staticDomains = this.ensureStaticDomains(websiteId);
     const runtimeDomains = await this.collectRuntimeDomains(websiteId, accounts);
     const total = mergeDomainLists(staticDomains, runtimeDomains);
 
@@ -50,13 +62,23 @@ export class WebsiteDomainService {
       })
       .debug('forRouting');
 
-    if (total.length === 0 && accounts.length === 0) {
+    if (total.length === 0) {
       this.logger
         .withMetadata({ websiteId })
-        .warn('no domains for routing and no accounts');
+        .warn('no domains for routing');
     }
 
     return total;
+  }
+
+  private ensureStaticDomains(websiteId: string): string[] {
+    if (this.websiteDomainMap.has(websiteId)) {
+      return this.getStaticDomains(websiteId);
+    }
+
+    const domains = this.staticDomainProvider?.(websiteId) ?? [];
+    this.registerStaticDomains(websiteId, domains);
+    return this.getStaticDomains(websiteId);
   }
 
   private async collectRuntimeDomains(

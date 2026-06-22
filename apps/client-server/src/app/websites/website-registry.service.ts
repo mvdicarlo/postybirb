@@ -3,6 +3,7 @@ import {
     Inject,
     Injectable,
     NotFoundException,
+    OnModuleInit,
     Optional,
 } from '@nestjs/common';
 import { Account, AccountRepository, WebsiteDataRepository } from '@postybirb/database';
@@ -17,7 +18,6 @@ import {
 } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/common';
 import { Class } from 'type-fest';
-import { ProxyModule } from '../proxy/proxy.module';
 import { WebsiteDomainService } from '../proxy/website-domain.service';
 import { WEBSITE_IMPLEMENTATIONS } from '../constants';
 import { WSGateway } from '../web-socket/web-socket-gateway';
@@ -36,7 +36,7 @@ type WebsiteInstances = Record<string, Record<string, UnknownWebsite>>;
  * Creates a new instance for each user account provided.
  */
 @Injectable()
-export class WebsiteRegistryService {
+export class WebsiteRegistryService implements OnModuleInit {
   private readonly logger = Logger();
 
   private readonly availableWebsites: Record<string, Class<UnknownWebsite>> =
@@ -82,7 +82,6 @@ export class WebsiteRegistryService {
       // );
       this.availableWebsites[website.prototype.decoratedProps.metadata.name] =
         website;
-      this.registerStaticDomainsForWebsite(website);
     });
 
     this.accountRepository = new AccountRepository();
@@ -100,6 +99,12 @@ export class WebsiteRegistryService {
         data: await this.getWebsiteInfo(),
       });
     }
+  }
+
+  onModuleInit(): void {
+    this.websiteDomainService.setStaticDomainProvider((websiteId) =>
+      this.collectStaticProxyDomains(websiteId),
+    );
   }
 
   /**
@@ -343,10 +348,11 @@ export class WebsiteRegistryService {
     return new DefaultWebsite(account, this.platform);
   }
 
-  private registerStaticDomainsForWebsite(
-    WebsiteCtor: Class<UnknownWebsite>,
-  ): void {
-    const websiteId = WebsiteCtor.prototype.decoratedProps.metadata.name;
+  private collectStaticProxyDomains(websiteId: string): string[] {
+    const WebsiteCtor = this.availableWebsites[websiteId];
+    if (!WebsiteCtor) {
+      return [];
+    }
 
     try {
       const probeAccount = new Account({
@@ -356,16 +362,13 @@ export class WebsiteRegistryService {
         groups: [],
       });
       const probe = new WebsiteCtor(probeAccount, this.platform);
-      this.websiteDomainService.registerStaticDomains(
-        websiteId,
-        probe.collectProxyDomains(),
-      );
+      return probe.collectProxyDomains();
     } catch (error) {
       this.logger
         .withError(error)
         .withMetadata({ websiteId })
-        .warn('Failed static domain registration');
-      this.websiteDomainService.registerStaticDomains(websiteId, []);
+        .warn('Failed static domain collection');
+      return [];
     }
   }
 }
