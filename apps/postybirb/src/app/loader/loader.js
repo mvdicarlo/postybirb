@@ -29,7 +29,7 @@ function show() {
     window
       .loadFile(path.join(__dirname, 'app', 'loader', 'loader.html'))
       .then(() => (window ? window.show() : undefined));
-    window.webContents.on('new-window', (event) => event.preventDefault());
+    window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
     window.on('closed', () => {
       if (window) {
         window.destroy();
