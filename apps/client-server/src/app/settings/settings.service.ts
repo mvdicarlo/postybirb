@@ -10,7 +10,6 @@ import { EntityId, SettingsConstants } from '@postybirb/types';
 import {
   PostyBirbEnvConfig,
   shouldBypassProxyForUrl,
-  StartupOptions,
   StartupOptionsManager,
 } from '@postybirb/utils/common';
 import { eq } from 'drizzle-orm';
@@ -180,27 +179,14 @@ export class SettingsService
       }
     }
 
-    const patch: Partial<StartupOptions> = {};
+    const { proxy, ...rest } = startUpOptions;
 
-    if (startUpOptions.proxy) {
-      await this.proxyService.saveConfiguration(startUpOptions.proxy);
-    }
-
-    if (startUpOptions.appDataPath !== undefined) {
-      patch.appDataPath = startUpOptions.appDataPath;
-    }
-    if (startUpOptions.port !== undefined) {
-      patch.port = startUpOptions.port;
-    }
-    if (startUpOptions.spellchecker !== undefined) {
-      patch.spellchecker = startUpOptions.spellchecker;
-    }
-    if (startUpOptions.startAppOnSystemStartup !== undefined) {
-      patch.startAppOnSystemStartup = startUpOptions.startAppOnSystemStartup;
+    if (proxy) {
+      await this.proxyService.saveConfiguration(proxy);
     }
 
-    if (Object.keys(patch).length > 0) {
-      StartupOptionsManager.set(patch);
+    if (Object.keys(rest).length > 0) {
+      StartupOptionsManager.set(rest);
     }
   }
 
