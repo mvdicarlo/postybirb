@@ -692,11 +692,15 @@ function ProxySettingsForm({
                         label={<Trans>Proxy type</Trans>}
                         data={proxyTypeOptions}
                         value={entry.type}
-                        onChange={(value) =>
+                        onChange={(value) => {
+                          const type = (value as ProxyType) ?? 'http';
                           updatePoolEntry(entry.id, {
-                            type: (value as ProxyType) ?? 'http',
-                          })
-                        }
+                            type,
+                            ...(type === 'socks5'
+                              ? { username: '', password: '' }
+                              : {}),
+                          });
+                        }}
                       />
 
                       <Group grow align="flex-start">
@@ -728,45 +732,47 @@ function ProxySettingsForm({
                         />
                       </Group>
 
-                      <Group grow align="flex-start">
-                        <TextInput
-                          label={<Trans>Username (optional)</Trans>}
-                          value={entry.username}
-                          onChange={(event) =>
-                            updatePoolEntry(entry.id, {
-                              username: event.currentTarget.value,
-                            })
-                          }
-                        />
-                        <TextInput
-                          label={<Trans>Password (optional)</Trans>}
-                          type={showPassword ? 'text' : 'password'}
-                          value={entry.password}
-                          onChange={(event) =>
-                            updatePoolEntry(entry.id, {
-                              password: event.currentTarget.value,
-                            })
-                          }
-                          rightSection={
-                            <Button
-                              variant="subtle"
-                              size="compact-sm"
-                              onClick={() =>
-                                setShowPasswordById((current) => ({
-                                  ...current,
-                                  [entry.id]: !showPassword,
-                                }))
-                              }
-                            >
-                              {showPassword ? (
-                                <IconEyeOff size={16} />
-                              ) : (
-                                <IconEye size={16} />
-                              )}
-                            </Button>
-                          }
-                        />
-                      </Group>
+                      {entry.type === 'http' ? (
+                        <Group grow align="flex-start">
+                          <TextInput
+                            label={<Trans>Username (optional)</Trans>}
+                            value={entry.username}
+                            onChange={(event) =>
+                              updatePoolEntry(entry.id, {
+                                username: event.currentTarget.value,
+                              })
+                            }
+                          />
+                          <TextInput
+                            label={<Trans>Password (optional)</Trans>}
+                            type={showPassword ? 'text' : 'password'}
+                            value={entry.password}
+                            onChange={(event) =>
+                              updatePoolEntry(entry.id, {
+                                password: event.currentTarget.value,
+                              })
+                            }
+                            rightSection={
+                              <Button
+                                variant="subtle"
+                                size="compact-sm"
+                                onClick={() =>
+                                  setShowPasswordById((current) => ({
+                                    ...current,
+                                    [entry.id]: !showPassword,
+                                  }))
+                                }
+                              >
+                                {showPassword ? (
+                                  <IconEyeOff size={16} />
+                                ) : (
+                                  <IconEye size={16} />
+                                )}
+                              </Button>
+                            }
+                          />
+                        </Group>
+                      ) : null}
 
                       <Button
                         variant="outline"
