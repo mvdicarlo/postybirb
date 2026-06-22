@@ -3,7 +3,7 @@ import { SharpInstanceManager } from './sharp-instance-manager';
 
 /**
  * Global module providing the SharpInstanceManager to all modules.
- * Sharp image processing is isolated in worker threads to protect
+ * Sharp image processing is isolated in a worker process to protect
  * the main process from native libvips crashes.
  */
 @Global()
