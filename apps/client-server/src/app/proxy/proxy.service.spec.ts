@@ -2,23 +2,25 @@ import { mkdtempSync, readFileSync, rmSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { BadRequestException } from '@nestjs/common';
-import {
-  applyGlobalProxyConfig,
-  invalidateAppliedGlobalProxyFingerprint,
-  probePoolEntryConnection,
-} from '@postybirb/http';
+import { applyProxy } from '@postybirb/http';
 import { StartupOptionsManager } from '@postybirb/utils/common';
 import { ProxyService } from './proxy.service';
+import { probeProxyPoolEntry } from './proxy-pool-probe';
 
 jest.mock('@postybirb/http', () => ({
-  probePoolEntryConnection: jest.fn(),
-  applyGlobalProxyConfig: jest.fn().mockResolvedValue(undefined),
-  invalidateAppliedGlobalProxyFingerprint: jest.fn(),
+  applyProxy: jest.fn().mockResolvedValue(undefined),
+}));
+
+jest.mock('./proxy-pool-probe', () => ({
+  probeProxyPoolEntry: jest.fn(),
 }));
 
 describe('ProxyService', () => {
   let service: ProxyService;
   let tmpDir: string;
+  const accountRepository = {
+    find: jest.fn().mockResolvedValue([]),
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -43,7 +45,7 @@ describe('ProxyService', () => {
         routing: {},
       },
     });
-    service = new ProxyService();
+    service = new ProxyService(accountRepository as never);
   });
 
   afterEach(() => {
@@ -51,7 +53,7 @@ describe('ProxyService', () => {
   });
 
   it('returns auth failure when probe receives HTTP 407', async () => {
-    jest.mocked(probePoolEntryConnection).mockResolvedValue({ statusCode: 407 });
+    jest.mocked(probeProxyPoolEntry).mockResolvedValue({ statusCode: 407 });
 
     await expect(
       service.testPoolEntryConnection({
@@ -69,7 +71,7 @@ describe('ProxyService', () => {
   });
 
   it('preserves saved password when the client omits it on test', async () => {
-    jest.mocked(probePoolEntryConnection).mockResolvedValue({ statusCode: 204 });
+    jest.mocked(probeProxyPoolEntry).mockResolvedValue({ statusCode: 204 });
 
     await service.testPoolEntryConnection({
       id: 'pool-1',
@@ -80,7 +82,7 @@ describe('ProxyService', () => {
       password: '',
     });
 
-    expect(probePoolEntryConnection).toHaveBeenCalledWith(
+    expect(probeProxyPoolEntry).toHaveBeenCalledWith(
       expect.objectContaining({ password: 'saved-pass' }),
       'https://www.google.com/generate_204',
       expect.objectContaining({ method: 'HEAD' }),
@@ -107,7 +109,7 @@ describe('ProxyService', () => {
     ).rejects.toBeInstanceOf(BadRequestException);
   });
 
-  it('saveConfiguration preserves saved pool passwords', async () => {
+  it('saveConfiguration persists proxy without applying in test env', async () => {
     await service.saveConfiguration({
       mode: 'pac_routing',
       pool: [
@@ -128,7 +130,30 @@ describe('ProxyService', () => {
     );
 
     expect(saved.proxy.pool[0].password).toBe('saved-pass');
-    expect(invalidateAppliedGlobalProxyFingerprint).not.toHaveBeenCalled();
-    expect(applyGlobalProxyConfig).not.toHaveBeenCalled();
+    expect(applyProxy).not.toHaveBeenCalled();
+  });
+
+  it('saveConfiguration generates pacAccessToken on first PAC routing save', async () => {
+    await service.saveConfiguration({
+      mode: 'pac_routing',
+      pool: [
+        {
+          id: 'pool-1',
+          type: 'http',
+          host: '127.0.0.1',
+          port: '8080',
+          username: '',
+          password: '',
+        },
+      ],
+      routing: { telegram: 'system' },
+    });
+
+    const saved = JSON.parse(
+      readFileSync(join(tmpDir, 'startup.json'), 'utf-8'),
+    );
+
+    expect(saved.proxy.pacAccessToken).toEqual(expect.any(String));
+    expect(saved.proxy.pacAccessToken.length).toBeGreaterThanOrEqual(32);
   });
 });

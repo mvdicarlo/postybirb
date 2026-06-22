@@ -1,9 +1,7 @@
+import { randomBytes } from 'node:crypto';
 import { BadRequestException, Injectable } from '@nestjs/common';
-import {
-  applyGlobalProxyConfig,
-  invalidateAppliedGlobalProxyFingerprint,
-  probePoolEntryConnection,
-} from '@postybirb/http';
+import { AccountRepository, AccountSchema } from '@postybirb/database';
+import { applyProxy } from '@postybirb/http';
 import { Logger } from '@postybirb/logger';
 import {
   isProxyConfiguration,
@@ -12,15 +10,19 @@ import {
   prepareProxyConfiguration,
   ProxyConfiguration,
   validateProxyConfiguration,
+  NULL_ACCOUNT_ID,
 } from '@postybirb/types';
 import {
   toEnabledProxyProfile,
   buildProxyRules,
   IsTestEnvironment,
   StartupOptionsManager,
+  collectManagedPartitionIds,
 } from '@postybirb/utils/common';
+import { ne } from 'drizzle-orm';
 import { UpdateProxyConfigurationDto } from './dtos/proxy-configuration.dto';
 import { TestProxyPoolEntryDto } from './dtos/proxy-pool-entry.dto';
+import { probeProxyPoolEntry } from './proxy-pool-probe';
 
 export type ProxyConnectionTestResult = {
   success: boolean;
@@ -31,6 +33,22 @@ export type ProxyConnectionTestResult = {
 export class ProxyService {
   private readonly logger = Logger('ProxyService');
 
+  constructor(private readonly accountRepository: AccountRepository) {}
+
+  /** Applies persisted proxy settings to all Electron sessions. */
+  async apply(): Promise<void> {
+    if (IsTestEnvironment()) {
+      return;
+    }
+
+    await applyProxy(undefined, await this.loadPartitionIds());
+  }
+
+  /** Re-applies proxy after a new account partition is created. */
+  async onAccountCreated(): Promise<void> {
+    await this.apply();
+  }
+
   /**
    * Validates, merges secrets, persists proxy settings, and applies them globally.
    */
@@ -40,7 +58,21 @@ export class ProxyService {
     }
 
     const current = StartupOptionsManager.get().proxy;
-    const proxyPatch = this.buildProxyPatch(current, incoming);
+    let proxyPatch = this.buildProxyPatch(current, incoming);
+
+    if (
+      proxyPatch.mode === 'pac_routing' &&
+      !proxyPatch.pacAccessToken?.trim()
+    ) {
+      proxyPatch = {
+        ...proxyPatch,
+        pacAccessToken: randomBytes(24).toString('hex'),
+      };
+      this.logger
+        .withMetadata({ mode: proxyPatch.mode })
+        .info('Generated pacAccessToken for PAC routing mode');
+    }
+
     const prepared = prepareProxyConfiguration({
       ...current,
       ...proxyPatch,
@@ -55,11 +87,7 @@ export class ProxyService {
     }
 
     StartupOptionsManager.set({ proxy: proxyPatch });
-
-    if (!IsTestEnvironment()) {
-      invalidateAppliedGlobalProxyFingerprint();
-      await applyGlobalProxyConfig(undefined, { force: true });
-    }
+    await this.apply();
   }
 
   /**
@@ -102,7 +130,7 @@ export class ProxyService {
     const testUrl = 'https://www.google.com/generate_204';
 
     try {
-      const { statusCode } = await probePoolEntryConnection(entry, testUrl, {
+      const { statusCode } = await probeProxyPoolEntry(entry, testUrl, {
         method: 'HEAD',
         timeoutMs: 15_000,
       });
@@ -151,6 +179,19 @@ export class ProxyService {
         message: 'Could not reach the test URL through the configured proxy',
       };
     }
+  }
+
+  private async loadPartitionIds(): Promise<string[]> {
+    const accounts = await this.accountRepository.find({
+      where: ne(AccountSchema.id, NULL_ACCOUNT_ID),
+    });
+
+    return collectManagedPartitionIds(
+      accounts.map((account) => ({
+        partitionId: account.id,
+        websiteId: account.website,
+      })),
+    );
   }
 
   private buildProxyPatch(
