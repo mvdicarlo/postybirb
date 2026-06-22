@@ -14,7 +14,7 @@ import {
   validateProxyConfiguration,
 } from '@postybirb/types';
 import {
-  asEnabledProxyProfile,
+  toEnabledProxyProfile,
   buildProxyRules,
   IsTestEnvironment,
   StartupOptionsManager,
@@ -92,7 +92,7 @@ export class ProxyService {
       };
     }
 
-    if (!buildProxyRules(asEnabledProxyProfile(entry))) {
+    if (!buildProxyRules(toEnabledProxyProfile(entry))) {
       return {
         success: false,
         message: 'Proxy host and port are required',

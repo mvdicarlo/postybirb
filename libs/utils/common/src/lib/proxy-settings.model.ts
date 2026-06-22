@@ -24,7 +24,6 @@ import type {
   ProxyConfiguration,
   ProxyPoolEntry,
   ProxyProfile,
-  ProxyType,
 } from '@postybirb/types';
 import {
   isProxyConfiguration,
@@ -35,27 +34,6 @@ export type ShouldBypassProxyOptions = {
   remoteHost?: string;
   appPort?: string;
 };
-
-export function normalizeProxyProfile(
-  profile?: Partial<ProxyProfile>,
-): ProxyProfile {
-  const type: ProxyType =
-    profile?.type === 'socks5' || profile?.type === 'http'
-      ? profile.type
-      : 'http';
-
-  return {
-    id: profile?.id?.trim() ?? '',
-    enabled: profile?.enabled ?? false,
-    label: profile?.label?.trim() || undefined,
-    type,
-    host: profile?.host?.trim() ?? '',
-    port: profile?.port?.trim() ?? '',
-    username: profile?.username?.trim() ?? '',
-    password: profile?.password ?? '',
-    websites: Array.isArray(profile?.websites) ? [...profile.websites] : [],
-  };
-}
 
 export function buildProxyRules(profile: ProxyProfile): string {
   if (!profile.enabled || !profile.host || !profile.port) {
@@ -92,11 +70,10 @@ export function buildSessionProxyRules(profile: ProxyProfile): string {
   return `http=${profile.host}:${profile.port};https=${profile.host}:${profile.port}`;
 }
 
-export function asEnabledProxyProfile(entry: ProxyPoolEntry): ProxyProfile {
+export function toEnabledProxyProfile(entry: ProxyPoolEntry): ProxyProfile {
   return {
     ...entry,
     enabled: true,
-    websites: [],
   };
 }
 

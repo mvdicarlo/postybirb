@@ -15,13 +15,11 @@ import {
 import {
   BrowserSessionRoute,
   ProxyRequestContext,
-  ProxyRoute,
   resolveBrowserSessionRoute,
-  resolveHttpRoute,
 } from './proxy-route';
 
 export type { PartitionEntry } from './proxy-partitions';
-export type { ProxyRequestContext, ProxyRoute } from './proxy-route';
+export type { ProxyRequestContext } from './proxy-route';
 
 export {
   applyGlobalProxyConfig,
@@ -37,12 +35,6 @@ export {
   resetGlobalProxyStateForTests,
   setPartitionIdProvider,
 };
-
-export function resolveHttpRequestRoute(
-  context: ProxyRequestContext,
-): ProxyRoute {
-  return resolveHttpRoute(context);
-}
 
 export function resolveBrowserProxySession(
   context: ProxyRequestContext,

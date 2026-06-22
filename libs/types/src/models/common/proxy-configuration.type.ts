@@ -24,7 +24,6 @@ export type ProxyConfiguration = {
 
 export type ProxyProfile = ProxyPoolEntry & {
   enabled: boolean;
-  websites: string[];
 };
 
 export type ProxyValidationField =

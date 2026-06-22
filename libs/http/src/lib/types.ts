@@ -24,12 +24,6 @@ export interface HttpOptions {
     | readonly boolean[]
   >;
   partition?: string | undefined;
-  /**
-   * Website whose proxy profile applies when partition is omitted.
-   * Http routes through Node proxy agents; BrowserWindow uses a headless
-   * Chromium partition (see proxy-route.ts).
-   */
-  websiteId?: string;
   options?: HttpRequestOptions;
 }
 

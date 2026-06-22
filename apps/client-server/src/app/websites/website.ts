@@ -14,7 +14,6 @@ import {
   normalizeDomain,
 } from '@postybirb/utils/common';
 import { Mutex } from 'async-mutex';
-import { createWebsiteScopedPlatform } from '../platform/website-scoped-platform';
 import { SubmissionValidator } from './commons/validator';
 import { WebsiteDecoratorProps } from './decorators/website-decorator-props';
 import { DataPropertyAccessibility } from './models/data-property-accessibility';
@@ -163,17 +162,16 @@ export abstract class Website<
 
   constructor(userAccount: Account, platform: PlatformService) {
     this.account = userAccount;
-    this.platform = createWebsiteScopedPlatform(platform, userAccount.website);
+    this.platform = platform;
     this.logger = Logger(this.decoratedProps.metadata.displayName);
     this.websiteDataStore = new WebsiteDataManager(userAccount);
     this.loginState = new LoginState();
   }
 
   /**
-   * Platform services made available to the website (cookies, headless
-   * browser, app metadata, notifications, network). Bundled into a single
-   * facade so adding new platform capabilities does not change every
-   * subclass constructor.
+   * Platform services made available to the website (HTTP, cookies, headless
+   * browser, app metadata, notifications). Bundled into a single facade so
+   * adding new platform capabilities does not change every subclass constructor.
    */
   public readonly platform: PlatformService;
 

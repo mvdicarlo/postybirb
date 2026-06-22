@@ -25,10 +25,7 @@ export {
 export { resolveTelegramSocksProxy } from './telegram-proxy';
 export type { TelegramSocksProxySettings } from './telegram-proxy';
 export { isProxiedResolution } from '@postybirb/utils/common';
-export {
-  getHeadlessWebsitePartitionId,
-  getInstagramOAuthPartitionId,
-} from './proxy-partitions';
+export { getInstagramOAuthPartitionId } from './proxy-partitions';
 
 type FetchInput = Request | URL | string;
 type ParsedProxyEntry = {

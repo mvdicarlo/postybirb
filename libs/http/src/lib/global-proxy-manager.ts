@@ -15,7 +15,7 @@ import type {
   ProxyProfile,
 } from '@postybirb/types';
 import {
-  asEnabledProxyProfile,
+  toEnabledProxyProfile,
   buildProxyAgentUrl,
   buildSessionProxyRules,
   buildChromiumProxyBypassRules,
@@ -108,7 +108,7 @@ function resolveSessionProxyConfig(config: ProxyConfiguration): ProxyConfig {
         return { mode: 'system' };
       }
 
-      const proxyRules = buildSessionProxyRules(asEnabledProxyProfile(entry));
+      const proxyRules = buildSessionProxyRules(toEnabledProxyProfile(entry));
       if (!proxyRules) {
         return { mode: 'system' };
       }
@@ -233,23 +233,6 @@ async function applyAppLevelProxy(config: ProxyConfig): Promise<void> {
   }
 }
 
-function collectWebsiteIdsForPartitionRefresh(
-  config: ProxyConfiguration,
-  accountEntries: PartitionEntry[],
-): string[] {
-  const websiteIds = new Set<string>();
-
-  for (const entry of accountEntries) {
-    websiteIds.add(entry.websiteId);
-  }
-
-  for (const websiteId of Object.keys(config.routing)) {
-    websiteIds.add(websiteId);
-  }
-
-  return [...websiteIds];
-}
-
 function ensureAppProxyLoginHandler(): void {
   if (appProxyLoginHandlerRegistered || typeof app?.on !== 'function') {
     return;
@@ -323,13 +306,8 @@ async function getAccountPartitionEntries(): Promise<PartitionEntry[]> {
 export async function refreshAllPartitionSessions(
   accountEntries: PartitionEntry[],
   proxyConfig: ProxyConfig,
-  config: ProxyConfiguration,
 ): Promise<void> {
-  const websiteIds = collectWebsiteIdsForPartitionRefresh(
-    config,
-    accountEntries,
-  );
-  const partitionIds = collectManagedPartitionIds(accountEntries, websiteIds);
+  const partitionIds = collectManagedPartitionIds(accountEntries);
 
   await Promise.all(
     partitionIds.map(async (partitionId) => {
@@ -373,7 +351,6 @@ export async function applyGlobalProxyConfig(
       await refreshAllPartitionSessions(
         accountEntries,
         materializedProxyConfigCache,
-        resolvedConfiguration,
       );
     }
 
@@ -391,10 +368,7 @@ export async function applyGlobalProxyConfig(
     .withMetadata({
       mode: resolvedConfiguration.mode,
       poolSize: resolvedConfiguration.pool.length,
-      partitionCount: collectManagedPartitionIds(
-        accountEntries,
-        collectWebsiteIdsForPartitionRefresh(resolvedConfiguration, accountEntries),
-      ).length,
+      partitionCount: collectManagedPartitionIds(accountEntries).length,
       pacMaterialized:
         resolvedConfiguration.mode === 'pac_routing' &&
         typeof proxyConfig.pacScript === 'string' &&
@@ -408,11 +382,7 @@ export async function applyGlobalProxyConfig(
 
   await applyProxyConfigToSession(session.defaultSession, proxyConfig);
   await applyAppLevelProxy(proxyConfig);
-  await refreshAllPartitionSessions(
-    accountEntries,
-    proxyConfig,
-    resolvedConfiguration,
-  );
+  await refreshAllPartitionSessions(accountEntries, proxyConfig);
 
   appliedGlobalFingerprint = fingerprint;
   await notifyProxyConfigurationApplied();
@@ -427,7 +397,7 @@ export async function probePoolEntryConnection(
   url: string,
   options: ProbeOptions = {},
 ): Promise<ProbeResult> {
-  const profile = asEnabledProxyProfile(entry);
+  const profile = toEnabledProxyProfile(entry);
   const agentUrl = buildProxyAgentUrl(profile);
   if (!agentUrl) {
     throw new Error('Proxy host and port are required');

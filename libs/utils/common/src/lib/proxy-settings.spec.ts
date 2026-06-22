@@ -7,46 +7,31 @@ import {
   isProxiedResolution,
   isProxyConfiguration,
   prepareProxyConfiguration,
-  normalizeProxyProfile,
   shouldBypassProxyForUrl,
+  toEnabledProxyProfile,
   validateProxyConfiguration,
 } from './proxy-settings';
 
-describe('normalizeProxyProfile', () => {
-  it('trims host/port and defaults type to http', () => {
+describe('toEnabledProxyProfile', () => {
+  it('marks pool entries as enabled', () => {
     expect(
-      normalizeProxyProfile({
-        id: ' profile-1 ',
-        enabled: true,
-        host: '  proxy.example.com ',
-        port: ' 8080 ',
-        type: undefined,
-        websites: undefined,
+      toEnabledProxyProfile({
+        id: 'pool-1',
+        type: 'http',
+        host: 'proxy.example.com',
+        port: '8080',
+        username: '',
+        password: '',
       }),
     ).toEqual({
-      id: 'profile-1',
-      enabled: true,
-      label: undefined,
+      id: 'pool-1',
       type: 'http',
       host: 'proxy.example.com',
       port: '8080',
       username: '',
       password: '',
-      websites: [],
+      enabled: true,
     });
-  });
-
-  it('preserves socks5 type', () => {
-    expect(
-      normalizeProxyProfile({
-        id: 'socks',
-        enabled: true,
-        type: 'socks5',
-        host: '127.0.0.1',
-        port: '7890',
-        websites: ['pixiv'],
-      }).type,
-    ).toBe('socks5');
   });
 });
 
@@ -61,7 +46,6 @@ describe('buildProxyRules', () => {
         port: '8080',
         username: 'user',
         password: 'pass',
-        websites: [],
       }),
     ).toBe('http://user:pass@proxy.example.com:8080');
   });
@@ -76,7 +60,6 @@ describe('buildProxyRules', () => {
         port: '7890',
         username: '',
         password: '',
-        websites: ['telegram'],
       }),
     ).toBe('socks5://127.0.0.1:7890');
   });
@@ -91,7 +74,6 @@ describe('buildProxyRules', () => {
         port: '7890',
         username: 'user',
         password: 'pass',
-        websites: [],
       }),
     ).toBe('socks5://127.0.0.1:7890');
   });
@@ -106,7 +88,6 @@ describe('buildProxyRules', () => {
         port: '8080',
         username: '',
         password: '',
-        websites: [],
       }),
     ).toBe('');
   });
@@ -123,7 +104,6 @@ describe('buildSessionProxyRules', () => {
         port: '8080',
         username: 'user',
         password: 'pass',
-        websites: [],
       }),
     ).toBe('http=proxy.example.com:8080;https=proxy.example.com:8080');
   });
@@ -147,7 +127,6 @@ describe('createProxyAgent', () => {
           port: '8080',
           username: '',
           password: '',
-          websites: [],
         },
         true,
       ),
@@ -165,7 +144,6 @@ describe('createProxyAgent', () => {
           port: '8080',
           username: '',
           password: '',
-          websites: [],
         },
         true,
       ),
