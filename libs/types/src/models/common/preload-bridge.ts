@@ -6,8 +6,7 @@ export interface PreloadBridge {
   pickDirectory?(defaultPath?: string): Promise<string | undefined>;
   openExternalLink(url: string): void;
   getCookiesForAccount(accountId: string): Promise<string>;
-  applyProxyConfig(): Promise<void>;
-  /** Subscribe to proxy re-applies after settings save (returns unsubscribe). */
+  /** Subscribe to proxy apply completion (returns unsubscribe). */
   onProxyConfigApplied(callback: () => void): () => void;
   getLocalStorageForAccount(
     accountId: string,

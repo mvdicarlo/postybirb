@@ -3,6 +3,5 @@
  */
 
 export * from './tag-search';
-export * from './use-global-proxy-ready';
 export * from './use-keybindings';
 export * from './use-locale';

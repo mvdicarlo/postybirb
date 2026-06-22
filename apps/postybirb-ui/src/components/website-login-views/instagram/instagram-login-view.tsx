@@ -24,7 +24,6 @@ import {
 } from '@tabler/icons-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import websitesApi from '../../../api/websites.api';
-import { useGlobalProxyReady } from '../../../hooks';
 import { showErrorNotification, showSuccessNotification } from '../../../utils';
 import type { WebviewTag } from '../../sections/accounts-section/webview-tag';
 import {
@@ -66,8 +65,6 @@ export default function InstagramLoginView(
   const keysReady = appId.trim().length > 0 && appSecret.trim().length > 0;
 
   const redirectUri = getInstagramRedirectUri();
-
-  const oauthProxyReady = useGlobalProxyReady(Boolean(authUrl));
 
   // Reset all state when switching between accounts
   const prevIdRef = useRef(id);
@@ -432,7 +429,7 @@ export default function InstagramLoginView(
                 </Paper>
               )}
 
-              {authUrl && oauthProxyReady && (
+              {authUrl && (
                 <Box
                   style={{
                     height: 500,

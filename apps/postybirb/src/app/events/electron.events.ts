@@ -3,42 +3,42 @@
  * between the frontend to the electron backend.
  */
 
-import {
-  applyGlobalProxyConfig,
-  invalidateAppliedGlobalProxyFingerprint,
-  onProxyConfigurationApplied,
-} from '@postybirb/http';
+import { onProxyConfigurationApplied } from '@postybirb/http';
 import { getPartitionKey } from '@postybirb/utils/common';
 import { app, BrowserWindow, dialog, ipcMain, session, shell } from 'electron';
 
-onProxyConfigurationApplied(() => {
-  for (const window of BrowserWindow.getAllWindows()) {
-    if (window.isDestroyed()) {
-      continue;
-    }
+let proxyBroadcastRegistered = false;
 
-    window.webContents.send('proxy-config-applied');
+function registerProxyConfigBroadcast(): void {
+  if (proxyBroadcastRegistered) {
+    return;
   }
-});
+
+  proxyBroadcastRegistered = true;
+  onProxyConfigurationApplied(() => {
+    for (const window of BrowserWindow.getAllWindows()) {
+      if (window.isDestroyed()) {
+        continue;
+      }
+
+      window.webContents.send('proxy-config-applied');
+    }
+  });
+}
 
 export default class ElectronEvents {
   static bootstrapElectronEvents(): Electron.IpcMain {
+    registerProxyConfigBroadcast();
     return ipcMain;
   }
 }
 
 // Return cookies for account, bundled as base64
 ipcMain.handle('get-cookies-for-account', async (event, accountId: string) => {
-  await applyGlobalProxyConfig();
   const sess = session.fromPartition(`persist:${accountId}`);
   const cookies = await sess.cookies.get({});
 
   return Buffer.from(JSON.stringify(cookies)).toString('base64');
-});
-
-ipcMain.handle('apply-proxy-config', async () => {
-  invalidateAppliedGlobalProxyFingerprint();
-  await applyGlobalProxyConfig(undefined, { force: true });
 });
 
 ipcMain.handle(
@@ -157,3 +157,5 @@ ipcMain.handle('set-spellchecker-words', async (event, words) => {
     }
   }
 });
+
+registerProxyConfigBroadcast();

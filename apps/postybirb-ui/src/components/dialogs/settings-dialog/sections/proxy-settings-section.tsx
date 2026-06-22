@@ -41,7 +41,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from 'react-query';
 import proxyApi from '../../../../api/proxy.api';
 import settingsApi from '../../../../api/settings.api';
-import { resetGlobalProxyReadyCache } from '../../../../hooks/use-global-proxy-ready';
 import { useAccounts } from '../../../../stores/entity/account-store';
 import { useWebsites } from '../../../../stores/entity/website-store';
 import { isRemote } from '../../../../transports/http-client';
@@ -533,8 +532,6 @@ function ProxySettingsForm({
         await settingsApi.updateLocalSystemStartupSettings({
           proxy: proxyPatch,
         });
-        resetGlobalProxyReadyCache();
-        await window.electron?.applyProxyConfig();
       } else {
         await settingsApi.updateSystemStartupSettings({
           proxy: proxyPatch,

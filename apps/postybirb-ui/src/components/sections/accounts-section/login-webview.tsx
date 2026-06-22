@@ -24,7 +24,6 @@ import {
 } from '@tabler/icons-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import accountApi from '../../../api/account.api';
-import { useGlobalProxyReady } from '../../../hooks';
 import remoteApi from '../../../api/remote.api';
 import { useAccount } from '../../../stores';
 import {
@@ -65,7 +64,6 @@ function isWebviewDomReady(webview: WebviewTag): boolean {
 export function LoginWebview({ src, accountId }: LoginWebviewProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [currentUrl, setCurrentUrl] = useState(src);
-  const proxyReady = useGlobalProxyReady();
   const webviewRef = useRef<WebviewTag | null>(null);
 
   // Subscribe to account state for real-time login status updates
@@ -144,7 +142,7 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
   useEffect(() => {
     const unsubscribe = window.electron?.onProxyConfigApplied?.(() => {
       const webview = webviewRef.current;
-      if (!webview || !proxyReady) {
+      if (!webview) {
         return;
       }
 
@@ -158,14 +156,10 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
     return () => {
       unsubscribe?.();
     };
-  }, [proxyReady]);
+  }, []);
 
   // Handle webview events
   useEffect(() => {
-    if (!proxyReady) {
-      return undefined;
-    }
-
     const webview = webviewRef.current;
     if (!webview) {
       return undefined;
@@ -268,7 +262,7 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
         triggerLoginCheck(true);
       }
     };
-  }, [triggerLoginCheck, accountId, proxyReady]);
+  }, [triggerLoginCheck, accountId]);
 
   // Handle refresh button click
   const handleRefresh = () => {
@@ -299,21 +293,6 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
 
   if (resetWebview) {
     return null;
-  }
-
-  if (!proxyReady) {
-    return (
-      <Box
-        h="100%"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <Loader size="lg" />
-      </Box>
-    );
   }
 
   return (

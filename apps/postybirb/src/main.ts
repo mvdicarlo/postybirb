@@ -6,8 +6,6 @@ import './bootstrap-electron-config';
 import '@postybirb/http';
 
 import {
-  applyGlobalProxyConfig,
-  invalidateAppliedGlobalProxyFingerprint,
   trustPostyBirbLocalCertificate,
 } from '@postybirb/http';
 import { INestApplication } from '@nestjs/common';
@@ -280,8 +278,11 @@ async function start() {
 
     // bootstrap app
     const nestApp = await bootstrapClientServerWithTimeout();
-    invalidateAppliedGlobalProxyFingerprint();
-    await applyGlobalProxyConfig();
+    const { ProxyService } = await import(
+      'apps/client-server/src/app/proxy/proxy.service'
+    );
+    await nestApp.get(ProxyService).apply();
+
     if (PostyBirbEnvConfig.headless) {
       // eslint-disable-next-line no-console
       console.log('[PostyBirb] Running in headless mode (no UI)');

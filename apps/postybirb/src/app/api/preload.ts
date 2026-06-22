@@ -3,6 +3,16 @@ import { contextBridge, ipcRenderer } from 'electron';
 
 // Implementation at electron.events.ts, typings for ui at main.tsx
 
+let proxyConfigApplied = false;
+const proxyConfigAppliedListeners = new Set<() => void>();
+
+ipcRenderer.on('proxy-config-applied', () => {
+  proxyConfigApplied = true;
+  for (const listener of proxyConfigAppliedListeners) {
+    listener();
+  }
+});
+
 contextBridge.exposeInMainWorld('electron', {
   pickDirectory: (defaultPath) =>
     ipcRenderer.invoke('pick-directory', defaultPath),
@@ -18,12 +28,15 @@ contextBridge.exposeInMainWorld('electron', {
   getRemoteConfig: () => JSON.parse(process.env.remote || '{}'),
   getCookiesForAccount: (accountId: string) =>
     ipcRenderer.invoke('get-cookies-for-account', accountId),
-  applyProxyConfig: () => ipcRenderer.invoke('apply-proxy-config'),
   onProxyConfigApplied: (callback: () => void) => {
-    const listener = () => callback();
-    ipcRenderer.on('proxy-config-applied', listener);
+    if (proxyConfigApplied) {
+      callback();
+    } else {
+      proxyConfigAppliedListeners.add(callback);
+    }
+
     return () => {
-      ipcRenderer.removeListener('proxy-config-applied', listener);
+      proxyConfigAppliedListeners.delete(callback);
     };
   },
   getLocalStorageForAccount: (accountId: string, url: string) =>
