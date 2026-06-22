@@ -12,7 +12,7 @@ import {
   validateProxyConfiguration,
   cloneProxyConfiguration,
 } from '@postybirb/types';
-import { Trans } from '@lingui/react/macro';
+import { Trans, useLingui } from '@lingui/react/macro';
 import {
   ActionIcon,
   Alert,
@@ -49,18 +49,6 @@ import {
   showConnectionSuccessNotification,
 } from '../../../../utils/notifications';
 
-const PROXY_TYPE_OPTIONS: { value: ProxyType; label: string }[] = [
-  { value: 'http', label: 'HTTP(S)' },
-  { value: 'socks5', label: 'SOCKS5' },
-];
-
-const PROXY_MODE_OPTIONS: { value: ProxyMode; label: string }[] = [
-  { value: 'system', label: 'System proxy' },
-  { value: 'direct', label: 'Direct (no proxy)' },
-  { value: 'fixed_servers', label: 'Fixed proxy (all traffic)' },
-  { value: 'pac_routing', label: 'Per-website routing (PAC)' },
-];
-
 function createEmptyPoolEntry(): ProxyPoolEntry {
   return {
     id: crypto.randomUUID(),
@@ -92,12 +80,16 @@ function isValidPoolEntry(entry: ProxyPoolEntry): boolean {
   );
 }
 
-function poolEntryLabel(entry: ProxyPoolEntry, index: number): string {
+function poolEntryLabel(
+  entry: ProxyPoolEntry,
+  index: number,
+  labelProxy: (index: number) => string,
+): string {
   if (entry.label?.trim()) {
     return entry.label.trim();
   }
 
-  return `Proxy ${index + 1}`;
+  return labelProxy(index);
 }
 
 function resolveRoutingChoice(
@@ -142,6 +134,7 @@ function serializeProxyForCompare(config: ProxyConfiguration): string {
 
 export function ProxySettingsSection() {
   const remoteMode = isRemote();
+  const { t } = useLingui();
 
   const {
     data: serverStartupSettings,
@@ -197,8 +190,8 @@ export function ProxySettingsSection() {
           setScope(nextScope);
         }}
         data={[
-          { value: 'client', label: 'Client (this device)' },
-          { value: 'server', label: 'Server (remote host)' },
+          { value: 'client', label: t`Client (this device)` },
+          { value: 'server', label: t`Server (remote host)` },
         ]}
       />
 
@@ -236,6 +229,7 @@ function ProxySettingsForm({
   scope: ProxySettingsScope | null;
   refetch: () => Promise<unknown>;
 }) {
+  const { t } = useLingui();
   const websites = useWebsites();
   const accounts = useAccounts();
   const [config, setConfig] = useState<ProxyConfiguration>(() =>
@@ -275,6 +269,38 @@ function ProxySettingsForm({
       .sort((left, right) => left.displayName.localeCompare(right.displayName));
   }, [accounts, websites]);
 
+  const proxyTypeOptions = useMemo(
+    () => [
+      { value: 'http' as ProxyType, label: t`HTTP(S)` },
+      { value: 'socks5' as ProxyType, label: t`SOCKS5` },
+    ],
+    [t],
+  );
+
+  const proxyModeOptions = useMemo(
+    () => [
+      { value: 'system' as ProxyMode, label: t`System proxy` },
+      { value: 'direct' as ProxyMode, label: t`Direct (no proxy)` },
+      {
+        value: 'fixed_servers' as ProxyMode,
+        label: t`Fixed proxy (all traffic)`,
+      },
+      {
+        value: 'pac_routing' as ProxyMode,
+        label: t`Per-website routing (PAC)`,
+      },
+    ],
+    [t],
+  );
+
+  const labelProxyEntry = useMemo(
+    () => (index: number) => {
+      const number = index + 1;
+      return t`Proxy ${number}`;
+    },
+    [t],
+  );
+
   const validPoolIds = useMemo(
     () =>
       new Set(
@@ -287,19 +313,19 @@ function ProxySettingsForm({
 
   const routingChoiceOptions = useMemo(() => {
     const options = [
-      { value: 'system', label: 'System proxy' },
-      { value: 'direct', label: 'Direct (no proxy)' },
+      { value: 'system', label: t`System proxy` },
+      { value: 'direct', label: t`Direct (no proxy)` },
       ...config.pool
         .map((entry, index) => ({ entry, index }))
         .filter(({ entry }) => isValidPoolEntry(entry))
         .map(({ entry, index }) => ({
           value: entry.id,
-          label: poolEntryLabel(entry, index),
+          label: poolEntryLabel(entry, index, labelProxyEntry),
         })),
     ];
 
     return options;
-  }, [config.pool]);
+  }, [config.pool, labelProxyEntry, t]);
 
   const fixedProxyOptions = useMemo(
     () =>
@@ -308,9 +334,9 @@ function ProxySettingsForm({
         .filter(({ entry }) => isValidPoolEntry(entry))
         .map(({ entry, index }) => ({
           value: entry.id,
-          label: poolEntryLabel(entry, index),
+          label: poolEntryLabel(entry, index, labelProxyEntry),
         })),
-    [config.pool],
+    [config.pool, labelProxyEntry],
   );
 
   const websiteDisplayNames = useMemo(
@@ -468,7 +494,8 @@ function ProxySettingsForm({
           }
 
           if (usedPoolIds.size === 1) {
-            next.fixedProxyId = [...usedPoolIds][0];
+            const [inferredFixedProxyId] = [...usedPoolIds];
+            next.fixedProxyId = inferredFixedProxyId;
           } else if (current.pool.length === 1) {
             next.fixedProxyId = current.pool[0]?.id;
           }
@@ -599,7 +626,7 @@ function ProxySettingsForm({
         <Stack gap="md">
           <Select
             label={<Trans>Routing mode</Trans>}
-            data={PROXY_MODE_OPTIONS}
+            data={proxyModeOptions}
             value={config.mode}
             onChange={(value) => handleModeChange(value as ProxyMode | null)}
           />
@@ -644,7 +671,7 @@ function ProxySettingsForm({
                         <ActionIcon
                           variant="subtle"
                           color="red"
-                          aria-label="Remove proxy"
+                          aria-label={t`Remove proxy`}
                           onClick={() => removePoolEntry(entry.id)}
                         >
                           <IconTrash size={16} />
@@ -663,7 +690,7 @@ function ProxySettingsForm({
 
                       <Select
                         label={<Trans>Proxy type</Trans>}
-                        data={PROXY_TYPE_OPTIONS}
+                        data={proxyTypeOptions}
                         value={entry.type}
                         onChange={(value) =>
                           updatePoolEntry(entry.id, {
@@ -768,7 +795,7 @@ function ProxySettingsForm({
           {showFixedProxyPicker && (
             <Select
               label={<Trans>Proxy for all traffic</Trans>}
-              placeholder="Select a pool entry"
+              placeholder={t`Select a pool entry`}
               data={fixedProxyOptions}
               value={config.fixedProxyId ?? null}
               error={fixedProxyError}

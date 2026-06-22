@@ -17,7 +17,7 @@ export class ProxyPacController {
 
   @Get(':token')
   async getPacScript(@Param('token') token: string, @Res() res: Response) {
-    const proxy = StartupOptionsManager.get().proxy;
+    const { proxy } = StartupOptionsManager.get();
     const expectedToken = proxy.pacAccessToken?.trim();
 
     if (!expectedToken || token !== expectedToken) {

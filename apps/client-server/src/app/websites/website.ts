@@ -1,7 +1,6 @@
 import { Account, WebsiteDataRepository } from '@postybirb/database';
 import { Logger, PostyBirbLogger } from '@postybirb/logger';
 import { PlatformCookieDetails, PlatformService } from '@postybirb/platform';
-import { createWebsiteScopedPlatform } from '../platform/website-scoped-platform';
 import {
     DynamicObject,
     ILoginState,
@@ -15,6 +14,7 @@ import {
   normalizeDomain,
 } from '@postybirb/utils/common';
 import { Mutex } from 'async-mutex';
+import { createWebsiteScopedPlatform } from '../platform/website-scoped-platform';
 import { SubmissionValidator } from './commons/validator';
 import { WebsiteDecoratorProps } from './decorators/website-decorator-props';
 import { DataPropertyAccessibility } from './models/data-property-accessibility';
@@ -218,7 +218,7 @@ export abstract class Website<
       }
     }
 
-    const loginFlow = this.decoratedProps.loginFlow;
+    const {loginFlow} = this.decoratedProps;
     if (loginFlow.type === 'user' && loginFlow.url?.trim()) {
       const host = extractHostname(loginFlow.url);
       if (host) {

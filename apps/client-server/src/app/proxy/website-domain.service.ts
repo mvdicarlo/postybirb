@@ -87,7 +87,7 @@ export class WebsiteDomainService {
     const record = data as Record<string, unknown>;
     const hosts: string[] = [];
 
-    const instanceUrl = record.instanceUrl;
+    const { instanceUrl } = record;
     if (typeof instanceUrl === 'string' && instanceUrl.trim()) {
       const host =
         extractHostname(
