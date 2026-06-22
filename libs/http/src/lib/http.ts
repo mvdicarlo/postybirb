@@ -15,9 +15,7 @@ import { encode as encodeQueryString } from 'querystring';
 import { FormFile } from './form-file';
 import {
   attachProxyAuthToRequest,
-  ensurePartitionProxy,
   resolveBrowserProxySession,
-  resolveHttpRequestRoute,
 } from './electron-proxy-manager';
 import {
   BinaryPostOptions,
@@ -57,26 +55,12 @@ interface CreateBodyData {
   buffer: Buffer;
 }
 
-async function ensurePartitionProxyForRequest(
-  options: HttpOptions,
-): Promise<void> {
-  const route = resolveHttpRequestRoute(options);
-  if (route.transport !== 'chromium-session') {
-    return;
-  }
-
-  await ensurePartitionProxy(route.partitionId);
-}
-
-async function ensureBrowserPartitionProxy(options: HttpOptions): Promise<void> {
+function assignBrowserPartition(options: HttpOptions): void {
   const sessionRoute = resolveBrowserProxySession(options);
-  if (!sessionRoute.partitionId) {
-    return;
+  if (sessionRoute.partitionId) {
+    // eslint-disable-next-line no-param-reassign
+    options.partition = sessionRoute.partitionId;
   }
-
-  await ensurePartitionProxy(sessionRoute.partitionId);
-  // eslint-disable-next-line no-param-reassign
-  options.partition = sessionRoute.partitionId;
 }
 
 /**
@@ -346,7 +330,6 @@ export class Http {
     partitionId: string,
     url: string,
   ): Promise<Electron.Cookie[]> {
-    await ensurePartitionProxy(partitionId);
     const sess = session.fromPartition(getPartitionKey(partitionId));
     return sess.cookies.get({
       url: new URL(url).origin,
@@ -375,8 +358,6 @@ export class Http {
     let error: Error | undefined;
 
     try {
-      await ensurePartitionProxyForRequest(options);
-
       const response = await new Promise<HttpResponse<T>>((resolve, reject) => {
         const req = Http.createClientRequest(options, {
           ...(crOptions ?? {}),
@@ -490,8 +471,6 @@ export class Http {
         return response;
       }
 
-      await ensurePartitionProxyForRequest(options);
-
       const response = await new Promise<HttpResponse<T>>((resolve, reject) => {
         const req = Http.createClientRequest(options, {
           ...(crOptions ?? {}),
@@ -541,7 +520,7 @@ export class Http {
     options: HttpOptions,
     crOptions?: ClientRequestConstructorOptions,
   ): Promise<HttpResponse<T>> {
-    await ensureBrowserPartitionProxy(options);
+    assignBrowserPartition(options);
 
     const window = new BrowserWindow({
       show: false,
@@ -568,7 +547,7 @@ export class Http {
     options: PostOptions | BinaryPostOptions,
     crOptions: ClientRequestConstructorOptions,
   ): Promise<HttpResponse<T>> {
-    await ensureBrowserPartitionProxy(options);
+    assignBrowserPartition(options);
 
     const { contentType, buffer } = Http.createPostBody(options);
     const headers = Object.entries({

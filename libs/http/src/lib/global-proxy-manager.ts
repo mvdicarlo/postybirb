@@ -422,14 +422,6 @@ export async function resolveProxyForUrl(url: string): Promise<string> {
   return session.defaultSession.resolveProxy(url);
 }
 
-export async function probeProfileConnection(
-  profile: ProxyProfile,
-  url: string,
-  options: ProbeOptions = {},
-): Promise<ProbeResult> {
-  return probePoolEntryConnection(profile, url, options);
-}
-
 export async function probePoolEntryConnection(
   entry: ProxyPoolEntry,
   url: string,
@@ -515,13 +507,6 @@ export function resetGlobalProxyStateForTests(): void {
 /** Clears the apply fingerprint so the next applyGlobalProxyConfig re-runs setProxy. */
 export function invalidateAppliedGlobalProxyFingerprint(): void {
   appliedGlobalFingerprint = '';
-}
-
-export function syncLegacyPartitionProfile(
-  partitionId: string,
-  profile: ProxyProfile | null,
-): void {
-  proxyAuthStore.syncPartitionProfile(partitionId, profile);
 }
 
 export function clearProxyAuthStore(): void {

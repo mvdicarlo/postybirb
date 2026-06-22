@@ -61,11 +61,4 @@ export function resolveBrowserSessionRoute(
   };
 }
 
-/** @deprecated Headless partitions are refreshed for websites with accounts or routing. */
-export function collectWebsiteIdsWithEnabledProfiles(
-  websiteIds: string[],
-): string[] {
-  return [...new Set(websiteIds)];
-}
-
 export { getHeadlessWebsitePartitionId };

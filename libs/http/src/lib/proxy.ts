@@ -4,13 +4,11 @@ import { app, net } from 'electron';
 import { isProxiedResolution, StartupOptionsManager } from '@postybirb/utils/common';
 import {
   applyGlobalProxyConfig,
-  applyProxySettings as applyProxySettingsInternal,
   getProxyConfiguration,
   invalidateAppliedGlobalProxyFingerprint,
   onProxyConfigurationApplied,
   onSessionCreated,
   probePoolEntryConnection,
-  probeProfileConnection,
   resolveProxyForUrl,
   setPartitionIdProvider,
 } from './electron-proxy-manager';
@@ -21,7 +19,6 @@ export {
   invalidateAppliedGlobalProxyFingerprint,
   onProxyConfigurationApplied,
   probePoolEntryConnection,
-  probeProfileConnection,
   resolveProxyForUrl,
   setPartitionIdProvider,
 };
@@ -32,14 +29,6 @@ export {
   getHeadlessWebsitePartitionId,
   getInstagramOAuthPartitionId,
 } from './proxy-partitions';
-
-export async function applyProxySettings(): Promise<void> {
-  await applyProxySettingsInternal();
-}
-
-export async function applyGlobalProxyFromStartup(): Promise<void> {
-  await applyGlobalProxyConfig();
-}
 
 type FetchInput = Request | URL | string;
 type ParsedProxyEntry = {
