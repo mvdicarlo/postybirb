@@ -1,4 +1,4 @@
-// Loads proxy bootstrap (startup applyProxySettings) before Http is used.
+// Patches global fetch to electron net.fetch before Http loads.
 export * from './lib/proxy';
 
 export * from './lib/form-file';

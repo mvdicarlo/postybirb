@@ -2,7 +2,7 @@
 // (e.g. @postybirb/fs evaluates StartupOptionsManager.get() at module load).
 import './bootstrap-electron-config';
 
-// Loads proxy bootstrap (applyProxySettings on ready) before Http is used.
+// Ensure proxy is imported first to patch fetch before any request is made.
 import '@postybirb/http';
 
 import {

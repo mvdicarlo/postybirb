@@ -29,7 +29,6 @@ import {
   SimpleValidationResult,
   SubmissionRating,
 } from '@postybirb/types';
-import { netFetch } from '@postybirb/http';
 import {
   calculateImageResize,
   getFileTypeFromMimeType,
@@ -554,7 +553,7 @@ export default class Bluesky
     };
     const uploadLimits =
       await this.checkFetchResult<AppBskyVideoGetUploadLimits.OutputSchema>(
-        netFetch(url, req),
+        fetch(url, req),
       ).catch((err) => {
         this.logger.error(err);
         throw new Error('Getting video upload limits failed', { cause: err });
@@ -590,7 +589,7 @@ export default class Bluesky
     // response that contains a job id at top level.
     const videoUpload = await this.checkFetchResult<
       JobStatus | AppBskyVideoUploadVideo.OutputSchema
-    >(netFetch(url, req), true).catch((err) => {
+    >(fetch(url, req), true).catch((err) => {
       this.logger.error(err);
       throw new Error('Checking video processing status failed', {
         cause: err,
@@ -632,7 +631,7 @@ export default class Bluesky
       };
       const res =
         await this.checkFetchResult<AppBskyVideoGetJobStatus.OutputSchema>(
-          netFetch(url, req),
+          fetch(url, req),
         ).catch((err) => {
           this.logger.error(err);
           throw new Error('Checking video processing status failed', {

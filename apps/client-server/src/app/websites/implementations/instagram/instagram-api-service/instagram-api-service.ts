@@ -1,16 +1,8 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { netFetch } from '@postybirb/http';
 import { Logger, PostyBirbLogger } from '@postybirb/logger';
 import { DynamicObject } from '@postybirb/types';
 
 const GRAPH_API_BASE = 'https://graph.instagram.com/v21.0';
-
-function fetchWithInstagramProxy(
-  input: string | URL | Request,
-  init?: RequestInit,
-): Promise<Response> {
-  return netFetch(input, init);
-}
 
 /**
  * Temporary in-memory store for OAuth authorization codes.
@@ -148,7 +140,7 @@ export class InstagramApiService {
       code,
     });
 
-    const response = await fetchWithInstagramProxy(
+    const response = await fetch(
       'https://api.instagram.com/oauth/access_token',
       {
         method: 'POST',
@@ -186,7 +178,7 @@ export class InstagramApiService {
       `&client_secret=${encodeURIComponent(appSecret)}` +
       `&access_token=${encodeURIComponent(shortLivedToken)}`;
 
-    const response = await fetchWithInstagramProxy(url);
+    const response = await fetch(url);
     const data = (await response.json()) as DynamicObject;
 
     if (data.error) {
@@ -216,7 +208,7 @@ export class InstagramApiService {
       `?grant_type=ig_refresh_token` +
       `&access_token=${encodeURIComponent(accessToken)}`;
 
-    const response = await fetchWithInstagramProxy(url);
+    const response = await fetch(url);
     const data = (await response.json()) as DynamicObject;
 
     if (data.error) {
@@ -244,7 +236,7 @@ export class InstagramApiService {
   ): Promise<InstagramBusinessAccount> {
     const url = `${GRAPH_API_BASE}/me?fields=user_id,username&access_token=${encodeURIComponent(accessToken)}`;
 
-    const response = await fetchWithInstagramProxy(url);
+    const response = await fetch(url);
     const data = (await response.json()) as DynamicObject;
 
     if (data.error) {
@@ -273,7 +265,7 @@ export class InstagramApiService {
   ): Promise<{ username: string } | null> {
     try {
       const url = `${GRAPH_API_BASE}/me?fields=username&access_token=${encodeURIComponent(accessToken)}`;
-      const response = await fetchWithInstagramProxy(url);
+      const response = await fetch(url);
       const data = (await response.json()) as DynamicObject;
 
       if (data.error) {
@@ -318,7 +310,7 @@ export class InstagramApiService {
     }
 
     const url = `${GRAPH_API_BASE}/${igUserId}/media`;
-    const response = await fetchWithInstagramProxy(url, {
+    const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: params.toString(),
@@ -356,7 +348,7 @@ export class InstagramApiService {
     }
 
     const url = `${GRAPH_API_BASE}/${igUserId}/media`;
-    const response = await fetchWithInstagramProxy(url, {
+    const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: params.toString(),
@@ -384,7 +376,7 @@ export class InstagramApiService {
     containerId: string,
   ): Promise<InstagramContainerStatus> {
     const url = `${GRAPH_API_BASE}/${containerId}?fields=status_code&access_token=${encodeURIComponent(accessToken)}`;
-    const response = await fetchWithInstagramProxy(url);
+    const response = await fetch(url);
     const data = (await response.json()) as DynamicObject;
 
     if (data.error) {
@@ -458,7 +450,7 @@ export class InstagramApiService {
     });
 
     const url = `${GRAPH_API_BASE}/${igUserId}/media_publish`;
-    const response = await fetchWithInstagramProxy(url, {
+    const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: params.toString(),
@@ -482,7 +474,7 @@ export class InstagramApiService {
   ): Promise<string | undefined> {
     try {
       const url = `${GRAPH_API_BASE}/${mediaId}?fields=permalink&access_token=${encodeURIComponent(accessToken)}`;
-      const response = await fetchWithInstagramProxy(url);
+      const response = await fetch(url);
       const data = (await response.json()) as DynamicObject;
 
       if (data.error) {
@@ -508,7 +500,7 @@ export class InstagramApiService {
   ): Promise<InstagramPublishingLimit | null> {
     try {
       const url = `${GRAPH_API_BASE}/${igUserId}/content_publishing_limit?fields=quota_usage,config&access_token=${encodeURIComponent(accessToken)}`;
-      const response = await fetchWithInstagramProxy(url);
+      const response = await fetch(url);
       const data = (await response.json()) as DynamicObject;
 
       if (data.error || !data.data?.length) {

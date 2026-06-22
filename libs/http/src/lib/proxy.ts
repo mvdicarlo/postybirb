@@ -1,6 +1,7 @@
-// Proxy bootstrap: applies settings on startup and exposes Electron net.fetch helpers.
+// Proxy bootstrap: patches global fetch and applies PAC/global proxy on startup.
 
 import { app, net } from 'electron';
+import { isProxiedResolution, StartupOptionsManager } from '@postybirb/utils/common';
 import {
   applyGlobalProxyConfig,
   applyProxySettings as applyProxySettingsInternal,
@@ -13,7 +14,6 @@ import {
   resolveProxyForUrl,
   setPartitionIdProvider,
 } from './electron-proxy-manager';
-import { isProxiedResolution, StartupOptionsManager } from '@postybirb/utils/common';
 
 export {
   applyGlobalProxyConfig,
@@ -48,7 +48,11 @@ type ParsedProxyEntry = {
   port: string;
 };
 
-function fetchThroughElectronNet(
+/**
+ * Routes fetch through Electron's network stack (defaultSession).
+ * Inherits global proxy/PAC from {@link applyGlobalProxyConfig}.
+ */
+function electronNetFetch(
   input: FetchInput,
   init?: RequestInit,
 ): Promise<Response> {
@@ -62,12 +66,13 @@ function fetchThroughElectronNet(
   return net.fetch(input.toString(), init);
 }
 
-/** Fetch via defaultSession; inherits global proxy/PAC from applyGlobalProxyConfig. */
-export async function netFetch(
-  input: FetchInput,
-  init?: RequestInit,
-): Promise<Response> {
-  return fetchThroughElectronNet(input, init);
+const patchedElectronFetch = electronNetFetch as typeof fetch & {
+  __postybirbElectronFetch?: boolean;
+};
+
+if (!patchedElectronFetch.__postybirbElectronFetch) {
+  patchedElectronFetch.__postybirbElectronFetch = true;
+  globalThis.fetch = patchedElectronFetch;
 }
 
 function parseProxySection(section: string): ParsedProxyEntry | null {

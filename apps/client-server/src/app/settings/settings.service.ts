@@ -12,20 +12,21 @@ import {
 import { Settings, SettingsRepository } from '@postybirb/database';
 import { SETTINGS_UPDATES } from '@postybirb/socket-events';
 import { EntityId, SettingsConstants } from '@postybirb/types';
-import { net } from 'electron';
 import {
-  buildProxyRules,
-  IsTestEnvironment,
-  isLegacyProxyConfiguration,
   isProxyConfiguration,
   mergeProxyPoolPasswords,
   normalizeProxyPoolEntry,
   prepareProxyConfiguration,
+  validateProxyConfiguration,
+} from '@postybirb/types';
+import {
+  buildProxyRules,
+  IsTestEnvironment,
+  isLegacyProxyConfiguration,
   PostyBirbEnvConfig,
   shouldBypassProxyForUrl,
   StartupOptions,
   StartupOptionsManager,
-  validateProxyConfiguration,
   asEnabledProxyProfile,
 } from '@postybirb/utils/common';
 import { eq } from 'drizzle-orm';
@@ -402,9 +403,7 @@ export class SettingsService
         signal: AbortSignal.timeout(10000),
       };
 
-      const response = bypass
-        ? await net.fetch(testUrl, fetchOptions)
-        : await fetch(testUrl, fetchOptions);
+      const response = await fetch(testUrl, fetchOptions);
 
       if (response.ok) {
         const result = await response.json();
