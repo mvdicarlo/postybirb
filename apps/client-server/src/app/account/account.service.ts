@@ -13,14 +13,11 @@ import {
   NULL_ACCOUNT_ID,
   NullAccount,
 } from '@postybirb/types';
-import {
-  applyGlobalProxyConfig,
-  setPartitionIdProvider,
-} from '@postybirb/http';
 import { IsTestEnvironment } from '@postybirb/utils/common';
 import { ne } from 'drizzle-orm';
 import { Class } from 'type-fest';
 import { PostyBirbService } from '../common/service/postybirb-service';
+import { ProxyService } from '../proxy/proxy.service';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { UnknownWebsite } from '../websites/website';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
@@ -50,6 +47,7 @@ export class AccountService
 
   constructor(
     private readonly websiteRegistry: WebsiteRegistryService,
+    private readonly proxyService: ProxyService,
     @Optional() webSocket?: WSGateway,
   ) {
     super(new AccountRepository(), webSocket);
@@ -65,26 +63,12 @@ export class AccountService
    * Heavy operations are deferred to avoid blocking application startup.
    */
   async onModuleInit() {
-    setPartitionIdProvider(async () => {
-      const accounts = await this.repository.find({
-        where: ne(this.table.id, NULL_ACCOUNT_ID),
-      });
-      return accounts.map((account) => ({
-        partitionId: account.id,
-        websiteId: account.website,
-      }));
-    });
-
     // Critical path: only populate null account to ensure database is ready
     await this.populateNullAccount();
 
     // Defer heavy operations to avoid blocking NestJS initialization
     setImmediate(async () => {
       await this.deleteUnregisteredAccounts();
-
-      if (!IsTestEnvironment()) {
-        await applyGlobalProxyConfig();
-      }
 
       await this.initWebsiteRegistry();
       this.websiteRegistry.markAsInitialized();
@@ -281,7 +265,7 @@ export class AccountService
     }
     const account = await this.repository.insert(new Account(createDto));
     if (!IsTestEnvironment()) {
-      await applyGlobalProxyConfig();
+      await this.proxyService.onAccountCreated();
     }
     const instance = await this.websiteRegistry.create(account);
     this.afterCreate(account, instance);
@@ -313,10 +297,6 @@ export class AccountService
       .update(id, update)
       .then((entity) => this.injectWebsiteInstance(entity));
 
-    if (!IsTestEnvironment()) {
-      await applyGlobalProxyConfig();
-    }
-
     return account;
   }
 
@@ -326,10 +306,6 @@ export class AccountService
       this.websiteRegistry.remove(account);
     }
     await super.remove(id);
-
-    if (!IsTestEnvironment()) {
-      await applyGlobalProxyConfig();
-    }
   }
 
   /**
