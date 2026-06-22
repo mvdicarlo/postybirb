@@ -2,6 +2,19 @@ import { AccountRepository } from '@postybirb/database';
 import { PacScriptService } from './pac-script.service';
 import { WebsiteDomainService } from './website-domain.service';
 
+jest.mock('@postybirb/utils/common', () => {
+  const actual = jest.requireActual('@postybirb/utils/common');
+
+  return {
+    ...actual,
+    PostyBirbEnvConfig: {
+      port: '9487',
+      headless: false,
+    },
+    resolveCloudApiUrl: () => 'https://postybirb.azurewebsites.net/api',
+  };
+});
+
 describe('PacScriptService', () => {
   const websiteDomainService = {
     getDomainsForRouting: jest.fn(),
@@ -46,10 +59,16 @@ describe('PacScriptService', () => {
       pacAccessToken: 'test-token',
     });
 
-    expect(script).toContain('function FindProxyForURL(url, host)');
-    expect(script).toContain('return "PROXY 127.0.0.1:8080"');
-    expect(script).toContain('pixiv.net');
-    expect(script.trim().endsWith('return "DIRECT";\n}')).toBe(true);
+    expect(script).toMatchInlineSnapshot(`
+"function FindProxyForURL(url, host) {
+  if (isPlainHostName(host) || host == "localhost") return "DIRECT";
+  if (host == "127.0.0.1" || host == "::1") return "DIRECT";
+  if (host == "postybirb.azurewebsites.net" || dnsDomainIs(host, ".postybirb.azurewebsites.net")) return "DIRECT";
+  if ((host == "127.0.0.1" || host == "localhost") && url.indexOf(":9487/") > -1) return "DIRECT";
+  if (host == "pixiv.net" || dnsDomainIs(host, ".pixiv.net")) return "PROXY 127.0.0.1:8080";
+  return "DIRECT";
+}"
+`);
   });
 
   it('omits system routing choices from PAC output', async () => {
@@ -62,7 +81,15 @@ describe('PacScriptService', () => {
       pacAccessToken: 'test-token',
     });
 
-    expect(script).not.toContain('pixiv.net');
+    expect(script).toMatchInlineSnapshot(`
+"function FindProxyForURL(url, host) {
+  if (isPlainHostName(host) || host == "localhost") return "DIRECT";
+  if (host == "127.0.0.1" || host == "::1") return "DIRECT";
+  if (host == "postybirb.azurewebsites.net" || dnsDomainIs(host, ".postybirb.azurewebsites.net")) return "DIRECT";
+  if ((host == "127.0.0.1" || host == "localhost") && url.indexOf(":9487/") > -1) return "DIRECT";
+  return "DIRECT";
+}"
+`);
     expect(websiteDomainService.getDomainsForRouting).not.toHaveBeenCalled();
   });
 });
