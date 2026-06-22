@@ -7,26 +7,26 @@ export class UpdateStartupSettingsDto {
   @ApiProperty()
   @IsOptional()
   @IsString()
-  appDataPath: string;
+  appDataPath?: string;
 
   @ApiProperty()
   @IsOptional()
   @IsString()
-  port: string;
+  port?: string;
 
   @ApiProperty()
   @IsOptional()
   @IsBoolean()
-  startAppOnSystemStartup: boolean;
+  startAppOnSystemStartup?: boolean;
 
   @ApiProperty()
   @IsOptional()
   @IsBoolean()
-  spellchecker: boolean;
+  spellchecker?: boolean;
 
   @ApiProperty()
   @IsOptional()
   @ValidateNested()
   @Type(() => UpdateProxyConfigurationDto)
-  proxy: UpdateProxyConfigurationDto;
+  proxy?: UpdateProxyConfigurationDto;
 }
