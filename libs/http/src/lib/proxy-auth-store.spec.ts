@@ -4,7 +4,7 @@ import {
 } from './proxy-auth-store';
 
 describe('ProxyAuthStore', () => {
-  it('resolves credentials by type:host:port', () => {
+  it('resolves HTTP credentials by type:host:port', () => {
     const store = new ProxyAuthStore();
     store.syncPool([
       {
@@ -29,7 +29,7 @@ describe('ProxyAuthStore', () => {
     });
   });
 
-  it('supports username-only pool entries', () => {
+  it('ignores SOCKS5 pool entries (host and port only)', () => {
     const store = new ProxyAuthStore();
     store.syncPool([
       {
@@ -38,7 +38,7 @@ describe('ProxyAuthStore', () => {
         host: 'proxy.example.com',
         port: '1080',
         username: 'solo-user',
-        password: '',
+        password: 'secret',
       },
     ]);
 
@@ -49,33 +49,7 @@ describe('ProxyAuthStore', () => {
         port: 1080,
         scheme: 'socks',
       }),
-    ).toEqual({
-      username: 'solo-user',
-      password: '',
-    });
-  });
-
-  it('matches either http or socks5 pool key for the same endpoint', () => {
-    const store = new ProxyAuthStore();
-    store.syncPool([
-      {
-        id: 'pool-3',
-        type: 'socks5',
-        host: '10.0.0.5',
-        port: '9050',
-        username: 'u',
-        password: 'p',
-      },
-    ]);
-
-    expect(buildPoolKey('socks5', '10.0.0.5', 9050)).toBe('socks5:10.0.0.5:9050');
-    expect(
-      store.resolveForProxyChallenge({
-        isProxy: true,
-        host: '10.0.0.5',
-        port: 9050,
-      }),
-    ).toEqual({ username: 'u', password: 'p' });
+    ).toBeNull();
   });
 
   it('returns null for non-proxy challenges', () => {
@@ -122,5 +96,9 @@ describe('ProxyAuthStore', () => {
         port: 8080,
       }),
     ).toBeNull();
+  });
+
+  it('builds stable pool keys', () => {
+    expect(buildPoolKey('http', '10.0.0.5', 9050)).toBe('http:10.0.0.5:9050');
   });
 });

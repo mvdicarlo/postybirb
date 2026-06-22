@@ -81,6 +81,21 @@ describe('buildProxyRules', () => {
     ).toBe('socks5://127.0.0.1:7890');
   });
 
+  it('ignores SOCKS5 credentials even when present', () => {
+    expect(
+      buildProxyRules({
+        id: 'socks-profile',
+        enabled: true,
+        type: 'socks5',
+        host: '127.0.0.1',
+        port: '7890',
+        username: 'user',
+        password: 'pass',
+        websites: [],
+      }),
+    ).toBe('socks5://127.0.0.1:7890');
+  });
+
   it('returns empty string when profile is disabled', () => {
     expect(
       buildProxyRules({

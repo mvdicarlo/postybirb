@@ -31,25 +31,10 @@ import {
   normalizeProxyPoolEntry,
 } from '@postybirb/types';
 
-/** @deprecated Old multi-profile shape on disk — falls back to system mode on load. */
-export type LegacyProxyConfiguration = {
-  profiles: ProxyProfile[];
-};
-
 export type ShouldBypassProxyOptions = {
   remoteHost?: string;
   appPort?: string;
 };
-
-export function isLegacyProxyConfiguration(
-  value: unknown,
-): value is LegacyProxyConfiguration {
-  if (typeof value !== 'object' || value === null) {
-    return false;
-  }
-
-  return Array.isArray((value as LegacyProxyConfiguration).profiles);
-}
 
 export function normalizeProxyProfile(
   profile?: Partial<ProxyProfile>,
@@ -75,6 +60,10 @@ export function normalizeProxyProfile(
 export function buildProxyRules(profile: ProxyProfile): string {
   if (!profile.enabled || !profile.host || !profile.port) {
     return '';
+  }
+
+  if (profile.type === 'socks5') {
+    return `socks5://${profile.host}:${profile.port}`;
   }
 
   const auth =

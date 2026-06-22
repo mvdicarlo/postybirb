@@ -195,7 +195,7 @@ describe('StartupOptionsStore — set()', () => {
     expect(s.get().proxy).toEqual(defaultProxyConfiguration());
   });
 
-  it('defaults legacy profiles on disk to system mode', () => {
+  it('defaults invalid proxy shapes on disk to system mode', () => {
     const path = join(tmpDir, 'startup.json');
     writeFileSync(
       path,

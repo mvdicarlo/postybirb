@@ -9,7 +9,6 @@ import { dirname } from 'path';
 import {
   cloneProxyConfiguration,
   defaultProxyConfiguration,
-  isLegacyProxyConfiguration,
   isProxyConfiguration,
   prepareProxyConfiguration,
   ProxyConfiguration,
@@ -52,14 +51,6 @@ function startupInfo(message: string, context?: Record<string, unknown>): void {
 function parseProxyFromDisk(rawProxy: unknown): ProxyConfiguration {
   if (isProxyConfiguration(rawProxy)) {
     return prepareProxyConfiguration(rawProxy);
-  }
-
-  if (isLegacyProxyConfiguration(rawProxy)) {
-    startupInfo('[StartupOptions.load] Defaulting proxy to system mode', {
-      reason: 'legacy-profiles-ignored',
-      profileCount: rawProxy.profiles.length,
-    });
-    return defaultProxyConfiguration();
   }
 
   startupInfo('[StartupOptions.load] Defaulting proxy to system mode', {

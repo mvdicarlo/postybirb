@@ -1,5 +1,5 @@
 import { Logger } from '@postybirb/logger';
-import { ProxyProfile, ProxyType } from '@postybirb/types';
+import { ProxyType } from '@postybirb/types';
 
 export type ProxyCredentials = {
   username: string;
@@ -47,8 +47,9 @@ function toCredentials(entry: {
 }
 
 /**
- * Stores proxy auth credentials keyed by pool endpoint (type:host:port) and
+ * Stores HTTP proxy auth credentials keyed by pool endpoint (type:host:port) and
  * resolves them for Chromium `app.on('login')` and ClientRequest login events.
+ * SOCKS5 entries are host+port only and are not registered here.
  */
 export class ProxyAuthStore {
   private readonly poolCredentials = new Map<string, ProxyCredentials>();
@@ -65,18 +66,6 @@ export class ProxyAuthStore {
       .info('syncPool');
   }
 
-  /**
-   * Registers credentials from a profile during partition apply (v2 bridge).
-   * Pool entries are only removed via {@link clear} or {@link syncPool}.
-   */
-  syncPartitionProfile(_partitionId: string, profile: ProxyProfile | null): void {
-    if (!profile?.enabled || !hasAuthCredentials(profile.username, profile.password)) {
-      return;
-    }
-
-    this.upsertFromProfile(profile);
-  }
-
   resolveForProxyChallenge(
     authInfo: ProxyChallengeInfo,
   ): ProxyCredentials | null {
@@ -85,7 +74,7 @@ export class ProxyAuthStore {
     }
 
     const host = authInfo.host?.trim();
-    const {port} = authInfo;
+    const { port } = authInfo;
     if (!host || !port) {
       logger
         .withMetadata({ host: authInfo.host, port: authInfo.port })
@@ -94,16 +83,12 @@ export class ProxyAuthStore {
     }
 
     const portKey = String(port);
-    for (const type of ['http', 'socks5'] as const) {
-      const credentials = this.poolCredentials.get(
-        buildPoolKey(type, host, portKey),
-      );
-      if (credentials) {
-        logger
-          .withMetadata({ type, host, port: portKey })
-          .debug('login');
-        return credentials;
-      }
+    const credentials = this.poolCredentials.get(
+      buildPoolKey('http', host, portKey),
+    );
+    if (credentials) {
+      logger.withMetadata({ type: 'http', host, port: portKey }).debug('login');
+      return credentials;
     }
 
     logger
@@ -116,18 +101,11 @@ export class ProxyAuthStore {
     this.poolCredentials.clear();
   }
 
-  private upsertFromProfile(profile: ProxyProfile): void {
-    this.upsertPoolEntry({
-      id: profile.id,
-      type: profile.type,
-      host: profile.host,
-      port: profile.port,
-      username: profile.username,
-      password: profile.password,
-    });
-  }
-
   private upsertPoolEntry(entry: ProxyPoolAuthEntry): void {
+    if (entry.type === 'socks5') {
+      return;
+    }
+
     if (!entry.host?.trim() || !entry.port?.trim()) {
       return;
     }

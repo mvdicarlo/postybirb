@@ -59,8 +59,8 @@ export function normalizeProxyPoolEntry(
     type,
     host: entry?.host?.trim() ?? '',
     port: entry?.port?.trim() ?? '',
-    username: entry?.username?.trim() ?? '',
-    password: entry?.password ?? '',
+    username: type === 'socks5' ? '' : entry?.username?.trim() ?? '',
+    password: type === 'socks5' ? '' : entry?.password ?? '',
   };
 }
 
