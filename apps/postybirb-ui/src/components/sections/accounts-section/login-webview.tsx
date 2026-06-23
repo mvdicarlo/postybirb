@@ -39,30 +39,13 @@ interface LoginWebviewProps {
   accountId: AccountId;
 }
 
-function readMainFrameLoading(webview: WebviewTag): boolean {
-  try {
-    return webview.isLoadingMainFrame();
-  } catch {
-    return false;
-  }
-}
-
-function isWebviewDomReady(webview: WebviewTag): boolean {
-  try {
-    webview.isLoadingMainFrame();
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 /**
  * A polished webview component for website login.
  * Features a toolbar with refresh button, login check button, URL display,
  * login status indicator, plus a loading overlay while the page loads.
  */
 export function LoginWebview({ src, accountId }: LoginWebviewProps) {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [currentUrl, setCurrentUrl] = useState(src);
   const webviewRef = useRef<WebviewTag | null>(null);
 
@@ -135,57 +118,19 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
     }
   }, [isLoggedIn, username, account?.name, accountId, account, currentUrl]);
 
-  useEffect(() => {
-    setIsLoading(false);
-  }, [accountId]);
-
-  useEffect(() => {
-    const unsubscribe = window.electron?.onProxyConfigApplied?.(() => {
-      const webview = webviewRef.current;
-      if (!webview) {
-        return;
-      }
-
-      try {
-        webview.reload();
-      } catch {
-        // Webview may not be ready yet.
-      }
-    });
-
-    return () => {
-      unsubscribe?.();
-    };
-  }, []);
-
   // Handle webview events
   useEffect(() => {
     const webview = webviewRef.current;
-    if (!webview) {
-      return undefined;
-    }
-
-    let listenersAttached = false;
+    if (!webview) return undefined;
 
     const handleStartLoading = () => {
-      if (readMainFrameLoading(webview)) {
-        setIsLoading(true);
-      }
+      setIsLoading(true);
     };
 
     const handleStopLoading = () => {
-      const loading = readMainFrameLoading(webview);
-      setIsLoading(loading);
-      if (!loading) {
-        // Automatic check after page finishes loading — debounced
-        triggerLoginCheck(false);
-      }
-    };
-
-    const handleFailLoad = (event: Electron.DidFailLoadEvent) => {
-      if (event.isMainFrame) {
-        setIsLoading(false);
-      }
+      setIsLoading(false);
+      // Automatic check after page finishes loading — debounced
+      triggerLoginCheck(false);
     };
 
     const handleDidNavigate = (event: Electron.DidNavigateEvent) => {
@@ -212,55 +157,25 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
       triggerLoginCheck(false);
     };
 
-    const attachListeners = () => {
-      if (listenersAttached) {
-        return;
-      }
-      listenersAttached = true;
-
-      setIsLoading(readMainFrameLoading(webview));
-
-      webview.addEventListener('did-start-loading', handleStartLoading);
-      webview.addEventListener('did-stop-loading', handleStopLoading);
-      webview.addEventListener('did-fail-load', handleFailLoad);
-      webview.addEventListener('did-navigate', handleDidNavigate);
-      webview.addEventListener('did-navigate-in-page', handleDidNavigateInPage);
-      webview.addEventListener('did-frame-navigate', handleFrameNavigation);
-      webview.addEventListener('did-redirect-navigation', handleRedirect);
-    };
-
-    const handleDomReady = () => {
-      attachListeners();
-    };
-
-    webview.addEventListener('dom-ready', handleDomReady);
-    if (isWebviewDomReady(webview)) {
-      attachListeners();
-    }
+    webview.addEventListener('did-start-loading', handleStartLoading);
+    webview.addEventListener('did-stop-loading', handleStopLoading);
+    webview.addEventListener('did-navigate', handleDidNavigate);
+    webview.addEventListener('did-navigate-in-page', handleDidNavigateInPage);
+    webview.addEventListener('did-frame-navigate', handleFrameNavigation);
+    webview.addEventListener('did-redirect-navigation', handleRedirect);
 
     return () => {
-      webview.removeEventListener('dom-ready', handleDomReady);
-
-      if (listenersAttached) {
-        webview.removeEventListener('did-start-loading', handleStartLoading);
-        webview.removeEventListener('did-stop-loading', handleStopLoading);
-        webview.removeEventListener('did-fail-load', handleFailLoad);
-        webview.removeEventListener('did-navigate', handleDidNavigate);
-        webview.removeEventListener(
-          'did-navigate-in-page',
-          handleDidNavigateInPage,
-        );
-        webview.removeEventListener(
-          'did-frame-navigate',
-          handleFrameNavigation,
-        );
-        webview.removeEventListener(
-          'did-redirect-navigation',
-          handleRedirect,
-        );
-        // Fire a final login check when the webview closes (user is done)
-        triggerLoginCheck(true);
-      }
+      webview.removeEventListener('did-start-loading', handleStartLoading);
+      webview.removeEventListener('did-stop-loading', handleStopLoading);
+      webview.removeEventListener('did-navigate', handleDidNavigate);
+      webview.removeEventListener(
+        'did-navigate-in-page',
+        handleDidNavigateInPage,
+      );
+      webview.removeEventListener('did-frame-navigate', handleFrameNavigation);
+      webview.removeEventListener('did-redirect-navigation', handleRedirect);
+      // Fire a final login check when the webview closes (user is done)
+      triggerLoginCheck(true);
     };
   }, [triggerLoginCheck, accountId]);
 
@@ -291,9 +206,7 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
     }
   }, [lastAccount, accountId, resetWebview, src]);
 
-  if (resetWebview) {
-    return null;
-  }
+  if (resetWebview) return null;
 
   return (
     <Box
