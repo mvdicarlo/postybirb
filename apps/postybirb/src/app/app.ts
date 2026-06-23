@@ -1,229 +1,65 @@
 import { INestApplication } from '@nestjs/common';
-import {
-  isLinux,
-  isOSX,
-  PostyBirbEnvConfig,
-  StartupOptionsManager,
-} from '@postybirb/utils/common';
-import {
-  app,
-  BrowserWindow,
-  Menu,
-  NativeImage,
-  nativeImage,
-  nativeTheme,
-  screen,
-  Tray,
-} from 'electron';
-import { join } from 'path';
-import { environment } from '../environments/environment';
-import { rendererAppPort } from './constants';
+import { app } from 'electron';
+import { installAppSecurity } from './main-process/security';
+import { TrayManager } from './main-process/tray';
+import { WindowManager } from './main-process/window-manager';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const loader = require('./loader/loader');
+/**
+ * Top-level orchestrator for the desktop application. Wires together the window
+ * manager, system tray, security policies, and application lifecycle events.
+ * Constructed once the embedded client-server has finished bootstrapping.
+ */
+export default class PostyBirbApp {
+  private readonly windowManager = new WindowManager();
 
-const appIcon = join(__dirname, 'assets/app-icon.png');
+  private tray: TrayManager | null = null;
 
-export default class PostyBirb {
-  // Keep a global reference of the window object, if you don't, the window will
-  // be closed automatically when the JavaScript object is garbage collected.
-  static mainWindow: Electron.BrowserWindow | null;
+  constructor(private readonly nestApp: INestApplication) {}
 
-  static application: Electron.App;
+  /**
+   * Install security policies, create the main window and tray, and register
+   * lifecycle handlers. Must be called after the app `ready` event has fired.
+   */
+  start(): void {
+    installAppSecurity();
 
-  static BrowserWindow: typeof BrowserWindow;
+    this.tray = new TrayManager(
+      this.windowManager.getAppImage(),
+      () => this.windowManager.show(),
+      () => app.quit(),
+    );
+    this.tray.init();
 
-  static appTray: Tray | null;
-
-  static nestApp: INestApplication;
-
-  static appImage: NativeImage;
-
-  public static isDevelopmentMode() {
-    return !environment.production;
+    this.registerLifecycleEvents();
+    this.windowManager.showOrCreate();
   }
 
-  private static onWindowAllClosed() {}
+  private registerLifecycleEvents(): void {
+    // Keep PostyBirb running in the system tray after the last window closes.
+    app.on('window-all-closed', () => {});
 
-  private static onClose() {
-    // Dereference the window object, usually you would store windows
-    // in an array if your app supports multi windows, this is the time
-    // when you should delete the corresponding element.
-    PostyBirb.mainWindow = null;
+    // macOS: re-show the window when the dock icon is clicked.
+    app.on('activate', () => {
+      this.windowManager.show();
+    });
+
+    // A second launch should focus the existing window, not spawn a new one.
+    app.on('second-instance', () => {
+      if (app.isReady()) {
+        this.windowManager.show();
+      }
+    });
+
+    app.on('quit', () => {
+      this.shutdown();
+    });
   }
 
-  private static onReady() {
-    // This method will be called when Electron has finished
-    // initialization and is ready to create browser windows.
-    // Some APIs can only be used after this event occurs.
-    PostyBirb.initAppTray();
-    PostyBirb.initMainWindow();
-    PostyBirb.loadMainWindow();
-  }
-
-  private static onActivate() {
-    // On macOS it's common to re-create a window in the app when the
-    // dock icon is clicked and there are no other windows open.
-    if (PostyBirb.mainWindow === null) {
-      PostyBirb.onReady();
-    }
-  }
-
-  private static async onQuit() {
-    if (PostyBirb.nestApp) {
-      await PostyBirb.nestApp.close();
-    }
+  private async shutdown(): Promise<void> {
+    await this.nestApp.close().catch((error) => {
+      // Ignore errors during shutdown
+      console.error('Error during shutdown:', error);
+    });
     process.exit();
-  }
-
-  private static initMainWindow() {
-    const { workAreaSize } = screen.getPrimaryDisplay();
-    const width = Math.min(1280, workAreaSize.width || 1280);
-    const height = Math.min(720, workAreaSize.height || 720);
-
-    // Create the browser window.
-    PostyBirb.mainWindow = new BrowserWindow({
-      title: 'PostyBirb',
-      darkTheme: nativeTheme.shouldUseDarkColors,
-      width,
-      height,
-      show: false,
-      icon: PostyBirb.appImage,
-      autoHideMenuBar: true,
-      webPreferences: {
-        contextIsolation: true,
-        backgroundThrottling: false,
-        preload: join(__dirname, 'preload.js'),
-        webviewTag: true,
-        spellcheck: StartupOptionsManager.get().spellchecker,
-        devTools: true,
-      },
-    });
-    PostyBirb.mainWindow.setMenu(null);
-    PostyBirb.mainWindow.center();
-    // PostyBirb.mainWindow.webContents.openDevTools({ mode: 'detach' });
-
-    PostyBirb.mainWindow.webContents.on('will-navigate', (event, url) => {
-      if (url.startsWith('file://')) {
-        event.preventDefault();
-      }
-    });
-
-    // if main window is ready to show, close the splash window and show the main window
-    PostyBirb.mainWindow.once('ready-to-show', () => {
-      loader.hide();
-      PostyBirb.mainWindow?.show();
-    });
-
-    // Emitted when the window is closed.
-    PostyBirb.mainWindow.on('closed', () => {
-      PostyBirb.onClose();
-    });
-  }
-
-  private static loadMainWindow() {
-    // load the index.html of the app.
-    if (this.isDevelopmentMode()) {
-      PostyBirb.mainWindow?.loadURL(`http://localhost:${rendererAppPort}`);
-    } else {
-      PostyBirb.mainWindow?.loadURL(
-        `https://localhost:${PostyBirbEnvConfig.port}`,
-      );
-    }
-  }
-
-  private static initAppTray() {
-    if (!PostyBirb.appTray) {
-      const trayItems: Array<
-        Electron.MenuItem | Electron.MenuItemConstructorOptions
-      > = [
-        {
-          label: 'Open',
-          click() {
-            PostyBirb.showMainWindow();
-          },
-        },
-        {
-          enabled: !isLinux(),
-          label: 'Launch on Startup',
-          type: 'checkbox',
-          checked: StartupOptionsManager.get().startAppOnSystemStartup,
-          click(event) {
-            const { checked } = event;
-            app.setLoginItemSettings({
-              openAtLogin: event.checked,
-              path: app.getPath('exe'),
-            });
-            StartupOptionsManager.set({
-              startAppOnSystemStartup: checked,
-            });
-          },
-        },
-        {
-          label: 'Quit',
-          click() {
-            PostyBirb.application.quit();
-          },
-        },
-      ];
-
-      let image = PostyBirb.appImage;
-      if (isOSX()) {
-        image = image.resize({
-          width: 16,
-          height: 16,
-        });
-      }
-
-      const tray = new Tray(image);
-      tray.setContextMenu(Menu.buildFromTemplate(trayItems));
-      tray.setToolTip('PostyBirb');
-      tray.on('click', () => PostyBirb.showMainWindow());
-      StartupOptionsManager.onUpdate(PostyBirb.refreshAppTray);
-      PostyBirb.appTray = tray;
-    }
-  }
-
-  private static refreshAppTray() {
-    if (PostyBirb.appTray) {
-      PostyBirb.appTray.destroy();
-      PostyBirb.appTray = null;
-      PostyBirb.initAppTray();
-    }
-  }
-
-  private static showMainWindow() {
-    if (!PostyBirb.mainWindow) {
-      PostyBirb.onReady();
-    } else {
-      if (PostyBirb.mainWindow.isMinimized()) {
-        PostyBirb.mainWindow.show();
-      }
-
-      PostyBirb.mainWindow.focus();
-    }
-  }
-
-  static main(electronApp: Electron.App, browserWindow: typeof BrowserWindow) {
-    PostyBirb.BrowserWindow = browserWindow;
-    PostyBirb.application = electronApp;
-    PostyBirb.appImage = nativeImage.createFromPath(appIcon);
-    PostyBirb.application.on('window-all-closed', PostyBirb.onWindowAllClosed); // Quit when all windows are closed.
-    PostyBirb.application.on('ready', PostyBirb.onReady); // App is ready to load data
-    PostyBirb.application.on('activate', PostyBirb.onActivate); // App is activated
-    PostyBirb.application.on('second-instance', () => {
-      if (PostyBirb.application.isReady()) {
-        PostyBirb.onReady();
-      }
-    });
-    PostyBirb.application.on('quit', PostyBirb.onQuit);
-
-    if (PostyBirb.application.isReady()) {
-      PostyBirb.onReady();
-    }
-  }
-
-  static registerNestApp(nestApp: INestApplication) {
-    PostyBirb.nestApp = nestApp;
   }
 }

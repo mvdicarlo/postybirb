@@ -5,320 +5,114 @@ import './bootstrap-electron-config';
 // Ensure proxy is imported first to patch fetch before any request is made.
 import '@postybirb/http';
 
-import {
-  trustPostyBirbLocalCertificate,
-} from '@postybirb/http';
 import { INestApplication } from '@nestjs/common';
-import { PostyBirbDirectories } from '@postybirb/fs';
-import {
-  flushAppInsights,
-  initializeAppInsights,
-  Logger,
-  trackException,
-} from '@postybirb/logger';
+import { initializeAppInsights } from '@postybirb/logger';
 import {
   PostyBirbEnvConfig,
-  RemoteConfigManager,
-  toError,
   validateEnvConfigOrExit,
 } from '@postybirb/utils/common';
-import { app, BrowserWindow, crashReporter, session } from 'electron';
+import { app, crashReporter } from 'electron';
 import contextMenu from 'electron-context-menu';
-import PostyBirb from './app/app';
-import ElectronEvents from './app/events/electron.events';
+import PostyBirbApp from './app/app';
+import { APP_USER_MODEL_ID } from './app/constants';
+import { bootstrapElectronEvents } from './app/events/electron.events';
+import {
+  registerChildProcessDiagnostics,
+  registerPowerDiagnostics,
+  registerProcessErrorHandlers,
+} from './app/main-process/diagnostics';
+import { startupLoader } from './app/main-process/loader';
+import {
+  bootstrapWithTimeout,
+  injectProcessEnvironment,
+  logStartupBanner,
+  quitOnStartupFailure,
+} from './app/main-process/startup';
 import { environment } from './environments/environment';
 
-// Handle --help and validate --port. Previously this ran implicitly at module
-// load inside the env-config lib; now it must be invoked explicitly so that
-// importing the env config from non-electron processes (e.g. tests) does not
-// pull electron APIs.
+// Handle --help and validate --port before anything else runs.
 validateEnvConfigOrExit({
   version: app.getVersion() || '4.0.2',
   onValidationFailed: () => app.quit(),
 });
 
-// Initialize crash reporter
 crashReporter.start({
   productName: 'PostyBirb',
   companyName: 'PostyBirb',
   uploadToServer: false,
 });
 
-const isOnlyInstance = app.requestSingleInstanceLock();
-if (!isOnlyInstance) {
+// Enforce a single running instance; subsequent launches are funneled to the
+// existing window by the 'second-instance' handler in PostyBirbApp.
+if (!app.requestSingleInstanceLock()) {
   app.quit();
   process.exit();
 }
 
+app.setAppUserModelId(APP_USER_MODEL_ID);
+
+// Keep the renderer and its timers running in the background so long-running
+// post queues do not stall when the window is hidden.
 app.commandLine.appendSwitch('disable-renderer-backgrounding');
 app.commandLine.appendSwitch('disable-background-timer-throttling');
 app.commandLine.appendSwitch('disable-features', 'CrossOriginOpenerPolicy');
 
-// Inject environment for use in preload
-process.env.POSTYBIRB_PORT = PostyBirbEnvConfig.port;
-process.env.POSTYBIRB_VERSION = environment.version;
-process.env.POSTYBIRB_ENV =
-  (process.env.POSTYBIRB_ENV ?? environment.production)
-    ? 'production'
-    : 'development';
-
-const remoteConfig = RemoteConfigManager.getSync();
-const entries: [string, string][] = [
-  ['Version', environment.version],
-  ['Mode', process.env.POSTYBIRB_ENV ?? ''],
-  ['Port', String(PostyBirbEnvConfig.port)],
-  ['Storage', PostyBirbDirectories.POSTYBIRB_DIRECTORY],
-  ['App Data', app.getPath('userData')],
-  ['===== Remote Config =====', ''],
-  ['Remote Enabled', String(remoteConfig?.enabled)],
-  [
-    'Remote Password',
-    remoteConfig?.enabled ? (remoteConfig?.password ?? '') : '',
-  ],
-];
-const labelWidth = Math.max(...entries.map(([k]) => k.length));
-const valueWidth = Math.max(...entries.map(([, v]) => v.length));
-// "║  Label : Value  ║" → 2 + labelWidth + 3 + valueWidth + 2
-const innerWidth = 2 + labelWidth + 3 + valueWidth + 2;
-const title = 'PostyBirb';
-const titlePad = Math.max(innerWidth, title.length + 4);
-const w = Math.max(innerWidth, titlePad);
-const titleLine = title.padStart(Math.floor((w + title.length) / 2)).padEnd(w);
-
-const lines = entries.map(
-  ([k, v]) => `║  ${k.padEnd(labelWidth)} : ${v.padEnd(valueWidth)}  ║`,
-);
-
-// eslint-disable-next-line no-console
-console.log(
-  [
-    '',
-    `╔${'═'.repeat(w)}╗`,
-    `║${titleLine}║`,
-    `╠${'═'.repeat(w)}╣`,
-    ...lines,
-    `╚${'═'.repeat(w)}╝`,
-    '',
-  ].join('\n'),
-);
+injectProcessEnvironment();
+logStartupBanner();
 
 initializeAppInsights({
   enabled: true,
   appVersion: environment.version,
 });
 
-const logger = Logger('MainProcess');
-const BOOTSTRAP_TIMEOUT_MS = 180_000;
+// Register diagnostics as early as possible so failures during bootstrap (and
+// early GPU/child-process crashes) are captured.
+registerProcessErrorHandlers();
+registerChildProcessDiagnostics();
 
-type LoaderModule = {
-  show: () => void;
-  hide: () => void;
-};
+async function bootstrapClientServer(): Promise<INestApplication> {
+  const { bootstrapClientServer: bootstrap } =
+    // eslint-disable-next-line @nx/enforce-module-boundaries
+    await import('apps/client-server/src/main');
+  return bootstrap({ userDataPath: app.getPath('userData') });
+}
 
-let loaderModule: LoaderModule | null = null;
-let isQuittingDueToStartupFailure = false;
-
-function getLoaderModule(): LoaderModule | null {
-  if (PostyBirbEnvConfig.headless) {
-    return null;
-  }
-
-  if (loaderModule) {
-    return loaderModule;
-  }
-
+async function start(): Promise<void> {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
-    loaderModule = require('./app/loader/loader');
-    return loaderModule;
-  } catch (error) {
-    logger
-      .withError(toError(error))
-      .warn('Failed to load startup loader module.');
-    return null;
-  }
-}
-
-function hideLoaderSafely(reason: string) {
-  const loader = getLoaderModule();
-  if (!loader) {
-    return;
-  }
-
-  try {
-    loader.hide();
-  } catch (error) {
-    logger
-      .withError(toError(error))
-      .warn(`Failed to hide startup loader window (${reason}).`);
-  }
-}
-
-async function bootstrapClientServerWithTimeout(): Promise<INestApplication> {
-  return Promise.race([
-    Main.bootstrapClientServer(),
-    new Promise<never>((_, reject) => {
-      setTimeout(() => {
-        reject(
-          new Error(
-            `Timed out bootstrapping client server after ${BOOTSTRAP_TIMEOUT_MS}ms.`,
-          ),
-        );
-      }, BOOTSTRAP_TIMEOUT_MS);
-    }),
-  ]);
-}
-
-function quitOnStartupFailure(error: unknown) {
-  if (isQuittingDueToStartupFailure) {
-    return;
-  }
-
-  isQuittingDueToStartupFailure = true;
-  const startupError = toError(error);
-  logger.withError(startupError).error('Fatal startup failure. Quitting app.');
-  trackException(startupError, {
-    source: 'electron-main',
-    type: 'startupFailure',
-  });
-
-  hideLoaderSafely('startup-failure');
-
-  const forceExitTimer = setTimeout(() => {
-    app.exit(1);
-  }, 5_000);
-  forceExitTimer.unref();
-
-  flushAppInsights().finally(() => {
-    app.quit();
-  });
-}
-
-// Handle uncaught exceptions in main process
-process.on('uncaughtException', (error: Error) => {
-  // eslint-disable-next-line no-console
-  logger.withError(error).error('Uncaught Exception in Main Process:');
-  trackException(error, {
-    source: 'electron-main',
-    type: 'uncaughtException',
-  });
-  // Give time for telemetry to be sent before exiting
-  flushAppInsights().then(() => {
-    if (!environment.production) {
-      process.exit(1);
-    }
-  });
-});
-
-// Handle unhandled promise rejections in main process
-process.on('unhandledRejection', (reason: unknown) => {
-  const error = toError(reason);
-  // eslint-disable-next-line no-console
-  logger.withError(error).error('Unhandled Rejection in Main Process:');
-  trackException(error, {
-    source: 'electron-main',
-    type: 'unhandledRejection',
-  });
-  flushAppInsights();
-});
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-// const psbId = powerSaveBlocker.start('prevent-app-suspension');
-
-app.on(
-  'certificate-error',
-  (
-    event: Electron.Event,
-    webContents: Electron.WebContents,
-    url: string,
-    error: string,
-    certificate: Electron.Certificate,
-    callback: (allow: boolean) => void,
-  ) => {
-    if (
-      certificate.issuerName === 'postybirb.com' &&
-      certificate.subject.organizations[0] === 'PostyBirb' &&
-      certificate.issuer.country === 'US'
-    ) {
-      callback(true);
-    } else {
-      callback(false);
-    }
-  },
-);
-
-export default class Main {
-  static async initialize() {
-    process.env.remote = JSON.stringify(await RemoteConfigManager.get());
-  }
-
-  static async bootstrapClientServer(): Promise<INestApplication> {
-    return (
-      // eslint-disable-next-line @nx/enforce-module-boundaries
-      (await import('apps/client-server/src/main')).bootstrapClientServer({
-        userDataPath: app.getPath('userData'),
-      })
-    );
-  }
-
-  static bootstrapApp(nestApp: INestApplication) {
-    PostyBirb.main(app, BrowserWindow);
-    PostyBirb.registerNestApp(nestApp);
-  }
-
-  static bootstrapAppEvents() {
-    ElectronEvents.bootstrapElectronEvents();
-  }
-}
-
-async function start() {
-  try {
-    // handle setup events as quickly as possible
-    await Main.initialize();
-
-    // bootstrap app
-    const nestApp = await bootstrapClientServerWithTimeout();
+    const nestApp = await bootstrapWithTimeout(bootstrapClientServer);
 
     if (PostyBirbEnvConfig.headless) {
       // eslint-disable-next-line no-console
       console.log('[PostyBirb] Running in headless mode (no UI)');
-    } else {
-      Main.bootstrapApp(nestApp);
-      Main.bootstrapAppEvents();
+      return;
     }
-  } catch (e) {
-    quitOnStartupFailure(e);
+
+    // Register IPC handlers BEFORE creating the window so the sandboxed preload
+    // can synchronously read app metadata as it loads.
+    bootstrapElectronEvents();
+
+    const postyBirb = new PostyBirbApp(nestApp);
+    postyBirb.start();
+  } catch (error) {
+    quitOnStartupFailure(error);
   }
 }
 
-// Suppress SSL error messages
-app.on('ready', () => {
-  if (!PostyBirbEnvConfig.headless) {
-    const loader = getLoaderModule();
-    try {
-      loader?.show();
-    } catch (error) {
-      logger.withError(toError(error)).warn('Failed to show startup loader.');
+app
+  .whenReady()
+  .then(() => {
+    if (!PostyBirbEnvConfig.headless) {
+      startupLoader.show();
     }
-  }
 
-  setInterval(() => {
-    const allMetrics = app.getAppMetrics();
-    allMetrics.forEach((proc) => {
-      logger.info(`Process ID: ${proc.pid}`);
-      logger.info(`Type: ${proc.type}`); // e.g., 'Browser', 'Tab', 'GPU'
-      logger.info(`CPU %: ${proc.cpu.percentCPUUsage}%`);
-      logger.info(`Memory (Private Bytes): ${proc.memory.privateBytes} KB`);
-      logger.info('---');
-    });
-  }, 5 * 60_000);
-
-  trustPostyBirbLocalCertificate(session.defaultSession);
-
-  contextMenu();
-  start();
-});
+    registerPowerDiagnostics();
+    contextMenu();
+    return start();
+  })
+  .catch((error) => {
+    quitOnStartupFailure(error);
+  });
 
 app.on('before-quit', () => {
-  hideLoaderSafely('before-quit');
+  startupLoader.hide('before-quit');
 });
