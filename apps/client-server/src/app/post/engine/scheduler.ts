@@ -282,24 +282,29 @@ export class RelayScheduler {
   }
 
   /**
-   * Sleep for `ms`, but resolve early if the token is cancelled so a pending
+   * Sleep for `ms`, but resolve early if the token's signal aborts so a pending
    * rate-limit/backoff wait does not force the user to sit through a long
-   * window after pressing cancel. Returns the (possibly shortened) actual
-   * elapsed intent; callers re-check `token.isCancelled` after awaiting.
+   * window after pressing cancel. The actual sleep stays injectable via
+   * `this.wait` (kept deterministic in tests); the AbortSignal only races it.
+   * Callers re-check `token.isCancelled` after awaiting.
    */
   private async interruptibleWait(
     ms: number,
-    token: CancellableToken,
+    signal: AbortSignal,
   ): Promise<void> {
-    if (token.isCancelled || ms <= 0) return;
-    let unsubscribe: (() => void) | undefined;
-    await Promise.race([
-      this.wait(ms),
-      new Promise<void>((resolve) => {
-        unsubscribe = token.onCancel(resolve);
-      }),
-    ]);
-    unsubscribe?.();
+    if (signal.aborted || ms <= 0) return;
+    let onAbort: (() => void) | undefined;
+    try {
+      await Promise.race([
+        this.wait(ms),
+        new Promise<void>((resolve) => {
+          onAbort = () => resolve();
+          signal.addEventListener('abort', onAbort, { once: true });
+        }),
+      ]);
+    } finally {
+      if (onAbort) signal.removeEventListener('abort', onAbort);
+    }
   }
 
   private async runJob(job: RelayJob): Promise<void> {
@@ -340,7 +345,7 @@ export class RelayScheduler {
             continue;
           }
           // eslint-disable-next-line no-await-in-loop
-          await this.interruptibleWait(Math.max(0, soonest - Date.now()), token);
+          await this.interruptibleWait(Math.max(0, soonest - Date.now()), token.signal);
           continue;
         }
 
@@ -495,7 +500,7 @@ export class RelayScheduler {
         data: { kind: se.kind, delayMs: decision.delayMs, attempt: task.attempts },
       });
       await this.persistTaskDurable(job, task);
-      await this.interruptibleWait(decision.delayMs, token);
+      await this.interruptibleWait(decision.delayMs, token.signal);
       if (token.isCancelled) {
         task.status = NodeStatus.CANCELLED;
         task.error = toTaskError(se);
