@@ -8,6 +8,7 @@ import { Settings, SettingsRepository } from '@postybirb/database';
 import { SETTINGS_UPDATES } from '@postybirb/socket-events';
 import { EntityId, SettingsConstants } from '@postybirb/types';
 import {
+  isLinux,
   PostyBirbEnvConfig,
   shouldBypassProxyForUrl,
   StartupOptionsManager,
@@ -168,6 +169,15 @@ export class SettingsService
     if (startUpOptions.appDataPath) {
       // eslint-disable-next-line no-param-reassign
       startUpOptions.appDataPath = startUpOptions.appDataPath.trim();
+    }
+
+    if (isLinux() && startUpOptions.startAppOnSystemStartup) {
+      // eslint-disable-next-line no-param-reassign
+      startUpOptions.startAppOnSystemStartup = false;
+      this.logger.warn('Startup on system startup is not supported on Linux');
+      throw new BadRequestException(
+        'Startup on system startup is not supported on Linux',
+      );
     }
 
     if (startUpOptions.port) {
