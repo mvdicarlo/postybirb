@@ -17,8 +17,6 @@ export {
   onProxyConfigurationApplied,
   resolveProxyForUrl,
 };
-export { resolveTelegramSocksProxy } from './telegram-proxy';
-export type { TelegramSocksProxySettings } from './telegram-proxy';
 export { isProxiedResolution } from '@postybirb/utils/common';
 export {
   collectManagedPartitionIds,
