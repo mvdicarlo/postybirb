@@ -133,8 +133,21 @@ describe('DirectoryWatchersService', () => {
       id: updatedRecord.id,
       importAction: DirectoryWatcherImportAction.NEW_SUBMISSION,
       path: 'path',
+      template: template.id,
       templateId: template.id,
     });
+
+    const reloadedRecord = await service.findByIdOrThrow(updatedRecord.id);
+    expect(reloadedRecord.toDTO().template).toBe(template.id);
+
+    const clearDto = new UpdateDirectoryWatcherDto();
+    clearDto.templateId = null;
+    const clearedRecord = await service.update(record.id, clearDto);
+    expect(clearedRecord.templateId).toBeNull();
+    expect(clearedRecord.toDTO().template).toBeNull();
+
+    updateDto.templateId = template.id;
+    await service.update(record.id, updateDto);
 
     await submissionService.remove(template.id);
     const rec = await service.findByIdOrThrow(updatedRecord.id);
