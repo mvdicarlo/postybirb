@@ -15,6 +15,8 @@ export class AccountRecord extends BaseRecord {
   readonly state: ILoginState;
   readonly data: unknown;
   readonly websiteInfo: IWebsiteInfo;
+  readonly defaultFileTemplateId: AccountId | null;
+  readonly defaultMessageTemplateId: AccountId | null;
 
   constructor(dto: IAccountDto) {
     super(dto);
@@ -24,6 +26,8 @@ export class AccountRecord extends BaseRecord {
     this.state = dto.state;
     this.data = dto.data;
     this.websiteInfo = dto.websiteInfo;
+    this.defaultFileTemplateId = dto.defaultFileTemplateId ?? null;
+    this.defaultMessageTemplateId = dto.defaultMessageTemplateId ?? null;
   }
 
   /**

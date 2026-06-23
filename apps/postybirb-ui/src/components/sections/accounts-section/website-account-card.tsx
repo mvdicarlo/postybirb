@@ -39,6 +39,7 @@ import {
     showUpdateErrorNotification,
 } from '../../../utils/notifications';
 import { HoldToConfirmButton } from '../../hold-to-confirm';
+import { AccountDefaultTemplatesPopover } from './account-default-templates-popover';
 import { useAccountsContext } from './context';
 import { useAccountActions } from './hooks';
 
@@ -205,6 +206,9 @@ const AccountRow = memo(({ account }: { account: AccountRecord }) => {
             <IconLogin size={14} />
           </ActionIcon>
         </Tooltip>
+
+        {/* Default templates popover */}
+        <AccountDefaultTemplatesPopover account={account} />
 
         {/* Reset button with confirmation popover */}
         <Popover

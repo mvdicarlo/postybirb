@@ -29,7 +29,6 @@ import { SubmissionRepository } from './submission.repository';
 import { TagConverterRepository } from './tag-converter.repository';
 import { TagGroupRepository } from './tag-group.repository';
 import { UserConverterRepository } from './user-converter.repository';
-import { UserSpecifiedWebsiteOptionsRepository } from './user-specified-website-options.repository';
 import { WebsiteDataRepository } from './website-data.repository';
 import { WebsiteOptionsRepository } from './website-options.repository';
 
@@ -49,7 +48,6 @@ describe('RepositoryRegistry + saveFromEntity integration', () => {
     tagConverter: TagConverterRepository,
     tagGroup: TagGroupRepository,
     userConverter: UserConverterRepository,
-    userSpecifiedWebsiteOptions: UserSpecifiedWebsiteOptionsRepository,
     websiteData: WebsiteDataRepository,
     websiteOptions: WebsiteOptionsRepository,
   } as const;
@@ -71,7 +69,6 @@ describe('RepositoryRegistry + saveFromEntity integration', () => {
     ['tagConverter', 'TagConverterSchema'],
     ['tagGroup', 'TagGroupSchema'],
     ['userConverter', 'UserConverterSchema'],
-    ['userSpecifiedWebsiteOptions', 'UserSpecifiedWebsiteOptionsSchema'],
     ['websiteData', 'WebsiteDataSchema'],
     ['websiteOptions', 'WebsiteOptionsSchema'],
   ];
@@ -147,12 +144,6 @@ describe('RepositoryRegistry + saveFromEntity integration', () => {
       data: { title: 't' } as IWebsiteFormFields,
       isDefault: false,
     });
-    const userSpecifiedWebsiteOptions =
-      await repos.userSpecifiedWebsiteOptions.insert({
-        accountId: account.id,
-        type: SubmissionType.FILE,
-        options: {},
-      });
     const directoryWatcher = await repos.directoryWatcher.insert({
       path: '/tmp/x',
       importAction: DirectoryWatcherImportAction.NEW_SUBMISSION,
@@ -199,7 +190,6 @@ describe('RepositoryRegistry + saveFromEntity integration', () => {
       postQueueRecord,
       websiteData,
       websiteOptions,
-      userSpecifiedWebsiteOptions,
       directoryWatcher,
       customShortcut,
       notification,

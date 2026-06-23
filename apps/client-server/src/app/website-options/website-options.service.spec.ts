@@ -22,8 +22,6 @@ import { CreateSubmissionDto } from '../submission/dtos/create-submission.dto';
 import { FileSubmissionService } from '../submission/services/file-submission.service';
 import { MessageSubmissionService } from '../submission/services/message-submission.service';
 import { SubmissionService } from '../submission/services/submission.service';
-import { UserSpecifiedWebsiteOptionsModule } from '../user-specified-website-options/user-specified-website-options.module';
-import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
 import { ValidationService } from '../validation/validation.service';
 import { WebsiteImplProvider } from '../websites/implementations/provider';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
@@ -64,7 +62,6 @@ describe('WebsiteOptionsService', () => {
           TestPlatformModule,
           WebsitesModule,
           AccountModule,
-          UserSpecifiedWebsiteOptionsModule,
           PostParsersModule,
           FormGeneratorModule,
         ],
@@ -82,7 +79,6 @@ describe('WebsiteOptionsService', () => {
           ValidationService,
           WebsiteOptionsService,
           WebsiteImplProvider,
-          UserSpecifiedWebsiteOptionsService,
           FileConverterService,
         ],
       }).compile();

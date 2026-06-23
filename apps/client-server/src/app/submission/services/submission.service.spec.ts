@@ -1,16 +1,15 @@
 import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { clearDatabase } from '@postybirb/database';
-import { EntityNotFoundError } from '@postybirb/database';
+import { clearDatabase, EntityNotFoundError } from '@postybirb/database';
 import { PostyBirbDirectories, writeSync } from '@postybirb/fs';
 import {
-  FileSubmissionMetadata,
-  ISubmissionMetadata,
-  IWebsiteFormFields,
-  ScheduleType,
-  SubmissionRating,
-  SubmissionType,
-  WebsiteOptionsDto,
+    FileSubmissionMetadata,
+    ISubmissionMetadata,
+    IWebsiteFormFields,
+    ScheduleType,
+    SubmissionRating,
+    SubmissionType,
+    WebsiteOptionsDto,
 } from '@postybirb/types';
 import { readFileSync } from 'fs';
 import { join } from 'path';
@@ -26,8 +25,6 @@ import { FormGeneratorModule } from '../../form-generator/form-generator.module'
 import { SharpInstanceManager } from '../../image-processing/sharp-instance-manager';
 import { TestPlatformModule } from '../../platform/testing/test-platform.module';
 import { PostParsersModule } from '../../post-parsers/post-parsers.module';
-import { UserSpecifiedWebsiteOptionsModule } from '../../user-specified-website-options/user-specified-website-options.module';
-import { UserSpecifiedWebsiteOptionsService } from '../../user-specified-website-options/user-specified-website-options.service';
 import { waitUntilPromised } from '../../utils/wait.util';
 import { ValidationService } from '../../validation/validation.service';
 import { WebsiteOptionsService } from '../../website-options/website-options.service';
@@ -61,7 +58,6 @@ describe('SubmissionService', () => {
           TestPlatformModule,
           AccountModule,
           WebsitesModule,
-          UserSpecifiedWebsiteOptionsModule,
           PostParsersModule,
           FormGeneratorModule,
         ],
@@ -75,7 +71,6 @@ describe('SubmissionService', () => {
           MessageSubmissionService,
           AccountService,
           WebsiteRegistryService,
-          UserSpecifiedWebsiteOptionsService,
           ValidationService,
           WebsiteOptionsService,
           WebsiteImplProvider,

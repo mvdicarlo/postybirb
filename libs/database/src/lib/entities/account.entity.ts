@@ -1,4 +1,5 @@
 import type {
+    EntityId,
     IAccount,
     IAccountDto,
     ILoginState,
@@ -45,6 +46,10 @@ export class Account extends DatabaseEntity<IAccount> implements IAccount {
 
   public groups: string[];
 
+  public defaultFileTemplateId: EntityId | null;
+
+  public defaultMessageTemplateId: EntityId | null;
+
   /**
    * Eagerly-loaded website data row. Stripped from `toDTO` payloads —
    * exposed only via the per-website-instance projection. Typed as
@@ -71,6 +76,8 @@ export class Account extends DatabaseEntity<IAccount> implements IAccount {
     this.name = init.name ?? '';
     this.website = init.website ?? '';
     this.groups = init.groups ?? [];
+    this.defaultFileTemplateId = init.defaultFileTemplateId ?? null;
+    this.defaultMessageTemplateId = init.defaultMessageTemplateId ?? null;
   }
 
   public toObject(): IAccount {
@@ -81,6 +88,8 @@ export class Account extends DatabaseEntity<IAccount> implements IAccount {
       name: this.name,
       website: this.website,
       groups: this.groups,
+      defaultFileTemplateId: this.defaultFileTemplateId,
+      defaultMessageTemplateId: this.defaultMessageTemplateId,
     } as IAccount;
   }
 
