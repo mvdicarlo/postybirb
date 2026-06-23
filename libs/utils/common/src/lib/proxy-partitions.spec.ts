@@ -1,7 +1,4 @@
-import {
-  collectManagedPartitionIds,
-  getInstagramOAuthPartitionId,
-} from './proxy-partitions';
+import { collectManagedPartitionIds } from './proxy-partitions';
 
 describe('proxy-partitions', () => {
   it('collects oauth partitions for instagram accounts', () => {
@@ -10,10 +7,7 @@ describe('proxy-partitions', () => {
     ]);
 
     expect(ids).toEqual(
-      expect.arrayContaining([
-        'acc-1',
-        getInstagramOAuthPartitionId('acc-1'),
-      ]),
+      expect.arrayContaining(['acc-1', 'instagram-oauth-acc-1']),
     );
   });
 
@@ -27,7 +21,7 @@ describe('proxy-partitions', () => {
       expect.arrayContaining([
         'account-1',
         'account-2',
-        getInstagramOAuthPartitionId('account-2'),
+        'instagram-oauth-account-2',
       ]),
     );
   });

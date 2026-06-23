@@ -5,16 +5,6 @@ export type PartitionEntry = {
   websiteId: WebsiteId;
 };
 
-export const INSTAGRAM_OAUTH_PARTITION_PREFIX = 'instagram-oauth-';
-
-export function getInstagramOAuthPartitionId(accountId: string): string {
-  return `${INSTAGRAM_OAUTH_PARTITION_PREFIX}${accountId}`;
-}
-
-export function isInstagramOAuthPartition(partitionId: string): boolean {
-  return partitionId.startsWith(INSTAGRAM_OAUTH_PARTITION_PREFIX);
-}
-
 export function collectManagedPartitionIds(
   accountEntries: PartitionEntry[],
 ): string[] {
@@ -23,7 +13,7 @@ export function collectManagedPartitionIds(
   for (const entry of accountEntries) {
     ids.add(entry.partitionId);
     if (entry.websiteId === 'instagram') {
-      ids.add(getInstagramOAuthPartitionId(entry.partitionId));
+      ids.add(`instagram-oauth-${entry.partitionId}`);
     }
   }
 

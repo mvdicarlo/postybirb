@@ -18,11 +18,6 @@ export {
   resolveProxyForUrl,
 };
 export { isProxiedResolution } from '@postybirb/utils/common';
-export {
-  collectManagedPartitionIds,
-  getInstagramOAuthPartitionId,
-} from '@postybirb/utils/common';
-export type { PartitionEntry } from '@postybirb/utils/common';
 
 type FetchInput = Request | URL | string;
 
