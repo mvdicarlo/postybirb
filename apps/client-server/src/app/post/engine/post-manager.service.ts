@@ -14,11 +14,11 @@
 import { Injectable, OnModuleInit, Optional } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import {
-  JobTreeNode,
-  NodeStatus,
-  PostRecordResumeMode,
-  ScheduleType,
-  SubmissionId,
+    JobTreeNode,
+    NodeStatus,
+    PostRecordResumeMode,
+    ScheduleType,
+    SubmissionId,
 } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/common';
 import { Mutex } from 'async-mutex';
@@ -44,17 +44,21 @@ export class RelayPostManager implements OnModuleInit {
 
   private recoveryAttempt: Promise<void> | undefined;
 
+  /**
+   * Set whenever {@link drain} is invoked. A drain that finds another already
+   * in flight sets this instead of queueing a second run; the in-flight drain
+   * checks it after each `runToIdle` pass and loops again if set. This closes
+   * the window where a job enqueued *after* `runToIdle` returned but *before*
+   * the mutex released would otherwise sit idle (and be masked by isPosting)
+   * until an unrelated submission triggered the next drain.
+   */
+  private drainRerunRequested = false;
+
   /** submissionId -> active jobId, so cancel/dedup can find the running job. */
   private readonly activeBySubmission = new Map<SubmissionId, string>();
 
   /** submissionId -> terminal status, awaiting the queue to acknowledge/dequeue. */
   private readonly outcomes = new Map<SubmissionId, NodeStatus>();
-
-  /** jobId -> timer that re-drives drain() when a future scheduledFor arrives. */
-  private readonly scheduleTimers = new Map<
-    string,
-    ReturnType<typeof setTimeout>
-  >();
 
   constructor(
     private readonly deps: RelayPipelineDeps,
@@ -187,12 +191,11 @@ export class RelayPostManager implements OnModuleInit {
 
   /**
    * Enqueue a submission: prepare context, plan a job, persist the tree, run.
-   * Returns the created job id. `schedule` carries optional priority/scheduledFor.
+   * Returns the created job id.
    */
   async enqueue(
     submissionId: SubmissionId,
     resumeMode: PostRecordResumeMode = PostRecordResumeMode.NEW,
-    schedule?: { priority?: number; scheduledFor?: number },
   ): Promise<string> {
     await this.waitForRecoveryAttempt();
 
@@ -210,8 +213,6 @@ export class RelayPostManager implements OnModuleInit {
 
     const job = this.scheduler.createJob(submissionId, {
       resumeMode,
-      priority: schedule?.priority,
-      scheduledFor: schedule?.scheduledFor,
     });
 
     try {
@@ -223,10 +224,6 @@ export class RelayPostManager implements OnModuleInit {
       );
       this.activeBySubmission.set(submissionId, job.id);
       this.outcomes.delete(submissionId);
-      // If the job is scheduled for the future, runToIdle won't pick it up yet
-      // and nothing else re-drives the scheduler. Arm a timer so the job runs
-      // when its time arrives even with no other queue activity.
-      this.armScheduleTimer(job.id, schedule?.scheduledFor);
       this.drain().catch((error) =>
         this.logger
           .withError(error)
@@ -235,43 +232,12 @@ export class RelayPostManager implements OnModuleInit {
       return job.id;
     } catch (error) {
       this.deps.release(job.id);
-      this.clearScheduleTimer(job.id);
       this.scheduler.discard(job.id);
       this.logger
         .withError(error)
         .withMetadata({ jobId: job.id, submissionId })
         .error('Relay enqueue failed; rolled back in-memory job state');
       throw error;
-    }
-  }
-
-  /** Arm (or replace) a one-shot timer to re-drive drain() at `scheduledFor`. */
-  private armScheduleTimer(jobId: string, scheduledFor?: number): void {
-    const existing = this.scheduleTimers.get(jobId);
-    if (existing) {
-      clearTimeout(existing);
-      this.scheduleTimers.delete(jobId);
-    }
-    if (scheduledFor === undefined) return;
-    const delay = scheduledFor - Date.now();
-    if (delay <= 0) return; // already due; the immediate drain() handles it
-    const timer = setTimeout(() => {
-      this.scheduleTimers.delete(jobId);
-      this.drain().catch((error) =>
-        this.logger.withError(error).error('Relay scheduled run failed'),
-      );
-    }, delay);
-    // Don't keep the event loop / app alive solely for a scheduled post.
-    timer.unref?.();
-    this.scheduleTimers.set(jobId, timer);
-  }
-
-  /** Cancel any pending scheduled-run timer for a job. */
-  private clearScheduleTimer(jobId: string): void {
-    const timer = this.scheduleTimers.get(jobId);
-    if (timer) {
-      clearTimeout(timer);
-      this.scheduleTimers.delete(jobId);
     }
   }
 
@@ -337,7 +303,6 @@ export class RelayPostManager implements OnModuleInit {
   cancel(submissionId: SubmissionId): boolean {
     const jobId = this.activeBySubmission.get(submissionId);
     if (jobId) {
-      this.clearScheduleTimer(jobId);
       this.scheduler.cancel(jobId);
       return true;
     }
@@ -398,18 +363,53 @@ export class RelayPostManager implements OnModuleInit {
     return this.outcomes.get(submissionId);
   }
 
+  /**
+   * True when the submission's most recent post job completed successfully.
+   * Used by the post queue to gate dependent submissions: a submission that
+   * declares a `dependsOn` is only handed to the engine once every dependency
+   * reports success here. Reads the durable persisted job (newest first), with
+   * any in-flight job overlaid from memory so a just-finished run is reflected
+   * immediately. Returns false when the submission has never been posted.
+   */
+  async hasSucceeded(submissionId: SubmissionId): Promise<boolean> {
+    // Prefer the live job if one is tracked (most up-to-date state).
+    const activeJobId = this.activeBySubmission.get(submissionId);
+    if (activeJobId) {
+      const live = this.scheduler.getJob(activeJobId);
+      if (live) return computeJobStatus(live) === NodeStatus.SUCCEEDED;
+    }
+    const jobs = await this.persistence.loadBySubmission(submissionId);
+    if (jobs.length === 0) return false;
+    const newest = jobs[0];
+    const live = this.scheduler.getJob(newest.id);
+    return computeJobStatus(live ?? newest) === NodeStatus.SUCCEEDED;
+  }
+
   /** Queue acknowledges a terminal outcome (after dequeue). */
   acknowledge(submissionId: SubmissionId): void {
     this.outcomes.delete(submissionId);
   }
 
-  /** Drive the scheduler to idle, then run terminal handling. Serialized. */
+  /**
+   * Drive the scheduler to idle, then run terminal handling. Serialized via
+   * `runMutex`: if a drain is already in flight we flag a rerun rather than
+   * queueing a second one. The in-flight drain re-checks the flag after each
+   * pass and loops again if set, so a job enqueued in the tiny window between
+   * the scheduler going idle and the mutex releasing is still picked up
+   * promptly instead of waiting for the next cron tick.
+   */
   private async drain(): Promise<void> {
+    this.drainRerunRequested = true;
     if (this.runMutex.isLocked()) return; // a drain is already running
     const release = await this.runMutex.acquire();
     try {
-      await this.scheduler.runToIdle();
-      await this.handleCompletions();
+      while (this.drainRerunRequested) {
+        this.drainRerunRequested = false;
+        // eslint-disable-next-line no-await-in-loop
+        await this.scheduler.runToIdle();
+        // eslint-disable-next-line no-await-in-loop
+        await this.handleCompletions();
+      }
     } catch (error) {
       this.logger.withError(error).error('Relay run failed');
     } finally {
@@ -423,7 +423,6 @@ export class RelayPostManager implements OnModuleInit {
       const job = this.scheduler.getJob(jobId);
       if (this.isActiveJob(job) || !job) continue;
       this.activeBySubmission.delete(submissionId);
-      this.clearScheduleTimer(jobId);
       this.outcomes.set(submissionId, computeJobStatus(job));
       // eslint-disable-next-line no-await-in-loop
       await this.onTerminal(job);

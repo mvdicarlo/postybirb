@@ -71,11 +71,6 @@ export const TRACER_JOB_EVENTS = {
   COMPLETED: 'job.completed' as const,
 } as const;
 
-/** Tracer event names for scheduler lifecycle. */
-export const TRACER_SCHEDULER_EVENTS = {
-  TOKEN_CREATED_LATE: 'scheduler.token_created_late' as const,
-} as const;
-
 /** Skip reason strings. */
 export const SKIP_REASONS = {
   DEPENDENCY_UNREACHABLE: 'dependency unreachable' as const,

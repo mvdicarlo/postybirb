@@ -8,18 +8,22 @@
 
 import { ITaskError, PostErrorKind } from '@postybirb/types';
 
+/**
+ * The engine's canonical error type. Every pipeline stage that fails throws
+ * one of these, tagged with the stage name and a {@link PostErrorKind} that
+ * tells the scheduler how to react (retry, park, fail). The constructor
+ * inherits a cause's stack so the original throw site stays inspectable in
+ * logs even after re-wrapping.
+ */
 export class StageError extends Error {
   kind: PostErrorKind;
   stage: string;
-  /** for RATE_LIMITED: explicit wait hint in ms */
-  retryAfterMs?: number;
   additionalInfo?: unknown;
 
   constructor(init: {
     kind: PostErrorKind;
     stage: string;
     message: string;
-    retryAfterMs?: number;
     additionalInfo?: unknown;
     cause?: unknown;
   }) {
@@ -27,7 +31,6 @@ export class StageError extends Error {
     this.name = 'StageError';
     this.kind = init.kind;
     this.stage = init.stage;
-    this.retryAfterMs = init.retryAfterMs;
     this.additionalInfo = init.additionalInfo;
     if (init.cause instanceof Error && init.cause.stack) {
       this.stack = init.cause.stack;
@@ -120,7 +123,6 @@ export function classify(stage: string, err: unknown): StageError {
 }
 
 const RETRYABLE: ReadonlySet<PostErrorKind> = new Set([
-  PostErrorKind.RATE_LIMITED,
   PostErrorKind.TRANSIENT,
 ]);
 
@@ -134,22 +136,18 @@ export type RetryDecision =
 
 /**
  * Decide what to do after a task fails.
- *  - RATE_LIMITED: wait (does not consume an attempt).
  *  - TRANSIENT: exponential backoff with jitter, consumes an attempt.
  *  - everything else: terminal failure.
+ *
+ * Rate-limit parking is handled before this point as expected control flow
+ * (the pipeline returns a `rate_limited` outcome rather than throwing), so it
+ * never reaches the retry policy.
  */
 export function decideRetry(
   err: StageError,
   attemptsUsed: number,
   maxAttempts: number,
 ): RetryDecision {
-  if (err.kind === PostErrorKind.RATE_LIMITED) {
-    return {
-      action: 'retry',
-      delayMs: err.retryAfterMs ?? 1000,
-      consumesAttempt: false,
-    };
-  }
   if (!isRetryable(err.kind)) return { action: 'fail' };
   if (attemptsUsed >= maxAttempts) return { action: 'fail' };
 

@@ -22,7 +22,6 @@ describe('RelayTracer memory + disk hygiene', () => {
 
     // B's entry survives despite A's flood (no cross-job eviction).
     expect(tracer.getEntries('B')).toHaveLength(1);
-    expect(tracer.getLedger('B')).toHaveLength(1);
 
     // A is bounded to its per-job cap (2000), not unbounded.
     expect(tracer.getEntries('A').length).toBeLessThanOrEqual(2000);

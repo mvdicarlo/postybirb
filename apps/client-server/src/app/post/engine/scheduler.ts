@@ -10,7 +10,7 @@
 
 /* eslint-disable no-param-reassign */ // the scheduler mutates the job tree in place
 
-import { NodeStatus, PostErrorKind, PostRecordResumeMode } from '@postybirb/types';
+import { NodeStatus, PostRecordResumeMode } from '@postybirb/types';
 import { CancellableToken } from '../models/cancellable-token';
 import { DEPENDENCY_STATES, SKIP_REASONS, TRACER_JOB_EVENTS, TRACER_TASK_EVENTS } from './constants';
 import { StageError, classify, decideRetry, toTaskError } from './errors';
@@ -21,7 +21,7 @@ import {
   evaluateDependency,
   isTerminal,
 } from './model';
-import { PipelineDeps, planJob, resetForResume, runTaskPass } from './pipeline';
+import { PipelineDeps, TaskPassResult, planJob, resetForResume, runTaskPass } from './pipeline';
 import { taskTraceFields } from './tracer.service';
 
 export interface SchedulerOptions {
@@ -166,15 +166,11 @@ export class RelayScheduler {
   createJob(
     submissionId: string,
     opts?: {
-      priority?: number;
-      scheduledFor?: number;
       resumeMode?: PostRecordResumeMode;
     },
   ): RelayJob {
     const job = new RelayJob({
       submissionId,
-      priority: opts?.priority,
-      scheduledFor: opts?.scheduledFor,
       resumeMode: opts?.resumeMode ?? PostRecordResumeMode.NEW,
     });
     this.recentlyCompleted.delete(job.id);
@@ -223,8 +219,6 @@ export class RelayScheduler {
   enqueue(
     submissionId: string,
     opts?: {
-      priority?: number;
-      scheduledFor?: number;
       resumeMode?: PostRecordResumeMode;
     },
   ): RelayJob {
@@ -264,24 +258,17 @@ export class RelayScheduler {
   }
 
   /** Run all due jobs to completion (or terminal failure). */
-  async runToIdle(startNow = Date.now()): Promise<void> {
-    let now = startNow;
+  async runToIdle(): Promise<void> {
     for (;;) {
-      const cutoff = now;
       const due = [...this.jobs.values()]
-        .filter(
-          (j) =>
-            !isTerminal(j) &&
-            (j.scheduledFor === undefined || j.scheduledFor <= cutoff),
-        )
-        .sort((a, b) => b.priority - a.priority || a.createdAt - b.createdAt);
+        .filter((j) => !isTerminal(j))
+        .sort((a, b) => a.createdAt - b.createdAt);
 
       if (due.length === 0) return;
 
       const batch = due.slice(0, this.opts.maxConcurrentJobs);
       // eslint-disable-next-line no-await-in-loop
       await Promise.all(batch.map((job) => this.runJob(job)));
-      now = Date.now();
     }
   }
 
@@ -319,6 +306,9 @@ export class RelayScheduler {
     this.deps.tracer.pushJobDelta(job);
 
     try {
+      // Main run loop. Each iteration either runs a batch of tasks, sleeps
+      // until something becomes runnable, or terminates the loop because all
+      // tasks are terminal or the job has been cancelled.
       for (;;) {
         if (token.isCancelled) break;
 
@@ -328,6 +318,11 @@ export class RelayScheduler {
         const runnable = pending.filter((t) => this.isRunnable(job, t, Date.now()));
 
         if (runnable.length === 0) {
+          // Nothing can run right now. Either everyone is parked on a
+          // wait/dependency gate (sleep until the soonest gate releases) or
+          // some tasks are dependency-BLOCKED (their upstreams can never
+          // satisfy them) — mark those SKIPPED and loop so any newly-unblocked
+          // dependents can be evaluated.
           const soonest = this.soonestWakeup(job);
           if (soonest === undefined) {
             this.skipBlockedDependents(job);
@@ -390,6 +385,11 @@ export class RelayScheduler {
       }
     }
     if (soonest !== undefined) return soonest;
+    // A dependency is pending but no task has an absolute wakeup time — the
+    // gate will only release when another task completes. Return a near-zero
+    // "nudge" so the outer loop yields to the event loop (giving the
+    // currently-running tasks a chance to finish) and then re-evaluates,
+    // rather than spinning hot on a tight while-true.
     return anyDepPending ? Date.now() + 5 : undefined;
   }
 
@@ -426,6 +426,13 @@ export class RelayScheduler {
     }
   }
 
+  /**
+   * Drive one task through a pipeline pass and apply the typed-error retry
+   * policy. Recurses (a "trampoline" tail-call) on a TRANSIENT retry so the
+   * second attempt re-uses this same method and benefits from the same
+   * persistence/cancel-on-wait handling — the recursion depth is bounded by
+   * `task.maxAttempts` (default 3) so stack growth is not a concern.
+   */
   private async runTaskWithRetries(
     job: RelayJob,
     task: RelayTask,
@@ -440,18 +447,25 @@ export class RelayScheduler {
       data: { attempt: task.attempts + 1 },
     });
 
+    let passResult: TaskPassResult | undefined;
     let passError: unknown;
     try {
-      await runTaskPass(this.deps, job, task, token);
+      passResult = await runTaskPass(this.deps, job, task, token);
     } catch (err) {
       passError = err;
     }
-
-    // Success path: the units are SUCCEEDED in memory and the post(s) already
-    // went out. Persist durably, but a persistence failure here must NOT be
-    // treated as a task failure (that would re-open the unit and double-post
-    // on resume). Keep the SUCCEEDED state; persist_failed is logged loudly.
+    // No error thrown: the pass either completed (units SUCCEEDED, post(s)
+    // already went out) or asked to park on a rate-limit gate. In both cases a
+    // persistence failure must NOT be treated as a task failure (that would
+    // re-open the unit and double-post on resume) — keep the in-memory state;
+    // persist_failed is logged loudly.
     if (passError === undefined) {
+      if (passResult?.outcome === 'rate_limited') {
+        task.status = NodeStatus.WAITING; // waitingUntil set in the gate stage
+        await this.persistTaskDurable(job, task);
+        this.deps.tracer.pushTaskDelta(job, task);
+        return;
+      }
       await this.persistTaskDurable(job, task);
       return;
     }
@@ -460,13 +474,6 @@ export class RelayScheduler {
       passError instanceof StageError
         ? passError
         : classify('unknown', passError);
-
-    if (se.kind === PostErrorKind.RATE_LIMITED) {
-      task.status = NodeStatus.WAITING; // waitingUntil set in the gate stage
-      await this.persistTaskDurable(job, task);
-      this.deps.tracer.pushTaskDelta(job, task);
-      return;
-    }
 
     const decision = decideRetry(se, task.attempts, task.maxAttempts);
     if (decision.action === 'retry') {

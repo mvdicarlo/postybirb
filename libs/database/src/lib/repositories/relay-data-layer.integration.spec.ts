@@ -44,7 +44,6 @@ describe('Relay data layer (PR#1)', () => {
       submissionId,
       status: NodeStatus.QUEUED,
       resumeMode: PostRecordResumeMode.NEW,
-      priority: 0,
     });
 
     const task = await repos.task.insert({

@@ -34,12 +34,6 @@ export interface IPostJob extends IEntity {
   /** How this job resumes prior work. */
   resumeMode: PostRecordResumeMode;
 
-  /** Queue ordering; higher runs first. */
-  priority: number;
-
-  /** Epoch ms the job is scheduled to run (undefined = immediately). */
-  scheduledFor?: number;
-
   /** When the job reached a terminal state. */
   completedAt?: string;
 

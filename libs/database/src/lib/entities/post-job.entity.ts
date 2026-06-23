@@ -34,10 +34,6 @@ export class PostJob extends DatabaseEntity<IPostJob> implements IPostJob {
 
   public resumeMode: PostRecordResumeMode;
 
-  public priority: number;
-
-  public scheduledFor?: number;
-
   public completedAt?: string;
 
   public tasks!: PostTask[];
@@ -55,8 +51,6 @@ export class PostJob extends DatabaseEntity<IPostJob> implements IPostJob {
     this.attemptOf = init.attemptOf;
     this.status = init.status ?? ('' as NodeStatus);
     this.resumeMode = init.resumeMode ?? ('' as PostRecordResumeMode);
-    this.priority = init.priority ?? 0;
-    this.scheduledFor = init.scheduledFor;
     this.completedAt = init.completedAt;
   }
 
@@ -71,8 +65,6 @@ export class PostJob extends DatabaseEntity<IPostJob> implements IPostJob {
       attemptOf: this.attemptOf,
       status: this.status,
       resumeMode: this.resumeMode,
-      priority: this.priority,
-      scheduledFor: this.scheduledFor,
       completedAt: this.completedAt,
       tasks: this.tasks,
     };

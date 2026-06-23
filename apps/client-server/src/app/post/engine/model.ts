@@ -67,6 +67,17 @@ export function isDone(value: StatusLike): boolean {
 // Working-tree nodes
 // ---------------------------------------------------------------------------
 
+/**
+ * Smallest unit of dispatchable work inside a task: either one file batch
+ * (a single onPostFileSubmission call carrying `fileBatchSize` files) or the
+ * one-shot message body for a message website. A task may own many BATCH
+ * units when a file submission is sharded across multiple posts; message
+ * tasks always have exactly one MESSAGE unit.
+ *
+ * Units own their own status so a partial failure mid-task (e.g. batch 2 of 4
+ * is rate-limited or errors) can be resumed without re-posting the batches
+ * that already succeeded — the cornerstone of the engine's idempotency.
+ */
 export class RelayUnit {
   id: EntityId;
   taskId: EntityId;
@@ -93,6 +104,13 @@ export class RelayUnit {
   }
 }
 
+/**
+ * A single (website, account) destination for a job. Carries the per-target
+ * retry counter, optional dependency gate (e.g. "wait for the standard sites
+ * to post first so you can quote their source URLs"), and the ordered list
+ * of units that physically dispatch the work. The task's own `status` is the
+ * roll-up the scheduler reads when deciding what to run next.
+ */
 export class RelayTask {
   id: EntityId;
   jobId: EntityId;
@@ -138,14 +156,18 @@ export class RelayTask {
   }
 }
 
+/**
+ * Top-level unit of work tracked by the scheduler: one posting attempt of one
+ * submission. Owns the full tree of tasks/units that materialize the post and
+ * carries the resume mode that controls how a re-run treats previously-
+ * succeeded units.
+ */
 export class RelayJob {
   id: EntityId;
   submissionId: EntityId;
   attemptOf?: EntityId;
   resumeMode: PostRecordResumeMode;
   status: NodeStatus;
-  priority: number;
-  scheduledFor?: number;
   createdAt: number;
   completedAt?: number;
   tasks: RelayTask[];
@@ -154,15 +176,11 @@ export class RelayJob {
     id?: EntityId;
     submissionId: EntityId;
     resumeMode?: PostRecordResumeMode;
-    priority?: number;
-    scheduledFor?: number;
     attemptOf?: EntityId;
   }) {
     this.id = init.id ?? v4();
     this.submissionId = init.submissionId;
     this.resumeMode = init.resumeMode ?? PostRecordResumeMode.NEW;
-    this.priority = init.priority ?? 0;
-    this.scheduledFor = init.scheduledFor;
     this.attemptOf = init.attemptOf;
     this.status = NodeStatus.QUEUED;
     this.createdAt = Date.now();
@@ -174,6 +192,21 @@ export class RelayJob {
 // Derived state
 // ---------------------------------------------------------------------------
 
+/**
+ * Roll up the task statuses into the job's effective status. The order of
+ * checks below encodes a priority — earlier branches win:
+ *  1. RUNNING wins so the UI shows live progress as long as anything is on
+ *     the wire.
+ *  2. WAITING surfaces "parked on a rate-limit/dependency gate" even when
+ *     other tasks are still queued, so the UI can show a wait countdown.
+ *  3. QUEUED/READY ⇒ RUNNING: from the user's perspective there's still
+ *     active work to do, even if no task happens to be mid-dispatch right now.
+ *  4. Any FAILED ⇒ the whole job is FAILED (one bad website fails the post).
+ *  5. CANCELLED only wins if *every* task was cancelled; a mix of cancelled +
+ *     succeeded is reported as SUCCEEDED so a single late cancel can't mask a
+ *     post that already went out.
+ *  6. Default: SUCCEEDED (only SUCCEEDED + SKIPPED remain).
+ */
 export function computeJobStatus(job: RelayJob): NodeStatus {
   const statuses = job.tasks.map((t) => t.status);
   if (statuses.length === 0) return NodeStatus.SUCCEEDED;
