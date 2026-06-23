@@ -1,32 +1,34 @@
 import { ApiProperty } from '@nestjs/swagger';
+import type { ProxyConfiguration } from '@postybirb/types';
+import { StartupOptions } from '@postybirb/utils/common';
 import { Type } from 'class-transformer';
 import { IsBoolean, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { UpdateProxyConfigurationDto } from '../../proxy/dtos/proxy-configuration.dto';
 
-export class UpdateStartupSettingsDto {
+export class UpdateStartupSettingsDto implements StartupOptions {
   @ApiProperty()
   @IsOptional()
   @IsString()
-  appDataPath?: string;
+  appDataPath: string;
 
   @ApiProperty()
   @IsOptional()
   @IsString()
-  port?: string;
+  port: string;
 
   @ApiProperty()
   @IsOptional()
   @IsBoolean()
-  startAppOnSystemStartup?: boolean;
+  startAppOnSystemStartup: boolean;
 
   @ApiProperty()
   @IsOptional()
   @IsBoolean()
-  spellchecker?: boolean;
+  spellchecker: boolean;
 
   @ApiProperty()
   @IsOptional()
   @ValidateNested()
   @Type(() => UpdateProxyConfigurationDto)
-  proxy?: UpdateProxyConfigurationDto;
+  proxy: ProxyConfiguration;
 }
