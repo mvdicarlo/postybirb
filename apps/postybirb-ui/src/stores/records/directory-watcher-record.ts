@@ -21,7 +21,7 @@ export class DirectoryWatcherRecord extends BaseRecord {
     super(dto);
     this.path = dto.path;
     this.importAction = dto.importAction;
-    this.template = dto.template;
+    this.template = dto.template ?? dto.templateId ?? undefined;
   }
 
   /**
