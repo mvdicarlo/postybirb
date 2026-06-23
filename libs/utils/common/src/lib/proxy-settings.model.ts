@@ -147,6 +147,17 @@ export function buildPacProxyDirective(entry: ProxyPoolEntry): string {
   return `PROXY ${hostPort}`;
 }
 
+export function buildPacScriptUrl(
+  config: Pick<ProxyConfiguration, 'mode' | 'pacAccessToken'>,
+  appPort: string,
+): string | null {
+  if (config.mode !== 'pac_routing' || !config.pacAccessToken?.trim()) {
+    return null;
+  }
+
+  return `https://127.0.0.1:${appPort}/api/proxy/pac/${config.pacAccessToken}`;
+}
+
 export function buildChromiumProxyBypassRules(
   appPort?: string | number,
 ): string {

@@ -12,6 +12,7 @@ import {
   normalizeDomain,
   PostyBirbEnvConfig,
   resolveCloudApiUrl,
+  StartupOptionsManager,
 } from '@postybirb/utils/common';
 import { WebsiteDomainService } from './website-domain.service';
 
@@ -85,6 +86,26 @@ export class PacScriptService {
     }
 
     return script;
+  }
+
+  async generateForToken(token: string): Promise<string | null> {
+    const normalizedToken = token.trim();
+    if (!normalizedToken) {
+      return null;
+    }
+
+    const { proxy } = StartupOptionsManager.get();
+    const expectedToken = proxy.pacAccessToken?.trim();
+
+    if (
+      proxy.mode !== 'pac_routing' ||
+      !expectedToken ||
+      normalizedToken !== expectedToken
+    ) {
+      return null;
+    }
+
+    return this.generate(proxy);
   }
 
   private groupAccountsByWebsite(accounts: Account[]): Map<string, Account[]> {

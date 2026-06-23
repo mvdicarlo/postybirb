@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { Account, WebsiteDataRepository } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import {
@@ -6,8 +6,7 @@ import {
   mergeDomainLists,
   normalizeDomain,
 } from '@postybirb/utils/common';
-
-export type StaticWebsiteDomainProvider = (websiteId: string) => string[];
+import { WebsiteRegistryService } from '../websites/website-registry.service';
 
 @Injectable()
 export class WebsiteDomainService {
@@ -17,11 +16,10 @@ export class WebsiteDomainService {
 
   private readonly websiteDataRepository = new WebsiteDataRepository();
 
-  private staticDomainProvider: StaticWebsiteDomainProvider | null = null;
-
-  setStaticDomainProvider(provider: StaticWebsiteDomainProvider): void {
-    this.staticDomainProvider = provider;
-  }
+  constructor(
+    @Inject(forwardRef(() => WebsiteRegistryService))
+    private readonly websiteRegistry: WebsiteRegistryService,
+  ) {}
 
   registerStaticDomains(websiteId: string, domains: string[]): void {
     const normalized = mergeDomainLists(domains);
@@ -50,7 +48,7 @@ export class WebsiteDomainService {
       return [];
     }
 
-    const staticDomains = this.ensureStaticDomains(websiteId);
+    const staticDomains = this.ensureStaticDomains(websiteId, accounts);
     const runtimeDomains = await this.collectRuntimeDomains(websiteId, accounts);
     const total = mergeDomainLists(staticDomains, runtimeDomains);
 
@@ -71,12 +69,16 @@ export class WebsiteDomainService {
     return total;
   }
 
-  private ensureStaticDomains(websiteId: string): string[] {
+  private ensureStaticDomains(
+    websiteId: string,
+    accounts: Account[],
+  ): string[] {
     if (this.websiteDomainMap.has(websiteId)) {
       return this.getStaticDomains(websiteId);
     }
 
-    const domains = this.staticDomainProvider?.(websiteId) ?? [];
+    const domains =
+      this.websiteRegistry.collectProxyDomainsForAccounts(accounts);
     this.registerStaticDomains(websiteId, domains);
     return this.getStaticDomains(websiteId);
   }

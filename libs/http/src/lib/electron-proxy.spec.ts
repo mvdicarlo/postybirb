@@ -72,7 +72,7 @@ describe('electron-proxy', () => {
       });
     });
 
-    it('maps pac_routing mode to HTTPS PAC URL', () => {
+    it('maps pac_routing mode to HTTPS PAC URL with local cert trust', () => {
       expect(
         __resolveSessionProxyConfigForTests({
           mode: 'pac_routing',

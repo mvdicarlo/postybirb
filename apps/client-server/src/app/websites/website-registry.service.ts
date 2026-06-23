@@ -3,7 +3,6 @@ import {
     Inject,
     Injectable,
     NotFoundException,
-    OnModuleInit,
     Optional,
 } from '@nestjs/common';
 import { Account, AccountRepository, WebsiteDataRepository } from '@postybirb/database';
@@ -18,7 +17,6 @@ import {
 } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/common';
 import { Class } from 'type-fest';
-import { WebsiteDomainService } from '../proxy/website-domain.service';
 import { WEBSITE_IMPLEMENTATIONS } from '../constants';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { validateWebsiteDecoratorProps } from './decorators/website-decorator-props';
@@ -36,7 +34,7 @@ type WebsiteInstances = Record<string, Record<string, UnknownWebsite>>;
  * Creates a new instance for each user account provided.
  */
 @Injectable()
-export class WebsiteRegistryService implements OnModuleInit {
+export class WebsiteRegistryService {
   private readonly logger = Logger();
 
   private readonly availableWebsites: Record<string, Class<UnknownWebsite>> =
@@ -58,7 +56,6 @@ export class WebsiteRegistryService implements OnModuleInit {
     @Inject(WEBSITE_IMPLEMENTATIONS)
     private readonly websiteImplementations: Class<UnknownWebsite>[],
     private readonly platform: PlatformService,
-    private readonly websiteDomainService: WebsiteDomainService,
     @Optional() private readonly webSocket?: WSGateway,
   ) {
     this.initializedPromise = new Promise<void>((resolve) => {
@@ -99,12 +96,6 @@ export class WebsiteRegistryService implements OnModuleInit {
         data: await this.getWebsiteInfo(),
       });
     }
-  }
-
-  onModuleInit(): void {
-    this.websiteDomainService.setStaticDomainProvider((websiteId) =>
-      this.collectStaticProxyDomains(websiteId),
-    );
   }
 
   /**
@@ -219,6 +210,20 @@ export class WebsiteRegistryService implements OnModuleInit {
     }
 
     return undefined;
+  }
+
+  /**
+   * Static PAC hostnames from an existing website instance for one of the accounts.
+   */
+  public collectProxyDomainsForAccounts(accounts: Account[]): string[] {
+    for (const account of accounts) {
+      const instance = this.findInstance(account);
+      if (instance) {
+        return instance.collectProxyDomains();
+      }
+    }
+
+    return [];
   }
 
   /**
@@ -346,29 +351,5 @@ export class WebsiteRegistryService implements OnModuleInit {
    */
   public createDefaultWebsiteInstance(account: Account): DefaultWebsite {
     return new DefaultWebsite(account, this.platform);
-  }
-
-  private collectStaticProxyDomains(websiteId: string): string[] {
-    const WebsiteCtor = this.availableWebsites[websiteId];
-    if (!WebsiteCtor) {
-      return [];
-    }
-
-    try {
-      const probeAccount = new Account({
-        id: `__domain-probe-${websiteId}__`,
-        name: '__probe__',
-        website: websiteId,
-        groups: [],
-      });
-      const probe = new WebsiteCtor(probeAccount, this.platform);
-      return probe.collectProxyDomains();
-    } catch (error) {
-      this.logger
-        .withError(error)
-        .withMetadata({ websiteId })
-        .warn('Failed static domain collection');
-      return [];
-    }
   }
 }

@@ -14,6 +14,7 @@ import {
   toEnabledProxyProfile,
   buildSessionProxyRules,
   buildChromiumProxyBypassRules,
+  buildPacScriptUrl,
   cloneProxyConfiguration,
   defaultProxyConfiguration,
   prepareProxyConfiguration,
@@ -42,17 +43,13 @@ function readStartupProxyConfiguration(): ProxyConfiguration {
   }
 }
 
-function buildPacScriptUrl(config: ProxyConfiguration): string {
-  const { port } = PostyBirbEnvConfig;
-  return `https://127.0.0.1:${port}/api/proxy/pac/${config.pacAccessToken}`;
-}
-
 function redactPacUrl(config: ProxyConfiguration): string | undefined {
-  if (config.mode !== 'pac_routing' || !config.pacAccessToken?.trim()) {
+  const url = buildPacScriptUrl(config, PostyBirbEnvConfig.port);
+  if (!url) {
     return undefined;
   }
 
-  return `https://127.0.0.1:${PostyBirbEnvConfig.port}/api/proxy/pac/[redacted]`;
+  return url.replace(/\/[^/]+$/, '/[redacted]');
 }
 
 function resolveSessionProxyConfig(config: ProxyConfiguration): ProxyConfig {
@@ -81,9 +78,14 @@ function resolveSessionProxyConfig(config: ProxyConfiguration): ProxyConfig {
         return { mode: 'system' };
       }
 
+      const pacScript = buildPacScriptUrl(config, PostyBirbEnvConfig.port);
+      if (!pacScript) {
+        return { mode: 'system' };
+      }
+
       return {
         mode: 'pac_script',
-        pacScript: buildPacScriptUrl(config),
+        pacScript,
       };
     }
     case 'system':
@@ -107,7 +109,10 @@ async function applyProxyConfigToSession(
   targetSession: Session,
   config: ProxyConfig,
 ): Promise<void> {
-  trustPostyBirbLocalCertificate(targetSession);
+  if (config.mode === 'pac_script') {
+    trustPostyBirbLocalCertificate(targetSession);
+  }
+
   try {
     await targetSession.setProxy(config);
     targetSession.closeAllConnections();
@@ -254,10 +259,22 @@ export async function resolveProxyForUrl(url: string): Promise<string> {
   return session.defaultSession.resolveProxy(url);
 }
 
+function hydrateActiveConfigurationFromStartup(): void {
+  if (activeSessionProxyConfig !== null) {
+    return;
+  }
+
+  const config = readStartupProxyConfiguration();
+  proxyAuthStore.syncPool(toPoolAuthEntries(config.pool));
+  activeProxyConfiguration = config;
+}
+
 export async function onSessionCreated(createdSession: Session): Promise<void> {
   if (!app.isReady()) {
     return;
   }
+
+  hydrateActiveConfigurationFromStartup();
 
   const proxyConfig =
     activeSessionProxyConfig ??

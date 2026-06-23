@@ -6,7 +6,6 @@ import {
   Res,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { StartupOptionsManager } from '@postybirb/utils/common';
 import { Response } from 'express';
 import { PacScriptService } from './pac-script.service';
 
@@ -17,14 +16,10 @@ export class ProxyPacController {
 
   @Get(':token')
   async getPacScript(@Param('token') token: string, @Res() res: Response) {
-    const { proxy } = StartupOptionsManager.get();
-    const expectedToken = proxy.pacAccessToken?.trim();
-
-    if (!expectedToken || token !== expectedToken) {
+    const body = await this.pacScriptService.generateForToken(token);
+    if (!body) {
       throw new NotFoundException();
     }
-
-    const body = await this.pacScriptService.generate(proxy);
 
     res.setHeader('Content-Type', 'application/x-ns-proxy-autoconfig');
     res.setHeader('Cache-Control', 'no-store');

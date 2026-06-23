@@ -33,7 +33,33 @@ export type ProxyConnectionTestResult = {
 export class ProxyService {
   private readonly logger = Logger('ProxyService');
 
+  private applyInFlight: Promise<void> | null = null;
+
   constructor(private readonly accountRepository: AccountRepository) {}
+
+  /** Called after Nest bootstrap finishes listening. */
+  bootstrapApply(): Promise<void> {
+    return this.scheduleApply();
+  }
+
+  /**
+   * Coalesces concurrent apply requests (startup, save, new account, etc.).
+   */
+  scheduleApply(): Promise<void> {
+    if (IsTestEnvironment()) {
+      return Promise.resolve();
+    }
+
+    if (this.applyInFlight) {
+      return this.applyInFlight;
+    }
+
+    this.applyInFlight = this.apply().finally(() => {
+      this.applyInFlight = null;
+    });
+
+    return this.applyInFlight;
+  }
 
   /** Applies persisted proxy settings to all Electron sessions. */
   async apply(): Promise<void> {
@@ -46,7 +72,7 @@ export class ProxyService {
 
   /** Re-applies proxy after a new account partition is created. */
   async onAccountCreated(): Promise<void> {
-    await this.apply();
+    await this.scheduleApply();
   }
 
   /**
@@ -87,7 +113,7 @@ export class ProxyService {
     }
 
     StartupOptionsManager.set({ proxy: proxyPatch });
-    await this.apply();
+    await this.scheduleApply();
   }
 
   /**

@@ -1,5 +1,6 @@
 import { Account } from '@postybirb/database';
 import { WebsiteDomainService } from './website-domain.service';
+import { WebsiteRegistryService } from '../websites/website-registry.service';
 
 jest.mock('@postybirb/database', () => {
   const actual = jest.requireActual('@postybirb/database');
@@ -14,32 +15,37 @@ jest.mock('@postybirb/database', () => {
 
 describe('WebsiteDomainService', () => {
   let service: WebsiteDomainService;
+  let websiteRegistry: jest.Mocked<
+    Pick<WebsiteRegistryService, 'collectProxyDomainsForAccounts'>
+  >;
 
   beforeEach(() => {
-    service = new WebsiteDomainService();
+    websiteRegistry = {
+      collectProxyDomainsForAccounts: jest.fn(),
+    };
+    service = new WebsiteDomainService(
+      websiteRegistry as unknown as WebsiteRegistryService,
+    );
   });
 
   it('returns no domains when there are no accounts', async () => {
-    service.setStaticDomainProvider(() => ['example.com']);
+    websiteRegistry.collectProxyDomainsForAccounts.mockReturnValue([
+      'example.com',
+    ]);
 
     await expect(service.getDomainsForRouting('pixiv', [])).resolves.toEqual([]);
   });
 
-  it('does not invoke the static provider when there are no accounts', async () => {
-    const provider = jest.fn(() => ['example.com']);
-    service.setStaticDomainProvider(provider);
-
+  it('does not query the registry when there are no accounts', async () => {
     await service.getDomainsForRouting('pixiv', []);
 
-    expect(provider).not.toHaveBeenCalled();
+    expect(websiteRegistry.collectProxyDomainsForAccounts).not.toHaveBeenCalled();
   });
 
-  it('lazy-loads static domains only when accounts exist', async () => {
-    const provider = jest
-      .fn()
-      .mockReturnValueOnce(['pixiv.net'])
-      .mockReturnValueOnce(['should-not-run.example']);
-    service.setStaticDomainProvider(provider);
+  it('loads static domains from existing website instances', async () => {
+    websiteRegistry.collectProxyDomainsForAccounts.mockReturnValue([
+      'pixiv.net',
+    ]);
 
     const account = new Account({
       id: 'acc-1',
@@ -55,6 +61,11 @@ describe('WebsiteDomainService', () => {
       service.getDomainsForRouting('pixiv', [account]),
     ).resolves.toEqual(['pixiv.net']);
 
-    expect(provider).toHaveBeenCalledTimes(1);
+    expect(websiteRegistry.collectProxyDomainsForAccounts).toHaveBeenCalledTimes(
+      1,
+    );
+    expect(websiteRegistry.collectProxyDomainsForAccounts).toHaveBeenCalledWith([
+      account,
+    ]);
   });
 });

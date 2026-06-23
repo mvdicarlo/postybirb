@@ -278,10 +278,6 @@ async function start() {
 
     // bootstrap app
     const nestApp = await bootstrapClientServerWithTimeout();
-    const { ProxyService } = await import(
-      'apps/client-server/src/app/proxy/proxy.service'
-    );
-    await nestApp.get(ProxyService).apply();
 
     if (PostyBirbEnvConfig.headless) {
       // eslint-disable-next-line no-console

@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Account, AccountRepository, clearDatabase } from '@postybirb/database';
-import { ProxyModule } from '../proxy/proxy.module';
 import { noopPlatformProvider } from '../platform/testing/noop-platform-providers';
 import { WebsiteImplProvider } from './implementations/provider';
 import TestWebsite from './implementations/test/test.website';
@@ -14,7 +13,6 @@ describe('WebsiteRegistryService', () => {
   beforeEach(async () => {
     clearDatabase();
     module = await Test.createTestingModule({
-      imports: [ProxyModule],
       providers: [
         WebsiteRegistryService,
         WebsiteImplProvider,
@@ -53,6 +51,23 @@ describe('WebsiteRegistryService', () => {
     expect(instance instanceof TestWebsite).toBe(true);
     expect(service.findInstance(account)).toEqual(instance);
     expect(service.getInstancesOf(TestWebsite)).toHaveLength(1);
+  });
+
+  it('collects proxy domains from an existing website instance', async () => {
+    const account = await accountRepository.insert(
+      new Account({
+        name: 'test',
+        id: 'test',
+        website: TestWebsite.prototype.decoratedProps.metadata.name,
+      }),
+    );
+
+    await service.create(account);
+
+    expect(service.collectProxyDomainsForAccounts([account])).toEqual(
+      expect.arrayContaining([expect.any(String)]),
+    );
+    expect(service.collectProxyDomainsForAccounts([])).toEqual([]);
   });
 
   it('should successfully remove website instance', async () => {
