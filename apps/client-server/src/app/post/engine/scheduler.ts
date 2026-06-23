@@ -15,11 +15,11 @@ import { CancellableToken } from '../models/cancellable-token';
 import { DEPENDENCY_STATES, SKIP_REASONS, TRACER_JOB_EVENTS, TRACER_TASK_EVENTS } from './constants';
 import { StageError, classify, decideRetry, toTaskError } from './errors';
 import {
-  RelayJob,
-  RelayTask,
-  computeJobStatus,
-  evaluateDependency,
-  isTerminal,
+    RelayJob,
+    RelayTask,
+    computeJobStatus,
+    evaluateDependency,
+    isTerminal,
 } from './model';
 import { PipelineDeps, TaskPassResult, planJob, resetForResume, runTaskPass } from './pipeline';
 import { taskTraceFields } from './tracer.service';
@@ -51,22 +51,16 @@ export class RelayScheduler {
 
   private readonly onJobChanged?: (job: RelayJob) => void | Promise<void>;
 
+  /**
+   * The live working set: only non-terminal (or just-completed-awaiting-forget)
+   * job trees the scheduler is actively running. This is the single in-memory
+   * index of "what is running" — the manager derives activeBySubmission from it
+   * rather than keeping a parallel map. Terminal jobs are dropped via
+   * {@link forget}; their durable record (and all history) lives in the DB.
+   */
   private readonly jobs = new Map<string, RelayJob>();
 
   private readonly tokens = new Map<string, CancellableToken>();
-
-  /**
-   * Small, insertion-ordered LRU of recently-completed job trees. Once a job
-   * reaches a terminal state the manager calls {@link forget} to drop it from
-   * the live `jobs` map (otherwise it would be retained for the life of the
-   * process — an unbounded leak). We keep the most recent few here so a
-   * just-finished job is still resolvable by {@link getJob} (e.g. a UI request
-   * landing right after completion) without re-reading the database; older
-   * entries are evicted. Persistent history always comes from the DB.
-   */
-  private readonly recentlyCompleted = new Map<string, RelayJob>();
-
-  private readonly maxRecentlyCompleted = 50;
 
   constructor(deps: PipelineDeps, opts?: Partial<SchedulerOptions>) {
     this.deps = deps;
@@ -81,7 +75,6 @@ export class RelayScheduler {
 
   /** Register an already-planned (or recovered) job without re-planning it. */
   adopt(job: RelayJob): void {
-    this.recentlyCompleted.delete(job.id);
     this.jobs.set(job.id, job);
     // Adopted jobs come from the database without a token (they didn't go through
     // createJob). Create one now so cancel() works and runJob has a token to use.
@@ -97,25 +90,44 @@ export class RelayScheduler {
   discard(jobId: string): void {
     this.jobs.delete(jobId);
     this.tokens.delete(jobId);
-    this.recentlyCompleted.delete(jobId);
   }
 
   /**
-   * Drop a terminal job from the live working set to bound memory. The job is
-   * moved into the bounded recently-completed cache so a brief follow-up lookup
-   * still resolves it. No-op if the job is unknown or still non-terminal.
+   * Drop a terminal job from the live working set to bound memory. After this
+   * the job (and all history) is served from the database — the DB is the
+   * source of truth for completed jobs. No-op if the job is unknown or still
+   * non-terminal.
    */
   forget(jobId: string): void {
     const job = this.jobs.get(jobId);
     if (!job || !isTerminal(job)) return;
     this.jobs.delete(jobId);
     this.tokens.delete(jobId);
-    this.recentlyCompleted.set(jobId, job);
-    while (this.recentlyCompleted.size > this.maxRecentlyCompleted) {
-      const oldest = this.recentlyCompleted.keys().next().value;
-      if (oldest === undefined) break;
-      this.recentlyCompleted.delete(oldest);
+  }
+
+  /** All tracked job trees (the live working set, including any just-completed
+   *  jobs not yet forgotten). Used by the manager to reap terminal jobs. */
+  getTrackedJobs(): RelayJob[] {
+    return [...this.jobs.values()];
+  }
+
+  /** All currently-active (non-terminal) job trees in the live working set. */
+  getActiveJobs(): RelayJob[] {
+    return [...this.jobs.values()].filter((j) => !isTerminal(j));
+  }
+
+  /**
+   * The newest currently-active (non-terminal) job for a submission, if one is
+   * tracked. Replaces the manager's parallel `activeBySubmission` map: the live
+   * `jobs` set already is the index of what's running.
+   */
+  getActiveJobForSubmission(submissionId: string): RelayJob | undefined {
+    let found: RelayJob | undefined;
+    for (const job of this.jobs.values()) {
+      if (job.submissionId !== submissionId || isTerminal(job)) continue;
+      if (!found || job.createdAt > found.createdAt) found = job;
     }
+    return found;
   }
 
   private async persistJob(job: RelayJob): Promise<void> {
@@ -173,7 +185,6 @@ export class RelayScheduler {
       submissionId,
       resumeMode: opts?.resumeMode ?? PostRecordResumeMode.NEW,
     });
-    this.recentlyCompleted.delete(job.id);
     this.jobs.set(job.id, job);
     // Create the cancellation token immediately so cancel() can interrupt the job
     // even before runJob is invoked, eliminating the race window.
@@ -228,10 +239,8 @@ export class RelayScheduler {
   }
 
   resume(jobId: string, mode: PostRecordResumeMode): RelayJob {
-    const job = this.jobs.get(jobId) ?? this.recentlyCompleted.get(jobId);
+    const job = this.jobs.get(jobId);
     if (!job) throw new Error(`unknown job ${jobId}`);
-    // A resumed job is live again: pull it back out of the completed cache.
-    this.recentlyCompleted.delete(jobId);
     this.jobs.set(jobId, job);
     // The previous token was deleted when the job completed; create a fresh one
     // so the job can be cancelled again during this execution.
@@ -254,7 +263,7 @@ export class RelayScheduler {
   }
 
   getJob(jobId: string): RelayJob | undefined {
-    return this.jobs.get(jobId) ?? this.recentlyCompleted.get(jobId);
+    return this.jobs.get(jobId);
   }
 
   /** Run all due jobs to completion (or terminal failure). */

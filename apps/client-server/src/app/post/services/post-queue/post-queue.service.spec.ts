@@ -37,9 +37,8 @@ describe('PostQueueService', () => {
     mockRelayPostManager = {
       enqueue: jest.fn().mockResolvedValue('job_1'),
       cancel: jest.fn().mockReturnValue(true),
-      acknowledge: jest.fn(),
       isPosting: jest.fn().mockReturnValue(false),
-      getOutcome: jest.fn().mockReturnValue(undefined),
+      getOutcome: jest.fn().mockResolvedValue(undefined),
       getActiveTrees: jest.fn().mockReturnValue([]),
       getHistory: jest.fn().mockResolvedValue([]),
       hasSucceeded: jest.fn().mockResolvedValue(false),
@@ -147,10 +146,13 @@ describe('PostQueueService', () => {
     const submission = await submissionService.create(createSubmissionDto());
     await service.enqueue([submission.id]);
 
-    mockRelayPostManager.getOutcome.mockReturnValue('SUCCEEDED' as never);
+    mockRelayPostManager.getOutcome.mockResolvedValue('SUCCEEDED' as never);
     await service.execute();
 
-    expect(mockRelayPostManager.acknowledge).toHaveBeenCalledWith(submission.id);
+    expect(mockRelayPostManager.getOutcome).toHaveBeenCalledWith(
+      submission.id,
+      expect.any(String),
+    );
     expect(await service.peek()).toBeNull();
   });
 

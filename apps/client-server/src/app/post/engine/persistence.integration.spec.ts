@@ -195,4 +195,97 @@ describe('RelayPersistence', () => {
     expect(history[0].tasks[0].status).toBe(NodeStatus.FAILED);
     expect(history[0].tasks[0].error?.message).toBe('submission deleted');
   });
+
+  describe('outcomeSince (DB-derived queue outcome)', () => {
+    it('returns undefined when the submission has no jobs', async () => {
+      const { submissionId } = await seed();
+      const persistence = new RelayPersistence();
+      expect(
+        await persistence.outcomeSince(submissionId, new Date(0).toISOString()),
+      ).toBeUndefined();
+    });
+
+    it('returns undefined while the newest job is still non-terminal', async () => {
+      const { submissionId, accountId } = await seed();
+      const persistence = new RelayPersistence();
+      const job = buildJob(submissionId, accountId);
+      await persistence.create(job);
+      job.status = NodeStatus.RUNNING;
+      await persistence.save(job);
+
+      // Even with an epoch-old `since`, an unfinished job has no outcome.
+      expect(
+        await persistence.outcomeSince(submissionId, new Date(0).toISOString()),
+      ).toBeUndefined();
+    });
+
+    it('returns the terminal status when the newest job was created at/after `since`', async () => {
+      const { submissionId, accountId } = await seed();
+      const persistence = new RelayPersistence();
+      const job = buildJob(submissionId, accountId);
+      await persistence.create(job);
+      job.status = NodeStatus.SUCCEEDED;
+      job.completedAt = Date.now();
+      await persistence.save(job);
+
+      const row = await new PostJobRepository().findById(job.id);
+      expect(row).not.toBeNull();
+      const createdAt = row?.createdAt ?? '';
+
+      // Boundary is inclusive: `since` == createdAt still counts.
+      expect(await persistence.outcomeSince(submissionId, createdAt)).toBe(
+        NodeStatus.SUCCEEDED,
+      );
+      const earlier = new Date(Date.parse(createdAt) - 1000).toISOString();
+      expect(await persistence.outcomeSince(submissionId, earlier)).toBe(
+        NodeStatus.SUCCEEDED,
+      );
+    });
+
+    it('ignores a terminal job that predates `since` (belongs to an earlier post)', async () => {
+      const { submissionId, accountId } = await seed();
+      const persistence = new RelayPersistence();
+      const job = buildJob(submissionId, accountId);
+      await persistence.create(job);
+      job.status = NodeStatus.FAILED;
+      job.completedAt = Date.now();
+      await persistence.save(job);
+
+      const row = await new PostJobRepository().findById(job.id);
+      expect(row).not.toBeNull();
+      const later = new Date(
+        Date.parse(row?.createdAt ?? '') + 1000,
+      ).toISOString();
+      expect(
+        await persistence.outcomeSince(submissionId, later),
+      ).toBeUndefined();
+    });
+
+    it('uses the newest job: an in-flight retry over an older terminal job yields no outcome', async () => {
+      const { submissionId, accountId } = await seed();
+      const persistence = new RelayPersistence();
+
+      const first = buildJob(submissionId, accountId);
+      await persistence.create(first);
+      first.status = NodeStatus.FAILED;
+      first.completedAt = Date.now();
+      await persistence.save(first);
+
+      // Ensure the retry gets a strictly-later createdAt (ms-resolution).
+      await new Promise((resolve) => {
+        setTimeout(resolve, 5);
+      });
+
+      const retry = buildJob(submissionId, accountId);
+      await persistence.create(retry);
+      retry.status = NodeStatus.RUNNING;
+      await persistence.save(retry);
+
+      // The newest job (the running retry) governs, so there is no consumable
+      // outcome yet even though an older terminal job exists.
+      expect(
+        await persistence.outcomeSince(submissionId, new Date(0).toISOString()),
+      ).toBeUndefined();
+    });
+  });
 });

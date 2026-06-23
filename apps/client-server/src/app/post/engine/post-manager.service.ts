@@ -54,12 +54,6 @@ export class RelayPostManager implements OnModuleInit {
    */
   private drainRerunRequested = false;
 
-  /** submissionId -> active jobId, so cancel/dedup can find the running job. */
-  private readonly activeBySubmission = new Map<SubmissionId, string>();
-
-  /** submissionId -> terminal status, awaiting the queue to acknowledge/dequeue. */
-  private readonly outcomes = new Map<SubmissionId, NodeStatus>();
-
   constructor(
     private readonly deps: RelayPipelineDeps,
     private readonly persistence: RelayPersistence,
@@ -132,7 +126,6 @@ export class RelayPostManager implements OnModuleInit {
           await this.deps.prepare(job);
           resetForResume(job, PostRecordResumeMode.CONTINUE);
           this.scheduler.adopt(job);
-          this.activeBySubmission.set(job.submissionId, job.id);
         } catch (error) {
           this.logger
             .withError(error)
@@ -200,9 +193,10 @@ export class RelayPostManager implements OnModuleInit {
     await this.waitForRecoveryAttempt();
 
     // Guard against duplicate jobs (e.g. the queue cron re-driving enqueue
-    // while a job is briefly between states).
-    const existing = this.activeBySubmission.get(submissionId);
-    if (existing) return existing;
+    // while a job is briefly between states). The scheduler's live working set
+    // is the source of truth for what is currently running.
+    const existing = this.scheduler.getActiveJobForSubmission(submissionId);
+    if (existing) return existing.id;
 
     // Reconcile against the DB: a non-terminal job may exist on disk but not
     // be tracked in memory (e.g. crash recovery couldn't bring up the website
@@ -222,8 +216,6 @@ export class RelayPostManager implements OnModuleInit {
         job,
         process.env.POSTYBIRB_VERSION ?? undefined,
       );
-      this.activeBySubmission.set(submissionId, job.id);
-      this.outcomes.delete(submissionId);
       this.drain().catch((error) =>
         this.logger
           .withError(error)
@@ -258,7 +250,6 @@ export class RelayPostManager implements OnModuleInit {
     // Already tracked by the scheduler (race) — just re-link and drive it.
     const tracked = this.scheduler.getJob(orphan.id);
     if (this.isActiveJob(tracked)) {
-      this.activeBySubmission.set(submissionId, tracked.id);
       this.drain().catch((error) =>
         this.logger.withError(error).error('Relay run failed'),
       );
@@ -271,7 +262,6 @@ export class RelayPostManager implements OnModuleInit {
       await this.deps.prepare(orphan);
       resetForResume(orphan, PostRecordResumeMode.CONTINUE);
       this.scheduler.adopt(orphan);
-      this.activeBySubmission.set(submissionId, orphan.id);
       this.logger
         .withMetadata({ jobId: orphan.id, submissionId })
         .info('Adopted orphaned Relay job on enqueue');
@@ -301,9 +291,9 @@ export class RelayPostManager implements OnModuleInit {
    * always has a way to clear a stuck record.
    */
   cancel(submissionId: SubmissionId): boolean {
-    const jobId = this.activeBySubmission.get(submissionId);
-    if (jobId) {
-      this.scheduler.cancel(jobId);
+    const job = this.scheduler.getActiveJobForSubmission(submissionId);
+    if (job) {
+      this.scheduler.cancel(job.id);
       return true;
     }
     // Background: persistence writes errors must not block the UI cancel.
@@ -326,10 +316,9 @@ export class RelayPostManager implements OnModuleInit {
   }
 
   isPosting(submissionId: SubmissionId): boolean {
-    const jobId = this.activeBySubmission.get(submissionId);
-    if (!jobId) return false;
-    const job = this.scheduler.getJob(jobId);
-    return this.isActiveJob(job);
+    return this.isActiveJob(
+      this.scheduler.getActiveJobForSubmission(submissionId),
+    );
   }
 
   /**
@@ -337,12 +326,7 @@ export class RelayPostManager implements OnModuleInit {
    * UI on load/reconnect to seed its store (deltas keep it live thereafter).
    */
   getActiveTrees(): JobTreeNode[] {
-    const trees: JobTreeNode[] = [];
-    for (const jobId of this.activeBySubmission.values()) {
-      const job = this.scheduler.getJob(jobId);
-      if (this.isActiveJob(job)) trees.push(projectJob(job));
-    }
-    return trees;
+    return this.scheduler.getActiveJobs().map((job) => projectJob(job));
   }
 
   /**
@@ -358,9 +342,22 @@ export class RelayPostManager implements OnModuleInit {
     });
   }
 
-  /** Terminal outcome awaiting queue acknowledgement (undefined if none). */
-  getOutcome(submissionId: SubmissionId): NodeStatus | undefined {
-    return this.outcomes.get(submissionId);
+  /**
+   * The terminal outcome of the submission's current queue entry, or undefined
+   * if it is still in flight / has not produced one. DB-derived: a tracked live
+   * (non-terminal) job means the attempt is still running; otherwise the newest
+   * persisted job decides, but only if it was created at/after `since` (the
+   * queue record's createdAt) so an outcome from an earlier post is not
+   * mistaken for the current entry's result.
+   */
+  async getOutcome(
+    submissionId: SubmissionId,
+    since: string,
+  ): Promise<NodeStatus | undefined> {
+    if (this.scheduler.getActiveJobForSubmission(submissionId)) {
+      return undefined;
+    }
+    return this.persistence.outcomeSince(submissionId, since);
   }
 
   /**
@@ -373,21 +370,13 @@ export class RelayPostManager implements OnModuleInit {
    */
   async hasSucceeded(submissionId: SubmissionId): Promise<boolean> {
     // Prefer the live job if one is tracked (most up-to-date state).
-    const activeJobId = this.activeBySubmission.get(submissionId);
-    if (activeJobId) {
-      const live = this.scheduler.getJob(activeJobId);
-      if (live) return computeJobStatus(live) === NodeStatus.SUCCEEDED;
-    }
+    const active = this.scheduler.getActiveJobForSubmission(submissionId);
+    if (active) return computeJobStatus(active) === NodeStatus.SUCCEEDED;
     const jobs = await this.persistence.loadBySubmission(submissionId);
     if (jobs.length === 0) return false;
     const newest = jobs[0];
     const live = this.scheduler.getJob(newest.id);
     return computeJobStatus(live ?? newest) === NodeStatus.SUCCEEDED;
-  }
-
-  /** Queue acknowledges a terminal outcome (after dequeue). */
-  acknowledge(submissionId: SubmissionId): void {
-    this.outcomes.delete(submissionId);
   }
 
   /**
@@ -419,19 +408,18 @@ export class RelayPostManager implements OnModuleInit {
 
   /** Archive/notify for jobs that have reached a terminal state. */
   private async handleCompletions(): Promise<void> {
-    for (const [submissionId, jobId] of [...this.activeBySubmission]) {
-      const job = this.scheduler.getJob(jobId);
-      if (this.isActiveJob(job) || !job) continue;
-      this.activeBySubmission.delete(submissionId);
-      this.outcomes.set(submissionId, computeJobStatus(job));
+    // After runToIdle every tracked job is terminal; reap each one exactly
+    // once. The scheduler's live working set is the source of truth for what
+    // just finished — the manager no longer keeps a parallel index.
+    for (const job of this.scheduler.getTrackedJobs()) {
+      if (!isTerminal(job)) continue; // still running
       // eslint-disable-next-line no-await-in-loop
       await this.onTerminal(job);
-      this.deps.release(jobId);
+      this.deps.release(job.id);
       // Drop the finished job tree from the scheduler's live working set so a
       // long-running process doesn't retain every job ever posted. Persistent
-      // history is served from the database (getHistory); the scheduler keeps
-      // only a small bounded cache of the most recent completions.
-      this.scheduler.forget(jobId);
+      // history is served from the database (getHistory).
+      this.scheduler.forget(job.id);
     }
   }
 

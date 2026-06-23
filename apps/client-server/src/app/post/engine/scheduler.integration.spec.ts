@@ -4,9 +4,9 @@ import { PostingFile } from '../models/posting-file';
 import { StageError } from './errors';
 import { RelayTask } from './model';
 import {
-    PipelineDeps,
-    RelayDispatchData,
-    RelaySubmission,
+  PipelineDeps,
+  RelayDispatchData,
+  RelaySubmission,
 } from './pipeline';
 import { MemoryRateStore, RateLimiter } from './rate-limiter';
 import { RelayScheduler } from './scheduler';
@@ -404,7 +404,7 @@ describe('Relay pipeline + scheduler (integration)', () => {
     expect(job.status).toBe(NodeStatus.FAILED);
   });
 
-  it('forget() evicts a terminal job and keeps a bounded recent cache', async () => {
+  it('forget() evicts a terminal job from the live working set (DB serves it after)', async () => {
     const submission = fileSubmission();
     submission.options = [{ accountId: 'a_fa', websiteId: 'furaffinity' }];
     const h = new Harness(submission);
@@ -415,19 +415,11 @@ describe('Relay pipeline + scheduler (integration)', () => {
     await sched.runToIdle();
     expect(job.status).toBe(NodeStatus.SUCCEEDED);
 
-    // Still resolvable while live.
+    // Still resolvable while live (before forget).
     expect(sched.getJob(job.id)).toBe(job);
-    // forget moves it into the bounded recent cache (still resolvable briefly).
+    // forget drops the terminal job from memory; the DB is the source of truth
+    // for completed jobs, so it is no longer resolvable from the scheduler.
     sched.forget(job.id);
-    expect(sched.getJob(job.id)).toBe(job);
-
-    // Overflow the recent cache (cap 50) with terminal jobs; the original is
-    // evicted and no longer resolvable from memory.
-    for (let i = 0; i < 60; i++) {
-      const j = sched.createJob(`s_overflow_${i}`);
-      j.status = NodeStatus.SUCCEEDED; // terminal so forget() accepts it
-      sched.forget(j.id);
-    }
     expect(sched.getJob(job.id)).toBeUndefined();
   });
 

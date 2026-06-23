@@ -1,13 +1,13 @@
 import {
-  Injectable,
-  InternalServerErrorException,
-  Optional,
+    Injectable,
+    InternalServerErrorException,
+    Optional,
 } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import {
-  PostQueueRecord,
-  PostQueueRecordRepository,
-  SubmissionRepository,
+    PostQueueRecord,
+    PostQueueRecordRepository,
+    SubmissionRepository,
 } from '@postybirb/database';
 import { EntityId, ScheduleType, SubmissionId } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/common';
@@ -123,7 +123,6 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
 
       submissionIds.forEach((id) => {
         this.relayPostManager.cancel(id);
-        this.relayPostManager.acknowledge(id);
       });
 
       return await this.repository.deleteById(records.map((r) => r.id));
@@ -206,15 +205,18 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
 
         if (submission?.isArchived) {
           this.relayPostManager.cancel(submissionId);
-          this.relayPostManager.acknowledge(submissionId);
           // eslint-disable-next-line no-await-in-loop
           await this.dequeue([submissionId]);
           continue;
         }
 
-        if (this.relayPostManager.getOutcome(submissionId)) {
-          //  manager already handled archive/notify; clear the queue.Terminal 
-          this.relayPostManager.acknowledge(submissionId);
+        // The current queue entry's post has produced a terminal result. The
+        // database is the source of truth (the engine already handled
+        // archive/notify for jobs it ran); `record.createdAt` scopes the check
+        // to this entry so an outcome from an earlier post is not consumed by
+        // mistake.
+        // eslint-disable-next-line no-await-in-loop
+        if (await this.relayPostManager.getOutcome(submissionId, record.createdAt)) {
           // eslint-disable-next-line no-await-in-loop
           await this.dequeue([submissionId]);
           continue;

@@ -177,8 +177,7 @@ describe('RelayPostManager hardening', () => {
   it('evicts the finished job tree from the scheduler on completion (memory)', async () => {
     // Regression: terminal jobs must not be retained in the scheduler's live
     // working set forever. After completion the job is dropped (served from
-    // the bounded recent cache / DB), so isPosting() is false and history
-    // still resolves.
+    // the DB), so isPosting() is false and history still resolves.
     const submissionId = 'sub-evict';
     const deps = makeDeps(submissionId);
     const persistence = makePersistence();

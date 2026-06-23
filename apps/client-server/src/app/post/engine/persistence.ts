@@ -101,6 +101,31 @@ export class RelayPersistence {
   }
 
   /**
+   * The terminal status of the submission's most recent post job, but only if
+   * that job was created at/after `since`. Returns undefined when the newest
+   * job is still running, predates `since` (it belongs to an earlier post), or
+   * none exists.
+   *
+   * Reads the RAW persisted rows: `PostJob.createdAt` is the durable DB-assigned
+   * timestamp, safe to compare lexicographically against another DB-assigned
+   * ISO-UTC timestamp (the queue record's createdAt). NOTE: do not use the
+   * {@link RelayJob} trees from {@link loadBySubmission} here — their createdAt
+   * is re-stamped to load time by {@link toRelayJob}.
+   */
+  async outcomeSince(
+    submissionId: string,
+    since: string,
+  ): Promise<NodeStatus | undefined> {
+    const rows = await this.jobs.findBySubmission(submissionId); // newest first
+    const newest = rows[0];
+    if (!newest) return undefined;
+    const status = newest.status as NodeStatus;
+    if (!isTerminal(status)) return undefined;
+    if (newest.createdAt < since) return undefined;
+    return status;
+  }
+
+  /**
    * Force-mark every non-terminal job/task/unit for a submission as CANCELLED.
    * Used as a fallback when a user cancels a submission whose job is not live
    * in the scheduler (e.g. recovery silently dropped it after a crash). Returns
