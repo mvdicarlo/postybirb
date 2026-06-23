@@ -4,8 +4,7 @@
  * the user associate a default submission template with this account.
  *
  * The associated template's option for this same account is used to pre-fill
- * defaults when new submissions of this type are created. This replaces the
- * former "save as default" affordance with a more discoverable, explained flow.
+ * defaults when new submissions of this type are created.
  */
 
 import { Trans, useLingui } from '@lingui/react/macro';
