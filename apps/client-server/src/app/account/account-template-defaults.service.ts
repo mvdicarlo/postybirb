@@ -6,11 +6,6 @@ import { PostyBirbService } from '../common/service/postybirb-service';
 /**
  * Resolves the default form field values for an account+submission type by
  * reading the submission template associated with the account.
- *
- * Replaces the former UserSpecifiedWebsiteOptions feature: instead of storing
- * defaults in a dedicated table, an account points at a template submission
- * (per submission type) and the template's option matching that same account
- * supplies the default values.
  */
 @Injectable()
 export class AccountTemplateDefaultsService extends PostyBirbService<AccountRepository> {
