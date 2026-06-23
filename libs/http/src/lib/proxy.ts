@@ -22,7 +22,7 @@ import { format } from 'node:url';
 
 // Monkey-patch global fetch to use electron-fetch
 global.fetch = async (
-  input: RequestInfo | URL,
+  input: Request | URL | string,
   init?: RequestInit,
 ): Promise<Response> => {
   // Handle Request objects properly - extract the URL string and merge options.

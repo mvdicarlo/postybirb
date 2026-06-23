@@ -8,7 +8,7 @@ import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
 export class DiscordMessageSubmission extends BaseWebsiteOptions {
   @DescriptionField<DiscordMessageSubmission>({
-    descriptionType: DescriptionType.MARKDOWN,
+    descriptionType: DescriptionType.CUSTOM,
     maxDescriptionLength: 2000,
     customDerive(_, target) {
       if (target.useEmbed) {
@@ -19,12 +19,12 @@ export class DiscordMessageSubmission extends BaseWebsiteOptions {
       }
     },
   })
-  description: DescriptionValue;
+  declare description: DescriptionValue;
 
   @TagField({
     hidden: true,
   })
-  tags: TagValue;
+  declare tags: TagValue;
 
   @BooleanField<DiscordMessageSubmission>({
     label: 'useTitle',

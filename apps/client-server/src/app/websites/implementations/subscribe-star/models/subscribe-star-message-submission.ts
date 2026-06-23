@@ -7,7 +7,7 @@ export class SubscribeStarMessageSubmission extends BaseWebsiteOptions {
   @DescriptionField({
     descriptionType: DescriptionType.HTML,
   })
-  description: DescriptionValue;
+  declare description: DescriptionValue;
 
   @SelectField<SubscribeStarAccountData>({
     required: true,

@@ -2294,6 +2294,7 @@ msgstr ""
 msgid "Not logged in"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-section-header.tsx
 #: apps/postybirb-ui/src/components/shared/schedule-popover/schedule-popover.tsx
 msgid "Not scheduled"
 msgstr ""
@@ -4091,7 +4092,7 @@ msgid "Width"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/submission-edit-tour.tsx
-msgid "Write your post description with rich text formatting. Type @ to insert username shortcuts, { to insert custom text shortcuts, or use the / slash menu for headings, lists, and more. Shortcuts are automatically expanded per website when posting."
+msgid "Write your post description with rich text formatting. Type @ to insert username shortcuts, {curlyBrace} to insert custom text shortcuts, or use the / slash menu for headings, lists, and more. Shortcuts are automatically expanded per website when posting."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/disclaimer/disclaimer.tsx

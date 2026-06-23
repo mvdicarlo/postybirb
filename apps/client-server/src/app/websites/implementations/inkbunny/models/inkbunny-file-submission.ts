@@ -50,17 +50,17 @@ export class InkbunnyFileSubmission extends BaseWebsiteOptions {
       },
     ],
   })
-  rating: SubmissionRating;
+  declare rating: SubmissionRating;
 
   @DescriptionField({
     descriptionType: DescriptionType.CUSTOM,
   })
-  description: DescriptionValue;
+  declare description: DescriptionValue;
 
   @TagField({
     minTags: 4,
   })
-  tags: TagValue;
+  declare tags: TagValue;
 
   @SelectField({
     label: 'category',

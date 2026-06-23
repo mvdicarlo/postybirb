@@ -69,7 +69,7 @@ export default function BlueskyLoginView(
             })
             .then(({ result }) => {
               if (result) {
-                notifyLoginSuccess(undefined, account);
+                notifyLoginSuccess(account);
                 setPassword('');
               } else {
                 notifyLoginFailed(

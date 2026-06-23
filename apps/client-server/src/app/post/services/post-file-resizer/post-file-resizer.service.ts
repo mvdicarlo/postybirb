@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import {
-  FileType,
-  IFileBuffer,
-  ImageResizeProps,
-  ISubmissionFile,
+    FileType,
+    IFileBuffer,
+    ImageResizeProps,
+    ISubmissionFile,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { SharpInstanceManager } from '../../../image-processing/sharp-instance-manager';
@@ -19,10 +19,9 @@ type ResizeRequest = {
  * Responsible for resizing an image file to a smaller size before
  * posting to a website.
  *
- * All sharp/libvips work is delegated to the SharpInstanceManager,
- * which runs sharp in isolated worker threads. If libvips crashes
- * (e.g. after long idle), only the worker dies — the main process
- * survives.
+ * All sharp/libvips work is delegated to the SharpInstanceManager, which runs
+ * sharp in an isolated worker process. If libvips crashes, only the worker
+ * dies — the main process survives.
  *
  * @class PostFileResizer
  */

@@ -147,7 +147,7 @@ export default function InstagramLoginView(
         )
         .then((res) => {
           if (res.success) {
-            notifyLoginSuccess(undefined, account);
+            notifyLoginSuccess(account);
             setAuthUrl(undefined);
             setActiveStep(3);
             if (res.igUsername) {

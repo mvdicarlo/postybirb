@@ -20,17 +20,18 @@ import { FurAffinityThemes } from './fur-affinity-themes';
 
 export class FurAffinityFileSubmission extends BaseWebsiteOptions {
   @TitleField({ maxLength: 60 })
-  title: string;
+  declare title: string;
 
   @DescriptionField({
     descriptionType: DescriptionType.BBCODE,
   })
-  description: DescriptionValue;
+  declare description: DescriptionValue;
 
   @TagField({
     spaceReplacer: '_',
+    minTags: 3,
   })
-  tags: TagValue;
+  declare tags: TagValue;
 
   @RatingField({
     options: [
@@ -39,7 +40,7 @@ export class FurAffinityFileSubmission extends BaseWebsiteOptions {
       { value: SubmissionRating.ADULT, label: 'Adult' },
     ],
   })
-  rating: SubmissionRating;
+  declare rating: SubmissionRating;
 
   @SelectField({
     required: true,

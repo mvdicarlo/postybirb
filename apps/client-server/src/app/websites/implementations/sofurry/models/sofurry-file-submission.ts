@@ -8,11 +8,11 @@ import {
 import {
   DescriptionType,
   DescriptionValue,
+  SofurryAccountData,
   SubmissionRating,
   TagValue,
 } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
-import { SofurryAccountData } from './sofurry-account-data';
 import {
   SofurryCategoriesByFileType,
   SofurryPrivacyOptions,
@@ -23,12 +23,13 @@ export class SofurryFileSubmission extends BaseWebsiteOptions {
   @DescriptionField({
     descriptionType: DescriptionType.PLAINTEXT,
   })
-  description: DescriptionValue;
+  declare description: DescriptionValue;
 
   @TagField({
     minTags: 2,
+    maxTags: 100
   })
-  tags: TagValue;
+  declare tags: TagValue;
 
   @RatingField({
     options: [
@@ -37,7 +38,22 @@ export class SofurryFileSubmission extends BaseWebsiteOptions {
       { value: SubmissionRating.EXTREME, label: 'Adult' },
     ],
   })
-  rating: SubmissionRating;
+  declare rating: SubmissionRating;
+
+  @SelectField<SofurryAccountData>({
+    label: 'folder',
+    allowMultiple: true,
+    options: [],
+    derive: [
+      {
+        key: 'folders',
+        populate: 'options',
+      },
+    ],
+    section: 'website',
+    span: 12,
+  })
+  folders: string[] = [];
 
   @SelectField({
     label: 'category',
@@ -69,21 +85,6 @@ export class SofurryFileSubmission extends BaseWebsiteOptions {
     span: 6,
   })
   privacy: string;
-
-  @SelectField<SofurryAccountData>({
-    label: 'folder',
-    defaultValue: '0',
-    options: [],
-    derive: [
-      {
-        key: 'folders',
-        populate: 'options',
-      },
-    ],
-    section: 'website',
-    span: 6,
-  })
-  folder: string;
 
   @BooleanField({
     label: 'allowComments',

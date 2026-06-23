@@ -19,7 +19,7 @@ export class InstagramFileSubmission extends BaseWebsiteOptions {
     expectsInlineTags: true,
     expectsInlineTitle: true,
   })
-  description: DescriptionValue;
+  declare description: DescriptionValue;
 
   @TagField({
     maxTags: 30,
@@ -38,7 +38,7 @@ export class InstagramFileSubmission extends BaseWebsiteOptions {
       },
     ],
   })
-  rating: SubmissionRating;
+  declare rating: SubmissionRating;
 
   /**
    * Process tags into Instagram hashtag format.

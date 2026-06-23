@@ -12,7 +12,7 @@ export class E621FileSubmission extends BaseWebsiteOptions {
     descriptionType: DescriptionType.CUSTOM,
     expectsInlineTitle: true,
   })
-  description: DescriptionValue;
+  declare description: DescriptionValue;
 
   @TagField({
     minTags: 4,

@@ -13,7 +13,6 @@ import { parse as parseFileName } from 'path';
 import { v4 } from 'uuid';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
-import { PostBuilder } from '../../commons/post-builder';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
 import { FileWebsite } from '../../models/website-modifiers/file-website';
 import { MessageWebsite } from '../../models/website-modifiers/message-website';
@@ -287,29 +286,42 @@ export default abstract class BaseSubscribeStar
     }
 
     // Process the S3 attachment
-    const processFile = await this.platform.http.post<SubscribeStarProcessFileResponse>(
-      `${this.BASE_URL}/post_uploads/process_s3_attachments.json`,
-      {
-        partition: this.accountId,
-        type: 'multipart',
-        data: record,
-        headers: {
-          'X-CSRF-Token': uploadData.csrfToken,
-          Accept: 'application/json',
-          Referer: `${this.BASE_URL}/${this.loginState.username}`,
+    const processFile =
+      await this.platform.http.post<SubscribeStarProcessFileResponse>(
+        `${this.BASE_URL}/post_uploads/process_s3_attachments.json`,
+        {
+          partition: this.accountId,
+          type: 'multipart',
+          data: record,
+          headers: {
+            'X-CSRF-Token': uploadData.csrfToken,
+            Accept: 'application/json',
+            Referer: `${this.BASE_URL}/${this.loginState.username}`,
+          },
         },
-      },
-    );
+      );
 
-    if (processFile.statusCode !== 200) {
+    let processFileResponse: SubscribeStarProcessFileResponse | undefined;
+
+    if (processFile.statusCode === 404) {
+      const processFileUploadHack = await this.runProcessFile(
+        `/post_uploads/process_s3_attachments.json`,
+        record,
+      );
+      processFileResponse = processFileUploadHack;
+    } else {
+      processFileResponse = processFile.body;
+    }
+
+    if (!processFileResponse) {
       throw new Error(`Failed to process file: ${processFile.statusCode}`);
     }
 
     // Extract the ID by matching the original filename
     const allUploads = [
-      ...processFile.body.imgs_and_videos,
-      ...processFile.body.audios,
-      ...processFile.body.docs,
+      ...processFileResponse.imgs_and_videos,
+      ...processFileResponse.audios,
+      ...processFileResponse.docs,
     ];
 
     // Find the uploaded item by matching the original filename
@@ -320,6 +332,116 @@ export default abstract class BaseSubscribeStar
     return uploadedItem ? String(uploadedItem.id) : undefined;
   }
 
+  private async deleteUploadedFile(fileId: string): Promise<void> {
+    const url = `/post_uploads/${fileId}`;
+    const cmd = `
+    var xhr = new XMLHttpRequest();
+    xhr.open('DELETE', '${url}', false);
+    xhr.setRequestHeader("X-CSRF-Token", document.body.parentElement.innerHTML.match(/<meta name="csrf-token" content="(.*?)"/)[1]);
+    xhr.setRequestHeader("Accept", "application/json");
+    xhr.send();
+    return JSON.stringify({ status: xhr.status, body: xhr.responseText });
+    `;
+
+    const result = await this.platform.browser.runScriptOnPage<string>(
+      this.accountId,
+      this.BASE_URL,
+      cmd,
+      1_000,
+    );
+
+    const parsed = JSON.parse(result) as { status: number; body: string };
+    if (parsed.status < 200 || parsed.status >= 300) {
+      throw new Error(
+        `Failed to delete uploaded file ${fileId}: ${parsed.status} ${parsed.body}`,
+      );
+    }
+  }
+
+  private async cleanupUploadedFiles(fileIds: string[]): Promise<void> {
+    for (const fileId of fileIds) {
+      try {
+        await this.deleteUploadedFile(fileId);
+      } catch (err) {
+        this.logger.warn(
+          err as never,
+          `Failed to cleanup uploaded file ${fileId}`,
+        );
+      }
+    }
+  }
+
+  private async runProcessFile(
+    url: string,
+    data: Record<string, unknown>,
+  ): Promise<SubscribeStarProcessFileResponse> {
+    const cmd = `
+    const data = JSON.parse('${JSON.stringify(data)}');
+    var fd = new FormData();
+    Object.entries(data).forEach(([key, value]) => {
+      if (Array.isArray(value)) {
+        value.forEach((v) => fd.append(key, v));
+      } else {
+        fd.append(key, value);
+      }
+    });
+    fd.append('authenticity_token', document.body.parentElement.innerHTML.match(/<meta name="csrf-token" content="(.*?)"/)[1]);
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '${url}', false);
+    xhr.setRequestHeader("X-CSRF-Token", document.body.parentElement.innerHTML.match(/<meta name="csrf-token" content="(.*?)"/)[1]);
+    xhr.send(fd);
+    return xhr.responseText
+    `;
+
+    const result = await this.platform.browser.runScriptOnPage<string>(
+      this.accountId,
+      this.BASE_URL,
+      cmd,
+      1_000,
+    );
+
+    const processFile = JSON.parse(result);
+    if (processFile.redirect_url) {
+      throw new Error(`Failed to process file: ${processFile.redirect_url}`);
+    }
+
+    return processFile;
+  }
+
+  private async completePost(
+    data: Record<string, unknown>,
+  ): Promise<SubscribeStarPostResponse> {
+    const cmd = `
+    const data = ${JSON.stringify(data)};
+    var fd = new FormData();
+    Object.entries(data).forEach(([key, value]) => {
+      if (Array.isArray(value)) {
+        value.forEach((v) => fd.append(key, v));
+      } else {
+        fd.append(key, value);
+      }
+    });
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '/posts.json', false);
+    xhr.setRequestHeader("X-CSRF-Token", document.body.parentElement.innerHTML.match(/<meta name="csrf-token" content="(.*?)"/)[1]);
+    xhr.send(fd);
+    return xhr.responseText
+    `;
+
+    const result = await this.platform.browser.runScriptOnPage<string>(
+      this.accountId,
+      this.BASE_URL,
+      cmd,
+      1_000,
+    );
+
+    if (!result) {
+      throw new Error('Failed to complete post');
+    }
+
+    return JSON.parse(result);
+  }
+
   async onPostFileSubmission(
     postData: PostData<SubscribeStarFileSubmission>,
     files: PostingFile[],
@@ -328,11 +450,19 @@ export default abstract class BaseSubscribeStar
     const uploadData = await this.getPostData();
 
     const uploadedFileIds: string[] = [];
-    for (const file of files) {
-      const fileId = await this.uploadFile(file, uploadData);
-      if (fileId) {
-        uploadedFileIds.push(fileId);
+    try {
+      for (const file of files) {
+        cancellationToken.throwIfCancelled();
+        const fileId = await this.uploadFile(file, uploadData);
+        if (fileId) {
+          uploadedFileIds.push(fileId);
+        }
       }
+    } catch (error) {
+      if (uploadedFileIds.length > 0) {
+        await this.cleanupUploadedFiles(uploadedFileIds);
+      }
+      throw error;
     }
 
     // Reorder files if there are multiple uploads
@@ -349,47 +479,53 @@ export default abstract class BaseSubscribeStar
       });
     }
 
-    const builder = new PostBuilder(this, cancellationToken)
-      .asUrlEncoded(true)
-      .withHeader('X-Csrf-Token', uploadData.csrfToken)
-      .withHeader('Referrer', `${this.BASE_URL}/${this.loginState.username}`)
-      .setField('authenticity_token', uploadData.authenticityToken)
-      .setField('html_content', `<div>${postData.options.description}</div>`)
-      .setField('pinned_uploads', '[]')
-      .setField('new_editor', true)
-      .setField('is_draft', '')
-      .setField('tags', postData.options.tags)
-      .setField('has_poll', false)
-      .setField('poll_options', [])
-      .setField('finish_date', '')
-      .setField('finish_time', '')
-      .setField(
-        'tier_ids',
-        postData.options.tiers.filter((tier) => tier !== 'free'),
-      )
-      .setField('posting_option', 'Publish Now');
+    cancellationToken.throwIfCancelled();
 
-    const post = await builder.send<SubscribeStarPostResponse>(
-      `${this.BASE_URL}/posts.json`,
-    );
+    try {
+      const post = await this.completePost({
+        authenticity_token: uploadData.authenticityToken,
+        html_content: `<div>${postData.options.description}</div>`,
+        pinned_uploads: '[]',
+        new_editor: true,
+        is_draft: '',
+        'tags[]': postData.options.tags,
+        has_poll: false,
+        poll_options: [],
+        finish_date: '',
+        finish_time: '',
+        'tier_ids[]': postData.options.tiers.filter((tier) => tier !== 'free'),
+        posting_option: 'Publish Now',
+      });
 
-    if (post.body.error) {
+      if (post.error) {
+        if (uploadedFileIds.length > 0) {
+          await this.cleanupUploadedFiles(uploadedFileIds);
+        }
+        return PostResponse.fromWebsite(this)
+          .withAdditionalInfo({
+            body: post,
+          })
+          .withException(new Error('Failed to post'));
+      }
+
+      const $ = parse(post.html);
+      const postId = $.querySelector('.post')?.getAttribute('data-id');
+      if (!postId) {
+        return PostResponse.fromWebsite(this).withException(
+          new Error(
+            'Failed to find post ID in file submission response, check to see if the post was created successfully',
+          ),
+        );
+      }
       return PostResponse.fromWebsite(this)
-        .withAdditionalInfo({
-          body: post.body,
-          statusCode: post.statusCode,
-        })
-        .withException(new Error('Failed to post'));
+        .withAdditionalInfo(post)
+        .withSourceUrl(postId ? `${this.BASE_URL}/posts/${postId}` : undefined);
+    } catch (error) {
+      if (uploadedFileIds.length > 0) {
+        await this.cleanupUploadedFiles(uploadedFileIds);
+      }
+      throw error;
     }
-
-    const $ = parse(post.body.html);
-    const postId = $.querySelector('.post')?.getAttribute('data-id');
-    if (!postId) {
-      this.logger.warn('Failed to find post ID in file submission response');
-    }
-    return PostResponse.fromWebsite(this)
-      .withAdditionalInfo(post.body)
-      .withSourceUrl(postId ? `${this.BASE_URL}/posts/${postId}` : undefined);
   }
 
   async onValidateFileSubmission(
@@ -409,46 +545,41 @@ export default abstract class BaseSubscribeStar
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     const uploadData = await this.getPostData();
-    const builder = new PostBuilder(this, cancellationToken)
-      .asUrlEncoded(true)
-      .withHeader('X-Csrf-Token', uploadData.csrfToken)
-      .withHeader('Referrer', `${this.BASE_URL}/${this.loginState.username}`)
-      .setField('authenticity_token', uploadData.authenticityToken)
-      .setField('html_content', `<div>${postData.options.description}</div>`)
-      .setField('pinned_uploads', '[]')
-      .setField('new_editor', true)
-      .setField('is_draft', '')
-      .setField('tags', postData.options.tags)
-      .setField('has_poll', false)
-      .setField('poll_options', [])
-      .setField('finish_date', '')
-      .setField('finish_time', '')
-      .setField(
-        'tier_ids',
-        postData.options.tiers.filter((tier) => tier !== 'free'),
-      )
-      .setField('posting_option', 'Publish Now');
 
-    const post = await builder.send<SubscribeStarPostResponse>(
-      `${this.BASE_URL}/posts.json`,
-    );
+    const post = await this.completePost({
+      authenticity_token: uploadData.authenticityToken,
+      html_content: `<div>${postData.options.description}</div>`,
+      pinned_uploads: '[]',
+      new_editor: true,
+      is_draft: '',
+      'tags[]': postData.options.tags,
+      has_poll: false,
+      poll_options: [],
+      finish_date: '',
+      finish_time: '',
+      'tier_ids[]': postData.options.tiers.filter((tier) => tier !== 'free'),
+      posting_option: 'Publish Now',
+    });
 
-    if (post.body.error) {
+    if (post.error) {
       return PostResponse.fromWebsite(this)
         .withAdditionalInfo({
-          body: post.body,
-          statusCode: post.statusCode,
+          body: post,
         })
         .withException(new Error('Failed to post'));
     }
 
-    const $ = parse(post.body.html);
+    const $ = parse(post.html);
     const postId = $.querySelector('.post')?.getAttribute('data-id');
     if (!postId) {
-      this.logger.warn('Failed to find post ID in message submission response');
+      return PostResponse.fromWebsite(this).withException(
+        new Error(
+          'Failed to find post ID in file submission response, check to see if the post was created successfully',
+        ),
+      );
     }
     return PostResponse.fromWebsite(this)
-      .withAdditionalInfo(post.body)
+      .withAdditionalInfo(post)
       .withSourceUrl(postId ? `${this.BASE_URL}/posts/${postId}` : undefined);
   }
 

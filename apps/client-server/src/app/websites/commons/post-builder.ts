@@ -422,7 +422,9 @@ export class PostBuilder {
           uploadAsRawData: this.rawData,
         });
         this.logger.debug(`Received response from ${url}:`, value.statusCode);
-        PostResponse.validateBody(this.website, value, undefined, url);
+        PostResponse.validateBody(this.website, value, undefined, url, {
+          keys: Object.keys(data),
+        });
         return value;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {

@@ -39,7 +39,7 @@ describe('DescriptionNode', () => {
 
     expect(tree.toPlainText()).toBe('Hello, https://test.postybirb.com/User');
     expect(tree.toHtml()).toBe(
-      '<div><span><b>Hello, </b></span><a target="_blank" href="https://test.postybirb.com/User">User</a></div>',
+      '<div><b>Hello, </b><a target="_blank" href="https://test.postybirb.com/User">User</a></div>',
     );
     expect(tree.toBBCode()).toBe(
       '[b]Hello, [/b][url=https://test.postybirb.com/User]User[/url]',
@@ -87,9 +87,7 @@ describe('DescriptionNode', () => {
     });
 
     expect(tree.toPlainText()).toBe('Hello, <!~User>');
-    expect(tree.toHtml()).toBe(
-      '<div><span><b>Hello, </b></span><span><!~User></span></div>',
-    );
+    expect(tree.toHtml()).toBe('<div><b>Hello, </b><!~User></div>');
     expect(tree.toBBCode()).toBe('[b]Hello, [/b]<!~User>');
   });
 
@@ -945,9 +943,7 @@ describe('DescriptionNode', () => {
       });
 
       expect(tree.toPlainText()).toBe('Title: My Amazing Artwork');
-      expect(tree.toHtml()).toBe(
-        '<div>Title: <span>My Amazing Artwork</span></div>',
-      );
+      expect(tree.toHtml()).toBe('<div>Title: My Amazing Artwork</div>');
       expect(tree.toBBCode()).toBe('Title: My Amazing Artwork');
     });
 
@@ -976,9 +972,7 @@ describe('DescriptionNode', () => {
       });
 
       expect(tree.toPlainText()).toBe('Tags: #art #digital #fantasy');
-      expect(tree.toHtml()).toBe(
-        '<div>Tags: <span>#art #digital #fantasy</span></div>',
-      );
+      expect(tree.toHtml()).toBe('<div>Tags: #art #digital #fantasy</div>');
       expect(tree.toBBCode()).toBe('Tags: #art #digital #fantasy');
     });
 
@@ -1008,7 +1002,7 @@ describe('DescriptionNode', () => {
       });
 
       expect(tree.toPlainText()).toBe('CW: Mild Violence');
-      expect(tree.toHtml()).toBe('<div>CW: <span>Mild Violence</span></div>');
+      expect(tree.toHtml()).toBe('<div>CW: Mild Violence</div>');
       expect(tree.toBBCode()).toBe('CW: Mild Violence');
     });
 
@@ -1097,7 +1091,7 @@ describe('DescriptionNode', () => {
 
       expect(tree.toPlainText()).toBe('My Art - NSFW\r\n#tag1 #tag2');
       expect(tree.toHtml()).toBe(
-        '<div><span>My Art</span> - <span>NSFW</span></div><div><span>#tag1 #tag2</span></div>',
+        '<div>My Art - NSFW</div><div>#tag1 #tag2</div>',
       );
     });
 
@@ -1123,7 +1117,7 @@ describe('DescriptionNode', () => {
       });
 
       expect(tree.toHtml()).toBe(
-        '<div><span>&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;</span></div>',
+        '<div>&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;</div>',
       );
     });
   });
@@ -1167,7 +1161,7 @@ describe('DescriptionNode', () => {
         'Hello, https://test.postybirb.com/TestUser',
       );
       expect(tree.toHtml()).toBe(
-        '<div><span><b>Hello, </b></span><a target="_blank" href="https://test.postybirb.com/TestUser">TestUser</a></div>',
+        '<div><b>Hello, </b><a target="_blank" href="https://test.postybirb.com/TestUser">TestUser</a></div>',
       );
       expect(tree.toBBCode()).toBe(
         '[b]Hello, [/b][url=https://test.postybirb.com/TestUser]TestUser[/url]',
@@ -1334,7 +1328,10 @@ describe('DescriptionNode', () => {
             id: 'furaffinity',
             url: 'https://furaffinity.net/user/$1',
             convert: (websiteName, shortcut) => {
-              if (websiteName === 'fur-affinity' && shortcut === 'furaffinity') {
+              if (
+                websiteName === 'fur-affinity' &&
+                shortcut === 'furaffinity'
+              ) {
                 return ':icon$1:';
               }
               return undefined;
@@ -1354,9 +1351,7 @@ describe('DescriptionNode', () => {
       });
 
       expect(tree.toBBCode()).toBe(':iconConvertedUser:');
-      expect(tree.toHtml()).toBe(
-        '<div><span>:iconConvertedUser:</span></div>',
-      );
+      expect(tree.toHtml()).toBe('<div>:iconConvertedUser:</div>');
       expect(tree.toPlainText()).toBe(':iconConvertedUser:');
     });
 
@@ -1384,7 +1379,10 @@ describe('DescriptionNode', () => {
             id: 'furaffinity',
             url: 'https://furaffinity.net/user/$1',
             convert: (websiteName, shortcut) => {
-              if (websiteName === 'fur-affinity' && shortcut === 'furaffinity') {
+              if (
+                websiteName === 'fur-affinity' &&
+                shortcut === 'furaffinity'
+              ) {
                 return ':icon$1:';
               }
               return undefined;
@@ -1437,7 +1435,10 @@ describe('DescriptionNode', () => {
             id: 'furaffinity',
             url: 'https://furaffinity.net/user/$1',
             convert: (websiteName, shortcut) => {
-              if (websiteName === 'fur-affinity' && shortcut === 'furaffinity') {
+              if (
+                websiteName === 'fur-affinity' &&
+                shortcut === 'furaffinity'
+              ) {
                 return ':icon$1:';
               }
               return undefined;
@@ -1458,7 +1459,7 @@ describe('DescriptionNode', () => {
 
       // No conversion — uses original shortcut with original username
       expect(tree.toBBCode()).toBe(':iconSomeUser:');
-      expect(tree.toHtml()).toBe('<div><span>:iconSomeUser:</span></div>');
+      expect(tree.toHtml()).toBe('<div>:iconSomeUser:</div>');
     });
 
     it('should convert username but keep original shortcut format when same as target', () => {
@@ -1485,7 +1486,10 @@ describe('DescriptionNode', () => {
             id: 'furaffinity',
             url: 'https://furaffinity.net/user/$1',
             convert: (websiteName, shortcut) => {
-              if (websiteName === 'fur-affinity' && shortcut === 'furaffinity') {
+              if (
+                websiteName === 'fur-affinity' &&
+                shortcut === 'furaffinity'
+              ) {
                 return ':icon$1:';
               }
               return undefined;
@@ -1505,7 +1509,7 @@ describe('DescriptionNode', () => {
       });
 
       expect(tree.toBBCode()).toBe(':iconNewName:');
-      expect(tree.toHtml()).toBe('<div><span>:iconNewName:</span></div>');
+      expect(tree.toHtml()).toBe('<div>:iconNewName:</div>');
     });
   });
 

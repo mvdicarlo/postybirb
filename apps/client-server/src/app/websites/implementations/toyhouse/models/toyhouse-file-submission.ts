@@ -40,18 +40,18 @@ export class ToyhouseFileSubmission extends BaseWebsiteOptions {
     required: false,
     hidden: true,
   })
-  title: never;
+  declare title: never;
 
   @TagField({
     hidden: true,
   })
-  tags: never;
+  declare tags: never;
 
   @RatingField({
     options: ToyhouseMaturityOptions,
     required: true,
   })
-  rating: SubmissionRating;
+  declare rating: SubmissionRating;
 
   @DescriptionField({
     label: 'description',
@@ -59,7 +59,7 @@ export class ToyhouseFileSubmission extends BaseWebsiteOptions {
     required: false,
     maxDescriptionLength: 255,
   })
-  description: DescriptionValue;
+  declare description: DescriptionValue;
 
   @BooleanField({
     label: 'nudity',
@@ -90,7 +90,7 @@ export class ToyhouseFileSubmission extends BaseWebsiteOptions {
     showWhen: [['sensitiveContent', [true]]],
     order: 3,
   })
-  contentWarning: string;
+  declare contentWarning: string;
 
   @SelectField<ToyhouseAccountData>({
     label: 'characters',

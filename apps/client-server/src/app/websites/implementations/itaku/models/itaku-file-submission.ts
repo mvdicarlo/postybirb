@@ -1,16 +1,16 @@
 import {
-    BooleanField,
-    DescriptionField,
-    RatingField,
-    SelectField,
-    TagField,
-    TextField,
+  BooleanField,
+  DescriptionField,
+  RatingField,
+  SelectField,
+  TagField,
+  TextField,
 } from '@postybirb/form-builder';
 import {
-    DescriptionType,
-    DescriptionValue,
-    SubmissionRating,
-    TagValue,
+  DescriptionType,
+  DescriptionValue,
+  SubmissionRating,
+  TagValue,
 } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 import { ItakuAccountData } from './itaku-account-data';
@@ -23,19 +23,19 @@ export class ItakuFileSubmission extends BaseWebsiteOptions {
       { value: SubmissionRating.ADULT, label: 'NSFW' },
     ],
   })
-  rating: SubmissionRating;
+  declare rating: SubmissionRating;
 
   @TagField({
     maxTagLength: 59,
     minTags: 5,
   })
-  tags: TagValue;
+  declare tags: TagValue;
 
   @DescriptionField({
     descriptionType: DescriptionType.PLAINTEXT,
     maxDescriptionLength: 5000,
   })
-  description: DescriptionValue;
+  declare description: DescriptionValue;
 
   @TextField({
     label: 'contentWarning',

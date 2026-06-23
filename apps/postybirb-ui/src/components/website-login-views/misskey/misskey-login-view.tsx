@@ -209,7 +209,7 @@ export default function MisskeyLoginView(
                         if (res.success && res.username) {
                           setLoggedInAs(res.username);
                           setActiveStep(2);
-                          notifyLoginSuccess(undefined, account);
+                          notifyLoginSuccess(account);
                         } else if (!res.success && res.message) {
                           throw new Error(res.message);
                         }

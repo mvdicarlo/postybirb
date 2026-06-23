@@ -2,7 +2,7 @@
  * Utility class for image-related checks.
  *
  * NOTE: Sharp image processing has been moved to SharpInstanceManager
- * which runs sharp in isolated worker threads for crash protection.
+ * which runs sharp in an isolated worker process for crash protection.
  * The load() and getMetadata() methods have been removed.
  * Use SharpInstanceManager.getMetadata() or SharpInstanceManager.resizeForPost() instead.
  */

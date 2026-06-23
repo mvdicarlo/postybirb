@@ -32,7 +32,7 @@ export class BaseWebsiteOptions implements IWebsiteFormFields {
     span: 12,
     layout: 'horizontal',
   })
-  rating: SubmissionRating;
+  declare rating: SubmissionRating;
 
   @TitleField({
     required: true,

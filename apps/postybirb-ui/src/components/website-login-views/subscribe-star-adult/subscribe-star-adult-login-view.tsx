@@ -1,12 +1,12 @@
 /* eslint-disable lingui/no-unlocalized-strings */
 import { Trans } from '@lingui/react/macro';
 import {
-    Alert,
-    Badge,
-    Box,
-    SegmentedControl,
-    Stack,
-    Text,
+  Alert,
+  Badge,
+  Box,
+  SegmentedControl,
+  Stack,
+  Text,
 } from '@mantine/core';
 import { IconInfoCircle } from '@tabler/icons-react';
 import { useState } from 'react';
@@ -21,23 +21,19 @@ export default function SubscribeStarAdultLoginView(
   props: LoginViewProps,
 ): JSX.Element {
   const { account } = props;
-  const [activeTab, setActiveTab] = useState<string>('com');
+  const [activeTab, setActiveTab] = useState<string>('adult');
 
   const accountState = useAccount(account.id);
   const isLoggedIn = accountState?.isLoggedIn ?? false;
 
   return (
     <Stack gap="xs">
-      <Alert
-        icon={<IconInfoCircle size={16} />}
-        color="orange"
-        variant="light"
-      >
+      <Alert icon={<IconInfoCircle size={16} />} color="orange" variant="light">
         <Text size="sm">
           <Trans>
             SubscribeStar Adult requires you to be logged in to both
-            subscribestar.com AND subscribestar.adult. Please log in to both
-            sites below.
+            subscribestar.com AND subscribestar.adult if you have an account on
+            both sites.
           </Trans>
         </Text>
       </Alert>
@@ -52,8 +48,8 @@ export default function SubscribeStarAdultLoginView(
         value={activeTab}
         onChange={setActiveTab}
         data={[
-          { label: 'subscribestar.com', value: 'com' },
           { label: 'subscribestar.adult', value: 'adult' },
+          { label: 'subscribestar.com', value: 'com' },
         ]}
         fullWidth
       />
@@ -65,10 +61,7 @@ export default function SubscribeStarAdultLoginView(
           flexDirection: 'column',
         }}
       >
-        <LoginWebview
-          src={SUBSCRIBESTAR_COM_LOGIN}
-          accountId={account.id}
-        />
+        <LoginWebview src={SUBSCRIBESTAR_COM_LOGIN} accountId={account.id} />
       </Box>
 
       <Box
@@ -78,10 +71,7 @@ export default function SubscribeStarAdultLoginView(
           flexDirection: 'column',
         }}
       >
-        <LoginWebview
-          src={SUBSCRIBESTAR_ADULT_LOGIN}
-          accountId={account.id}
-        />
+        <LoginWebview src={SUBSCRIBESTAR_ADULT_LOGIN} accountId={account.id} />
       </Box>
     </Stack>
   );

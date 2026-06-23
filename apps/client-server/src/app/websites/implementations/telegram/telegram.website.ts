@@ -1,5 +1,5 @@
 // eslint-disable-next-line max-classes-per-file
-import { SelectOption } from '@postybirb/form-builder';
+import { SelectOption, SelectOptionSingle } from '@postybirb/form-builder';
 
 import {
   FileType,
@@ -233,18 +233,41 @@ export default class Telegram
     for await (const dialog of telegram.iterDialogs()) {
       total++;
       if (!dialog.id || !dialog.entity) continue;
-      if (!this.canSendMediaInChat(dialog.entity)) continue;
+      const chat = dialog.entity;
 
-      const id = dialog.entity.id.toString();
+      if (!this.canSendMediaInChat(chat)) continue;
+
+      const id = chat.id.toString();
       const hash =
-        dialog.entity.className === 'Channel'
-          ? `|${dialog.entity.accessHash?.toString()}`
-          : '';
+        chat.className === 'Channel' ? `|${chat.accessHash?.toString()}` : '';
+      const channelId = `${id}${hash}`;
+      const label = dialog.title ?? dialog.name ?? 'Empty name';
 
-      channels.push({
-        label: dialog.title ?? dialog.name ?? 'Empty name',
-        value: `${id}${hash}`,
-      });
+      if (chat.className === 'Channel' && chat.forum) {
+        const { topics } = await telegram.invoke(
+          new Api.messages.GetForumTopics({
+            peer: this.getPeer(channelId).peer,
+          }),
+        );
+
+        const filteredTopics: SelectOptionSingle[] = [];
+        for (const topic of topics) {
+          if (topic.className !== 'ForumTopic') continue;
+          if (topic.closed || topic.hidden) continue;
+
+          filteredTopics.push({
+            label: topic.titleMissing ? `Topic ${topic.id}` : topic.title,
+            value: `${channelId}|${topic.id}`,
+          });
+        }
+
+        channels.push({ label, value: channelId, items: filteredTopics });
+      } else {
+        channels.push({
+          label,
+          value: channelId,
+        });
+      }
       this.setWebsiteData({ ...this.websiteDataStore.getData(), channels });
     }
 
@@ -370,7 +393,7 @@ export default class Telegram
 
       // Only add description to the media in first batch
       const firstInBatch = batch.index === 0;
-      const peer = this.getPeer(channel);
+      const { peer, topic } = this.getPeer(channel);
 
       if (medias.length === 1) {
         response = await telegram.invoke(
@@ -380,6 +403,7 @@ export default class Telegram
             entities: firstInBatch ? mediaEntities : [],
             silent: postData.options.silent,
             peer,
+            replyTo: topic,
           }),
         );
       } else {
@@ -436,16 +460,21 @@ export default class Telegram
             silent: postData.options.silent,
             multiMedia,
             peer,
+            replyTo: topic,
           }),
         );
       }
 
       if (messageDescription) {
-        await telegram.sendMessage(peer, {
-          message: messageDescription,
-          silent: postData.options.silent,
-          formattingEntities: entities,
-        });
+        await telegram.invoke(
+          new Api.messages.SendMessage({
+            message: messageDescription,
+            entities,
+            silent: postData.options.silent,
+            peer,
+            replyTo: topic,
+          }),
+        );
       }
     }
 
@@ -479,7 +508,7 @@ export default class Telegram
   }
 
   private getPeer(channel: string) {
-    const [idRaw, accessHash] = channel.split('|');
+    const [idRaw, accessHash, topicId] = channel.split('|');
     const id = returnBigInt(idRaw);
     const peer = accessHash
       ? new Api.InputPeerChannel({
@@ -488,7 +517,14 @@ export default class Telegram
         })
       : new Api.InputPeerChat({ chatId: id });
 
-    return peer;
+    return {
+      peer,
+      topic: topicId
+        ? new Api.InputReplyToMessage({
+            replyToMsgId: parseInt(topicId, 10),
+          })
+        : undefined,
+    };
   }
 
   private readonly MAX_CHARS = 4096;
@@ -540,12 +576,14 @@ export default class Telegram
     for (const channel of postData.options.channels) {
       cancellationToken.throwIfCancelled();
 
+      const { peer, topic } = this.getPeer(channel);
       response = await telegram.invoke(
         new Api.messages.SendMessage({
           message: description,
           entities,
           silent: postData.options.silent,
-          peer: this.getPeer(channel),
+          peer,
+          replyTo: topic,
         }),
       );
     }

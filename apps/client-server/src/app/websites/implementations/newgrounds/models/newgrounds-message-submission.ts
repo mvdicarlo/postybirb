@@ -20,5 +20,5 @@ export class NewgroundsMessageSubmission extends NewgroundsBaseSubmission {
       },
     ],
   })
-  rating: SubmissionRating;
+  declare rating: SubmissionRating;
 }

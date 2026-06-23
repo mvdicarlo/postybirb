@@ -1,10 +1,14 @@
 /**
  * Sharp Worker Script
  *
- * Runs in a separate worker thread via piscina to isolate sharp/libvips
- * native code from the main process. If libvips segfaults (e.g. after
- * long idle), only this worker dies — the main process survives and
- * piscina automatically spawns a replacement.
+ * Runs in a dedicated Electron utilityProcess (a real OS child process) to
+ * isolate sharp/libvips native code from the main process. If libvips
+ * segfaults, aborts, or runs out of memory on a pathological image, only this
+ * child process dies — the main process survives and rejects the in-flight
+ * job with a normal catchable error.
+ *
+ * In test mode this same file is required in-process and its exported
+ * `processImage` function is called directly (no child process).
  *
  * All sharp imports are confined to this file.
  */
@@ -13,9 +17,9 @@
 const sharp = require('sharp');
 const os = require('os');
 
-// Configure sharp for worker thread
+// Configure sharp for this process
 sharp.cache({ files: 0 });
-sharp.concurrency(1); // Limit per-worker thread count to reduce native memory pressure
+sharp.concurrency(1); // Limit native thread count to reduce memory pressure
 
 // On glibc-based Linux, reduce memory arena count to prevent
 // the fragmentation that causes crashes after long idle.
@@ -24,16 +28,50 @@ if (os.platform() === 'linux' && !process.env.MALLOC_ARENA_MAX) {
 }
 
 /**
- * Create a sharp instance with the pixel limit disabled.
- * Sharp's default limit (268 megapixels) rejects large images
- * that artists commonly work with (e.g. 50MB+ high-res JPEGs).
+ * Upper bound on input pixels (width × height) we will decode.
+ *
+ * Sharp's own default is ~268 megapixels, which rejects large images that
+ * artists legitimately work with. Rather than disable the guard entirely
+ * (which would let a pathological/malicious image exhaust memory and crash
+ * the worker), we raise it to 500 megapixels.
+ *
+ * libvips decodes to raw RGBA at 4 bytes/pixel, so this caps a single frame's
+ * worst-case raw decode at ~2GB — survivable for the utility process — while
+ * still comfortably covering real artwork/photos (8K ≈ 33MP, 16K ≈ 133MP, a
+ * 300 DPI 24"×36" print ≈ 78MP). A decompression bomb such as a 30000×30000
+ * PNG (~900MP, ~3.6GB raw) is rejected before decode.
+ */
+const MAX_INPUT_PIXELS = 500_000_000;
+
+/**
+ * Per-pipeline native timeout, in seconds.
+ *
+ * Aborts a runaway libvips operation from inside the native layer before the
+ * coarser-grained per-request timeout in SharpInstanceManager (180s) has to
+ * kill and respawn the whole worker. Kept comfortably below that so a wedged
+ * native call fails as a normal error instead of a process restart.
+ */
+const PIPELINE_TIMEOUT_SECONDS = 120;
+
+/**
+ * Create a sharp instance with a high (but finite) pixel limit and a native
+ * operation timeout already applied, so every pipeline derived from this
+ * helper inherits both safety guards.
  * @param {Buffer} buffer
  * @param {Object} [opts] - Additional sharp input options
  * @param {boolean} [opts.animated] - Whether to load all frames (for GIF/WebP)
  * @returns {import('sharp').Sharp}
  */
 function load(buffer, opts) {
-  return sharp(buffer, { limitInputPixels: false, ...opts });
+  // failOn: 'none' makes decoding resilient to mildly corrupt or
+  // progressively-truncated images that browsers render fine — sharp's
+  // default ('warning') would otherwise throw on them. Callers can still
+  // override via opts.
+  return sharp(buffer, {
+    limitInputPixels: MAX_INPUT_PIXELS,
+    failOn: 'none',
+    ...opts,
+  }).timeout({ seconds: PIPELINE_TIMEOUT_SECONDS });
 }
 
 /**
@@ -51,7 +89,7 @@ function isAnimatedFormat(mimeType) {
  * @returns {Promise<boolean>}
  */
 async function isAnimated(buffer) {
-  const metadata = await sharp(buffer, { limitInputPixels: false }).metadata();
+  const metadata = await load(buffer).metadata();
   return (metadata.pages || 1) > 1;
 }
 
@@ -396,7 +434,7 @@ async function generateThumbnail(
 
   pipeline = isJpeg
     ? pipeline.jpeg({ quality: 99, force: true })
-    : pipeline.png({ quality: 99, force: true });
+    : pipeline.png({ quality: 90, palette: true, force: true });
 
   // Get buffer + output dimensions in one call — no re-decode needed
   const { data, info } = await pipeline.toBuffer({ resolveWithObject: true });
@@ -418,11 +456,17 @@ async function generateThumbnail(
 }
 
 /**
- * Main worker function dispatched by piscina.
+ * Main image-processing entry point.
+ *
+ * Invoked either:
+ *  - directly in-process (test mode), via the exported function, or
+ *  - inside an Electron utilityProcess child, via the parentPort wiring at
+ *    the bottom of this file.
+ *
  * @param {SharpWorkerInput} input
  * @returns {Promise<SharpWorkerResult>}
  */
-module.exports = async function processImage(input) {
+async function processImage(input) {
   const { operation } = input;
 
   switch (operation) {
@@ -628,4 +672,59 @@ module.exports = async function processImage(input) {
     default:
       throw new Error(`Unknown operation: ${operation}`);
   }
-};
+}
+
+/**
+ * Worker message protocol handler.
+ *
+ * Transforms a request envelope `{ id, input }` into a response envelope
+ * `{ id, result }` on success or `{ id, error }` on failure. This is the
+ * single source of truth for the request/response shape, shared by both:
+ *  - the real Electron utility-process wiring below, and
+ *  - the in-process test worker (which calls `module.exports.dispatch`).
+ *
+ * @param {{ id: number, input: unknown }} message
+ * @returns {Promise<{ id: number, result?: unknown, error?: { message: string, stack?: string } }>}
+ */
+async function dispatch(message) {
+  const { id, input } = message || {};
+  try {
+    const result = await processImage(input);
+    return { id, result };
+  } catch (error) {
+    return {
+      id,
+      error: {
+        message: error && error.message ? error.message : String(error),
+        stack: error && error.stack ? error.stack : undefined,
+      },
+    };
+  }
+}
+
+// `processImage` is the raw operation entry point; `dispatch` is the
+// envelope-aware handler used by the platform process abstraction (real and
+// in-process/test implementations alike).
+module.exports = processImage;
+module.exports.dispatch = dispatch;
+
+/**
+ * Electron utility-process wiring.
+ *
+ * When this file is launched via `utilityProcess.fork()` (see
+ * ElectronProcessService), `process.parentPort` is defined and we run as a
+ * dedicated OS process. THIS is what isolates native libvips crashes:
+ * a segfault / abort / OOM in here terminates ONLY this child process —
+ * the main Electron process survives and rejects the in-flight job with a
+ * normal, catchable JavaScript error.
+ *
+ * When this module is required in-process (test mode), `process.parentPort`
+ * is undefined, this block is skipped, and callers invoke `dispatch`
+ * (or the exported `processImage`) directly.
+ */
+if (process.parentPort) {
+  process.parentPort.on('message', async (event) => {
+    process.parentPort.postMessage(await dispatch(event.data));
+  });
+}
+
