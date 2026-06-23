@@ -4,6 +4,7 @@ import { PostyBirbDirectories, writeSync } from '@postybirb/fs';
 import { FileSubmission, SubmissionType } from '@postybirb/types';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { AccountTemplateDefaultsService } from '../account/account-template-defaults.service';
 import { AccountService } from '../account/account.service';
 import { CustomShortcutsService } from '../custom-shortcuts/custom-shortcuts.service';
 import { FileConverterService } from '../file-converter/file-converter.service';
@@ -21,7 +22,6 @@ import { MessageSubmissionService } from '../submission/services/message-submiss
 import { SubmissionService } from '../submission/services/submission.service';
 import { TagConvertersService } from '../tag-converters/tag-converters.service';
 import { UserConvertersService } from '../user-converters/user-converters.service';
-import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
 import { ValidationService } from '../validation/validation.service';
 import { WebsiteOptionsService } from '../website-options/website-options.service';
 import { WebsiteImplProvider } from '../websites/implementations/provider';
@@ -98,7 +98,7 @@ describe('FileService', () => {
     clearDatabase();
     module = await Test.createTestingModule({
       providers: [
-        UserSpecifiedWebsiteOptionsService,
+        AccountTemplateDefaultsService,
         SubmissionService,
         CreateFileService,
         UpdateFileService,

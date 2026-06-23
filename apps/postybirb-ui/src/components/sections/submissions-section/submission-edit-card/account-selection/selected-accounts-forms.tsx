@@ -42,6 +42,7 @@ import {
   getAccountPostStatusMap,
 } from '../../submission-history';
 import { useSubmissionEditCardContext } from '../context';
+import { AccountDefaultTemplateModal } from './account-default-template-modal';
 import './account-selection.css';
 import { FormFieldsProvider, SectionLayout } from './form';
 
@@ -251,6 +252,10 @@ function WebsiteFormGroup({ website, options, accountStatusMap }: WebsiteFormGro
                   }
                   return null;
                 })()}
+                <AccountDefaultTemplateModal
+                  account={account}
+                  submission={submission}
+                />
                 {hasErrors && (
                   <Badge size="xs" variant="light" color="red">
                     <Trans>Error</Trans>
