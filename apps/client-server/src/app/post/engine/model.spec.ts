@@ -64,6 +64,23 @@ describe('Relay model — dependency evaluation', () => {
     expect(evaluateDependency(job, allT)).toBe('blocked');
   });
 
+  it('allSettled waits for all to settle then satisfies, never blocked', () => {
+    const up1 = task('s1');
+    const up2 = task('s2');
+    const settled = task('settled', { mode: 'allSettled', tasks: ['s1', 's2'] });
+    const job = jobWith([up1, up2, settled]);
+
+    expect(evaluateDependency(job, settled)).toBe('pending');
+
+    up1.status = NodeStatus.SUCCEEDED;
+    expect(evaluateDependency(job, settled)).toBe('pending'); // s2 not terminal
+
+    // Both terminal now — best-effort satisfies despite the failure (a strict
+    // 'all' would report 'blocked' here).
+    up2.status = NodeStatus.FAILED;
+    expect(evaluateDependency(job, settled)).toBe('satisfied');
+  });
+
   it('treats no dependency as none', () => {
     const t = task('t');
     const job = jobWith([t]);

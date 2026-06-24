@@ -125,7 +125,11 @@ export class RelayPipelineDeps implements PipelineDeps {
 
   private toSourceMeta(
     f: SubmissionFile,
-  ): RelaySourceFile & { order: number; ignoredWebsites?: string[] } {
+  ): RelaySourceFile & {
+    order: number;
+    ignoredWebsites?: string[];
+    sourceUrls?: string[];
+  } {
     const dimensionOverrides: RelaySourceFile['dimensionOverrides'] = {};
     for (const [accountId, dim] of Object.entries(f.metadata.dimensions ?? {})) {
       dimensionOverrides[accountId] = { width: dim.width, height: dim.height };
@@ -142,6 +146,7 @@ export class RelayPipelineDeps implements PipelineDeps {
       dimensionOverrides,
       order: f.order ?? 0,
       ignoredWebsites: f.metadata.ignoredWebsites ?? [],
+      sourceUrls: f.metadata.sourceUrls ?? [],
     };
   }
 

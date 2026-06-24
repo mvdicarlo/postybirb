@@ -10,14 +10,14 @@
 
 /* eslint-disable max-classes-per-file */
 import {
-    AccountId,
-    Dependency,
-    EntityId,
-    ITaskError,
-    NodeStatus,
-    PostRecordResumeMode,
-    SubmissionFileId,
-    UnitKind,
+  AccountId,
+  Dependency,
+  EntityId,
+  ITaskError,
+  NodeStatus,
+  PostRecordResumeMode,
+  SubmissionFileId,
+  UnitKind,
 } from '@postybirb/types';
 import { v4 } from 'uuid';
 import { DEPENDENCY_STATES, SOURCE_DEPENDENCY_MODES } from './constants';
@@ -240,7 +240,9 @@ export type DependencyState = 'none' | 'satisfied' | 'pending' | 'blocked';
  *  - 'blocked'   : can never be met -> the task should be SKIPPED.
  *
  * SKIPPED upstreams count as "done" for 'all' but not as a success for
- * 'any'/'count'.
+ * 'any'/'count'. The 'allSettled' mode is best-effort: it waits for every
+ * upstream to settle (any outcome) and is never blocked — a failed upstream
+ * simply yields no source URL rather than skipping the dependent.
  */
 export function evaluateDependency(
   job: RelayJob,
@@ -258,6 +260,14 @@ export function evaluateDependency(
   const skipped = deps.filter((t) => t.status === NodeStatus.SKIPPED).length;
   const terminal = deps.filter((t) => isTerminal(t)).length;
   const total = deps.length;
+
+  if (dep.mode === SOURCE_DEPENDENCY_MODES.ALL_SETTLED) {
+    // Best-effort: post once every upstream has settled, whatever the outcome.
+    // Never blocked — a failed upstream just contributes no source URL.
+    return terminal === total
+      ? DEPENDENCY_STATES.SATISFIED
+      : DEPENDENCY_STATES.PENDING;
+  }
 
   if (dep.mode === SOURCE_DEPENDENCY_MODES.ALL) {
     if (succeeded + skipped === total) return DEPENDENCY_STATES.SATISFIED;

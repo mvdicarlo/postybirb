@@ -457,4 +457,70 @@ describe('Relay pipeline + scheduler (integration)', () => {
     expect(job.status).toBe(NodeStatus.SUCCEEDED);
     expect(cp.sourceUrl).toBeTruthy();
   });
+
+  it('allSettled external site still posts when an upstream fails (best-effort)', async () => {
+    const submission = fileSubmission();
+    submission.options = [
+      { accountId: 'a_fa', websiteId: 'furaffinity' },
+      { accountId: 'a_cp', websiteId: 'crosspost' },
+    ];
+    const h = new Harness(submission);
+    h.register(fileWebsite({ id: 'furaffinity', fileBatchSize: 3 }));
+    h.register(
+      fileWebsite({
+        id: 'crosspost',
+        fileBatchSize: 3,
+        acceptsExternalSourceUrls: true,
+        sourceDependencyMode: 'allSettled',
+      }),
+    );
+    // The only upstream fails to authenticate.
+    h.authFailures.add('a_fa');
+
+    const sched = new RelayScheduler(h, instant);
+    const job = sched.enqueue(submission.id);
+    const fa = job.tasks.find((t) => t.websiteId === 'furaffinity')!;
+    const cp = job.tasks.find((t) => t.websiteId === 'crosspost')!;
+    expect(cp.dependency?.mode).toBe('allSettled');
+
+    await sched.runToIdle();
+
+    // The upstream failed, but the cross-poster still posted (best-effort) — it
+    // is NOT skipped the way a strict 'all' gate would skip it.
+    expect(fa.status).toBe(NodeStatus.FAILED);
+    expect(cp.status).toBe(NodeStatus.SUCCEEDED);
+    expect(cp.sourceUrl).toBeTruthy();
+    expect(job.status).toBe(NodeStatus.FAILED); // one site failed overall
+  });
+
+  it('wires no source dependency when every file already has a user source URL', async () => {
+    const submission = fileSubmission();
+    // User supplied a source URL on every file.
+    submission.files = submission.files.map((f) => ({
+      ...f,
+      sourceUrls: ['https://user/source'],
+    }));
+    submission.options = [
+      { accountId: 'a_fa', websiteId: 'furaffinity' },
+      { accountId: 'a_cp', websiteId: 'crosspost' },
+    ];
+    const h = new Harness(submission);
+    h.register(fileWebsite({ id: 'furaffinity', fileBatchSize: 3 }));
+    h.register(
+      fileWebsite({
+        id: 'crosspost',
+        fileBatchSize: 3,
+        acceptsExternalSourceUrls: true,
+      }),
+    );
+
+    const sched = new RelayScheduler(h, instant);
+    const job = sched.enqueue(submission.id);
+    const cp = job.tasks.find((t) => t.websiteId === 'crosspost')!;
+    // No gate is wired: the user already supplied the sources.
+    expect(cp.dependency).toBeUndefined();
+
+    await sched.runToIdle();
+    expect(job.status).toBe(NodeStatus.SUCCEEDED);
+  });
 });

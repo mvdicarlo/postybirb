@@ -11,15 +11,16 @@
 /* eslint-disable no-param-reassign */ // the scheduler mutates the job tree in place
 
 import { NodeStatus, PostRecordResumeMode } from '@postybirb/types';
+import fastq from 'fastq';
 import { CancellableToken } from '../models/cancellable-token';
 import { DEPENDENCY_STATES, SKIP_REASONS, TRACER_JOB_EVENTS, TRACER_TASK_EVENTS } from './constants';
 import { StageError, classify, decideRetry, toTaskError } from './errors';
 import {
-    RelayJob,
-    RelayTask,
-    computeJobStatus,
-    evaluateDependency,
-    isTerminal,
+  RelayJob,
+  RelayTask,
+  computeJobStatus,
+  evaluateDependency,
+  isTerminal,
 } from './model';
 import { PipelineDeps, TaskPassResult, planJob, resetForResume, runTaskPass } from './pipeline';
 import { taskTraceFields } from './tracer.service';
@@ -39,6 +40,23 @@ const realWait = (ms: number) =>
   new Promise<void>((r) => {
     setTimeout(r, ms);
   });
+
+/**
+ * Mutable per-run state for a job's task reactor (see {@link RelayScheduler.runReactor}).
+ * Holds the fastq task queue, the set of tasks currently owned by the reactor
+ * (in-flight, queued for a slot, or parked on a timer), the in-flight worker
+ * count, cancel/settle flags, and the promise resolver that ends the run.
+ */
+interface RunCtx {
+  job: RelayJob;
+  token: CancellableToken;
+  queue: fastq.queueAsPromised<RelayTask, void>;
+  active: Set<string>;
+  inFlight: number;
+  cancelled: boolean;
+  settled: boolean;
+  resolve: () => void;
+}
 
 export class RelayScheduler {
   private readonly deps: PipelineDeps;
@@ -320,46 +338,15 @@ export class RelayScheduler {
     this.deps.tracer.pushJobDelta(job);
 
     try {
-      // Main run loop. Each iteration either runs a batch of tasks, sleeps
-      // until something becomes runnable, or terminates the loop because all
-      // tasks are terminal or the job has been cancelled.
-      for (;;) {
-        if (token.isCancelled) break;
+      // Event-driven reactor: tasks are dispatched through a fastq queue as
+      // their dependency/rate-limit gates open. It
+      // resolves once every task is terminal (or the job was cancelled and the
+      // remainder force-settled).
+      await this.runReactor(job, token);
 
-        const pending = job.tasks.filter((t) => !isTerminal(t));
-        if (pending.length === 0) break;
-
-        const runnable = pending.filter((t) => this.isRunnable(job, t, Date.now()));
-
-        if (runnable.length === 0) {
-          // Nothing can run right now. Either everyone is parked on a
-          // wait/dependency gate (sleep until the soonest gate releases) or
-          // some tasks are dependency-BLOCKED (their upstreams can never
-          // satisfy them) — mark those SKIPPED and loop so any newly-unblocked
-          // dependents can be evaluated.
-          const soonest = this.soonestWakeup(job);
-          if (soonest === undefined) {
-            this.skipBlockedDependents(job);
-            // eslint-disable-next-line no-await-in-loop
-            await this.persistJob(job);
-            continue;
-          }
-          // eslint-disable-next-line no-await-in-loop
-          await this.interruptibleWait(Math.max(0, soonest - Date.now()), token.signal);
-          continue;
-        }
-
-        const slice = runnable.slice(0, this.opts.maxConcurrentTasks);
-        // eslint-disable-next-line no-await-in-loop
-        await Promise.all(
-          slice.map((t) => this.runTaskWithRetries(job, t, token)),
-        );
-      }
-
-      // A cancel can break the loop with tasks still parked in WAITING/QUEUED
-      // (e.g. mid rate-limit window). Mark every remaining non-terminal task
-      // CANCELLED so the job settles to a terminal state instead of being
-      // computed as still WAITING/RUNNING.
+      // A cancel can leave tasks parked in WAITING/QUEUED (e.g. mid rate-limit
+      // window). Mark every remaining non-terminal task CANCELLED so the job
+      // settles terminal instead of computing as still WAITING/RUNNING.
       if (token.isCancelled) this.cancelRemainingTasks(job);
 
       job.status = computeJobStatus(job);
@@ -379,48 +366,171 @@ export class RelayScheduler {
     }
   }
 
-  private isRunnable(job: RelayJob, task: RelayTask, now: number): boolean {
-    if (isTerminal(task)) return false;
-    if (task.waitingUntil !== undefined && task.waitingUntil > now) return false;
-    const dep = evaluateDependency(job, task);
-    return dep === DEPENDENCY_STATES.SATISFIED || dep === DEPENDENCY_STATES.NONE;
+  /**
+   * Drive a job's task tree to completion as an event-driven reactor.
+   *
+   * A {@link fastq} queue (concurrency = maxConcurrentTasks) dispatches a task
+   * the moment it becomes runnable; completion events re-evaluate dependents
+   * (source-URL gates) and rate-limit parks re-arm via an abortable timer.
+   * There is no polling: each non-terminal task is always either in-flight,
+   * queued for a free slot, parked on a timer, or waiting for an upstream
+   * settle to re-pump it. Resolves when all tasks are terminal, or promptly on
+   * cancel after in-flight work drains.
+   */
+  private runReactor(job: RelayJob, token: CancellableToken): Promise<void> {
+    return new Promise<void>((resolve) => {
+      let ctx: RunCtx;
+      const worker = async (task: RelayTask): Promise<void> => {
+        ctx.inFlight += 1;
+        try {
+          await this.runTaskWithRetries(job, task, token);
+        } catch {
+          // runTaskWithRetries is designed never to throw; guard fastq anyway.
+          if (!isTerminal(task)) task.status = NodeStatus.FAILED;
+        } finally {
+          ctx.inFlight -= 1;
+          this.afterTask(ctx, task);
+        }
+      };
+      const queue = fastq.promise<unknown, RelayTask, void>(
+        worker,
+        this.opts.maxConcurrentTasks,
+      );
+      ctx = {
+        job,
+        token,
+        queue,
+        active: new Set<string>(),
+        inFlight: 0,
+        cancelled: false,
+        settled: false,
+        resolve,
+      };
+
+      if (token.isCancelled) {
+        this.onCancel(ctx);
+        return;
+      }
+      token.signal.addEventListener('abort', () => this.onCancel(ctx), {
+        once: true,
+      });
+      this.pump(ctx);
+    });
   }
 
-  private soonestWakeup(job: RelayJob): number | undefined {
-    let soonest: number | undefined;
-    let anyDepPending = false;
-    for (const t of job.tasks) {
-      if (isTerminal(t)) continue;
-      if (t.waitingUntil !== undefined) {
-        soonest =
-          soonest === undefined ? t.waitingUntil : Math.min(soonest, t.waitingUntil);
-      } else if (evaluateDependency(job, t) === DEPENDENCY_STATES.PENDING) {
-        anyDepPending = true;
+  /**
+   * Schedule every currently-runnable task and skip any that are permanently
+   * dependency-blocked, repeating until the ready set is stable. Called once at
+   * start and after each task settles (so newly-unblocked dependents are picked
+   * up). Pure bookkeeping over the small task set — not a wall-clock poll.
+   */
+  private pump(ctx: RunCtx): void {
+    if (ctx.cancelled || ctx.settled) return;
+    const { job } = ctx;
+    let changed = true;
+    while (changed) {
+      changed = false;
+      for (const task of job.tasks) {
+        if (isTerminal(task) || ctx.active.has(task.id)) continue;
+        if (task.waitingUntil !== undefined && task.waitingUntil > Date.now()) {
+          continue; // parked; its timer owns re-scheduling
+        }
+        const dep = evaluateDependency(job, task);
+        if (
+          dep === DEPENDENCY_STATES.SATISFIED ||
+          dep === DEPENDENCY_STATES.NONE
+        ) {
+          ctx.active.add(task.id);
+          ctx.queue.push(task).catch(() => undefined);
+          changed = true;
+        } else if (dep === DEPENDENCY_STATES.BLOCKED) {
+          this.skipBlockedTask(job, task);
+          changed = true; // its dependents may now be (un)blocked
+        }
+        // PENDING: leave it; an upstream settle will re-pump.
       }
     }
-    if (soonest !== undefined) return soonest;
-    // A dependency is pending but no task has an absolute wakeup time — the
-    // gate will only release when another task completes. Return a near-zero
-    // "nudge" so the outer loop yields to the event loop (giving the
-    // currently-running tasks a chance to finish) and then re-evaluates,
-    // rather than spinning hot on a tight while-true.
-    return anyDepPending ? Date.now() + 5 : undefined;
+    this.checkDone(ctx);
   }
 
-  private skipBlockedDependents(job: RelayJob): void {
-    for (const t of job.tasks) {
-      if (isTerminal(t)) continue;
-      if (evaluateDependency(job, t) === DEPENDENCY_STATES.BLOCKED) {
-        t.status = NodeStatus.SKIPPED;
-        this.deps.tracer.emit({
-          jobId: job.id,
-          taskId: t.id,
-          level: 'warn',
-          event: TRACER_TASK_EVENTS.SKIPPED,
-          data: { reason: SKIP_REASONS.DEPENDENCY_UNREACHABLE },
-        });
-      }
+  /** Worker-completion handler: re-arm a rate-limit park, or propagate a settle. */
+  private afterTask(ctx: RunCtx, task: RelayTask): void {
+    ctx.active.delete(task.id);
+    if (ctx.cancelled) {
+      if (ctx.inFlight === 0) this.finishCancelled(ctx);
+      return;
     }
+    if (task.status === NodeStatus.WAITING) {
+      this.scheduleParkTimer(ctx, task);
+      return;
+    }
+    this.pump(ctx);
+  }
+
+  /**
+   * Re-arm a rate-limit-parked task: wait out its `waitingUntil` window (via the
+   * injectable, abortable wait) then re-pump it. The remaining window is
+   * re-checked against the clock rather than re-running the (expensive)
+   * pipeline pass, so an instant injected wait in tests does not repeatedly
+   * re-dispatch the task.
+   */
+  private scheduleParkTimer(ctx: RunCtx, task: RelayTask): void {
+    ctx.active.add(task.id); // keep the task owned while parked
+    const tick = (): void => {
+      if (ctx.cancelled || ctx.settled) {
+        ctx.active.delete(task.id);
+        return;
+      }
+      const remaining = (task.waitingUntil ?? 0) - Date.now();
+      if (remaining > 0) {
+        this.interruptibleWait(remaining, ctx.token.signal)
+          .then(tick)
+          .catch(() => undefined);
+        return;
+      }
+      ctx.active.delete(task.id);
+      this.pump(ctx);
+    };
+    tick();
+  }
+
+  /** Mark a permanently dependency-blocked task SKIPPED (and persist it). */
+  private skipBlockedTask(job: RelayJob, task: RelayTask): void {
+    task.status = NodeStatus.SKIPPED;
+    this.deps.tracer.emit({
+      jobId: job.id,
+      taskId: task.id,
+      level: 'warn',
+      event: TRACER_TASK_EVENTS.SKIPPED,
+      data: { reason: SKIP_REASONS.DEPENDENCY_UNREACHABLE },
+    });
+    this.deps.tracer.pushTaskDelta(job, task);
+    this.persistTaskDurable(job, task).catch(() => undefined);
+  }
+
+  /** Resolve the reactor once every task has reached a terminal state. */
+  private checkDone(ctx: RunCtx): void {
+    if (ctx.settled || ctx.cancelled) return;
+    if (ctx.job.tasks.every((t) => isTerminal(t))) {
+      ctx.settled = true;
+      ctx.resolve();
+    }
+  }
+
+  /** Begin cancellation: stop scheduling, drop queued work, settle when idle. */
+  private onCancel(ctx: RunCtx): void {
+    if (ctx.cancelled) return;
+    ctx.cancelled = true;
+    ctx.queue.kill(); // drop not-yet-started tasks; in-flight workers finish
+    if (ctx.inFlight === 0) this.finishCancelled(ctx);
+  }
+
+  /** Force-settle the reactor after a cancel once in-flight work has drained. */
+  private finishCancelled(ctx: RunCtx): void {
+    if (ctx.settled) return;
+    ctx.settled = true;
+    this.cancelRemainingTasks(ctx.job);
+    ctx.resolve();
   }
 
   /** Mark every non-terminal task CANCELLED (used on a cancelled job exit). */

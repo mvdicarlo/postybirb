@@ -16,6 +16,7 @@ export const DEPENDENCY_STATES = {
 /** Source dependency mode keys used by planning and website metadata. */
 export const SOURCE_DEPENDENCY_MODES = {
   ALL: 'all' as const,
+  ALL_SETTLED: 'allSettled' as const,
   ANY: 'any' as const,
   COUNT: 'count' as const,
 } as const;

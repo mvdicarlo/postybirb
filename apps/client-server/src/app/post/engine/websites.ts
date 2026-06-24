@@ -20,6 +20,7 @@ export type RelayPostResult = { sourceUrl?: string; message?: string };
 
 export type RelaySourceDependencyMode =
   | typeof SOURCE_DEPENDENCY_MODES.ALL
+  | typeof SOURCE_DEPENDENCY_MODES.ALL_SETTLED
   | typeof SOURCE_DEPENDENCY_MODES.ANY
   | { count: number };
 
@@ -93,7 +94,7 @@ export class WebsiteInstanceAdapter implements RelayWebsite {
   get sourceDependencyMode(): RelaySourceDependencyMode {
     return (
       this.instance.decoratedProps.fileOptions?.sourceDependencyMode ??
-      SOURCE_DEPENDENCY_MODES.ALL
+      SOURCE_DEPENDENCY_MODES.ALL_SETTLED
     );
   }
 

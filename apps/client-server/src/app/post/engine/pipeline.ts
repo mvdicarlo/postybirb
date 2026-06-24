@@ -64,7 +64,14 @@ export interface RelaySubmission {
   id: string;
   type: SubmissionType;
   title: string;
-  files: Array<RelaySourceFile & { order: number; ignoredWebsites?: string[] }>;
+  files: Array<
+    RelaySourceFile & {
+      order: number;
+      ignoredWebsites?: string[];
+      /** User-provided source URLs for this file (file metadata). */
+      sourceUrls?: string[];
+    }
+  >;
   options: Array<{ accountId: string; websiteId: string }>;
 }
 
@@ -252,6 +259,9 @@ function buildSourceDependency(
   if (mode === SOURCE_DEPENDENCY_MODES.ALL) {
     return { mode: SOURCE_DEPENDENCY_MODES.ALL, tasks: standardIds };
   }
+  if (mode === SOURCE_DEPENDENCY_MODES.ALL_SETTLED) {
+    return { mode: SOURCE_DEPENDENCY_MODES.ALL_SETTLED, tasks: standardIds };
+  }
   if (mode === SOURCE_DEPENDENCY_MODES.ANY) {
     return { mode: SOURCE_DEPENDENCY_MODES.ANY, tasks: standardIds };
   }
@@ -270,6 +280,7 @@ function buildSourceDependency(
  * {@link buildSourceDependency} to stay satisfiable.
  */
 function wireSourceDependencies(job: RelayJob, deps: PipelineDeps): void {
+  const submission = deps.getSubmission(job.id);
   const standardIds = job.tasks
     .filter(
       (t) =>
@@ -284,8 +295,28 @@ function wireSourceDependencies(job: RelayJob, deps: PipelineDeps): void {
     if (t.status === NodeStatus.SKIPPED) continue;
     const site = deps.getWebsite(job.id, t.websiteId, t.accountId);
     if (!site.acceptsExternalSourceUrls) continue;
+    // Best-effort short-circuit: if the user already supplied a source URL on
+    // every file this account will post, the site already has its sources and
+    // has nothing to wait for — leave it ungated so it posts immediately.
+    if (allFilesHaveUserSourceUrls(submission, t.accountId)) continue;
     t.dependency = buildSourceDependency(site.sourceDependencyMode, standardIds);
   }
+}
+
+/**
+ * True when this is a file submission and every file the account will post
+ * already carries at least one user-provided source URL — so an external-source
+ * site has nothing to gain by waiting on upstream posts.
+ */
+function allFilesHaveUserSourceUrls(
+  submission: RelaySubmission,
+  accountId: string,
+): boolean {
+  if (submission.type !== SubmissionType.FILE) return false;
+  const files = submission.files.filter(
+    (f) => !f.ignoredWebsites?.includes(accountId),
+  );
+  return files.length > 0 && files.every((f) => (f.sourceUrls?.length ?? 0) > 0);
 }
 
 /**
@@ -614,7 +645,6 @@ export async function runTaskPass(
     const bucket = rateKey(site.rateLimitScope, task.websiteId, task.accountId);
 
     // 5. Gate (rate limit). A positive wait means park the whole task.
-    // eslint-disable-next-line no-await-in-loop
     const waitMs = await gateUnit(deps, site, task, unit, bucket, base);
     if (waitMs > 0) {
       // Parking is expected control flow, not a failure: returning a
@@ -626,7 +656,6 @@ export async function runTaskPass(
     }
 
     // 6. Transform — convert/resize/thumbnail/verify into PostingFiles.
-    // eslint-disable-next-line no-await-in-loop
     const postingFiles = await transformUnit(
       deps,
       task,
@@ -637,7 +666,6 @@ export async function runTaskPass(
     );
 
     // 7. Dispatch
-    // eslint-disable-next-line no-await-in-loop
     const result = await dispatchUnit(
       deps,
       site,
@@ -650,7 +678,6 @@ export async function runTaskPass(
     );
 
     // 8. Capture
-    // eslint-disable-next-line no-await-in-loop
     await captureUnit(deps, job, task, unit, result, bucket, base);
   }
 
