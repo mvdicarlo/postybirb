@@ -186,9 +186,18 @@ export abstract class PhilomenaWebsite<
         );
     }
 
-    return PostResponse.fromWebsite(this)
-      .withAdditionalInfo(result.body)
-      .withSourceUrl(responseUrl);
+    let response = PostResponse.fromWebsite(this).withAdditionalInfo(
+      result.body,
+    );
+
+    if (responseUrl) {
+      const { pathname } = new URL(responseUrl);
+      if (pathname && pathname !== '/') {
+        response = response.withSourceUrl(`${this.BASE_URL}${pathname}`);
+      }
+    }
+
+    return response;
   }
 
   onValidateFileSubmission = validatorPassthru;

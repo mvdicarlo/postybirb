@@ -180,8 +180,16 @@ export default class Itaku
     isBatch: boolean,
     cancellationToken: CancellableToken,
   ): Promise<{ id: number }> {
-    const spoilerText =
-      postData.options.contentWarning || file.metadata.spoilerText;
+    const maxContentWarningLength =
+      new ItakuFileSubmission().getFormFieldFor('contentWarning')?.maxLength ??
+      Infinity;
+    const spoilerText = (
+      postData.options.contentWarning ||
+      file.metadata.spoilerText ||
+      ''
+    )
+      .trim()
+      .slice(0, maxContentWarningLength);
 
     if (
       !(file.fileType === FileType.IMAGE || file.fileType === FileType.VIDEO)

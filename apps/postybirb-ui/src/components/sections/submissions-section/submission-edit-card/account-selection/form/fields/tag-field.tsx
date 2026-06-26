@@ -105,13 +105,13 @@ export function TagField({
   const tagGroupsOptions = useMemo(
     () =>
       tagGroups
+        .filter((tagGroup) => !containsAllTagsInGroup(allTags, tagGroup))
         .map((tagGroup) => ({
           label: `${TAG_GROUP_LABEL}${JSON.stringify({ name: tagGroup.name, tags: tagGroup.tags })}`,
           value: `${TAG_GROUP_LABEL}${JSON.stringify({ name: tagGroup.name, tags: tagGroup.tags })}`,
-          disabled: containsAllTagsInGroup(tagValue, tagGroup),
         }))
         .sort((a, b) => a.label.localeCompare(b.label)),
-    [tagGroups, tagValue],
+    [tagGroups, allTags],
   );
 
   const updateTags = (tags: Tag[]) => {
