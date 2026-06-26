@@ -37,6 +37,24 @@ records that pointed to it.
 default options can only be fully restored from a personal backup, but the app
 will no longer be in a broken state.
 
+### If you already upgraded to 4.0.40 (impacted)
+
+- Update to the next release. On first launch it automatically rebuilds the
+  missing default options.
+- Sign back in to each connected website (login data could not be recovered).
+- The exact values you had typed into default options can only be fully restored
+  from a personal backup taken before the 4.0.40 upgrade. If you have one, restore
+  it before launching the new version.
+
+### If you have not upgraded yet (not impacted)
+
+- Your data is intact. The bug only triggers during the 4.0.40 upgrade, which you
+  have not run.
+- Skip 4.0.40 and update directly to the next release. Its upgrade step is the
+  fixed, non-destructive version.
+- Optionally back up your database file first (`~\Documents\PostyBirb\data\database-production.sqlite`),
+  though the new version also creates an automatic pre-upgrade backup.
+
 ---
 
 ## Impact
