@@ -56,6 +56,8 @@ linux:
   target:
     - target: AppImage
     - target: snap
+      arch:
+        - x64
     - target: deb
     - target: rpm
 
