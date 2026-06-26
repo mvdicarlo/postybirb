@@ -8,6 +8,9 @@
     },
     {
       "files": ["*.ts", "*.tsx"],
+      "parserOptions": {
+        "project": ["apps/client-server/tsconfig.*?.json"]
+      },
       "rules": {}
     },
     {
