@@ -94,11 +94,85 @@ export class SubmissionService
 
   async onModuleInit() {
     await this.cleanupUninitializedSubmissions();
+    await this.recreateMissingDefaultOptions();
     await this.normalizeOrders();
     for (const type of Object.values(SubmissionType)) {
       // eslint-disable-next-line no-await-in-loop
       await this.populateMultiSubmission(type);
     }
+  }
+
+  /**
+   * Self-healing pass that restores the default (NULL_ACCOUNT) website option
+   * for any submission missing it.
+   *
+   * Every submission is expected to have exactly one default option (created
+   * during {@link create}). A destructive migration cascade-deleted
+   * `website-options` rows on some databases, leaving pre-existing submissions
+   * without their default option. This recreates any that are missing so the
+   * database is whole again. Account-specific options and stored login data are
+   * not recoverable here (no source survives); website data rows are
+   * re-created lazily on website initialization, and accounts must be
+   * re-authenticated.
+   */
+  private async recreateMissingDefaultOptions() {
+    const submissions = await this.repository.findAll();
+    let recreated = 0;
+
+    for (const submission of submissions) {
+      const hasDefault = (submission.options ?? []).some(
+        (option) =>
+          option.isDefault || option.accountId === NULL_ACCOUNT_ID,
+      );
+      if (hasDefault) {
+        continue;
+      }
+
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        await this.websiteOptionsService.createDefaultSubmissionOptions(
+          submission,
+          this.deriveRecoveryTitle(submission),
+        );
+        recreated++;
+      } catch (err) {
+        this.logger
+          .withError(toError(err))
+          .withMetadata({ id: submission.id })
+          .error('Failed to recreate missing default website option');
+      }
+    }
+
+    if (recreated > 0) {
+      this.logger.warn(
+        `Recreated ${recreated} missing default website option(s)`,
+      );
+    }
+  }
+
+  /**
+   * Derives a best-effort title for a recreated default option, preferring any
+   * surviving option title, then a file name, then the template/submission
+   * name.
+   */
+  private deriveRecoveryTitle(submission: SubmissionEntity): string {
+    const survivingTitle = (submission.options ?? [])
+      .map((option) => option.data?.title)
+      .find((title) => typeof title === 'string' && title.trim().length > 0);
+    if (survivingTitle) {
+      return survivingTitle;
+    }
+
+    const firstFile = (submission.files ?? [])[0];
+    if (firstFile?.fileName) {
+      return path.parse(firstFile.fileName).name;
+    }
+
+    if (submission.metadata?.template?.name) {
+      return submission.metadata.template.name;
+    }
+
+    return submission.isMultiSubmission ? submission.type : 'New submission';
   }
 
   /**
