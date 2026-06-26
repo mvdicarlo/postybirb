@@ -14,18 +14,18 @@
 import { Injectable, OnModuleInit, Optional } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import {
-    JobTreeNode,
-    NodeStatus,
-    PostRecordResumeMode,
-    ScheduleType,
-    SubmissionId,
+  JobTreeNode,
+  NodeStatus,
+  PostRecordResumeMode,
+  ScheduleType,
+  SubmissionId,
 } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/common';
 import { Mutex } from 'async-mutex';
 import { NotificationsService } from '../../notifications/notifications.service';
 import { SubmissionService } from '../../submission/services/submission.service';
 import { WebsiteRegistryService } from '../../websites/website-registry.service';
-import { RelayJob, computeJobStatus, isTerminal } from './model';
+import { RelayJob, isTerminal } from './model';
 import { RelayPersistence } from './persistence';
 import { resetForResume } from './pipeline';
 import { RelayPipelineDeps } from './pipeline-deps';
@@ -371,12 +371,12 @@ export class RelayPostManager implements OnModuleInit {
   async hasSucceeded(submissionId: SubmissionId): Promise<boolean> {
     // Prefer the live job if one is tracked (most up-to-date state).
     const active = this.scheduler.getActiveJobForSubmission(submissionId);
-    if (active) return computeJobStatus(active) === NodeStatus.SUCCEEDED;
+    if (active) return active.computeStatus() === NodeStatus.SUCCEEDED;
     const jobs = await this.persistence.loadBySubmission(submissionId);
     if (jobs.length === 0) return false;
     const newest = jobs[0];
     const live = this.scheduler.getJob(newest.id);
-    return computeJobStatus(live ?? newest) === NodeStatus.SUCCEEDED;
+    return (live ?? newest).computeStatus() === NodeStatus.SUCCEEDED;
   }
 
   /**
@@ -424,7 +424,7 @@ export class RelayPostManager implements OnModuleInit {
   }
 
   private async onTerminal(job: RelayJob): Promise<void> {
-    const status = computeJobStatus(job);
+    const status = job.computeStatus();
     if (status === NodeStatus.SUCCEEDED) {
       try {
         const submission = this.deps.getSubmission(job.id);

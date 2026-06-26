@@ -13,16 +13,16 @@ import { PostyBirbDirectories } from '@postybirb/fs';
 import { POST_STATE_DELTA } from '@postybirb/socket-events';
 import { JobTreeNode, NodeStatus, UnitKind } from '@postybirb/types';
 import {
-  appendFile,
-  mkdir,
-  readFile,
-  readdir,
-  stat,
-  unlink,
+    appendFile,
+    mkdir,
+    readFile,
+    readdir,
+    stat,
+    unlink,
 } from 'node:fs/promises';
 import { join } from 'node:path';
 import { WSGateway } from '../../web-socket/web-socket-gateway';
-import { RelayJob, RelayTask, RelayUnit, computeJobStatus, isDone } from './model';
+import { RelayJob, RelayTask, RelayUnit, isDone } from './model';
 
 export type TraceLevel = 'debug' | 'info' | 'warn' | 'error';
 
@@ -268,7 +268,7 @@ export function projectJob(job: RelayJob): JobTreeNode {
     kind: 'job',
     submissionId: job.submissionId,
     label: `${job.submissionId}`,
-    status: computeJobStatus(job),
+    status: job.computeStatus(),
     progress: { done, total },
     children: job.tasks.map(projectTask),
   };

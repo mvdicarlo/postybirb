@@ -1,10 +1,5 @@
 import { NodeStatus } from '@postybirb/types';
-import {
-    RelayJob,
-    RelayTask,
-    computeJobStatus,
-    evaluateDependency,
-} from './model';
+import { RelayJob, RelayTask } from './model';
 
 function task(id: string, dependency?: RelayTask['dependency']): RelayTask {
   return new RelayTask({
@@ -34,21 +29,21 @@ describe('Relay model — dependency evaluation', () => {
     const cntT = task('cnt', { mode: 'count', tasks: ids, n: 2 });
     const job = jobWith([up1, up2, up3, anyT, allT, cntT]);
 
-    expect(evaluateDependency(job, anyT)).toBe('pending');
-    expect(evaluateDependency(job, allT)).toBe('pending');
-    expect(evaluateDependency(job, cntT)).toBe('pending');
+    expect(anyT.evaluateDependency(job)).toBe('pending');
+    expect(allT.evaluateDependency(job)).toBe('pending');
+    expect(cntT.evaluateDependency(job)).toBe('pending');
 
     up1.status = NodeStatus.SUCCEEDED;
-    expect(evaluateDependency(job, anyT)).toBe('satisfied');
-    expect(evaluateDependency(job, cntT)).toBe('pending');
-    expect(evaluateDependency(job, allT)).toBe('pending');
+    expect(anyT.evaluateDependency(job)).toBe('satisfied');
+    expect(cntT.evaluateDependency(job)).toBe('pending');
+    expect(allT.evaluateDependency(job)).toBe('pending');
 
     up2.status = NodeStatus.SUCCEEDED;
-    expect(evaluateDependency(job, cntT)).toBe('satisfied');
-    expect(evaluateDependency(job, allT)).toBe('pending');
+    expect(cntT.evaluateDependency(job)).toBe('satisfied');
+    expect(allT.evaluateDependency(job)).toBe('pending');
 
     up3.status = NodeStatus.SKIPPED;
-    expect(evaluateDependency(job, allT)).toBe('satisfied');
+    expect(allT.evaluateDependency(job)).toBe('satisfied');
   });
 
   it('resolves unreachable gates to blocked', () => {
@@ -60,8 +55,8 @@ describe('Relay model — dependency evaluation', () => {
 
     up1.status = NodeStatus.SUCCEEDED;
     up2.status = NodeStatus.FAILED;
-    expect(evaluateDependency(job, cnt)).toBe('blocked');
-    expect(evaluateDependency(job, allT)).toBe('blocked');
+    expect(cnt.evaluateDependency(job)).toBe('blocked');
+    expect(allT.evaluateDependency(job)).toBe('blocked');
   });
 
   it('allSettled waits for all to settle then satisfies, never blocked', () => {
@@ -70,21 +65,21 @@ describe('Relay model — dependency evaluation', () => {
     const settled = task('settled', { mode: 'allSettled', tasks: ['s1', 's2'] });
     const job = jobWith([up1, up2, settled]);
 
-    expect(evaluateDependency(job, settled)).toBe('pending');
+    expect(settled.evaluateDependency(job)).toBe('pending');
 
     up1.status = NodeStatus.SUCCEEDED;
-    expect(evaluateDependency(job, settled)).toBe('pending'); // s2 not terminal
+    expect(settled.evaluateDependency(job)).toBe('pending'); // s2 not terminal
 
     // Both terminal now — best-effort satisfies despite the failure (a strict
     // 'all' would report 'blocked' here).
     up2.status = NodeStatus.FAILED;
-    expect(evaluateDependency(job, settled)).toBe('satisfied');
+    expect(settled.evaluateDependency(job)).toBe('satisfied');
   });
 
   it('treats no dependency as none', () => {
     const t = task('t');
     const job = jobWith([t]);
-    expect(evaluateDependency(job, t)).toBe('none');
+    expect(t.evaluateDependency(job)).toBe('none');
   });
 });
 
@@ -97,12 +92,12 @@ describe('Relay model — computeJobStatus', () => {
 
     a.status = NodeStatus.SUCCEEDED;
     b.status = NodeStatus.RUNNING;
-    expect(computeJobStatus(job)).toBe(NodeStatus.RUNNING);
+    expect(job.computeStatus()).toBe(NodeStatus.RUNNING);
 
     b.status = NodeStatus.SUCCEEDED;
-    expect(computeJobStatus(job)).toBe(NodeStatus.SUCCEEDED);
+    expect(job.computeStatus()).toBe(NodeStatus.SUCCEEDED);
 
     b.status = NodeStatus.FAILED;
-    expect(computeJobStatus(job)).toBe(NodeStatus.FAILED);
+    expect(job.computeStatus()).toBe(NodeStatus.FAILED);
   });
 });
