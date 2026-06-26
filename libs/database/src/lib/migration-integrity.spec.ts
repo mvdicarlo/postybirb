@@ -167,6 +167,7 @@ describe('migration integrity', () => {
     applyMigrations(sqlite, migrations.slice(0, targetIndex));
     seedAccountGraph(sqlite);
 
+    expect(countRows(sqlite, 'account')).toBe(1);
     expect(countRows(sqlite, 'website-options')).toBe(1);
     expect(countRows(sqlite, 'website-data')).toBe(1);
 
@@ -174,6 +175,7 @@ describe('migration integrity', () => {
     applyMigrations(sqlite, migrations.slice(targetIndex));
 
     // Data must survive the upgrade.
+    expect(countRows(sqlite, 'account')).toBe(1);
     expect(countRows(sqlite, 'website-options')).toBe(1);
     expect(countRows(sqlite, 'website-data')).toBe(1);
 

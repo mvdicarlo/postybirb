@@ -1,9 +1,13 @@
 # Postmortem: Loss of Default Website Options After 4.0.40 Upgrade
 
 **Status:** Resolved
+
 **Severity:** SEV1 — silent user data loss
-**Author:** Engineering
+
+**Author:** mvdicarlo
+
 **Date of incident:** 2026-06-24 (first user reports, following the 4.0.40 release)
+
 **Date of writeup:** 2026-06-26
 
 ---
@@ -17,14 +21,14 @@ had created before updating. It also **logged everyone out** of their connected
 websites.
 
 The cause was a database upgrade that rebuilt an internal table while a safety
-switch that was *supposed* to prevent collateral deletion was silently ignored.
+switch that was _supposed_ to prevent collateral deletion was silently ignored.
 When the old table was removed, the database automatically deleted related
 records that pointed to it.
 
 **What we did:**
 
 - Fixed the faulty upgrade step so it no longer deletes anything (it now only
-  *adds* what it needs).
+  _adds_ what it needs).
 - Added an automatic recovery step that rebuilds the missing default options the
   next time the app starts.
 - Added **automatic database backups taken right before any future upgrade**, so
@@ -68,7 +72,7 @@ will no longer be in a broken state.
   - The `user-specified-website-options` table — saved account default templates
     (this table was intentionally removed by the refactor, but with no data
     migration into the new model).
-- **What was *not* affected:**
+- **What was _not_ affected:**
   - `post-event` history (its account reference is `ON DELETE SET NULL`, so those
     rows survived with the account link cleared).
   - Submissions, files, and other core records themselves.
@@ -79,13 +83,13 @@ will no longer be in a broken state.
 
 ## Timeline
 
-| When | Event |
-| --- | --- |
-| 2026-06-23 | PR #919 (`54cc281`) merged — "use templates as backing for user defaults", including auto-generated migration `0008`. |
-| ~2026-06-23 | Release **4.0.40** cut (`1d4b416`). |
-| 2026-06-24 | First user reports: default website options "disappeared" on existing submissions. |
-| 2026-06-25 | Issue reproduced internally; suspicion focused on `54cc281`. |
-| 2026-06-26 | Root cause confirmed empirically; migration rewritten, recovery + safeguards added. |
+| When        | Event                                                                                                                 |
+| ----------- | --------------------------------------------------------------------------------------------------------------------- |
+| 2026-06-23  | PR #919 (`54cc281`) merged — "use templates as backing for user defaults", including auto-generated migration `0008`. |
+| ~2026-06-23 | Release **4.0.40** cut (`1d4b416`).                                                                                   |
+| 2026-06-24  | First user reports: default website options "disappeared" on existing submissions.                                    |
+| 2026-06-25  | Issue reproduced internally; suspicion focused on `54cc281`.                                                          |
+| 2026-06-26  | Root cause confirmed empirically; migration rewritten, recovery + safeguards added.                                   |
 
 ---
 
@@ -228,19 +232,19 @@ it before release.
 
 ## Remedies / Action Items
 
-| # | Action | Status |
-| --- | --- | --- |
-| 1 | Rewrite migration `0008` to be additive (no table rebuild). | ✅ Done |
-| 2 | Self-healing pass to recreate missing default website options on startup. | ✅ Done |
-| 3 | **Automatic pre-migration backups** — consistent `VACUUM INTO` snapshot taken only when migrations are pending, stored in a `backups/` subfolder, retaining the 5 most recent. | ✅ Done |
-| 4 | **Migration integrity tests** — seed representative data, run migrations as production does (FKs on, in a transaction), and assert data survives; plus a generic guard that fails for any future migration that destroys seeded data. | ✅ Done |
-| 5 | Prefer additive migrations; treat any generated `DROP TABLE` / table-rebuild as a red flag requiring explicit review. | ⏳ Process |
-| 6 | Document the FK-pragma trap: the in-SQL `PRAGMA foreign_keys=OFF` is ignored inside drizzle's transaction. If a rebuild is truly required, toggle FKs on the connection *outside* `migrate()`. | ⏳ Process |
-| 7 | Unit tests for the new recovery and backup logic. | ⏳ Planned |
-| 8 | User-facing restore path (list/restore a backup) instead of manual file swaps. | ⏳ Planned |
-| 9 | Decide whether to backfill the dropped `user-specified-website-options` (saved account defaults) into the new template model. | ⏳ Decision needed |
-| 10 | Add monitoring/alerting for unexpected mass row deletion so future incidents are detected automatically, not via user reports. | ⏳ Planned |
-| 11 | Apply the upstream-recommended workaround for [drizzle-orm#5782](https://github.com/drizzle-team/drizzle-orm/issues/5782): toggle `foreign_keys = OFF` on the raw connection **before** `migrate()` and restore it in a `finally`, so any future table-rebuild migration cannot silently cascade-delete. Revisit once the upstream fix (PR #5784) ships and drizzle is upgraded. | ⏳ Recommended |
+| #   | Action                                                                                                                                                                                                                                                                                                                                                                           | Status             |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
+| 1   | Rewrite migration `0008` to be additive (no table rebuild).                                                                                                                                                                                                                                                                                                                      | ✅ Done            |
+| 2   | Self-healing pass to recreate missing default website options on startup.                                                                                                                                                                                                                                                                                                        | ✅ Done            |
+| 3   | **Automatic pre-migration backups** — consistent `VACUUM INTO` snapshot taken only when migrations are pending, stored in a `backups/` subfolder, retaining the 5 most recent.                                                                                                                                                                                                   | ✅ Done            |
+| 4   | **Migration integrity tests** — seed representative data, run migrations as production does (FKs on, in a transaction), and assert data survives; plus a generic guard that fails for any future migration that destroys seeded data.                                                                                                                                            | ✅ Done            |
+| 5   | Prefer additive migrations; treat any generated `DROP TABLE` / table-rebuild as a red flag requiring explicit review.                                                                                                                                                                                                                                                            | ⏳ Process         |
+| 6   | Document the FK-pragma trap: the in-SQL `PRAGMA foreign_keys=OFF` is ignored inside drizzle's transaction. If a rebuild is truly required, toggle FKs on the connection _outside_ `migrate()`.                                                                                                                                                                                   | ⏳ Process         |
+| 7   | Unit tests for the new recovery and backup logic.                                                                                                                                                                                                                                                                                                                                | ⏳ Planned         |
+| 8   | User-facing restore path (list/restore a backup) instead of manual file swaps.                                                                                                                                                                                                                                                                                                   | ⏳ Planned         |
+| 9   | Decide whether to backfill the dropped `user-specified-website-options` (saved account defaults) into the new template model.                                                                                                                                                                                                                                                    | ⏳ Decision needed |
+| 10  | Add monitoring/alerting for unexpected mass row deletion so future incidents are detected automatically, not via user reports.                                                                                                                                                                                                                                                   | ⏳ Planned         |
+| 11  | Apply the upstream-recommended workaround for [drizzle-orm#5782](https://github.com/drizzle-team/drizzle-orm/issues/5782): toggle `foreign_keys = OFF` on the raw connection **before** `migrate()` and restore it in a `finally`, so any future table-rebuild migration cannot silently cascade-delete. Revisit once the upstream fix (PR #5784) ships and drizzle is upgraded. | ⏳ Recommended     |
 
 ---
 
@@ -280,7 +284,7 @@ path for already-upgraded users without a personal backup.
   — proposed upstream fix (hoist `PRAGMA foreign_keys` before `BEGIN`).
 - [drizzle-team/drizzle-orm#1813](https://github.com/drizzle-team/drizzle-orm/issues/1813)
   and [#4089](https://github.com/drizzle-team/drizzle-orm/issues/4089) — the
-  long-standing *loud* (`NO ACTION`) variant of the same bug.
+  long-standing _loud_ (`NO ACTION`) variant of the same bug.
 - [SQLite: PRAGMA foreign_keys](https://www.sqlite.org/pragma.html#pragma_foreign_keys)
   — "This pragma is a no-op within a transaction."
 - [SQLite: DROP TABLE](https://www.sqlite.org/lang_droptable.html) — implicit
