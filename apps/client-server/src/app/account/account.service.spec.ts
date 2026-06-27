@@ -134,6 +134,8 @@ describe('AccountsService', () => {
       id: record.id,
       createdAt: record.createdAt,
       updatedAt: record.updatedAt,
+      defaultFileTemplateId: null,
+      defaultMessageTemplateId: null,
       state: {
         isLoggedIn: true,
         pending: false,

@@ -8,7 +8,6 @@ import { useMemo } from 'react';
 import { ComponentErrorBoundary } from '../../../../../error-boundary';
 import { FormField } from './form-field';
 import { useFormFieldsContext } from './form-fields-context';
-import { SaveDefaultsPopover } from './save-defaults-popover';
 import './section-layout.css';
 import { ValidationAlerts } from './validation-alerts';
 
@@ -112,7 +111,7 @@ function SectionGroupComponent({ section }: SectionGroupComponentProps) {
 }
 
 export function SectionLayout() {
-  const { formFields, isLoading, isError, option } = useFormFieldsContext();
+  const { formFields, isLoading, isError } = useFormFieldsContext();
   const sections = useMemo(() => {
     if (!formFields) return [];
     return groupFieldsBySection(formFields);
@@ -140,11 +139,6 @@ export function SectionLayout() {
 
   return (
     <Box className="section-layout" pos="relative">
-      {/* Header with save defaults action */}
-      <Box pos="absolute" mb="md" top={0} right={0}>
-        <SaveDefaultsPopover />
-      </Box>
-
       {/* Non-field-specific validation alerts */}
       <ValidationAlerts />
 

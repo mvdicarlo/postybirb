@@ -61,7 +61,12 @@ export function useTagSearch(fieldProviderId?: string): UseTagSearchResult {
   const debouncedSearch = useDebouncedCallback(
     (query: string) => {
       if (query === '' || !provider) {
-        setData([]);
+        // Keep the last results cached so the dropdown stays populated
+        // after a suggestion is selected (which clears the search input).
+        // Only providerless fields should reset the data.
+        if (!provider) {
+          setData([]);
+        }
         setIsLoading(false);
         return;
       }

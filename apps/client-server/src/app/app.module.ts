@@ -26,7 +26,6 @@ import { TagConvertersModule } from './tag-converters/tag-converters.module';
 import { TagGroupsModule } from './tag-groups/tag-groups.module';
 import { UpdateModule } from './update/update.module';
 import { UserConvertersModule } from './user-converters/user-converters.module';
-import { UserSpecifiedWebsiteOptionsModule } from './user-specified-website-options/user-specified-website-options.module';
 import { ValidationModule } from './validation/validation.module';
 import { WebSocketModule } from './web-socket/web-socket.module';
 import { WebsiteOptionsModule } from './website-options/website-options.module';
@@ -55,7 +54,6 @@ import { ProxyModule } from './proxy/proxy.module';
     TagConvertersModule,
     UserConvertersModule,
     DirectoryWatchersModule,
-    UserSpecifiedWebsiteOptionsModule,
     UpdateModule,
     PostModule,
     PostParsersModule,

@@ -14,7 +14,6 @@ import { PostParsersModule } from '../../../post-parsers/post-parsers.module';
 import { CreateSubmissionDto } from '../../../submission/dtos/create-submission.dto';
 import { SubmissionService } from '../../../submission/services/submission.service';
 import { SubmissionModule } from '../../../submission/submission.module';
-import { UserSpecifiedWebsiteOptionsModule } from '../../../user-specified-website-options/user-specified-website-options.module';
 import { WebsitesModule } from '../../../websites/websites.module';
 import { InvalidPostChainError } from '../../errors';
 import { PostEventRepository } from './post-event.repository';
@@ -37,7 +36,6 @@ describe('PostRecordFactory', () => {
         SubmissionModule,
         AccountModule,
         WebsitesModule,
-        UserSpecifiedWebsiteOptionsModule,
         PostParsersModule,
       ],
       providers: [PostRecordFactory, PostEventRepository],

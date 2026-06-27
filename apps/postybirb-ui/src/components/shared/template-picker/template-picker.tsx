@@ -51,6 +51,7 @@ export function TemplatePicker({
       data={options}
       value={value ?? null}
       onChange={onChange}
+      onClear={() => onChange(null)}
       clearable
       searchable
       nothingFoundMessage={<Trans>No results found</Trans>}

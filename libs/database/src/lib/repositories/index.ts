@@ -12,7 +12,6 @@ export * from './submission.repository';
 export * from './tag-converter.repository';
 export * from './tag-group.repository';
 export * from './user-converter.repository';
-export * from './user-specified-website-options.repository';
 export * from './website-data.repository';
 export * from './website-options.repository';
 

@@ -8,6 +8,9 @@
     },
     {
       "files": ["*.ts", "*.tsx"],
+      "parserOptions": {
+        "project": ["libs/database/tsconfig.*?.json"]
+      },
       "rules": {}
     },
     {

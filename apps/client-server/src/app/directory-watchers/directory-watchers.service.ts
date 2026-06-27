@@ -323,10 +323,10 @@ export class DirectoryWatchersService extends PostyBirbService<DirectoryWatcherR
           );
           submissionId = submission.id;
 
-          if (watcher.template) {
+          if (watcher.templateId) {
             await this.submissionService.applyOverridingTemplate(
               submission.id,
-              watcher.template?.id,
+              watcher.templateId,
             );
           }
           break;
@@ -432,7 +432,9 @@ export class DirectoryWatchersService extends PostyBirbService<DirectoryWatcherR
     const updatedEntity = await this.repository.update(id, {
       importAction: update.importAction ?? entity.importAction,
       path: update.path ?? entity.path,
-      templateId: update.templateId ?? entity.templateId,
+      templateId: Object.prototype.hasOwnProperty.call(update, 'templateId')
+        ? update.templateId
+        : entity.templateId,
     });
 
     // If this is the first time setting a path (from null/empty to valid path), ensure directory structure
