@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
 import { PlatformService } from '@postybirb/platform';
 import { NoopPlatformService } from '../platform/testing/noop-platform-providers';
+import { ProxyService } from '../proxy/proxy.service';
 import { SettingsService } from '../settings/settings.service';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { CreateNotificationDto } from './dtos/create-notification.dto';
@@ -26,6 +27,12 @@ describe('NotificationsService', () => {
       providers: [
         NotificationsService,
         SettingsService,
+        {
+          provide: ProxyService,
+          useValue: {
+            saveConfiguration: jest.fn(),
+          },
+        },
         {
           provide: PlatformService,
           useValue: noopPlatform,

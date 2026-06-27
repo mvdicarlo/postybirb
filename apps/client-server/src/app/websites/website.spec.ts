@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Account, AccountRepository, clearDatabase, saveFromEntity, WebsiteDataRepository } from '@postybirb/database';
 import { PlatformService } from '@postybirb/platform';
 import { eq } from 'drizzle-orm';
-import { ProxyModule } from '../proxy/proxy.module';
 import { createNoopPlatformContext } from '../platform/testing/noop-platform-context';
 import { noopPlatformProvider } from '../platform/testing/noop-platform-providers';
 import { WebsiteImplProvider } from './implementations/provider';
@@ -18,7 +17,6 @@ describe('Website', () => {
   beforeEach(async () => {
     clearDatabase();
     module = await Test.createTestingModule({
-      imports: [ProxyModule],
       providers: [
         WebsiteRegistryService,
         WebsiteImplProvider,

@@ -26,6 +26,7 @@ import { FormGeneratorModule } from '../form-generator/form-generator.module';
 import { FormGeneratorService } from '../form-generator/form-generator.service';
 import { SharpInstanceManager } from '../image-processing/sharp-instance-manager';
 import { TestPlatformModule } from '../platform/testing/test-platform.module';
+import { ProxyService } from '../proxy/proxy.service';
 import { PostParsersModule } from '../post-parsers/post-parsers.module';
 import { CreateSubmissionDto } from '../submission/dtos/create-submission.dto';
 import { FileSubmissionService } from '../submission/services/file-submission.service';
@@ -86,6 +87,12 @@ describe('Account default template association', () => {
         WebsiteOptionsService,
         WebsiteImplProvider,
         FileConverterService,
+        {
+          provide: ProxyService,
+          useValue: {
+            saveConfiguration: jest.fn(),
+          },
+        },
       ],
     }).compile();
 

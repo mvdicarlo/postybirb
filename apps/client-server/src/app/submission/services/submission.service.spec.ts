@@ -27,6 +27,7 @@ import { TestPlatformModule } from '../../platform/testing/test-platform.module'
 import { PostParsersModule } from '../../post-parsers/post-parsers.module';
 import { waitUntilPromised } from '../../utils/wait.util';
 import { ValidationService } from '../../validation/validation.service';
+import { ProxyService } from '../../proxy/proxy.service';
 import { WebsiteOptionsService } from '../../website-options/website-options.service';
 import { WebsiteImplProvider } from '../../websites/implementations/provider';
 import { WebsiteRegistryService } from '../../websites/website-registry.service';
@@ -70,13 +71,19 @@ describe('SubmissionService', () => {
           FileSubmissionService,
           MessageSubmissionService,
           AccountService,
-          WebsiteRegistryService,
-          ValidationService,
-          WebsiteOptionsService,
-          WebsiteImplProvider,
-          FileConverterService,
-        ],
-      }).compile();
+        WebsiteRegistryService,
+        ValidationService,
+        WebsiteOptionsService,
+        WebsiteImplProvider,
+        FileConverterService,
+        {
+          provide: ProxyService,
+          useValue: {
+            saveConfiguration: jest.fn(),
+          },
+        },
+      ],
+    }).compile();
 
       service = module.get<SubmissionService>(SubmissionService);
       websiteOptionsService = module.get<WebsiteOptionsService>(

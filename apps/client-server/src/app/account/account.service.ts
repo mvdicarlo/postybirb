@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  OnModuleDestroy,
   OnModuleInit,
   Optional,
 } from '@nestjs/common';
@@ -33,7 +34,7 @@ import { LoginStatePoller } from './login-state-poller';
 @Injectable()
 export class AccountService
   extends PostyBirbService<AccountRepository>
-  implements OnModuleInit
+  implements OnModuleInit, OnModuleDestroy
 {
   private readonly loginRefreshTimers: Record<
     string,
@@ -79,6 +80,12 @@ export class AccountService
       Object.keys(this.loginRefreshTimers).forEach((interval) =>
         this.executeOnLoginForInterval(interval),
       );
+    });
+  }
+
+  onModuleDestroy(): void {
+    Object.values(this.loginRefreshTimers).forEach(({ timer }) => {
+      clearInterval(timer);
     });
   }
 
@@ -150,11 +157,17 @@ export class AccountService
         (website.prototype.decoratedProps.metadata as IWebsiteMetadata)
           .refreshInterval ?? 60_000 * 60;
       if (!this.loginRefreshTimers[interval]) {
+        const timer = setInterval(() => {
+          this.executeOnLoginForInterval(interval);
+        }, interval);
+
+        if (typeof timer.unref === 'function') {
+          timer.unref();
+        }
+
         this.loginRefreshTimers[interval] = {
           websites: [],
-          timer: setInterval(() => {
-            this.executeOnLoginForInterval(interval);
-          }, interval),
+          timer,
         };
       }
 
