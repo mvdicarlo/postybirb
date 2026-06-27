@@ -47,13 +47,25 @@ export class PacHttpServerService implements OnModuleInit, OnModuleDestroy {
     }
 
     this.server = createServer((req, res) => {
-      void this.handleRequest(req, res);
+      this.handleRequest(req, res).catch((error) => {
+        this.logger.withError(error).warn('PAC HTTP request failed');
+        if (!res.headersSent) {
+          res.writeHead(500);
+        }
+        res.end();
+      });
     });
 
     await new Promise<void>((resolve, reject) => {
-      this.server!.once('error', reject);
-      this.server!.listen(portNumber, '127.0.0.1', () => {
-        this.server!.off('error', reject);
+      const { server } = this;
+      if (!server) {
+        reject(new Error('PAC HTTP server not initialized'));
+        return;
+      }
+
+      server.once('error', reject);
+      server.listen(portNumber, '127.0.0.1', () => {
+        server.off('error', reject);
         resolve();
       });
     });
@@ -102,8 +114,9 @@ export class PacHttpServerService implements OnModuleInit, OnModuleDestroy {
       return;
     }
 
+    const { server } = this;
     await new Promise<void>((resolve, reject) => {
-      this.server!.close((error) => {
+      server.close((error) => {
         if (error) {
           reject(error);
           return;

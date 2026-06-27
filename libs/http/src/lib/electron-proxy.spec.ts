@@ -1,9 +1,9 @@
 import { app, session } from 'electron';
 import {
-  __resolveSessionProxyConfigForTests,
   applyProxy,
   onSessionCreated,
   resetProxyStateForTests,
+  resolveSessionProxyConfigForTests,
 } from './electron-proxy';
 
 jest.mock('@postybirb/utils/common', () => {
@@ -17,6 +17,11 @@ jest.mock('@postybirb/utils/common', () => {
 type ElectronTestModule = typeof import('electron') & {
   __getAppProxyConfig: () => unknown;
   __resetAppProxyConfig: () => void;
+  __getSessionProxyConfig: (session: unknown) => unknown;
+  __setSessionProxyConfig: (
+    session: unknown,
+    config: unknown,
+  ) => void;
 };
 
 const electronMock = require('electron') as ElectronTestModule;
@@ -30,7 +35,7 @@ describe('electron-proxy', () => {
   describe('resolveSessionProxyConfig', () => {
     it('maps direct mode', () => {
       expect(
-        __resolveSessionProxyConfigForTests({
+        resolveSessionProxyConfigForTests({
           mode: 'direct',
           pool: [],
           routing: {},
@@ -40,7 +45,7 @@ describe('electron-proxy', () => {
 
     it('maps system mode', () => {
       expect(
-        __resolveSessionProxyConfigForTests({
+        resolveSessionProxyConfigForTests({
           mode: 'system',
           pool: [],
           routing: {},
@@ -50,7 +55,7 @@ describe('electron-proxy', () => {
 
     it('maps fixed_servers mode with pool entry', () => {
       expect(
-        __resolveSessionProxyConfigForTests({
+        resolveSessionProxyConfigForTests({
           mode: 'fixed_servers',
           fixedProxyId: 'pool-1',
           pool: [
@@ -74,7 +79,7 @@ describe('electron-proxy', () => {
 
     it('maps pac_routing mode to loopback HTTP PAC URL', () => {
       expect(
-        __resolveSessionProxyConfigForTests({
+        resolveSessionProxyConfigForTests({
           mode: 'pac_routing',
           pacAccessToken: 'secret-token',
           pool: [],
@@ -89,7 +94,7 @@ describe('electron-proxy', () => {
 
     it('falls back to system when PAC token is missing', () => {
       expect(
-        __resolveSessionProxyConfigForTests({
+        resolveSessionProxyConfigForTests({
           mode: 'pac_routing',
           pool: [],
           routing: {},
@@ -105,7 +110,9 @@ describe('electron-proxy', () => {
         ['account-1'],
       );
 
-      expect(session.defaultSession.__state.proxyConfig).toEqual({
+      expect(
+        electronMock.__getSessionProxyConfig(session.defaultSession),
+      ).toEqual({
         mode: 'direct',
       });
       expect(
@@ -115,7 +122,9 @@ describe('electron-proxy', () => {
       expect(electronMock.__getAppProxyConfig()).toEqual({ mode: 'direct' });
 
       const partition = session.fromPartition('persist:account-1');
-      expect(partition.__state.proxyConfig).toEqual({ mode: 'direct' });
+      expect(electronMock.__getSessionProxyConfig(partition)).toEqual({
+        mode: 'direct',
+      });
     });
   });
 
@@ -127,11 +136,13 @@ describe('electron-proxy', () => {
       );
 
       const createdSession = session.fromPartition('persist:new-account');
-      createdSession.__state.proxyConfig = { mode: 'system' };
+      electronMock.__setSessionProxyConfig(createdSession, { mode: 'system' });
 
       await onSessionCreated(createdSession);
 
-      expect(createdSession.__state.proxyConfig).toEqual({ mode: 'direct' });
+      expect(electronMock.__getSessionProxyConfig(createdSession)).toEqual({
+        mode: 'direct',
+      });
     });
   });
 
@@ -145,11 +156,13 @@ describe('electron-proxy', () => {
       resetProxyStateForTests();
 
       const createdSession = session.fromPartition('persist:after-reset');
-      createdSession.__state.proxyConfig = { mode: 'direct' };
+      electronMock.__setSessionProxyConfig(createdSession, { mode: 'direct' });
 
       await onSessionCreated(createdSession);
 
-      expect(createdSession.__state.proxyConfig).toEqual({ mode: 'system' });
+      expect(electronMock.__getSessionProxyConfig(createdSession)).toEqual({
+        mode: 'system',
+      });
     });
   });
 });

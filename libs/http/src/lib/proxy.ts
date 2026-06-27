@@ -1,12 +1,11 @@
 // Proxy bootstrap: patches global fetch and applies PAC/global proxy on startup.
 
-import { app, net } from 'electron';
+import { net } from 'electron';
 import { isProxiedResolution } from '@postybirb/utils/common';
 import {
   applyProxy,
   getProxyConfiguration,
   onProxyConfigurationApplied,
-  onSessionCreated,
   resolveProxyForUrl,
 } from './electron-proxy';
 import { parseProxyResolution } from './proxy-resolution';
@@ -39,12 +38,13 @@ function electronNetFetch(
   return net.fetch(input.toString(), init);
 }
 
-const patchedElectronFetch = electronNetFetch as typeof fetch & {
-  __postybirbElectronFetch?: boolean;
+const patchedElectronFetch = electronNetFetch as typeof fetch;
+const globalFetchState = globalThis as typeof globalThis & {
+  postybirbElectronFetchPatched?: boolean;
 };
 
-if (!patchedElectronFetch.__postybirbElectronFetch) {
-  patchedElectronFetch.__postybirbElectronFetch = true;
+if (!globalFetchState.postybirbElectronFetchPatched) {
+  globalFetchState.postybirbElectronFetchPatched = true;
   globalThis.fetch = patchedElectronFetch;
 }
 
@@ -56,7 +56,3 @@ export async function getParsedProxiesFor(url: string) {
 
   return parseProxyResolution(proxySources);
 }
-
-app.on('session-created', (sess) => {
-  onSessionCreated(sess);
-});

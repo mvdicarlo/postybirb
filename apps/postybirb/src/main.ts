@@ -3,7 +3,7 @@
 import './bootstrap-electron-config';
 
 // Ensure proxy is imported first to patch fetch before any request is made.
-import '@postybirb/http';
+import { onSessionCreated } from '@postybirb/http';
 
 import { INestApplication } from '@nestjs/common';
 import { initializeAppInsights } from '@postybirb/logger';
@@ -50,6 +50,13 @@ if (!app.requestSingleInstanceLock()) {
 }
 
 app.setAppUserModelId(APP_USER_MODEL_ID);
+
+app.on('session-created', (createdSession) => {
+  onSessionCreated(createdSession).catch((error) => {
+    // eslint-disable-next-line no-console
+    console.error('[PostyBirb] Failed to apply proxy to new session', error);
+  });
+});
 
 // Keep the renderer and its timers running in the background so long-running
 // post queues do not stall when the window is hidden.

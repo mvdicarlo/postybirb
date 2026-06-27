@@ -1,6 +1,7 @@
 export {
   applyProxy,
   getProxyConfiguration,
+  onSessionCreated,
   onProxyConfigurationApplied,
   resolveProxyForUrl,
 } from './lib/electron-proxy';

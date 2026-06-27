@@ -6,14 +6,14 @@ const http = require('http');
 const https = require('https');
 
 const partitionSessions = new Map();
+const sessionStates = new WeakMap();
 
 function createSession(partitionId) {
   const sessionState = {
     proxyConfig: { mode: 'system' },
     resolveProxyResult: 'DIRECT',
   };
-
-  return {
+  const session = {
     setProxy: async function (config) {
       sessionState.proxyConfig = config || { mode: 'system' };
     },
@@ -30,9 +30,11 @@ function createSession(partitionId) {
       set: async function () {},
       remove: async function () {},
     },
-    __state: sessionState,
     __partitionId: partitionId,
   };
+
+  sessionStates.set(session, sessionState);
+  return session;
 }
 
 function getSession(partitionId) {
@@ -40,6 +42,10 @@ function getSession(partitionId) {
     partitionSessions.set(partitionId, createSession(partitionId));
   }
   return partitionSessions.get(partitionId);
+}
+
+function getSessionState(session) {
+  return sessionStates.get(session);
 }
 
 function performRequest(url, method, headers, body, eventHandlers, redirectCount) {
@@ -172,6 +178,18 @@ module.exports = {
 
   __resetAppProxyConfig: function () {
     appProxyConfig = null;
+  },
+
+  __getSessionProxyConfig: function (session) {
+    const state = getSessionState(session);
+    return state ? state.proxyConfig : undefined;
+  },
+
+  __setSessionProxyConfig: function (session, config) {
+    const state = getSessionState(session);
+    if (state) {
+      state.proxyConfig = config || { mode: 'system' };
+    }
   },
 
   net: {

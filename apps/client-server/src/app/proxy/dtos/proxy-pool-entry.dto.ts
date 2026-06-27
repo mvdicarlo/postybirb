@@ -32,5 +32,3 @@ export class ProxyPoolEntryDto {
   @IsString()
   password: string;
 }
-
-export class TestProxyPoolEntryDto extends ProxyPoolEntryDto {}

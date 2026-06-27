@@ -6,10 +6,7 @@ import {
   type ProxyConfig,
 } from 'electron';
 import { Logger } from '@postybirb/logger';
-import type {
-  ProxyConfiguration,
-  ProxyPoolEntry,
-} from '@postybirb/types';
+import type { ProxyConfiguration, ProxyPoolEntry } from '@postybirb/types';
 import {
   toEnabledProxyProfile,
   buildSessionProxyRules,
@@ -56,7 +53,9 @@ function resolveSessionProxyConfig(config: ProxyConfiguration): ProxyConfig {
     case 'direct':
       return { mode: 'direct' };
     case 'fixed_servers': {
-      const entry = config.pool.find((poolEntry) => poolEntry.id === config.fixedProxyId);
+      const entry = config.pool.find(
+        (poolEntry) => poolEntry.id === config.fixedProxyId,
+      );
       if (!entry) {
         return { mode: 'system' };
       }
@@ -69,7 +68,9 @@ function resolveSessionProxyConfig(config: ProxyConfiguration): ProxyConfig {
       return {
         mode: 'fixed_servers',
         proxyRules,
-        proxyBypassRules: buildChromiumProxyBypassRules(PostyBirbEnvConfig.port),
+        proxyBypassRules: buildChromiumProxyBypassRules(
+          PostyBirbEnvConfig.port,
+        ),
       };
     }
     case 'pac_routing': {
@@ -317,7 +318,7 @@ export function clearProxyAuthStore(): void {
 }
 
 /** @internal Exported for unit tests. */
-export function __resolveSessionProxyConfigForTests(
+export function resolveSessionProxyConfigForTests(
   config: ProxyConfiguration,
 ): ProxyConfig {
   return resolveSessionProxyConfig(config);

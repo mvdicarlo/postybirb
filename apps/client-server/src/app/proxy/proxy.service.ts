@@ -4,15 +4,15 @@ import { AccountRepository, AccountSchema } from '@postybirb/database';
 import { applyProxy } from '@postybirb/http';
 import { Logger } from '@postybirb/logger';
 import {
+  ProxyConfiguration,
+  NULL_ACCOUNT_ID,
+} from '@postybirb/types';
+import {
   isProxyConfiguration,
   mergeProxyPoolPasswords,
   normalizeProxyPoolEntry,
   prepareProxyConfiguration,
-  ProxyConfiguration,
   validateProxyConfiguration,
-  NULL_ACCOUNT_ID,
-} from '@postybirb/types';
-import {
   toEnabledProxyProfile,
   buildProxyRules,
   IsTestEnvironment,
@@ -21,7 +21,7 @@ import {
 } from '@postybirb/utils/common';
 import { ne } from 'drizzle-orm';
 import { UpdateProxyConfigurationDto } from './dtos/proxy-configuration.dto';
-import { TestProxyPoolEntryDto } from './dtos/proxy-pool-entry.dto';
+import { ProxyPoolEntryDto } from './dtos/proxy-pool-entry.dto';
 import { probeProxyPoolEntry } from './proxy-pool-probe';
 
 export type ProxyConnectionTestResult = {
@@ -134,7 +134,7 @@ export class ProxyService {
    * Probes a pool entry via the Node agent without changing persisted proxy settings.
    */
   async testPoolEntryConnection(
-    poolEntryDto: TestProxyPoolEntryDto,
+    poolEntryDto: ProxyPoolEntryDto,
   ): Promise<ProxyConnectionTestResult> {
     const saved = StartupOptionsManager.get().proxy;
     const existing = saved.pool.find((entry) => entry.id === poolEntryDto.id);
