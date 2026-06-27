@@ -163,7 +163,7 @@ describe('ProxyService', () => {
       .spyOn(CommonUtils, 'IsTestEnvironment')
       .mockReturnValue(false);
 
-    let resolver: (() => void) | null = null;
+    let resolver: (() => void) | undefined;
     const firstApplyGate = new Promise<void>((resolve) => {
       resolver = resolve;
     });
@@ -180,7 +180,9 @@ describe('ProxyService', () => {
     const secondRun = service.scheduleApply();
     expect(secondRun).toBe(firstRun);
 
-    resolver?.();
+    if (resolver) {
+      resolver();
+    }
     await firstRun;
 
     expect(applySpy).toHaveBeenCalledTimes(2);
