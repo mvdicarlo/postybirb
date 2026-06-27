@@ -6,12 +6,12 @@ import {
   writeFileSync,
 } from 'fs';
 import { dirname } from 'path';
+import type { ProxyConfiguration } from '@postybirb/types';
 import {
   cloneProxyConfiguration,
   defaultProxyConfiguration,
   isProxyConfiguration,
   prepareProxyConfiguration,
-  ProxyConfiguration,
 } from './proxy-settings';
 
 export type StartupOptions = {

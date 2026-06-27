@@ -11,9 +11,9 @@ import { Logger } from '@postybirb/logger';
 import {
   getPartitionKey,
   PostyBirbEnvConfig,
-  type RemoteConfig,
   RemoteConfigManager,
 } from '@postybirb/utils/common';
+import type { RemoteConfig } from '@postybirb/types';
 import { app, BrowserWindow, dialog, ipcMain, session } from 'electron';
 import { environment } from '../../environments/environment';
 import { type AppMetadata, IPC_CHANNELS } from '../constants';

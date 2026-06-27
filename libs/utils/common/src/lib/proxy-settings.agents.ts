@@ -1,10 +1,9 @@
 import { HttpProxyAgent } from 'http-proxy-agent';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import { SocksProxyAgent } from 'socks-proxy-agent';
-import {
-  buildProxyAgentUrl,
-  type ProxyProfile,
-} from './proxy-settings.model';
+import { type ProxyProfile } from '@postybirb/types';
+
+import { buildProxyAgentUrl } from './proxy-settings.model';
 
 export type ProxyHttpAgent =
   | SocksProxyAgent

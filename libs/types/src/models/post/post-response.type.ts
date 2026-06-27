@@ -1,8 +1,8 @@
-import { HttpResponse } from '@postybirb/http/types';
 import { DynamicObject } from '../common/dynamic-object';
 // Required by drizzle which does not support custom paths like this
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { toError } from '../../../../utils/common/src/lib/common';
+import type { HttpResponse } from '../common/http-response.type';
 
 export type IPostResponse = {
   /**

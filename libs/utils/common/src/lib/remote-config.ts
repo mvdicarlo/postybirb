@@ -1,11 +1,7 @@
 import { readFileSync, statSync, writeFileSync } from 'fs';
 import { readFile, stat, writeFile } from 'fs/promises';
 import { v4 as uuidv4 } from 'uuid';
-
-export type RemoteConfig = {
-  password: string;
-  enabled: boolean;
-};
+import type { RemoteConfig } from '@postybirb/types';
 
 export type RemoteConfigStoreConfig = {
   storagePath: string;

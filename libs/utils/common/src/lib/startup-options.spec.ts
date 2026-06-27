@@ -158,12 +158,14 @@ describe('StartupOptionsStore — set()', () => {
 
     store.set({
       proxy: {
+        mode: 'fixed_servers',
         pool: [
           {
             ...firstEntry,
             host: '10.0.0.2',
           },
         ],
+        routing: {},
       },
     });
 

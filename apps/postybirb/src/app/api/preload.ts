@@ -1,5 +1,4 @@
-import type { PreloadBridge } from '@postybirb/types';
-import type { RemoteConfig } from '@postybirb/utils/common';
+import type { PreloadBridge, RemoteConfig } from '@postybirb/types';
 import { contextBridge, ipcRenderer } from 'electron';
 import { type AppMetadata, IPC_CHANNELS } from '../constants';
 
