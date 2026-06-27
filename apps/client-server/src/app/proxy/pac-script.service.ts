@@ -12,6 +12,7 @@ import {
   normalizeDomain,
   PostyBirbEnvConfig,
   resolveCloudApiUrl,
+  resolvePacHttpPort,
   StartupOptionsManager,
 } from '@postybirb/utils/common';
 import { WebsiteDomainService } from './website-domain.service';
@@ -146,6 +147,10 @@ export class PacScriptService {
     if (appPort) {
       rules.push(
         `  if ((host == "127.0.0.1" || host == "localhost") && url.indexOf(":${this.escapePacString(appPort)}/") > -1) return "DIRECT";`,
+      );
+      const pacPort = resolvePacHttpPort(appPort);
+      rules.push(
+        `  if ((host == "127.0.0.1" || host == "localhost") && url.indexOf(":${this.escapePacString(pacPort)}/") > -1) return "DIRECT";`,
       );
     }
 

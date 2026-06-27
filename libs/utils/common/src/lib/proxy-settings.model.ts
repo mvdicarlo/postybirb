@@ -147,6 +147,28 @@ export function buildPacProxyDirective(entry: ProxyPoolEntry): string {
   return `PROXY ${hostPort}`;
 }
 
+/** Nest route and loopback PAC server path (no trailing slash). */
+export const PAC_SCRIPT_API_PATH = '/api/proxy/pac';
+
+export const PAC_SCRIPT_MEDIA_TYPE = 'application/x-ns-proxy-autoconfig';
+
+export const PAC_SCRIPT_CACHE_CONTROL = 'no-store';
+
+/** Loopback HTTP port for Chromium PAC fetches (defaults to main API port + 1). */
+export function resolvePacHttpPort(appPort: string): string {
+  const override = process.env.POSTYBIRB_PAC_PORT?.trim();
+  if (override) {
+    return override;
+  }
+
+  const parsed = parseInt(appPort, 10);
+  if (Number.isNaN(parsed)) {
+    return appPort;
+  }
+
+  return String(parsed + 1);
+}
+
 export function buildPacScriptUrl(
   config: Pick<ProxyConfiguration, 'mode' | 'pacAccessToken'>,
   appPort: string,
@@ -155,7 +177,19 @@ export function buildPacScriptUrl(
     return null;
   }
 
-  return `https://127.0.0.1:${appPort}/api/proxy/pac/${config.pacAccessToken}`;
+  const pacPort = resolvePacHttpPort(appPort);
+  return `http://127.0.0.1:${pacPort}${PAC_SCRIPT_API_PATH}/${config.pacAccessToken}`;
+}
+
+export function parsePacScriptTokenFromUrl(url: string): string | null {
+  const path = url.split(/[?#]/, 1)[0] ?? '';
+  const prefix = `${PAC_SCRIPT_API_PATH}/`;
+  if (!path.startsWith(prefix)) {
+    return null;
+  }
+
+  const token = decodeURIComponent(path.slice(prefix.length)).trim();
+  return token || null;
 }
 
 export function buildChromiumProxyBypassRules(
@@ -166,6 +200,8 @@ export function buildChromiumProxyBypassRules(
 
   if (port) {
     rules.push(`localhost:${port}`, `127.0.0.1:${port}`);
+    const pacPort = resolvePacHttpPort(port);
+    rules.push(`localhost:${pacPort}`, `127.0.0.1:${pacPort}`);
   }
 
   try {

@@ -3,6 +3,7 @@ import { join } from 'path';
 import { tmpdir } from 'os';
 import { BadRequestException } from '@nestjs/common';
 import { applyProxy } from '@postybirb/http';
+import * as CommonUtils from '@postybirb/utils/common';
 import { StartupOptionsManager } from '@postybirb/utils/common';
 import { ProxyService } from './proxy.service';
 import { probeProxyPoolEntry } from './proxy-pool-probe';
@@ -155,5 +156,36 @@ describe('ProxyService', () => {
 
     expect(saved.proxy.pacAccessToken).toEqual(expect.any(String));
     expect(saved.proxy.pacAccessToken.length).toBeGreaterThanOrEqual(32);
+  });
+
+  it('scheduleApply queues a follow-up apply when called in-flight', async () => {
+    const isTestSpy = jest
+      .spyOn(CommonUtils, 'IsTestEnvironment')
+      .mockReturnValue(false);
+
+    let resolver: (() => void) | null = null;
+    const firstApplyGate = new Promise<void>((resolve) => {
+      resolver = resolve;
+    });
+
+    let applyCount = 0;
+    const applySpy = jest.spyOn(service, 'apply').mockImplementation(async () => {
+      applyCount += 1;
+      if (applyCount === 1) {
+        await firstApplyGate;
+      }
+    });
+
+    const firstRun = service.scheduleApply();
+    const secondRun = service.scheduleApply();
+    expect(secondRun).toBe(firstRun);
+
+    resolver?.();
+    await firstRun;
+
+    expect(applySpy).toHaveBeenCalledTimes(2);
+
+    applySpy.mockRestore();
+    isTestSpy.mockRestore();
   });
 });

@@ -1,5 +1,6 @@
 import {
   buildChromiumProxyBypassRules,
+  buildPacScriptUrl,
   buildProxyAgentUrl,
   buildProxyRules,
   buildSessionProxyRules,
@@ -7,6 +8,8 @@ import {
   isProxiedResolution,
   isProxyConfiguration,
   prepareProxyConfiguration,
+  parsePacScriptTokenFromUrl,
+  resolvePacHttpPort,
   shouldBypassProxyForUrl,
   toEnabledProxyProfile,
   validateProxyConfiguration,
@@ -376,12 +379,48 @@ describe('prepareProxyConfiguration', () => {
 });
 
 describe('buildChromiumProxyBypassRules', () => {
-  it('includes loopback hosts and the app port', () => {
+  it('includes loopback hosts, the app port, and the PAC HTTP port', () => {
     expect(buildChromiumProxyBypassRules('9487')).toContain(
       'localhost:9487',
     );
     expect(buildChromiumProxyBypassRules('9487')).toContain(
+      'localhost:9488',
+    );
+    expect(buildChromiumProxyBypassRules('9487')).toContain(
       '<-loopback>',
     );
+  });
+});
+
+describe('resolvePacHttpPort', () => {
+  it('defaults to main port plus one', () => {
+    expect(resolvePacHttpPort('9487')).toBe('9488');
+  });
+});
+
+describe('buildPacScriptUrl', () => {
+  it('uses loopback HTTP on the PAC port', () => {
+    expect(
+      buildPacScriptUrl(
+        { mode: 'pac_routing', pacAccessToken: 'abc' },
+        '9487',
+      ),
+    ).toBe('http://127.0.0.1:9488/api/proxy/pac/abc');
+  });
+});
+
+describe('parsePacScriptTokenFromUrl', () => {
+  it('extracts the token from a PAC request path', () => {
+    expect(parsePacScriptTokenFromUrl('/api/proxy/pac/secret-token')).toBe(
+      'secret-token',
+    );
+    expect(
+      parsePacScriptTokenFromUrl('/api/proxy/pac/secret-token?cache=bust'),
+    ).toBe('secret-token');
+  });
+
+  it('returns null for unrelated paths', () => {
+    expect(parsePacScriptTokenFromUrl('/api/proxy/pool')).toBeNull();
+    expect(parsePacScriptTokenFromUrl('/api/proxy/pac/')).toBeNull();
   });
 });

@@ -177,7 +177,20 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
       // Fire a final login check when the webview closes (user is done)
       triggerLoginCheck(true);
     };
-  }, [triggerLoginCheck, accountId]);
+  }, [triggerLoginCheck, accountId, currentUrl]);
+
+  useEffect(() => {
+    const unsubscribe = window.electron.onProxyConfigApplied(() => {
+      const webview = webviewRef.current;
+      if (!webview) {
+        return;
+      }
+
+      webview.reload();
+    });
+
+    return unsubscribe;
+  }, [accountId]);
 
   // Handle refresh button click
   const handleRefresh = () => {

@@ -87,13 +87,9 @@ export class ProxyAuthStore {
       buildPoolKey('http', host, portKey),
     );
     if (credentials) {
-      logger.withMetadata({ type: 'http', host, port: portKey }).debug('login');
       return credentials;
     }
 
-    logger
-      .withMetadata({ host, port: portKey, scheme: authInfo.scheme ?? null })
-      .warn('no matching pool credentials for proxy challenge');
     return null;
   }
 

@@ -23,7 +23,6 @@ import {
   toError,
 } from '@postybirb/utils/common';
 import { ProxyAuthStore, ProxyPoolAuthEntry } from './proxy-auth-store';
-import { trustPostyBirbLocalCertificate } from './local-certificate-trust';
 
 type ProxyConfigurationListener = () => void | Promise<void>;
 
@@ -105,21 +104,42 @@ function toPoolAuthEntries(pool: ProxyPoolEntry[]): ProxyPoolAuthEntry[] {
   }));
 }
 
+function listManagedSessions(partitionIds: string[]): Session[] {
+  return [
+    session.defaultSession,
+    ...partitionIds.map((partitionId) =>
+      session.fromPartition(`persist:${partitionId}`),
+    ),
+  ];
+}
+
 async function applyProxyConfigToSession(
   targetSession: Session,
   config: ProxyConfig,
 ): Promise<void> {
-  if (config.mode === 'pac_script') {
-    trustPostyBirbLocalCertificate(targetSession);
-  }
-
   try {
     await targetSession.setProxy(config);
-    targetSession.closeAllConnections();
     logger.withMetadata({ mode: config.mode }).debug('setProxy applied');
   } catch (error) {
     logger.withError(toError(error)).warn('setProxy failed');
     throw error;
+  }
+}
+
+async function finalizeProxySessions(
+  proxyConfig: ProxyConfig,
+  sessions: Session[],
+): Promise<void> {
+  if (proxyConfig.mode === 'pac_script') {
+    for (const targetSession of sessions) {
+      if (typeof targetSession.forceReloadProxyConfig === 'function') {
+        await targetSession.forceReloadProxyConfig();
+      }
+    }
+  }
+
+  for (const targetSession of sessions) {
+    targetSession.closeAllConnections();
   }
 }
 
@@ -208,6 +228,7 @@ async function applyFullProxyConfig(
 ): Promise<void> {
   const proxyConfig = resolveSessionProxyConfig(resolvedConfiguration);
   activeSessionProxyConfig = proxyConfig;
+  const managedSessions = listManagedSessions(partitionIds);
 
   logger
     .withMetadata({
@@ -221,6 +242,7 @@ async function applyFullProxyConfig(
   await applyProxyConfigToSession(session.defaultSession, proxyConfig);
   await applyAppLevelProxy(proxyConfig);
   await refreshPartitionSessions(partitionIds, proxyConfig);
+  await finalizeProxySessions(proxyConfig, managedSessions);
 }
 
 function resolveActiveConfiguration(
@@ -281,6 +303,7 @@ export async function onSessionCreated(createdSession: Session): Promise<void> {
     resolveSessionProxyConfig(activeProxyConfiguration);
 
   await applyProxyConfigToSession(createdSession, proxyConfig);
+  await finalizeProxySessions(proxyConfig, [createdSession]);
 }
 
 export function resetProxyStateForTests(): void {

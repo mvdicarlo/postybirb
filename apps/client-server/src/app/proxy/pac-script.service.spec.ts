@@ -65,6 +65,7 @@ describe('PacScriptService', () => {
   if (host == "127.0.0.1" || host == "::1") return "DIRECT";
   if (host == "postybirb.azurewebsites.net" || dnsDomainIs(host, ".postybirb.azurewebsites.net")) return "DIRECT";
   if ((host == "127.0.0.1" || host == "localhost") && url.indexOf(":9487/") > -1) return "DIRECT";
+  if ((host == "127.0.0.1" || host == "localhost") && url.indexOf(":9488/") > -1) return "DIRECT";
   if (host == "pixiv.net" || dnsDomainIs(host, ".pixiv.net")) return "PROXY 127.0.0.1:8080";
   return "DIRECT";
 }"
@@ -87,6 +88,7 @@ describe('PacScriptService', () => {
   if (host == "127.0.0.1" || host == "::1") return "DIRECT";
   if (host == "postybirb.azurewebsites.net" || dnsDomainIs(host, ".postybirb.azurewebsites.net")) return "DIRECT";
   if ((host == "127.0.0.1" || host == "localhost") && url.indexOf(":9487/") > -1) return "DIRECT";
+  if ((host == "127.0.0.1" || host == "localhost") && url.indexOf(":9488/") > -1) return "DIRECT";
   return "DIRECT";
 }"
 `);

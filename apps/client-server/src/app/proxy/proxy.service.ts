@@ -34,6 +34,7 @@ export class ProxyService {
   private readonly logger = Logger('ProxyService');
 
   private applyInFlight: Promise<void> | null = null;
+  private applyQueued = false;
 
   constructor(private readonly accountRepository: AccountRepository) {}
 
@@ -51,11 +52,20 @@ export class ProxyService {
     }
 
     if (this.applyInFlight) {
+      this.applyQueued = true;
+      this.logger.debug('Proxy apply already running, queueing follow-up');
       return this.applyInFlight;
     }
 
-    this.applyInFlight = this.apply().finally(() => {
+    this.applyInFlight = (async () => {
+      do {
+        this.applyQueued = false;
+        this.logger.debug('Running proxy apply cycle');
+        await this.apply();
+      } while (this.applyQueued);
+    })().finally(() => {
       this.applyInFlight = null;
+      this.logger.debug('Proxy apply queue drained');
     });
 
     return this.applyInFlight;
@@ -67,7 +77,11 @@ export class ProxyService {
       return;
     }
 
-    await applyProxy(undefined, await this.loadPartitionIds());
+    const partitionIds = await this.loadPartitionIds();
+    this.logger
+      .withMetadata({ partitionCount: partitionIds.length })
+      .debug('Applying persisted proxy configuration');
+    await applyProxy(undefined, partitionIds);
   }
 
   /** Re-applies proxy after a new account partition is created. */

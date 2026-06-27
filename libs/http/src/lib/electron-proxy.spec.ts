@@ -72,7 +72,7 @@ describe('electron-proxy', () => {
       });
     });
 
-    it('maps pac_routing mode to HTTPS PAC URL with local cert trust', () => {
+    it('maps pac_routing mode to loopback HTTP PAC URL', () => {
       expect(
         __resolveSessionProxyConfigForTests({
           mode: 'pac_routing',
@@ -83,7 +83,7 @@ describe('electron-proxy', () => {
       ).toEqual({
         mode: 'pac_script',
         pacScript:
-          'https://127.0.0.1:9247/api/proxy/pac/secret-token',
+          'http://127.0.0.1:9248/api/proxy/pac/secret-token',
       });
     });
 
