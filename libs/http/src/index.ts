@@ -1,6 +1,5 @@
 export {
   applyProxy,
-  getProxyConfiguration,
   onSessionCreated,
   onProxyConfigurationApplied,
   resolveProxyForUrl,
@@ -10,7 +9,3 @@ export * from './lib/proxy';
 
 export * from './lib/form-file';
 export * from './lib/http';
-export {
-  isPostyBirbLocalCertificate,
-  trustPostyBirbLocalCertificate,
-} from './lib/local-certificate-trust';

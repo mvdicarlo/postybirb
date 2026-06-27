@@ -190,10 +190,6 @@ async function notifyProxyConfigurationApplied(): Promise<void> {
   );
 }
 
-export function getProxyConfiguration(): ProxyConfiguration {
-  return cloneProxyConfiguration(activeProxyConfiguration);
-}
-
 export function attachProxyAuthToRequest(request: ClientRequest): void {
   request.on('login', (authInfo, callback) => {
     if (!authInfo.isProxy) {
@@ -310,10 +306,6 @@ export async function onSessionCreated(createdSession: Session): Promise<void> {
 export function resetProxyStateForTests(): void {
   activeSessionProxyConfig = null;
   activeProxyConfiguration = defaultProxyConfiguration();
-  proxyAuthStore.clear();
-}
-
-export function clearProxyAuthStore(): void {
   proxyAuthStore.clear();
 }
 
