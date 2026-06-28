@@ -7,10 +7,10 @@ import {
 import { Settings, SettingsRepository } from '@postybirb/database';
 import { SETTINGS_UPDATES } from '@postybirb/socket-events';
 import { EntityId, SettingsConstants } from '@postybirb/types';
-import { shouldBypassProxyForUrl } from '@postybirb/http';
 import {
   isLinux,
   PostyBirbEnvConfig,
+  shouldBypassProxyForUrl,
   StartupOptionsManager,
 } from '@postybirb/utils/common';
 import { eq } from 'drizzle-orm';

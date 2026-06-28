@@ -4,8 +4,8 @@ import {
   buildPacScriptUrl,
   parsePacScriptTokenFromUrl,
   resolvePacHttpPort,
-  shouldBypassProxyForUrl,
 } from './proxy-settings';
+import { shouldBypassProxyForUrl } from '@postybirb/utils/common';
 
 describe('buildPacProxyDirective', () => {
   it('returns DIRECT when host or port is missing', () => {
