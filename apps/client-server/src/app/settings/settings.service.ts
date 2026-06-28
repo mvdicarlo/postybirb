@@ -7,17 +7,16 @@ import {
 import { Settings, SettingsRepository } from '@postybirb/database';
 import { SETTINGS_UPDATES } from '@postybirb/socket-events';
 import { EntityId, SettingsConstants } from '@postybirb/types';
+import { shouldBypassProxyForUrl } from '@postybirb/http';
 import {
   isLinux,
   PostyBirbEnvConfig,
-  shouldBypassProxyForUrl,
   StartupOptionsManager,
 } from '@postybirb/utils/common';
 import { eq } from 'drizzle-orm';
 import { PostyBirbService } from '../common/service/postybirb-service';
 import { ProxyService } from '../proxy/proxy.service';
 import { WSGateway } from '../web-socket/web-socket-gateway';
-import { TestRemoteConnectionDto } from './dtos/update-proxy-settings.dto';
 import { UpdateSettingsDto } from './dtos/update-settings.dto';
 import { UpdateStartupSettingsDto } from './dtos/update-startup-settings.dto';
 

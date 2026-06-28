@@ -18,10 +18,7 @@ type ElectronTestModule = typeof import('electron') & {
   __getAppProxyConfig: () => unknown;
   __resetAppProxyConfig: () => void;
   __getSessionProxyConfig: (session: unknown) => unknown;
-  __setSessionProxyConfig: (
-    session: unknown,
-    config: unknown,
-  ) => void;
+  __setSessionProxyConfig: (session: unknown, config: unknown) => void;
 };
 
 const electronMock = require('electron') as ElectronTestModule;
@@ -87,8 +84,7 @@ describe('electron-proxy', () => {
         }),
       ).toEqual({
         mode: 'pac_script',
-        pacScript:
-          'http://127.0.0.1:9248/api/proxy/pac/secret-token',
+        pacScript: 'http://127.0.0.1:9248/api/proxy/pac/secret-token',
       });
     });
 
@@ -105,10 +101,9 @@ describe('electron-proxy', () => {
 
   describe('applyProxy', () => {
     it('applies direct mode to default session, app proxy, and partitions', async () => {
-      await applyProxy(
-        { mode: 'direct', pool: [], routing: {} },
-        ['account-1'],
-      );
+      await applyProxy({ mode: 'direct', pool: [], routing: {} }, [
+        'account-1',
+      ]);
 
       expect(
         electronMock.__getSessionProxyConfig(session.defaultSession),
@@ -130,10 +125,7 @@ describe('electron-proxy', () => {
 
   describe('onSessionCreated', () => {
     it('reuses the active session proxy config from the last apply', async () => {
-      await applyProxy(
-        { mode: 'direct', pool: [], routing: {} },
-        [],
-      );
+      await applyProxy({ mode: 'direct', pool: [], routing: {} }, []);
 
       const createdSession = session.fromPartition('persist:new-account');
       electronMock.__setSessionProxyConfig(createdSession, { mode: 'system' });
@@ -148,10 +140,7 @@ describe('electron-proxy', () => {
 
   describe('resetProxyStateForTests', () => {
     it('clears cached proxy configuration', async () => {
-      await applyProxy(
-        { mode: 'direct', pool: [], routing: {} },
-        [],
-      );
+      await applyProxy({ mode: 'direct', pool: [], routing: {} }, []);
 
       resetProxyStateForTests();
 

@@ -1,23 +1,14 @@
 import { randomBytes } from 'node:crypto';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { AccountRepository, AccountSchema } from '@postybirb/database';
-import { applyProxy } from '@postybirb/http';
 import { Logger } from '@postybirb/logger';
+import { ProxyConfiguration, NULL_ACCOUNT_ID } from '@postybirb/types';
+import { applyProxy } from '@postybirb/http';
 import {
-  ProxyConfiguration,
-  NULL_ACCOUNT_ID,
-} from '@postybirb/types';
-import {
-  isProxyConfiguration,
-  mergeProxyPoolPasswords,
-  normalizeProxyPoolEntry,
-  prepareProxyConfiguration,
-  validateProxyConfiguration,
-  toEnabledProxyProfile,
   buildProxyRules,
   IsTestEnvironment,
   StartupOptionsManager,
-  collectManagedPartitionIds,
+  toEnabledProxyProfile,
 } from '@postybirb/utils/common';
 import { ne } from 'drizzle-orm';
 import { UpdateProxyConfigurationDto } from './dtos/proxy-configuration.dto';
@@ -90,40 +81,44 @@ export class ProxyService {
   }
 
   /**
-   * Validates, merges secrets, persists proxy settings, and applies them globally.
+   * Merges secrets, persists proxy settings, and applies them globally.
    */
-  async saveConfiguration(incoming: UpdateProxyConfigurationDto): Promise<void> {
-    if (!isProxyConfiguration(incoming)) {
-      throw new BadRequestException('Unsupported proxy configuration shape');
-    }
-
+  async saveConfiguration(
+    incoming: UpdateProxyConfigurationDto,
+  ): Promise<void> {
     const current = StartupOptionsManager.get().proxy;
-    let proxyPatch = this.buildProxyPatch(current, incoming);
+    const proxyPatch: ProxyConfiguration = {
+      ...current,
+      ...incoming,
+      pool: incoming.pool.map((entry) => {
+        const existing = current.pool.find((saved) => saved.id === entry.id);
+        return {
+          ...entry,
+          password: entry.password?.trim()
+            ? entry.password
+            : (existing?.password ?? ''),
+        };
+      }),
+      pacAccessToken:
+        incoming.mode === 'pac_routing'
+          ? incoming.pacAccessToken?.trim() || current.pacAccessToken
+          : undefined,
+    };
 
     if (
       proxyPatch.mode === 'pac_routing' &&
       !proxyPatch.pacAccessToken?.trim()
     ) {
-      proxyPatch = {
+      const nextProxyPatch = {
         ...proxyPatch,
         pacAccessToken: randomBytes(24).toString('hex'),
       };
       this.logger
-        .withMetadata({ mode: proxyPatch.mode })
+        .withMetadata({ mode: nextProxyPatch.mode })
         .info('Generated pacAccessToken for PAC routing mode');
-    }
-
-    const prepared = prepareProxyConfiguration({
-      ...current,
-      ...proxyPatch,
-    });
-
-    const validation = validateProxyConfiguration(prepared);
-    if (!validation.ok) {
-      this.logger
-        .withMetadata({ errors: validation.errors })
-        .warn('Proxy configuration validation failed');
-      throw new BadRequestException(validation.errors.join(' '));
+      StartupOptionsManager.set({ proxy: nextProxyPatch });
+      await this.scheduleApply();
+      return;
     }
 
     StartupOptionsManager.set({ proxy: proxyPatch });
@@ -138,12 +133,12 @@ export class ProxyService {
   ): Promise<ProxyConnectionTestResult> {
     const saved = StartupOptionsManager.get().proxy;
     const existing = saved.pool.find((entry) => entry.id === poolEntryDto.id);
-    const entry = normalizeProxyPoolEntry({
+    const entry = {
       ...poolEntryDto,
       password: poolEntryDto.password?.trim()
         ? poolEntryDto.password
-        : existing?.password ?? '',
-    });
+        : (existing?.password ?? ''),
+    };
 
     if (!entry.host) {
       return {
@@ -178,8 +173,7 @@ export class ProxyService {
       if (statusCode === 407) {
         return {
           success: false,
-          message:
-            'Proxy authentication failed. Check username and password.',
+          message: 'Proxy authentication failed. Check username and password.',
         };
       }
 
@@ -226,27 +220,16 @@ export class ProxyService {
       where: ne(AccountSchema.id, NULL_ACCOUNT_ID),
     });
 
-    return collectManagedPartitionIds(
-      accounts.map((account) => ({
-        partitionId: account.id,
-        websiteId: account.website,
-      })),
-    );
+    const ids = new Set<string>();
+
+    for (const account of accounts) {
+      ids.add(account.id);
+      if (account.website === 'instagram') {
+        ids.add(`instagram-oauth-${account.id}`);
+      }
+    }
+
+    return [...ids];
   }
 
-  private buildProxyPatch(
-    current: ProxyConfiguration,
-    incoming: UpdateProxyConfigurationDto,
-  ): ProxyConfiguration {
-    return {
-      mode: incoming.mode,
-      pool: mergeProxyPoolPasswords(incoming.pool, current.pool),
-      fixedProxyId: incoming.fixedProxyId,
-      routing: incoming.routing,
-      pacAccessToken:
-        incoming.mode === 'pac_routing'
-          ? incoming.pacAccessToken?.trim() || current.pacAccessToken
-          : undefined,
-    };
-  }
 }

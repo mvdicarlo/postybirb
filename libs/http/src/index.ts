@@ -1,10 +1,6 @@
-export {
-  applyProxy,
-  onSessionCreated,
-  onProxyConfigurationApplied,
-  resolveProxyForUrl,
-} from './lib/electron-proxy';
-// Patches global fetch to electron net.fetch before Http loads.
+export * from './lib/electron-proxy';
+export * from './lib/proxy-agents';
+export * from './lib/proxy-settings';
 export * from './lib/proxy';
 
 export * from './lib/form-file';

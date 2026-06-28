@@ -1,19 +1,23 @@
 import {
-    BadRequestException,
-    Inject,
-    Injectable,
-    NotFoundException,
-    Optional,
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+  Optional,
 } from '@nestjs/common';
-import { Account, AccountRepository, WebsiteDataRepository } from '@postybirb/database';
+import {
+  Account,
+  AccountRepository,
+  WebsiteDataRepository,
+} from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import { PlatformService } from '@postybirb/platform';
 import { WEBSITE_UPDATES } from '@postybirb/socket-events';
 import {
-    DynamicObject,
-    IAccount,
-    IWebsiteInfoDto,
-    OAuthRoutes,
+  DynamicObject,
+  IAccount,
+  IWebsiteInfoDto,
+  OAuthRoutes,
 } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/common';
 import { Class } from 'type-fest';
@@ -330,7 +334,9 @@ export class WebsiteRegistryService {
   ) {
     this.logger.info(`OAuth website route for '${oauthRequestDto.id}'`);
 
-    const account = await this.accountRepository.findByIdOrThrow(oauthRequestDto.id);
+    const account = await this.accountRepository.findByIdOrThrow(
+      oauthRequestDto.id,
+    );
     const instance = this.findInstance(account);
 
     if (!instance) throw new NotFoundException('Website instance not found.');

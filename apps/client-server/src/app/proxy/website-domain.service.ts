@@ -49,7 +49,10 @@ export class WebsiteDomainService {
     }
 
     const staticDomains = this.ensureStaticDomains(websiteId, accounts);
-    const runtimeDomains = await this.collectRuntimeDomains(websiteId, accounts);
+    const runtimeDomains = await this.collectRuntimeDomains(
+      websiteId,
+      accounts,
+    );
     const total = mergeDomainLists(staticDomains, runtimeDomains);
 
     this.logger
@@ -61,9 +64,7 @@ export class WebsiteDomainService {
       .debug('forRouting');
 
     if (total.length === 0) {
-      this.logger
-        .withMetadata({ websiteId })
-        .warn('no domains for routing');
+      this.logger.withMetadata({ websiteId }).warn('no domains for routing');
     }
 
     return total;
@@ -115,9 +116,7 @@ export class WebsiteDomainService {
     if (typeof instanceUrl === 'string' && instanceUrl.trim()) {
       const host =
         extractHostname(
-          instanceUrl.includes('://')
-            ? instanceUrl
-            : `https://${instanceUrl}`,
+          instanceUrl.includes('://') ? instanceUrl : `https://${instanceUrl}`,
         ) ?? normalizeDomain(instanceUrl);
       if (host) {
         hosts.push(host);

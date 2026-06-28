@@ -1,24 +1,24 @@
 import { Logger, trackException } from '@postybirb/logger';
 import {
-    PostyBirbEnvConfig,
-    StartupOptionsManager,
-    toError,
+  PostyBirbEnvConfig,
+  StartupOptionsManager,
+  toError,
 } from '@postybirb/utils/common';
 import {
-    BrowserWindow,
-    NativeImage,
-    nativeImage,
-    nativeTheme,
-    screen,
+  BrowserWindow,
+  NativeImage,
+  nativeImage,
+  nativeTheme,
+  screen,
 } from 'electron';
 import { join } from 'path';
 import { environment } from '../../environments/environment';
 import {
-    MAIN_WINDOW_DEFAULT_HEIGHT,
-    MAIN_WINDOW_DEFAULT_WIDTH,
-    RENDERER_MAX_RELOADS,
-    RENDERER_RELOAD_WINDOW_MS,
-    rendererAppPort,
+  MAIN_WINDOW_DEFAULT_HEIGHT,
+  MAIN_WINDOW_DEFAULT_WIDTH,
+  RENDERER_MAX_RELOADS,
+  RENDERER_RELOAD_WINDOW_MS,
+  rendererAppPort,
 } from '../constants';
 import { startupLoader } from './loader';
 import { hardenMainWindowWebContents } from './security';
@@ -34,8 +34,7 @@ const appIcon = join(__dirname, 'assets/app-icon.png');
 export class WindowManager {
   private window: BrowserWindow | null = null;
 
-  private readonly appImage: NativeImage =
-    nativeImage.createFromPath(appIcon);
+  private readonly appImage: NativeImage = nativeImage.createFromPath(appIcon);
 
   /** Timestamps of recent recovery reloads, used to throttle reload loops. */
   private rendererReloadTimestamps: number[] = [];

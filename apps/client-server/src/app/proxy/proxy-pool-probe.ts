@@ -1,11 +1,8 @@
 import http from 'node:http';
 import nodeHttps from 'node:https';
 import type { ProxyPoolEntry } from '@postybirb/types';
-import {
-  buildProxyAgentUrl,
-  createProxyAgent,
-  toEnabledProxyProfile,
-} from '@postybirb/utils/common';
+import { createProxyAgent } from '@postybirb/http';
+import { buildProxyAgentUrl, toEnabledProxyProfile } from '@postybirb/utils/common';
 
 type ProbeOptions = {
   method?: 'GET' | 'HEAD';

@@ -8,34 +8,39 @@ import {
 import { Logger } from '@postybirb/logger';
 import type { ProxyConfiguration, ProxyPoolEntry } from '@postybirb/types';
 import {
-  toEnabledProxyProfile,
+  StartupOptionsManager,
+  PostyBirbEnvConfig,
+  toError,
   buildSessionProxyRules,
+  toEnabledProxyProfile,
+} from '@postybirb/utils/common';
+import {
   buildChromiumProxyBypassRules,
   buildPacScriptUrl,
-  cloneProxyConfiguration,
-  defaultProxyConfiguration,
-  prepareProxyConfiguration,
-  PostyBirbEnvConfig,
-  StartupOptionsManager,
-  toError,
-} from '@postybirb/utils/common';
+} from './proxy-settings';
 import { ProxyAuthStore, ProxyPoolAuthEntry } from './proxy-auth-store';
 
 type ProxyConfigurationListener = () => void | Promise<void>;
 
+const DEFAULT_PROXY_CONFIGURATION: ProxyConfiguration = {
+  mode: 'system',
+  pool: [],
+  routing: {},
+};
+
 const logger = Logger('ElectronProxy');
 const proxyAuthStore = new ProxyAuthStore();
 
-let activeProxyConfiguration: ProxyConfiguration = defaultProxyConfiguration();
+let activeProxyConfiguration: ProxyConfiguration = DEFAULT_PROXY_CONFIGURATION;
 let activeSessionProxyConfig: ProxyConfig | null = null;
 const proxyConfigurationListeners = new Set<ProxyConfigurationListener>();
 let appProxyLoginHandlerRegistered = false;
 
 function readStartupProxyConfiguration(): ProxyConfiguration {
   try {
-    return cloneProxyConfiguration(StartupOptionsManager.get().proxy);
+    return StartupOptionsManager.get().proxy;
   } catch {
-    return defaultProxyConfiguration();
+    return DEFAULT_PROXY_CONFIGURATION;
   }
 }
 
@@ -190,6 +195,10 @@ async function notifyProxyConfigurationApplied(): Promise<void> {
   );
 }
 
+export function getProxyConfiguration(): ProxyConfiguration {
+  return activeProxyConfiguration;
+}
+
 export function attachProxyAuthToRequest(request: ClientRequest): void {
   request.on('login', (authInfo, callback) => {
     if (!authInfo.isProxy) {
@@ -246,7 +255,7 @@ function resolveActiveConfiguration(
   configuration?: ProxyConfiguration,
 ): ProxyConfiguration {
   if (configuration !== undefined) {
-    return prepareProxyConfiguration(configuration);
+    return configuration;
   }
 
   return readStartupProxyConfiguration();
@@ -305,7 +314,7 @@ export async function onSessionCreated(createdSession: Session): Promise<void> {
 
 export function resetProxyStateForTests(): void {
   activeSessionProxyConfig = null;
-  activeProxyConfiguration = defaultProxyConfiguration();
+  activeProxyConfiguration = DEFAULT_PROXY_CONFIGURATION;
   proxyAuthStore.clear();
 }
 

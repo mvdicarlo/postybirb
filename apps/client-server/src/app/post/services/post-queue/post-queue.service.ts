@@ -1,17 +1,23 @@
 import {
-    Injectable,
-    InternalServerErrorException,
-    OnModuleInit,
-    Optional,
+  Injectable,
+  InternalServerErrorException,
+  OnModuleInit,
+  Optional,
 } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { PostQueueRecord, PostQueueRecordRepository, PostRecord, PostRecordRepository, SubmissionRepository } from '@postybirb/database';
 import {
-    EntityId,
-    PostRecordResumeMode,
-    PostRecordState,
-    ScheduleType,
-    SubmissionId,
+  PostQueueRecord,
+  PostQueueRecordRepository,
+  PostRecord,
+  PostRecordRepository,
+  SubmissionRepository,
+} from '@postybirb/database';
+import {
+  EntityId,
+  PostRecordResumeMode,
+  PostRecordState,
+  ScheduleType,
+  SubmissionId,
 } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/common';
 import { Mutex } from 'async-mutex';
@@ -462,10 +468,7 @@ export class PostQueueService
 
     const entities = await this.submissionRepository.find({
       where: (submission, { eq, and }) =>
-        and(
-          eq(submission.isScheduled, true),
-          eq(submission.isArchived, false),
-        ),
+        and(eq(submission.isScheduled, true), eq(submission.isArchived, false)),
     });
     const now = Date.now();
     const sorted = entities

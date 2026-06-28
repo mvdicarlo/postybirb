@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
+import { toError } from '@postybirb/utils/common';
 import {
-  PAC_SCRIPT_CACHE_CONTROL,
   PAC_SCRIPT_MEDIA_TYPE,
-  toError,
-} from '@postybirb/utils/common';
+  PAC_SCRIPT_CACHE_CONTROL,
+} from '@postybirb/http';
 import { PacScriptService } from './pac-script.service';
 
 export type PacScriptDeliveryResult =

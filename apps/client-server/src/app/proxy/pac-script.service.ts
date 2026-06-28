@@ -7,14 +7,16 @@ import type {
   WebsiteProxyChoice,
 } from '@postybirb/types';
 import {
-  buildPacProxyDirective,
   extractHostname,
   normalizeDomain,
   PostyBirbEnvConfig,
-  resolveCloudApiUrl,
-  resolvePacHttpPort,
   StartupOptionsManager,
+  resolveCloudApiUrl,
 } from '@postybirb/utils/common';
+import {
+  buildPacProxyDirective,
+  resolvePacHttpPort,
+} from '@postybirb/http';
 import { WebsiteDomainService } from './website-domain.service';
 
 @Injectable()

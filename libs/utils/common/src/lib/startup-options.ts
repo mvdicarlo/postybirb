@@ -7,12 +7,12 @@ import {
 } from 'fs';
 import { dirname } from 'path';
 import type { ProxyConfiguration } from '@postybirb/types';
-import {
-  cloneProxyConfiguration,
-  defaultProxyConfiguration,
-  isProxyConfiguration,
-  prepareProxyConfiguration,
-} from './proxy-settings';
+
+const DEFAULT_PROXY_CONFIGURATION: ProxyConfiguration = {
+  mode: 'system',
+  pool: [],
+  routing: {},
+};
 
 export type StartupOptions = {
   startAppOnSystemStartup: boolean;
@@ -30,35 +30,6 @@ export type StartupOptionsConfig = {
 };
 
 export type StartupOptionsListener = (opts: StartupOptions) => void;
-
-const PROXY_LOG_LEVEL = (process.env.LOG_LEVEL ?? 'debug').toLowerCase();
-
-function startupInfo(message: string, context?: Record<string, unknown>): void {
-  if (PROXY_LOG_LEVEL === 'error' || PROXY_LOG_LEVEL === 'warn') {
-    return;
-  }
-
-  if (context) {
-    // eslint-disable-next-line no-console
-    console.info(message, context);
-    return;
-  }
-
-  // eslint-disable-next-line no-console
-  console.info(message);
-}
-
-function parseProxyFromDisk(rawProxy: unknown): ProxyConfiguration {
-  if (isProxyConfiguration(rawProxy)) {
-    return prepareProxyConfiguration(rawProxy);
-  }
-
-  startupInfo('[StartupOptions.load] Defaulting proxy to system mode', {
-    reason: 'invalid-proxy-shape',
-  });
-
-  return defaultProxyConfiguration();
-}
 
 /**
  * Persists and exposes the application's startup options. Holds no host
@@ -89,7 +60,7 @@ export class StartupOptionsStore {
       spellchecker: true,
       port: '9487',
       appDataPath: config.defaultAppDataPath,
-      proxy: defaultProxyConfiguration(),
+      proxy: DEFAULT_PROXY_CONFIGURATION,
     };
     // Drop memoized state so a reconfigure (mostly tests) takes effect.
     this.current = null;
@@ -109,30 +80,16 @@ export class StartupOptionsStore {
         this.persist(this.current);
       }
     }
-    return {
-      ...this.current,
-      proxy: cloneProxyConfiguration(this.current.proxy),
-    };
+    return this.current;
   }
 
   public set(opts: Partial<StartupOptions>): void {
     if (!this.current) {
       this.current = this.load();
     }
-    const { proxy, ...rest } = opts;
     this.current = {
       ...this.current,
-      ...rest,
-      ...(proxy
-        ? {
-            proxy: prepareProxyConfiguration({
-              ...this.current.proxy,
-              ...proxy,
-              pool: proxy.pool ?? this.current.proxy.pool,
-              routing: proxy.routing ?? this.current.proxy.routing,
-            }),
-          }
-        : undefined),
+      ...opts,
     };
     this.persist(this.current);
     const snapshot = this.current;
@@ -168,28 +125,18 @@ export class StartupOptionsStore {
     const fallback = this.requireDefaults();
     try {
       if (!existsSync(path)) {
-        return {
-          ...fallback,
-          proxy: cloneProxyConfiguration(fallback.proxy),
-        };
+        return fallback;
       }
       const raw = JSON.parse(readFileSync(path, 'utf-8'));
-      if (raw) {
+      if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
         return {
           ...fallback,
-          ...raw,
-          proxy: parseProxyFromDisk(raw.proxy),
+          ...(raw as Partial<StartupOptions>),
         };
       }
-      return {
-        ...fallback,
-        proxy: cloneProxyConfiguration(fallback.proxy),
-      };
+      return fallback;
     } catch {
-      return {
-        ...fallback,
-        proxy: cloneProxyConfiguration(fallback.proxy),
-      };
+      return fallback;
     }
   }
 

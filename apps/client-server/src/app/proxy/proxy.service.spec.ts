@@ -1,7 +1,6 @@
 import { mkdtempSync, readFileSync, rmSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
-import { BadRequestException } from '@nestjs/common';
 import { applyProxy } from '@postybirb/http';
 import * as CommonUtils from '@postybirb/utils/common';
 import { StartupOptionsManager } from '@postybirb/utils/common';
@@ -90,24 +89,28 @@ describe('ProxyService', () => {
     );
   });
 
-  it('saveConfiguration rejects invalid pool entries', async () => {
-    await expect(
-      service.saveConfiguration({
-        mode: 'fixed_servers',
-        fixedProxyId: 'pool-1',
-        pool: [
-          {
-            id: 'pool-1',
-            type: 'http',
-            host: '',
-            port: '8080',
-            username: '',
-            password: '',
-          },
-        ],
-        routing: {},
-      }),
-    ).rejects.toBeInstanceOf(BadRequestException);
+  it('saveConfiguration persists invalid pool entries as provided', async () => {
+    await service.saveConfiguration({
+      mode: 'fixed_servers',
+      fixedProxyId: 'pool-1',
+      pool: [
+        {
+          id: 'pool-1',
+          type: 'http',
+          host: '',
+          port: '8080',
+          username: '',
+          password: '',
+        },
+      ],
+      routing: {},
+    });
+
+    const saved = JSON.parse(
+      readFileSync(join(tmpDir, 'startup.json'), 'utf-8'),
+    );
+
+    expect(saved.proxy.pool[0].host).toBe('');
   });
 
   it('saveConfiguration persists proxy without applying in test env', async () => {
@@ -169,12 +172,14 @@ describe('ProxyService', () => {
     });
 
     let applyCount = 0;
-    const applySpy = jest.spyOn(service, 'apply').mockImplementation(async () => {
-      applyCount += 1;
-      if (applyCount === 1) {
-        await firstApplyGate;
-      }
-    });
+    const applySpy = jest
+      .spyOn(service, 'apply')
+      .mockImplementation(async () => {
+        applyCount += 1;
+        if (applyCount === 1) {
+          await firstApplyGate;
+        }
+      });
 
     const firstRun = service.scheduleApply();
     const secondRun = service.scheduleApply();

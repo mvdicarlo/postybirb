@@ -64,9 +64,7 @@ async function bootstrap(options: BootstrapOptions = {}) {
   app.useWebSocketAdapter(new WebSocketAdapter(app));
   app.setGlobalPrefix(globalPrefix);
   app.useGlobalInterceptors(new CustomClassSerializer(app.get(Reflector)));
-  app.useGlobalFilters(
-    new EntityNotFoundExceptionFilter(app.getHttpAdapter()),
-  );
+  app.useGlobalFilters(new EntityNotFoundExceptionFilter(app.getHttpAdapter()));
   app.useGlobalPipes(
     new ValidationPipe({
       forbidUnknownValues: true,
@@ -118,4 +116,3 @@ async function bootstrap(options: BootstrapOptions = {}) {
 }
 
 export { bootstrap as bootstrapClientServer };
-

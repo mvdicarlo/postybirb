@@ -5,13 +5,6 @@ import type {
   ProxyType,
   WebsiteProxyChoice,
 } from '@postybirb/types';
-import {
-  defaultProxyConfiguration,
-  isProxyConfiguration,
-  prepareProxyConfiguration,
-  validateProxyConfiguration,
-  cloneProxyConfiguration,
-} from '@postybirb/types';
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
   ActionIcon,
@@ -61,13 +54,11 @@ function createEmptyPoolEntry(): ProxyPoolEntry {
   };
 }
 
-function normalizeStartupProxy(raw: unknown): ProxyConfiguration {
-  if (isProxyConfiguration(raw)) {
-    return cloneProxyConfiguration(raw);
-  }
-
-  return defaultProxyConfiguration();
-}
+const DEFAULT_PROXY_CONFIGURATION: ProxyConfiguration = {
+  mode: 'system',
+  pool: [],
+  routing: {},
+};
 
 function isValidPoolEntry(entry: ProxyPoolEntry): boolean {
   const parsed = Number.parseInt(entry.port.trim(), 10);
@@ -110,17 +101,6 @@ type ProxySettingsScope = 'client' | 'server';
 function readStoredProxyScope(): ProxySettingsScope {
   const stored = localStorage.getItem(PROXY_SCOPE_STORAGE_KEY);
   return stored === 'server' ? 'server' : 'client';
-}
-
-function buildProxyPatch(config: ProxyConfiguration) {
-  const prepared = prepareProxyConfiguration(config);
-
-  return {
-    mode: prepared.mode,
-    pool: prepared.pool,
-    fixedProxyId: prepared.fixedProxyId,
-    routing: prepared.routing,
-  };
 }
 
 function serializeProxyForCompare(config: ProxyConfiguration): string {
@@ -166,19 +146,15 @@ export function ProxySettingsSection() {
   }
 
   if (!remoteMode) {
-    const proxy = normalizeStartupProxy(localStartupSettings?.proxy);
+    const proxy = localStartupSettings?.proxy ?? DEFAULT_PROXY_CONFIGURATION;
     return (
-      <ProxySettingsForm
-        proxy={proxy}
-        scope={null}
-        refetch={refetchLocal}
-      />
+      <ProxySettingsForm proxy={proxy} scope={null} refetch={refetchLocal} />
     );
   }
 
   const activeStartupSettings =
     scope === 'client' ? localStartupSettings : serverStartupSettings;
-  const proxy = normalizeStartupProxy(activeStartupSettings?.proxy);
+  const proxy = activeStartupSettings?.proxy ?? DEFAULT_PROXY_CONFIGURATION;
 
   return (
     <Stack gap="md">
@@ -198,9 +174,9 @@ export function ProxySettingsSection() {
       <Alert color="blue">
         {scope === 'client' ? (
           <Trans>
-            Applies to login webviews and other traffic on this computer.
-            Remote posting still uses the server proxy below unless you configure
-            it separately.
+            Applies to login webviews and other traffic on this computer. Remote
+            posting still uses the server proxy below unless you configure it
+            separately.
           </Trans>
         ) : (
           <Trans>
@@ -232,9 +208,7 @@ function ProxySettingsForm({
   const { t } = useLingui();
   const websites = useWebsites();
   const accounts = useAccounts();
-  const [config, setConfig] = useState<ProxyConfiguration>(() =>
-    cloneProxyConfiguration(proxy),
-  );
+  const [config, setConfig] = useState<ProxyConfiguration>(() => proxy);
   const [showPasswordById, setShowPasswordById] = useState<
     Record<string, boolean>
   >({});
@@ -249,7 +223,7 @@ function ProxySettingsForm({
     }
 
     setConfig((current) => {
-      const incoming = cloneProxyConfiguration(proxy);
+      const incoming = proxy;
       if (
         serializeProxyForCompare(current) === serializeProxyForCompare(incoming)
       ) {
@@ -339,71 +313,9 @@ function ProxySettingsForm({
     [config.pool, labelProxyEntry],
   );
 
-  const websiteDisplayNames = useMemo(
-    () =>
-      Object.fromEntries(
-        websitesWithAccounts.map((website) => [
-          website.id,
-          website.displayName,
-        ]),
-      ),
-    [websitesWithAccounts],
-  );
-
-  const validation = useMemo(
-    () => validateProxyConfiguration(config, { websiteDisplayNames }),
-    [config, websiteDisplayNames],
-  );
-
   const isDirty =
     serializeProxyForCompare(config) !== serializeProxyForCompare(proxy);
-
-  const poolEntryFieldErrors = useMemo(() => {
-    const map = new Map<string, { host?: string; port?: string }>();
-
-    if (!isDirty) {
-      return map;
-    }
-
-    for (const issue of validation.issues) {
-      if (!issue.entryId || !issue.field) {
-        continue;
-      }
-
-      if (issue.field !== 'host' && issue.field !== 'port') {
-        continue;
-      }
-
-      const current = map.get(issue.entryId) ?? {};
-      current[issue.field] = issue.message;
-      map.set(issue.entryId, current);
-    }
-
-    return map;
-  }, [isDirty, validation.issues]);
-
-  const fixedProxyError = isDirty
-    ? validation.issues.find((issue) => issue.field === 'fixedProxyId')
-        ?.message
-    : undefined;
-
-  const routingErrorsByWebsiteId = useMemo(() => {
-    const map = new Map<string, string>();
-
-    if (!isDirty) {
-      return map;
-    }
-
-    for (const issue of validation.issues) {
-      if (issue.field === 'routing' && issue.websiteId) {
-        map.set(issue.websiteId, issue.message);
-      }
-    }
-
-    return map;
-  }, [isDirty, validation.issues]);
-
-  const canSave = isDirty && validation.ok;
+  const canSave = isDirty && !isSaving;
 
   const updateConfig = (patch: Partial<ProxyConfiguration>): void => {
     setConfig((current) => ({ ...current, ...patch }));
@@ -488,7 +400,11 @@ function ProxySettingsForm({
           const usedPoolIds = new Set<string>();
 
           for (const choice of Object.values(current.routing)) {
-            if (choice !== 'direct' && choice !== 'system' && poolIds.has(choice)) {
+            if (
+              choice !== 'direct' &&
+              choice !== 'system' &&
+              poolIds.has(choice)
+            ) {
               usedPoolIds.add(choice);
             }
           }
@@ -512,34 +428,19 @@ function ProxySettingsForm({
   };
 
   const handleSave = async (): Promise<void> => {
-    if (!validation.ok) {
-      showConnectionErrorNotification(
-        <Trans>Configuration Error</Trans>,
-        validation.errors.join(' '),
-      );
-      return;
-    }
-
     setIsSaving(true);
     try {
-      const proxyPatch = buildProxyPatch(config);
-      const savedConfig = cloneProxyConfiguration({
-        ...config,
-        ...proxyPatch,
-      });
-
       if (usesLocalProxyTarget) {
         await settingsApi.updateLocalSystemStartupSettings({
-          proxy: proxyPatch,
+          proxy: config,
         });
       } else {
         await settingsApi.updateSystemStartupSettings({
-          proxy: proxyPatch,
+          proxy: config,
         });
       }
 
       await refetch();
-      setConfig(savedConfig);
       showConnectionSuccessNotification(
         usesLocalProxyTarget ? (
           <Trans>Proxy settings saved and applied on this device</Trans>
@@ -615,9 +516,6 @@ function ProxySettingsForm({
         <Text size="sm" c="dimmed" mb="md">
           <Trans>
             Choose how all outbound traffic is routed.
-            <br />
-            Per-website mode assigns a proxy to each site — domains are detected
-            automatically.
           </Trans>
         </Text>
 
@@ -657,7 +555,6 @@ function ProxySettingsForm({
 
               {config.pool.map((entry, index) => {
                 const showPassword = showPasswordById[entry.id] ?? false;
-                const fieldErrors = poolEntryFieldErrors.get(entry.id);
 
                 return (
                   <Card key={entry.id} withBorder padding="md">
@@ -702,15 +599,14 @@ function ProxySettingsForm({
                       />
 
                       <Group grow align="flex-start">
-                        <TextInput
-                          label={<Trans>Host</Trans>}
-                          leftSection={<IconPlug size={18} />}
-                          placeholder="proxy.example.com"
-                          value={entry.host}
-                          error={fieldErrors?.host}
-                          onChange={(event) =>
-                            updatePoolEntry(entry.id, {
-                              host: event.currentTarget.value,
+                      <TextInput
+                        label={<Trans>Host</Trans>}
+                        leftSection={<IconPlug size={18} />}
+                        placeholder="proxy.example.com"
+                        value={entry.host}
+                        onChange={(event) =>
+                          updatePoolEntry(entry.id, {
+                            host: event.currentTarget.value,
                             })
                           }
                         />
@@ -718,7 +614,6 @@ function ProxySettingsForm({
                           label={<Trans>Port</Trans>}
                           placeholder="8080"
                           value={entry.port}
-                          error={fieldErrors?.port}
                           onChange={(event) =>
                             updatePoolEntry(entry.id, {
                               port: event.currentTarget.value,
@@ -802,7 +697,6 @@ function ProxySettingsForm({
               placeholder={t`Select a pool entry`}
               data={fixedProxyOptions}
               value={config.fixedProxyId ?? null}
-              error={fixedProxyError}
               onChange={(value) =>
                 updateConfig({ fixedProxyId: value ?? undefined })
               }
@@ -841,9 +735,6 @@ function ProxySettingsForm({
                         storedChoice,
                         validPoolIds,
                       );
-                      const routingError = routingErrorsByWebsiteId.get(
-                        website.id,
-                      );
                       const showsTelegramHttpHint =
                         website.id === 'telegram' &&
                         config.pool.some(
@@ -859,7 +750,6 @@ function ProxySettingsForm({
                               <Select
                                 data={routingChoiceOptions}
                                 value={choice}
-                                error={routingError}
                                 onChange={(value) => {
                                   if (value) {
                                     updateRouting(website.id, value);
@@ -884,18 +774,6 @@ function ProxySettingsForm({
             </Stack>
           )}
 
-          {!validation.ok && isDirty && (
-            <Alert color="red" title={<Trans>Fix these issues before saving</Trans>}>
-              <Stack gap={4}>
-                {validation.issues.map((issue, index) => (
-                  <Text key={`${issue.field ?? 'general'}-${issue.entryId ?? issue.websiteId ?? index}`} size="sm">
-                    {issue.message}
-                  </Text>
-                ))}
-              </Stack>
-            </Alert>
-          )}
-
           <Group>
             <Button
               leftSection={<IconDeviceFloppy size={16} />}
@@ -909,10 +787,7 @@ function ProxySettingsForm({
 
           <Alert color="blue">
             {usesLocalProxyTarget ? (
-              <Trans>
-                Saved settings apply on this device right away. Reload any open
-                login pages.
-              </Trans>
+              <Trans>Saved settings apply on this device right away.</Trans>
             ) : (
               <Trans>
                 Saved settings apply on the remote server for posting and

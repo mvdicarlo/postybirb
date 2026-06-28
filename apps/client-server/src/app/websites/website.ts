@@ -2,11 +2,11 @@ import { Account, WebsiteDataRepository } from '@postybirb/database';
 import { Logger, PostyBirbLogger } from '@postybirb/logger';
 import { PlatformCookieDetails, PlatformService } from '@postybirb/platform';
 import {
-    DynamicObject,
-    ILoginState,
-    IWebsiteFormFields,
-    LoginState,
-    SubmissionType,
+  DynamicObject,
+  ILoginState,
+  IWebsiteFormFields,
+  LoginState,
+  SubmissionType,
 } from '@postybirb/types';
 import {
   extractHostname,
@@ -18,12 +18,12 @@ import { SubmissionValidator } from './commons/validator';
 import { WebsiteDecoratorProps } from './decorators/website-decorator-props';
 import { DataPropertyAccessibility } from './models/data-property-accessibility';
 import {
-    FileWebsiteKey,
-    isFileWebsite,
+  FileWebsiteKey,
+  isFileWebsite,
 } from './models/website-modifiers/file-website';
 import {
-    isMessageWebsite,
-    MessageWebsiteKey,
+  isMessageWebsite,
+  MessageWebsiteKey,
 } from './models/website-modifiers/message-website';
 import WebsiteDataManager from './website-data-manager';
 
@@ -216,7 +216,7 @@ export abstract class Website<
       }
     }
 
-    const {loginFlow} = this.decoratedProps;
+    const { loginFlow } = this.decoratedProps;
     if (loginFlow.type === 'user' && loginFlow.url?.trim()) {
       const host = extractHostname(loginFlow.url);
       if (host) {

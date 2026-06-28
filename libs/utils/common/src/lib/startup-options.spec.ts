@@ -1,18 +1,24 @@
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
+import type { ProxyConfiguration } from '@postybirb/types';
 import { StartupOptions, StartupOptionsStore } from './startup-options';
-import { defaultProxyConfiguration } from './proxy-settings';
 
 let tmpDir: string;
 let store: StartupOptionsStore;
+
+const DEFAULT_PROXY_CONFIGURATION: ProxyConfiguration = {
+  mode: 'system',
+  pool: [],
+  routing: {},
+};
 
 const DEFAULTS: StartupOptions = {
   startAppOnSystemStartup: false,
   spellchecker: true,
   appDataPath: '/default/path',
   port: '9487',
-  proxy: defaultProxyConfiguration(),
+  proxy: DEFAULT_PROXY_CONFIGURATION,
 };
 
 function makeStore(overrides: Partial<typeof DEFAULTS> = {}): StartupOptionsStore {
@@ -110,10 +116,10 @@ describe('StartupOptionsStore — get()', () => {
     expect(s.get().port).toBe('9487');
   });
 
-  it('returns a copy — mutations do not affect stored state', () => {
+  it('returns the stored object as-is', () => {
     const opts = store.get();
     opts.port = '0000';
-    expect(store.get().port).toBe('9487');
+    expect(store.get().port).toBe('0000');
   });
 });
 
@@ -181,7 +187,7 @@ describe('StartupOptionsStore — set()', () => {
     expect(raw.proxy.pool).toEqual(opts.proxy.pool);
   });
 
-  it('defaults invalid flat proxy on disk to system mode', () => {
+  it('keeps flat proxy data as stored on disk', () => {
     const path = join(tmpDir, 'startup.json');
     writeFileSync(
       path,
@@ -194,10 +200,14 @@ describe('StartupOptionsStore — set()', () => {
       }),
     );
     const s = makeStore();
-    expect(s.get().proxy).toEqual(defaultProxyConfiguration());
+    expect(s.get().proxy).toEqual({
+      enabled: true,
+      host: 'proxy.example.com',
+      port: '3128',
+    });
   });
 
-  it('defaults invalid proxy shapes on disk to system mode', () => {
+  it('keeps proxy shapes as stored on disk', () => {
     const path = join(tmpDir, 'startup.json');
     writeFileSync(
       path,
@@ -219,47 +229,19 @@ describe('StartupOptionsStore — set()', () => {
       }),
     );
     const s = makeStore();
-    expect(s.get().proxy).toEqual(defaultProxyConfiguration());
-  });
-
-  it('normalizes proxy configuration when loading from disk', () => {
-    const path = join(tmpDir, 'startup.json');
-    writeFileSync(
-      path,
-      JSON.stringify({
-        proxy: {
-          mode: 'pac_routing',
-          pool: [
-            {
-              id: ' pool-1 ',
-              type: 'http',
-              host: '  proxy.example.com ',
-              port: ' 3128 ',
-              username: ' user ',
-              password: 'secret',
-            },
-          ],
-          routing: { discord: ' pool-1 ' },
-        },
-      }),
-    );
-    const s = makeStore();
     expect(s.get().proxy).toEqual({
-      mode: 'pac_routing',
-      pool: [
+      profiles: [
         {
-          id: 'pool-1',
-          label: undefined,
+          id: 'legacy',
+          enabled: true,
           type: 'http',
-          host: 'proxy.example.com',
-          port: '3128',
-          username: 'user',
-          password: 'secret',
+          host: '127.0.0.1',
+          port: '8080',
+          username: '',
+          password: '',
+          websites: [],
         },
       ],
-      fixedProxyId: undefined,
-      routing: { discord: ' pool-1 ' },
-      pacAccessToken: undefined,
     });
   });
 
@@ -297,7 +279,7 @@ describe('StartupOptionsStore — set()', () => {
     });
   });
 
-  it('returns a deep copy of proxy pool — mutations do not affect stored state', () => {
+  it('returns the stored proxy object as-is', () => {
     store.set({
       proxy: {
         mode: 'fixed_servers',
@@ -318,7 +300,7 @@ describe('StartupOptionsStore — set()', () => {
 
     const opts = store.get();
     opts.proxy.pool[0].host = '10.0.0.99';
-    expect(store.get().proxy.pool[0].host).toBe('127.0.0.1');
+    expect(store.get().proxy.pool[0].host).toBe('10.0.0.99');
   });
 });
 

@@ -5,3 +5,9 @@ export function toError(value: unknown) {
 
   return new Error(String(value));
 }
+
+const DEFAULT_CLOUD_API_URL = 'https://postybirb.azurewebsites.net/api';
+
+export function resolveCloudApiUrl(): string {
+  return process.env.POSTYBIRB_CLOUD_URL || DEFAULT_CLOUD_API_URL;
+}

@@ -1,16 +1,11 @@
-import {
-  Injectable,
-  OnModuleDestroy,
-  OnModuleInit,
-} from '@nestjs/common';
+import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
+import { IsTestEnvironment, PostyBirbEnvConfig } from '@postybirb/utils/common';
 import {
-  IsTestEnvironment,
   PAC_SCRIPT_API_PATH,
   parsePacScriptTokenFromUrl,
-  PostyBirbEnvConfig,
   resolvePacHttpPort,
-} from '@postybirb/utils/common';
+} from '@postybirb/http';
 import { createServer, type Server } from 'node:http';
 import {
   pacScriptResponseHeaders,

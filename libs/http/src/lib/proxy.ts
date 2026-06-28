@@ -1,29 +1,9 @@
-// Proxy bootstrap: patches global fetch and applies PAC/global proxy on startup.
-
 import { net } from 'electron';
-import { isProxiedResolution } from '@postybirb/utils/common';
-import {
-  applyProxy,
-  getProxyConfiguration,
-  onProxyConfigurationApplied,
-  resolveProxyForUrl,
-} from './electron-proxy';
+import { resolveProxyForUrl } from './electron-proxy';
 import { parseProxyResolution } from './proxy-resolution';
-
-export {
-  applyProxy,
-  getProxyConfiguration,
-  onProxyConfigurationApplied,
-  resolveProxyForUrl,
-};
-export { isProxiedResolution } from '@postybirb/utils/common';
 
 type FetchInput = Request | URL | string;
 
-/**
- * Routes fetch through Electron's network stack (defaultSession).
- * Inherits global proxy/PAC from {@link applyProxy}.
- */
 function electronNetFetch(
   input: FetchInput,
   init?: RequestInit,
@@ -55,4 +35,15 @@ export async function getParsedProxiesFor(url: string) {
   }
 
   return parseProxyResolution(proxySources);
+}
+
+export function isProxiedResolution(resolution?: string | null): boolean {
+  if (!resolution?.trim()) {
+    return false;
+  }
+
+  return resolution
+    .split(';')
+    .map((part) => part.trim())
+    .some((part) => part.length > 0 && part.toUpperCase() !== 'DIRECT');
 }

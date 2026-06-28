@@ -1,7 +1,3 @@
-// Side-effect module: configures all electron-derived paths required by
-// @postybirb/utils/common and @postybirb/fs before those libraries
-// evaluate. Imported as the very first line of apps/postybirb/src/main.ts so
-// that downstream module-load reads (e.g. PostyBirbDirectories) succeed.
 import {
   isWindows,
   RemoteConfigManager,
