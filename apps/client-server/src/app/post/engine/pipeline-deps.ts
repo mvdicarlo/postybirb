@@ -1,5 +1,5 @@
 /**
- * Relay  production PipelineDeps wiring.engine 
+ * Relay engine — production PipelineDeps wiring.
  *
  * Bridges the engine's abstract {@link PipelineDeps} seams onto the real
  * services:
@@ -17,10 +17,10 @@
 
 import { Injectable } from '@nestjs/common';
 import {
-    Submission,
-    SubmissionFile,
-    SubmissionRepository,
-    WebsiteOptions,
+  Submission,
+  SubmissionFile,
+  SubmissionRepository,
+  WebsiteOptions,
 } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import { FileSubmission, IWebsiteOptions } from '@postybirb/types';

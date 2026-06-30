@@ -1,5 +1,5 @@
 /**
- * Relay  dry-run preview.engine 
+ * Relay engine — dry-run preview.
  *
  * Runs the front half of the pipeline (resolve + process files) for a
  * submission WITHOUT dispatching to any website. Built-in validation/test

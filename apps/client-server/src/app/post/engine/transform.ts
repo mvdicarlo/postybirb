@@ -1,9 +1,9 @@
 /**
- * Relay  shared source-file shape used across the posting pipeline.engine 
+ * Relay engine — shared source-file shape used across the posting pipeline.
  *
- * The actual file resizing/conversion is performed by {@link RelayFileProcessor}
- * (which delegates to PostFileResizerService + the sharp worker pool). This
- * module only carries the metadata type the pipeline threads through its stages.
+ * File resizing/conversion is performed by {@link RelayFileProcessor} (which
+ * delegates to PostFileResizerService + the sharp worker pool). This module
+ * only carries the metadata type the pipeline threads through its stages.
  */
 
 export type RelaySourceFile = {

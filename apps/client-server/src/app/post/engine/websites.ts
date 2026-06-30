@@ -2,10 +2,8 @@
  * Relay engine — website contract + adapter.
  *
  * The engine works against the abstract {@link RelayWebsite} so it stays
- * testable with mocks. {@link WebsiteInstanceAdapter} bridges the real
- * `UnknownWebsite` (decoratedProps + onPost… methods) onto this contract,
- * reading the new `rateLimitScope` / `sourceDependencyMode` props. No existing
- * website implementation needs to change.
+ * testable with mocks. {@link WebsiteInstanceAdapter} bridges a concrete
+ * `UnknownWebsite` (decoratedProps + onPost… methods) onto this contract.
  */
 
 import { RateLimitScope } from '@postybirb/types';
@@ -49,9 +47,8 @@ export interface RelayWebsite {
 
 /**
  * Adapter over a concrete website instance. The dispatch helpers
- * (postFile/postMessage) delegate to the real onPost… methods; threading the
- * resized buffers and parsed PostData through lands with the pipeline
- * persistence work.
+ * (postFile/postMessage) delegate to the instance's onPost… methods, passing
+ * the parsed PostData and processed files through.
  */
 export class WebsiteInstanceAdapter implements RelayWebsite {
   constructor(public readonly instance: UnknownWebsite) {}
@@ -100,8 +97,8 @@ export class WebsiteInstanceAdapter implements RelayWebsite {
 
   /**
    * Ensure the website session is authenticated, re-logging in if the cached
-   * session is not currently logged in. Mirrors the legacy ensureLoggedIn:
-   * `login()` is mutex-guarded inside the website instance.
+   * session is not currently logged in. `login()` is mutex-guarded inside the
+   * website instance.
    */
   async ensureLoggedIn(): Promise<void> {
     if (this.instance.getLoginState().isLoggedIn) return;

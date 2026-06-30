@@ -5,8 +5,8 @@
  * The bucket key is computed by {@link rateKey} from the website's declared
  * scope (account | website | website+account). A {@link RateStore} backs the
  * window; the SQLite-backed store persists `lastPostedAt` so rate-limit
- * windows survive application restarts (the legacy in-memory map did not) and
- * are shared across concurrently-running jobs.
+ * windows survive application restarts and are shared across concurrently-
+ * running jobs.
  */
 
 import { Injectable, Optional } from '@nestjs/common';
@@ -16,8 +16,7 @@ import { RateLimitScope } from '@postybirb/types';
 /**
  * Storage seam for the per-bucket "last posted at" timestamp. Abstracted so
  * tests can use the in-memory implementation while production persists to
- * SQLite (the legacy in-memory map lost its windows on restart, which made
- * back-to-back restarts hammer site rate limits).
+ * SQLite, keeping rate-limit windows across restarts.
  */
 export interface RateStore {
   get(key: string): Promise<number | undefined>; // last posted epoch ms

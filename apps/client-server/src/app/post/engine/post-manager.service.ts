@@ -14,11 +14,11 @@
 import { Injectable, OnModuleInit, Optional } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import {
-  JobTreeNode,
-  NodeStatus,
-  PostRecordResumeMode,
-  ScheduleType,
-  SubmissionId,
+    JobTreeNode,
+    NodeStatus,
+    PostRecordResumeMode,
+    ScheduleType,
+    SubmissionId,
 } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/common';
 import { Mutex } from 'async-mutex';
@@ -408,7 +408,7 @@ export class RelayPostManager implements OnModuleInit {
   private async handleCompletions(): Promise<void> {
     // After runToIdle every tracked job is terminal; reap each one exactly
     // once. The scheduler's live working set is the source of truth for what
-    // just finished — the manager no longer keeps a parallel index.
+    // just finished.
     for (const job of this.scheduler.getTrackedJobs()) {
       if (!isTerminal(job)) continue; // still running
       await this.onTerminal(job);

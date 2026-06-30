@@ -69,9 +69,9 @@ export class RelayTracer {
    * Per-job in-memory ring buffers. Keyed by jobId and bounded two ways so a
    * long-running process can't leak: each job keeps at most
    * {@link maxEntriesPerJob} recent entries, and at most {@link maxJobs} jobs
-   * are retained (oldest-touched evicted first). A single busy job can no
-   * longer evict another job's entries (which previously truncated its ledger
-   * / history). The full record always lives on disk (per-job NDJSON).
+   * are retained (oldest-touched evicted first). Per-job bounding keeps a single
+   * busy job from evicting another job's entries. The full record always lives
+   * on disk (per-job NDJSON).
    */
   private readonly buffers = new Map<string, TraceEntry[]>();
 

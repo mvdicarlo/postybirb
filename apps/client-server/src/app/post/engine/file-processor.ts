@@ -1,10 +1,8 @@
 /**
  * Relay engine — file processing (resize / convert / thumbnail / verify).
  *
- * Production-faithful port of the legacy file pipeline
- * (FileSubmissionPostManager.resizeOrModifyFile + getResizeParameters +
- * verifyPostingFiles), reusing the proven PostFileResizerService (sharp worker
- * pool) and FileConverterService rather than re-implementing the resize math.
+ * Delegates the resize math to PostFileResizerService (sharp worker pool) and
+ * FileConverterService.
  *
  * Produces ready-to-post PostingFiles (with thumbnails) for a batch, applying:
  *  - mime conversion for unsupported image types (and text alt-file fallback)
@@ -14,13 +12,13 @@
  *  - a post-condition verification that the output mime is accepted
  */
 
-/* eslint-disable no-param-reassign */ // mirrors legacy resizeOrModifyFile: mutates the loaded file in place
+/* eslint-disable no-param-reassign */ // resizeOrModifyFile mutates the loaded file in place
 import { Injectable } from '@nestjs/common';
 import { FileBuffer, type SubmissionFile } from '@postybirb/database';
 import {
-  FileType,
-  type FileSubmission,
-  type ImageResizeProps,
+    FileType,
+    type FileSubmission,
+    type ImageResizeProps,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { FileConverterService } from '../../file-converter/file-converter.service';
@@ -89,7 +87,7 @@ export class RelayFileProcessor {
           fileInstance,
         );
 
-        // Propagate source URLs + truncate alt text (legacy parity).
+        // Propagate source URLs + truncate alt text.
         processed.metadata.sourceUrls = [
           ...(processed.metadata.sourceUrls ?? []),
           ...sourceUrls,
@@ -127,7 +125,7 @@ export class RelayFileProcessor {
     return { files: posting, info };
   }
 
-  /** Port of FileSubmissionPostManager.resizeOrModifyFile. */
+  /** Resize/convert one file for the website into a ready-to-post PostingFile. */
   private async resizeOrModifyFile(
     file: SubmissionFile,
     submission: FileSubmission,
@@ -168,7 +166,10 @@ export class RelayFileProcessor {
     );
   }
 
-  /** Port of FileSubmissionPostManager.getResizeParameters. */
+  /**
+   * Compute a file's resize parameters from the website caps, per-account
+   * dimension overrides, and byte-size limit.
+   */
   private getResizeParameters(
     submission: FileSubmission,
     instance: ImplementedFileWebsite,
@@ -212,7 +213,7 @@ export class RelayFileProcessor {
     return resizeParams;
   }
 
-  /** Port of FileSubmissionPostManager.verifyPostingFiles. */
+  /** Throw if any processed file's mime type is not accepted by the website. */
   private verifyPostingFiles(
     instance: UnknownWebsite,
     postingFiles: PostingFile[],
