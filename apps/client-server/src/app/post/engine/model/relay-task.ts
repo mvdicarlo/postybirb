@@ -34,7 +34,6 @@ export class RelayTask {
   status: NodeStatus;
   attempts: number;
   maxAttempts: number;
-  idempotencyKey: string;
   sourceUrl?: string;
   message?: string;
   error?: ITaskError;
@@ -53,7 +52,6 @@ export class RelayTask {
     jobId: EntityId;
     accountId: AccountId;
     websiteId: string;
-    idempotencyKey: string;
     dependency?: Dependency;
     maxAttempts?: number;
   }) {
@@ -61,7 +59,6 @@ export class RelayTask {
     this.jobId = init.jobId;
     this.accountId = init.accountId;
     this.websiteId = init.websiteId;
-    this.idempotencyKey = init.idempotencyKey;
     this.dependency = init.dependency;
     this.status = NodeStatus.QUEUED;
     this.attempts = 0;

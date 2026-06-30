@@ -44,9 +44,7 @@ export class RelayScheduler {
   /**
    * The live working set: only non-terminal (or just-completed-awaiting-forget)
    * job trees the scheduler is actively running. This is the single in-memory
-   * index of "what is running" — the manager derives activeBySubmission from it
-   * rather than keeping a parallel map. Terminal jobs are dropped via
-   * {@link forget}; their durable record (and all history) lives in the DB.
+   * index of "what is running".
    */
   private readonly jobs = new Map<string, RelayJob>();
 
@@ -111,8 +109,7 @@ export class RelayScheduler {
 
   /**
    * The newest currently-active (non-terminal) job for a submission, if one is
-   * tracked. Replaces the manager's parallel `activeBySubmission` map: the live
-   * `jobs` set already is the index of what's running.
+   * tracked.
    */
   getActiveJobForSubmission(submissionId: string): RelayJob | undefined {
     let found: RelayJob | undefined;
@@ -140,7 +137,7 @@ export class RelayScheduler {
     });
     this.jobs.set(job.id, job);
     // Create the cancellation token immediately so cancel() can interrupt the job
-    // even before runJob is invoked, eliminating the race window.
+    // even before runJob is invoked.
     const token = new CancellableToken();
     this.tokens.set(job.id, token);
     return job;
@@ -227,9 +224,7 @@ export class RelayScheduler {
         .sort((a, b) => a.createdAt - b.createdAt);
 
       if (due.length === 0) return;
-
       const batch = due.slice(0, this.opts.maxConcurrentJobs);
-      // eslint-disable-next-line no-await-in-loop
       await Promise.all(batch.map((job) => this.runJob(job)));
     }
   }

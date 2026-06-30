@@ -66,7 +66,7 @@ export class PostController {
     const jobs = await this.relayPostManager.getHistory(id);
     const parts: string[] = [];
     for (const job of jobs) {
-      // eslint-disable-next-line no-await-in-loop
+      
       let body = await this.tracer.readDiskLog(job.id);
       if (!body) {
         // Fall back to whatever the in-memory ring buffer has.

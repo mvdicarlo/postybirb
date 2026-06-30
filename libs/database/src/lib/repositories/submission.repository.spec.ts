@@ -1,7 +1,7 @@
 import type {
-  ISubmissionMetadata,
-  IWebsiteFormFields,
-  SubmissionFileMetadata,
+    ISubmissionMetadata,
+    IWebsiteFormFields,
+    SubmissionFileMetadata,
 } from '@postybirb/types';
 import { ScheduleType, SubmissionType } from '@postybirb/types';
 import { Account } from '../entities/account.entity';
@@ -211,7 +211,7 @@ describe('SubmissionRepository (full dependency tree)', () => {
       expect(await repos.submission.findById(seed.submissionId)).toBeNull();
 
       for (const id of seed.fileIds) {
-        // eslint-disable-next-line no-await-in-loop
+        
         expect(await repos.file.findById(id)).toBeNull();
       }
 

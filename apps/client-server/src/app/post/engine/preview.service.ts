@@ -44,7 +44,7 @@ export class RelayPreviewService {
     const tasks: PreviewTaskResult[] = [];
     for (const option of submission.options ?? []) {
       if (option.isDefault) continue;
-      // eslint-disable-next-line no-await-in-loop
+      
       tasks.push(await this.previewOption(submission, option));
     }
 
@@ -89,7 +89,7 @@ export class RelayPreviewService {
         continue;
       }
       try {
-        // eslint-disable-next-line no-await-in-loop
+        
         const { info } = await this.fileProcessor.processBatch(
           instance,
           [file],

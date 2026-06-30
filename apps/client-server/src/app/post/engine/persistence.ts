@@ -42,10 +42,10 @@ export class RelayPersistence {
     });
 
     for (const task of job.tasks) {
-      // eslint-disable-next-line no-await-in-loop
+      
       await this.tasks.insert(this.taskValues(task));
       for (const unit of task.units) {
-        // eslint-disable-next-line no-await-in-loop
+        
         await this.units.insert(this.unitValues(unit));
       }
     }
@@ -62,7 +62,7 @@ export class RelayPersistence {
           : undefined,
     });
     for (const task of job.tasks) {
-      // eslint-disable-next-line no-await-in-loop
+      
       await this.saveTask(task);
     }
   }
@@ -79,7 +79,7 @@ export class RelayPersistence {
       waitingUntil: task.waitingUntil,
     });
     for (const unit of task.units) {
-      // eslint-disable-next-line no-await-in-loop
+      
       await this.units.update(unit.id, {
         status: unit.status,
         sourceUrl: unit.sourceUrl,
@@ -106,9 +106,7 @@ export class RelayPersistence {
    * job is still running, predates `since` (it belongs to an earlier post), or
    * none exists.
    *
-   * Reads the RAW persisted rows: `PostJob.createdAt` is the durable DB-assigned
-   * timestamp, safe to compare lexicographically against another DB-assigned
-   * ISO-UTC timestamp (the queue record's createdAt). NOTE: do not use the
+   * NOTE: do not use the
    * {@link RelayJob} trees from {@link loadBySubmission} here — their createdAt
    * is re-stamped to load time by {@link toRelayJob}.
    */
@@ -119,7 +117,7 @@ export class RelayPersistence {
     const rows = await this.jobs.findBySubmission(submissionId); // newest first
     const newest = rows[0];
     if (!newest) return undefined;
-    const status = newest.status as NodeStatus;
+    const { status } = newest;
     if (!isTerminal(status)) return undefined;
     if (newest.createdAt < since) return undefined;
     return status;
@@ -137,14 +135,15 @@ export class RelayPersistence {
     const nowIso = new Date().toISOString();
     let cleared = 0;
     for (const row of rows) {
-      if (isTerminal(row.status as NodeStatus)) continue;
+      const { status } = row;
+      if (isTerminal(status)) continue;
       cleared += 1;
-      // eslint-disable-next-line no-await-in-loop
+      
       await this.jobs.update(row.id, {
         status: NodeStatus.CANCELLED,
         completedAt: nowIso,
       });
-      // eslint-disable-next-line no-await-in-loop
+      
       await this.terminateRowSubtree(row, NodeStatus.CANCELLED);
     }
     return cleared;
@@ -181,7 +180,7 @@ export class RelayPersistence {
   ): Promise<void> {
     for (const task of row.tasks ?? []) {
       if (isTerminal(task.status as NodeStatus)) continue;
-      // eslint-disable-next-line no-await-in-loop
+      
       await this.tasks.update(task.id, {
         status,
         waitingUntil: null,
@@ -189,7 +188,7 @@ export class RelayPersistence {
       });
       for (const unit of task.units ?? []) {
         if (isTerminal(unit.status as NodeStatus)) continue;
-        // eslint-disable-next-line no-await-in-loop
+        
         await this.units.update(unit.id, { status });
       }
     }
@@ -205,7 +204,6 @@ export class RelayPersistence {
       dependency: task.dependency,
       attempts: task.attempts,
       maxAttempts: task.maxAttempts,
-      idempotencyKey: task.idempotencyKey,
       sourceUrl: task.sourceUrl,
       message: task.message,
       error: task.error,
@@ -248,7 +246,6 @@ export class RelayPersistence {
         jobId: t.jobId,
         accountId: t.accountId ?? '',
         websiteId: t.websiteId,
-        idempotencyKey: t.idempotencyKey,
         dependency: t.dependency,
         maxAttempts: t.maxAttempts,
       });

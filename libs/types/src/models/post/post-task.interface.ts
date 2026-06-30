@@ -47,9 +47,6 @@ export interface IPostTask extends IEntity {
   /** Maximum retry attempts before terminal failure. */
   maxAttempts: number;
 
-  /** Stable key for duplicate-post detection across retries/crashes. */
-  idempotencyKey: string;
-
   /** The canonical source URL for this task (its post page). */
   sourceUrl?: string;
 

@@ -35,8 +35,6 @@ export class PostTask extends DatabaseEntity<IPostTask> implements IPostTask {
 
   public maxAttempts: number;
 
-  public idempotencyKey: string;
-
   public sourceUrl?: string;
 
   public message?: string;
@@ -64,7 +62,6 @@ export class PostTask extends DatabaseEntity<IPostTask> implements IPostTask {
     this.dependency = init.dependency;
     this.attempts = init.attempts ?? 0;
     this.maxAttempts = init.maxAttempts ?? 3;
-    this.idempotencyKey = init.idempotencyKey ?? '';
     this.sourceUrl = init.sourceUrl;
     this.message = init.message;
     this.error = init.error;
@@ -84,7 +81,6 @@ export class PostTask extends DatabaseEntity<IPostTask> implements IPostTask {
       dependency: this.dependency,
       attempts: this.attempts,
       maxAttempts: this.maxAttempts,
-      idempotencyKey: this.idempotencyKey,
       sourceUrl: this.sourceUrl,
       message: this.message,
       error: this.error,

@@ -1,13 +1,13 @@
 import {
-    Injectable,
-    InternalServerErrorException,
-    Optional,
+  Injectable,
+  InternalServerErrorException,
+  Optional,
 } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import {
-    PostQueueRecord,
-    PostQueueRecordRepository,
-    SubmissionRepository,
+  PostQueueRecord,
+  PostQueueRecordRepository,
+  SubmissionRepository,
 } from '@postybirb/database';
 import { EntityId, ScheduleType, SubmissionId } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/common';
@@ -76,8 +76,8 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
 
     try {
       for (const submissionId of submissionIds) {
-        // eslint-disable-next-line no-await-in-loop
-        const submission = await this.submissionRepository.findById(submissionId);
+        const submission =
+          await this.submissionRepository.findById(submissionId);
         if (!submission) {
           this.logger
             .withMetadata({ submissionId })
@@ -91,13 +91,11 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
           continue;
         }
 
-        // eslint-disable-next-line no-await-in-loop
         const existing = await this.repository.findOne({
           where: (queueRecord, { eq }) =>
             eq(queueRecord.submissionId, submissionId),
         });
         if (!existing) {
-          // eslint-disable-next-line no-await-in-loop
           await this.repository.insert({ submissionId });
         }
         // If existing, do nothing (first-in-wins).
@@ -141,10 +139,7 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
 
     const entities = await this.submissionRepository.find({
       where: (submission, { eq, and }) =>
-        and(
-          eq(submission.isScheduled, true),
-          eq(submission.isArchived, false),
-        ),
+        and(eq(submission.isScheduled, true), eq(submission.isArchived, false)),
     });
     const now = Date.now();
     const sorted = entities
@@ -164,7 +159,10 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
 
     // Advance recurring schedules to their next run.
     sorted
-      .filter((s) => s.schedule.scheduleType === ScheduleType.RECURRING && s.schedule.cron)
+      .filter(
+        (s) =>
+          s.schedule.scheduleType === ScheduleType.RECURRING && s.schedule.cron,
+      )
       .forEach((s) => {
         const next = CronGenerator(s.schedule.cron as string)
           .nextRun()
@@ -205,19 +203,16 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
 
         if (submission?.isArchived) {
           this.relayPostManager.cancel(submissionId);
-          // eslint-disable-next-line no-await-in-loop
           await this.dequeue([submissionId]);
           continue;
         }
 
-        // The current queue entry's post has produced a terminal result. The
-        // database is the source of truth (the engine already handled
-        // archive/notify for jobs it ran); `record.createdAt` scopes the check
-        // to this entry so an outcome from an earlier post is not consumed by
-        // mistake.
-        // eslint-disable-next-line no-await-in-loop
-        if (await this.relayPostManager.getOutcome(submissionId, record.createdAt)) {
-          // eslint-disable-next-line no-await-in-loop
+        // The current queue entry's post has produced a terminal result.
+        //  `record.createdAt` scopes the check to this entry so an outcome
+        // from an earlier post is not consumed by mistake.
+        if (
+          await this.relayPostManager.getOutcome(submissionId, record.createdAt)
+        ) {
           await this.dequeue([submissionId]);
           continue;
         }
@@ -229,11 +224,9 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
           // posting order (e.g. comic pages) without serializing the whole
           // queue. Leave the queue record in place so the submission is
           // re-evaluated on the next cycle once its dependencies finish.
-          // eslint-disable-next-line no-await-in-loop
           if (!(await this.areDependenciesSatisfied(submission))) {
             continue;
           }
-          // eslint-disable-next-line no-await-in-loop
           await this.relayPostManager.enqueue(submissionId);
         }
       }
@@ -267,13 +260,13 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
     const staleIds: SubmissionId[] = [];
     let blocked = false;
     for (const dependencyId of dependsOn) {
-      // eslint-disable-next-line no-await-in-loop
+      
       const dependency = await this.submissionRepository.findById(dependencyId);
       if (!dependency) {
         staleIds.push(dependencyId);
         continue;
       }
-      // eslint-disable-next-line no-await-in-loop
+      
       if (!(await this.relayPostManager.hasSucceeded(dependencyId))) {
         blocked = true;
       }

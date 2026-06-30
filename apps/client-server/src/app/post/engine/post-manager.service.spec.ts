@@ -13,7 +13,7 @@ import { RelayTracer } from './tracer.service';
 /** Flush pending microtasks/timers so a fire-and-forget drain() can settle. */
 async function flush(times = 5): Promise<void> {
   for (let i = 0; i < times; i++) {
-    // eslint-disable-next-line no-await-in-loop
+    
     await new Promise((r) => setImmediate(r));
   }
 }
@@ -95,7 +95,6 @@ function succeededOrphan(submissionId: string, jobId: string): RelayJob {
     jobId,
     accountId: 'a1',
     websiteId: 'mastodon',
-    idempotencyKey: `${jobId}:k`,
   });
   task.status = NodeStatus.SUCCEEDED;
   const unit = new RelayUnit({ id: `${jobId}:u`, taskId: task.id, kind: UnitKind.MESSAGE, ordinal: 0 });

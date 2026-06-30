@@ -122,7 +122,7 @@ export class RelayPostManager implements OnModuleInit {
       // cannot become a stuck row the user is unable to clear.
       for (const job of active) {
         try {
-          // eslint-disable-next-line no-await-in-loop
+          
           await this.deps.prepare(job);
           resetForResume(job, PostRecordResumeMode.CONTINUE);
           this.scheduler.adopt(job);
@@ -131,7 +131,7 @@ export class RelayPostManager implements OnModuleInit {
             .withError(error)
             .withMetadata({ jobId: job.id, submissionId: job.submissionId })
             .error('Failed to recover job; marking it FAILED');
-          // eslint-disable-next-line no-await-in-loop
+          
           await this.persistence
             .failJob(job.id, (error as Error)?.message ?? 'recovery failed')
             .catch((e) =>
@@ -169,7 +169,7 @@ export class RelayPostManager implements OnModuleInit {
   private async waitForRegistry(): Promise<boolean> {
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
-        // eslint-disable-next-line no-await-in-loop
+        
         await this.websiteRegistry.waitForInitialization(60_000);
         return true;
       } catch (error) {
@@ -344,7 +344,7 @@ export class RelayPostManager implements OnModuleInit {
 
   /**
    * The terminal outcome of the submission's current queue entry, or undefined
-   * if it is still in flight / has not produced one. DB-derived: a tracked live
+   * if it is still in flight / has not produced one. A tracked live
    * (non-terminal) job means the attempt is still running; otherwise the newest
    * persisted job decides, but only if it was created at/after `since` (the
    * queue record's createdAt) so an outcome from an earlier post is not
@@ -394,9 +394,7 @@ export class RelayPostManager implements OnModuleInit {
     try {
       while (this.drainRerunRequested) {
         this.drainRerunRequested = false;
-        // eslint-disable-next-line no-await-in-loop
         await this.scheduler.runToIdle();
-        // eslint-disable-next-line no-await-in-loop
         await this.handleCompletions();
       }
     } catch (error) {
@@ -413,7 +411,6 @@ export class RelayPostManager implements OnModuleInit {
     // just finished — the manager no longer keeps a parallel index.
     for (const job of this.scheduler.getTrackedJobs()) {
       if (!isTerminal(job)) continue; // still running
-      // eslint-disable-next-line no-await-in-loop
       await this.onTerminal(job);
       this.deps.release(job.id);
       // Drop the finished job tree from the scheduler's live working set so a

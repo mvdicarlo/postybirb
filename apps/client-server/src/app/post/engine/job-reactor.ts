@@ -303,7 +303,7 @@ export class JobReactor {
     const maxAttempts = 5;
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
-        // eslint-disable-next-line no-await-in-loop
+        
         await this.onTaskChanged(job, task);
         return true;
       } catch (err) {
@@ -320,7 +320,7 @@ export class JobReactor {
           });
           return false;
         }
-        // eslint-disable-next-line no-await-in-loop
+        
         await this.wait(50 * 2 ** (attempt - 1));
       }
     }

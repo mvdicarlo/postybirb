@@ -36,7 +36,6 @@ CREATE TABLE `post-task` (
 	`dependency` text,
 	`attempts` integer DEFAULT 0 NOT NULL,
 	`maxAttempts` integer DEFAULT 3 NOT NULL,
-	`idempotencyKey` text NOT NULL,
 	`sourceUrl` text,
 	`message` text,
 	`error` text,

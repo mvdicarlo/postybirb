@@ -42,7 +42,6 @@ function buildJob(submissionId: string, accountId: string): RelayJob {
     jobId: job.id,
     accountId,
     websiteId: 'weasyl',
-    idempotencyKey: `${job.id}:weasyl:${accountId}`,
     dependency: { mode: 'any', tasks: ['x'] },
   });
   task.units.push(

@@ -713,13 +713,6 @@
           "autoincrement": false,
           "default": 3
         },
-        "idempotencyKey": {
-          "name": "idempotencyKey",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "sourceUrl": {
           "name": "sourceUrl",
           "type": "text",

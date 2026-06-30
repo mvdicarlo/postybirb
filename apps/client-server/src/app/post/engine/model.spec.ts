@@ -7,7 +7,6 @@ function task(id: string, dependency?: RelayTask['dependency']): RelayTask {
     jobId: 'j',
     accountId: 'a',
     websiteId: 'w',
-    idempotencyKey: id,
     dependency,
   });
 }

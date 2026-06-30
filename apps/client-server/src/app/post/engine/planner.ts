@@ -9,11 +9,11 @@
 /* eslint-disable no-param-reassign */ // the planner builds the job tree in place
 
 import {
-    Dependency,
-    NodeStatus,
-    PostRecordResumeMode,
-    SubmissionType,
-    UnitKind,
+  Dependency,
+  NodeStatus,
+  PostRecordResumeMode,
+  SubmissionType,
+  UnitKind,
 } from '@postybirb/types';
 import { SOURCE_DEPENDENCY_MODES } from './constants';
 import { RelayJob, RelayTask, RelayUnit, isDone } from './model';
@@ -88,7 +88,6 @@ function buildTask(
     jobId: job.id,
     accountId: opt.accountId,
     websiteId: opt.websiteId,
-    idempotencyKey: `${job.id}:${opt.websiteId}:${opt.accountId}`,
   });
 
   const supports =

@@ -97,7 +97,7 @@ export class SubmissionService
     await this.cleanupUninitializedSubmissions();
     await this.normalizeOrders();
     for (const type of Object.values(SubmissionType)) {
-      // eslint-disable-next-line no-await-in-loop
+      
       await this.populateMultiSubmission(type);
     }
   }
@@ -116,7 +116,7 @@ export class SubmissionService
 
       for (let i = 0; i < submissions.length; i++) {
         if (submissions[i].order !== i) {
-          // eslint-disable-next-line no-await-in-loop
+          
           await this.repository.update(submissions[i].id, { order: i });
         }
       }

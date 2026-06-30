@@ -51,7 +51,6 @@ describe('Relay data layer (PR#1)', () => {
       websiteId: 'weasyl',
       status: NodeStatus.QUEUED,
       dependency: { mode: 'any', tasks: ['t1', 't2'] },
-      idempotencyKey: `${job.id}:weasyl`,
       maxAttempts: 3,
       attempts: 0,
     });
@@ -105,7 +104,6 @@ describe('Relay data layer (PR#1)', () => {
       jobId: job.id,
       websiteId: 'furaffinity',
       status: NodeStatus.QUEUED,
-      idempotencyKey: `${job.id}:furaffinity`,
     });
     await repos.unit.insert({
       taskId: task.id,

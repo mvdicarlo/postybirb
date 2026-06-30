@@ -198,9 +198,9 @@ describe('RepositoryRegistry + saveFromEntity integration', () => {
     for (const entity of allEntities) {
       const previousUpdatedAt = entity.updatedAt;
       // Force at least 1ms of clock advance for the updatedAt assertion.
-      // eslint-disable-next-line no-await-in-loop
+      
       await new Promise((r) => setTimeout(r, 2));
-      // eslint-disable-next-line no-await-in-loop
+      
       const result = await saveFromEntity(entity);
       expect(result).toBe(entity);
       // updatedAt should have advanced after the update branch.
@@ -208,7 +208,7 @@ describe('RepositoryRegistry + saveFromEntity integration', () => {
 
       // The corresponding registered repo should be able to find it.
       const repo = RepositoryRegistry.get(entity.entitySchemaKey);
-      // eslint-disable-next-line no-await-in-loop
+      
       const reread = await repo.findById(entity.id);
       expect(reread).not.toBeNull();
       expect(reread?.updatedAt).toBe(entity.updatedAt);

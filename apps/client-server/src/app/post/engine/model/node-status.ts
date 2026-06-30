@@ -2,8 +2,7 @@
  * Relay engine — NodeStatus state-machine helpers.
  *
  * Generic predicates over a status (or any job/task/unit node that carries
- * one). Kept as standalone functions rather than methods because they are
- * polymorphic over a bare {@link NodeStatus} as well as the working-tree nodes.
+ * one).
  */
 
 import { NodeStatus } from '@postybirb/types';

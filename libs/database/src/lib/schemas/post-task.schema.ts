@@ -62,7 +62,6 @@ export const PostTaskSchema = sqliteTable(
 
     attempts: integer().notNull().default(0),
     maxAttempts: integer().notNull().default(3),
-    idempotencyKey: text().notNull(),
 
     sourceUrl: text(),
     message: text(),
