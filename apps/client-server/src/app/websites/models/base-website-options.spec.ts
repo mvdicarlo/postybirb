@@ -152,6 +152,56 @@ describe('BaseWebsiteOptions', () => {
     });
   });
 
+  it('should let a per-website option disable inherited insert flags', () => {
+    const defaultOptions = new DefaultWebsiteOptions({
+      description: {
+        overrideDefault: false,
+        description: defaultDescriptionValue,
+        insertTitle: true,
+        insertTags: true,
+      },
+    });
+
+    const options = new BaseWebsiteOptions({
+      description: {
+        overrideDefault: false,
+        description: { type: 'doc', content: [] },
+        insertTitle: false,
+        insertTags: false,
+      },
+    });
+
+    const mergedOptions = options.mergeDefaults(defaultOptions);
+
+    expect(mergedOptions.description.insertTitle).toBe(false);
+    expect(mergedOptions.description.insertTags).toBe(false);
+  });
+
+  it('should inherit insert flags from defaults when unset', () => {
+    const defaultOptions = new DefaultWebsiteOptions({
+      description: {
+        overrideDefault: false,
+        description: defaultDescriptionValue,
+        insertTitle: true,
+        insertTags: true,
+      },
+    });
+
+    const options = new BaseWebsiteOptions({
+      description: {
+        overrideDefault: false,
+        description: { type: 'doc', content: [] },
+        insertTitle: undefined,
+        insertTags: undefined,
+      },
+    });
+
+    const mergedOptions = options.mergeDefaults(defaultOptions);
+
+    expect(mergedOptions.description.insertTitle).toBe(true);
+    expect(mergedOptions.description.insertTags).toBe(true);
+  });
+
   it('should get form fields', () => {
     const options = new BaseWebsiteOptions();
     const formFields = options.getFormFields();

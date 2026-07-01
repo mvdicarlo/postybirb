@@ -886,6 +886,84 @@ describe('DescriptionParserService', () => {
       expect((description!.match(/#tag1 #tag2/g) || []).length).toBe(1);
     });
 
+    it('should let a per-website option disable inherited insertTags', async () => {
+      const instance = {
+        decoratedProps: {
+          allowAd: false,
+          metadata: {
+            name: 'Test',
+          },
+        },
+      };
+
+      const plainDescription: Description = {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [{ type: 'text', text: 'Body' }],
+          },
+        ],
+      };
+
+      // Default enables inserting tags at end...
+      const defaultOptions = createWebsiteOptions(plainDescription);
+      defaultOptions.data.description!.insertTags = true;
+
+      // ...but the per-website option explicitly disables it.
+      const websiteOptions = createWebsiteOptions(undefined);
+      websiteOptions.data.description!.insertTags = false;
+
+      const description = await service.parse(
+        instance as unknown as UnknownWebsite,
+        new DefaultWebsiteOptions(defaultOptions.data),
+        new BaseWebsiteOptions(websiteOptions.data),
+        ['tag1', 'tag2'],
+        '',
+      );
+
+      expect(description).not.toContain('#tag1');
+      expect(description).not.toContain('#tag2');
+    });
+
+    it('should insert tags inherited from default when per-website option is unset', async () => {
+      const instance = {
+        decoratedProps: {
+          allowAd: false,
+          metadata: {
+            name: 'Test',
+          },
+        },
+      };
+
+      const plainDescription: Description = {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [{ type: 'text', text: 'Body' }],
+          },
+        ],
+      };
+
+      const defaultOptions = createWebsiteOptions(plainDescription);
+      defaultOptions.data.description!.insertTags = true;
+
+      // Per-website option leaves insertTags unset -> inherits the default.
+      const websiteOptions = createWebsiteOptions(undefined);
+
+      const description = await service.parse(
+        instance as unknown as UnknownWebsite,
+        new DefaultWebsiteOptions(defaultOptions.data),
+        new BaseWebsiteOptions(websiteOptions.data),
+        ['tag1', 'tag2'],
+        '',
+      );
+
+      expect(description).toContain('#tag1');
+      expect(description).toContain('#tag2');
+    });
+
     it('should render all system shortcuts together in plaintext', async () => {
       const instance = {
         decoratedProps: {

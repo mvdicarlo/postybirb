@@ -120,11 +120,13 @@ export function DescriptionField({
     DefaultDescriptionValue();
   const overrideDefault = fieldValue.overrideDefault || false;
 
-  // Derive effective values - if default has it enabled, it's always enabled (locked)
+  // Derive effective values. A per-website option may explicitly disable
+  // (false) an inherited flag; only an unset (undefined) value falls back to
+  // the default, so use ?? rather than ||.
   const defaultInsertTitle = defaultOption?.insertTitle || false;
   const defaultInsertTags = defaultOption?.insertTags || false;
-  const insertTags = fieldValue.insertTags || defaultInsertTags;
-  const insertTitle = fieldValue.insertTitle || defaultInsertTitle;
+  const insertTags = fieldValue.insertTags ?? defaultInsertTags;
+  const insertTitle = fieldValue.insertTitle ?? defaultInsertTitle;
   const description = useMemo(
     () => fieldValue.description || DefaultDescription(),
     [fieldValue.description],
@@ -196,9 +198,7 @@ export function DescriptionField({
         <Checkbox
           mb="4"
           disabled={
-            submission.isArchived ||
-            (overrideDefault && hasTitleShortcut) ||
-            defaultInsertTitle
+            submission.isArchived || (overrideDefault && hasTitleShortcut)
           }
           checked={insertTitle}
           onChange={(e) => {
@@ -213,9 +213,7 @@ export function DescriptionField({
         <Checkbox
           mb="4"
           disabled={
-            submission.isArchived ||
-            (overrideDefault && hasTagsShortcut) ||
-            defaultInsertTags
+            submission.isArchived || (overrideDefault && hasTagsShortcut)
           }
           checked={insertTags}
           onChange={(e) => {
