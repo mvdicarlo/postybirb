@@ -2,21 +2,21 @@
 import { SelectOption, SelectOptionSingle } from '@postybirb/form-builder';
 
 import {
-  FileType,
-  ILoginState,
-  ImageResizeProps,
-  ISubmissionFile,
-  OAuthRouteHandlers,
-  PostData,
-  PostResponse,
-  SimpleValidationResult,
-  TelegramAccountData,
-  TelegramOAuthRoutes,
-  TipTapNode,
+    FileType,
+    ImageResizeProps,
+    ISubmissionFile,
+    LoginResult,
+    OAuthRouteHandlers,
+    PostData,
+    PostResponse,
+    SimpleValidationResult,
+    TelegramAccountData,
+    TelegramOAuthRoutes,
+    TipTapNode,
 } from '@postybirb/types';
 import {
-  calculateImageResize,
-  supportsImage,
+    calculateImageResize,
+    supportsImage,
 } from '@postybirb/utils/file-type';
 import { Api, TelegramClient } from 'teleproto';
 import { CustomFile } from 'teleproto/client/uploads';
@@ -38,8 +38,8 @@ import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
 import {
-  FileWebsite,
-  PostBatchData,
+    FileWebsite,
+    PostBatchData,
 } from '../../models/website-modifiers/file-website';
 import { MessageWebsite } from '../../models/website-modifiers/message-website';
 import { OAuthWebsite } from '../../models/website-modifiers/oauth-website';
@@ -148,7 +148,7 @@ export default class Telegram
           },
         });
         this.logger.info('Login successfull');
-        this.onLogin();
+        this.login();
         return { success: true };
       } catch (e) {
         this.logger.withError(e).error('Failed to ');
@@ -291,10 +291,10 @@ export default class Telegram
     return false;
   }
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     const account = this.websiteDataStore.getData();
     if (!account.appHash || !account.appId || !account.phoneNumber) {
-      return this.loginState.setLogin(false, null);
+      return { loggedIn: false };
     }
 
     const client = await this.getTelegramClient(account);
@@ -304,13 +304,13 @@ export default class Telegram
       const username = me.username ?? me.firstName ?? me.id.toString();
       this.setWebsiteData({ ...account, session: telegramSession });
       await this.loadChannels(client);
-      return this.loginState.setLogin(true, username);
+      return { loggedIn: true, username };
     }
 
     this.logger.info(
       `Not logged in with session presence ${!!account.session}`,
     );
-    return this.loginState.setLogin(false, null);
+    return { loggedIn: false };
   }
 
   createFileModel(): TelegramFileSubmission {

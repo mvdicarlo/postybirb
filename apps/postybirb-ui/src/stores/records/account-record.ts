@@ -2,7 +2,7 @@
  * AccountRecord - Concrete class for account data.
  */
 
-import type { AccountId, IAccountDto, ILoginState, IWebsiteInfo } from '@postybirb/types';
+import type { AccountId, IAccountDto, ILoginState, IWebsiteInfo, LoginStatus } from '@postybirb/types';
 import { BaseRecord } from './base-record';
 
 /**
@@ -49,6 +49,13 @@ export class AccountRecord extends BaseRecord {
    */
   get isPending(): boolean {
     return this.state.pending;
+  }
+
+  /**
+   * The login lifecycle status ('idle' | 'checking' | 'loggedIn' | 'loggedOut').
+   */
+  get loginStatus(): LoginStatus {
+    return this.state.status;
   }
 
   /**

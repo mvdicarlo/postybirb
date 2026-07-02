@@ -1,6 +1,6 @@
 import {
-  ILoginState,
   ImageResizeProps,
+  LoginResult,
   PostData,
   PostResponse,
   SubmissionRating,
@@ -48,7 +48,7 @@ export default class Piczel
       folders: true,
     };
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     const res = await this.platform.http.get<string>(
       `${this.BASE_URL}/gallery/upload`,
       {
@@ -57,7 +57,7 @@ export default class Piczel
     );
 
     if (res.body.includes('/signup')) {
-      return this.loginState.logout();
+      return { loggedIn: false };
     }
 
     try {
@@ -75,19 +75,19 @@ export default class Piczel
       );
 
       if (!preloadedData.currentUser) {
-        return this.loginState.logout();
+        return { loggedIn: false };
       }
       const { username } = preloadedData.currentUser.data;
       if (!username) {
-        return this.loginState.logout();
+        return { loggedIn: false };
       }
 
       // Fetch folders
       await this.getFolders(username);
 
-      return this.loginState.setLogin(true, username);
+      return { loggedIn: true, username };
     } catch (error) {
-      return this.loginState.logout();
+      return { loggedIn: false };
     }
   }
 

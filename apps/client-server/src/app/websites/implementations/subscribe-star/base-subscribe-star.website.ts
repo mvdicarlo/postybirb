@@ -1,12 +1,12 @@
 import { SelectOption } from '@postybirb/form-builder';
 
 import {
-  ILoginState,
-  ImageResizeProps,
-  ISubmissionFile,
-  PostData,
-  PostResponse,
-  SimpleValidationResult,
+    ImageResizeProps,
+    ISubmissionFile,
+    LoginResult,
+    PostData,
+    PostResponse,
+    SimpleValidationResult,
 } from '@postybirb/types';
 import parse, { HTMLElement } from 'node-html-parser';
 import { parse as parseFileName } from 'path';
@@ -77,7 +77,7 @@ export default abstract class BaseSubscribeStar
       tiers: true,
     };
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     const { body: profilePage } = await this.platform.http.get<string>(
       `${this.BASE_URL}/profile/settings`,
       {
@@ -94,20 +94,20 @@ export default abstract class BaseSubscribeStar
       )?.getAttribute('content');
       if (!csrfToken) {
         this.logger.warn('Failed to find csrf-token meta element during login');
-        return this.loginState.setLogin(false, null);
+        return { loggedIn: false };
       }
       this.sessionData.csrfToken = csrfToken;
       const userId = topBar.querySelector('img')?.getAttribute('data-user-id');
       if (!userId) {
         this.logger.warn('Failed to find user-id img element during login');
-        return this.loginState.setLogin(false, null);
+        return { loggedIn: false };
       }
       this.sessionData.userId = userId;
       this.loadTiers($);
-      return this.loginState.setLogin(true, username || 'unknown');
+      return { loggedIn: true, username: username || 'unknown' };
     }
 
-    return this.loginState.setLogin(false, null);
+    return { loggedIn: false };
   }
 
   private loadTiers($: HTMLElement) {
@@ -156,7 +156,7 @@ export default abstract class BaseSubscribeStar
   }
 
   private async getPostData(): Promise<SubscribeStarUploadData> {
-    const url = `${this.BASE_URL}/${this.loginState.username}`;
+    const url = `${this.BASE_URL}/${this.username}`;
     try {
       return await this.acquireUploadTokens(url);
     } catch (error) {
@@ -296,7 +296,7 @@ export default abstract class BaseSubscribeStar
           headers: {
             'X-CSRF-Token': uploadData.csrfToken,
             Accept: 'application/json',
-            Referer: `${this.BASE_URL}/${this.loginState.username}`,
+            Referer: `${this.BASE_URL}/${this.username}`,
           },
         },
       );

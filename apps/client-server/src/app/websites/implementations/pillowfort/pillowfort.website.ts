@@ -1,6 +1,6 @@
 import {
-    ILoginState,
     ImageResizeProps,
+    LoginResult,
     PostData,
     PostResponse,
     SubmissionRating,
@@ -50,7 +50,7 @@ export default class Pillowfort
   public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<PillowfortAccountData> =
     {};
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     try {
       const res = await this.platform.http.get<string>(this.BASE_URL, {
         partition: this.accountId,
@@ -67,13 +67,13 @@ export default class Pillowfort
           html
             .querySelector('option[value="current_user"]')
             ?.innerText.trim() || 'Unknown';
-        return this.loginState.setLogin(true, username);
+        return { loggedIn: true, username };
       }
 
-      return this.loginState.logout();
+      return { loggedIn: false };
     } catch (e) {
       this.logger.error('Failed to login', e);
-      return this.loginState.logout();
+      return { loggedIn: false };
     }
   }
 

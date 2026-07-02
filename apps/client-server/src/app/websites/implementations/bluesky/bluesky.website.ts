@@ -1,37 +1,37 @@
 // eslint-disable-next-line max-classes-per-file
 import {
-  $Typed,
-  AppBskyActorGetProfile,
-  AppBskyEmbedImages,
-  AppBskyEmbedVideo,
-  AppBskyFeedThreadgate,
-  AppBskyVideoGetJobStatus,
-  AppBskyVideoGetUploadLimits,
-  AppBskyVideoUploadVideo,
-  AtpAgent,
-  AtUri,
-  BlobRef,
-  ComAtprotoLabelDefs,
+    $Typed,
+    AppBskyActorGetProfile,
+    AppBskyEmbedImages,
+    AppBskyEmbedVideo,
+    AppBskyFeedThreadgate,
+    AppBskyVideoGetJobStatus,
+    AppBskyVideoGetUploadLimits,
+    AppBskyVideoUploadVideo,
+    AtpAgent,
+    AtUri,
+    BlobRef,
+    ComAtprotoLabelDefs,
 } from '@atproto/api';
 import { ReplyRef } from '@atproto/api/dist/client/types/app/bsky/feed/post';
 import { isMention } from '@atproto/api/dist/client/types/app/bsky/richtext/facet';
 import { JobStatus } from '@atproto/api/dist/client/types/app/bsky/video/defs';
 import {
-  BlueskyAccountData,
-  BlueskyOAuthRoutes,
-  FileType,
-  ILoginState,
-  ImageResizeProps,
-  ISubmissionFile,
-  OAuthRouteHandlers,
-  PostData,
-  PostResponse,
-  SimpleValidationResult,
-  SubmissionRating,
+    BlueskyAccountData,
+    BlueskyOAuthRoutes,
+    FileType,
+    ImageResizeProps,
+    ISubmissionFile,
+    LoginResult,
+    OAuthRouteHandlers,
+    PostData,
+    PostResponse,
+    SimpleValidationResult,
+    SubmissionRating,
 } from '@postybirb/types';
 import {
-  calculateImageResize,
-  getFileTypeFromMimeType,
+    calculateImageResize,
+    getFileTypeFromMimeType,
 } from '@postybirb/utils/file-type';
 import { SetNonNullable } from 'type-fest';
 import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
@@ -96,8 +96,8 @@ export default class Bluesky
   onAuthRoute: OAuthRouteHandlers<BlueskyOAuthRoutes> = {
     login: async (request) => {
       await this.setWebsiteData(request);
-      const result = await this.onLogin();
-      return { result: result.isLoggedIn };
+      const state = await this.login();
+      return { result: state.isLoggedIn };
     },
   };
 
@@ -116,23 +116,23 @@ export default class Bluesky
     return this.agent as LoggedInAgent;
   }
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     const { username, password, serviceUrl } = this.websiteDataStore.getData();
 
-    if (!username || !password) return this.loginState.logout();
+    if (!username || !password) return { loggedIn: false };
 
     this.agent = new AtpAgent({ service: serviceUrl ?? 'https://bsky.social' });
 
     return this.agent
       .login({ identifier: username, password })
       .then((res) => {
-        if (!res.success) return this.loginState.logout();
+        if (!res.success) return { loggedIn: false };
 
-        return this.loginState.setLogin(true, res.data.handle);
+        return { loggedIn: true, username: res.data.handle };
       })
       .catch((error) => {
         this.logger.error(error);
-        return this.loginState.logout();
+        return { loggedIn: false };
       });
   }
 

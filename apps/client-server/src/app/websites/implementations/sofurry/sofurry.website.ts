@@ -1,14 +1,14 @@
 import {
-  FileType,
-  ILoginState,
-  ImageResizeProps,
-  IPostResponse,
-  OAuthRouteHandlers,
-  PostData,
-  PostResponse,
-  SofurryAccountData,
-  SofurryOAuthRoutes,
-  SubmissionRating,
+    FileType,
+    ImageResizeProps,
+    IPostResponse,
+    LoginResult,
+    OAuthRouteHandlers,
+    PostData,
+    PostResponse,
+    SofurryAccountData,
+    SofurryOAuthRoutes,
+    SubmissionRating,
 } from '@postybirb/types';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
@@ -103,10 +103,10 @@ export default class Sofurry
       folders: true,
     };
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     const { token } = this.websiteDataStore.getData();
     if (!token) {
-      return this.loginState.logout();
+      return { loggedIn: false };
     }
 
     try {
@@ -120,13 +120,13 @@ export default class Sofurry
 
       if (res.statusCode === 200 && res.body?.username) {
         await this.getFolders(token);
-        return this.loginState.setLogin(true, res.body.username);
+        return { loggedIn: true, username: res.body.username };
       }
 
-      return this.loginState.logout();
+      return { loggedIn: false };
     } catch (e) {
       this.logger.error('Failed to login', e);
-      return this.loginState.logout();
+      return { loggedIn: false };
     }
   }
 
@@ -174,8 +174,8 @@ export default class Sofurry
           ...this.websiteDataStore.getData(),
           token,
         });
-        const result = await this.onLogin();
-        return { result: result.isLoggedIn };
+        const state = await this.login();
+        return { result: state.isLoggedIn };
       } catch (e) {
         this.logger.withError(e).error('onAuthRoute.login failed');
         return { result: false };

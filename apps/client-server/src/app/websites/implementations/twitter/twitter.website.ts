@@ -1,14 +1,14 @@
 import {
-  FileType,
-  ILoginState,
-  ImageResizeProps,
-  ISubmissionFile,
-  OAuthRouteHandlers,
-  PostData,
-  PostResponse,
-  SimpleValidationResult,
-  TwitterAccountData,
-  TwitterOAuthRoutes,
+    FileType,
+    ImageResizeProps,
+    ISubmissionFile,
+    LoginResult,
+    OAuthRouteHandlers,
+    PostData,
+    PostResponse,
+    SimpleValidationResult,
+    TwitterAccountData,
+    TwitterOAuthRoutes,
 } from '@postybirb/types';
 import { chunk } from 'lodash';
 import { parseTweet } from 'twitter-text';
@@ -27,8 +27,8 @@ import { Website } from '../../website';
 import { TwitterFileSubmission } from './models/twitter-file-submission';
 import { TwitterMessageSubmission } from './models/twitter-message-submission';
 import {
-  TweetResultMeta,
-  TwitterApiServiceV2,
+    TweetResultMeta,
+    TwitterApiServiceV2,
 } from './twitter-api-service/twitter-api-service';
 
 @WebsiteMetadata({
@@ -152,7 +152,7 @@ export default class Twitter
           requestToken: undefined,
           requestTokenSecret: undefined,
         });
-        await this.onLogin();
+        await this.login();
         return {
           success: true,
           screenName: result.screenName,
@@ -165,12 +165,12 @@ export default class Twitter
     },
   };
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     const data = this.websiteDataStore.getData();
     if (data?.accessToken && data?.accessTokenSecret && data?.screenName) {
-      return this.loginState.setLogin(true, data.screenName);
+      return { loggedIn: true, username: data.screenName };
     }
-    return this.loginState.logout();
+    return { loggedIn: false };
   }
 
   createFileModel(): TwitterFileSubmission {

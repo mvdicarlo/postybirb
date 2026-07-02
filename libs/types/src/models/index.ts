@@ -45,6 +45,7 @@ export * from './website/folder.type';
 export * from './website/image-resize-props';
 export * from './website/login-request-data.type';
 export * from './website/login-response.interface';
+export * from './website/login-result.type';
 export * from './website/login-state.class';
 export * from './website/login-state.interface';
 export * from './website/post-data.type';

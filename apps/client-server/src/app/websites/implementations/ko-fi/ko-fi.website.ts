@@ -1,12 +1,12 @@
 import { SelectOption } from '@postybirb/form-builder';
 
 import {
-  ILoginState,
-  ImageResizeProps,
-  IPostResponse,
-  ISubmissionFile,
-  PostData,
-  PostResponse,
+    ImageResizeProps,
+    IPostResponse,
+    ISubmissionFile,
+    LoginResult,
+    PostData,
+    PostResponse,
 } from '@postybirb/types';
 import { parse } from 'node-html-parser';
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -52,7 +52,7 @@ export default class KoFi
       folders: true,
     };
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     try {
       // Retrieve settings page to check login status
       const res = await this.platform.http.get<string>(
@@ -81,13 +81,13 @@ export default class KoFi
           this.logger.error('Failed to retrieve Ko-fi account Id');
         }
 
-        return this.loginState.setLogin(true, username || 'Unknown');
+        return { loggedIn: true, username: username || 'Unknown' };
       }
 
-      return this.loginState.logout();
+      return { loggedIn: false };
     } catch (e) {
       this.logger.error('Failed to login', e);
-      return this.loginState.logout();
+      return { loggedIn: false };
     }
   }
 

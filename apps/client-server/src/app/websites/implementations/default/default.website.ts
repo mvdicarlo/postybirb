@@ -1,10 +1,10 @@
 import {
-  DynamicObject,
-  ILoginState,
-  ImageResizeProps,
-  IPostResponse,
-  ISubmissionFile,
-  PostData,
+    DynamicObject,
+    ImageResizeProps,
+    IPostResponse,
+    ISubmissionFile,
+    LoginResult,
+    PostData,
 } from '@postybirb/types';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
@@ -60,7 +60,7 @@ export default class DefaultWebsite
 
   public externallyAccessibleWebsiteDataProperties: DynamicObject = {};
 
-  public onLogin(): Promise<ILoginState> {
+  public onLogin(): Promise<LoginResult> {
     throw new Error('Method not implemented.');
   }
 }

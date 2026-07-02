@@ -1,10 +1,10 @@
 import {
-  FileType,
-  ILoginState,
-  ImageResizeProps,
-  PostData,
-  PostResponse,
-  SubmissionRating,
+    FileType,
+    ImageResizeProps,
+    LoginResult,
+    PostData,
+    PostResponse,
+    SubmissionRating,
 } from '@postybirb/types';
 import parse from 'node-html-parser';
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -43,7 +43,7 @@ export default class Pixiv
   public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<PixivAccountData> =
     {};
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     const res = await this.platform.http.get<string>(this.BASE_URL, {
       partition: this.accountId,
     });
@@ -58,7 +58,7 @@ export default class Pixiv
           this.logger.warn(
             'Failed to find #__NEXT_DATA__ element during login',
           );
-          return this.loginState.setLogin(true, 'Logged In');
+          return { loggedIn: true, username: 'Logged In' };
         }
         username = JSON.parse(
           JSON.parse(data).props.pageProps.serverSerializedPreloadedState,
@@ -66,10 +66,10 @@ export default class Pixiv
       } catch (error) {
         this.logger.warn('Failed to parse username from login response');
       }
-      return this.loginState.setLogin(true, username || 'Logged In');
+      return { loggedIn: true, username: username || 'Logged In' };
     }
 
-    return this.loginState.logout();
+    return { loggedIn: false };
   }
 
   createFileModel(): PixivFileSubmission {
