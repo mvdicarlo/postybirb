@@ -6,7 +6,6 @@
  * synchronous metadata channels exist so the sandboxed preload — which can no
  * longer read process.env — can still expose app metadata synchronously.
  */
-import { onProxyConfigurationApplied } from '@postybirb/http';
 import { Logger } from '@postybirb/logger';
 import {
   getPartitionKey,
@@ -22,25 +21,6 @@ import { isLoopbackAppUrl, openExternalUrl } from '../main-process/security';
 const logger = Logger('ElectronEvents');
 
 type TrustableEvent = Electron.IpcMainEvent | Electron.IpcMainInvokeEvent;
-
-let proxyBroadcastRegistered = false;
-
-function registerProxyConfigBroadcast(): void {
-  if (proxyBroadcastRegistered) {
-    return;
-  }
-
-  proxyBroadcastRegistered = true;
-  onProxyConfigurationApplied(() => {
-    for (const window of BrowserWindow.getAllWindows()) {
-      if (window.isDestroyed()) {
-        continue;
-      }
-
-      window.webContents.send('proxy-config-applied');
-    }
-  });
-}
 
 /** True only when the IPC request comes from PostyBirb's own loopback UI. */
 function isTrustedSender(event: TrustableEvent): boolean {
@@ -58,8 +38,6 @@ function assertTrustedSender(event: TrustableEvent, channel: string): void {
 
 /** Register all IPC handlers. Call once, before the main window is created. */
 export function bootstrapElectronEvents(): Electron.IpcMain {
-  registerProxyConfigBroadcast();
-
   // --- Synchronous metadata (a sandboxed preload cannot read process.env) ---
 
   ipcMain.on(IPC_CHANNELS.getAppMetadata, (event) => {

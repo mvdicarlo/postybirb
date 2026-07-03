@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import { Logger } from '@nestjs/common';
 import { trackDependency, trackException } from '@postybirb/logger';
+import { resolveProxyAuthCredentials } from '@postybirb/proxy';
 import { getPartitionKey } from '@postybirb/utils/common';
 import {
   BrowserWindow,
@@ -13,7 +14,6 @@ import FormData from 'form-data';
 import urlEncoded from 'form-urlencoded';
 import { encode as encodeQueryString } from 'querystring';
 import { FormFile } from './form-file';
-import { attachProxyAuthToRequest } from './electron-proxy';
 import {
   BinaryPostOptions,
   HttpOptions,
@@ -58,6 +58,23 @@ function assignBrowserPartition(options: HttpOptions): void {
     // eslint-disable-next-line no-param-reassign
     options.partition = partitionId;
   }
+}
+
+function attachProxyAuthToRequest(request: ClientRequest): void {
+  request.on('login', (authInfo, callback) => {
+    if (!authInfo.isProxy) {
+      callback();
+      return;
+    }
+
+    const credentials = resolveProxyAuthCredentials(authInfo);
+    if (!credentials) {
+      callback();
+      return;
+    }
+
+    callback(credentials.username, credentials.password);
+  });
 }
 
 /**

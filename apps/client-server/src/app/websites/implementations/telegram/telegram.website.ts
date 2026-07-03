@@ -14,7 +14,6 @@ import {
   TelegramOAuthRoutes,
   TipTapNode,
 } from '@postybirb/types';
-import { onProxyConfigurationApplied } from '@postybirb/http';
 import {
   calculateImageResize,
   supportsImage,
@@ -48,6 +47,11 @@ import { WithCustomDescriptionParser } from '../../models/website-modifiers/with
 import { Website } from '../../website';
 import { TelegramFileSubmission } from './models/telegram-file-submission';
 import { TelegramMessageSubmission } from './models/telegram-message-submission';
+
+type TelegramProxyResolution = {
+  proxySettings?: ProxyInterface;
+  signature: string;
+};
 
 @WebsiteMetadata({
   name: 'telegram',
@@ -89,19 +93,7 @@ export default class Telegram
     };
 
   private clients = new Map<number, TelegramClient>();
-
-  private static proxyInvalidationRegistered = false;
-
-  private registerProxyInvalidation(): void {
-    if (Telegram.proxyInvalidationRegistered) {
-      return;
-    }
-
-    Telegram.proxyInvalidationRegistered = true;
-    onProxyConfigurationApplied(async () => {
-      await this.invalidateTelegramClients();
-    });
-  }
+  private lastProxySignature = '';
 
   private async invalidateTelegramClients(): Promise<void> {
     for (const [appId, client] of this.clients.entries()) {
@@ -122,8 +114,9 @@ export default class Telegram
     );
   }
 
-  private async resolveProxySettings(): Promise<ProxyInterface | undefined> {
+  private async resolveProxySettings(): Promise<TelegramProxyResolution> {
     let telegramProxySettings: ProxyInterface | undefined;
+    let signature = 'none';
 
     const env = process.env.POSTYBIRB_TELEGRAM_MTPROXY;
     if (env) {
@@ -140,6 +133,7 @@ export default class Telegram
             secret: parsed.searchParams.get('secret') ?? '',
             port: parseInt(parsed.searchParams.get('port') ?? '', 10),
           };
+          signature = `env:${env.trim()}`;
           this.logger.info('Using', env);
         }
       } catch (error) {
@@ -158,6 +152,9 @@ export default class Telegram
         )),
         ...(await this.platform.http.getParsedProxiesFor('https://t.me/')),
       ];
+      signature = `resolved:${proxies
+        .map((entry) => `${entry?.type ?? ''}:${entry?.hostname ?? ''}:${entry?.port ?? ''}`)
+        .join('|')}`;
       const proxy =
         proxies.find((entry) => entry?.type === 'SOCKS') ??
         proxies.find((entry) => entry?.type === 'SOCKS5');
@@ -179,13 +176,20 @@ export default class Telegram
       }
     }
 
-    return telegramProxySettings;
+    return {
+      proxySettings: telegramProxySettings,
+      signature,
+    };
   }
 
   private async getTelegramClient(
     account: TelegramAccountData = this.websiteDataStore.getData(),
   ) {
-    this.registerProxyInvalidation();
+    const { proxySettings, signature } = await this.resolveProxySettings();
+    if (signature !== this.lastProxySignature) {
+      await this.invalidateTelegramClients();
+      this.lastProxySignature = signature;
+    }
 
     let client = this.clients.get(account.appId);
     if (!client) {
@@ -193,14 +197,12 @@ export default class Telegram
         `Creating client for ${account.appId} with session present ${!!account.session}`,
       );
 
-      const telegramProxySettings = await this.resolveProxySettings();
-
       client = new TelegramClient(
         new StringSession(account.session ?? ''),
         account.appId,
         account.appHash,
         {
-          proxy: telegramProxySettings,
+          proxy: proxySettings,
         },
       );
       client.setLogLevel(LogLevel.ERROR);

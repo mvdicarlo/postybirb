@@ -16,7 +16,7 @@ import {
 import {
   buildPacProxyDirective,
   resolvePacHttpPort,
-} from '@postybirb/http';
+} from '@postybirb/proxy';
 import { WebsiteDomainService } from './website-domain.service';
 
 @Injectable()

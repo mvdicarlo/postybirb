@@ -12,7 +12,10 @@ import { ElectronPlatformService } from './electron/electron-platform.service';
  */
 @Global()
 @Module({
-  providers: [{ provide: PlatformService, useClass: ElectronPlatformService }],
-  exports: [PlatformService],
+  providers: [
+    ElectronPlatformService,
+    { provide: PlatformService, useExisting: ElectronPlatformService },
+  ],
+  exports: [PlatformService, ElectronPlatformService],
 })
 export class PlatformModule {}

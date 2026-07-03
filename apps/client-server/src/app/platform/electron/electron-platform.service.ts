@@ -5,6 +5,7 @@ import { ElectronBrowserService } from './electron-browser.service';
 import { ElectronHttpService } from './electron-http.service';
 import { ElectronNotificationService } from './electron-notification.service';
 import { ElectronProcessService } from './electron-process.service';
+import { ElectronProxyService } from './electron-proxy.service';
 import { ElectronSessionService } from './electron-session.service';
 
 /**
@@ -13,9 +14,9 @@ import { ElectronSessionService } from './electron-session.service';
  */
 @Injectable()
 export class ElectronPlatformService extends PlatformService {
-  readonly app = new ElectronAppService();
-
   readonly session = new ElectronSessionService();
+
+  readonly app = new ElectronAppService();
 
   readonly browser = new ElectronBrowserService();
 
@@ -24,4 +25,6 @@ export class ElectronPlatformService extends PlatformService {
   readonly http = new ElectronHttpService();
 
   readonly process = new ElectronProcessService();
+
+  readonly proxy = new ElectronProxyService();
 }

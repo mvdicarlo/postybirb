@@ -34,7 +34,7 @@ msgstr ""
 msgid "{0} submissions selected"
 msgstr ""
 
-#. placeholder {0}: account?.websiteDisplayName
+#. placeholder {0}: account.websiteDisplayName
 #: apps/postybirb-ui/src/components/website-login-views/helpers.tsx
 msgid "{0}: Login successful"
 msgstr ""
@@ -171,12 +171,20 @@ msgstr ""
 msgid "Add account"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "Add an account to configure per-website proxy routing."
+msgstr ""
+
 #: apps/postybirb-ui/src/components/sections/home-section/account-health-panel.tsx
 msgid "Add an account to start posting"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
-msgid "Add profile"
+msgid "Add at least one proxy entry to use this mode."
+msgstr ""
+
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "Add proxy"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/drawers/custom-shortcuts-drawer/custom-shortcuts-drawer.tsx
@@ -236,7 +244,6 @@ msgstr ""
 #: apps/postybirb-ui/src/components/drawers/notifications-drawer/notifications-drawer.tsx
 #: apps/postybirb-ui/src/components/drawers/notifications-drawer/notifications-drawer.tsx
 #: apps/postybirb-ui/src/components/sections/accounts-section/account-section-header.tsx
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/form/save-defaults-popover.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-section-header.tsx
 #: apps/postybirb-ui/src/components/shared/description-editor/custom-blocks/website-only-selector.tsx
 #: apps/postybirb-ui/src/components/shared/description-editor/extensions/username-shortcut.tsx
@@ -257,6 +264,10 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/home-section/validation-issues-panel.tsx
 msgid "All submissions are ready to post"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "All traffic connects directly without a proxy."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/shared/description-editor/custom-blocks/website-only-selector.tsx
@@ -385,6 +396,14 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/shared/template-picker/template-picker-modal.tsx
 msgid "Applied to {successCount} submissions, {failedCount} failed"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "Applies to login webviews and other traffic on this computer. Remote posting still uses the server proxy below unless you configure it separately."
+msgstr ""
+
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "Applies to posting and background tasks on the remote host. Does not change proxy settings on this device."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/file-submission-modal/image-editor.tsx
@@ -545,7 +564,6 @@ msgstr ""
 #: apps/postybirb-ui/src/components/sections/submissions-section/file-submission-modal/image-editor.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/post-confirm-modal.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/resume-mode-modal/resume-mode-modal.tsx
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/form/save-defaults-popover.tsx
 #: apps/postybirb-ui/src/components/sections/templates-section/template-card.tsx
 #: apps/postybirb-ui/src/components/sections/templates-section/templates-section.tsx
 #: apps/postybirb-ui/src/components/shared/description-editor/components/description-toolbar.tsx
@@ -608,7 +626,7 @@ msgid "Check that handle and password are valid or try using email instead of ha
 msgstr ""
 
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
-msgid "Check that profiles are valid and websites are not duplicated"
+msgid "Check that pool entries and routing choices are valid"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/telegram/telegram-login-view.tsx
@@ -621,6 +639,10 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/accounts-section/accounts-content.tsx
 msgid "Choose an account from the list on the left"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "Choose how all outbound traffic is routed."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/shared/template-picker/template-picker-modal.tsx
@@ -671,6 +693,10 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/remote-settings-section.tsx
 msgid "Client"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "Client (this device)"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/telegram/telegram-login-view.tsx
@@ -858,10 +884,6 @@ msgstr "Kurti naują pateikimą"
 msgid "Create New Template"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
-msgid "Create proxy profiles and assign websites to each profile."
-msgstr ""
-
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/layout-tour.tsx
 msgid "Create reusable sets of tags that you can quickly apply to any submission. Saves time when you use the same tags often."
 msgstr ""
@@ -1024,13 +1046,31 @@ msgstr "Numatytasis"
 msgid "Default Options"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/account-default-template-modal.tsx
+msgid "Default template"
+msgstr ""
+
+#. placeholder {0}: account.name
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/account-default-template-modal.tsx
+msgid "Default template for {0}"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/form/account-default-template-inline.tsx
+msgid "Default template for this account"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/account-default-template-modal.tsx
+msgid "Default template set — click to change"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/accounts-section/account-default-templates-popover.tsx
+#: apps/postybirb-ui/src/components/sections/accounts-section/account-default-templates-popover.tsx
+msgid "Default templates"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/sections/submissions-section/file-submission-modal/submission-options.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/defaults-form/defaults-form.tsx
 msgid "Defaults"
-msgstr ""
-
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/form/save-defaults-popover.tsx
-msgid "Defaults saved successfully"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/layout-tour.tsx
@@ -1109,6 +1149,11 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/file-management/file-metadata.tsx
 msgid "Dimensions"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "Direct (no proxy)"
 msgstr ""
 
 #: libs/translations/src/lib/field-translations.ts
@@ -1264,10 +1309,6 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/actions/submission-edit-card-actions.tsx
 msgid "Editor Tour"
-msgstr ""
-
-#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
-msgid "Enable"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/notifications-settings-section.tsx
@@ -1557,6 +1598,10 @@ msgstr ""
 msgid "File Submissions"
 msgstr "Failų pateikimai"
 
+#: apps/postybirb-ui/src/components/sections/accounts-section/account-default-templates-popover.tsx
+msgid "File template"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/file-management/file-actions.tsx
 msgid "File types do not match. Please upload a file of the same type."
 msgstr "Failų tipai nesutampa. Įkelkite to paties tipo failą."
@@ -1630,6 +1675,10 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/mantine-tooltip.tsx
 msgid "Finish"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "Fixed proxy (all traffic)"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/file-submission-modal/image-editor.tsx
@@ -1849,7 +1898,7 @@ msgid "How to create a webhook"
 msgstr "Kaip sukurti saityno gaudyklę"
 
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
-msgid "HTTP(S) profiles cannot be used for Teleproto."
+msgid "HTTP(S)"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/disclaimer/disclaimer.tsx
@@ -1972,6 +2021,10 @@ msgstr ""
 
 #: apps/postybirb-ui/src/i18n/validation-translation.tsx
 msgid "It is recommended to add at least 10 general tags <0>( {generalTags} / 10 )</0>. See <1>tagging checklist</1>"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/account-default-template-modal.tsx
+msgid "It only applies to new submissions — existing ones are not changed."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/instagram/instagram-login-view.tsx
@@ -2164,6 +2217,10 @@ msgstr ""
 msgid "Message Submissions"
 msgstr "Žinutės pateikimai"
 
+#: apps/postybirb-ui/src/components/sections/accounts-section/account-default-templates-popover.tsx
+msgid "Message template"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/shared/multi-scheduler-modal/multi-scheduler-modal.tsx
 msgid "Minutes"
 msgstr "Minutės (-čių)"
@@ -2266,10 +2323,6 @@ msgstr ""
 msgid "No preview available"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
-msgid "No proxy profiles configured."
-msgstr ""
-
 #: apps/postybirb-ui/src/components/empty-state/empty-state.tsx
 msgid "No records yet"
 msgstr ""
@@ -2325,7 +2378,6 @@ msgid "No wiki page available"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/tags-settings-section.tsx
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/form/save-defaults-popover.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/file-management/file-actions.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/schedule-form/schedule-form.tsx
 #: apps/postybirb-ui/src/components/shared/schedule-popover/schedule-popover.tsx
@@ -2404,10 +2456,6 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/shared/multi-scheduler-modal/multi-scheduler-modal.tsx
 msgid "Only set scheduled date (don't activate)"
-msgstr ""
-
-#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
-msgid "Only SOCKS5 type or use POSTYBIRB_TELEGRAM_MTPROXY."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/shared/schedule-popover/cron-picker.tsx
@@ -2508,6 +2556,10 @@ msgstr ""
 msgid "Per-Account Dimensions"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "Per-website routing (PAC)"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/website-login-views/telegram/telegram-login-view.tsx
 msgid "Phone Number"
 msgstr ""
@@ -2527,6 +2579,10 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/helpers.tsx
 msgid "Please check your credentials and try again"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/accounts-section/account-default-templates-popover.tsx
+msgid "Populate default field values for new submissions from a template's options for this account."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
@@ -2619,14 +2675,18 @@ msgstr ""
 msgid "Profanity"
 msgstr ""
 
-#. placeholder {0}: index + 1
-#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
-msgid "Profile {0}"
-msgstr ""
-
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/settings-dialog.tsx
 msgid "Proxy"
+msgstr ""
+
+#. placeholder {0}: index + 1
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "Proxy {0}"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "Proxy {number}"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
@@ -2634,11 +2694,23 @@ msgid "Proxy connection test succeeded"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "Proxy for all traffic"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
 msgid "Proxy host and port are required"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
-msgid "Proxy settings saved and applied"
+msgid "Proxy pool"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "Proxy settings saved and applied on this device"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "Proxy settings saved on the remote server"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
@@ -2772,6 +2844,10 @@ msgstr ""
 msgid "Remove image"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "Remove proxy"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/sections/templates-section/template-card.tsx
 msgid "Rename"
 msgstr ""
@@ -2899,6 +2975,14 @@ msgstr ""
 msgid "Rotate right 90°"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "Route via"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "Routing mode"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-record-card.tsx
 msgid "running"
 msgstr ""
@@ -2930,21 +3014,12 @@ msgstr "Išsaugoti"
 msgid "Save API Keys"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/form/save-defaults-popover.tsx
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/form/save-defaults-popover.tsx
-msgid "Save as default"
-msgstr ""
-
 #: apps/postybirb-ui/src/components/drawers/file-watcher-drawer/file-watcher-drawer.tsx
 msgid "Save changes"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/instagram/instagram-login-view.tsx
 msgid "Save Credentials"
-msgstr ""
-
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/form/save-defaults-popover.tsx
-msgid "Save Selected"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/layout-tour.tsx
@@ -2961,7 +3036,11 @@ msgid "Save to submissions"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
-msgid "Saved settings apply right away. Reload any open login pages."
+msgid "Saved settings apply on the remote server for posting and background tasks."
+msgstr ""
+
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "Saved settings apply on this device right away."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/drawers/schedule-drawer/schedule-drawer.tsx
@@ -3074,6 +3153,10 @@ msgstr ""
 msgid "Search..."
 msgstr ""
 
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "Select a pool entry"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/sections/submissions-section/submissions-content.tsx
 msgid "Select a submission from the list to view details"
 msgstr ""
@@ -3107,10 +3190,6 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/accounts-section/accounts-content.tsx
 msgid "Select an account to log in"
-msgstr ""
-
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/form/save-defaults-popover.tsx
-msgid "Select fields to save as defaults for this account."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/drawers/converter-drawer/converter-drawer.tsx
@@ -3171,12 +3250,20 @@ msgstr ""
 msgid "Sensitive content"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "Server (remote host)"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/website-login-views/discord/discord-login-view.tsx
 msgid "Server Boost Level"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/remote-settings-section.tsx
 msgid "Server unreachable"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/account-default-template-modal.tsx
+msgid "Set a default template for this account"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/submission-edit-tour.tsx
@@ -3272,6 +3359,10 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/resume-mode-modal/resume-mode-modal.tsx
 msgid "Skip websites that posted successfully and only attempt failed or unattempted ones. Continues from the last successful batch of files."
+msgstr ""
+
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "SOCKS5"
 msgstr ""
 
 #: libs/translations/src/lib/field-translations.ts
@@ -3500,6 +3591,11 @@ msgstr ""
 msgid "Switch between light and dark mode to match your preference."
 msgstr ""
 
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "System proxy"
+msgstr ""
+
 #: apps/postybirb-ui/src/i18n/validation-translation.tsx
 msgid "Tag {tag} has {postCount} post(s). Tag may be invalid or low use"
 msgstr ""
@@ -3616,11 +3712,16 @@ msgstr ""
 msgid "Teaser"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "Telegram requires a SOCKS5 proxy entry."
+msgstr ""
+
 #: apps/postybirb-ui/src/components/website-login-views/telegram/telegram-login-view.tsx
 msgid "Telegram requires API credentials and phone number authentication. You'll need to create a Telegram app and verify your phone number."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/file-submission-modal/submission-options.tsx
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/account-default-template-modal.tsx
 #: apps/postybirb-ui/src/components/shared/template-picker/template-picker.tsx
 msgid "Template"
 msgstr "Šablonas"
@@ -3713,10 +3814,6 @@ msgstr ""
 msgid "Theme"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/form/save-defaults-popover.tsx
-msgid "These defaults apply to future submissions."
-msgstr ""
-
 #: apps/postybirb-ui/src/i18n/validation-translation.tsx
 msgid "These mentioned users don't exist: {mentionsList}. Ensure that their tag is correct (e.g. name.bsky.social instead of name.bluesky.social)"
 msgstr ""
@@ -3755,6 +3852,11 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/schedule-tour.tsx
 msgid "This sidebar lists your unscheduled submissions. Drag any submission from here onto the calendar to schedule it for a specific date and time."
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/account-default-template-modal.tsx
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/form/account-default-template-inline.tsx
+msgid "This template is already the default"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/accounts-section/accounts-content.tsx
@@ -3986,8 +4088,24 @@ msgstr ""
 msgid "Use templates to save time on repeated posts"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/account-default-template-modal.tsx
+msgid "Use the template you are currently editing as the default"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/form/account-default-template-inline.tsx
+msgid "Use this"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/submissions-tour.tsx
 msgid "Use this checkbox to select or deselect all submissions at once. When items are selected, bulk actions like delete, post, and apply template become available."
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/account-default-template-modal.tsx
+msgid "Use this template"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/form/account-default-template-inline.tsx
+msgid "Use this template as the default for this account"
 msgstr ""
 
 #: libs/translations/src/lib/field-translations.ts
@@ -4039,6 +4157,10 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/bluesky/bluesky-login-view.tsx
 msgid "Username or Email"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "Uses the operating system proxy settings for all traffic."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/home-tour.tsx
@@ -4129,6 +4251,7 @@ msgstr ""
 msgid "We encountered an unexpected error. Please try refreshing the page."
 msgstr ""
 
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-record-card.tsx
 msgid "Website"
 msgstr "Svetainė"
@@ -4149,6 +4272,10 @@ msgstr ""
 msgid "Website Options"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
+msgid "Website routing"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/accounts-tour.tsx
 msgid "Website Visibility"
 msgstr ""
@@ -4157,7 +4284,6 @@ msgstr ""
 msgid "Website-Specific Options"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/proxy-settings-section.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/account-select.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/account-selection-form.tsx
 #: apps/postybirb-ui/src/components/shared/account-picker/account-picker.tsx
@@ -4191,6 +4317,14 @@ msgstr ""
 msgid "When a template is selected, its settings appear here. Configure titles, descriptions, tags, and website-specific options just like a regular submission."
 msgstr ""
 
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/account-default-template-modal.tsx
+msgid "When you create a new file submission, the option for this account will be pre-filled using the values from the template you choose here."
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/account-default-template-modal.tsx
+msgid "When you create a new submission, the option for this account will be pre-filled using the values from the template you choose here."
+msgstr ""
+
 #: libs/translations/src/lib/field-translations.ts
 msgid "Who can reply"
 msgstr ""
@@ -4202,7 +4336,7 @@ msgid "Width"
 msgstr "Plotis"
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/submission-edit-tour.tsx
-msgid "Write your post description with rich text formatting. Type @ to insert username shortcuts, { to insert custom text shortcuts, or use the / slash menu for headings, lists, and more. Shortcuts are automatically expanded per website when posting."
+msgid "Write your post description with rich text formatting. Type @ to insert username shortcuts, {curlyBrace} to insert custom text shortcuts, or use the / slash menu for headings, lists, and more. Shortcuts are automatically expanded per website when posting."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/disclaimer/disclaimer.tsx

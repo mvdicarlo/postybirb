@@ -5,7 +5,7 @@ import {
   PAC_SCRIPT_API_PATH,
   parsePacScriptTokenFromUrl,
   resolvePacHttpPort,
-} from '@postybirb/http';
+} from '@postybirb/proxy';
 import { createServer, type Server } from 'node:http';
 import {
   pacScriptResponseHeaders,

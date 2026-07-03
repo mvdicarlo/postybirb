@@ -73,8 +73,6 @@ export function PostyBirb() {
 
   useEffect(() => {
     loadAllStores()
-      .then(() => {
-      })
       .catch((error) => {
         console.error('Failed to load all stores', error);
       });

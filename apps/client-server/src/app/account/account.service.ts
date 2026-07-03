@@ -141,7 +141,9 @@ export class AccountService
       where: ne(this.table.id, NULL_ACCOUNT_ID),
     });
     await Promise.all(
-      accounts.map((account) => this.websiteRegistry.create(account)),
+      accounts.map(async (account) => {
+        await this.websiteRegistry.create(account);
+      }),
     ).catch((err) => {
       this.logger.error(err, 'onModuleInit');
     });

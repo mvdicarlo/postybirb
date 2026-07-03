@@ -4,7 +4,7 @@ import { toError } from '@postybirb/utils/common';
 import {
   PAC_SCRIPT_MEDIA_TYPE,
   PAC_SCRIPT_CACHE_CONTROL,
-} from '@postybirb/http';
+} from '@postybirb/proxy';
 import { PacScriptService } from './pac-script.service';
 
 export type PacScriptDeliveryResult =

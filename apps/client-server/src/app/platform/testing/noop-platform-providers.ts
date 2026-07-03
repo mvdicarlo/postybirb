@@ -7,11 +7,14 @@ import {
   PlatformForkOptions,
   PlatformHttpService,
   PlatformNotificationService,
+  PlatformProxyService,
+  type PlatformProxySession,
   PlatformProcessService,
   PlatformService,
   PlatformSessionService,
   PlatformWorkerProcess,
 } from '@postybirb/platform';
+import type { ProxyConfiguration } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/common';
 
 class NoopPlatformAppService implements PlatformAppService {
@@ -91,6 +94,20 @@ class NoopPlatformHttpService implements PlatformHttpService {
   async put<T>(): Promise<never> {
     throw new Error('NoopPlatformHttpService.put is not implemented');
   }
+}
+
+class NoopPlatformProxyService extends PlatformProxyService {
+  async applyProxy(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _partitionIds: string[],
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _configuration?: ProxyConfiguration,
+  ): Promise<void> {}
+
+  async onSessionCreated(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _createdSession: PlatformProxySession,
+  ): Promise<void> {}
 }
 
 /**
@@ -181,6 +198,8 @@ export class NoopPlatformService extends PlatformService {
   readonly notification = new NoopPlatformNotificationService();
 
   readonly http = new NoopPlatformHttpService();
+
+  readonly proxy = new NoopPlatformProxyService();
 
   readonly process = new NoopPlatformProcessService();
 }

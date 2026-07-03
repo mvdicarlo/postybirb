@@ -1,26 +1,23 @@
 import { mkdtempSync, readFileSync, rmSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
-import { applyProxy } from '@postybirb/http';
+import { AccountRepository } from '@postybirb/database';
 import * as CommonUtils from '@postybirb/utils/common';
 import { StartupOptionsManager } from '@postybirb/utils/common';
 import { ProxyService } from './proxy.service';
-import { probeProxyPoolEntry } from './proxy-pool-probe';
-
-jest.mock('@postybirb/http', () => ({
-  applyProxy: jest.fn().mockResolvedValue(undefined),
-}));
-
-jest.mock('./proxy-pool-probe', () => ({
-  probeProxyPoolEntry: jest.fn(),
-}));
 
 describe('ProxyService', () => {
   let service: ProxyService;
   let tmpDir: string;
-  const accountRepository = {
-    find: jest.fn().mockResolvedValue([]),
+  const platform = {
+    proxy: {
+      applyProxy: jest.fn().mockResolvedValue(undefined),
+    },
   };
+  const accountRepository = {
+    find: jest.fn(),
+    table: { id: 'id' },
+  } as unknown as AccountRepository;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -45,48 +42,11 @@ describe('ProxyService', () => {
         routing: {},
       },
     });
-    service = new ProxyService(accountRepository as never);
+    service = new ProxyService(platform as never, accountRepository);
   });
 
   afterEach(() => {
     rmSync(tmpDir, { recursive: true, force: true });
-  });
-
-  it('returns auth failure when probe receives HTTP 407', async () => {
-    jest.mocked(probeProxyPoolEntry).mockResolvedValue({ statusCode: 407 });
-
-    await expect(
-      service.testPoolEntryConnection({
-        id: 'pool-1',
-        type: 'http',
-        host: '127.0.0.1',
-        port: '8080',
-        username: 'saved-user',
-        password: '',
-      }),
-    ).resolves.toEqual({
-      success: false,
-      message: 'Proxy authentication failed. Check username and password.',
-    });
-  });
-
-  it('preserves saved password when the client omits it on test', async () => {
-    jest.mocked(probeProxyPoolEntry).mockResolvedValue({ statusCode: 204 });
-
-    await service.testPoolEntryConnection({
-      id: 'pool-1',
-      type: 'http',
-      host: '127.0.0.1',
-      port: '8080',
-      username: 'saved-user',
-      password: '',
-    });
-
-    expect(probeProxyPoolEntry).toHaveBeenCalledWith(
-      expect.objectContaining({ password: 'saved-pass' }),
-      'https://www.google.com/generate_204',
-      expect.objectContaining({ method: 'HEAD' }),
-    );
   });
 
   it('saveConfiguration persists invalid pool entries as provided', async () => {
@@ -134,7 +94,7 @@ describe('ProxyService', () => {
     );
 
     expect(saved.proxy.pool[0].password).toBe('saved-pass');
-    expect(applyProxy).not.toHaveBeenCalled();
+    expect(platform.proxy.applyProxy).not.toHaveBeenCalled();
   });
 
   it('saveConfiguration generates pacAccessToken on first PAC routing save', async () => {

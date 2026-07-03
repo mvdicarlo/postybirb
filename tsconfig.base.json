@@ -21,6 +21,7 @@
       "@postybirb/database": ["libs/database/src/index.ts"],
       "@postybirb/form-builder": ["libs/form-builder/src/index.ts"],
       "@postybirb/fs": ["libs/fs/src/index.ts"],
+      "@postybirb/proxy": ["libs/proxy/src/index.ts"],
       "@postybirb/http": ["libs/http/src/index.ts"],
       "@postybirb/http/types": ["libs/http/src/types.ts"],
       "@postybirb/logger": ["libs/logger/src/index.ts"],

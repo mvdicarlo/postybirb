@@ -3,7 +3,7 @@ import {
   RemoteConfigManager,
   StartupOptionsManager,
 } from '@postybirb/utils/common';
-import { app } from 'electron';
+import { app, net } from 'electron';
 import { join } from 'path';
 
 const userDataPath = app.getPath('userData');
@@ -21,3 +21,7 @@ StartupOptionsManager.configure({
 RemoteConfigManager.configure({
   storagePath: join(userDataPath, 'remote-config.json'),
 });
+
+if (typeof globalThis.fetch === 'function' && typeof net.fetch === 'function') {
+  globalThis.fetch = net.fetch.bind(net) as typeof fetch;
+}

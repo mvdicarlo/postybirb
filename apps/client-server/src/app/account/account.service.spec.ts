@@ -63,7 +63,7 @@ describe('AccountsService', () => {
             onAccountCreated: jest.fn().mockResolvedValue(undefined),
           },
         },
-        ...[noopPlatformProvider],
+        noopPlatformProvider,
       ],
     }).compile();
 

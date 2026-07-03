@@ -22,6 +22,10 @@ import { WebsiteDomainService } from './website-domain.service';
       useFactory: () => new AccountRepository(),
     },
   ],
-  exports: [WebsiteDomainService, PacScriptService, ProxyService],
+  exports: [
+    WebsiteDomainService,
+    PacScriptService,
+    ProxyService,
+  ],
 })
 export class ProxyModule {}

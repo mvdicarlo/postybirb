@@ -1,19 +1,23 @@
 import { randomBytes } from 'node:crypto';
+import http from 'node:http';
+import nodeHttps from 'node:https';
 import { Injectable } from '@nestjs/common';
-import { AccountRepository, AccountSchema } from '@postybirb/database';
-import { Logger } from '@postybirb/logger';
-import { ProxyConfiguration, NULL_ACCOUNT_ID } from '@postybirb/types';
-import { applyProxy } from '@postybirb/http';
-import {
-  buildProxyRules,
-  IsTestEnvironment,
-  StartupOptionsManager,
-  toEnabledProxyProfile,
-} from '@postybirb/utils/common';
 import { ne } from 'drizzle-orm';
+import { Logger } from '@postybirb/logger';
+import { AccountRepository } from '@postybirb/database';
+import { NULL_ACCOUNT_ID, ProxyConfiguration } from '@postybirb/types';
+import { HttpProxyAgent } from 'http-proxy-agent';
+import { HttpsProxyAgent } from 'https-proxy-agent';
+import { SocksProxyAgent } from 'socks-proxy-agent';
+import {
+  IsTestEnvironment,
+  getPartitionKey,
+  StartupOptionsManager,
+} from '@postybirb/utils/common';
+import { PlatformService } from '@postybirb/platform';
+import { buildProxyRules } from '@postybirb/proxy';
 import { UpdateProxyConfigurationDto } from './dtos/proxy-configuration.dto';
 import { ProxyPoolEntryDto } from './dtos/proxy-pool-entry.dto';
-import { probeProxyPoolEntry } from './proxy-pool-probe';
 
 export type ProxyConnectionTestResult = {
   success: boolean;
@@ -27,7 +31,83 @@ export class ProxyService {
   private applyInFlight: Promise<void> | null = null;
   private applyQueued = false;
 
-  constructor(private readonly accountRepository: AccountRepository) {}
+  private createProxyAgent(
+    entry: ProxyPoolEntryDto,
+    secure: boolean,
+  ): SocksProxyAgent | HttpProxyAgent<string> | HttpsProxyAgent<string> {
+    const agentUrl = buildProxyRules(entry);
+    if (!agentUrl) {
+      throw new Error('Proxy host and port are required');
+    }
+
+    if (entry.type === 'socks5') {
+      return new SocksProxyAgent(agentUrl);
+    }
+
+    return secure ? new HttpsProxyAgent(agentUrl) : new HttpProxyAgent(agentUrl);
+  }
+
+  private async requestThroughProxy(
+    url: URL,
+    agent: SocksProxyAgent | HttpProxyAgent<string> | HttpsProxyAgent<string>,
+    timeoutMs: number,
+  ): Promise<number> {
+    const secure = url.protocol === 'https:';
+    const lib = secure ? nodeHttps : http;
+
+    return new Promise<number>((resolve, reject) => {
+      let timeout: NodeJS.Timeout | undefined;
+
+      const req = lib.request(
+        url,
+        {
+          method: 'HEAD',
+          agent,
+        },
+        (response) => {
+          if (timeout) {
+            clearTimeout(timeout);
+          }
+          response.resume();
+          resolve(response.statusCode ?? 0);
+        },
+      );
+
+      timeout = setTimeout(() => {
+        req.destroy(new Error('Probe timed out'));
+      }, timeoutMs);
+
+      req.on('error', (error) => {
+        if (timeout) {
+          clearTimeout(timeout);
+        }
+        reject(error);
+      });
+
+      req.end();
+    });
+  }
+
+  constructor(
+    private readonly platform: PlatformService,
+    private readonly accountRepository: AccountRepository,
+  ) {}
+
+  private async getPartitionIds(): Promise<string[]> {
+    const accounts = await this.accountRepository.find({
+      where: ne(this.accountRepository.table.id, NULL_ACCOUNT_ID),
+    });
+
+    const partitions = new Set<string>();
+    for (const account of accounts) {
+      partitions.add(getPartitionKey(account.id));
+      if (account.website === 'instagram') {
+        partitions.add(getPartitionKey(`instagram-oauth-${account.id}`));
+      }
+    }
+
+    return [...partitions];
+  }
 
   /** Called after Nest bootstrap finishes listening. */
   bootstrapApply(): Promise<void> {
@@ -68,11 +148,8 @@ export class ProxyService {
       return;
     }
 
-    const partitionIds = await this.loadPartitionIds();
-    this.logger
-      .withMetadata({ partitionCount: partitionIds.length })
-      .debug('Applying persisted proxy configuration');
-    await applyProxy(undefined, partitionIds);
+    const partitionIds = await this.getPartitionIds();
+    await this.platform.proxy.applyProxy(partitionIds, undefined);
   }
 
   /** Re-applies proxy after a new account partition is created. */
@@ -155,20 +232,15 @@ export class ProxyService {
       };
     }
 
-    if (!buildProxyRules(toEnabledProxyProfile(entry))) {
-      return {
-        success: false,
-        message: 'Proxy host and port are required',
-      };
-    }
-
     const testUrl = 'https://www.google.com/generate_204';
 
     try {
-      const { statusCode } = await probeProxyPoolEntry(entry, testUrl, {
-        method: 'HEAD',
-        timeoutMs: 15_000,
-      });
+      const parsedUrl = new URL(testUrl);
+      const agent = this.createProxyAgent(
+        entry,
+        parsedUrl.protocol === 'https:',
+      );
+      const statusCode = await this.requestThroughProxy(parsedUrl, agent, 15_000);
 
       if (statusCode === 407) {
         return {
@@ -214,22 +286,4 @@ export class ProxyService {
       };
     }
   }
-
-  private async loadPartitionIds(): Promise<string[]> {
-    const accounts = await this.accountRepository.find({
-      where: ne(AccountSchema.id, NULL_ACCOUNT_ID),
-    });
-
-    const ids = new Set<string>();
-
-    for (const account of accounts) {
-      ids.add(account.id);
-      if (account.website === 'instagram') {
-        ids.add(`instagram-oauth-${account.id}`);
-      }
-    }
-
-    return [...ids];
-  }
-
 }
