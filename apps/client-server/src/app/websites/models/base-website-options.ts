@@ -95,10 +95,13 @@ export class BaseWebsiteOptions implements IWebsiteFormFields {
         : {
             overrideDefault: false,
             description: options.description.description,
+            // Use ?? so a per-website option can explicitly disable (false) an
+            // insert flag inherited from the default. Only an unset (undefined)
+            // value inherits the default's setting.
             insertTitle:
-              this.description.insertTitle || options.description.insertTitle,
+              this.description.insertTitle ?? options.description.insertTitle,
             insertTags:
-              this.description.insertTags || options.description.insertTags,
+              this.description.insertTags ?? options.description.insertTags,
           },
       contentWarning: (!isNullOrWhiteSpace(this.contentWarning)
         ? this.contentWarning
