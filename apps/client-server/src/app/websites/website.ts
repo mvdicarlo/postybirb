@@ -2,23 +2,28 @@ import { Account, WebsiteDataRepository } from '@postybirb/database';
 import { Logger, PostyBirbLogger } from '@postybirb/logger';
 import { PlatformCookieDetails, PlatformService } from '@postybirb/platform';
 import {
-    DynamicObject,
-    ILoginState,
-    IWebsiteFormFields,
-    LoginState,
-    SubmissionType,
+  DynamicObject,
+  ILoginState,
+  IWebsiteFormFields,
+  LoginState,
+  SubmissionType,
 } from '@postybirb/types';
+import {
+  extractHostname,
+  mergeDomainLists,
+  normalizeDomain,
+} from '@postybirb/utils/common';
 import { Mutex } from 'async-mutex';
 import { SubmissionValidator } from './commons/validator';
 import { WebsiteDecoratorProps } from './decorators/website-decorator-props';
 import { DataPropertyAccessibility } from './models/data-property-accessibility';
 import {
-    FileWebsiteKey,
-    isFileWebsite,
+  FileWebsiteKey,
+  isFileWebsite,
 } from './models/website-modifiers/file-website';
 import {
-    isMessageWebsite,
-    MessageWebsiteKey,
+  isMessageWebsite,
+  MessageWebsiteKey,
 } from './models/website-modifiers/message-website';
 import WebsiteDataManager from './website-data-manager';
 
@@ -164,10 +169,9 @@ export abstract class Website<
   }
 
   /**
-   * Platform services made available to the website (cookies, headless
-   * browser, app metadata, notifications, network). Bundled into a single
-   * facade so adding new platform capabilities does not change every
-   * subclass constructor.
+   * Platform services made available to the website (HTTP, cookies, headless
+   * browser, app metadata, notifications). Bundled into a single facade so
+   * adding new platform capabilities does not change every subclass constructor.
    */
   public readonly platform: PlatformService;
 
@@ -196,6 +200,36 @@ export abstract class Website<
       });
 
     return { ...data };
+  }
+
+  /**
+   * Hostnames used for automatic PAC routing (static sources only).
+   * Subclasses may override to append per-account runtime URLs.
+   */
+  public collectProxyDomains(): string[] {
+    const lists: string[][] = [];
+
+    if (this.BASE_URL?.trim()) {
+      const host = extractHostname(this.BASE_URL);
+      if (host) {
+        lists.push([host]);
+      }
+    }
+
+    const { loginFlow } = this.decoratedProps;
+    if (loginFlow.type === 'user' && loginFlow.url?.trim()) {
+      const host = extractHostname(loginFlow.url);
+      if (host) {
+        lists.push([host]);
+      }
+    }
+
+    const additional = this.decoratedProps.metadata.additionalDomains;
+    if (Array.isArray(additional) && additional.length > 0) {
+      lists.push(additional.map((domain) => normalizeDomain(domain)));
+    }
+
+    return mergeDomainLists(...lists);
   }
 
   /**

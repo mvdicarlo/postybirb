@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Account, clearDatabase } from '@postybirb/database';
 import { NULL_ACCOUNT_ID } from '@postybirb/types';
 import { noopPlatformProvider } from '../platform/testing/noop-platform-providers';
+import { ProxyService } from '../proxy/proxy.service';
 import { waitUntil } from '../utils/wait.util';
 import { WebsiteImplProvider } from '../websites/implementations/provider';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
@@ -55,7 +56,14 @@ describe('AccountsService', () => {
         AccountService,
         WebsiteRegistryService,
         WebsiteImplProvider,
-        ...[noopPlatformProvider],
+        {
+          provide: ProxyService,
+          useValue: {
+            apply: jest.fn().mockResolvedValue(undefined),
+            onAccountCreated: jest.fn().mockResolvedValue(undefined),
+          },
+        },
+        noopPlatformProvider,
       ],
     }).compile();
 

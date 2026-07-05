@@ -1,13 +1,9 @@
-// Side-effect module: configures all electron-derived paths required by
-// @postybirb/utils/common and @postybirb/fs before those libraries
-// evaluate. Imported as the very first line of apps/postybirb/src/main.ts so
-// that downstream module-load reads (e.g. PostyBirbDirectories) succeed.
 import {
   isWindows,
   RemoteConfigManager,
   StartupOptionsManager,
 } from '@postybirb/utils/common';
-import { app } from 'electron';
+import { app, net } from 'electron';
 import { join } from 'path';
 
 const userDataPath = app.getPath('userData');
@@ -25,3 +21,7 @@ StartupOptionsManager.configure({
 RemoteConfigManager.configure({
   storagePath: join(userDataPath, 'remote-config.json'),
 });
+
+if (typeof globalThis.fetch === 'function' && typeof net.fetch === 'function') {
+  globalThis.fetch = net.fetch.bind(net) as typeof fetch;
+}

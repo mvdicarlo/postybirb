@@ -48,9 +48,15 @@ import { Website } from '../../website';
 import { TelegramFileSubmission } from './models/telegram-file-submission';
 import { TelegramMessageSubmission } from './models/telegram-message-submission';
 
+type TelegramProxyResolution = {
+  proxySettings?: ProxyInterface;
+  signature: string;
+};
+
 @WebsiteMetadata({
   name: 'telegram',
   displayName: 'Telegram',
+  additionalDomains: ['telegram.org'],
 })
 @CustomLoginFlow()
 @SupportsFiles({
@@ -87,24 +93,116 @@ export default class Telegram
     };
 
   private clients = new Map<number, TelegramClient>();
+  private lastProxySignature = '';
+
+  private async invalidateTelegramClients(): Promise<void> {
+    for (const [appId, client] of this.clients.entries()) {
+      try {
+        if (client.connected) {
+          await client.disconnect();
+        }
+      } catch (error) {
+        this.logger
+          .withError(error)
+          .warn(`Failed to disconnect Telegram client ${appId}`);
+      }
+    }
+
+    this.clients.clear();
+    this.logger.info(
+      '[Telegram.proxy] Cleared cached clients after proxy configuration change',
+    );
+  }
+
+  private async resolveProxySettings(): Promise<TelegramProxyResolution> {
+    let telegramProxySettings: ProxyInterface | undefined;
+    let signature = 'none';
+
+    const env = process.env.POSTYBIRB_TELEGRAM_MTPROXY;
+    if (env) {
+      try {
+        const parsed = new URL(env);
+        if (
+          parsed.protocol === 'tg:' &&
+          parsed.host === 'proxy' &&
+          parsed.search
+        ) {
+          telegramProxySettings = {
+            MTProxy: true,
+            ip: parsed.searchParams.get('ip') ?? '',
+            secret: parsed.searchParams.get('secret') ?? '',
+            port: parseInt(parsed.searchParams.get('port') ?? '', 10),
+          };
+          signature = `env:${env.trim()}`;
+          this.logger.info('Using', env);
+        }
+      } catch (error) {
+        this.logger
+          .withError(error)
+          .error(
+            'Failed to parse env POSTYBIRB_TELEGRAM_MTPROXY, falling back to other proxy settings...',
+          );
+      }
+    }
+
+    if (!telegramProxySettings) {
+      const proxies = [
+        ...(await this.platform.http.getParsedProxiesFor(
+          'https://telegram.org',
+        )),
+        ...(await this.platform.http.getParsedProxiesFor('https://t.me/')),
+      ];
+      signature = `resolved:${proxies
+        .map((entry) => `${entry?.type ?? ''}:${entry?.hostname ?? ''}:${entry?.port ?? ''}`)
+        .join('|')}`;
+      const proxy =
+        proxies.find((entry) => entry?.type === 'SOCKS') ??
+        proxies.find((entry) => entry?.type === 'SOCKS5');
+
+      if (proxy?.hostname) {
+        const port = parseInt(proxy.port, 10);
+        if (!Number.isNaN(port)) {
+          telegramProxySettings = {
+            ip: proxy.hostname,
+            port,
+            socksType: 5,
+          };
+          this.logger
+            .withMetadata({ proxy: telegramProxySettings, proxies })
+            .info(
+              'Using SOCKS5 proxy resolved for hostname t.me or telegram.org',
+            );
+        }
+      }
+    }
+
+    return {
+      proxySettings: telegramProxySettings,
+      signature,
+    };
+  }
 
   private async getTelegramClient(
     account: TelegramAccountData = this.websiteDataStore.getData(),
   ) {
+    const { proxySettings, signature } = await this.resolveProxySettings();
+    if (signature !== this.lastProxySignature) {
+      await this.invalidateTelegramClients();
+      this.lastProxySignature = signature;
+    }
+
     let client = this.clients.get(account.appId);
     if (!client) {
       this.logger.info(
         `Creating client for ${account.appId} with session present ${!!account.session}`,
       );
 
-      const telegramProxySettings = await this.resolveProxySettings();
-
       client = new TelegramClient(
         new StringSession(account.session ?? ''),
         account.appId,
         account.appHash,
         {
-          proxy: telegramProxySettings,
+          proxy: proxySettings,
         },
       );
       client.setLogLevel(LogLevel.ERROR);
@@ -165,65 +263,6 @@ export default class Telegram
       }
     },
   };
-
-  private async resolveProxySettings() {
-    let telegramProxySettings: ProxyInterface | undefined;
-
-    // Example:
-    // tg://proxy?server=127.0.0.1&port=1080&secret=dda7e716f615266d980bf8e2e41acc36b0
-    const env = process.env.POSTYBIRB_TELEGRAM_MTPROXY;
-    if (env) {
-      try {
-        const parsed = new URL(env);
-        if (
-          parsed.protocol === 'tg:' &&
-          parsed.host === 'proxy' &&
-          parsed.search
-        ) {
-          telegramProxySettings = {
-            MTProxy: true,
-            ip: parsed.searchParams.get('ip') ?? '',
-            secret: parsed.searchParams.get('secret') ?? '',
-            port: parseInt(parsed.searchParams.get('port') ?? '', 10),
-          };
-          this.logger.info('Using', env);
-        }
-      } catch (e) {
-        this.logger
-          .withError(e)
-          .error(
-            'Failed to parse env POSTYBIRB_TELEGRAM_MTPROXY, falling back to other proxy settings...',
-          );
-      }
-    }
-
-    if (!telegramProxySettings) {
-      const proxies = [
-        ...(await this.platform.http.getParsedProxiesFor(
-          'https://telegram.org',
-        )),
-        ...(await this.platform.http.getParsedProxiesFor('https://t.me/')),
-      ];
-      const proxy =
-        proxies.find((e) => e?.type === 'SOCKS') ??
-        proxies.find((e) => e?.type === 'PROXY') ??
-        proxies[0];
-
-      if (proxy && proxy.type !== 'DIRECT') {
-        telegramProxySettings = {
-          ip: proxy.hostname,
-          port: parseInt(proxy.port, 10),
-          socksType: 5,
-        };
-        this.logger
-          .withMetadata({ proxy: telegramProxySettings, proxies })
-          .info(
-            'Using SOCKS5 proxy resolved for hostname t.me or telegram.org',
-          );
-      }
-    }
-    return telegramProxySettings;
-  }
 
   private async loadChannels(telegram: TelegramClient) {
     this.logger.info('Loading folders...');

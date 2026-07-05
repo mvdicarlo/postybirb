@@ -1,4 +1,7 @@
-import { IsTestEnvironment , StartupOptionsManager } from '@postybirb/utils/common';
+import {
+  IsTestEnvironment,
+  StartupOptionsManager,
+} from '@postybirb/utils/common';
 
 import { join } from 'path';
 import { deleteDirSync, ensureDirSync } from './fs';

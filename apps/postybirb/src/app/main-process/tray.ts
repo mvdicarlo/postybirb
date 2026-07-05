@@ -1,8 +1,8 @@
 import {
-    isLinux,
-    isOSX,
-    StartupOptions,
-    StartupOptionsManager,
+  isLinux,
+  isOSX,
+  StartupOptions,
+  StartupOptionsManager,
 } from '@postybirb/utils/common';
 import { app, Menu, NativeImage, Tray } from 'electron';
 

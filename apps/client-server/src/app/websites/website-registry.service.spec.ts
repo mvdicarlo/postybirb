@@ -53,6 +53,23 @@ describe('WebsiteRegistryService', () => {
     expect(service.getInstancesOf(TestWebsite)).toHaveLength(1);
   });
 
+  it('collects proxy domains from an existing website instance', async () => {
+    const account = await accountRepository.insert(
+      new Account({
+        name: 'test',
+        id: 'test',
+        website: TestWebsite.prototype.decoratedProps.metadata.name,
+      }),
+    );
+
+    await service.create(account);
+
+    expect(service.collectProxyDomainsForAccounts([account])).toEqual(
+      expect.arrayContaining([expect.any(String)]),
+    );
+    expect(service.collectProxyDomainsForAccounts([])).toEqual([]);
+  });
+
   it('should successfully remove website instance', async () => {
     const account = await accountRepository.insert(
       new Account({

@@ -68,8 +68,8 @@ window.addEventListener('storage', (e) => {
   }
 });
 
-export function isRemote() {
-  return cachedConfig.mode === 'client' && cachedConfig.host?.trim();
+export function isRemote(): boolean {
+  return cachedConfig.mode === 'client' && !!cachedConfig.host?.trim();
 }
 
 /**
@@ -79,12 +79,20 @@ export function isRemote() {
  * @example https://mydomain.com
  * @example https://192.168.3.1:8080
  */
+export function getLocalBaseUrl() {
+  return `https://localhost:${window.electron.app_port}`;
+}
+
 export function getBaseUrl() {
   if (isRemote()) {
     return `https://${cachedConfig.host}`;
   }
 
-  return `https://localhost:${window.electron.app_port}`;
+  return getLocalBaseUrl();
+}
+
+export function getLocalServerPassword() {
+  return window.electron?.getRemoteConfig()?.password?.trim();
 }
 
 export function getRemotePassword() {
@@ -156,6 +164,7 @@ export class HttpClient {
   constructor(
     private readonly basePath: string,
     private readonly targetProvider: () => string = getBaseUrl,
+    private readonly passwordProvider: () => string | undefined = getRemotePassword,
   ) {}
 
   public get<T = any>(
@@ -246,7 +255,7 @@ export class HttpClient {
     }
 
     // Add remote password if configured
-    const pw = getRemotePassword();
+    const pw = this.passwordProvider();
     if (pw) {
       headers['X-Remote-Password'] = pw;
     }

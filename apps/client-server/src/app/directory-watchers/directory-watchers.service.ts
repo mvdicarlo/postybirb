@@ -1,11 +1,14 @@
 import { BadRequestException, Injectable, Optional } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { DirectoryWatcher, DirectoryWatcherRepository } from '@postybirb/database';
+import {
+  DirectoryWatcher,
+  DirectoryWatcherRepository,
+} from '@postybirb/database';
 import { DIRECTORY_WATCHER_UPDATES } from '@postybirb/socket-events';
 import {
-    DirectoryWatcherImportAction,
-    EntityId,
-    SubmissionType,
+  DirectoryWatcherImportAction,
+  EntityId,
+  SubmissionType,
 } from '@postybirb/types';
 import { IsTestEnvironment, toError } from '@postybirb/utils/common';
 import { mkdir, readdir, rename, writeFile } from 'fs/promises';

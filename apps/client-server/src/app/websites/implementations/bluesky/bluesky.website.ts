@@ -56,7 +56,7 @@ import { BlueskyMessageSubmission } from './models/bluesky-message-submission';
 
 type LoggedInAgent = SetNonNullable<AtpAgent, 'session' | 'pdsUrl'>;
 
-@WebsiteMetadata({ name: 'bluesky', displayName: 'BlueSky' })
+@WebsiteMetadata({ name: 'bluesky', displayName: 'BlueSky', additionalDomains: ['bsky.social', 'video.bsky.app'] })
 @CustomLoginFlow()
 @SupportsUsernameShortcut({
   id: 'bluesky',
@@ -625,7 +625,8 @@ export default class Bluesky
       const req: RequestInit = {
         method: 'GET',
         headers: {
-          'atproto-accept-labelers': 'did:plc:ar7c4by46qjdydhdevvrndac;redact',
+          'atproto-accept-labelers':
+            'did:plc:ar7c4by46qjdydhdevvrndac;redact',
         },
       };
       const res =

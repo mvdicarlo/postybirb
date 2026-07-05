@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { getParsedProxiesFor, Http } from '@postybirb/http';
+import { Http } from '@postybirb/http';
+import { parseProxyResolution } from '@postybirb/proxy';
 import type {
   BinaryPostOptions,
   HttpOptions,
@@ -11,13 +12,15 @@ import {
   PlatformHttpService,
   PlatformParsedProxy,
 } from '@postybirb/platform';
+import { session } from 'electron';
 
 /**
  * Electron-backed implementation of {@link PlatformHttpService}.
  *
- * Delegates 1:1 to the static `Http` class and `getParsedProxiesFor` from
- * `@postybirb/http`, which use Electron's `net` module, `BrowserWindow`
- * (for Cloudflare bypass), and `session.fromPartition` for cookies.
+ * Delegates 1:1 to the static `Http` class from `@postybirb/http`, which
+ * uses Electron's `net` module, `BrowserWindow` (for Cloudflare bypass), and
+ * `session.fromPartition` for cookies. Proxy resolution is read directly from
+ * Electron's default session and parsed locally.
  *
  * Centralizing this delegation here keeps the rest of the application
  * free of direct `@postybirb/http` (and therefore electron) imports.
@@ -48,8 +51,8 @@ export class ElectronHttpService extends PlatformHttpService {
   }
 
   async getParsedProxiesFor(url: string): Promise<PlatformParsedProxy[]> {
-    const proxies = await getParsedProxiesFor(url);
-    return proxies.filter((p): p is PlatformParsedProxy => Boolean(p));
+    const resolved = await session.defaultSession.resolveProxy(url);
+    return parseProxyResolution(resolved);
   }
 
   get<T>(url: string, options: HttpOptions): Promise<HttpResponse<T>> {

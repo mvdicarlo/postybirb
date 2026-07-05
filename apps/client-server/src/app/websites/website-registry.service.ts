@@ -1,19 +1,23 @@
 import {
-    BadRequestException,
-    Inject,
-    Injectable,
-    NotFoundException,
-    Optional,
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+  Optional,
 } from '@nestjs/common';
-import { Account, AccountRepository, WebsiteDataRepository } from '@postybirb/database';
+import {
+  Account,
+  AccountRepository,
+  WebsiteDataRepository,
+} from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import { PlatformService } from '@postybirb/platform';
 import { WEBSITE_UPDATES } from '@postybirb/socket-events';
 import {
-    DynamicObject,
-    IAccount,
-    IWebsiteInfoDto,
-    OAuthRoutes,
+  DynamicObject,
+  IAccount,
+  IWebsiteInfoDto,
+  OAuthRoutes,
 } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/common';
 import { Class } from 'type-fest';
@@ -213,6 +217,20 @@ export class WebsiteRegistryService {
   }
 
   /**
+   * Static PAC hostnames from an existing website instance for one of the accounts.
+   */
+  public collectProxyDomainsForAccounts(accounts: Account[]): string[] {
+    for (const account of accounts) {
+      const instance = this.findInstance(account);
+      if (instance) {
+        return instance.collectProxyDomains();
+      }
+    }
+
+    return [];
+  }
+
+  /**
    * Returns all created instances of a website.
    * @param {Class<UnknownWebsite>} website
    */
@@ -243,6 +261,16 @@ export class WebsiteRegistryService {
    */
   public getAvailableWebsites(): Class<UnknownWebsite>[] {
     return Object.values(this.availableWebsites);
+  }
+
+  /**
+   * Returns website ids registered in the website registry.
+   * Used by proxy settings UI for exclusive website assignment.
+   */
+  public getAvailableWebsiteIds(): string[] {
+    return Object.keys(this.availableWebsites).sort((a, b) =>
+      a.localeCompare(b),
+    );
   }
 
   /**
@@ -306,7 +334,9 @@ export class WebsiteRegistryService {
   ) {
     this.logger.info(`OAuth website route for '${oauthRequestDto.id}'`);
 
-    const account = await this.accountRepository.findByIdOrThrow(oauthRequestDto.id);
+    const account = await this.accountRepository.findByIdOrThrow(
+      oauthRequestDto.id,
+    );
     const instance = this.findInstance(account);
 
     if (!instance) throw new NotFoundException('Website instance not found.');

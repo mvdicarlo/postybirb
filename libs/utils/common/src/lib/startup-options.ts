@@ -6,12 +6,20 @@ import {
   writeFileSync,
 } from 'fs';
 import { dirname } from 'path';
+import type { ProxyConfiguration } from '@postybirb/types';
+
+const DEFAULT_PROXY_CONFIGURATION: ProxyConfiguration = {
+  mode: 'system',
+  pool: [],
+  routing: {},
+};
 
 export type StartupOptions = {
   startAppOnSystemStartup: boolean;
   spellchecker: boolean;
   appDataPath: string;
   port: string;
+  proxy: ProxyConfiguration;
 };
 
 export type StartupOptionsConfig = {
@@ -52,6 +60,7 @@ export class StartupOptionsStore {
       spellchecker: true,
       port: '9487',
       appDataPath: config.defaultAppDataPath,
+      proxy: DEFAULT_PROXY_CONFIGURATION,
     };
     // Drop memoized state so a reconfigure (mostly tests) takes effect.
     this.current = null;
@@ -71,14 +80,17 @@ export class StartupOptionsStore {
         this.persist(this.current);
       }
     }
-    return { ...this.current };
+    return this.current;
   }
 
   public set(opts: Partial<StartupOptions>): void {
     if (!this.current) {
       this.current = this.load();
     }
-    this.current = { ...this.current, ...opts };
+    this.current = {
+      ...this.current,
+      ...opts,
+    };
     this.persist(this.current);
     const snapshot = this.current;
     this.listeners.forEach((listener) => listener(snapshot));
@@ -113,15 +125,18 @@ export class StartupOptionsStore {
     const fallback = this.requireDefaults();
     try {
       if (!existsSync(path)) {
-        return { ...fallback };
+        return fallback;
       }
       const raw = JSON.parse(readFileSync(path, 'utf-8'));
-      if (raw) {
-        return { ...fallback, ...raw };
+      if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+        return {
+          ...fallback,
+          ...(raw as Partial<StartupOptions>),
+        };
       }
-      return { ...fallback };
+      return fallback;
     } catch {
-      return { ...fallback };
+      return fallback;
     }
   }
 

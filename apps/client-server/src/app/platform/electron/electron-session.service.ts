@@ -5,7 +5,6 @@ import {
   PlatformCookieFilter,
   PlatformSessionService,
 } from '@postybirb/platform';
-import { getPartitionKey } from '@postybirb/utils/common';
 import { session } from 'electron';
 
 /**
@@ -17,7 +16,7 @@ import { session } from 'electron';
 @Injectable()
 export class ElectronSessionService extends PlatformSessionService {
   private getSession(partition: string) {
-    return session.fromPartition(getPartitionKey(partition));
+    return session.fromPartition(partition);
   }
 
   async getCookies(

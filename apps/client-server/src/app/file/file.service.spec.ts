@@ -16,6 +16,7 @@ import { TagParserService } from '../post-parsers/parsers/tag-parser.service';
 import { TitleParser } from '../post-parsers/parsers/title-parser';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
 import { SettingsService } from '../settings/settings.service';
+import { ProxyService } from '../proxy/proxy.service';
 import { CreateSubmissionDto } from '../submission/dtos/create-submission.dto';
 import { FileSubmissionService } from '../submission/services/file-submission.service';
 import { MessageSubmissionService } from '../submission/services/message-submission.service';
@@ -118,6 +119,12 @@ describe('FileService', () => {
         TitleParser,
         TagConvertersService,
         SettingsService,
+        {
+          provide: ProxyService,
+          useValue: {
+            saveConfiguration: jest.fn(),
+          },
+        },
         FormGeneratorService,
         FileConverterService,
         CustomShortcutsService,
@@ -131,6 +138,10 @@ describe('FileService', () => {
 
     const accountService = module.get<AccountService>(AccountService);
     await accountService.onModuleInit();
+  });
+
+  afterEach(async () => {
+    await module?.close();
   });
 
   async function loadBuffers(rec: SubmissionFile) {

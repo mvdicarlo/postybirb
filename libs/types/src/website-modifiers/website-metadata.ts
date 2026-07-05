@@ -22,4 +22,10 @@ export interface IWebsiteMetadata {
    * spam detection measures.
    */
   minimumPostWaitInterval?: number;
+
+  /**
+   * Contributor-only hostnames not covered by the website `BASE_URL`.
+   * Used for automatic PAC routing; never user-editable.
+   */
+  additionalDomains?: string[];
 }

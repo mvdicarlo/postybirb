@@ -1,5 +1,4 @@
-import type { PreloadBridge } from '@postybirb/types';
-import type { RemoteConfig } from '@postybirb/utils/common';
+import type { PreloadBridge, RemoteConfig } from '@postybirb/types';
 import { contextBridge, ipcRenderer } from 'electron';
 import { type AppMetadata, IPC_CHANNELS } from '../constants';
 
@@ -8,6 +7,16 @@ import { type AppMetadata, IPC_CHANNELS } from '../constants';
 // This preload runs sandboxed, so it cannot read process.env. App metadata
 // (port, version, platform) is fetched synchronously over IPC at load time so
 // the exposed bridge can keep the same synchronous shape the UI relies on.
+
+let proxyConfigApplied = false;
+const proxyConfigAppliedListeners = new Set<() => void>();
+
+ipcRenderer.on('proxy-config-applied', () => {
+  proxyConfigApplied = true;
+  for (const listener of proxyConfigAppliedListeners) {
+    listener();
+  }
+});
 
 const metadata: AppMetadata = (ipcRenderer.sendSync(
   IPC_CHANNELS.getAppMetadata,
@@ -36,6 +45,17 @@ const bridge: PreloadBridge = {
     },
   getCookiesForAccount: (accountId: string) =>
     ipcRenderer.invoke(IPC_CHANNELS.getCookiesForAccount, accountId),
+  onProxyConfigApplied: (callback: () => void) => {
+    if (proxyConfigApplied) {
+      callback();
+    } else {
+      proxyConfigAppliedListeners.add(callback);
+    }
+
+    return () => {
+      proxyConfigAppliedListeners.delete(callback);
+    };
+  },
   getLocalStorageForAccount: (accountId: string, url: string) =>
     ipcRenderer.invoke(IPC_CHANNELS.getLocalStorageForAccount, accountId, url),
 

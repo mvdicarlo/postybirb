@@ -1,0 +1,20 @@
+{
+  "name": "proxy",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/proxy/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"]
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/libs/proxy"],
+      "options": {
+        "jestConfig": "libs/proxy/jest.config.ts"
+      }
+    }
+  }
+}

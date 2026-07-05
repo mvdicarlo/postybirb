@@ -73,10 +73,6 @@ export function PostyBirb() {
 
   useEffect(() => {
     loadAllStores()
-      .then(() => {
-        // eslint-disable-next-line no-console, lingui/no-unlocalized-strings
-        console.log('All stores loaded successfully');
-      })
       .catch((error) => {
         // eslint-disable-next-line no-console, lingui/no-unlocalized-strings
         console.error('Failed to load all stores', error);

@@ -2,9 +2,6 @@
 // (e.g. @postybirb/fs evaluates StartupOptionsManager.get() at module load).
 import './bootstrap-electron-config';
 
-// Ensure proxy is imported first to patch fetch before any request is made.
-import '@postybirb/http';
-
 import { INestApplication } from '@nestjs/common';
 import { initializeAppInsights } from '@postybirb/logger';
 import {
@@ -13,6 +10,7 @@ import {
 } from '@postybirb/utils/common';
 import { app, crashReporter } from 'electron';
 import contextMenu from 'electron-context-menu';
+import { PlatformService } from '@postybirb/platform';
 import PostyBirbApp from './app/app';
 import { APP_USER_MODEL_ID } from './app/constants';
 import { bootstrapElectronEvents } from './app/events/electron.events';
@@ -80,6 +78,17 @@ async function bootstrapClientServer(): Promise<INestApplication> {
 async function start(): Promise<void> {
   try {
     const nestApp = await bootstrapWithTimeout(bootstrapClientServer);
+    const platform = nestApp.get(PlatformService);
+
+    app.on('session-created', (createdSession) => {
+      platform.proxy.onSessionCreated(createdSession).catch((error) => {
+        // eslint-disable-next-line no-console
+        console.error(
+          '[PostyBirb] Failed to apply proxy to new session',
+          error,
+        );
+      });
+    });
 
     if (PostyBirbEnvConfig.headless) {
       // eslint-disable-next-line no-console

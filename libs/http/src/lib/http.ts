@@ -1,6 +1,8 @@
 /* eslint-disable no-console */
 import { Logger } from '@nestjs/common';
 import { trackDependency, trackException } from '@postybirb/logger';
+import { resolveProxyAuthCredentials } from '@postybirb/proxy';
+import { getPartitionKey } from '@postybirb/utils/common';
 import {
   BrowserWindow,
   ClientRequest,
@@ -50,8 +52,29 @@ interface CreateBodyData {
   buffer: Buffer;
 }
 
-function getPartitionKey(partition: string): string {
-  return `persist:${partition}`;
+function assignBrowserPartition(options: HttpOptions): void {
+  const partitionId = options.partition?.trim();
+  if (partitionId) {
+    // eslint-disable-next-line no-param-reassign
+    options.partition = partitionId;
+  }
+}
+
+function attachProxyAuthToRequest(request: ClientRequest): void {
+  request.on('login', (authInfo, callback) => {
+    if (!authInfo.isProxy) {
+      callback();
+      return;
+    }
+
+    const credentials = resolveProxyAuthCredentials(authInfo);
+    if (!credentials) {
+      callback();
+      return;
+    }
+
+    callback(credentials.username, credentials.password);
+  });
 }
 
 /**
@@ -142,6 +165,7 @@ export class Http {
     }
 
     const req = net.request(clientRequestOptions);
+    attachProxyAuthToRequest(req);
     if (
       clientRequestOptions.method === 'POST' ||
       clientRequestOptions.method === 'PATCH' ||
@@ -320,7 +344,8 @@ export class Http {
     partitionId: string,
     url: string,
   ): Promise<Electron.Cookie[]> {
-    return session.fromPartition(`persist:${partitionId}`).cookies.get({
+    const sess = session.fromPartition(getPartitionKey(partitionId));
+    return sess.cookies.get({
       url: new URL(url).origin,
     });
   }
@@ -509,6 +534,8 @@ export class Http {
     options: HttpOptions,
     crOptions?: ClientRequestConstructorOptions,
   ): Promise<HttpResponse<T>> {
+    assignBrowserPartition(options);
+
     const window = new BrowserWindow({
       show: false,
       webPreferences: {
@@ -534,6 +561,8 @@ export class Http {
     options: PostOptions | BinaryPostOptions,
     crOptions: ClientRequestConstructorOptions,
   ): Promise<HttpResponse<T>> {
+    assignBrowserPartition(options);
+
     const { contentType, buffer } = Http.createPostBody(options);
     const headers = Object.entries({
       ...(options.headers ?? {}),

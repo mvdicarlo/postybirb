@@ -2,9 +2,9 @@ import { INestApplication } from '@nestjs/common';
 import { PostyBirbDirectories } from '@postybirb/fs';
 import { flushAppInsights, Logger, trackException } from '@postybirb/logger';
 import {
-    PostyBirbEnvConfig,
-    RemoteConfigManager,
-    toError,
+  PostyBirbEnvConfig,
+  RemoteConfigManager,
+  toError,
 } from '@postybirb/utils/common';
 import { app } from 'electron';
 import { environment } from '../../environments/environment';

@@ -46,6 +46,7 @@ import { InstagramFileSubmission } from './models/instagram-file-submission';
 @WebsiteMetadata({
   name: 'instagram',
   displayName: 'Instagram',
+  additionalDomains: ['graph.instagram.com', 'api.instagram.com'],
 })
 @CustomLoginFlow()
 @SupportsUsernameShortcut({

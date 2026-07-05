@@ -1,16 +1,24 @@
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
+import type { ProxyConfiguration } from '@postybirb/types';
 import { StartupOptions, StartupOptionsStore } from './startup-options';
 
 let tmpDir: string;
 let store: StartupOptionsStore;
+
+const DEFAULT_PROXY_CONFIGURATION: ProxyConfiguration = {
+  mode: 'system',
+  pool: [],
+  routing: {},
+};
 
 const DEFAULTS: StartupOptions = {
   startAppOnSystemStartup: false,
   spellchecker: true,
   appDataPath: '/default/path',
   port: '9487',
+  proxy: DEFAULT_PROXY_CONFIGURATION,
 };
 
 function makeStore(overrides: Partial<typeof DEFAULTS> = {}): StartupOptionsStore {
@@ -108,10 +116,10 @@ describe('StartupOptionsStore — get()', () => {
     expect(s.get().port).toBe('9487');
   });
 
-  it('returns a copy — mutations do not affect stored state', () => {
+  it('returns the stored object as-is', () => {
     const opts = store.get();
     opts.port = '0000';
-    expect(store.get().port).toBe('9487');
+    expect(store.get().port).toBe('0000');
   });
 });
 
@@ -133,6 +141,166 @@ describe('StartupOptionsStore — set()', () => {
     const opts = store.get();
     expect(opts.port).toBe('4444');
     expect(opts.spellchecker).toBe(false);
+  });
+
+  it('replaces pool when proxy.pool is provided', () => {
+    const firstEntry = {
+      id: 'pool-1',
+      type: 'http' as const,
+      host: '10.0.0.1',
+      port: '8080',
+      username: 'user',
+      password: 'secret',
+    };
+
+    store.set({
+      proxy: {
+        mode: 'fixed_servers',
+        pool: [firstEntry],
+        fixedProxyId: 'pool-1',
+        routing: {},
+      },
+    });
+
+    store.set({
+      proxy: {
+        mode: 'fixed_servers',
+        pool: [
+          {
+            ...firstEntry,
+            host: '10.0.0.2',
+          },
+        ],
+        routing: {},
+      },
+    });
+
+    const opts = store.get();
+    expect(opts.proxy.pool).toEqual([
+      {
+        ...firstEntry,
+        host: '10.0.0.2',
+      },
+    ]);
+
+    const raw = JSON.parse(readFileSync(join(tmpDir, 'startup.json'), 'utf-8'));
+    expect(raw.proxy.pool).toEqual(opts.proxy.pool);
+  });
+
+  it('keeps flat proxy data as stored on disk', () => {
+    const path = join(tmpDir, 'startup.json');
+    writeFileSync(
+      path,
+      JSON.stringify({
+        proxy: {
+          enabled: true,
+          host: 'proxy.example.com',
+          port: '3128',
+        },
+      }),
+    );
+    const s = makeStore();
+    expect(s.get().proxy).toEqual({
+      enabled: true,
+      host: 'proxy.example.com',
+      port: '3128',
+    });
+  });
+
+  it('keeps proxy shapes as stored on disk', () => {
+    const path = join(tmpDir, 'startup.json');
+    writeFileSync(
+      path,
+      JSON.stringify({
+        proxy: {
+          profiles: [
+            {
+              id: 'legacy',
+              enabled: true,
+              type: 'http',
+              host: '127.0.0.1',
+              port: '8080',
+              username: '',
+              password: '',
+              websites: [],
+            },
+          ],
+        },
+      }),
+    );
+    const s = makeStore();
+    expect(s.get().proxy).toEqual({
+      profiles: [
+        {
+          id: 'legacy',
+          enabled: true,
+          type: 'http',
+          host: '127.0.0.1',
+          port: '8080',
+          username: '',
+          password: '',
+          websites: [],
+        },
+      ],
+    });
+  });
+
+  it('loads valid proxy configuration from disk', () => {
+    const path = join(tmpDir, 'startup.json');
+    writeFileSync(
+      path,
+      JSON.stringify({
+        proxy: {
+          mode: 'fixed_servers',
+          pool: [
+            {
+              id: 'pool-1',
+              type: 'http',
+              host: 'proxy.example.com',
+              port: '3128',
+              username: '',
+              password: '',
+            },
+          ],
+          fixedProxyId: 'pool-1',
+          routing: {},
+        },
+      }),
+    );
+    const s = makeStore();
+    expect(s.get().proxy).toMatchObject({
+      mode: 'fixed_servers',
+      pool: [
+        expect.objectContaining({
+          host: 'proxy.example.com',
+          port: '3128',
+        }),
+      ],
+    });
+  });
+
+  it('returns the stored proxy object as-is', () => {
+    store.set({
+      proxy: {
+        mode: 'fixed_servers',
+        pool: [
+          {
+            id: 'pool-1',
+            type: 'http',
+            host: '127.0.0.1',
+            port: '8080',
+            username: '',
+            password: '',
+          },
+        ],
+        fixedProxyId: 'pool-1',
+        routing: {},
+      },
+    });
+
+    const opts = store.get();
+    opts.proxy.pool[0].host = '10.0.0.99';
+    expect(store.get().proxy.pool[0].host).toBe('10.0.0.99');
   });
 });
 

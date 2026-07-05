@@ -42,31 +42,6 @@ export function initializeAppInsightsUI(): void {
     });
     appInsights.trackPageView();
 
-    // Set up global error handler for React
-    window.addEventListener('error', (event: ErrorEvent) => {
-      trackUIException(event.error, {
-        source: 'window.onerror',
-        message: event.message,
-        filename: event.filename,
-        lineno: String(event.lineno),
-        colno: String(event.colno),
-      });
-    });
-
-    // Handle unhandled promise rejections
-    window.addEventListener(
-      'unhandledrejection',
-      (event: PromiseRejectionEvent) => {
-        const error =
-          event.reason instanceof Error
-            ? event.reason
-            : new Error(String(event.reason));
-        trackUIException(error, {
-          source: 'unhandledrejection',
-          reason: String(event.reason),
-        });
-      },
-    );
   } catch (error) {
     // Failed to initialize - silently fail
   }

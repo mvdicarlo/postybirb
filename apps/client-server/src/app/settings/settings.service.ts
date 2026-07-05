@@ -9,20 +9,26 @@ import { SETTINGS_UPDATES } from '@postybirb/socket-events';
 import { EntityId, SettingsConstants } from '@postybirb/types';
 import {
   isLinux,
-  StartupOptions,
+  PostyBirbEnvConfig,
+  shouldBypassProxyForUrl,
   StartupOptionsManager,
 } from '@postybirb/utils/common';
 import { eq } from 'drizzle-orm';
 import { PostyBirbService } from '../common/service/postybirb-service';
+import { ProxyService } from '../proxy/proxy.service';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { UpdateSettingsDto } from './dtos/update-settings.dto';
+import { UpdateStartupSettingsDto } from './dtos/update-startup-settings.dto';
 
 @Injectable()
 export class SettingsService
   extends PostyBirbService<SettingsRepository>
   implements OnModuleInit
 {
-  constructor(@Optional() webSocket: WSGateway) {
+  constructor(
+    private readonly proxyService: ProxyService,
+    @Optional() webSocket?: WSGateway,
+  ) {
     super(new SettingsRepository(), webSocket);
     this.repository.subscribe('SettingsSchema', () => this.emit());
   }
@@ -158,7 +164,7 @@ export class SettingsService
   /**
    * Updates app startup settings.
    */
-  public updateStartupSettings(startUpOptions: Partial<StartupOptions>) {
+  public async updateStartupSettings(startUpOptions: UpdateStartupSettingsDto) {
     if (startUpOptions.appDataPath) {
       // eslint-disable-next-line no-param-reassign
       startUpOptions.appDataPath = startUpOptions.appDataPath.trim();
@@ -182,8 +188,15 @@ export class SettingsService
       }
     }
 
-    StartupOptionsManager.set({ ...startUpOptions });
-    return StartupOptionsManager.get();
+    const { proxy, ...rest } = startUpOptions;
+
+    if (proxy) {
+      await this.proxyService.saveConfiguration(proxy);
+    }
+
+    if (Object.keys(rest).length > 0) {
+      StartupOptionsManager.set(rest);
+    }
   }
 
   /**
@@ -220,20 +233,27 @@ export class SettingsService
         };
       }
 
-      // Clean up the URL
-      const cleanUrl = hostUrl.trim().replace(/\/$/, '');
+      const cleanUrl = this.normalizeRemoteHostUrl(hostUrl);
       const testUrl = `${cleanUrl}/api/remote/ping/${encodeURIComponent(password)}`;
+      const bypass = shouldBypassProxyForUrl(testUrl, {
+        remoteHost: hostUrl,
+        appPort: PostyBirbEnvConfig.port,
+      });
 
-      this.logger.debug(`Testing remote connection to: ${cleanUrl}`);
+      this.logger.debug('[Settings.testRemote]', {
+        cleanUrl,
+        bypass,
+      });
 
-      const response = await fetch(testUrl, {
+      const fetchOptions: RequestInit = {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
-        // Set a reasonable timeout
-        signal: AbortSignal.timeout(10000), // 10 seconds
-      });
+        signal: AbortSignal.timeout(10000),
+      };
+
+      const response = await fetch(testUrl, fetchOptions);
 
       if (response.ok) {
         const result = await response.json();
@@ -293,5 +313,18 @@ export class SettingsService
         message: `Connection test failed: ${(error as Error).message}`,
       };
     }
+  }
+
+  private normalizeRemoteHostUrl(hostUrl: string): string {
+    const trimmed = hostUrl.trim().replace(/\/$/, '');
+    if (!trimmed) {
+      return trimmed;
+    }
+
+    if (/^https?:\/\//i.test(trimmed)) {
+      return trimmed;
+    }
+
+    return `https://${trimmed}`;
   }
 }

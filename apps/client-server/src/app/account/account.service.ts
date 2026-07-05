@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  OnModuleDestroy,
   OnModuleInit,
   Optional,
 } from '@nestjs/common';
@@ -17,6 +18,7 @@ import { IsTestEnvironment } from '@postybirb/utils/common';
 import { ne } from 'drizzle-orm';
 import { Class } from 'type-fest';
 import { PostyBirbService } from '../common/service/postybirb-service';
+import { ProxyService } from '../proxy/proxy.service';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { UnknownWebsite } from '../websites/website';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
@@ -32,7 +34,7 @@ import { LoginStatePoller } from './login-state-poller';
 @Injectable()
 export class AccountService
   extends PostyBirbService<AccountRepository>
-  implements OnModuleInit
+  implements OnModuleInit, OnModuleDestroy
 {
   private readonly loginRefreshTimers: Record<
     string,
@@ -46,6 +48,7 @@ export class AccountService
 
   constructor(
     private readonly websiteRegistry: WebsiteRegistryService,
+    private readonly proxyService: ProxyService,
     @Optional() webSocket?: WSGateway,
   ) {
     super(new AccountRepository(), webSocket);
@@ -67,6 +70,7 @@ export class AccountService
     // Defer heavy operations to avoid blocking NestJS initialization
     setImmediate(async () => {
       await this.deleteUnregisteredAccounts();
+
       await this.initWebsiteRegistry();
       this.websiteRegistry.markAsInitialized();
       this.initWebsiteLoginRefreshTimers();
@@ -76,6 +80,12 @@ export class AccountService
       Object.keys(this.loginRefreshTimers).forEach((interval) =>
         this.executeOnLoginForInterval(interval),
       );
+    });
+  }
+
+  onModuleDestroy(): void {
+    Object.values(this.loginRefreshTimers).forEach(({ timer }) => {
+      clearInterval(timer);
     });
   }
 
@@ -131,7 +141,9 @@ export class AccountService
       where: ne(this.table.id, NULL_ACCOUNT_ID),
     });
     await Promise.all(
-      accounts.map((account) => this.websiteRegistry.create(account)),
+      accounts.map(async (account) => {
+        await this.websiteRegistry.create(account);
+      }),
     ).catch((err) => {
       this.logger.error(err, 'onModuleInit');
     });
@@ -147,11 +159,17 @@ export class AccountService
         (website.prototype.decoratedProps.metadata as IWebsiteMetadata)
           .refreshInterval ?? 60_000 * 60;
       if (!this.loginRefreshTimers[interval]) {
+        const timer = setInterval(() => {
+          this.executeOnLoginForInterval(interval);
+        }, interval);
+
+        if (typeof timer.unref === 'function') {
+          timer.unref();
+        }
+
         this.loginRefreshTimers[interval] = {
           websites: [],
-          timer: setInterval(() => {
-            this.executeOnLoginForInterval(interval);
-          }, interval),
+          timer,
         };
       }
 
@@ -180,7 +198,6 @@ export class AccountService
     const { websites } = this.loginRefreshTimers[interval];
     websites.forEach((website) => {
       this.websiteRegistry.getInstancesOf(website).forEach((instance) => {
-        // Fire-and-forget — the poller will detect state changes
         instance.login().catch((e) => {
           this.logger.withError(e).error(`Login failed for ${instance.id}`);
         });
@@ -195,7 +212,6 @@ export class AccountService
    * @param {UnknownWebsite} website
    */
   private afterCreate(account: Account, website: UnknownWebsite) {
-    // Fire-and-forget — poller picks up the state change
     website.login().catch((e) => {
       this.logger.withError(e).error(`Initial login failed for ${website.id}`);
     });
@@ -225,7 +241,7 @@ export class AccountService
       instance = await this.websiteRegistry.create(account);
     }
 
-    instance.login().catch((e) => {
+    await instance.login().catch((e) => {
       this.logger.withError(e).error(`Login failed for ${instance.id}`);
     });
   }
@@ -263,6 +279,9 @@ export class AccountService
       );
     }
     const account = await this.repository.insert(new Account(createDto));
+    if (!IsTestEnvironment()) {
+      await this.proxyService.onAccountCreated();
+    }
     const instance = await this.websiteRegistry.create(account);
     this.afterCreate(account, instance);
     return account.withWebsiteInstance(instance);
@@ -289,9 +308,11 @@ export class AccountService
 
   async update(id: AccountId, update: UpdateAccountDto) {
     this.logger.withMetadata(update).info(`Updating Account '${id}'`);
-    return this.repository
+    const account = await this.repository
       .update(id, update)
-      .then((account) => this.injectWebsiteInstance(account));
+      .then((entity) => this.injectWebsiteInstance(entity));
+
+    return account;
   }
 
   async remove(id: AccountId): Promise<void> {

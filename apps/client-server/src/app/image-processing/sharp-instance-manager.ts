@@ -203,9 +203,7 @@ export class SharpInstanceManager implements OnModuleDestroy {
    * utilityProcess in production (true crash isolation) or an in-process
    * stand-in under test.
    */
-  private async spawnWorker(
-    operation: string,
-  ): Promise<PlatformWorkerProcess> {
+  private async spawnWorker(operation: string): Promise<PlatformWorkerProcess> {
     const child = await this.platform.process.fork(this.workerPath, {
       serviceName: 'PostyBirb Sharp Image Processor',
     });
@@ -339,9 +337,7 @@ export class SharpInstanceManager implements OnModuleDestroy {
               timeoutMs: REQUEST_TIMEOUT_MS,
               pid: child.pid,
             })
-            .error(
-              'Sharp operation timed out; terminating the worker process',
-            );
+            .error('Sharp operation timed out; terminating the worker process');
           rejectPromise(
             new Error(
               `Sharp ${input.operation} operation timed out after ${REQUEST_TIMEOUT_MS}ms`,

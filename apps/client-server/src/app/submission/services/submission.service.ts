@@ -17,7 +17,7 @@ import {
   SubmissionSchema,
   WebsiteOptions,
   WebsiteOptionsSchema,
-  withTransactionContext
+  withTransactionContext,
 } from '@postybirb/database';
 import { SUBMISSION_UPDATES } from '@postybirb/socket-events';
 import {
@@ -68,10 +68,7 @@ export class SubmissionService
     private readonly messageSubmissionService: MessageSubmissionService,
     @Optional() webSocket: WSGateway,
   ) {
-    super(
-      new SubmissionRepository(),
-      webSocket,
-    );
+    super(new SubmissionRepository(), webSocket);
     this.repository.subscribe(
       [
         'PostRecordSchema',
@@ -121,8 +118,7 @@ export class SubmissionService
 
     for (const submission of submissions) {
       const hasDefault = (submission.options ?? []).some(
-        (option) =>
-          option.isDefault || option.accountId === NULL_ACCOUNT_ID,
+        (option) => option.isDefault || option.accountId === NULL_ACCOUNT_ID,
       );
       if (hasDefault) {
         continue;

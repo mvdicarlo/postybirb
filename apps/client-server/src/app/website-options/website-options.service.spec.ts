@@ -23,6 +23,7 @@ import { FileSubmissionService } from '../submission/services/file-submission.se
 import { MessageSubmissionService } from '../submission/services/message-submission.service';
 import { SubmissionService } from '../submission/services/submission.service';
 import { ValidationService } from '../validation/validation.service';
+import { ProxyService } from '../proxy/proxy.service';
 import { WebsiteImplProvider } from '../websites/implementations/provider';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { WebsitesModule } from '../websites/websites.module';
@@ -75,13 +76,19 @@ describe('WebsiteOptionsService', () => {
           FileSubmissionService,
           MessageSubmissionService,
           AccountService,
-          WebsiteRegistryService,
-          ValidationService,
-          WebsiteOptionsService,
-          WebsiteImplProvider,
-          FileConverterService,
-        ],
-      }).compile();
+        WebsiteRegistryService,
+        ValidationService,
+        WebsiteOptionsService,
+        WebsiteImplProvider,
+        FileConverterService,
+        {
+          provide: ProxyService,
+          useValue: {
+            saveConfiguration: jest.fn(),
+          },
+        },
+      ],
+    }).compile();
 
       service = module.get<WebsiteOptionsService>(WebsiteOptionsService);
       submissionService = module.get<SubmissionService>(SubmissionService);

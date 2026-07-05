@@ -6,13 +6,15 @@ import {
   PlatformBrowserService,
   PlatformForkOptions,
   PlatformHttpService,
-  PlatformNetworkService,
   PlatformNotificationService,
+  PlatformProxyService,
+  type PlatformProxySession,
   PlatformProcessService,
   PlatformService,
   PlatformSessionService,
   PlatformWorkerProcess,
 } from '@postybirb/platform';
+import type { ProxyConfiguration } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/common';
 
 class NoopPlatformAppService implements PlatformAppService {
@@ -64,16 +66,6 @@ class NoopPlatformNotificationService implements PlatformNotificationService {
   show(): void {}
 }
 
-class NoopPlatformNetworkService implements PlatformNetworkService {
-  isOnline(): boolean {
-    return true;
-  }
-
-  async fetch(input: string | URL, init?: RequestInit): Promise<Response> {
-    return fetch(input, init);
-  }
-}
-
 class NoopPlatformHttpService implements PlatformHttpService {
   getUserAgent(): string {
     return 'PostyBirb/0.0.0-test';
@@ -102,6 +94,20 @@ class NoopPlatformHttpService implements PlatformHttpService {
   async put<T>(): Promise<never> {
     throw new Error('NoopPlatformHttpService.put is not implemented');
   }
+}
+
+class NoopPlatformProxyService extends PlatformProxyService {
+  async applyProxy(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _partitionIds: string[],
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _configuration?: ProxyConfiguration,
+  ): Promise<void> {}
+
+  async onSessionCreated(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _createdSession: PlatformProxySession,
+  ): Promise<void> {}
 }
 
 /**
@@ -191,9 +197,9 @@ export class NoopPlatformService extends PlatformService {
 
   readonly notification = new NoopPlatformNotificationService();
 
-  readonly network = new NoopPlatformNetworkService();
-
   readonly http = new NoopPlatformHttpService();
+
+  readonly proxy = new NoopPlatformProxyService();
 
   readonly process = new NoopPlatformProcessService();
 }

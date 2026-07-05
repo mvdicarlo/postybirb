@@ -25,6 +25,7 @@ import {
   IconServer,
 } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
+import settingsApi from '../../../../api/settings.api';
 import {
   getRemoteConfig,
   resetRemoteConfig,
@@ -92,26 +93,24 @@ export function RemoteSettingsSection() {
     setIsConnectionValid(false);
 
     try {
-      const url = `https://${hostUrl.trim()}/api/remote/ping/${encodeURIComponent(remotePassword.trim())}`;
-      const res = await fetch(url);
-      const response = await res.json();
+      const result = await settingsApi.testRemoteConnection(
+        hostUrl.trim(),
+        remotePassword.trim(),
+      );
 
-      if (!res.ok) {
-        const errorInfo = {
-          error: response.error || t`Connection Failed`,
-          statusCode: response.statusCode || res.status,
-          message: response.message || t`Failed to connect to remote host`,
-        };
-        showConnectionErrorNotification(
-          `${errorInfo.error} (${errorInfo.statusCode})`,
-          errorInfo.message,
+      if (result.body.success) {
+        setIsConnectionValid(true);
+        showConnectionSuccessNotification(
+          result.body.message || (
+            <Trans>Successfully connected to the remote host</Trans>
+          ),
         );
         return;
       }
 
-      setIsConnectionValid(true);
-      showConnectionSuccessNotification(
-        <Trans>Successfully connected to the remote host</Trans>,
+      showConnectionErrorNotification(
+        <Trans>Connection Failed</Trans>,
+        result.body.message || t`Failed to connect to remote host`,
       );
     } catch (error) {
       if (error instanceof TypeError) {

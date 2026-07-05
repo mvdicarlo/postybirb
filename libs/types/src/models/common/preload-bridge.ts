@@ -1,4 +1,4 @@
-import type { RemoteConfig } from '@postybirb/utils/common';
+import type { RemoteConfig } from './remote-config.type';
 
 export interface PreloadBridge {
   getLanIp(): Promise<string | undefined>;
@@ -6,6 +6,8 @@ export interface PreloadBridge {
   pickDirectory?(defaultPath?: string): Promise<string | undefined>;
   openExternalLink(url: string): void;
   getCookiesForAccount(accountId: string): Promise<string>;
+  /** Subscribe to proxy apply completion (returns unsubscribe). */
+  onProxyConfigApplied(callback: () => void): () => void;
   getLocalStorageForAccount(
     accountId: string,
     url: string,

@@ -5,6 +5,49 @@
 const http = require('http');
 const https = require('https');
 
+const partitionSessions = new Map();
+const sessionStates = new WeakMap();
+
+function createSession(partitionId) {
+  const sessionState = {
+    proxyConfig: { mode: 'system' },
+    resolveProxyResult: 'DIRECT',
+  };
+  const session = {
+    setProxy: async function (config) {
+      sessionState.proxyConfig = config || { mode: 'system' };
+    },
+    resolveProxy: async function () {
+      return sessionState.resolveProxyResult;
+    },
+    closeAllConnections: function () {},
+    forceReloadProxyConfig: async function () {},
+    setCertificateVerifyProc: function () {},
+    cookies: {
+      get: async function () {
+        return [];
+      },
+      set: async function () {},
+      remove: async function () {},
+    },
+    __partitionId: partitionId,
+  };
+
+  sessionStates.set(session, sessionState);
+  return session;
+}
+
+function getSession(partitionId) {
+  if (!partitionSessions.has(partitionId)) {
+    partitionSessions.set(partitionId, createSession(partitionId));
+  }
+  return partitionSessions.get(partitionId);
+}
+
+function getSessionState(session) {
+  return sessionStates.get(session);
+}
+
 function performRequest(url, method, headers, body, eventHandlers, redirectCount) {
   if (redirectCount === undefined) redirectCount = 0;
 
@@ -42,7 +85,6 @@ function performRequest(url, method, headers, body, eventHandlers, redirectCount
           nodeRes.headers,
         );
       }
-      // Consume redirect response body before following
       nodeRes.resume();
       performRequest(redirectUrl, method, headers, body, eventHandlers, redirectCount + 1);
       return;
@@ -104,25 +146,71 @@ function makeElectronNetRequest(options) {
   return clientRequest;
 }
 
+const defaultSession = createSession('default');
+defaultSession.__partitionId = 'default';
+
+let appProxyConfig = null;
+
+const appHandlers = {
+  ready: [],
+  'session-created': [],
+  login: [],
+};
+
 module.exports = {
+  app: {
+    on: function (event, handler) {
+      if (appHandlers[event]) {
+        appHandlers[event].push(handler);
+      }
+    },
+    isReady: function () {
+      return true;
+    },
+    setProxy: async function (config) {
+      appProxyConfig = config || { mode: 'system' };
+    },
+  },
+
+  __getAppProxyConfig: function () {
+    return appProxyConfig;
+  },
+
+  __resetAppProxyConfig: function () {
+    appProxyConfig = null;
+  },
+
+  __getSessionProxyConfig: function (session) {
+    const state = getSessionState(session);
+    return state ? state.proxyConfig : undefined;
+  },
+
+  __setSessionProxyConfig: function (session, config) {
+    const state = getSessionState(session);
+    if (state) {
+      state.proxyConfig = config || { mode: 'system' };
+    }
+  },
+
   net: {
     isOnline: function () {
       return true;
     },
     request: makeElectronNetRequest,
+    fetch: async function (input, init) {
+      return fetch(input, init);
+    },
   },
 
   session: {
-    fromPartition: function () {
-      return {
-        cookies: {
-          get: async function () {
-            return [];
-          },
-          set: async function () {},
-          remove: async function () {},
-        },
-      };
+    defaultSession: defaultSession,
+    resolveProxy: async function () {
+      return defaultSession.resolveProxy();
+    },
+    fromPartition: function (partitionId) {
+      const sess = getSession(partitionId || 'default');
+      sess.__partitionId = partitionId || 'default';
+      return sess;
     },
   },
 

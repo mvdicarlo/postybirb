@@ -1,7 +1,7 @@
 import { Logger, PostyBirbLogger } from '@postybirb/logger';
+import { resolveCloudApiUrl } from '@postybirb/utils/common';
 
-const FUNCTION_BASE_URL =
-  process.env.POSTYBIRB_CLOUD_URL || 'https://postybirb.azurewebsites.net/api';
+const FUNCTION_BASE_URL = resolveCloudApiUrl();
 
 interface UploadResponse {
   url: string;

@@ -169,9 +169,10 @@ export abstract class BasePostManager {
   ): Promise<void> {
     const { submission } = entity;
     const { accountId, instance } = websiteInfo;
-    let data: PostData | undefined;
     const option = submission.options.find((o) => o.accountId === accountId);
     if (!option) throw new Error('No website options found');
+
+    let data: PostData | undefined;
 
     try {
       await this.ensureLoggedIn(instance);
