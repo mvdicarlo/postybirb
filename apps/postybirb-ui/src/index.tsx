@@ -74,6 +74,7 @@ export function PostyBirb() {
   useEffect(() => {
     loadAllStores()
       .catch((error) => {
+        // eslint-disable-next-line no-console, lingui/no-unlocalized-strings
         console.error('Failed to load all stores', error);
       });
   }, []);
