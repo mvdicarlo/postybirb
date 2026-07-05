@@ -1,22 +1,14 @@
 import type {
   EntityId,
   IUpdateSettingsDto,
-  ProxyConfiguration,
   SettingsDto,
 } from '@postybirb/types';
+import type { StartupOptions } from '@postybirb/utils/common';
 import {
   getLocalBaseUrl,
   getLocalServerPassword,
   HttpClient,
 } from '../transports/http-client';
-
-type StartupOptions = {
-  startAppOnSystemStartup?: boolean;
-  spellchecker?: boolean;
-  appDataPath?: string;
-  port?: string;
-  proxy?: Partial<ProxyConfiguration> | unknown;
-};
 
 class SettingsApi {
   private readonly client: HttpClient = new HttpClient('settings');
