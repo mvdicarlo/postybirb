@@ -6,6 +6,7 @@ import { Trans } from '@lingui/react/macro';
 import {
   ActionIcon,
   Badge,
+  Button,
   Box,
   Collapse,
   Divider,
@@ -19,9 +20,7 @@ import { useDisclosure } from '@mantine/hooks';
 import { FileType, ISubmissionFileDto } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import {
-  IconChevronDown,
   IconGripVertical,
-  IconPencil,
   IconTrash,
 } from '@tabler/icons-react';
 import { memo } from 'react';
@@ -125,28 +124,14 @@ export const SubmissionFileCard = memo(
               <Group gap="xs">
                 {/* Edit metadata button - more discoverable */}
                 {!submission.isArchived && (
-                  <Tooltip
-                    label={
-                      expanded ? (
-                        <Trans>Collapse</Trans>
-                      ) : (
-                        <Trans>Edit metadata</Trans>
-                      )
-                    }
+                  <Button
+                    size="compact-xs"
+                    variant={expanded ? 'filled' : 'light'}
+                    color="blue"
+                    onClick={toggle}
                   >
-                    <ActionIcon
-                      size="sm"
-                      variant={expanded ? 'filled' : 'light'}
-                      color="blue"
-                      onClick={toggle}
-                    >
-                      {expanded ? (
-                        <IconChevronDown size={14} />
-                      ) : (
-                        <IconPencil size={14} />
-                      )}
-                    </ActionIcon>
-                  </Tooltip>
+                    <Trans>Edit</Trans>
+                  </Button>
                 )}
 
                 {/* Delete button */}
