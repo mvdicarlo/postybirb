@@ -1,4 +1,3 @@
-import { INestApplication } from '@nestjs/common';
 import { app } from 'electron';
 import { installAppSecurity } from './main-process/security';
 import { TrayManager } from './main-process/tray';
@@ -13,8 +12,6 @@ export default class PostyBirbApp {
   private readonly windowManager = new WindowManager();
 
   private tray: TrayManager | null = null;
-
-  constructor(private readonly nestApp: INestApplication) {}
 
   /**
    * Install security policies, create the main window and tray, and register
@@ -35,8 +32,8 @@ export default class PostyBirbApp {
   }
 
   private registerLifecycleEvents(): void {
-    // Keep PostyBirb running in the system tray after the last window closes.
-    app.on('window-all-closed', () => {});
+    // The `window-all-closed` override is registered globally in main.ts so it
+    // applies in both GUI and headless modes (see the crash-loop note there).
 
     // macOS: re-show the window when the dock icon is clicked.
     app.on('activate', () => {
@@ -49,17 +46,5 @@ export default class PostyBirbApp {
         this.windowManager.show();
       }
     });
-
-    app.on('quit', () => {
-      this.shutdown();
-    });
-  }
-
-  private async shutdown(): Promise<void> {
-    await this.nestApp.close().catch((error) => {
-      // Ignore errors during shutdown
-      console.error('Error during shutdown:', error);
-    });
-    process.exit();
   }
 }
