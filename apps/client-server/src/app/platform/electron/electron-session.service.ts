@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import {
+  PlatformClearStorageOptions,
   PlatformCookie,
   PlatformCookieDetails,
   PlatformCookieFilter,
@@ -58,7 +59,10 @@ export class ElectronSessionService extends PlatformSessionService {
     await this.getSession(partition).cookies.flushStore();
   }
 
-  async clearStorageData(partition: string): Promise<void> {
-    await this.getSession(partition).clearStorageData();
+  async clearStorageData(
+    partition: string,
+    options?: PlatformClearStorageOptions,
+  ): Promise<void> {
+    await this.getSession(partition).clearStorageData(options);
   }
 }

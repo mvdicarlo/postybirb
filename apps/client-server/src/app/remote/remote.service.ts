@@ -12,6 +12,18 @@ import { UpdateCookiesRemoteDto } from './models/update-cookies-remote.dto';
 export class RemoteService {
   protected readonly logger = Logger(this.constructor.name);
 
+  /**
+   * Last `localStorage` payload written per account, keyed by account id and
+   * stored as a JSON signature of `{ url, data }`.
+   *
+   * Writing localStorage requires spawning a headless BrowserWindow and
+   * loading the target page — an expensive operation that, when triggered on
+   * every login-check event (as the Itaku login flow does), can hang the
+   * server on resource-constrained hosts. We cache the last value we wrote
+   * and skip the write when the incoming payload is identical.
+   */
+  private readonly localStorageCache = new Map<string, string>();
+
   constructor(private readonly platform: PlatformService) {}
 
   async validate(password: string): Promise<boolean> {
@@ -52,7 +64,12 @@ export class RemoteService {
     if (cookies.length === 0) {
       this.logger.warn('No cookies provided for account, skipping update');
     } else {
-      await this.platform.session.clearStorageData(updateCookies.accountId);
+      // Clear only cookies (not localStorage) so the cached localStorage we
+      // persist below survives cookie refreshes and we can safely skip
+      // rewriting it when it hasn't changed.
+      await this.platform.session.clearStorageData(updateCookies.accountId, {
+        storages: ['cookies'],
+      });
       await Promise.all(
         cookies.map((cookie) =>
           this.platform.session.setCookie(
@@ -67,14 +84,27 @@ export class RemoteService {
       this.logger.warn(
         'No local storage provided for account, skipping update',
       );
+      this.localStorageCache.delete(updateCookies.accountId);
     } else {
-      await this.platform.browser.runScriptOnPage(
-        updateCookies.accountId,
-        updateCookies.localStorage.url,
-        `for (const [key, value] of Object.entries(JSON.parse(${JSON.stringify(JSON.stringify(updateCookies.localStorage.data))}))) {
+      const signature = JSON.stringify({
+        url: updateCookies.localStorage.url,
+        data: updateCookies.localStorage.data,
+      });
+
+      if (this.localStorageCache.get(updateCookies.accountId) === signature) {
+        this.logger
+          .withMetadata({ accountId: updateCookies.accountId })
+          .info('Local storage unchanged, skipping write');
+      } else {
+        await this.platform.browser.runScriptOnPage(
+          updateCookies.accountId,
+          updateCookies.localStorage.url,
+          `for (const [key, value] of Object.entries(JSON.parse(${JSON.stringify(JSON.stringify(updateCookies.localStorage.data))}))) {
             localStorage.setItem(key, value)
          }`,
-      );
+        );
+        this.localStorageCache.set(updateCookies.accountId, signature);
+      }
     }
   }
 
