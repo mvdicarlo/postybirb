@@ -88,6 +88,7 @@ export class LoginStatePoller {
    */
   private statesEqual(a: ILoginState, b: ILoginState): boolean {
     return (
+      a.status === b.status &&
       a.isLoggedIn === b.isLoggedIn &&
       a.pending === b.pending &&
       a.username === b.username &&

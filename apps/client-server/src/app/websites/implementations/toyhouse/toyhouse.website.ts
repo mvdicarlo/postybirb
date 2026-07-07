@@ -1,12 +1,12 @@
 import { FormFile, HttpResponse } from '@postybirb/http/types';
 import {
-  ILoginState,
-  ISubmissionFile,
-  PostData,
-  PostFields,
-  PostResponse,
-  SimpleValidationResult,
-  SubmissionRating,
+    ISubmissionFile,
+    LoginResult,
+    PostData,
+    PostFields,
+    PostResponse,
+    SimpleValidationResult,
+    SubmissionRating,
 } from '@postybirb/types';
 import { HTMLElement, parse } from 'node-html-parser';
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -43,7 +43,7 @@ export default class Toyhouse
       characters: true,
     };
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     try {
       const res = await this.platform.http.get<string>(
         `${this.BASE_URL}/~characters/manage/folder:all`,
@@ -52,7 +52,7 @@ export default class Toyhouse
 
       if (!isLoggedIn(res)) {
         // Not logged in
-        return this.loginState.setLogin(false, null);
+        return { loggedIn: false };
       }
 
       const $ = parse(res.body);
@@ -61,7 +61,7 @@ export default class Toyhouse
       );
       if (!usernameEl) {
         this.logger.warn('Failed to find username element during login');
-        return this.loginState.setLogin(false, null);
+        return { loggedIn: false };
       }
       const username = usernameEl.text.trim();
 
@@ -69,10 +69,10 @@ export default class Toyhouse
 
       this.setWebsiteData({ characters });
 
-      return this.loginState.setLogin(true, username);
+      return { loggedIn: true, username };
     } catch (e) {
       this.logger.withError(e).error('Failed to login');
-      return this.loginState.setLogin(false, null);
+      return { loggedIn: false };
     }
   }
 

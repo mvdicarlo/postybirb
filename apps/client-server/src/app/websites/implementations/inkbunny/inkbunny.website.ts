@@ -1,13 +1,13 @@
 import {
-  ILoginState,
-  ImageResizeProps,
-  InkbunnyAccountData,
-  InkbunnyOAuthRoutes,
-  IPostResponse,
-  OAuthRouteHandlers,
-  PostData,
-  PostResponse,
-  SubmissionRating,
+    ImageResizeProps,
+    InkbunnyAccountData,
+    InkbunnyOAuthRoutes,
+    IPostResponse,
+    LoginResult,
+    OAuthRouteHandlers,
+    PostData,
+    PostResponse,
+    SubmissionRating,
 } from '@postybirb/types';
 import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -21,8 +21,8 @@ import { SupportsUsernameShortcut } from '../../decorators/supports-username-sho
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
 import {
-  FileWebsite,
-  PostBatchData,
+    FileWebsite,
+    PostBatchData,
 } from '../../models/website-modifiers/file-website';
 import { OAuthWebsite } from '../../models/website-modifiers/oauth-website';
 import { WithCustomDescriptionParser } from '../../models/website-modifiers/with-custom-description-parser';
@@ -122,11 +122,11 @@ export default class Inkbunny
     },
   };
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     const data = this.websiteDataStore.getData();
 
     if (!data.username || !data.sid) {
-      return this.loginState.setLogin(false, null);
+      return { loggedIn: false };
     }
 
     try {
@@ -143,13 +143,13 @@ export default class Inkbunny
       );
 
       if (authCheck.body && !authCheck.body.error_code) {
-        return this.loginState.setLogin(true, data.username);
+        return { loggedIn: true, username: data.username };
       }
 
-      return this.loginState.setLogin(false, null);
+      return { loggedIn: false };
     } catch (error) {
       this.logger.error('Failed to check Inkbunny login status', error);
-      return this.loginState.setLogin(false, null);
+      return { loggedIn: false };
     }
   }
 

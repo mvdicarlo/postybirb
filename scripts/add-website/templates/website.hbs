@@ -1,8 +1,8 @@
 import { Http } from '@postybirb/http';
 import {
-  ILoginState,
   ImageResizeProps,
   ISubmissionFile,
+  LoginResult,
   PostData,
   PostResponse,
   SimpleValidationResult,
@@ -52,12 +52,12 @@ export default class {{pascalWebsiteName}} extends Website<{{pascalWebsiteName}}
       folders: true
     };
 
-  protected async onLogin(): Promise<ILoginState> {
+  protected async onLogin(): Promise<LoginResult> {
     if (this.account.name === 'test') {
-      this.loginState.logout();
+      return { loggedIn: false };
     }
 
-    return this.loginState.setLogin(true, 'TestUser');
+    return { loggedIn: true, username: 'TestUser' };
   }
 
   {{#if hasFile}}

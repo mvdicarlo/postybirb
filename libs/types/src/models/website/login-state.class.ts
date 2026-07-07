@@ -1,82 +1,113 @@
-import { ILoginState } from './login-state.interface';
+import { LoginResult } from './login-result.type';
+import { ILoginState, LoginStatus } from './login-state.interface';
 
 /**
- * A class used for tracking the login state of a website.
+ * Immutable value object tracking the login state of a website.
+ *
+ * Instances are never mutated: every transition returns a NEW frozen
+ * `LoginState`. The login lifecycle (in the `Website` base class) owns all
+ * transitions — website implementations report results via {@link LoginResult}
+ * and never touch this class directly.
+ *
+ * `status` is the single source of truth; `isLoggedIn`/`pending` are derived.
+ *
  * @class
  * @implements ILoginState
  */
 export class LoginState implements ILoginState {
   /**
-   * Whether a login request is pending.
-   * @type {boolean}
+   * The lifecycle status of the login check.
+   * @type {LoginStatus}
    */
-  pending = false;
-
-  /**
-   * Whether the user is currently logged in.
-   * @type {boolean}
-   */
-  isLoggedIn = false;
+  public readonly status: LoginStatus;
 
   /**
    * The username of the logged-in user, or null if not logged in.
    * @type {string | null}
    */
-  username: string | null = null;
+  public readonly username: string | null;
 
   /**
-   * ISO 8601 timestamp of the last time the login state was updated.
+   * ISO 8601 timestamp of the last state change.
    * @type {string | null}
    */
-  lastUpdated: string | null = null;
+  public readonly lastUpdated: string | null;
 
-  /**
-   * Updates the lastUpdated timestamp to now.
-   */
-  private touch(): void {
-    this.lastUpdated = new Date().toISOString();
-  }
-
-  /**
-   * Logs the user out by resetting the login state.
-   * @returns {LoginState} The current LoginState object.
-   */
-  public logout(): LoginState {
-    this.isLoggedIn = false;
-    this.username = null;
-    this.pending = false;
-    this.touch();
-    return this;
-  }
-
-  /**
-   * Sets the login state to the given values.
-   * @param {boolean} isLoggedIn - Whether the user is currently logged in.
-   * @param {string | null} username - The username of the logged-in user, or null if not logged in.
-   * @returns {ILoginState} The current login state.
-   */
-  public setLogin(isLoggedIn: boolean, username: string | null): ILoginState {
-    this.isLoggedIn = isLoggedIn;
+  private constructor(
+    status: LoginStatus,
+    username: string | null,
+    lastUpdated: string | null,
+  ) {
+    this.status = status;
     this.username = username;
-    this.touch();
-    return this.getState();
+    this.lastUpdated = lastUpdated;
+    Object.freeze(this);
   }
 
   /**
-   * Sets the pending flag.
-   * @param {boolean} value - Whether a login request is pending.
+   * Whether the user is currently logged in. Derived from the status.
    */
-  public setPending(value: boolean): void {
-    this.pending = value;
-    this.touch();
+  public get isLoggedIn(): boolean {
+    return this.status === 'loggedIn';
   }
 
   /**
-   * Returns a copy of the current login state.
+   * Whether a login check is currently in progress. Derived from the status.
+   */
+  public get pending(): boolean {
+    return this.status === 'checking';
+  }
+
+  /**
+   * Creates the initial `idle` login state (no check has completed yet).
+   * @returns {LoginState}
+   */
+  public static initial(): LoginState {
+    return new LoginState('idle', null, null);
+  }
+
+  /**
+   * Returns a new state marking that a login check has started. Preserves the
+   * current username so the UI can keep showing it while re-checking.
+   * @returns {LoginState}
+   */
+  public beginCheck(): LoginState {
+    return new LoginState('checking', this.username, new Date().toISOString());
+  }
+
+  /**
+   * Returns a new state reflecting the outcome of a completed login check.
+   * @param {LoginResult} result - The result reported by the website.
+   * @returns {LoginState}
+   */
+  public resolve(result: LoginResult): LoginState {
+    if (result.loggedIn) {
+      return new LoginState(
+        'loggedIn',
+        result.username ?? null,
+        new Date().toISOString(),
+      );
+    }
+    return new LoginState('loggedOut', null, new Date().toISOString());
+  }
+
+  /**
+   * Returns a new `loggedOut` state with no username. Used when login data is
+   * explicitly cleared.
+   * @returns {LoginState}
+   */
+  public reset(): LoginState {
+    return new LoginState('loggedOut', null, new Date().toISOString());
+  }
+
+  /**
+   * Returns a plain, serializable snapshot of the state, including the derived
+   * `isLoggedIn` and `pending` fields.
    * @returns {ILoginState} A copy of the current login state.
    */
-  getState(): ILoginState {
+  public toDTO(): ILoginState {
     return {
+      status: this.status,
       isLoggedIn: this.isLoggedIn,
       username: this.username,
       pending: this.pending,
@@ -84,3 +115,4 @@ export class LoginState implements ILoginState {
     };
   }
 }
+

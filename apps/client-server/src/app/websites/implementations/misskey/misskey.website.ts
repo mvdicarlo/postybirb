@@ -1,14 +1,14 @@
 import { Logger } from '@postybirb/logger';
 import {
-  ILoginState,
-  ImageResizeProps,
-  ISubmissionFile,
-  MisskeyAccountData,
-  MisskeyOAuthRoutes,
-  OAuthRouteHandlers,
-  PostData,
-  PostResponse,
-  SimpleValidationResult,
+    ImageResizeProps,
+    ISubmissionFile,
+    LoginResult,
+    MisskeyAccountData,
+    MisskeyOAuthRoutes,
+    OAuthRouteHandlers,
+    PostData,
+    PostResponse,
+    SimpleValidationResult,
 } from '@postybirb/types';
 import { toError } from '@postybirb/utils/common';
 import { calculateImageResize } from '@postybirb/utils/file-type';
@@ -146,7 +146,7 @@ export default class Misskey
           miAuthSessionId: undefined, // Clear temporary session
         });
 
-        await this.onLogin();
+        await this.login();
 
         return { success: true, username: result.user.username };
       } catch (error) {
@@ -163,11 +163,11 @@ export default class Misskey
   // Login
   // ========================================================================
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     const data = this.websiteDataStore.getData();
 
     if (!data?.accessToken || !data?.instanceUrl) {
-      return this.loginState.logout();
+      return { loggedIn: false };
     }
 
     try {
@@ -204,13 +204,13 @@ export default class Misskey
         this.logger.warn('Failed to fetch instance metadata', e);
       }
 
-      return this.loginState.setLogin(
-        true,
-        `${user.username}@${data.instanceUrl}`,
-      );
+      return {
+        loggedIn: true,
+        username: `${user.username}@${data.instanceUrl}`,
+      };
     } catch (error) {
       this.logger.error('Misskey login verification failed', error);
-      return this.loginState.logout();
+      return { loggedIn: false };
     }
   }
 

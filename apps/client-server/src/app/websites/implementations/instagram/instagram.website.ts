@@ -1,14 +1,14 @@
 import {
-  FileType,
-  ILoginState,
-  ImageResizeProps,
-  InstagramAccountData,
-  InstagramOAuthRoutes,
-  ISubmissionFile,
-  OAuthRouteHandlers,
-  PostData,
-  PostResponse,
-  SimpleValidationResult,
+    FileType,
+    ImageResizeProps,
+    InstagramAccountData,
+    InstagramOAuthRoutes,
+    ISubmissionFile,
+    LoginResult,
+    OAuthRouteHandlers,
+    PostData,
+    PostResponse,
+    SimpleValidationResult,
 } from '@postybirb/types';
 import { calculateImageResize } from '@postybirb/utils/file-type';
 import { v4 as uuidv4 } from 'uuid';
@@ -24,8 +24,8 @@ import { DataPropertyAccessibility } from '../../models/data-property-accessibil
 import { FileWebsite } from '../../models/website-modifiers/file-website';
 import { Website } from '../../website';
 import {
-  InstagramApiService,
-  retrieveOAuthCode,
+    InstagramApiService,
+    retrieveOAuthCode,
 } from './instagram-api-service/instagram-api-service';
 import { InstagramBlobService } from './instagram-blob-service/instagram-blob-service';
 import { InstagramFileSubmission } from './models/instagram-file-submission';
@@ -159,7 +159,7 @@ export default class Instagram
           igUsername: igAccount.igUsername,
         });
 
-        await this.onLogin();
+        await this.login();
 
         return {
           success: true,
@@ -211,11 +211,11 @@ export default class Instagram
   // Login
   // ========================================================================
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     const data = this.websiteDataStore.getData();
 
     if (!data?.accessToken || !data?.igUserId || !data?.igUsername) {
-      return this.loginState.logout();
+      return { loggedIn: false };
     }
 
     // Check if token is expired
@@ -225,7 +225,7 @@ export default class Instagram
 
       if (now > expiry) {
         this.logger.warn('Instagram token has expired');
-        return this.loginState.logout();
+        return { loggedIn: false };
       }
 
       // Auto-refresh if within 7 days of expiry
@@ -244,10 +244,10 @@ export default class Instagram
     const verified = await InstagramApiService.verifyToken(data.accessToken);
 
     if (verified) {
-      return this.loginState.setLogin(true, data.igUsername);
+      return { loggedIn: true, username: data.igUsername };
     }
 
-    return this.loginState.logout();
+    return { loggedIn: false };
   }
 
   // ========================================================================

@@ -1,12 +1,12 @@
 import { SelectOption } from '@postybirb/form-builder';
 
 import {
-  FileType,
-  ILoginState,
-  ImageResizeProps,
-  PostData,
-  PostResponse,
-  SimpleValidationResult,
+    FileType,
+    ImageResizeProps,
+    LoginResult,
+    PostData,
+    PostResponse,
+    SimpleValidationResult,
 } from '@postybirb/types';
 import { HTMLElement, parse } from 'node-html-parser';
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -66,7 +66,7 @@ export default class Aryion
       folders: true,
     };
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     const res = await this.platform.http.get<string>(
       `${this.BASE_URL}/g4/treeview.php`,
       {
@@ -81,13 +81,11 @@ export default class Aryion
       const $ = parse(res.body);
       const userLink = $.querySelector('.user-link');
       const username = userLink ? userLink.text : 'Unknown User';
-      this.loginState.setLogin(true, username);
       await this.getFolders($);
-    } else {
-      this.loginState.logout();
+      return { loggedIn: true, username };
     }
 
-    return this.loginState.getState();
+    return { loggedIn: false };
   }
 
   private async getFolders($: HTMLElement): Promise<void> {

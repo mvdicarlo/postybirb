@@ -1,14 +1,14 @@
 import {
-  ILoginState,
-  ImageResizeProps,
-  IPostResponse,
-  IWebsiteFormFields,
-  IWebsiteMetadata,
-  OAuthRouteHandlers,
-  OAuthRoutes,
-  PostData,
-  PostResponse,
-  SimpleValidationResult,
+    ImageResizeProps,
+    IPostResponse,
+    IWebsiteFormFields,
+    IWebsiteMetadata,
+    LoginResult,
+    OAuthRouteHandlers,
+    OAuthRoutes,
+    PostData,
+    PostResponse,
+    SimpleValidationResult,
 } from '@postybirb/types';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
@@ -44,14 +44,14 @@ export default class TestWebsite
 
   protected BASE_URL = 'http://localhost:3000';
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     if (this.account.id === 'FAIL') {
-      this.loginState.logout();
+      return { loggedIn: false };
     }
 
     // await wait(5_000);
     await this.websiteDataStore.setData({ test: 'test-mode' });
-    return this.loginState.setLogin(true, 'TestUser');
+    return { loggedIn: true, username: 'TestUser' };
   }
 
   createFileModel(): TestFileSubmission {

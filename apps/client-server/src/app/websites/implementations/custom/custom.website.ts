@@ -1,12 +1,12 @@
 import {
-  CustomAccountData,
-  DescriptionType,
-  ILoginState,
-  ImageResizeProps,
-  IPostResponse,
-  ISubmissionFile,
-  PostData,
-  PostResponse,
+    CustomAccountData,
+    DescriptionType,
+    ImageResizeProps,
+    IPostResponse,
+    ISubmissionFile,
+    LoginResult,
+    PostData,
+    PostResponse,
 } from '@postybirb/types';
 import { chunk } from 'lodash';
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -58,7 +58,7 @@ export default class Custom
       fileBatchLimit: true,
     };
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     const data = this.websiteDataStore.getData();
     // HACK: Ensure any initial data is processed
     this.onWebsiteDataChange(data);
@@ -66,10 +66,10 @@ export default class Custom
     // Check if we have either a file URL or notification URL configured
     if (data?.fileUrl || data?.notificationUrl) {
       const displayName = data.fileUrl || data.notificationUrl;
-      return this.loginState.setLogin(true, displayName || null);
+      return { loggedIn: true, username: displayName || null };
     }
 
-    return this.loginState.setLogin(false, null);
+    return { loggedIn: false };
   }
 
   async onWebsiteDataChange(newData: CustomAccountData): Promise<void> {

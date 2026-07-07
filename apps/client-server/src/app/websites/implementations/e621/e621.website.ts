@@ -2,18 +2,18 @@
 
 // eslint-disable-next-line max-classes-per-file
 import {
-  E621AccountData,
-  E621OAuthRoutes,
-  E621TagCategory,
-  ILoginState,
-  ImageResizeProps,
-  ISubmissionFile,
-  OAuthRouteHandlers,
-  PostData,
-  PostResponse,
-  SimpleValidationResult,
-  SubmissionRating,
-  TipTapNode,
+    E621AccountData,
+    E621OAuthRoutes,
+    E621TagCategory,
+    ImageResizeProps,
+    ISubmissionFile,
+    LoginResult,
+    OAuthRouteHandlers,
+    PostData,
+    PostResponse,
+    SimpleValidationResult,
+    SubmissionRating,
+    TipTapNode,
 } from '@postybirb/types';
 import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
 import { BBCodeConverter } from '../../../post-parsers/models/description-node/converters/bbcode-converter';
@@ -70,11 +70,11 @@ export default class E621
       key: true,
     };
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     const data = this.websiteDataStore.getData();
-    if (data.username) return this.loginState.setLogin(true, data.username);
+    if (data.username) return { loggedIn: true, username: data.username };
 
-    return this.loginState.logout();
+    return { loggedIn: false };
   }
 
   onAuthRoute: OAuthRouteHandlers<E621OAuthRoutes> = {
@@ -94,8 +94,8 @@ export default class E621
       }
 
       await this.setWebsiteData(data);
-      const result = await this.onLogin();
-      return { result: result.isLoggedIn };
+      const state = await this.login();
+      return { result: state.isLoggedIn };
     },
   };
 

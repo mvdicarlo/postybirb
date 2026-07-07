@@ -45,3 +45,31 @@ export interface PlatformCookieDetails {
   expirationDate?: number;
   sameSite?: 'unspecified' | 'no_restriction' | 'lax' | 'strict';
 }
+
+/**
+ * The reason a cookie changed. Mirrors the `cause` argument of Electron's
+ * `Cookies` `changed` event.
+ */
+export type PlatformCookieChangeCause =
+  | 'explicit'
+  | 'overwrite'
+  | 'expired'
+  | 'evicted'
+  | 'expired-overwrite'
+  | 'inserted'
+  | 'inserted-no-change-overwrite'
+  | 'inserted-no-value-change-overwrite';
+
+/**
+ * Describes a single cookie change emitted to
+ * {@link PlatformSessionService.onCookieChanged} subscribers.
+ */
+export interface PlatformCookieChange {
+  /** The cookie that was added, edited, or removed. */
+  cookie: PlatformCookie;
+  /** Why the cookie changed. */
+  cause: PlatformCookieChangeCause;
+  /** True when the cookie was removed rather than added/edited. */
+  removed: boolean;
+}
+

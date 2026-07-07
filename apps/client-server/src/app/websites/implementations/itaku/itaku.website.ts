@@ -1,13 +1,13 @@
 import { SelectOption } from '@postybirb/form-builder';
 
 import {
-  FileType,
-  ILoginState,
-  ImageResizeProps,
-  PostData,
-  PostResponse,
-  SimpleValidationResult,
-  SubmissionRating,
+    FileType,
+    ImageResizeProps,
+    LoginResult,
+    PostData,
+    PostResponse,
+    SimpleValidationResult,
+    SubmissionRating,
 } from '@postybirb/types';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
@@ -71,7 +71,7 @@ export default class Itaku
       notificationFolders: true,
     };
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     const localStorage = await this.platform.browser.getLocalStorage<{
       token: string;
     }>(this.accountId, this.BASE_URL);
@@ -88,14 +88,12 @@ export default class Itaku
         },
       );
 
-      this.loginState.setLogin(true, user.body.profile.displayname);
       this.sessionData.profile = user.body.profile;
       await this.retrieveFolders();
-    } else {
-      this.loginState.logout();
+      return { loggedIn: true, username: user.body.profile.displayname };
     }
 
-    return this.loginState;
+    return { loggedIn: false };
   }
 
   private async retrieveFolders(): Promise<void> {

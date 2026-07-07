@@ -6,29 +6,29 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-  ActionIcon,
-  Badge,
-  Box,
-  Group,
-  Loader,
-  Paper,
-  Text,
-  Tooltip,
+    ActionIcon,
+    Badge,
+    Box,
+    Group,
+    Loader,
+    Paper,
+    Text,
+    Tooltip,
 } from '@mantine/core';
 import type { AccountId } from '@postybirb/types';
 import {
-  IconArrowLeft,
-  IconArrowRight,
-  IconRefresh,
-  IconUserCheck,
+    IconArrowLeft,
+    IconArrowRight,
+    IconRefresh,
+    IconUserCheck,
 } from '@tabler/icons-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import accountApi from '../../../api/account.api';
 import remoteApi from '../../../api/remote.api';
 import { useAccount } from '../../../stores';
 import {
-  createLoginHttpErrorHandler,
-  notifyLoginSuccess,
+    createLoginHttpErrorHandler,
+    notifyLoginSuccess,
 } from '../../website-login-views/helpers';
 import type { WebviewTag } from './webview-tag';
 
@@ -58,50 +58,67 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
   // Track to which account we've shown the success notification to avoid duplicates
   const hasShownSuccessNotification = useRef<string | null>(null);
 
-  // Track whether we have an in-flight login request to prevent duplicate calls
-  const loginInFlight = useRef(false);
+  // Ref mirror of the current URL so the login-check loop always reads the
+  // latest value without the callback being re-created (which would re-register
+  // every webview listener) on each navigation.
+  const currentUrlRef = useRef(src);
+  useEffect(() => {
+    currentUrlRef.current = currentUrl;
+  }, [currentUrl]);
 
-  // Track the last time we fired a login check to debounce navigation events
-  const lastLoginCheckTime = useRef(0);
+  // True while a login check is actively running.
+  const isCheckingRef = useRef(false);
 
-  // Minimum ms between automatic (navigation-triggered) login checks
-  const AUTO_CHECK_DEBOUNCE_MS = 2_000;
+  // Set whenever a new check is requested while one is already running.
+  // Guarantees a trailing re-run so the FINAL page/session state is always the
+  // one we report — this is what fixes stale "not logged in" results.
+  const rerunRequestedRef = useRef(false);
 
   /**
-   * Fire a login check, deduplicating against in-flight requests.
-   * @param force - If true, skip the time-based debounce (for manual clicks)
+   * Run a login check. Safe (and cheap) to call as often as needed:
+   * - If no check is running, it starts one immediately.
+   * - If a check is already running, it flags a trailing re-run so the loop
+   *   runs again with the latest cookies/URL once the current pass finishes.
+   *
+   * This coalesces bursts of navigation events into a single in-flight check
+   * plus (at most) one queued follow-up, while never dropping the most recent
+   * request. The loop keeps draining requests so the last observed state
+   * always wins.
    */
-  const triggerLoginCheck = useCallback(
-    async (force = false) => {
-      const now = Date.now();
+  const runLoginCheck = useCallback(async () => {
+    // Always mark that a(nother) check has been requested.
+    rerunRequestedRef.current = true;
 
-      // Skip if a request is already in flight
-      if (loginInFlight.current) {
-        return;
+    // If a check is already running, the running loop will pick this up.
+    if (isCheckingRef.current) {
+      return;
+    }
+
+    isCheckingRef.current = true;
+    try {
+      while (rerunRequestedRef.current) {
+        rerunRequestedRef.current = false;
+        try {
+          await remoteApi.setCookiesAndLocalStorage(
+            accountId,
+            currentUrlRef.current,
+          );
+          await accountApi.refreshLogin(accountId);
+        } catch {
+          // Transient failures (network blips during login) are expected and
+          // will be re-checked on the next navigation or cookie change. Don't
+          // spam notifications.
+        }
       }
+    } finally {
+      isCheckingRef.current = false;
+    }
+  }, [accountId]);
 
-      // Skip automatic checks that are too close together
-      if (!force && now - lastLoginCheckTime.current < AUTO_CHECK_DEBOUNCE_MS) {
-        return;
-      }
-
-      loginInFlight.current = true;
-      lastLoginCheckTime.current = now;
-
-      try {
-        await remoteApi.setCookiesAndLocalStorage(accountId, currentUrl);
-        await accountApi.refreshLogin(accountId);
-      } finally {
-        loginInFlight.current = false;
-      }
-    },
-    [accountId, currentUrl],
-  );
-
-  // Manual login check handler — always forces, shows spinner via isPending
+  // Manual login check handler — kicks off a fresh authoritative check.
   const handleCheckLogin = useCallback(() => {
-    triggerLoginCheck(true);
-  }, [triggerLoginCheck]);
+    runLoginCheck();
+  }, [runLoginCheck]);
 
   // Show notification on first successful login
   useEffect(() => {
@@ -129,12 +146,15 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
 
     const handleStopLoading = () => {
       setIsLoading(false);
-      // Automatic check after page finishes loading — debounced
-      triggerLoginCheck(false);
+      // Automatic check after page finishes loading.
+      runLoginCheck();
     };
 
     const handleDidNavigate = (event: Electron.DidNavigateEvent) => {
       setCurrentUrl(event.url);
+      // Full navigation is a strong signal — check (coalesced with the
+      // did-stop-loading check that follows once cookies have settled).
+      runLoginCheck();
     };
 
     // SPA navigations (pushState, replaceState, hashchange) don't trigger
@@ -143,18 +163,18 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
       event: Electron.DidNavigateInPageEvent,
     ) => {
       setCurrentUrl(event.url);
-      triggerLoginCheck(false);
+      runLoginCheck();
     };
 
     // Iframe navigations (OAuth callback frames, CAPTCHA frames)
     const handleFrameNavigation = () => {
-      triggerLoginCheck(false);
+      runLoginCheck();
     };
 
     // HTTP redirects (302 during OAuth flows) — the final landing page
     // may set cookies before did-stop-loading fires
     const handleRedirect = () => {
-      triggerLoginCheck(false);
+      runLoginCheck();
     };
 
     webview.addEventListener('did-start-loading', handleStartLoading);
@@ -175,9 +195,9 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
       webview.removeEventListener('did-frame-navigate', handleFrameNavigation);
       webview.removeEventListener('did-redirect-navigation', handleRedirect);
       // Fire a final login check when the webview closes (user is done)
-      triggerLoginCheck(true);
+      runLoginCheck();
     };
-  }, [triggerLoginCheck, accountId]);
+  }, [runLoginCheck]);
 
   // Handle refresh button click
   const handleRefresh = () => {

@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import {
-  ILoginState,
-  ImageResizeProps,
-  IPostResponse,
-  ISubmissionFile,
-  PostData,
-  PostResponse,
-  SimpleValidationResult,
-  SubmissionRating,
+    ImageResizeProps,
+    IPostResponse,
+    ISubmissionFile,
+    LoginResult,
+    PostData,
+    PostResponse,
+    SimpleValidationResult,
+    SubmissionRating,
 } from '@postybirb/types';
 import { parse } from 'node-html-parser';
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -67,7 +67,7 @@ export default class Newgrounds
   public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<NewgroundsAccountData> =
     {};
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     try {
       const res = await this.platform.http.get<string>(this.BASE_URL, {
         partition: this.accountId,
@@ -76,13 +76,13 @@ export default class Newgrounds
       if (res.body.includes('activeuser')) {
         const match = res.body.match(/"name":"(.*?)"/);
         const username = match ? match[1] : 'Unknown';
-        return this.loginState.setLogin(true, username);
+        return { loggedIn: true, username };
       }
 
-      return this.loginState.logout();
+      return { loggedIn: false };
     } catch (e) {
       this.logger.error('Failed to login', e as any);
-      return this.loginState.logout();
+      return { loggedIn: false };
     }
   }
 
