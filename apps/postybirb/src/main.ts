@@ -22,11 +22,13 @@ import {
   registerProcessErrorHandlers,
 } from './app/main-process/diagnostics';
 import { startupLoader } from './app/main-process/loader';
+import { installAppSecurity } from './app/main-process/security';
 import {
   bootstrapWithTimeout,
   injectProcessEnvironment,
   logStartupBanner,
   quitOnStartupFailure,
+  registerGracefulShutdown,
 } from './app/main-process/startup';
 import { environment } from './environments/environment';
 
@@ -81,7 +83,17 @@ async function start(): Promise<void> {
   try {
     const nestApp = await bootstrapWithTimeout(bootstrapClientServer);
 
+    // A single graceful-shutdown path for every launch mode (GUI, terminal,
+    // headless/Docker). Registered here — after bootstrap — so the embedded
+    // server is always available to close cleanly when a quit is requested.
+    registerGracefulShutdown(nestApp);
+
     if (PostyBirbEnvConfig.headless) {
+      // Background login/scraper flows still open hidden BrowserWindows in
+      // headless mode, so apply the same security policies the GUI path applies
+      // via PostyBirbApp.
+      installAppSecurity();
+
       // eslint-disable-next-line no-console
       console.log('[PostyBirb] Running in headless mode (no UI)');
       return;
@@ -91,7 +103,7 @@ async function start(): Promise<void> {
     // can synchronously read app metadata as it loads.
     bootstrapElectronEvents();
 
-    const postyBirb = new PostyBirbApp(nestApp);
+    const postyBirb = new PostyBirbApp();
     postyBirb.start();
   } catch (error) {
     quitOnStartupFailure(error);
@@ -112,6 +124,17 @@ app
   .catch((error) => {
     quitOnStartupFailure(error);
   });
+
+// Keep the application alive when the last window closes. Electron's default
+// behavior quits the app once the open-window count reaches zero. In GUI mode
+// this keeps PostyBirb running in the system tray; in headless mode it is
+// essential — background login/scraper flows briefly open and close hidden
+// BrowserWindows, and the default quit-on-zero-windows behavior would tear down
+// the process (killing the NestJS server and its child processes), producing an
+// infinite crash/restart loop under Docker.
+app.on('window-all-closed', () => {
+  // Intentionally empty: overrides Electron's default quit-on-all-closed.
+});
 
 app.on('before-quit', () => {
   startupLoader.hide('before-quit');
