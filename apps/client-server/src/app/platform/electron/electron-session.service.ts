@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import {
-    PlatformCookie,
-    PlatformCookieChange,
-    PlatformCookieChangeCause,
-    PlatformCookieDetails,
-    PlatformCookieFilter,
-    PlatformSessionService,
+  PlatformClearStorageOptions,
+  PlatformCookie,
+  PlatformCookieDetails,
+  PlatformCookieFilter,
+  PlatformSessionService,
+  PlatformCookieChange,
+  PlatformCookieChangeCause,
 } from '@postybirb/platform';
 import { getPartitionKey } from '@postybirb/utils/common';
 import { Cookie, session } from 'electron';
@@ -64,8 +65,11 @@ export class ElectronSessionService extends PlatformSessionService {
     await this.getSession(partition).cookies.flushStore();
   }
 
-  async clearStorageData(partition: string): Promise<void> {
-    await this.getSession(partition).clearStorageData();
+  async clearStorageData(
+    partition: string,
+    options?: PlatformClearStorageOptions,
+  ): Promise<void> {
+    await this.getSession(partition).clearStorageData(options);
   }
 
   onCookieChanged(

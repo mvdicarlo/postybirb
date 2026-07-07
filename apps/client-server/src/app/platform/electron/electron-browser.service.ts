@@ -12,6 +12,7 @@ function delay(ms: number): Promise<void> {
 async function createWindow(
   partition: string,
   url: string,
+  loadTimeout = 60_000,
 ): Promise<Electron.BrowserWindow> {
   const bw = new BrowserWindow({
     show: false,
@@ -19,7 +20,25 @@ async function createWindow(
   });
 
   try {
-    await bw.loadURL(url);
+    // `loadURL` can hang indefinitely on some pages (redirect loops, stalled
+    // resources). Left unbounded it will silently wedge the caller — and,
+    // because these calls are awaited on the request path, the whole server
+    // can appear to lock up with nothing in the logs. Race it against a
+    // timeout so a bad page fails fast instead of bricking the process.
+    let timer: NodeJS.Timeout | undefined;
+    await Promise.race([
+      bw.loadURL(url),
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(
+          () => reject(new Error(`loadURL timed out after ${loadTimeout}ms`)),
+          loadTimeout,
+        );
+      }),
+    ]).finally(() => {
+      if (timer) {
+        clearTimeout(timer);
+      }
+    });
   } catch (err) {
     bw.destroy();
     throw err;

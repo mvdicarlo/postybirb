@@ -1,9 +1,28 @@
 import {
-    PlatformCookie,
-    PlatformCookieChange,
-    PlatformCookieDetails,
-    PlatformCookieFilter,
+  PlatformCookie,
+  PlatformCookieChange,
+  PlatformCookieDetails,
+  PlatformCookieFilter,
 } from './cookie-types';
+
+/**
+ * Storage types that {@link PlatformSessionService.clearStorageData} can
+ * selectively clear. Mirrors the subset of Electron's storage names that
+ * PostyBirb relies on.
+ */
+export type PlatformStorageType =
+  | 'cookies'
+  | 'localstorage'
+  | 'indexdb'
+  | 'filesystem'
+  | 'serviceworkers'
+  | 'cachestorage';
+
+/** Options controlling which storage types are cleared. */
+export type PlatformClearStorageOptions = {
+  /** Limit the clear to these storage types. Clears everything when omitted. */
+  storages?: PlatformStorageType[];
+};
 
 /**
  * Per-partition session and cookie management.
@@ -41,10 +60,16 @@ export abstract class PlatformSessionService {
   abstract flushCookies(partition: string): Promise<void>;
 
   /**
-   * Clears all storage (cookies, localStorage, indexedDB, cache) associated
-   * with the partition.
+   * Clears storage associated with the partition.
+   *
+   * By default clears all storage (cookies, localStorage, indexedDB, cache).
+   * Pass `options.storages` to limit the clear to specific storage types
+   * (e.g. `['cookies']` to refresh cookies while preserving localStorage).
    */
-  abstract clearStorageData(partition: string): Promise<void>;
+  abstract clearStorageData(
+    partition: string,
+    options?: PlatformClearStorageOptions,
+  ): Promise<void>;
 
   /**
    * Subscribes to cookie changes for a partition. The callback fires whenever
