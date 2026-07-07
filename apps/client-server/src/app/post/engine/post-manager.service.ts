@@ -14,11 +14,11 @@
 import { Injectable, OnModuleInit, Optional } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import {
-    JobTreeNode,
-    NodeStatus,
-    PostRecordResumeMode,
-    ScheduleType,
-    SubmissionId,
+  JobTreeNode,
+  NodeStatus,
+  PostRecordResumeMode,
+  ScheduleType,
+  SubmissionId,
 } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/common';
 import { Mutex } from 'async-mutex';
@@ -62,7 +62,7 @@ export class RelayPostManager implements OnModuleInit {
     @Optional() private readonly notifications?: NotificationsService,
   ) {
     this.scheduler = new RelayScheduler(this.deps, {
-      maxConcurrentJobs: 3,
+      maxConcurrentJobs: 1, // Set to 1 to keep similar to what users expect at the moment
       maxConcurrentTasks: 4,
       onTaskChanged: (job, task) => this.persistence.saveTask(task),
       onJobChanged: (job) => this.persistence.save(job),
