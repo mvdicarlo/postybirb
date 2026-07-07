@@ -129,6 +129,7 @@ describe('AccountsService', () => {
       defaultFileTemplateId: null,
       defaultMessageTemplateId: null,
       state: {
+        status: 'loggedIn',
         isLoggedIn: true,
         pending: false,
         username: 'TestUser',

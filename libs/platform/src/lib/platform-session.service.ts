@@ -1,5 +1,6 @@
 import {
   PlatformCookie,
+  PlatformCookieChange,
   PlatformCookieDetails,
   PlatformCookieFilter,
 } from './cookie-types';
@@ -69,4 +70,17 @@ export abstract class PlatformSessionService {
     partition: string,
     options?: PlatformClearStorageOptions,
   ): Promise<void>;
+
+  /**
+   * Subscribes to cookie changes for a partition. The callback fires whenever
+   * a cookie in the partition is added, edited, or removed, providing a real
+   * push signal for login/session changes instead of relying on polling.
+   *
+   * @returns An unsubscribe function. Implementations that cannot observe
+   * cookie changes (e.g. non-Electron platforms or tests) return a no-op.
+   */
+  abstract onCookieChanged(
+    partition: string,
+    callback: (change: PlatformCookieChange) => void,
+  ): () => void;
 }

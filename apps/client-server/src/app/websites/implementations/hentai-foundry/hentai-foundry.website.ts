@@ -1,11 +1,11 @@
 
 import {
-  ILoginState,
-  ImageResizeProps,
-  IPostResponse,
-  ISubmissionFile,
-  PostData,
-  PostResponse,
+    ImageResizeProps,
+    IPostResponse,
+    ISubmissionFile,
+    LoginResult,
+    PostData,
+    PostResponse,
 } from '@postybirb/types';
 import { calculateImageResize } from '@postybirb/utils/file-type';
 import { parse } from 'node-html-parser';
@@ -60,7 +60,7 @@ export default class HentaiFoundry
       folders: true,
     };
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     try {
       const res = await this.platform.http.get<string>(this.BASE_URL, {
         partition: this.accountId,
@@ -71,13 +71,13 @@ export default class HentaiFoundry
         const username =
           res.body.match(/class=.navlink. href=.\/user\/(.*?)\//)?.[1] ||
           'Unknown';
-        return this.loginState.setLogin(true, username);
+        return { loggedIn: true, username };
       }
 
-      return this.loginState.setLogin(false, null);
+      return { loggedIn: false };
     } catch (e) {
       this.logger.error('Failed to login', e);
-      return this.loginState.setLogin(false, null);
+      return { loggedIn: false };
     }
   }
 

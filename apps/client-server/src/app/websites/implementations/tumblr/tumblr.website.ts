@@ -2,16 +2,16 @@
 // No need to import BlockNote in the server-side website implementation
 
 import {
-  DynamicObject,
-  FileType,
-  ILoginState,
-  ImageResizeProps,
-  ISubmissionFile,
-  NPFContentBlock,
-  PostData,
-  PostResponse,
-  SimpleValidationResult,
-  SubmissionRating,
+    DynamicObject,
+    FileType,
+    ImageResizeProps,
+    ISubmissionFile,
+    LoginResult,
+    NPFContentBlock,
+    PostData,
+    PostResponse,
+    SimpleValidationResult,
+    SubmissionRating,
 } from '@postybirb/types';
 import parse from 'node-html-parser';
 import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
@@ -96,7 +96,7 @@ export default class Tumblr
       blogs: true,
     };
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     const page = await this.platform.http.get<string>(`${this.BASE_URL}`, {
       partition: this.accountId,
     });
@@ -107,8 +107,7 @@ export default class Tumblr
       this.logger.warn(
         'Failed to find #___INITIAL_STATE___ element during login',
       );
-      this.loginState.logout();
-      return this.loginState;
+      return { loggedIn: false };
     }
     const initialState = initialStateEl.innerText;
     const cleanedState = initialState.trim().replace(/\\\\"/g, '\\"');
@@ -116,8 +115,7 @@ export default class Tumblr
     const apiToken = data?.apiFetchStore?.API_TOKEN;
 
     if (!apiToken) {
-      this.loginState.logout();
-      return this.loginState;
+      return { loggedIn: false };
     }
 
     this.sessionData.apiToken = apiToken;
@@ -128,8 +126,7 @@ export default class Tumblr
     );
 
     if (!userInfo || userInfo?.state?.data?.isLoggedIn === false) {
-      this.loginState.logout();
-      return this.loginState;
+      return { loggedIn: false };
     }
 
     const userName = userInfo.state.data.user.name;
@@ -143,7 +140,7 @@ export default class Tumblr
         }),
       ),
     });
-    return this.loginState.setLogin(true, userName);
+    return { loggedIn: true, username: userName };
   }
 
   createFileModel(): TumblrFileSubmission {

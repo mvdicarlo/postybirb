@@ -98,6 +98,7 @@ export class Account extends DatabaseEntity<IAccount> implements IAccount {
       ...this.toObject(),
       data: (this.websiteInstance?.getWebsiteData() ?? {}) as IAccountDto['data'],
       state: this.websiteInstance?.getLoginState() ?? {
+        status: 'idle',
         isLoggedIn: false,
         username: '',
         pending: false,

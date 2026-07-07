@@ -1,7 +1,7 @@
 import {
-  ILoginState,
   ImageResizeProps,
   ISubmissionFile,
+  LoginResult,
   PostData,
   PostResponse,
   SubmissionRating,
@@ -59,7 +59,7 @@ export default class Artconomy
   public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<ArtconomyAccountData> =
     {};
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     try {
       const authCheck = await this.platform.http.get<{
         username: string;
@@ -83,12 +83,12 @@ export default class Artconomy
           username: authCheck.body.username,
           csrfToken: csrfCookie?.value || '',
         });
-        return this.loginState.setLogin(true, authCheck.body.username);
+        return { loggedIn: true, username: authCheck.body.username };
       }
 
-      return this.loginState.setLogin(false, null);
+      return { loggedIn: false };
     } catch (error) {
-      return this.loginState.setLogin(false, null);
+      return { loggedIn: false };
     }
   }
 

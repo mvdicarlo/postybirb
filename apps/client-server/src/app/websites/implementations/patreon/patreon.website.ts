@@ -3,9 +3,9 @@ import { FormFile } from '@postybirb/http/types';
 import {
     DynamicObject,
     FileType,
-    ILoginState,
     ImageResizeProps,
     ISubmissionFile,
+    LoginResult,
     PostData,
     PostResponse,
     SimpleValidationResult,
@@ -112,7 +112,7 @@ export default class Patreon
       collections: true,
     };
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     const membershipPage = await this.platform.http.get<string>(
       `${this.BASE_URL}/membership`,
       {
@@ -160,11 +160,11 @@ export default class Patreon
           folders: this.parseTiers(campaignResult.body),
           collections: await this.loadCollections(campaignId),
         });
-        return this.loginState.setLogin(true, username);
+        return { loggedIn: true, username };
       }
     }
 
-    return this.loginState.setLogin(false, null);
+    return { loggedIn: false };
   }
 
   private parseTiers(campaign: PatreonCampaignResponse): SelectOption[] {

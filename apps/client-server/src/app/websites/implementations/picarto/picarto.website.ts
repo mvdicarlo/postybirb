@@ -1,10 +1,10 @@
 import {
-  ILoginState,
-  ImageResizeProps,
-  ISubmissionFile,
-  PostData,
-  PostResponse,
-  SubmissionRating,
+    ImageResizeProps,
+    ISubmissionFile,
+    LoginResult,
+    PostData,
+    PostResponse,
+    SubmissionRating,
 } from '@postybirb/types';
 import { calculateImageResize } from '@postybirb/utils/file-type';
 import { mutation, query } from 'gql-query-builder';
@@ -50,7 +50,7 @@ export default class Picarto
       folders: true,
     };
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     // Load the site and read localStorage to find the auth payload
     try {
       const ls = await this.platform.browser.getLocalStorage<{
@@ -58,7 +58,7 @@ export default class Picarto
       }>(this.accountId, this.BASE_URL, 3000);
 
       if (!ls?.auth) {
-        return this.loginState.logout();
+        return { loggedIn: false };
       }
 
       const auth = JSON.parse(ls.auth) as {
@@ -73,10 +73,10 @@ export default class Picarto
       // Populate folders
       await this.retrieveAlbums();
 
-      return this.loginState.setLogin(true, auth.user.username);
+      return { loggedIn: true, username: auth.user.username };
     } catch (e) {
       this.logger.error('Picarto login check failed', e);
-      return this.loginState.logout();
+      return { loggedIn: false };
     }
   }
 

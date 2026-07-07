@@ -1,9 +1,9 @@
 import { SelectOption } from '@postybirb/form-builder';
 import {
-  ILoginState,
-  ImageResizeProps,
-  PostData,
-  PostResponse,
+    ImageResizeProps,
+    LoginResult,
+    PostData,
+    PostResponse,
 } from '@postybirb/types';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
@@ -54,7 +54,7 @@ export default class TheJabArchives
       galleries: true,
     };
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     try {
       const res = await this.platform.http.get<{
         username: string;
@@ -72,12 +72,12 @@ export default class TheJabArchives
           isArtist: res.body.isArtist,
           galleries,
         });
-        return this.loginState.setLogin(true, res.body.username);
+        return { loggedIn: true, username: res.body.username };
       }
     } catch {
       // fall through to logged-out state
     }
-    return this.loginState.setLogin(false, null);
+    return { loggedIn: false };
   }
 
   private async retrieveGalleries(): Promise<SelectOption[]> {

@@ -1,14 +1,14 @@
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 
 import {
-  FileType,
-  ILoginState,
-  ImageResizeProps,
-  ISubmissionFile,
-  PostData,
-  PostResponse,
-  SimpleValidationResult,
-  SubmissionRating,
+    FileType,
+    ImageResizeProps,
+    ISubmissionFile,
+    LoginResult,
+    PostData,
+    PostResponse,
+    SimpleValidationResult,
+    SubmissionRating,
 } from '@postybirb/types';
 import parse from 'node-html-parser';
 import { v4 as uuid } from 'uuid';
@@ -149,7 +149,7 @@ export default class Cara
   public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<CaraAccountData> =
     {};
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     const { body, responseUrl } = await this.platform.http.get<string>(
       `${this.BASE_URL}/settings`,
       {
@@ -162,10 +162,10 @@ export default class Cara
       const username =
         $.querySelector('input[name="slug"]')?.getAttribute('value') ??
         'Unknown';
-      return this.loginState.setLogin(true, username);
+      return { loggedIn: true, username };
     }
 
-    return this.loginState.logout();
+    return { loggedIn: false };
   }
 
   createFileModel(): CaraFileSubmission {
@@ -334,7 +334,7 @@ export default class Cara
 
     // Generate a post ID for the upload
     const postId = uuid();
-    const username = this.loginState.username || 'unknown';
+    const username = this.username || 'unknown';
 
     const builder = new PostBuilder(this, cancellationToken)
       .asJson()

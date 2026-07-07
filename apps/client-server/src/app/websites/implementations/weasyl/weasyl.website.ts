@@ -1,12 +1,12 @@
 import { SelectOption } from '@postybirb/form-builder';
 
 import {
-  FileType,
-  ILoginState,
-  ImageResizeProps,
-  PostData,
-  PostResponse,
-  SubmissionRating,
+    FileType,
+    ImageResizeProps,
+    LoginResult,
+    PostData,
+    PostResponse,
+    SubmissionRating,
 } from '@postybirb/types';
 import { getFileTypeFromMimeType } from '@postybirb/utils/file-type';
 import { parse } from 'node-html-parser';
@@ -76,7 +76,7 @@ export default class Weasyl
       folders: true,
     };
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     const res = await this.platform.http.get<{ login: string }>(
       `${this.BASE_URL}/api/whoami`,
       {
@@ -85,13 +85,11 @@ export default class Weasyl
     );
 
     if (res.body.login) {
-      this.loginState.setLogin(true, res.body.login);
       await this.getFolders(res.body.login);
-    } else {
-      this.loginState.setLogin(false, null);
+      return { loggedIn: true, username: res.body.login };
     }
 
-    return this.loginState.getState();
+    return { loggedIn: false };
   }
 
   private async getFolders(username: string): Promise<void> {

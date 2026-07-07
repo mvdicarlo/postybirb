@@ -27,6 +27,7 @@ function accountHasChanged(existing: AccountRecord, dto: IAccountDto): boolean {
   // 2. Login state changed
   const dtoState = dto.state;
   const existingState = existing.state;
+  if (dtoState.status !== existingState.status) return true;
   if (dtoState.isLoggedIn !== existingState.isLoggedIn) return true;
   if (dtoState.username !== existingState.username) return true;
   if (dtoState.pending !== existingState.pending) return true;
