@@ -1,30 +1,29 @@
 import { Account, WebsiteDataRepository } from '@postybirb/database';
 import { Logger, PostyBirbLogger } from '@postybirb/logger';
 import {
-  PlatformCookieChange,
-  PlatformCookieDetails,
-  PlatformService,
+    PlatformCookieChange,
+    PlatformCookieDetails,
+    PlatformService,
 } from '@postybirb/platform';
 import {
-  DynamicObject,
-  ILoginState,
-  IWebsiteFormFields,
-  LoginResult,
-  LoginState,
-  LoginStatus,
-  SubmissionType,
+    DynamicObject,
+    ILoginState,
+    IWebsiteFormFields,
+    LoginResult,
+    LoginState,
+    SubmissionType,
 } from '@postybirb/types';
 import { Mutex } from 'async-mutex';
 import { SubmissionValidator } from './commons/validator';
 import { WebsiteDecoratorProps } from './decorators/website-decorator-props';
 import { DataPropertyAccessibility } from './models/data-property-accessibility';
 import {
-  FileWebsiteKey,
-  isFileWebsite,
+    FileWebsiteKey,
+    isFileWebsite,
 } from './models/website-modifiers/file-website';
 import {
-  isMessageWebsite,
-  MessageWebsiteKey,
+    isMessageWebsite,
+    MessageWebsiteKey,
 } from './models/website-modifiers/message-website';
 import WebsiteDataManager from './website-data-manager';
 
@@ -251,20 +250,6 @@ export abstract class Website<
   }
 
   /**
-   * Whether the website is currently considered logged in.
-   */
-  public get isLoggedIn(): boolean {
-    return this.loginState.isLoggedIn;
-  }
-
-  /**
-   * The current login lifecycle status.
-   */
-  public get loginStatus(): LoginStatus {
-    return this.loginState.status;
-  }
-
-  /**
    * The username of the logged-in user, or null if not logged in.
    */
   public get username(): string | null {
@@ -321,7 +306,7 @@ export abstract class Website<
    * There are no automatic retries — exactly one check runs per invocation.
    * A transient failure leaves the previous state intact (see
    * {@link executeLogin}); fresh checks are driven by newer triggers (cookie
-   * changes, navigation events, the periodic poll).
+   * changes and navigation events).
    *
    * @returns {Promise<ILoginState>} The login state after the check completes.
    */
@@ -386,7 +371,7 @@ export abstract class Website<
   /**
    * Subscribes to cookie changes for this account's partition so login is
    * detected as soon as the website sets/updates its auth cookies, rather than
-   * waiting for a navigation event or the periodic poll. Only meaningful for
+   * waiting for a navigation event. Only meaningful for
    * 'user' (webview) login flows; API/OAuth flows don't rely on webview
    * cookies.
    */

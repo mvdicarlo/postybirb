@@ -6,29 +6,29 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-  ActionIcon,
-  Badge,
-  Box,
-  Group,
-  Loader,
-  Paper,
-  Text,
-  Tooltip,
+    ActionIcon,
+    Badge,
+    Box,
+    Group,
+    Loader,
+    Paper,
+    Text,
+    Tooltip,
 } from '@mantine/core';
 import type { AccountId } from '@postybirb/types';
 import {
-  IconArrowLeft,
-  IconArrowRight,
-  IconRefresh,
-  IconUserCheck,
+    IconArrowLeft,
+    IconArrowRight,
+    IconRefresh,
+    IconUserCheck,
 } from '@tabler/icons-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import accountApi from '../../../api/account.api';
 import remoteApi from '../../../api/remote.api';
 import { useAccount } from '../../../stores';
 import {
-  createLoginHttpErrorHandler,
-  notifyLoginSuccess,
+    createLoginHttpErrorHandler,
+    notifyLoginSuccess,
 } from '../../website-login-views/helpers';
 import type { WebviewTag } from './webview-tag';
 
@@ -105,8 +105,9 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
           );
           await accountApi.refreshLogin(accountId);
         } catch {
-          // Transient failures (network blips during login) are expected; the
-          // periodic safety-net poll will retry. Don't spam notifications.
+          // Transient failures (network blips during login) are expected and
+          // will be re-checked on the next navigation or cookie change. Don't
+          // spam notifications.
         }
       }
     } finally {
