@@ -21,6 +21,7 @@ import {
 import { useQuery } from 'react-query';
 import formGeneratorApi from '../../../../../../api/form-generator.api';
 import websiteOptionsApi from '../../../../../../api/website-options.api';
+import { useAccount } from '../../../../../../stores/entity/account-store';
 import type { SubmissionRecord } from '../../../../../../stores/records';
 import { showErrorWithContext } from '../../../../../../utils/notifications';
 
@@ -64,6 +65,24 @@ export function FormFieldsProvider({
   // Track the option.id to reset local state when switching options
   const optionIdRef = useRef(option.id);
 
+  // Subscribe to the backing account so the generated form regenerates when its
+  // login state or website data changes.
+  const account = useAccount(option.accountId);
+
+  // Derived form options (e.g. FurAffinity folders) are generated on the server
+  // from the account's website data + login state. Fingerprint them so the form
+  // query refetches when the account logs in or its data changes — otherwise the
+  // options stay stale until a full page reload.
+  const accountFormFingerprint = useMemo(
+    () =>
+      JSON.stringify({
+        loggedIn: account?.state.isLoggedIn ?? false,
+        status: account?.state.status ?? null,
+        data: account?.data ?? null,
+      }),
+    [account?.state.isLoggedIn, account?.state.status, account?.data],
+  );
+
   // Sync local state when option changes (server confirmed update or option switch)
   useEffect(() => {
     if (optionIdRef.current !== option.id) {
@@ -97,6 +116,7 @@ export function FormFieldsProvider({
       option.accountId,
       submission.type,
       submission.isMultiSubmission,
+      accountFormFingerprint,
     ],
     queryFn: async () => {
       const response = await formGeneratorApi.getForm({

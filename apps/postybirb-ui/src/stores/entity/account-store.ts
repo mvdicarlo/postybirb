@@ -18,7 +18,8 @@ import { AccountRecord } from '../records';
  *
  * Checks the root `updatedAt` timestamp as well as the `state` (ILoginState)
  * fields which may change independently (e.g. login status toggled without
- * touching the account entity itself).
+ * touching the account entity itself), and the website `data` which backs
+ * derived form options (e.g. FurAffinity folders).
  */
 function accountHasChanged(existing: AccountRecord, dto: IAccountDto): boolean {
   // 1. Root entity changed
@@ -31,6 +32,15 @@ function accountHasChanged(existing: AccountRecord, dto: IAccountDto): boolean {
   if (dtoState.isLoggedIn !== existingState.isLoggedIn) return true;
   if (dtoState.username !== existingState.username) return true;
   if (dtoState.pending !== existingState.pending) return true;
+
+  // 3. Website data changed (e.g. folders repopulated after login). This drives
+  // derived form options, so a change must refresh the record even when the
+  // login state itself is unchanged (folders added/removed while logged in).
+  if (
+    JSON.stringify(dto.data ?? null) !== JSON.stringify(existing.data ?? null)
+  ) {
+    return true;
+  }
 
   return false;
 }
