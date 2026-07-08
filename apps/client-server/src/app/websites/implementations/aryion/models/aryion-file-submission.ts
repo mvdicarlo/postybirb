@@ -30,7 +30,7 @@ export class AryionFileSubmission extends BaseWebsiteOptions {
     options: [],
     required: true,
     section: 'website',
-    span: 12,
+    span: 9,
     derive: [
       {
         key: 'folders',
@@ -55,7 +55,7 @@ export class AryionFileSubmission extends BaseWebsiteOptions {
   @RadioField({
     label: 'commentPermissions',
     section: 'website',
-    span: 9,
+    span: 12,
     options: [
       { value: 'USER', label: 'Registered Users' },
       { value: 'BLACK', label: 'All But Blocked' },

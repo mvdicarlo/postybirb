@@ -48,13 +48,13 @@ export class MegalodonFileSubmission extends BaseWebsiteOptions {
       { value: 'private', label: 'Followers only' },
       { value: 'direct', label: 'Direct' },
     ],
-    span: 12,
+    span: 6,
   })
   visibility: 'public' | 'unlisted' | 'private' | 'direct' = 'public';
 
   @TextField({
     label: 'spoiler',
-    span: 12,
+    span: 6,
   })
   spoilerText?: string;
 }

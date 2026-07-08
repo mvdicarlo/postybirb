@@ -77,6 +77,7 @@ function InnerRadioField({ fieldName, field }: InnerRadioFieldProps) {
     <SegmentedControl
       value={value}
       size="xs"
+      fullWidth
       disabled={submission.isArchived}
       data={field.options.map((o) => ({
         label: `${o.label}${
