@@ -1,29 +1,29 @@
 import { Account, WebsiteDataRepository } from '@postybirb/database';
 import { Logger, PostyBirbLogger } from '@postybirb/logger';
 import {
-    PlatformCookieChange,
-    PlatformCookieDetails,
-    PlatformService,
+  PlatformCookieChange,
+  PlatformCookieDetails,
+  PlatformService,
 } from '@postybirb/platform';
 import {
-    DynamicObject,
-    ILoginState,
-    IWebsiteFormFields,
-    LoginResult,
-    LoginState,
-    SubmissionType,
+  DynamicObject,
+  ILoginState,
+  IWebsiteFormFields,
+  LoginResult,
+  LoginState,
+  SubmissionType,
 } from '@postybirb/types';
 import { Mutex } from 'async-mutex';
 import { SubmissionValidator } from './commons/validator';
 import { WebsiteDecoratorProps } from './decorators/website-decorator-props';
 import { DataPropertyAccessibility } from './models/data-property-accessibility';
 import {
-    FileWebsiteKey,
-    isFileWebsite,
+  FileWebsiteKey,
+  isFileWebsite,
 } from './models/website-modifiers/file-website';
 import {
-    isMessageWebsite,
-    MessageWebsiteKey,
+  isMessageWebsite,
+  MessageWebsiteKey,
 } from './models/website-modifiers/message-website';
 import WebsiteDataManager from './website-data-manager';
 
@@ -77,6 +77,11 @@ export abstract class Website<
    * by the login lifecycle; reassigned (never mutated) on each transition.
    */
   private loginState: LoginState = LoginState.initial();
+
+  /**
+   * Ignorable noisy cookies that are written by the website but not relevant to our login state.
+   */
+  protected readonly cookieIgnoreList: string[] = [];
 
   /**
    * Mutex that serializes login attempts for this website instance.
@@ -398,6 +403,10 @@ export abstract class Website<
    */
   private handleCookieChange(change: PlatformCookieChange): void {
     if (!this.isRelevantCookieDomain(change.cookie.domain)) {
+      return;
+    }
+
+    if (this.cookieIgnoreList.includes(change.cookie.name)) {
       return;
     }
 

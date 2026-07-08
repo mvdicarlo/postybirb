@@ -1,9 +1,9 @@
 import {
-    ImageResizeProps,
-    LoginResult,
-    PostData,
-    PostResponse,
-    SubmissionRating,
+  ImageResizeProps,
+  LoginResult,
+  PostData,
+  PostResponse,
+  SubmissionRating,
 } from '@postybirb/types';
 import { parse } from 'node-html-parser';
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -49,6 +49,8 @@ export default class Pillowfort
 
   public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<PillowfortAccountData> =
     {};
+
+  protected readonly cookieIgnoreList = ['_Pf_reset_session'];
 
   public async onLogin(): Promise<LoginResult> {
     try {
