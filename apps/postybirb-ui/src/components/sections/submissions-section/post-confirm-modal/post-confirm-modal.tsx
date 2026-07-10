@@ -1,17 +1,20 @@
 /**
  * PostConfirmModal - Modal for confirming and reordering submissions before posting.
- * Displays a reorderable list allowing users to set the queue order, and surfaces
- * each submission's cross-submission dependencies (the submissions it waits for).
+ *
+ * Shows a flat, fully-reorderable "post order" list where every submission
+ * (including ones that depend on others) is an independently orderable record,
+ * plus a read-only dependency tree beneath it for context (prerequisite =
+ * parent, dependents nested). Each row surfaces the submissions it waits for.
  */
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
   Alert,
   Badge,
+  Box,
   Button,
   Group,
   Modal,
-  Pill,
   Stack,
   Text,
   Tooltip,
@@ -23,6 +26,12 @@ import { useAccountsMap } from '../../../../stores/entity/account-store';
 import { useSubmissionsMap } from '../../../../stores/entity/submission-store';
 import type { SubmissionRecord } from '../../../../stores/records';
 import { ReorderableSubmissionList } from '../../../shared/reorderable-submission-list';
+import { DependencyReorderableTree } from './dependency-reorderable-tree';
+import {
+  buildDependencyForest,
+  flattenForest,
+  type DependencyNode,
+} from './dependency-tree';
 
 export interface PostConfirmModalProps {
   /** Whether the modal is open */
@@ -60,37 +69,42 @@ export function PostConfirmModal({
     (s) => s.hasWebsiteOptions && !s.hasErrors,
   );
 
-  // Track the ordered list (reset when modal opens with new submissions)
+  // Flat, fully-reorderable post order (every submission is a top-level record
+  // so any of them can be granularly ordered) plus the read-only dependency
+  // forest shown for context. Both are seeded when the modal opens; the flat
+  // order defaults to a dependency-friendly (prerequisite-first) sequence.
   const [orderedSubmissions, setOrderedSubmissions] = useState<
     SubmissionRecord[]
   >([]);
+  const [forest, setForest] = useState<DependencyNode[]>([]);
 
-  // Reset order when modal opens or submissions change
   useEffect(() => {
     if (opened) {
-      setOrderedSubmissions(validSubmissions);
+      const built = buildDependencyForest(validSubmissions);
+      setForest(built);
+      setOrderedSubmissions(flattenForest(built));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [opened]);
 
-  // Ids being posted in this batch, so a dependency can be flagged as either
-  // "also in this batch" or external (still gates, just not selected here).
+  // Ids being posted in this batch (used to color dependency chips).
   const batchIds = useMemo(
-    () => new Set(orderedSubmissions.map((s) => s.id)),
-    [orderedSubmissions],
+    () => new Set(validSubmissions.map((s) => s.id)),
+    [validSubmissions],
   );
 
   const anyHasDependencies = useMemo(
-    () => orderedSubmissions.some((s) => (s.metadata?.dependsOn?.length ?? 0) > 0),
-    [orderedSubmissions],
+    () =>
+      validSubmissions.some((s) =>
+        (s.metadata?.dependsOn ?? []).some((id) => batchIds.has(id)),
+      ),
+    [validSubmissions, batchIds],
   );
 
-  // Build the "waits for" dependency chips for a submission (if any).
-  const getDependencyChips = useCallback(
-    (submission: SubmissionRecord) => {
-      const dependsOn = submission.metadata?.dependsOn ?? [];
-      if (dependsOn.length === 0) return null;
-
+  // Build the "waits for" chips for a set of prerequisite ids.
+  const buildWaitsFor = useCallback(
+    (dependencyIds: string[]) => {
+      if (dependencyIds.length === 0) return null;
       return (
         <Group gap={6} mt={4} align="center" wrap="wrap">
           <Text
@@ -103,8 +117,8 @@ export function PostConfirmModal({
             <IconClock size={12} />
             <Trans>Waits for</Trans>
           </Text>
-          {dependsOn.map((dependencyId: SubmissionId) => {
-            const dependency = submissionsMap.get(dependencyId);
+          {dependencyIds.map((dependencyId) => {
+            const dependency = submissionsMap.get(dependencyId as SubmissionId);
             const inBatch = batchIds.has(dependencyId);
             const label = dependency
               ? dependency.title.trim() || t`Untitled`
@@ -130,7 +144,7 @@ export function PostConfirmModal({
                 withArrow
               >
                 <Badge
-                  size="sm"
+                  size="xs"
                   variant="light"
                   color={color}
                   radius="sm"
@@ -151,53 +165,75 @@ export function PostConfirmModal({
     [submissionsMap, batchIds, t],
   );
 
-  const renderExtra = useCallback(
+  // Website "post" chips, grouped by website: one two-tone pill per website
+  // showing the website name (accent color) and its account names (plain).
+  const buildWebsitePills = useCallback(
     (submission: SubmissionRecord) => {
       const nonDefaultOptions = submission.options.filter((o) => !o.isDefault);
-      const dependencies = getDependencyChips(submission);
-      if (nonDefaultOptions.length === 0 && !dependencies) return null;
+      if (nonDefaultOptions.length === 0) return null;
+
+      const groups = new Map<string, { website: string; accounts: string[] }>();
+      for (const option of nonDefaultOptions) {
+        const acc = accountsMap.get(option.accountId);
+        const website =
+          acc?.websiteDisplayName ?? option.account?.website ?? t`Unknown`;
+        const name = acc?.name ?? option.account?.name ?? option.accountId;
+        const group = groups.get(website);
+        if (group) group.accounts.push(name);
+        else groups.set(website, { website, accounts: [name] });
+      }
 
       return (
+        <Group gap={6} wrap="wrap">
+          {[...groups.values()].map((group) => (
+            <WebsitePostPill
+              key={group.website}
+              website={group.website}
+              accounts={group.accounts}
+            />
+          ))}
+        </Group>
+      );
+    },
+    [accountsMap, t],
+  );
+
+  // Extra content under each row in the flat post-order list: website chips and
+  // the full "waits for" chip set (no nesting here, so show every dependency).
+  const renderExtra = useCallback(
+    (submission: SubmissionRecord) => {
+      const pills = buildWebsitePills(submission);
+      const chips = buildWaitsFor(submission.metadata?.dependsOn ?? []);
+      if (!pills && !chips) return null;
+      return (
         <Stack gap={2} mt={4}>
-          {nonDefaultOptions.length > 0 && (
-            <Pill.Group gap={4}>
-              {nonDefaultOptions.map((option) => {
-                const acc = accountsMap.get(option.accountId);
-                return (
-                  <Pill
-                    key={option.accountId}
-                    style={{ maxWidth: 'unset', flex: 'none' }}
-                  >
-                    <span
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 4,
-                      }}
-                    >
-                      <Badge
-                        size="xs"
-                        variant="light"
-                        radius="sm"
-                        px={4}
-                        style={{ flexShrink: 0 }}
-                      >
-                        {acc?.websiteDisplayName ?? option.account?.website}
-                      </Badge>
-                      <Text size="xs" span>
-                        {acc?.name ?? option.account?.name ?? option.accountId}
-                      </Text>
-                    </span>
-                  </Pill>
-                );
-              })}
-            </Pill.Group>
-          )}
-          {dependencies}
+          {pills}
+          {chips}
         </Stack>
       );
     },
-    [accountsMap, getDependencyChips],
+    [buildWebsitePills, buildWaitsFor],
+  );
+
+  // Render one read-only tree row: title, website chips, and any "waits for"
+  // chips not already implied by nesting (external / independent prerequisites).
+  const renderRow = useCallback(
+    (node: DependencyNode) => {
+      const { submission } = node;
+      const extraDeps = (submission.metadata?.dependsOn ?? []).filter(
+        (id) => !node.ancestorIds.includes(id),
+      );
+      return (
+        <Stack gap={4}>
+          <Text size="sm" fw={500} truncate>
+            {submission.title.trim() || <Trans>Untitled</Trans>}
+          </Text>
+          {buildWebsitePills(submission)}
+          {buildWaitsFor(extraDeps)}
+        </Stack>
+      );
+    },
+    [buildWebsitePills, buildWaitsFor],
   );
 
   const handleConfirm = useCallback(() => {
@@ -256,22 +292,37 @@ export function PostConfirmModal({
           >
             <Text size="xs">
               <Trans>
-                Some submissions wait for others to finish posting first. These
-                dependencies are enforced automatically, regardless of the order
-                below.
+                Order any submission below. Dependencies are enforced
+                automatically — a submission still waits for the ones it depends
+                on to finish posting, regardless of the order you set.
               </Trans>
             </Text>
           </Alert>
         )}
 
-        {/* Reorderable list */}
+        {/* Flat post-order list: every submission is individually reorderable */}
         {validCount > 0 && (
           <ReorderableSubmissionList
             submissions={orderedSubmissions}
             onReorder={setOrderedSubmissions}
             renderExtra={renderExtra}
-            maxHeight="320px"
+            maxHeight="300px"
           />
+        )}
+
+        {/* Read-only dependency tree for context */}
+        {validCount > 0 && anyHasDependencies && (
+          <Stack gap={4}>
+            <Text size="sm" fw={600}>
+              <Trans>Dependencies</Trans>
+            </Text>
+            <DependencyReorderableTree
+              forest={forest}
+              renderRow={renderRow}
+              readOnly
+              maxHeight="220px"
+            />
+          </Stack>
         )}
 
         {/* Action buttons */}
@@ -290,5 +341,67 @@ export function PostConfirmModal({
         </Group>
       </Stack>
     </Modal>
+  );
+}
+
+/**
+ * A grouped website "post" chip rendered as a single two-tone pill, e.g.
+ * `DISCORD | test1, test2`: the website name carries the accent (pill) color,
+ * and the account names sit on a plain background — the color boundary is the
+ * visual divider between them.
+ */
+function WebsitePostPill({
+  website,
+  accounts,
+}: {
+  website: string;
+  accounts: string[];
+}) {
+  return (
+    <Box
+      style={{
+        display: 'inline-flex',
+        alignItems: 'stretch',
+        maxWidth: '100%',
+        borderRadius: 'var(--mantine-radius-sm)',
+        overflow: 'hidden',
+        borderWidth: 1,
+        borderStyle: 'solid',
+        borderColor: 'var(--mantine-color-default-border)',
+      }}
+    >
+      <Text
+        span
+        fw={700}
+        style={{
+          backgroundColor: 'var(--mantine-primary-color-light)',
+          color: 'var(--mantine-primary-color-light-color)',
+          paddingBlock: 0,
+          paddingInline: 5,
+          fontSize: 10,
+          textTransform: 'uppercase',
+          letterSpacing: '0.3px',
+          whiteSpace: 'nowrap',
+          flexShrink: 0,
+        }}
+      >
+        {website}
+      </Text>
+      <Text
+        span
+        c="dimmed"
+        style={{
+          paddingBlock: 0,
+          paddingInline: 5,
+          fontSize: 10,
+          minWidth: 0,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {accounts.join(', ')}
+      </Text>
+    </Box>
   );
 }
