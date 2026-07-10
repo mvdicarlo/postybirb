@@ -64,6 +64,13 @@
       "when": 1781785528097,
       "tag": "0008_windy_kinsey_walden",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1783682073974,
+      "tag": "0009_parched_champions",
+      "breakpoints": true
     }
   ]
 }
