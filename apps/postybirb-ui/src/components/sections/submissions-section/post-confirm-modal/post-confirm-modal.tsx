@@ -1,12 +1,3 @@
-/**
- * PostConfirmModal - Modal for confirming and reordering submissions before posting.
- *
- * Shows a flat, fully-reorderable "post order" list where every submission
- * (including ones that depend on others) is an independently orderable record,
- * plus a read-only dependency tree beneath it for context (prerequisite =
- * parent, dependents nested). Each row surfaces the submissions it waits for.
- */
-
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
   Alert,
@@ -32,6 +23,7 @@ import {
   flattenForest,
   type DependencyNode,
 } from './dependency-tree';
+import './post-confirm-modal.css';
 
 export interface PostConfirmModalProps {
   /** Whether the modal is open */
@@ -246,6 +238,7 @@ export function PostConfirmModal({
 
   return (
     <Modal
+      className="postybirb__post-confirm-modal"
       opened={opened}
       onClose={onClose}
       title={
@@ -263,8 +256,20 @@ export function PostConfirmModal({
       centered
       radius="md"
       size="md"
+      padding="md"
+      styles={{
+        content: { maxHeight: '85vh' },
+        header: { backgroundColor: 'var(--mantine-color-body)' },
+        body: {
+          padding: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: 0,
+        },
+      }}
     >
-      <Stack>
+      {/* Scrollable content */}
+      <Stack gap="md" p="md">
         {/* Info message */}
         <Text size="sm" c="dimmed">
           {hasSkippedSubmissions ? (
@@ -306,7 +311,7 @@ export function PostConfirmModal({
             submissions={orderedSubmissions}
             onReorder={setOrderedSubmissions}
             renderExtra={renderExtra}
-            maxHeight="300px"
+            fill
           />
         )}
 
@@ -320,26 +325,40 @@ export function PostConfirmModal({
               forest={forest}
               renderRow={renderRow}
               readOnly
-              maxHeight="220px"
+              fill
             />
           </Stack>
         )}
-
-        {/* Action buttons */}
-        <Group justify="flex-end">
-          <Button variant="default" onClick={onClose} disabled={loading}>
-            <Trans>Cancel</Trans>
-          </Button>
-          <Button
-            color="blue"
-            onClick={handleConfirm}
-            loading={loading}
-            disabled={validCount === 0}
-          >
-            <Trans>Post</Trans>
-          </Button>
-        </Group>
       </Stack>
+
+      {/* Sticky footer: action buttons stay visible while content scrolls */}
+      <Group
+        justify="flex-end"
+        gap="sm"
+        px="md"
+        py="sm"
+        style={{
+          position: 'sticky',
+          bottom: 0,
+          zIndex: 2,
+          backgroundColor: 'var(--mantine-color-body)',
+          borderTopWidth: 1,
+          borderTopStyle: 'solid',
+          borderTopColor: 'var(--mantine-color-default-border)',
+        }}
+      >
+        <Button variant="default" onClick={onClose} disabled={loading}>
+          <Trans>Cancel</Trans>
+        </Button>
+        <Button
+          color="blue"
+          onClick={handleConfirm}
+          loading={loading}
+          disabled={validCount === 0}
+        >
+          <Trans>Post</Trans>
+        </Button>
+      </Group>
     </Modal>
   );
 }

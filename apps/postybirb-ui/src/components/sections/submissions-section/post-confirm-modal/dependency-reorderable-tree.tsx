@@ -46,6 +46,11 @@ export interface DependencyReorderableTreeProps {
   maxHeight?: string | number;
   /** Render the whole tree read-only (no drag handles / reordering). */
   readOnly?: boolean;
+  /**
+   * Render at natural height without an internal scroll area, letting an
+   * ancestor own the scrolling. Ignores `maxHeight`.
+   */
+  fill?: boolean;
 }
 
 /** Reorder handler for the (top-level) root group. */
@@ -57,12 +62,27 @@ export function DependencyReorderableTree({
   renderRow,
   maxHeight = '340px',
   readOnly = false,
+  fill = false,
 }: DependencyReorderableTreeProps) {
   const handleReorder = useCallback<ReorderFn>(
     (nodes) => {
       onForestChange?.(reorderForestGroup(forest, null, nodes));
     },
     [forest, onForestChange],
+  );
+
+  const body = readOnly ? (
+    <Stack gap="xs">
+      {forest.map((node) => (
+        <StaticTreeItem
+          key={node.submission.id}
+          node={node}
+          renderRow={renderRow}
+        />
+      ))}
+    </Stack>
+  ) : (
+    <RootGroup nodes={forest} onReorder={handleReorder} renderRow={renderRow} />
   );
 
   return (
@@ -77,27 +97,15 @@ export function DependencyReorderableTree({
           </Trans>
         )}
       </Text>
-      <Box style={{ overflow: 'hidden', maxHeight }}>
-        <ScrollArea h="100%" scrollbars="y">
-          {readOnly ? (
-            <Stack gap="xs">
-              {forest.map((node) => (
-                <StaticTreeItem
-                  key={node.submission.id}
-                  node={node}
-                  renderRow={renderRow}
-                />
-              ))}
-            </Stack>
-          ) : (
-            <RootGroup
-              nodes={forest}
-              onReorder={handleReorder}
-              renderRow={renderRow}
-            />
-          )}
-        </ScrollArea>
-      </Box>
+      {fill ? (
+        body
+      ) : (
+        <Box style={{ overflow: 'hidden', maxHeight }}>
+          <ScrollArea h="100%" scrollbars="y">
+            {body}
+          </ScrollArea>
+        </Box>
+      )}
     </Box>
   );
 }
