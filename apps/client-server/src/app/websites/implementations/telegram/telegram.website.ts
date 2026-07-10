@@ -2,33 +2,29 @@
 import { SelectOption, SelectOptionSingle } from '@postybirb/form-builder';
 
 import {
-    FileType,
-    ImageResizeProps,
-    ISubmissionFile,
-    LoginResult,
-    OAuthRouteHandlers,
-    PostData,
-    PostResponse,
-    SimpleValidationResult,
-    TelegramAccountData,
-    TelegramOAuthRoutes,
-    TipTapNode,
+  FileType,
+  ImageResizeProps,
+  ISubmissionFile,
+  LoginResult,
+  OAuthRouteHandlers,
+  PostData,
+  PostResponse,
+  SimpleValidationResult,
+  TelegramAccountData,
+  TelegramOAuthRoutes,
 } from '@postybirb/types';
 import {
-    calculateImageResize,
-    supportsImage,
+  calculateImageResize,
+  supportsImage,
 } from '@postybirb/utils/file-type';
 import { Api, TelegramClient } from 'teleproto';
 import { CustomFile } from 'teleproto/client/uploads';
 import { Entity } from 'teleproto/define';
-import { HTMLParser as HTMLToTelegram } from 'teleproto/extensions/html';
 import { LogLevel } from 'teleproto/extensions/Logger';
 import { returnBigInt } from 'teleproto/Helpers';
 import { ProxyInterface } from 'teleproto/network/connection/TCPMTProxy';
 import { StringSession } from 'teleproto/sessions';
 import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
-import { HtmlConverter } from '../../../post-parsers/models/description-node/converters/html-converter';
-import { ConversionContext } from '../../../post-parsers/models/description-node/description-node.base';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
@@ -38,8 +34,8 @@ import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
 import {
-    FileWebsite,
-    PostBatchData,
+  FileWebsite,
+  PostBatchData,
 } from '../../models/website-modifiers/file-website';
 import { MessageWebsite } from '../../models/website-modifiers/message-website';
 import { OAuthWebsite } from '../../models/website-modifiers/oauth-website';
@@ -47,6 +43,7 @@ import { WithCustomDescriptionParser } from '../../models/website-modifiers/with
 import { Website } from '../../website';
 import { TelegramFileSubmission } from './models/telegram-file-submission';
 import { TelegramMessageSubmission } from './models/telegram-message-submission';
+import { TelegramConverter } from './telegram-description-converter';
 
 @WebsiteMetadata({
   name: 'telegram',
@@ -606,37 +603,5 @@ export default class Telegram
 
   getDescriptionConverter(): BaseConverter {
     return new TelegramConverter();
-  }
-}
-
-class TelegramConverter extends HtmlConverter {
-  protected getBlockSeparator(): string {
-    return '<br>';
-  }
-
-  convert(nodes: TipTapNode[], context: ConversionContext): string {
-    let html = super.convert(nodes, context);
-
-    html = html.replaceAll('<hr>', '<span>————————</span>');
-
-    // Used for description preview
-    const rendered = HTMLToTelegram.unparse(
-      ...TelegramConverter.fromHtml(html),
-    ).replaceAll('\n', '<br>');
-
-    return JSON.stringify({
-      html,
-      rendered,
-    });
-  }
-
-  static fromJson(json: string) {
-    const { html } = JSON.parse(json) as { html: string };
-
-    return TelegramConverter.fromHtml(html);
-  }
-
-  private static fromHtml(html: string) {
-    return HTMLToTelegram.parse(html.replaceAll('<br>', '\n'));
   }
 }
