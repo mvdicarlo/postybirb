@@ -1,14 +1,26 @@
 /**
  * PostConfirmModal - Modal for confirming and reordering submissions before posting.
- * Displays a reorderable list allowing users to set the queue order.
+ * Displays a reorderable list allowing users to set the queue order, and surfaces
+ * each submission's cross-submission dependencies (the submissions it waits for).
  */
 
 import { Trans, useLingui } from '@lingui/react/macro';
-import { Alert, Badge, Button, Group, Modal, Pill, Radio, Stack, Text } from '@mantine/core';
-import { PostRecordResumeMode } from '@postybirb/types';
-import { IconAlertCircle } from '@tabler/icons-react';
-import { useCallback, useEffect, useState } from 'react';
+import {
+  Alert,
+  Badge,
+  Button,
+  Group,
+  Modal,
+  Pill,
+  Stack,
+  Text,
+  Tooltip,
+} from '@mantine/core';
+import type { PostRecordResumeMode, SubmissionId } from '@postybirb/types';
+import { IconClock, IconInfoCircle } from '@tabler/icons-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAccountsMap } from '../../../../stores/entity/account-store';
+import { useSubmissionsMap } from '../../../../stores/entity/submission-store';
 import type { SubmissionRecord } from '../../../../stores/records';
 import { ReorderableSubmissionList } from '../../../shared/reorderable-submission-list';
 
@@ -41,24 +53,17 @@ export function PostConfirmModal({
 }: PostConfirmModalProps) {
   const { t } = useLingui();
   const accountsMap = useAccountsMap();
+  const submissionsMap = useSubmissionsMap();
 
   // Filter to only valid submissions that can be posted
   const validSubmissions = selectedSubmissions.filter(
     (s) => s.hasWebsiteOptions && !s.hasErrors,
   );
 
-  // Resume-mode prompting is handled by the relay engine; no failed-post detection here.
-  const hasFailedPosts = false;
-
   // Track the ordered list (reset when modal opens with new submissions)
   const [orderedSubmissions, setOrderedSubmissions] = useState<
     SubmissionRecord[]
   >([]);
-
-  // Track selected resume mode
-  const [resumeMode, setResumeMode] = useState<PostRecordResumeMode>(
-    PostRecordResumeMode.CONTINUE,
-  );
 
   // Reset order when modal opens or submissions change
   useEffect(() => {
@@ -68,39 +73,137 @@ export function PostConfirmModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [opened]);
 
+  // Ids being posted in this batch, so a dependency can be flagged as either
+  // "also in this batch" or external (still gates, just not selected here).
+  const batchIds = useMemo(
+    () => new Set(orderedSubmissions.map((s) => s.id)),
+    [orderedSubmissions],
+  );
+
+  const anyHasDependencies = useMemo(
+    () => orderedSubmissions.some((s) => (s.metadata?.dependsOn?.length ?? 0) > 0),
+    [orderedSubmissions],
+  );
+
+  // Build the "waits for" dependency chips for a submission (if any).
+  const getDependencyChips = useCallback(
+    (submission: SubmissionRecord) => {
+      const dependsOn = submission.metadata?.dependsOn ?? [];
+      if (dependsOn.length === 0) return null;
+
+      return (
+        <Group gap={6} mt={4} align="center" wrap="wrap">
+          <Text
+            size="xs"
+            c="dimmed"
+            fw={500}
+            span
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
+          >
+            <IconClock size={12} />
+            <Trans>Waits for</Trans>
+          </Text>
+          {dependsOn.map((dependencyId: SubmissionId) => {
+            const dependency = submissionsMap.get(dependencyId);
+            const inBatch = batchIds.has(dependencyId);
+            const label = dependency
+              ? dependency.title.trim() || t`Untitled`
+              : t`Deleted submission`;
+            let tooltip: string;
+            let color: string;
+            if (!dependency) {
+              tooltip = t`This dependency no longer exists and will be ignored.`;
+              color = 'red';
+            } else if (inBatch) {
+              tooltip = t`Also being posted in this batch.`;
+              color = 'grape';
+            } else {
+              tooltip = t`Not selected here — this submission still waits for it to finish posting.`;
+              color = 'gray';
+            }
+            return (
+              <Tooltip
+                key={dependencyId}
+                label={tooltip}
+                multiline
+                w={220}
+                withArrow
+              >
+                <Badge
+                  size="sm"
+                  variant="light"
+                  color={color}
+                  radius="sm"
+                  style={{
+                    maxWidth: 180,
+                    textTransform: 'none',
+                    cursor: 'default',
+                  }}
+                >
+                  {label}
+                </Badge>
+              </Tooltip>
+            );
+          })}
+        </Group>
+      );
+    },
+    [submissionsMap, batchIds, t],
+  );
+
   const renderExtra = useCallback(
     (submission: SubmissionRecord) => {
       const nonDefaultOptions = submission.options.filter((o) => !o.isDefault);
-      if (nonDefaultOptions.length === 0) return null;
+      const dependencies = getDependencyChips(submission);
+      if (nonDefaultOptions.length === 0 && !dependencies) return null;
 
       return (
-        <Pill.Group gap={4} mt={4}>
-          {nonDefaultOptions.map((option) => {
-            const acc = accountsMap.get(option.accountId);
-            return (
-              <Pill key={option.accountId} style={{ maxWidth: 'unset', flex: 'none' }}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                  <Badge size="xs" variant="light" radius="sm" px={4} style={{ flexShrink: 0 }}>
-                    {acc?.websiteDisplayName ?? option.account?.website}
-                  </Badge>
-                  <Text size="xs" span>
-                    {acc?.name ?? option.account?.name ?? option.accountId}
-                  </Text>
-                </span>
-              </Pill>
-            );
-          })}
-        </Pill.Group>
+        <Stack gap={2} mt={4}>
+          {nonDefaultOptions.length > 0 && (
+            <Pill.Group gap={4}>
+              {nonDefaultOptions.map((option) => {
+                const acc = accountsMap.get(option.accountId);
+                return (
+                  <Pill
+                    key={option.accountId}
+                    style={{ maxWidth: 'unset', flex: 'none' }}
+                  >
+                    <span
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 4,
+                      }}
+                    >
+                      <Badge
+                        size="xs"
+                        variant="light"
+                        radius="sm"
+                        px={4}
+                        style={{ flexShrink: 0 }}
+                      >
+                        {acc?.websiteDisplayName ?? option.account?.website}
+                      </Badge>
+                      <Text size="xs" span>
+                        {acc?.name ?? option.account?.name ?? option.accountId}
+                      </Text>
+                    </span>
+                  </Pill>
+                );
+              })}
+            </Pill.Group>
+          )}
+          {dependencies}
+        </Stack>
       );
     },
-    [accountsMap],
+    [accountsMap, getDependencyChips],
   );
 
   const handleConfirm = useCallback(() => {
-    const orderedIds = orderedSubmissions.map((s) => s.id);
-    onConfirm(orderedIds, hasFailedPosts ? resumeMode : undefined);
+    onConfirm(orderedSubmissions.map((s) => s.id));
     onClose();
-  }, [orderedSubmissions, onConfirm, onClose, hasFailedPosts, resumeMode]);
+  }, [orderedSubmissions, onConfirm, onClose]);
 
   const validCount = validSubmissions.length;
   const hasSkippedSubmissions = validCount < totalSelectedCount;
@@ -109,14 +212,25 @@ export function PostConfirmModal({
     <Modal
       opened={opened}
       onClose={onClose}
-      title={<Trans>Post Submissions</Trans>}
+      title={
+        <Group gap="xs" align="center">
+          <Text fw={600}>
+            <Trans>Post Submissions</Trans>
+          </Text>
+          {validCount > 0 && (
+            <Badge variant="light" color="blue" radius="sm">
+              {validCount}
+            </Badge>
+          )}
+        </Group>
+      }
       centered
       radius="md"
       size="md"
     >
       <Stack>
         {/* Info message */}
-        <Text size="sm">
+        <Text size="sm" c="dimmed">
           {hasSkippedSubmissions ? (
             <Trans>
               {validCount} of {totalSelectedCount} selected submission(s) are
@@ -131,45 +245,22 @@ export function PostConfirmModal({
           )}
         </Text>
 
-        {/* Resume mode selector for failed posts */}
-        {hasFailedPosts && (
+        {/* Dependency explainer (only when a submission has dependencies) */}
+        {anyHasDependencies && (
           <Alert
-            icon={<IconAlertCircle size={16} />}
-            title={<Trans>Failed Posts Detected</Trans>}
-            color="orange"
+            icon={<IconInfoCircle size={16} />}
+            color="blue"
+            variant="light"
+            p="xs"
+            radius="md"
           >
-            <Stack gap="sm">
-              <Text size="sm">
-                <Trans>
-                  Some submissions have failed posting attempts. Choose how to
-                  handle them:
-                </Trans>
-              </Text>
-              <Radio.Group
-                value={resumeMode}
-                onChange={(value) =>
-                  setResumeMode(value as PostRecordResumeMode)
-                }
-              >
-                <Stack gap="xs">
-                  <Radio
-                    value={PostRecordResumeMode.CONTINUE}
-                    label={t`Continue from where it left off`}
-                    description={t`Skip websites that posted successfully and only attempt failed or unattempted ones.`}
-                  />
-                  <Radio
-                    value={PostRecordResumeMode.CONTINUE_RETRY}
-                    label={t`Retry all failed or unattempted websites`}
-                    description={t`Retry posting to all websites that failed or were not attempted. All files will be re-uploaded.`}
-                  />
-                  <Radio
-                    value={PostRecordResumeMode.NEW}
-                    label={t`Start completely fresh`}
-                    description={t`Discard all progress from the previous attempt and start as if this were the first time posting.`}
-                  />
-                </Stack>
-              </Radio.Group>
-            </Stack>
+            <Text size="xs">
+              <Trans>
+                Some submissions wait for others to finish posting first. These
+                dependencies are enforced automatically, regardless of the order
+                below.
+              </Trans>
+            </Text>
           </Alert>
         )}
 
@@ -179,7 +270,7 @@ export function PostConfirmModal({
             submissions={orderedSubmissions}
             onReorder={setOrderedSubmissions}
             renderExtra={renderExtra}
-            maxHeight="300px"
+            maxHeight="320px"
           />
         )}
 
