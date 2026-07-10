@@ -11,7 +11,6 @@ const config = {
     'eslint-config-prettier',
   ],
   plugins: ['@nx', 'jest'],
-  parserOptions: { project: './tsconfig.base.json' },
   overrides: [
     {
       files: ['*.tsx'],

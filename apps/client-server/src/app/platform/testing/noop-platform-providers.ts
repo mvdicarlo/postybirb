@@ -2,16 +2,16 @@
 /* eslint-disable max-classes-per-file */
 import { Provider } from '@nestjs/common';
 import {
-  PlatformAppService,
-  PlatformBrowserService,
-  PlatformForkOptions,
-  PlatformHttpService,
-  PlatformNetworkService,
-  PlatformNotificationService,
-  PlatformProcessService,
-  PlatformService,
-  PlatformSessionService,
-  PlatformWorkerProcess,
+    PlatformAppService,
+    PlatformBrowserService,
+    PlatformForkOptions,
+    PlatformHttpService,
+    PlatformNetworkService,
+    PlatformNotificationService,
+    PlatformProcessService,
+    PlatformService,
+    PlatformSessionService,
+    PlatformWorkerProcess,
 } from '@postybirb/platform';
 import { IsTestEnvironment } from '@postybirb/utils/common';
 
@@ -41,6 +41,10 @@ class NoopPlatformSessionService implements PlatformSessionService {
   async flushCookies(): Promise<void> {}
 
   async clearStorageData(): Promise<void> {}
+
+  onCookieChanged(): () => void {
+    return () => {};
+  }
 }
 
 class NoopPlatformBrowserService implements PlatformBrowserService {

@@ -1,15 +1,15 @@
 import {
-  FileType,
-  ILoginState,
-  ImageResizeProps,
-  ISubmissionFile,
-  MegalodonAccountData,
-  MegalodonOAuthRoutes,
-  OAuthRouteHandlers,
-  PostData,
-  PostResponse,
-  SimpleValidationResult,
-  SubmissionRating,
+    FileType,
+    ImageResizeProps,
+    ISubmissionFile,
+    LoginResult,
+    MegalodonAccountData,
+    MegalodonOAuthRoutes,
+    OAuthRouteHandlers,
+    PostData,
+    PostResponse,
+    SimpleValidationResult,
+    SubmissionRating,
 } from '@postybirb/types';
 import { toError } from '@postybirb/utils/common';
 import { isObject } from 'lodash';
@@ -24,8 +24,8 @@ import { MessageWebsite } from '../../models/website-modifiers/message-website';
 import { OAuthWebsite } from '../../models/website-modifiers/oauth-website';
 import { Website } from '../../website';
 import {
-  FediverseInstanceTypes,
-  MegalodonApiService,
+    FediverseInstanceTypes,
+    MegalodonApiService,
 } from './megalodon-api-service';
 import { MegalodonFileSubmission } from './models/megalodon-file-submission';
 import { MegalodonMessageSubmission } from './models/megalodon-message-submission';
@@ -224,7 +224,7 @@ export abstract class MegalodonWebsite
           authCode: undefined, // Clear temporary code
         });
 
-        await this.onLogin();
+        await this.login();
 
         return {
           success: true,
@@ -251,7 +251,7 @@ export abstract class MegalodonWebsite
     return normalized;
   }
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     const data = this.websiteDataStore.getData();
 
     if (data?.accessToken && data?.username && data?.instanceUrl) {
@@ -294,17 +294,17 @@ export abstract class MegalodonWebsite
           }
         }
 
-        return this.loginState.setLogin(
-          true,
-          `${account.data.username}@${data.instanceUrl}`,
-        );
+        return {
+          loggedIn: true,
+          username: `${account.data.username}@${data.instanceUrl}`,
+        };
       } catch (error) {
         this.logger.error('Token verification failed', error);
-        return this.loginState.logout();
+        return { loggedIn: false };
       }
     }
 
-    return this.loginState.logout();
+    return { loggedIn: false };
   }
 
   /**

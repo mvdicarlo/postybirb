@@ -1,10 +1,10 @@
 import {
-  ILoginState,
-  ImageResizeProps,
-  ISubmissionFile,
-  PostData,
-  PostResponse,
-  SubmissionRating,
+    ImageResizeProps,
+    ISubmissionFile,
+    LoginResult,
+    PostData,
+    PostResponse,
+    SubmissionRating,
 } from '@postybirb/types';
 import parse from 'node-html-parser';
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -37,7 +37,7 @@ export abstract class PhilomenaWebsite<
    * Check if the user is logged in by looking for the logout link
    * and extracting the username from the data-user-name attribute.
    */
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     const res = await this.platform.http.get<string>(`${this.BASE_URL}`, {
       partition: this.accountId,
     });
@@ -47,10 +47,10 @@ export abstract class PhilomenaWebsite<
       const usernameElement = document.querySelector('[data-user-name]');
       const username =
         usernameElement?.getAttribute('data-user-name') || 'Unknown';
-      return this.loginState.setLogin(true, username);
+      return { loggedIn: true, username };
     }
 
-    return this.loginState.setLogin(false, null);
+    return { loggedIn: false };
   }
 
   abstract createFileModel(): TFileSubmission;
@@ -186,9 +186,18 @@ export abstract class PhilomenaWebsite<
         );
     }
 
-    return PostResponse.fromWebsite(this)
-      .withAdditionalInfo(result.body)
-      .withSourceUrl(responseUrl);
+    let response = PostResponse.fromWebsite(this).withAdditionalInfo(
+      result.body,
+    );
+
+    if (responseUrl) {
+      const { pathname } = new URL(responseUrl);
+      if (pathname && pathname !== '/') {
+        response = response.withSourceUrl(`${this.BASE_URL}${pathname}`);
+      }
+    }
+
+    return response;
   }
 
   onValidateFileSubmission = validatorPassthru;

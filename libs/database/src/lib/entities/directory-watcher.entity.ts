@@ -24,7 +24,7 @@ export class DirectoryWatcher
 
   public path?: string;
 
-  public templateId: SubmissionId;
+  public templateId: SubmissionId | null;
 
   public importAction: DirectoryWatcherImportAction;
 
@@ -39,7 +39,7 @@ export class DirectoryWatcher
       configurable: false,
     });
     this.path = init.path;
-    this.templateId = (init.templateId === undefined ? null : init.templateId) as SubmissionId;
+    this.templateId = init.templateId === undefined ? null : init.templateId;
     this.importAction =
       init.importAction ?? ('' as DirectoryWatcherImportAction);
   }
@@ -58,7 +58,7 @@ export class DirectoryWatcher
 
   public toDTO(): DirectoryWatcherDto {
     const { template, ...rest } = this.toObject();
-    return { ...rest, template: template?.id };
+    return { ...rest, template: template?.id ?? this.templateId };
   }
 
   static fromRow(

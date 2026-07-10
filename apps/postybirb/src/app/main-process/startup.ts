@@ -2,9 +2,9 @@ import { INestApplication } from '@nestjs/common';
 import { PostyBirbDirectories } from '@postybirb/fs';
 import { flushAppInsights, Logger, trackException } from '@postybirb/logger';
 import {
-    PostyBirbEnvConfig,
-    RemoteConfigManager,
-    toError,
+  PostyBirbEnvConfig,
+  RemoteConfigManager,
+  toError,
 } from '@postybirb/utils/common';
 import { app } from 'electron';
 import { environment } from '../../environments/environment';
@@ -125,5 +125,57 @@ export function quitOnStartupFailure(error: unknown): void {
 
   flushAppInsights().finally(() => {
     app.quit();
+  });
+}
+
+/**
+ * Wire a single graceful-shutdown path for every launch mode. The embedded
+ * NestJS server must close cleanly — flushing the database and terminating its
+ * worker processes — however the quit is triggered:
+ *  - GUI: the tray "Quit" action or Cmd-Q drive `app.quit()`.
+ *  - Terminal (GUI or headless): Ctrl-C sends SIGINT and `docker stop` sends
+ *    SIGTERM. Electron does not turn these signals into a quit on its own, so
+ *    without this the process would be killed abruptly with no cleanup.
+ *
+ * Registered once, after the server has bootstrapped, so `nestApp` is always
+ * available when a quit is requested.
+ */
+export function registerGracefulShutdown(nestApp: INestApplication): void {
+  let isShuttingDown = false;
+
+  const closeAndExit = (): void => {
+    if (isShuttingDown) {
+      return;
+    }
+    isShuttingDown = true;
+
+    // Guard against a hung close leaving the container running indefinitely.
+    const forceExitTimer = setTimeout(() => app.exit(0), 5_000);
+    forceExitTimer.unref();
+
+    nestApp
+      .close()
+      .catch((error) => {
+        logger
+          .withError(toError(error))
+          .error('Error while closing the embedded server during shutdown.');
+      })
+      .finally(() => {
+        clearTimeout(forceExitTimer);
+        app.exit(0);
+      });
+  };
+
+  // Translate container/terminal termination signals into an Electron quit.
+  process.once('SIGTERM', () => app.quit());
+  process.once('SIGINT', () => app.quit());
+
+  // Defer the actual quit until the embedded server has closed cleanly.
+  app.on('before-quit', (event) => {
+    if (isShuttingDown) {
+      return;
+    }
+    event.preventDefault();
+    closeAndExit();
   });
 }

@@ -1,11 +1,11 @@
 import { HttpResponse } from '@postybirb/http/types';
 import {
-  DiscordAccountData,
-  ILoginState,
-  ImageResizeProps,
-  IPostResponse,
-  PostData,
-  PostResponse,
+    DiscordAccountData,
+    ImageResizeProps,
+    IPostResponse,
+    LoginResult,
+    PostData,
+    PostResponse,
 } from '@postybirb/types';
 import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -18,14 +18,14 @@ import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
 import {
-  FileWebsite,
-  PostBatchData,
+    FileWebsite,
+    PostBatchData,
 } from '../../models/website-modifiers/file-website';
 import { MessageWebsite } from '../../models/website-modifiers/message-website';
 import { WithCustomDescriptionParser } from '../../models/website-modifiers/with-custom-description-parser';
 import {
-  DynamicFileSizeLimits,
-  WithDynamicFileSizeLimits,
+    DynamicFileSizeLimits,
+    WithDynamicFileSizeLimits,
 } from '../../models/website-modifiers/with-dynamic-file-size-limits';
 import { Website } from '../../website';
 import { DiscordDescriptionConverter } from './discord-description-converter';
@@ -59,10 +59,10 @@ export default class Discord
       isForum: true,
     };
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     const data = this.websiteDataStore.getData();
     if (data.webhook) {
-      return this.loginState.setLogin(true, this.account.name);
+      return { loggedIn: true, username: this.account.name };
     }
 
     if (
@@ -81,7 +81,7 @@ export default class Discord
       }
     }
 
-    return this.loginState.setLogin(false, null);
+    return { loggedIn: false };
   }
 
   getDescriptionConverter(): BaseConverter {

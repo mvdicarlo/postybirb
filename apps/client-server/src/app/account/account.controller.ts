@@ -5,8 +5,8 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { AccountId } from '@postybirb/types';
 import { AccountRepository } from '@postybirb/database';
+import { AccountId } from '@postybirb/types';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
 import { AccountService } from './account.service';
 import { CreateAccountDto } from './dtos/create-account.dto';
@@ -46,9 +46,18 @@ export class AccountController extends PostyBirbController<AccountRepository> {
   }
 
   @Get('/refresh/:id')
-  @ApiOkResponse({ description: 'Account login check queued.' })
+  @ApiOkResponse({ description: 'Account login check completed.' })
   async refresh(@Param('id') id: AccountId) {
-    this.service.manuallyExecuteOnLogin(id);
+    // Await so the caller's request resolves only once the login check has
+    // actually finished. This lets the UI's trailing-rerun scheduler run its
+    // follow-up check against the freshest cookies/session state rather than
+    // racing a fire-and-forget check that may have read stale cookies.
+    try {
+      await this.service.manuallyExecuteOnLogin(id);
+    } catch {
+      // Login errors are handled/logged internally by the website instance;
+      // never surface them as a 500 that would trigger a UI error toast.
+    }
   }
 
   @Patch(':id')

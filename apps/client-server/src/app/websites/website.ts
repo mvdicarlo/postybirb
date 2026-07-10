@@ -1,28 +1,47 @@
 import { Account, WebsiteDataRepository } from '@postybirb/database';
 import { Logger, PostyBirbLogger } from '@postybirb/logger';
-import { PlatformCookieDetails, PlatformService } from '@postybirb/platform';
 import {
-    DynamicObject,
-    ILoginState,
-    IWebsiteFormFields,
-    LoginState,
-    SubmissionType,
+  PlatformCookieChange,
+  PlatformCookieDetails,
+  PlatformService,
+} from '@postybirb/platform';
+import {
+  DynamicObject,
+  ILoginState,
+  IWebsiteFormFields,
+  LoginResult,
+  LoginState,
+  SubmissionType,
 } from '@postybirb/types';
 import { Mutex } from 'async-mutex';
 import { SubmissionValidator } from './commons/validator';
 import { WebsiteDecoratorProps } from './decorators/website-decorator-props';
 import { DataPropertyAccessibility } from './models/data-property-accessibility';
 import {
-    FileWebsiteKey,
-    isFileWebsite,
+  FileWebsiteKey,
+  isFileWebsite,
 } from './models/website-modifiers/file-website';
 import {
-    isMessageWebsite,
-    MessageWebsiteKey,
+  isMessageWebsite,
+  MessageWebsiteKey,
 } from './models/website-modifiers/message-website';
 import WebsiteDataManager from './website-data-manager';
 
 const CookiePrefix = 'postybirb:session:';
+
+/**
+ * Debounce window for login checks triggered by cookie changes. A single page
+ * load can set many cookies in rapid succession, so we coalesce the burst into
+ * one login check.
+ */
+const COOKIE_CHANGE_DEBOUNCE_MS = 1_000;
+
+/**
+ * Window after a login completes during which cookie changes are ignored. Our
+ * own onBeforeLogin writes/rehydrates session cookies, which would otherwise
+ * re-trigger a login and create a feedback loop.
+ */
+const COOKIE_SELF_MUTATION_BUFFER_MS = 1_000;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type UnknownWebsite = Website<any>;
@@ -54,9 +73,15 @@ export abstract class Website<
   protected readonly sessionData: SessionData = {} as SessionData;
 
   /**
-   * Tracks the login state of a website.
+   * Tracks the login state of a website. Immutable snapshot owned exclusively
+   * by the login lifecycle; reassigned (never mutated) on each transition.
    */
-  protected readonly loginState: LoginState;
+  private loginState: LoginState = LoginState.initial();
+
+  /**
+   * Ignorable noisy cookies that are written by the website but not relevant to our login state.
+   */
+  protected readonly cookieIgnoreList: string[] = [];
 
   /**
    * Mutex that serializes login attempts for this website instance.
@@ -66,12 +91,21 @@ export abstract class Website<
   private readonly loginMutex = new Mutex();
 
   /**
-   * When true, a follow-up login will run after the current one completes.
-   * This handles the case where cookies/state changed during an in-flight login
-   * (e.g. user logs in on a page while a login check is already running).
-   * Only one follow-up is ever queued regardless of how many callers request it.
+   * Unsubscribe handle for the per-partition cookie-change listener, if
+   * subscribed. Only set for 'user' (webview) login flows.
    */
-  private loginDirty = false;
+  private cookieChangeUnsubscribe?: () => void;
+
+  /**
+   * Pending debounce timer for a cookie-change-triggered login check.
+   */
+  private cookieChangeDebounceTimer?: NodeJS.Timeout;
+
+  /**
+   * Epoch ms until which cookie-change triggers are ignored, used to filter out
+   * the cookie writes performed by our own login lifecycle.
+   */
+  private suppressCookieChangeUntil = 0;
 
   /**
    * Properties set by website decorators such as {@link WebsiteMetadata}.
@@ -160,7 +194,6 @@ export abstract class Website<
     this.platform = platform;
     this.logger = Logger(this.decoratedProps.metadata.displayName);
     this.websiteDataStore = new WebsiteDataManager(userAccount);
-    this.loginState = new LoginState();
   }
 
   /**
@@ -176,9 +209,12 @@ export abstract class Website<
 
   public async clearLoginStateAndData(forWebsiteDeletion = false) {
     this.logger.info('Clearing login state and data');
+    if (forWebsiteDeletion) {
+      this.unsubscribeFromCookieChanges();
+    }
     await this.platform.session.clearStorageData(this.account.id);
     await this.websiteDataStore.clearData(!forWebsiteDeletion);
-    this.loginState.logout();
+    this.loginState = this.loginState.reset();
   }
 
   /**
@@ -212,10 +248,17 @@ export abstract class Website<
   }
 
   /**
-   * Returns the login state of the website.
+   * Returns a serializable snapshot of the website's login state.
    */
-  public getLoginState() {
-    return this.loginState.getState();
+  public getLoginState(): ILoginState {
+    return this.loginState.toDTO();
+  }
+
+  /**
+   * The username of the logged-in user, or null if not logged in.
+   */
+  public get username(): string | null {
+    return this.loginState.username;
   }
 
   /**
@@ -259,55 +302,60 @@ export abstract class Website<
   // -------------- Login Methods --------------
 
   /**
-   * Public entry point for login. Serialized via mutex so that:
-   * - The first caller runs the full lifecycle (onBeforeLogin -> onLogin).
-   * - Concurrent callers mark the login as dirty so one follow-up runs.
-   * - At most one follow-up is queued, not one per waiter.
+   * Public entry point for a login check. Serialized via a mutex so only one
+   * check runs at a time per instance:
+   * - The first caller runs the full lifecycle (onBeforeLogin -> onLogin) and
+   *   applies the result.
+   * - Concurrent callers await the in-flight check and receive its result.
+   *
+   * There are no automatic retries — exactly one check runs per invocation.
+   * A transient failure leaves the previous state intact (see
+   * {@link executeLogin}); fresh checks are driven by newer triggers (cookie
+   * changes and navigation events).
    *
    * @returns {Promise<ILoginState>} The login state after the check completes.
    */
   public async login(): Promise<ILoginState> {
-    // If the mutex is already locked, mark dirty so a follow-up runs,
-    // then wait for all pending work (current + follow-up) to finish.
+    // If a check is already running, await it and return its result rather than
+    // starting a redundant concurrent check.
     if (this.loginMutex.isLocked()) {
       this.logger.debug(
-        `Login already in progress for ${this.id}, marking dirty and waiting...`,
+        `Login already in progress for ${this.id}, awaiting result...`,
       );
-      this.loginDirty = true;
       await this.loginMutex.waitForUnlock();
-      return this.loginState.getState();
+      return this.getLoginState();
     }
 
     return this.loginMutex.runExclusive(async () => {
-      await this.executeLogin();
-
-      if (this.loginDirty) {
-        this.loginDirty = false;
-        this.logger.debug(
-          `Running follow-up login for ${this.id} (state may have changed during previous run)`,
-        );
-        if (!this.loginState.isLoggedIn) {
-          await this.executeLogin();
-        }
+      const previous = this.loginState;
+      this.loginState = this.loginState.beginCheck();
+      try {
+        const result = await this.executeLogin();
+        this.loginState = this.loginState.resolve(result);
+      } catch (e) {
+        // Keep the previous state on failure: never flip a logged-in account to
+        // logged-out due to a transient error, and never auto-retry.
+        this.logger.withError(e).error(`Login failed for ${this.id}`);
+        this.loginState = previous;
       }
-
-      return this.loginState.getState();
+      return this.getLoginState();
     });
   }
 
   /**
-   * Runs the actual login lifecycle: onBeforeLogin -> onLogin.
-   * Must only be called while holding the loginMutex.
+   * Runs the login lifecycle (onBeforeLogin -> onLogin) and returns the raw
+   * result reported by the website. Errors propagate to {@link login}, which
+   * decides how to apply them. Must only be called while holding the loginMutex.
    */
-  private async executeLogin(): Promise<void> {
+  private async executeLogin(): Promise<LoginResult> {
     try {
-      this.loginState.setPending(true);
       await this.onBeforeLogin();
-      await this.onLogin();
-    } catch (e) {
-      this.logger.withError(e).error(`Login failed for ${this.id}`);
+      return await this.onLogin();
     } finally {
-      this.loginState.setPending(false);
+      // Suppress cookie-change triggers briefly so the cookie writes performed
+      // by our own onBeforeLogin don't re-trigger another login.
+      this.suppressCookieChangeUntil =
+        Date.now() + COOKIE_SELF_MUTATION_BUFFER_MS;
     }
   }
 
@@ -322,6 +370,108 @@ export abstract class Website<
     websiteDataRepository: WebsiteDataRepository,
   ): Promise<void> {
     await this.websiteDataStore.initialize(websiteDataRepository);
+    this.subscribeToCookieChanges();
+  }
+
+  /**
+   * Subscribes to cookie changes for this account's partition so login is
+   * detected as soon as the website sets/updates its auth cookies, rather than
+   * waiting for a navigation event. Only meaningful for
+   * 'user' (webview) login flows; API/OAuth flows don't rely on webview
+   * cookies.
+   */
+  private subscribeToCookieChanges(): void {
+    if (this.decoratedProps.loginFlow.type !== 'user') {
+      return;
+    }
+    // Guard against double-subscription if initialized more than once.
+    this.unsubscribeFromCookieChanges();
+    try {
+      this.cookieChangeUnsubscribe = this.platform.session.onCookieChanged(
+        this.accountId,
+        (change) => this.handleCookieChange(change),
+      );
+    } catch (err) {
+      this.logger.withError(err).warn('Failed to subscribe to cookie changes');
+    }
+  }
+
+  /**
+   * Reacts to a cookie change in this account's partition. Ignores cookies
+   * unrelated to the website's domain and changes caused by our own login
+   * lifecycle, then debounces the rest into a single login check.
+   */
+  private handleCookieChange(change: PlatformCookieChange): void {
+    if (!this.isRelevantCookieDomain(change.cookie.domain)) {
+      return;
+    }
+
+    if (this.cookieIgnoreList.includes(change.cookie.name)) {
+      return;
+    }
+
+    // Ignore cookie mutations caused by our own login lifecycle to avoid a
+    // feedback loop (onBeforeLogin writes/rehydrates session cookies).
+    if (
+      this.loginMutex.isLocked() ||
+      Date.now() < this.suppressCookieChangeUntil
+    ) {
+      return;
+    }
+
+    if (this.cookieChangeDebounceTimer) {
+      clearTimeout(this.cookieChangeDebounceTimer);
+    }
+    this.cookieChangeDebounceTimer = setTimeout(() => {
+      this.cookieChangeDebounceTimer = undefined;
+      this.logger.debug(`Cookie change detected for ${this.id}, checking login`);
+      this.login().catch((e) =>
+        this.logger.withError(e).error('Cookie-change login check failed'),
+      );
+    }, COOKIE_CHANGE_DEBOUNCE_MS);
+  }
+
+  /**
+   * Determines whether a cookie domain is relevant to this website's BASE_URL.
+   * Matches the base host, its subdomains, and parent domains so auth cookies
+   * set on either the apex or a subdomain are picked up.
+   */
+  private isRelevantCookieDomain(cookieDomain?: string): boolean {
+    if (!cookieDomain) {
+      return false;
+    }
+    const normalized = cookieDomain.replace(/^\./, '').toLowerCase();
+    try {
+      const baseHost = new URL(this.BASE_URL).hostname.toLowerCase();
+      return (
+        baseHost === normalized ||
+        baseHost.endsWith(`.${normalized}`) ||
+        normalized.endsWith(`.${baseHost}`)
+      );
+    } catch {
+      // If BASE_URL can't be parsed, don't filter — better to over-trigger.
+      return true;
+    }
+  }
+
+  /**
+   * Tears down the cookie-change subscription and any pending debounce timer.
+   */
+  private unsubscribeFromCookieChanges(): void {
+    if (this.cookieChangeDebounceTimer) {
+      clearTimeout(this.cookieChangeDebounceTimer);
+      this.cookieChangeDebounceTimer = undefined;
+    }
+    if (this.cookieChangeUnsubscribe) {
+      try {
+        this.cookieChangeUnsubscribe();
+      } catch (err) {
+        this.logger
+          .withError(err)
+          .warn('Failed to unsubscribe from cookie changes');
+      }
+      this.cookieChangeUnsubscribe = undefined;
+    }
   }
 
   /**
@@ -416,7 +566,7 @@ export abstract class Website<
    *
    * @protected - called internally by {@link login}.
    */
-  protected abstract onLogin(): Promise<ILoginState>;
+  protected abstract onLogin(): Promise<LoginResult>;
 
   // -------------- End Event Methods --------------
 }

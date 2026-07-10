@@ -1,17 +1,17 @@
 import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
+    BadRequestException,
+    Injectable,
+    NotFoundException,
 } from '@nestjs/common';
 import { FormBuilderMetadata, formBuilder } from '@postybirb/form-builder';
 import {
-  AccountId,
-  IWebsiteFormFields,
-  NullAccount,
-  SubmissionType,
+    AccountId,
+    IWebsiteFormFields,
+    NullAccount,
+    SubmissionType,
 } from '@postybirb/types';
+import { AccountTemplateDefaultsService } from '../account/account-template-defaults.service';
 import { AccountService } from '../account/account.service';
-import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
 import { DefaultWebsiteOptions } from '../websites/models/default-website-options';
 import { isFileWebsite } from '../websites/models/website-modifiers/file-website';
 import { isMessageWebsite } from '../websites/models/website-modifiers/message-website';
@@ -22,7 +22,7 @@ import { FormGenerationRequestDto } from './dtos/form-generation-request.dto';
 export class FormGeneratorService {
   constructor(
     private readonly websiteRegistryService: WebsiteRegistryService,
-    private readonly userSpecifiedWebsiteOptionsService: UserSpecifiedWebsiteOptionsService,
+    private readonly accountTemplateDefaultsService: AccountTemplateDefaultsService,
     private readonly accountService: AccountService,
   ) {}
 
@@ -99,13 +99,10 @@ export class FormGeneratorService {
     type: SubmissionType,
   ): Promise<FormBuilderMetadata> {
     const userSpecifiedDefaults =
-      await this.userSpecifiedWebsiteOptionsService.findByAccountAndSubmissionType(
-        accountId,
-        type,
-      );
+      await this.accountTemplateDefaultsService.resolveDefaults(accountId, type);
 
     if (userSpecifiedDefaults) {
-      Object.entries(userSpecifiedDefaults.options).forEach(([key, value]) => {
+      Object.entries(userSpecifiedDefaults).forEach(([key, value]) => {
         const field = form[key];
         if (field) {
           field.defaultValue = value ?? field.defaultValue;

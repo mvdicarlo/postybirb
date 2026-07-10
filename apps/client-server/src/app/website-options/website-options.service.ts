@@ -1,12 +1,12 @@
 import {
-  BadRequestException,
-  forwardRef,
-  Inject,
-  Injectable,
-  NotFoundException,
-  OnModuleInit,
+    BadRequestException,
+    forwardRef,
+    Inject,
+    Injectable,
+    NotFoundException,
+    OnModuleInit,
 } from '@nestjs/common';
-import { Account, CustomShortcutRepository, Insert, Submission, SubmissionRepository, UserSpecifiedWebsiteOptionsRepository, WebsiteOptions, WebsiteOptionsRepository } from '@postybirb/database';
+import { Account, CustomShortcutRepository, Insert, Submission, SubmissionRepository, WebsiteOptions, WebsiteOptionsRepository } from '@postybirb/database';
 import {
     AccountId,
     Description,
@@ -25,13 +25,13 @@ import {
     TipTapNode,
     ValidationResult,
 } from '@postybirb/types';
+import { AccountTemplateDefaultsService } from '../account/account-template-defaults.service';
 import { AccountService } from '../account/account.service';
 import { PostyBirbService } from '../common/service/postybirb-service';
 
 import { FormGeneratorService } from '../form-generator/form-generator.service';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
 import { SubmissionService } from '../submission/services/submission.service';
-import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
 import {
     isBlockNoteFormat,
     migrateDescription,
@@ -56,7 +56,7 @@ export class WebsiteOptionsService
     @Inject(forwardRef(() => SubmissionService))
     private readonly submissionService: SubmissionService,
     private readonly accountService: AccountService,
-    private readonly userSpecifiedOptionsService: UserSpecifiedWebsiteOptionsService,
+    private readonly accountTemplateDefaultsService: AccountTemplateDefaultsService,
     private readonly formGeneratorService: FormGeneratorService,
     private readonly validationService: ValidationService,
     private readonly postParsersService: PostParsersService,
@@ -85,7 +85,7 @@ export class WebsiteOptionsService
   /**
    * One-time migration: convert any BlockNote-format descriptions
    * (stored as arrays) to TipTap format ({ type: 'doc', content: [] }).
-   * Covers website options, custom shortcuts, and user-specified website options.
+   * Covers website options and custom shortcuts.
    */
   private async migrateBlockNoteDescriptions() {
     let migrated = 0;
@@ -123,30 +123,6 @@ export class WebsiteOptionsService
           shortcut: converted,
         });
         migrated++;
-      }
-    }
-
-    // 3. Migrate user-specified website options
-    const userOptsRepo = new UserSpecifiedWebsiteOptionsRepository();
-    const userOpts = await userOptsRepo.findAll();
-    for (const userOpt of userOpts) {
-      const opts = (userOpt as DynamicObject).options as DynamicObject;
-      if (opts?.description) {
-        const descValue = opts.description as DescriptionValue | undefined;
-        const desc = descValue?.description;
-        if (desc && isBlockNoteFormat(desc)) {
-          const converted = migrateDescription(desc);
-          await userOptsRepo.update(userOpt.id, {
-            options: {
-              ...opts,
-              description: {
-                ...descValue,
-                description: converted,
-              },
-            },
-          });
-          migrated++;
-        }
       }
     }
 
@@ -199,11 +175,12 @@ export class WebsiteOptionsService
     const account = await this.accountService.findByIdOrThrow(accountId);
     const isDefault = accountId === NULL_ACCOUNT_ID;
 
-    const userDefinedDefaultOptions =
-      await this.userSpecifiedOptionsService.findByAccountAndSubmissionType(
-        accountId,
-        submission.type,
-      );
+    const userDefinedDefaultOptions = submission.isTemplate
+      ? undefined
+      : await this.accountTemplateDefaultsService.resolveDefaults(
+          accountId,
+          submission.type,
+        );
 
     const formFields = isDefault
       ? await this.formGeneratorService.getDefaultForm(submission.type)
@@ -226,7 +203,7 @@ export class WebsiteOptionsService
     const mergedData: IWebsiteFormFields = {
       ...(isDefault ? new DefaultWebsiteOptions() : {}), // Only merge default options if this is the default option
       ...websiteData, // Merge default form fields
-      ...(userDefinedDefaultOptions?.options ?? {}), // Merge user defined options
+      ...(userDefinedDefaultOptions ?? {}), // Merge template-sourced account defaults
       ...data, // Merge user defined data
       title, // Override title (optional)
     };
@@ -363,17 +340,8 @@ export class WebsiteOptionsService
     title?: string,
     defaultOptions?: Partial<IWebsiteFormFields>,
   ): Promise<IWebsiteFormFields> {
-    const userSpecifiedOptions =
-      (
-        await this.userSpecifiedOptionsService.findByAccountAndSubmissionType(
-          NULL_ACCOUNT_ID,
-          type,
-        )
-      )?.options ?? {};
-
     const websiteFormFields: IWebsiteFormFields = {
       ...new DefaultWebsiteOptions(),
-      ...userSpecifiedOptions,
       title,
     };
 

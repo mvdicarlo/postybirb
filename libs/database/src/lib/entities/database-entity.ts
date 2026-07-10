@@ -61,8 +61,16 @@ export abstract class DatabaseEntity<
 
   public abstract toDTO(): IEntityDto;
 
-  public toJSON(): string {
-    return JSON.stringify(this.toDTO());
+  /**
+   * Called implicitly by `JSON.stringify`. Must return the *value* to be
+   * serialized (a plain DTO object), NOT a pre-stringified string — the
+   * latter double-encodes any entity nested inside another object being
+   * serialized (e.g. `WebsiteOptions.account` in a submission payload
+   * emitted over the websocket), turning it into an escaped JSON string
+   * on the client.
+   */
+  public toJSON(): IEntityDto {
+    return this.toDTO();
   }
 
   /**

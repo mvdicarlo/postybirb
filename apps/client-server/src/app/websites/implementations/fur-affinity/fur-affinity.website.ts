@@ -1,14 +1,14 @@
 import { SelectOption } from '@postybirb/form-builder';
 
 import {
-  FileType,
-  ILoginState,
-  ImageResizeProps,
-  IPostResponse,
-  PostData,
-  PostResponse,
-  SimpleValidationResult,
-  SubmissionRating,
+    FileType,
+    ImageResizeProps,
+    IPostResponse,
+    LoginResult,
+    PostData,
+    PostResponse,
+    SimpleValidationResult,
+    SubmissionRating,
 } from '@postybirb/types';
 import { HTMLElement, parse } from 'node-html-parser';
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -83,7 +83,7 @@ export default class FurAffinity
       folders: true,
     };
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     try {
       const res = await this.platform.http.get<string>(
         `${this.BASE_URL}/controls/submissions`,
@@ -101,13 +101,13 @@ export default class FurAffinity
             'Failed to find loggedin_user_avatar element during login',
           );
         }
-        return this.loginState.setLogin(true, username ?? null);
+        return { loggedIn: true, username: username ?? null };
       }
 
-      return this.loginState.setLogin(false, null);
+      return { loggedIn: false };
     } catch (e) {
       this.logger.withError(e).error('Failed to login');
-      return this.loginState.setLogin(false, null);
+      return { loggedIn: false };
     }
   }
 

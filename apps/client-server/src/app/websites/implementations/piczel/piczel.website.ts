@@ -1,6 +1,6 @@
 import {
-  ILoginState,
   ImageResizeProps,
+  LoginResult,
   PostData,
   PostResponse,
   SubmissionRating,
@@ -48,7 +48,7 @@ export default class Piczel
       folders: true,
     };
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     const res = await this.platform.http.get<string>(
       `${this.BASE_URL}/gallery/upload`,
       {
@@ -57,7 +57,7 @@ export default class Piczel
     );
 
     if (res.body.includes('/signup')) {
-      return this.loginState.logout();
+      return { loggedIn: false };
     }
 
     try {
@@ -68,26 +68,32 @@ export default class Piczel
         ) ?? [];
       const stateJson =
         jsonMatches.find((match) => match.includes('username')) ?? '';
-      const preloadedData = JSON.parse(
-        stateJson
-          .match(/JSON\.parse\(\s*(["'])((?:\\.|(?!\1).)*)\1\s*\)/)?.[2]
-          .replace(/\\/g, '') ?? '',
-      );
+      const escapedJson = stateJson.match(
+        /JSON\.parse\(\s*(["'])((?:\\.|(?!\1).)*)\1\s*\)/,
+      )?.[2];
+      // The captured content is the escaped body of a string literal that was
+      // passed to JSON.parse. Unescape it properly (handles \uXXXX, \\, \n,
+      // etc.) by parsing it as a JSON string, instead of stripping backslashes,
+      // which corrupted any non-ASCII/escaped data and broke login detection.
+      const unescapedJson = escapedJson
+        ? (JSON.parse(`"${escapedJson}"`) as string)
+        : '';
+      const preloadedData = JSON.parse(unescapedJson || '{}');
 
       if (!preloadedData.currentUser) {
-        return this.loginState.logout();
+        return { loggedIn: false };
       }
       const { username } = preloadedData.currentUser.data;
       if (!username) {
-        return this.loginState.logout();
+        return { loggedIn: false };
       }
 
       // Fetch folders
       await this.getFolders(username);
 
-      return this.loginState.setLogin(true, username);
+      return { loggedIn: true, username };
     } catch (error) {
-      return this.loginState.logout();
+      return { loggedIn: false };
     }
   }
 

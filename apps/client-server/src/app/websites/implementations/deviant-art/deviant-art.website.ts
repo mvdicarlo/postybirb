@@ -1,14 +1,14 @@
 import { SelectOption, SelectOptionSingle } from '@postybirb/form-builder';
 
 import {
-  FileType,
-  ILoginState,
-  ImageResizeProps,
-  ISubmissionFile,
-  PostData,
-  PostResponse,
-  SimpleValidationResult,
-  SubmissionRating,
+    FileType,
+    ImageResizeProps,
+    ISubmissionFile,
+    LoginResult,
+    PostData,
+    PostResponse,
+    SimpleValidationResult,
+    SubmissionRating,
 } from '@postybirb/types';
 import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -87,7 +87,7 @@ export default class DeviantArt
       folders: true,
     };
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     const res = await this.platform.http.get<string>(this.BASE_URL, {
       partition: this.accountId,
     });
@@ -102,11 +102,11 @@ export default class DeviantArt
       );
       if (userInfo && userInfo.username) {
         await this.getFolders(userInfo.username);
-        return this.loginState.setLogin(true, userInfo.username);
+        return { loggedIn: true, username: userInfo.username };
       }
     }
 
-    return this.loginState.setLogin(false, null);
+    return { loggedIn: false };
   }
 
   getDescriptionConverter(): BaseConverter {
