@@ -37,7 +37,7 @@ export class ArtconomyFileSubmission extends BaseWebsiteOptions {
   @BooleanField({
     label: 'private',
     section: 'website',
-    span: 6,
+    span: 4,
     defaultValue: false,
   })
   isPrivate: boolean;
@@ -45,7 +45,7 @@ export class ArtconomyFileSubmission extends BaseWebsiteOptions {
   @BooleanField({
     label: 'disableComments',
     section: 'website',
-    span: 6,
+    span: 4,
     defaultValue: false,
   })
   commentsDisabled: boolean;
@@ -53,7 +53,7 @@ export class ArtconomyFileSubmission extends BaseWebsiteOptions {
   @BooleanField({
     label: 'originalWork',
     section: 'website',
-    span: 6,
+    span: 4,
     defaultValue: true,
   })
   isArtist: boolean;

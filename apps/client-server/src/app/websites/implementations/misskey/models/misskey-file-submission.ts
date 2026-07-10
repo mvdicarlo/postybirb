@@ -38,13 +38,13 @@ export class MisskeyFileSubmission extends BaseWebsiteOptions {
       { value: 'followers', label: 'Followers' },
       { value: 'specified', label: 'Direct' },
     ],
-    span: 12,
+    span: 6,
   })
   visibility: 'public' | 'home' | 'followers' | 'specified' = 'public';
 
   @TextField({
     label: 'spoiler',
-    span: 12,
+    span: 6,
   })
   cw?: string;
 

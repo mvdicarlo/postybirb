@@ -82,7 +82,7 @@ export class SofurryFileSubmission extends BaseWebsiteOptions {
     defaultValue: '3',
     options: SofurryPrivacyOptions,
     section: 'website',
-    span: 6,
+    span: 12,
   })
   privacy: string;
 

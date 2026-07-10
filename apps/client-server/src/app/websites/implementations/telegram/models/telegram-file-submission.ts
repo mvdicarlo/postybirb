@@ -31,21 +31,21 @@ export class TelegramFileSubmission extends BaseWebsiteOptions {
     minSelected: 1,
     required: true,
     section: 'website',
-    span: 6,
+    span: 12,
   })
   channels: string[];
 
   @BooleanField({
     label: 'silent',
     section: 'website',
-    span: 12,
+    span: 6,
   })
   silent = false;
 
   @BooleanField({
     label: 'spoiler',
     section: 'website',
-    span: 12,
+    span: 6,
   })
   spoiler = false;
 }

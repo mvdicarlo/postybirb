@@ -42,14 +42,14 @@ export class BlueskyFileSubmission extends BaseWebsiteOptions {
   })
   labelRating: '' | 'sexual' | 'nudity' | 'porn';
 
-  @TextField({ label: 'replyToUrl', section: 'website', span: 12 })
+  @TextField({ label: 'replyToUrl', section: 'website', span: 6 })
   replyToUrl?: string;
 
   // Note: in v3 it was threadgate
   @SelectField({
     label: 'whoCanReply',
     section: 'website',
-    span: 12,
+    span: 6,
     options: [
       { value: '', label: 'Everybody' },
       { value: 'nobody', label: 'Nobody' },

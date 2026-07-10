@@ -14,7 +14,7 @@ export class PillowfortFileSubmission extends BaseWebsiteOptions {
   @RadioField({
     label: 'visibility',
     section: 'website',
-    span: 6,
+    span: 12,
     defaultValue: 'public',
     options: [
       { value: 'public', label: 'Public' },
@@ -29,7 +29,7 @@ export class PillowfortFileSubmission extends BaseWebsiteOptions {
   @BooleanField({
     label: 'allowComments',
     section: 'website',
-    span: 6,
+    span: 4,
     defaultValue: true,
   })
   allowComments: boolean;
@@ -37,7 +37,7 @@ export class PillowfortFileSubmission extends BaseWebsiteOptions {
   @BooleanField({
     label: 'allowReblogging',
     section: 'website',
-    span: 6,
+    span: 4,
     defaultValue: true,
   })
   allowReblogging: boolean;
@@ -45,7 +45,7 @@ export class PillowfortFileSubmission extends BaseWebsiteOptions {
   @BooleanField({
     label: 'useTitle',
     section: 'website',
-    span: 6,
+    span: 4,
     defaultValue: true,
   })
   useTitle: boolean;
