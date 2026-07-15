@@ -15,6 +15,7 @@ import {
   DefaultDescriptionValue,
   DefaultTagValue,
   DescriptionValue,
+  DynamicObject,
   IWebsiteFormFields,
   SubmissionRating,
   Tag,
@@ -117,17 +118,26 @@ export class BaseWebsiteOptions implements IWebsiteFormFields {
     return newInstance;
   }
 
-  public getFormFields(params: Record<string, never> = {}) {
+  public getFormFields(params: DynamicObject = {}) {
     return formBuilder(this, params);
   }
 
-  public getFormFieldFor(key: 'tags'): TagFieldType;
-  public getFormFieldFor(key: 'description'): DescriptionFieldType;
-  public getFormFieldFor(key: 'title'): TitleFieldType;
-  public getFormFieldFor(key: 'rating'): RatingFieldType;
-  public getFormFieldFor(key: 'contentWarning'): TextFieldType;
-  public getFormFieldFor(key: keyof IWebsiteFormFields) {
-    return this.getFormFields()[key];
+  public getFormFieldFor(key: 'tags', data?: DynamicObject): TagFieldType;
+  public getFormFieldFor(
+    key: 'description',
+    data?: DynamicObject,
+  ): DescriptionFieldType;
+  public getFormFieldFor(key: 'title', data?: DynamicObject): TitleFieldType;
+  public getFormFieldFor(key: 'rating', data?: DynamicObject): RatingFieldType;
+  public getFormFieldFor(
+    key: 'contentWarning',
+    data?: DynamicObject,
+  ): TextFieldType;
+  public getFormFieldFor(
+    key: keyof IWebsiteFormFields,
+    data: DynamicObject = {},
+  ) {
+    return this.getFormFields(data)[key];
   }
 
   /**

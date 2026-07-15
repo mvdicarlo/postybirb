@@ -104,6 +104,29 @@ function hasLegacyShortcuts(
   return false;
 }
 
+/**
+ * Recursively counts the number of text characters in the description blocks.
+ * This is an approximation of the final posted length used only for display.
+ */
+function countTextLength(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  blocks: any[],
+): number {
+  let length = 0;
+  for (const block of blocks) {
+    if (typeof block?.text === 'string') {
+      length += block.text.length;
+    }
+    if (Array.isArray(block?.content)) {
+      length += countTextLength(block.content);
+    }
+    if (Array.isArray(block?.children)) {
+      length += countTextLength(block.children);
+    }
+  }
+  return length;
+}
+
 export function DescriptionField({
   fieldName,
   field,
@@ -151,6 +174,22 @@ export function DescriptionField({
     const usernames = extractUsernames(description.content || []);
     return userConverters.filter((c) => usernames.includes(c.username));
   }, [description, userConverters]);
+
+  const { maxDescriptionLength } = field;
+  const hasMaxLength =
+    typeof maxDescriptionLength === 'number' &&
+    Number.isFinite(maxDescriptionLength) &&
+    maxDescriptionLength > 0;
+
+  // When the custom editor is hidden the default description is what will be
+  // posted, so count that instead so the counter stays meaningful.
+  const showsCustomEditor = overrideDefault || option.isDefault;
+  const descriptionLength = useMemo(() => {
+    const content = showsCustomEditor
+      ? description.content || []
+      : defaultOption?.description?.content || [];
+    return countTextLength(content);
+  }, [showsCustomEditor, description, defaultOption]);
 
   const descriptionChangeEvent = useMemo(() => new EventTarget(), []);
 
@@ -282,6 +321,16 @@ export function DescriptionField({
               </Alert>
             )}
           </>
+        )}
+        {hasMaxLength && (
+          <Group justify="flex-end" mt={2}>
+            <Text
+              size="xs"
+              c={descriptionLength > maxDescriptionLength ? 'red' : 'dimmed'}
+            >
+              {descriptionLength} / {maxDescriptionLength}
+            </Text>
+          </Group>
         )}
       </FieldLabel>
     </Box>

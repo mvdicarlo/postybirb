@@ -18,7 +18,7 @@ import { ItakuAccountData } from './itaku-account-data';
 export class ItakuFileSubmission extends BaseWebsiteOptions {
   @RatingField({
     options: [
-      { value: SubmissionRating.GENERAL, label: 'General' },
+      { value: SubmissionRating.GENERAL, label: 'SFW' },
       { value: SubmissionRating.MATURE, label: 'Questionable' },
       { value: SubmissionRating.ADULT, label: 'NSFW' },
     ],

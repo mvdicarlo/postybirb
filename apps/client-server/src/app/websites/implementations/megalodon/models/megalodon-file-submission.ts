@@ -9,17 +9,22 @@ import {
   DefaultTagValue,
   DescriptionType,
   DescriptionValue,
+  MegalodonAccountData,
   SubmissionRating,
   TagValue,
 } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
 export class MegalodonFileSubmission extends BaseWebsiteOptions {
-  @DescriptionField({
+  @DescriptionField<MegalodonAccountData>({
     descriptionType: DescriptionType.PLAINTEXT,
     required: false,
     expectsInlineTags: true,
     expectsInlineTitle: true,
+    // Static fallback used before instance limits are fetched. Overridden per
+    // instance via `derive` from the account's stored `maxCharacters`.
+    maxDescriptionLength: 500,
+    derive: [{ key: 'maxCharacters', populate: 'maxDescriptionLength' }],
   })
   declare description: DescriptionValue;
 

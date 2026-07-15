@@ -21,6 +21,10 @@
   z-index: 1000;
 }
 
+.tiptap-editor-wrapper {
+  word-break: break-word;
+}
+
 .tiptap-editor-wrapper .tiptap {
   flex: 1;
   padding: 8px 16px;
