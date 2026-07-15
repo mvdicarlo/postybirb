@@ -183,6 +183,10 @@ export class ValidationService {
         submission,
         website,
         websiteOption,
+        // Skip description truncation during validation so length validators can
+        // detect (and warn about) descriptions that exceed the limit. The actual
+        // post pipeline parses separately and still truncates.
+        true,
       );
 
       const defaultOptions = submission.options.find((o) => o.isDefault);

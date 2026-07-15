@@ -15,9 +15,13 @@ export async function validateDescriptionMaxLength({
   data,
   mergedWebsiteOptions,
   validator,
+  websiteInstance,
 }: ValidatorParams) {
   const { hidden, descriptionType, maxDescriptionLength } =
-    mergedWebsiteOptions.getFormFieldFor('description');
+    mergedWebsiteOptions.getFormFieldFor(
+      'description',
+      websiteInstance.getFormProperties(),
+    );
 
   if (
     descriptionType === undefined ||

@@ -122,6 +122,7 @@ describe('DescriptionParserService', () => {
 
   it('should parse plaintext description', async () => {
     const instance = {
+      getFormProperties: () => ({}),
       decoratedProps: {
         allowAd: true,
         metadata: {
@@ -152,6 +153,7 @@ describe('DescriptionParserService', () => {
 
   it('should parse html description', async () => {
     const instance = {
+      getFormProperties: () => ({}),
       decoratedProps: {
         allowAd: true,
         metadata: {
@@ -176,6 +178,7 @@ describe('DescriptionParserService', () => {
 
   it('should parse markdown description', async () => {
     const instance = {
+      getFormProperties: () => ({}),
       decoratedProps: {
         allowAd: true,
         metadata: {
@@ -207,6 +210,7 @@ describe('DescriptionParserService', () => {
 
   it('should return empty for description type NONE', async () => {
     const instance = {
+      getFormProperties: () => ({}),
       decoratedProps: {
         allowAd: true,
       },
@@ -238,6 +242,7 @@ describe('DescriptionParserService', () => {
       },
     });
     const instance = {
+      getFormProperties: () => ({}),
       decoratedProps: {
         allowAd: true,
         metadata: {
@@ -270,6 +275,7 @@ describe('DescriptionParserService', () => {
       },
     });
     const instance = {
+      getFormProperties: () => ({}),
       decoratedProps: {
         allowAd: false,
         metadata: {
@@ -331,6 +337,7 @@ describe('DescriptionParserService', () => {
 
   it('should insert default when available', async () => {
     const instance = {
+      getFormProperties: () => ({}),
       decoratedProps: {
         allowAd: true,
         metadata: {
@@ -376,6 +383,7 @@ describe('DescriptionParserService', () => {
   describe('Custom Shortcuts', () => {
     it('should inject single custom shortcut', async () => {
       const instance = {
+        getFormProperties: () => ({}),
         decoratedProps: {
           allowAd: false,
           metadata: {
@@ -437,6 +445,7 @@ describe('DescriptionParserService', () => {
 
     it('should inject multiple custom shortcuts', async () => {
       const instance = {
+        getFormProperties: () => ({}),
         decoratedProps: {
           allowAd: false,
           metadata: {
@@ -516,6 +525,7 @@ describe('DescriptionParserService', () => {
 
     it('should handle missing custom shortcut gracefully', async () => {
       const instance = {
+        getFormProperties: () => ({}),
         decoratedProps: {
           allowAd: false,
           metadata: {
@@ -561,6 +571,7 @@ describe('DescriptionParserService', () => {
 
     it('should resolve custom shortcuts with different output formats', async () => {
       const instance = {
+        getFormProperties: () => ({}),
         decoratedProps: {
           allowAd: false,
           metadata: {
@@ -624,6 +635,7 @@ describe('DescriptionParserService', () => {
 
     it('should resolve custom shortcuts with links and styling', async () => {
       const instance = {
+        getFormProperties: () => ({}),
         decoratedProps: {
           allowAd: false,
           metadata: {
@@ -690,6 +702,7 @@ describe('DescriptionParserService', () => {
   describe('System Inline Shortcuts', () => {
     it('should render titleShortcut with submission title', async () => {
       const instance = {
+        getFormProperties: () => ({}),
         decoratedProps: {
           allowAd: false,
           metadata: {
@@ -728,6 +741,7 @@ describe('DescriptionParserService', () => {
 
     it('should render tagsShortcut with submission tags', async () => {
       const instance = {
+        getFormProperties: () => ({}),
         decoratedProps: {
           allowAd: false,
           metadata: {
@@ -766,6 +780,7 @@ describe('DescriptionParserService', () => {
 
     it('should render contentWarningShortcut with content warning', async () => {
       const instance = {
+        getFormProperties: () => ({}),
         decoratedProps: {
           allowAd: false,
           metadata: {
@@ -810,6 +825,7 @@ describe('DescriptionParserService', () => {
 
     it('should not double-insert title when titleShortcut is present and insertTitle is true', async () => {
       const instance = {
+        getFormProperties: () => ({}),
         decoratedProps: {
           allowAd: false,
           metadata: {
@@ -848,6 +864,7 @@ describe('DescriptionParserService', () => {
 
     it('should not double-insert tags when tagsShortcut is present and insertTags is true', async () => {
       const instance = {
+        getFormProperties: () => ({}),
         decoratedProps: {
           allowAd: false,
           metadata: {
@@ -888,6 +905,7 @@ describe('DescriptionParserService', () => {
 
     it('should let a per-website option disable inherited insertTags', async () => {
       const instance = {
+        getFormProperties: () => ({}),
         decoratedProps: {
           allowAd: false,
           metadata: {
@@ -928,6 +946,7 @@ describe('DescriptionParserService', () => {
 
     it('should insert tags inherited from default when per-website option is unset', async () => {
       const instance = {
+        getFormProperties: () => ({}),
         decoratedProps: {
           allowAd: false,
           metadata: {
@@ -966,6 +985,7 @@ describe('DescriptionParserService', () => {
 
     it('should render all system shortcuts together in plaintext', async () => {
       const instance = {
+        getFormProperties: () => ({}),
         decoratedProps: {
           allowAd: false,
           metadata: {

@@ -1,5 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import { Node } from '@tiptap/core';
+import { JSONContent, Node } from '@tiptap/core';
 import { Blockquote } from '@tiptap/extension-blockquote';
 import { Bold } from '@tiptap/extension-bold';
 import { Color } from '@tiptap/extension-color';
@@ -92,11 +92,33 @@ export interface PatreonContentOptions {
 
 export class PatreonDescriptionConverter {
   /**
+   * Recursively removes `textStyle` marks (including color) from TipTap nodes,
+   * as Patreon's editor schema does not support them.
+   */
+  private static stripTextStyleMarks(content: JSONContent[] | undefined): void {
+    if (!content) return;
+    for (const node of content) {
+      if (Array.isArray(node.marks)) {
+        node.marks = node.marks.filter((mark) => mark.type !== 'textStyle');
+        if (node.marks.length === 0) {
+          delete node.marks;
+        }
+      }
+      if (Array.isArray(node.content)) {
+        PatreonDescriptionConverter.stripTextStyleMarks(node.content);
+      }
+    }
+  }
+
+  /**
    * Converts HTML content into a Patreon-compatible TipTap JSON string,
    * optionally prepending a paywallBreakpoint node.
    */
   static convert(html: string, options: PatreonContentOptions): string {
     const doc = generateJSON(html || '<p></p>', extensions);
+
+    // Patreon's schema rejects textStyle marks, so remove them before sending.
+    PatreonDescriptionConverter.stripTextStyleMarks(doc.content);
 
     if (options.includePaywall) {
       // Prepend the paywallBreakpoint node to the document content

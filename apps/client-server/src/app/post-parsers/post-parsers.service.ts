@@ -31,6 +31,7 @@ export class PostParsersService {
     submission: ISubmission,
     instance: UnknownWebsite,
     websiteOptions: IWebsiteOptions,
+    skipTruncation = false,
   ): Promise<PostData<IWebsiteFormFields>> {
     const defaultOptions = submission.options.find((o) => o.isDefault);
     if (!defaultOptions) throw new Error('No defalt website options found');
@@ -60,6 +61,7 @@ export class PostParsersService {
           websiteOpts,
           tags,
           title,
+          skipTruncation,
         )) as string,
         title,
         contentWarning,
