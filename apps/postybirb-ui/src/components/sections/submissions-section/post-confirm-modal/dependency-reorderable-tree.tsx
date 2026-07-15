@@ -89,7 +89,9 @@ export function DependencyReorderableTree({
     <Box className="postybirb__reorderable-container">
       <Text size="xs" c="dimmed" mb="xs">
         {readOnly ? (
-          <Trans>Dependents are grouped under the submission they wait for.</Trans>
+          <Trans>
+            Dependents are grouped under the submission they wait for.
+          </Trans>
         ) : (
           <Trans>
             Drag or use arrow keys to reorder. Dependents are grouped under the
@@ -227,6 +229,7 @@ function StaticChildren({
       mt="xs"
       ml="lg"
       pl="xs"
+      // eslint-disable-next-line lingui/no-unlocalized-strings
       style={{ borderLeft: '2px solid var(--mantine-color-default-border)' }}
     >
       <Stack gap="xs">
