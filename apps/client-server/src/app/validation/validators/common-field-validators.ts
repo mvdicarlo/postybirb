@@ -137,7 +137,7 @@ export async function validateRequiredDescriptionField({
     value = value.replaceAll('<div></div>', '').trim();
 
     if (!value || value.length === 0) {
-      validator.error('validation.field.required', {}, fieldName);
+      validator.error('validation.description.required', {}, fieldName);
     }
   }
 }
