@@ -1,14 +1,14 @@
 import {
-    ImageResizeProps,
-    IPostResponse,
-    IWebsiteFormFields,
-    IWebsiteMetadata,
-    LoginResult,
-    OAuthRouteHandlers,
-    OAuthRoutes,
-    PostData,
-    PostResponse,
-    SimpleValidationResult,
+  ImageResizeProps,
+  IPostResponse,
+  IWebsiteFormFields,
+  IWebsiteMetadata,
+  LoginResult,
+  OAuthRouteHandlers,
+  OAuthRoutes,
+  PostData,
+  PostResponse,
+  SimpleValidationResult,
 } from '@postybirb/types';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
@@ -45,6 +45,10 @@ export default class TestWebsite
   protected BASE_URL = 'http://localhost:3000';
 
   public async onLogin(): Promise<LoginResult> {
+    const res = await this.platform.http.get<string>(
+      `${this.BASE_URL}/controls/submissions`,
+      { partition: this.accountId },
+    );
     if (this.account.id === 'FAIL') {
       return { loggedIn: false };
     }

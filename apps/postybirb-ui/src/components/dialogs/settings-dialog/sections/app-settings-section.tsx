@@ -18,8 +18,10 @@ import {
 import { IconFolder, IconRouter } from '@tabler/icons-react';
 import { useQuery } from 'react-query';
 import settingsApi from '../../../../api/settings.api';
+import { useSettings } from '../../../../stores';
 
 export function AppSettingsSection() {
+  const settings = useSettings();
   const {
     data: startupSettings,
     isLoading,
@@ -127,6 +129,45 @@ export function AppSettingsSection() {
           </Alert>
         </Stack>
       </Box>
+
+      {settings && (
+        <Box>
+          <Title order={4} mb="md">
+            <Trans>Cloudflare Challenges</Trans>
+          </Title>
+
+          <Stack gap="xs">
+            <Switch
+              label={
+                <Trans>
+                  Open a browser window when Cloudflare requires attention
+                </Trans>
+              }
+              checked={
+                settings.settings.cloudflareChallenge?.openBrowserWindow ??
+                false
+              }
+              onChange={(event) => {
+                settingsApi.update(settings.id, {
+                  settings: {
+                    ...settings.settings,
+                    cloudflareChallenge: {
+                      openBrowserWindow: event.currentTarget.checked,
+                    },
+                  },
+                });
+              }}
+            />
+            <Text size="xs" c="dimmed">
+              <Trans>
+                When a request is challenged, PostyBirb will open an account-specific
+                browser window for you to complete the challenge manually. The post
+                waits for up to five minutes and uses the resulting session cookies.
+              </Trans>
+            </Text>
+          </Stack>
+        </Box>
+      )}
     </Stack>
   );
 }

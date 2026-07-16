@@ -18,5 +18,8 @@ export class SettingsConstants {
       id: undefined,
       showWikiInHelpOnHover: false,
     },
+    cloudflareChallenge: {
+      openBrowserWindow: false,
+    },
   };
 }
