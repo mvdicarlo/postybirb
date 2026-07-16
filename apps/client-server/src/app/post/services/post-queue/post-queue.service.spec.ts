@@ -202,6 +202,32 @@ describe('PostQueueService', () => {
       expect(mockRelayPostManager.enqueue).toHaveBeenCalledWith(dependent.id);
     });
 
+    it('re-enforces a restored chain: a re-queued dependency blocks its dependent despite a prior success', async () => {
+      const dependency = await submissionService.create(createSubmissionDto());
+      const dependent = await createDependentSubmission([dependency.id]);
+
+      // The whole chain is unarchived and queued together again.
+      await service.enqueue([dependency.id, dependent.id]);
+      mockRelayPostManager.isPosting.mockReturnValue(false);
+      // Its prior (pre-archive) run succeeded — this stale success must NOT
+      // satisfy the gate now that the dependency is being re-posted.
+      mockRelayPostManager.hasSucceeded.mockResolvedValue(true);
+      // Nothing has produced a fresh outcome yet this round.
+      mockRelayPostManager.getOutcome.mockResolvedValue(undefined);
+
+      await service.execute();
+
+      // The dependency itself is (re)enqueued to post again...
+      expect(mockRelayPostManager.enqueue).toHaveBeenCalledWith(dependency.id);
+      // ...but the dependent is held back because the dependency is still queued
+      // (its fresh post has not finished), even though hasSucceeded() is true.
+      expect(mockRelayPostManager.enqueue).not.toHaveBeenCalledWith(
+        dependent.id,
+      );
+      // The dependent remains queued for re-evaluation next cycle.
+      expect(await service.peek()).not.toBeNull();
+    });
+
     it('keeps the dependent blocked when one of several dependencies fails', async () => {
       const depA = await submissionService.create(createSubmissionDto());
       const depB = await submissionService.create(createSubmissionDto());

@@ -198,12 +198,19 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
         with: { submission: true },
       });
 
+      // Submissions with a live queue record this cycle. A dependency that is
+      // itself queued here has not finished (re)posting yet, so its dependents
+      // must wait for it — this re-enforces a restored dependency chain rather
+      // than letting a stale, pre-archive success satisfy the gate.
+      const queuedIds = new Set<SubmissionId>(records.map((r) => r.submissionId));
+
       for (const record of records) {
         const { submissionId, submission } = record;
 
         if (submission?.isArchived) {
           this.relayPostManager.cancel(submissionId);
           await this.dequeue([submissionId]);
+          queuedIds.delete(submissionId);
           continue;
         }
 
@@ -214,17 +221,19 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
           await this.relayPostManager.getOutcome(submissionId, record.createdAt)
         ) {
           await this.dequeue([submissionId]);
+          queuedIds.delete(submissionId);
           continue;
         }
 
         if (!this.relayPostManager.isPosting(submissionId)) {
           // Gate on cross-submission dependencies: a submission that declares
           // `metadata.dependsOn` is held back until every dependency has a
-          // successfully-completed post job. This enforces user-specified
-          // posting order (e.g. comic pages) without serializing the whole
-          // queue. Leave the queue record in place so the submission is
-          // re-evaluated on the next cycle once its dependencies finish.
-          if (!(await this.areDependenciesSatisfied(submission))) {
+          // successfully-completed post job and is no longer queued for a
+          // re-post this cycle. This enforces user-specified posting order
+          // (e.g. comic pages) without serializing the whole queue. Leave the
+          // queue record in place so the submission is re-evaluated on the next
+          // cycle once its dependencies finish.
+          if (!(await this.areDependenciesSatisfied(submission, queuedIds))) {
             continue;
           }
           await this.relayPostManager.enqueue(submissionId);
@@ -239,20 +248,29 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
   }
 
   /**
-   * True when every submission listed in `metadata.dependsOn` has a
-   * successfully-completed post job. Submissions with no declared dependencies
-   * are always satisfied. A dependency that has not yet posted (or failed)
-   * keeps the dependent blocked until it succeeds.
+   * True when every submission listed in `metadata.dependsOn` is ready. A
+   * dependency is ready when it has a successfully-completed post job AND is
+   * not itself queued for a (re)post this cycle. Submissions with no declared
+   * dependencies are always satisfied.
+   *
+   * The "not currently queued" clause re-enforces a restored dependency chain:
+   * when an archived chain is unarchived and re-posted, every member gets a new
+   * queue record, so a dependency's *prior* (pre-archive) success no longer
+   * satisfies the gate — the dependent waits for the dependency's fresh post to
+   * finish (and leave the queue) first. A dependency that is not re-queued
+   * still relies on its historical success, so posting a lone dependent whose
+   * prerequisite already posted continues to work.
    *
    * A dependency that no longer exists can never be satisfied, so blocking on
    * it would leave the dependent stuck forever. Instead we self-heal: stale ids
-   * are stripped from `metadata.dependsOn` (mirroring the deletion path's
-   * {@link unqueueDependents}) and satisfaction is decided from the remaining,
-   * still-existing dependencies. This guards against stale references that slip
-   * past the normal deletion cleanup (races, imports, manual edits).
+   * are stripped from `metadata.dependsOn` and satisfaction is decided from the
+   * remaining, still-existing dependencies. This guards against stale
+   * references that slip past the normal deletion cleanup (races, imports,
+   * manual edits).
    */
   private async areDependenciesSatisfied(
     submission: PostQueueRecord['submission'] | undefined,
+    queuedIds: ReadonlySet<SubmissionId>,
   ): Promise<boolean> {
     const dependsOn = submission?.metadata?.dependsOn;
     if (!submission || !dependsOn || dependsOn.length === 0) return true;
@@ -260,13 +278,21 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
     const staleIds: SubmissionId[] = [];
     let blocked = false;
     for (const dependencyId of dependsOn) {
-      
       const dependency = await this.submissionRepository.findById(dependencyId);
       if (!dependency) {
         staleIds.push(dependencyId);
         continue;
       }
-      
+
+      // The dependency is being (re)posted this cycle: its fresh post has not
+      // finished, so block until it leaves the queue via a successful post.
+      // Without this a stale, pre-archive success would satisfy the gate and a
+      // restored chain would lose its ordering.
+      if (queuedIds.has(dependencyId)) {
+        blocked = true;
+        continue;
+      }
+
       if (!(await this.relayPostManager.hasSucceeded(dependencyId))) {
         blocked = true;
       }
