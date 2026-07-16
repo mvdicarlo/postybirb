@@ -181,6 +181,10 @@ export function TagField({
           data={[...search.data, ...tagGroupsOptions]}
           searchValue={search.searchValue}
           onSearchChange={search.onSearchChange}
+          comboboxProps={{
+            position: 'bottom',
+            middlewares: { flip: false, shift: false },
+          }}
           onClear={() => {
             setValue(fieldName, { ...fieldValue, tags: [] });
           }}
