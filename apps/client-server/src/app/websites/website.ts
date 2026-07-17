@@ -424,7 +424,9 @@ export abstract class Website<
     }
     this.cookieChangeDebounceTimer = setTimeout(() => {
       this.cookieChangeDebounceTimer = undefined;
-      this.logger.debug(`Cookie change detected for ${this.id}, checking login`);
+      this.logger.debug(
+        `Cookie change detected for ${this.id}: '${change.cookie.name}', checking login`,
+      );
       this.login().catch((e) =>
         this.logger.withError(e).error('Cookie-change login check failed'),
       );
