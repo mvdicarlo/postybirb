@@ -110,6 +110,8 @@ export interface ValidationMessages {
     maxLength: number;
   };
 
+  'validation.description.required': object;
+
   'validation.description.max-length': {
     currentLength: number;
     maxLength: number;

@@ -25,6 +25,10 @@ export const TranslationMessages: TranslationsMap = {
     return <Trans>Failed to validate submission: {message}</Trans>;
   },
 
+  'validation.description.required': () => (
+    <Trans>Description shouldn't be empty</Trans>
+  ),
+
   'validation.description.max-length': (props) => {
     const maxLength = props?.maxLength ?? 0;
     const currentLength = props?.currentLength ?? 0;
