@@ -53,10 +53,11 @@ export class DescriptionParserService {
     websiteOptions: BaseWebsiteOptions,
     tags: string[],
     title: string,
+    skipTruncation = false,
   ): Promise<string | undefined> {
     const mergedOptions = websiteOptions.mergeDefaults(defaultOptions);
     const { descriptionType, hidden, maxDescriptionLength } =
-      mergedOptions.getFormFieldFor('description');
+      mergedOptions.getFormFieldFor('description', instance.getFormProperties());
 
     if (descriptionType === DescriptionType.NONE || hidden) {
       return undefined;
@@ -152,7 +153,9 @@ export class DescriptionParserService {
       instance,
       descriptionType,
       tree,
-      maxDescriptionLength ?? Number.MAX_SAFE_INTEGER,
+      skipTruncation
+        ? Number.MAX_SAFE_INTEGER
+        : (maxDescriptionLength ?? Number.MAX_SAFE_INTEGER),
     );
   }
 

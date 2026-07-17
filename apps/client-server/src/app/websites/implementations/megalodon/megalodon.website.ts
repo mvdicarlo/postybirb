@@ -1,15 +1,15 @@
 import {
-    FileType,
-    ImageResizeProps,
-    ISubmissionFile,
-    LoginResult,
-    MegalodonAccountData,
-    MegalodonOAuthRoutes,
-    OAuthRouteHandlers,
-    PostData,
-    PostResponse,
-    SimpleValidationResult,
-    SubmissionRating,
+  FileType,
+  ImageResizeProps,
+  ISubmissionFile,
+  LoginResult,
+  MegalodonAccountData,
+  MegalodonOAuthRoutes,
+  OAuthRouteHandlers,
+  PostData,
+  PostResponse,
+  SimpleValidationResult,
+  SubmissionRating,
 } from '@postybirb/types';
 import { toError } from '@postybirb/utils/common';
 import { isObject } from 'lodash';
@@ -24,8 +24,8 @@ import { MessageWebsite } from '../../models/website-modifiers/message-website';
 import { OAuthWebsite } from '../../models/website-modifiers/oauth-website';
 import { Website } from '../../website';
 import {
-    FediverseInstanceTypes,
-    MegalodonApiService,
+  FediverseInstanceTypes,
+  MegalodonApiService,
 } from './megalodon-api-service';
 import { MegalodonFileSubmission } from './models/megalodon-file-submission';
 import { MegalodonMessageSubmission } from './models/megalodon-message-submission';
@@ -74,6 +74,7 @@ export abstract class MegalodonWebsite
       username: true,
       displayName: true,
       instanceType: true,
+      maxCharacters: true,
       accessToken: false, // Never expose token
       authCode: false, // Temporary, don't expose
     };
@@ -365,6 +366,20 @@ export abstract class MegalodonWebsite
         maxCharacters: this.getDefaultMaxDescriptionLength(),
         maxMediaAttachments: 4,
       };
+    }
+
+    // Persist the character limit into website data so the description form
+    // field can derive its maxDescriptionLength for this specific instance.
+    try {
+      const currentData = this.websiteDataStore.getData();
+      if (currentData.maxCharacters !== this.instanceLimits.maxCharacters) {
+        await this.setWebsiteData({
+          ...(currentData as MegalodonAccountData),
+          maxCharacters: this.instanceLimits.maxCharacters,
+        });
+      }
+    } catch (error) {
+      this.logger.error('Failed to persist instance character limit', error);
     }
   }
 
@@ -672,17 +687,9 @@ export abstract class MegalodonWebsite
   ): Promise<SimpleValidationResult> {
     const validator = this.createValidator<MegalodonFileSubmission>();
 
-    // Basic validations - subclasses can add more
-    const descLength = postData.options.description?.length || 0;
-    const maxLength = this.getMaxDescriptionLength();
-
-    if (descLength > maxLength) {
-      validator.error(
-        'validation.description.max-length',
-        { currentLength: descLength, maxLength },
-        'description',
-      );
-    }
+    // Description length is validated (warned) and truncated by the shared
+    // pipeline via the description field's `maxDescriptionLength`, which is
+    // derived from the instance's `maxCharacters`. Subclasses can add more.
 
     return validator.result;
   }
@@ -692,16 +699,9 @@ export abstract class MegalodonWebsite
   ): Promise<SimpleValidationResult> {
     const validator = this.createValidator<MegalodonMessageSubmission>();
 
-    const descLength = postData.options.description?.length || 0;
-    const maxLength = this.getMaxDescriptionLength();
-
-    if (descLength > maxLength) {
-      validator.error(
-        'validation.description.max-length',
-        { currentLength: descLength, maxLength },
-        'description',
-      );
-    }
+    // Description length is validated (warned) and truncated by the shared
+    // pipeline via the description field's `maxDescriptionLength`, which is
+    // derived from the instance's `maxCharacters`.
 
     return validator.result;
   }

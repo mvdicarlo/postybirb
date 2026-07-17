@@ -1,13 +1,13 @@
 import { SelectOption } from '@postybirb/form-builder';
 
 import {
-    FileType,
-    ImageResizeProps,
-    LoginResult,
-    PostData,
-    PostResponse,
-    SimpleValidationResult,
-    SubmissionRating,
+  FileType,
+  ImageResizeProps,
+  LoginResult,
+  PostData,
+  PostResponse,
+  SimpleValidationResult,
+  SubmissionRating,
 } from '@postybirb/types';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
@@ -210,7 +210,7 @@ export default class Itaku
       .setField('maturity_rating', this.convertRating(postData.options.rating))
       .setField('visibility', postData.options.visibility)
       .setConditional(
-        'share_on_feed',
+        'add_to_feed',
         isBatch || postData.options.shareOnFeed,
         postData.options.shareOnFeed,
       )
