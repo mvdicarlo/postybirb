@@ -45,10 +45,6 @@ export default class TestWebsite
   protected BASE_URL = 'http://localhost:3000';
 
   public async onLogin(): Promise<LoginResult> {
-    const res = await this.platform.http.get<string>(
-      `${this.BASE_URL}/controls/submissions`,
-      { partition: this.accountId },
-    );
     if (this.account.id === 'FAIL') {
       return { loggedIn: false };
     }
