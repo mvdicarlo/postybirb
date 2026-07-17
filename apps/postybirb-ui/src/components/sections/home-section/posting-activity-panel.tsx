@@ -1,38 +1,43 @@
 /**
- *  dashboard panel showing live posting activity.PostingActivityPanel 
+ * PostingActivityPanel - dashboard panel showing live posting activity.
  *
  * Active posts render as Relay job trees (live via POST_STATE_DELTA + the
  * /post/jobs/active snapshot). Queued submissions that are not yet posting
  * render as lightweight cards with a cancel action.
  */
 
+import { t } from '@lingui/core/macro';
 import { Trans } from '@lingui/react/macro';
 import {
-    ActionIcon,
-    Badge,
-    Box,
-    Group,
-    Paper,
-    Stack,
-    Text,
-    ThemeIcon,
-    Tooltip,
+  ActionIcon,
+  Badge,
+  Box,
+  Group,
+  Paper,
+  Stack,
+  Text,
+  ThemeIcon,
+  Tooltip,
 } from '@mantine/core';
+import type { SubmissionId } from '@postybirb/types';
 import { SubmissionType } from '@postybirb/types';
-import { IconPlayerStop, IconSend } from '@tabler/icons-react';
+import { IconClock, IconPlayerStop, IconSend } from '@tabler/icons-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import postQueueApi from '../../../api/post-queue.api';
-import { useQueuedSubmissions, useSubmissionsMap } from '../../../stores/entity/submission-store';
+import {
+  useQueuedSubmissions,
+  useSubmissionsMap,
+} from '../../../stores/entity/submission-store';
 import type { SubmissionRecord } from '../../../stores/records';
 import { useViewStateActions } from '../../../stores/ui/navigation-store';
 import {
-    useActiveJobs,
-    useActivePostingSubmissionIds,
-    usePostingStateActions,
+  useActiveJobs,
+  useActivePostingSubmissionIds,
+  usePostingStateActions,
 } from '../../../stores/ui/posting-state-store';
 import {
-    createFileSubmissionsViewState,
-    createMessageSubmissionsViewState,
+  createFileSubmissionsViewState,
+  createMessageSubmissionsViewState,
 } from '../../../types/view-state';
 import { JobTreeView } from './job-tree-view';
 
@@ -47,7 +52,25 @@ function QueuedSubmissionCard({
   position: number;
 }) {
   const { setViewState } = useViewStateActions();
+  const submissionsMap = useSubmissionsMap();
   const [isCancelling, setIsCancelling] = useState(false);
+
+  // Prerequisites that haven't posted yet (still exist and not archived).
+  // Missing dependencies are stripped server-side and don't block, so they are
+  // not counted here.
+  const pendingDeps = useMemo(() => {
+    const ids = submission.metadata?.dependsOn ?? [];
+    const result: { id: string; title: string }[] = [];
+    for (const id of ids) {
+      const dep = submissionsMap.get(id as SubmissionId);
+      if (dep && !dep.isArchived) {
+        result.push({ id, title: dep.title.trim() || t`Untitled` });
+      }
+    }
+    return result;
+  }, [submission.metadata, submissionsMap]);
+
+  const isWaiting = pendingDeps.length > 0;
 
   const handleNavigate = useCallback(() => {
     if (submission.type === SubmissionType.FILE) {
@@ -71,33 +94,97 @@ function QueuedSubmissionCard({
   }, [submission.id]);
 
   return (
-    <Paper withBorder p="xs" radius="sm" bg="var(--mantine-color-default)">
-      <Group justify="space-between" wrap="nowrap">
-        <Group gap="xs" style={{ minWidth: 0, flex: 1 }}>
-          <Badge size="xs" variant="light" color="gray" circle>
+    <Paper
+      withBorder
+      p="xs"
+      radius="sm"
+      bg="var(--mantine-color-default)"
+      style={
+        isWaiting
+          ? {
+              borderLeftWidth: 3,
+              borderLeftStyle: 'solid',
+              borderLeftColor: 'var(--mantine-color-orange-6)',
+            }
+          : undefined
+      }
+    >
+      <Group justify="space-between" wrap="nowrap" align="flex-start">
+        <Group
+          gap="xs"
+          wrap="nowrap"
+          align="flex-start"
+          style={{ minWidth: 0, flex: 1 }}
+        >
+          <Badge size="xs" variant="light" color="gray" circle mt={2}>
             {position}
           </Badge>
-          <Badge
-            size="xs"
-            variant="outline"
-            color={submission.type === SubmissionType.FILE ? 'blue' : 'teal'}
-          >
-            {submission.type === SubmissionType.FILE ? (
-              <Trans>File</Trans>
-            ) : (
-              <Trans>Message</Trans>
+          <Box style={{ minWidth: 0, flex: 1 }}>
+            <Group gap="xs" wrap="nowrap" style={{ minWidth: 0 }}>
+              <Badge
+                size="xs"
+                variant="outline"
+                color={submission.type === SubmissionType.FILE ? 'blue' : 'teal'}
+              >
+                {submission.type === SubmissionType.FILE ? (
+                  <Trans>File</Trans>
+                ) : (
+                  <Trans>Message</Trans>
+                )}
+              </Badge>
+              <Text
+                size="sm"
+                truncate
+                style={{ cursor: 'pointer', minWidth: 0, flex: 1 }}
+                onClick={handleNavigate}
+                td="underline"
+                c="blue.6"
+              >
+                {submission.title || <Trans>Untitled</Trans>}
+              </Text>
+            </Group>
+            {isWaiting && (
+              <Group gap={4} mt={4} align="center" wrap="wrap">
+                <Text
+                  component="span"
+                  size="xs"
+                  c="orange.7"
+                  fw={600}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 4,
+                  }}
+                >
+                  <IconClock size={12} />
+                  <Trans>Waiting for</Trans>
+                </Text>
+                {pendingDeps.map((dep) => (
+                  <Tooltip
+                    key={dep.id}
+                    label={t`Hasn't posted yet — this submission waits for it.`}
+                    multiline
+                    w={220}
+                    withArrow
+                  >
+                    <Badge
+                      size="xs"
+                      variant="light"
+                      color="orange"
+                      radius="sm"
+                      style={{
+                        maxWidth: 160,
+                        textTransform: 'none',
+                        cursor: 'default',
+                      }}
+                    >
+                      {dep.title}
+                    </Badge>
+                  </Tooltip>
+                ))}
+              </Group>
             )}
-          </Badge>
-          <Text
-            size="sm"
-            truncate
-            style={{ cursor: 'pointer', minWidth: 0, flex: 1 }}
-            onClick={handleNavigate}
-            td="underline"
-            c="blue.6"
-          >
-            {submission.title || <Trans>Untitled</Trans>}
-          </Text>
+          </Box>
         </Group>
         <Tooltip label={<Trans>Remove from queue</Trans>} withArrow>
           <ActionIcon
