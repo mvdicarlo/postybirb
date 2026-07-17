@@ -1,5 +1,6 @@
 import { Global, Module } from '@nestjs/common';
 import { PlatformService } from '@postybirb/platform';
+import { SettingsModule } from '../settings/settings.module';
 import { ElectronPlatformService } from './electron/electron-platform.service';
 
 /**
@@ -12,6 +13,7 @@ import { ElectronPlatformService } from './electron/electron-platform.service';
  */
 @Global()
 @Module({
+  imports: [SettingsModule],
   providers: [{ provide: PlatformService, useClass: ElectronPlatformService }],
   exports: [PlatformService],
 })

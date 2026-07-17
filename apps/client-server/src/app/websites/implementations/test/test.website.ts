@@ -1,14 +1,14 @@
 import {
-    ImageResizeProps,
-    IPostResponse,
-    IWebsiteFormFields,
-    IWebsiteMetadata,
-    LoginResult,
-    OAuthRouteHandlers,
-    OAuthRoutes,
-    PostData,
-    PostResponse,
-    SimpleValidationResult,
+  ImageResizeProps,
+  IPostResponse,
+  IWebsiteFormFields,
+  IWebsiteMetadata,
+  LoginResult,
+  OAuthRouteHandlers,
+  OAuthRoutes,
+  PostData,
+  PostResponse,
+  SimpleValidationResult,
 } from '@postybirb/types';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';

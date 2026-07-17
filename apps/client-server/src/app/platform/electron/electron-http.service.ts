@@ -17,13 +17,56 @@ import {
  *
  * Delegates 1:1 to the static `Http` class and `getParsedProxiesFor` from
  * `@postybirb/http`, which use Electron's `net` module, `BrowserWindow`
- * (for Cloudflare bypass), and `session.fromPartition` for cookies.
+ * (for interactive Cloudflare challenges), and `session.fromPartition` for
+ * cookies.
  *
  * Centralizing this delegation here keeps the rest of the application
  * free of direct `@postybirb/http` (and therefore electron) imports.
  */
 @Injectable()
 export class ElectronHttpService extends PlatformHttpService {
+  private openCloudflareWindow = false;
+
+  private cloudflareSettingExpiresAt = 0;
+
+  constructor(
+    private readonly shouldOpenCloudflareChallengeWindow: () =>
+      | boolean
+      | Promise<boolean> = () => false,
+  ) {
+    super();
+  }
+
+  private async getOpenCloudflareWindowSetting(): Promise<boolean> {
+    const now = Date.now();
+    if (now < this.cloudflareSettingExpiresAt) {
+      return this.openCloudflareWindow;
+    }
+
+    try {
+      this.openCloudflareWindow =
+        await this.shouldOpenCloudflareChallengeWindow();
+    } catch {
+      this.openCloudflareWindow = false;
+    }
+    this.cloudflareSettingExpiresAt = now + 1000;
+    return this.openCloudflareWindow;
+  }
+
+  private async withCloudflareChallengeSettings<T extends HttpOptions>(
+    options: T,
+  ): Promise<T> {
+    return {
+      ...options,
+      cloudflareChallenge: {
+        openBrowserWindow:
+          options.cloudflareChallenge?.openBrowserWindow ??
+          (await this.getOpenCloudflareWindowSetting()),
+        timeoutMs: options.cloudflareChallenge?.timeoutMs,
+      },
+    };
+  }
+
   getUserAgent(appVersion: string): string {
     return Http.getUserAgent(appVersion);
   }
@@ -52,25 +95,37 @@ export class ElectronHttpService extends PlatformHttpService {
     return proxies.filter((p): p is PlatformParsedProxy => Boolean(p));
   }
 
-  get<T>(url: string, options: HttpOptions): Promise<HttpResponse<T>> {
-    return Http.get<T>(url, options);
+  async get<T>(url: string, options: HttpOptions): Promise<HttpResponse<T>> {
+    return Http.get<T>(
+      url,
+      await this.withCloudflareChallengeSettings(options),
+    );
   }
 
-  post<T>(
+  async post<T>(
     url: string,
     options: PostOptions | BinaryPostOptions,
   ): Promise<HttpResponse<T>> {
-    return Http.post<T>(url, options);
+    return Http.post<T>(
+      url,
+      await this.withCloudflareChallengeSettings(options),
+    );
   }
 
-  patch<T>(url: string, options: PostOptions): Promise<HttpResponse<T>> {
-    return Http.patch<T>(url, options);
+  async patch<T>(url: string, options: PostOptions): Promise<HttpResponse<T>> {
+    return Http.patch<T>(
+      url,
+      await this.withCloudflareChallengeSettings(options),
+    );
   }
 
-  put<T>(
+  async put<T>(
     url: string,
     options: PostOptions | BinaryPostOptions,
   ): Promise<HttpResponse<T>> {
-    return Http.put<T>(url, options);
+    return Http.put<T>(
+      url,
+      await this.withCloudflareChallengeSettings(options),
+    );
   }
 }

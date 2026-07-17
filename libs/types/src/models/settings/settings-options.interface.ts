@@ -28,6 +28,11 @@ export interface ISettingsOptions {
    * Global tag search provider id
    */
   tagSearchProvider: TagSearchProviderSettings;
+
+  /**
+   * Cloudflare challenge handling preferences.
+   */
+  cloudflareChallenge?: CloudflareChallengeSettings;
 }
 
 export type TagSearchProviderSettings = {
@@ -41,4 +46,11 @@ export type DesktopNotificationSettings = {
   showOnPostError: boolean;
   showOnDirectoryWatcherError: boolean;
   showOnDirectoryWatcherSuccess: boolean;
+};
+
+export type CloudflareChallengeSettings = {
+  /**
+   * Opens an Electron BrowserWindow so the user can complete a challenge.
+   */
+  openBrowserWindow: boolean;
 };

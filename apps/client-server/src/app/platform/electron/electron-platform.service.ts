@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PlatformService } from '@postybirb/platform';
+import { SettingsConstants } from '@postybirb/types';
+import { SettingsService } from '../../settings/settings.service';
 import { ElectronAppService } from './electron-app.service';
 import { ElectronBrowserService } from './electron-browser.service';
 import { ElectronHttpService } from './electron-http.service';
@@ -14,6 +16,19 @@ import { ElectronSessionService } from './electron-session.service';
  */
 @Injectable()
 export class ElectronPlatformService extends PlatformService {
+  constructor(settingsService: SettingsService) {
+    super();
+    this.http = new ElectronHttpService(async () => {
+      const settings = await settingsService.getDefaultSettings();
+      return (
+        settings?.settings.cloudflareChallenge?.openBrowserWindow ??
+        SettingsConstants.DEFAULT_SETTINGS.cloudflareChallenge
+          ?.openBrowserWindow ??
+        false
+      );
+    });
+  }
+
   readonly app = new ElectronAppService();
 
   readonly session = new ElectronSessionService();
@@ -24,7 +39,7 @@ export class ElectronPlatformService extends PlatformService {
 
   readonly network = new ElectronNetworkService();
 
-  readonly http = new ElectronHttpService();
+  readonly http: ElectronHttpService;
 
   readonly process = new ElectronProcessService();
 }

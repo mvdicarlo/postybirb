@@ -12,6 +12,16 @@ export interface HttpRequestOptions {
   skipUrlEncodedIndexing?: boolean;
 }
 
+export interface CloudflareChallengeOptions {
+  /**
+   * Opens an Electron BrowserWindow so the user can complete the challenge.
+   * The window uses the request partition so clearance cookies are retained.
+   */
+  openBrowserWindow?: boolean;
+  /** Maximum time to wait for the user to complete the challenge. */
+  timeoutMs?: number;
+}
+
 export interface HttpOptions {
   headers?: Record<string, string>;
   queryParameters?: Record<
@@ -25,6 +35,7 @@ export interface HttpOptions {
   >;
   partition?: string | undefined;
   options?: HttpRequestOptions;
+  cloudflareChallenge?: CloudflareChallengeOptions;
 }
 
 export interface PostOptions extends HttpOptions {
