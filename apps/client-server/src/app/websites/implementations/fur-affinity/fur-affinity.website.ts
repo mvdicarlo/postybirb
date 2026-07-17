@@ -1,14 +1,14 @@
 import { SelectOption } from '@postybirb/form-builder';
 
 import {
-    FileType,
-    ImageResizeProps,
-    IPostResponse,
-    LoginResult,
-    PostData,
-    PostResponse,
-    SimpleValidationResult,
-    SubmissionRating,
+  FileType,
+  ImageResizeProps,
+  IPostResponse,
+  LoginResult,
+  PostData,
+  PostResponse,
+  SimpleValidationResult,
+  SubmissionRating,
 } from '@postybirb/types';
 import { HTMLElement, parse } from 'node-html-parser';
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -82,6 +82,8 @@ export default class FurAffinity
     {
       folders: true,
     };
+
+  protected readonly cookieIgnoreList = ['FCNEC'];
 
   public async onLogin(): Promise<LoginResult> {
     try {
