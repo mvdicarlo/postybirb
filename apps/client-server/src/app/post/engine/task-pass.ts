@@ -329,7 +329,11 @@ export async function runTaskPass(
   emitStageOk(PIPELINE_STAGES.VALIDATE);
 
   // ---- per-unit dispatch loop ----
-  for (const unit of task.units) {
+  // Dispatch batches strictly in ascending ordinal order (batch 0, then 1, then
+  // 2, …) so a multi-batch post always goes out in sequence — even after a
+  // resume/recovery that reloaded the units in some other order.
+  const orderedUnits = [...task.units].sort((a, b) => a.ordinal - b.ordinal);
+  for (const unit of orderedUnits) {
     if (isDone(unit)) continue;
     throwIfAborted(token, PIPELINE_STAGES.DISPATCH);
     unit.status = NodeStatus.RUNNING;

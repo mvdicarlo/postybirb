@@ -13,10 +13,10 @@
 
 import { Injectable } from '@nestjs/common';
 import {
-    PostJob,
-    PostJobRepository,
-    PostTaskRepository,
-    PostUnitRepository,
+  PostJob,
+  PostJobRepository,
+  PostTaskRepository,
+  PostUnitRepository,
 } from '@postybirb/database';
 import { ITaskError, NodeStatus, PostErrorKind } from '@postybirb/types';
 import { PIPELINE_STAGES } from './constants';
@@ -255,19 +255,24 @@ export class RelayPersistence {
       task.message = t.message;
       task.error = t.error;
       task.waitingUntil = t.waitingUntil ?? undefined;
-      task.units = (t.units ?? []).map((u) => {
-        const unit = new RelayUnit({
-          id: u.id,
-          taskId: u.taskId,
-          kind: u.kind,
-          ordinal: u.ordinal,
-          fileIds: u.fileIds,
+      // Sort by ordinal so the in-memory tree preserves batch order regardless
+      // of the DB relation load order (batches must post 0, 1, 2, …).
+      task.units = (t.units ?? [])
+        .slice()
+        .sort((a, b) => a.ordinal - b.ordinal)
+        .map((u) => {
+          const unit = new RelayUnit({
+            id: u.id,
+            taskId: u.taskId,
+            kind: u.kind,
+            ordinal: u.ordinal,
+            fileIds: u.fileIds,
+          });
+          unit.status = u.status as NodeStatus;
+          unit.sourceUrl = u.sourceUrl;
+          unit.error = u.error;
+          return unit;
         });
-        unit.status = u.status as NodeStatus;
-        unit.sourceUrl = u.sourceUrl;
-        unit.error = u.error;
-        return unit;
-      });
       return task;
     });
 
