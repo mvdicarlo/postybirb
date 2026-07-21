@@ -82,9 +82,9 @@ export function SubmissionTitle({
             // eslint-disable-next-line lingui/no-unlocalized-strings
             padding: '2px 6px',
             // eslint-disable-next-line lingui/no-unlocalized-strings
-            height: 'auto',
+            height: '22px',
             // eslint-disable-next-line lingui/no-unlocalized-strings
-            minHeight: 'unset',
+            minHeight: '22px',
           },
         }}
       />
@@ -98,7 +98,7 @@ export function SubmissionTitle({
           handleClick(event as unknown as React.MouseEvent);
         }
       }}
-      tabIndex={0}
+      tabIndex={readOnly ? undefined : 0}
       size="sm"
       fw={500}
       lineClamp={1}
@@ -107,7 +107,9 @@ export function SubmissionTitle({
       title={title || name}
     >
       {title || name}{' '}
-      <IconEdit size={12} style={{ verticalAlign: 'middle', opacity: 0.6 }} />
+      {!readOnly && (
+        <IconEdit size={12} style={{ verticalAlign: 'middle', opacity: 0.6 }} />
+      )}
     </Text>
   );
 }

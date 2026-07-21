@@ -127,9 +127,11 @@ export function SubmissionActions({
   );
 
   return (
-    <>
-      {/* Action buttons */}
-      <Group gap={4}>
+    <Group
+      gap={4}
+      wrap="nowrap"
+      className="postybirb__submission__card_actions"
+    >
         {/* Schedule popover */}
         <span
           onClick={(e) => e.stopPropagation()}
@@ -142,21 +144,6 @@ export function SubmissionActions({
             size="sm"
           />
         </span>
-
-        {/* History button - always visible, color-coded by most recent post state */}
-        <Tooltip label={<Trans>View history</Trans>}>
-          <ActionIcon
-            variant="subtle"
-            size="sm"
-            color="gray"
-            disabled={!onViewHistory}
-            onClick={handleViewHistory}
-            // eslint-disable-next-line lingui/no-unlocalized-strings
-            aria-label="View history"
-          >
-            <IconHistory size={16} />
-          </ActionIcon>
-        </Tooltip>
 
         {/* Post button or Cancel button based on queue state */}
         {isQueued ? (
@@ -186,8 +173,6 @@ export function SubmissionActions({
             </HoldToConfirmButton>
           </Tooltip>
         )}
-      </Group>
-
       {/* Actions menu */}
       <Menu position="bottom-end" withinPortal trapFocus returnFocus>
         <Menu.Target>
@@ -239,6 +224,6 @@ export function SubmissionActions({
           </Menu.Item>
         </Menu.Dropdown>
       </Menu>
-    </>
+    </Group>
   );
 }

@@ -30,16 +30,14 @@ export const SubmissionThumbnail = memo(({
   canPreview = false,
   fileCount = 1,
 }: SubmissionThumbnailProps) => {
-  // Calculate additional files (total - 1 for the primary file shown)
-  const additionalFiles = fileCount > 1 ? fileCount - 1 : 0;
-
   const thumbnailBox = (
     <Indicator
-      label={`+${additionalFiles}`}
+      label={fileCount}
       size={16}
-      position="bottom-end"
+      position="top-end"
       offset={4}
-      disabled={additionalFiles === 0}
+      disabled={fileCount <= 1}
+      color="blue"
     >
       <Box className="postybirb__submission__thumbnail">
         {thumbnailUrl ? (
