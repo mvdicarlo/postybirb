@@ -59,6 +59,7 @@ export function LanguagePicker({
       label={labelContent}
       leftSection={<IconLanguage size={20} />}
       active={opened}
+      aria-label={collapsed ? t`Language` : undefined}
     />
   );
 

@@ -13,23 +13,23 @@
   --z-base: 0;
   --z-section-panel: 1;
   --z-sticky: 10;
-  
+
   /* Navigation */
   --z-sidenav: 100;
-  
+
   /* Drawers */
   --z-drawer-overlay: 200;
   --z-drawer: 201;
-  
+
   /* Modals */
   --z-modal-overlay: 300;
   --z-modal: 301;
   --z-modal-nested: 400;
-  
+
   /* Floating elements */
   --z-popover: 500;
   --z-tooltip: 600;
-  
+
   /* Always on top */
   --z-notification: 700;
 }
@@ -153,7 +153,7 @@
 }
 
 /* Sidenav scroll area - primary color scrollbar */
-.mantine-ScrollArea-scrollbar {
+.postybirb__sidenav_scroll .mantine-ScrollArea-scrollbar {
   --scrollbar-color: color-mix(
     in srgb,
     var(--mantine-primary-color-filled) 40%,
@@ -161,7 +161,7 @@
   );
 }
 
-.mantine-ScrollArea-scrollbar:hover {
+.postybirb__sidenav_scroll .mantine-ScrollArea-scrollbar:hover {
   --scrollbar-color: color-mix(
     in srgb,
     var(--mantine-primary-color-filled) 65%,
@@ -169,7 +169,7 @@
   );
 }
 
-.mantine-ScrollArea-thumb {
+.postybirb__sidenav_scroll .mantine-ScrollArea-thumb {
   background-color: var(--scrollbar-color);
 }
 
@@ -198,6 +198,26 @@
   display: none;
 }
 
+.postybirb__sidenav_backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgb(0 0 0 / 35%);
+  z-index: calc(var(--z-sidenav) - 1);
+}
+
+@media (max-width: 900px) {
+  .postybirb__sidenav {
+    width: 60px;
+    min-width: 60px;
+  }
+
+  .postybirb__sidenav--narrow_open {
+    width: 280px;
+    min-width: 280px;
+    box-shadow: var(--mantine-shadow-lg);
+  }
+}
+
 /* Main content wrapper - adjusts for sidenav */
 .postybirb__main {
   display: flex;
@@ -210,6 +230,12 @@
 
 .postybirb__main--sidenav_collapsed {
   margin-left: 60px;
+}
+
+@media (max-width: 900px) {
+  .postybirb__main {
+    margin-left: 60px;
+  }
 }
 
 /* Content navbar (with pagination) */

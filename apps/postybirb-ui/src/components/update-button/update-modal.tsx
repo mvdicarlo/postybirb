@@ -18,7 +18,22 @@ import {
 } from '@mantine/core';
 import { UpdateState } from '@postybirb/types';
 import { IconDeviceDesktopUp, IconDownload } from '@tabler/icons-react';
+import { useMemo } from 'react';
+import sanitizeHtml from 'sanitize-html';
 import updateApi from '../../api/update.api';
+
+const RELEASE_NOTE_TAGS = [
+  'p',
+  'br',
+  'ul',
+  'ol',
+  'li',
+  'strong',
+  'b',
+  'em',
+  'i',
+  'code',
+];
 
 interface UpdateModalProps {
   /** Whether the modal is open */
@@ -44,6 +59,19 @@ export function UpdateModal({
   const isDownloading = updateState.updateDownloading;
   const isDownloaded = updateState.updateDownloaded;
   const progress = updateState.updateProgress ?? 0;
+  const sanitizedUpdateNotes = useMemo(
+    () =>
+      (updateState.updateNotes ?? []).map((note) => ({
+        ...note,
+        note: note.note
+          ? sanitizeHtml(note.note, {
+              allowedTags: RELEASE_NOTE_TAGS,
+              allowedAttributes: {},
+            })
+          : note.note,
+      })),
+    [updateState.updateNotes],
+  );
 
   const handleStartUpdate = async () => {
     if (onMockStartDownload) {
@@ -59,7 +87,7 @@ export function UpdateModal({
   };
 
   // Get the latest version from release notes
-  const latestVersion = updateState.updateNotes?.[0]?.version;
+  const latestVersion = sanitizedUpdateNotes[0]?.version;
 
   return (
     <Modal
@@ -115,14 +143,14 @@ export function UpdateModal({
         )}
 
         {/* Release notes */}
-        {updateState.updateNotes && updateState.updateNotes.length > 0 && (
+        {sanitizedUpdateNotes.length > 0 && (
           <Box>
             <Text size="sm" fw={600} mb="xs">
               <Trans>What's New</Trans>
             </Text>
             <ScrollArea.Autosize mah={250} offsetScrollbars>
               <Stack gap="sm">
-                {updateState.updateNotes.map((note) => (
+                {sanitizedUpdateNotes.map((note) => (
                   <Box
                     key={note.version}
                     p="xs"

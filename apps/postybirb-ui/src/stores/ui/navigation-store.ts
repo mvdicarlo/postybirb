@@ -333,6 +333,14 @@ export const useNavigationStore = create<NavigationStore>()(
 export const useViewState = () =>
   useNavigationStore((state) => state.viewState);
 
+/** Select only the current section type */
+export const useCurrentViewType = () =>
+  useNavigationStore((state) => state.viewState.type);
+
+/** Select the stable view-state setter */
+export const useSetViewState = () =>
+  useNavigationStore((state) => state.setViewState);
+
 /** Select view state with setter */
 export const useViewStateActions = () =>
   useNavigationStore(

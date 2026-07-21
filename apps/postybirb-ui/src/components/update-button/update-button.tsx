@@ -4,7 +4,7 @@
  * Opens a modal for update details and actions.
  */
 
-import { Trans } from '@lingui/react/macro';
+import { Trans, useLingui } from '@lingui/react/macro';
 import { Box, NavLink as MantineNavLink, Text, Tooltip } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { UPDATE_UPDATES } from '@postybirb/socket-events';
@@ -19,6 +19,8 @@ import { UpdateModal } from './update-modal';
 interface UpdateButtonProps {
   /** Whether the sidenav is collapsed */
   collapsed: boolean;
+  /** Called after opening the update modal */
+  onNavigate?: () => void;
 }
 
 /**
@@ -59,7 +61,8 @@ const MOCK_UPDATE_STATE: UpdateState = {
  * Opens a modal with update details and action buttons.
  * In development mode, shows mock data for testing.
  */
-export function UpdateButton({ collapsed }: UpdateButtonProps) {
+export function UpdateButton({ collapsed, onNavigate }: UpdateButtonProps) {
+  const { t } = useLingui();
   const [modalOpened, modal] = useDisclosure(false);
   const [updateState, setUpdateState] = useState<UpdateState>(
     isDevelopment ? MOCK_UPDATE_STATE : {},
@@ -188,7 +191,11 @@ export function UpdateButton({ collapsed }: UpdateButtonProps) {
       active
       color="green"
       variant="light"
-      onClick={modal.open}
+      aria-label={collapsed ? t`Update available` : undefined}
+      onClick={() => {
+        modal.open();
+        onNavigate?.();
+      }}
     />
   );
 
