@@ -39,10 +39,8 @@ export function SubmissionEditCardHeader({
         {submission.title || <Trans>Untitled</Trans>}
       </Text>
 
-      {/* Edit / History toggle - shown when post history exists */}
-      {!submission.isTemplate &&
-        !submission.isMultiSubmission &&
-        submission.posts.length > 0 && (
+      {/* Edit / History toggle */}
+      {!submission.isTemplate && !submission.isMultiSubmission && (
           <Box onClick={(e) => e.stopPropagation()} style={{ flexShrink: 0 }}>
             <SegmentedControl
               size="xs"

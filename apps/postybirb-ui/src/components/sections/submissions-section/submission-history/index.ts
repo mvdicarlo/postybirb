@@ -1,11 +1,7 @@
 export {
-  exportPostRecordToFile,
-  extractWebsitePostsFromEvents,
-  getAccountPostStatusMap,
-  getPostRecordStateInfo,
-  type AccountPostStatus,
-  type AccountPostStatusEntry,
-  type DerivedWebsitePost,
+    getAccountStatusFromJob,
+    type AccountPostStatus,
+    type AccountPostStatusEntry
 } from './history-utils';
 export { PostHistoryContent } from './post-history-content';
-export { PostRecordCard } from './post-record-card';
+

@@ -1,7 +1,6 @@
 import { SubmissionType } from '../../enums';
 import { EntityId, IEntity } from '../database/entity.interface';
 import { IPostQueueRecord } from '../post/post-queue-record.interface';
-import { IPostRecord } from '../post/post-record.interface';
 import { IWebsiteOptions } from '../website-options/website-options.interface';
 import { ISubmissionFile } from './submission-file.interface';
 import { ISubmissionMetadata } from './submission-metadata.interface';
@@ -86,12 +85,6 @@ export interface ISubmission<
    * @type {T}
    */
   metadata: T;
-
-  /**
-   * The post records associated with the submission.
-   * @type {Collection<IPostRecord>}
-   */
-  posts: IPostRecord[];
 
   /**
    * The index of the submission for display purposes.

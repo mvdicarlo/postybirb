@@ -1,9 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { clearDatabase, PostRecordRepository } from '@postybirb/database';
+import { clearDatabase } from '@postybirb/database';
 import {
     AccountId,
     DefaultDescription,
-    PostRecordState,
     SubmissionId,
     SubmissionRating,
     SubmissionType,
@@ -19,11 +18,9 @@ import { SubmissionModule } from '../../../submission/submission.module';
 import { CreateWebsiteOptionsDto } from '../../../website-options/dtos/create-website-options.dto';
 import { WebsiteOptionsModule } from '../../../website-options/website-options.module';
 import { WebsiteOptionsService } from '../../../website-options/website-options.service';
-import { WebsiteRegistryService } from '../../../websites/website-registry.service';
 import { WebsitesModule } from '../../../websites/websites.module';
+import { RelayPostManager } from '../../engine/post-manager.service';
 import { PostModule } from '../../post.module';
-import { PostService } from '../../post.service';
-import { PostManagerRegistry } from '../post-manager-v2';
 import { PostQueueService } from './post-queue.service';
 
 describe('PostQueueService', () => {
@@ -32,52 +29,45 @@ describe('PostQueueService', () => {
   let submissionService: SubmissionService;
   let accountService: AccountService;
   let websiteOptionsService: WebsiteOptionsService;
-  let registryService: WebsiteRegistryService;
-  let postService: PostService;
-  let mockPostManagerRegistry: jest.Mocked<PostManagerRegistry>;
+  let mockRelayPostManager: jest.Mocked<RelayPostManager>;
 
   beforeEach(async () => {
     clearDatabase();
 
-    // Create mock PostManagerRegistry
-    mockPostManagerRegistry = {
-      startPost: jest.fn().mockResolvedValue(undefined),
-      cancelIfRunning: jest.fn().mockResolvedValue(true),
-      isPostingType: jest.fn().mockReturnValue(false),
-      getManager: jest.fn(),
-    } as any;
+    mockRelayPostManager = {
+      enqueue: jest.fn().mockResolvedValue('job_1'),
+      cancel: jest.fn().mockReturnValue(true),
+      isPosting: jest.fn().mockReturnValue(false),
+      getOutcome: jest.fn().mockResolvedValue(undefined),
+      getActiveTrees: jest.fn().mockReturnValue([]),
+      getHistory: jest.fn().mockResolvedValue([]),
+      hasSucceeded: jest.fn().mockResolvedValue(false),
+      recover: jest.fn().mockResolvedValue(undefined),
+    } as unknown as jest.Mocked<RelayPostManager>;
 
-    try {
-      module = await Test.createTestingModule({
-        imports: [
-          TestPlatformModule,
-          SubmissionModule,
-          AccountModule,
-          WebsiteOptionsModule,
-          WebsitesModule,
-          PostModule,
-        ],
-      })
-        .overrideProvider(PostManagerRegistry)
-        .useValue(mockPostManagerRegistry)
-        .compile();
+    module = await Test.createTestingModule({
+      imports: [
+        TestPlatformModule,
+        SubmissionModule,
+        AccountModule,
+        WebsiteOptionsModule,
+        WebsitesModule,
+        PostModule,
+      ],
+    })
+      .overrideProvider(RelayPostManager)
+      .useValue(mockRelayPostManager)
+      .compile();
 
-      service = module.get<PostQueueService>(PostQueueService);
-      submissionService = module.get<SubmissionService>(SubmissionService);
-      accountService = module.get<AccountService>(AccountService);
-      const settingsService = module.get<SettingsService>(SettingsService);
-      websiteOptionsService = module.get<WebsiteOptionsService>(
-        WebsiteOptionsService,
-      );
-      registryService = module.get<WebsiteRegistryService>(
-        WebsiteRegistryService,
-      );
-      postService = module.get<PostService>(PostService);
-      await accountService.onModuleInit();
-      await settingsService.onModuleInit();
-    } catch (err) {
-      console.log(err);
-    }
+    service = module.get<PostQueueService>(PostQueueService);
+    submissionService = module.get<SubmissionService>(SubmissionService);
+    accountService = module.get<AccountService>(AccountService);
+    const settingsService = module.get<SettingsService>(SettingsService);
+    websiteOptionsService = module.get<WebsiteOptionsService>(
+      WebsiteOptionsService,
+    );
+    await accountService.onModuleInit();
+    await settingsService.onModuleInit();
   });
 
   function createSubmissionDto(): CreateSubmissionDto {
@@ -103,14 +93,8 @@ describe('PostQueueService', () => {
     dto.accountId = accountId;
     dto.data = {
       title: 'Test Title',
-      tags: {
-        overrideDefault: true,
-        tags: ['test'],
-      },
-      description: {
-        overrideDefault: true,
-        description: DefaultDescription(),
-      },
+      tags: { overrideDefault: true, tags: ['test'] },
+      description: { overrideDefault: true, description: DefaultDescription() },
       rating: SubmissionRating.GENERAL,
     };
     return dto;
@@ -124,97 +108,201 @@ describe('PostQueueService', () => {
     expect(service).toBeDefined();
   });
 
-  it('should handle pausing and resuming the queue', async () => {
+  it('pauses and resumes the queue', async () => {
     await service.pause();
     expect(await service.isPaused()).toBe(true);
     await service.resume();
     expect(await service.isPaused()).toBe(false);
   });
 
-  it('should handle enqueue and dequeue of submissions', async () => {
-    await service.pause(); // Just to test the function
+  it('enqueues and dequeues submissions', async () => {
     const submission = await submissionService.create(createSubmissionDto());
-    const account = await accountService.create(createAccountDto());
-    expect(registryService.findInstance(account)).toBeDefined();
 
+    await service.enqueue([submission.id, submission.id]);
+    const top = await service.peek();
+    expect(top).not.toBeNull();
+    expect(top?.submissionId).toBe(submission.id);
+
+    await service.dequeue([submission.id]);
+    expect(await service.peek()).toBeNull();
+    expect(mockRelayPostManager.cancel).toHaveBeenCalledWith(submission.id);
+  });
+
+  it('starts a Relay job for a queued submission on execute', async () => {
+    const account = await accountService.create(createAccountDto());
+    const submission = await submissionService.create(createSubmissionDto());
     await websiteOptionsService.create(
       createWebsiteOptionsDto(submission.id, account.id),
     );
 
-    await service.enqueue([submission.id, submission.id]);
-    expect((await service.findAll()).length).toBe(1);
-    const top = await service.peek();
-    expect(top).toBeDefined();
-    expect(top?.submission.id).toBe(submission.id);
+    await service.enqueue([submission.id]);
+    mockRelayPostManager.isPosting.mockReturnValue(false);
 
-    await service.dequeue([submission.id]);
-    expect((await service.findAll()).length).toBe(0);
+    await service.execute();
+    expect(mockRelayPostManager.enqueue).toHaveBeenCalledWith(submission.id);
+  });
+
+  it('dequeues a submission whose Relay job has finished', async () => {
+    const submission = await submissionService.create(createSubmissionDto());
+    await service.enqueue([submission.id]);
+
+    mockRelayPostManager.getOutcome.mockResolvedValue('SUCCEEDED' as never);
+    await service.execute();
+
+    expect(mockRelayPostManager.getOutcome).toHaveBeenCalledWith(
+      submission.id,
+      expect.any(String),
+    );
     expect(await service.peek()).toBeNull();
   });
 
-  it('should insert posts into the post manager', async () => {
-    const submission = await submissionService.create(createSubmissionDto());
-    const account = await accountService.create(createAccountDto());
-    expect(registryService.findInstance(account)).toBeDefined();
+  describe('dependsOn gating', () => {
+    async function createDependentSubmission(dependsOn: SubmissionId[]) {
+      const account = await accountService.create(createAccountDto());
+      const submission = await submissionService.create(createSubmissionDto());
+      await websiteOptionsService.create(
+        createWebsiteOptionsDto(submission.id, account.id),
+      );
+      await submissionService.update(submission.id, {
+        metadata: { dependsOn },
+      } as never);
+      return submission;
+    }
 
-    await websiteOptionsService.create(
-      createWebsiteOptionsDto(submission.id, account.id),
-    );
+    it('holds back a submission whose dependency has not succeeded', async () => {
+      const dependency = await submissionService.create(createSubmissionDto());
+      const dependent = await createDependentSubmission([dependency.id]);
 
-    // Enqueue now creates the PostRecord immediately
-    await service.enqueue([submission.id]);
-    expect((await service.findAll()).length).toBe(1);
+      await service.enqueue([dependent.id]);
+      mockRelayPostManager.isPosting.mockReturnValue(false);
+      mockRelayPostManager.hasSucceeded.mockResolvedValue(false);
 
-    // PostRecord should already exist after enqueue
-    let postRecord = (await postService.findAll())[0];
-    expect(postRecord).toBeDefined();
-    expect(postRecord.submissionId).toBe(submission.id);
-    expect(postRecord.state).toBe(PostRecordState.PENDING);
+      await service.execute();
 
-    // Initially, no manager is posting (so execute will start the post)
-    mockPostManagerRegistry.isPostingType.mockReturnValue(false);
-
-    // Execute should start the post manager
-    await service.execute();
-    let queueRecord = await service.peek();
-    expect(mockPostManagerRegistry.startPost).toHaveBeenCalledWith(
-      expect.objectContaining({
-        id: postRecord.id,
-        submissionId: submission.id,
-      }),
-    );
-    expect(queueRecord).toBeDefined();
-    expect(queueRecord?.postRecord).toBeDefined();
-
-    // Now simulate that the manager is posting
-    mockPostManagerRegistry.isPostingType.mockReturnValue(true);
-
-    // Simulate cancellation
-    await mockPostManagerRegistry.cancelIfRunning(submission.id);
-    expect(mockPostManagerRegistry.cancelIfRunning).toHaveBeenCalledWith(
-      submission.id,
-    );
-
-    // Simulate the post completing (with failure) - manually update the record
-    const database = new PostRecordRepository();
-    await database.update(postRecord.id, {
-      state: PostRecordState.FAILED,
-      completedAt: new Date().toISOString(),
+      expect(mockRelayPostManager.hasSucceeded).toHaveBeenCalledWith(
+        dependency.id,
+      );
+      expect(mockRelayPostManager.enqueue).not.toHaveBeenCalledWith(
+        dependent.id,
+      );
+      // Still queued for re-evaluation next cycle.
+      expect(await service.peek()).not.toBeNull();
     });
 
-    // Simulate posting finished
-    mockPostManagerRegistry.isPostingType.mockReturnValue(false);
+    it('enqueues a submission once every dependency has succeeded', async () => {
+      const dependency = await submissionService.create(createSubmissionDto());
+      const dependent = await createDependentSubmission([dependency.id]);
 
-    queueRecord = await service.peek();
-    expect(queueRecord).toBeDefined();
-    expect(queueRecord?.postRecord).toBeDefined();
+      await service.enqueue([dependent.id]);
+      mockRelayPostManager.isPosting.mockReturnValue(false);
+      mockRelayPostManager.hasSucceeded.mockResolvedValue(true);
 
-    // We expect the post to be in a terminal state and cleanup of the record.
-    // The post record should remain after the queue record is deleted.
-    await service.execute();
-    expect((await service.findAll()).length).toBe(0);
-    postRecord = await postService.findByIdOrThrow(postRecord.id);
-    expect(postRecord.state).toBe(PostRecordState.FAILED);
-    expect(postRecord.completedAt).toBeDefined();
+      await service.execute();
+
+      expect(mockRelayPostManager.enqueue).toHaveBeenCalledWith(dependent.id);
+    });
+
+    it('re-enforces a restored chain: a re-queued dependency blocks its dependent despite a prior success', async () => {
+      const dependency = await submissionService.create(createSubmissionDto());
+      const dependent = await createDependentSubmission([dependency.id]);
+
+      // The whole chain is unarchived and queued together again.
+      await service.enqueue([dependency.id, dependent.id]);
+      mockRelayPostManager.isPosting.mockReturnValue(false);
+      // Its prior (pre-archive) run succeeded — this stale success must NOT
+      // satisfy the gate now that the dependency is being re-posted.
+      mockRelayPostManager.hasSucceeded.mockResolvedValue(true);
+      // Nothing has produced a fresh outcome yet this round.
+      mockRelayPostManager.getOutcome.mockResolvedValue(undefined);
+
+      await service.execute();
+
+      // The dependency itself is (re)enqueued to post again...
+      expect(mockRelayPostManager.enqueue).toHaveBeenCalledWith(dependency.id);
+      // ...but the dependent is held back because the dependency is still queued
+      // (its fresh post has not finished), even though hasSucceeded() is true.
+      expect(mockRelayPostManager.enqueue).not.toHaveBeenCalledWith(
+        dependent.id,
+      );
+      // The dependent remains queued for re-evaluation next cycle.
+      expect(await service.peek()).not.toBeNull();
+    });
+
+    it('keeps the dependent blocked when one of several dependencies fails', async () => {
+      const depA = await submissionService.create(createSubmissionDto());
+      const depB = await submissionService.create(createSubmissionDto());
+      const dependent = await createDependentSubmission([depA.id, depB.id]);
+
+      await service.enqueue([dependent.id]);
+      mockRelayPostManager.isPosting.mockReturnValue(false);
+      mockRelayPostManager.hasSucceeded.mockImplementation(async (id) =>
+        id === depA.id,
+      );
+
+      await service.execute();
+
+      expect(mockRelayPostManager.enqueue).not.toHaveBeenCalledWith(
+        dependent.id,
+      );
+    });
+
+    it('enqueues a submission with no declared dependencies', async () => {
+      const account = await accountService.create(createAccountDto());
+      const submission = await submissionService.create(createSubmissionDto());
+      await websiteOptionsService.create(
+        createWebsiteOptionsDto(submission.id, account.id),
+      );
+
+      await service.enqueue([submission.id]);
+      mockRelayPostManager.isPosting.mockReturnValue(false);
+
+      await service.execute();
+
+      expect(mockRelayPostManager.hasSucceeded).not.toHaveBeenCalled();
+      expect(mockRelayPostManager.enqueue).toHaveBeenCalledWith(submission.id);
+    });
+
+    it('strips references to deleted dependencies and proceeds', async () => {
+      const dependent = await createDependentSubmission([
+        'deleted-dependency-id' as SubmissionId,
+      ]);
+
+      await service.enqueue([dependent.id]);
+      mockRelayPostManager.isPosting.mockReturnValue(false);
+
+      await service.execute();
+
+      // The stale id is unsatisfiable and never consulted on the relay manager.
+      expect(mockRelayPostManager.hasSucceeded).not.toHaveBeenCalledWith(
+        'deleted-dependency-id',
+      );
+      // Self-healed: the stale id is removed from the submission metadata.
+      const updated = await submissionService.findById(dependent.id);
+      expect(updated?.metadata.dependsOn ?? []).toEqual([]);
+      // With no remaining blockers it proceeds to post.
+      expect(mockRelayPostManager.enqueue).toHaveBeenCalledWith(dependent.id);
+    });
+
+    it('strips a deleted dependency but stays blocked on a live one', async () => {
+      const live = await submissionService.create(createSubmissionDto());
+      const dependent = await createDependentSubmission([
+        'deleted-dependency-id' as SubmissionId,
+        live.id,
+      ]);
+
+      await service.enqueue([dependent.id]);
+      mockRelayPostManager.isPosting.mockReturnValue(false);
+      mockRelayPostManager.hasSucceeded.mockResolvedValue(false);
+
+      await service.execute();
+
+      // Stale id removed, the still-existing dependency is retained.
+      const updated = await submissionService.findById(dependent.id);
+      expect(updated?.metadata.dependsOn ?? []).toEqual([live.id]);
+      // Still blocked by the live, unsatisfied dependency.
+      expect(mockRelayPostManager.enqueue).not.toHaveBeenCalledWith(
+        dependent.id,
+      );
+    });
   });
 });

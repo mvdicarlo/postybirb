@@ -42,6 +42,7 @@ const config = {
     'no-continue': 'off',
     'no-await-in-loop': 'off',
     'no-restricted-syntax': 'off',
+    'no-param-reassign': 'off',
     'class-methods-use-this': 'off',
 
     'import/export': 'off',

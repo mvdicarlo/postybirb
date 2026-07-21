@@ -47,4 +47,18 @@ export type WebsiteFileOptions = {
    * If file alt text is equal or greater then this number it will be trimmed and the warning will be shown
    */
   maxAltTextLength?: number;
+
+  /**
+   * How many upstream source URLs this site needs before it may post (Relay
+   * engine). Only meaningful with `acceptsExternalSourceUrls: true`.
+   *  - 'allSettled' (default) : wait for every standard task to settle (any
+   *                             outcome), then post best-effort with whatever
+   *                             URLs exist. A failed upstream never skips this
+   *                             site.
+   *  - 'all'                  : require every standard task to succeed/skip; a
+   *                             failed upstream skips this site.
+   *  - 'any'                  : post as soon as the first upstream URL exists
+   *  - { count: n }           : wait for n upstream URLs
+   */
+  sourceDependencyMode?: 'all' | 'allSettled' | 'any' | { count: number };
 };

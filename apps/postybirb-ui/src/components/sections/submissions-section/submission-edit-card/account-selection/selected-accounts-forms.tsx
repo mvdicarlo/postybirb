@@ -6,40 +6,41 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-  Badge,
-  Box,
-  Checkbox,
-  Collapse,
-  Divider,
-  Group,
-  Paper,
-  Stack,
-  Text,
-  Tooltip,
-  UnstyledButton,
+    Badge,
+    Box,
+    Checkbox,
+    Collapse,
+    Divider,
+    Group,
+    Paper,
+    Stack,
+    Text,
+    Tooltip,
+    UnstyledButton,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import type { EntityId, WebsiteOptionsDto } from '@postybirb/types';
 import {
-  IconCheck,
-  IconChevronDown,
-  IconChevronRight,
-  IconCircleFilled,
-  IconLoader,
-  IconX,
+    IconCheck,
+    IconChevronDown,
+    IconChevronRight,
+    IconCircleFilled,
+    IconLoader,
+    IconX,
 } from '@tabler/icons-react';
 import { useMemo, useState } from 'react';
 import { useAccounts } from '../../../../../stores/entity/account-store';
 import { useWebsites } from '../../../../../stores/entity/website-store';
 import type {
-  AccountRecord,
-  WebsiteRecord,
+    AccountRecord,
+    WebsiteRecord,
 } from '../../../../../stores/records';
+import { useSubmissionActiveJob } from '../../../../../stores/ui/posting-state-store';
 import { ComponentErrorBoundary } from '../../../../error-boundary';
 import {
-  type AccountPostStatus,
-  type AccountPostStatusEntry,
-  getAccountPostStatusMap,
+    type AccountPostStatus,
+    type AccountPostStatusEntry,
+    getAccountStatusFromJob
 } from '../../submission-history';
 import { useSubmissionEditCardContext } from '../context';
 import { AccountDefaultTemplateModal } from './account-default-template-modal';
@@ -290,15 +291,16 @@ export function SelectedAccountsForms() {
   const accounts = useAccounts();
   const websites = useWebsites();
   const [hidePosted, setHidePosted] = useState(false);
+  const activeJob = useSubmissionActiveJob(submission.id);
 
-  // Compute per-account post status from latest post record
-  // Skip for templates and multi-edit cards (they never have post history)
+  // Per-account post status from the live Relay job (empty when not posting).
+  // Skip for templates and multi-edit cards (they never post).
   const accountStatusMap = useMemo(() => {
     if (submission.isTemplate || submission.isMultiSubmission) {
       return new Map<EntityId, AccountPostStatusEntry>();
     }
-    return getAccountPostStatusMap(submission);
-  }, [submission]);
+    return getAccountStatusFromJob(activeJob);
+  }, [submission.isTemplate, submission.isMultiSubmission, activeJob]);
 
   // Map accountId -> AccountRecord
   const accountById = useMemo(() => {

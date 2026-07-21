@@ -1,11 +1,11 @@
 import { HttpResponse } from '@postybirb/http/types';
 import {
-    DiscordAccountData,
-    ImageResizeProps,
-    IPostResponse,
-    LoginResult,
-    PostData,
-    PostResponse,
+  DiscordAccountData,
+  ImageResizeProps,
+  IPostResponse,
+  LoginResult,
+  PostData,
+  PostResponse,
 } from '@postybirb/types';
 import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -18,14 +18,14 @@ import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
 import {
-    FileWebsite,
-    PostBatchData,
+  FileWebsite,
+  PostBatchData,
 } from '../../models/website-modifiers/file-website';
 import { MessageWebsite } from '../../models/website-modifiers/message-website';
 import { WithCustomDescriptionParser } from '../../models/website-modifiers/with-custom-description-parser';
 import {
-    DynamicFileSizeLimits,
-    WithDynamicFileSizeLimits,
+  DynamicFileSizeLimits,
+  WithDynamicFileSizeLimits,
 } from '../../models/website-modifiers/with-dynamic-file-size-limits';
 import { Website } from '../../website';
 import { DiscordDescriptionConverter } from './discord-description-converter';
@@ -35,6 +35,7 @@ import { DiscordMessageSubmission } from './models/discord-message-submission';
 @WebsiteMetadata({
   name: 'discord',
   displayName: 'Discord',
+  minimumPostWaitInterval: 60_000,
 })
 @CustomLoginFlow()
 @SupportsFiles({

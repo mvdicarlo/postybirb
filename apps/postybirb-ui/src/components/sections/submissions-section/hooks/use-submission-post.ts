@@ -2,7 +2,7 @@
  * Hook for submission posting handlers.
  */
 
-import { PostRecordResumeMode, PostRecordState } from '@postybirb/types';
+import { PostRecordResumeMode } from '@postybirb/types';
 import { useCallback, useState } from 'react';
 import postManagerApi from '../../../../api/post-manager.api';
 import postQueueApi from '../../../../api/post-queue.api';
@@ -41,7 +41,6 @@ export function useSubmissionPost(): UseSubmissionPostResult {
   const handlePost = useCallback(
     async (id: string) => {
       try {
-        // Get the submission to check if last post failed
         const submission = useSubmissionStore.getState().recordsMap.get(id);
 
         if (!submission) {
@@ -49,18 +48,6 @@ export function useSubmissionPost(): UseSubmissionPostResult {
           return;
         }
 
-        // Check if the last post record was failed
-        const lastPost = submission.latestPost;
-        const shouldPromptResumeMode =
-          lastPost && lastPost.state === PostRecordState.FAILED;
-
-        if (shouldPromptResumeMode) {
-          // Set pending state to show the modal
-          setPendingResumeSubmissionId(id);
-          return;
-        }
-
-        // No failed post, proceed normally
         await postQueueApi.enqueue([id]);
       } catch {
         showPostErrorNotification();
