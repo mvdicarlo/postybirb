@@ -134,7 +134,7 @@
     "express": "4.21.2",
     "fastq": "^1.17.1",
     "filesize": "^10.1.6",
-    "form-data": "^4.0.0",
+    "form-data": "^4.0.6",
     "form-urlencoded": "^6.1.5",
     "gql-query-builder": "^3.8.0",
     "happy-dom": "^20.8.9",
