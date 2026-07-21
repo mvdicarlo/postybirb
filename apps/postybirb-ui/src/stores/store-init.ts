@@ -3,7 +3,7 @@
  * Provides a hook to load all entity stores when the app starts.
  */
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useAccountStore } from './entity/account-store';
 import { useCustomShortcutStore } from './entity/custom-shortcut-store';
 import { useDirectoryWatcherStore } from './entity/directory-watcher-store';
@@ -32,6 +32,24 @@ export async function loadAllStores(): Promise<void> {
     useUserConverterStore.getState().loadAll(),
     useWebsiteStore.getState().loadAll(),
   ]);
+
+  const errors = [
+    useAccountStore.getState().error,
+    useSettingsStore.getState().error,
+    useSubmissionStore.getState().error,
+    useCustomShortcutStore.getState().error,
+    useDirectoryWatcherStore.getState().error,
+    useNotificationStore.getState().error,
+    useTagConverterStore.getState().error,
+    useTagGroupStore.getState().error,
+    useUserConverterStore.getState().error,
+    useWebsiteStore.getState().error,
+  ].filter((error): error is string => Boolean(error));
+
+  if (errors.length > 0) {
+    // eslint-disable-next-line lingui/no-unlocalized-strings
+    throw new Error(errors.join('\n'));
+  }
 }
 
 /**
@@ -42,24 +60,39 @@ export function useInitializeStores() {
   const [isInitialized, setIsInitialized] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
-    if (isInitialized) return;
+    let cancelled = false;
 
     setIsLoading(true);
+    setError(null);
     loadAllStores()
       .then(() => {
-        setIsInitialized(true);
-        setIsLoading(false);
+        if (!cancelled) {
+          setIsInitialized(true);
+          setIsLoading(false);
+        }
       })
       .catch((err) => {
-        // eslint-disable-next-line lingui/no-unlocalized-strings
-        setError(err instanceof Error ? err.message : 'Failed to load stores');
-        setIsLoading(false);
+        if (!cancelled) {
+          // eslint-disable-next-line lingui/no-unlocalized-strings
+          setError(err instanceof Error ? err.message : 'Failed to load stores');
+          setIsLoading(false);
+        }
       });
-  }, [isInitialized]);
 
-  return { isInitialized, isLoading, error };
+    return () => {
+      cancelled = true;
+    };
+  }, [attempt]);
+
+  const retry = useCallback(() => {
+    setIsInitialized(false);
+    setAttempt((currentAttempt) => currentAttempt + 1);
+  }, []);
+
+  return { isInitialized, isLoading, error, retry };
 }
 
 /**

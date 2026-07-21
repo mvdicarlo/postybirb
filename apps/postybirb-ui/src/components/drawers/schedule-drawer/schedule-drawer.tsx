@@ -20,13 +20,19 @@ import { SubmissionList } from './submission-list';
 export function ScheduleDrawer() {
   const activeDrawer = useActiveDrawer();
   const { closeDrawer } = useDrawerActions();
+
+  if (activeDrawer !== 'schedule') return null;
+
+  return <ScheduleDrawerContent onClose={closeDrawer} />;
+}
+
+function ScheduleDrawerContent({ onClose }: { onClose: () => void }) {
   const { startTour } = useTourActions();
-  const opened = activeDrawer === 'schedule';
 
   return (
     <SectionDrawer
-      opened={opened}
-      onClose={closeDrawer}
+      opened
+      onClose={onClose}
       title={
         <Group gap="xs">
           <Trans>Schedule</Trans>

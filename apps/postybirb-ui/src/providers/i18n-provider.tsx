@@ -9,7 +9,7 @@ import { I18nProvider as LinguiI18nProvider } from '@lingui/react';
 import { Group, Loader } from '@mantine/core';
 import { DatesProvider } from '@mantine/dates';
 import dayjs from 'dayjs';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLanguage } from '../stores/ui/locale-store';
 
 /**
@@ -21,22 +21,23 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   const locale = useLanguage();
   const [loaded, setLoaded] = useState(false);
 
-  const loadLocale = useCallback(async (lang: string) => {
-    // Vite plugin lingui automatically converts .po files into plain json
-    // during production build and vite converts dynamic import into the path map.
-    // We don't need to cache these imported messages because browser's import
-    // call does it automatically.
-    // eslint-disable-next-line no-param-reassign
-    lang = lang ?? 'en';
-    const { messages } = await import(`../../../../lang/${lang}.po`);
-    i18n.loadAndActivate({ locale: lang, messages });
-    dayjs.locale(lang);
-    setLoaded(true);
-  }, []);
-
   useEffect(() => {
     let cancelled = false;
-    loadLocale(locale).catch((error) => {
+
+    const loadLocale = async () => {
+      // Vite plugin lingui converts .po files into JSON and maps this dynamic
+      // import during the production build. The module cache handles reuse.
+      const lang = locale ?? 'en';
+      const { messages } = await import(`../../../../lang/${lang}.po`);
+
+      if (!cancelled) {
+        i18n.loadAndActivate({ locale: lang, messages });
+        dayjs.locale(lang);
+        setLoaded(true);
+      }
+    };
+
+    loadLocale().catch((error) => {
       if (!cancelled) {
         // eslint-disable-next-line no-console
         console.error('Failed to load locale:', locale, error);
@@ -45,7 +46,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [locale, loadLocale]);
+  }, [locale]);
 
   const [tooLongLoading, setTooLongLoading] = useState(false);
   useEffect(() => {

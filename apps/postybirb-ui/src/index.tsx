@@ -9,8 +9,19 @@ import '@mantine/notifications/styles.css';
 import './styles/layout.css';
 import './theme/theme-styles.css';
 
-import { MantineProvider, useMantineColorScheme } from '@mantine/core';
+import { Trans } from '@lingui/react/macro';
+import {
+  Alert,
+  Button,
+  Center,
+  Loader,
+  MantineProvider,
+  Stack,
+  Text,
+  useMantineColorScheme,
+} from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
+import { IconAlertCircle } from '@tabler/icons-react';
 import { useEffect, useMemo } from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { Disclaimer } from './components/disclaimer/disclaimer';
@@ -18,7 +29,7 @@ import { PageErrorBoundary } from './components/error-boundary';
 import { Layout } from './components/layout/layout';
 import { TourProvider } from './components/onboarding-tour';
 import { I18nProvider } from './providers/i18n-provider';
-import { loadAllStores } from './stores';
+import { useInitializeStores } from './stores';
 import { useColorScheme, usePrimaryColor } from './stores/ui/appearance-store';
 import { cssVariableResolver } from './theme/css-variable-resolver';
 import { createAppTheme } from './theme/theme';
@@ -37,9 +48,14 @@ const queryClient = new QueryClient({
  * Inner app component that uses the color scheme from state.
  * Must be inside MantineProvider to use useMantineColorScheme.
  */
-function AppContent() {
+function AppContent({
+  initialization,
+}: {
+  initialization: ReturnType<typeof useInitializeStores>;
+}) {
   const colorScheme = useColorScheme();
   const { setColorScheme } = useMantineColorScheme();
+  const { isInitialized, isLoading, error, retry } = initialization;
 
   // Sync our store's colorScheme with Mantine's colorScheme
   useEffect(() => {
@@ -49,9 +65,42 @@ function AppContent() {
   return (
     <QueryClientProvider client={queryClient}>
       <PageErrorBoundary>
-        <TourProvider>
-          <Layout />
-        </TourProvider>
+        {isLoading ? (
+          <Center mih="100vh">
+            <Stack align="center" gap="sm">
+              <Loader />
+              <Text c="dimmed">
+                <Trans>Loading application data...</Trans>
+              </Text>
+            </Stack>
+          </Center>
+        ) : error ? (
+          <Center mih="100vh" p="md">
+            <Alert
+              icon={<IconAlertCircle size={20} />}
+              title={<Trans>Application data could not be loaded</Trans>}
+              color="red"
+              maw={600}
+            >
+              <Stack gap="sm">
+                <Text size="sm" style={{ whiteSpace: 'pre-wrap' }}>
+                  {error}
+                </Text>
+                <Button
+                  onClick={retry}
+                  variant="light"
+                  style={{ alignSelf: 'flex-start' }}
+                >
+                  <Trans>Try again</Trans>
+                </Button>
+              </Stack>
+            </Alert>
+          </Center>
+        ) : isInitialized ? (
+          <TourProvider>
+            <Layout />
+          </TourProvider>
+        ) : null}
       </PageErrorBoundary>
     </QueryClientProvider>
   );
@@ -64,24 +113,13 @@ function AppContent() {
  */
 export function PostyBirb() {
   const primaryColor = usePrimaryColor();
+  const initialization = useInitializeStores();
 
   // Create theme with dynamic primary color
   const dynamicTheme = useMemo(
     () => createAppTheme(primaryColor),
     [primaryColor],
   );
-
-  useEffect(() => {
-    loadAllStores()
-      .then(() => {
-        // eslint-disable-next-line no-console, lingui/no-unlocalized-strings
-        console.log('All stores loaded successfully');
-      })
-      .catch((error) => {
-        // eslint-disable-next-line no-console, lingui/no-unlocalized-strings
-        console.error('Failed to load all stores', error);
-      });
-  }, []);
 
   return (
     <MantineProvider
@@ -92,7 +130,7 @@ export function PostyBirb() {
       <I18nProvider>
         <Notifications zIndex="var(--z-notification)" />
         <Disclaimer>
-          <AppContent />
+          <AppContent initialization={initialization} />
         </Disclaimer>
       </I18nProvider>
     </MantineProvider>

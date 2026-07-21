@@ -4,24 +4,40 @@
  * Renders null when closed to avoid unnecessary store subscriptions.
  */
 
-import { useSubmissionsMap } from '../../../stores/entity/submission-store';
+import { useSubmission } from '../../../stores/entity/submission-store';
 import {
-    useSubmissionHistoryDrawerActions,
-    useSubmissionHistoryDrawerState,
+  useSubmissionHistoryDrawerActions,
+  useSubmissionHistoryDrawerState,
 } from '../../../stores/ui/submission-history-drawer-store';
 import { SubmissionHistoryDrawer } from '../../sections/submissions-section/submission-history-drawer';
 
 export function GlobalSubmissionHistoryDrawer() {
   const { opened, submissionId } = useSubmissionHistoryDrawerState();
   const { close } = useSubmissionHistoryDrawerActions();
-  const submissionsMap = useSubmissionsMap();
 
-  const submission = submissionId ? submissionsMap.get(submissionId) ?? null : null;
+  if (!opened || !submissionId) return null;
+
+  return (
+    <OpenSubmissionHistoryDrawer
+      submissionId={submissionId}
+      onClose={close}
+    />
+  );
+}
+
+function OpenSubmissionHistoryDrawer({
+  submissionId,
+  onClose,
+}: {
+  submissionId: string;
+  onClose: () => void;
+}) {
+  const submission = useSubmission(submissionId) ?? null;
 
   return (
     <SubmissionHistoryDrawer
-      opened={opened}
-      onClose={close}
+      opened
+      onClose={onClose}
       submission={submission}
     />
   );
