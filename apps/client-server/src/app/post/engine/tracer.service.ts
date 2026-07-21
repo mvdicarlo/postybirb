@@ -9,20 +9,20 @@
  */
 
 import { Injectable, Optional } from '@nestjs/common';
-import { PostyBirbDirectories } from '@postybirb/fs';
 import { POST_STATE_DELTA } from '@postybirb/socket-events';
 import { JobTreeNode, NodeStatus, UnitKind } from '@postybirb/types';
 import {
-    appendFile,
-    mkdir,
-    readFile,
-    readdir,
-    stat,
-    unlink,
+  appendFile,
+  mkdir,
+  readFile,
+  readdir,
+  stat,
+  unlink,
 } from 'node:fs/promises';
 import { join } from 'node:path';
 import { WSGateway } from '../../web-socket/web-socket-gateway';
 import { RelayJob, RelayTask, RelayUnit, isDone } from './model';
+import { POST_TRACE_DIR, deleteTraceFiles, tracePath } from './trace-files';
 
 export type TraceLevel = 'debug' | 'info' | 'warn' | 'error';
 
@@ -63,7 +63,7 @@ function countDone(nodes: ReadonlyArray<{ status: NodeStatus }>): number {
 
 @Injectable()
 export class RelayTracer {
-  private readonly dir = join(PostyBirbDirectories.LOGS_DIRECTORY, 'post-traces');
+  private readonly dir = POST_TRACE_DIR;
 
   /**
    * Per-job in-memory ring buffers. Keyed by jobId and bounded two ways so a
@@ -120,7 +120,7 @@ export class RelayTracer {
         this.dirReady = true;
       }
       await appendFile(
-        join(this.dir, `${full.jobId}.ndjson`),
+        tracePath(full.jobId),
         `${JSON.stringify(full)}\n`,
       );
     } catch {
@@ -147,7 +147,12 @@ export class RelayTracer {
 
   /** Absolute path to the NDJSON file for a job (may not yet exist). */
   getLogPath(jobId: string): string {
-    return join(this.dir, `${jobId}.ndjson`);
+    return tracePath(jobId);
+  }
+
+  /** Delete the persisted NDJSON trace file for a job. Best-effort. */
+  async deleteLog(jobId: string): Promise<void> {
+    await deleteTraceFiles([jobId]);
   }
 
   /**

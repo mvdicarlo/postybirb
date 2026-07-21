@@ -1,43 +1,45 @@
 /* eslint-disable no-param-reassign */
 import {
-    BadRequestException,
-    forwardRef,
-    Inject,
-    Injectable,
-    NotFoundException,
-    OnModuleInit,
-    Optional,
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+  OnModuleInit,
+  Optional,
 } from '@nestjs/common';
 import {
-    FileBufferSchema,
-    Insert,
-    PostQueueRecordRepository,
-    Submission,
-    SubmissionFileSchema,
-    SubmissionRepository,
-    SubmissionSchema,
-    WebsiteOptions,
-    WebsiteOptionsSchema,
-    withTransactionContext
+  FileBufferSchema,
+  Insert,
+  PostJobRepository,
+  PostQueueRecordRepository,
+  Submission,
+  SubmissionFileSchema,
+  SubmissionRepository,
+  SubmissionSchema,
+  WebsiteOptions,
+  WebsiteOptionsSchema,
+  withTransactionContext
 } from '@postybirb/database';
 import { SUBMISSION_UPDATES } from '@postybirb/socket-events';
 import {
-    FileSubmission,
-    FileSubmissionMetadata,
-    ISubmissionDto,
-    ISubmissionMetadata,
-    MessageSubmission,
-    NULL_ACCOUNT_ID,
-    ScheduleType,
-    SubmissionId,
-    SubmissionMetadataType,
-    SubmissionType,
+  FileSubmission,
+  FileSubmissionMetadata,
+  ISubmissionDto,
+  ISubmissionMetadata,
+  MessageSubmission,
+  NULL_ACCOUNT_ID,
+  ScheduleType,
+  SubmissionId,
+  SubmissionMetadataType,
+  SubmissionType,
 } from '@postybirb/types';
 import { IsTestEnvironment, toError } from '@postybirb/utils/common';
 import { eq } from 'drizzle-orm';
 import * as path from 'path';
 import { PostyBirbService } from '../../common/service/postybirb-service';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
+import { deleteTraceFiles } from '../../post/engine/trace-files';
 import { WSGateway } from '../../web-socket/web-socket-gateway';
 import { WebsiteOptionsService } from '../../website-options/website-options.service';
 import { ApplyMultiSubmissionDto } from '../dtos/apply-multi-submission.dto';
@@ -62,6 +64,8 @@ export class SubmissionService
   private emitDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 
   private readonly postQueueRepository = new PostQueueRecordRepository();
+
+  private readonly postJobRepository = new PostJobRepository();
 
   constructor(
     @Inject(forwardRef(() => WebsiteOptionsService))
@@ -600,8 +604,32 @@ export class SubmissionService
 
   public async remove(id: SubmissionId): Promise<void> {
     await this.unqueueDependents(id);
+    await this.deletePostTraceLogs(id);
     await super.remove(id);
     this.emit();
+  }
+
+  /**
+   * Delete the on-disk trace logs for the submission's post jobs. Must run
+   * before {@link remove} deletes the row, because the `post_job` rows (which
+   * carry the job ids the trace files are named after) are removed by the
+   * schema cascade. Best-effort: a failure here never blocks the deletion.
+   */
+  private async deletePostTraceLogs(id: SubmissionId): Promise<void> {
+    try {
+      const jobs = await this.postJobRepository.find({
+        where: (job, { eq: equals }) => equals(job.submissionId, id),
+        with: {},
+      });
+      if (jobs.length > 0) {
+        await deleteTraceFiles(jobs.map((job) => job.id));
+      }
+    } catch (error) {
+      this.logger
+        .withError(error)
+        .withMetadata({ submissionId: id })
+        .warn('Failed to clean up post trace logs on submission delete');
+    }
   }
 
   /**
