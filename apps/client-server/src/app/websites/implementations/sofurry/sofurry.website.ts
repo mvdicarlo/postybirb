@@ -1,14 +1,14 @@
 import {
-    FileType,
-    ImageResizeProps,
-    IPostResponse,
-    LoginResult,
-    OAuthRouteHandlers,
-    PostData,
-    PostResponse,
-    SofurryAccountData,
-    SofurryOAuthRoutes,
-    SubmissionRating,
+  FileType,
+  ImageResizeProps,
+  IPostResponse,
+  LoginResult,
+  OAuthRouteHandlers,
+  PostData,
+  PostResponse,
+  SofurryAccountData,
+  SofurryOAuthRoutes,
+  SubmissionRating,
 } from '@postybirb/types';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
@@ -84,6 +84,7 @@ interface SofurryErrorResponse {
     'audio/mp3',
     'audio/mpeg',
     'video/mp4',
+    'video/webm',
   ],
   acceptedFileSizes: {
     '*': 104857600, // 100 MB (public API maxFileSize)
