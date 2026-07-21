@@ -32,12 +32,11 @@ import { EmptyState } from '../../empty-state';
 import { useSubmissionsData } from './context';
 import { SortableSubmissionCard, SubmissionCard } from './submission-card';
 import './submissions-section.css';
-import { DRAGGABLE_SUBMISSION_CLASS } from './types';
-
-/** Card height for virtualization in normal mode */
-const NORMAL_CARD_HEIGHT = 102;
-/** Card height for virtualization in compact mode */
-const COMPACT_CARD_HEIGHT = 89;
+import {
+    COMPACT_SUBMISSION_CARD_HEIGHT,
+    DRAGGABLE_SUBMISSION_CLASS,
+    SUBMISSION_CARD_HEIGHT,
+} from './types';
 /** Number of items to render outside visible area */
 const OVERSCAN_COUNT = 5;
 
@@ -71,6 +70,10 @@ export function SubmissionList({
   const activeSubmission = activeId
     ? submissions.find((s) => s.id === activeId)
     : null;
+  const getItemKey = useCallback(
+    (index: number) => submissions[index].id,
+    [submissions],
+  );
 
   // dnd-kit sensors with keyboard accessibility
   const sensors = useSensors(
@@ -88,7 +91,9 @@ export function SubmissionList({
   const virtualizer = useVirtualizer({
     count: submissions.length,
     getScrollElement: () => viewportRef.current,
-    estimateSize: () => (isCompact ? COMPACT_CARD_HEIGHT : NORMAL_CARD_HEIGHT),
+    getItemKey,
+    estimateSize: () =>
+      isCompact ? COMPACT_SUBMISSION_CARD_HEIGHT : SUBMISSION_CARD_HEIGHT,
     overscan: OVERSCAN_COUNT,
   });
 
@@ -171,6 +176,7 @@ export function SubmissionList({
         >
           <div
             className="postybirb__submission__list"
+            role="list"
             style={{
               height: `${virtualizer.getTotalSize()}px`,
               width: '100%',
@@ -181,9 +187,7 @@ export function SubmissionList({
               const submission = submissions[virtualRow.index];
               return (
                 <div
-                  key={submission.id}
-                  data-index={virtualRow.index}
-                  ref={virtualizer.measureElement}
+                  key={virtualRow.key}
                   style={{
                     position: 'absolute',
                     top: 0,

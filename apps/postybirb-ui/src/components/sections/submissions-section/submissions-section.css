@@ -54,8 +54,13 @@
    ============================================================================= */
 
 .postybirb__submission__card {
+  --postybirb-submission-card-height: 76px;
+
   cursor: pointer;
   user-select: none;
+  box-sizing: border-box;
+  height: var(--postybirb-submission-card-height);
+  overflow: hidden;
   border-left: none;
   border-right: none;
   border-top: none;
@@ -101,12 +106,24 @@
 
 /* Compact mode */
 .postybirb__submission__card--compact {
+  --postybirb-submission-card-height: 64px;
+
   padding: var(--mantine-spacing-xs);
+}
+
+.postybirb__submission__card--detailed {
+  --postybirb-submission-card-height: 122px;
+}
+
+.postybirb__submission__card_layout {
+  height: 100%;
+  min-width: 0;
 }
 
 /* Card actions column - checkbox + drag handle */
 .postybirb__submission__card_actions_column {
-  padding: var(--mantine-spacing-xs) 0;
+  flex: 0 0 20px;
+  padding: 0;
   border-right: 1px solid var(--mantine-color-default-border);
   padding-right: var(--mantine-spacing-xs);
 }
@@ -127,6 +144,170 @@
 .postybirb__submission__card_content {
   flex: 1;
   min-width: 0;
+  overflow: hidden;
+}
+
+.postybirb__submission__card_body {
+  flex: 1;
+  min-width: 0;
+}
+
+.postybirb__submission__card_modified {
+  margin-top: auto;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+.postybirb__submission__card_meta {
+  min-width: 0;
+  height: 26px;
+}
+
+.postybirb__submission__quick_edit_actions {
+  width: 100%;
+  min-width: 0;
+  height: 28px;
+}
+
+.postybirb__submission__quick_edit_actions > :first-child {
+  flex: 0 0 auto;
+  align-self: center;
+  height: 28px;
+  display: flex;
+  align-items: center;
+}
+
+.postybirb__submission__quick_edit_actions .mantine-Rating-root {
+  display: flex;
+  align-items: center;
+}
+
+.postybirb__submission__quick_edit_actions .mantine-Rating-root svg {
+  vertical-align: text-bottom;
+}
+
+.postybirb__submission__quick_edit_tags {
+  flex: 1;
+  min-width: 0;
+}
+
+.postybirb__submission__quick_edit_tag_input {
+  display: flex;
+  align-items: center;
+  height: 28px;
+  min-height: 28px;
+  padding-left: 8px;
+  padding-right: 42px;
+  border-radius: var(--mantine-radius-sm);
+  overflow: hidden;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.postybirb__submission__quick_edit_tags:hover
+  .postybirb__submission__quick_edit_tag_input,
+.postybirb__submission__quick_edit_tags:focus-within
+  .postybirb__submission__quick_edit_tag_input {
+  border-color: var(--mantine-primary-color-filled);
+}
+
+.postybirb__submission__quick_edit_tags:focus-within
+  .postybirb__submission__quick_edit_tag_input {
+  box-shadow: 0 0 0 2px var(--mantine-primary-color-light);
+}
+
+.postybirb__submission__quick_edit_tag_rail {
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  flex-wrap: nowrap;
+  gap: 4px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.postybirb__submission__quick_edit_tag_rail::-webkit-scrollbar {
+  display: none;
+}
+
+.postybirb__submission__quick_edit_tag_pill {
+  flex: 0 0 auto;
+  height: 18px;
+}
+
+.postybirb__submission__quick_edit_tag_field {
+  flex: 1 0 60px;
+  min-width: 60px;
+  padding-block: 0;
+}
+
+.postybirb__submission__tag_count {
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.postybirb__submission__quick_edit_tag_dropdown {
+  padding: 4px;
+}
+
+.postybirb__submission__tag_dropdown_header {
+  padding: 2px 6px 6px;
+}
+
+.postybirb__submission__tag_dropdown_empty {
+  padding: 2px 6px 6px;
+}
+
+.postybirb__submission__tag_dropdown_list {
+  padding: 0 2px 2px;
+}
+
+.postybirb__submission__tag_row {
+  padding: 2px 4px 2px 6px;
+  border-radius: var(--mantine-radius-sm);
+}
+
+.postybirb__submission__tag_row:hover {
+  background: var(--mantine-color-default-hover);
+}
+
+.postybirb__submission__tag_remove_all {
+  padding: 2px 4px;
+  border-radius: var(--mantine-radius-sm);
+}
+
+.postybirb__submission__tag_remove_all:hover {
+  background: var(--mantine-color-red-light);
+}
+
+.postybirb__submission__card_actions {
+  flex: 0 0 auto;
+}
+
+.postybirb__submission__status_button {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  border-radius: var(--mantine-radius-xl);
+}
+
+.postybirb__submission__status_button:focus-visible {
+  outline: 2px solid var(--mantine-color-blue-6);
+  outline-offset: 1px;
+}
+
+.postybirb__submission__status_badge {
+  display: flex;
+  max-width: 100%;
+}
+
+.postybirb__submission__status_badge .mantine-Badge-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Last modified timestamp row */

@@ -256,6 +256,7 @@
 /* Section Panel (Master) - left side list */
 .postybirb__section_panel {
   display: flex;
+  flex-shrink: 0;
   flex-direction: column;
   height: 100%;
   background-color: var(--mantine-color-body);

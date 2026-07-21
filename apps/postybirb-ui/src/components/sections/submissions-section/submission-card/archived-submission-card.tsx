@@ -10,7 +10,6 @@ import {
     Group,
     Menu,
     Stack,
-    Text,
     Tooltip,
 } from '@mantine/core';
 import { SubmissionType } from '@postybirb/types';
@@ -22,7 +21,6 @@ import {
 } from '@tabler/icons-react';
 import { memo, useCallback, useMemo } from 'react';
 import submissionApi from '../../../../api/submission.api';
-import { useLocale } from '../../../../hooks';
 import {
     showDeletedNotification,
     showDeleteErrorNotification,
@@ -58,7 +56,6 @@ export const ArchivedSubmissionCard = memo(({
   onViewHistory,
 }: ArchivedSubmissionCardProps) => {
   const { onSelect } = useSubmissionsActions();
-  const { formatRelativeTime, formatDateTime } = useLocale();
   const thumbnailUrl = getThumbnailUrl(submission);
 
   // Check if the primary file is an image that can be previewed
@@ -85,6 +82,8 @@ export const ArchivedSubmissionCard = memo(({
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent) => {
+      if (event.target !== event.currentTarget) return;
+
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
         onSelect(submission.id, event);
@@ -147,10 +146,14 @@ export const ArchivedSubmissionCard = memo(({
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       tabIndex={0}
-      role="button"
+      role="listitem"
     >
-      <Stack gap="xs">
-        <Group gap="xs" wrap="nowrap" align="center">
+      <Group
+        gap="xs"
+        wrap="nowrap"
+        align="flex-start"
+        className="postybirb__submission__card_layout"
+      >
           {/* Thumbnail - only for FILE type */}
           {showThumbnail && (
             <SubmissionThumbnail
@@ -161,47 +164,22 @@ export const ArchivedSubmissionCard = memo(({
             />
           )}
 
-          {/* Content */}
-          <Stack gap={4} className="postybirb__submission__card_content">
-            {/* Title (read-only for archived) */}
-            <SubmissionTitle
-              title={submission.title}
-              name={submission.title}
-              readOnly
-            />
+        <Stack gap={4} className="postybirb__submission__card_content">
+          <SubmissionTitle
+            title={submission.title}
+            name={submission.title}
+            readOnly
+          />
+          <SubmissionBadges
+            submission={submission}
+          />
+        </Stack>
 
-            {/* Status badges */}
-            <SubmissionBadges
-              submission={submission}
-              submissionType={submissionType}
-            />
-
-            {/* Last modified - hidden in compact mode */}
-            {!isCompact && (
-              <Text
-                size="xs"
-                c="dimmed"
-                title={formatDateTime(submission.lastModified)}
-              >
-                {formatRelativeTime(submission.lastModified)}
-              </Text>
-            )}
-          </Stack>
-
-          {/* Action buttons */}
-          <Group gap={4}>
-            {/* View history button */}
-            <Tooltip label={<Trans>View history</Trans>}>
-              <ActionIcon
-                variant="subtle"
-                size="sm"
-                onClick={handleViewHistory}
-                onKeyDown={(e) => e.stopPropagation()}
-              >
-                <IconHistory size={16} />
-              </ActionIcon>
-            </Tooltip>
-
+        <Group
+          gap={4}
+          wrap="nowrap"
+          className="postybirb__submission__card_actions"
+        >
             {/* Unarchive button */}
             <Tooltip label={<Trans>Restore</Trans>}>
               <ActionIcon
@@ -251,9 +229,8 @@ export const ArchivedSubmissionCard = memo(({
                 </Menu.Item>
               </Menu.Dropdown>
             </Menu>
-          </Group>
         </Group>
-      </Stack>
+      </Group>
     </Card>
   );
 });

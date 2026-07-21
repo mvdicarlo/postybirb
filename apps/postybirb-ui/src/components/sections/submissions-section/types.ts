@@ -26,6 +26,11 @@ export interface SubmissionsSectionProps {
 /** Class name for draggable submission cards */
 export const DRAGGABLE_SUBMISSION_CLASS = 'draggable-submission-card';
 
+/** Exact border-box heights shared by card CSS and list virtualizers. */
+export const SUBMISSION_CARD_HEIGHT = 122;
+export const COMPACT_SUBMISSION_CARD_HEIGHT = 64;
+export const ARCHIVED_SUBMISSION_CARD_HEIGHT = 76;
+
 // ============================================================================
 // View State Type Guards
 // ============================================================================
