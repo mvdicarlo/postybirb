@@ -4,8 +4,8 @@ import {
   OnModuleInit,
   Optional,
 } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Settings, SettingsRepository } from '@postybirb/database';
-import { SETTINGS_UPDATES } from '@postybirb/socket-events';
 import { EntityId, SettingsConstants } from '@postybirb/types';
 import {
   isLinux,
@@ -14,17 +14,17 @@ import {
 } from '@postybirb/utils/common';
 import { eq } from 'drizzle-orm';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { WSGateway } from '../web-socket/web-socket-gateway';
 import { UpdateSettingsDto } from './dtos/update-settings.dto';
+import { SETTINGS_EVENT_PREFIX } from './settings.events';
 
 @Injectable()
 export class SettingsService
   extends PostyBirbService<SettingsRepository>
   implements OnModuleInit
 {
-  constructor(@Optional() webSocket: WSGateway) {
-    super(new SettingsRepository(), webSocket);
-    this.repository.subscribe('SettingsSchema', () => this.emit());
+  constructor(@Optional() eventEmitter?: EventEmitter2) {
+    super(new SettingsRepository());
+    this.configureCrudEvents(SETTINGS_EVENT_PREFIX, eventEmitter);
   }
 
   /**
@@ -96,9 +96,10 @@ export class SettingsService
           // Update database if there were changes
           if (hasChanges) {
             this.logger.debug('Updating default settings with missing fields');
-            await this.repository.update(existingSettings.id, {
+            const updated = await this.repository.update(existingSettings.id, {
               settings: updatedSettings,
             });
+            this.publishUpdated(updated.toDTO());
           }
         }
       });
@@ -122,20 +123,11 @@ export class SettingsService
       })
       .then((entity) => {
         this.logger.withMetadata(entity).debug('Default settings created');
+        this.publishCreated(entity.toDTO());
       })
       .catch((err: Error) => {
         this.logger.withError(err).error('Unable to create default settings');
       });
-  }
-
-  /**
-   * Emits settings.
-   */
-  async emit() {
-    super.emit({
-      event: SETTINGS_UPDATES,
-      data: (await this.findAll()).map((entity) => entity.toDTO()),
-    });
   }
 
   /**
@@ -198,7 +190,9 @@ export class SettingsService
       .withMetadata(updateSettingsDto)
       .info(`Updating Settings '${id}'`);
 
-    return this.repository.update(id, updateSettingsDto);
+    const entity = await this.repository.update(id, updateSettingsDto);
+    this.publishUpdated(entity.toDTO());
+    return entity;
   }
 
   /**

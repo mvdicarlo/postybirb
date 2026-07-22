@@ -1,11 +1,6 @@
-import { SETTINGS_UPDATES } from '@postybirb/socket-events';
 import { SettingsDto } from '@postybirb/types';
-import { WebsocketEvent } from '../web-socket/models/web-socket-event';
+import { EntityDeltaEvent } from '../common/events/entity-crud.events';
 
-export type SettingsEventTypes = SettingsUpdateEvent;
+export const SETTINGS_EVENT_PREFIX = 'settings';
 
-class SettingsUpdateEvent implements WebsocketEvent<SettingsDto[]> {
-  event: string = SETTINGS_UPDATES;
-
-  data: SettingsDto[];
-}
+export type SettingsEventTypes = EntityDeltaEvent<SettingsDto>;

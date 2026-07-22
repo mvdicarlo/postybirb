@@ -5,7 +5,7 @@
  * The store provides a convenient `useSettings()` hook that returns the single record.
  */
 
-import { SETTINGS_UPDATES } from '@postybirb/socket-events';
+import { SETTINGS_DELTA } from '@postybirb/socket-events';
 import type { SettingsDto } from '@postybirb/types';
 import { useShallow } from 'zustand/react/shallow';
 import settingsApi from '../../api/settings.api';
@@ -29,7 +29,7 @@ export const useSettingsStore = createEntityStore<SettingsDto, SettingsRecord>(
   {
     // eslint-disable-next-line lingui/no-unlocalized-strings
     storeName: 'SettingsStore',
-    websocketEvent: SETTINGS_UPDATES,
+    websocketDeltaEvent: SETTINGS_DELTA,
   },
 );
 
