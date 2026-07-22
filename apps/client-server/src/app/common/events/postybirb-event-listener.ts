@@ -20,16 +20,16 @@ export abstract class PostyBirbEventListener<TDto>
 
   private isListening = false;
 
-  private readonly createdListener = (event: EntityCreatedEvent<TDto>) => {
-    this.handleCreated(event);
+  private readonly createdListener = (events: EntityCreatedEvent<TDto>[]) => {
+    this.handleCreated(events);
   };
 
-  private readonly updatedListener = (event: EntityUpdatedEvent<TDto>) => {
-    this.handleUpdated(event);
+  private readonly updatedListener = (events: EntityUpdatedEvent<TDto>[]) => {
+    this.handleUpdated(events);
   };
 
-  private readonly removedListener = (event: EntityRemovedEvent) => {
-    this.handleRemoved(event);
+  private readonly removedListener = (events: EntityRemovedEvent[]) => {
+    this.handleRemoved(events);
   };
 
   protected constructor(
@@ -63,16 +63,16 @@ export abstract class PostyBirbEventListener<TDto>
     this.isListening = false;
   }
 
-  protected handleCreated(event: EntityCreatedEvent<TDto>): void {
-    this.emit({ upserts: [event.entity], removedIds: [] });
+  protected handleCreated(events: EntityCreatedEvent<TDto>[]): void {
+    this.emit({ upserts: events.map((event) => event.entity), removedIds: [] });
   }
 
-  protected handleUpdated(event: EntityUpdatedEvent<TDto>): void {
-    this.emit({ upserts: [event.entity], removedIds: [] });
+  protected handleUpdated(events: EntityUpdatedEvent<TDto>[]): void {
+    this.emit({ upserts: events.map((event) => event.entity), removedIds: [] });
   }
 
-  protected handleRemoved(event: EntityRemovedEvent): void {
-    this.emit({ upserts: [], removedIds: [event.id] });
+  protected handleRemoved(events: EntityRemovedEvent[]): void {
+    this.emit({ upserts: [], removedIds: events.map((event) => event.id) });
   }
 
   protected emit(data: EntityDelta<TDto>): void {

@@ -67,7 +67,7 @@ describe('TagConvertersService', () => {
     });
     expect(emit).toHaveBeenCalledWith(
       eventNames.created,
-      new EntityCreatedEvent(record.toDTO()),
+      [new EntityCreatedEvent(record.toDTO())],
     );
   });
 
@@ -104,7 +104,7 @@ describe('TagConvertersService', () => {
     expect(updatedRec.convertTo).toEqual(updateDto.convertTo);
     expect(emit).toHaveBeenLastCalledWith(
       eventNames.updated,
-      new EntityUpdatedEvent(updated.toDTO()),
+      [new EntityUpdatedEvent(updated.toDTO())],
     );
   });
 
@@ -127,7 +127,7 @@ describe('TagConvertersService', () => {
     expect(await service.findAll()).toHaveLength(0);
     expect(emit).toHaveBeenLastCalledWith(
       eventNames.removed,
-      new EntityRemovedEvent(record.id),
+      [new EntityRemovedEvent(record.id)],
     );
   });
 

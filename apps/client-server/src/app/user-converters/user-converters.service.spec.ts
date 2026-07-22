@@ -69,7 +69,7 @@ describe('UserConvertersService', () => {
     });
     expect(emit).toHaveBeenCalledWith(
       eventNames.created,
-      new EntityCreatedEvent(record.toDTO()),
+      [new EntityCreatedEvent(record.toDTO())],
     );
   });
 
@@ -115,7 +115,7 @@ describe('UserConvertersService', () => {
     expect(updatedRec.convertTo).toEqual(updateDto.convertTo);
     expect(emit).toHaveBeenLastCalledWith(
       eventNames.updated,
-      new EntityUpdatedEvent(updated.toDTO()),
+      [new EntityUpdatedEvent(updated.toDTO())],
     );
   });
 
@@ -140,7 +140,7 @@ describe('UserConvertersService', () => {
     expect(await service.findAll()).toHaveLength(0);
     expect(emit).toHaveBeenLastCalledWith(
       eventNames.removed,
-      new EntityRemovedEvent(record.id),
+      [new EntityRemovedEvent(record.id)],
     );
   });
 

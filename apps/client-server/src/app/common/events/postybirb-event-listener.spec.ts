@@ -50,7 +50,7 @@ describe('PostyBirbEventListener', () => {
     [eventNames.created, new EntityCreatedEvent(dto)],
     [eventNames.updated, new EntityUpdatedEvent(dto)],
   ])('maps %s to an upsert delta', (topic, event) => {
-    eventEmitter.emit(topic, event);
+    eventEmitter.emit(topic, [event]);
 
     expect(emit).toHaveBeenCalledWith({
       event: 'TEST_ENTITY_DELTA',
@@ -58,12 +58,40 @@ describe('PostyBirbEventListener', () => {
     });
   });
 
+  it('batches multiple upserts into a single delta', () => {
+    const second: TestDto = { id: 'test-id-2', value: 'value-2' };
+
+    eventEmitter.emit(eventNames.created, [
+      new EntityCreatedEvent(dto),
+      new EntityCreatedEvent(second),
+    ]);
+
+    expect(emit).toHaveBeenCalledTimes(1);
+    expect(emit).toHaveBeenCalledWith({
+      event: 'TEST_ENTITY_DELTA',
+      data: { upserts: [dto, second], removedIds: [] },
+    });
+  });
+
   it('maps removals to a removal delta', () => {
-    eventEmitter.emit(eventNames.removed, new EntityRemovedEvent(dto.id));
+    eventEmitter.emit(eventNames.removed, [new EntityRemovedEvent(dto.id)]);
 
     expect(emit).toHaveBeenCalledWith({
       event: 'TEST_ENTITY_DELTA',
       data: { upserts: [], removedIds: [dto.id] },
+    });
+  });
+
+  it('batches multiple removals into a single delta', () => {
+    eventEmitter.emit(eventNames.removed, [
+      new EntityRemovedEvent(dto.id),
+      new EntityRemovedEvent('test-id-2'),
+    ]);
+
+    expect(emit).toHaveBeenCalledTimes(1);
+    expect(emit).toHaveBeenCalledWith({
+      event: 'TEST_ENTITY_DELTA',
+      data: { upserts: [], removedIds: [dto.id, 'test-id-2'] },
     });
   });
 
@@ -73,20 +101,20 @@ describe('PostyBirbEventListener', () => {
     });
 
     expect(() =>
-      eventEmitter.emit(eventNames.created, new EntityCreatedEvent(dto)),
+      eventEmitter.emit(eventNames.created, [new EntityCreatedEvent(dto)]),
     ).not.toThrow();
   });
 
   it('does not register duplicate listeners', () => {
     module.get(TestEventListener).onModuleInit();
-    eventEmitter.emit(eventNames.created, new EntityCreatedEvent(dto));
+    eventEmitter.emit(eventNames.created, [new EntityCreatedEvent(dto)]);
 
     expect(emit).toHaveBeenCalledTimes(1);
   });
 
   it('removes listeners when destroyed', () => {
     module.get(TestEventListener).onModuleDestroy();
-    eventEmitter.emit(eventNames.created, new EntityCreatedEvent(dto));
+    eventEmitter.emit(eventNames.created, [new EntityCreatedEvent(dto)]);
 
     expect(emit).not.toHaveBeenCalled();
   });

@@ -33,35 +33,46 @@ export class EntityRemovedEvent {
 
 export type EntityDeltaEvent<T> = WebsocketEvent<EntityDelta<T>>;
 
+function toArray<V>(value: V | V[]): V[] {
+  return Array.isArray(value) ? value : [value];
+}
+
 export function publishEntityCreated<T>(
   eventEmitter: EventEmitter2 | undefined,
   prefix: string,
-  entity: T,
+  entities: T | T[],
 ): void {
-  eventEmitter?.emit(
-    getEntityCrudEventNames(prefix).created,
-    new EntityCreatedEvent(entity),
+  const events = toArray(entities).map(
+    (entity) => new EntityCreatedEvent(entity),
   );
+  if (!events.length) {
+    return;
+  }
+  eventEmitter?.emit(getEntityCrudEventNames(prefix).created, events);
 }
 
 export function publishEntityUpdated<T>(
   eventEmitter: EventEmitter2 | undefined,
   prefix: string,
-  entity: T,
+  entities: T | T[],
 ): void {
-  eventEmitter?.emit(
-    getEntityCrudEventNames(prefix).updated,
-    new EntityUpdatedEvent(entity),
+  const events = toArray(entities).map(
+    (entity) => new EntityUpdatedEvent(entity),
   );
+  if (!events.length) {
+    return;
+  }
+  eventEmitter?.emit(getEntityCrudEventNames(prefix).updated, events);
 }
 
 export function publishEntityRemoved(
   eventEmitter: EventEmitter2 | undefined,
   prefix: string,
-  id: EntityId,
+  ids: EntityId | EntityId[],
 ): void {
-  eventEmitter?.emit(
-    getEntityCrudEventNames(prefix).removed,
-    new EntityRemovedEvent(id),
-  );
+  const events = toArray(ids).map((id) => new EntityRemovedEvent(id));
+  if (!events.length) {
+    return;
+  }
+  eventEmitter?.emit(getEntityCrudEventNames(prefix).removed, events);
 }

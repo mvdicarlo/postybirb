@@ -57,7 +57,7 @@ describe('CustomShortcutsService', () => {
     expect(list[0].name).toBe(dto.name);
     expect(emit).toHaveBeenCalledWith(
       eventNames.created,
-      new EntityCreatedEvent(record.toDTO()),
+      [new EntityCreatedEvent(record.toDTO())],
     );
   });
 
@@ -82,7 +82,7 @@ describe('CustomShortcutsService', () => {
 
     expect(emit).toHaveBeenCalledWith(
       eventNames.updated,
-      new EntityUpdatedEvent(updated.toDTO()),
+      [new EntityUpdatedEvent(updated.toDTO())],
     );
   });
 
@@ -105,7 +105,7 @@ describe('CustomShortcutsService', () => {
     expect(await service.findAll()).toHaveLength(0);
     expect(emit).toHaveBeenCalledWith(
       eventNames.removed,
-      new EntityRemovedEvent(record.id),
+      [new EntityRemovedEvent(record.id)],
     );
   });
 

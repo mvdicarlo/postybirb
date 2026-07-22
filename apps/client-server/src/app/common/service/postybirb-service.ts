@@ -63,7 +63,7 @@ export abstract class PostyBirbService<
     this.crudEventConfig = { prefix, eventEmitter };
   }
 
-  protected publishCreated<TDto>(entity: TDto): void {
+  protected publishCreated<TDto>(entity: TDto | TDto[]): void {
     if (this.crudEventConfig) {
       publishEntityCreated(
         this.crudEventConfig.eventEmitter,
@@ -73,7 +73,7 @@ export abstract class PostyBirbService<
     }
   }
 
-  protected publishUpdated<TDto>(entity: TDto): void {
+  protected publishUpdated<TDto>(entity: TDto | TDto[]): void {
     if (this.crudEventConfig) {
       publishEntityUpdated(
         this.crudEventConfig.eventEmitter,

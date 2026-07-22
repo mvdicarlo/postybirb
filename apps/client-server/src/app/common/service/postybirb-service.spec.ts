@@ -100,17 +100,17 @@ describe('PostyBirbService', () => {
     expect(emit).toHaveBeenNthCalledWith(
       1,
       eventNames.created,
-      new EntityCreatedEvent(dto),
+      [new EntityCreatedEvent(dto)],
     );
     expect(emit).toHaveBeenNthCalledWith(
       2,
       eventNames.updated,
-      new EntityUpdatedEvent(dto),
+      [new EntityUpdatedEvent(dto)],
     );
     expect(emit).toHaveBeenNthCalledWith(
       3,
       eventNames.removed,
-      new EntityRemovedEvent(created.id),
+      [new EntityRemovedEvent(created.id)],
     );
   });
 

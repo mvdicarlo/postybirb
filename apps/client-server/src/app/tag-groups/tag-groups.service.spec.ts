@@ -63,7 +63,7 @@ describe('TagGroupsService', () => {
     });
     expect(emit).toHaveBeenCalledWith(
       eventNames.created,
-      new EntityCreatedEvent(record.toDTO()),
+      [new EntityCreatedEvent(record.toDTO())],
     );
   });
 
@@ -104,7 +104,7 @@ describe('TagGroupsService', () => {
     expect(updatedRec.tags).toEqual(updateDto.tags);
     expect(emit).toHaveBeenLastCalledWith(
       eventNames.updated,
-      new EntityUpdatedEvent(updated.toDTO()),
+      [new EntityUpdatedEvent(updated.toDTO())],
     );
   });
 
@@ -125,7 +125,7 @@ describe('TagGroupsService', () => {
     expect(await service.findAll()).toHaveLength(0);
     expect(emit).toHaveBeenLastCalledWith(
       eventNames.removed,
-      new EntityRemovedEvent(record.id),
+      [new EntityRemovedEvent(record.id)],
     );
   });
 
