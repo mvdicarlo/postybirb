@@ -31,6 +31,7 @@ import { PostyBirbService } from '../common/service/postybirb-service';
 
 import { FormGeneratorService } from '../form-generator/form-generator.service';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
+import { SubmissionDeltaService } from '../submission/services/submission-delta.service';
 import { SubmissionService } from '../submission/services/submission.service';
 import {
     isBlockNoteFormat,
@@ -55,6 +56,7 @@ export class WebsiteOptionsService
   constructor(
     @Inject(forwardRef(() => SubmissionService))
     private readonly submissionService: SubmissionService,
+    private readonly submissionDeltaService: SubmissionDeltaService,
     private readonly accountService: AccountService,
     private readonly accountTemplateDefaultsService: AccountTemplateDefaultsService,
     private readonly formGeneratorService: FormGeneratorService,
@@ -290,15 +292,21 @@ export class WebsiteOptionsService
       accountId: account.id,
       isDefault,
     });
-    this.submissionService.emit();
+    this.submissionDeltaService.emitUpserts(submission.id);
     return record;
   }
 
   async update(id: EntityId, update: UpdateWebsiteOptionsDto) {
     this.logger.withMetadata(update).info(`Updating WebsiteOptions '${id}'`);
     const result = await this.repository.update(id, update);
-    this.submissionService.emit();
+    this.submissionDeltaService.emitUpserts(result.submissionId);
     return result;
+  }
+
+  public override async remove(id: EntityId): Promise<void> {
+    const option = await this.repository.findByIdOrThrow(id);
+    await super.remove(id);
+    this.submissionDeltaService.emitUpserts(option.submissionId);
   }
 
   /**
@@ -491,7 +499,7 @@ export class WebsiteOptionsService
       await this.repository.insert(options);
     }
 
-    this.submissionService.emit();
+    this.submissionDeltaService.emitUpserts(submissionId);
     return this.submissionService.findByIdOrThrow(submissionId);
   }
 
@@ -523,7 +531,7 @@ export class WebsiteOptionsService
             description: updatedDescription,
           },
         });
-        this.submissionService.emit();
+        this.submissionDeltaService.emitUpserts(option.submissionId);
       }
     }
   }

@@ -5,13 +5,19 @@ import {
   Optional,
 } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { Account, AccountRepository } from '@postybirb/database';
+import {
+  Account,
+  AccountRepository,
+  SubmissionRepository,
+  WebsiteOptionsRepository,
+} from '@postybirb/database';
 import { ACCOUNT_UPDATES } from '@postybirb/socket-events';
 import {
   AccountId,
   IWebsiteMetadata,
   NULL_ACCOUNT_ID,
   NullAccount,
+  SubmissionId,
 } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/common';
 import { ne } from 'drizzle-orm';
@@ -34,6 +40,10 @@ export class AccountService
   extends PostyBirbService<AccountRepository>
   implements OnModuleInit
 {
+  private readonly submissionRepository = new SubmissionRepository();
+
+  private readonly websiteOptionsRepository = new WebsiteOptionsRepository();
+
   private readonly loginRefreshTimers: Record<
     string,
     {
@@ -50,7 +60,8 @@ export class AccountService
   ) {
     super(new AccountRepository(), webSocket);
     this.repository.subscribe('AccountSchema', () => this.emit());
-    this.loginStatePoller = new LoginStatePoller(this.websiteRegistry, () => {
+    this.loginStatePoller = new LoginStatePoller(this.websiteRegistry, (ids) => {
+      this.repository.notify(ids, 'update');
       this.emit();
       this.websiteRegistry.emit();
     });
@@ -104,7 +115,7 @@ export class AccountService
           .warn(
             `Deleting unregistered account: ${account.id} (${account.name})`,
           );
-        await this.repository.deleteById([account.id]);
+        await this.removeAccountRecord(account.id);
       } catch (err) {
         this.logger
           .withError(err)
@@ -299,7 +310,31 @@ export class AccountService
     if (account) {
       this.websiteRegistry.remove(account);
     }
-    await super.remove(id);
+    await this.removeAccountRecord(id);
+  }
+
+  private async removeAccountRecord(id: AccountId): Promise<void> {
+    let affectedSubmissionIds: SubmissionId[] = [];
+    try {
+      const affectedOptions = await this.websiteOptionsRepository.find({
+        where: (option, { eq }) => eq(option.accountId, id),
+        with: {},
+      });
+      affectedSubmissionIds = [
+        ...new Set(affectedOptions.map((option) => option.submissionId)),
+      ];
+    } catch (error) {
+      this.logger
+        .withError(error)
+        .withMetadata({ accountId: id })
+        .warn('Failed to resolve submissions affected by account removal');
+    }
+
+    await this.repository.deleteById([id]);
+    this.submissionRepository.notify(
+      affectedSubmissionIds,
+      'update',
+    );
   }
 
   /**

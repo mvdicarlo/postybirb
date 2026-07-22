@@ -1,13 +1,13 @@
 import {
-  Injectable,
-  InternalServerErrorException,
-  Optional,
+    Injectable,
+    InternalServerErrorException,
+    Optional,
 } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import {
-  PostQueueRecord,
-  PostQueueRecordRepository,
-  SubmissionRepository,
+    PostQueueRecord,
+    PostQueueRecordRepository,
+    SubmissionRepository,
 } from '@postybirb/database';
 import { EntityId, ScheduleType, SubmissionId } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/common';
@@ -15,6 +15,7 @@ import { Mutex } from 'async-mutex';
 import { Cron as CronGenerator } from 'croner';
 import { PostyBirbService } from '../../../common/service/postybirb-service';
 import { SettingsService } from '../../../settings/settings.service';
+import { SubmissionDeltaService } from '../../../submission/services/submission-delta.service';
 import { WSGateway } from '../../../web-socket/web-socket-gateway';
 import { RelayPostManager } from '../../engine/post-manager.service';
 
@@ -38,6 +39,7 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
   constructor(
     private readonly settingsService: SettingsService,
     private readonly relayPostManager: RelayPostManager,
+    private readonly submissionDeltaService: SubmissionDeltaService,
     @Optional() webSocket?: WSGateway,
   ) {
     super(new PostQueueRecordRepository(), webSocket);
@@ -75,6 +77,7 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
     this.logger.withMetadata({ submissionIds }).info('Enqueueing posts');
 
     try {
+      const enqueuedIds: SubmissionId[] = [];
       for (const submissionId of submissionIds) {
         const submission =
           await this.submissionRepository.findById(submissionId);
@@ -97,9 +100,11 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
         });
         if (!existing) {
           await this.repository.insert({ submissionId });
+          enqueuedIds.push(submissionId);
         }
         // If existing, do nothing (first-in-wins).
       }
+      this.submissionDeltaService.emitUpserts(enqueuedIds);
     } catch (error) {
       this.logger.withError(error).error('Failed to enqueue posts');
       throw new InternalServerErrorException((error as Error).message);
@@ -123,7 +128,13 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
         this.relayPostManager.cancel(id);
       });
 
-      return await this.repository.deleteById(records.map((r) => r.id));
+      const result = await this.repository.deleteById(
+        records.map((record) => record.id),
+      );
+      this.submissionDeltaService.emitUpserts(
+        records.map((record) => record.submissionId),
+      );
+      return result;
     } catch (error) {
       this.logger.withError(error).error('Failed to dequeue posts');
       throw new InternalServerErrorException((error as Error).message);

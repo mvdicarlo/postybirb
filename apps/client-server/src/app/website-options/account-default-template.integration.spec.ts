@@ -30,6 +30,7 @@ import { PostParsersModule } from '../post-parsers/post-parsers.module';
 import { CreateSubmissionDto } from '../submission/dtos/create-submission.dto';
 import { FileSubmissionService } from '../submission/services/file-submission.service';
 import { MessageSubmissionService } from '../submission/services/message-submission.service';
+import { SubmissionDeltaService } from '../submission/services/submission-delta.service';
 import { SubmissionService } from '../submission/services/submission.service';
 import { ValidationService } from '../validation/validation.service';
 import { WebsiteImplProvider } from '../websites/implementations/provider';
@@ -74,6 +75,7 @@ describe('Account default template association', () => {
       ],
       providers: [
         SubmissionService,
+        SubmissionDeltaService,
         CreateFileService,
         UpdateFileService,
         SharpInstanceManager,

@@ -21,7 +21,7 @@ export class LoginStatePoller {
 
   constructor(
     private readonly websiteRegistry: WebsiteRegistryService,
-    private readonly onStateChange: () => void,
+    private readonly onStateChange: (accountIds: AccountId[]) => void,
   ) {}
 
   /**
@@ -31,7 +31,7 @@ export class LoginStatePoller {
   checkForChanges(): void {
     try {
       const instances = this.websiteRegistry.getAll();
-      let hasChanged = false;
+      const changedAccountIds = new Set<AccountId>();
 
       const currentStates: Record<AccountId, ILoginState> = {};
 
@@ -42,20 +42,20 @@ export class LoginStatePoller {
 
         const previous = this.lastKnownStates[accountId];
         if (!previous || !this.statesEqual(previous, state)) {
-          hasChanged = true;
+          changedAccountIds.add(accountId);
         }
       }
 
       // Detect removed accounts
       for (const accountId of Object.keys(this.lastKnownStates)) {
         if (!(accountId in currentStates)) {
-          hasChanged = true;
+          changedAccountIds.add(accountId);
         }
       }
 
-      if (hasChanged) {
+      if (changedAccountIds.size) {
         this.lastKnownStates = currentStates;
-        this.onStateChange();
+        this.onStateChange([...changedAccountIds]);
       }
     } catch (e) {
       this.logger.withError(e).error('Error during login state poll');
@@ -76,7 +76,7 @@ export class LoginStatePoller {
 
       if (!previous || !this.statesEqual(previous, state)) {
         this.lastKnownStates[accountId] = state;
-        this.onStateChange();
+        this.onStateChange([accountId]);
       }
     } catch (e) {
       this.logger.withError(e).error('Error during single instance login state check');

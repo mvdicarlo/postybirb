@@ -16,9 +16,9 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { SubmissionRepository } from '@postybirb/database';
 import { ISubmissionDto, SubmissionId, SubmissionType } from '@postybirb/types';
 import { parse } from 'path';
-import { SubmissionRepository } from '@postybirb/database';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
 import { MulterFileInfo } from '../file/models/multer-file-info';
 import { ApplyMultiSubmissionDto } from './dtos/apply-multi-submission.dto';
@@ -27,6 +27,7 @@ import { CreateSubmissionDto } from './dtos/create-submission.dto';
 import { ReorderSubmissionDto } from './dtos/reorder-submission.dto';
 import { UpdateSubmissionTemplateNameDto } from './dtos/update-submission-template-name.dto';
 import { UpdateSubmissionDto } from './dtos/update-submission.dto';
+import { SubmissionDeltaService } from './services/submission-delta.service';
 import { SubmissionService } from './services/submission.service';
 
 /**
@@ -37,13 +38,16 @@ import { SubmissionService } from './services/submission.service';
 @ApiTags('submissions')
 @Controller('submissions')
 export class SubmissionController extends PostyBirbController<SubmissionRepository> {
-  constructor(readonly service: SubmissionService) {
+  constructor(
+    readonly service: SubmissionService,
+    private readonly submissionDeltaService: SubmissionDeltaService,
+  ) {
     super(service);
   }
 
   @Get()
   async findAll(): Promise<ISubmissionDto[]> {
-    return this.service.findAllAsDto();
+    return this.submissionDeltaService.findAllAsDto();
   }
 
   @Post()

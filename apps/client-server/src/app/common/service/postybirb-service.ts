@@ -1,11 +1,11 @@
 import { BadRequestException } from '@nestjs/common';
 import {
-  Action,
-  EntityRepository,
-  RepoEntity,
-  RepoSchemaKey,
-  SchemaKey,
-  SchemaTable,
+    Action,
+    EntityRepository,
+    RepoEntity,
+    RepoSchemaKey,
+    SchemaKey,
+    SchemaTable,
 } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import { EntityId, IEntity } from '@postybirb/types';
@@ -56,6 +56,10 @@ export abstract class PostyBirbService<
     } catch (err) {
       this.logger.error(`Error emitting websocket event: ${event.event}`, err);
     }
+  }
+
+  protected get canEmitWebSocket(): boolean {
+    return this.webSocket !== undefined;
   }
 
   /**

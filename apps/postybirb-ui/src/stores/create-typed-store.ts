@@ -19,6 +19,10 @@ export interface TypedStoreConfig<TDto extends { id: string; updatedAt: string }
   storeName: string;
   /** Websocket event name to subscribe to for real-time updates (optional) */
   websocketEvent?: string;
+  /** Websocket event carrying incremental upserts and removals (optional) */
+  websocketDeltaEvent?: string;
+  /** Reload the authoritative snapshot after websocket reconnection */
+  reloadOnReconnect?: boolean;
   /**
    * Custom comparator to determine whether a record has changed.
    * Receives the existing record and the incoming DTO.
@@ -50,6 +54,8 @@ export interface TypedStoreResult<TRecord extends BaseRecord> {
   useActions: () => {
     loadAll: () => Promise<void>;
     setRecords: (records: TRecord[]) => void;
+    upsertRecords: (records: TRecord[]) => void;
+    removeRecords: (ids: string[]) => void;
     getById: (id: string) => TRecord | undefined;
     clear: () => void;
   };
@@ -86,6 +92,8 @@ export function createTypedStore<TDto extends { id: string; updatedAt: string },
     {
       storeName: config.storeName,
       websocketEvent: config.websocketEvent,
+      websocketDeltaEvent: config.websocketDeltaEvent,
+      reloadOnReconnect: config.reloadOnReconnect,
       hasChanged: config.hasChanged,
     }
   );
@@ -127,6 +135,8 @@ export function createTypedStore<TDto extends { id: string; updatedAt: string },
       useShallow((state: StoreState) => ({
         loadAll: state.loadAll,
         setRecords: state.setRecords,
+        upsertRecords: state.upsertRecords,
+        removeRecords: state.removeRecords,
         getById: state.getById,
         clear: state.clear,
       }))

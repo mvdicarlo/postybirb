@@ -19,6 +19,7 @@ import { SettingsService } from '../settings/settings.service';
 import { CreateSubmissionDto } from '../submission/dtos/create-submission.dto';
 import { FileSubmissionService } from '../submission/services/file-submission.service';
 import { MessageSubmissionService } from '../submission/services/message-submission.service';
+import { SubmissionDeltaService } from '../submission/services/submission-delta.service';
 import { SubmissionService } from '../submission/services/submission.service';
 import { TagConvertersService } from '../tag-converters/tag-converters.service';
 import { UserConvertersService } from '../user-converters/user-converters.service';
@@ -100,6 +101,7 @@ describe('FileService', () => {
       providers: [
         AccountTemplateDefaultsService,
         SubmissionService,
+        SubmissionDeltaService,
         CreateFileService,
         UpdateFileService,
         SharpInstanceManager,

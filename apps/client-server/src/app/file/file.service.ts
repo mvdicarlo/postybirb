@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign */
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { FileBufferRepository, SubmissionFile, SubmissionFileRepository } from '@postybirb/database';
+import { FileBufferRepository, SubmissionFile, SubmissionFileRepository, SubmissionRepository } from '@postybirb/database';
 import { read } from '@postybirb/fs';
 import { Logger } from '@postybirb/logger';
 import {
@@ -37,6 +37,8 @@ export class FileService {
 
   private readonly fileRepository = new SubmissionFileRepository();
 
+  private readonly submissionRepository = new SubmissionRepository();
+
   constructor(
     private readonly createFileService: CreateFileService,
     private readonly updateFileService: UpdateFileService,
@@ -50,7 +52,10 @@ export class FileService {
    */
   public async remove(id: EntityId) {
     this.logger.info(id, `Removing entity '${id}'`);
-    return this.fileRepository.deleteById([id]);
+    const file = await this.fileRepository.findByIdOrThrow(id);
+    const result = await this.fileRepository.deleteById([id]);
+    this.submissionRepository.notify([file.submissionId], 'update');
+    return result;
   }
 
   /**

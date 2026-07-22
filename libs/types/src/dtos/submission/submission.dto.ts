@@ -1,6 +1,7 @@
 import {
     ISubmission,
     ISubmissionMetadata,
+    SubmissionId,
     ValidationResult,
 } from '../../models';
 import { IEntityDto } from '../database/entity.dto';
@@ -18,3 +19,10 @@ export type ISubmissionDto<
   validations: ValidationResult[];
   postQueueRecord?: PostQueueRecordDto;
 };
+
+export interface ISubmissionDelta<
+  T extends ISubmissionMetadata = ISubmissionMetadata,
+> {
+  upserts: ISubmissionDto<T>[];
+  removals: SubmissionId[];
+}

@@ -2,7 +2,7 @@
  * Submission Store - Zustand store for submission entities.
  */
 
-import { SUBMISSION_UPDATES } from '@postybirb/socket-events';
+import { SUBMISSION_DELTA } from '@postybirb/socket-events';
 import type { ISubmissionDto, SubmissionId, SubmissionType, ValidationResult } from '@postybirb/types';
 import { useShallow } from 'zustand/react/shallow';
 import submissionApi from '../../api/submission.api';
@@ -97,7 +97,8 @@ export const useSubmissionStore = createEntityStore<ISubmissionDto, SubmissionRe
   {
     // eslint-disable-next-line lingui/no-unlocalized-strings
     storeName: 'SubmissionStore',
-    websocketEvent: SUBMISSION_UPDATES,
+    websocketDeltaEvent: SUBMISSION_DELTA,
+    reloadOnReconnect: true,
     hasChanged: submissionHasChanged,
   }
 );
@@ -267,6 +268,8 @@ export const useSubmissionActions = () =>
     useShallow((state: SubmissionStoreState) => ({
       loadAll: state.loadAll,
       setRecords: state.setRecords,
+      upsertRecords: state.upsertRecords,
+      removeRecords: state.removeRecords,
       getById: state.getById,
       clear: state.clear,
     }))

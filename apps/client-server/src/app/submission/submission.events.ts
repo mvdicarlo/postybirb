@@ -1,13 +1,13 @@
-import { SUBMISSION_UPDATES } from '@postybirb/socket-events';
-import { ISubmissionDto, ISubmissionMetadata } from '@postybirb/types';
+import { SUBMISSION_DELTA } from '@postybirb/socket-events';
+import { ISubmissionDelta, ISubmissionMetadata } from '@postybirb/types';
 import { WebsocketEvent } from '../web-socket/models/web-socket-event';
 
-export type SubmissionEventTypes = SubmissionUpdateEvent;
+export type SubmissionEventTypes = SubmissionDeltaEvent;
 
-class SubmissionUpdateEvent
-  implements WebsocketEvent<ISubmissionDto<ISubmissionMetadata>[]>
+class SubmissionDeltaEvent
+  implements WebsocketEvent<ISubmissionDelta<ISubmissionMetadata>>
 {
-  event: string = SUBMISSION_UPDATES;
+  event: string = SUBMISSION_DELTA;
 
-  data: ISubmissionDto<ISubmissionMetadata>[];
+  data: ISubmissionDelta<ISubmissionMetadata>;
 }

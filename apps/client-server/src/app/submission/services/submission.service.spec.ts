@@ -35,6 +35,7 @@ import { CreateSubmissionDto } from '../dtos/create-submission.dto';
 import { UpdateSubmissionDto } from '../dtos/update-submission.dto';
 import { FileSubmissionService } from './file-submission.service';
 import { MessageSubmissionService } from './message-submission.service';
+import { SubmissionDeltaService } from './submission-delta.service';
 import { SubmissionService } from './submission.service';
 
 describe('SubmissionService', () => {
@@ -63,6 +64,7 @@ describe('SubmissionService', () => {
         ],
         providers: [
           SubmissionService,
+          SubmissionDeltaService,
           CreateFileService,
           UpdateFileService,
           SharpInstanceManager,
