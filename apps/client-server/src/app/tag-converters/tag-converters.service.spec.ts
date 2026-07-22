@@ -2,22 +2,22 @@ import { BadRequestException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
+import {
+    EntityCreatedEvent,
+    EntityRemovedEvent,
+    EntityUpdatedEvent,
+    getEntityCrudEventNames,
+} from '../common/events/entity-crud.events';
 import { CreateTagConverterDto } from './dtos/create-tag-converter.dto';
 import { UpdateTagConverterDto } from './dtos/update-tag-converter.dto';
-import {
-    TAG_CONVERTER_CREATED,
-    TAG_CONVERTER_REMOVED,
-    TAG_CONVERTER_UPDATED,
-    TagConverterCreatedEvent,
-    TagConverterRemovedEvent,
-    TagConverterUpdatedEvent,
-} from './tag-converter.events';
+import { TAG_CONVERTER_EVENT_PREFIX } from './tag-converter.events';
 import { TagConvertersService } from './tag-converters.service';
 
 describe('TagConvertersService', () => {
   let service: TagConvertersService;
   let module: TestingModule;
   const emit = jest.fn();
+  const eventNames = getEntityCrudEventNames(TAG_CONVERTER_EVENT_PREFIX);
 
   function createTagConverterDto(
     tag: string,
@@ -66,8 +66,8 @@ describe('TagConvertersService', () => {
       updatedAt: record.updatedAt,
     });
     expect(emit).toHaveBeenCalledWith(
-      TAG_CONVERTER_CREATED,
-      new TagConverterCreatedEvent(record.toDTO()),
+      eventNames.created,
+      new EntityCreatedEvent(record.toDTO()),
     );
   });
 
@@ -103,8 +103,8 @@ describe('TagConvertersService', () => {
     expect(updatedRec.tag).toBe(updateDto.tag);
     expect(updatedRec.convertTo).toEqual(updateDto.convertTo);
     expect(emit).toHaveBeenLastCalledWith(
-      TAG_CONVERTER_UPDATED,
-      new TagConverterUpdatedEvent(updated.toDTO()),
+      eventNames.updated,
+      new EntityUpdatedEvent(updated.toDTO()),
     );
   });
 
@@ -126,8 +126,8 @@ describe('TagConvertersService', () => {
     await service.remove(record.id);
     expect(await service.findAll()).toHaveLength(0);
     expect(emit).toHaveBeenLastCalledWith(
-      TAG_CONVERTER_REMOVED,
-      new TagConverterRemovedEvent(record.id),
+      eventNames.removed,
+      new EntityRemovedEvent(record.id),
     );
   });
 

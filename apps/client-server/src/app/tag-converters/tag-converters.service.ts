@@ -7,19 +7,13 @@ import { PostyBirbService } from '../common/service/postybirb-service';
 import { Website } from '../websites/website';
 import { CreateTagConverterDto } from './dtos/create-tag-converter.dto';
 import { UpdateTagConverterDto } from './dtos/update-tag-converter.dto';
-import {
-  TAG_CONVERTER_CREATED,
-  TAG_CONVERTER_REMOVED,
-  TAG_CONVERTER_UPDATED,
-  TagConverterCreatedEvent,
-  TagConverterRemovedEvent,
-  TagConverterUpdatedEvent,
-} from './tag-converter.events';
+import { TAG_CONVERTER_EVENT_PREFIX } from './tag-converter.events';
 
 @Injectable()
 export class TagConvertersService extends PostyBirbService<TagConverterRepository> {
-  constructor(@Optional() private readonly eventEmitter?: EventEmitter2) {
+  constructor(@Optional() eventEmitter?: EventEmitter2) {
     super(new TagConverterRepository());
+    this.configureCrudEvents(TAG_CONVERTER_EVENT_PREFIX, eventEmitter);
   }
 
   async create(createDto: CreateTagConverterDto): Promise<TagConverter> {
@@ -28,10 +22,7 @@ export class TagConvertersService extends PostyBirbService<TagConverterRepositor
       .info(`Creating TagConverter '${createDto.tag}'`);
     await this.throwIfExists(eq(this.table.tag, createDto.tag));
     const entity = await this.repository.insert(createDto);
-    this.eventEmitter?.emit(
-      TAG_CONVERTER_CREATED,
-      new TagConverterCreatedEvent(entity.toDTO()),
-    );
+    this.publishCreated(entity.toDTO());
     return entity;
   }
 
@@ -41,22 +32,8 @@ export class TagConvertersService extends PostyBirbService<TagConverterRepositor
   ): Promise<TagConverter> {
     this.logger.withMetadata(update).info(`Updating TagConverter '${id}'`);
     const entity = await this.repository.update(id, update);
-    this.eventEmitter?.emit(
-      TAG_CONVERTER_UPDATED,
-      new TagConverterUpdatedEvent(entity.toDTO()),
-    );
+    this.publishUpdated(entity.toDTO());
     return entity;
-  }
-
-  override async remove(id: EntityId): Promise<void> {
-    this.logger.withMetadata({ id }).info(`Removing entity '${id}'`);
-    const result = await this.repository.deleteById([id]);
-    if (result.changes > 0) {
-      this.eventEmitter?.emit(
-        TAG_CONVERTER_REMOVED,
-        new TagConverterRemovedEvent(id),
-      );
-    }
   }
 
   /**

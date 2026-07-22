@@ -2,22 +2,22 @@ import { BadRequestException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
+import {
+  EntityCreatedEvent,
+  EntityRemovedEvent,
+  EntityUpdatedEvent,
+  getEntityCrudEventNames,
+} from '../common/events/entity-crud.events';
 import { CreateUserConverterDto } from './dtos/create-user-converter.dto';
 import { UpdateUserConverterDto } from './dtos/update-user-converter.dto';
-import {
-    USER_CONVERTER_CREATED,
-    USER_CONVERTER_REMOVED,
-    USER_CONVERTER_UPDATED,
-    UserConverterCreatedEvent,
-    UserConverterRemovedEvent,
-    UserConverterUpdatedEvent,
-} from './user-converter.events';
+import { USER_CONVERTER_EVENT_PREFIX } from './user-converter.events';
 import { UserConvertersService } from './user-converters.service';
 
 describe('UserConvertersService', () => {
   let service: UserConvertersService;
   let module: TestingModule;
   const emit = jest.fn();
+  const eventNames = getEntityCrudEventNames(USER_CONVERTER_EVENT_PREFIX);
 
   function createUserConverterDto(
     username: string,
@@ -68,8 +68,8 @@ describe('UserConvertersService', () => {
       updatedAt: record.updatedAt,
     });
     expect(emit).toHaveBeenCalledWith(
-      USER_CONVERTER_CREATED,
-      new UserConverterCreatedEvent(record.toDTO()),
+      eventNames.created,
+      new EntityCreatedEvent(record.toDTO()),
     );
   });
 
@@ -114,8 +114,8 @@ describe('UserConvertersService', () => {
     expect(updatedRec.username).toBe(updateDto.username);
     expect(updatedRec.convertTo).toEqual(updateDto.convertTo);
     expect(emit).toHaveBeenLastCalledWith(
-      USER_CONVERTER_UPDATED,
-      new UserConverterUpdatedEvent(updated.toDTO()),
+      eventNames.updated,
+      new EntityUpdatedEvent(updated.toDTO()),
     );
   });
 
@@ -139,8 +139,8 @@ describe('UserConvertersService', () => {
     await service.remove(record.id);
     expect(await service.findAll()).toHaveLength(0);
     expect(emit).toHaveBeenLastCalledWith(
-      USER_CONVERTER_REMOVED,
-      new UserConverterRemovedEvent(record.id),
+      eventNames.removed,
+      new EntityRemovedEvent(record.id),
     );
   });
 

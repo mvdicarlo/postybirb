@@ -7,19 +7,13 @@ import { PostyBirbService } from '../common/service/postybirb-service';
 import { Website } from '../websites/website';
 import { CreateUserConverterDto } from './dtos/create-user-converter.dto';
 import { UpdateUserConverterDto } from './dtos/update-user-converter.dto';
-import {
-    USER_CONVERTER_CREATED,
-    USER_CONVERTER_REMOVED,
-    USER_CONVERTER_UPDATED,
-    UserConverterCreatedEvent,
-    UserConverterRemovedEvent,
-    UserConverterUpdatedEvent,
-} from './user-converter.events';
+import { USER_CONVERTER_EVENT_PREFIX } from './user-converter.events';
 
 @Injectable()
 export class UserConvertersService extends PostyBirbService<UserConverterRepository> {
-  constructor(@Optional() private readonly eventEmitter?: EventEmitter2) {
+  constructor(@Optional() eventEmitter?: EventEmitter2) {
     super(new UserConverterRepository());
+    this.configureCrudEvents(USER_CONVERTER_EVENT_PREFIX, eventEmitter);
   }
 
   async create(createDto: CreateUserConverterDto): Promise<UserConverter> {
@@ -28,10 +22,7 @@ export class UserConvertersService extends PostyBirbService<UserConverterReposit
       .info(`Creating UserConverter '${createDto.username}'`);
     await this.throwIfExists(eq(this.table.username, createDto.username));
     const entity = await this.repository.insert(createDto);
-    this.eventEmitter?.emit(
-      USER_CONVERTER_CREATED,
-      new UserConverterCreatedEvent(entity.toDTO()),
-    );
+    this.publishCreated(entity.toDTO());
     return entity;
   }
 
@@ -41,22 +32,8 @@ export class UserConvertersService extends PostyBirbService<UserConverterReposit
   ): Promise<UserConverter> {
     this.logger.withMetadata(update).info(`Updating UserConverter '${id}'`);
     const entity = await this.repository.update(id, update);
-    this.eventEmitter?.emit(
-      USER_CONVERTER_UPDATED,
-      new UserConverterUpdatedEvent(entity.toDTO()),
-    );
+    this.publishUpdated(entity.toDTO());
     return entity;
-  }
-
-  override async remove(id: EntityId): Promise<void> {
-    this.logger.withMetadata({ id }).info(`Removing entity '${id}'`);
-    const result = await this.repository.deleteById([id]);
-    if (result.changes > 0) {
-      this.eventEmitter?.emit(
-        USER_CONVERTER_REMOVED,
-        new UserConverterRemovedEvent(id),
-      );
-    }
   }
 
   /**

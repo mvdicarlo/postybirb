@@ -5,14 +5,9 @@ import { Logger } from '@postybirb/logger';
 import { PlatformService } from '@postybirb/platform';
 import { join } from 'path';
 import { AccountService } from '../account/account.service';
-import {
-    TAG_CONVERTER_CREATED,
-    TagConverterCreatedEvent,
-} from '../tag-converters/tag-converter.events';
-import {
-    TAG_GROUP_CREATED,
-    TagGroupCreatedEvent,
-} from '../tag-groups/tag-group.events';
+import { publishEntityCreated } from '../common/events/entity-crud.events';
+import { TAG_CONVERTER_EVENT_PREFIX } from '../tag-converters/tag-converter.events';
+import { TAG_GROUP_EVENT_PREFIX } from '../tag-groups/tag-group.events';
 import { LegacyConverter } from './converters/legacy-converter';
 import { LegacyCustomShortcutConverter } from './converters/legacy-custom-shortcut.converter';
 import { LegacySubmissionConverter } from './converters/legacy-submission.converter';
@@ -76,9 +71,10 @@ export class LegacyDatabaseImporterService {
       // Import tag groups
       const result = await this.processImport(
         new LegacyTagGroupConverter(path, (entity) => {
-          this.eventEmitter.emit(
-            TAG_GROUP_CREATED,
-            new TagGroupCreatedEvent(entity.toDTO()),
+          publishEntityCreated(
+            this.eventEmitter,
+            TAG_GROUP_EVENT_PREFIX,
+            entity.toDTO(),
           );
         }),
       );
@@ -91,9 +87,10 @@ export class LegacyDatabaseImporterService {
       // Import tag converters
       const result = await this.processImport(
         new LegacyTagConverterConverter(path, (entity) => {
-          this.eventEmitter.emit(
-            TAG_CONVERTER_CREATED,
-            new TagConverterCreatedEvent(entity.toDTO()),
+          publishEntityCreated(
+            this.eventEmitter,
+            TAG_CONVERTER_EVENT_PREFIX,
+            entity.toDTO(),
           );
         }),
       );

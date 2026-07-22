@@ -2,21 +2,21 @@ import { BadRequestException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
-import { CreateTagGroupDto } from './dtos/create-tag-group.dto';
 import {
-    TAG_GROUP_CREATED,
-    TAG_GROUP_REMOVED,
-    TAG_GROUP_UPDATED,
-    TagGroupCreatedEvent,
-    TagGroupRemovedEvent,
-    TagGroupUpdatedEvent,
-} from './tag-group.events';
+    EntityCreatedEvent,
+    EntityRemovedEvent,
+    EntityUpdatedEvent,
+    getEntityCrudEventNames,
+} from '../common/events/entity-crud.events';
+import { CreateTagGroupDto } from './dtos/create-tag-group.dto';
+import { TAG_GROUP_EVENT_PREFIX } from './tag-group.events';
 import { TagGroupsService } from './tag-groups.service';
 
 describe('TagGroupsService', () => {
   let service: TagGroupsService;
   let module: TestingModule;
   const emit = jest.fn();
+  const eventNames = getEntityCrudEventNames(TAG_GROUP_EVENT_PREFIX);
 
   function createTagGroupDto(name: string, tags: string[]) {
     const dto = new CreateTagGroupDto();
@@ -62,8 +62,8 @@ describe('TagGroupsService', () => {
       updatedAt: record.updatedAt,
     });
     expect(emit).toHaveBeenCalledWith(
-      TAG_GROUP_CREATED,
-      new TagGroupCreatedEvent(record.toDTO()),
+      eventNames.created,
+      new EntityCreatedEvent(record.toDTO()),
     );
   });
 
@@ -103,8 +103,8 @@ describe('TagGroupsService', () => {
     expect(updatedRec.name).toBe(updateDto.name);
     expect(updatedRec.tags).toEqual(updateDto.tags);
     expect(emit).toHaveBeenLastCalledWith(
-      TAG_GROUP_UPDATED,
-      new TagGroupUpdatedEvent(updated.toDTO()),
+      eventNames.updated,
+      new EntityUpdatedEvent(updated.toDTO()),
     );
   });
 
@@ -124,8 +124,8 @@ describe('TagGroupsService', () => {
     await service.remove(record.id);
     expect(await service.findAll()).toHaveLength(0);
     expect(emit).toHaveBeenLastCalledWith(
-      TAG_GROUP_REMOVED,
-      new TagGroupRemovedEvent(record.id),
+      eventNames.removed,
+      new EntityRemovedEvent(record.id),
     );
   });
 
