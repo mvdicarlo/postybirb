@@ -1,21 +1,25 @@
 import { Injectable, Optional } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { TagConverter, TagConverterRepository } from '@postybirb/database';
-import { TAG_CONVERTER_UPDATES } from '@postybirb/socket-events';
 import { DynamicObject, EntityId } from '@postybirb/types';
 import { eq } from 'drizzle-orm';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { WSGateway } from '../web-socket/web-socket-gateway';
 import { Website } from '../websites/website';
 import { CreateTagConverterDto } from './dtos/create-tag-converter.dto';
 import { UpdateTagConverterDto } from './dtos/update-tag-converter.dto';
+import {
+  TAG_CONVERTER_CREATED,
+  TAG_CONVERTER_REMOVED,
+  TAG_CONVERTER_UPDATED,
+  TagConverterCreatedEvent,
+  TagConverterRemovedEvent,
+  TagConverterUpdatedEvent,
+} from './tag-converter.events';
 
 @Injectable()
 export class TagConvertersService extends PostyBirbService<TagConverterRepository> {
-  constructor(@Optional() webSocket?: WSGateway) {
-    super(new TagConverterRepository(), webSocket);
-    this.repository.subscribe('TagConverterSchema', () => {
-      this.emit();
-    });
+  constructor(@Optional() private readonly eventEmitter?: EventEmitter2) {
+    super(new TagConverterRepository());
   }
 
   async create(createDto: CreateTagConverterDto): Promise<TagConverter> {
@@ -23,12 +27,36 @@ export class TagConvertersService extends PostyBirbService<TagConverterRepositor
       .withMetadata(createDto)
       .info(`Creating TagConverter '${createDto.tag}'`);
     await this.throwIfExists(eq(this.table.tag, createDto.tag));
-    return this.repository.insert(createDto);
+    const entity = await this.repository.insert(createDto);
+    this.eventEmitter?.emit(
+      TAG_CONVERTER_CREATED,
+      new TagConverterCreatedEvent(entity.toDTO()),
+    );
+    return entity;
   }
 
-  update(id: EntityId, update: UpdateTagConverterDto) {
+  async update(
+    id: EntityId,
+    update: UpdateTagConverterDto,
+  ): Promise<TagConverter> {
     this.logger.withMetadata(update).info(`Updating TagConverter '${id}'`);
-    return this.repository.update(id, update);
+    const entity = await this.repository.update(id, update);
+    this.eventEmitter?.emit(
+      TAG_CONVERTER_UPDATED,
+      new TagConverterUpdatedEvent(entity.toDTO()),
+    );
+    return entity;
+  }
+
+  override async remove(id: EntityId): Promise<void> {
+    this.logger.withMetadata({ id }).info(`Removing entity '${id}'`);
+    const result = await this.repository.deleteById([id]);
+    if (result.changes > 0) {
+      this.eventEmitter?.emit(
+        TAG_CONVERTER_REMOVED,
+        new TagConverterRemovedEvent(id),
+      );
+    }
   }
 
   /**
@@ -64,13 +92,6 @@ export class TagConvertersService extends PostyBirbService<TagConverterRepositor
         converter.convertTo.default ?? // NOTE: This is not currently used, but it's here for future proofing
         tag
       );
-    });
-  }
-
-  protected async emit() {
-    super.emit({
-      event: TAG_CONVERTER_UPDATES,
-      data: (await this.repository.findAll()).map((entity) => entity.toDTO()),
     });
   }
 }

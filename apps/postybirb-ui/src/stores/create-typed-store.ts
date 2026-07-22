@@ -73,7 +73,7 @@ export interface TypedStoreResult<TRecord extends BaseRecord> {
  *   fetchFn: () => tagConvertersApi.getAll().then((r) => r.body),
  *   createRecord: (dto) => new TagConverterRecord(dto),
  *   storeName: 'TagConverterStore',
- *   websocketEvent: TAG_CONVERTER_UPDATES,
+ *   websocketDeltaEvent: TAG_CONVERTER_DELTA,
  * });
  * ```
  */

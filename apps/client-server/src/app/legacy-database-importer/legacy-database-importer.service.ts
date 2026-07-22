@@ -6,6 +6,10 @@ import { PlatformService } from '@postybirb/platform';
 import { join } from 'path';
 import { AccountService } from '../account/account.service';
 import {
+  TAG_CONVERTER_CREATED,
+  TagConverterCreatedEvent,
+} from '../tag-converters/tag-converter.events';
+import {
     TAG_GROUP_CREATED,
     TagGroupCreatedEvent,
 } from '../tag-groups/tag-group.events';
@@ -86,7 +90,12 @@ export class LegacyDatabaseImporterService {
     if (importRequest.tagConverters) {
       // Import tag converters
       const result = await this.processImport(
-        new LegacyTagConverterConverter(path),
+        new LegacyTagConverterConverter(path, (entity) => {
+          this.eventEmitter.emit(
+            TAG_CONVERTER_CREATED,
+            new TagConverterCreatedEvent(entity.toDTO()),
+          );
+        }),
       );
       if (result.error) {
         errors.push(result.error);
