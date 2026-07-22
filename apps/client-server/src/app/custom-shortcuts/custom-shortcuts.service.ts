@@ -1,26 +1,18 @@
 import { Injectable, Optional } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CustomShortcut, CustomShortcutRepository } from '@postybirb/database';
-import { CUSTOM_SHORTCUT_UPDATES } from '@postybirb/socket-events';
 import { EntityId } from '@postybirb/types';
 import { eq } from 'drizzle-orm';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { WSGateway } from '../web-socket/web-socket-gateway';
+import { CUSTOM_SHORTCUT_EVENT_PREFIX } from './custom-shortcut.events';
 import { CreateCustomShortcutDto } from './dtos/create-custom-shortcut.dto';
 import { UpdateCustomShortcutDto } from './dtos/update-custom-shortcut.dto';
 
 @Injectable()
 export class CustomShortcutsService extends PostyBirbService<CustomShortcutRepository> {
-  constructor(@Optional() webSocket?: WSGateway) {
-    super(new CustomShortcutRepository(), webSocket);
-    this.repository.subscribe('CustomShortcutSchema', () => this.emit());
-  }
-
-  public async emit() {
-    const dtos = await this.findAll();
-    super.emit({
-      event: CUSTOM_SHORTCUT_UPDATES,
-      data: dtos.map((dto) => dto.toDTO()),
-    });
+  constructor(@Optional() eventEmitter?: EventEmitter2) {
+    super(new CustomShortcutRepository());
+    this.configureCrudEvents(CUSTOM_SHORTCUT_EVENT_PREFIX, eventEmitter);
   }
 
   public async create(
@@ -32,7 +24,9 @@ export class CustomShortcutsService extends PostyBirbService<CustomShortcutRepos
     await this.throwIfExists(
       eq(this.table.name, createCustomShortcutDto.name),
     );
-    return this.repository.insert(createCustomShortcutDto);
+    const entity = await this.repository.insert(createCustomShortcutDto);
+    this.publishCreated(entity.toDTO());
+    return entity;
   }
 
   public async update(
@@ -42,12 +36,13 @@ export class CustomShortcutsService extends PostyBirbService<CustomShortcutRepos
     this.logger
       .withMetadata(updateCustomShortcutDto)
       .info('Updating custom shortcut');
-    const existing = await this.repository.findByIdOrThrow(id);
-
-    return this.repository.update(id, updateCustomShortcutDto);
+    await this.repository.findByIdOrThrow(id);
+    const entity = await this.repository.update(id, updateCustomShortcutDto);
+    this.publishUpdated(entity.toDTO());
+    return entity;
   }
 
-  public async remove(id: EntityId): Promise<void> {
+  public override async remove(id: EntityId): Promise<void> {
     await this.repository.findByIdOrThrow(id);
     await super.remove(id);
   }

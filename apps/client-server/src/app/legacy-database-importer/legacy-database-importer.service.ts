@@ -6,6 +6,7 @@ import { PlatformService } from '@postybirb/platform';
 import { join } from 'path';
 import { AccountService } from '../account/account.service';
 import { publishEntityCreated } from '../common/events/entity-crud.events';
+import { CUSTOM_SHORTCUT_EVENT_PREFIX } from '../custom-shortcuts/custom-shortcut.events';
 import { TAG_CONVERTER_EVENT_PREFIX } from '../tag-converters/tag-converter.events';
 import { TAG_GROUP_EVENT_PREFIX } from '../tag-groups/tag-group.events';
 import { LegacyConverter } from './converters/legacy-converter';
@@ -102,7 +103,13 @@ export class LegacyDatabaseImporterService {
     if (importRequest.customShortcuts) {
       // Import custom shortcuts
       const result = await this.processImport(
-        new LegacyCustomShortcutConverter(path),
+        new LegacyCustomShortcutConverter(path, (entity) => {
+          publishEntityCreated(
+            this.eventEmitter,
+            CUSTOM_SHORTCUT_EVENT_PREFIX,
+            entity.toDTO(),
+          );
+        }),
       );
       if (result.error) {
         errors.push(result.error);
