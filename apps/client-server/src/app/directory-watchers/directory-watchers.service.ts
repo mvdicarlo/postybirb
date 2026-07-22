@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, Optional } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { DirectoryWatcher, DirectoryWatcherRepository } from '@postybirb/database';
-import { DIRECTORY_WATCHER_UPDATES } from '@postybirb/socket-events';
 import {
     DirectoryWatcherImportAction,
     EntityId,
@@ -15,7 +15,7 @@ import { PostyBirbService } from '../common/service/postybirb-service';
 import { MulterFileInfo } from '../file/models/multer-file-info';
 import { NotificationsService } from '../notifications/notifications.service';
 import { SubmissionService } from '../submission/services/submission.service';
-import { WSGateway } from '../web-socket/web-socket-gateway';
+import { DIRECTORY_WATCHER_EVENT_PREFIX } from './directory-watcher.events';
 import { CreateDirectoryWatcherDto } from './dtos/create-directory-watcher.dto';
 import { UpdateDirectoryWatcherDto } from './dtos/update-directory-watcher.dto';
 
@@ -73,19 +73,10 @@ export class DirectoryWatchersService extends PostyBirbService<DirectoryWatcherR
   constructor(
     private readonly submissionService: SubmissionService,
     private readonly notificationService: NotificationsService,
-    @Optional() webSocket?: WSGateway,
+    @Optional() eventEmitter?: EventEmitter2,
   ) {
-    super(new DirectoryWatcherRepository(), webSocket);
-    this.repository.subscribe('DirectoryWatcherSchema', () =>
-      this.emitUpdates(),
-    );
-  }
-
-  protected async emitUpdates() {
-    super.emit({
-      event: DIRECTORY_WATCHER_UPDATES,
-      data: (await this.repository.findAll()).map((entity) => entity.toDTO()),
-    });
+    super(new DirectoryWatcherRepository());
+    this.configureCrudEvents(DIRECTORY_WATCHER_EVENT_PREFIX, eventEmitter);
   }
 
   /**
@@ -401,7 +392,9 @@ export class DirectoryWatchersService extends PostyBirbService<DirectoryWatcherR
       await this.ensureDirectoryStructure(createDto.path);
     }
 
-    return this.repository.insert(createDto);
+    const entity = await this.repository.insert(createDto);
+    this.publishCreated(entity.toDTO());
+    return entity;
   }
 
   async update(id: EntityId, update: UpdateDirectoryWatcherDto) {
@@ -442,6 +435,7 @@ export class DirectoryWatchersService extends PostyBirbService<DirectoryWatcherR
       await this.ensureDirectoryStructure(updatedEntity.path);
     }
 
+    this.publishUpdated(updatedEntity.toDTO());
     return updatedEntity;
   }
 
