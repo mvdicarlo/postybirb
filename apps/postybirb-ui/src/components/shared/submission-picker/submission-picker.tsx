@@ -5,14 +5,14 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-    Avatar,
-    Checkbox,
-    Group,
-    Image,
-    MultiSelect,
-    type MultiSelectProps,
-    Stack,
-    Text,
+  Avatar,
+  Checkbox,
+  Group,
+  Image,
+  MultiSelect,
+  type MultiSelectProps,
+  Stack,
+  Text,
 } from '@mantine/core';
 import { SubmissionType } from '@postybirb/types';
 import { IconFile, IconMessage } from '@tabler/icons-react';
@@ -53,6 +53,7 @@ export function SubmissionPicker({
   excludeIds = [],
   label,
   placeholder,
+  comboboxProps,
   ...selectProps
 }: SubmissionPickerProps) {
   const allSubmissions = useSubmissionsByType(type);
@@ -103,6 +104,7 @@ export function SubmissionPicker({
         <Checkbox checked={checked} readOnly tabIndex={-1} />
         {meta?.thumbnail ? (
           <Image
+            loading="lazy"
             src={meta.thumbnail}
             alt=""
             h={32}
@@ -137,6 +139,7 @@ export function SubmissionPicker({
         searchable
         clearable
         maxDropdownHeight={300}
+        comboboxProps={{ keepMounted: false, ...comboboxProps }}
         renderOption={renderOption}
         nothingFoundMessage={<Trans>No results found</Trans>}
         {...selectProps}
