@@ -19,6 +19,8 @@ export interface TypedStoreConfig<TDto extends { id: string; updatedAt: string }
   storeName: string;
   /** Websocket event name to subscribe to for real-time updates (optional) */
   websocketEvent?: string;
+  /** Websocket event name carrying incremental entity updates (optional) */
+  websocketDeltaEvent?: string;
   /**
    * Custom comparator to determine whether a record has changed.
    * Receives the existing record and the incoming DTO.
@@ -86,6 +88,7 @@ export function createTypedStore<TDto extends { id: string; updatedAt: string },
     {
       storeName: config.storeName,
       websocketEvent: config.websocketEvent,
+      websocketDeltaEvent: config.websocketDeltaEvent,
       hasChanged: config.hasChanged,
     }
   );

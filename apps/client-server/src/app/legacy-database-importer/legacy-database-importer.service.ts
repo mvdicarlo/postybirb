@@ -1,8 +1,14 @@
 import { Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { DatabaseEntity } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import { PlatformService } from '@postybirb/platform';
 import { join } from 'path';
 import { AccountService } from '../account/account.service';
+import {
+    TAG_GROUP_CREATED,
+    TagGroupCreatedEvent,
+} from '../tag-groups/tag-group.events';
 import { LegacyConverter } from './converters/legacy-converter';
 import { LegacyCustomShortcutConverter } from './converters/legacy-custom-shortcut.converter';
 import { LegacySubmissionConverter } from './converters/legacy-submission.converter';
@@ -20,6 +26,7 @@ export class LegacyDatabaseImporterService {
 
   constructor(
     private readonly accountService: AccountService,
+    private readonly eventEmitter: EventEmitter2,
     platform: PlatformService,
   ) {
     this.LEGACY_POSTYBIRB_PLUS_PATH = join(
@@ -64,7 +71,12 @@ export class LegacyDatabaseImporterService {
     if (importRequest.tagGroups) {
       // Import tag groups
       const result = await this.processImport(
-        new LegacyTagGroupConverter(path),
+        new LegacyTagGroupConverter(path, (entity) => {
+          this.eventEmitter.emit(
+            TAG_GROUP_CREATED,
+            new TagGroupCreatedEvent(entity.toDTO()),
+          );
+        }),
       );
       if (result.error) {
         errors.push(result.error);
@@ -114,8 +126,8 @@ export class LegacyDatabaseImporterService {
     return { errors: errors.map((e) => ({ message: e.message })) };
   }
 
-  private async processImport(
-    converter: LegacyConverter,
+  private async processImport<TEntity extends DatabaseEntity>(
+    converter: LegacyConverter<TEntity>,
   ): Promise<{ error?: Error }> {
     try {
       this.logger.info(`Starting import for ${converter.legacyFileName}...`);

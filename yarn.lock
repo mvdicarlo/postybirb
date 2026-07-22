@@ -6651,6 +6651,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@nestjs/event-emitter@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "@nestjs/event-emitter@npm:3.1.0"
+  dependencies:
+    eventemitter2: "npm:6.4.9"
+  peerDependencies:
+    "@nestjs/common": ^10.0.0 || ^11.0.0
+    "@nestjs/core": ^10.0.0 || ^11.0.0
+  checksum: 10c0/4aee7cb0b2b745236d23c4a448bd6d0513a1c6eb2f2d6a68e9095be21ae1698bea4f7baf6dfb55b4d88a2e1bc0cfd9d0206e824aa143f97bc0629366ca4c4fa4
+  languageName: node
+  linkType: hard
+
 "@nestjs/mapped-types@npm:2.0.2":
   version: 2.0.2
   resolution: "@nestjs/mapped-types@npm:2.0.2"
@@ -16826,7 +16838,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eventemitter2@npm:^6.4.3":
+"eventemitter2@npm:6.4.9, eventemitter2@npm:^6.4.3":
   version: 6.4.9
   resolution: "eventemitter2@npm:6.4.9"
   checksum: 10c0/b2adf7d9f1544aa2d95ee271b0621acaf1e309d85ebcef1244fb0ebc7ab0afa6ffd5e371535d0981bc46195ad67fd6ff57a8d1db030584dee69aa5e371a27ea7
@@ -23975,6 +23987,7 @@ __metadata:
     "@microsoft/applicationinsights-web": "npm:^3.3.10"
     "@nestjs/common": "npm:^10.4.16"
     "@nestjs/core": "npm:^10.4.16"
+    "@nestjs/event-emitter": "npm:^3.1.0"
     "@nestjs/platform-express": "npm:^10.4.16"
     "@nestjs/platform-socket.io": "npm:^10.4.16"
     "@nestjs/schedule": "npm:^4"
