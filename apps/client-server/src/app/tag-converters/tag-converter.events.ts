@@ -2,9 +2,9 @@
 import { TAG_CONVERTER_DELTA } from '@postybirb/socket-events';
 import { EntityDelta, TagConverterDto } from '@postybirb/types';
 import {
-  EntityCreatedEvent,
-  EntityRemovedEvent,
-  EntityUpdatedEvent,
+    EntityCreatedEvent,
+    EntityRemovedEvent,
+    EntityUpdatedEvent,
 } from '../common/events/entity-crud.events';
 import { WebsocketEvent } from '../web-socket/models/web-socket-event';
 

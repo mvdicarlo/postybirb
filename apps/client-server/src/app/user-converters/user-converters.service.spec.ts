@@ -1,13 +1,23 @@
 import { BadRequestException } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
 import { CreateUserConverterDto } from './dtos/create-user-converter.dto';
 import { UpdateUserConverterDto } from './dtos/update-user-converter.dto';
+import {
+    USER_CONVERTER_CREATED,
+    USER_CONVERTER_REMOVED,
+    USER_CONVERTER_UPDATED,
+    UserConverterCreatedEvent,
+    UserConverterRemovedEvent,
+    UserConverterUpdatedEvent,
+} from './user-converter.events';
 import { UserConvertersService } from './user-converters.service';
 
 describe('UserConvertersService', () => {
   let service: UserConvertersService;
   let module: TestingModule;
+  const emit = jest.fn();
 
   function createUserConverterDto(
     username: string,
@@ -21,19 +31,18 @@ describe('UserConvertersService', () => {
 
   beforeEach(async () => {
     clearDatabase();
-    try {
-      module = await Test.createTestingModule({
-        imports: [],
-        providers: [UserConvertersService],
-      }).compile();
+    emit.mockClear();
+    module = await Test.createTestingModule({
+      providers: [
+        UserConvertersService,
+        { provide: EventEmitter2, useValue: { emit } },
+      ],
+    }).compile();
 
-      service = module.get<UserConvertersService>(UserConvertersService);
-    } catch (e) {
-      console.log(e);
-    }
+    service = module.get<UserConvertersService>(UserConvertersService);
   });
 
-  afterAll(async () => {
+  afterEach(async () => {
     await module.close();
   });
 
@@ -58,6 +67,10 @@ describe('UserConvertersService', () => {
       createdAt: record.createdAt,
       updatedAt: record.updatedAt,
     });
+    expect(emit).toHaveBeenCalledWith(
+      USER_CONVERTER_CREATED,
+      new UserConverterCreatedEvent(record.toDTO()),
+    );
   });
 
   it('should fail to create duplicate user converters', async () => {
@@ -69,6 +82,7 @@ describe('UserConvertersService', () => {
     });
 
     await service.create(dto);
+    emit.mockClear();
 
     let expectedException = null;
     try {
@@ -77,6 +91,7 @@ describe('UserConvertersService', () => {
       expectedException = err;
     }
     expect(expectedException).toBeInstanceOf(BadRequestException);
+    expect(emit).not.toHaveBeenCalled();
   });
 
   it('should update entities', async () => {
@@ -94,10 +109,23 @@ describe('UserConvertersService', () => {
       default: 'converted_friend',
       bluesky: 'converted_friend2',
     };
-    await service.update(record.id, updateDto);
+    const updated = await service.update(record.id, updateDto);
     const updatedRec = await service.findByIdOrThrow(record.id);
     expect(updatedRec.username).toBe(updateDto.username);
     expect(updatedRec.convertTo).toEqual(updateDto.convertTo);
+    expect(emit).toHaveBeenLastCalledWith(
+      USER_CONVERTER_UPDATED,
+      new UserConverterUpdatedEvent(updated.toDTO()),
+    );
+  });
+
+  it('should not emit when updating a missing entity', async () => {
+    const updateDto = new UpdateUserConverterDto();
+    updateDto.username = 'missing';
+    updateDto.convertTo = {};
+
+    await expect(service.update('missing', updateDto)).rejects.toThrow();
+    expect(emit).not.toHaveBeenCalled();
   });
 
   it('should delete entities', async () => {
@@ -110,6 +138,15 @@ describe('UserConvertersService', () => {
 
     await service.remove(record.id);
     expect(await service.findAll()).toHaveLength(0);
+    expect(emit).toHaveBeenLastCalledWith(
+      USER_CONVERTER_REMOVED,
+      new UserConverterRemovedEvent(record.id),
+    );
+  });
+
+  it('should not emit when removing a missing entity', async () => {
+    await service.remove('missing');
+    expect(emit).not.toHaveBeenCalled();
   });
 
   it('should convert usernames', async () => {

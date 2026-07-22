@@ -5,12 +5,12 @@ import { TAG_CONVERTER_DELTA } from '@postybirb/socket-events';
 import { EntityDelta, TagConverterDto } from '@postybirb/types';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import {
-  TAG_CONVERTER_CREATED,
-  TAG_CONVERTER_REMOVED,
-  TAG_CONVERTER_UPDATED,
-  TagConverterCreatedEvent,
-  TagConverterRemovedEvent,
-  TagConverterUpdatedEvent,
+    TAG_CONVERTER_CREATED,
+    TAG_CONVERTER_REMOVED,
+    TAG_CONVERTER_UPDATED,
+    TagConverterCreatedEvent,
+    TagConverterRemovedEvent,
+    TagConverterUpdatedEvent,
 } from './tag-converter.events';
 
 @Injectable()

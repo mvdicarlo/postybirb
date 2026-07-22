@@ -6,8 +6,8 @@ import { PlatformService } from '@postybirb/platform';
 import { join } from 'path';
 import { AccountService } from '../account/account.service';
 import {
-  TAG_CONVERTER_CREATED,
-  TagConverterCreatedEvent,
+    TAG_CONVERTER_CREATED,
+    TagConverterCreatedEvent,
 } from '../tag-converters/tag-converter.events';
 import {
     TAG_GROUP_CREATED,

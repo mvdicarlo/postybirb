@@ -1,25 +1,25 @@
 import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
-import { TAG_CONVERTER_DELTA } from '@postybirb/socket-events';
-import { TagConverterDto } from '@postybirb/types';
+import { USER_CONVERTER_DELTA } from '@postybirb/socket-events';
+import { UserConverterDto } from '@postybirb/types';
 import { WSGateway } from '../web-socket/web-socket-gateway';
-import { TagConverterEventListener } from './tag-converter-event.listener';
+import { UserConverterEventListener } from './user-converter-event.listener';
 import {
-    TAG_CONVERTER_CREATED,
-    TAG_CONVERTER_REMOVED,
-    TAG_CONVERTER_UPDATED,
-    TagConverterCreatedEvent,
-    TagConverterRemovedEvent,
-    TagConverterUpdatedEvent,
-} from './tag-converter.events';
+    USER_CONVERTER_CREATED,
+    USER_CONVERTER_REMOVED,
+    USER_CONVERTER_UPDATED,
+    UserConverterCreatedEvent,
+    UserConverterRemovedEvent,
+    UserConverterUpdatedEvent,
+} from './user-converter.events';
 
-describe('TagConverterEventListener', () => {
+describe('UserConverterEventListener', () => {
   let module: TestingModule;
   let eventEmitter: EventEmitter2;
   const emit = jest.fn();
-  const dto: TagConverterDto = {
-    id: 'tag-converter-id',
-    tag: 'tag',
+  const dto: UserConverterDto = {
+    id: 'user-converter-id',
+    username: 'username',
     convertTo: { default: 'converted' },
     createdAt: '2026-07-22T00:00:00.000Z',
     updatedAt: '2026-07-22T00:00:00.000Z',
@@ -30,7 +30,7 @@ describe('TagConverterEventListener', () => {
     module = await Test.createTestingModule({
       imports: [EventEmitterModule.forRoot()],
       providers: [
-        TagConverterEventListener,
+        UserConverterEventListener,
         { provide: WSGateway, useValue: { emit } },
       ],
     }).compile();
@@ -43,25 +43,25 @@ describe('TagConverterEventListener', () => {
   });
 
   it.each([
-    [TAG_CONVERTER_CREATED, new TagConverterCreatedEvent(dto)],
-    [TAG_CONVERTER_UPDATED, new TagConverterUpdatedEvent(dto)],
+    [USER_CONVERTER_CREATED, new UserConverterCreatedEvent(dto)],
+    [USER_CONVERTER_UPDATED, new UserConverterUpdatedEvent(dto)],
   ])('maps %s to an upsert delta', (topic, event) => {
     eventEmitter.emit(topic, event);
 
     expect(emit).toHaveBeenCalledWith({
-      event: TAG_CONVERTER_DELTA,
+      event: USER_CONVERTER_DELTA,
       data: { upserts: [dto], removedIds: [] },
     });
   });
 
   it('maps removals to a removal delta', () => {
     eventEmitter.emit(
-      TAG_CONVERTER_REMOVED,
-      new TagConverterRemovedEvent(dto.id),
+      USER_CONVERTER_REMOVED,
+      new UserConverterRemovedEvent(dto.id),
     );
 
     expect(emit).toHaveBeenCalledWith({
-      event: TAG_CONVERTER_DELTA,
+      event: USER_CONVERTER_DELTA,
       data: { upserts: [], removedIds: [dto.id] },
     });
   });
@@ -73,8 +73,8 @@ describe('TagConverterEventListener', () => {
 
     expect(() =>
       eventEmitter.emit(
-        TAG_CONVERTER_CREATED,
-        new TagConverterCreatedEvent(dto),
+        USER_CONVERTER_CREATED,
+        new UserConverterCreatedEvent(dto),
       ),
     ).not.toThrow();
   });

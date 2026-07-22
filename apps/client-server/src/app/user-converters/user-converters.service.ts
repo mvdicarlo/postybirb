@@ -1,21 +1,25 @@
 import { Injectable, Optional } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { UserConverter, UserConverterRepository } from '@postybirb/database';
-import { USER_CONVERTER_UPDATES } from '@postybirb/socket-events';
 import { DynamicObject, EntityId } from '@postybirb/types';
 import { eq } from 'drizzle-orm';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { WSGateway } from '../web-socket/web-socket-gateway';
 import { Website } from '../websites/website';
 import { CreateUserConverterDto } from './dtos/create-user-converter.dto';
 import { UpdateUserConverterDto } from './dtos/update-user-converter.dto';
+import {
+    USER_CONVERTER_CREATED,
+    USER_CONVERTER_REMOVED,
+    USER_CONVERTER_UPDATED,
+    UserConverterCreatedEvent,
+    UserConverterRemovedEvent,
+    UserConverterUpdatedEvent,
+} from './user-converter.events';
 
 @Injectable()
 export class UserConvertersService extends PostyBirbService<UserConverterRepository> {
-  constructor(@Optional() webSocket?: WSGateway) {
-    super(new UserConverterRepository(), webSocket);
-    this.repository.subscribe('UserConverterSchema', () => {
-      this.emit();
-    });
+  constructor(@Optional() private readonly eventEmitter?: EventEmitter2) {
+    super(new UserConverterRepository());
   }
 
   async create(createDto: CreateUserConverterDto): Promise<UserConverter> {
@@ -23,12 +27,36 @@ export class UserConvertersService extends PostyBirbService<UserConverterReposit
       .withMetadata(createDto)
       .info(`Creating UserConverter '${createDto.username}'`);
     await this.throwIfExists(eq(this.table.username, createDto.username));
-    return this.repository.insert(createDto);
+    const entity = await this.repository.insert(createDto);
+    this.eventEmitter?.emit(
+      USER_CONVERTER_CREATED,
+      new UserConverterCreatedEvent(entity.toDTO()),
+    );
+    return entity;
   }
 
-  update(id: EntityId, update: UpdateUserConverterDto) {
+  async update(
+    id: EntityId,
+    update: UpdateUserConverterDto,
+  ): Promise<UserConverter> {
     this.logger.withMetadata(update).info(`Updating UserConverter '${id}'`);
-    return this.repository.update(id, update);
+    const entity = await this.repository.update(id, update);
+    this.eventEmitter?.emit(
+      USER_CONVERTER_UPDATED,
+      new UserConverterUpdatedEvent(entity.toDTO()),
+    );
+    return entity;
+  }
+
+  override async remove(id: EntityId): Promise<void> {
+    this.logger.withMetadata({ id }).info(`Removing entity '${id}'`);
+    const result = await this.repository.deleteById([id]);
+    if (result.changes > 0) {
+      this.eventEmitter?.emit(
+        USER_CONVERTER_REMOVED,
+        new UserConverterRemovedEvent(id),
+      );
+    }
   }
 
   /**
@@ -51,12 +79,5 @@ export class UserConvertersService extends PostyBirbService<UserConverterReposit
       converter.convertTo.default ??
       username
     );
-  }
-
-  protected async emit() {
-    super.emit({
-      event: USER_CONVERTER_UPDATES,
-      data: (await this.repository.findAll()).map((entity) => entity.toDTO()),
-    });
   }
 }

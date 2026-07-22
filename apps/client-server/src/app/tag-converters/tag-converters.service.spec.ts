@@ -5,12 +5,12 @@ import { clearDatabase } from '@postybirb/database';
 import { CreateTagConverterDto } from './dtos/create-tag-converter.dto';
 import { UpdateTagConverterDto } from './dtos/update-tag-converter.dto';
 import {
-  TAG_CONVERTER_CREATED,
-  TAG_CONVERTER_REMOVED,
-  TAG_CONVERTER_UPDATED,
-  TagConverterCreatedEvent,
-  TagConverterRemovedEvent,
-  TagConverterUpdatedEvent,
+    TAG_CONVERTER_CREATED,
+    TAG_CONVERTER_REMOVED,
+    TAG_CONVERTER_UPDATED,
+    TagConverterCreatedEvent,
+    TagConverterRemovedEvent,
+    TagConverterUpdatedEvent,
 } from './tag-converter.events';
 import { TagConvertersService } from './tag-converters.service';
 
