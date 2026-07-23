@@ -1,23 +1,19 @@
 import {
-  BadRequestException,
-  Injectable,
-  OnModuleDestroy,
-  OnModuleInit,
-  Optional,
+    BadRequestException,
+    Injectable,
+    OnModuleInit,
+    Optional,
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Account, AccountRepository } from '@postybirb/database';
 import {
-  AccountId,
-  IAccountDto,
-  IWebsiteMetadata,
-  NULL_ACCOUNT_ID,
-  NullAccount,
+    AccountId,
+    IAccountDto,
+    NULL_ACCOUNT_ID,
+    NullAccount,
 } from '@postybirb/types';
 import { ne } from 'drizzle-orm';
-import { Class } from 'type-fest';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { UnknownWebsite } from '../websites/website';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { publishAccountRemoved } from './account.events';
 import { CreateAccountDto } from './dtos/create-account.dto';
@@ -26,21 +22,12 @@ import { UpdateAccountDto } from './dtos/update-account.dto';
 
 /**
  * Service responsible for returning Account data.
- * Also stores login refresh timers for initiating login checks.
  */
 @Injectable()
 export class AccountService
   extends PostyBirbService<AccountRepository>
-  implements OnModuleInit, OnModuleDestroy
+  implements OnModuleInit
 {
-  private readonly loginRefreshTimers: Record<
-    string,
-    {
-      timer: NodeJS.Timeout;
-      websites: Class<UnknownWebsite>[];
-    }
-  > = {};
-
   constructor(
     private readonly websiteRegistry: WebsiteRegistryService,
     @Optional() private readonly eventEmitter?: EventEmitter2,
@@ -48,14 +35,8 @@ export class AccountService
     super(new AccountRepository());
   }
 
-  onModuleDestroy(): void {
-    Object.values(this.loginRefreshTimers).forEach(({ timer }) => {
-      clearInterval(timer);
-    });
-  }
-
   /**
-   * Initializes all website login timers and creates instances for known accounts.
+   * Creates website instances for known accounts.
    * Heavy operations are deferred to avoid blocking application startup.
    */
   async onModuleInit() {
@@ -67,11 +48,6 @@ export class AccountService
       try {
         await this.deleteUnregisteredAccounts();
         await this.initWebsiteRegistry();
-        this.initWebsiteLoginRefreshTimers();
-
-        Object.keys(this.loginRefreshTimers).forEach((interval) =>
-          this.executeOnLoginForInterval(interval),
-        );
       } catch (error) {
         this.logger.withError(error).error('Failed to initialize Accounts');
       } finally {
@@ -136,60 +112,6 @@ export class AccountService
   }
 
   /**
-   * Creates website login check timers.
-   */
-  private initWebsiteLoginRefreshTimers(): void {
-    const availableWebsites = this.websiteRegistry.getAvailableWebsites();
-    availableWebsites.forEach((website) => {
-      const interval: number =
-        (website.prototype.decoratedProps.metadata as IWebsiteMetadata)
-          .refreshInterval ?? 60_000 * 60;
-      if (!this.loginRefreshTimers[interval]) {
-        this.loginRefreshTimers[interval] = {
-          websites: [],
-          timer: setInterval(() => {
-            this.executeOnLoginForInterval(interval);
-          }, interval),
-        };
-      }
-
-      this.loginRefreshTimers[interval].websites.push(website);
-    });
-  }
-
-  /**
-   * Runs login on all created website instances within a specific interval.
-   * The mutex inside website.login() ensures only one login runs at a time
-   * per instance; concurrent callers simply wait and get the fresh state.
-   *
-   * @param {string} interval
-   */
-  private async executeOnLoginForInterval(interval: string | number) {
-    const { websites } = this.loginRefreshTimers[interval];
-    websites.forEach((website) => {
-      this.websiteRegistry.getInstancesOf(website).forEach((instance) => {
-        // Fire-and-forget — the poller will detect state changes
-        instance.login().catch((e) => {
-          this.logger.withError(e).error(`Login failed for ${instance.id}`);
-        });
-      });
-    });
-  }
-
-  /**
-   * Logic that needs to be run after an account is created.
-   *
-   * @param {Account} account
-   * @param {UnknownWebsite} website
-   */
-  private afterCreate(account: Account, website: UnknownWebsite) {
-    // Fire-and-forget — poller picks up the state change
-    website.login().catch((e) => {
-      this.logger.withError(e).error(`Initial login failed for ${website.id}`);
-    });
-  }
-
-  /**
    * Ensures a website instance is registered for an account that already
    * exists in the database (e.g. from a legacy import). Creates the instance
    * if it doesn't already exist, then triggers login.
@@ -249,9 +171,8 @@ export class AccountService
       );
     }
     const account = await this.repository.insert(new Account(createDto));
-    let instance: UnknownWebsite;
     try {
-      instance = await this.websiteRegistry.create(account);
+      await this.websiteRegistry.create(account);
     } catch (error) {
       try {
         await this.repository.deleteById([account.id]);
@@ -262,7 +183,6 @@ export class AccountService
       }
       throw error;
     }
-    this.afterCreate(account, instance);
     return account;
   }
 

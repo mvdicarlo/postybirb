@@ -111,6 +111,31 @@ describe('Website', () => {
     expect(onDelete).toHaveBeenCalledTimes(1);
   });
 
+  it('should own and dispose its login refresh timer', async () => {
+    const setIntervalSpy = jest.spyOn(global, 'setInterval');
+    const clearIntervalSpy = jest.spyOn(global, 'clearInterval');
+    const website = new TestWebsite(await populateAccount(), platformContext);
+    const onLogin = jest.spyOn(website as any, 'onLogin');
+    website.decoratedProps.metadata.refreshInterval = 1_234;
+
+    try {
+      await website.onInitialize(repository);
+      await website.login();
+
+      expect(onLogin).toHaveBeenCalledTimes(1);
+      expect(setIntervalSpy).toHaveBeenCalledWith(expect.any(Function), 1_234);
+      const timer = setIntervalSpy.mock.results.at(-1)?.value;
+
+      await website.dispose();
+
+      expect(clearIntervalSpy).toHaveBeenCalledWith(timer);
+    } finally {
+      await website.dispose();
+      setIntervalSpy.mockRestore();
+      clearIntervalSpy.mockRestore();
+    }
+  });
+
   it('should keep mutable decorator properties isolated per instance', async () => {
     const first = new TestWebsite(await populateAccount(), platformContext);
     const secondAccount = await saveFromEntity(

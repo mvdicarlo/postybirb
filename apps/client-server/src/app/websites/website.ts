@@ -6,14 +6,13 @@ import {
   PlatformService,
 } from '@postybirb/platform';
 import {
-  AccountId,
   DynamicObject,
   IAccountDto,
   ILoginState,
   IWebsiteFormFields,
   LoginResult,
   LoginState,
-  SubmissionType,
+  SubmissionType
 } from '@postybirb/types';
 import { Mutex } from 'async-mutex';
 import { SubmissionValidator } from './commons/validator';
@@ -48,6 +47,8 @@ const COOKIE_CHANGE_DEBOUNCE_MS = 1_000;
  * re-trigger a login and create a feedback loop.
  */
 const COOKIE_SELF_MUTATION_BUFFER_MS = 1_000;
+
+const DEFAULT_LOGIN_REFRESH_INTERVAL_MS = 60 * 60_000;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type UnknownWebsite = Website<any>;
@@ -91,6 +92,8 @@ export abstract class Website<
   private disposePromise?: Promise<void>;
 
   private deletePromise?: Promise<void>;
+
+  private loginRefreshTimer?: NodeJS.Timeout;
 
   /**
    * Ignorable noisy cookies that are written by the website but not relevant to our login state.
@@ -437,6 +440,7 @@ export abstract class Website<
     );
     this.subscribeToCookieChanges();
     this.notifyAccountProjectionChanged();
+    this.startLoginRefresh();
   }
 
   private notifyAccountProjectionChanged(): void {
@@ -448,6 +452,10 @@ export abstract class Website<
   public dispose(): Promise<void> {
     if (!this.disposePromise) {
       this.disposed = true;
+      if (this.loginRefreshTimer) {
+        clearInterval(this.loginRefreshTimer);
+        this.loginRefreshTimer = undefined;
+      }
       this.unsubscribeFromCookieChanges();
       this.disposePromise = this.loginMutex.waitForUnlock();
     }
@@ -478,6 +486,25 @@ export abstract class Website<
 
   protected async onDelete(): Promise<void> {
     // Optional implementation-specific cleanup.
+  }
+
+  private startLoginRefresh(): void {
+    if (this.loginRefreshTimer) {
+      clearInterval(this.loginRefreshTimer);
+    }
+    const refreshInterval =
+      this.decoratedProps.metadata.refreshInterval ??
+      DEFAULT_LOGIN_REFRESH_INTERVAL_MS;
+    this.loginRefreshTimer = setInterval(() => {
+      this.executeLoginRefresh();
+    }, refreshInterval);
+    this.executeLoginRefresh();
+  }
+
+  private executeLoginRefresh(): void {
+    this.login().catch((error) => {
+      this.logger.withError(error).error(`Login refresh failed for ${this.id}`);
+    });
   }
 
   /**
