@@ -1,10 +1,18 @@
+import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Account, clearDatabase } from '@postybirb/database';
-import { NULL_ACCOUNT_ID } from '@postybirb/types';
+import { IAccountDto, NULL_ACCOUNT_ID } from '@postybirb/types';
 import { noopPlatformProvider } from '../platform/testing/noop-platform-providers';
+import {
+  EntityCreatedEvent,
+  EntityRemovedEvent,
+  EntityUpdatedEvent,
+  getEntityCrudEventNames,
+} from '../common/events/entity-crud.events';
 import { waitUntil } from '../utils/wait.util';
 import { WebsiteImplProvider } from '../websites/implementations/provider';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
+import { ACCOUNT_EVENT_PREFIX } from './account.events';
 import { AccountService } from './account.service';
 import { CreateAccountDto } from './dtos/create-account.dto';
 
@@ -12,6 +20,9 @@ describe('AccountsService', () => {
   let service: AccountService;
   let registryService: WebsiteRegistryService;
   let module: TestingModule;
+  let eventEmitter: EventEmitter2;
+  let emit: jest.SpyInstance;
+  const eventNames = getEntityCrudEventNames(ACCOUNT_EVENT_PREFIX);
 
   // Mock objects for deleteUnregisteredAccounts tests
   let mockRepository: any;
@@ -51,6 +62,7 @@ describe('AccountsService', () => {
   beforeEach(async () => {
     clearDatabase();
     module = await Test.createTestingModule({
+      imports: [EventEmitterModule.forRoot()],
       providers: [
         AccountService,
         WebsiteRegistryService,
@@ -63,8 +75,10 @@ describe('AccountsService', () => {
     registryService = module.get<WebsiteRegistryService>(
       WebsiteRegistryService,
     );
+    eventEmitter = module.get<EventEmitter2>(EventEmitter2);
+    emit = jest.spyOn(eventEmitter, 'emit');
 
-    await service.onModuleInit();
+    await module.init();
   });
 
   afterAll(async () => {
@@ -98,9 +112,35 @@ describe('AccountsService', () => {
     expect(instance?.getWebsiteData()).toEqual({
       test: 'test-mode-2',
     });
+    await waitUntil(
+      () =>
+        emit.mock.calls.some(
+          ([event, events]) =>
+            event === eventNames.updated &&
+            (events as EntityUpdatedEvent<IAccountDto>[]).some(
+              ({ entity }) =>
+                entity.id === record.id &&
+                entity.data.test === 'test-mode-2',
+            ),
+        ),
+      10,
+    );
 
     await service.clearAccountData(record.id);
     expect(instance?.getWebsiteData()).toEqual({});
+    await waitUntil(
+      () =>
+        emit.mock.calls.some(
+          ([event, events]) =>
+            event === eventNames.updated &&
+            (events as EntityUpdatedEvent<IAccountDto>[]).some(
+              ({ entity }) =>
+                entity.id === record.id &&
+                Object.keys(entity.data).length === 0,
+            ),
+        ),
+      10,
+    );
   }, 10000);
 
   it('should create entities', async () => {
@@ -145,6 +185,23 @@ describe('AccountsService', () => {
     });
   }, 10000);
 
+  it('should roll back a create when website initialization fails', async () => {
+    jest
+      .spyOn(registryService, 'create')
+      .mockRejectedValueOnce(new Error('Initialization failed'));
+    const dto = new CreateAccountDto();
+    dto.groups = [];
+    dto.name = 'test';
+    dto.website = 'test';
+
+    await expect(service.create(dto)).rejects.toThrow('Initialization failed');
+
+    expect(await service.findAll()).toHaveLength(0);
+    expect(
+      emit.mock.calls.some(([event]) => event === eventNames.created),
+    ).toBe(false);
+  });
+
   it('should support crud operations', async () => {
     const createAccount: CreateAccountDto = new CreateAccountDto();
     createAccount.name = 'test';
@@ -153,15 +210,38 @@ describe('AccountsService', () => {
     // Create
     const account = await service.create(createAccount);
     expect(account).toBeDefined();
+    expect(emit).toHaveBeenCalledWith(eventNames.created, [
+      expect.objectContaining<EntityCreatedEvent<unknown>>({
+        entity: expect.objectContaining({
+          id: account.id,
+          name: createAccount.name,
+          website: createAccount.website,
+        }),
+      }),
+    ]);
     expect(await service.findAll()).toHaveLength(1);
     expect(await service.findById(account.id)).toBeDefined();
 
     // Update
-    await service.update(account.id, { name: 'Updated', groups: [] });
-    expect(await (await service.findByIdOrThrow(account.id)).name).toEqual('Updated');
+    const updated = await service.update(account.id, {
+      name: 'Updated',
+      groups: [],
+    });
+    expect(updated.name).toEqual('Updated');
+    expect(emit).toHaveBeenCalledWith(eventNames.updated, [
+      expect.objectContaining<EntityUpdatedEvent<unknown>>({
+        entity: expect.objectContaining({
+          id: updated.id,
+          name: updated.name,
+        }),
+      }),
+    ]);
 
     // Remove
     await service.remove(account.id);
+    expect(emit).toHaveBeenCalledWith(eventNames.removed, [
+      new EntityRemovedEvent(account.id),
+    ]);
     expect(await service.findAll()).toHaveLength(0);
   });
 
@@ -186,6 +266,7 @@ describe('AccountsService', () => {
       mockLogger = {
         withMetadata: jest.fn().mockReturnThis(),
         withError: jest.fn().mockReturnThis(),
+        info: jest.fn(),
         warn: jest.fn(),
         error: jest.fn(),
       };
@@ -206,7 +287,7 @@ describe('AccountsService', () => {
         return website === 'registered-website';
       });
 
-      mockRepository.deleteById.mockResolvedValue(undefined);
+      mockRepository.deleteById.mockResolvedValue({ changes: 1 });
     });
 
     it('should delete accounts for unregistered websites', async () => {
@@ -259,7 +340,7 @@ describe('AccountsService', () => {
     it('should handle deletion errors gracefully', async () => {
       const deleteError = new Error('Database deletion failed');
       mockRepository.deleteById
-        .mockResolvedValueOnce(undefined) // First deletion succeeds
+        .mockResolvedValueOnce({ changes: 1 }) // First deletion succeeds
         .mockRejectedValueOnce(deleteError); // Second deletion fails
 
       await (service as any).deleteUnregisteredAccounts();

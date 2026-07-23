@@ -1,14 +1,16 @@
 import {
   BadRequestException,
   Injectable,
+  OnModuleDestroy,
   OnModuleInit,
   Optional,
 } from '@nestjs/common';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Account, AccountRepository } from '@postybirb/database';
-import { ACCOUNT_UPDATES } from '@postybirb/socket-events';
 import {
   AccountId,
+  IAccountDto,
   IWebsiteMetadata,
   NULL_ACCOUNT_ID,
   NullAccount,
@@ -17,9 +19,13 @@ import { IsTestEnvironment } from '@postybirb/utils/common';
 import { ne } from 'drizzle-orm';
 import { Class } from 'type-fest';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { WSGateway } from '../web-socket/web-socket-gateway';
 import { UnknownWebsite } from '../websites/website';
+import {
+  WEBSITE_DATA_CHANGED,
+  WebsiteDataChangedEvent,
+} from '../websites/website-data.events';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
+import { ACCOUNT_EVENT_PREFIX } from './account.events';
 import { CreateAccountDto } from './dtos/create-account.dto';
 import { SetWebsiteDataRequestDto } from './dtos/set-website-data-request.dto';
 import { UpdateAccountDto } from './dtos/update-account.dto';
@@ -32,7 +38,7 @@ import { LoginStatePoller } from './login-state-poller';
 @Injectable()
 export class AccountService
   extends PostyBirbService<AccountRepository>
-  implements OnModuleInit
+  implements OnModuleInit, OnModuleDestroy
 {
   private readonly loginRefreshTimers: Record<
     string,
@@ -44,16 +50,65 @@ export class AccountService
 
   private readonly loginStatePoller: LoginStatePoller;
 
+  @OnEvent(WEBSITE_DATA_CHANGED)
+  private async websiteDataChanged(
+    events: WebsiteDataChangedEvent[],
+  ): Promise<void> {
+    try {
+      await this.publishUpdatedAccounts(
+        events.map((event) => event.accountId),
+      );
+    } catch (error) {
+      this.logger
+        .withError(error)
+        .error('Failed to publish account data update');
+    }
+  }
+
   constructor(
     private readonly websiteRegistry: WebsiteRegistryService,
-    @Optional() webSocket?: WSGateway,
+    @Optional() eventEmitter?: EventEmitter2,
   ) {
-    super(new AccountRepository(), webSocket);
-    this.repository.subscribe('AccountSchema', () => this.emit());
-    this.loginStatePoller = new LoginStatePoller(this.websiteRegistry, () => {
-      this.emit();
-      this.websiteRegistry.emit();
+    super(new AccountRepository());
+    this.configureCrudEvents(ACCOUNT_EVENT_PREFIX, eventEmitter);
+    this.loginStatePoller = new LoginStatePoller(
+      this.websiteRegistry,
+      (accountIds) => {
+        this.publishUpdatedAccounts(accountIds).catch((error) => {
+          this.logger
+            .withError(error)
+            .error('Failed to publish account login-state update');
+        });
+      },
+    );
+  }
+
+  onModuleDestroy(): void {
+    Object.values(this.loginRefreshTimers).forEach(({ timer }) => {
+      clearInterval(timer);
     });
+  }
+
+  private async resolveAccountDtos(
+    accountIds: AccountId[],
+  ): Promise<IAccountDto[]> {
+    const uniqueIds = [
+      ...new Set(accountIds.filter((id) => id !== NULL_ACCOUNT_ID)),
+    ];
+    const accounts = await Promise.all(
+      uniqueIds.map((id) => this.repository.findById(id)),
+    );
+    return accounts
+      .filter((account): account is Account => Boolean(account))
+      .map((account) => this.injectWebsiteInstance(account).toDTO());
+  }
+
+  async publishCreatedAccounts(accountIds: AccountId[]): Promise<void> {
+    this.publishCreated(await this.resolveAccountDtos(accountIds));
+  }
+
+  async publishUpdatedAccounts(accountIds: AccountId[]): Promise<void> {
+    this.publishUpdated(await this.resolveAccountDtos(accountIds));
   }
 
   /**
@@ -71,7 +126,9 @@ export class AccountService
       this.websiteRegistry.markAsInitialized();
       this.initWebsiteLoginRefreshTimers();
 
-      this.emit();
+      this.publishUpdated(
+        (await this.findAll()).map((account) => account.toDTO()),
+      );
 
       Object.keys(this.loginRefreshTimers).forEach((interval) =>
         this.executeOnLoginForInterval(interval),
@@ -104,7 +161,7 @@ export class AccountService
           .warn(
             `Deleting unregistered account: ${account.id} (${account.name})`,
           );
-        await this.repository.deleteById([account.id]);
+        await super.remove(account.id);
       } catch (err) {
         this.logger
           .withError(err)
@@ -156,16 +213,6 @@ export class AccountService
       }
 
       this.loginRefreshTimers[interval].websites.push(website);
-    });
-  }
-
-  public async emit() {
-    const dtos = await this.findAll().then((accounts) =>
-      accounts.map((a) => this.injectWebsiteInstance(a)),
-    );
-    super.emit({
-      event: ACCOUNT_UPDATES,
-      data: dtos.map((dto) => dto.toDTO()),
     });
   }
 
@@ -263,9 +310,23 @@ export class AccountService
       );
     }
     const account = await this.repository.insert(new Account(createDto));
-    const instance = await this.websiteRegistry.create(account);
+    let instance: UnknownWebsite;
+    try {
+      instance = await this.websiteRegistry.create(account);
+    } catch (error) {
+      try {
+        await this.repository.deleteById([account.id]);
+      } catch (rollbackError) {
+        this.logger
+          .withError(rollbackError)
+          .error(`Failed to roll back Account '${account.id}'`);
+      }
+      throw error;
+    }
     this.afterCreate(account, instance);
-    return account.withWebsiteInstance(instance);
+    const created = account.withWebsiteInstance(instance);
+    this.publishCreated(created.toDTO());
+    return created;
   }
 
   public async findById(id: AccountId): Promise<Account | null> {
@@ -289,15 +350,23 @@ export class AccountService
 
   async update(id: AccountId, update: UpdateAccountDto) {
     this.logger.withMetadata(update).info(`Updating Account '${id}'`);
-    return this.repository
-      .update(id, update)
-      .then((account) => this.injectWebsiteInstance(account));
+    const account = this.injectWebsiteInstance(
+      await this.repository.update(id, update),
+    );
+    this.publishUpdated(account.toDTO());
+    return account;
   }
 
   async remove(id: AccountId): Promise<void> {
     const account = await this.findById(id);
     if (account) {
-      this.websiteRegistry.remove(account);
+      try {
+        await this.websiteRegistry.remove(account);
+      } catch (error) {
+        this.logger
+          .withError(error)
+          .error(`Failed to clean up website data for Account '${id}'`);
+      }
     }
     await super.remove(id);
   }

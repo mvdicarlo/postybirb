@@ -1,6 +1,6 @@
 import { WebsiteData, WebsiteDataRepository } from '@postybirb/database';
 import { Logger, PostyBirbLogger } from '@postybirb/logger';
-import { DynamicObject, IAccount } from '@postybirb/types';
+import { AccountId, DynamicObject, IAccount } from '@postybirb/types';
 
 /**
  * Saves website specific data associated with an account.
@@ -17,6 +17,8 @@ export default class WebsiteDataManager<T extends DynamicObject> {
   private initialized: boolean;
 
   private repository: WebsiteDataRepository;
+
+  private onDataChanged?: (accountId: AccountId) => void;
 
   constructor(userAccount: IAccount) {
     this.account = userAccount;
@@ -46,9 +48,13 @@ export default class WebsiteDataManager<T extends DynamicObject> {
    * Initializes the internal WebsiteData entity.
    * @param {WebsiteDataRepository} repository
    */
-  public async initialize(repository: WebsiteDataRepository) {
+  public async initialize(
+    repository: WebsiteDataRepository,
+    onDataChanged?: (accountId: AccountId) => void,
+  ) {
     if (!this.initialized) {
       this.repository = repository;
+      this.onDataChanged = onDataChanged;
       await this.createOrLoadWebsiteData();
       this.initialized = true;
     }
@@ -68,6 +74,7 @@ export default class WebsiteDataManager<T extends DynamicObject> {
     if (recreateEntity) {
       // Do a reload to recreate an object that hasn't been saved.
       await this.createOrLoadWebsiteData();
+      this.onDataChanged?.(this.account.id);
     }
   }
 
@@ -91,8 +98,15 @@ export default class WebsiteDataManager<T extends DynamicObject> {
    */
   public async setData(data: T) {
     if (JSON.stringify(data) !== JSON.stringify(this.entity.data)) {
+      const previousData = this.entity.data;
       this.entity.data = { ...data };
-      await this.saveData();
+      try {
+        await this.saveData();
+      } catch (error) {
+        this.entity.data = previousData;
+        throw error;
+      }
+      this.onDataChanged?.(this.account.id);
     }
   }
 }

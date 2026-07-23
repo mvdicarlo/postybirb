@@ -6,6 +6,7 @@ import {
   PlatformService,
 } from '@postybirb/platform';
 import {
+  AccountId,
   DynamicObject,
   ILoginState,
   IWebsiteFormFields,
@@ -368,8 +369,12 @@ export abstract class Website<
    */
   public async onInitialize(
     websiteDataRepository: WebsiteDataRepository,
+    onWebsiteDataChanged?: (accountId: AccountId) => void,
   ): Promise<void> {
-    await this.websiteDataStore.initialize(websiteDataRepository);
+    await this.websiteDataStore.initialize(
+      websiteDataRepository,
+      onWebsiteDataChanged,
+    );
     this.subscribeToCookieChanges();
   }
 

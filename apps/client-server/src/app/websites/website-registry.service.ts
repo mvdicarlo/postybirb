@@ -3,8 +3,11 @@ import {
     Inject,
     Injectable,
     NotFoundException,
+    OnModuleDestroy,
+    OnModuleInit,
     Optional,
 } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Account, AccountRepository, WebsiteDataRepository } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import { PlatformService } from '@postybirb/platform';
@@ -17,6 +20,8 @@ import {
 } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/common';
 import { Class } from 'type-fest';
+import { ACCOUNT_EVENT_PREFIX } from '../account/account.events';
+import { getEntityCrudEventNames } from '../common/events/entity-crud.events';
 import { WEBSITE_IMPLEMENTATIONS } from '../constants';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { validateWebsiteDecoratorProps } from './decorators/website-decorator-props';
@@ -26,6 +31,7 @@ import { FileWebsiteKey } from './models/website-modifiers/file-website';
 import { MessageWebsiteKey } from './models/website-modifiers/message-website';
 import { OAuthWebsite } from './models/website-modifiers/oauth-website';
 import { UnknownWebsite } from './website';
+import { publishWebsiteDataChanged } from './website-data.events';
 
 type WebsiteInstances = Record<string, Record<string, UnknownWebsite>>;
 
@@ -34,7 +40,7 @@ type WebsiteInstances = Record<string, Record<string, UnknownWebsite>>;
  * Creates a new instance for each user account provided.
  */
 @Injectable()
-export class WebsiteRegistryService {
+export class WebsiteRegistryService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = Logger();
 
   private readonly availableWebsites: Record<string, Class<UnknownWebsite>> =
@@ -52,10 +58,23 @@ export class WebsiteRegistryService {
 
   private readonly initializedPromise: Promise<void>;
 
+  private readonly accountEventNames = getEntityCrudEventNames(
+    ACCOUNT_EVENT_PREFIX,
+  );
+
+  private readonly accountEventListener = () => {
+    this.emit().catch((error) => {
+      this.logger.withError(error).error('Failed to emit website updates');
+    });
+  };
+
+  private isListening = false;
+
   constructor(
     @Inject(WEBSITE_IMPLEMENTATIONS)
     private readonly websiteImplementations: Class<UnknownWebsite>[],
     private readonly platform: PlatformService,
+    @Optional() private readonly eventEmitter?: EventEmitter2,
     @Optional() private readonly webSocket?: WSGateway,
   ) {
     this.initializedPromise = new Promise<void>((resolve) => {
@@ -83,10 +102,44 @@ export class WebsiteRegistryService {
 
     this.accountRepository = new AccountRepository();
     this.websiteDataRepository = new WebsiteDataRepository();
-    this.accountRepository.subscribe(
-      ['AccountSchema', 'WebsiteDataSchema'],
-      () => this.emit(),
+  }
+
+  onModuleInit(): void {
+    if (!this.eventEmitter || this.isListening) {
+      return;
+    }
+    this.eventEmitter?.on(
+      this.accountEventNames.created,
+      this.accountEventListener,
     );
+    this.eventEmitter?.on(
+      this.accountEventNames.updated,
+      this.accountEventListener,
+    );
+    this.eventEmitter?.on(
+      this.accountEventNames.removed,
+      this.accountEventListener,
+    );
+    this.isListening = true;
+  }
+
+  onModuleDestroy(): void {
+    if (!this.isListening) {
+      return;
+    }
+    this.eventEmitter?.off(
+      this.accountEventNames.created,
+      this.accountEventListener,
+    );
+    this.eventEmitter?.off(
+      this.accountEventNames.updated,
+      this.accountEventListener,
+    );
+    this.eventEmitter?.off(
+      this.accountEventNames.removed,
+      this.accountEventListener,
+    );
+    this.isListening = false;
   }
 
   public async emit() {
@@ -179,13 +232,13 @@ export class WebsiteRegistryService {
 
       if (!this.websiteInstances[website][id]) {
         // this.logger.info(`Creating instance of '${website}' with id '${id}'`);
-        this.websiteInstances[website][id] = new WebsiteCtor(
-          account,
-          this.platform,
-        );
-        await this.websiteInstances[website][id].onInitialize(
+        const instance = new WebsiteCtor(account, this.platform);
+        await instance.onInitialize(
           this.websiteDataRepository,
+          (accountId) =>
+            publishWebsiteDataChanged(this.eventEmitter, accountId),
         );
+        this.websiteInstances[website][id] = instance;
       } else {
         this.logger.warn(
           `An instance of "${website}" with id '${id}' already exists`,
@@ -292,8 +345,11 @@ export class WebsiteRegistryService {
     const instance = this.findInstance(account);
     if (instance) {
       this.logger.info(`Removing and cleaning up ${website} - ${name} - ${id}`);
-      await instance.clearLoginStateAndData(true);
-      delete this.websiteInstances[website][id];
+      try {
+        await instance.clearLoginStateAndData(true);
+      } finally {
+        delete this.websiteInstances[website][id];
+      }
     }
   }
 

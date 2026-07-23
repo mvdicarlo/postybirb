@@ -1,11 +1,6 @@
-import { ACCOUNT_UPDATES } from '@postybirb/socket-events';
 import { IAccountDto } from '@postybirb/types';
-import { WebsocketEvent } from '../web-socket/models/web-socket-event';
+import { EntityDeltaEvent } from '../common/events/entity-crud.events';
 
-export type AccountEventTypes = AccountUpdateEvent;
+export const ACCOUNT_EVENT_PREFIX = 'account';
 
-class AccountUpdateEvent implements WebsocketEvent<IAccountDto[]> {
-  event: string = ACCOUNT_UPDATES;
-
-  data: IAccountDto[];
-}
+export type AccountEventTypes = EntityDeltaEvent<IAccountDto>;

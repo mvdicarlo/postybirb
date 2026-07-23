@@ -3,6 +3,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { DatabaseEntity } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import { PlatformService } from '@postybirb/platform';
+import { AccountId } from '@postybirb/types';
 import { join } from 'path';
 import { AccountService } from '../account/account.service';
 import { publishEntityCreated } from '../common/events/entity-crud.events';
@@ -42,9 +43,14 @@ export class LegacyDatabaseImporterService {
 
     const errors: Error[] = [];
     if (importRequest.accounts) {
+      const importedAccountIds: AccountId[] = [];
+      const importedWebsiteDataAccountIds: AccountId[] = [];
+
       // Import user accounts
       const result = await this.processImport(
-        new LegacyUserAccountConverter(path),
+        new LegacyUserAccountConverter(path, (account) => {
+          importedAccountIds.push(account.id);
+        }),
       );
       if (result.error) {
         errors.push(result.error);
@@ -54,7 +60,9 @@ export class LegacyDatabaseImporterService {
       // WebsiteData records have a foreign key reference to Account records.
       // The Account must exist before its associated WebsiteData can be created.
       const websiteDataResult = await this.processImport(
-        new LegacyWebsiteDataConverter(path),
+        new LegacyWebsiteDataConverter(path, (websiteData) => {
+          importedWebsiteDataAccountIds.push(websiteData.id);
+        }),
       );
       if (websiteDataResult.error) {
         errors.push(websiteDataResult.error);
@@ -63,9 +71,25 @@ export class LegacyDatabaseImporterService {
       const allAccounts = await this.accountService.findAll();
       for (const account of allAccounts) {
         if (account) {
-          await this.accountService.registerAndLogin(account.id);
+          try {
+            await this.accountService.registerAndLogin(account.id);
+          } catch (error) {
+            const registrationError = error as Error;
+            errors.push(registrationError);
+            this.logger
+              .withError(registrationError)
+              .error(`Failed to register imported Account '${account.id}'`);
+          }
         }
       }
+
+      await this.accountService.publishCreatedAccounts(importedAccountIds);
+      const importedAccountIdSet = new Set(importedAccountIds);
+      await this.accountService.publishUpdatedAccounts(
+        importedWebsiteDataAccountIds.filter(
+          (accountId) => !importedAccountIdSet.has(accountId),
+        ),
+      );
     }
 
     if (importRequest.tagGroups) {
