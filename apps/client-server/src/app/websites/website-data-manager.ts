@@ -67,14 +67,16 @@ export default class WebsiteDataManager<T extends DynamicObject> {
   /**
    * Deletes the internal WebsiteData entity and creates a new one.
    */
-  public async clearData(recreateEntity = true) {
+  public async clearData(recreateEntity = true, notify = true) {
     this.logger.info('Clearing website data');
     await this.repository.deleteById([this.entity.id]);
 
     if (recreateEntity) {
       // Do a reload to recreate an object that hasn't been saved.
       await this.createOrLoadWebsiteData();
-      this.onDataChanged?.(this.account.id);
+      if (notify) {
+        this.onDataChanged?.(this.account.id);
+      }
     }
   }
 
@@ -96,7 +98,7 @@ export default class WebsiteDataManager<T extends DynamicObject> {
    * Sets WebsiteData value.
    * @param {T} data
    */
-  public async setData(data: T) {
+  public async setData(data: T, notify = true): Promise<boolean> {
     if (JSON.stringify(data) !== JSON.stringify(this.entity.data)) {
       const previousData = this.entity.data;
       this.entity.data = { ...data };
@@ -106,7 +108,11 @@ export default class WebsiteDataManager<T extends DynamicObject> {
         this.entity.data = previousData;
         throw error;
       }
-      this.onDataChanged?.(this.account.id);
+      if (notify) {
+        this.onDataChanged?.(this.account.id);
+      }
+      return true;
     }
+    return false;
   }
 }

@@ -8,6 +8,7 @@ import {
 import {
   AccountId,
   DynamicObject,
+  IAccountDto,
   ILoginState,
   IWebsiteFormFields,
   LoginResult,
@@ -16,7 +17,11 @@ import {
 } from '@postybirb/types';
 import { Mutex } from 'async-mutex';
 import { SubmissionValidator } from './commons/validator';
-import { WebsiteDecoratorProps } from './decorators/website-decorator-props';
+import {
+  cloneWebsiteDecoratorProps,
+  cloneWebsiteFileOptions,
+  WebsiteDecoratorProps,
+} from './decorators/website-decorator-props';
 import { DataPropertyAccessibility } from './models/data-property-accessibility';
 import {
   FileWebsiteKey,
@@ -56,7 +61,7 @@ export abstract class Website<
   /**
    * User account info for reference primarily during posting and login.
    */
-  public readonly account: Account;
+  public account: Account;
 
   /**
    * Data store for website data that is persisted to dick and read on initialization.
@@ -78,6 +83,14 @@ export abstract class Website<
    * by the login lifecycle; reassigned (never mutated) on each transition.
    */
   private loginState: LoginState = LoginState.initial();
+
+  private onAccountProjectionChanged?: (account: IAccountDto) => void;
+
+  private disposed = false;
+
+  private disposePromise?: Promise<void>;
+
+  private deletePromise?: Promise<void>;
 
   /**
    * Ignorable noisy cookies that are written by the website but not relevant to our login state.
@@ -148,6 +161,10 @@ export abstract class Website<
     return this.account.id;
   }
 
+  public get isDisposed(): boolean {
+    return this.disposed;
+  }
+
   /**
    * Whether or not this class supports {SubmissionType.FILE}.
    *
@@ -193,6 +210,7 @@ export abstract class Website<
   constructor(userAccount: Account, platform: PlatformService) {
     this.account = userAccount;
     this.platform = platform;
+    this.decoratedProps = cloneWebsiteDecoratorProps(this.decoratedProps);
     this.logger = Logger(this.decoratedProps.metadata.displayName);
     this.websiteDataStore = new WebsiteDataManager(userAccount);
   }
@@ -214,8 +232,11 @@ export abstract class Website<
       this.unsubscribeFromCookieChanges();
     }
     await this.platform.session.clearStorageData(this.account.id);
-    await this.websiteDataStore.clearData(!forWebsiteDeletion);
+    await this.websiteDataStore.clearData(!forWebsiteDeletion, false);
     this.loginState = this.loginState.reset();
+    if (!forWebsiteDeletion) {
+      this.notifyAccountProjectionChanged();
+    }
   }
 
   /**
@@ -279,13 +300,42 @@ export abstract class Website<
     return types;
   }
 
+  public toAccountDto(): IAccountDto<D> {
+    return {
+      ...this.account.toObject(),
+      state: this.getLoginState(),
+      data: this.getWebsiteData(),
+      instanceCapabilities: {
+        websiteDisplayName: this.decoratedProps.metadata.displayName,
+        supports: this.getSupportedTypes(),
+        fileOptions: cloneWebsiteFileOptions(this.decoratedProps.fileOptions),
+      },
+    } as IAccountDto<D>;
+  }
+
+  public syncAccount(account: Account, emit = true): void {
+    if (account.id !== this.accountId || account.website !== this.account.website) {
+      throw new Error('Cannot change the identity of a Website instance');
+    }
+    this.account = account;
+    if (emit) {
+      this.notifyAccountProjectionChanged();
+    }
+  }
+
   /**
    * Sets the website data provided by user or other means.
    * @param {D} data
    */
   public async setWebsiteData(data: D) {
-    await this.websiteDataStore.setData(data);
-    this.onWebsiteDataChange(data);
+    const changed = await this.websiteDataStore.setData(data, false);
+    try {
+      await this.onWebsiteDataChange(data);
+    } finally {
+      if (changed) {
+        this.notifyAccountProjectionChanged();
+      }
+    }
   }
 
   /**
@@ -317,6 +367,9 @@ export abstract class Website<
    * @returns {Promise<ILoginState>} The login state after the check completes.
    */
   public async login(): Promise<ILoginState> {
+    if (this.isDisposed) {
+      return this.getLoginState();
+    }
     // If a check is already running, await it and return its result rather than
     // starting a redundant concurrent check.
     if (this.loginMutex.isLocked()) {
@@ -328,16 +381,22 @@ export abstract class Website<
     }
 
     return this.loginMutex.runExclusive(async () => {
+      if (this.isDisposed) {
+        return this.getLoginState();
+      }
       const previous = this.loginState;
       this.loginState = this.loginState.beginCheck();
+      this.notifyAccountProjectionChanged();
       try {
         const result = await this.executeLogin();
         this.loginState = this.loginState.resolve(result);
+        this.notifyAccountProjectionChanged();
       } catch (e) {
         // Keep the previous state on failure: never flip a logged-in account to
         // logged-out due to a transient error, and never auto-retry.
         this.logger.withError(e).error(`Login failed for ${this.id}`);
         this.loginState = previous;
+        this.notifyAccountProjectionChanged();
       }
       return this.getLoginState();
     });
@@ -369,13 +428,56 @@ export abstract class Website<
    */
   public async onInitialize(
     websiteDataRepository: WebsiteDataRepository,
-    onWebsiteDataChanged?: (accountId: AccountId) => void,
+    onWebsiteDataChanged?: (account: IAccountDto) => void,
   ): Promise<void> {
+    this.onAccountProjectionChanged = onWebsiteDataChanged;
     await this.websiteDataStore.initialize(
       websiteDataRepository,
-      onWebsiteDataChanged,
+      () => this.notifyAccountProjectionChanged(),
     );
     this.subscribeToCookieChanges();
+    this.notifyAccountProjectionChanged();
+  }
+
+  private notifyAccountProjectionChanged(): void {
+    if (!this.isDisposed) {
+      this.onAccountProjectionChanged?.(this.toAccountDto());
+    }
+  }
+
+  public dispose(): Promise<void> {
+    if (!this.disposePromise) {
+      this.disposed = true;
+      this.unsubscribeFromCookieChanges();
+      this.disposePromise = this.loginMutex.waitForUnlock();
+    }
+    return this.disposePromise;
+  }
+
+  public delete(): Promise<void> {
+    if (!this.deletePromise) {
+      this.deletePromise = (async () => {
+        await this.dispose();
+        const cleanupResults = await Promise.allSettled([
+          this.platform.session.clearStorageData(this.accountId),
+          this.onDelete(),
+        ]);
+        const cleanupErrors = cleanupResults.flatMap((result) =>
+          result.status === 'rejected' ? [result.reason] : [],
+        );
+        if (cleanupErrors.length) {
+          throw new AggregateError(
+            cleanupErrors,
+            `Failed to clean up Website instance '${this.id}'`,
+          );
+        }
+      })();
+    }
+    return this.deletePromise;
+  }
+
+  protected async onDelete(): Promise<void> {
+    // Optional implementation-specific cleanup.
   }
 
   /**
@@ -407,6 +509,9 @@ export abstract class Website<
    * lifecycle, then debounces the rest into a single login check.
    */
   private handleCookieChange(change: PlatformCookieChange): void {
+    if (this.isDisposed) {
+      return;
+    }
     if (!this.isRelevantCookieDomain(change.cookie.domain)) {
       return;
     }

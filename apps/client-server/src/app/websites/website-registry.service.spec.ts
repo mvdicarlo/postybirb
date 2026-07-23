@@ -1,12 +1,11 @@
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Account, AccountRepository, clearDatabase } from '@postybirb/database';
-import { WEBSITE_UPDATES } from '@postybirb/socket-events';
-import { ACCOUNT_EVENT_PREFIX } from '../account/account.events';
-import { publishEntityUpdated } from '../common/events/entity-crud.events';
+import {
+  ACCOUNT_STATE_CHANGED,
+  AccountStateChangedEvent,
+} from '../account/account.events';
 import { noopPlatformProvider } from '../platform/testing/noop-platform-providers';
-import { waitUntil } from '../utils/wait.util';
-import { WSGateway } from '../web-socket/web-socket-gateway';
 import { WebsiteImplProvider } from './implementations/provider';
 import TestWebsite from './implementations/test/test.website';
 import { WebsiteRegistryService } from './website-registry.service';
@@ -16,24 +15,22 @@ describe('WebsiteRegistryService', () => {
   let module: TestingModule;
   let accountRepository: AccountRepository;
   let eventEmitter: EventEmitter2;
-  const webSocketEmit = jest.fn();
+  let emit: jest.SpyInstance;
 
   beforeEach(async () => {
     clearDatabase();
     eventEmitter = new EventEmitter2();
-    webSocketEmit.mockClear();
+    emit = jest.spyOn(eventEmitter, 'emit');
     module = await Test.createTestingModule({
       providers: [
         WebsiteRegistryService,
         WebsiteImplProvider,
         { provide: EventEmitter2, useValue: eventEmitter },
-        { provide: WSGateway, useValue: { emit: webSocketEmit } },
         ...[noopPlatformProvider],
       ],
     }).compile();
 
     service = module.get<WebsiteRegistryService>(WebsiteRegistryService);
-    service.onModuleInit();
     accountRepository = new AccountRepository();
   });
 
@@ -66,6 +63,31 @@ describe('WebsiteRegistryService', () => {
     expect(service.getInstancesOf(TestWebsite)).toHaveLength(1);
   });
 
+  it('should share concurrent instance initialization', async () => {
+    const account = await accountRepository.insert(
+      new Account({ name: 'test', id: 'test', website: 'test' }),
+    );
+
+    const [first, second] = await Promise.all([
+      service.create(account),
+      service.create(account),
+    ]);
+
+    expect(first).toBe(second);
+    expect(service.getInstancesOf(TestWebsite)).toHaveLength(1);
+  });
+
+  it('should return serializable account-free Website definitions', () => {
+    const definition = service
+      .getWebsiteDefinitions()
+      .find((website) => website.id === 'test');
+
+    expect(definition).toBeDefined();
+    expect(definition).not.toHaveProperty('accounts');
+    expect(typeof definition?.usernameShortcut?.id).not.toBe('function');
+    expect(JSON.parse(JSON.stringify(definition))).toEqual(definition);
+  });
+
   it('should successfully remove website instance', async () => {
     const account = await accountRepository.insert(
       new Account({
@@ -78,31 +100,29 @@ describe('WebsiteRegistryService', () => {
     const instance = await service.create(account);
     await instance.login();
     expect(instance instanceof TestWebsite).toBe(true);
+    expect(emit).toHaveBeenCalledWith(ACCOUNT_STATE_CHANGED, [
+      new AccountStateChangedEvent(
+        expect.objectContaining({ id: account.id }) as never,
+      ),
+    ]);
     await service.remove(account);
+    expect(instance.isDisposed).toBe(true);
     expect(service.getInstancesOf(TestWebsite)).toHaveLength(0);
   }, 30_000);
 
-  it('should refresh website updates from Account domain events', async () => {
+  it('should recreate a fresh instance after removal is rolled back', async () => {
     const account = await accountRepository.insert(
-      new Account({
-        name: 'test',
-        id: 'test',
-        website: TestWebsite.prototype.decoratedProps.metadata.name,
-      }),
+      new Account({ name: 'test', id: 'test', website: 'test' }),
     );
-    const instance = await service.create(account);
-    webSocketEmit.mockClear();
+    const original = await service.create(account);
 
-    publishEntityUpdated(
-      eventEmitter,
-      ACCOUNT_EVENT_PREFIX,
-      account.withWebsiteInstance(instance).toDTO(),
-    );
+    await service.remove(account);
+    const recreated = await service.create(account);
 
-    await waitUntil(() => webSocketEmit.mock.calls.length > 0, 10);
-    expect(webSocketEmit).toHaveBeenCalledWith({
-      event: WEBSITE_UPDATES,
-      data: expect.any(Array),
-    });
+    expect(original.isDisposed).toBe(true);
+    expect(recreated).not.toBe(original);
+    expect(recreated.isDisposed).toBe(false);
+    expect(service.findInstance(account)).toBe(recreated);
   });
+
 });

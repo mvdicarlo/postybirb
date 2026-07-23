@@ -32,7 +32,7 @@ function createDto(overrides: Partial<IAccountDto> = {}): IAccountDto {
       lastUpdated: null,
     },
     data: {},
-    websiteInfo: {
+    instanceCapabilities: {
       websiteDisplayName: '',
       supports: [],
     },
@@ -44,7 +44,7 @@ describe('accountHasChanged', () => {
   it('detects deferred website projection changes', () => {
     const existing = new AccountRecord(createDto());
     const initialized = createDto({
-      websiteInfo: {
+      instanceCapabilities: {
         websiteDisplayName: 'Test Website',
         supports: [SubmissionType.FILE],
       },

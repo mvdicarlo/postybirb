@@ -1,6 +1,13 @@
+import { SubmissionType } from '../../enums';
 import { IAccount, ILoginState } from '../../models';
-import { IWebsiteInfo } from '../../models/website/website-info.interface';
+import { WebsiteFileOptions } from '../../website-modifiers/website-file-options';
 import { IEntityDto } from '../database/entity.dto';
+
+export interface IAccountInstanceCapabilities {
+  websiteDisplayName: string;
+  supports: SubmissionType[];
+  fileOptions?: WebsiteFileOptions;
+}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type IAccountDto<T = any> = IEntityDto<IAccount> & {
@@ -17,8 +24,7 @@ export type IAccountDto<T = any> = IEntityDto<IAccount> & {
   data: T;
 
   /**
-   * Website info for display purposes from API consumers.
-   * @type {IWebsiteInfo}
+   * Account-specific capabilities discovered by the runtime Website instance.
    */
-  websiteInfo: IWebsiteInfo;
+  instanceCapabilities: IAccountInstanceCapabilities;
 };

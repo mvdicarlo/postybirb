@@ -1,13 +1,20 @@
-import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { AccountRepository } from '@postybirb/database';
-import { AccountId } from '@postybirb/types';
-import { PostyBirbController } from '../common/controller/postybirb-controller';
+import { AccountId, EntityId } from '@postybirb/types';
 import { AccountService } from './account.service';
 import { CreateAccountDto } from './dtos/create-account.dto';
 import { SetWebsiteDataRequestDto } from './dtos/set-website-data-request.dto';
@@ -19,18 +26,26 @@ import { UpdateAccountDto } from './dtos/update-account.dto';
  */
 @ApiTags('account')
 @Controller('account')
-export class AccountController extends PostyBirbController<AccountRepository> {
-  constructor(readonly service: AccountService) {
-    super(service);
+export class AccountController {
+  constructor(private readonly service: AccountService) {}
+
+  @Get(':id')
+  @ApiOkResponse({ description: 'Account by Id.' })
+  findOne(@Param('id') id: AccountId) {
+    return this.service.findDtoByIdOrThrow(id);
+  }
+
+  @Get()
+  @ApiOkResponse({ description: 'A list of all Accounts.' })
+  findAll() {
+    return this.service.findAllDtos();
   }
 
   @Post()
   @ApiOkResponse({ description: 'Account created.' })
   @ApiBadRequestResponse({ description: 'Bad request made.' })
   create(@Body() createAccountDto: CreateAccountDto) {
-    return this.service
-      .create(createAccountDto)
-      .then((account) => account.toDTO());
+    return this.service.createDto(createAccountDto);
   }
 
   @Post('/clear/:id')
@@ -39,7 +54,7 @@ export class AccountController extends PostyBirbController<AccountRepository> {
   async clear(@Param('id') id: AccountId) {
     await this.service.clearAccountData(id);
     try {
-      this.service.manuallyExecuteOnLogin(id);
+      await this.service.manuallyExecuteOnLogin(id);
     } catch {
       // For some reason throws error that crashes app when deleting account
     }
@@ -67,9 +82,16 @@ export class AccountController extends PostyBirbController<AccountRepository> {
     @Body() updateAccountDto: UpdateAccountDto,
     @Param('id') id: AccountId,
   ) {
-    return this.service
-      .update(id, updateAccountDto)
-      .then((account) => account.toDTO());
+    return this.service.updateDto(id, updateAccountDto);
+  }
+
+  @Delete()
+  @ApiOkResponse({ description: 'Accounts removed.' })
+  async remove(@Query('ids') ids: EntityId | EntityId[]) {
+    await Promise.all(
+      (Array.isArray(ids) ? ids : [ids]).map((id) => this.service.remove(id)),
+    );
+    return { success: true };
   }
 
   @Post('/account-data')

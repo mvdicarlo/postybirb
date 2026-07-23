@@ -5,8 +5,7 @@ import {
   OnModuleInit,
   Optional,
 } from '@nestjs/common';
-import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Account, AccountRepository } from '@postybirb/database';
 import {
   AccountId,
@@ -15,21 +14,15 @@ import {
   NULL_ACCOUNT_ID,
   NullAccount,
 } from '@postybirb/types';
-import { IsTestEnvironment } from '@postybirb/utils/common';
 import { ne } from 'drizzle-orm';
 import { Class } from 'type-fest';
 import { PostyBirbService } from '../common/service/postybirb-service';
 import { UnknownWebsite } from '../websites/website';
-import {
-  WEBSITE_DATA_CHANGED,
-  WebsiteDataChangedEvent,
-} from '../websites/website-data.events';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
-import { ACCOUNT_EVENT_PREFIX } from './account.events';
+import { publishAccountRemoved } from './account.events';
 import { CreateAccountDto } from './dtos/create-account.dto';
 import { SetWebsiteDataRequestDto } from './dtos/set-website-data-request.dto';
 import { UpdateAccountDto } from './dtos/update-account.dto';
-import { LoginStatePoller } from './login-state-poller';
 
 /**
  * Service responsible for returning Account data.
@@ -48,67 +41,17 @@ export class AccountService
     }
   > = {};
 
-  private readonly loginStatePoller: LoginStatePoller;
-
-  @OnEvent(WEBSITE_DATA_CHANGED)
-  private async websiteDataChanged(
-    events: WebsiteDataChangedEvent[],
-  ): Promise<void> {
-    try {
-      await this.publishUpdatedAccounts(
-        events.map((event) => event.accountId),
-      );
-    } catch (error) {
-      this.logger
-        .withError(error)
-        .error('Failed to publish account data update');
-    }
-  }
-
   constructor(
     private readonly websiteRegistry: WebsiteRegistryService,
-    @Optional() eventEmitter?: EventEmitter2,
+    @Optional() private readonly eventEmitter?: EventEmitter2,
   ) {
     super(new AccountRepository());
-    this.configureCrudEvents(ACCOUNT_EVENT_PREFIX, eventEmitter);
-    this.loginStatePoller = new LoginStatePoller(
-      this.websiteRegistry,
-      (accountIds) => {
-        this.publishUpdatedAccounts(accountIds).catch((error) => {
-          this.logger
-            .withError(error)
-            .error('Failed to publish account login-state update');
-        });
-      },
-    );
   }
 
   onModuleDestroy(): void {
     Object.values(this.loginRefreshTimers).forEach(({ timer }) => {
       clearInterval(timer);
     });
-  }
-
-  private async resolveAccountDtos(
-    accountIds: AccountId[],
-  ): Promise<IAccountDto[]> {
-    const uniqueIds = [
-      ...new Set(accountIds.filter((id) => id !== NULL_ACCOUNT_ID)),
-    ];
-    const accounts = await Promise.all(
-      uniqueIds.map((id) => this.repository.findById(id)),
-    );
-    return accounts
-      .filter((account): account is Account => Boolean(account))
-      .map((account) => this.injectWebsiteInstance(account).toDTO());
-  }
-
-  async publishCreatedAccounts(accountIds: AccountId[]): Promise<void> {
-    this.publishCreated(await this.resolveAccountDtos(accountIds));
-  }
-
-  async publishUpdatedAccounts(accountIds: AccountId[]): Promise<void> {
-    this.publishUpdated(await this.resolveAccountDtos(accountIds));
   }
 
   /**
@@ -121,30 +64,20 @@ export class AccountService
 
     // Defer heavy operations to avoid blocking NestJS initialization
     setImmediate(async () => {
-      await this.deleteUnregisteredAccounts();
-      await this.initWebsiteRegistry();
-      this.websiteRegistry.markAsInitialized();
-      this.initWebsiteLoginRefreshTimers();
+      try {
+        await this.deleteUnregisteredAccounts();
+        await this.initWebsiteRegistry();
+        this.initWebsiteLoginRefreshTimers();
 
-      this.publishUpdated(
-        (await this.findAll()).map((account) => account.toDTO()),
-      );
-
-      Object.keys(this.loginRefreshTimers).forEach((interval) =>
-        this.executeOnLoginForInterval(interval),
-      );
+        Object.keys(this.loginRefreshTimers).forEach((interval) =>
+          this.executeOnLoginForInterval(interval),
+        );
+      } catch (error) {
+        this.logger.withError(error).error('Failed to initialize Accounts');
+      } finally {
+        this.websiteRegistry.markAsInitialized();
+      }
     });
-  }
-
-  /**
-   * CRON-driven poll for login state changes.
-   * Compares cached login states against live values and emits to UI on change.
-   */
-  @Cron(CronExpression.EVERY_SECOND)
-  private pollLoginStates() {
-    if (!IsTestEnvironment()) {
-      this.loginStatePoller.checkForChanges();
-    }
   }
 
   private async deleteUnregisteredAccounts() {
@@ -161,7 +94,10 @@ export class AccountService
           .warn(
             `Deleting unregistered account: ${account.id} (${account.name})`,
           );
-        await super.remove(account.id);
+        const result = await this.repository.deleteById([account.id]);
+        if (result.changes > 0) {
+          publishAccountRemoved(this.eventEmitter, account.id);
+        }
       } catch (err) {
         this.logger
           .withError(err)
@@ -187,10 +123,15 @@ export class AccountService
     const accounts = await this.repository.find({
       where: ne(this.table.id, NULL_ACCOUNT_ID),
     });
-    await Promise.all(
-      accounts.map((account) => this.websiteRegistry.create(account)),
-    ).catch((err) => {
-      this.logger.error(err, 'onModuleInit');
+    const results = await Promise.allSettled(
+      accounts.map((account) => this.websiteRegistry.ensureInstance(account)),
+    );
+    results.forEach((result, index) => {
+      if (result.status === 'rejected') {
+        this.logger
+          .withError(result.reason)
+          .error(`Failed to initialize Account '${accounts[index].id}'`);
+      }
     });
   }
 
@@ -289,8 +230,6 @@ export class AccountService
       const instance = this.websiteRegistry.findInstance(account);
       if (instance) {
         await instance.login();
-        // Force an immediate UI update for this instance
-        this.loginStatePoller.checkInstance(instance);
       }
     }
   }
@@ -324,51 +263,93 @@ export class AccountService
       throw error;
     }
     this.afterCreate(account, instance);
-    const created = account.withWebsiteInstance(instance);
-    this.publishCreated(created.toDTO());
-    return created;
+    return account;
   }
 
   public async findById(id: AccountId): Promise<Account | null> {
-    const account = await this.repository.findById(id);
-    return this.injectWebsiteInstance(account);
+    return this.repository.findById(id);
   }
 
   public async findByIdOrThrow(id: AccountId): Promise<Account> {
-    const account = await this.repository.findByIdOrThrow(id);
-    return this.injectWebsiteInstance(account) as Account;
+    return this.repository.findByIdOrThrow(id);
   }
 
   public async findAll() {
     const accounts = await this.repository.find({
       where: ne(this.table.id, NULL_ACCOUNT_ID),
     });
-    return accounts.map(
-      (account) => this.injectWebsiteInstance(account) as Account,
+    return accounts;
+  }
+
+  async findDtoByIdOrThrow(id: AccountId): Promise<IAccountDto> {
+    await this.websiteRegistry.waitForInitialization(60_000);
+    const account = await this.repository.findByIdOrThrow(id);
+    return (await this.websiteRegistry.ensureInstance(account)).toAccountDto();
+  }
+
+  async findAllDtos(): Promise<IAccountDto[]> {
+    await this.websiteRegistry.waitForInitialization(60_000);
+    return Promise.all(
+      (await this.findAll()).map(async (account) =>
+        (await this.websiteRegistry.ensureInstance(account)).toAccountDto(),
+      ),
     );
+  }
+
+  async createDto(createDto: CreateAccountDto): Promise<IAccountDto> {
+    const account = await this.create(createDto);
+    return this.websiteRegistry.getAccountDto(account);
   }
 
   async update(id: AccountId, update: UpdateAccountDto) {
     this.logger.withMetadata(update).info(`Updating Account '${id}'`);
-    const account = this.injectWebsiteInstance(
-      await this.repository.update(id, update),
-    );
-    this.publishUpdated(account.toDTO());
+    const existing = await this.repository.findByIdOrThrow(id);
+    if (!this.websiteRegistry.findInstance(existing)) {
+      await this.websiteRegistry.create(existing);
+    }
+    const account = await this.repository.update(id, update);
+    this.websiteRegistry.syncAccount(account);
     return account;
   }
 
+  async updateDto(
+    id: AccountId,
+    update: UpdateAccountDto,
+  ): Promise<IAccountDto> {
+    const account = await this.update(id, update);
+    return this.websiteRegistry.getAccountDto(account);
+  }
+
   async remove(id: AccountId): Promise<void> {
-    const account = await this.findById(id);
-    if (account) {
-      try {
-        await this.websiteRegistry.remove(account);
-      } catch (error) {
-        this.logger
-          .withError(error)
-          .error(`Failed to clean up website data for Account '${id}'`);
+    this.logger.withMetadata({ id }).info(`Removing Account '${id}'`);
+    const account = await this.findByIdOrThrow(id);
+    await this.websiteRegistry.remove(account);
+    try {
+      const result = await this.repository.deleteById([id]);
+      if (result.changes > 0) {
+        publishAccountRemoved(this.eventEmitter, id);
+      } else {
+        await this.restoreWebsiteAfterFailedDelete(account);
       }
+    } catch (error) {
+      await this.restoreWebsiteAfterFailedDelete(account);
+      throw error;
     }
-    await super.remove(id);
+  }
+
+  private async restoreWebsiteAfterFailedDelete(
+    account: Account,
+  ): Promise<void> {
+    try {
+      const persistedAccount = await this.findById(account.id);
+      if (persistedAccount) {
+        await this.websiteRegistry.create(persistedAccount);
+      }
+    } catch (error) {
+      this.logger
+        .withError(error)
+        .error(`Failed to recreate Website for Account '${account.id}'`);
+    }
   }
 
   /**
@@ -412,15 +393,5 @@ export class AccountService
 
     const instance = this.findWebsiteInstanceOrThrow(account);
     await instance.setWebsiteData(setWebsiteDataRequestDto.data);
-  }
-
-  private injectWebsiteInstance<T extends Account | null>(account?: T): T {
-    if (!account) {
-      return null as T;
-    }
-
-    return account.withWebsiteInstance(
-      this.websiteRegistry.findInstance(account),
-    ) as T;
   }
 }

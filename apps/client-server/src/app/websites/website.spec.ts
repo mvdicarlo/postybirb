@@ -58,6 +58,79 @@ describe('Website', () => {
     expect(entity.data).toEqual({ test: 'test-mode' });
   }, 10000);
 
+  it('should report login projection transitions and final clear state', async () => {
+    const website = new TestWebsite(await populateAccount(), platformContext);
+    const onAccountProjectionChanged = jest.fn();
+    await website.onInitialize(repository, onAccountProjectionChanged);
+
+    await website.login();
+
+    expect(onAccountProjectionChanged).toHaveBeenCalledTimes(4);
+    expect(onAccountProjectionChanged).toHaveBeenCalledWith(
+      expect.objectContaining({ id: website.accountId }),
+    );
+
+    onAccountProjectionChanged.mockClear();
+    await website.clearLoginStateAndData();
+    expect(onAccountProjectionChanged).toHaveBeenCalledTimes(1);
+    expect(website.getLoginState().status).toBe('loggedOut');
+
+    onAccountProjectionChanged.mockClear();
+    await website.clearLoginStateAndData(true);
+    expect(onAccountProjectionChanged).not.toHaveBeenCalled();
+  });
+
+  it('should report pending and restored state when login fails', async () => {
+    const website = new TestWebsite(await populateAccount(), platformContext);
+    const onAccountProjectionChanged = jest.fn();
+    await website.onInitialize(repository, onAccountProjectionChanged);
+    jest
+      .spyOn(website as any, 'onLogin')
+      .mockRejectedValueOnce(new Error('Login failed'));
+
+    await website.login();
+
+    expect(onAccountProjectionChanged).toHaveBeenCalledTimes(3);
+    expect(website.getLoginState().status).toBe('idle');
+  });
+
+  it('should permanently dispose and clean up a deleted instance once', async () => {
+    const website = new TestWebsite(await populateAccount(), platformContext);
+    await website.onInitialize(repository);
+    const clearStorageData = jest.spyOn(
+      platformContext.session,
+      'clearStorageData',
+    );
+    const onDelete = jest.spyOn(website as any, 'onDelete');
+
+    await Promise.all([website.delete(), website.delete()]);
+
+    expect(website.isDisposed).toBe(true);
+    expect(clearStorageData).toHaveBeenCalledTimes(1);
+    expect(clearStorageData).toHaveBeenCalledWith(website.accountId);
+    expect(onDelete).toHaveBeenCalledTimes(1);
+  });
+
+  it('should keep mutable decorator properties isolated per instance', async () => {
+    const first = new TestWebsite(await populateAccount(), platformContext);
+    const secondAccount = await saveFromEntity(
+      new Account({
+        name: 'second',
+        website: 'test',
+        groups: [],
+        id: 'second',
+      }),
+    );
+    const second = new TestWebsite(secondAccount, platformContext);
+
+    first.decoratedProps.fileOptions!.fileBatchSize = 99;
+
+    expect(second.decoratedProps.fileOptions?.fileBatchSize).toBe(1);
+    expect(TestWebsite.prototype.decoratedProps.fileOptions?.fileBatchSize).toBe(
+      1,
+    );
+  });
+
   it('should set website metadata', () => {
     expect(TestWebsite.prototype.decoratedProps).not.toBeUndefined();
   });

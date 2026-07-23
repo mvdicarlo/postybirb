@@ -3,7 +3,6 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { DatabaseEntity } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import { PlatformService } from '@postybirb/platform';
-import { AccountId } from '@postybirb/types';
 import { join } from 'path';
 import { AccountService } from '../account/account.service';
 import { publishEntityCreated } from '../common/events/entity-crud.events';
@@ -43,14 +42,9 @@ export class LegacyDatabaseImporterService {
 
     const errors: Error[] = [];
     if (importRequest.accounts) {
-      const importedAccountIds: AccountId[] = [];
-      const importedWebsiteDataAccountIds: AccountId[] = [];
-
       // Import user accounts
       const result = await this.processImport(
-        new LegacyUserAccountConverter(path, (account) => {
-          importedAccountIds.push(account.id);
-        }),
+        new LegacyUserAccountConverter(path),
       );
       if (result.error) {
         errors.push(result.error);
@@ -60,9 +54,7 @@ export class LegacyDatabaseImporterService {
       // WebsiteData records have a foreign key reference to Account records.
       // The Account must exist before its associated WebsiteData can be created.
       const websiteDataResult = await this.processImport(
-        new LegacyWebsiteDataConverter(path, (websiteData) => {
-          importedWebsiteDataAccountIds.push(websiteData.id);
-        }),
+        new LegacyWebsiteDataConverter(path),
       );
       if (websiteDataResult.error) {
         errors.push(websiteDataResult.error);
@@ -82,14 +74,6 @@ export class LegacyDatabaseImporterService {
           }
         }
       }
-
-      await this.accountService.publishCreatedAccounts(importedAccountIds);
-      const importedAccountIdSet = new Set(importedAccountIds);
-      await this.accountService.publishUpdatedAccounts(
-        importedWebsiteDataAccountIds.filter(
-          (accountId) => !importedAccountIdSet.has(accountId),
-        ),
-      );
     }
 
     if (importRequest.tagGroups) {

@@ -45,17 +45,10 @@ export function accountHasChanged(
     return true;
   }
 
-  // 4. Runtime website projection changes after deferred registry
-  // initialization without updating the persisted Account timestamp.
+  // 4. Runtime capabilities can change without updating Account persistence.
   if (
-    dto.websiteInfo.websiteDisplayName !==
-    existing.websiteInfo.websiteDisplayName
-  ) {
-    return true;
-  }
-  if (
-    JSON.stringify(dto.websiteInfo.supports) !==
-    JSON.stringify(existing.websiteInfo.supports)
+    JSON.stringify(dto.instanceCapabilities) !==
+    JSON.stringify(existing.instanceCapabilities)
   ) {
     return true;
   }
