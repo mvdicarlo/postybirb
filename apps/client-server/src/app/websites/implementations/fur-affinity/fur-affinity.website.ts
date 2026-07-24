@@ -349,7 +349,7 @@ export default class FurAffinity
 
     if (keywords.length >= keywordsFieldLimit) {
       validator.error(
-        'validation.tags.furaffnity.keywords-max-length',
+        'validation.tags.furaffinity.keywords-max-length',
         {
           currentLength: keywords.length,
           maxLength: keywordsFieldLimit,

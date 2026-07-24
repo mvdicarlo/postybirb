@@ -440,7 +440,7 @@ export const TranslationMessages: TranslationsMap = {
     return <Trans>Unsupported rating: {ratingLabel}</Trans>;
   },
 
-  'validation.tags.furaffnity.keywords-max-length': (props) => {
+  'validation.tags.furaffinity.keywords-max-length': (props) => {
     const { maxLength, currentLength } = props;
     return (
       <Trans>

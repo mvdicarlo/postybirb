@@ -244,7 +244,7 @@ export interface ValidationMessages {
     fileName: string;
   };
 
-  'validation.tags.furaffnity.keywords-max-length': {
+  'validation.tags.furaffinity.keywords-max-length': {
     currentLength: number;
     maxLength: number;
   };
