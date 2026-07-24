@@ -439,6 +439,15 @@ export const TranslationMessages: TranslationsMap = {
     }
     return <Trans>Unsupported rating: {ratingLabel}</Trans>;
   },
+
+  'validation.tags.furaffnity.keywords-max-length': (props) => {
+    const { maxLength, currentLength } = props;
+    return (
+      <Trans>
+        Keywords field limit reached ({currentLength} / {maxLength})
+      </Trans>
+    );
+  },
 };
 
 export function ValidationTranslation({

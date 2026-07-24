@@ -15,7 +15,7 @@ import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { PostBuilder } from '../../commons/post-builder';
-import { validatorPassthru } from '../../commons/validator-passthru';
+import { SubmissionValidator } from '../../commons/validator';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { SupportsUsernameShortcut } from '../../decorators/supports-username-shortcut.decorator';
@@ -331,7 +331,28 @@ export default class FurAffinity
   ): Promise<SimpleValidationResult> {
     const validator = this.createValidator<FurAffinityFileSubmission>();
 
+    this.validateKeywords(postData, validator);
+
     return validator.result;
+  }
+
+  private validateKeywords(
+    postData: PostData<
+      FurAffinityFileSubmission | FurAffinityMessageSubmission
+    >,
+    validator:
+      | SubmissionValidator<FurAffinityFileSubmission>
+      | SubmissionValidator<FurAffinityMessageSubmission>,
+  ) {
+    const keywords = postData.options.tags.join(' ');
+    const keywordsFieldLimit = 500;
+
+    if (keywords.length >= keywordsFieldLimit) {
+      validator.warning('validation.tags.furaffnity.keywords-max-length', {
+        currentLength: keywords.length,
+        maxLength: keywordsFieldLimit,
+      });
+    }
   }
 
   createMessageModel(): FurAffinityMessageSubmission {
@@ -427,5 +448,13 @@ export default class FurAffinity
     }
   }
 
-  onValidateMessageSubmission = validatorPassthru;
+  async onValidateMessageSubmission(
+    postData: PostData<FurAffinityMessageSubmission>,
+  ): Promise<SimpleValidationResult> {
+    const validator = this.createValidator<FurAffinityMessageSubmission>();
+
+    this.validateKeywords(postData, validator);
+
+    return validator.result;
+  }
 }
