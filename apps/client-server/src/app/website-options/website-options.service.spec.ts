@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
 import {
-    DefaultDescriptionValue,
-    DefaultTagValue,
-    SubmissionRating,
-    SubmissionType,
-    TipTapNode,
+  DefaultDescriptionValue,
+  DefaultTagValue,
+  SubmissionRating,
+  SubmissionType,
+  TipTapNode,
 } from '@postybirb/types';
 import { AccountModule } from '../account/account.module';
 import { AccountService } from '../account/account.service';
@@ -22,6 +22,7 @@ import { CreateSubmissionDto } from '../submission/dtos/create-submission.dto';
 import { FileSubmissionService } from '../submission/services/file-submission.service';
 import { MessageSubmissionService } from '../submission/services/message-submission.service';
 import { SubmissionService } from '../submission/services/submission.service';
+import { SubmissionEventPublisher } from '../submission/submission-event.publisher';
 import { ValidationService } from '../validation/validation.service';
 import { WebsiteImplProvider } from '../websites/implementations/provider';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
@@ -34,6 +35,8 @@ describe('WebsiteOptionsService', () => {
   let submissionService: SubmissionService;
   let accountService: AccountService;
   let module: TestingModule;
+  const markChanged = jest.fn();
+  const markRemoved = jest.fn();
 
   async function createAccount() {
     const dto = new CreateAccountDto();
@@ -56,6 +59,8 @@ describe('WebsiteOptionsService', () => {
 
   beforeEach(async () => {
     clearDatabase();
+    markChanged.mockReset();
+    markRemoved.mockReset();
     try {
       module = await Test.createTestingModule({
         imports: [
@@ -78,6 +83,10 @@ describe('WebsiteOptionsService', () => {
           WebsiteRegistryService,
           ValidationService,
           WebsiteOptionsService,
+          {
+            provide: SubmissionEventPublisher,
+            useValue: { markChanged, markRemoved },
+          },
           WebsiteImplProvider,
           FileConverterService,
         ],
@@ -115,6 +124,7 @@ describe('WebsiteOptionsService', () => {
     dto.accountId = account.id;
     dto.submissionId = submission.id;
 
+    markChanged.mockClear();
     const record = await service.create(dto);
     const groups = await service.findAll();
     expect(groups).toHaveLength(2); // 2 because default
@@ -123,6 +133,7 @@ describe('WebsiteOptionsService', () => {
     expect(groups[1].isDefault).toEqual(false);
     expect(groups[1].data).toEqual(dto.data);
     expect(groups[1].submission.id).toEqual(dto.submissionId);
+    expect(markChanged).toHaveBeenCalledWith(submission.id, true);
 
     expect(record.toDTO()).toEqual({
       data: record.data,
@@ -153,8 +164,35 @@ describe('WebsiteOptionsService', () => {
     const record = await service.create(dto);
     expect(await service.findAll()).toHaveLength(2); // 2 because default
 
+    markChanged.mockClear();
     await service.remove(record.id);
     expect(await service.findAll()).toHaveLength(1);
+    expect(markChanged).toHaveBeenCalledWith(submission.id, true);
+  });
+
+  it('immediately publishes bulk option additions and removals once', async () => {
+    const account = await createAccount();
+    const submission = await createSubmission();
+    const data = {
+      title: 'title',
+      tags: DefaultTagValue(),
+      description: DefaultDescriptionValue(),
+      rating: SubmissionRating.GENERAL,
+    };
+    const record = await service.create({
+      accountId: account.id,
+      submissionId: submission.id,
+      data,
+    });
+
+    markChanged.mockClear();
+    await service.updateSubmissionOptions(submission.id, {
+      remove: [record.id],
+      add: [{ accountId: account.id, data }],
+    });
+
+    expect(markChanged).toHaveBeenCalledTimes(1);
+    expect(markChanged).toHaveBeenCalledWith(submission.id, true);
   });
 
   it('should remove entity when parent is removed', async () => {

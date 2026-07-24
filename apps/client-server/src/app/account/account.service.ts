@@ -1,19 +1,24 @@
 import {
-    BadRequestException,
-    Injectable,
-    OnModuleInit,
-    Optional,
+  BadRequestException,
+  Injectable,
+  OnModuleInit,
+  Optional,
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { Account, AccountRepository } from '@postybirb/database';
 import {
-    AccountId,
-    IAccountDto,
-    NULL_ACCOUNT_ID,
-    NullAccount,
+  Account,
+  AccountRepository,
+  WebsiteOptionsRepository,
+} from '@postybirb/database';
+import {
+  AccountId,
+  IAccountDto,
+  NULL_ACCOUNT_ID,
+  NullAccount,
 } from '@postybirb/types';
 import { ne } from 'drizzle-orm';
 import { PostyBirbService } from '../common/service/postybirb-service';
+import { publishSubmissionProjectionChanged } from '../submission/submission.events';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { publishAccountRemoved } from './account.events';
 import { CreateAccountDto } from './dtos/create-account.dto';
@@ -28,6 +33,8 @@ export class AccountService
   extends PostyBirbService<AccountRepository>
   implements OnModuleInit
 {
+  private readonly websiteOptionsRepository = new WebsiteOptionsRepository();
+
   constructor(
     private readonly websiteRegistry: WebsiteRegistryService,
     @Optional() private readonly eventEmitter?: EventEmitter2,
@@ -243,11 +250,19 @@ export class AccountService
   async remove(id: AccountId): Promise<void> {
     this.logger.withMetadata({ id }).info(`Removing Account '${id}'`);
     const account = await this.findByIdOrThrow(id);
+    const affectedOptions = await this.websiteOptionsRepository.find({
+      where: (option, { eq }) => eq(option.accountId, id),
+      with: {},
+    });
     await this.websiteRegistry.remove(account);
     try {
       const result = await this.repository.deleteById([id]);
       if (result.changes > 0) {
         publishAccountRemoved(this.eventEmitter, id);
+        publishSubmissionProjectionChanged(
+          this.eventEmitter,
+          affectedOptions.map((option) => option.submissionId),
+        );
       } else {
         await this.restoreWebsiteAfterFailedDelete(account);
       }

@@ -2,83 +2,12 @@
  * Submission Store - Zustand store for submission entities.
  */
 
-import { SUBMISSION_UPDATES } from '@postybirb/socket-events';
-import type { ISubmissionDto, SubmissionId, SubmissionType, ValidationResult } from '@postybirb/types';
+import { SUBMISSION_DELTA } from '@postybirb/socket-events';
+import type { ISubmissionDto, SubmissionId, SubmissionType } from '@postybirb/types';
 import { useShallow } from 'zustand/react/shallow';
 import submissionApi from '../../api/submission.api';
 import { createEntityStore, type EntityStore } from '../create-entity-store';
 import { SubmissionRecord } from '../records';
-
-// ============================================================================
-// Submission-specific change detection
-// ============================================================================
-
-/**
- * Build a cheap fingerprint of a validation result's errors and warnings.
- * Skips the `account` field (large, stable) — only stringifies the small
- * error/warning arrays which are the actual changing content.
- */
-function validationFingerprint(v: ValidationResult): string {
-  return `${v.id}:${JSON.stringify(v.errors ?? [])}|${JSON.stringify(v.warnings ?? [])}`;
-}
-
-/**
- * Find the maximum `updatedAt` ISO string in an array of entities.
- * Returns an empty string when the array is empty.
- */
-function maxUpdatedAt(items: { updatedAt: string }[]): string {
-  if (items.length === 0) return '';
-  let max = items[0].updatedAt;
-  for (let i = 1; i < items.length; i++) {
-    if (items[i].updatedAt > max) max = items[i].updatedAt;
-  }
-  return max;
-}
-
-/**
- * Deep change-detection for submissions.
- *
- * A submission's root `updatedAt` does NOT reflect changes to nested entities
- * (files, options, posts are separate DB tables) and `ValidationResult` has no
- * `updatedAt` at all. This comparator checks all dimensions:
- *
- * - Root `updatedAt`
- * - File count + max file `updatedAt`
- * - Option count + max option `updatedAt`
- * - Post count + max post `updatedAt` + latest post state
- * - PostQueueRecord presence / id
- * - Validation fingerprint (JSON of errors/warnings arrays, excluding account)
- */
-function submissionHasChanged(existing: SubmissionRecord, dto: ISubmissionDto): boolean {
-  // 1. Root entity changed
-  if (dto.updatedAt !== existing.updatedAt.toISOString()) return true;
-
-  // 2. Files changed
-  const dtoFiles = dto.files ?? [];
-  if (dtoFiles.length !== existing.files.length) return true;
-  if (dtoFiles.length > 0 && maxUpdatedAt(dtoFiles) !== maxUpdatedAt(existing.files)) return true;
-
-  // 3. Options changed
-  const dtoOptions = dto.options ?? [];
-  if (dtoOptions.length !== existing.options.length) return true;
-  if (dtoOptions.length > 0 && maxUpdatedAt(dtoOptions) !== maxUpdatedAt(existing.options)) return true;
-
-  // 4. PostQueueRecord changed
-  const dtoQueueId = dto.postQueueRecord?.id ?? null;
-  const existingQueueId = existing.postQueueRecord?.id ?? null;
-  if (dtoQueueId !== existingQueueId) return true;
-
-  // 6. Validations changed (ephemeral — no updatedAt, use fingerprint)
-  const dtoValidations = dto.validations ?? [];
-  if (dtoValidations.length !== existing.validations.length) return true;
-  for (let i = 0; i < dtoValidations.length; i++) {
-    if (validationFingerprint(dtoValidations[i]) !== validationFingerprint(existing.validations[i])) {
-      return true;
-    }
-  }
-
-  return false;
-}
 
 /**
  * Fetch all submissions from the API.
@@ -97,8 +26,8 @@ export const useSubmissionStore = createEntityStore<ISubmissionDto, SubmissionRe
   {
     // eslint-disable-next-line lingui/no-unlocalized-strings
     storeName: 'SubmissionStore',
-    websocketEvent: SUBMISSION_UPDATES,
-    hasChanged: submissionHasChanged,
+    websocketDeltaEvent: SUBMISSION_DELTA,
+    hasChanged: () => true,
   }
 );
 

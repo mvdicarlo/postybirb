@@ -1,29 +1,30 @@
 import {
-    BadRequestException,
-    forwardRef,
-    Inject,
-    Injectable,
-    NotFoundException,
-    OnModuleInit,
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+  OnModuleInit,
+  Optional,
 } from '@nestjs/common';
 import { Account, CustomShortcutRepository, Insert, Submission, SubmissionRepository, WebsiteOptions, WebsiteOptionsRepository } from '@postybirb/database';
 import {
-    AccountId,
-    Description,
-    DescriptionType,
-    DescriptionValue,
-    DynamicObject,
-    EntityId,
-    IDescriptionPreviewResult,
-    ISubmission,
-    ISubmissionMetadata,
-    IWebsiteFormFields,
-    NULL_ACCOUNT_ID,
-    SubmissionId,
-    SubmissionMetadataType,
-    SubmissionType,
-    TipTapNode,
-    ValidationResult,
+  AccountId,
+  Description,
+  DescriptionType,
+  DescriptionValue,
+  DynamicObject,
+  EntityId,
+  IDescriptionPreviewResult,
+  ISubmission,
+  ISubmissionMetadata,
+  IWebsiteFormFields,
+  NULL_ACCOUNT_ID,
+  SubmissionId,
+  SubmissionMetadataType,
+  SubmissionType,
+  TipTapNode,
+  ValidationResult,
 } from '@postybirb/types';
 import { AccountTemplateDefaultsService } from '../account/account-template-defaults.service';
 import { AccountService } from '../account/account.service';
@@ -32,9 +33,10 @@ import { PostyBirbService } from '../common/service/postybirb-service';
 import { FormGeneratorService } from '../form-generator/form-generator.service';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
 import { SubmissionService } from '../submission/services/submission.service';
+import { SubmissionEventPublisher } from '../submission/submission-event.publisher';
 import {
-    isBlockNoteFormat,
-    migrateDescription,
+  isBlockNoteFormat,
+  migrateDescription,
 } from '../utils/blocknote-to-tiptap';
 import { ValidationService } from '../validation/validation.service';
 import { DefaultWebsiteOptions } from '../websites/models/default-website-options';
@@ -61,6 +63,8 @@ export class WebsiteOptionsService
     private readonly validationService: ValidationService,
     private readonly postParsersService: PostParsersService,
     private readonly websiteRegistry: WebsiteRegistryService,
+    @Optional()
+    private readonly submissionEventPublisher?: SubmissionEventPublisher,
   ) {
     super(new WebsiteOptionsRepository());
 
@@ -80,6 +84,13 @@ export class WebsiteOptionsService
 
   async onModuleInit() {
     await this.migrateBlockNoteDescriptions();
+  }
+
+  private markChanged(
+    ids: SubmissionId | SubmissionId[],
+    immediate = false,
+  ): void {
+    this.submissionEventPublisher?.markChanged(ids, immediate);
   }
 
   /**
@@ -155,7 +166,9 @@ export class WebsiteOptionsService
       data,
       title,
     );
-    return this.repository.insert(option);
+    const result = await this.repository.insert(option);
+    this.markChanged(submission.id);
+    return result;
   }
 
   /**
@@ -290,14 +303,14 @@ export class WebsiteOptionsService
       accountId: account.id,
       isDefault,
     });
-    this.submissionService.emit();
+    this.markChanged(submission.id, true);
     return record;
   }
 
   async update(id: EntityId, update: UpdateWebsiteOptionsDto) {
     this.logger.withMetadata(update).info(`Updating WebsiteOptions '${id}'`);
     const result = await this.repository.update(id, update);
-    this.submissionService.emit();
+    this.markChanged(result.submissionId);
     return result;
   }
 
@@ -331,7 +344,17 @@ export class WebsiteOptionsService
       ),
     };
 
-    return this.repository.insert(options);
+    const result = await this.repository.insert(options);
+    this.markChanged(submission.id);
+    return result;
+  }
+
+  public override async remove(id: EntityId): Promise<void> {
+    const option = await this.repository.findById(id);
+    await super.remove(id);
+    if (option) {
+      this.markChanged(option.submissionId, true);
+    }
   }
 
   private async populateDefaultWebsiteOptions(
@@ -465,6 +488,7 @@ export class WebsiteOptionsService
     updateDto: UpdateSubmissionWebsiteOptionsDto,
   ) {
     const submission = await this.submissionService.findByIdOrThrow(submissionId);
+    let optionsChanged = false;
 
     const { remove, add } = updateDto;
     if (remove?.length) {
@@ -480,6 +504,7 @@ export class WebsiteOptionsService
         `Removing option(s) [${removableIds.join(', ')}] from submission ${submissionId}`,
       );
       await this.repository.deleteById(removableIds);
+      optionsChanged ||= removableIds.length > 0;
     }
 
     if (add?.length) {
@@ -489,9 +514,10 @@ export class WebsiteOptionsService
         ),
       );
       await this.repository.insert(options);
+      optionsChanged ||= options.length > 0;
     }
 
-    this.submissionService.emit();
+    this.markChanged(submissionId, optionsChanged);
     return this.submissionService.findByIdOrThrow(submissionId);
   }
 
@@ -523,7 +549,7 @@ export class WebsiteOptionsService
             description: updatedDescription,
           },
         });
-        this.submissionService.emit();
+        this.markChanged(option.submissionId);
       }
     }
   }

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { DatabaseEntity } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
@@ -7,6 +7,7 @@ import { join } from 'path';
 import { AccountService } from '../account/account.service';
 import { publishEntityCreated } from '../common/events/entity-crud.events';
 import { CUSTOM_SHORTCUT_EVENT_PREFIX } from '../custom-shortcuts/custom-shortcut.events';
+import { SubmissionEventPublisher } from '../submission/submission-event.publisher';
 import { TAG_CONVERTER_EVENT_PREFIX } from '../tag-converters/tag-converter.events';
 import { TAG_GROUP_EVENT_PREFIX } from '../tag-groups/tag-group.events';
 import { LegacyConverter } from './converters/legacy-converter';
@@ -28,6 +29,8 @@ export class LegacyDatabaseImporterService {
     private readonly accountService: AccountService,
     private readonly eventEmitter: EventEmitter2,
     platform: PlatformService,
+    @Optional()
+    private readonly submissionEventPublisher?: SubmissionEventPublisher,
   ) {
     this.LEGACY_POSTYBIRB_PLUS_PATH = join(
       platform.app.getPath('documents'),
@@ -127,7 +130,9 @@ export class LegacyDatabaseImporterService {
     if (importRequest.submissions) {
       // Import submissions (must be after accounts for FK references)
       const submissionResult = await this.processSubmissionImport(
-        new LegacySubmissionConverter(path, false),
+        new LegacySubmissionConverter(path, false, (id) =>
+          this.submissionEventPublisher?.markChanged(id),
+        ),
       );
       if (submissionResult.error) {
         errors.push(submissionResult.error);
@@ -137,7 +142,9 @@ export class LegacyDatabaseImporterService {
     if (importRequest.templates) {
       // Import submission templates
       const templateResult = await this.processSubmissionImport(
-        new LegacySubmissionConverter(path, true),
+        new LegacySubmissionConverter(path, true, (id) =>
+          this.submissionEventPublisher?.markChanged(id),
+        ),
       );
       if (templateResult.error) {
         errors.push(templateResult.error);

@@ -1,52 +1,51 @@
 /* eslint-disable no-param-reassign */
 import {
-  BadRequestException,
-  forwardRef,
-  Inject,
-  Injectable,
-  NotFoundException,
-  OnModuleInit,
-  Optional,
+    BadRequestException,
+    forwardRef,
+    Inject,
+    Injectable,
+    NotFoundException,
+    OnModuleInit,
+    Optional,
 } from '@nestjs/common';
 import {
-  FileBufferSchema,
-  Insert,
-  PostJobRepository,
-  PostQueueRecordRepository,
-  Submission,
-  SubmissionFileSchema,
-  SubmissionRepository,
-  SubmissionSchema,
-  WebsiteOptions,
-  WebsiteOptionsSchema,
-  withTransactionContext
+    FileBufferSchema,
+    Insert,
+    PostJobRepository,
+    PostQueueRecordRepository,
+    Submission,
+    SubmissionFileSchema,
+    SubmissionRepository,
+    SubmissionSchema,
+    WebsiteOptions,
+    WebsiteOptionsSchema,
+    withTransactionContext
 } from '@postybirb/database';
-import { SUBMISSION_UPDATES } from '@postybirb/socket-events';
 import {
-  FileSubmission,
-  FileSubmissionMetadata,
-  ISubmissionDto,
-  ISubmissionMetadata,
-  MessageSubmission,
-  NULL_ACCOUNT_ID,
-  ScheduleType,
-  SubmissionId,
-  SubmissionMetadataType,
-  SubmissionType,
+    FileSubmission,
+    FileSubmissionMetadata,
+    ISubmissionDto,
+    ISubmissionMetadata,
+    MessageSubmission,
+    NULL_ACCOUNT_ID,
+    ScheduleType,
+    SubmissionId,
+    SubmissionMetadataType,
+    SubmissionType,
 } from '@postybirb/types';
-import { IsTestEnvironment, toError } from '@postybirb/utils/common';
+import { toError } from '@postybirb/utils/common';
 import { eq } from 'drizzle-orm';
 import * as path from 'path';
 import { PostyBirbService } from '../../common/service/postybirb-service';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { deleteTraceFiles } from '../../post/engine/trace-files';
-import { WSGateway } from '../../web-socket/web-socket-gateway';
 import { WebsiteOptionsService } from '../../website-options/website-options.service';
 import { ApplyMultiSubmissionDto } from '../dtos/apply-multi-submission.dto';
 import { ApplyTemplateOptionsDto } from '../dtos/apply-template-options.dto';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
 import { UpdateSubmissionTemplateNameDto } from '../dtos/update-submission-template-name.dto';
 import { UpdateSubmissionDto } from '../dtos/update-submission.dto';
+import { SubmissionEventPublisher } from '../submission-event.publisher';
 import { FileSubmissionService } from './file-submission.service';
 import { MessageSubmissionService } from './message-submission.service';
 
@@ -61,8 +60,6 @@ export class SubmissionService
   extends PostyBirbService<SubmissionRepository>
   implements OnModuleInit
 {
-  private emitDebounceTimer: ReturnType<typeof setTimeout> | null = null;
-
   private readonly postQueueRepository = new PostQueueRecordRepository();
 
   private readonly postJobRepository = new PostJobRepository();
@@ -73,28 +70,10 @@ export class SubmissionService
     @Inject(forwardRef(() => FileSubmissionService))
     private readonly fileSubmissionService: FileSubmissionService,
     private readonly messageSubmissionService: MessageSubmissionService,
-    @Optional() webSocket: WSGateway,
+    @Optional()
+    private readonly submissionEventPublisher?: SubmissionEventPublisher,
   ) {
-    super(
-      new SubmissionRepository(),
-      webSocket,
-    );
-    this.repository.subscribe(
-      [
-        'PostQueueRecordSchema',
-        'SubmissionFileSchema',
-        'FileBufferSchema',
-      ],
-      () => {
-        this.emit();
-      },
-    );
-
-    this.repository.subscribe(['WebsiteOptionsSchema'], (_, action) => {
-      if (action === 'delete') {
-        this.emit();
-      }
-    });
+    super(new SubmissionRepository());
   }
 
   async onModuleInit() {
@@ -105,6 +84,14 @@ export class SubmissionService
       
       await this.populateMultiSubmission(type);
     }
+  }
+
+  private markChanged(ids: SubmissionId | SubmissionId[]): void {
+    this.submissionEventPublisher?.markChanged(ids);
+  }
+
+  private markRemoved(ids: SubmissionId | SubmissionId[]): void {
+    this.submissionEventPublisher?.markRemoved(ids);
   }
 
   /**
@@ -221,37 +208,37 @@ export class SubmissionService
     }
   }
 
-  /**
-   * Emits submissions onto websocket.
-   * Debounced by 50ms to avoid rapid consecutive emits.
-   * Overrides base class emit to provide submission-specific behavior.
-   */
-  public async emit() {
-    if (IsTestEnvironment()) {
-      return;
-    }
-
-    if (this.emitDebounceTimer) {
-      clearTimeout(this.emitDebounceTimer);
-    }
-
-    this.emitDebounceTimer = setTimeout(() => {
-      this.emitDebounceTimer = null;
-      this.performEmit();
-    }, 50);
-  }
-
-  private async performEmit() {
-    const now = Date.now();
-    super.emit({
-      event: SUBMISSION_UPDATES,
-      data: await this.findAllAsDto(),
-    });
-    this.logger.info(`Emitted submission updates in ${Date.now() - now}ms`);
-  }
-
   public async findAllAsDto(): Promise<ISubmissionDto<ISubmissionMetadata>[]> {
     const all = (await super.findAll()).filter((s) => s.isInitialized);
+
+    return this.toDtosWithValidation(all);
+  }
+
+  public async findByIdsAsDto(
+    ids: SubmissionId[],
+  ): Promise<ISubmissionDto<ISubmissionMetadata>[]> {
+    const uniqueIds = [...new Set(ids)];
+    if (!uniqueIds.length) {
+      return [];
+    }
+
+    const submissions = await this.repository.find({
+      where: (submission, { inArray }) =>
+        inArray(submission.id, uniqueIds),
+    });
+    const byId = new Map(submissions.map((submission) => [submission.id, submission]));
+    const initialized = uniqueIds.flatMap((id) => {
+      const submission = byId.get(id);
+      return submission?.isInitialized ? [submission] : [];
+    });
+
+    return this.toDtosWithValidation(initialized);
+  }
+
+  private async toDtosWithValidation(
+    submissions: SubmissionEntity[],
+  ): Promise<ISubmissionDto<ISubmissionMetadata>[]> {
+    const all = submissions;
 
     // Separate archived from non-archived for efficient processing
     const archived = all.filter((s) => s.isArchived);
@@ -439,12 +426,13 @@ export class SubmissionService
         ...submission.toObject(),
         isInitialized: true,
       });
-      this.emit();
+      this.markChanged(submission.id);
       return await this.findByIdOrThrow(submission.id);
     } catch (err) {
       // Clean up on error, tx is too much work
       this.logger.error(err, 'Error creating submission');
       await this.repository.deleteById([submission.id]);
+      this.markRemoved(submission.id);
       throw err;
     }
   }
@@ -507,7 +495,9 @@ export class SubmissionService
     });
 
     try {
-      return await this.findByIdOrThrow(id);
+      const result = await this.findByIdOrThrow(id);
+      this.markChanged(id);
+      return result;
     } catch (err) {
       throw new BadRequestException(err);
     }
@@ -595,7 +585,7 @@ export class SubmissionService
     try {
       // Update Here
       await this.repository.update(id, updates);
-      this.emit();
+      this.markChanged(id);
       return await this.findByIdOrThrow(id);
     } catch (err) {
       throw new BadRequestException(err);
@@ -606,7 +596,7 @@ export class SubmissionService
     await this.unqueueDependents(id);
     await this.deletePostTraceLogs(id);
     await super.remove(id);
-    this.emit();
+    this.markRemoved(id);
   }
 
   /**
@@ -697,7 +687,7 @@ export class SubmissionService
     );
     if (dependents.length === 0) return;
 
-    await Promise.allSettled(
+    const updateResults = await Promise.allSettled(
       dependents.map((s) =>
         this.repository.update(s.id, {
           metadata: {
@@ -709,6 +699,11 @@ export class SubmissionService
         }),
       ),
     );
+    this.markChanged(
+      dependents.flatMap((submission, index) =>
+        updateResults[index].status === 'fulfilled' ? [submission.id] : [],
+      ),
+    );
 
     const dependentIds = dependents.map((s) => s.id);
     const queueRecords = await this.postQueueRepository.find({
@@ -717,6 +712,7 @@ export class SubmissionService
     });
     if (queueRecords.length > 0) {
       await this.postQueueRepository.deleteById(queueRecords.map((r) => r.id));
+      this.markChanged(queueRecords.map((record) => record.submissionId));
     }
   }
 
@@ -774,7 +770,7 @@ export class SubmissionService
       }
     }
 
-    this.emit();
+    this.markChanged(submissions.map((submission) => submission.id));
   }
 
   /**
@@ -852,6 +848,7 @@ export class SubmissionService
         }
 
         results.success++;
+        this.markChanged(submissionId);
       } catch (error) {
         results.failed++;
         results.errors.push({
@@ -864,7 +861,6 @@ export class SubmissionService
       }
     }
 
-    this.emit();
     return results;
   }
 
@@ -892,6 +888,7 @@ export class SubmissionService
       );
     }
 
+    let duplicatedSubmissionId: SubmissionId | undefined;
     await withTransactionContext(this.repository.db, async (ctx) => {
       const newSubmission = (
         await ctx
@@ -909,6 +906,7 @@ export class SubmissionService
           })
           .returning()
       )[0];
+      duplicatedSubmissionId = newSubmission.id;
       ctx.track('SubmissionSchema', newSubmission.id);
 
       const optionValues = entityToDuplicate.options.map((option) => ({
@@ -1012,7 +1010,9 @@ export class SubmissionService
         .set({ metadata: newSubmission.metadata, isInitialized: true })
         .where(eq(SubmissionSchema.id, newSubmission.id));
     });
-    this.emit();
+    if (duplicatedSubmissionId) {
+      this.markChanged(duplicatedSubmissionId);
+    }
   }
 
   async updateTemplateName(
@@ -1038,7 +1038,7 @@ export class SubmissionService
     const result = await this.repository.update(id, {
       metadata: entity.metadata,
     });
-    this.emit();
+    this.markChanged(id);
     return result;
   }
 
@@ -1091,7 +1091,7 @@ export class SubmissionService
     }
 
     await this.repository.update(id, { order: newOrder });
-    this.emit();
+    this.markChanged(id);
   }
 
   async unarchive(id: SubmissionId) {
@@ -1102,7 +1102,7 @@ export class SubmissionService
     await this.repository.update(id, {
       isArchived: false,
     });
-    this.emit();
+    this.markChanged(id);
   }
 
   async archive(id: SubmissionId) {
@@ -1119,6 +1119,6 @@ export class SubmissionService
         cron: undefined,
       },
     });
-    this.emit();
+    this.markChanged(id);
   }
 }

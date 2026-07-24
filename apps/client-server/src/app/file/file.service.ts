@@ -7,6 +7,7 @@ import {
     EntityId,
     FileSubmission,
     SubmissionFileMetadata,
+    SubmissionId,
 } from '@postybirb/types';
 import type { queueAsPromised } from 'fastq';
 import fastq from 'fastq';
@@ -144,6 +145,14 @@ export class FileService {
    */
   public async findFile(id: EntityId): Promise<SubmissionFile> {
     return this.fileRepository.findByIdOrThrow(id);
+  }
+
+  public async findSubmissionIdForBuffer(
+    id: EntityId,
+  ): Promise<SubmissionId> {
+    const buffer = await this.fileBufferRepository.findByIdOrThrow(id);
+    const submissionFile = await this.findFile(buffer.submissionFileId);
+    return submissionFile.submissionId;
   }
 
   /**
