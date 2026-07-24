@@ -1,34 +1,34 @@
 import { Account, WebsiteDataRepository } from '@postybirb/database';
 import { Logger, PostyBirbLogger } from '@postybirb/logger';
 import {
-  PlatformCookieChange,
-  PlatformCookieDetails,
-  PlatformService,
+    PlatformCookieChange,
+    PlatformCookieDetails,
+    PlatformService,
 } from '@postybirb/platform';
 import {
-  DynamicObject,
-  IAccountDto,
-  ILoginState,
-  IWebsiteFormFields,
-  LoginResult,
-  LoginState,
-  SubmissionType
+    DynamicObject,
+    IAccountDto,
+    ILoginState,
+    IWebsiteFormFields,
+    LoginResult,
+    LoginState,
+    SubmissionType
 } from '@postybirb/types';
 import { Mutex } from 'async-mutex';
 import { SubmissionValidator } from './commons/validator';
 import {
-  cloneWebsiteDecoratorProps,
-  cloneWebsiteFileOptions,
-  WebsiteDecoratorProps,
+    cloneWebsiteDecoratorProps,
+    cloneWebsiteFileOptions,
+    WebsiteDecoratorProps,
 } from './decorators/website-decorator-props';
 import { DataPropertyAccessibility } from './models/data-property-accessibility';
 import {
-  FileWebsiteKey,
-  isFileWebsite,
+    FileWebsiteKey,
+    isFileWebsite,
 } from './models/website-modifiers/file-website';
 import {
-  isMessageWebsite,
-  MessageWebsiteKey,
+    isMessageWebsite,
+    MessageWebsiteKey,
 } from './models/website-modifiers/message-website';
 import WebsiteDataManager from './website-data-manager';
 
@@ -49,6 +49,8 @@ const COOKIE_CHANGE_DEBOUNCE_MS = 1_000;
 const COOKIE_SELF_MUTATION_BUFFER_MS = 1_000;
 
 const DEFAULT_LOGIN_REFRESH_INTERVAL_MS = 60 * 60_000;
+
+const ACCOUNT_PROJECTION_DEBOUNCE_MS = 50;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type UnknownWebsite = Website<any>;
@@ -86,6 +88,8 @@ export abstract class Website<
   private loginState: LoginState = LoginState.initial();
 
   private onAccountProjectionChanged?: (account: IAccountDto) => void;
+
+  private accountProjectionDebounceTimer?: ReturnType<typeof setTimeout>;
 
   private disposed = false;
 
@@ -439,19 +443,31 @@ export abstract class Website<
       () => this.notifyAccountProjectionChanged(),
     );
     this.subscribeToCookieChanges();
-    this.notifyAccountProjectionChanged();
     this.startLoginRefresh();
   }
 
   private notifyAccountProjectionChanged(): void {
-    if (!this.isDisposed) {
-      this.onAccountProjectionChanged?.(this.toAccountDto());
+    if (this.isDisposed || !this.onAccountProjectionChanged) {
+      return;
     }
+    if (this.accountProjectionDebounceTimer) {
+      clearTimeout(this.accountProjectionDebounceTimer);
+    }
+    this.accountProjectionDebounceTimer = setTimeout(() => {
+      this.accountProjectionDebounceTimer = undefined;
+      if (!this.isDisposed) {
+        this.onAccountProjectionChanged?.(this.toAccountDto());
+      }
+    }, ACCOUNT_PROJECTION_DEBOUNCE_MS);
   }
 
   public dispose(): Promise<void> {
     if (!this.disposePromise) {
       this.disposed = true;
+      if (this.accountProjectionDebounceTimer) {
+        clearTimeout(this.accountProjectionDebounceTimer);
+        this.accountProjectionDebounceTimer = undefined;
+      }
       if (this.loginRefreshTimer) {
         clearInterval(this.loginRefreshTimer);
         this.loginRefreshTimer = undefined;

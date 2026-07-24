@@ -7,10 +7,10 @@ import { waitUntil } from '../utils/wait.util';
 import { WebsiteImplProvider } from '../websites/implementations/provider';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import {
-  ACCOUNT_REMOVED,
-  ACCOUNT_STATE_CHANGED,
-  AccountRemovedEvent,
-  AccountStateChangedEvent,
+    ACCOUNT_REMOVED,
+    ACCOUNT_STATE_CHANGED,
+    AccountRemovedEvent,
+    AccountStateChangedEvent,
 } from './account.events';
 import { AccountService } from './account.service';
 import { CreateAccountDto } from './dtos/create-account.dto';
@@ -174,6 +174,11 @@ describe('AccountsService', () => {
     // Create
     const account = await service.create(createAccount);
     expect(account).toBeDefined();
+    await waitUntil(
+      () =>
+        emit.mock.calls.some(([event]) => event === ACCOUNT_STATE_CHANGED),
+      10,
+    );
     expect(emit).toHaveBeenCalledWith(ACCOUNT_STATE_CHANGED, [
       new AccountStateChangedEvent(
         expect.objectContaining({ id: account.id }) as never,
@@ -189,6 +194,11 @@ describe('AccountsService', () => {
       groups: [],
     });
     expect(updated.name).toEqual('Updated');
+    await waitUntil(
+      () =>
+        emit.mock.calls.some(([event]) => event === ACCOUNT_STATE_CHANGED),
+      10,
+    );
     expect(emit).toHaveBeenCalledWith(ACCOUNT_STATE_CHANGED, [
       new AccountStateChangedEvent(
         expect.objectContaining({ id: updated.id, name: 'Updated' }) as never,

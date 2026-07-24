@@ -2,10 +2,11 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Account, AccountRepository, clearDatabase } from '@postybirb/database';
 import {
-  ACCOUNT_STATE_CHANGED,
-  AccountStateChangedEvent,
+    ACCOUNT_STATE_CHANGED,
+    AccountStateChangedEvent,
 } from '../account/account.events';
 import { noopPlatformProvider } from '../platform/testing/noop-platform-providers';
+import { waitUntil } from '../utils/wait.util';
 import { WebsiteImplProvider } from './implementations/provider';
 import TestWebsite from './implementations/test/test.website';
 import { WebsiteRegistryService } from './website-registry.service';
@@ -100,6 +101,11 @@ describe('WebsiteRegistryService', () => {
     const instance = await service.create(account);
     await instance.login();
     expect(instance instanceof TestWebsite).toBe(true);
+    await waitUntil(
+      () =>
+        emit.mock.calls.some(([event]) => event === ACCOUNT_STATE_CHANGED),
+      10,
+    );
     expect(emit).toHaveBeenCalledWith(ACCOUNT_STATE_CHANGED, [
       new AccountStateChangedEvent(
         expect.objectContaining({ id: account.id }) as never,

@@ -8,6 +8,9 @@ import { WebsiteImplProvider } from './implementations/provider';
 import TestWebsite from './implementations/test/test.website';
 import { WebsiteRegistryService } from './website-registry.service';
 
+const waitForProjectionDebounce = () =>
+  new Promise((resolve) => setTimeout(resolve, 75));
+
 describe('Website', () => {
   let module: TestingModule;
 
@@ -64,15 +67,29 @@ describe('Website', () => {
     await website.onInitialize(repository, onAccountProjectionChanged);
 
     await website.login();
+    await waitForProjectionDebounce();
 
-    expect(onAccountProjectionChanged).toHaveBeenCalledTimes(4);
+    expect(onAccountProjectionChanged).toHaveBeenCalledTimes(1);
     expect(onAccountProjectionChanged).toHaveBeenCalledWith(
-      expect.objectContaining({ id: website.accountId }),
+      expect.objectContaining({
+        id: website.accountId,
+        state: expect.objectContaining({ status: 'loggedIn' }),
+      }),
     );
 
     onAccountProjectionChanged.mockClear();
+    jest
+      .spyOn(website as any, 'onLogin')
+      .mockResolvedValueOnce({ loggedIn: false });
     await website.clearLoginStateAndData();
+    await website.login();
+    await waitForProjectionDebounce();
     expect(onAccountProjectionChanged).toHaveBeenCalledTimes(1);
+    expect(onAccountProjectionChanged).toHaveBeenCalledWith(
+      expect.objectContaining({
+        state: expect.objectContaining({ status: 'loggedOut' }),
+      }),
+    );
     expect(website.getLoginState().status).toBe('loggedOut');
 
     onAccountProjectionChanged.mockClear();
@@ -89,14 +106,21 @@ describe('Website', () => {
       .mockRejectedValueOnce(new Error('Login failed'));
 
     await website.login();
+    await waitForProjectionDebounce();
 
-    expect(onAccountProjectionChanged).toHaveBeenCalledTimes(3);
+    expect(onAccountProjectionChanged).toHaveBeenCalledTimes(1);
+    expect(onAccountProjectionChanged).toHaveBeenCalledWith(
+      expect.objectContaining({
+        state: expect.objectContaining({ status: 'idle' }),
+      }),
+    );
     expect(website.getLoginState().status).toBe('idle');
   });
 
   it('should permanently dispose and clean up a deleted instance once', async () => {
     const website = new TestWebsite(await populateAccount(), platformContext);
-    await website.onInitialize(repository);
+    const onAccountProjectionChanged = jest.fn();
+    await website.onInitialize(repository, onAccountProjectionChanged);
     const clearStorageData = jest.spyOn(
       platformContext.session,
       'clearStorageData',
@@ -104,11 +128,13 @@ describe('Website', () => {
     const onDelete = jest.spyOn(website as any, 'onDelete');
 
     await Promise.all([website.delete(), website.delete()]);
+    await waitForProjectionDebounce();
 
     expect(website.isDisposed).toBe(true);
     expect(clearStorageData).toHaveBeenCalledTimes(1);
     expect(clearStorageData).toHaveBeenCalledWith(website.accountId);
     expect(onDelete).toHaveBeenCalledTimes(1);
+    expect(onAccountProjectionChanged).not.toHaveBeenCalled();
   });
 
   it('should own and dispose its login refresh timer', async () => {
