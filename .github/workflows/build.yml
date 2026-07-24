@@ -88,7 +88,7 @@ jobs:
 
       - name: Patch electron-builder.yml for fork repositories
         if: github.event.repository.fork
-        uses: actions/github-script@v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd  # v8
         with:
           script: |
             const fs = require('fs');
@@ -189,7 +189,7 @@ jobs:
       # the Snap Store upload still happens and this step is skipped.
       - name: Publish artifacts to GitHub Release
         if: matrix.publish == 'never'
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65  # v2
         with:
           tag_name: v${{ steps.appVersion.outputs.version }}
           name: v${{ steps.appVersion.outputs.version }}
