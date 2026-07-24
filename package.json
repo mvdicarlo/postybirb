@@ -173,7 +173,7 @@
     "socket.io": "^4.8.0",
     "socket.io-client": "^4.8.0",
     "socks-proxy-agent": "^8.0.5",
-    "teleproto": "^1.227.5",
+    "teleproto": "^1.228.4",
     "tinykeys": "^3.0.0",
     "tippy.js": "^6.3.7",
     "tslib": "2.5.2",
