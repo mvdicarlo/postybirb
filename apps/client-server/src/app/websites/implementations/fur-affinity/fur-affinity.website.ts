@@ -348,10 +348,14 @@ export default class FurAffinity
     const keywordsFieldLimit = 500;
 
     if (keywords.length >= keywordsFieldLimit) {
-      validator.warning('validation.tags.furaffnity.keywords-max-length', {
-        currentLength: keywords.length,
-        maxLength: keywordsFieldLimit,
-      });
+      validator.error(
+        'validation.tags.furaffnity.keywords-max-length',
+        {
+          currentLength: keywords.length,
+          maxLength: keywordsFieldLimit,
+        },
+        'tags',
+      );
     }
   }
 
