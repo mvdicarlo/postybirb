@@ -3,7 +3,6 @@ import { clearDatabase } from '../../database';
 import type { SchemaKey } from '../../helper-types';
 import { EntityRepository } from './entity-repository';
 import { RepositoryRegistry } from './repository-registry';
-import { SubscriberBus } from './subscriber-bus';
 
 /**
  * Assert that every key on a row appears on a hydrated entity with the
@@ -32,12 +31,11 @@ export function assertRowRoundtrips<
 
 /**
  * Reset all shared static state held by the repository layer. Always run
- * registry/bus clears before `clearDatabase` so any active subscribers
- * stop receiving notifications before the underlying connection drops.
+ * registry clears before `clearDatabase` so the underlying connection can
+ * be dropped cleanly.
  */
 export function resetRepositoryState(): void {
   RepositoryRegistry.clear();
-  SubscriberBus.clear();
   clearDatabase();
 }
 

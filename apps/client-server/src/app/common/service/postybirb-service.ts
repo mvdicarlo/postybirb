@@ -1,12 +1,11 @@
 import { BadRequestException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
-  Action,
-  EntityRepository,
-  RepoEntity,
-  RepoSchemaKey,
-  SchemaKey,
-  SchemaTable,
+    EntityRepository,
+    RepoEntity,
+    RepoSchemaKey,
+    SchemaKey,
+    SchemaTable,
 } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import { EntityId, IEntity } from '@postybirb/types';
@@ -14,9 +13,9 @@ import { SQL } from 'drizzle-orm';
 import { WSGateway } from '../../web-socket/web-socket-gateway';
 import { WebSocketEvents } from '../../web-socket/web-socket.events';
 import {
-  publishEntityCreated,
-  publishEntityRemoved,
-  publishEntityUpdated,
+    publishEntityCreated,
+    publishEntityRemoved,
+    publishEntityUpdated,
 } from '../events/entity-crud.events';
 
 /**
@@ -106,14 +105,6 @@ export abstract class PostyBirbService<
    */
   protected get table(): SchemaTable<RepoSchemaKey<TRepo>> {
     return this.repository.table as SchemaTable<RepoSchemaKey<TRepo>>;
-  }
-
-  /**
-   * Coalesced subscriber notification. Pass-through to
-   * `this.repository.notify(ids, action)`.
-   */
-  protected notify(ids: EntityId[], action: Action) {
-    this.repository.notify(ids, action);
   }
 
   /**

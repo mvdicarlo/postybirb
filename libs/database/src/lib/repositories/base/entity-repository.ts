@@ -8,16 +8,13 @@ import type { Insert, SchemaKey } from '../../helper-types';
 import { EntityNotFoundError } from './entity-not-found.error';
 import { HydrationContext } from './hydration-context';
 import { RepositoryRegistry } from './repository-registry';
-import { SubscriberBus } from './subscriber-bus';
 import type {
-    Action,
     DefaultWithFor,
     EntityCtor,
     FindFirstConfig,
     FindManyConfig,
     SchemaQuery,
     SchemaTable,
-    SubscriberCb,
 } from './types';
 
 /**
@@ -57,8 +54,6 @@ export interface EntityRepositoryConfig<
  *    returned entity.
  *  - `update` precondition-checks via `findByIdOrThrow`
  *    before issuing SQL, then re-fetches and returns the fresh entity.
- *  - All write operations broadcast through `SubscriberBus.notify` after
- *    SQL succeeds (coalesced per `(schemaKey, action)` per tick).
  *  - `select(SQL)` bypasses the relational query API; results have no
  *    relations but are still hydrated via `EntityClass.fromRow`.
  */
@@ -195,7 +190,6 @@ export abstract class EntityRepository<
       .returning()) as Array<{ id: EntityId }>;
 
     const ids = inserted.map((row) => row.id);
-    this.notify(ids, 'insert');
 
     // Re-fetch each row so the returned entity reflects `defaultWith`
     // eager-loads.
@@ -217,7 +211,6 @@ export abstract class EntityRepository<
       .update(this.table as never)
       .set(set as never)
       .where(eq(this.idColumn, id));
-    this.notify([id], 'update');
 
     return this.findByIdOrThrow(id);
   }
@@ -229,25 +222,6 @@ export abstract class EntityRepository<
     const result = (await this.db
       .delete(this.table as never)
       .where(inArray(this.idColumn, ids))) as RunResult;
-    this.notify(ids, 'delete');
     return result;
-  }
-
-  // ---------------------------------------------------------------------
-  // Pub/sub passthroughs
-  // ---------------------------------------------------------------------
-
-  public subscribe(keys: SchemaKey | SchemaKey[], cb: SubscriberCb): this {
-    SubscriberBus.subscribe(keys, cb);
-    return this;
-  }
-
-  /**
-   * Per-repo shortcut for `SubscriberBus.notify(this.schemaKey, ids, action)`.
-   * Coalesced. Callers needing synchronous delivery should call
-   * `SubscriberBus.notifyImmediate` directly.
-   */
-  public notify(ids: EntityId[], action: Action): void {
-    SubscriberBus.notify(this.schemaKey, ids, action);
   }
 }

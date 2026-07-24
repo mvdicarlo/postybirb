@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
 import {
-  DefaultDescriptionValue,
-  DefaultTagValue,
-  SubmissionRating,
-  SubmissionType,
-  TipTapNode,
+    DefaultDescriptionValue,
+    DefaultTagValue,
+    SubmissionRating,
+    SubmissionType,
+    TipTapNode,
 } from '@postybirb/types';
 import { AccountModule } from '../account/account.module';
 import { AccountService } from '../account/account.service';
@@ -188,7 +188,7 @@ describe('WebsiteOptionsService', () => {
     markChanged.mockClear();
     await service.updateSubmissionOptions(submission.id, {
       remove: [record.id],
-      add: [{ accountId: account.id, data }],
+      add: [{ accountId: account.id, submissionId: submission.id, data }],
     });
 
     expect(markChanged).toHaveBeenCalledTimes(1);

@@ -1,42 +1,48 @@
 import {
-  BadRequestException,
-  forwardRef,
-  Inject,
-  Injectable,
-  NotFoundException,
-  OnModuleInit,
-  Optional,
+    BadRequestException,
+    forwardRef,
+    Inject,
+    Injectable,
+    NotFoundException,
+    OnModuleInit,
+    Optional,
 } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
 import { Account, CustomShortcutRepository, Insert, Submission, SubmissionRepository, WebsiteOptions, WebsiteOptionsRepository } from '@postybirb/database';
 import {
-  AccountId,
-  Description,
-  DescriptionType,
-  DescriptionValue,
-  DynamicObject,
-  EntityId,
-  IDescriptionPreviewResult,
-  ISubmission,
-  ISubmissionMetadata,
-  IWebsiteFormFields,
-  NULL_ACCOUNT_ID,
-  SubmissionId,
-  SubmissionMetadataType,
-  SubmissionType,
-  TipTapNode,
-  ValidationResult,
+    AccountId,
+    Description,
+    DescriptionType,
+    DescriptionValue,
+    DynamicObject,
+    EntityId,
+    IDescriptionPreviewResult,
+    ISubmission,
+    ISubmissionMetadata,
+    IWebsiteFormFields,
+    NULL_ACCOUNT_ID,
+    SubmissionId,
+    SubmissionMetadataType,
+    SubmissionType,
+    TipTapNode,
+    ValidationResult,
 } from '@postybirb/types';
 import { AccountTemplateDefaultsService } from '../account/account-template-defaults.service';
 import { AccountService } from '../account/account.service';
+import {
+    EntityRemovedEvent,
+    getEntityCrudEventNames,
+} from '../common/events/entity-crud.events';
 import { PostyBirbService } from '../common/service/postybirb-service';
+import { CUSTOM_SHORTCUT_EVENT_PREFIX } from '../custom-shortcuts/custom-shortcut.events';
 
 import { FormGeneratorService } from '../form-generator/form-generator.service';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
 import { SubmissionService } from '../submission/services/submission.service';
 import { SubmissionEventPublisher } from '../submission/submission-event.publisher';
 import {
-  isBlockNoteFormat,
-  migrateDescription,
+    isBlockNoteFormat,
+    migrateDescription,
 } from '../utils/blocknote-to-tiptap';
 import { ValidationService } from '../validation/validation.service';
 import { DefaultWebsiteOptions } from '../websites/models/default-website-options';
@@ -67,23 +73,22 @@ export class WebsiteOptionsService
     private readonly submissionEventPublisher?: SubmissionEventPublisher,
   ) {
     super(new WebsiteOptionsRepository());
-
-    this.repository.subscribe('CustomShortcutSchema', (ids, action) => {
-      if (action === 'delete') {
-        for (const id of ids) {
-          this.onCustomShortcutDelete(id).catch((err) =>
-            this.logger.error(
-              `Error handling custom shortcut delete for id '${id}': ${err.message}`,
-              err.stack,
-            ),
-          );
-        }
-      }
-    });
   }
 
   async onModuleInit() {
     await this.migrateBlockNoteDescriptions();
+  }
+
+  @OnEvent(getEntityCrudEventNames(CUSTOM_SHORTCUT_EVENT_PREFIX).removed)
+  private onCustomShortcutRemoved(events: EntityRemovedEvent[]): void {
+    events.forEach((event) => {
+      this.onCustomShortcutDelete(event.id).catch((err) =>
+        this.logger.error(
+          `Error handling custom shortcut delete for id '${event.id}': ${err.message}`,
+          err.stack,
+        ),
+      );
+    });
   }
 
   private markChanged(
