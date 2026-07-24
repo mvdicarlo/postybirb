@@ -4,60 +4,46 @@ import {
   OnModuleInit,
   Optional,
 } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
-import { Account, AccountRepository } from '@postybirb/database';
-import { ACCOUNT_UPDATES } from '@postybirb/socket-events';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import {
+  Account,
+  AccountRepository,
+  WebsiteOptionsRepository,
+} from '@postybirb/database';
 import {
   AccountId,
-  IWebsiteMetadata,
+  IAccountDto,
   NULL_ACCOUNT_ID,
   NullAccount,
 } from '@postybirb/types';
-import { IsTestEnvironment } from '@postybirb/utils/common';
 import { ne } from 'drizzle-orm';
-import { Class } from 'type-fest';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { WSGateway } from '../web-socket/web-socket-gateway';
-import { UnknownWebsite } from '../websites/website';
+import { publishSubmissionProjectionChanged } from '../submission/submission.events';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
+import { publishAccountRemoved } from './account.events';
 import { CreateAccountDto } from './dtos/create-account.dto';
 import { SetWebsiteDataRequestDto } from './dtos/set-website-data-request.dto';
 import { UpdateAccountDto } from './dtos/update-account.dto';
-import { LoginStatePoller } from './login-state-poller';
 
 /**
  * Service responsible for returning Account data.
- * Also stores login refresh timers for initiating login checks.
  */
 @Injectable()
 export class AccountService
   extends PostyBirbService<AccountRepository>
   implements OnModuleInit
 {
-  private readonly loginRefreshTimers: Record<
-    string,
-    {
-      timer: NodeJS.Timeout;
-      websites: Class<UnknownWebsite>[];
-    }
-  > = {};
-
-  private readonly loginStatePoller: LoginStatePoller;
+  private readonly websiteOptionsRepository = new WebsiteOptionsRepository();
 
   constructor(
     private readonly websiteRegistry: WebsiteRegistryService,
-    @Optional() webSocket?: WSGateway,
+    @Optional() private readonly eventEmitter?: EventEmitter2,
   ) {
-    super(new AccountRepository(), webSocket);
-    this.repository.subscribe('AccountSchema', () => this.emit());
-    this.loginStatePoller = new LoginStatePoller(this.websiteRegistry, () => {
-      this.emit();
-      this.websiteRegistry.emit();
-    });
+    super(new AccountRepository());
   }
 
   /**
-   * Initializes all website login timers and creates instances for known accounts.
+   * Creates website instances for known accounts.
    * Heavy operations are deferred to avoid blocking application startup.
    */
   async onModuleInit() {
@@ -66,28 +52,15 @@ export class AccountService
 
     // Defer heavy operations to avoid blocking NestJS initialization
     setImmediate(async () => {
-      await this.deleteUnregisteredAccounts();
-      await this.initWebsiteRegistry();
-      this.websiteRegistry.markAsInitialized();
-      this.initWebsiteLoginRefreshTimers();
-
-      this.emit();
-
-      Object.keys(this.loginRefreshTimers).forEach((interval) =>
-        this.executeOnLoginForInterval(interval),
-      );
+      try {
+        await this.deleteUnregisteredAccounts();
+        await this.initWebsiteRegistry();
+      } catch (error) {
+        this.logger.withError(error).error('Failed to initialize Accounts');
+      } finally {
+        this.websiteRegistry.markAsInitialized();
+      }
     });
-  }
-
-  /**
-   * CRON-driven poll for login state changes.
-   * Compares cached login states against live values and emits to UI on change.
-   */
-  @Cron(CronExpression.EVERY_SECOND)
-  private pollLoginStates() {
-    if (!IsTestEnvironment()) {
-      this.loginStatePoller.checkForChanges();
-    }
   }
 
   private async deleteUnregisteredAccounts() {
@@ -104,7 +77,10 @@ export class AccountService
           .warn(
             `Deleting unregistered account: ${account.id} (${account.name})`,
           );
-        await this.repository.deleteById([account.id]);
+        const result = await this.repository.deleteById([account.id]);
+        if (result.changes > 0) {
+          publishAccountRemoved(this.eventEmitter, account.id);
+        }
       } catch (err) {
         this.logger
           .withError(err)
@@ -130,74 +106,15 @@ export class AccountService
     const accounts = await this.repository.find({
       where: ne(this.table.id, NULL_ACCOUNT_ID),
     });
-    await Promise.all(
-      accounts.map((account) => this.websiteRegistry.create(account)),
-    ).catch((err) => {
-      this.logger.error(err, 'onModuleInit');
-    });
-  }
-
-  /**
-   * Creates website login check timers.
-   */
-  private initWebsiteLoginRefreshTimers(): void {
-    const availableWebsites = this.websiteRegistry.getAvailableWebsites();
-    availableWebsites.forEach((website) => {
-      const interval: number =
-        (website.prototype.decoratedProps.metadata as IWebsiteMetadata)
-          .refreshInterval ?? 60_000 * 60;
-      if (!this.loginRefreshTimers[interval]) {
-        this.loginRefreshTimers[interval] = {
-          websites: [],
-          timer: setInterval(() => {
-            this.executeOnLoginForInterval(interval);
-          }, interval),
-        };
-      }
-
-      this.loginRefreshTimers[interval].websites.push(website);
-    });
-  }
-
-  public async emit() {
-    const dtos = await this.findAll().then((accounts) =>
-      accounts.map((a) => this.injectWebsiteInstance(a)),
+    const results = await Promise.allSettled(
+      accounts.map((account) => this.websiteRegistry.ensureInstance(account)),
     );
-    super.emit({
-      event: ACCOUNT_UPDATES,
-      data: dtos.map((dto) => dto.toDTO()),
-    });
-  }
-
-  /**
-   * Runs login on all created website instances within a specific interval.
-   * The mutex inside website.login() ensures only one login runs at a time
-   * per instance; concurrent callers simply wait and get the fresh state.
-   *
-   * @param {string} interval
-   */
-  private async executeOnLoginForInterval(interval: string | number) {
-    const { websites } = this.loginRefreshTimers[interval];
-    websites.forEach((website) => {
-      this.websiteRegistry.getInstancesOf(website).forEach((instance) => {
-        // Fire-and-forget — the poller will detect state changes
-        instance.login().catch((e) => {
-          this.logger.withError(e).error(`Login failed for ${instance.id}`);
-        });
-      });
-    });
-  }
-
-  /**
-   * Logic that needs to be run after an account is created.
-   *
-   * @param {Account} account
-   * @param {UnknownWebsite} website
-   */
-  private afterCreate(account: Account, website: UnknownWebsite) {
-    // Fire-and-forget — poller picks up the state change
-    website.login().catch((e) => {
-      this.logger.withError(e).error(`Initial login failed for ${website.id}`);
+    results.forEach((result, index) => {
+      if (result.status === 'rejected') {
+        this.logger
+          .withError(result.reason)
+          .error(`Failed to initialize Account '${accounts[index].id}'`);
+      }
     });
   }
 
@@ -242,8 +159,6 @@ export class AccountService
       const instance = this.websiteRegistry.findInstance(account);
       if (instance) {
         await instance.login();
-        // Force an immediate UI update for this instance
-        this.loginStatePoller.checkInstance(instance);
       }
     }
   }
@@ -263,43 +178,113 @@ export class AccountService
       );
     }
     const account = await this.repository.insert(new Account(createDto));
-    const instance = await this.websiteRegistry.create(account);
-    this.afterCreate(account, instance);
-    return account.withWebsiteInstance(instance);
+    try {
+      await this.websiteRegistry.create(account);
+    } catch (error) {
+      try {
+        await this.repository.deleteById([account.id]);
+      } catch (rollbackError) {
+        this.logger
+          .withError(rollbackError)
+          .error(`Failed to roll back Account '${account.id}'`);
+      }
+      throw error;
+    }
+    return account;
   }
 
   public async findById(id: AccountId): Promise<Account | null> {
-    const account = await this.repository.findById(id);
-    return this.injectWebsiteInstance(account);
+    return this.repository.findById(id);
   }
 
   public async findByIdOrThrow(id: AccountId): Promise<Account> {
-    const account = await this.repository.findByIdOrThrow(id);
-    return this.injectWebsiteInstance(account) as Account;
+    return this.repository.findByIdOrThrow(id);
   }
 
   public async findAll() {
     const accounts = await this.repository.find({
       where: ne(this.table.id, NULL_ACCOUNT_ID),
     });
-    return accounts.map(
-      (account) => this.injectWebsiteInstance(account) as Account,
+    return accounts;
+  }
+
+  async findDtoByIdOrThrow(id: AccountId): Promise<IAccountDto> {
+    await this.websiteRegistry.waitForInitialization(60_000);
+    const account = await this.repository.findByIdOrThrow(id);
+    return (await this.websiteRegistry.ensureInstance(account)).toAccountDto();
+  }
+
+  async findAllDtos(): Promise<IAccountDto[]> {
+    await this.websiteRegistry.waitForInitialization(60_000);
+    return Promise.all(
+      (await this.findAll()).map(async (account) =>
+        (await this.websiteRegistry.ensureInstance(account)).toAccountDto(),
+      ),
     );
+  }
+
+  async createDto(createDto: CreateAccountDto): Promise<IAccountDto> {
+    const account = await this.create(createDto);
+    return this.websiteRegistry.getAccountDto(account);
   }
 
   async update(id: AccountId, update: UpdateAccountDto) {
     this.logger.withMetadata(update).info(`Updating Account '${id}'`);
-    return this.repository
-      .update(id, update)
-      .then((account) => this.injectWebsiteInstance(account));
+    const existing = await this.repository.findByIdOrThrow(id);
+    if (!this.websiteRegistry.findInstance(existing)) {
+      await this.websiteRegistry.create(existing);
+    }
+    const account = await this.repository.update(id, update);
+    this.websiteRegistry.syncAccount(account);
+    return account;
+  }
+
+  async updateDto(
+    id: AccountId,
+    update: UpdateAccountDto,
+  ): Promise<IAccountDto> {
+    const account = await this.update(id, update);
+    return this.websiteRegistry.getAccountDto(account);
   }
 
   async remove(id: AccountId): Promise<void> {
-    const account = await this.findById(id);
-    if (account) {
-      this.websiteRegistry.remove(account);
+    this.logger.withMetadata({ id }).info(`Removing Account '${id}'`);
+    const account = await this.findByIdOrThrow(id);
+    const affectedOptions = await this.websiteOptionsRepository.find({
+      where: (option, { eq }) => eq(option.accountId, id),
+      with: {},
+    });
+    await this.websiteRegistry.remove(account);
+    try {
+      const result = await this.repository.deleteById([id]);
+      if (result.changes > 0) {
+        publishAccountRemoved(this.eventEmitter, id);
+        publishSubmissionProjectionChanged(
+          this.eventEmitter,
+          affectedOptions.map((option) => option.submissionId),
+        );
+      } else {
+        await this.restoreWebsiteAfterFailedDelete(account);
+      }
+    } catch (error) {
+      await this.restoreWebsiteAfterFailedDelete(account);
+      throw error;
     }
-    await super.remove(id);
+  }
+
+  private async restoreWebsiteAfterFailedDelete(
+    account: Account,
+  ): Promise<void> {
+    try {
+      const persistedAccount = await this.findById(account.id);
+      if (persistedAccount) {
+        await this.websiteRegistry.create(persistedAccount);
+      }
+    } catch (error) {
+      this.logger
+        .withError(error)
+        .error(`Failed to recreate Website for Account '${account.id}'`);
+    }
   }
 
   /**
@@ -343,15 +328,5 @@ export class AccountService
 
     const instance = this.findWebsiteInstanceOrThrow(account);
     await instance.setWebsiteData(setWebsiteDataRequestDto.data);
-  }
-
-  private injectWebsiteInstance<T extends Account | null>(account?: T): T {
-    if (!account) {
-      return null as T;
-    }
-
-    return account.withWebsiteInstance(
-      this.websiteRegistry.findInstance(account),
-    ) as T;
   }
 }

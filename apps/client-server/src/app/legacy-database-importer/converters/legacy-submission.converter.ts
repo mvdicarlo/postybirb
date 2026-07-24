@@ -1,20 +1,30 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-continue */
-import { AccountRepository, FileBufferRepository, SubmissionFileRepository, SubmissionRepository, WebsiteOptionsRepository } from '@postybirb/database';
+import {
+  AccountRepository,
+  FileBufferRepository,
+  SubmissionFileRepository,
+  SubmissionRepository,
+  WebsiteOptionsRepository,
+} from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import {
-    DefaultSubmissionFileMetadata,
-    ISubmissionMetadata,
-    ISubmissionScheduleInfo,
-    NULL_ACCOUNT_ID,
-    ScheduleType,
-    SubmissionType,
+  DefaultSubmissionFileMetadata,
+  ISubmissionMetadata,
+  ISubmissionScheduleInfo,
+  NULL_ACCOUNT_ID,
+  ScheduleType,
+  SubmissionId,
+  SubmissionType,
 } from '@postybirb/types';
 import { createHash } from 'crypto';
 import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { v4 } from 'uuid';
-import { LegacyFileRecord, LegacySubmission } from '../legacy-entities/legacy-submission';
+import {
+  LegacyFileRecord,
+  LegacySubmission,
+} from '../legacy-entities/legacy-submission';
 import { LegacySubmissionPart } from '../legacy-entities/legacy-submission-part';
 import { SubmissionPartTransformerRegistry } from '../transformers/submission-part/submission-part-transformer-registry';
 import { LegacyDescriptionConverter } from '../utils/legacy-description-converter';
@@ -63,7 +73,14 @@ function convertSchedule(
  */
 function readLegacyFile(
   fileRecord: LegacyFileRecord,
-): { buffer: Buffer; fileName: string; mimeType: string; size: number; width: number; height: number } | null {
+): {
+  buffer: Buffer;
+  fileName: string;
+  mimeType: string;
+  size: number;
+  width: number;
+  height: number;
+} | null {
   // Try primary location first, then fallback to originalPath
   const paths = [fileRecord.location, fileRecord.originalPath].filter(Boolean);
 
@@ -87,7 +104,7 @@ function readLegacyFile(
 
   logger.warn(
     `File not found for submission file "${fileRecord.name}". ` +
-    `Tried: ${paths.join(', ')}`,
+      `Tried: ${paths.join(', ')}`,
   );
   return null;
 }
@@ -111,6 +128,9 @@ export class LegacySubmissionConverter {
   constructor(
     private readonly databasePath: string,
     private readonly isTemplate = false,
+    private readonly onPersisted?: (
+      submissionId: SubmissionId,
+    ) => void | Promise<void>,
   ) {}
 
   /**
@@ -197,179 +217,191 @@ export class LegacySubmissionConverter {
     let fileCount = 0;
 
     for (const legacySub of submissionResult.records) {
-      // Check for duplicates
-      const exists = await submissionDb.findById(legacySub._id);
-      if (exists) {
-        logger.warn(
-          `Submission ${legacySub._id} already exists. Skipping.`,
-        );
-        skippedCount++;
-        continue;
-      }
+      let rootInserted = false;
+      try {
+        // Check for duplicates
+        const exists = await submissionDb.findById(legacySub._id);
+        if (exists) {
+          logger.warn(`Submission ${legacySub._id} already exists. Skipping.`);
+          skippedCount++;
+          continue;
+        }
 
-      const modernType = mapSubmissionType(legacySub.type);
-      const { isScheduled, schedule } = convertSchedule(legacySub.schedule);
+        const modernType = mapSubmissionType(legacySub.type);
+        const { isScheduled, schedule } = convertSchedule(legacySub.schedule);
 
-      const metadata: ISubmissionMetadata = {};
-      if (this.isTemplate) {
-        metadata.template = {
-          name: legacySub.alias || legacySub.title || 'Imported Template',
-        };
-      }
+        const metadata: ISubmissionMetadata = {};
+        if (this.isTemplate) {
+          metadata.template = {
+            name: legacySub.alias || legacySub.title || 'Imported Template',
+          };
+        }
 
-      // Insert submission
-      await submissionDb.insert({
-        id: legacySub._id,
-        type: modernType,
-        isScheduled,
-        schedule,
-        isTemplate: this.isTemplate,
-        isMultiSubmission: false,
-        isArchived: false,
-        isInitialized: true,
-        metadata,
-        order: legacySub.order ?? 0,
-      });
+        // Insert submission
+        await submissionDb.insert({
+          id: legacySub._id,
+          type: modernType,
+          isScheduled,
+          schedule,
+          isTemplate: this.isTemplate,
+          isMultiSubmission: false,
+          isArchived: false,
+          isInitialized: true,
+          metadata,
+          order: legacySub.order ?? 0,
+        });
+        rootInserted = true;
 
-      // Step 5: Import files for FILE submissions (non-templates)
-      if (modernType === SubmissionType.FILE && !this.isTemplate && legacySub.primary) {
-        const files = [legacySub.primary, ...(legacySub.additional ?? [])];
+        // Step 5: Import files for FILE submissions (non-templates)
+        if (
+          modernType === SubmissionType.FILE &&
+          !this.isTemplate &&
+          legacySub.primary
+        ) {
+          const files = [legacySub.primary, ...(legacySub.additional ?? [])];
 
-        for (let i = 0; i < files.length; i++) {
-          const fileRecord = files[i];
-          const fileData = readLegacyFile(fileRecord);
+          for (let i = 0; i < files.length; i++) {
+            const fileRecord = files[i];
+            const fileData = readLegacyFile(fileRecord);
 
-          if (!fileData) {
+            if (!fileData) {
+              continue;
+            }
+
+            const hash = createHash('sha256')
+              .update(fileData.buffer)
+              .digest('hex');
+
+            const submissionFileId = v4();
+            const fileBufferId = v4();
+
+            // Insert SubmissionFile first (FileBuffer has FK to SubmissionFile)
+            await submissionFileDb.insert({
+              id: submissionFileId,
+              submissionId: legacySub._id,
+              fileName: fileData.fileName,
+              hash,
+              mimeType: fileData.mimeType,
+              size: fileData.size,
+              width: fileData.width,
+              height: fileData.height,
+              hasThumbnail: false,
+              hasCustomThumbnail: false,
+              hasAltFile: false,
+              metadata: {
+                ...DefaultSubmissionFileMetadata(),
+                altText: fileRecord.altText ?? '',
+                ignoredWebsites: fileRecord.ignoredAccounts ?? [],
+              },
+              order: fileRecord.order ?? i,
+            });
+
+            // Insert FileBuffer with reference to SubmissionFile
+            await fileBufferDb.insert({
+              id: fileBufferId,
+              submissionFileId,
+              buffer: fileData.buffer,
+              fileName: fileData.fileName,
+              mimeType: fileData.mimeType,
+              size: fileData.size,
+              width: fileData.width,
+              height: fileData.height,
+            });
+
+            // Update SubmissionFile with the primaryFileId
+            await submissionFileDb.update(submissionFileId, {
+              primaryFileId: fileBufferId,
+            });
+
+            fileCount++;
+          }
+        }
+
+        // Step 6: Import submission parts as WebsiteOptions
+        const parts = partsBySubmission.get(legacySub._id) ?? [];
+
+        for (const part of parts) {
+          if (part.isDefault) {
+            // Default part → WebsiteOptions with NULL_ACCOUNT_ID
+            const transformer =
+              SubmissionPartTransformerRegistry.getTransformer(part.website);
+
+            // For default parts, use base conversion even without a website-specific transformer
+            const data = transformer
+              ? transformer.transform(part.data, legacySub.type)
+              : this.convertDefaultPartData(part.data);
+
+            if (!data) {
+              continue;
+            }
+
+            await websiteOptionsDb.insert({
+              submissionId: legacySub._id,
+              accountId: NULL_ACCOUNT_ID,
+              data,
+              isDefault: true,
+            });
             continue;
           }
 
-          const hash = createHash('sha256')
-            .update(fileData.buffer)
-            .digest('hex');
+          // Non-default part: needs a valid account and transformer
+          const newWebsiteId = WebsiteNameMapper.map(part.website);
+          if (!newWebsiteId) {
+            logger.debug(
+              `Skipping part for deprecated website "${part.website}" ` +
+                `(submission: ${legacySub._id})`,
+            );
+            continue;
+          }
 
-          const submissionFileId = v4();
-          const fileBufferId = v4();
-
-          // Insert SubmissionFile first (FileBuffer has FK to SubmissionFile)
-          await submissionFileDb.insert({
-            id: submissionFileId,
-            submissionId: legacySub._id,
-            fileName: fileData.fileName,
-            hash,
-            mimeType: fileData.mimeType,
-            size: fileData.size,
-            width: fileData.width,
-            height: fileData.height,
-            hasThumbnail: false,
-            hasCustomThumbnail: false,
-            hasAltFile: false,
-            metadata: {
-              ...DefaultSubmissionFileMetadata(),
-              altText: fileRecord.altText ?? '',
-              ignoredWebsites: fileRecord.ignoredAccounts ?? [],
-            },
-            order: fileRecord.order ?? i,
-          });
-
-          // Insert FileBuffer with reference to SubmissionFile
-          await fileBufferDb.insert({
-            id: fileBufferId,
-            submissionFileId,
-            buffer: fileData.buffer,
-            fileName: fileData.fileName,
-            mimeType: fileData.mimeType,
-            size: fileData.size,
-            width: fileData.width,
-            height: fileData.height,
-          });
-
-          // Update SubmissionFile with the primaryFileId
-          await submissionFileDb.update(submissionFileId, {
-            primaryFileId: fileBufferId,
-          });
-
-          fileCount++;
-        }
-      }
-
-      // Step 6: Import submission parts as WebsiteOptions
-      const parts = partsBySubmission.get(legacySub._id) ?? [];
-
-      for (const part of parts) {
-        if (part.isDefault) {
-          // Default part → WebsiteOptions with NULL_ACCOUNT_ID
           const transformer = SubmissionPartTransformerRegistry.getTransformer(
             part.website,
           );
+          if (!transformer) {
+            logger.debug(
+              `No submission-part transformer for "${part.website}". ` +
+                `Skipping part (submission: ${legacySub._id}).`,
+            );
+            continue;
+          }
 
-          // For default parts, use base conversion even without a website-specific transformer
-          const data = transformer
-            ? transformer.transform(part.data, legacySub.type)
-            : this.convertDefaultPartData(part.data);
+          // Check if account exists
+          const account = await accountDb.findById(part.accountId);
+          if (!account) {
+            logger.warn(
+              `Account "${part.accountId}" not found for part "${part._id}". ` +
+                `Skipping (the account may not have been imported).`,
+            );
+            continue;
+          }
 
+          const data = transformer.transform(part.data, legacySub.type);
           if (!data) {
             continue;
           }
 
           await websiteOptionsDb.insert({
             submissionId: legacySub._id,
-            accountId: NULL_ACCOUNT_ID,
+            accountId: part.accountId,
             data,
-            isDefault: true,
+            isDefault: false,
           });
-          continue;
         }
 
-        // Non-default part: needs a valid account and transformer
-        const newWebsiteId = WebsiteNameMapper.map(part.website);
-        if (!newWebsiteId) {
-          logger.debug(
-            `Skipping part for deprecated website "${part.website}" ` +
-            `(submission: ${legacySub._id})`,
-          );
-          continue;
+        importedCount++;
+        rootInserted = false;
+        await this.onPersisted?.(legacySub._id);
+      } catch (error) {
+        if (rootInserted) {
+          await this.onPersisted?.(legacySub._id);
         }
-
-        const transformer = SubmissionPartTransformerRegistry.getTransformer(
-          part.website,
-        );
-        if (!transformer) {
-          logger.debug(
-            `No submission-part transformer for "${part.website}". ` +
-            `Skipping part (submission: ${legacySub._id}).`,
-          );
-          continue;
-        }
-
-        // Check if account exists
-        const account = await accountDb.findById(part.accountId);
-        if (!account) {
-          logger.warn(
-            `Account "${part.accountId}" not found for part "${part._id}". ` +
-            `Skipping (the account may not have been imported).`,
-          );
-          continue;
-        }
-
-        const data = transformer.transform(part.data, legacySub.type);
-        if (!data) {
-          continue;
-        }
-
-        await websiteOptionsDb.insert({
-          submissionId: legacySub._id,
-          accountId: part.accountId,
-          data,
-          isDefault: false,
-        });
+        throw error;
       }
-
-      importedCount++;
     }
 
     logger.info(
       `${this.isTemplate ? 'Template' : 'Submission'} import completed: ` +
-      `${importedCount} imported, ${skippedCount} skipped, ${fileCount} files copied.`,
+        `${importedCount} imported, ${skippedCount} skipped, ${fileCount} files copied.`,
     );
   }
 
@@ -384,8 +416,11 @@ export class LegacySubmissionConverter {
 
     for (const template of templates) {
       // Legacy templates are parsed as LegacySubmission but may have a `parts` field
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const rawParts = (template as any).parts as Record<string, any> | undefined;
+      /* eslint-disable @typescript-eslint/no-explicit-any */
+      const rawParts = (template as any).parts as
+        | Record<string, any>
+        | undefined;
+      /* eslint-enable @typescript-eslint/no-explicit-any */
       if (!rawParts) {
         continue;
       }

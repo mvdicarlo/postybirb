@@ -5,7 +5,9 @@ import {
     Injectable,
     NotFoundException,
     OnModuleInit,
+    Optional,
 } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
 import { Account, CustomShortcutRepository, Insert, Submission, SubmissionRepository, WebsiteOptions, WebsiteOptionsRepository } from '@postybirb/database';
 import {
     AccountId,
@@ -27,11 +29,17 @@ import {
 } from '@postybirb/types';
 import { AccountTemplateDefaultsService } from '../account/account-template-defaults.service';
 import { AccountService } from '../account/account.service';
+import {
+    EntityRemovedEvent,
+    getEntityCrudEventNames,
+} from '../common/events/entity-crud.events';
 import { PostyBirbService } from '../common/service/postybirb-service';
+import { CUSTOM_SHORTCUT_EVENT_PREFIX } from '../custom-shortcuts/custom-shortcut.events';
 
 import { FormGeneratorService } from '../form-generator/form-generator.service';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
 import { SubmissionService } from '../submission/services/submission.service';
+import { SubmissionEventPublisher } from '../submission/submission-event.publisher';
 import {
     isBlockNoteFormat,
     migrateDescription,
@@ -61,25 +69,33 @@ export class WebsiteOptionsService
     private readonly validationService: ValidationService,
     private readonly postParsersService: PostParsersService,
     private readonly websiteRegistry: WebsiteRegistryService,
+    @Optional()
+    private readonly submissionEventPublisher?: SubmissionEventPublisher,
   ) {
     super(new WebsiteOptionsRepository());
-
-    this.repository.subscribe('CustomShortcutSchema', (ids, action) => {
-      if (action === 'delete') {
-        for (const id of ids) {
-          this.onCustomShortcutDelete(id).catch((err) =>
-            this.logger.error(
-              `Error handling custom shortcut delete for id '${id}': ${err.message}`,
-              err.stack,
-            ),
-          );
-        }
-      }
-    });
   }
 
   async onModuleInit() {
     await this.migrateBlockNoteDescriptions();
+  }
+
+  @OnEvent(getEntityCrudEventNames(CUSTOM_SHORTCUT_EVENT_PREFIX).removed)
+  private onCustomShortcutRemoved(events: EntityRemovedEvent[]): void {
+    events.forEach((event) => {
+      this.onCustomShortcutDelete(event.id).catch((err) =>
+        this.logger.error(
+          `Error handling custom shortcut delete for id '${event.id}': ${err.message}`,
+          err.stack,
+        ),
+      );
+    });
+  }
+
+  private markChanged(
+    ids: SubmissionId | SubmissionId[],
+    immediate = false,
+  ): void {
+    this.submissionEventPublisher?.markChanged(ids, immediate);
   }
 
   /**
@@ -155,7 +171,9 @@ export class WebsiteOptionsService
       data,
       title,
     );
-    return this.repository.insert(option);
+    const result = await this.repository.insert(option);
+    this.markChanged(submission.id);
+    return result;
   }
 
   /**
@@ -290,14 +308,14 @@ export class WebsiteOptionsService
       accountId: account.id,
       isDefault,
     });
-    this.submissionService.emit();
+    this.markChanged(submission.id, true);
     return record;
   }
 
   async update(id: EntityId, update: UpdateWebsiteOptionsDto) {
     this.logger.withMetadata(update).info(`Updating WebsiteOptions '${id}'`);
     const result = await this.repository.update(id, update);
-    this.submissionService.emit();
+    this.markChanged(result.submissionId);
     return result;
   }
 
@@ -331,7 +349,17 @@ export class WebsiteOptionsService
       ),
     };
 
-    return this.repository.insert(options);
+    const result = await this.repository.insert(options);
+    this.markChanged(submission.id);
+    return result;
+  }
+
+  public override async remove(id: EntityId): Promise<void> {
+    const option = await this.repository.findById(id);
+    await super.remove(id);
+    if (option) {
+      this.markChanged(option.submissionId, true);
+    }
   }
 
   private async populateDefaultWebsiteOptions(
@@ -465,6 +493,7 @@ export class WebsiteOptionsService
     updateDto: UpdateSubmissionWebsiteOptionsDto,
   ) {
     const submission = await this.submissionService.findByIdOrThrow(submissionId);
+    let optionsChanged = false;
 
     const { remove, add } = updateDto;
     if (remove?.length) {
@@ -480,6 +509,7 @@ export class WebsiteOptionsService
         `Removing option(s) [${removableIds.join(', ')}] from submission ${submissionId}`,
       );
       await this.repository.deleteById(removableIds);
+      optionsChanged ||= removableIds.length > 0;
     }
 
     if (add?.length) {
@@ -489,9 +519,10 @@ export class WebsiteOptionsService
         ),
       );
       await this.repository.insert(options);
+      optionsChanged ||= options.length > 0;
     }
 
-    this.submissionService.emit();
+    this.markChanged(submissionId, optionsChanged);
     return this.submissionService.findByIdOrThrow(submissionId);
   }
 
@@ -523,7 +554,7 @@ export class WebsiteOptionsService
             description: updatedDescription,
           },
         });
-        this.submissionService.emit();
+        this.markChanged(option.submissionId);
       }
     }
   }

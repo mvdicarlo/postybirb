@@ -4,7 +4,6 @@ import { eq } from 'drizzle-orm';
 import type { AnySQLiteColumn } from 'drizzle-orm/sqlite-core';
 import type { PostyBirbDatabaseType } from '../database';
 import type { SchemaKey } from '../helper-types';
-import { SubscriberBus } from '../repositories/base/subscriber-bus';
 import * as schemas from '../schemas';
 
 interface TrackedEntity {
@@ -16,9 +15,6 @@ interface TrackedEntity {
  * A transaction-like wrapper that tracks created entities and provides
  * automatic cleanup on failure. This works around drizzle-orm's synchronous
  * transaction requirement with better-sqlite3.
- *
- * `commit()` broadcasts inserts through `SubscriberBus.notifyImmediate`
- * (bypassing coalescing, since `commit()` is itself a coalescing point).
  */
 export class TransactionContext {
   private readonly logger = Logger();
@@ -88,37 +84,16 @@ export class TransactionContext {
   }
 
   /**
-   * Clear tracked entities and notify subscribers (called on successful
-   * completion). Tracks only inserts today; the bus is invoked
-   * synchronously via `notifyImmediate` so consumers observing the result
-   * of a transaction see the write before control returns.
-   *
-   * NOTE: If update/delete tracking is needed in the future, add
-   * `trackUpdate()` and `trackDelete()` methods that store the action type
-   * alongside the entity.
+   * Clear tracked entities (called on successful completion). Tracking
+   * exists solely to support automatic cleanup on failure.
    */
   commit(): void {
-    const bySchema = new Map<SchemaKey, EntityId[]>();
-    for (const { schemaKey, id } of this.createdEntities) {
-      const existing = bySchema.get(schemaKey);
-      if (existing) {
-        existing.push(id);
-      } else {
-        bySchema.set(schemaKey, [id]);
-      }
-    }
-
-    for (const [schemaKey, ids] of bySchema) {
-      SubscriberBus.notifyImmediate(schemaKey, ids, 'insert');
-    }
-
     this.createdEntities.length = 0;
   }
 }
 
 /**
- * Execute an operation with automatic cleanup on failure. On success,
- * `commit()` broadcasts inserts synchronously through `SubscriberBus`.
+ * Execute an operation with automatic cleanup on failure.
  *
  * @example
  * ```typescript

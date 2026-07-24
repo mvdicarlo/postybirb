@@ -8,14 +8,12 @@ import { Submission } from '../../entities/submission.entity';
 import { SubmissionSchema } from '../../schemas';
 import { SubmissionRepository } from '../submission.repository';
 import { EntityNotFoundError } from './entity-not-found.error';
-import { SubscriberBus } from './subscriber-bus';
 import { createTestRepository } from './test-utils';
-import type { Action, SubscriberCb } from './types';
 
 /**
  * Integration spec for `EntityRepository` using `SubmissionRepository` as
- * the representative subclass. Covers: reads, writes, subscriptions,
- * raw select, count, and coalesced notify.
+ * the representative subclass. Covers: reads, writes, raw select, and
+ * count.
  */
 describe('EntityRepository (SubmissionRepository)', () => {
   const repo = createTestRepository(SubmissionRepository);
@@ -111,36 +109,7 @@ describe('EntityRepository (SubmissionRepository)', () => {
     expect(await repo.findById(e.id)).toBeNull();
   });
 
-  // --- subscribers ---
-
-  it('writes broadcast through SubscriberBus with the right action and ids', async () => {
-    const events: Array<[string[], Action]> = [];
-    const cb: SubscriberCb = (ids, action) => events.push([ids, action]);
-    repo.subscribe('SubmissionSchema', cb);
-
-    const inserted = await repo.insert(buildInsert());
-    SubscriberBus.flush();
-    await repo.update(inserted.id, { isArchived: true });
-    SubscriberBus.flush();
-    await repo.deleteById([inserted.id]);
-    SubscriberBus.flush();
-
-    const actions = events.map(([, a]) => a);
-    expect(actions).toEqual(['insert', 'update', 'delete']);
-    expect(events[0][0]).toContain(inserted.id);
-  });
-
-  it('subscriber receives schemaKey as third argument', async () => {
-    let receivedKey: string | undefined;
-    repo.subscribe('SubmissionSchema', (_ids, _action, key) => {
-      receivedKey = key;
-    });
-    await repo.insert(buildInsert());
-    SubscriberBus.flush();
-    expect(receivedKey).toBe('SubmissionSchema');
-  });
-
-  // --- count + select + notify passthrough ---
+  // --- count + select ---
 
   it('count() and count(SQL) return expected counts', async () => {
     await repo.insert([
@@ -160,21 +129,6 @@ describe('EntityRepository (SubmissionRepository)', () => {
     expect(rows[0].id).toBe(e.id);
     // .select bypasses the relational API — relations should be undefined.
     expect(rows[0].options).toBeUndefined();
-  });
-
-  it('repo.notify equals SubscriberBus.notify(schemaKey, ids, action)', async () => {
-    const events: Array<[string[], Action]> = [];
-    SubscriberBus.subscribe('SubmissionSchema', (ids, action) =>
-      events.push([ids, action]),
-    );
-    repo.notify(['x'], 'update');
-    SubscriberBus.notify('SubmissionSchema', ['x'], 'update');
-    SubscriberBus.flush();
-    // Both calls target the same (key, action, id) — the bus coalesces
-    // them into a single subscriber invocation, proving repo.notify is
-    // the exact same routing as the static call.
-    expect(events).toHaveLength(1);
-    expect(events[0]).toEqual([['x'], 'update']);
   });
 });
 

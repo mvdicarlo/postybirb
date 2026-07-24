@@ -5,7 +5,7 @@
  * All entity stores follow a similar pattern of loading, storing, and providing access to records.
  */
 
-import type { EntityId } from '@postybirb/types';
+import type { EntityDelta, EntityId } from '@postybirb/types';
 import type { StoreApi } from 'zustand';
 import { create } from 'zustand';
 import { useShallow } from 'zustand/shallow';
@@ -64,6 +64,8 @@ export interface CreateEntityStoreOptions<
   storeName: string;
   /** Websocket event name to subscribe to for real-time updates (optional) */
   websocketEvent?: string;
+  /** Websocket event name carrying incremental entity updates (optional) */
+  websocketDeltaEvent?: string;
   /**
    * Custom comparator to determine whether a record has changed.
    * Receives the existing record and the incoming DTO.
@@ -224,6 +226,76 @@ export function diffRecords<
 }
 
 /**
+ * Apply incremental upserts and removals while preserving unaffected records.
+ */
+export function applyEntityDelta<
+  TDto extends { id: string; updatedAt: string },
+  TRecord extends BaseRecord,
+>(
+  existingRecords: TRecord[],
+  existingMap: Map<EntityId, TRecord>,
+  delta: EntityDelta<TDto>,
+  createRecord: (dto: TDto) => TRecord,
+  hasChanged?: (existing: TRecord, newDto: TDto) => boolean,
+): { records: TRecord[]; recordsMap: Map<EntityId, TRecord> } | null {
+  const removedIds = new Set(delta.removedIds);
+  const upsertsById = new Map(delta.upserts.map((dto) => [dto.id, dto]));
+  const lastUpsertIndexes = new Map(
+    delta.upserts.map((dto, index) => [dto.id, index]),
+  );
+  const handledUpserts = new Set<EntityId>();
+  const records: TRecord[] = [];
+  let anyChanged = false;
+
+  for (const existing of existingRecords) {
+    if (removedIds.has(existing.id)) {
+      anyChanged = true;
+      continue;
+    }
+
+    const dto = upsertsById.get(existing.id);
+    if (!dto) {
+      records.push(existing);
+      continue;
+    }
+
+    handledUpserts.add(existing.id);
+    const changed = hasChanged
+      ? hasChanged(existing, dto)
+      : dto.updatedAt !== existing.updatedAt.toISOString();
+    if (changed) {
+      records.push(createRecord(dto));
+      anyChanged = true;
+    } else {
+      records.push(existing);
+    }
+  }
+
+  for (const [index, dto] of delta.upserts.entries()) {
+    if (
+      removedIds.has(dto.id) ||
+      lastUpsertIndexes.get(dto.id) !== index ||
+      handledUpserts.has(dto.id) ||
+      existingMap.has(dto.id)
+    ) {
+      continue;
+    }
+    records.push(createRecord(dto));
+    handledUpserts.add(dto.id);
+    anyChanged = true;
+  }
+
+  if (!anyChanged) {
+    return null;
+  }
+
+  return {
+    records,
+    recordsMap: new Map(records.map((record) => [record.id, record])),
+  };
+}
+
+/**
  * Factory function to create an entity store.
  *
  * @param fetchFn - Async function that fetches DTOs from the API
@@ -238,7 +310,8 @@ export function createEntityStore<
   createRecord: (dto: TDto) => TRecord,
   options: CreateEntityStoreOptions<TDto, TRecord>,
 ) {
-  const { storeName, websocketEvent, hasChanged } = options;
+  const { storeName, websocketEvent, websocketDeltaEvent, hasChanged } =
+    options;
 
   const initialState: BaseEntityState<TRecord> = {
     records: [],
@@ -251,6 +324,7 @@ export function createEntityStore<
   type StoreType = EntityStore<TRecord>;
   type SetState = StoreApi<StoreType>['setState'];
   type GetState = StoreApi<StoreType>['getState'];
+  let pendingDeltas: EntityDelta<TDto>[] | null = null;
 
   const storeCreator = (set: SetState, get: GetState): StoreType => ({
     ...initialState,
@@ -261,24 +335,46 @@ export function createEntityStore<
         return;
       }
 
+      pendingDeltas = [];
       set({ loadingState: 'loading', error: null });
 
       try {
         const dtos = await fetchFn();
-        const { recordsMap: existingMap } = get();
+        const currentState = get();
 
         // Use diffing on subsequent loads; on first load existingMap is empty so all records are new
         const diffResult = diffRecords(
-          existingMap,
+          currentState.recordsMap,
           dtos,
           createRecord,
           hasChanged,
           storeName,
         );
-        if (diffResult) {
+        let nextRecords = diffResult?.records ?? currentState.records;
+        let nextRecordsMap = diffResult?.recordsMap ?? currentState.recordsMap;
+
+        for (const delta of pendingDeltas) {
+          const deltaResult = applyEntityDelta(
+            nextRecords,
+            nextRecordsMap,
+            delta,
+            createRecord,
+            hasChanged,
+          );
+          if (deltaResult) {
+            nextRecords = deltaResult.records;
+            nextRecordsMap = deltaResult.recordsMap;
+          }
+        }
+        pendingDeltas = null;
+
+        if (
+          nextRecords !== currentState.records ||
+          nextRecordsMap !== currentState.recordsMap
+        ) {
           set({
-            records: diffResult.records,
-            recordsMap: diffResult.recordsMap,
+            records: nextRecords,
+            recordsMap: nextRecordsMap,
             loadingState: 'loaded',
             lastLoadedAt: new Date(),
           });
@@ -290,6 +386,7 @@ export function createEntityStore<
         // eslint-disable-next-line no-console, lingui/no-unlocalized-strings
         console.debug(`[${storeName}] Loaded ${dtos.length} records`);
       } catch (err) {
+        pendingDeltas = null;
         const errorMessage =
           // eslint-disable-next-line lingui/no-unlocalized-strings
           err instanceof Error ? err.message : 'Unknown error';
@@ -351,6 +448,36 @@ export function createEntityStore<
         });
       }
       // If diffResult is null, nothing changed — skip setState entirely
+    });
+  }
+
+  if (websocketDeltaEvent) {
+    AppSocket.on(websocketDeltaEvent, (delta: EntityDelta<TDto>) => {
+      pendingDeltas?.push(delta);
+      const { records, recordsMap } = store.getState();
+      const result = applyEntityDelta(
+        records,
+        recordsMap,
+        delta,
+        createRecord,
+        hasChanged,
+      );
+
+      if (result) {
+        store.setState({
+          records: result.records,
+          recordsMap: result.recordsMap,
+          loadingState: 'loaded',
+          lastLoadedAt: new Date(),
+        });
+      }
+    });
+
+    let hasConnected = AppSocket.connected;
+    AppSocket.on('connect', () => {
+      const isReconnect = hasConnected;
+      hasConnected = true;
+      return isReconnect ? store.getState().loadAll() : undefined;
     });
   }
 

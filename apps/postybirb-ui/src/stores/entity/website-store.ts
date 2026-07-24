@@ -3,12 +3,10 @@
  * Handles website metadata, login types, and capabilities.
  */
 
-import { WEBSITE_UPDATES } from '@postybirb/socket-events';
-import type { IWebsiteInfoDto, WebsiteId } from '@postybirb/types';
+import type { IWebsiteDefinitionDto, WebsiteId } from '@postybirb/types';
 import { create } from 'zustand';
 import { useShallow } from 'zustand/react/shallow';
 import websitesApi from '../../api/websites.api';
-import AppSocket from '../../transports/websocket';
 import type { LoadingState } from '../create-entity-store';
 import { WebsiteRecord } from '../records';
 
@@ -34,8 +32,8 @@ interface WebsiteState {
 interface WebsiteActions {
   /** Load all websites from the API */
   loadAll: () => Promise<void>;
-  /** Set websites directly (for websocket updates) */
-  setWebsites: (dtos: IWebsiteInfoDto[]) => void;
+  /** Set website definitions directly. */
+  setWebsites: (dtos: IWebsiteDefinitionDto[]) => void;
   /** Get a website by ID */
   getById: (id: WebsiteId) => WebsiteRecord | undefined;
   /** Clear all websites and reset state */
@@ -61,31 +59,15 @@ const initialState: WebsiteState = {
 /**
  * Fetch all websites from the API.
  */
-const fetchWebsites = async (): Promise<IWebsiteInfoDto[]> => {
-  const response = await websitesApi.getWebsiteInfo();
+const fetchWebsites = async (): Promise<IWebsiteDefinitionDto[]> => {
+  const response = await websitesApi.getWebsiteDefinitions();
   return response.body;
 };
 
 /**
  * Website store instance.
  */
-export const useWebsiteStore = create<WebsiteStore>((set, get) => {
-  // Subscribe to websocket updates
-  AppSocket.on(WEBSITE_UPDATES, (data: IWebsiteInfoDto[]) => {
-    const records = data.map((dto) => new WebsiteRecord(dto));
-    const websitesMap = new Map<WebsiteId, WebsiteRecord>();
-    records.forEach((record) => {
-      websitesMap.set(record.id, record);
-    });
-
-    set({
-      websites: records,
-      websitesMap,
-      lastLoadedAt: new Date(),
-    });
-  });
-
-  return {
+export const useWebsiteStore = create<WebsiteStore>((set, get) => ({
     ...initialState,
 
     loadAll: async () => {
@@ -125,7 +107,7 @@ export const useWebsiteStore = create<WebsiteStore>((set, get) => {
       }
     },
 
-    setWebsites: (dtos: IWebsiteInfoDto[]) => {
+    setWebsites: (dtos: IWebsiteDefinitionDto[]) => {
       const records = dtos.map((dto) => new WebsiteRecord(dto));
       const websitesMap = new Map<WebsiteId, WebsiteRecord>();
       records.forEach((record) => {
@@ -144,8 +126,7 @@ export const useWebsiteStore = create<WebsiteStore>((set, get) => {
     clear: () => {
       set(initialState);
     },
-  };
-});
+}));
 
 // ============================================================================
 // Selector Hooks

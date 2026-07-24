@@ -1,11 +1,6 @@
-import { NOTIFICATION_UPDATES } from '@postybirb/socket-events';
 import { INotification } from '@postybirb/types';
-import { WebsocketEvent } from '../web-socket/models/web-socket-event';
+import { EntityDeltaEvent } from '../common/events/entity-crud.events';
 
-export type NotificationEventTypes = NotificationEvent;
+export const NOTIFICATION_EVENT_PREFIX = 'notification';
 
-class NotificationEvent implements WebsocketEvent<INotification[]> {
-  event: string = NOTIFICATION_UPDATES;
-
-  data: INotification[];
-}
+export type NotificationEventTypes = EntityDeltaEvent<INotification>;

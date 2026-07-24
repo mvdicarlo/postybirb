@@ -1,11 +1,6 @@
-import { TAG_CONVERTER_UPDATES } from '@postybirb/socket-events';
 import { TagConverterDto } from '@postybirb/types';
-import { WebsocketEvent } from '../web-socket/models/web-socket-event';
+import { EntityDeltaEvent } from '../common/events/entity-crud.events';
 
-export type TagConverterEventTypes = TagConverterUpdateEvent;
+export const TAG_CONVERTER_EVENT_PREFIX = 'tag-converter';
 
-class TagConverterUpdateEvent implements WebsocketEvent<TagConverterDto[]> {
-  event: string = TAG_CONVERTER_UPDATES;
-
-  data: TagConverterDto[];
-}
+export type TagConverterEventTypes = EntityDeltaEvent<TagConverterDto>;

@@ -2,7 +2,7 @@
  * Account Store - Zustand store for account entities.
  */
 
-import { ACCOUNT_UPDATES } from '@postybirb/socket-events';
+import { ACCOUNT_DELTA } from '@postybirb/socket-events';
 import type { AccountId, IAccountDto } from '@postybirb/types';
 import { useShallow } from 'zustand/react/shallow';
 import accountApi from '../../api/account.api';
@@ -21,7 +21,10 @@ import { AccountRecord } from '../records';
  * touching the account entity itself), and the website `data` which backs
  * derived form options (e.g. FurAffinity folders).
  */
-function accountHasChanged(existing: AccountRecord, dto: IAccountDto): boolean {
+export function accountHasChanged(
+  existing: AccountRecord,
+  dto: IAccountDto,
+): boolean {
   // 1. Root entity changed
   if (dto.updatedAt !== existing.updatedAt.toISOString()) return true;
 
@@ -38,6 +41,14 @@ function accountHasChanged(existing: AccountRecord, dto: IAccountDto): boolean {
   // login state itself is unchanged (folders added/removed while logged in).
   if (
     JSON.stringify(dto.data ?? null) !== JSON.stringify(existing.data ?? null)
+  ) {
+    return true;
+  }
+
+  // 4. Runtime capabilities can change without updating Account persistence.
+  if (
+    JSON.stringify(dto.instanceCapabilities) !==
+    JSON.stringify(existing.instanceCapabilities)
   ) {
     return true;
   }
@@ -62,7 +73,7 @@ export const useAccountStore = createEntityStore<IAccountDto, AccountRecord>(
   {
     // eslint-disable-next-line lingui/no-unlocalized-strings
     storeName: 'AccountStore',
-    websocketEvent: ACCOUNT_UPDATES,
+    websocketDeltaEvent: ACCOUNT_DELTA,
     hasChanged: accountHasChanged,
   }
 );

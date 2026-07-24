@@ -1,5 +1,4 @@
 import type { PostyBirbDatabaseType } from '../database';
-import { SubscriberBus } from '../repositories/base/subscriber-bus';
 import {
     TransactionContext,
     withTransactionContext,
@@ -23,82 +22,29 @@ function makeMockDb() {
 }
 
 describe('TransactionContext', () => {
-  let notifyImmediateSpy: jest.SpyInstance;
-
-  beforeEach(() => {
-    notifyImmediateSpy = jest
-      .spyOn(SubscriberBus, 'notifyImmediate')
-      .mockImplementation(() => {
-        /* swallow — verified via spy */
-      });
-  });
-
-  afterEach(() => {
-    notifyImmediateSpy.mockRestore();
-    SubscriberBus.clear();
-  });
-
   describe('commit()', () => {
-    it('issues one notifyImmediate per schemaKey with union of tracked ids', () => {
-      const { db } = makeMockDb();
+    it('clears tracked entities so a later cleanup is a no-op', async () => {
+      const { db, deleteMock } = makeMockDb();
       const ctx = new TransactionContext(db);
       ctx.track('AccountSchema', 'a1');
-      ctx.track('AccountSchema', 'a2');
       ctx.track('SubmissionSchema', 's1');
 
       ctx.commit();
+      await ctx.cleanup();
 
-      expect(notifyImmediateSpy).toHaveBeenCalledTimes(2);
-      expect(notifyImmediateSpy).toHaveBeenCalledWith(
-        'AccountSchema',
-        ['a1', 'a2'],
-        'insert',
-      );
-      expect(notifyImmediateSpy).toHaveBeenCalledWith(
-        'SubmissionSchema',
-        ['s1'],
-        'insert',
-      );
+      expect(deleteMock).not.toHaveBeenCalled();
     });
 
-    it('trackMany behaves like multiple track calls', () => {
-      const { db } = makeMockDb();
-      const ctx = new TransactionContext(db);
-      ctx.trackMany('AccountSchema', ['a1', 'a2', 'a3']);
-
-      ctx.commit();
-
-      expect(notifyImmediateSpy).toHaveBeenCalledTimes(1);
-      expect(notifyImmediateSpy).toHaveBeenCalledWith(
-        'AccountSchema',
-        ['a1', 'a2', 'a3'],
-        'insert',
-      );
-    });
-
-    it('clears tracked entities so a second commit is a no-op', () => {
-      const { db } = makeMockDb();
-      const ctx = new TransactionContext(db);
-      ctx.track('AccountSchema', 'a1');
-
-      ctx.commit();
-      ctx.commit();
-
-      expect(notifyImmediateSpy).toHaveBeenCalledTimes(1);
-    });
-
-    it('does nothing when no entities are tracked', () => {
+    it('is safe to call when no entities are tracked', () => {
       const { db } = makeMockDb();
       const ctx = new TransactionContext(db);
 
-      ctx.commit();
-
-      expect(notifyImmediateSpy).not.toHaveBeenCalled();
+      expect(() => ctx.commit()).not.toThrow();
     });
   });
 
   describe('cleanup()', () => {
-    it('deletes tracked entities in LIFO order and does NOT notify', async () => {
+    it('deletes tracked entities in LIFO order', async () => {
       const { db, deleteMock, whereMock } = makeMockDb();
       const ctx = new TransactionContext(db);
       ctx.track('AccountSchema', 'a1');
@@ -108,7 +54,6 @@ describe('TransactionContext', () => {
 
       expect(deleteMock).toHaveBeenCalledTimes(2);
       expect(whereMock).toHaveBeenCalledTimes(2);
-      expect(notifyImmediateSpy).not.toHaveBeenCalled();
     });
 
     it('continues cleanup when a single delete throws', async () => {
@@ -137,7 +82,7 @@ describe('TransactionContext', () => {
 
   describe('withTransactionContext()', () => {
     it('resolves with the operation return value and commits', async () => {
-      const { db } = makeMockDb();
+      const { db, deleteMock } = makeMockDb();
 
       const result = await withTransactionContext(db, async (ctx) => {
         ctx.track('AccountSchema', 'a1');
@@ -145,11 +90,7 @@ describe('TransactionContext', () => {
       });
 
       expect(result).toBe('ok');
-      expect(notifyImmediateSpy).toHaveBeenCalledWith(
-        'AccountSchema',
-        ['a1'],
-        'insert',
-      );
+      expect(deleteMock).not.toHaveBeenCalled();
     });
 
     it('runs cleanup and rethrows when the operation throws', async () => {
@@ -165,7 +106,6 @@ describe('TransactionContext', () => {
       ).rejects.toBe(failure);
 
       expect(deleteMock).toHaveBeenCalledTimes(2);
-      expect(notifyImmediateSpy).not.toHaveBeenCalled();
     });
 
     it('does not invoke cleanup when operation succeeds', async () => {

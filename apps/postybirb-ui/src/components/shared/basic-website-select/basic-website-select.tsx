@@ -14,7 +14,9 @@ const mapRecordToDto = (record: AccountRecord): IAccountDto => ({
   groups: record.groups,
   state: record.state,
   data: record.data,
-  websiteInfo: record.websiteInfo,
+  instanceCapabilities: record.instanceCapabilities,
+  defaultFileTemplateId: record.defaultFileTemplateId,
+  defaultMessageTemplateId: record.defaultMessageTemplateId,
   createdAt: record.createdAt.toISOString(),
   updatedAt: record.updatedAt.toISOString(),
 });
@@ -45,7 +47,7 @@ export function BasicWebsiteSelect(props: WebsiteSelectProps) {
       (websiteAccounts: AccountRecord[], _websiteId: string) => {
         if (websiteAccounts.length === 0) return;
 
-        // Get the display name from the first account's websiteInfo
+        // Runtime account projection includes its Website display name.
         const displayName = websiteAccounts[0].websiteDisplayName;
 
         groups.push({

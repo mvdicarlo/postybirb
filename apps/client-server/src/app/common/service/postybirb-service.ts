@@ -1,17 +1,22 @@
 import { BadRequestException } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
-  Action,
-  EntityRepository,
-  RepoEntity,
-  RepoSchemaKey,
-  SchemaKey,
-  SchemaTable,
+    EntityRepository,
+    RepoEntity,
+    RepoSchemaKey,
+    SchemaKey,
+    SchemaTable,
 } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import { EntityId, IEntity } from '@postybirb/types';
 import { SQL } from 'drizzle-orm';
 import { WSGateway } from '../../web-socket/web-socket-gateway';
 import { WebSocketEvents } from '../../web-socket/web-socket.events';
+import {
+    publishEntityCreated,
+    publishEntityRemoved,
+    publishEntityUpdated,
+} from '../events/entity-crud.events';
 
 /**
  * Abstract base for NestJS CRUD services. Delegates reads and writes to
@@ -35,11 +40,46 @@ export abstract class PostyBirbService<
 
   protected readonly repository: TRepo;
 
+  private crudEventConfig?: {
+    eventEmitter?: EventEmitter2;
+    prefix: string;
+  };
+
   constructor(
     repository: TRepo,
     private readonly webSocket?: WSGateway,
   ) {
     this.repository = repository;
+  }
+
+  /**
+   * Enables standard CRUD event publication for this service.
+   */
+  protected configureCrudEvents(
+    prefix: string,
+    eventEmitter?: EventEmitter2,
+  ): void {
+    this.crudEventConfig = { prefix, eventEmitter };
+  }
+
+  protected publishCreated<TDto>(entity: TDto | TDto[]): void {
+    if (this.crudEventConfig) {
+      publishEntityCreated(
+        this.crudEventConfig.eventEmitter,
+        this.crudEventConfig.prefix,
+        entity,
+      );
+    }
+  }
+
+  protected publishUpdated<TDto>(entity: TDto | TDto[]): void {
+    if (this.crudEventConfig) {
+      publishEntityUpdated(
+        this.crudEventConfig.eventEmitter,
+        this.crudEventConfig.prefix,
+        entity,
+      );
+    }
   }
 
   /**
@@ -65,14 +105,6 @@ export abstract class PostyBirbService<
    */
   protected get table(): SchemaTable<RepoSchemaKey<TRepo>> {
     return this.repository.table as SchemaTable<RepoSchemaKey<TRepo>>;
-  }
-
-  /**
-   * Coalesced subscriber notification. Pass-through to
-   * `this.repository.notify(ids, action)`.
-   */
-  protected notify(ids: EntityId[], action: Action) {
-    this.repository.notify(ids, action);
   }
 
   /**
@@ -108,7 +140,14 @@ export abstract class PostyBirbService<
 
   public async remove(id: EntityId): Promise<void> {
     this.logger.withMetadata({ id }).info(`Removing entity '${id}'`);
-    await this.repository.deleteById([id]);
+    const result = await this.repository.deleteById([id]);
+    if (result.changes > 0 && this.crudEventConfig) {
+      publishEntityRemoved(
+        this.crudEventConfig.eventEmitter,
+        this.crudEventConfig.prefix,
+        id,
+      );
+    }
   }
 
   // END Repository Wrappers

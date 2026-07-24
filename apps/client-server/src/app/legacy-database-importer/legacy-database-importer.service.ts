@@ -1,8 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { DatabaseEntity } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import { PlatformService } from '@postybirb/platform';
 import { join } from 'path';
 import { AccountService } from '../account/account.service';
+import { publishEntityCreated } from '../common/events/entity-crud.events';
+import { CUSTOM_SHORTCUT_EVENT_PREFIX } from '../custom-shortcuts/custom-shortcut.events';
+import { SubmissionEventPublisher } from '../submission/submission-event.publisher';
+import { TAG_CONVERTER_EVENT_PREFIX } from '../tag-converters/tag-converter.events';
+import { TAG_GROUP_EVENT_PREFIX } from '../tag-groups/tag-group.events';
 import { LegacyConverter } from './converters/legacy-converter';
 import { LegacyCustomShortcutConverter } from './converters/legacy-custom-shortcut.converter';
 import { LegacySubmissionConverter } from './converters/legacy-submission.converter';
@@ -20,7 +27,10 @@ export class LegacyDatabaseImporterService {
 
   constructor(
     private readonly accountService: AccountService,
+    private readonly eventEmitter: EventEmitter2,
     platform: PlatformService,
+    @Optional()
+    private readonly submissionEventPublisher?: SubmissionEventPublisher,
   ) {
     this.LEGACY_POSTYBIRB_PLUS_PATH = join(
       platform.app.getPath('documents'),
@@ -56,7 +66,15 @@ export class LegacyDatabaseImporterService {
       const allAccounts = await this.accountService.findAll();
       for (const account of allAccounts) {
         if (account) {
-          await this.accountService.registerAndLogin(account.id);
+          try {
+            await this.accountService.registerAndLogin(account.id);
+          } catch (error) {
+            const registrationError = error as Error;
+            errors.push(registrationError);
+            this.logger
+              .withError(registrationError)
+              .error(`Failed to register imported Account '${account.id}'`);
+          }
         }
       }
     }
@@ -64,7 +82,13 @@ export class LegacyDatabaseImporterService {
     if (importRequest.tagGroups) {
       // Import tag groups
       const result = await this.processImport(
-        new LegacyTagGroupConverter(path),
+        new LegacyTagGroupConverter(path, (entity) => {
+          publishEntityCreated(
+            this.eventEmitter,
+            TAG_GROUP_EVENT_PREFIX,
+            entity.toDTO(),
+          );
+        }),
       );
       if (result.error) {
         errors.push(result.error);
@@ -74,7 +98,13 @@ export class LegacyDatabaseImporterService {
     if (importRequest.tagConverters) {
       // Import tag converters
       const result = await this.processImport(
-        new LegacyTagConverterConverter(path),
+        new LegacyTagConverterConverter(path, (entity) => {
+          publishEntityCreated(
+            this.eventEmitter,
+            TAG_CONVERTER_EVENT_PREFIX,
+            entity.toDTO(),
+          );
+        }),
       );
       if (result.error) {
         errors.push(result.error);
@@ -84,7 +114,13 @@ export class LegacyDatabaseImporterService {
     if (importRequest.customShortcuts) {
       // Import custom shortcuts
       const result = await this.processImport(
-        new LegacyCustomShortcutConverter(path),
+        new LegacyCustomShortcutConverter(path, (entity) => {
+          publishEntityCreated(
+            this.eventEmitter,
+            CUSTOM_SHORTCUT_EVENT_PREFIX,
+            entity.toDTO(),
+          );
+        }),
       );
       if (result.error) {
         errors.push(result.error);
@@ -94,7 +130,9 @@ export class LegacyDatabaseImporterService {
     if (importRequest.submissions) {
       // Import submissions (must be after accounts for FK references)
       const submissionResult = await this.processSubmissionImport(
-        new LegacySubmissionConverter(path, false),
+        new LegacySubmissionConverter(path, false, (id) =>
+          this.submissionEventPublisher?.markChanged(id),
+        ),
       );
       if (submissionResult.error) {
         errors.push(submissionResult.error);
@@ -104,7 +142,9 @@ export class LegacyDatabaseImporterService {
     if (importRequest.templates) {
       // Import submission templates
       const templateResult = await this.processSubmissionImport(
-        new LegacySubmissionConverter(path, true),
+        new LegacySubmissionConverter(path, true, (id) =>
+          this.submissionEventPublisher?.markChanged(id),
+        ),
       );
       if (templateResult.error) {
         errors.push(templateResult.error);
@@ -114,8 +154,8 @@ export class LegacyDatabaseImporterService {
     return { errors: errors.map((e) => ({ message: e.message })) };
   }
 
-  private async processImport(
-    converter: LegacyConverter,
+  private async processImport<TEntity extends DatabaseEntity>(
+    converter: LegacyConverter<TEntity>,
   ): Promise<{ error?: Error }> {
     try {
       this.logger.info(`Starting import for ${converter.legacyFileName}...`);

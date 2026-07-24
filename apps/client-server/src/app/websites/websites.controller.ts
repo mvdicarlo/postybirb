@@ -33,7 +33,7 @@ export class WebsitesController {
   @Get('info')
   @ApiResponse({ status: 200 })
   getWebsiteLoginInfo() {
-    return this.websiteRegistryService.getWebsiteInfo();
+    return this.websiteRegistryService.getWebsiteDefinitions();
   }
 
   /**

@@ -1,17 +1,19 @@
 import { WebsiteId } from '../../models';
 import { WebsiteLoginType } from '../../models/website/website-login-type';
-import { IWebsiteMetadata } from '../../website-modifiers';
-import { UsernameShortcut } from '../../website-modifiers/username-shortcut';
+import {
+  IWebsiteMetadata,
+  UsernameShortcut,
+} from '../../website-modifiers';
 import { WebsiteFileOptions } from '../../website-modifiers/website-file-options';
-import { IAccountDto } from '../account/account.dto';
 
-export interface IWebsiteInfoDto {
+export type UsernameShortcutDto = Pick<UsernameShortcut, 'id' | 'url'>;
+
+export interface IWebsiteDefinitionDto {
   id: WebsiteId;
   displayName: string;
   loginType: WebsiteLoginType;
-  usernameShortcut?: UsernameShortcut;
+  usernameShortcut?: UsernameShortcutDto;
   metadata: IWebsiteMetadata;
-  accounts: IAccountDto[];
   fileOptions?: WebsiteFileOptions;
   supportsFile: boolean;
   supportsMessage: boolean;

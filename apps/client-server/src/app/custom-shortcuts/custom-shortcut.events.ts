@@ -1,11 +1,6 @@
-import { CUSTOM_SHORTCUT_UPDATES } from '@postybirb/socket-events';
-import { ICustomShortcut } from '@postybirb/types';
-import { WebsocketEvent } from '../web-socket/models/web-socket-event';
+import { ICustomShortcutDto } from '@postybirb/types';
+import { EntityDeltaEvent } from '../common/events/entity-crud.events';
 
-export type CustomShortcutEventTypes = CustomShortcutEvent;
+export const CUSTOM_SHORTCUT_EVENT_PREFIX = 'custom-shortcut';
 
-class CustomShortcutEvent implements WebsocketEvent<ICustomShortcut[]> {
-  event: string = CUSTOM_SHORTCUT_UPDATES;
-
-  data: ICustomShortcut[];
-}
+export type CustomShortcutEventTypes = EntityDeltaEvent<ICustomShortcutDto>;

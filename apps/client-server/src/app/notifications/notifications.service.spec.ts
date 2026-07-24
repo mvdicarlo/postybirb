@@ -1,11 +1,18 @@
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
 import { PlatformService } from '@postybirb/platform';
+import {
+    EntityCreatedEvent,
+    EntityRemovedEvent,
+    EntityUpdatedEvent,
+    getEntityCrudEventNames,
+} from '../common/events/entity-crud.events';
 import { NoopPlatformService } from '../platform/testing/noop-platform-providers';
 import { SettingsService } from '../settings/settings.service';
-import { WSGateway } from '../web-socket/web-socket-gateway';
 import { CreateNotificationDto } from './dtos/create-notification.dto';
 import { UpdateNotificationDto } from './dtos/update-notification.dto';
+import { NOTIFICATION_EVENT_PREFIX } from './notification.events';
 import { NotificationsService } from './notifications.service';
 
 const noopPlatform: PlatformService = new NoopPlatformService();
@@ -13,14 +20,20 @@ const noopPlatform: PlatformService = new NoopPlatformService();
 describe('NotificationsService', () => {
   let service: NotificationsService;
   let module: TestingModule;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let webSocketMock: any;
+  const emit = jest.fn();
+  const eventNames = getEntityCrudEventNames(NOTIFICATION_EVENT_PREFIX);
+
+  function createDto(title = 'Test Notification') {
+    const dto = new CreateNotificationDto();
+    dto.title = title;
+    dto.message = 'This is a test notification';
+    dto.type = 'info';
+    return dto;
+  }
 
   beforeEach(async () => {
     clearDatabase();
-    webSocketMock = {
-      emit: jest.fn(),
-    };
+    emit.mockClear();
 
     module = await Test.createTestingModule({
       providers: [
@@ -31,8 +44,8 @@ describe('NotificationsService', () => {
           useValue: noopPlatform,
         },
         {
-          provide: WSGateway,
-          useValue: webSocketMock,
+          provide: EventEmitter2,
+          useValue: { emit },
         },
       ],
     }).compile();
@@ -40,7 +53,7 @@ describe('NotificationsService', () => {
     service = module.get<NotificationsService>(NotificationsService);
   });
 
-  afterAll(async () => {
+  afterEach(async () => {
     await module?.close();
   });
 
@@ -48,14 +61,10 @@ describe('NotificationsService', () => {
     expect(service).toBeDefined();
   });
 
-  it('should create a notification', async () => {
-    const dto = new CreateNotificationDto();
-    dto.title = 'Test Notification';
-    dto.message = 'This is a test notification';
-    dto.type = 'info';
+  it('should create a notification and emit created event', async () => {
+    const dto = createDto();
 
     const notification = await service.create(dto);
-    expect(notification).toBeDefined();
     expect(notification.title).toBe(dto.title);
     expect(notification.message).toBe(dto.message);
     expect(notification.type).toBe(dto.type);
@@ -63,47 +72,48 @@ describe('NotificationsService', () => {
     const notifications = await service.findAll();
     expect(notifications).toHaveLength(1);
     expect(notifications[0].id).toBe(notification.id);
+
+    expect(emit).toHaveBeenCalledWith(
+      eventNames.created,
+      [new EntityCreatedEvent(notification.toDTO())],
+    );
   });
 
-  it('should update a notification', async () => {
-    const createDto = new CreateNotificationDto();
-    createDto.title = 'Initial Title';
-    createDto.message = 'Initial Message';
-    createDto.type = 'info';
-
-    const notification = await service.create(createDto);
+  it('should update a notification and emit updated event', async () => {
+    const notification = await service.create(createDto('Initial Title'));
+    emit.mockClear();
 
     const updateDto = new UpdateNotificationDto();
     updateDto.isRead = true;
 
-    await service.update(notification.id, updateDto);
+    const updated = await service.update(notification.id, updateDto);
+    expect(updated.isRead).toBe(true);
 
-    const updatedNotification = await service.findByIdOrThrow(notification.id);
-    expect(updatedNotification.message).toBe(createDto.message); // unchanged
-    expect(updatedNotification.isRead).toBe(true);
+    expect(emit).toHaveBeenCalledWith(
+      eventNames.updated,
+      [new EntityUpdatedEvent(updated.toDTO())],
+    );
   });
 
-  it('should emit notification updates when changes occur', async () => {
-    // Create a notification which should trigger an emit
-    const dto = new CreateNotificationDto();
-    dto.title = 'Test Notification';
-    dto.message = 'This is a test notification';
-    dto.type = 'info';
+  it('should remove a notification and emit removed event', async () => {
+    const notification = await service.create(createDto());
+    emit.mockClear();
 
-    await service.create(dto);
+    await service.remove(notification.id);
+    expect(await service.findAll()).toHaveLength(0);
 
-    // Verify websocket emit was called with the correct event
-    expect(webSocketMock.emit).toHaveBeenCalled();
-    const emitArgs = webSocketMock.emit.mock.calls[0];
-    expect(emitArgs[0].data[0].title).toBe(dto.title);
+    expect(emit).toHaveBeenCalledWith(
+      eventNames.removed,
+      [new EntityRemovedEvent(notification.id)],
+    );
   });
 
-  it('should initialize without websocket and not throw error', () => {
-    const serviceWithoutWebsocket = new NotificationsService(
+  it('should initialize without an event emitter and not throw', () => {
+    const serviceWithoutEmitter = new NotificationsService(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       undefined as any,
       noopPlatform,
     );
-    expect(serviceWithoutWebsocket).toBeDefined();
+    expect(serviceWithoutEmitter).toBeDefined();
   });
 });

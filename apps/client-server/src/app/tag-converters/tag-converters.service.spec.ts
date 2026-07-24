@@ -1,13 +1,23 @@
 import { BadRequestException } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
+import {
+    EntityCreatedEvent,
+    EntityRemovedEvent,
+    EntityUpdatedEvent,
+    getEntityCrudEventNames,
+} from '../common/events/entity-crud.events';
 import { CreateTagConverterDto } from './dtos/create-tag-converter.dto';
 import { UpdateTagConverterDto } from './dtos/update-tag-converter.dto';
+import { TAG_CONVERTER_EVENT_PREFIX } from './tag-converter.events';
 import { TagConvertersService } from './tag-converters.service';
 
 describe('TagConvertersService', () => {
   let service: TagConvertersService;
   let module: TestingModule;
+  const emit = jest.fn();
+  const eventNames = getEntityCrudEventNames(TAG_CONVERTER_EVENT_PREFIX);
 
   function createTagConverterDto(
     tag: string,
@@ -21,19 +31,18 @@ describe('TagConvertersService', () => {
 
   beforeEach(async () => {
     clearDatabase();
-    try {
-      module = await Test.createTestingModule({
-        imports: [],
-        providers: [TagConvertersService],
-      }).compile();
+    emit.mockClear();
+    module = await Test.createTestingModule({
+      providers: [
+        TagConvertersService,
+        { provide: EventEmitter2, useValue: { emit } },
+      ],
+    }).compile();
 
-      service = module.get<TagConvertersService>(TagConvertersService);
-    } catch (e) {
-      console.log(e);
-    }
+    service = module.get<TagConvertersService>(TagConvertersService);
   });
 
-  afterAll(async () => {
+  afterEach(async () => {
     await module.close();
   });
 
@@ -56,6 +65,10 @@ describe('TagConvertersService', () => {
       createdAt: record.createdAt,
       updatedAt: record.updatedAt,
     });
+    expect(emit).toHaveBeenCalledWith(
+      eventNames.created,
+      [new EntityCreatedEvent(record.toDTO())],
+    );
   });
 
   it('should fail to create duplicate tag converters', async () => {
@@ -63,6 +76,7 @@ describe('TagConvertersService', () => {
     const dto2 = createTagConverterDto('test', { default: 'converted' });
 
     await service.create(dto);
+    emit.mockClear();
 
     let expectedException = null;
     try {
@@ -71,6 +85,7 @@ describe('TagConvertersService', () => {
       expectedException = err;
     }
     expect(expectedException).toBeInstanceOf(BadRequestException);
+    expect(emit).not.toHaveBeenCalled();
   });
 
   it('should update entities', async () => {
@@ -83,10 +98,23 @@ describe('TagConvertersService', () => {
     const updateDto = new UpdateTagConverterDto();
     updateDto.tag = 'test';
     updateDto.convertTo = { default: 'converted', test: 'converted2' };
-    await service.update(record.id, updateDto);
+    const updated = await service.update(record.id, updateDto);
     const updatedRec = await service.findByIdOrThrow(record.id);
     expect(updatedRec.tag).toBe(updateDto.tag);
     expect(updatedRec.convertTo).toEqual(updateDto.convertTo);
+    expect(emit).toHaveBeenLastCalledWith(
+      eventNames.updated,
+      [new EntityUpdatedEvent(updated.toDTO())],
+    );
+  });
+
+  it('should not emit when updating a missing entity', async () => {
+    const updateDto = new UpdateTagConverterDto();
+    updateDto.tag = 'missing';
+    updateDto.convertTo = {};
+
+    await expect(service.update('missing', updateDto)).rejects.toThrow();
+    expect(emit).not.toHaveBeenCalled();
   });
 
   it('should delete entities', async () => {
@@ -97,6 +125,15 @@ describe('TagConvertersService', () => {
 
     await service.remove(record.id);
     expect(await service.findAll()).toHaveLength(0);
+    expect(emit).toHaveBeenLastCalledWith(
+      eventNames.removed,
+      [new EntityRemovedEvent(record.id)],
+    );
+  });
+
+  it('should not emit when removing a missing entity', async () => {
+    await service.remove('missing');
+    expect(emit).not.toHaveBeenCalled();
   });
 
   it('should convert tags', async () => {

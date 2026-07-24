@@ -36,7 +36,7 @@ All entity data is managed through Zustand stores located in `stores/`. The stor
 const useAccountStore = createEntityStore<AccountDto, AccountRecord>(
   fetchAccounts,
   (dto) => new AccountRecord(dto),
-  { storeName: 'AccountStore', websocketEvent: ACCOUNT_UPDATES }
+  { storeName: 'AccountStore', websocketDeltaEvent: ACCOUNT_DELTA }
 );
 ```
 

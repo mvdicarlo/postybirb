@@ -3,23 +3,28 @@ import {
     Inject,
     Injectable,
     NotFoundException,
+  OnModuleDestroy,
     Optional,
 } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Account, AccountRepository, WebsiteDataRepository } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import { PlatformService } from '@postybirb/platform';
-import { WEBSITE_UPDATES } from '@postybirb/socket-events';
 import {
     DynamicObject,
     IAccount,
-    IWebsiteInfoDto,
+    IAccountDto,
+    IWebsiteDefinitionDto,
     OAuthRoutes,
 } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/common';
 import { Class } from 'type-fest';
+import { publishAccountStateChanged } from '../account/account.events';
 import { WEBSITE_IMPLEMENTATIONS } from '../constants';
-import { WSGateway } from '../web-socket/web-socket-gateway';
-import { validateWebsiteDecoratorProps } from './decorators/website-decorator-props';
+import {
+  cloneWebsiteFileOptions,
+  validateWebsiteDecoratorProps,
+} from './decorators/website-decorator-props';
 import { OAuthWebsiteRequestDto } from './dtos/oauth-website-request.dto';
 import DefaultWebsite from './implementations/default/default.website';
 import { FileWebsiteKey } from './models/website-modifiers/file-website';
@@ -34,7 +39,7 @@ type WebsiteInstances = Record<string, Record<string, UnknownWebsite>>;
  * Creates a new instance for each user account provided.
  */
 @Injectable()
-export class WebsiteRegistryService {
+export class WebsiteRegistryService implements OnModuleDestroy {
   private readonly logger = Logger();
 
   private readonly availableWebsites: Record<string, Class<UnknownWebsite>> =
@@ -46,6 +51,13 @@ export class WebsiteRegistryService {
 
   private readonly websiteDataRepository: WebsiteDataRepository;
 
+  private readonly initializingInstances = new Map<
+    string,
+    Promise<UnknownWebsite>
+  >();
+
+  private shuttingDown = false;
+
   private initialized = false;
 
   private initializedResolve: (() => void) | null = null;
@@ -56,7 +68,7 @@ export class WebsiteRegistryService {
     @Inject(WEBSITE_IMPLEMENTATIONS)
     private readonly websiteImplementations: Class<UnknownWebsite>[],
     private readonly platform: PlatformService,
-    @Optional() private readonly webSocket?: WSGateway,
+    @Optional() private readonly eventEmitter?: EventEmitter2,
   ) {
     this.initializedPromise = new Promise<void>((resolve) => {
       this.initializedResolve = resolve;
@@ -83,19 +95,6 @@ export class WebsiteRegistryService {
 
     this.accountRepository = new AccountRepository();
     this.websiteDataRepository = new WebsiteDataRepository();
-    this.accountRepository.subscribe(
-      ['AccountSchema', 'WebsiteDataSchema'],
-      () => this.emit(),
-    );
-  }
-
-  public async emit() {
-    if (this.webSocket) {
-      this.webSocket.emit({
-        event: WEBSITE_UPDATES,
-        data: await this.getWebsiteInfo(),
-      });
-    }
   }
 
   /**
@@ -171,32 +170,58 @@ export class WebsiteRegistryService {
    */
   public async create(account: Account): Promise<UnknownWebsite> {
     const { website, id } = account;
+    if (this.shuttingDown) {
+      throw new Error('Website registry is shutting down');
+    }
     if (this.canCreate(account.website)) {
       const WebsiteCtor = this.availableWebsites[website];
       if (!this.websiteInstances[website]) {
         this.websiteInstances[website] = {};
       }
 
-      if (!this.websiteInstances[website][id]) {
-        // this.logger.info(`Creating instance of '${website}' with id '${id}'`);
-        this.websiteInstances[website][id] = new WebsiteCtor(
-          account,
-          this.platform,
-        );
-        await this.websiteInstances[website][id].onInitialize(
-          this.websiteDataRepository,
-        );
-      } else {
-        this.logger.warn(
-          `An instance of "${website}" with id '${id}' already exists`,
-        );
+      const existing = this.websiteInstances[website][id];
+      if (existing) {
+        return existing;
+      }
+      const pending = this.initializingInstances.get(id);
+      if (pending) {
+        return pending;
       }
 
-      return this.websiteInstances[website][id];
+      const initialization = (async () => {
+        const instance = new WebsiteCtor(account, this.platform);
+        await instance.onInitialize(this.websiteDataRepository, (accountDto) => {
+          if (!this.shuttingDown) {
+            try {
+              publishAccountStateChanged(this.eventEmitter, accountDto);
+            } catch (error) {
+              this.logger
+                .withError(error)
+                .error(`Failed to publish Account state for '${id}'`);
+            }
+          }
+        });
+        if (this.shuttingDown) {
+          await instance.dispose();
+        } else {
+          this.websiteInstances[website][id] = instance;
+        }
+        return instance;
+      })();
+      this.initializingInstances.set(id, initialization);
+      try {
+        return await initialization;
+      } finally {
+        this.initializingInstances.delete(id);
+      }
     }
 
     this.logger.error(`Unable to find website '${website}'`);
     throw new BadRequestException(`Unable to find website '${website}'`);
+  }
+
+  public async ensureInstance(account: Account): Promise<UnknownWebsite> {
+    return this.findInstance(account) ?? this.create(account);
   }
 
   /**
@@ -210,6 +235,73 @@ export class WebsiteRegistryService {
     }
 
     return undefined;
+  }
+
+  public getAccountDto(account: IAccount): IAccountDto {
+    const instance = this.findInstance(account);
+    if (!instance) {
+      throw new Error(`No Website instance for Account '${account.id}'`);
+    }
+    return instance.toAccountDto();
+  }
+
+  public syncAccount(account: Account): IAccountDto {
+    const instance = this.findInstance(account);
+    if (!instance) {
+      throw new Error(`No Website instance for Account '${account.id}'`);
+    }
+    instance.syncAccount(account);
+    return instance.toAccountDto();
+  }
+
+  public async remove(account: IAccount): Promise<void> {
+    try {
+      let instance = this.findInstance(account);
+      if (!instance) {
+        try {
+          instance = await this.initializingInstances.get(account.id);
+        } catch (error) {
+          this.logger
+            .withError(error)
+            .error(`Failed to await Website initialization for '${account.id}'`);
+        }
+      }
+      if (instance) {
+        await this.deleteInstance(instance, account.id);
+      }
+    } finally {
+      if (this.websiteInstances[account.website]) {
+        delete this.websiteInstances[account.website][account.id];
+      }
+    }
+  }
+
+  private async deleteInstance(
+    instance: UnknownWebsite,
+    accountId: string,
+  ): Promise<void> {
+    try {
+      await instance.delete();
+    } catch (error) {
+      this.logger
+        .withError(error)
+        .error(`Failed to clean up Website instance for Account '${accountId}'`);
+    }
+  }
+
+  async onModuleDestroy(): Promise<void> {
+    this.shuttingDown = true;
+    const initializing = [...this.initializingInstances.values()];
+    const initialized = this.getAll();
+    const completed = await Promise.allSettled(initializing);
+    const pendingInstances = completed.flatMap((result) =>
+      result.status === 'fulfilled' ? [result.value] : [],
+    );
+    await Promise.allSettled(
+      [...new Set([...initialized, ...pendingInstances])].map((instance) =>
+        instance.dispose(),
+      ),
+    );
   }
 
   /**
@@ -245,56 +337,27 @@ export class WebsiteRegistryService {
     return Object.values(this.availableWebsites);
   }
 
-  /**
-   * Returns a list of all available websites for UI.
-   * @return {*}  {Promise<IWebsiteInfoDto[]>}
-   */
-  public async getWebsiteInfo(): Promise<IWebsiteInfoDto[]> {
-    const dtos: IWebsiteInfoDto[] = [];
-
-    const availableWebsites = this.getAvailableWebsites();
-    // eslint-disable-next-line no-restricted-syntax
-    for (const website of availableWebsites) {
-      const accounts = await this.accountRepository.find({
-        where: (account, { eq }) =>
-          eq(account.website, website.prototype.decoratedProps.metadata.name),
-      });
-      dtos.push({
-        loginType: website.prototype.decoratedProps.loginFlow,
-        id: website.prototype.decoratedProps.metadata.name,
-        displayName: website.prototype.decoratedProps.metadata.displayName,
-        usernameShortcut: website.prototype.decoratedProps.usernameShortcut,
-        metadata: website.prototype.decoratedProps.metadata,
-        fileOptions: website.prototype.decoratedProps.fileOptions,
-        accounts: accounts
-          .map((account) => {
-            const instance = this.findInstance(account);
-            if (!instance) return undefined;
-
-            return account.withWebsiteInstance(instance).toDTO();
-          })
-          .filter((e) => !!e),
-        supportsFile: FileWebsiteKey in website.prototype,
-        supportsMessage: MessageWebsiteKey in website.prototype,
-      });
-    }
-
-    return dtos.sort((a, b) => a.displayName.localeCompare(b.displayName));
-  }
-
-  /**
-   * Removes an instance of a Website.
-   * Cleans up login, stored, and cache data.
-   * @param {Account} account
-   */
-  public async remove(account: IAccount): Promise<void> {
-    const { name, id, website } = account;
-    const instance = this.findInstance(account);
-    if (instance) {
-      this.logger.info(`Removing and cleaning up ${website} - ${name} - ${id}`);
-      await instance.clearLoginStateAndData(true);
-      delete this.websiteInstances[website][id];
-    }
+  public getWebsiteDefinitions(): IWebsiteDefinitionDto[] {
+    return this.getAvailableWebsites()
+      .map((website) => {
+        const { decoratedProps } = website.prototype;
+        return {
+          loginType: { ...decoratedProps.loginFlow },
+          id: decoratedProps.metadata.name,
+          displayName: decoratedProps.metadata.displayName,
+          usernameShortcut: decoratedProps.usernameShortcut
+            ? {
+                id: decoratedProps.usernameShortcut.id,
+                url: decoratedProps.usernameShortcut.url,
+              }
+            : undefined,
+          metadata: { ...decoratedProps.metadata },
+          fileOptions: cloneWebsiteFileOptions(decoratedProps.fileOptions),
+          supportsFile: FileWebsiteKey in website.prototype,
+          supportsMessage: MessageWebsiteKey in website.prototype,
+        };
+      })
+      .sort((a, b) => a.displayName.localeCompare(b.displayName));
   }
 
   /**

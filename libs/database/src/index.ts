@@ -5,32 +5,29 @@ export * from './lib/schemas';
 // Repository infrastructure
 export { EntityNotFoundError } from './lib/repositories/base/entity-not-found.error';
 export {
-  EntityRepository,
-  type EntityRepositoryConfig,
+    EntityRepository,
+    type EntityRepositoryConfig
 } from './lib/repositories/base/entity-repository';
 export { HydrationContext } from './lib/repositories/base/hydration-context';
 export { OptimisticConcurrencyError } from './lib/repositories/base/optimistic-concurrency.error';
 export { RepositoryRegistry } from './lib/repositories/base/repository-registry';
-export { SubscriberBus } from './lib/repositories/base/subscriber-bus';
 export type {
-  Action,
-  DefaultWithFor,
-  EntityCtor,
-  EntityId,
-  FindFirstConfig,
-  FindManyConfig,
-  RepoEntity,
-  RepoSchemaKey,
-  SchemaQuery,
-  SchemaTable,
-  SubscriberCb,
-  TableSchemaKey,
+    DefaultWithFor,
+    EntityCtor,
+    EntityId,
+    FindFirstConfig,
+    FindManyConfig,
+    RepoEntity,
+    RepoSchemaKey,
+    SchemaQuery,
+    SchemaTable,
+    TableSchemaKey
 } from './lib/repositories/base/types';
 
 // Transaction context
 export {
-  TransactionContext,
-  withTransactionContext,
+    TransactionContext,
+    withTransactionContext
 } from './lib/transaction/transaction-context';
 
 // Entity classes and *Row type aliases
@@ -42,3 +39,4 @@ export * from './lib/repositories';
 // saveFromEntity — resolves the target repository via RepositoryRegistry;
 // throws OptimisticConcurrencyError on version conflict
 export { saveFromEntity } from './lib/save-from-entity';
+

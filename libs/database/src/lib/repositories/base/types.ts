@@ -75,20 +75,6 @@ export type FindFirstConfig<K extends SchemaKey> = Omit<
 export type SchemaQuery<K extends SchemaKey> = PostyBirbDatabaseType['query'][K];
 
 /**
- * Write actions broadcast through `SubscriberBus`.
- */
-export type Action = 'insert' | 'update' | 'delete';
-
-/**
- * Subscriber callback invoked by `SubscriberBus` after write operations.
- */
-export type SubscriberCb<K extends SchemaKey = SchemaKey> = (
-  ids: EntityId[],
-  action: Action,
-  schemaKey: K,
-) => void;
-
-/**
  * Entity classes used by repositories must provide a `fromRow` /
  * `fromRows` static for hydration. The instance type is parameterized.
  */

@@ -5,8 +5,8 @@
 
 import { Anchor, type MantineColor } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { NOTIFICATION_UPDATES } from '@postybirb/socket-events';
-import type { INotification } from '@postybirb/types';
+import { NOTIFICATION_DELTA } from '@postybirb/socket-events';
+import type { EntityDelta, INotification } from '@postybirb/types';
 import { useShallow } from 'zustand/react/shallow';
 import notificationApi from '../../api/notification.api';
 import AppSocket from '../../transports/websocket';
@@ -105,8 +105,8 @@ function showUINotification(notification: INotification): void {
 /**
  * Subscribe to websocket updates and show UI notifications for new ones.
  */
-AppSocket.on(NOTIFICATION_UPDATES, (data: INotification[]) => {
-  data.forEach(showUINotification);
+AppSocket.on(NOTIFICATION_DELTA, (delta: EntityDelta<INotification>) => {
+  delta.upserts.forEach(showUINotification);
 });
 
 /**
@@ -118,7 +118,7 @@ export const useNotificationStore = createEntityStore<
 >(fetchNotifications, (dto) => new NotificationRecord(dto), {
   // eslint-disable-next-line lingui/no-unlocalized-strings
   storeName: 'NotificationStore',
-  websocketEvent: NOTIFICATION_UPDATES,
+  websocketDeltaEvent: NOTIFICATION_DELTA,
 });
 
 /**

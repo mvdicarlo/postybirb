@@ -1,11 +1,6 @@
-import { USER_CONVERTER_UPDATES } from '@postybirb/socket-events';
 import { UserConverterDto } from '@postybirb/types';
-import { WebsocketEvent } from '../web-socket/models/web-socket-event';
+import { EntityDeltaEvent } from '../common/events/entity-crud.events';
 
-export type UserConverterEventTypes = UserConverterUpdateEvent;
+export const USER_CONVERTER_EVENT_PREFIX = 'user-converter';
 
-class UserConverterUpdateEvent implements WebsocketEvent<UserConverterDto[]> {
-  event: string = USER_CONVERTER_UPDATES;
-
-  data: UserConverterDto[];
-}
+export type UserConverterEventTypes = EntityDeltaEvent<UserConverterDto>;

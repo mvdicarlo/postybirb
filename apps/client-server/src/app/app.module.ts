@@ -1,5 +1,6 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
@@ -34,6 +35,7 @@ import { WebsitesModule } from './websites/websites.module';
 @Module({
   imports: [
     PlatformModule,
+    EventEmitterModule.forRoot({ global: true }),
     ScheduleModule.forRoot(),
     ImageProcessingModule,
     AccountModule,

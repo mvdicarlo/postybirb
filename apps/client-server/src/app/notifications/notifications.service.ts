@@ -1,14 +1,17 @@
 import { Injectable, Optional } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Notification, NotificationRepository } from '@postybirb/database';
 import { PlatformService } from '@postybirb/platform';
-import { NOTIFICATION_UPDATES } from '@postybirb/socket-events';
 import { EntityId } from '@postybirb/types';
+import {
+  publishEntityRemoved,
+} from '../common/events/entity-crud.events';
 import { PostyBirbService } from '../common/service/postybirb-service';
 import { SettingsService } from '../settings/settings.service';
-import { WSGateway } from '../web-socket/web-socket-gateway';
 import { CreateNotificationDto } from './dtos/create-notification.dto';
 import { UpdateNotificationDto } from './dtos/update-notification.dto';
+import { NOTIFICATION_EVENT_PREFIX } from './notification.events';
 
 /**
  * Service responsible for managing application notifications.
@@ -17,19 +20,23 @@ import { UpdateNotificationDto } from './dtos/update-notification.dto';
  */
 @Injectable()
 export class NotificationsService extends PostyBirbService<NotificationRepository> {
+  private readonly eventEmitter?: EventEmitter2;
+
   /**
    * Creates a new instance of the NotificationsService.
    *
    * @param settingsService - Service for accessing application settings
-   * @param webSocket - Optional websocket gateway for emitting events
+   * @param platform - Platform service for desktop notifications
+   * @param eventEmitter - Optional event emitter for CRUD event publication
    */
   constructor(
     private readonly settingsService: SettingsService,
     private readonly platform: PlatformService,
-    @Optional() webSocket?: WSGateway,
+    @Optional() eventEmitter?: EventEmitter2,
   ) {
-    super(new NotificationRepository(), webSocket);
-    this.repository.subscribe('NotificationSchema', () => this.emit());
+    super(new NotificationRepository());
+    this.eventEmitter = eventEmitter;
+    this.configureCrudEvents(NOTIFICATION_EVENT_PREFIX, eventEmitter);
     this.removeStaleNotifications();
   }
 
@@ -48,7 +55,7 @@ export class NotificationsService extends PostyBirbService<NotificationRepositor
         new Date(notification.createdAt).getTime() < aMonthAgo.getTime(),
     );
     if (staleNotifications.length) {
-      await this.repository.deleteById(staleNotifications.map((n) => n.id));
+      await this.bulkRemove(staleNotifications.map((n) => n.id));
     }
   }
 
@@ -70,7 +77,9 @@ export class NotificationsService extends PostyBirbService<NotificationRepositor
       this.sendDesktopNotification(createDto);
     }
 
-    return this.repository.insert(createDto);
+    const entity = await this.repository.insert(createDto);
+    this.publishCreated(entity.toDTO());
+    return entity;
   }
 
   /**
@@ -88,7 +97,22 @@ export class NotificationsService extends PostyBirbService<NotificationRepositor
         new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
     );
     const toRemove = sorted.slice(0, notifications.length - 250);
-    await this.repository.deleteById(toRemove.map((n) => n.id));
+    await this.bulkRemove(toRemove.map((n) => n.id));
+  }
+
+  /**
+   * Deletes many notifications by id and publishes an `entity.removed`
+   * event for each successful deletion so delta listeners can forward
+   * the removals to connected clients.
+   */
+  private async bulkRemove(ids: EntityId[]): Promise<void> {
+    if (!ids.length) {
+      return;
+    }
+    const result = await this.repository.deleteById(ids);
+    if (result.changes > 0) {
+      publishEntityRemoved(this.eventEmitter, NOTIFICATION_EVENT_PREFIX, ids);
+    }
   }
 
   /**
@@ -132,19 +156,10 @@ export class NotificationsService extends PostyBirbService<NotificationRepositor
    * @param update - The data to update
    * @returns The updated notification
    */
-  update(id: EntityId, update: UpdateNotificationDto) {
+  async update(id: EntityId, update: UpdateNotificationDto) {
     this.logger.withMetadata(update).info(`Updating notification '${id}'`);
-    return this.repository.update(id, update);
-  }
-
-  /**
-   * Emits notification updates to connected clients.
-   * Converts entities to DTOs before sending.
-   */
-  protected async emit() {
-    super.emit({
-      event: NOTIFICATION_UPDATES,
-      data: (await this.repository.findAll()).map((entity) => entity.toDTO()),
-    });
+    const entity = await this.repository.update(id, update);
+    this.publishUpdated(entity.toDTO());
+    return entity;
   }
 }

@@ -47,6 +47,22 @@ describe('LegacyTagConverterConverter', () => {
     expect(record.convertTo['fur-affinity']).toBe('converted');
   });
 
+  it('should call the inserted callback only for newly imported records', async () => {
+    const onInserted = jest.fn();
+    const callbackConverter = new LegacyTagConverterConverter(
+      testDataPath,
+      onInserted,
+    );
+
+    await callbackConverter.import();
+    await callbackConverter.import();
+
+    expect(onInserted).toHaveBeenCalledTimes(1);
+    expect(onInserted.mock.calls[0][0].toDTO()).toEqual(
+      (await repository.findAll())[0].toDTO(),
+    );
+  });
+
   it('should handle empty conversions object', async () => {
     // Create test data with empty conversions
     const emptyConversionData = {
