@@ -224,7 +224,7 @@ export default class Tumblr
     ) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const blogData = this.getBlogData(blogId);
-      const postUrl = `${blogData.data.url}${result.body.response.id}`;
+      const postUrl = `${blogData.data.url}/${result.body.response.id}`;
       return PostResponse.fromWebsite(this)
         .withAdditionalInfo(result.body)
         .withSourceUrl(postUrl);
