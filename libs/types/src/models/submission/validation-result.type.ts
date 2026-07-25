@@ -243,4 +243,9 @@ export interface ValidationMessages {
   'validation.file.instagram.invalid-aspect-ratio': {
     fileName: string;
   };
+
+  'validation.tags.furaffinity.keywords-max-length': {
+    currentLength: number;
+    maxLength: number;
+  };
 }
