@@ -4,9 +4,6 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { Notification, NotificationRepository } from '@postybirb/database';
 import { PlatformService } from '@postybirb/platform';
 import { EntityId } from '@postybirb/types';
-import {
-  publishEntityRemoved,
-} from '../common/events/entity-crud.events';
 import { PostyBirbService } from '../common/service/postybirb-service';
 import { SettingsService } from '../settings/settings.service';
 import { CreateNotificationDto } from './dtos/create-notification.dto';
@@ -20,8 +17,6 @@ import { NOTIFICATION_EVENT_PREFIX } from './notification.events';
  */
 @Injectable()
 export class NotificationsService extends PostyBirbService<NotificationRepository> {
-  private readonly eventEmitter?: EventEmitter2;
-
   /**
    * Creates a new instance of the NotificationsService.
    *
@@ -35,7 +30,6 @@ export class NotificationsService extends PostyBirbService<NotificationRepositor
     @Optional() eventEmitter?: EventEmitter2,
   ) {
     super(new NotificationRepository());
-    this.eventEmitter = eventEmitter;
     this.configureCrudEvents(NOTIFICATION_EVENT_PREFIX, eventEmitter);
     this.removeStaleNotifications();
   }
@@ -55,7 +49,7 @@ export class NotificationsService extends PostyBirbService<NotificationRepositor
         new Date(notification.createdAt).getTime() < aMonthAgo.getTime(),
     );
     if (staleNotifications.length) {
-      await this.bulkRemove(staleNotifications.map((n) => n.id));
+      await this.removeMany(staleNotifications.map((n) => n.id));
     }
   }
 
@@ -97,22 +91,7 @@ export class NotificationsService extends PostyBirbService<NotificationRepositor
         new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
     );
     const toRemove = sorted.slice(0, notifications.length - 250);
-    await this.bulkRemove(toRemove.map((n) => n.id));
-  }
-
-  /**
-   * Deletes many notifications by id and publishes an `entity.removed`
-   * event for each successful deletion so delta listeners can forward
-   * the removals to connected clients.
-   */
-  private async bulkRemove(ids: EntityId[]): Promise<void> {
-    if (!ids.length) {
-      return;
-    }
-    const result = await this.repository.deleteById(ids);
-    if (result.changes > 0) {
-      publishEntityRemoved(this.eventEmitter, NOTIFICATION_EVENT_PREFIX, ids);
-    }
+    await this.removeMany(toRemove.map((n) => n.id));
   }
 
   /**

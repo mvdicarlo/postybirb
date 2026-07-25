@@ -1,21 +1,19 @@
 import { BadRequestException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
-    EntityRepository,
-    RepoEntity,
-    RepoSchemaKey,
-    SchemaKey,
-    SchemaTable,
+  EntityRepository,
+  RepoEntity,
+  RepoSchemaKey,
+  SchemaKey,
+  SchemaTable,
 } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import { EntityId, IEntity } from '@postybirb/types';
 import { SQL } from 'drizzle-orm';
-import { WSGateway } from '../../web-socket/web-socket-gateway';
-import { WebSocketEvents } from '../../web-socket/web-socket.events';
 import {
-    publishEntityCreated,
-    publishEntityRemoved,
-    publishEntityUpdated,
+  publishEntityCreated,
+  publishEntityRemoved,
+  publishEntityUpdated,
 } from '../events/entity-crud.events';
 
 /**
@@ -45,10 +43,7 @@ export abstract class PostyBirbService<
     prefix: string;
   };
 
-  constructor(
-    repository: TRepo,
-    private readonly webSocket?: WSGateway,
-  ) {
+  constructor(repository: TRepo) {
     this.repository = repository;
   }
 
@@ -82,19 +77,13 @@ export abstract class PostyBirbService<
     }
   }
 
-  /**
-   * Emits events onto the websocket
-   *
-   * @protected
-   * @param {WebSocketEvents} event
-   */
-  protected async emit(event: WebSocketEvents) {
-    try {
-      if (this.webSocket) {
-        this.webSocket.emit(event);
-      }
-    } catch (err) {
-      this.logger.error(`Error emitting websocket event: ${event.event}`, err);
+  protected publishRemoved(ids: EntityId | EntityId[]): void {
+    if (this.crudEventConfig) {
+      publishEntityRemoved(
+        this.crudEventConfig.eventEmitter,
+        this.crudEventConfig.prefix,
+        ids,
+      );
     }
   }
 
@@ -139,14 +128,23 @@ export abstract class PostyBirbService<
   }
 
   public async remove(id: EntityId): Promise<void> {
-    this.logger.withMetadata({ id }).info(`Removing entity '${id}'`);
-    const result = await this.repository.deleteById([id]);
-    if (result.changes > 0 && this.crudEventConfig) {
-      publishEntityRemoved(
-        this.crudEventConfig.eventEmitter,
-        this.crudEventConfig.prefix,
-        id,
-      );
+    await this.removeMany([id]);
+  }
+
+  /**
+   * Deletes many entities in a single operation and publishes one batched
+   * `removed` event so delta listeners forward all removals to clients at once.
+   */
+  public async removeMany(ids: EntityId[]): Promise<void> {
+    if (!ids.length) {
+      return;
+    }
+    this.logger
+      .withMetadata({ ids })
+      .info(`Removing ${ids.length} entit${ids.length === 1 ? 'y' : 'ies'}`);
+    const result = await this.repository.deleteById(ids);
+    if (result.changes > 0) {
+      this.publishRemoved(ids);
     }
   }
 

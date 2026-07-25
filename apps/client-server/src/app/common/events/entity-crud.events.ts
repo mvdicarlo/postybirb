@@ -9,6 +9,19 @@ export type EntityCrudEventNames<TPrefix extends string = string> = {
   removed: `${TPrefix}.removed`;
 };
 
+/**
+ * Single source of truth pairing an entity's CRUD event `prefix` (used on the
+ * internal `EventEmitter2` bus) with the `delta` websocket event it maps to.
+ *
+ * Declared once per entity in its `*.events.ts` and registered in
+ * `ENTITY_DELTA_DESCRIPTORS` so a single `EntityDeltaBridge` can forward all
+ * standard CRUD events to the websocket without per-entity listener classes.
+ */
+export type EntityDeltaDescriptor = {
+  prefix: string;
+  delta: string;
+};
+
 export function getEntityCrudEventNames<TPrefix extends string>(
   prefix: TPrefix,
 ): EntityCrudEventNames<TPrefix> {

@@ -1,11 +1,10 @@
 import { Module } from '@nestjs/common';
-import { CustomShortcutEventListener } from './custom-shortcut-event.listener';
 import { CustomShortcutsController } from './custom-shortcuts.controller';
 import { CustomShortcutsService } from './custom-shortcuts.service';
 
 @Module({
   controllers: [CustomShortcutsController],
-  providers: [CustomShortcutsService, CustomShortcutEventListener],
+  providers: [CustomShortcutsService],
   exports: [CustomShortcutsService],
 })
 export class CustomShortcutsModule {}

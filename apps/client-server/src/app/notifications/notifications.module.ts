@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { AccountModule } from '../account/account.module';
 import { SettingsModule } from '../settings/settings.module';
 import { WebsitesModule } from '../websites/websites.module';
-import { NotificationEventListener } from './notification-event.listener';
 import { NotificationsController } from './notifications.controller';
 import { NotificationsService } from './notifications.service';
 
@@ -12,7 +11,7 @@ import { NotificationsService } from './notifications.service';
     AccountModule,
     SettingsModule,
   ],
-  providers: [NotificationsService, NotificationEventListener],
+  providers: [NotificationsService],
   controllers: [NotificationsController],
   exports: [NotificationsService],
 })

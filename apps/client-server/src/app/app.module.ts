@@ -7,6 +7,7 @@ import { join } from 'path';
 import { AccountModule } from './account/account.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { EntityDeltaModule } from './common/events/entity-delta.module';
 import { CustomShortcutsModule } from './custom-shortcuts/custom-shortcuts.module';
 import { DirectoryWatchersModule } from './directory-watchers/directory-watchers.module';
 import { FileConverterModule } from './file-converter/file-converter.module';
@@ -37,6 +38,7 @@ import { WebsitesModule } from './websites/websites.module';
     PlatformModule,
     EventEmitterModule.forRoot({ global: true }),
     ScheduleModule.forRoot(),
+    EntityDeltaModule,
     ImageProcessingModule,
     AccountModule,
     WebSocketModule,

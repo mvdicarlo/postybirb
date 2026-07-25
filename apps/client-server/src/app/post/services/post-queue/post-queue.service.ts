@@ -16,7 +16,6 @@ import { Cron as CronGenerator } from 'croner';
 import { PostyBirbService } from '../../../common/service/postybirb-service';
 import { SettingsService } from '../../../settings/settings.service';
 import { SubmissionEventPublisher } from '../../../submission/submission-event.publisher';
-import { WSGateway } from '../../../web-socket/web-socket-gateway';
 import { RelayPostManager } from '../../engine/post-manager.service';
 
 /**
@@ -39,11 +38,10 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
   constructor(
     private readonly settingsService: SettingsService,
     private readonly relayPostManager: RelayPostManager,
-    @Optional() webSocket?: WSGateway,
     @Optional()
     private readonly submissionEventPublisher?: SubmissionEventPublisher,
   ) {
-    super(new PostQueueRecordRepository(), webSocket);
+    super(new PostQueueRecordRepository());
   }
 
   public async isPaused(): Promise<boolean> {
