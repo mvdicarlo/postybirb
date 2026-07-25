@@ -12393,15 +12393,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"async-mutex@npm:^0.3.0":
-  version: 0.3.2
-  resolution: "async-mutex@npm:0.3.2"
-  dependencies:
-    tslib: "npm:^2.3.1"
-  checksum: 10c0/456c6cc480f2fa5afce6e0bd375fed7fc9f3705e77545c29218b01e7283a652928d38a571c5375787a5c198ea3c6679cf0e28b0109f369545881702daec64128
-  languageName: node
-  linkType: hard
-
 "async-mutex@npm:^0.5.0":
   version: 0.5.0
   resolution: "async-mutex@npm:0.5.0"
@@ -24150,7 +24141,7 @@ __metadata:
     socks-proxy-agent: "npm:^8.0.5"
     swagger-ui-express: "npm:^4.1.6"
     tailwindcss: "npm:3.4.3"
-    teleproto: "npm:^1.227.5"
+    teleproto: "npm:^1.228.4"
     tinykeys: "npm:^3.0.0"
     tippy.js: "npm:^6.3.7"
     tslib: "npm:2.5.2"
@@ -27432,18 +27423,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"teleproto@npm:^1.227.5":
-  version: 1.227.5
-  resolution: "teleproto@npm:1.227.5"
+"teleproto@npm:^1.228.4":
+  version: 1.228.4
+  resolution: "teleproto@npm:1.228.4"
   dependencies:
-    async-mutex: "npm:^0.3.0"
     big-integer: "npm:^1.6.48"
     mime: "npm:^3.0.0"
     node-localstorage: "npm:^2.2.1"
     socks: "npm:^2.6.2"
     store2: "npm:^2.13.0"
-    ts-custom-error: "npm:^3.2.0"
-  checksum: 10c0/ffee2d02b3b30566b06d683a78952addffe4e1157393bfb673854327a11da10cb583a9ca86db022a7c62522627ad2472439d5fb2d29b25ae595cceb79b6bd50a
+  checksum: 10c0/477deb616f3b71227e60f85f252e76ee26385e75be1ae748294e02b442e3725ea10df57595108f7a0071556c977b5dd5e1f85fa1e94c5603c45347e782714d90
   languageName: node
   linkType: hard
 
@@ -27822,13 +27811,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ts-custom-error@npm:^3.2.0":
-  version: 3.3.1
-  resolution: "ts-custom-error@npm:3.3.1"
-  checksum: 10c0/67cc807d03406d7eeb2b908408d455d253cc43b480d669e2e3ea028b9aaa2c78ad1b392425b86368bbbc3c43a15e4abe304312d87ed845091646ec1937bab982
-  languageName: node
-  linkType: hard
-
 "ts-easing@npm:^0.2.0":
   version: 0.2.0
   resolution: "ts-easing@npm:0.2.0"
@@ -27901,7 +27883,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:2.8.1, tslib@npm:^2.0.0, tslib@npm:^2.0.3, tslib@npm:^2.1.0, tslib@npm:^2.2.0, tslib@npm:^2.3.0, tslib@npm:^2.3.1, tslib@npm:^2.4.0, tslib@npm:^2.6.2, tslib@npm:^2.7.0, tslib@npm:^2.8.0, tslib@npm:^2.8.1":
+"tslib@npm:2.8.1, tslib@npm:^2.0.0, tslib@npm:^2.0.3, tslib@npm:^2.1.0, tslib@npm:^2.2.0, tslib@npm:^2.3.0, tslib@npm:^2.4.0, tslib@npm:^2.6.2, tslib@npm:^2.7.0, tslib@npm:^2.8.0, tslib@npm:^2.8.1":
   version: 2.8.1
   resolution: "tslib@npm:2.8.1"
   checksum: 10c0/9c4759110a19c53f992d9aae23aac5ced636e99887b51b9e61def52611732872ff7668757d4e4c61f19691e36f4da981cd9485e869b4a7408d689f6bf1f14e62
