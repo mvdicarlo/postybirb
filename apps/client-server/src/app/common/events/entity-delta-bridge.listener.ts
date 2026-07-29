@@ -23,11 +23,6 @@ type BusHandler = (events: unknown[]) => void;
 /**
  * Single generic bridge that forwards every registered entity's standard CRUD
  * events onto the websocket as {@link EntityDelta} payloads.
- *
- * Replaces the per-entity `*EventListener` boilerplate: each entity contributes
- * an {@link EntityDeltaDescriptor} to {@link ENTITY_DELTA_DESCRIPTORS} and this
- * bridge subscribes to its `created`/`updated`/`removed` bus events, mapping
- * `created`/`updated` to `upserts` and `removed` to `removedIds`.
  */
 @Injectable()
 export class EntityDeltaBridge implements OnModuleInit, OnModuleDestroy {
