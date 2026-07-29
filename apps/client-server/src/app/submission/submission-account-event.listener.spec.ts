@@ -124,7 +124,7 @@ describe('SubmissionAccountEventListener', () => {
     expect(markChanged).toHaveBeenCalledWith(['message-submission']);
   });
 
-  it('retains changed types across overlapping option lookups', async () => {
+  it('serializes overlapping changes and publishes each change in order', async () => {
     await (listener as any).handleAccountChanged(account());
     const options = [
       {
@@ -153,6 +153,7 @@ describe('SubmissionAccountEventListener', () => {
       ]),
     );
     const first = (listener as any).handleAccountChanged(account());
+    await flush();
 
     (listener as any).buildFingerprints.mockReturnValue(
       new Map([
@@ -160,15 +161,18 @@ describe('SubmissionAccountEventListener', () => {
         [SubmissionType.MESSAGE, 'changed-message'],
       ]),
     );
-    await (listener as any).handleAccountChanged(account());
+    const second = (listener as any).handleAccountChanged(account());
+    await flush();
+
+    // The second change is blocked behind the first while its lookup is pending.
+    expect(markChanged).not.toHaveBeenCalled();
+
     resolveFirst(options);
     await first;
+    await second;
 
-    expect(markChanged).toHaveBeenCalledTimes(1);
-    expect(markChanged).toHaveBeenCalledWith([
-      'file-submission',
-      'message-submission',
-    ]);
+    expect(markChanged).toHaveBeenNthCalledWith(1, ['file-submission']);
+    expect(markChanged).toHaveBeenNthCalledWith(2, ['message-submission']);
   });
 
   it('clears account fingerprint state when the account is removed', async () => {

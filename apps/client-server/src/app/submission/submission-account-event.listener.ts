@@ -4,6 +4,7 @@ import { WebsiteOptionsRepository } from '@postybirb/database';
 import { formBuilder } from '@postybirb/form-builder';
 import { Logger } from '@postybirb/logger';
 import { AccountId, IAccountDto, SubmissionType } from '@postybirb/types';
+import { Mutex } from 'async-mutex';
 import {
     ACCOUNT_REMOVED,
     ACCOUNT_STATE_CHANGED,
@@ -16,6 +17,8 @@ import { SubmissionEventPublisher } from './submission-event.publisher';
 
 type FormFingerprints = Map<SubmissionType, string>;
 
+// Produces a stable, order-independent string for a value so two structurally
+// equal form definitions hash to the same fingerprint regardless of key order.
 function canonicalize(value: unknown): unknown {
   if (Array.isArray(value)) {
     return value.map(canonicalize);
@@ -35,18 +38,31 @@ export function canonicalStringify(value: unknown): string {
   return JSON.stringify(canonicalize(value));
 }
 
+/**
+ * Watches account state changes and, when an account's form definition changes,
+ * marks the affected submissions dirty so their projections get rebuilt.
+ *
+ * Each account keeps a fingerprint per submission type; a change is only fanned
+ * out to submissions whose type's fingerprint actually differs. Work is
+ * serialized per account with a {@link Mutex} so overlapping change events for
+ * the same account run one at a time (the fingerprint baseline stays consistent
+ * and an in-flight lookup can't be clobbered).
+ */
 @Injectable()
 export class SubmissionAccountEventListener implements OnModuleInit {
   private readonly logger = Logger(SubmissionAccountEventListener.name);
 
   private readonly websiteOptionsRepository = new WebsiteOptionsRepository();
 
+  // Last-known form fingerprint per account, keyed by submission type. This is
+  // the baseline each incoming change is diffed against.
   private readonly fingerprints = new Map<AccountId, FormFingerprints>();
 
-  private readonly revisions = new Map<AccountId, number>();
+  // One mutex per account to serialize its change handling. Pruned on removal.
+  private readonly locks = new Map<AccountId, Mutex>();
 
-  private readonly pendingTypes = new Map<AccountId, Set<SubmissionType>>();
-
+  // Flipped once the initial fingerprint seed completes; events before this are
+  // ignored so we don't fan out on the startup baseline.
   private ready = false;
 
   @OnEvent(ACCOUNT_STATE_CHANGED)
@@ -64,8 +80,7 @@ export class SubmissionAccountEventListener implements OnModuleInit {
   private accountRemoved(events: AccountRemovedEvent[]): void {
     events.forEach((event) => {
       this.fingerprints.delete(event.accountId);
-      this.revisions.delete(event.accountId);
-      this.pendingTypes.delete(event.accountId);
+      this.locks.delete(event.accountId);
     });
   }
 
@@ -83,6 +98,8 @@ export class SubmissionAccountEventListener implements OnModuleInit {
   private async seedFingerprints(): Promise<void> {
     try {
       await this.websiteRegistry.waitForInitialization();
+      // Capture the current form state for every known account so later changes
+      // have a baseline to diff against without fanning out on startup.
       this.websiteRegistry.getAll().forEach((instance) => {
         try {
           this.fingerprints.set(
@@ -105,11 +122,29 @@ export class SubmissionAccountEventListener implements OnModuleInit {
     }
   }
 
-  private async handleAccountChanged(account: IAccountDto): Promise<void> {
+  private handleAccountChanged(account: IAccountDto): Promise<void> {
+    // Ignore events before the baseline is seeded, or while the account is still
+    // in a transient/pending state (its form isn't settled yet).
     if (!this.ready || account.state.pending) {
-      return;
+      return Promise.resolve();
     }
 
+    // Serialize per account so concurrent changes don't race on the fingerprint.
+    return this.lockFor(account.id).runExclusive(() =>
+      this.resolveAccountChange(account),
+    );
+  }
+
+  private lockFor(accountId: AccountId): Mutex {
+    let mutex = this.locks.get(accountId);
+    if (!mutex) {
+      mutex = new Mutex();
+      this.locks.set(accountId, mutex);
+    }
+    return mutex;
+  }
+
+  private async resolveAccountChange(account: IAccountDto): Promise<void> {
     const instance = this.websiteRegistry.findInstance(account);
     if (!instance) {
       return;
@@ -125,12 +160,14 @@ export class SubmissionAccountEventListener implements OnModuleInit {
       return;
     }
 
+    // No baseline yet (e.g. account added after seed) -> record and stop.
     const previous = this.fingerprints.get(account.id);
     if (previous === undefined) {
       this.fingerprints.set(account.id, fingerprints);
       return;
     }
 
+    // Only the submission types whose form definition actually changed.
     const changedTypes = new Set(
       [...previous.keys(), ...fingerprints.keys()].filter(
         (type) => previous.get(type) !== fingerprints.get(type),
@@ -141,31 +178,23 @@ export class SubmissionAccountEventListener implements OnModuleInit {
     }
 
     this.fingerprints.set(account.id, fingerprints);
-    const pendingTypes = this.pendingTypes.get(account.id) ?? new Set();
-    changedTypes.forEach((type) => pendingTypes.add(type));
-    this.pendingTypes.set(account.id, pendingTypes);
-    const revision = (this.revisions.get(account.id) ?? 0) + 1;
-    this.revisions.set(account.id, revision);
     try {
+      // Find this account's submission options and mark the ones whose type's
+      // form changed as dirty for reprojection.
       const options = await this.websiteOptionsRepository.find({
         where: (option, { eq }) => eq(option.accountId, account.id),
         with: { submission: true },
       });
-      if (this.revisions.get(account.id) === revision) {
-        const typesToPublish = this.pendingTypes.get(account.id) ?? new Set();
-        this.submissionEventPublisher.markChanged(
-          options.flatMap((option) =>
-            option.submission && typesToPublish.has(option.submission.type)
-              ? [option.submissionId]
-              : [],
-          ),
-        );
-        this.pendingTypes.delete(account.id);
-      }
+      this.submissionEventPublisher.markChanged(
+        options.flatMap((option) =>
+          option.submission && changedTypes.has(option.submission.type)
+            ? [option.submissionId]
+            : [],
+        ),
+      );
     } catch (error) {
-      if (this.revisions.get(account.id) === revision) {
-        this.fingerprints.set(account.id, previous);
-      }
+      // Roll the baseline back so the change is retried on the next event.
+      this.fingerprints.set(account.id, previous);
       this.logger
         .withError(error)
         .error(`Failed to resolve submissions for Account '${account.id}'`);

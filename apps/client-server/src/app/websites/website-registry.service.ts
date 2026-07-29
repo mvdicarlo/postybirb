@@ -55,8 +55,6 @@ export class WebsiteRegistryService implements OnModuleDestroy {
     Promise<UnknownWebsite>
   >();
 
-  private shuttingDown = false;
-
   private initialized = false;
 
   private initializedResolve: (() => void) | null = null;
@@ -169,9 +167,6 @@ export class WebsiteRegistryService implements OnModuleDestroy {
    */
   public async create(account: Account): Promise<UnknownWebsite> {
     const { website, id } = account;
-    if (this.shuttingDown) {
-      throw new Error('Website registry is shutting down');
-    }
     if (this.canCreate(account.website)) {
       const WebsiteCtor = this.availableWebsites[website];
       if (!this.websiteInstances[website]) {
@@ -190,21 +185,15 @@ export class WebsiteRegistryService implements OnModuleDestroy {
       const initialization = (async () => {
         const instance = new WebsiteCtor(account, this.platform);
         await instance.onInitialize(this.websiteDataRepository, (accountDto) => {
-          if (!this.shuttingDown) {
-            try {
-              publishAccountStateChanged(this.eventEmitter, accountDto);
-            } catch (error) {
-              this.logger
-                .withError(error)
-                .error(`Failed to publish Account state for '${id}'`);
-            }
+          try {
+            publishAccountStateChanged(this.eventEmitter, accountDto);
+          } catch (error) {
+            this.logger
+              .withError(error)
+              .error(`Failed to publish Account state for '${id}'`);
           }
         });
-        if (this.shuttingDown) {
-          await instance.dispose();
-        } else {
-          this.websiteInstances[website][id] = instance;
-        }
+        this.websiteInstances[website][id] = instance;
         return instance;
       })();
       this.initializingInstances.set(id, initialization);
@@ -289,7 +278,6 @@ export class WebsiteRegistryService implements OnModuleDestroy {
   }
 
   async onModuleDestroy(): Promise<void> {
-    this.shuttingDown = true;
     const initializing = [...this.initializingInstances.values()];
     const initialized = this.getAll();
     const completed = await Promise.allSettled(initializing);
