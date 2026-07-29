@@ -320,14 +320,12 @@ export abstract class Website<
     } as IAccountDto<D>;
   }
 
-  public syncAccount(account: Account, emit = true): void {
+  public syncAccount(account: Account): void {
     if (account.id !== this.accountId || account.website !== this.account.website) {
       throw new Error('Cannot change the identity of a Website instance');
     }
     this.account = account;
-    if (emit) {
-      this.notifyAccountProjectionChanged();
-    }
+    this.notifyAccountProjectionChanged();
   }
 
   /**

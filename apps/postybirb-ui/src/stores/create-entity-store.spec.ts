@@ -56,7 +56,6 @@ describe('applyEntityDelta', () => {
     };
 
     const result = applyEntityDelta(
-      existing.values,
       existing.map,
       delta,
       (value) => new TestRecord(value),
@@ -76,7 +75,6 @@ describe('applyEntityDelta', () => {
     const existing = records(dto('a'));
 
     const result = applyEntityDelta(
-      existing.values,
       existing.map,
       { upserts: [dto('a')], removedIds: ['missing'] },
       (value) => new TestRecord(value),
@@ -89,7 +87,6 @@ describe('applyEntityDelta', () => {
     const existing = records(dto('a'));
 
     const result = applyEntityDelta(
-      existing.values,
       existing.map,
       { upserts: [dto('a', 'updated')], removedIds: [] },
       (value) => new TestRecord(value),
@@ -103,7 +100,6 @@ describe('applyEntityDelta', () => {
     const existing = records();
 
     const result = applyEntityDelta(
-      existing.values,
       existing.map,
       {
         upserts: [
@@ -117,6 +113,40 @@ describe('applyEntityDelta', () => {
 
     expect(result?.records).toHaveLength(1);
     expect(result?.records[0].name).toBe('last');
+  });
+
+  it('orders new duplicate upserts by their last occurrence', () => {
+    const result = applyEntityDelta(
+      records().map,
+      {
+        upserts: [
+          dto('a', 'first'),
+          dto('b'),
+          dto('a', 'last', '2026-07-22T00:01:00.000Z'),
+        ],
+        removedIds: [],
+      },
+      (value) => new TestRecord(value),
+    );
+
+    expect(result?.records.map((record) => record.id)).toEqual(['b', 'a']);
+    expect(result?.records[1].name).toBe('last');
+  });
+
+  it('lets removals win defensively when a delta contains the same upsert', () => {
+    const existing = records(dto('a'), dto('b'));
+
+    const result = applyEntityDelta(
+      existing.map,
+      {
+        upserts: [dto('a', 'updated', '2026-07-22T00:01:00.000Z')],
+        removedIds: ['a'],
+      },
+      (value) => new TestRecord(value),
+    );
+
+    expect(result?.records).toEqual([existing.values[1]]);
+    expect(result?.recordsMap.has('a')).toBe(false);
   });
 });
 

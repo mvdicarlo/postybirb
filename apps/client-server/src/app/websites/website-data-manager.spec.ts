@@ -42,7 +42,7 @@ describe('WebsiteDataManager', () => {
     expect(manager.isInitialized()).toBeFalsy();
     expect(manager.getData()).toEqual({});
 
-    await manager.initialize(repository);
+    await manager.initialize(repository, jest.fn());
     expect(manager.isInitialized()).toBeTruthy();
     expect(await repository.findAll()).toHaveLength(1);
   });
@@ -54,7 +54,7 @@ describe('WebsiteDataManager', () => {
     expect(manager.isInitialized()).toBeFalsy();
     expect(manager.getData()).toEqual({});
 
-    await manager.initialize(repository);
+    await manager.initialize(repository, jest.fn());
     expect(manager.isInitialized()).toBeTruthy();
 
     const obj = { test: 'value' };
@@ -70,7 +70,7 @@ describe('WebsiteDataManager', () => {
     expect(manager.isInitialized()).toBeFalsy();
     expect(manager.getData()).toEqual({});
 
-    await manager.initialize(repository);
+    await manager.initialize(repository, jest.fn());
     expect(manager.isInitialized()).toBeTruthy();
 
     const obj = { test: 'value' };

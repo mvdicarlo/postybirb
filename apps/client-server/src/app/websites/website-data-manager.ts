@@ -18,7 +18,7 @@ export default class WebsiteDataManager<T extends DynamicObject> {
 
   private repository: WebsiteDataRepository;
 
-  private onDataChanged?: (accountId: AccountId) => void;
+  private onDataChanged: (accountId: AccountId) => void;
 
   constructor(userAccount: IAccount) {
     this.account = userAccount;
@@ -50,7 +50,7 @@ export default class WebsiteDataManager<T extends DynamicObject> {
    */
   public async initialize(
     repository: WebsiteDataRepository,
-    onDataChanged?: (accountId: AccountId) => void,
+    onDataChanged: (accountId: AccountId) => void,
   ) {
     if (!this.initialized) {
       this.repository = repository;
@@ -75,7 +75,7 @@ export default class WebsiteDataManager<T extends DynamicObject> {
       // Do a reload to recreate an object that hasn't been saved.
       await this.createOrLoadWebsiteData();
       if (notify) {
-        this.onDataChanged?.(this.account.id);
+        this.onDataChanged(this.account.id);
       }
     }
   }
@@ -109,7 +109,7 @@ export default class WebsiteDataManager<T extends DynamicObject> {
         throw error;
       }
       if (notify) {
-        this.onDataChanged?.(this.account.id);
+        this.onDataChanged(this.account.id);
       }
       return true;
     }

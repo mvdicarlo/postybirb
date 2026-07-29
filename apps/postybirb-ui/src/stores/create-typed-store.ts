@@ -17,8 +17,6 @@ export interface TypedStoreConfig<TDto extends { id: string; updatedAt: string }
   createRecord: (dto: TDto) => TRecord;
   /** Name of the store for debugging */
   storeName: string;
-  /** Websocket event name to subscribe to for real-time updates (optional) */
-  websocketEvent?: string;
   /** Websocket event name carrying incremental entity updates (optional) */
   websocketDeltaEvent?: string;
   /**
@@ -87,7 +85,6 @@ export function createTypedStore<TDto extends { id: string; updatedAt: string },
     config.createRecord,
     {
       storeName: config.storeName,
-      websocketEvent: config.websocketEvent,
       websocketDeltaEvent: config.websocketDeltaEvent,
       hasChanged: config.hasChanged,
     }

@@ -62,8 +62,6 @@ export interface CreateEntityStoreOptions<
 > {
   /** Name of the store for debugging */
   storeName: string;
-  /** Websocket event name to subscribe to for real-time updates (optional) */
-  websocketEvent?: string;
   /** Websocket event name carrying incremental entity updates (optional) */
   websocketDeltaEvent?: string;
   /**
@@ -107,6 +105,19 @@ function shallowDiff(
     }
   }
   return Object.keys(changes).length > 0 ? changes : null;
+}
+
+function recordHasChanged<
+  TDto extends { updatedAt: string },
+  TRecord extends BaseRecord,
+>(
+  existing: TRecord,
+  dto: TDto,
+  hasChanged?: (existing: TRecord, newDto: TDto) => boolean,
+): boolean {
+  return hasChanged
+    ? hasChanged(existing, dto)
+    : dto.updatedAt !== existing.updatedAt.toISOString();
 }
 
 /**
@@ -157,9 +168,7 @@ export function diffRecords<
 
     if (existing) {
       // Determine if the record actually changed
-      const changed = hasChanged
-        ? hasChanged(existing, dto)
-        : dto.updatedAt !== existing.updatedAt.toISOString();
+      const changed = recordHasChanged(existing, dto, hasChanged);
 
       if (changed) {
         const newRecord = createRecord(dto);
@@ -232,57 +241,37 @@ export function applyEntityDelta<
   TDto extends { id: string; updatedAt: string },
   TRecord extends BaseRecord,
 >(
-  existingRecords: TRecord[],
   existingMap: Map<EntityId, TRecord>,
   delta: EntityDelta<TDto>,
   createRecord: (dto: TDto) => TRecord,
   hasChanged?: (existing: TRecord, newDto: TDto) => boolean,
 ): { records: TRecord[]; recordsMap: Map<EntityId, TRecord> } | null {
   const removedIds = new Set(delta.removedIds);
-  const upsertsById = new Map(delta.upserts.map((dto) => [dto.id, dto]));
-  const lastUpsertIndexes = new Map(
-    delta.upserts.map((dto, index) => [dto.id, index]),
-  );
-  const handledUpserts = new Set<EntityId>();
-  const records: TRecord[] = [];
+  const upsertsById = new Map<EntityId, TDto>();
+  const recordsMap = new Map(existingMap);
   let anyChanged = false;
 
-  for (const existing of existingRecords) {
-    if (removedIds.has(existing.id)) {
-      anyChanged = true;
-      continue;
-    }
-
-    const dto = upsertsById.get(existing.id);
-    if (!dto) {
-      records.push(existing);
-      continue;
-    }
-
-    handledUpserts.add(existing.id);
-    const changed = hasChanged
-      ? hasChanged(existing, dto)
-      : dto.updatedAt !== existing.updatedAt.toISOString();
-    if (changed) {
-      records.push(createRecord(dto));
-      anyChanged = true;
-    } else {
-      records.push(existing);
-    }
+  // Last duplicate wins and is ordered by its last occurrence in the delta.
+  for (const dto of delta.upserts) {
+    upsertsById.delete(dto.id);
+    upsertsById.set(dto.id, dto);
   }
 
-  for (const [index, dto] of delta.upserts.entries()) {
-    if (
-      removedIds.has(dto.id) ||
-      lastUpsertIndexes.get(dto.id) !== index ||
-      handledUpserts.has(dto.id) ||
-      existingMap.has(dto.id)
-    ) {
+  for (const id of removedIds) {
+    anyChanged = recordsMap.delete(id) || anyChanged;
+  }
+
+  for (const [id, dto] of upsertsById) {
+    // The delta contract forbids overlap; removals win defensively if violated.
+    if (removedIds.has(id)) {
       continue;
     }
-    records.push(createRecord(dto));
-    handledUpserts.add(dto.id);
-    anyChanged = true;
+
+    const existing = recordsMap.get(id);
+    if (!existing || recordHasChanged(existing, dto, hasChanged)) {
+      recordsMap.set(id, createRecord(dto));
+      anyChanged = true;
+    }
   }
 
   if (!anyChanged) {
@@ -290,8 +279,8 @@ export function applyEntityDelta<
   }
 
   return {
-    records,
-    recordsMap: new Map(records.map((record) => [record.id, record])),
+    records: [...recordsMap.values()],
+    recordsMap,
   };
 }
 
@@ -310,8 +299,7 @@ export function createEntityStore<
   createRecord: (dto: TDto) => TRecord,
   options: CreateEntityStoreOptions<TDto, TRecord>,
 ) {
-  const { storeName, websocketEvent, websocketDeltaEvent, hasChanged } =
-    options;
+  const { storeName, websocketDeltaEvent, hasChanged } = options;
 
   const initialState: BaseEntityState<TRecord> = {
     records: [],
@@ -355,7 +343,6 @@ export function createEntityStore<
 
         for (const delta of pendingDeltas) {
           const deltaResult = applyEntityDelta(
-            nextRecords,
             nextRecordsMap,
             delta,
             createRecord,
@@ -422,41 +409,11 @@ export function createEntityStore<
 
   const store = create<StoreType>(storeCreator);
 
-  // Subscribe to websocket events if event name is provided
-  if (websocketEvent) {
-    AppSocket.on(websocketEvent, (dtos: TDto[]) => {
-      // eslint-disable-next-line no-console
-      console.debug(
-        `[${storeName}] Received ${dtos.length} records via websocket`,
-      );
-
-      const { recordsMap: existingMap } = store.getState();
-      const diffResult = diffRecords(
-        existingMap,
-        dtos,
-        createRecord,
-        hasChanged,
-        storeName,
-      );
-
-      if (diffResult) {
-        store.setState({
-          records: diffResult.records,
-          recordsMap: diffResult.recordsMap,
-          loadingState: 'loaded',
-          lastLoadedAt: new Date(),
-        });
-      }
-      // If diffResult is null, nothing changed — skip setState entirely
-    });
-  }
-
   if (websocketDeltaEvent) {
     AppSocket.on(websocketDeltaEvent, (delta: EntityDelta<TDto>) => {
       pendingDeltas?.push(delta);
-      const { records, recordsMap } = store.getState();
+      const { recordsMap } = store.getState();
       const result = applyEntityDelta(
-        records,
         recordsMap,
         delta,
         createRecord,

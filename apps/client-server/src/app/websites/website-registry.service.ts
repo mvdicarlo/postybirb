@@ -182,20 +182,7 @@ export class WebsiteRegistryService implements OnModuleDestroy {
         return pending;
       }
 
-      const initialization = (async () => {
-        const instance = new WebsiteCtor(account, this.platform);
-        await instance.onInitialize(this.websiteDataRepository, (accountDto) => {
-          try {
-            publishAccountStateChanged(this.eventEmitter, accountDto);
-          } catch (error) {
-            this.logger
-              .withError(error)
-              .error(`Failed to publish Account state for '${id}'`);
-          }
-        });
-        this.websiteInstances[website][id] = instance;
-        return instance;
-      })();
+      const initialization = this.initializeInstance(account, WebsiteCtor);
       this.initializingInstances.set(id, initialization);
       try {
         return await initialization;
@@ -206,6 +193,25 @@ export class WebsiteRegistryService implements OnModuleDestroy {
 
     this.logger.error(`Unable to find website '${website}'`);
     throw new BadRequestException(`Unable to find website '${website}'`);
+  }
+
+  private async initializeInstance(
+    account: Account,
+    WebsiteCtor: Class<UnknownWebsite>,
+  ): Promise<UnknownWebsite> {
+    const { website, id } = account;
+    const instance = new WebsiteCtor(account, this.platform);
+    await instance.onInitialize(this.websiteDataRepository, (accountDto) => {
+      try {
+        publishAccountStateChanged(this.eventEmitter, accountDto);
+      } catch (error) {
+        this.logger
+          .withError(error)
+          .error(`Failed to publish Account state for '${id}'`);
+      }
+    });
+    this.websiteInstances[website][id] = instance;
+    return instance;
   }
 
   public async ensureInstance(account: Account): Promise<UnknownWebsite> {
