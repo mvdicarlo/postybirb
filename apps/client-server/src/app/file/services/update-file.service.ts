@@ -2,9 +2,9 @@
 // @ts-expect-error No types on npm
 import * as rtf from '@iarna/rtf-to-html';
 import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
+    BadRequestException,
+    Injectable,
+    NotFoundException,
 } from '@nestjs/common';
 import { FileBufferRepository, SubmissionFile, SubmissionFileRepository, TransactionContext, withTransactionContext } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
@@ -61,10 +61,6 @@ export class UpdateFileService {
         await this.replacePrimaryFile(ctx, submissionFile, file, buf);
       }
     });
-
-    // Notify subscribers so SubmissionService emits a websocket update
-    this.fileRepository.notify([submissionFileId], 'update');
-    this.fileBufferRepository.notify([submissionFileId], 'update');
 
     // return the latest
     return this.findFile(submissionFileId);

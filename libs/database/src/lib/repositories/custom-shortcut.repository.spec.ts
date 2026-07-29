@@ -1,6 +1,4 @@
-import { SubscriberBus } from './base/subscriber-bus';
 import { createTestRepository } from './base/test-utils';
-import type { Action, SubscriberCb } from './base/types';
 import { CustomShortcutRepository } from './custom-shortcut.repository';
 
 describe('CustomShortcutRepository', () => {
@@ -28,19 +26,14 @@ describe('CustomShortcutRepository', () => {
     expect(threw).toBe(true);
   });
 
-  it('update fires subscriber and persists the change', async () => {
+  it('update persists the change', async () => {
     const e = await repo.insert({
       name: 'orig',
       shortcut: { type: 'doc', content: [] },
     });
-    const events: Array<[string[], Action]> = [];
-    const cb: SubscriberCb = (ids, action) => events.push([ids, action]);
-    SubscriberBus.subscribe('CustomShortcutSchema', cb);
 
     await repo.update(e.id, { name: 'renamed' });
-    SubscriberBus.flush();
 
-    expect(events.some(([, a]) => a === 'update')).toBe(true);
     expect((await repo.findById(e.id))?.name).toBe('renamed');
   });
 

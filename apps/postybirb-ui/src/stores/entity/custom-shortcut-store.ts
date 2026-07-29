@@ -2,7 +2,7 @@
  * Custom Shortcut Store - Zustand store for custom shortcut entities.
  */
 
-import { CUSTOM_SHORTCUT_UPDATES } from '@postybirb/socket-events';
+import { CUSTOM_SHORTCUT_DELTA } from '@postybirb/socket-events';
 import type { ICustomShortcutDto } from '@postybirb/types';
 import customShortcutApi from '../../api/custom-shortcut.api';
 import { type EntityStore } from '../create-entity-store';
@@ -23,7 +23,7 @@ export const {
   createRecord: (dto) => new CustomShortcutRecord(dto),
   // eslint-disable-next-line lingui/no-unlocalized-strings
   storeName: 'CustomShortcutStore',
-  websocketEvent: CUSTOM_SHORTCUT_UPDATES,
+  websocketDeltaEvent: CUSTOM_SHORTCUT_DELTA,
 });
 
 /**

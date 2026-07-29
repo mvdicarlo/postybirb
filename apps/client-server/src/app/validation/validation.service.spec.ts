@@ -1,3 +1,4 @@
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
 import { FileType, SubmissionType } from '@postybirb/types';
@@ -22,6 +23,7 @@ describe('ValidationService', () => {
     clearDatabase();
     const module: TestingModule = await Test.createTestingModule({
       imports: [
+        EventEmitterModule.forRoot(),
         TestPlatformModule,
         WebsitesModule,
         PostParsersModule,

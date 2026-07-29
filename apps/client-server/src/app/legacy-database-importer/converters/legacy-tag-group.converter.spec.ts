@@ -46,6 +46,22 @@ describe('LegacyTagGroupConverter', () => {
     expect(record.tags).toEqual(['tag1', 'tag2']);
   });
 
+  it('should call the inserted callback only for newly imported records', async () => {
+    const onInserted = jest.fn();
+    const callbackConverter = new LegacyTagGroupConverter(
+      testDataPath,
+      onInserted,
+    );
+
+    await callbackConverter.import();
+    await callbackConverter.import();
+
+    expect(onInserted).toHaveBeenCalledTimes(1);
+    expect(onInserted.mock.calls[0][0].toDTO()).toEqual(
+      (await repository.findAll())[0].toDTO(),
+    );
+  });
+
   it('should handle tag group with empty tags array', async () => {
     // Create test data with empty tags
     const emptyTagsData = {

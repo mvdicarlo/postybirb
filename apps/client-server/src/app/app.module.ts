@@ -1,11 +1,13 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { AccountModule } from './account/account.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { EntityDeltaModule } from './common/events/entity-delta.module';
 import { CustomShortcutsModule } from './custom-shortcuts/custom-shortcuts.module';
 import { DirectoryWatchersModule } from './directory-watchers/directory-watchers.module';
 import { FileConverterModule } from './file-converter/file-converter.module';
@@ -34,7 +36,9 @@ import { WebsitesModule } from './websites/websites.module';
 @Module({
   imports: [
     PlatformModule,
+    EventEmitterModule.forRoot({ global: true }),
     ScheduleModule.forRoot(),
+    EntityDeltaModule,
     ImageProcessingModule,
     AccountModule,
     WebSocketModule,

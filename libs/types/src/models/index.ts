@@ -2,6 +2,7 @@ export * from './account/account.interface';
 export * from './common/dynamic-object';
 export * from './common/preload-bridge';
 export * from './custom-shortcut/custom-shortcut.interface';
+export * from './database/entity-delta.interface';
 export * from './database/entity-primitive.type';
 export * from './database/entity.interface';
 export * from './directory-watcher/directory-watcher.interface';
@@ -55,7 +56,6 @@ export * from './website/login-state.class';
 export * from './website/login-state.interface';
 export * from './website/post-data.type';
 export * from './website/website-data.interface';
-export * from './website/website-info.interface';
 export * from './website/website-login-type';
 export * from './website/website.type';
 

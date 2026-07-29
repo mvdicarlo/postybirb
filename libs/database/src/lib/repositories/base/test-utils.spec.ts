@@ -2,7 +2,6 @@ import { SettingsConstants } from '@postybirb/types';
 import { AccountRepository } from '../account.repository';
 import { SettingsRepository } from '../settings.repository';
 import { RepositoryRegistry } from './repository-registry';
-import { SubscriberBus } from './subscriber-bus';
 import {
     createTestRepositories,
     createTestRepository,
@@ -55,12 +54,15 @@ describe('createTestRepositories', () => {
 });
 
 describe('resetRepositoryState', () => {
-  it('clears the registry and subscriber bus', () => {
-    SubscriberBus.subscribe('SettingsSchema', () => undefined);
+  const settings = createTestRepository(SettingsRepository);
+
+  it('clears the registry', async () => {
+    await settings.insert({
+      profile: 'reset',
+      settings: SettingsConstants.DEFAULT_SETTINGS,
+    });
+    expect(RepositoryRegistry.has('SettingsSchema')).toBe(true);
     resetRepositoryState();
     expect(RepositoryRegistry.has('SettingsSchema')).toBe(false);
-    // re-subscribing should not double-fire from a previous handler;
-    // easiest proxy is that `clear()` was called, so the registry has
-    // no entries — already asserted above.
   });
 });

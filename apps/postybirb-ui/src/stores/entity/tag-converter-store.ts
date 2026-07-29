@@ -3,7 +3,7 @@
  * Uses createTypedStore for reduced boilerplate.
  */
 
-import { TAG_CONVERTER_UPDATES } from '@postybirb/socket-events';
+import { TAG_CONVERTER_DELTA } from '@postybirb/socket-events';
 import type { TagConverterDto } from '@postybirb/types';
 import tagConvertersApi from '../../api/tag-converters.api';
 import { type EntityStore } from '../create-entity-store';
@@ -27,7 +27,7 @@ export const {
   createRecord: (dto) => new TagConverterRecord(dto),
   // eslint-disable-next-line lingui/no-unlocalized-strings
   storeName: 'TagConverterStore',
-  websocketEvent: TAG_CONVERTER_UPDATES,
+  websocketDeltaEvent: TAG_CONVERTER_DELTA,
 });
 
 /**

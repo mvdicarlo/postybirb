@@ -36,6 +36,7 @@ import {
 import { debounce } from 'lodash';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import fileSubmissionApi from '../../../../../api/file-submission.api';
+import { useWebsitesMap } from '../../../../../stores/entity/website-store';
 import { showErrorWithContext } from '../../../../../utils/notifications';
 import { BasicWebsiteSelect } from '../../../../shared';
 import { FileAltTextEditor } from './file-alt-text-editor';
@@ -303,6 +304,7 @@ function CustomAccountDimensions({
   metadata,
   save,
 }: CustomAccountDimensionsProps) {
+  const websitesMap = useWebsitesMap();
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
     null,
   );
@@ -352,7 +354,7 @@ function CustomAccountDimensions({
   // Build select options with [WebsiteName] AccountName format
   const accountOptions = availableAccounts.map((acc) => ({
     value: acc.id,
-    label: `[${acc.websiteInfo.websiteDisplayName}] ${acc.name}`,
+    label: `[${websitesMap.get(acc.website)?.displayName ?? acc.website}] ${acc.name}`,
   }));
 
   return (
@@ -398,7 +400,7 @@ function CustomAccountDimensions({
           return (
             <Group key={accountId} gap="xs" mb="xs" wrap="nowrap">
               <Badge size="xs" variant="light" color="gray">
-                {account.websiteInfo.websiteDisplayName}
+                {websitesMap.get(account.website)?.displayName ?? account.website}
               </Badge>
               <Text size="xs" style={{ minWidth: 80 }} truncate>
                 {account.name}

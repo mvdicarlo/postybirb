@@ -1,7 +1,5 @@
 import { AccountRepository } from './account.repository';
-import { SubscriberBus } from './base/subscriber-bus';
 import { createTestRepositories } from './base/test-utils';
-import type { Action, SubscriberCb } from './base/types';
 import { WebsiteDataRepository } from './website-data.repository';
 
 describe('AccountRepository', () => {
@@ -21,20 +19,15 @@ describe('AccountRepository', () => {
     expect(fetched?.websiteData).toBeUndefined();
   });
 
-  it('update fires a subscriber with action="update"', async () => {
+  it('update persists the change', async () => {
     const e = await repos.account.insert({
       name: 'a1',
       website: 'demo',
       groups: [],
     });
-    const events: Array<[string[], Action]> = [];
-    const cb: SubscriberCb = (ids, action) => events.push([ids, action]);
-    SubscriberBus.subscribe('AccountSchema', cb);
 
     await repos.account.update(e.id, { name: 'renamed' });
-    SubscriberBus.flush();
 
-    expect(events.some(([, a]) => a === 'update')).toBe(true);
     const reread = await repos.account.findById(e.id);
     expect(reread?.name).toBe('renamed');
   });

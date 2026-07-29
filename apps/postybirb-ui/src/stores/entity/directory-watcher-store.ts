@@ -2,7 +2,7 @@
  * Directory Watcher Store - Zustand store for directory watcher entities.
  */
 
-import { DIRECTORY_WATCHER_UPDATES } from '@postybirb/socket-events';
+import { DIRECTORY_WATCHER_DELTA } from '@postybirb/socket-events';
 import type { DirectoryWatcherDto } from '@postybirb/types';
 import { useShallow } from 'zustand/react/shallow';
 import directoryWatchersApi from '../../api/directory-watchers.api';
@@ -24,7 +24,7 @@ export const {
   createRecord: (dto) => new DirectoryWatcherRecord(dto),
   // eslint-disable-next-line lingui/no-unlocalized-strings
   storeName: 'DirectoryWatcherStore',
-  websocketEvent: DIRECTORY_WATCHER_UPDATES,
+  websocketDeltaEvent: DIRECTORY_WATCHER_DELTA,
 });
 
 /**

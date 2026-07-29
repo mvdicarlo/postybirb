@@ -1,11 +1,15 @@
-import { TAG_GROUP_UPDATES } from '@postybirb/socket-events';
+import { TAG_GROUP_DELTA } from '@postybirb/socket-events';
 import { TagGroupDto } from '@postybirb/types';
-import { WebsocketEvent } from '../web-socket/models/web-socket-event';
+import {
+    EntityDeltaDescriptor,
+    EntityDeltaEvent,
+} from '../common/events/entity-crud.events';
 
-export type TagGroupEventTypes = TagGroupUpdateEvent;
+export const TAG_GROUP_EVENTS: EntityDeltaDescriptor = {
+  prefix: 'tag-group',
+  delta: TAG_GROUP_DELTA,
+};
 
-class TagGroupUpdateEvent implements WebsocketEvent<TagGroupDto[]> {
-  event: string = TAG_GROUP_UPDATES;
+export const TAG_GROUP_EVENT_PREFIX = TAG_GROUP_EVENTS.prefix;
 
-  data: TagGroupDto[];
-}
+export type TagGroupEventTypes = EntityDeltaEvent<TagGroupDto>;

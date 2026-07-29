@@ -1,13 +1,12 @@
 /**
  * WebsiteRecord - Concrete class for website info data.
- * Note: Does not extend BaseRecord as IWebsiteInfoDto lacks createdAt/updatedAt.
+ * Note: Does not extend BaseRecord because definitions are static catalog data.
  */
 
 import type {
-  IAccountDto,
-  IWebsiteInfoDto,
+  IWebsiteDefinitionDto,
   IWebsiteMetadata,
-  UsernameShortcut,
+  UsernameShortcutDto,
   WebsiteFileOptions,
   WebsiteId,
   WebsiteLoginType
@@ -20,31 +19,21 @@ export class WebsiteRecord {
   readonly id: WebsiteId;
   readonly displayName: string;
   readonly loginType: WebsiteLoginType;
-  readonly usernameShortcut?: UsernameShortcut;
+  readonly usernameShortcut?: UsernameShortcutDto;
   readonly metadata: IWebsiteMetadata;
-  readonly accounts: IAccountDto[];
   readonly fileOptions?: WebsiteFileOptions;
   readonly supportsFile: boolean;
   readonly supportsMessage: boolean;
 
-  // Cached computed value — safe because record data is immutable after construction
-  private readonly cachedLoggedInAccounts: IAccountDto[];
-
-  constructor(dto: IWebsiteInfoDto) {
+  constructor(dto: IWebsiteDefinitionDto) {
     this.id = dto.id;
     this.displayName = dto.displayName;
     this.loginType = dto.loginType;
     this.usernameShortcut = dto.usernameShortcut;
     this.metadata = dto.metadata;
-    this.accounts = dto.accounts;
     this.fileOptions = dto.fileOptions;
     this.supportsFile = dto.supportsFile;
     this.supportsMessage = dto.supportsMessage;
-
-    // Pre-compute filtered accounts
-    this.cachedLoggedInAccounts = this.accounts.filter(
-      (account) => account.state.isLoggedIn
-    );
   }
 
   /**
@@ -52,34 +41,6 @@ export class WebsiteRecord {
    */
   matches(id: WebsiteId): boolean {
     return this.id === id;
-  }
-
-  /**
-   * Get the number of accounts for this website.
-   */
-  get accountCount(): number {
-    return this.accounts.length;
-  }
-
-  /**
-   * Get logged-in accounts for this website.
-   */
-  get loggedInAccounts(): IAccountDto[] {
-    return this.cachedLoggedInAccounts;
-  }
-
-  /**
-   * Get the number of logged-in accounts.
-   */
-  get loggedInCount(): number {
-    return this.cachedLoggedInAccounts.length;
-  }
-
-  /**
-   * Check if any accounts are logged in.
-   */
-  get hasLoggedInAccounts(): boolean {
-    return this.loggedInCount > 0;
   }
 
   /**

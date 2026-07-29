@@ -1,6 +1,7 @@
 /* eslint-disable lingui/no-unlocalized-strings */
 import reactPreset from '@bbob/preset-react';
 import BBCode from '@bbob/react';
+import { ErrorBoundary } from '../../error-boundary/error-boundary';
 import { descriptionPreviewRendererByWebsite } from '../../sections/submissions-section/submission-edit-card/account-selection/form/fields/description-preview-panel';
 
 // https://e621.net/help/dtext
@@ -23,6 +24,13 @@ const dtextPreset = reactPreset.extend((tags, options) => ({
     };
   },
 }));
+
+const onlyAllowTags: string[] = [];
+
+dtextPreset.extend((tags) => {
+  onlyAllowTags.push(...Object.keys(tags));
+  return {};
+})();
 
 // ----------------------------------------------------------------------
 // React component
@@ -65,11 +73,13 @@ export function E621Dtext({ dtext }: E621DtextProps) {
   );
 
   return (
-    <div style={{ whiteSpace: 'pre-wrap' }}>
-      <BBCode plugins={[dtextPreset()]} options={{}}>
-        {processed}
-      </BBCode>
-    </div>
+    <ErrorBoundary>
+      <div style={{ whiteSpace: 'pre-wrap' }}>
+        <BBCode plugins={[dtextPreset()]} options={{ onlyAllowTags }}>
+          {processed}
+        </BBCode>
+      </div>
+    </ErrorBoundary>
   );
 }
 

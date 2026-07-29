@@ -1,13 +1,12 @@
 import {
-  Injectable,
-  InternalServerErrorException,
-  Optional,
+    Injectable,
+    InternalServerErrorException,
 } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import {
-  PostQueueRecord,
-  PostQueueRecordRepository,
-  SubmissionRepository,
+    PostQueueRecord,
+    PostQueueRecordRepository,
+    SubmissionRepository,
 } from '@postybirb/database';
 import { EntityId, ScheduleType, SubmissionId } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/common';
@@ -15,7 +14,7 @@ import { Mutex } from 'async-mutex';
 import { Cron as CronGenerator } from 'croner';
 import { PostyBirbService } from '../../../common/service/postybirb-service';
 import { SettingsService } from '../../../settings/settings.service';
-import { WSGateway } from '../../../web-socket/web-socket-gateway';
+import { SubmissionEventPublisher } from '../../../submission/submission-event.publisher';
 import { RelayPostManager } from '../../engine/post-manager.service';
 
 /**
@@ -38,9 +37,9 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
   constructor(
     private readonly settingsService: SettingsService,
     private readonly relayPostManager: RelayPostManager,
-    @Optional() webSocket?: WSGateway,
+    private readonly submissionEventPublisher: SubmissionEventPublisher,
   ) {
-    super(new PostQueueRecordRepository(), webSocket);
+    super(new PostQueueRecordRepository());
   }
 
   public async isPaused(): Promise<boolean> {
@@ -73,6 +72,7 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
     if (!submissionIds.length) return;
     const release = await this.queueModificationMutex.acquire();
     this.logger.withMetadata({ submissionIds }).info('Enqueueing posts');
+    const changedIds = new Set<SubmissionId>();
 
     try {
       for (const submissionId of submissionIds) {
@@ -97,6 +97,7 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
         });
         if (!existing) {
           await this.repository.insert({ submissionId });
+          changedIds.add(submissionId);
         }
         // If existing, do nothing (first-in-wins).
       }
@@ -105,6 +106,7 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
       throw new InternalServerErrorException((error as Error).message);
     } finally {
       release();
+      this.submissionEventPublisher?.markChanged([...changedIds]);
       this.initTime -= 61_000; // ensure the next cycle processes promptly
     }
   }
@@ -123,7 +125,13 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
         this.relayPostManager.cancel(id);
       });
 
-      return await this.repository.deleteById(records.map((r) => r.id));
+      const result = await this.repository.deleteById(records.map((r) => r.id));
+      if (result.changes > 0) {
+        this.submissionEventPublisher?.markChanged(
+          records.map((record) => record.submissionId),
+        );
+      }
+      return result;
     } catch (error) {
       this.logger.withError(error).error('Failed to dequeue posts');
       throw new InternalServerErrorException((error as Error).message);
@@ -158,21 +166,32 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
     await this.enqueue(sorted.map((s) => s.id));
 
     // Advance recurring schedules to their next run.
-    sorted
-      .filter(
-        (s) =>
-          s.schedule.scheduleType === ScheduleType.RECURRING && s.schedule.cron,
-      )
-      .forEach((s) => {
-        const next = CronGenerator(s.schedule.cron as string)
+    const recurring = sorted.filter(
+      (submission) =>
+        submission.schedule.scheduleType === ScheduleType.RECURRING &&
+        submission.schedule.cron,
+    );
+    const scheduleResults = await Promise.allSettled(
+      recurring.map(async (submission) => {
+        const next = CronGenerator(submission.schedule.cron as string)
           .nextRun()
           ?.toISOString();
-        if (next) {
-          // eslint-disable-next-line no-param-reassign
-          s.schedule.scheduledFor = next;
-          this.submissionRepository.update(s.id, { schedule: s.schedule });
+        if (!next) {
+          return false;
         }
-      });
+        const schedule = { ...submission.schedule, scheduledFor: next };
+        await this.submissionRepository.update(submission.id, { schedule });
+        return true;
+      }),
+    );
+    this.submissionEventPublisher?.markChanged(
+      recurring.flatMap((submission, index) => {
+        const result = scheduleResults[index];
+        return result.status === 'fulfilled' && result.value
+          ? [submission.id]
+          : [];
+      }),
+    );
   }
 
   /** Per-second queue tick (after a startup grace period). */
@@ -324,6 +343,7 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
     await this.submissionRepository.update(submission.id, {
       metadata: { ...submission.metadata, dependsOn: remaining },
     });
+    this.submissionEventPublisher?.markChanged(submission.id);
   }
 
   /** Peeks at the next item in the queue (oldest first). */

@@ -20,6 +20,7 @@ import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
 import { ReorderSubmissionFilesDto } from '../dtos/reorder-submission-files.dto';
 import { UpdateAltFileDto } from '../dtos/update-alt-file.dto';
+import { SubmissionEventPublisher } from '../submission-event.publisher';
 import { ISubmissionService } from './submission-service.interface';
 import { SubmissionService } from './submission.service';
 
@@ -39,6 +40,7 @@ export class FileSubmissionService
     private readonly fileService: FileService,
     @Inject(forwardRef(() => SubmissionService))
     private readonly submissionService: SubmissionService,
+    private readonly submissionEventPublisher: SubmissionEventPublisher,
   ) {
     super(new SubmissionRepository());
   }
@@ -91,6 +93,7 @@ export class FileSubmissionService
     await this.repository.update(submission.id, {
       metadata: submission.metadata,
     });
+    this.submissionEventPublisher?.markChanged(submission.id);
 
     return submission;
   }
@@ -102,6 +105,7 @@ export class FileSubmissionService
     this.guardIsFileSubmission(submission);
 
     await this.fileService.update(file, fileId, false);
+    this.submissionEventPublisher?.markChanged(submission.id);
   }
 
   /**
@@ -122,6 +126,7 @@ export class FileSubmissionService
     this.guardIsFileSubmission(submission);
 
     await this.fileService.update(file, fileId, true);
+    this.submissionEventPublisher?.markChanged(submission.id);
   }
 
   /**
@@ -140,21 +145,35 @@ export class FileSubmissionService
     await this.repository.update(submission.id, {
       metadata: submission.metadata,
     });
+    this.submissionEventPublisher?.markChanged(submission.id);
   }
 
   getAltFileText(id: EntityId) {
     return this.fileService.getAltText(id);
   }
 
-  updateAltFileText(id: EntityId, update: UpdateAltFileDto) {
-    return this.fileService.updateAltText(id, update);
+  async updateAltFileText(id: EntityId, update: UpdateAltFileDto) {
+    const submissionId = await this.fileService.findSubmissionIdForBuffer(id);
+    const result = await this.fileService.updateAltText(id, update);
+    this.submissionEventPublisher?.markChanged(submissionId);
+    return result;
   }
 
-  updateMetadata(id: EntityId, update: SubmissionFileMetadata) {
-    return this.fileService.updateMetadata(id, update);
+  async updateMetadata(id: EntityId, update: SubmissionFileMetadata) {
+    const submissionFile = await this.fileService.findFile(id);
+    const result = await this.fileService.updateMetadata(id, update);
+    this.submissionEventPublisher?.markChanged(submissionFile.submissionId);
+    return result;
   }
 
-  reorderFiles(update: ReorderSubmissionFilesDto) {
-    return this.fileService.reorderFiles(update);
+  async reorderFiles(update: ReorderSubmissionFilesDto) {
+    const submissionFiles = await Promise.all(
+      Object.keys(update.order).map((id) => this.fileService.findFile(id)),
+    );
+    const result = await this.fileService.reorderFiles(update);
+    this.submissionEventPublisher?.markChanged(
+      submissionFiles.map((file) => file.submissionId),
+    );
+    return result;
   }
 }

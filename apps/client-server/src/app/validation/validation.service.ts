@@ -8,7 +8,6 @@ import {
     IWebsiteOptions,
     PostData,
     SimpleValidationResult,
-    SubmissionId,
     SubmissionType,
     ValidationResult,
 } from '@postybirb/types';
@@ -29,27 +28,11 @@ import {
     ValidatorParams,
 } from './validators/validator.type';
 
-type ValidationCacheRecord = {
-  submissionLastUpdatedTimestamp: string;
-  results: Record<
-    EntityId, // WebsiteOptionId
-    {
-      validationResult: ValidationResult;
-      websiteOptionLastUpdatedTimestamp: string;
-    }
-  >;
-};
-
 @Injectable()
 export class ValidationService {
   private readonly logger = Logger(this.constructor.name);
 
   private readonly validations: Validator[] = validators;
-
-  private readonly validationCache = new Map<
-    SubmissionId,
-    ValidationCacheRecord
-  >();
 
   constructor(
     private readonly websiteRegistry: WebsiteRegistryService,
@@ -57,40 +40,6 @@ export class ValidationService {
     private readonly fileConverterService: FileConverterService,
     private readonly fileService: FileService,
   ) {}
-
-  private getCachedValidation(
-    submissionId: SubmissionId,
-  ): ValidationCacheRecord | undefined {
-    return this.validationCache.get(submissionId);
-  }
-
-  private clearCachedValidation(submissionId: SubmissionId) {
-    this.validationCache.delete(submissionId);
-  }
-
-  private setCachedValidation(
-    submission: Submission,
-    websiteOption: WebsiteOptions,
-    validationResult: ValidationResult,
-  ) {
-    const cachedValidation = this.getCachedValidation(submission.id);
-    if (!cachedValidation) {
-      this.validationCache.set(submission.id, {
-        submissionLastUpdatedTimestamp: submission.updatedAt,
-        results: {
-          [websiteOption.id]: {
-            validationResult,
-            websiteOptionLastUpdatedTimestamp: websiteOption.updatedAt,
-          },
-        },
-      });
-    } else {
-      cachedValidation.results[websiteOption.id] = {
-        validationResult,
-        websiteOptionLastUpdatedTimestamp: websiteOption.updatedAt,
-      };
-    }
-  }
 
   /**
    * Validate a submission for all website options.
@@ -101,37 +50,8 @@ export class ValidationService {
   public async validateSubmission(
     submission: Submission,
   ): Promise<ValidationResult[]> {
-    if (this.isStale(submission)) {
-      this.clearCachedValidation(submission.id);
-    }
     return Promise.all(
       submission.options.map((website) => this.validate(submission, website)),
-    );
-  }
-
-  /**
-   * Check if a submission is stale by comparing the last updated timestamps of
-   * the submission and the website options.
-   *
-   * @param {Submission} submission
-   * @return {*}  {boolean}
-   */
-  private isStale(submission: Submission): boolean {
-    const cachedValidation = this.getCachedValidation(submission.id);
-    if (!cachedValidation) {
-      return false;
-    }
-    if (
-      cachedValidation.submissionLastUpdatedTimestamp !== submission.updatedAt
-    ) {
-      return true;
-    }
-
-    return submission.options.some(
-      (website) =>
-        cachedValidation.results[website.id] &&
-        cachedValidation.results[website.id]
-          .websiteOptionLastUpdatedTimestamp !== website.updatedAt,
     );
   }
 
@@ -147,16 +67,6 @@ export class ValidationService {
     websiteOption: WebsiteOptions,
   ): Promise<ValidationResult> {
     try {
-      const cachedValidation = this.getCachedValidation(submission.id);
-      if (
-        cachedValidation &&
-        cachedValidation.results[websiteOption.id] &&
-        cachedValidation.results[websiteOption.id]
-          .websiteOptionLastUpdatedTimestamp === websiteOption.updatedAt
-      ) {
-        return cachedValidation.results[websiteOption.id].validationResult;
-      }
-
       const website = websiteOption.isDefault
         ? this.websiteRegistry.createDefaultWebsiteInstance(
             new Account(websiteOption.account),
@@ -232,7 +142,6 @@ export class ValidationService {
       result.warnings.push(...(instanceResult.warnings ?? []));
       result.errors.push(...(instanceResult.errors ?? []));
 
-      this.setCachedValidation(submission, websiteOption, result);
       return result;
     } catch (error) {
       this.logger.warn(
