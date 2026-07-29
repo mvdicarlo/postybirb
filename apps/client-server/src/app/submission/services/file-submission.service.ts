@@ -8,14 +8,12 @@ import { SubmissionRepository } from '@postybirb/database';
 import {
     EntityId,
     FileSubmission,
-    FileType,
     isFileSubmission,
     ISubmission,
     SubmissionFileMetadata,
     SubmissionId,
     SubmissionType,
 } from '@postybirb/types';
-import { getFileType } from '@postybirb/utils/file-type';
 import { PostyBirbService } from '../../common/service/postybirb-service';
 import { FileService } from '../../file/file.service';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
@@ -73,39 +71,6 @@ export class FileSubmissionService
   }
 
   /**
-   * Guards against mixing different file types in the same submission.
-   * For example, prevents adding an IMAGE file to a submission that already contains a TEXT (PDF) file.
-   *
-   * @param {FileSubmission} submission - The submission to check
-   * @param {MulterFileInfo} file - The new file being added
-   * @throws {BadRequestException} if file types are incompatible
-   */
-  private guardFileTypeCompatibility(
-    submission: FileSubmission,
-    file: MulterFileInfo,
-  ) {
-    if (!submission.files || submission.files.length === 0) {
-      return; // No existing files, any type is allowed
-    }
-
-    const newFileType = getFileType(file.originalname);
-    const existingFileType = getFileType(submission.files[0].fileName);
-
-    if (newFileType !== existingFileType) {
-      const fileTypeLabels: Record<FileType, string> = {
-        [FileType.IMAGE]: 'IMAGE',
-        [FileType.VIDEO]: 'VIDEO',
-        [FileType.AUDIO]: 'AUDIO',
-        [FileType.TEXT]: 'TEXT',
-        [FileType.UNKNOWN]: 'UNKNOWN',
-      };
-      throw new BadRequestException(
-        `Cannot add ${fileTypeLabels[newFileType]} file to a submission containing ${fileTypeLabels[existingFileType]} files. All files in a submission must be of the same type.`,
-      );
-    }
-  }
-
-  /**
    * Adds a file to a submission.
    *
    * @param {string} id
@@ -113,13 +78,10 @@ export class FileSubmissionService
    */
   async appendFile(id: EntityId | FileSubmission, file: MulterFileInfo) {
     const submission = (
-      typeof id === 'string'
-        ? await this.repository.findByIdOrThrow(id)
-        : id
+      typeof id === 'string' ? await this.repository.findByIdOrThrow(id) : id
     ) as FileSubmission;
 
     this.guardIsFileSubmission(submission);
-    this.guardFileTypeCompatibility(submission, file);
 
     const createdFile = await this.fileService.create(file, submission);
     this.logger

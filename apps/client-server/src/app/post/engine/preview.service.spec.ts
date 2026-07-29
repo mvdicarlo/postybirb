@@ -1,5 +1,5 @@
 import { SubmissionRepository } from '@postybirb/database';
-import { SubmissionType } from '@postybirb/types';
+import { FileType, SubmissionType } from '@postybirb/types';
 import { RelayPreviewService } from './preview.service';
 
 type AnyObj = Record<string, unknown>;
@@ -50,8 +50,14 @@ describe('RelayPreviewService', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .mockResolvedValue(opts.submission as any);
 
+    const instance = opts.instance
+      ? {
+          decoratedProps: { fileOptions: { supportedFileTypes: [] } },
+          ...opts.instance,
+        }
+      : null;
     const registry = {
-      findInstance: jest.fn().mockReturnValue(opts.instance ?? null),
+      findInstance: jest.fn().mockReturnValue(instance),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any;
     const processor = {
@@ -62,8 +68,18 @@ describe('RelayPreviewService', () => {
           info: [
             {
               fileId: 'f1',
-              from: { width: 2000, height: 2000, bytes: 1_000_000, mimeType: 'image/png' },
-              to: { width: 1280, height: 1280, bytes: 400_000, mimeType: 'image/jpeg' },
+              from: {
+                width: 2000,
+                height: 2000,
+                bytes: 1_000_000,
+                mimeType: 'image/png',
+              },
+              to: {
+                width: 1280,
+                height: 1280,
+                bytes: 400_000,
+                mimeType: 'image/jpeg',
+              },
             },
           ],
         }),
@@ -117,8 +133,31 @@ describe('RelayPreviewService', () => {
     expect(processBatch).not.toHaveBeenCalled();
   });
 
+  it('marks unsupported broad file types as filtered without processing them', async () => {
+    const processBatch = jest.fn();
+    const service = build({
+      submission: makeSubmission({
+        files: [makeFile({ fileName: 'clip.mp4', mimeType: 'video/mp4' })],
+      }),
+      instance: {
+        supportsFile: true,
+        decoratedProps: {
+          fileOptions: { supportedFileTypes: [FileType.IMAGE] },
+        },
+      },
+      processBatch,
+    });
+
+    const result = await service.preview('s1');
+
+    expect(result.tasks[0].files[0].filtered).toBe(true);
+    expect(processBatch).not.toHaveBeenCalled();
+  });
+
   it('captures a per-file error when processing fails', async () => {
-    const processBatch = jest.fn().mockRejectedValue(new Error('unsupported type'));
+    const processBatch = jest
+      .fn()
+      .mockRejectedValue(new Error('unsupported type'));
     const service = build({
       submission: makeSubmission(),
       instance: { supportsFile: true },
@@ -132,7 +171,11 @@ describe('RelayPreviewService', () => {
     const service = build({
       submission: makeSubmission({
         options: [
-          { isDefault: true, accountId: 'def', account: { website: 'default' } },
+          {
+            isDefault: true,
+            accountId: 'def',
+            account: { website: 'default' },
+          },
           { isDefault: false, accountId: 'a1', account: { website: 'weasyl' } },
         ],
       }),

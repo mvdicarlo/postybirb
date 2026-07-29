@@ -16,6 +16,7 @@ import { toError } from '@postybirb/utils/common';
 import { FileConverterService } from '../file-converter/file-converter.service';
 import { FileService } from '../file/file.service';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
+import { isFileSupported } from '../websites/decorators/supports-files.decorator';
 import { DefaultWebsiteOptions } from '../websites/models/default-website-options';
 import { isFileWebsite } from '../websites/models/website-modifiers/file-website';
 import { isMessageWebsite } from '../websites/models/website-modifiers/message-website';
@@ -263,7 +264,16 @@ export class ValidationService {
     let result: SimpleValidationResult | undefined;
     try {
       if (submission.type === SubmissionType.FILE && isFileWebsite(website)) {
-        result = await website.onValidateFileSubmission(postData);
+        const effectivePostData = {
+          ...postData,
+          submission: {
+            ...postData.submission,
+            files: postData.submission.files.filter(
+              (file) => isFileSupported(website, file),
+            ),
+          },
+        };
+        result = await website.onValidateFileSubmission(effectivePostData);
       }
 
       if (

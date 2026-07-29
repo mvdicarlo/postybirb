@@ -19,7 +19,11 @@ import {
     ThemeIcon,
 } from '@mantine/core';
 import { PreviewResult, SubmissionType } from '@postybirb/types';
-import { IconAlertTriangle, IconArrowRight, IconCheck } from '@tabler/icons-react';
+import {
+    IconAlertTriangle,
+    IconArrowRight,
+    IconCheck,
+} from '@tabler/icons-react';
 import { filesize } from 'filesize';
 import { useEffect, useState } from 'react';
 import postApi from '../../../../api/post.api';
@@ -169,9 +173,17 @@ export function PostPreviewModal({
                               <Badge color="gray" variant="light" size="sm">
                                 <Trans>Excluded</Trans>
                               </Badge>
+                            ) : file.filtered ? (
+                              <Badge color="yellow" variant="light" size="sm">
+                                <Trans>Filtered</Trans>
+                              </Badge>
                             ) : file.error ? (
                               <Group gap={4} wrap="nowrap">
-                                <ThemeIcon color="red" variant="light" size="sm">
+                                <ThemeIcon
+                                  color="red"
+                                  variant="light"
+                                  size="sm"
+                                >
                                   <IconAlertTriangle size={12} />
                                 </ThemeIcon>
                                 <Text size="xs" c="red">

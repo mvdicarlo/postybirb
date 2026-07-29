@@ -109,7 +109,7 @@ export const TranslationMessages: TranslationsMap = {
   ),
 
   'validation.file.unsupported-file-type': (props) => {
-    const { fileType } = props;
+    const { fileName, fileType } = props;
     let fileTypeString;
     switch (fileType) {
       case FileType.IMAGE:
@@ -128,7 +128,12 @@ export const TranslationMessages: TranslationsMap = {
         fileTypeString = <Trans>Unknown</Trans>;
         break;
     }
-    return <Trans>Unsupported submission type: {fileTypeString}</Trans>;
+    return (
+      <Trans>
+        The {fileTypeString} file {fileName} is not supported by this website
+        and will be filtered when posting.
+      </Trans>
+    );
   },
 
   'validation.file.file-size': (props) => {

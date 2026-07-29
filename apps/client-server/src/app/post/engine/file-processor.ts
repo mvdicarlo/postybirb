@@ -16,11 +16,11 @@
 import { Injectable } from '@nestjs/common';
 import { FileBuffer, type SubmissionFile } from '@postybirb/database';
 import {
-    FileType,
-    type FileSubmission,
-    type ImageResizeProps,
+  FileType,
+  type FileSubmission,
+  type ImageResizeProps,
 } from '@postybirb/types';
-import { getFileType } from '@postybirb/utils/file-type';
+import { getFileTypeFromFile } from '@postybirb/utils/file-type';
 import { FileConverterService } from '../../file-converter/file-converter.service';
 import { getSupportedFileSize } from '../../websites/decorators/supports-files.decorator';
 import type { ImplementedFileWebsite } from '../../websites/models/website-modifiers/file-website';
@@ -137,7 +137,7 @@ export class RelayFileProcessor {
 
     const { fileOptions } = instance.decoratedProps;
     const allowedMimeTypes = fileOptions?.acceptedMimeTypes ?? [];
-    const fileType = getFileType(file.mimeType);
+    const fileType = getFileTypeFromFile(file);
 
     if (fileType === FileType.IMAGE) {
       if (await this.converter.canConvert(file.mimeType, allowedMimeTypes)) {

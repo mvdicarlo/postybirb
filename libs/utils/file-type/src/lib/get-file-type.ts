@@ -21,3 +21,13 @@ export function getFileTypeFromMimeType(mimeType: string): FileType {
 
   return FileType.UNKNOWN;
 }
+
+export function getFileTypeFromFile(file: {
+  fileName: string;
+  mimeType: string;
+}): FileType {
+  const mimeFileType = getFileTypeFromMimeType(file.mimeType);
+  return mimeFileType === FileType.UNKNOWN
+    ? getFileType(file.fileName)
+    : mimeFileType;
+}

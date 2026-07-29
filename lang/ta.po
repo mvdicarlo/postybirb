@@ -34,7 +34,7 @@ msgstr ""
 msgid "{0} submissions selected"
 msgstr ""
 
-#. placeholder {0}: account?.websiteDisplayName
+#. placeholder {0}: account.websiteDisplayName
 #: apps/postybirb-ui/src/components/website-login-views/helpers.tsx
 msgid "{0}: Login successful"
 msgstr ""
@@ -45,6 +45,10 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/drawers/notifications-drawer/notifications-drawer.tsx
 msgid "{count} selected"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/submission-badges.tsx
+msgid "{errorCount} errors"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/accounts-section/website-visibility-picker.tsx
@@ -61,6 +65,10 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/post-confirm-modal.tsx
 msgid "{validCount} submission(s) will be posted in the order shown below."
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/submission-badges.tsx
+msgid "{warningCount} warnings"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/bluesky/bluesky-login-view.tsx
@@ -97,10 +105,6 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/selected-accounts-forms.tsx
 msgid "account"
-msgstr ""
-
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-record-card.tsx
-msgid "Account"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/accounts-section/accounts-section.tsx
@@ -180,6 +184,11 @@ msgstr ""
 msgid "Add shortcut"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/submission-quick-edit-actions.tsx
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/submission-quick-edit-actions.tsx
+msgid "Add tags"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/sections/submissions-section/file-submission-modal/submission-options.tsx
 msgid "Add tags..."
 msgstr ""
@@ -232,7 +241,6 @@ msgstr ""
 #: apps/postybirb-ui/src/components/drawers/notifications-drawer/notifications-drawer.tsx
 #: apps/postybirb-ui/src/components/drawers/notifications-drawer/notifications-drawer.tsx
 #: apps/postybirb-ui/src/components/sections/accounts-section/account-section-header.tsx
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/form/save-defaults-popover.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-section-header.tsx
 #: apps/postybirb-ui/src/components/shared/description-editor/custom-blocks/website-only-selector.tsx
 #: apps/postybirb-ui/src/components/shared/description-editor/extensions/username-shortcut.tsx
@@ -286,6 +294,14 @@ msgstr ""
 
 #: libs/translations/src/lib/field-translations.ts
 msgid "Allow reblogging"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/home-section/upcoming-posts-panel.tsx
+msgid "Already posted."
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/post-confirm-modal.tsx
+msgid "Also being posted in this batch."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/file-management/file-metadata.tsx
@@ -407,6 +423,7 @@ msgstr ""
 msgid "Archive"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/submission-badges.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/header/submission-edit-card-header.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/submissions-section.tsx
 msgid "Archived"
@@ -439,6 +456,11 @@ msgstr ""
 
 #: libs/translations/src/lib/field-translations.ts
 msgid "Attach Images as Attachments"
+msgstr ""
+
+#. placeholder {0}: merged.length - index
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-history-content.tsx
+msgid "Attempt {0}"
 msgstr ""
 
 #: libs/translations/src/lib/field-translations.ts
@@ -541,7 +563,6 @@ msgstr ""
 #: apps/postybirb-ui/src/components/sections/submissions-section/file-submission-modal/image-editor.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/post-confirm-modal.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/resume-mode-modal/resume-mode-modal.tsx
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/form/save-defaults-popover.tsx
 #: apps/postybirb-ui/src/components/sections/templates-section/template-card.tsx
 #: apps/postybirb-ui/src/components/sections/templates-section/templates-section.tsx
 #: apps/postybirb-ui/src/components/shared/description-editor/components/description-toolbar.tsx
@@ -555,12 +576,6 @@ msgstr "ரத்துசெய்"
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/submission-actions.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/actions/submission-edit-card-actions.tsx
 msgid "Cancel posting"
-msgstr ""
-
-#. placeholder {0}: getFileTypeLabel(newFileType)
-#. placeholder {1}: getFileTypeLabel(existingFileType)
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/file-management/file-uploader.tsx
-msgid "Cannot add {0} files to a submission containing {1} files. All files in a submission must be of the same type."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/file-management/submission-file-card.tsx
@@ -577,6 +592,10 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/layout-tour.tsx
 msgid "Change the application language. PostyBirb is available in multiple languages thanks to community translations."
+msgstr ""
+
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/app-settings-section.tsx
+msgid "Changing storage folder does not automatically move app data. You need to change location, quit using button below and then manually move files."
 msgstr ""
 
 #: libs/translations/src/lib/field-translations.ts
@@ -665,6 +684,10 @@ msgstr ""
 msgid "Cloud Password"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/app-settings-section.tsx
+msgid "Cloudflare Challenges"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/website-login-views/telegram/telegram-login-view.tsx
 msgid "Code"
 msgstr ""
@@ -678,7 +701,6 @@ msgid "Code sent"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/drawers/custom-shortcuts-drawer/custom-shortcuts-drawer.tsx
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/file-management/submission-file-card.tsx
 msgid "Collapse"
 msgstr ""
 
@@ -762,7 +784,6 @@ msgstr ""
 msgid "Content warning"
 msgstr "உள்ளடக்க எச்சரிக்கை"
 
-#: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/post-confirm-modal.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/resume-mode-modal/resume-mode-modal.tsx
 msgid "Continue from where it left off"
 msgstr ""
@@ -1001,13 +1022,31 @@ msgstr "இயல்புநிலை"
 msgid "Default Options"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/account-default-template-modal.tsx
+msgid "Default template"
+msgstr ""
+
+#. placeholder {0}: account.name
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/account-default-template-modal.tsx
+msgid "Default template for {0}"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/form/account-default-template-inline.tsx
+msgid "Default template for this account"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/account-default-template-modal.tsx
+msgid "Default template set — click to change"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/accounts-section/account-default-templates-popover.tsx
+#: apps/postybirb-ui/src/components/sections/accounts-section/account-default-templates-popover.tsx
+msgid "Default templates"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/sections/submissions-section/file-submission-modal/submission-options.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/defaults-form/defaults-form.tsx
 msgid "Defaults"
-msgstr ""
-
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/form/save-defaults-popover.tsx
-msgid "Defaults saved successfully"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/layout-tour.tsx
@@ -1037,8 +1076,25 @@ msgstr ""
 msgid "Delete Submissions"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/sections/home-section/upcoming-posts-panel.tsx
+#: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/post-confirm-modal.tsx
+msgid "Deleted submission"
+msgstr ""
+
 #: apps/postybirb-ui/src/utils/notifications.tsx
 msgid "Deleted successfully"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/post-confirm-modal.tsx
+msgid "Dependencies"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/dependency-reorderable-tree.tsx
+msgid "Dependents are grouped under the submission they wait for."
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/depends-on-form/depends-on-form.tsx
+msgid "Depends on"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/settings-dialog.tsx
@@ -1063,6 +1119,10 @@ msgstr ""
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/description-settings-section.tsx
 msgid "Description Settings"
 msgstr "விளக்கம் அமைப்புகள்"
+
+#: apps/postybirb-ui/src/i18n/validation-translation.tsx
+msgid "Description shouldn't be empty"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/account-select.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/account-selection-form.tsx
@@ -1092,7 +1152,6 @@ msgstr ""
 msgid "Disable comments"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/post-confirm-modal.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/resume-mode-modal/resume-mode-modal.tsx
 msgid "Discard all progress from the previous attempt and start as if this were the first time posting."
 msgstr ""
@@ -1111,6 +1170,10 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/data-settings-section.tsx
 msgid "Download application logs as a compressed archive. This is useful for troubleshooting issues or sharing logs with developers."
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-history-content.tsx
+msgid "Download logs"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/data-settings-section.tsx
@@ -1132,6 +1195,10 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/shared/reorderable-submission-list/reorderable-submission-list.tsx
 msgid "Drag or use arrow keys to reorder"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/dependency-reorderable-tree.tsx
+msgid "Drag or use arrow keys to reorder. Dependents are grouped under the submission they wait for and post after it."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/drawers/schedule-drawer/submission-list.tsx
@@ -1218,6 +1285,7 @@ msgid "Early Access"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/submission-actions.tsx
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/file-management/submission-file-card.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/header/submission-edit-card-header.tsx
 msgid "Edit"
 msgstr "தொகு"
@@ -1231,8 +1299,8 @@ msgstr ""
 msgid "Edit image"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/file-management/submission-file-card.tsx
-msgid "Edit metadata"
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/submission-quick-edit-actions.tsx
+msgid "Edit tags"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/file-submission-modal/file-preview.tsx
@@ -1297,7 +1365,7 @@ msgid "Enter your Twitter app credentials"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/error-boundary/error-boundary.tsx
-#: apps/postybirb-ui/src/components/sections/home-section/posting-activity-panel.tsx
+#: apps/postybirb-ui/src/components/sections/home-section/job-tree-view.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/account-option-row.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/selected-accounts-forms.tsx
 #: apps/postybirb-ui/src/utils/notifications.tsx
@@ -1313,8 +1381,11 @@ msgid "errors"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/drawers/notifications-drawer/notifications-drawer.tsx
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/submission-badges.tsx
 msgid "Errors"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/post-preview-modal/post-preview-modal.tsx
+msgid "Excluded"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/drawers/custom-shortcuts-drawer/custom-shortcuts-drawer.tsx
@@ -1330,17 +1401,8 @@ msgstr ""
 msgid "Extreme"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-record-card.tsx
-msgid "failed"
-msgstr ""
-
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-history-content.tsx
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-record-card.tsx
 msgid "Failed"
-msgstr ""
-
-#: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/post-confirm-modal.tsx
-msgid "Failed Posts Detected"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/file-management/bulk-file-editor.tsx
@@ -1503,7 +1565,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/drawers/schedule-drawer/schedule-calendar.tsx
 #: apps/postybirb-ui/src/components/sections/home-section/posting-activity-panel.tsx
-#: apps/postybirb-ui/src/components/sections/home-section/posting-activity-panel.tsx
+#: apps/postybirb-ui/src/components/sections/submissions-section/post-preview-modal/post-preview-modal.tsx
 #: apps/postybirb-ui/src/components/sections/templates-section/templates-section.tsx
 msgid "File"
 msgstr ""
@@ -1525,6 +1587,10 @@ msgstr ""
 #: apps/postybirb-ui/src/components/sections/submissions-section/submissions-content.tsx
 msgid "File Submissions"
 msgstr "கோப்பு சமர்ப்பிப்புகள்"
+
+#: apps/postybirb-ui/src/components/sections/accounts-section/account-default-templates-popover.tsx
+msgid "File template"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/file-management/file-actions.tsx
 msgid "File types do not match. Please upload a file of the same type."
@@ -1597,6 +1663,10 @@ msgstr ""
 msgid "Filter your templates by name. Useful when you have many templates saved."
 msgstr ""
 
+#: apps/postybirb-ui/src/components/sections/submissions-section/post-preview-modal/post-preview-modal.tsx
+msgid "Filtered"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/onboarding-tour/mantine-tooltip.tsx
 msgid "Finish"
 msgstr ""
@@ -1667,6 +1737,11 @@ msgstr ""
 msgid "General"
 msgstr ""
 
+#. SoFurry login form
+#: apps/postybirb-ui/src/components/website-login-views/sofurry/sofurry-login-view.tsx
+msgid "Generate a Personal Access Token from your <0>account settings</0>"
+msgstr ""
+
 #. E621 login form
 #: apps/postybirb-ui/src/components/website-login-views/e621/e621-login-view.tsx
 msgid "Generate an API key from your <0>account settings</0>"
@@ -1722,12 +1797,9 @@ msgstr ""
 msgid "Has sexual content"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/submission-badges.tsx
-msgid "Has validation errors"
-msgstr ""
-
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/submission-badges.tsx
-msgid "Has validation warnings"
+#: apps/postybirb-ui/src/components/sections/home-section/posting-activity-panel.tsx
+#: apps/postybirb-ui/src/components/sections/home-section/upcoming-posts-panel.tsx
+msgid "Hasn't posted yet — this submission waits for it."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/file-management/file-metadata.tsx
@@ -1817,6 +1889,10 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/bluesky/bluesky-login-view.tsx
 msgid "If you are using pds other then bsky.social"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/app-settings-section.tsx
+msgid "If you change these settings you will need to restart the app using the Quit button to apply them."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/disclaimer/disclaimer.tsx
@@ -1929,9 +2005,17 @@ msgstr ""
 msgid "It is recommended to add at least 10 general tags <0>( {generalTags} / 10 )</0>. See <1>tagging checklist</1>"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/account-default-template-modal.tsx
+msgid "It only applies to new submissions — existing ones are not changed."
+msgstr ""
+
 #: apps/postybirb-ui/src/components/website-login-views/instagram/instagram-login-view.tsx
 #: apps/postybirb-ui/src/components/website-login-views/twitter/twitter-login-view.tsx
 msgid "Keep this secret and never share it publicly"
+msgstr ""
+
+#: apps/postybirb-ui/src/i18n/validation-translation.tsx
+msgid "Keywords field limit reached ({currentLength} / {maxLength})"
 msgstr ""
 
 #: apps/postybirb-ui/src/config/nav-items.tsx
@@ -1954,6 +2038,10 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/update-button/update-modal.tsx
 msgid "Later"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-history-content.tsx
+msgid "Latest"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/form/fields/description-field.tsx
@@ -2104,9 +2192,12 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/drawers/schedule-drawer/schedule-calendar.tsx
 #: apps/postybirb-ui/src/components/sections/home-section/posting-activity-panel.tsx
-#: apps/postybirb-ui/src/components/sections/home-section/posting-activity-panel.tsx
 #: apps/postybirb-ui/src/components/sections/templates-section/templates-section.tsx
 msgid "Message"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/post-preview-modal/post-preview-modal.tsx
+msgid "Message submission — no file processing required."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/home-section/home-content.tsx
@@ -2114,6 +2205,10 @@ msgstr ""
 #: apps/postybirb-ui/src/components/sections/submissions-section/submissions-content.tsx
 msgid "Message Submissions"
 msgstr "செய்தி சமர்ப்பிப்புகள்"
+
+#: apps/postybirb-ui/src/components/sections/accounts-section/account-default-templates-popover.tsx
+msgid "Message template"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/shared/multi-scheduler-modal/multi-scheduler-modal.tsx
 msgid "Minutes"
@@ -2133,11 +2228,16 @@ msgid "Modification"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/file-submission-modal/image-editor.tsx
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/submission-card.tsx
 msgid "Modified"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/shared/schedule-popover/cron-picker.tsx
 msgid "Monthly"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-history-content.tsx
+msgid "Most recent attempt"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/header/submission-edit-card-header.tsx
@@ -2175,6 +2275,10 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/mantine-tooltip.tsx
 msgid "Next"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/post-preview-modal/post-preview-modal.tsx
+msgid "No accounts are selected for this submission."
 msgstr ""
 
 #: libs/translations/src/lib/field-translations.ts
@@ -2242,12 +2346,12 @@ msgstr ""
 msgid "No submissions selected"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/sections/home-section/validation-issues-panel.tsx
-msgid "No validation issues"
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/submission-quick-edit-actions.tsx
+msgid "No tags added yet"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-record-card.tsx
-msgid "No website posts found"
+#: apps/postybirb-ui/src/components/sections/home-section/validation-issues-panel.tsx
+msgid "No validation issues"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/submission-badges.tsx
@@ -2258,13 +2362,8 @@ msgstr ""
 msgid "No websites available"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/submission-badges.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/actions/submission-edit-card-actions.tsx
 msgid "No websites selected"
-msgstr ""
-
-#: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/post-confirm-modal.tsx
-msgid "No websites will post (all previously succeeded)"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/website-components/e621/e621-tag-search-provider.tsx
@@ -2272,7 +2371,6 @@ msgid "No wiki page available"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/tags-settings-section.tsx
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/form/save-defaults-popover.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/file-management/file-actions.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/schedule-form/schedule-form.tsx
 #: apps/postybirb-ui/src/components/shared/schedule-popover/schedule-popover.tsx
@@ -2295,6 +2393,14 @@ msgstr "உள்நுழையவில்லை"
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-section-header.tsx
 #: apps/postybirb-ui/src/components/shared/schedule-popover/schedule-popover.tsx
 msgid "Not scheduled"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/post-confirm-modal.tsx
+msgid "Not selected here — this submission still waits for it to finish posting."
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/post-preview-modal/post-preview-modal.tsx
+msgid "Not supported"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/empty-state/empty-state.tsx
@@ -2353,6 +2459,10 @@ msgstr ""
 msgid "Only set scheduled date (don't activate)"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/app-settings-section.tsx
+msgid "Open a browser window when Cloudflare requires attention"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/shared/schedule-popover/cron-picker.tsx
 msgid "Open CRON helper"
 msgstr ""
@@ -2379,6 +2489,14 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/shared/template-picker/template-picker-modal.tsx
 msgid "Options"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/post-confirm-modal.tsx
+msgid "Order any submission below. Dependencies are enforced automatically — a submission still waits for the ones it depends on to finish posting, regardless of the order you set."
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/post-preview-modal/post-preview-modal.tsx
+msgid "Original"
 msgstr ""
 
 #: libs/translations/src/lib/field-translations.ts
@@ -2468,6 +2586,10 @@ msgstr ""
 msgid "Please check your credentials and try again"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/sections/accounts-section/account-default-templates-popover.tsx
+msgid "Populate default field values for new submissions from a template's options for this account."
+msgstr ""
+
 #: apps/postybirb-ui/src/i18n/languages.tsx
 msgid "Portuguese (Brazil)"
 msgstr ""
@@ -2478,7 +2600,7 @@ msgstr ""
 msgid "Post"
 msgstr "இடுகை"
 
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-record-card.tsx
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-history-content.tsx
 msgid "Post Data (JSON)"
 msgstr ""
 
@@ -2495,6 +2617,10 @@ msgstr ""
 msgid "Post Files"
 msgstr "கோப்புகளை இடுங்கள்"
 
+#: apps/postybirb-ui/src/components/sections/submissions-section/post-preview-modal/post-preview-modal.tsx
+msgid "Post preview (dry run)"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/post-confirm-modal.tsx
 msgid "Post Submissions"
 msgstr ""
@@ -2505,11 +2631,6 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/selected-accounts-forms.tsx
 msgid "Posted successfully"
-msgstr ""
-
-#: apps/postybirb-ui/src/components/sections/home-section/posting-activity-panel.tsx
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-record-card.tsx
-msgid "Posting"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/home-section/posting-activity-panel.tsx
@@ -2527,6 +2648,10 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/form/fields/description-preview-panel.tsx
 msgid "Preview"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/actions/submission-edit-card-actions.tsx
+msgid "Preview (dry run)"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/file-management/file-actions.tsx
@@ -2548,6 +2673,10 @@ msgstr ""
 #: apps/postybirb-ui/src/components/website-login-views/instagram/instagram-login-view.tsx
 #: apps/postybirb-ui/src/components/website-login-views/twitter/twitter-login-view.tsx
 msgid "Proceed to Authorization"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/post-preview-modal/post-preview-modal.tsx
+msgid "Processing files…"
 msgstr ""
 
 #: libs/translations/src/lib/field-translations.ts
@@ -2584,6 +2713,10 @@ msgstr ""
 msgid "Quickly find accounts that need attention. Filter by All, Logged in, or Not logged in status."
 msgstr ""
 
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/app-settings-section.tsx
+msgid "Quit"
+msgstr ""
+
 #: libs/translations/src/lib/field-translations.ts
 msgid "Racism"
 msgstr ""
@@ -2610,10 +2743,6 @@ msgstr ""
 msgid "Ready to Install"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/submission-badges.tsx
-msgid "Ready to post"
-msgstr ""
-
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/home-tour.tsx
 #: apps/postybirb-ui/src/components/sections/home-section/recent-activity-panel.tsx
 msgid "Recent Activity"
@@ -2627,6 +2756,10 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/shared/schedule-popover/schedule-popover.tsx
 msgid "Recurring schedule (active)"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/submission-badges.tsx
+msgid "Recurring schedule configured"
 msgstr ""
 
 #: libs/translations/src/lib/field-translations.ts
@@ -2669,12 +2802,20 @@ msgstr ""
 msgid "Remove"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/submission-quick-edit-actions.tsx
+msgid "Remove all"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/sections/home-section/posting-activity-panel.tsx
 msgid "Remove from queue"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/shared/description-editor/extensions/resizable-image.tsx
 msgid "Remove image"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/submission-quick-edit-actions.tsx
+msgid "Remove tag {tag}"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/templates-section/template-card.tsx
@@ -2774,6 +2915,10 @@ msgstr ""
 msgid "Restored successfully"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/sections/submissions-section/post-preview-modal/post-preview-modal.tsx
+msgid "Result"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/sections/submissions-section/resume-mode-modal/resume-mode-modal.tsx
 msgid "Resume Failed Posting"
 msgstr ""
@@ -2782,12 +2927,10 @@ msgstr ""
 msgid "Resume Posting"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/post-confirm-modal.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/resume-mode-modal/resume-mode-modal.tsx
 msgid "Retry all failed or unattempted websites"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/post-confirm-modal.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/resume-mode-modal/resume-mode-modal.tsx
 msgid "Retry posting to all websites that failed or were not attempted. All files will be re-uploaded."
 msgstr ""
@@ -2804,14 +2947,6 @@ msgstr ""
 msgid "Rotate right 90°"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-record-card.tsx
-msgid "running"
-msgstr ""
-
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-history-content.tsx
-msgid "Running"
-msgstr ""
-
 #: apps/postybirb-ui/src/i18n/languages.tsx
 msgid "Russian"
 msgstr "ரச்ய"
@@ -2826,16 +2961,12 @@ msgstr ""
 #: apps/postybirb-ui/src/components/website-login-views/discord/discord-login-view.tsx
 #: apps/postybirb-ui/src/components/website-login-views/e621/e621-login-view.tsx
 #: apps/postybirb-ui/src/components/website-login-views/inkbunny/inkbunny-login-view.tsx
+#: apps/postybirb-ui/src/components/website-login-views/sofurry/sofurry-login-view.tsx
 msgid "Save"
 msgstr "சேமி"
 
 #: apps/postybirb-ui/src/components/website-login-views/twitter/twitter-login-view.tsx
 msgid "Save API Keys"
-msgstr ""
-
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/form/save-defaults-popover.tsx
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/form/save-defaults-popover.tsx
-msgid "Save as default"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/drawers/file-watcher-drawer/file-watcher-drawer.tsx
@@ -2846,15 +2977,11 @@ msgstr ""
 msgid "Save Credentials"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/form/save-defaults-popover.tsx
-msgid "Save Selected"
-msgstr ""
-
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/layout-tour.tsx
 msgid "Save submission settings as reusable templates. Great for repeated posts with the same tags, description, or account selection."
 msgstr ""
 
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-record-card.tsx
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-history-content.tsx
 msgid "Save to file"
 msgstr ""
 
@@ -2922,6 +3049,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/home-section/home-content.tsx
 #: apps/postybirb-ui/src/components/sections/home-section/schedule-calendar-panel.tsx
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/submission-badges.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-section-header.tsx
 msgid "Scheduled"
 msgstr ""
@@ -3008,10 +3136,6 @@ msgstr ""
 msgid "Select an account to log in"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/form/save-defaults-popover.tsx
-msgid "Select fields to save as defaults for this account."
-msgstr ""
-
 #: apps/postybirb-ui/src/components/drawers/converter-drawer/converter-drawer.tsx
 #: apps/postybirb-ui/src/components/drawers/tag-group-drawer/tag-group-drawer.tsx
 msgid "Select items to delete"
@@ -3078,6 +3202,10 @@ msgstr ""
 msgid "Server unreachable"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/account-default-template-modal.tsx
+msgid "Set a default template for this account"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/submission-edit-tour.tsx
 msgid "Set the default title, description, tags, and content rating here. These values are inherited by all website-specific options unless you override them individually."
 msgstr ""
@@ -3140,6 +3268,10 @@ msgstr ""
 msgid "Show/Hide Websites"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/sections/submissions-section/post-preview-modal/post-preview-modal.tsx
+msgid "Shows how each file would be converted and resized for every selected account. Nothing is posted."
+msgstr ""
+
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/home-tour.tsx
 msgid "Shows how many of your accounts are logged in. If any accounts need attention, you'll see a warning here."
 msgstr ""
@@ -3165,16 +3297,16 @@ msgstr ""
 msgid "Skip Accounts"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/post-confirm-modal.tsx
-msgid "Skip websites that posted successfully and only attempt failed or unattempted ones."
-msgstr ""
-
 #: apps/postybirb-ui/src/components/sections/submissions-section/resume-mode-modal/resume-mode-modal.tsx
 msgid "Skip websites that posted successfully and only attempt failed or unattempted ones. Continues from the last successful batch of files."
 msgstr ""
 
 #: libs/translations/src/lib/field-translations.ts
 msgid "Software"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/website-login-views/sofurry/sofurry-login-view.tsx
+msgid "SoFurry uses a Personal Access Token (PAT) to authenticate PostyBirb with its public API."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/home-section/account-health-panel.tsx
@@ -3189,17 +3321,9 @@ msgstr ""
 msgid "Some posts failed"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/post-confirm-modal.tsx
-msgid "Some submissions have failed posting attempts. Choose how to handle them:"
-msgstr ""
-
 #: apps/postybirb-ui/src/components/error-boundary/error-boundary.tsx
 #: apps/postybirb-ui/src/components/error-boundary/error-boundary.tsx
 msgid "Something went wrong"
-msgstr ""
-
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-record-card.tsx
-msgid "Source URL"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/file-management/file-metadata.tsx
@@ -3250,7 +3374,6 @@ msgstr "ச்பாய்லர் உரை"
 msgid "Spoilers"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/post-confirm-modal.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/resume-mode-modal/resume-mode-modal.tsx
 msgid "Start completely fresh"
 msgstr ""
@@ -3277,10 +3400,6 @@ msgstr ""
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/app-settings-section.tsx
 msgid "Startup Settings"
 msgstr "தொடக்க அமைப்புகள்"
-
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-record-card.tsx
-msgid "Status"
-msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/submissions-tour.tsx
 msgid "Status Filter"
@@ -3318,6 +3437,10 @@ msgstr ""
 msgid "Submission Stats"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/submission-badges.tsx
+msgid "Submission status"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/drawers/schedule-drawer/schedule-calendar.tsx
 msgid "Submission unscheduled"
 msgstr ""
@@ -3351,15 +3474,10 @@ msgid "Submissions with errors or warnings appear here. Fix any issues before po
 msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/subscribe-star-adult/subscribe-star-adult-login-view.tsx
-msgid "SubscribeStar Adult requires you to be logged in to both subscribestar.com AND subscribestar.adult. Please log in to both sites below."
-msgstr ""
-
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-record-card.tsx
-msgid "success"
+msgid "SubscribeStar Adult requires you to be logged in to both subscribestar.com AND subscribestar.adult if you have an account on both sites."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/drawers/notifications-drawer/notifications-drawer.tsx
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-record-card.tsx
 msgid "Success"
 msgstr ""
 
@@ -3381,6 +3499,10 @@ msgstr ""
 #. placeholder {0}: orderedSubmissions.length
 #: apps/postybirb-ui/src/components/shared/multi-scheduler-modal/multi-scheduler-modal.tsx
 msgid "Successfully scheduled ${0} submissions"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/post-preview-modal/post-preview-modal.tsx
+msgid "Supported"
 msgstr ""
 
 #: apps/postybirb-ui/src/i18n/validation-translation.tsx
@@ -3472,6 +3594,7 @@ msgstr ""
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/settings-dialog.tsx
 #: apps/postybirb-ui/src/components/drawers/tag-group-drawer/tag-group-drawer.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/file-submission-modal/submission-options.tsx
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/submission-quick-edit-actions.tsx
 #: apps/postybirb-ui/src/components/shared/description-editor/extensions/tags-shortcut.tsx
 #: libs/translations/src/lib/field-translations.ts
 msgid "Tags"
@@ -3516,6 +3639,7 @@ msgid "Telegram requires API credentials and phone number authentication. You'll
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/file-submission-modal/submission-options.tsx
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/account-default-template-modal.tsx
 #: apps/postybirb-ui/src/components/shared/template-picker/template-picker.tsx
 msgid "Template"
 msgstr "வார்ப்புரு"
@@ -3574,6 +3698,10 @@ msgstr "உரை"
 msgid "Th"
 msgstr ""
 
+#: apps/postybirb-ui/src/i18n/validation-translation.tsx
+msgid "The {fileTypeString} file {fileName} is not supported by this website and will be filtered when posting."
+msgstr ""
+
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/schedule-tour.tsx
 msgid "The calendar shows all your scheduled submissions. Switch between month, week, and day views. Click an event to reschedule or unschedule it. Drag events to move them to a different time."
 msgstr ""
@@ -3607,16 +3735,17 @@ msgstr ""
 msgid "Theme"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/form/save-defaults-popover.tsx
-msgid "These defaults apply to future submissions."
-msgstr ""
-
 #: apps/postybirb-ui/src/i18n/validation-translation.tsx
 msgid "These mentioned users don't exist: {mentionsList}. Ensure that their tag is correct (e.g. name.bsky.social instead of name.bluesky.social)"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/error-boundary/error-boundary.tsx
 msgid "This component encountered an error and couldn't render properly."
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/home-section/upcoming-posts-panel.tsx
+#: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/post-confirm-modal.tsx
+msgid "This dependency no longer exists and will be ignored."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/discord/discord-login-view.tsx
@@ -3643,12 +3772,13 @@ msgstr ""
 msgid "This is your home dashboard. It gives you a quick overview of your submissions, schedule, and account health at a glance."
 msgstr ""
 
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-record-card.tsx
-msgid "This post record has no events or is still processing. Check the JSON data below for more details."
-msgstr ""
-
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/schedule-tour.tsx
 msgid "This sidebar lists your unscheduled submissions. Drag any submission from here onto the calendar to schedule it for a specific date and time."
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/account-default-template-modal.tsx
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/form/account-default-template-inline.tsx
+msgid "This template is already the default"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/accounts-section/accounts-content.tsx
@@ -3757,6 +3887,7 @@ msgstr ""
 msgid "Type the username as you write it in your descriptions (e.g. \"ArtistJohn\") and click the button to create a new alias. Then expand it to add website-specific replacements — for example, set Twitter to \"@JohnDraws\" and DeviantArt to \"John_Art\"."
 msgstr ""
 
+#: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/post-confirm-modal.tsx
 #: apps/postybirb-ui/src/components/shared/description-editor/custom-blocks/website-only-selector.tsx
 #: apps/postybirb-ui/src/components/shared/description-editor/extensions/username-shortcut.tsx
 #: apps/postybirb-ui/src/i18n/validation-translation.tsx
@@ -3796,14 +3927,13 @@ msgstr "ஆதரிக்கப்படாத கோப்பு வகை {mi
 msgid "Unsupported rating: {ratingLabel}"
 msgstr ""
 
-#: apps/postybirb-ui/src/i18n/validation-translation.tsx
-msgid "Unsupported submission type: {fileTypeString}"
-msgstr "ஆதரிக்கப்படாத சமர்ப்பிப்பு வகை: {fileTypeString}"
-
 #: apps/postybirb-ui/src/components/sections/home-section/posting-activity-panel.tsx
 #: apps/postybirb-ui/src/components/sections/home-section/posting-activity-panel.tsx
 #: apps/postybirb-ui/src/components/sections/home-section/upcoming-posts-panel.tsx
+#: apps/postybirb-ui/src/components/sections/home-section/upcoming-posts-panel.tsx
 #: apps/postybirb-ui/src/components/sections/home-section/validation-issues-panel.tsx
+#: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/post-confirm-modal.tsx
+#: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/post-confirm-modal.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/header/submission-edit-card-header.tsx
 #: apps/postybirb-ui/src/components/sections/templates-section/template-card.tsx
 #: apps/postybirb-ui/src/components/shared/reorderable-submission-list/reorderable-submission-list.tsx
@@ -3880,8 +4010,24 @@ msgstr ""
 msgid "Use templates to save time on repeated posts"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/account-default-template-modal.tsx
+msgid "Use the template you are currently editing as the default"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/form/account-default-template-inline.tsx
+msgid "Use this"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/submissions-tour.tsx
 msgid "Use this checkbox to select or deselect all submissions at once. When items are selected, bulk actions like delete, post, and apply template become available."
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/account-default-template-modal.tsx
+msgid "Use this template"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/form/account-default-template-inline.tsx
+msgid "Use this template as the default for this account"
 msgstr ""
 
 #: libs/translations/src/lib/field-translations.ts
@@ -3931,16 +4077,25 @@ msgstr ""
 msgid "Username or Email"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/submission-badges.tsx
+msgid "Validation errors"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/home-tour.tsx
 #: apps/postybirb-ui/src/components/sections/home-section/validation-issues-panel.tsx
 msgid "Validation Issues"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/submission-badges.tsx
+msgid "Validation warnings"
 msgstr ""
 
 #: apps/postybirb-ui/src/i18n/validation-translation.tsx
 msgid "Video"
 msgstr "ஒளிதோற்றம்"
 
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-record-card.tsx
+#: apps/postybirb-ui/src/components/drawers/notifications-drawer/notifications-drawer.tsx
+#: apps/postybirb-ui/src/components/sections/home-section/job-tree-view.tsx
 msgid "View"
 msgstr ""
 
@@ -3953,8 +4108,6 @@ msgid "View Error"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/archived-submission-card.tsx
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/archived-submission-card.tsx
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/submission-actions.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/submission-actions.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/actions/submission-edit-card-actions.tsx
 msgid "View history"
@@ -3968,6 +4121,10 @@ msgstr ""
 msgid "View posting results, errors, and other important events. The badge shows how many unread notifications you have."
 msgstr ""
 
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/submission-badges.tsx
+msgid "View submission status details"
+msgstr ""
+
 #: libs/translations/src/lib/field-translations.ts
 msgid "Violence"
 msgstr ""
@@ -3976,16 +4133,29 @@ msgstr ""
 msgid "Visibility"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-record-card.tsx
-msgid "waiting"
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/depends-on-form/depends-on-form.tsx
+msgid "Wait to post this submission until the selected submissions have finished posting successfully."
 msgstr ""
 
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-record-card.tsx
+#: apps/postybirb-ui/src/components/sections/home-section/upcoming-posts-panel.tsx
 msgid "Waiting"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/selected-accounts-forms.tsx
 msgid "Waiting (rate limit)"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/home-section/posting-activity-panel.tsx
+msgid "Waiting for"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/home-section/job-tree-view.tsx
+msgid "Waiting on a rate-limit or dependency"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/home-section/upcoming-posts-panel.tsx
+#: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/post-confirm-modal.tsx
+msgid "Waits for"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/account-option-row.tsx
@@ -3998,7 +4168,6 @@ msgid "warnings"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/drawers/notifications-drawer/notifications-drawer.tsx
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/submission-badges.tsx
 msgid "Warnings"
 msgstr ""
 
@@ -4016,10 +4185,6 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/error-boundary/error-boundary.tsx
 msgid "We encountered an unexpected error. Please try refreshing the page."
-msgstr ""
-
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-record-card.tsx
-msgid "Website"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/accounts-tour.tsx
@@ -4071,12 +4236,24 @@ msgstr ""
 msgid "What's New"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/app-settings-section.tsx
+msgid "When a request is challenged, PostyBirb will open an account-specific browser window for you to complete the challenge manually. The post waits for up to five minutes and uses the resulting session cookies."
+msgstr ""
+
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/submissions-tour.tsx
 msgid "When a submission is selected, its full editor appears here. Configure titles, descriptions, tags, file options, and website-specific settings. Use the Mass Edit toggle to edit multiple submissions at once."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/templates-tour.tsx
 msgid "When a template is selected, its settings appear here. Configure titles, descriptions, tags, and website-specific options just like a regular submission."
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/account-default-template-modal.tsx
+msgid "When you create a new file submission, the option for this account will be pre-filled using the values from the template you choose here."
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/account-default-template-modal.tsx
+msgid "When you create a new submission, the option for this account will be pre-filled using the values from the template you choose here."
 msgstr ""
 
 #: libs/translations/src/lib/field-translations.ts

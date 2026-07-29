@@ -17,6 +17,7 @@ import {
     PreviewTaskResult,
     SubmissionType,
 } from '@postybirb/types';
+import { getFileFilterReason } from '../../websites/decorators/supports-files.decorator';
 import { isFileWebsite } from '../../websites/models/website-modifiers/file-website';
 import { isMessageWebsite } from '../../websites/models/website-modifiers/message-website';
 import { WebsiteRegistryService } from '../../websites/website-registry.service';
@@ -44,7 +45,7 @@ export class RelayPreviewService {
     const tasks: PreviewTaskResult[] = [];
     for (const option of submission.options ?? []) {
       if (option.isDefault) continue;
-      
+
       tasks.push(await this.previewOption(submission, option));
     }
 
@@ -77,19 +78,32 @@ export class RelayPreviewService {
 
     const files = submission.files ?? [];
     for (const file of files) {
-      const excluded = file.metadata.ignoredWebsites?.includes(accountId);
+      const filterReason = getFileFilterReason(instance, file, accountId);
       const from = {
         width: file.width,
         height: file.height,
         bytes: file.size,
         mimeType: file.mimeType,
       };
-      if (excluded) {
-        result.files.push({ fileId: file.id, fileName: file.fileName, from, excluded: true });
+      if (filterReason === 'ignored') {
+        result.files.push({
+          fileId: file.id,
+          fileName: file.fileName,
+          from,
+          excluded: true,
+        });
+        continue;
+      }
+      if (filterReason === 'unsupported-file-type') {
+        result.files.push({
+          fileId: file.id,
+          fileName: file.fileName,
+          from,
+          filtered: true,
+        });
         continue;
       }
       try {
-        
         const { info } = await this.fileProcessor.processBatch(
           instance,
           [file],

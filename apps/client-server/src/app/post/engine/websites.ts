@@ -7,6 +7,7 @@
  */
 
 import { RateLimitScope } from '@postybirb/types';
+import { isFileSupported as isFileSupportedByWebsite } from '../../websites/decorators/supports-files.decorator';
 import { isFileWebsite } from '../../websites/models/website-modifiers/file-website';
 import { isMessageWebsite } from '../../websites/models/website-modifiers/message-website';
 import { UnknownWebsite } from '../../websites/website';
@@ -34,6 +35,11 @@ export interface RelayWebsite {
   minimumPostWaitInterval: number;
   rateLimitScope: RateLimitScope;
   fileBatchSize: number;
+  isFileSupported(file: {
+    fileName: string;
+    mimeType: string;
+    ignoredWebsites?: string[];
+  }): boolean;
   acceptsExternalSourceUrls: boolean;
   sourceDependencyMode: RelaySourceDependencyMode;
 
@@ -79,12 +85,27 @@ export class WebsiteInstanceAdapter implements RelayWebsite {
   }
 
   get fileBatchSize(): number {
-    return Math.max(1, this.instance.decoratedProps.fileOptions?.fileBatchSize ?? 1);
+    return Math.max(
+      1,
+      this.instance.decoratedProps.fileOptions?.fileBatchSize ?? 1,
+    );
+  }
+
+  isFileSupported(file: {
+    fileName: string;
+    mimeType: string;
+    ignoredWebsites?: string[];
+  }): boolean {
+    return isFileSupportedByWebsite(this.instance, {
+      ...file,
+      metadata: { ignoredWebsites: file.ignoredWebsites },
+    });
   }
 
   get acceptsExternalSourceUrls(): boolean {
     return (
-      this.instance.decoratedProps.fileOptions?.acceptsExternalSourceUrls ?? false
+      this.instance.decoratedProps.fileOptions?.acceptsExternalSourceUrls ??
+      false
     );
   }
 
@@ -135,7 +156,9 @@ export class WebsiteInstanceAdapter implements RelayWebsite {
     token: CancellableToken,
   ): Promise<RelayPostResult> {
     if (!isMessageWebsite(this.instance)) {
-      throw new Error(`${this.displayName} does not support message submissions`);
+      throw new Error(
+        `${this.displayName} does not support message submissions`,
+      );
     }
     const result = await this.instance.onPostMessageSubmission(postData, token);
     // eslint-disable-next-line @typescript-eslint/no-throw-literal

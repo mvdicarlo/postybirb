@@ -5,9 +5,13 @@ import {
   ISubmissionFile,
   SubmissionType,
 } from '@postybirb/types';
-import { getFileType } from '@postybirb/utils/file-type';
+import { getFileTypeFromFile } from '@postybirb/utils/file-type';
 import { parse } from 'path';
-import { getSupportedFileSize } from '../../websites/decorators/supports-files.decorator';
+import {
+  getFileFilterReason,
+  getSupportedFileSize,
+  isFileSupported,
+} from '../../websites/decorators/supports-files.decorator';
 import DefaultWebsite from '../../websites/implementations/default/default.website';
 import {
   ImplementedFileWebsite,
@@ -28,20 +32,10 @@ function isFileSubmission(
   return submission.type === SubmissionType.FILE;
 }
 
-function isFileFiltered(
-  file: ISubmissionFile,
-  submission: FileSubmission,
-  websiteInstance: UnknownWebsite,
-): boolean {
-  if (file.metadata?.ignoredWebsites?.includes(websiteInstance.accountId)) {
-    return true;
-  }
-  return false;
-}
-
 async function validateTextFileRequiresFallback({
   websiteInstance,
   submission,
+  file,
   fileService,
   validator,
 }: ValidatorParams & { file: ISubmissionFile }) {
@@ -53,36 +47,32 @@ async function validateTextFileRequiresFallback({
     return;
   }
 
-  for (const file of submission.files) {
-    if (isFileFiltered(file, submission, websiteInstance)) {
-      continue;
-    }
-    if (getFileType(file.fileName) === FileType.TEXT) {
-      const supportedMimeTypes =
-        websiteInstance.decoratedProps.fileOptions?.acceptedMimeTypes ?? [];
-      if (supportedMimeTypes.length === 0) {
-        // Assume empty to accept all file types if no accepted mime types are specified
-        continue;
-      }
-      // Check if the alt file has content by querying its size
-      let altFileHasContent = false;
-      if (file.altFileId) {
-        const altFileSize = await fileService.getAltFileSize(file.altFileId);
-        altFileHasContent = altFileSize > 0;
-      }
-      // Fail validation if the file is not supported and alt file is empty or missing
-      if (!supportedMimeTypes.includes(file.mimeType) && !altFileHasContent) {
-        validator.error(
-          'validation.file.text-file-no-fallback',
-          {
-            fileName: file.fileName,
-            fileExtension: parse(file.fileName).ext,
-            fileId: file.id,
-          },
-          'files',
-        );
-      }
-    }
+  if (getFileTypeFromFile(file) !== FileType.TEXT) {
+    return;
+  }
+
+  const supportedMimeTypes =
+    websiteInstance.decoratedProps.fileOptions?.acceptedMimeTypes ?? [];
+  if (supportedMimeTypes.length === 0) {
+    return;
+  }
+
+  let altFileHasContent = false;
+  if (file.altFileId) {
+    const altFileSize = await fileService.getAltFileSize(file.altFileId);
+    altFileHasContent = altFileSize > 0;
+  }
+
+  if (!supportedMimeTypes.includes(file.mimeType) && !altFileHasContent) {
+    validator.error(
+      'validation.file.text-file-no-fallback',
+      {
+        fileName: file.fileName,
+        fileExtension: parse(file.fileName).ext,
+        fileId: file.id,
+      },
+      'files',
+    );
   }
 }
 
@@ -100,7 +90,8 @@ export async function validateNotAllFilesIgnored({
   }
 
   const numFiles = submission.files.filter(
-    (file) => !isFileFiltered(file, submission, websiteInstance),
+    (file) =>
+      getFileFilterReason(websiteInstance, file) !== 'ignored',
   ).length;
   if (numFiles === 0) {
     validator.warning('validation.file.all-ignored', {}, 'files');
@@ -133,26 +124,30 @@ export async function validateAcceptedFiles({
     return;
   }
 
-  submission.files.forEach((file) => {
-    if (isFileFiltered(file, submission, websiteInstance)) {
-      return;
+  for (const file of submission.files) {
+    const filterReason = getFileFilterReason(websiteInstance, file);
+    if (filterReason === 'ignored') {
+      continue;
     }
+
+    if (filterReason === 'unsupported-file-type') {
+      validator.warning(
+        'validation.file.unsupported-file-type',
+        {
+          fileName: file.fileName,
+          fileType: getFileTypeFromFile(file),
+          fileId: file.id,
+        },
+        'files',
+      );
+      continue;
+    }
+
     if (!acceptedMimeTypes.includes(file.mimeType)) {
-      const fileType = getFileType(file.fileName);
-      if (!supportedFileTypes.includes(fileType)) {
-        validator.error(
-          'validation.file.unsupported-file-type',
-          {
-            fileName: file.fileName,
-            fileType: getFileType(file.fileName),
-            fileId: file.id,
-          },
-          'files',
-        );
-      }
+      const fileType = getFileTypeFromFile(file);
 
       if (fileType === FileType.TEXT) {
-        validateTextFileRequiresFallback({
+        await validateTextFileRequiresFallback({
           result,
           websiteInstance,
           submission,
@@ -162,7 +157,7 @@ export async function validateAcceptedFiles({
           validator,
           ...rest,
         });
-        return;
+        continue;
       }
 
       if (!fileConverterService.canConvert(file.mimeType, acceptedMimeTypes)) {
@@ -177,7 +172,7 @@ export async function validateAcceptedFiles({
         );
       }
     }
-  });
+  }
 }
 
 export async function validateFileBatchSize({
@@ -196,7 +191,7 @@ export async function validateFileBatchSize({
   const maxBatchSize =
     websiteInstance.decoratedProps.fileOptions?.fileBatchSize ?? 0;
   const numFiles = submission.files.filter(
-    (file) => !isFileFiltered(file, submission, websiteInstance),
+    (file) => isFileSupported(websiteInstance, file),
   ).length;
   if (numFiles > maxBatchSize) {
     const expectedBatchesToCreate = Math.ceil(numFiles / maxBatchSize);
@@ -226,14 +221,14 @@ export async function validateFileSize({
   }
 
   submission.files.forEach((file) => {
-    if (isFileFiltered(file, submission, websiteInstance)) {
+    if (!isFileSupported(websiteInstance, file)) {
       return;
     }
 
     const maxFileSize = getSupportedFileSize(websiteInstance, file);
     if (maxFileSize && file.size > maxFileSize) {
       const type =
-        getFileType(file.fileName) === FileType.IMAGE ? 'warning' : 'error';
+        getFileTypeFromFile(file) === FileType.IMAGE ? 'warning' : 'error';
 
       validator[type](
         'validation.file.file-size',
@@ -264,10 +259,10 @@ export async function validateImageFileDimensions({
   }
 
   submission.files.forEach((file) => {
-    if (isFileFiltered(file, submission, websiteInstance)) {
+    if (!isFileSupported(websiteInstance, file)) {
       return;
     }
-    if (getFileType(file.fileName) === FileType.IMAGE) {
+    if (getFileTypeFromFile(file) === FileType.IMAGE) {
       const resizeProps = websiteInstance.calculateImageResize(file);
       if (resizeProps) {
         validator.warning(
@@ -303,10 +298,7 @@ export async function validateFileAltTextLength({
   }
 
   submission.files.forEach((file) => {
-    if (
-      !file.metadata.altText ||
-      isFileFiltered(file, submission, websiteInstance)
-    ) {
+    if (!file.metadata.altText || !isFileSupported(websiteInstance, file)) {
       return;
     }
 

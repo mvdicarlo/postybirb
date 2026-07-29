@@ -11,13 +11,10 @@ import {
     MS_WORD_MIME_TYPE,
     PDF_MIME_TYPE,
 } from '@mantine/dropzone';
-import { FileType } from '@postybirb/types';
-import { getFileType } from '@postybirb/utils/file-type';
 import { IconPhoto, IconUpload, IconX } from '@tabler/icons-react';
 import { useState } from 'react';
 import fileSubmissionApi from '../../../../../api/file-submission.api';
 import {
-    showErrorNotification,
     showUploadErrorNotification,
     showWarningNotification,
 } from '../../../../../utils/notifications';
@@ -39,62 +36,19 @@ const AUDIO_MIME_TYPES = ['audio/*'];
 
 const MAX_SIZE = 100 * 1024 * 1024; // 100MB
 
-/**
- * Gets a human-readable label for a FileType.
- */
-function getFileTypeLabel(fileType: FileType): string {
-  switch (fileType) {
-    case FileType.IMAGE:
-      return 'image';
-    case FileType.VIDEO:
-      return 'video';
-    case FileType.AUDIO:
-      return 'audio';
-    case FileType.TEXT:
-      return 'text';
-    default:
-      return 'unknown';
-  }
-}
-
 export function FileUploader() {
   const { submission } = useSubmissionEditCardContext();
   const [uploading, setUploading] = useState(false);
 
-  // Get the existing file type if there are files
-  const existingFileType =
-    submission.files.length > 0
-      ? getFileType(submission.files[0].fileName)
-      : null;
-
   const handleDrop = async (files: FileWithPath[]) => {
     if (files.length === 0) return;
-
-    // Check file type compatibility before uploading
-    if (existingFileType) {
-      const incompatibleFiles = files.filter(
-        (file) => getFileType(file.name) !== existingFileType
-      );
-
-      if (incompatibleFiles.length > 0) {
-        const newFileType = getFileType(incompatibleFiles[0].name);
-        showErrorNotification(
-          <Trans>
-            Cannot add {getFileTypeLabel(newFileType)} files to a submission
-            containing {getFileTypeLabel(existingFileType)} files. All files in
-            a submission must be of the same type.
-          </Trans>
-        );
-        return;
-      }
-    }
 
     setUploading(true);
     try {
       await fileSubmissionApi.appendFiles(submission.id, 'file', files);
     } catch (error) {
       showUploadErrorNotification(
-        error instanceof Error ? error.message : undefined
+        error instanceof Error ? error.message : undefined,
       );
     } finally {
       setUploading(false);
@@ -103,7 +57,9 @@ export function FileUploader() {
 
   const handleReject = () => {
     showWarningNotification(
-      <Trans>Some files were rejected. Check file type and size (max 100MB).</Trans>
+      <Trans>
+        Some files were rejected. Check file type and size (max 100MB).
+      </Trans>,
     );
   };
 

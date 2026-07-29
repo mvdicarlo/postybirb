@@ -1,6 +1,6 @@
 import { ISubmissionFile, WebsiteFileOptions } from '@postybirb/types';
 import {
-  getFileType,
+  getFileTypeFromFile,
   getFileTypeFromMimeType,
 } from '@postybirb/utils/file-type';
 import { parse } from 'path';
@@ -50,6 +50,51 @@ export function SupportsFiles(
   };
 }
 
+export function isFileTypeSupported(
+  instance: UnknownWebsite,
+  file: Pick<ISubmissionFile, 'fileName' | 'mimeType'>,
+): boolean {
+  const supportedFileTypes =
+    instance.decoratedProps.fileOptions?.supportedFileTypes ?? [];
+
+  return (
+    supportedFileTypes.length === 0 ||
+    supportedFileTypes.includes(getFileTypeFromFile(file))
+  );
+}
+
+export type FileFilterReason = 'ignored' | 'unsupported-file-type';
+
+type FileFilterCandidate = Pick<ISubmissionFile, 'fileName' | 'mimeType'> & {
+  metadata?: {
+    ignoredWebsites?: readonly string[];
+  };
+};
+
+export function getFileFilterReason(
+  instance: UnknownWebsite,
+  file: FileFilterCandidate,
+  accountId: string = instance.accountId,
+): FileFilterReason | undefined {
+  if (file.metadata?.ignoredWebsites?.includes(accountId)) {
+    return 'ignored';
+  }
+
+  if (!isFileTypeSupported(instance, file)) {
+    return 'unsupported-file-type';
+  }
+
+  return undefined;
+}
+
+export function isFileSupported(
+  instance: UnknownWebsite,
+  file: FileFilterCandidate,
+  accountId: string = instance.accountId,
+): boolean {
+  return getFileFilterReason(instance, file, accountId) === undefined;
+}
+
 export function getSupportedFileSize(
   instance: UnknownWebsite,
   file: ISubmissionFile,
@@ -69,7 +114,7 @@ export function getSupportedFileSize(
     limits[file.mimeType] ??
     limits[`${file.mimeType.split('/')[0]}/*`] ??
     limits[parse(file.fileName).ext] ??
-    limits[getFileType(file.fileName)] ??
+    limits[getFileTypeFromFile(file)] ??
     limits['*'] ??
     Number.MAX_SAFE_INTEGER
   );

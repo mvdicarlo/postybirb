@@ -9,11 +9,11 @@
 /* eslint-disable no-param-reassign */ // the planner builds the job tree in place
 
 import {
-  Dependency,
-  NodeStatus,
-  PostRecordResumeMode,
-  SubmissionType,
-  UnitKind,
+    Dependency,
+    NodeStatus,
+    PostRecordResumeMode,
+    SubmissionType,
+    UnitKind,
 } from '@postybirb/types';
 import { SOURCE_DEPENDENCY_MODES } from './constants';
 import { RelayJob, RelayTask, RelayUnit, isDone } from './model';
@@ -101,7 +101,7 @@ function buildTask(
 
   if (submission.type === SubmissionType.FILE) {
     const files = submission.files
-      .filter((f) => !f.ignoredWebsites?.includes(opt.accountId))
+      .filter((f) => site.isFileSupported(f))
       .sort((a, b) => a.order - b.order);
     if (files.length === 0) {
       task.status = NodeStatus.SKIPPED;
@@ -169,8 +169,11 @@ function wireSourceDependencies(job: RelayJob, deps: PipelineDeps): void {
     // Best-effort short-circuit: if the user already supplied a source URL on
     // every file this account will post, the site already has its sources and
     // has nothing to wait for — leave it ungated so it posts immediately.
-    if (allFilesHaveUserSourceUrls(submission, t.accountId)) continue;
-    t.dependency = buildSourceDependency(site.sourceDependencyMode, standardIds);
+    if (allFilesHaveUserSourceUrls(submission, site)) continue;
+    t.dependency = buildSourceDependency(
+      site.sourceDependencyMode,
+      standardIds,
+    );
   }
 }
 
@@ -181,13 +184,13 @@ function wireSourceDependencies(job: RelayJob, deps: PipelineDeps): void {
  */
 function allFilesHaveUserSourceUrls(
   submission: RelaySubmission,
-  accountId: string,
+  site: RelayWebsite,
 ): boolean {
   if (submission.type !== SubmissionType.FILE) return false;
-  const files = submission.files.filter(
-    (f) => !f.ignoredWebsites?.includes(accountId),
+  const files = submission.files.filter((f) => site.isFileSupported(f));
+  return (
+    files.length > 0 && files.every((f) => (f.sourceUrls?.length ?? 0) > 0)
   );
-  return files.length > 0 && files.every((f) => (f.sourceUrls?.length ?? 0) > 0);
 }
 
 /**

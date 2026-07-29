@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import {
-    FileType,
-    IFileBuffer,
-    ImageResizeProps,
-    ISubmissionFile,
+  FileType,
+  IFileBuffer,
+  ImageResizeProps,
+  ISubmissionFile,
 } from '@postybirb/types';
-import { getFileType } from '@postybirb/utils/file-type';
+import { getFileTypeFromFile } from '@postybirb/utils/file-type';
 import { SharpInstanceManager } from '../../../image-processing/sharp-instance-manager';
 import { PostingFile, ThumbnailOptions } from '../../models/posting-file';
 
@@ -88,7 +88,7 @@ export class PostFileResizerService {
   ): Promise<ThumbnailOptions | undefined> {
     let thumb = file.thumbnail;
     const shouldProcessThumbnail =
-      !!thumb || getFileType(file.fileName) === FileType.IMAGE;
+      !!thumb || getFileTypeFromFile(file) === FileType.IMAGE;
 
     if (!shouldProcessThumbnail) {
       return undefined;

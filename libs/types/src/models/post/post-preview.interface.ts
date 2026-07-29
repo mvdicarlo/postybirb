@@ -26,6 +26,8 @@ export interface PreviewFileResult {
   to?: PreviewFileDimensions;
   /** True when the file is ignored for this account. */
   excluded?: boolean;
+  /** True when the website does not support the file's broad type. */
+  filtered?: boolean;
   /** Set when processing this file failed (e.g. unsupported type). */
   error?: string;
 }

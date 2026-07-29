@@ -281,10 +281,7 @@ export async function runTaskPass(
   const base = taskTraceFields(job, task);
 
   /** Emit the standard "stage completed OK" debug trace line. */
-  const emitStageOk = (
-    stage: string,
-    data?: Record<string, unknown>,
-  ): void => {
+  const emitStageOk = (stage: string, data?: Record<string, unknown>): void => {
     tracer.emit({
       ...base,
       level: 'debug',
@@ -360,6 +357,13 @@ export async function runTaskPass(
       token,
       base,
     );
+
+    if (unit.kind === UnitKind.BATCH && postingFiles.length === 0) {
+      unit.status = NodeStatus.SKIPPED;
+      unit.error = undefined;
+      tracer.pushTaskDelta(job, task);
+      continue;
+    }
 
     // 7. Dispatch
     const result = await dispatchUnit(

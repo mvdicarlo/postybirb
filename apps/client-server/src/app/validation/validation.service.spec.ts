@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
+import { FileType, SubmissionType } from '@postybirb/types';
 import { FileConverterService } from '../file-converter/file-converter.service';
 import { FileModule } from '../file/file.module';
 import { FileService } from '../file/file.service';
@@ -20,7 +21,12 @@ describe('ValidationService', () => {
   beforeEach(async () => {
     clearDatabase();
     const module: TestingModule = await Test.createTestingModule({
-      imports: [TestPlatformModule, WebsitesModule, PostParsersModule, FileModule],
+      imports: [
+        TestPlatformModule,
+        WebsitesModule,
+        PostParsersModule,
+        FileModule,
+      ],
       providers: [
         WebsiteImplProvider,
         ValidationService,
@@ -39,5 +45,62 @@ describe('ValidationService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  it('filters unsupported files before website-specific validation', async () => {
+    const onValidateFileSubmission = jest.fn().mockResolvedValue({
+      warnings: [],
+      errors: [],
+    });
+    const website = {
+      accountId: 'account',
+      supportsFile: true,
+      account: { toDTO: jest.fn().mockReturnValue({}) },
+      decoratedProps: {
+        fileOptions: { supportedFileTypes: [FileType.IMAGE] },
+      },
+      onValidateFileSubmission,
+    };
+    const submission = {
+      id: 'submission',
+      type: SubmissionType.FILE,
+      files: [
+        {
+          id: 'image',
+          fileName: 'image.png',
+          metadata: { ignoredWebsites: [] },
+        },
+        {
+          id: 'video',
+          fileName: 'video.mp4',
+          metadata: { ignoredWebsites: [] },
+        },
+        {
+          id: 'ignored',
+          fileName: 'ignored.png',
+          metadata: { ignoredWebsites: ['account'] },
+        },
+      ],
+    };
+    const validateWebsiteInstance = (
+      service as unknown as {
+        validateWebsiteInstance: (
+          websiteId: string,
+          targetSubmission: unknown,
+          targetWebsite: unknown,
+          postData: unknown,
+        ) => Promise<unknown>;
+      }
+    ).validateWebsiteInstance.bind(service);
+
+    await validateWebsiteInstance('option', submission, website, {
+      submission,
+      options: {},
+    });
+
+    const [postData] = onValidateFileSubmission.mock.calls[0];
+    expect(
+      postData.submission.files.map((file: { id: string }) => file.id),
+    ).toEqual(['image']);
   });
 });

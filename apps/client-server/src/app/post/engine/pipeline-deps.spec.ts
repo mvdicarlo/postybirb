@@ -6,7 +6,7 @@
  * by verifying the bridge's own mapping and error-path logic in isolation.
  */
 
-import { SubmissionType } from '@postybirb/types';
+import { FileType, SubmissionType } from '@postybirb/types';
 import { CancellableToken } from '../models/cancellable-token';
 import { RelayJob, RelayTask } from './model';
 import { RelayPipelineDeps } from './pipeline-deps';
@@ -56,8 +56,9 @@ function makeDeps(): { deps: RelayPipelineDeps } & Mocks {
   // Replace the internally-instantiated repository with a controllable stub so
   // prepare() reads our hand-built submission rather than hitting the DB.
   const findById = jest.fn();
-  (deps as unknown as { submissionRepository: { findById: jest.Mock } })
-    .submissionRepository = { findById };
+  (
+    deps as unknown as { submissionRepository: { findById: jest.Mock } }
+  ).submissionRepository = { findById };
 
   return { deps, registry, postParsers, validation, fileProcessor, findById };
 }
@@ -94,7 +95,11 @@ function rawSubmission(over: Record<string, unknown> = {}) {
     files: [rawFile()],
     options: [
       { isDefault: true, accountId: 'def', account: { website: 'default' } },
-      { isDefault: false, accountId: 'a1', account: { website: 'furaffinity' } },
+      {
+        isDefault: false,
+        accountId: 'a1',
+        account: { website: 'furaffinity' },
+      },
       { isDefault: false, accountId: 'a2', account: { website: 'weasyl' } },
     ],
     ...over,
@@ -107,7 +112,9 @@ describe('RelayPipelineDeps (production adapter bridge)', () => {
       const { deps, findById } = makeDeps();
       findById.mockResolvedValue(undefined);
       const job = new RelayJob({ submissionId: 'missing' });
-      await expect(deps.prepare(job)).rejects.toThrow(/Submission missing not found/);
+      await expect(deps.prepare(job)).rejects.toThrow(
+        /Submission missing not found/,
+      );
     });
 
     it('maps submission fields and filters out the default option', async () => {
@@ -130,7 +137,9 @@ describe('RelayPipelineDeps (production adapter bridge)', () => {
 
     it('falls back to the submission id when getSubmissionName is absent', async () => {
       const { deps, findById } = makeDeps();
-      findById.mockResolvedValue(rawSubmission({ getSubmissionName: undefined }));
+      findById.mockResolvedValue(
+        rawSubmission({ getSubmissionName: undefined }),
+      );
       const job = new RelayJob({ submissionId: 's1' });
 
       const relay = await deps.prepare(job);
@@ -192,8 +201,9 @@ describe('RelayPipelineDeps (production adapter bridge)', () => {
       findById.mockResolvedValue(rawSubmission());
       const fa = makeWebsiteInstance();
       // Registry resolves a1 only; a2 has no live instance.
-      registry.findInstance.mockImplementation((account: { website: string }) =>
-        account.website === 'furaffinity' ? fa : undefined,
+      registry.findInstance.mockImplementation(
+        (account: { website: string }) =>
+          account.website === 'furaffinity' ? fa : undefined,
       );
       const job = new RelayJob({ submissionId: 's1' });
 
@@ -321,6 +331,36 @@ describe('RelayPipelineDeps (production adapter bridge)', () => {
       expect(postParsers.parse).toHaveBeenCalledTimes(1);
     });
 
+    it('parses with only files supported by the target website', async () => {
+      const { deps, registry, postParsers, findById } = makeDeps();
+      findById.mockResolvedValue(
+        rawSubmission({
+          files: [
+            rawFile(),
+            rawFile({ id: 'f2', fileName: 'clip.mp4', mimeType: 'video/mp4' }),
+          ],
+        }),
+      );
+      registry.findInstance.mockReturnValue(
+        makeWebsiteInstance({
+          decoratedProps: {
+            metadata: { name: 'furaffinity', displayName: 'FurAffinity' },
+            fileOptions: { supportedFileTypes: [FileType.IMAGE] },
+          },
+        }),
+      );
+      postParsers.parse.mockResolvedValue({});
+      const job = new RelayJob({ submissionId: 's1' });
+      await deps.prepare(job);
+
+      await deps.buildPostData(taskFor(job.id), []);
+
+      const [submission] = postParsers.parse.mock.calls[0];
+      expect(submission.files.map((file: { id: string }) => file.id)).toEqual([
+        'f1',
+      ]);
+    });
+
     it('throws when the account has no resolved instance/option', async () => {
       const { deps, registry, findById } = makeDeps();
       findById.mockResolvedValue(rawSubmission());
@@ -328,9 +368,9 @@ describe('RelayPipelineDeps (production adapter bridge)', () => {
       const job = new RelayJob({ submissionId: 's1' });
       await deps.prepare(job);
 
-      await expect(
-        deps.buildPostData(taskFor(job.id), []),
-      ).rejects.toThrow(/Missing instance\/options for a1/);
+      await expect(deps.buildPostData(taskFor(job.id), [])).rejects.toThrow(
+        /Missing instance\/options for a1/,
+      );
     });
   });
 
@@ -432,6 +472,35 @@ describe('RelayPipelineDeps (production adapter bridge)', () => {
       await expect(
         deps.processBatch(taskFor(job.id), ['f1'], [], new CancellableToken()),
       ).rejects.toThrow(/No instance for a1/);
+    });
+
+    it('does not process files whose broad type is unsupported', async () => {
+      const { deps, registry, fileProcessor, findById } = makeDeps();
+      findById.mockResolvedValue(
+        rawSubmission({
+          files: [rawFile({ fileName: 'clip.mp4', mimeType: 'video/mp4' })],
+        }),
+      );
+      registry.findInstance.mockReturnValue(
+        makeWebsiteInstance({
+          decoratedProps: {
+            metadata: { name: 'furaffinity', displayName: 'FurAffinity' },
+            fileOptions: { supportedFileTypes: [FileType.IMAGE] },
+          },
+        }),
+      );
+      const job = new RelayJob({ submissionId: 's1' });
+      await deps.prepare(job);
+
+      const result = await deps.processBatch(
+        taskFor(job.id),
+        ['f1'],
+        [],
+        new CancellableToken(),
+      );
+
+      expect(result).toEqual([]);
+      expect(fileProcessor.processBatch).not.toHaveBeenCalled();
     });
   });
 });

@@ -26,6 +26,7 @@ import { Logger } from '@postybirb/logger';
 import { FileSubmission, IWebsiteOptions } from '@postybirb/types';
 import { PostParsersService } from '../../post-parsers/post-parsers.service';
 import { ValidationService } from '../../validation/validation.service';
+import { isFileSupported } from '../../websites/decorators/supports-files.decorator';
 import { UnknownWebsite } from '../../websites/website';
 import { WebsiteRegistryService } from '../../websites/website-registry.service';
 import { CancellableToken } from '../models/cancellable-token';
@@ -119,19 +120,21 @@ export class RelayPipelineDeps implements PipelineDeps {
     const hadContext = this.contexts.has(jobId);
     this.contexts.delete(jobId);
     if (hadContext) {
-      this.logger.withMetadata({ jobId }).debug('Released Relay pipeline context');
+      this.logger
+        .withMetadata({ jobId })
+        .debug('Released Relay pipeline context');
     }
   }
 
-  private toSourceMeta(
-    f: SubmissionFile,
-  ): RelaySourceFile & {
+  private toSourceMeta(f: SubmissionFile): RelaySourceFile & {
     order: number;
     ignoredWebsites?: string[];
     sourceUrls?: string[];
   } {
     const dimensionOverrides: RelaySourceFile['dimensionOverrides'] = {};
-    for (const [accountId, dim] of Object.entries(f.metadata.dimensions ?? {})) {
+    for (const [accountId, dim] of Object.entries(
+      f.metadata.dimensions ?? {},
+    )) {
       dimensionOverrides[accountId] = { width: dim.width, height: dim.height };
     }
     return {
@@ -169,7 +172,11 @@ export class RelayPipelineDeps implements PipelineDeps {
     return this.context(jobId).relay;
   }
 
-  getWebsite(jobId: string, websiteId: string, accountId: string): RelayWebsite {
+  getWebsite(
+    jobId: string,
+    websiteId: string,
+    accountId: string,
+  ): RelayWebsite {
     const instance = this.context(jobId).instances.get(accountId);
     if (!instance) {
       throw new Error(`No website instance for ${websiteId}:${accountId}`);
@@ -180,7 +187,9 @@ export class RelayPipelineDeps implements PipelineDeps {
   async authenticate(task: RelayTask): Promise<void> {
     const instance = this.context(task.jobId).instances.get(task.accountId);
     if (!instance) {
-      throw new Error(`No website instance for ${task.websiteId}:${task.accountId}`);
+      throw new Error(
+        `No website instance for ${task.websiteId}:${task.accountId}`,
+      );
     }
     await new WebsiteInstanceAdapter(instance).ensureLoggedIn();
   }
@@ -195,8 +204,17 @@ export class RelayPipelineDeps implements PipelineDeps {
     if (!instance || !option) {
       throw new Error(`Missing instance/options for ${task.accountId}`);
     }
-    const postData = await this.postParsers.parse(
+    const effectiveSubmission = Object.assign(
+      Object.create(Object.getPrototypeOf(ctx.raw)),
       ctx.raw,
+      {
+        files: (ctx.raw.files ?? []).filter(
+          (file) => isFileSupported(instance, file, task.accountId),
+        ),
+      },
+    ) as Submission;
+    const postData = await this.postParsers.parse(
+      effectiveSubmission,
       instance,
       option as unknown as IWebsiteOptions,
     );
@@ -223,7 +241,12 @@ export class RelayPipelineDeps implements PipelineDeps {
 
     const files = fileIds
       .map((id) => ctx.files.get(id))
-      .filter((f): f is SubmissionFile => !!f);
+      .filter((f): f is SubmissionFile => !!f)
+      .filter((file) => isFileSupported(instance, file, task.accountId));
+
+    if (files.length === 0) {
+      return [];
+    }
 
     const { files: posting, info } = await this.fileProcessor.processBatch(
       instance,

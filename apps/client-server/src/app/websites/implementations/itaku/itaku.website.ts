@@ -15,7 +15,10 @@ import FileSize from '../../../utils/filesize.util';
 import { PostBuilder } from '../../commons/post-builder';
 import { validatorPassthru } from '../../commons/validator-passthru';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
-import { SupportsFiles } from '../../decorators/supports-files.decorator';
+import {
+  isFileSupported,
+  SupportsFiles,
+} from '../../decorators/supports-files.decorator';
 import { SupportsUsernameShortcut } from '../../decorators/supports-username-shortcut.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
@@ -297,8 +300,8 @@ export default class Itaku
 
     const { submission, options } = postData;
     if (!options.shareOnFeed) {
-      const filesToPost = submission.files.filter(
-        (file) => !file.metadata?.ignoredWebsites.includes(this.accountId),
+      const filesToPost = submission.files.filter((file) =>
+        isFileSupported(this, file),
       );
 
       if (filesToPost.length > 1) {

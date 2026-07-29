@@ -5,7 +5,7 @@ import {
   SubmissionFileId,
   SubmissionFileMetadata,
 } from '@postybirb/types';
-import { getFileType } from '@postybirb/utils/file-type';
+import { getFileTypeFromFile } from '@postybirb/utils/file-type';
 import { parse } from 'path';
 
 export type ThumbnailOptions = Pick<
@@ -50,7 +50,7 @@ export class PostingFile {
     this.mimeType = file.mimeType;
     this.width = file.width;
     this.height = file.height;
-    this.fileType = getFileType(file.fileName);
+    this.fileType = getFileTypeFromFile(file);
     this.fileName = this.normalizeFileName(file);
     this.thumbnail = thumbnail;
   }

@@ -1,13 +1,14 @@
-import { NodeStatus, PostErrorKind, PostRecordResumeMode, SubmissionType } from '@postybirb/types';
+import {
+  NodeStatus,
+  PostErrorKind,
+  PostRecordResumeMode,
+  SubmissionType,
+} from '@postybirb/types';
 import { CancellableToken } from '../models/cancellable-token';
 import { PostingFile } from '../models/posting-file';
 import { StageError } from './errors';
 import { RelayTask } from './model';
-import {
-  PipelineDeps,
-  RelayDispatchData,
-  RelaySubmission,
-} from './pipeline';
+import { PipelineDeps, RelayDispatchData, RelaySubmission } from './pipeline';
 import { MemoryRateStore, RateLimiter } from './rate-limiter';
 import { RelayScheduler } from './scheduler';
 import { RelayTracer } from './tracer.service';
@@ -26,6 +27,7 @@ function fileWebsite(over: Partial<RelayWebsite> = {}): RelayWebsite {
     minimumPostWaitInterval: over.minimumPostWaitInterval ?? 0,
     rateLimitScope: over.rateLimitScope ?? 'account',
     fileBatchSize: over.fileBatchSize ?? 1,
+    isFileSupported: over.isFileSupported ?? (() => true),
     acceptsExternalSourceUrls: over.acceptsExternalSourceUrls ?? false,
     sourceDependencyMode: over.sourceDependencyMode ?? 'all',
   };
@@ -56,6 +58,8 @@ class Harness implements PipelineDeps {
   /** Account ids that should fail authentication. */
   readonly authFailures = new Set<string>();
 
+  readonly filteredFileIds = new Set<string>();
+
   register(site: RelayWebsite): void {
     this.websites.set(site.id, site);
   }
@@ -80,7 +84,10 @@ class Harness implements PipelineDeps {
     task: RelayTask,
     upstreamSourceUrls: string[],
   ): Promise<RelayDispatchData> {
-    return { postData: { title: this.submission.title }, sourceUrls: upstreamSourceUrls };
+    return {
+      postData: { title: this.submission.title },
+      sourceUrls: upstreamSourceUrls,
+    };
   }
 
   async validate(): Promise<string[]> {
@@ -92,10 +99,16 @@ class Harness implements PipelineDeps {
     fileIds: string[],
   ): Promise<PostingFile[]> {
     // Mock: produce a posting file per id without real bytes.
-    return fileIds.map(
-      (id) =>
-        ({ id, fileName: `${id}.jpg`, mimeType: 'image/jpeg' }) as unknown as PostingFile,
-    );
+    return fileIds
+      .filter((id) => !this.filteredFileIds.has(id))
+      .map(
+        (id) =>
+          ({
+            id,
+            fileName: `${id}.jpg`,
+            mimeType: 'image/jpeg',
+          }) as unknown as PostingFile,
+      );
   }
 
   async dispatchFile(
@@ -125,9 +138,36 @@ function fileSubmission(): RelaySubmission {
     type: SubmissionType.FILE,
     title: 'Test',
     files: [
-      { id: 'f1', fileName: 'f1.jpg', mimeType: 'image/jpeg', width: 1200, height: 1200, bytes: 500_000, hash: 'h1', order: 0 },
-      { id: 'f2', fileName: 'f2.jpg', mimeType: 'image/jpeg', width: 1200, height: 1200, bytes: 500_000, hash: 'h2', order: 1 },
-      { id: 'f3', fileName: 'f3.jpg', mimeType: 'image/jpeg', width: 1200, height: 1200, bytes: 500_000, hash: 'h3', order: 2 },
+      {
+        id: 'f1',
+        fileName: 'f1.jpg',
+        mimeType: 'image/jpeg',
+        width: 1200,
+        height: 1200,
+        bytes: 500_000,
+        hash: 'h1',
+        order: 0,
+      },
+      {
+        id: 'f2',
+        fileName: 'f2.jpg',
+        mimeType: 'image/jpeg',
+        width: 1200,
+        height: 1200,
+        bytes: 500_000,
+        hash: 'h2',
+        order: 1,
+      },
+      {
+        id: 'f3',
+        fileName: 'f3.jpg',
+        mimeType: 'image/jpeg',
+        width: 1200,
+        height: 1200,
+        bytes: 500_000,
+        hash: 'h3',
+        order: 2,
+      },
     ],
     options: [
       { accountId: 'a_fa', websiteId: 'furaffinity' },
@@ -146,10 +186,18 @@ describe('Relay pipeline + scheduler (integration)', () => {
     h.register(fileWebsite({ id: 'furaffinity', fileBatchSize: 1 }));
     h.register(fileWebsite({ id: 'weasyl', fileBatchSize: 3 }));
     h.register(
-      fileWebsite({ id: 'bluesky', fileBatchSize: 4, acceptsExternalSourceUrls: true }),
+      fileWebsite({
+        id: 'bluesky',
+        fileBatchSize: 4,
+        acceptsExternalSourceUrls: true,
+      }),
     );
 
-    const sched = new RelayScheduler(h, { ...instant, maxConcurrentJobs: 2, maxConcurrentTasks: 4 });
+    const sched = new RelayScheduler(h, {
+      ...instant,
+      maxConcurrentJobs: 2,
+      maxConcurrentTasks: 4,
+    });
     const job = sched.enqueue(submission.id);
 
     const fa = job.tasks.find((t) => t.websiteId === 'furaffinity')!;
@@ -171,6 +219,75 @@ describe('Relay pipeline + scheduler (integration)', () => {
     expect((parseEntry?.data?.upstreamSourceUrls as string[]).length).toBe(2);
   });
 
+  it('filters unsupported broad file types before batching', async () => {
+    const submission = fileSubmission();
+    submission.options = [{ accountId: 'a_fa', websiteId: 'furaffinity' }];
+    submission.files.push({
+      id: 'f4',
+      fileName: 'clip.mp4',
+      mimeType: 'video/mp4',
+      width: 1200,
+      height: 1200,
+      bytes: 500_000,
+      hash: 'h4',
+      order: 1,
+    });
+    const h = new Harness(submission);
+    h.register(
+      fileWebsite({
+        id: 'furaffinity',
+        fileBatchSize: 2,
+        isFileSupported: (file) => !file.fileName.endsWith('.mp4'),
+      }),
+    );
+
+    const job = new RelayScheduler(h, instant).enqueue(submission.id);
+
+    expect(job.tasks[0].units.map((unit) => unit.fileIds)).toEqual([
+      ['f1', 'f2'],
+      ['f3'],
+    ]);
+  });
+
+  it('skips a website task when every file type is unsupported', () => {
+    const submission = fileSubmission();
+    submission.options = [{ accountId: 'a_fa', websiteId: 'furaffinity' }];
+    const h = new Harness(submission);
+    h.register(
+      fileWebsite({
+        id: 'furaffinity',
+        isFileSupported: () => false,
+      }),
+    );
+
+    const job = new RelayScheduler(h, instant).enqueue(submission.id);
+
+    expect(job.tasks[0].status).toBe(NodeStatus.SKIPPED);
+    expect(job.tasks[0].units).toEqual([]);
+  });
+
+  it('does not dispatch a legacy batch that becomes empty after filtering', async () => {
+    const submission = fileSubmission();
+    submission.files = [submission.files[0]];
+    submission.options = [{ accountId: 'a_fa', websiteId: 'furaffinity' }];
+    const h = new Harness(submission);
+    h.register(fileWebsite({ id: 'furaffinity' }));
+    h.filteredFileIds.add('f1');
+    let dispatched = 0;
+    h.behavior = () => {
+      dispatched += 1;
+      return {};
+    };
+
+    const scheduler = new RelayScheduler(h, instant);
+    const job = scheduler.enqueue(submission.id);
+    await scheduler.runToIdle();
+
+    expect(dispatched).toBe(0);
+    expect(job.tasks[0].units[0].status).toBe(NodeStatus.SKIPPED);
+    expect(job.status).toBe(NodeStatus.SUCCEEDED);
+  });
+
   it('retries a transient failure then succeeds', async () => {
     const submission = fileSubmission();
     submission.options = [{ accountId: 'a_fk', websiteId: 'flaky' }];
@@ -178,7 +295,11 @@ describe('Relay pipeline + scheduler (integration)', () => {
     h.register(fileWebsite({ id: 'flaky', fileBatchSize: 3 }));
     h.behavior = (w, _d, batchIndex, attempt) => {
       if (attempt === 1) {
-        throw new StageError({ kind: PostErrorKind.TRANSIENT, stage: 'dispatch', message: '503' });
+        throw new StageError({
+          kind: PostErrorKind.TRANSIENT,
+          stage: 'dispatch',
+          message: '503',
+        });
       }
       return { sourceUrl: `https://flaky/${batchIndex}` };
     };
@@ -216,7 +337,13 @@ describe('Relay pipeline + scheduler (integration)', () => {
     const submission = fileSubmission();
     submission.options = [{ accountId: 'a_fa', websiteId: 'furaffinity' }];
     const h = new Harness(submission);
-    h.register(fileWebsite({ id: 'furaffinity', fileBatchSize: 1, minimumPostWaitInterval: 50 }));
+    h.register(
+      fileWebsite({
+        id: 'furaffinity',
+        fileBatchSize: 1,
+        minimumPostWaitInterval: 50,
+      }),
+    );
 
     const sched = new RelayScheduler(h, { ...instant });
     const job = sched.enqueue(submission.id);
@@ -264,7 +391,11 @@ describe('Relay pipeline + scheduler (integration)', () => {
     // The first batch had already posted before the cancel landed.
     expect(job.tasks[0].units[0].status).toBe(NodeStatus.SUCCEEDED);
     // Remaining batches are cancelled, not left dangling.
-    expect(job.tasks[0].units.slice(1).every((u) => u.status === NodeStatus.CANCELLED)).toBe(true);
+    expect(
+      job.tasks[0].units
+        .slice(1)
+        .every((u) => u.status === NodeStatus.CANCELLED),
+    ).toBe(true);
   });
 
   it('resume (CONTINUE) re-runs only non-done units', async () => {
@@ -276,7 +407,11 @@ describe('Relay pipeline + scheduler (integration)', () => {
     let recovered = false;
     h.behavior = (w, _d, batchIndex) => {
       if (!recovered && batchIndex > 0) {
-        throw new StageError({ kind: PostErrorKind.TRANSIENT, stage: 'dispatch', message: 'down' });
+        throw new StageError({
+          kind: PostErrorKind.TRANSIENT,
+          stage: 'dispatch',
+          message: 'down',
+        });
       }
       return { sourceUrl: `https://dtu/${batchIndex}-${Math.random()}` };
     };
@@ -304,7 +439,13 @@ describe('Relay pipeline + scheduler (integration)', () => {
     const submission = fileSubmission();
     submission.options = [{ accountId: 'a_md', websiteId: 'mastodon' }];
     const h = new Harness(submission);
-    h.register(fileWebsite({ id: 'mastodon', supportsFile: false, supportsMessage: true } as Partial<RelayWebsite>));
+    h.register(
+      fileWebsite({
+        id: 'mastodon',
+        supportsFile: false,
+        supportsMessage: true,
+      } as Partial<RelayWebsite>),
+    );
     // override supportsFile false
     const sched = new RelayScheduler(h, instant);
     const job = sched.enqueue(submission.id);
@@ -364,7 +505,9 @@ describe('Relay pipeline + scheduler (integration)', () => {
     h.authenticate = async () => {
       authCalls += 1;
       if (authCalls === 1) {
-        throw Object.assign(new Error('socket hang up'), { code: 'ECONNRESET' });
+        throw Object.assign(new Error('socket hang up'), {
+          code: 'ECONNRESET',
+        });
       }
     };
 
@@ -445,7 +588,12 @@ describe('Relay pipeline + scheduler (integration)', () => {
     h.register(fileWebsite({ id: 'weasyl', fileBatchSize: 3 }));
     h.register(fileWebsite({ id: 'furaffinity', fileBatchSize: 3 }));
     h.register(
-      fileWebsite({ id: 'crosspost', fileBatchSize: 3, acceptsExternalSourceUrls: true, sourceDependencyMode: 'any' }),
+      fileWebsite({
+        id: 'crosspost',
+        fileBatchSize: 3,
+        acceptsExternalSourceUrls: true,
+        sourceDependencyMode: 'any',
+      }),
     );
 
     const sched = new RelayScheduler(h, instant);
