@@ -1,28 +1,28 @@
 import {
-    BadRequestException,
-    Inject,
-    Injectable,
-    NotFoundException,
-    OnModuleDestroy,
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+  OnModuleDestroy,
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Account, AccountRepository, WebsiteDataRepository } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import { PlatformService } from '@postybirb/platform';
 import {
-    DynamicObject,
-    IAccount,
-    IAccountDto,
-    IWebsiteDefinitionDto,
-    OAuthRoutes,
+  DynamicObject,
+  IAccount,
+  IAccountDto,
+  IWebsiteDefinitionDto,
+  OAuthRoutes,
 } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/common';
 import { Class } from 'type-fest';
 import { publishAccountStateChanged } from '../account/account.events';
 import { WEBSITE_IMPLEMENTATIONS } from '../constants';
 import {
-    cloneWebsiteFileOptions,
-    validateWebsiteDecoratorProps,
+  cloneWebsiteFileOptions,
+  validateWebsiteDecoratorProps,
 } from './decorators/website-decorator-props';
 import { OAuthWebsiteRequestDto } from './dtos/oauth-website-request.dto';
 import DefaultWebsite from './implementations/default/default.website';

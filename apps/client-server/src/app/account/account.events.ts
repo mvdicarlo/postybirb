@@ -1,34 +1,39 @@
-/* eslint-disable max-classes-per-file */
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { ACCOUNT_DELTA } from '@postybirb/socket-events';
 import { AccountId, IAccountDto } from '@postybirb/types';
-import { EntityDeltaEvent } from '../common/events/entity-crud.events';
+import {
+	EntityDeltaDescriptor,
+	EntityDeltaEvent,
+	getEntityCrudEventNames,
+	publishEntityRemoved,
+	publishEntityUpdated,
+} from '../common/events/entity-crud.events';
 
-export const ACCOUNT_STATE_CHANGED = 'account.state-changed';
+export const ACCOUNT_EVENTS: EntityDeltaDescriptor = {
+	prefix: 'account',
+	delta: ACCOUNT_DELTA,
+};
 
-export const ACCOUNT_REMOVED = 'account.removed';
+export const ACCOUNT_EVENT_PREFIX = ACCOUNT_EVENTS.prefix;
 
-export class AccountStateChangedEvent {
-	constructor(public readonly account: IAccountDto) {}
-}
+const ACCOUNT_EVENT_NAMES = getEntityCrudEventNames(ACCOUNT_EVENT_PREFIX);
+
+export const ACCOUNT_STATE_CHANGED = ACCOUNT_EVENT_NAMES.updated;
+
+export const ACCOUNT_REMOVED = ACCOUNT_EVENT_NAMES.removed;
 
 export function publishAccountStateChanged(
 	eventEmitter: EventEmitter2 | undefined,
 	account: IAccountDto,
 ): void {
-	eventEmitter?.emit(ACCOUNT_STATE_CHANGED, [
-		new AccountStateChangedEvent(account),
-	]);
-}
-
-export class AccountRemovedEvent {
-	constructor(public readonly accountId: AccountId) {}
+	publishEntityUpdated(eventEmitter, ACCOUNT_EVENT_PREFIX, account);
 }
 
 export function publishAccountRemoved(
 	eventEmitter: EventEmitter2 | undefined,
 	accountId: AccountId,
 ): void {
-	eventEmitter?.emit(ACCOUNT_REMOVED, [new AccountRemovedEvent(accountId)]);
+	publishEntityRemoved(eventEmitter, ACCOUNT_EVENT_PREFIX, accountId);
 }
 
 export type AccountEventTypes = EntityDeltaEvent<IAccountDto>;

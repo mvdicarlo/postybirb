@@ -2,9 +2,9 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Account, AccountRepository, clearDatabase } from '@postybirb/database';
 import {
-    ACCOUNT_STATE_CHANGED,
-    AccountStateChangedEvent,
+  ACCOUNT_STATE_CHANGED,
 } from '../account/account.events';
+import { EntityUpdatedEvent } from '../common/events/entity-crud.events';
 import { noopPlatformProvider } from '../platform/testing/noop-platform-providers';
 import { waitUntil } from '../utils/wait.util';
 import { WebsiteImplProvider } from './implementations/provider';
@@ -107,7 +107,7 @@ describe('WebsiteRegistryService', () => {
       10,
     );
     expect(emit).toHaveBeenCalledWith(ACCOUNT_STATE_CHANGED, [
-      new AccountStateChangedEvent(
+      new EntityUpdatedEvent(
         expect.objectContaining({ id: account.id }) as never,
       ),
     ]);

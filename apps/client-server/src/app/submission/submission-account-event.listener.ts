@@ -8,9 +8,11 @@ import { Mutex } from 'async-mutex';
 import {
     ACCOUNT_REMOVED,
     ACCOUNT_STATE_CHANGED,
-    AccountRemovedEvent,
-    AccountStateChangedEvent,
 } from '../account/account.events';
+import {
+    EntityRemovedEvent,
+    EntityUpdatedEvent,
+} from '../common/events/entity-crud.events';
 import { UnknownWebsite } from '../websites/website';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { SubmissionEventPublisher } from './submission-event.publisher';
@@ -66,9 +68,9 @@ export class SubmissionAccountEventListener implements OnModuleInit {
   private ready = false;
 
   @OnEvent(ACCOUNT_STATE_CHANGED)
-  private accountChanged(events: AccountStateChangedEvent[]): void {
+  private accountChanged(events: EntityUpdatedEvent<IAccountDto>[]): void {
     events.forEach((event) => {
-      this.handleAccountChanged(event.account).catch((error) => {
+      this.handleAccountChanged(event.entity).catch((error) => {
         this.logger
           .withError(error)
           .error('Failed to handle Account form change');
@@ -77,10 +79,10 @@ export class SubmissionAccountEventListener implements OnModuleInit {
   }
 
   @OnEvent(ACCOUNT_REMOVED)
-  private accountRemoved(events: AccountRemovedEvent[]): void {
+  private accountRemoved(events: EntityRemovedEvent[]): void {
     events.forEach((event) => {
-      this.fingerprints.delete(event.accountId);
-      this.locks.delete(event.accountId);
+      this.fingerprints.delete(event.id);
+      this.locks.delete(event.id);
     });
   }
 

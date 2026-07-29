@@ -2,15 +2,17 @@ import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Account, clearDatabase } from '@postybirb/database';
 import { NULL_ACCOUNT_ID } from '@postybirb/types';
+import {
+  EntityRemovedEvent,
+  EntityUpdatedEvent,
+} from '../common/events/entity-crud.events';
 import { noopPlatformProvider } from '../platform/testing/noop-platform-providers';
 import { waitUntil } from '../utils/wait.util';
 import { WebsiteImplProvider } from '../websites/implementations/provider';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import {
-    ACCOUNT_REMOVED,
-    ACCOUNT_STATE_CHANGED,
-    AccountRemovedEvent,
-    AccountStateChangedEvent,
+  ACCOUNT_REMOVED,
+  ACCOUNT_STATE_CHANGED,
 } from './account.events';
 import { AccountService } from './account.service';
 import { CreateAccountDto } from './dtos/create-account.dto';
@@ -180,7 +182,7 @@ describe('AccountsService', () => {
       10,
     );
     expect(emit).toHaveBeenCalledWith(ACCOUNT_STATE_CHANGED, [
-      new AccountStateChangedEvent(
+      new EntityUpdatedEvent(
         expect.objectContaining({ id: account.id }) as never,
       ),
     ]);
@@ -200,7 +202,7 @@ describe('AccountsService', () => {
       10,
     );
     expect(emit).toHaveBeenCalledWith(ACCOUNT_STATE_CHANGED, [
-      new AccountStateChangedEvent(
+      new EntityUpdatedEvent(
         expect.objectContaining({ id: updated.id, name: 'Updated' }) as never,
       ),
     ]);
@@ -209,7 +211,7 @@ describe('AccountsService', () => {
     emit.mockClear();
     await service.remove(account.id);
     expect(emit).toHaveBeenCalledWith(ACCOUNT_REMOVED, [
-      new AccountRemovedEvent(account.id),
+      new EntityRemovedEvent(account.id),
     ]);
     expect(await service.findAll()).toHaveLength(0);
   });
