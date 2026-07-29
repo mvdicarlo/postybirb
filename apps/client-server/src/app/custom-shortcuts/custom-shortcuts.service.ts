@@ -1,7 +1,6 @@
 import { Injectable, Optional } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CustomShortcut, CustomShortcutRepository } from '@postybirb/database';
-import { EntityId } from '@postybirb/types';
 import { eq } from 'drizzle-orm';
 import { PostyBirbService } from '../common/service/postybirb-service';
 import { CUSTOM_SHORTCUT_EVENT_PREFIX } from './custom-shortcut.events';
@@ -40,10 +39,5 @@ export class CustomShortcutsService extends PostyBirbService<CustomShortcutRepos
     const entity = await this.repository.update(id, updateCustomShortcutDto);
     this.publishUpdated(entity.toDTO());
     return entity;
-  }
-
-  public override async remove(id: EntityId): Promise<void> {
-    await this.repository.findByIdOrThrow(id);
-    await super.remove(id);
   }
 }
