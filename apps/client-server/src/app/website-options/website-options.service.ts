@@ -5,7 +5,6 @@ import {
     Injectable,
     NotFoundException,
     OnModuleInit,
-    Optional,
 } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { Account, CustomShortcutRepository, Insert, Submission, SubmissionRepository, WebsiteOptions, WebsiteOptionsRepository } from '@postybirb/database';
@@ -69,8 +68,7 @@ export class WebsiteOptionsService
     private readonly validationService: ValidationService,
     private readonly postParsersService: PostParsersService,
     private readonly websiteRegistry: WebsiteRegistryService,
-    @Optional()
-    private readonly submissionEventPublisher?: SubmissionEventPublisher,
+    private readonly submissionEventPublisher: SubmissionEventPublisher,
   ) {
     super(new WebsiteOptionsRepository());
   }

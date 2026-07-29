@@ -1,7 +1,6 @@
 import {
     Injectable,
     InternalServerErrorException,
-    Optional,
 } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import {
@@ -38,8 +37,7 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
   constructor(
     private readonly settingsService: SettingsService,
     private readonly relayPostManager: RelayPostManager,
-    @Optional()
-    private readonly submissionEventPublisher?: SubmissionEventPublisher,
+    private readonly submissionEventPublisher: SubmissionEventPublisher,
   ) {
     super(new PostQueueRecordRepository());
   }

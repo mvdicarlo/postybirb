@@ -2,7 +2,6 @@ import {
   BadRequestException,
   Injectable,
   OnModuleInit,
-  Optional,
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
@@ -37,7 +36,7 @@ export class AccountService
 
   constructor(
     private readonly websiteRegistry: WebsiteRegistryService,
-    @Optional() private readonly eventEmitter?: EventEmitter2,
+    private readonly eventEmitter: EventEmitter2,
   ) {
     super(new AccountRepository());
   }

@@ -1,3 +1,4 @@
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Account, AccountRepository, clearDatabase, saveFromEntity, WebsiteDataRepository } from '@postybirb/database';
 import { PlatformService } from '@postybirb/platform';
@@ -20,6 +21,7 @@ describe('Website', () => {
   beforeEach(async () => {
     clearDatabase();
     module = await Test.createTestingModule({
+      imports: [EventEmitterModule.forRoot()],
       providers: [
         WebsiteRegistryService,
         WebsiteImplProvider,

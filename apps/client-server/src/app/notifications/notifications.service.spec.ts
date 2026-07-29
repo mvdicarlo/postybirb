@@ -107,13 +107,4 @@ describe('NotificationsService', () => {
       [new EntityRemovedEvent(notification.id)],
     );
   });
-
-  it('should initialize without an event emitter and not throw', () => {
-    const serviceWithoutEmitter = new NotificationsService(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      undefined as any,
-      noopPlatform,
-    );
-    expect(serviceWithoutEmitter).toBeDefined();
-  });
 });

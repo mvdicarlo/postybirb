@@ -1,4 +1,4 @@
-import { Injectable, Optional } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CustomShortcut, CustomShortcutRepository } from '@postybirb/database';
 import { eq } from 'drizzle-orm';
@@ -9,7 +9,7 @@ import { UpdateCustomShortcutDto } from './dtos/update-custom-shortcut.dto';
 
 @Injectable()
 export class CustomShortcutsService extends PostyBirbService<CustomShortcutRepository> {
-  constructor(@Optional() eventEmitter?: EventEmitter2) {
+  constructor(eventEmitter: EventEmitter2) {
     super(new CustomShortcutRepository());
     this.configureCrudEvents(CUSTOM_SHORTCUT_EVENT_PREFIX, eventEmitter);
   }

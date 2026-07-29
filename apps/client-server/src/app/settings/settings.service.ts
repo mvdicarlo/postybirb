@@ -1,16 +1,15 @@
 import {
-  BadRequestException,
-  Injectable,
-  OnModuleInit,
-  Optional,
+    BadRequestException,
+    Injectable,
+    OnModuleInit,
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Settings, SettingsRepository } from '@postybirb/database';
 import { EntityId, SettingsConstants } from '@postybirb/types';
 import {
-  isLinux,
-  StartupOptions,
-  StartupOptionsManager,
+    isLinux,
+    StartupOptions,
+    StartupOptionsManager,
 } from '@postybirb/utils/common';
 import { eq } from 'drizzle-orm';
 import { PostyBirbService } from '../common/service/postybirb-service';
@@ -22,7 +21,7 @@ export class SettingsService
   extends PostyBirbService<SettingsRepository>
   implements OnModuleInit
 {
-  constructor(@Optional() eventEmitter?: EventEmitter2) {
+  constructor(eventEmitter: EventEmitter2) {
     super(new SettingsRepository());
     this.configureCrudEvents(SETTINGS_EVENT_PREFIX, eventEmitter);
   }

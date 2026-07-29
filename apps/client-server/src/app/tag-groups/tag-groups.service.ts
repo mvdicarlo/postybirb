@@ -1,4 +1,4 @@
-import { Injectable, Optional } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { TagGroup, TagGroupRepository } from '@postybirb/database';
 import { EntityId } from '@postybirb/types';
@@ -10,7 +10,7 @@ import { TAG_GROUP_EVENT_PREFIX } from './tag-group.events';
 
 @Injectable()
 export class TagGroupsService extends PostyBirbService<TagGroupRepository> {
-  constructor(@Optional() eventEmitter?: EventEmitter2) {
+  constructor(eventEmitter: EventEmitter2) {
     super(new TagGroupRepository());
     this.configureCrudEvents(TAG_GROUP_EVENT_PREFIX, eventEmitter);
   }

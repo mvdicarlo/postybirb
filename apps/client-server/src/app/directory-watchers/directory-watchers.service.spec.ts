@@ -1,4 +1,4 @@
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
 import { DirectoryWatcherImportAction, SubmissionType } from '@postybirb/types';
@@ -47,7 +47,12 @@ describe('DirectoryWatchersService', () => {
     (writeFile as jest.Mock).mockResolvedValue(undefined);
 
     module = await Test.createTestingModule({
-      imports: [TestPlatformModule, SubmissionModule, NotificationsModule],
+      imports: [
+        EventEmitterModule.forRoot(),
+        TestPlatformModule,
+        SubmissionModule,
+        NotificationsModule,
+      ],
       providers: [
         DirectoryWatchersService,
         { provide: EventEmitter2, useValue: { emit } },

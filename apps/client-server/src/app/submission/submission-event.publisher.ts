@@ -1,4 +1,4 @@
-import { Inject, Injectable, Optional } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SubmissionId } from '@postybirb/types';
 import {
@@ -10,8 +10,7 @@ import {
 export class SubmissionEventPublisher {
   constructor(
     @Inject(EventEmitter2)
-    @Optional()
-    private readonly eventEmitter: EventEmitter2 | undefined,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   markChanged(

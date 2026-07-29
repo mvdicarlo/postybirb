@@ -1,3 +1,4 @@
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
 import {
@@ -47,6 +48,7 @@ describe('PostQueueService', () => {
 
     module = await Test.createTestingModule({
       imports: [
+        EventEmitterModule.forRoot(),
         TestPlatformModule,
         SubmissionModule,
         AccountModule,

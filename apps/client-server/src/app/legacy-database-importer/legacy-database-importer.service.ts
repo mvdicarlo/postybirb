@@ -1,4 +1,4 @@
-import { Injectable, Optional } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { DatabaseEntity } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
@@ -29,8 +29,7 @@ export class LegacyDatabaseImporterService {
     private readonly accountService: AccountService,
     private readonly eventEmitter: EventEmitter2,
     platform: PlatformService,
-    @Optional()
-    private readonly submissionEventPublisher?: SubmissionEventPublisher,
+    private readonly submissionEventPublisher: SubmissionEventPublisher,
   ) {
     this.LEGACY_POSTYBIRB_PLUS_PATH = join(
       platform.app.getPath('documents'),

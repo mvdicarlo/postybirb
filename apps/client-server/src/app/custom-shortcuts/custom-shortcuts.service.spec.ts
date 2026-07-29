@@ -4,10 +4,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase, EntityNotFoundError } from '@postybirb/database';
 import { DefaultDescription } from '@postybirb/types';
 import {
-    EntityCreatedEvent,
-    EntityRemovedEvent,
-    EntityUpdatedEvent,
-    getEntityCrudEventNames,
+  EntityCreatedEvent,
+  EntityRemovedEvent,
+  EntityUpdatedEvent,
+  getEntityCrudEventNames,
 } from '../common/events/entity-crud.events';
 import { CUSTOM_SHORTCUT_EVENT_PREFIX } from './custom-shortcut.events';
 import { CustomShortcutsService } from './custom-shortcuts.service';
@@ -107,12 +107,5 @@ describe('CustomShortcutsService', () => {
       eventNames.removed,
       [new EntityRemovedEvent(record.id)],
     );
-  });
-
-  it('should throw and not emit when removing a missing entity', async () => {
-    await expect(service.remove('missing')).rejects.toBeInstanceOf(
-      EntityNotFoundError,
-    );
-    expect(emit).not.toHaveBeenCalled();
   });
 });

@@ -1,4 +1,4 @@
-import { Injectable, Optional } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { TagConverter, TagConverterRepository } from '@postybirb/database';
 import { DynamicObject, EntityId } from '@postybirb/types';
@@ -11,7 +11,7 @@ import { TAG_CONVERTER_EVENT_PREFIX } from './tag-converter.events';
 
 @Injectable()
 export class TagConvertersService extends PostyBirbService<TagConverterRepository> {
-  constructor(@Optional() eventEmitter?: EventEmitter2) {
+  constructor(eventEmitter: EventEmitter2) {
     super(new TagConverterRepository());
     this.configureCrudEvents(TAG_CONVERTER_EVENT_PREFIX, eventEmitter);
   }

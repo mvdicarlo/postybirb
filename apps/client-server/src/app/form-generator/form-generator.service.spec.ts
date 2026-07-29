@@ -1,3 +1,4 @@
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase, EntityNotFoundError } from '@postybirb/database';
 import { SubmissionType } from '@postybirb/types';
@@ -15,7 +16,12 @@ describe('FormGeneratorService', () => {
   beforeEach(async () => {
     clearDatabase();
     module = await Test.createTestingModule({
-      imports: [TestPlatformModule, AccountModule, WebsitesModule],
+      imports: [
+        EventEmitterModule.forRoot(),
+        TestPlatformModule,
+        AccountModule,
+        WebsitesModule,
+      ],
       providers: [FormGeneratorService],
     }).compile();
 

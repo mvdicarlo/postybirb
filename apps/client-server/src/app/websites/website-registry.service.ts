@@ -3,8 +3,7 @@ import {
     Inject,
     Injectable,
     NotFoundException,
-  OnModuleDestroy,
-    Optional,
+    OnModuleDestroy,
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Account, AccountRepository, WebsiteDataRepository } from '@postybirb/database';
@@ -22,8 +21,8 @@ import { Class } from 'type-fest';
 import { publishAccountStateChanged } from '../account/account.events';
 import { WEBSITE_IMPLEMENTATIONS } from '../constants';
 import {
-  cloneWebsiteFileOptions,
-  validateWebsiteDecoratorProps,
+    cloneWebsiteFileOptions,
+    validateWebsiteDecoratorProps,
 } from './decorators/website-decorator-props';
 import { OAuthWebsiteRequestDto } from './dtos/oauth-website-request.dto';
 import DefaultWebsite from './implementations/default/default.website';
@@ -68,7 +67,7 @@ export class WebsiteRegistryService implements OnModuleDestroy {
     @Inject(WEBSITE_IMPLEMENTATIONS)
     private readonly websiteImplementations: Class<UnknownWebsite>[],
     private readonly platform: PlatformService,
-    @Optional() private readonly eventEmitter?: EventEmitter2,
+    private readonly eventEmitter: EventEmitter2,
   ) {
     this.initializedPromise = new Promise<void>((resolve) => {
       this.initializedResolve = resolve;

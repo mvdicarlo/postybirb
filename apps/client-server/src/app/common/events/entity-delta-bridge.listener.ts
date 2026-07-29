@@ -34,12 +34,12 @@ export class EntityDeltaBridge implements OnModuleInit, OnModuleDestroy {
   }> = [];
 
   constructor(
-    @Optional() private readonly eventEmitter?: EventEmitter2,
+    private readonly eventEmitter: EventEmitter2,
     @Optional() private readonly webSocket?: WSGateway,
   ) {}
 
   onModuleInit(): void {
-    if (!this.eventEmitter || this.registrations.length) {
+    if (this.registrations.length) {
       return;
     }
 
@@ -49,12 +49,8 @@ export class EntityDeltaBridge implements OnModuleInit, OnModuleDestroy {
   }
 
   onModuleDestroy(): void {
-    if (!this.eventEmitter) {
-      return;
-    }
-
     this.registrations.forEach(({ event, handler }) =>
-      this.eventEmitter?.off(event, handler),
+      this.eventEmitter.off(event, handler),
     );
     this.registrations.length = 0;
   }
@@ -84,7 +80,7 @@ export class EntityDeltaBridge implements OnModuleInit, OnModuleDestroy {
 
   private register<T>(event: string, handler: (events: T[]) => void): void {
     const busHandler = handler as BusHandler;
-    this.eventEmitter?.on(event, busHandler);
+    this.eventEmitter.on(event, busHandler);
     this.registrations.push({ event, handler: busHandler });
   }
 

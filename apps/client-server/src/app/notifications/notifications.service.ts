@@ -1,4 +1,4 @@
-import { Injectable, Optional } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Notification, NotificationRepository } from '@postybirb/database';
@@ -22,12 +22,12 @@ export class NotificationsService extends PostyBirbService<NotificationRepositor
    *
    * @param settingsService - Service for accessing application settings
    * @param platform - Platform service for desktop notifications
-   * @param eventEmitter - Optional event emitter for CRUD event publication
+   * @param eventEmitter - Event emitter for CRUD event publication
    */
   constructor(
     private readonly settingsService: SettingsService,
     private readonly platform: PlatformService,
-    @Optional() eventEmitter?: EventEmitter2,
+    eventEmitter: EventEmitter2,
   ) {
     super(new NotificationRepository());
     this.configureCrudEvents(NOTIFICATION_EVENT_PREFIX, eventEmitter);

@@ -3,7 +3,6 @@ import {
     forwardRef,
     Inject,
     Injectable,
-    Optional,
 } from '@nestjs/common';
 import { SubmissionRepository } from '@postybirb/database';
 import {
@@ -43,8 +42,7 @@ export class FileSubmissionService
     private readonly fileService: FileService,
     @Inject(forwardRef(() => SubmissionService))
     private readonly submissionService: SubmissionService,
-    @Optional()
-    private readonly submissionEventPublisher?: SubmissionEventPublisher,
+    private readonly submissionEventPublisher: SubmissionEventPublisher,
   ) {
     super(new SubmissionRepository());
   }

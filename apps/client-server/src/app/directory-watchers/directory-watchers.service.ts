@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Optional } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { DirectoryWatcher, DirectoryWatcherRepository } from '@postybirb/database';
@@ -73,7 +73,7 @@ export class DirectoryWatchersService extends PostyBirbService<DirectoryWatcherR
   constructor(
     private readonly submissionService: SubmissionService,
     private readonly notificationService: NotificationsService,
-    @Optional() eventEmitter?: EventEmitter2,
+    eventEmitter: EventEmitter2,
   ) {
     super(new DirectoryWatcherRepository());
     this.configureCrudEvents(DIRECTORY_WATCHER_EVENT_PREFIX, eventEmitter);

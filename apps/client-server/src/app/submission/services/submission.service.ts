@@ -6,7 +6,6 @@ import {
     Injectable,
     NotFoundException,
     OnModuleInit,
-    Optional,
 } from '@nestjs/common';
 import {
     FileBufferSchema,
@@ -70,8 +69,7 @@ export class SubmissionService
     @Inject(forwardRef(() => FileSubmissionService))
     private readonly fileSubmissionService: FileSubmissionService,
     private readonly messageSubmissionService: MessageSubmissionService,
-    @Optional()
-    private readonly submissionEventPublisher?: SubmissionEventPublisher,
+    private readonly submissionEventPublisher: SubmissionEventPublisher,
   ) {
     super(new SubmissionRepository());
   }

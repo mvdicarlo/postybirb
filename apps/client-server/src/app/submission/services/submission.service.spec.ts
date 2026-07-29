@@ -1,4 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase, EntityNotFoundError } from '@postybirb/database';
 import { PostyBirbDirectories, writeSync } from '@postybirb/fs';
@@ -33,6 +34,7 @@ import { WebsiteRegistryService } from '../../websites/website-registry.service'
 import { WebsitesModule } from '../../websites/websites.module';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
 import { UpdateSubmissionDto } from '../dtos/update-submission.dto';
+import { SubmissionEventPublisher } from '../submission-event.publisher';
 import { FileSubmissionService } from './file-submission.service';
 import { MessageSubmissionService } from './message-submission.service';
 import { SubmissionService } from './submission.service';
@@ -55,6 +57,7 @@ describe('SubmissionService', () => {
     try {
       module = await Test.createTestingModule({
         imports: [
+          EventEmitterModule.forRoot(),
           TestPlatformModule,
           AccountModule,
           WebsitesModule,
@@ -73,6 +76,7 @@ describe('SubmissionService', () => {
           WebsiteRegistryService,
           ValidationService,
           WebsiteOptionsService,
+          SubmissionEventPublisher,
           WebsiteImplProvider,
           FileConverterService,
         ],

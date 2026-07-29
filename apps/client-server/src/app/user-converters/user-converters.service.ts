@@ -1,4 +1,4 @@
-import { Injectable, Optional } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { UserConverter, UserConverterRepository } from '@postybirb/database';
 import { DynamicObject, EntityId } from '@postybirb/types';
@@ -11,7 +11,7 @@ import { USER_CONVERTER_EVENT_PREFIX } from './user-converter.events';
 
 @Injectable()
 export class UserConvertersService extends PostyBirbService<UserConverterRepository> {
-  constructor(@Optional() eventEmitter?: EventEmitter2) {
+  constructor(eventEmitter: EventEmitter2) {
     super(new UserConverterRepository());
     this.configureCrudEvents(USER_CONVERTER_EVENT_PREFIX, eventEmitter);
   }
