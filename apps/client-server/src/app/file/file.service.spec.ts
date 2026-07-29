@@ -1,3 +1,4 @@
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase, FileBufferRepository, SubmissionFile, SubmissionFileRepository } from '@postybirb/database';
 import { PostyBirbDirectories, writeSync } from '@postybirb/fs';
@@ -20,6 +21,7 @@ import { CreateSubmissionDto } from '../submission/dtos/create-submission.dto';
 import { FileSubmissionService } from '../submission/services/file-submission.service';
 import { MessageSubmissionService } from '../submission/services/message-submission.service';
 import { SubmissionService } from '../submission/services/submission.service';
+import { SubmissionEventPublisher } from '../submission/submission-event.publisher';
 import { TagConvertersService } from '../tag-converters/tag-converters.service';
 import { UserConvertersService } from '../user-converters/user-converters.service';
 import { ValidationService } from '../validation/validation.service';
@@ -97,6 +99,7 @@ describe('FileService', () => {
   beforeEach(async () => {
     clearDatabase();
     module = await Test.createTestingModule({
+      imports: [EventEmitterModule.forRoot()],
       providers: [
         AccountTemplateDefaultsService,
         SubmissionService,
@@ -111,6 +114,7 @@ describe('FileService', () => {
         AccountService,
         WebsiteRegistryService,
         WebsiteOptionsService,
+        SubmissionEventPublisher,
         WebsiteImplProvider,
         PostParsersService,
         TagParserService,

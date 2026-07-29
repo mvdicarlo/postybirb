@@ -28,7 +28,9 @@ export function useSubmissionAccounts(): IAccountDto[] {
           groups: record.groups,
           state: record.state,
           data: record.data,
-          websiteInfo: record.websiteInfo,
+          instanceCapabilities: record.instanceCapabilities,
+          defaultFileTemplateId: record.defaultFileTemplateId,
+          defaultMessageTemplateId: record.defaultMessageTemplateId,
           createdAt: record.createdAt.toISOString(),
           updatedAt: record.updatedAt.toISOString(),
         } as IAccountDto;

@@ -2,7 +2,12 @@
  * AccountRecord - Concrete class for account data.
  */
 
-import type { AccountId, IAccountDto, ILoginState, IWebsiteInfo } from '@postybirb/types';
+import type {
+  AccountId,
+  IAccountDto,
+  IAccountInstanceCapabilities,
+  ILoginState,
+} from '@postybirb/types';
 import { BaseRecord } from './base-record';
 
 /**
@@ -14,7 +19,7 @@ export class AccountRecord extends BaseRecord {
   readonly groups: string[];
   readonly state: ILoginState;
   readonly data: unknown;
-  readonly websiteInfo: IWebsiteInfo;
+  readonly instanceCapabilities: IAccountInstanceCapabilities;
   readonly defaultFileTemplateId: AccountId | null;
   readonly defaultMessageTemplateId: AccountId | null;
 
@@ -25,7 +30,7 @@ export class AccountRecord extends BaseRecord {
     this.groups = dto.groups ?? [];
     this.state = dto.state;
     this.data = dto.data;
-    this.websiteInfo = dto.websiteInfo;
+    this.instanceCapabilities = dto.instanceCapabilities;
     this.defaultFileTemplateId = dto.defaultFileTemplateId ?? null;
     this.defaultMessageTemplateId = dto.defaultMessageTemplateId ?? null;
   }
@@ -58,11 +63,8 @@ export class AccountRecord extends BaseRecord {
     return this.state.username;
   }
 
-  /**
-   * Get the display name for the website.
-   */
   get websiteDisplayName(): string {
-    return this.websiteInfo.websiteDisplayName;
+    return this.instanceCapabilities.websiteDisplayName;
   }
 
   /**

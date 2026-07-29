@@ -66,6 +66,41 @@ export function defaultWebsiteDecoratorProps(): WebsiteDecoratorProps {
   };
 }
 
+export function cloneWebsiteDecoratorProps(
+  props: WebsiteDecoratorProps,
+): WebsiteDecoratorProps {
+  return {
+    ...props,
+    loginFlow: { ...props.loginFlow },
+    metadata: { ...props.metadata },
+    usernameShortcut: props.usernameShortcut
+      ? { ...props.usernameShortcut }
+      : undefined,
+    fileOptions: cloneWebsiteFileOptions(props.fileOptions),
+  };
+}
+
+export function cloneWebsiteFileOptions(
+  fileOptions?: WebsiteFileOptions,
+): WebsiteFileOptions | undefined {
+  if (!fileOptions) {
+    return undefined;
+  }
+  const { sourceDependencyMode } = fileOptions;
+  return {
+    ...fileOptions,
+    acceptedMimeTypes: [...fileOptions.acceptedMimeTypes],
+    supportedFileTypes: [...fileOptions.supportedFileTypes],
+    acceptedFileSizes: fileOptions.acceptedFileSizes
+      ? { ...fileOptions.acceptedFileSizes }
+      : undefined,
+    sourceDependencyMode:
+      typeof sourceDependencyMode === 'object'
+        ? { ...sourceDependencyMode }
+        : sourceDependencyMode,
+  };
+}
+
 /**
  * Injects basic website decorator properties into a website instance.
  *

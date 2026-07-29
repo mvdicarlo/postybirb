@@ -1,3 +1,4 @@
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
 import { FileConverterService } from '../file-converter/file-converter.service';
@@ -20,7 +21,13 @@ describe('ValidationService', () => {
   beforeEach(async () => {
     clearDatabase();
     const module: TestingModule = await Test.createTestingModule({
-      imports: [TestPlatformModule, WebsitesModule, PostParsersModule, FileModule],
+      imports: [
+        EventEmitterModule.forRoot(),
+        TestPlatformModule,
+        WebsitesModule,
+        PostParsersModule,
+        FileModule,
+      ],
       providers: [
         WebsiteImplProvider,
         ValidationService,

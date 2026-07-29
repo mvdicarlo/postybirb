@@ -1,32 +1,13 @@
 import type {
     EntityId,
     IAccount,
-    IAccountDto,
-    ILoginState,
-    SubmissionType,
+  IEntityDto,
 } from '@postybirb/types';
 import type { InferSelectModel } from 'drizzle-orm';
 import { HydrationContext } from '../repositories/base/hydration-context';
 import type { AccountSchema } from '../schemas';
 import { DatabaseEntity } from './database-entity';
 import { WebsiteData, type WebsiteDataRow } from './website-data.entity';
-
-/**
- * Minimal structural type for the runtime website instance attached to an
- * `Account` via `withWebsiteInstance`. The lib uses this local interface
- * rather than importing concrete website classes from `apps/client-server`.
- * All website implementations already satisfy this shape.
- */
-export interface AccountWebsiteInstanceLike {
-  getWebsiteData(): unknown;
-  getLoginState(): ILoginState;
-  getSupportedTypes(): SubmissionType[];
-  decoratedProps: {
-    metadata: {
-      displayName?: string;
-    };
-  };
-}
 
 /**
  * Row alias for `AccountSchema`. Optional `websiteData` relation; all
@@ -58,13 +39,6 @@ export class Account extends DatabaseEntity<IAccount> implements IAccount {
    */
   public websiteData!: WebsiteData;
 
-  /**
-   * Runtime website instance — NOT a database column. Attached via
-   * `withWebsiteInstance` and consumed by `toDTO` for the DTO payload.
-   * Excluded from `toObject` so it never leaks into serialized state.
-   */
-  public websiteInstance?: AccountWebsiteInstanceLike;
-
   constructor(init: Partial<IAccount> = {}) {
     super(init);
     Object.defineProperty(this, 'entitySchemaKey', {
@@ -93,28 +67,8 @@ export class Account extends DatabaseEntity<IAccount> implements IAccount {
     } as IAccount;
   }
 
-  public toDTO(): IAccountDto {
-    return {
-      ...this.toObject(),
-      data: (this.websiteInstance?.getWebsiteData() ?? {}) as IAccountDto['data'],
-      state: this.websiteInstance?.getLoginState() ?? {
-        status: 'idle',
-        isLoggedIn: false,
-        username: '',
-        pending: false,
-        lastUpdated: null,
-      },
-      websiteInfo: {
-        websiteDisplayName:
-          this.websiteInstance?.decoratedProps.metadata.displayName ?? '',
-        supports: this.websiteInstance?.getSupportedTypes() ?? [],
-      },
-    } as IAccountDto;
-  }
-
-  withWebsiteInstance(websiteInstance: AccountWebsiteInstanceLike | undefined): this {
-    this.websiteInstance = websiteInstance;
-    return this;
+  public toDTO(): IEntityDto<IAccount> {
+    return this.toObject() as IEntityDto<IAccount>;
   }
 
   static fromRow(

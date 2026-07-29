@@ -6,6 +6,7 @@
  * into the field `defaultValue`s the UI uses when creating new website options.
  */
 
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
 import {
@@ -31,6 +32,7 @@ import { CreateSubmissionDto } from '../submission/dtos/create-submission.dto';
 import { FileSubmissionService } from '../submission/services/file-submission.service';
 import { MessageSubmissionService } from '../submission/services/message-submission.service';
 import { SubmissionService } from '../submission/services/submission.service';
+import { SubmissionEventPublisher } from '../submission/submission-event.publisher';
 import { ValidationService } from '../validation/validation.service';
 import { WebsiteImplProvider } from '../websites/implementations/provider';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
@@ -66,6 +68,7 @@ describe('Account default template association', () => {
     clearDatabase();
     module = await Test.createTestingModule({
       imports: [
+        EventEmitterModule.forRoot(),
         TestPlatformModule,
         WebsitesModule,
         AccountModule,
@@ -84,6 +87,7 @@ describe('Account default template association', () => {
         WebsiteRegistryService,
         ValidationService,
         WebsiteOptionsService,
+        SubmissionEventPublisher,
         WebsiteImplProvider,
         FileConverterService,
       ],

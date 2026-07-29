@@ -5,7 +5,7 @@
  * All entity stores follow a similar pattern of loading, storing, and providing access to records.
  */
 
-import type { EntityId } from '@postybirb/types';
+import type { EntityDelta, EntityId } from '@postybirb/types';
 import type { StoreApi } from 'zustand';
 import { create } from 'zustand';
 import { useShallow } from 'zustand/shallow';
@@ -62,8 +62,8 @@ export interface CreateEntityStoreOptions<
 > {
   /** Name of the store for debugging */
   storeName: string;
-  /** Websocket event name to subscribe to for real-time updates (optional) */
-  websocketEvent?: string;
+  /** Websocket event name carrying incremental entity updates (optional) */
+  websocketDeltaEvent?: string;
   /**
    * Custom comparator to determine whether a record has changed.
    * Receives the existing record and the incoming DTO.
@@ -105,6 +105,19 @@ function shallowDiff(
     }
   }
   return Object.keys(changes).length > 0 ? changes : null;
+}
+
+function recordHasChanged<
+  TDto extends { updatedAt: string },
+  TRecord extends BaseRecord,
+>(
+  existing: TRecord,
+  dto: TDto,
+  hasChanged?: (existing: TRecord, newDto: TDto) => boolean,
+): boolean {
+  return hasChanged
+    ? hasChanged(existing, dto)
+    : dto.updatedAt !== existing.updatedAt.toISOString();
 }
 
 /**
@@ -155,9 +168,7 @@ export function diffRecords<
 
     if (existing) {
       // Determine if the record actually changed
-      const changed = hasChanged
-        ? hasChanged(existing, dto)
-        : dto.updatedAt !== existing.updatedAt.toISOString();
+      const changed = recordHasChanged(existing, dto, hasChanged);
 
       if (changed) {
         const newRecord = createRecord(dto);
@@ -224,6 +235,56 @@ export function diffRecords<
 }
 
 /**
+ * Apply incremental upserts and removals while preserving unaffected records.
+ */
+export function applyEntityDelta<
+  TDto extends { id: string; updatedAt: string },
+  TRecord extends BaseRecord,
+>(
+  existingMap: Map<EntityId, TRecord>,
+  delta: EntityDelta<TDto>,
+  createRecord: (dto: TDto) => TRecord,
+  hasChanged?: (existing: TRecord, newDto: TDto) => boolean,
+): { records: TRecord[]; recordsMap: Map<EntityId, TRecord> } | null {
+  const removedIds = new Set(delta.removedIds);
+  const upsertsById = new Map<EntityId, TDto>();
+  const recordsMap = new Map(existingMap);
+  let anyChanged = false;
+
+  // Last duplicate wins and is ordered by its last occurrence in the delta.
+  for (const dto of delta.upserts) {
+    upsertsById.delete(dto.id);
+    upsertsById.set(dto.id, dto);
+  }
+
+  for (const id of removedIds) {
+    anyChanged = recordsMap.delete(id) || anyChanged;
+  }
+
+  for (const [id, dto] of upsertsById) {
+    // The delta contract forbids overlap; removals win defensively if violated.
+    if (removedIds.has(id)) {
+      continue;
+    }
+
+    const existing = recordsMap.get(id);
+    if (!existing || recordHasChanged(existing, dto, hasChanged)) {
+      recordsMap.set(id, createRecord(dto));
+      anyChanged = true;
+    }
+  }
+
+  if (!anyChanged) {
+    return null;
+  }
+
+  return {
+    records: [...recordsMap.values()],
+    recordsMap,
+  };
+}
+
+/**
  * Factory function to create an entity store.
  *
  * @param fetchFn - Async function that fetches DTOs from the API
@@ -238,7 +299,7 @@ export function createEntityStore<
   createRecord: (dto: TDto) => TRecord,
   options: CreateEntityStoreOptions<TDto, TRecord>,
 ) {
-  const { storeName, websocketEvent, hasChanged } = options;
+  const { storeName, websocketDeltaEvent, hasChanged } = options;
 
   const initialState: BaseEntityState<TRecord> = {
     records: [],
@@ -251,6 +312,7 @@ export function createEntityStore<
   type StoreType = EntityStore<TRecord>;
   type SetState = StoreApi<StoreType>['setState'];
   type GetState = StoreApi<StoreType>['getState'];
+  let pendingDeltas: EntityDelta<TDto>[] | null = null;
 
   const storeCreator = (set: SetState, get: GetState): StoreType => ({
     ...initialState,
@@ -261,24 +323,45 @@ export function createEntityStore<
         return;
       }
 
+      pendingDeltas = [];
       set({ loadingState: 'loading', error: null });
 
       try {
         const dtos = await fetchFn();
-        const { recordsMap: existingMap } = get();
+        const currentState = get();
 
         // Use diffing on subsequent loads; on first load existingMap is empty so all records are new
         const diffResult = diffRecords(
-          existingMap,
+          currentState.recordsMap,
           dtos,
           createRecord,
           hasChanged,
           storeName,
         );
-        if (diffResult) {
+        let nextRecords = diffResult?.records ?? currentState.records;
+        let nextRecordsMap = diffResult?.recordsMap ?? currentState.recordsMap;
+
+        for (const delta of pendingDeltas) {
+          const deltaResult = applyEntityDelta(
+            nextRecordsMap,
+            delta,
+            createRecord,
+            hasChanged,
+          );
+          if (deltaResult) {
+            nextRecords = deltaResult.records;
+            nextRecordsMap = deltaResult.recordsMap;
+          }
+        }
+        pendingDeltas = null;
+
+        if (
+          nextRecords !== currentState.records ||
+          nextRecordsMap !== currentState.recordsMap
+        ) {
           set({
-            records: diffResult.records,
-            recordsMap: diffResult.recordsMap,
+            records: nextRecords,
+            recordsMap: nextRecordsMap,
             loadingState: 'loaded',
             lastLoadedAt: new Date(),
           });
@@ -290,6 +373,7 @@ export function createEntityStore<
         // eslint-disable-next-line no-console, lingui/no-unlocalized-strings
         console.debug(`[${storeName}] Loaded ${dtos.length} records`);
       } catch (err) {
+        pendingDeltas = null;
         const errorMessage =
           // eslint-disable-next-line lingui/no-unlocalized-strings
           err instanceof Error ? err.message : 'Unknown error';
@@ -325,32 +409,32 @@ export function createEntityStore<
 
   const store = create<StoreType>(storeCreator);
 
-  // Subscribe to websocket events if event name is provided
-  if (websocketEvent) {
-    AppSocket.on(websocketEvent, (dtos: TDto[]) => {
-      // eslint-disable-next-line no-console
-      console.debug(
-        `[${storeName}] Received ${dtos.length} records via websocket`,
-      );
-
-      const { recordsMap: existingMap } = store.getState();
-      const diffResult = diffRecords(
-        existingMap,
-        dtos,
+  if (websocketDeltaEvent) {
+    AppSocket.on(websocketDeltaEvent, (delta: EntityDelta<TDto>) => {
+      pendingDeltas?.push(delta);
+      const { recordsMap } = store.getState();
+      const result = applyEntityDelta(
+        recordsMap,
+        delta,
         createRecord,
         hasChanged,
-        storeName,
       );
 
-      if (diffResult) {
+      if (result) {
         store.setState({
-          records: diffResult.records,
-          recordsMap: diffResult.recordsMap,
+          records: result.records,
+          recordsMap: result.recordsMap,
           loadingState: 'loaded',
           lastLoadedAt: new Date(),
         });
       }
-      // If diffResult is null, nothing changed — skip setState entirely
+    });
+
+    let hasConnected = AppSocket.connected;
+    AppSocket.on('connect', () => {
+      const isReconnect = hasConnected;
+      hasConnected = true;
+      return isReconnect ? store.getState().loadAll() : undefined;
     });
   }
 

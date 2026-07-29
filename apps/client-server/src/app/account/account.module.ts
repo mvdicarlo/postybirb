@@ -6,7 +6,10 @@ import { AccountService } from './account.service';
 
 @Module({
   imports: [WebsitesModule],
-  providers: [AccountService, AccountTemplateDefaultsService],
+  providers: [
+    AccountService,
+    AccountTemplateDefaultsService,
+  ],
   controllers: [AccountController],
   exports: [AccountService, AccountTemplateDefaultsService],
 })
