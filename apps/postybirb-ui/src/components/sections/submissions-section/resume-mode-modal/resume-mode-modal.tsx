@@ -6,7 +6,7 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import { Button, Group, Modal, Radio, Stack, Text } from '@mantine/core';
 import { PostRecordResumeMode } from '@postybirb/types';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface ResumeModeModalProps {
   /** Whether the modal is open */
@@ -33,6 +33,10 @@ export function ResumeModeModal({
   const [selectedMode, setSelectedMode] = useState<PostRecordResumeMode>(
     PostRecordResumeMode.CONTINUE,
   );
+
+  useEffect(() => {
+    if (opened) setSelectedMode(PostRecordResumeMode.CONTINUE);
+  }, [opened]);
 
   const handleConfirm = () => {
     onConfirm(selectedMode);

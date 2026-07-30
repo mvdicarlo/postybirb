@@ -8,7 +8,12 @@ import {
     PostQueueRecordRepository,
     SubmissionRepository,
 } from '@postybirb/database';
-import { EntityId, ScheduleType, SubmissionId } from '@postybirb/types';
+import {
+    EntityId,
+    PostRecordResumeMode,
+    ScheduleType,
+    SubmissionId,
+} from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/common';
 import { Mutex } from 'async-mutex';
 import { Cron as CronGenerator } from 'croner';
@@ -33,6 +38,16 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
   private initTime = Date.now();
 
   private readonly submissionRepository = new SubmissionRepository();
+
+  /**
+   * Resume mode the user picked, held until the cycle that starts the job
+   * consumes it. In-memory on purpose: a restart should fall back to the
+   * default rather than replay a stale choice.
+   */
+  private readonly requestedResumeModes = new Map<
+    SubmissionId,
+    PostRecordResumeMode
+  >();
 
   constructor(
     private readonly settingsService: SettingsService,
@@ -67,8 +82,16 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
     await this.dequeue([id]);
   }
 
-  /** Enqueue submissions for posting (creates a queue record per submission). */
-  public async enqueue(submissionIds: SubmissionId[]) {
+  /**
+   * Enqueue submissions for posting (creates a queue record per submission).
+   * `resumeMode` is the user's answer to "how should this re-post treat the
+   * previous attempt?"; it is held until the queue cycle actually starts the
+   * job. When omitted the engine picks its default (CONTINUE).
+   */
+  public async enqueue(
+    submissionIds: SubmissionId[],
+    resumeMode?: PostRecordResumeMode,
+  ) {
     if (!submissionIds.length) return;
     const release = await this.queueModificationMutex.acquire();
     this.logger.withMetadata({ submissionIds }).info('Enqueueing posts');
@@ -98,6 +121,11 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
         if (!existing) {
           await this.repository.insert({ submissionId });
           changedIds.add(submissionId);
+          if (resumeMode) {
+            this.requestedResumeModes.set(submissionId, resumeMode);
+          } else {
+            this.requestedResumeModes.delete(submissionId);
+          }
         }
         // If existing, do nothing (first-in-wins).
       }
@@ -123,6 +151,7 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
 
       submissionIds.forEach((id) => {
         this.relayPostManager.cancel(id);
+        this.requestedResumeModes.delete(id);
       });
 
       const result = await this.repository.deleteById(records.map((r) => r.id));
@@ -255,7 +284,19 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
           if (!(await this.areDependenciesSatisfied(submission, queuedIds))) {
             continue;
           }
-          await this.relayPostManager.enqueue(submissionId);
+          try {
+            await this.relayPostManager.enqueue(
+              submissionId,
+              this.requestedResumeModes.get(submissionId),
+            );
+          } catch (error) {
+            // Keep the record queued and move on: one submission that cannot
+            // start must not stall the ones behind it every cycle.
+            this.logger
+              .withError(error)
+              .withMetadata({ submissionId })
+              .error('Failed to start post; leaving it queued for retry');
+          }
         }
       }
     } catch (error) {

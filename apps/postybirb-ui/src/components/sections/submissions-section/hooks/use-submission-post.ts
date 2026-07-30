@@ -10,6 +10,7 @@ import { useSubmissionStore } from '../../../../stores';
 import { useNavigationStore } from '../../../../stores/ui/navigation-store';
 import { type ViewState } from '../../../../types/view-state';
 import { showPostErrorNotification } from '../../../../utils/notifications';
+import { hasResumableAttempt } from '../resume-mode-modal';
 import { isSubmissionsViewState } from '../types';
 
 interface UseSubmissionPostResult {
@@ -45,6 +46,14 @@ export function useSubmissionPost(): UseSubmissionPostResult {
 
         if (!submission) {
           showPostErrorNotification();
+          return;
+        }
+
+        // Re-posting after a failed attempt is ambiguous: ask whether to
+        // continue that attempt or start over, rather than silently re-posting
+        // to websites that already succeeded.
+        if (await hasResumableAttempt(id)) {
+          setPendingResumeSubmissionId(id);
           return;
         }
 

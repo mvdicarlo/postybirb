@@ -4,9 +4,11 @@ import { PostingFile } from '../models/posting-file';
 import { StageError } from './errors';
 import { RelayTask } from './model';
 import {
-  PipelineDeps,
-  RelayDispatchData,
-  RelaySubmission,
+    PipelineDeps,
+    RelayDispatchData,
+    RelaySubmission,
+    resetForResume,
+    seedFromPreviousAttempt,
 } from './pipeline';
 import { MemoryRateStore, RateLimiter } from './rate-limiter';
 import { RelayScheduler } from './scheduler';
@@ -493,7 +495,7 @@ describe('Relay pipeline + scheduler (integration)', () => {
     expect(job.status).toBe(NodeStatus.FAILED); // one site failed overall
   });
 
-  it('wires no source dependency when every file already has a user source URL', async () => {
+  it('still wires a source dependency when files already have user source URLs', async () => {
     const submission = fileSubmission();
     // User supplied a source URL on every file.
     submission.files = submission.files.map((f) => ({
@@ -517,10 +519,257 @@ describe('Relay pipeline + scheduler (integration)', () => {
     const sched = new RelayScheduler(h, instant);
     const job = sched.enqueue(submission.id);
     const cp = job.tasks.find((t) => t.websiteId === 'crosspost')!;
-    // No gate is wired: the user already supplied the sources.
-    expect(cp.dependency).toBeUndefined();
+    const fa = job.tasks.find((t) => t.websiteId === 'furaffinity')!;
+    // User sources are additive, so the cross-poster still waits for upstream.
+    expect(cp.dependency?.tasks).toEqual([fa.id]);
 
     await sched.runToIdle();
     expect(job.status).toBe(NodeStatus.SUCCEEDED);
+  });
+
+  describe('resuming a previous attempt', () => {
+    /** weasyl fully posted; furaffinity posted 2 of 3 batches then died. */
+    function previousAttempt() {
+      const submission = fileSubmission();
+      submission.options = [
+        { accountId: 'a_fa', websiteId: 'furaffinity' },
+        { accountId: 'a_ws', websiteId: 'weasyl' },
+      ];
+      const h = new Harness(submission);
+      h.register(fileWebsite({ id: 'furaffinity', fileBatchSize: 1 }));
+      h.register(fileWebsite({ id: 'weasyl', fileBatchSize: 3 }));
+      const sched = new RelayScheduler(h, instant);
+
+      const previous = sched.enqueue(submission.id);
+      const fa = previous.tasks.find((t) => t.websiteId === 'furaffinity')!;
+      fa.units[0].status = NodeStatus.SUCCEEDED;
+      fa.units[0].sourceUrl = 'https://furaffinity/1';
+      fa.units[1].status = NodeStatus.SUCCEEDED;
+      fa.units[1].sourceUrl = 'https://furaffinity/2';
+      fa.units[2].status = NodeStatus.FAILED;
+      fa.status = NodeStatus.FAILED;
+      fa.sourceUrl = 'https://furaffinity/1';
+      const ws = previous.tasks.find((t) => t.websiteId === 'weasyl')!;
+      ws.units[0].status = NodeStatus.SUCCEEDED;
+      ws.units[0].sourceUrl = 'https://weasyl/1';
+      ws.status = NodeStatus.SUCCEEDED;
+      ws.sourceUrl = 'https://weasyl/1';
+      previous.status = NodeStatus.FAILED;
+
+      return { sched, previous, submission };
+    }
+
+    function tasksOf(job: ReturnType<RelayScheduler['enqueue']>) {
+      return {
+        fa: job.tasks.find((t) => t.websiteId === 'furaffinity')!,
+        ws: job.tasks.find((t) => t.websiteId === 'weasyl')!,
+      };
+    }
+
+    it('CONTINUE resumes at the first unposted batch', () => {
+      const { sched, previous, submission } = previousAttempt();
+
+      const retry = sched.enqueue(submission.id);
+      seedFromPreviousAttempt(retry, previous);
+      resetForResume(retry, PostRecordResumeMode.CONTINUE);
+
+      const { fa, ws } = tasksOf(retry);
+      expect(ws.status).toBe(NodeStatus.SUCCEEDED);
+      expect(ws.sourceUrl).toBe('https://weasyl/1');
+      expect(fa.status).toBe(NodeStatus.QUEUED);
+      expect(fa.units.map((u) => u.status)).toEqual([
+        NodeStatus.SUCCEEDED,
+        NodeStatus.SUCCEEDED,
+        NodeStatus.QUEUED,
+      ]);
+      expect(fa.units[0].sourceUrl).toBe('https://furaffinity/1');
+    });
+
+    it('gives a re-queued task a fresh retry budget', () => {
+      const { sched, previous, submission } = previousAttempt();
+
+      const retry = sched.enqueue(submission.id);
+      seedFromPreviousAttempt(retry, previous);
+      // A crash-adopted job carries the attempts it had already burned.
+      tasksOf(retry).fa.attempts = 3;
+      resetForResume(retry, PostRecordResumeMode.CONTINUE);
+
+      expect(tasksOf(retry).fa.attempts).toBe(0);
+    });
+
+    it('CONTINUE_RETRY re-runs an incomplete site from its first batch', () => {
+      const { sched, previous, submission } = previousAttempt();
+
+      const retry = sched.enqueue(submission.id);
+      seedFromPreviousAttempt(retry, previous);
+      resetForResume(retry, PostRecordResumeMode.CONTINUE_RETRY);
+
+      // A site that fully posted is never re-sent, whatever the mode.
+      const { fa, ws } = tasksOf(retry);
+      expect(ws.status).toBe(NodeStatus.SUCCEEDED);
+      expect(ws.sourceUrl).toBe('https://weasyl/1');
+
+      expect(fa.status).toBe(NodeStatus.QUEUED);
+      expect(fa.units.every((u) => u.status === NodeStatus.QUEUED)).toBe(true);
+      // Nothing of this task survives, so no stale URL is left for downstream.
+      expect(fa.units.every((u) => u.sourceUrl === undefined)).toBe(true);
+      expect(fa.sourceUrl).toBeUndefined();
+    });
+
+    it('NEW ignores the previous attempt entirely', () => {
+      const { sched, submission } = previousAttempt();
+
+      // NEW never seeds, so the freshly planned tree is what runs.
+      const retry = sched.enqueue(submission.id);
+
+      const { fa, ws } = tasksOf(retry);
+      expect(retry.attemptOf).toBeUndefined();
+      for (const task of [fa, ws]) {
+        expect(task.status).toBe(NodeStatus.QUEUED);
+        expect(task.sourceUrl).toBeUndefined();
+        expect(task.units.every((u) => u.status === NodeStatus.QUEUED)).toBe(
+          true,
+        );
+      }
+    });
+
+    it('re-posts a batch whose files changed since the previous attempt', () => {
+      const { sched, previous, submission } = previousAttempt();
+      // Batch 0 now carries a different file, so it is not the posted batch.
+      submission.files[0] = { ...submission.files[0], id: 'f1-replaced' };
+
+      const retry = sched.enqueue(submission.id);
+      seedFromPreviousAttempt(retry, previous);
+      resetForResume(retry, PostRecordResumeMode.CONTINUE);
+
+      const { fa } = tasksOf(retry);
+      expect(fa.units[0].status).toBe(NodeStatus.QUEUED);
+      expect(fa.units[1].status).toBe(NodeStatus.SUCCEEDED);
+    });
+
+    it('matches a completed batch when its files are reordered', () => {
+      const submission = fileSubmission();
+      submission.options = [
+        { accountId: 'a_fa', websiteId: 'furaffinity' },
+      ];
+      const h = new Harness(submission);
+      h.register(fileWebsite({ id: 'furaffinity', fileBatchSize: 3 }));
+      const sched = new RelayScheduler(h, instant);
+      const previous = sched.enqueue(submission.id);
+      const previousTask = previous.tasks[0];
+      previousTask.units[0].status = NodeStatus.SUCCEEDED;
+      previousTask.units[0].sourceUrl = 'https://furaffinity/batch';
+      previousTask.status = NodeStatus.SUCCEEDED;
+      previousTask.sourceUrl = 'https://furaffinity/batch';
+
+      submission.files.reverse();
+      const retry = sched.enqueue(submission.id);
+      seedFromPreviousAttempt(retry, previous);
+      resetForResume(retry, PostRecordResumeMode.CONTINUE);
+
+      expect(retry.tasks[0].status).toBe(NodeStatus.SUCCEEDED);
+      expect(retry.tasks[0].units[0].status).toBe(NodeStatus.SUCCEEDED);
+      expect(retry.tasks[0].sourceUrl).toBe('https://furaffinity/batch');
+    });
+
+    it('accumulates completed batches through the immediately prior attempt', () => {
+      const { sched, previous, submission } = previousAttempt();
+      const previousFa = tasksOf(previous).fa;
+      previousFa.units[1].status = NodeStatus.FAILED;
+      previousFa.units[1].sourceUrl = undefined;
+
+      const retryOne = sched.createJob(submission.id, {
+        resumeMode: PostRecordResumeMode.CONTINUE,
+        attemptOf: previous.id,
+      });
+      sched.plan(retryOne);
+      seedFromPreviousAttempt(retryOne, previous);
+      resetForResume(retryOne, PostRecordResumeMode.CONTINUE);
+      const retryOneFa = tasksOf(retryOne).fa;
+      retryOneFa.units[1].status = NodeStatus.SUCCEEDED;
+      retryOneFa.units[1].sourceUrl = 'https://furaffinity/2';
+      retryOneFa.units[2].status = NodeStatus.FAILED;
+      retryOneFa.status = NodeStatus.FAILED;
+
+      const retryTwo = sched.createJob(submission.id, {
+        resumeMode: PostRecordResumeMode.CONTINUE,
+        attemptOf: retryOne.id,
+      });
+      sched.plan(retryTwo);
+      seedFromPreviousAttempt(retryTwo, retryOne);
+      resetForResume(retryTwo, PostRecordResumeMode.CONTINUE);
+
+      expect(retryTwo.attemptOf).toBe(retryOne.id);
+      expect(tasksOf(retryTwo).fa.units.map((unit) => unit.status)).toEqual([
+        NodeStatus.SUCCEEDED,
+        NodeStatus.SUCCEEDED,
+        NodeStatus.QUEUED,
+      ]);
+    });
+
+    it('drops a stale task source URL when no posted batch survives', async () => {
+      const { sched, previous, submission } = previousAttempt();
+      submission.files[0] = { ...submission.files[0], id: 'f1-replaced' };
+      submission.files[1] = { ...submission.files[1], id: 'f2-replaced' };
+
+      const retry = sched.enqueue(submission.id);
+      seedFromPreviousAttempt(retry, previous);
+      resetForResume(retry, PostRecordResumeMode.CONTINUE);
+
+      const { fa } = tasksOf(retry);
+      expect(fa.sourceUrl).toBeUndefined();
+
+      await sched.runToIdle();
+
+      expect(fa.sourceUrl).toMatch(/^https:\/\/furaffinity\//);
+      expect(fa.sourceUrl).not.toBe('https://furaffinity/1');
+    });
+
+    it('carries a seeded upstream URL to a newly planned dependent site', async () => {
+      const submission = fileSubmission();
+      submission.options = [
+        { accountId: 'a_fa', websiteId: 'furaffinity' },
+        { accountId: 'a_cp', websiteId: 'crosspost' },
+      ];
+      const h = new Harness(submission);
+      h.register(fileWebsite({ id: 'furaffinity', fileBatchSize: 3 }));
+      h.register(
+        fileWebsite({
+          id: 'crosspost',
+          fileBatchSize: 3,
+          acceptsExternalSourceUrls: true,
+        }),
+      );
+      const sched = new RelayScheduler(h, instant);
+
+      // Upstream posted; only the cross-poster failed.
+      const previous = sched.enqueue(submission.id);
+      const prevFa = previous.tasks.find((t) => t.websiteId === 'furaffinity')!;
+      prevFa.units[0].status = NodeStatus.SUCCEEDED;
+      prevFa.units[0].sourceUrl = 'https://furaffinity/upstream';
+      prevFa.status = NodeStatus.SUCCEEDED;
+      prevFa.sourceUrl = 'https://furaffinity/upstream';
+      previous.status = NodeStatus.FAILED;
+
+      const retry = sched.enqueue(submission.id);
+      seedFromPreviousAttempt(retry, previous);
+      resetForResume(retry, PostRecordResumeMode.CONTINUE);
+
+      const cp = retry.tasks.find((t) => t.websiteId === 'crosspost')!;
+      const fa = retry.tasks.find((t) => t.websiteId === 'furaffinity')!;
+      expect(fa.status).toBe(NodeStatus.SUCCEEDED);
+      expect(cp.dependency?.tasks).toEqual([fa.id]);
+
+      await sched.runToIdle();
+
+      // The satisfied upstream still supplied its URL to the dependent.
+      expect(retry.status).toBe(NodeStatus.SUCCEEDED);
+      const parseEntry = h.tracer
+        .getEntries(retry.id)
+        .find((e) => e.taskId === cp.id && e.stage === 'parse');
+      expect(parseEntry?.data?.upstreamSourceUrls).toEqual([
+        'https://furaffinity/upstream',
+      ]);
+    });
   });
 });

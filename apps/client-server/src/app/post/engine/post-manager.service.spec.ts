@@ -173,6 +173,28 @@ describe('RelayPostManager hardening', () => {
     expect(jobId).not.toBe('job-bad');
   });
 
+  it('does not replace an orphan that cannot be marked failed', async () => {
+    const submissionId = 'sub-still-active';
+    const orphan = succeededOrphan(submissionId, 'job-still-active');
+    const deps = makeDeps(submissionId);
+    (deps.prepare as jest.Mock).mockRejectedValue(new Error('submission gone'));
+    const persistence = makePersistence({
+      loadBySubmission: jest.fn().mockResolvedValue([orphan]),
+      failJob: jest.fn().mockRejectedValue(new Error('db locked')),
+    } as Partial<RelayPersistence>);
+
+    const manager = new RelayPostManager(
+      deps,
+      persistence,
+      makeRegistry(true),
+      { archive: jest.fn().mockResolvedValue(undefined) } as never,
+      { create: jest.fn().mockResolvedValue(undefined) } as never,
+    );
+
+    await expect(manager.enqueue(submissionId)).rejects.toThrow('db locked');
+    expect(persistence.create).not.toHaveBeenCalled();
+  });
+
   it('evicts the finished job tree from the scheduler on completion (memory)', async () => {
     // Regression: terminal jobs must not be retained in the scheduler's live
     // working set forever. After completion the job is dropped (served from
@@ -198,5 +220,87 @@ describe('RelayPostManager hardening', () => {
     expect(manager.getActiveTrees()).toHaveLength(0);
     // The per-job context was released.
     expect(deps.release).toHaveBeenCalledWith(jobId);
+  });
+
+  it('only reconciles the newest attempt, never an older stranded one', async () => {
+    // An older non-terminal row sitting behind a newer terminal one is dead
+    // history; adopting it would re-run an attempt the user already superseded.
+    const submissionId = 'sub-stale';
+    const stranded = succeededOrphan(submissionId, 'job-stranded');
+    const newest = succeededOrphan(submissionId, 'job-newest');
+    newest.status = NodeStatus.FAILED;
+    const deps = makeDeps(submissionId);
+    const persistence = makePersistence({
+      // loadBySubmission returns newest-first.
+      loadBySubmission: jest.fn().mockResolvedValue([newest, stranded]),
+    } as Partial<RelayPersistence>);
+
+    const manager = new RelayPostManager(
+      deps,
+      persistence,
+      makeRegistry(true),
+      { archive: jest.fn().mockResolvedValue(undefined) } as never,
+      { create: jest.fn().mockResolvedValue(undefined) } as never,
+    );
+
+    const jobId = await manager.enqueue(submissionId);
+    await flush();
+
+    expect(jobId).not.toBe('job-stranded');
+    expect(deps.prepare).not.toHaveBeenCalledWith(stranded);
+    // A resume of the newest failed attempt is a new row linked back to it.
+    const [created] = (persistence.create as jest.Mock).mock.calls[0];
+    expect(created.id).toBe(jobId);
+    expect(created.attemptOf).toBe('job-newest');
+  });
+
+  it('starts clean when the newest attempt succeeded', async () => {
+    // Re-posting a submission that fully posted is a deliberate new post, not
+    // a resume, so nothing is carried forward.
+    const submissionId = 'sub-done';
+    const previous = succeededOrphan(submissionId, 'job-done');
+    previous.status = NodeStatus.SUCCEEDED;
+    const deps = makeDeps(submissionId);
+    const persistence = makePersistence({
+      loadBySubmission: jest.fn().mockResolvedValue([previous]),
+    } as Partial<RelayPersistence>);
+
+    const manager = new RelayPostManager(
+      deps,
+      persistence,
+      makeRegistry(true),
+      { archive: jest.fn().mockResolvedValue(undefined) } as never,
+      { create: jest.fn().mockResolvedValue(undefined) } as never,
+    );
+
+    const jobId = await manager.enqueue(submissionId);
+    await flush();
+
+    expect(jobId).not.toBe('job-done');
+    // It actually posted again rather than skipping the already-done task.
+    expect(deps.dispatchMessage).toHaveBeenCalledTimes(1);
+  });
+
+  it('refuses to post when the previous attempt cannot be read', async () => {
+    // Fail closed: without history a resume cannot tell what already went out,
+    // and posting blind would duplicate it. The queue record survives the
+    // throw, so a later cycle retries.
+    const submissionId = 'sub-unreadable';
+    const deps = makeDeps(submissionId);
+    const persistence = makePersistence({
+      loadBySubmission: jest.fn().mockRejectedValue(new Error('db locked')),
+    } as Partial<RelayPersistence>);
+
+    const manager = new RelayPostManager(
+      deps,
+      persistence,
+      makeRegistry(true),
+      { archive: jest.fn().mockResolvedValue(undefined) } as never,
+      { create: jest.fn().mockResolvedValue(undefined) } as never,
+    );
+
+    await expect(manager.enqueue(submissionId)).rejects.toThrow('db locked');
+    expect(persistence.create).not.toHaveBeenCalled();
+    expect(deps.dispatchMessage).not.toHaveBeenCalled();
   });
 });

@@ -4,6 +4,7 @@
 
 import { Trans } from '@lingui/react/macro';
 import { ActionIcon, Group, Tooltip } from '@mantine/core';
+import { PostRecordResumeMode } from '@postybirb/types';
 import {
     IconArchiveOff,
     IconCancel,
@@ -30,6 +31,7 @@ import {
 import { HoldToConfirmButton } from '../../../../hold-to-confirm';
 import { SUBMISSION_EDIT_TOUR_ID } from '../../../../onboarding-tour/tours/submission-edit-tour';
 import { PostPreviewModal } from '../../post-preview-modal';
+import { hasResumableAttempt, ResumeModeModal } from '../../resume-mode-modal';
 import { useSubmissionEditCardContext } from '../context';
 import { ApplyTemplateAction } from './apply-template-action';
 import { SaveToManyAction } from './save-to-many-action';
@@ -42,13 +44,35 @@ export function SubmissionEditCardActions() {
   const { startTour } = useTourActions();
   const isPosting = useIsSubmissionPosting(submission.id);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [resumePromptOpen, setResumePromptOpen] = useState(false);
 
-  const handlePost = async () => {
+  const enqueue = async (resumeMode?: PostRecordResumeMode) => {
     try {
-      await postQueueApi.enqueue([submission.id]);
+      await postQueueApi.enqueue([submission.id], resumeMode);
     } catch {
       showPostErrorNotification();
     }
+  };
+
+  const handlePost = async () => {
+    // Re-posting after a failed attempt is ambiguous: ask whether to continue
+    // that attempt or start over, rather than silently re-posting to websites
+    // that already succeeded.
+    try {
+      if (await hasResumableAttempt(submission.id)) {
+        setResumePromptOpen(true);
+        return;
+      }
+    } catch {
+      showPostErrorNotification();
+      return;
+    }
+    await enqueue();
+  };
+
+  const handleResumeConfirm = async (resumeMode: PostRecordResumeMode) => {
+    setResumePromptOpen(false);
+    await enqueue(resumeMode);
   };
 
   const handleCancel = async () => {
@@ -227,6 +251,11 @@ export function SubmissionEditCardActions() {
         opened={previewOpen}
         onClose={() => setPreviewOpen(false)}
         submissionId={submission.id}
+      />
+      <ResumeModeModal
+        opened={resumePromptOpen}
+        onClose={() => setResumePromptOpen(false)}
+        onConfirm={handleResumeConfirm}
       />
     </Group>
   );

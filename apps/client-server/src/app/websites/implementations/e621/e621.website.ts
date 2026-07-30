@@ -1,19 +1,17 @@
 // eslint-disable-next-line max-classes-per-file
-
-// eslint-disable-next-line max-classes-per-file
 import {
-    E621AccountData,
-    E621OAuthRoutes,
-    E621TagCategory,
-    ImageResizeProps,
-    ISubmissionFile,
-    LoginResult,
-    OAuthRouteHandlers,
-    PostData,
-    PostResponse,
-    SimpleValidationResult,
-    SubmissionRating,
-    TipTapNode,
+  E621AccountData,
+  E621OAuthRoutes,
+  E621TagCategory,
+  ImageResizeProps,
+  ISubmissionFile,
+  LoginResult,
+  OAuthRouteHandlers,
+  PostData,
+  PostResponse,
+  SimpleValidationResult,
+  SubmissionRating,
+  TipTapNode,
 } from '@postybirb/types';
 import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
 import { BBCodeConverter } from '../../../post-parsers/models/description-node/converters/bbcode-converter';

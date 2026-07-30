@@ -27,7 +27,7 @@ import { SubmissionService } from '../../submission/services/submission.service'
 import { WebsiteRegistryService } from '../../websites/website-registry.service';
 import { RelayJob, isTerminal } from './model';
 import { RelayPersistence } from './persistence';
-import { resetForResume } from './pipeline';
+import { resetForResume, seedFromPreviousAttempt } from './pipeline';
 import { RelayPipelineDeps } from './pipeline-deps';
 import { RelayScheduler } from './scheduler';
 import { projectJob } from './tracer.service';
@@ -184,11 +184,13 @@ export class RelayPostManager implements OnModuleInit {
 
   /**
    * Enqueue a submission: prepare context, plan a job, persist the tree, run.
-   * Returns the created job id.
+   * Returns the created job id. Defaults to CONTINUE so a re-post after a
+   * failure picks up where it stopped instead of re-sending what already went
+   * out; pass NEW to force a clean attempt.
    */
   async enqueue(
     submissionId: SubmissionId,
-    resumeMode: PostRecordResumeMode = PostRecordResumeMode.NEW,
+    resumeMode: PostRecordResumeMode = PostRecordResumeMode.CONTINUE,
   ): Promise<string> {
     await this.waitForRecoveryAttempt();
 
@@ -202,16 +204,44 @@ export class RelayPostManager implements OnModuleInit {
     // be tracked in memory (e.g. crash recovery couldn't bring up the website
     // registry, so the job was never adopted). Adopt + resume it instead of
     // creating a duplicate post_job row that would race the orphan.
-    const adopted = await this.adoptOrphanJob(submissionId);
-    if (adopted) return adopted;
+    const [newest] = await this.loadHistory(submissionId);
+    if (newest && !this.isTerminalStatus(newest.status)) {
+      const adopted = await this.adoptOrphanJob(newest, submissionId);
+      if (adopted) return adopted;
+    }
+
+    // A resume is still a *new* job row (so the queue can tell this attempt's
+    // outcome apart from the last one's); it is linked to the attempt it
+    // continues and seeded with that attempt's progress below. A submission
+    // whose last attempt succeeded is being deliberately re-posted, so it
+    // starts clean.
+    const previousAttempt =
+      resumeMode === PostRecordResumeMode.NEW ||
+      !newest ||
+      newest.status === NodeStatus.SUCCEEDED
+        ? undefined
+        : newest;
 
     const job = this.scheduler.createJob(submissionId, {
       resumeMode,
+      attemptOf: previousAttempt?.id,
     });
 
     try {
       await this.deps.prepare(job);
       this.scheduler.plan(job);
+      if (previousAttempt) {
+        seedFromPreviousAttempt(job, previousAttempt);
+        resetForResume(job, resumeMode);
+        this.logger
+          .withMetadata({
+            jobId: job.id,
+            submissionId,
+            resumeMode,
+            attemptOf: previousAttempt.id,
+          })
+          .info('Resuming a previously failed post');
+      }
       await this.persistence.create(
         job,
         process.env.POSTYBIRB_VERSION ?? undefined,
@@ -234,19 +264,35 @@ export class RelayPostManager implements OnModuleInit {
   }
 
   /**
-   * Look for an untracked non-terminal job for the submission in the DB and
-   * adopt it (resume) rather than creating a duplicate. If the orphan cannot
-   * be brought back (e.g. its website registry/submission is gone) it is
-   * force-failed so it stops blocking and a fresh job can be created.
+   * Every persisted attempt for the submission, newest first.
+   *
+   * Deliberately fails closed: without history a resume cannot tell what has
+   * already been delivered, and posting anyway would duplicate it. The queue
+   * record outlives the throw, so the next cycle retries.
+   */
+  private async loadHistory(submissionId: SubmissionId): Promise<RelayJob[]> {
+    try {
+      return await this.persistence.loadBySubmission(submissionId);
+    } catch (error) {
+      this.logger
+        .withError(error)
+        .withMetadata({ submissionId })
+        .error('Could not load post history; refusing to post');
+      throw error;
+    }
+  }
+
+  /**
+   * Adopt (resume) an untracked non-terminal job rather than duplicating it.
+   * If it cannot be brought back (e.g. its website registry/submission is
+   * gone) it is force-failed so it stops blocking, and the caller falls
+   * through to a fresh attempt seeded from whatever it did deliver.
    * Returns the adopted job id, or undefined if there was nothing to adopt.
    */
   private async adoptOrphanJob(
+    orphan: RelayJob,
     submissionId: SubmissionId,
   ): Promise<string | undefined> {
-    const jobs = await this.persistence.loadBySubmission(submissionId);
-    const orphan = jobs.find((job) => !this.isTerminalStatus(job.status));
-    if (!orphan) return undefined;
-
     // Already tracked by the scheduler (race) — just re-link and drive it.
     const tracked = this.scheduler.getJob(orphan.id);
     if (this.isActiveJob(tracked)) {
@@ -274,11 +320,10 @@ export class RelayPostManager implements OnModuleInit {
         .withError(error)
         .withMetadata({ jobId: orphan.id, submissionId })
         .error('Could not adopt orphaned job; marking it FAILED');
-      await this.persistence
-        .failJob(orphan.id, (error as Error)?.message ?? 'adopt failed')
-        .catch((e) =>
-          this.logger.withError(e).error('Failed to mark orphan job FAILED'),
-        );
+      await this.persistence.failJob(
+        orphan.id,
+        (error as Error)?.message ?? 'adopt failed',
+      );
       return undefined;
     }
   }

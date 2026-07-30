@@ -148,10 +148,10 @@ function buildSourceDependency(
  * on every "standard" (non-external-source) task so they post afterwards and
  * can quote their source URLs. The mode decides how many upstreams must be done
  * first; COUNT is clamped to the upstream count by {@link buildSourceDependency}
- * to stay satisfiable.
+ * to stay satisfiable. User-supplied source URLs on the files do NOT skip the
+ * gate — they are additive to the upstream URLs, not a replacement.
  */
 function wireSourceDependencies(job: RelayJob, deps: PipelineDeps): void {
-  const submission = deps.getSubmission(job.id);
   const standardIds = job.tasks
     .filter(
       (t) =>
@@ -166,35 +166,19 @@ function wireSourceDependencies(job: RelayJob, deps: PipelineDeps): void {
     if (t.status === NodeStatus.SKIPPED) continue;
     const site = deps.getWebsite(job.id, t.websiteId, t.accountId);
     if (!site.acceptsExternalSourceUrls) continue;
-    // Best-effort short-circuit: if the user already supplied a source URL on
-    // every file this account will post, the site already has its sources and
-    // has nothing to wait for — leave it ungated so it posts immediately.
-    if (allFilesHaveUserSourceUrls(submission, t.accountId)) continue;
     t.dependency = buildSourceDependency(site.sourceDependencyMode, standardIds);
   }
 }
 
 /**
- * True when this is a file submission and every file the account will post
- * already carries at least one user-provided source URL — so an external-source
- * site has nothing to gain by waiting on upstream posts.
- */
-function allFilesHaveUserSourceUrls(
-  submission: RelaySubmission,
-  accountId: string,
-): boolean {
-  if (submission.type !== SubmissionType.FILE) return false;
-  const files = submission.files.filter(
-    (f) => !f.ignoredWebsites?.includes(accountId),
-  );
-  return files.length > 0 && files.every((f) => (f.sourceUrls?.length ?? 0) > 0);
-}
-
-/**
  * Resume planner. Re-opens non-done nodes to QUEUED.
  *  - CONTINUE: keep SUCCEEDED units, re-run the rest.
- *  - CONTINUE_RETRY: also re-run SUCCEEDED units (full re-upload).
+ *  - CONTINUE_RETRY: re-run every unit of a destination that still has work
+ *    (full re-upload), but never a destination that already finished.
  *  - NEW handled by the caller (builds a fresh job).
+ *
+ * A destination whose units are all done is left SUCCEEDED in *every* mode:
+ * re-sending it would duplicate a post that already went out.
  */
 export function resetForResume(
   job: RelayJob,
@@ -202,7 +186,14 @@ export function resetForResume(
 ): void {
   for (const task of job.tasks) {
     if (task.status === NodeStatus.SKIPPED) continue;
-    let hasWork = false;
+
+    if (task.units.length > 0 && task.units.every(isDone)) {
+      task.status = NodeStatus.SUCCEEDED;
+      task.error = undefined;
+      task.waitingUntil = undefined;
+      continue;
+    }
+
     for (const unit of task.units) {
       if (mode === PostRecordResumeMode.CONTINUE_RETRY) {
         unit.status = NodeStatus.QUEUED;
@@ -212,14 +203,72 @@ export function resetForResume(
         unit.status = NodeStatus.QUEUED;
         unit.error = undefined;
       }
-      if (!isDone(unit)) hasWork = true;
     }
-    if (hasWork || task.units.length === 0) {
-      task.status = NodeStatus.QUEUED;
-      task.error = undefined;
-      task.waitingUntil = undefined;
-    } else {
-      task.status = NodeStatus.SUCCEEDED;
+
+    if (mode === PostRecordResumeMode.CONTINUE_RETRY) {
+      // Nothing of this task survives the re-upload, so the URL downstream
+      // sites would quote is stale.
+      task.sourceUrl = undefined;
     }
+
+    task.status = NodeStatus.QUEUED;
+    task.error = undefined;
+    task.waitingUntil = undefined;
+    // Persisted attempts survive a DB load, so without this an adopted or
+    // resumed task would run with its retry budget already spent.
+    task.attempts = 0;
+  }
+}
+
+/** Identifies a task across attempts: same website account, same submission. */
+function taskKey(task: RelayTask): string {
+  return `${task.websiteId}:${task.accountId}`;
+}
+
+/**
+ * Identifies a unit across attempts by *what it posts* rather than by its
+ * ordinal, so that editing the submission's files between attempts cannot
+ * make a new batch inherit an old batch's "already posted" status.
+ */
+function unitKey(unit: RelayUnit): string {
+  return `${unit.kind}:${[...unit.fileIds].sort().join(',')}`;
+}
+
+/**
+ * Copy the outcome of a previous attempt onto a freshly-planned job tree so a
+ * resume does not re-post work that already went out. Node ids are namespaced
+ * per job, so nodes are matched by what they target rather than by id; nodes
+ * with no counterpart in the previous attempt (a newly-selected website, a
+ * newly-added file) stay QUEUED and will be posted.
+ *
+ * Call {@link resetForResume} afterwards to re-open the nodes the chosen mode
+ * wants to re-run.
+ */
+export function seedFromPreviousAttempt(
+  job: RelayJob,
+  previous: RelayJob,
+): void {
+  const previousTasks = new Map(previous.tasks.map((t) => [taskKey(t), t]));
+
+  for (const task of job.tasks) {
+    if (task.status === NodeStatus.SKIPPED) continue;
+    const previousTask = previousTasks.get(taskKey(task));
+    if (!previousTask) continue;
+
+    const previousUnits = new Map(
+      previousTask.units.map((u) => [unitKey(u), u]),
+    );
+    for (const unit of task.units) {
+      const previousUnit = previousUnits.get(unitKey(unit));
+      if (!previousUnit || !isDone(previousUnit)) continue;
+      unit.status = previousUnit.status;
+      unit.sourceUrl = previousUnit.sourceUrl;
+    }
+
+    // Downstream sites quote this, so it may only come from a batch that both
+    // already posted and still exists in the current plan.
+    task.sourceUrl = task.units.find(
+      (unit) => isDone(unit) && unit.sourceUrl,
+    )?.sourceUrl;
   }
 }

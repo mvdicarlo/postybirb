@@ -1,14 +1,14 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
-  Alert,
-  Badge,
-  Box,
-  Button,
-  Group,
-  Modal,
-  Stack,
-  Text,
-  Tooltip,
+    Alert,
+    Badge,
+    Box,
+    Button,
+    Group,
+    Modal,
+    Stack,
+    Text,
+    Tooltip,
 } from '@mantine/core';
 import type { PostRecordResumeMode, SubmissionId } from '@postybirb/types';
 import { IconClock, IconInfoCircle } from '@tabler/icons-react';
@@ -19,9 +19,9 @@ import type { SubmissionRecord } from '../../../../stores/records';
 import { ReorderableSubmissionList } from '../../../shared/reorderable-submission-list';
 import { DependencyReorderableTree } from './dependency-reorderable-tree';
 import {
-  buildDependencyForest,
-  flattenForest,
-  type DependencyNode,
+    buildDependencyForest,
+    flattenForest,
+    type DependencyNode,
 } from './dependency-tree';
 import './post-confirm-modal.css';
 
@@ -307,12 +307,29 @@ export function PostConfirmModal({
 
         {/* Flat post-order list: every submission is individually reorderable */}
         {validCount > 0 && (
-          <ReorderableSubmissionList
-            submissions={orderedSubmissions}
-            onReorder={setOrderedSubmissions}
-            renderExtra={renderExtra}
-            fill
-          />
+          <>
+            <Alert
+              icon={<IconInfoCircle size={16} />}
+              color="blue"
+              variant="light"
+              p="xs"
+              radius="md"
+            >
+              <Text size="xs">
+                <Trans>
+                  Submissions with an incomplete previous attempt continue from
+                  where they stopped. Post one on its own to retry it or start
+                  it over instead.
+                </Trans>
+              </Text>
+            </Alert>
+            <ReorderableSubmissionList
+              submissions={orderedSubmissions}
+              onReorder={setOrderedSubmissions}
+              renderExtra={renderExtra}
+              fill
+            />
+          </>
         )}
 
         {/* Read-only dependency tree for context */}

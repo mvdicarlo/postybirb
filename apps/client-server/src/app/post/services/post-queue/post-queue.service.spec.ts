@@ -4,6 +4,7 @@ import { clearDatabase } from '@postybirb/database';
 import {
     AccountId,
     DefaultDescription,
+    PostRecordResumeMode,
     SubmissionId,
     SubmissionRating,
     SubmissionType,
@@ -141,7 +142,92 @@ describe('PostQueueService', () => {
     mockRelayPostManager.isPosting.mockReturnValue(false);
 
     await service.execute();
-    expect(mockRelayPostManager.enqueue).toHaveBeenCalledWith(submission.id);
+    expect(mockRelayPostManager.enqueue).toHaveBeenCalledWith(
+      submission.id,
+      undefined,
+    );
+  });
+
+  it('forwards the resume mode chosen at enqueue time to the relay manager', async () => {
+    const submission = await submissionService.create(createSubmissionDto());
+    await websiteOptionsService.create(
+      createWebsiteOptionsDto(
+        submission.id,
+        (await accountService.create(createAccountDto())).id,
+      ),
+    );
+
+    await service.enqueue([submission.id], PostRecordResumeMode.CONTINUE_RETRY);
+    mockRelayPostManager.isPosting.mockReturnValue(false);
+
+    await service.execute();
+
+    expect(mockRelayPostManager.enqueue).toHaveBeenCalledWith(
+      submission.id,
+      PostRecordResumeMode.CONTINUE_RETRY,
+    );
+  });
+
+  it('keeps the first resume mode when an entry is already queued', async () => {
+    const account = await accountService.create(createAccountDto());
+    const submission = await submissionService.create(createSubmissionDto());
+    await websiteOptionsService.create(
+      createWebsiteOptionsDto(submission.id, account.id),
+    );
+
+    await service.enqueue([submission.id], PostRecordResumeMode.CONTINUE_RETRY);
+    await service.enqueue([submission.id], PostRecordResumeMode.NEW);
+    await service.execute();
+
+    expect(mockRelayPostManager.enqueue).toHaveBeenCalledWith(
+      submission.id,
+      PostRecordResumeMode.CONTINUE_RETRY,
+    );
+  });
+
+  it('clears the requested mode when a queue entry is removed', async () => {
+    const account = await accountService.create(createAccountDto());
+    const submission = await submissionService.create(createSubmissionDto());
+    await websiteOptionsService.create(
+      createWebsiteOptionsDto(submission.id, account.id),
+    );
+
+    await service.enqueue([submission.id], PostRecordResumeMode.NEW);
+    await service.dequeue([submission.id]);
+    await service.enqueue([submission.id]);
+    jest.clearAllMocks();
+
+    await service.execute();
+
+    expect(mockRelayPostManager.enqueue).toHaveBeenCalledWith(
+      submission.id,
+      undefined,
+    );
+  });
+
+  it('keeps starting other submissions when one cannot be started', async () => {
+    const account = await accountService.create(createAccountDto());
+    const first = await submissionService.create(createSubmissionDto());
+    await websiteOptionsService.create(
+      createWebsiteOptionsDto(first.id, account.id),
+    );
+    const second = await submissionService.create(createSubmissionDto());
+    await websiteOptionsService.create(
+      createWebsiteOptionsDto(second.id, account.id),
+    );
+
+    await service.enqueue([first.id]);
+    await service.enqueue([second.id]);
+    mockRelayPostManager.enqueue.mockRejectedValueOnce(
+      new Error('history unavailable'),
+    );
+
+    await expect(service.execute()).resolves.toBeUndefined();
+
+    // The failure is contained: the other queued submission still started.
+    expect(mockRelayPostManager.enqueue).toHaveBeenCalledTimes(2);
+    // Neither record was dropped, so the failed one retries next cycle.
+    expect(await service.peek()).not.toBeNull();
   });
 
   it('dequeues a submission whose Relay job has finished', async () => {
@@ -186,6 +272,7 @@ describe('PostQueueService', () => {
       );
       expect(mockRelayPostManager.enqueue).not.toHaveBeenCalledWith(
         dependent.id,
+        undefined,
       );
       // Still queued for re-evaluation next cycle.
       expect(await service.peek()).not.toBeNull();
@@ -201,7 +288,10 @@ describe('PostQueueService', () => {
 
       await service.execute();
 
-      expect(mockRelayPostManager.enqueue).toHaveBeenCalledWith(dependent.id);
+      expect(mockRelayPostManager.enqueue).toHaveBeenCalledWith(
+        dependent.id,
+        undefined,
+      );
     });
 
     it('re-enforces a restored chain: a re-queued dependency blocks its dependent despite a prior success', async () => {
@@ -220,11 +310,15 @@ describe('PostQueueService', () => {
       await service.execute();
 
       // The dependency itself is (re)enqueued to post again...
-      expect(mockRelayPostManager.enqueue).toHaveBeenCalledWith(dependency.id);
+      expect(mockRelayPostManager.enqueue).toHaveBeenCalledWith(
+        dependency.id,
+        undefined,
+      );
       // ...but the dependent is held back because the dependency is still queued
       // (its fresh post has not finished), even though hasSucceeded() is true.
       expect(mockRelayPostManager.enqueue).not.toHaveBeenCalledWith(
         dependent.id,
+        undefined,
       );
       // The dependent remains queued for re-evaluation next cycle.
       expect(await service.peek()).not.toBeNull();
@@ -245,6 +339,7 @@ describe('PostQueueService', () => {
 
       expect(mockRelayPostManager.enqueue).not.toHaveBeenCalledWith(
         dependent.id,
+        undefined,
       );
     });
 
@@ -261,7 +356,10 @@ describe('PostQueueService', () => {
       await service.execute();
 
       expect(mockRelayPostManager.hasSucceeded).not.toHaveBeenCalled();
-      expect(mockRelayPostManager.enqueue).toHaveBeenCalledWith(submission.id);
+      expect(mockRelayPostManager.enqueue).toHaveBeenCalledWith(
+        submission.id,
+        undefined,
+      );
     });
 
     it('strips references to deleted dependencies and proceeds', async () => {
@@ -282,7 +380,10 @@ describe('PostQueueService', () => {
       const updated = await submissionService.findById(dependent.id);
       expect(updated?.metadata.dependsOn ?? []).toEqual([]);
       // With no remaining blockers it proceeds to post.
-      expect(mockRelayPostManager.enqueue).toHaveBeenCalledWith(dependent.id);
+      expect(mockRelayPostManager.enqueue).toHaveBeenCalledWith(
+        dependent.id,
+        undefined,
+      );
     });
 
     it('strips a deleted dependency but stays blocked on a live one', async () => {
@@ -304,6 +405,7 @@ describe('PostQueueService', () => {
       // Still blocked by the live, unsatisfied dependency.
       expect(mockRelayPostManager.enqueue).not.toHaveBeenCalledWith(
         dependent.id,
+        undefined,
       );
     });
   });

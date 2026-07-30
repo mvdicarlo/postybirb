@@ -129,11 +129,13 @@ export class RelayScheduler {
     submissionId: string,
     opts?: {
       resumeMode?: PostRecordResumeMode;
+      attemptOf?: string;
     },
   ): RelayJob {
     const job = new RelayJob({
       submissionId,
       resumeMode: opts?.resumeMode ?? PostRecordResumeMode.NEW,
+      attemptOf: opts?.attemptOf,
     });
     this.jobs.set(job.id, job);
     // Create the cancellation token immediately so cancel() can interrupt the job
