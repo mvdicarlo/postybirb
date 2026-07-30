@@ -31,7 +31,7 @@ import {
 import { HoldToConfirmButton } from '../../../../hold-to-confirm';
 import { SUBMISSION_EDIT_TOUR_ID } from '../../../../onboarding-tour/tours/submission-edit-tour';
 import { PostPreviewModal } from '../../post-preview-modal';
-import { hasResumableAttempt, ResumeModeModal } from '../../resume-mode-modal';
+import { inspectPreviousAttempt, ResumeModeModal } from '../../resume-mode-modal';
 import { useSubmissionEditCardContext } from '../context';
 import { ApplyTemplateAction } from './apply-template-action';
 import { SaveToManyAction } from './save-to-many-action';
@@ -45,6 +45,7 @@ export function SubmissionEditCardActions() {
   const isPosting = useIsSubmissionPosting(submission.id);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [resumePromptOpen, setResumePromptOpen] = useState(false);
+  const [resumeHasNewFiles, setResumeHasNewFiles] = useState(false);
 
   const enqueue = async (resumeMode?: PostRecordResumeMode) => {
     try {
@@ -59,7 +60,12 @@ export function SubmissionEditCardActions() {
     // that attempt or start over, rather than silently re-posting to websites
     // that already succeeded.
     try {
-      if (await hasResumableAttempt(submission.id)) {
+      const { resumable, hasNewFiles } = await inspectPreviousAttempt(
+        submission.id,
+        submission.files.map((file) => file.id),
+      );
+      if (resumable) {
+        setResumeHasNewFiles(hasNewFiles);
         setResumePromptOpen(true);
         return;
       }
@@ -254,6 +260,7 @@ export function SubmissionEditCardActions() {
       />
       <ResumeModeModal
         opened={resumePromptOpen}
+        hasNewFiles={resumeHasNewFiles}
         onClose={() => setResumePromptOpen(false)}
         onConfirm={handleResumeConfirm}
       />

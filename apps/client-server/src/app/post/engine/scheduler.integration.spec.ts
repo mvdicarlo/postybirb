@@ -556,7 +556,7 @@ describe('Relay pipeline + scheduler (integration)', () => {
       ws.sourceUrl = 'https://weasyl/1';
       previous.status = NodeStatus.FAILED;
 
-      return { sched, previous, submission };
+      return { sched, previous, submission, h };
     }
 
     function tasksOf(job: ReturnType<RelayScheduler['enqueue']>) {
@@ -566,12 +566,17 @@ describe('Relay pipeline + scheduler (integration)', () => {
       };
     }
 
+    /** [file id, status] per unit, for a site whose batches hold one file. */
+    function unitsByFile(task: RelayTask) {
+      return task.units.map((unit) => [unit.fileIds[0], unit.status]);
+    }
+
     it('CONTINUE resumes at the first unposted batch', () => {
-      const { sched, previous, submission } = previousAttempt();
+      const { sched, previous, submission, h } = previousAttempt();
 
       const retry = sched.enqueue(submission.id);
-      seedFromPreviousAttempt(retry, previous);
-      resetForResume(retry, PostRecordResumeMode.CONTINUE);
+      seedFromPreviousAttempt(retry, previous, PostRecordResumeMode.CONTINUE, h);
+      resetForResume(retry);
 
       const { fa, ws } = tasksOf(retry);
       expect(ws.status).toBe(NodeStatus.SUCCEEDED);
@@ -586,23 +591,28 @@ describe('Relay pipeline + scheduler (integration)', () => {
     });
 
     it('gives a re-queued task a fresh retry budget', () => {
-      const { sched, previous, submission } = previousAttempt();
+      const { sched, previous, submission, h } = previousAttempt();
 
       const retry = sched.enqueue(submission.id);
-      seedFromPreviousAttempt(retry, previous);
+      seedFromPreviousAttempt(retry, previous, PostRecordResumeMode.CONTINUE, h);
       // A crash-adopted job carries the attempts it had already burned.
       tasksOf(retry).fa.attempts = 3;
-      resetForResume(retry, PostRecordResumeMode.CONTINUE);
+      resetForResume(retry);
 
       expect(tasksOf(retry).fa.attempts).toBe(0);
     });
 
     it('CONTINUE_RETRY re-runs an incomplete site from its first batch', () => {
-      const { sched, previous, submission } = previousAttempt();
+      const { sched, previous, submission, h } = previousAttempt();
 
       const retry = sched.enqueue(submission.id);
-      seedFromPreviousAttempt(retry, previous);
-      resetForResume(retry, PostRecordResumeMode.CONTINUE_RETRY);
+      seedFromPreviousAttempt(
+        retry,
+        previous,
+        PostRecordResumeMode.CONTINUE_RETRY,
+        h,
+      );
+      resetForResume(retry);
 
       // A site that fully posted is never re-sent, whatever the mode.
       const { fa, ws } = tasksOf(retry);
@@ -633,18 +643,95 @@ describe('Relay pipeline + scheduler (integration)', () => {
       }
     });
 
-    it('re-posts a batch whose files changed since the previous attempt', () => {
-      const { sched, previous, submission } = previousAttempt();
-      // Batch 0 now carries a different file, so it is not the posted batch.
+    it('re-posts a replaced file without re-posting its neighbours', () => {
+      const { sched, previous, submission, h } = previousAttempt();
+      // f1 posted, then the user swapped it out for a different file.
       submission.files[0] = { ...submission.files[0], id: 'f1-replaced' };
 
       const retry = sched.enqueue(submission.id);
-      seedFromPreviousAttempt(retry, previous);
-      resetForResume(retry, PostRecordResumeMode.CONTINUE);
+      seedFromPreviousAttempt(retry, previous, PostRecordResumeMode.CONTINUE, h);
+      resetForResume(retry);
 
       const { fa } = tasksOf(retry);
-      expect(fa.units[0].status).toBe(NodeStatus.QUEUED);
-      expect(fa.units[1].status).toBe(NodeStatus.SUCCEEDED);
+      expect(unitsByFile(fa)).toEqual([
+        // The batch that posted f1 is gone, taking its source URL with it.
+        ['f2', NodeStatus.SUCCEEDED],
+        ['f1-replaced', NodeStatus.QUEUED],
+        ['f3', NodeStatus.QUEUED],
+      ]);
+    });
+
+    it('posts only the added file when the site already finished', () => {
+      const submission = fileSubmission();
+      submission.options = [{ accountId: 'a_fa', websiteId: 'furaffinity' }];
+      const h = new Harness(submission);
+      // Big enough that every file lands in one batch, as most sites do.
+      h.register(fileWebsite({ id: 'furaffinity', fileBatchSize: 10 }));
+      const sched = new RelayScheduler(h, instant);
+
+      const previous = sched.enqueue(submission.id);
+      const previousTask = previous.tasks[0];
+      previousTask.units[0].status = NodeStatus.SUCCEEDED;
+      previousTask.units[0].sourceUrl = 'https://furaffinity/batch';
+      previousTask.status = NodeStatus.SUCCEEDED;
+      previous.status = NodeStatus.FAILED;
+
+      submission.files.push({ ...submission.files[0], id: 'f4', order: 4 });
+      const retry = sched.enqueue(submission.id);
+      seedFromPreviousAttempt(retry, previous, PostRecordResumeMode.CONTINUE, h);
+      resetForResume(retry);
+
+      const task = retry.tasks[0];
+      expect(task.status).toBe(NodeStatus.QUEUED);
+      expect(task.units.map((unit) => [unit.fileIds, unit.status])).toEqual([
+        [['f1', 'f2', 'f3'], NodeStatus.SUCCEEDED],
+        [['f4'], NodeStatus.QUEUED],
+      ]);
+      expect(task.sourceUrl).toBe('https://furaffinity/batch');
+    });
+
+    it('does not re-post earlier files when a new file is ordered first', () => {
+      const { sched, previous, submission, h } = previousAttempt();
+      submission.files.unshift({ ...submission.files[0], id: 'f0', order: -1 });
+
+      const retry = sched.enqueue(submission.id);
+      seedFromPreviousAttempt(retry, previous, PostRecordResumeMode.CONTINUE, h);
+      resetForResume(retry);
+
+      const { fa } = tasksOf(retry);
+      expect(unitsByFile(fa)).toEqual([
+        ['f1', NodeStatus.SUCCEEDED],
+        ['f2', NodeStatus.SUCCEEDED],
+        ['f0', NodeStatus.QUEUED],
+        ['f3', NodeStatus.QUEUED],
+      ]);
+    });
+
+    it('CONTINUE_RETRY re-posts an added file alongside the incomplete site', () => {
+      const { sched, previous, submission, h } = previousAttempt();
+      submission.files.push({ ...submission.files[0], id: 'f4', order: 4 });
+
+      const retry = sched.enqueue(submission.id);
+      seedFromPreviousAttempt(
+        retry,
+        previous,
+        PostRecordResumeMode.CONTINUE_RETRY,
+        h,
+      );
+      resetForResume(retry);
+
+      const { fa, ws } = tasksOf(retry);
+      expect(unitsByFile(fa)).toEqual([
+        ['f1', NodeStatus.QUEUED],
+        ['f2', NodeStatus.QUEUED],
+        ['f3', NodeStatus.QUEUED],
+        ['f4', NodeStatus.QUEUED],
+      ]);
+      // weasyl finished, so only its added file goes out.
+      expect(ws.units.map((unit) => [unit.fileIds, unit.status])).toEqual([
+        [['f1', 'f2', 'f3'], NodeStatus.SUCCEEDED],
+        [['f4'], NodeStatus.QUEUED],
+      ]);
     });
 
     it('matches a completed batch when its files are reordered', () => {
@@ -664,8 +751,8 @@ describe('Relay pipeline + scheduler (integration)', () => {
 
       submission.files.reverse();
       const retry = sched.enqueue(submission.id);
-      seedFromPreviousAttempt(retry, previous);
-      resetForResume(retry, PostRecordResumeMode.CONTINUE);
+      seedFromPreviousAttempt(retry, previous, PostRecordResumeMode.CONTINUE, h);
+      resetForResume(retry);
 
       expect(retry.tasks[0].status).toBe(NodeStatus.SUCCEEDED);
       expect(retry.tasks[0].units[0].status).toBe(NodeStatus.SUCCEEDED);
@@ -673,7 +760,7 @@ describe('Relay pipeline + scheduler (integration)', () => {
     });
 
     it('accumulates completed batches through the immediately prior attempt', () => {
-      const { sched, previous, submission } = previousAttempt();
+      const { sched, previous, submission, h } = previousAttempt();
       const previousFa = tasksOf(previous).fa;
       previousFa.units[1].status = NodeStatus.FAILED;
       previousFa.units[1].sourceUrl = undefined;
@@ -683,8 +770,13 @@ describe('Relay pipeline + scheduler (integration)', () => {
         attemptOf: previous.id,
       });
       sched.plan(retryOne);
-      seedFromPreviousAttempt(retryOne, previous);
-      resetForResume(retryOne, PostRecordResumeMode.CONTINUE);
+      seedFromPreviousAttempt(
+        retryOne,
+        previous,
+        PostRecordResumeMode.CONTINUE,
+        h,
+      );
+      resetForResume(retryOne);
       const retryOneFa = tasksOf(retryOne).fa;
       retryOneFa.units[1].status = NodeStatus.SUCCEEDED;
       retryOneFa.units[1].sourceUrl = 'https://furaffinity/2';
@@ -696,8 +788,13 @@ describe('Relay pipeline + scheduler (integration)', () => {
         attemptOf: retryOne.id,
       });
       sched.plan(retryTwo);
-      seedFromPreviousAttempt(retryTwo, retryOne);
-      resetForResume(retryTwo, PostRecordResumeMode.CONTINUE);
+      seedFromPreviousAttempt(
+        retryTwo,
+        retryOne,
+        PostRecordResumeMode.CONTINUE,
+        h,
+      );
+      resetForResume(retryTwo);
 
       expect(retryTwo.attemptOf).toBe(retryOne.id);
       expect(tasksOf(retryTwo).fa.units.map((unit) => unit.status)).toEqual([
@@ -708,13 +805,13 @@ describe('Relay pipeline + scheduler (integration)', () => {
     });
 
     it('drops a stale task source URL when no posted batch survives', async () => {
-      const { sched, previous, submission } = previousAttempt();
+      const { sched, previous, submission, h } = previousAttempt();
       submission.files[0] = { ...submission.files[0], id: 'f1-replaced' };
       submission.files[1] = { ...submission.files[1], id: 'f2-replaced' };
 
       const retry = sched.enqueue(submission.id);
-      seedFromPreviousAttempt(retry, previous);
-      resetForResume(retry, PostRecordResumeMode.CONTINUE);
+      seedFromPreviousAttempt(retry, previous, PostRecordResumeMode.CONTINUE, h);
+      resetForResume(retry);
 
       const { fa } = tasksOf(retry);
       expect(fa.sourceUrl).toBeUndefined();
@@ -752,8 +849,8 @@ describe('Relay pipeline + scheduler (integration)', () => {
       previous.status = NodeStatus.FAILED;
 
       const retry = sched.enqueue(submission.id);
-      seedFromPreviousAttempt(retry, previous);
-      resetForResume(retry, PostRecordResumeMode.CONTINUE);
+      seedFromPreviousAttempt(retry, previous, PostRecordResumeMode.CONTINUE, h);
+      resetForResume(retry);
 
       const cp = retry.tasks.find((t) => t.websiteId === 'crosspost')!;
       const fa = retry.tasks.find((t) => t.websiteId === 'furaffinity')!;

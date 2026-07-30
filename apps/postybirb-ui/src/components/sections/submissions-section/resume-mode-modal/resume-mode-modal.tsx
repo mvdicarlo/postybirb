@@ -4,8 +4,9 @@
  */
 
 import { Trans, useLingui } from '@lingui/react/macro';
-import { Button, Group, Modal, Radio, Stack, Text } from '@mantine/core';
+import { Alert, Button, Group, Modal, Radio, Stack, Text } from '@mantine/core';
 import { PostRecordResumeMode } from '@postybirb/types';
+import { IconAlertTriangle } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 
 interface ResumeModeModalProps {
@@ -15,6 +16,8 @@ interface ResumeModeModalProps {
   onClose: () => void;
   /** Called when the user selects a resume mode and confirms */
   onConfirm: (resumeMode: PostRecordResumeMode) => void;
+  /** Whether the submission gained files since the failed attempt */
+  hasNewFiles?: boolean;
 }
 
 /**
@@ -28,6 +31,7 @@ export function ResumeModeModal({
   opened,
   onClose,
   onConfirm,
+  hasNewFiles,
 }: ResumeModeModalProps) {
   const { t } = useLingui();
   const [selectedMode, setSelectedMode] = useState<PostRecordResumeMode>(
@@ -55,6 +59,21 @@ export function ResumeModeModal({
             The last posting attempt failed. How would you like to proceed?
           </Trans>
         </Text>
+
+        {hasNewFiles ? (
+          <Alert
+            color="yellow"
+            variant="light"
+            icon={<IconAlertTriangle size={16} />}
+            title={<Trans>Files were added since that attempt</Trans>}
+          >
+            <Trans>
+              Websites that already finished will receive the new files as a
+              separate post — they cannot be added to the post that already went
+              out.
+            </Trans>
+          </Alert>
+        ) : null}
 
         <Radio.Group
           value={selectedMode}

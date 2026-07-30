@@ -12,6 +12,7 @@ import {
   Dependency,
   NodeStatus,
   PostRecordResumeMode,
+  SubmissionFileId,
   SubmissionType,
   UnitKind,
 } from '@postybirb/types';
@@ -45,6 +46,32 @@ export function planJob(job: RelayJob, deps: PipelineDeps): void {
 }
 
 /**
+ * Shard file ids into ordered BATCH units of `batchSize`, numbering them from
+ * `startOrdinal` so a caller can append to units that already exist.
+ */
+function buildBatchUnits(
+  task: RelayTask,
+  fileIds: SubmissionFileId[],
+  batchSize: number,
+  startOrdinal = 0,
+): RelayUnit[] {
+  const units: RelayUnit[] = [];
+  for (let i = 0; i < fileIds.length; i += batchSize) {
+    const ordinal = startOrdinal + units.length;
+    units.push(
+      new RelayUnit({
+        id: `${task.id}:b${ordinal}`,
+        taskId: task.id,
+        kind: UnitKind.BATCH,
+        ordinal,
+        fileIds: fileIds.slice(i, i + batchSize),
+      }),
+    );
+  }
+  return units;
+}
+
+/**
  * Shard a file submission's files into ordered BATCH units of `batchSize`,
  * pushing them onto the task. Files excluded for this account are filtered out
  * upstream by {@link buildTask}.
@@ -54,20 +81,13 @@ function shardFilesIntoUnits(
   files: RelaySubmission['files'],
   batchSize: number,
 ): void {
-  let ordinal = 0;
-  for (let i = 0; i < files.length; i += batchSize) {
-    const batch = files.slice(i, i + batchSize);
-    task.units.push(
-      new RelayUnit({
-        id: `${task.id}:b${ordinal}`,
-        taskId: task.id,
-        kind: UnitKind.BATCH,
-        ordinal,
-        fileIds: batch.map((f) => f.id),
-      }),
-    );
-    ordinal++;
-  }
+  task.units.push(
+    ...buildBatchUnits(
+      task,
+      files.map((file) => file.id),
+      batchSize,
+    ),
+  );
 }
 
 /**
@@ -178,12 +198,11 @@ function wireSourceDependencies(job: RelayJob, deps: PipelineDeps): void {
  *  - NEW handled by the caller (builds a fresh job).
  *
  * A destination whose units are all done is left SUCCEEDED in *every* mode:
- * re-sending it would duplicate a post that already went out.
+ * re-sending it would duplicate a post that already went out. Which of the
+ * previous attempt's work is still "done" is decided by
+ * {@link seedFromPreviousAttempt}, so this only has to re-open the rest.
  */
-export function resetForResume(
-  job: RelayJob,
-  mode: PostRecordResumeMode,
-): void {
+export function resetForResume(job: RelayJob): void {
   for (const task of job.tasks) {
     if (task.status === NodeStatus.SKIPPED) continue;
 
@@ -195,20 +214,9 @@ export function resetForResume(
     }
 
     for (const unit of task.units) {
-      if (mode === PostRecordResumeMode.CONTINUE_RETRY) {
-        unit.status = NodeStatus.QUEUED;
-        unit.sourceUrl = undefined;
-        unit.error = undefined;
-      } else if (!isDone(unit)) {
-        unit.status = NodeStatus.QUEUED;
-        unit.error = undefined;
-      }
-    }
-
-    if (mode === PostRecordResumeMode.CONTINUE_RETRY) {
-      // Nothing of this task survives the re-upload, so the URL downstream
-      // sites would quote is stale.
-      task.sourceUrl = undefined;
+      if (isDone(unit)) continue;
+      unit.status = NodeStatus.QUEUED;
+      unit.error = undefined;
     }
 
     task.status = NodeStatus.QUEUED;
@@ -226,20 +234,65 @@ function taskKey(task: RelayTask): string {
 }
 
 /**
- * Identifies a unit across attempts by *what it posts* rather than by its
- * ordinal, so that editing the submission's files between attempts cannot
- * make a new batch inherit an old batch's "already posted" status.
+ * Rebuild a task's units as "what already posted", followed by "what still has
+ * to". Progress is tracked per *file* rather than per batch: batch boundaries
+ * shift whenever files are added, removed or reordered, so matching whole
+ * batches would make already-posted files look unposted and re-send them.
+ *
+ * A posted batch keeps only the files that are still planned, so a batch whose
+ * files were all removed takes its source URL out of the tree with it.
  */
-function unitKey(unit: RelayUnit): string {
-  return `${unit.kind}:${[...unit.fileIds].sort().join(',')}`;
+function carryOverPostedWork(
+  task: RelayTask,
+  previousTask: RelayTask,
+  batchSize: number,
+): void {
+  const plannedFileIds = task.units.flatMap((unit) => unit.fileIds);
+  const stillPlanned = new Set(plannedFileIds);
+  const postedFileIds = new Set<SubmissionFileId>();
+  const posted: RelayUnit[] = [];
+
+  const inOrder = [...previousTask.units].sort((a, b) => a.ordinal - b.ordinal);
+  for (const previousUnit of inOrder) {
+    if (!isDone(previousUnit)) continue;
+    previousUnit.fileIds.forEach((fileId) => postedFileIds.add(fileId));
+
+    const fileIds = previousUnit.fileIds.filter((id) => stillPlanned.has(id));
+    if (previousUnit.kind === UnitKind.BATCH && fileIds.length === 0) continue;
+
+    const ordinal = posted.length;
+    const unit = new RelayUnit({
+      id:
+        previousUnit.kind === UnitKind.MESSAGE
+          ? `${task.id}:m`
+          : `${task.id}:b${ordinal}`,
+      taskId: task.id,
+      kind: previousUnit.kind,
+      ordinal,
+      fileIds,
+    });
+    unit.status = previousUnit.status;
+    unit.sourceUrl = previousUnit.sourceUrl;
+    posted.push(unit);
+  }
+
+  // Nothing that posted survives, so the freshly planned tree already describes
+  // everything left to do.
+  if (posted.length === 0) return;
+
+  const remaining = plannedFileIds.filter((id) => !postedFileIds.has(id));
+  task.units = [
+    ...posted,
+    ...buildBatchUnits(task, remaining, batchSize, posted.length),
+  ];
 }
 
 /**
  * Copy the outcome of a previous attempt onto a freshly-planned job tree so a
  * resume does not re-post work that already went out. Node ids are namespaced
- * per job, so nodes are matched by what they target rather than by id; nodes
+ * per job, so nodes are matched by what they target rather than by id; work
  * with no counterpart in the previous attempt (a newly-selected website, a
- * newly-added file) stay QUEUED and will be posted.
+ * newly-added file) stays QUEUED and will be posted.
  *
  * Call {@link resetForResume} afterwards to re-open the nodes the chosen mode
  * wants to re-run.
@@ -247,6 +300,8 @@ function unitKey(unit: RelayUnit): string {
 export function seedFromPreviousAttempt(
   job: RelayJob,
   previous: RelayJob,
+  mode: PostRecordResumeMode,
+  deps: PipelineDeps,
 ): void {
   const previousTasks = new Map(previous.tasks.map((t) => [taskKey(t), t]));
 
@@ -255,17 +310,16 @@ export function seedFromPreviousAttempt(
     const previousTask = previousTasks.get(taskKey(task));
     if (!previousTask) continue;
 
-    const previousUnits = new Map(
-      previousTask.units.map((u) => [unitKey(u), u]),
-    );
-    for (const unit of task.units) {
-      const previousUnit = previousUnits.get(unitKey(unit));
-      if (!previousUnit || !isDone(previousUnit)) continue;
-      unit.status = previousUnit.status;
-      unit.sourceUrl = previousUnit.sourceUrl;
-    }
+    // CONTINUE_RETRY deliberately re-sends an incomplete site in full; a site
+    // that finished is never re-sent, whatever the mode.
+    const wasFullyDone =
+      previousTask.units.length > 0 && previousTask.units.every(isDone);
+    if (mode === PostRecordResumeMode.CONTINUE_RETRY && !wasFullyDone) continue;
 
-    // Downstream sites quote this, so it may only come from a batch that both
+    const site = deps.getWebsite(job.id, task.websiteId, task.accountId);
+    carryOverPostedWork(task, previousTask, site.fileBatchSize);
+
+    // Downstream sites quote this, so it may only come from work that both
     // already posted and still exists in the current plan.
     task.sourceUrl = task.units.find(
       (unit) => isDone(unit) && unit.sourceUrl,

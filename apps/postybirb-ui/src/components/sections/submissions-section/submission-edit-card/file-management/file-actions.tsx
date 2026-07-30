@@ -5,35 +5,36 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-  ActionIcon,
-  Badge,
-  Box,
-  Divider,
-  FileButton,
-  Group,
-  Image,
-  Stack,
-  Text,
-  Tooltip,
+    ActionIcon,
+    Badge,
+    Box,
+    Divider,
+    FileButton,
+    Group,
+    Image,
+    Stack,
+    Text,
+    Tooltip,
 } from '@mantine/core';
 import { FileWithPath } from '@mantine/dropzone';
 import { FileType, ISubmissionFileDto, SubmissionId } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import {
-  IconCrop,
-  IconFileUpload,
-  IconPencil,
-  IconReplace,
+    IconCrop,
+    IconFileUpload,
+    IconPencil,
+    IconReplace,
 } from '@tabler/icons-react';
 import { useState } from 'react';
 import fileSubmissionApi, {
-  FileUpdateTarget,
+    FileUpdateTarget,
 } from '../../../../../api/file-submission.api';
+import { useIsSubmissionPosting } from '../../../../../stores/ui/posting-state-store';
 import { getBaseUrl } from '../../../../../transports/http-client';
 import {
-  showErrorNotification,
-  showErrorWithContext,
-  showErrorWithTitleNotification,
+    showErrorNotification,
+    showErrorWithContext,
+    showErrorWithTitleNotification,
 } from '../../../../../utils/notifications';
 import { ImageEditor } from '../../file-submission-modal/image-editor';
 import { useSubmissionEditCardContext } from '../context';
@@ -51,6 +52,9 @@ export function FileActions({ file, submissionId }: FileActionsProps) {
   const { submission } = useSubmissionEditCardContext();
   const fileType = getFileType(file.fileName);
   const { isArchived } = submission;
+  const isPosting = useIsSubmissionPosting(submissionId);
+  // The server refuses replaces mid-post; keep the buttons in step with it.
+  const editingDisabled = isArchived || isPosting;
 
   // Editor modal states - stores the file to edit and which target to update
   const [editorFile, setEditorFile] = useState<FileWithPath | null>(null);
@@ -211,7 +215,7 @@ export function FileActions({ file, submissionId }: FileActionsProps) {
                 file.mimeType === 'image/jpeg') && (
                 <Tooltip label={<Trans>Edit file</Trans>} withArrow>
                   <ActionIcon
-                    disabled={isArchived}
+                    disabled={editingDisabled}
                     variant="light"
                     color="grape"
                     size="xs"
@@ -223,7 +227,10 @@ export function FileActions({ file, submissionId }: FileActionsProps) {
                 </Tooltip>
               )}
 
-            <FileButton onChange={handlePrimaryReplace} disabled={isArchived}>
+            <FileButton
+              onChange={handlePrimaryReplace}
+              disabled={editingDisabled}
+            >
               {(buttonProps) => (
                 <Tooltip label={<Trans>Replace file</Trans>} withArrow>
                   <ActionIcon
@@ -231,7 +238,7 @@ export function FileActions({ file, submissionId }: FileActionsProps) {
                     variant="light"
                     color="blue"
                     size="xs"
-                    disabled={isArchived}
+                    disabled={editingDisabled}
                   >
                     <IconReplace size={12} />
                   </ActionIcon>
@@ -279,7 +286,7 @@ export function FileActions({ file, submissionId }: FileActionsProps) {
                   variant="light"
                   color="teal"
                   size="xs"
-                  disabled={isArchived}
+                  disabled={editingDisabled}
                   onClick={handleCropFromPrimary}
                   loading={isLoadingPrimary}
                 >
@@ -292,7 +299,7 @@ export function FileActions({ file, submissionId }: FileActionsProps) {
             <FileButton
               accept="image/*"
               onChange={handleThumbnailUpload}
-              disabled={isArchived}
+              disabled={editingDisabled}
             >
               {(buttonProps) => (
                 <Tooltip label={<Trans>Upload thumbnail</Trans>} withArrow>
@@ -301,7 +308,7 @@ export function FileActions({ file, submissionId }: FileActionsProps) {
                     variant="light"
                     color="indigo"
                     size="xs"
-                    disabled={isArchived}
+                    disabled={editingDisabled}
                   >
                     <IconFileUpload size={12} />
                   </ActionIcon>

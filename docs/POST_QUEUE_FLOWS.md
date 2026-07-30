@@ -62,13 +62,16 @@ flowchart TD
 | Mode | Behaviour |
 | ---- | --------- |
 | `NEW` | Start every current destination and batch from scratch. |
-| `CONTINUE` | Keep completed batches and resume incomplete websites at their first unposted batch. |
-| `CONTINUE_RETRY` | Keep fully completed websites, but restart every batch of an incomplete website and clear its old source URLs. |
+| `CONTINUE` | Keep the files that already posted and shard only the rest. |
+| `CONTINUE_RETRY` | Keep fully completed websites, but restart an incomplete website from its first file. |
 
-Units are the source of truth for delivered work. A current unit inherits
-`SUCCEEDED` or `SKIPPED` only when its kind and sorted file ids match a completed
-unit from the previous attempt. Changing batch composition therefore queues the
-changed work; reordering files inside the same batch does not.
+Delivered work is tracked per *file*, not per batch. A resume carries over the
+previous attempt's completed units, drops any file they posted that the
+submission no longer has, and shards the remaining files into fresh batches
+appended after them. Adding, removing or reordering files therefore shifts batch
+boundaries without making an already-posted file look unposted, so nothing is
+sent twice. Files added since the attempt go out as an additional post on a
+website that already finished — they cannot join the post that already exists.
 
 ## 3. Relay Execution
 

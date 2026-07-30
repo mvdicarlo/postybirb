@@ -198,7 +198,7 @@ export class RelayScheduler {
     // so the job can be cancelled again during this execution.
     this.tokens.set(jobId, new CancellableToken());
     job.resumeMode = mode;
-    resetForResume(job, mode);
+    resetForResume(job);
     job.completedAt = undefined;
     job.status = NodeStatus.QUEUED;
     this.deps.tracer.emit({

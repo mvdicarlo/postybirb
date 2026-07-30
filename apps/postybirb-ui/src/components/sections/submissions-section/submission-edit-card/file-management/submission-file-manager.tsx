@@ -4,45 +4,47 @@
  */
 
 import {
-  closestCenter,
-  DndContext,
-  DragEndEvent,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
+    closestCenter,
+    DndContext,
+    DragEndEvent,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
 } from '@dnd-kit/core';
 import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-  verticalListSortingStrategy,
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    useSortable,
+    verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Trans } from '@lingui/react/macro';
 import {
-  Box,
-  Button,
-  Collapse,
-  Divider,
-  Group,
-  Paper,
-  ScrollArea,
-  Stack,
-  Text,
+    Alert,
+    Box,
+    Button,
+    Collapse,
+    Divider,
+    Group,
+    Paper,
+    ScrollArea,
+    Stack,
+    Text,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { ISubmissionFileDto } from '@postybirb/types';
-import { IconArrowsSort, IconListDetails } from '@tabler/icons-react';
+import { IconArrowsSort, IconListDetails, IconLock } from '@tabler/icons-react';
 import {
-  CSSProperties,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
+    CSSProperties,
+    useCallback,
+    useEffect,
+    useMemo,
+    useState,
 } from 'react';
 import fileSubmissionApi from '../../../../../api/file-submission.api';
+import { useIsSubmissionPosting } from '../../../../../stores/ui/posting-state-store';
 import { useSubmissionEditCardContext } from '../context';
 import { BulkFileEditor } from './bulk-file-editor';
 import './file-management.css';
@@ -127,6 +129,7 @@ function SortableFileCard({
 
 export function SubmissionFileManager() {
   const { submission } = useSubmissionEditCardContext();
+  const isPosting = useIsSubmissionPosting(submission.id);
   const [orderedFiles, setOrderedFiles] = useState(() =>
     orderFiles(submission.files),
   );
@@ -205,7 +208,8 @@ export function SubmissionFileManager() {
     [orderedFiles, applyReorder],
   );
 
-  const isDraggable = orderedFiles.length > 1 && !submission.isArchived;
+  const isDraggable =
+    orderedFiles.length > 1 && !submission.isArchived && !isPosting;
 
   return (
     <Paper withBorder p={0} radius="md">
@@ -237,6 +241,25 @@ export function SubmissionFileManager() {
           </Group>
         </Group>
       </Box>
+
+      {isPosting && (
+        <>
+          <Divider />
+          <Alert
+            color="blue"
+            variant="light"
+            radius={0}
+            icon={<IconLock size={16} />}
+            title={<Trans>Files are locked while posting</Trans>}
+          >
+            <Trans>
+              This submission is being posted, so files cannot be added,
+              replaced, removed or reordered. A website waiting on a rate limit
+              still counts as posting. Cancel the post to make changes now.
+            </Trans>
+          </Alert>
+        </>
+      )}
 
       {/* Bulk edit panel */}
       <Collapse in={bulkOpen && orderedFiles.length > 1}>

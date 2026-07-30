@@ -73,6 +73,8 @@ interface UseSubmissionHandlersResult {
   ) => Promise<void>;
   /** ID of submission waiting for resume mode selection */
   pendingResumeSubmissionId: string | null;
+  /** Whether that submission gained files since the failed attempt */
+  pendingResumeHasNewFiles: boolean;
   /** Close the resume mode modal without posting */
   cancelResume: () => void;
   /** Post with the selected resume mode */
@@ -105,6 +107,7 @@ export function useSubmissionHandlers({
     handleCancel,
     handlePostSelected,
     pendingResumeSubmissionId,
+    pendingResumeHasNewFiles,
     cancelResume,
     confirmResume,
   } = useSubmissionPost();
@@ -137,6 +140,7 @@ export function useSubmissionHandlers({
     handlePostSelected,
     handleScheduleChange,
     pendingResumeSubmissionId,
+    pendingResumeHasNewFiles,
     cancelResume,
     confirmResume,
   };

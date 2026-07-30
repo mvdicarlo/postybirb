@@ -10,7 +10,7 @@ import { useSubmissionStore } from '../../../../stores';
 import { useNavigationStore } from '../../../../stores/ui/navigation-store';
 import { type ViewState } from '../../../../types/view-state';
 import { showPostErrorNotification } from '../../../../utils/notifications';
-import { hasResumableAttempt } from '../resume-mode-modal';
+import { inspectPreviousAttempt } from '../resume-mode-modal';
 import { isSubmissionsViewState } from '../types';
 
 interface UseSubmissionPostResult {
@@ -22,6 +22,8 @@ interface UseSubmissionPostResult {
   handlePostSelected: (orderedIds: string[], resumeMode?: PostRecordResumeMode) => Promise<void>;
   /** ID of submission waiting for resume mode selection */
   pendingResumeSubmissionId: string | null;
+  /** Whether that submission gained files since the failed attempt */
+  pendingResumeHasNewFiles: boolean;
   /** Close the resume mode modal without posting */
   cancelResume: () => void;
   /** Post with the selected resume mode */
@@ -37,6 +39,8 @@ export function useSubmissionPost(): UseSubmissionPostResult {
   const [pendingResumeSubmissionId, setPendingResumeSubmissionId] = useState<
     string | null
   >(null);
+  const [pendingResumeHasNewFiles, setPendingResumeHasNewFiles] =
+    useState(false);
 
   // Handle posting a submission — reads submissionsMap at call time
   const handlePost = useCallback(
@@ -52,7 +56,12 @@ export function useSubmissionPost(): UseSubmissionPostResult {
         // Re-posting after a failed attempt is ambiguous: ask whether to
         // continue that attempt or start over, rather than silently re-posting
         // to websites that already succeeded.
-        if (await hasResumableAttempt(id)) {
+        const { resumable, hasNewFiles } = await inspectPreviousAttempt(
+          id,
+          submission.files.map((file) => file.id),
+        );
+        if (resumable) {
+          setPendingResumeHasNewFiles(hasNewFiles);
           setPendingResumeSubmissionId(id);
           return;
         }
@@ -127,6 +136,7 @@ export function useSubmissionPost(): UseSubmissionPostResult {
     handleCancel,
     handlePostSelected,
     pendingResumeSubmissionId,
+    pendingResumeHasNewFiles,
     cancelResume,
     confirmResume,
   };

@@ -23,6 +23,7 @@ import {
 import { IsTestEnvironment } from '@postybirb/utils/common';
 import { Mutex } from 'async-mutex';
 import { NotificationsService } from '../../notifications/notifications.service';
+import { PostingLockService } from '../../posting-lock/posting-lock.service';
 import { SubmissionService } from '../../submission/services/submission.service';
 import { WebsiteRegistryService } from '../../websites/website-registry.service';
 import { RelayJob, isTerminal } from './model';
@@ -45,6 +46,13 @@ export class RelayPostManager implements OnModuleInit {
   private recoveryAttempt: Promise<void> | undefined;
 
   /**
+   * Synchronous view of {@link recoveryAttempt} for callers that cannot await.
+   * While set, the scheduler has not yet adopted whatever was running before
+   * the process restarted, so nothing can be said about any single submission.
+   */
+  private recoveryPending = false;
+
+  /**
    * Set whenever {@link drain} is invoked. A drain that finds another already
    * in flight sets this instead of queueing a second run; the in-flight drain
    * checks it after each `runToIdle` pass and loops again if set. This closes
@@ -60,6 +68,7 @@ export class RelayPostManager implements OnModuleInit {
     private readonly websiteRegistry: WebsiteRegistryService,
     @Optional() private readonly submissionService?: SubmissionService,
     @Optional() private readonly notifications?: NotificationsService,
+    @Optional() postingLock?: PostingLockService,
   ) {
     this.scheduler = new RelayScheduler(this.deps, {
       maxConcurrentJobs: 1, // Set to 1 to keep similar to what users expect at the moment
@@ -67,12 +76,18 @@ export class RelayPostManager implements OnModuleInit {
       onTaskChanged: (job, task) => this.persistence.saveTask(task),
       onJobChanged: (job) => this.persistence.save(job),
     });
+    postingLock?.setSource((submissionId) => this.isPostingLocked(submissionId));
   }
 
   async onModuleInit(): Promise<void> {
     if (IsTestEnvironment()) return;
     // Recover in the background so startup is not blocked.
-    this.recoveryAttempt = this.recover();
+    this.recoveryPending = true;
+    // finally, not then: a rejected recovery must still release the lock or
+    // every submission stays uneditable for the rest of the session.
+    this.recoveryAttempt = this.recover().finally(() => {
+      this.recoveryPending = false;
+    });
     this.recoveryAttempt.catch((error) =>
       this.logger.withError(error).error('Relay crash recovery failed'),
     );
@@ -124,7 +139,7 @@ export class RelayPostManager implements OnModuleInit {
         try {
           
           await this.deps.prepare(job);
-          resetForResume(job, PostRecordResumeMode.CONTINUE);
+          resetForResume(job);
           this.scheduler.adopt(job);
         } catch (error) {
           this.logger
@@ -231,8 +246,8 @@ export class RelayPostManager implements OnModuleInit {
       await this.deps.prepare(job);
       this.scheduler.plan(job);
       if (previousAttempt) {
-        seedFromPreviousAttempt(job, previousAttempt);
-        resetForResume(job, resumeMode);
+        seedFromPreviousAttempt(job, previousAttempt, resumeMode, this.deps);
+        resetForResume(job);
         this.logger
           .withMetadata({
             jobId: job.id,
@@ -306,7 +321,7 @@ export class RelayPostManager implements OnModuleInit {
       const ready = await this.waitForRegistry();
       if (!ready) throw new Error('website registry not ready');
       await this.deps.prepare(orphan);
-      resetForResume(orphan, PostRecordResumeMode.CONTINUE);
+      resetForResume(orphan);
       this.scheduler.adopt(orphan);
       this.logger
         .withMetadata({ jobId: orphan.id, submissionId })
@@ -364,6 +379,16 @@ export class RelayPostManager implements OnModuleInit {
     return this.isActiveJob(
       this.scheduler.getActiveJobForSubmission(submissionId),
     );
+  }
+
+  /**
+   * Whether edits to a submission must be refused. Broader than
+   * {@link isPosting}: until crash recovery has reconciled, a job that is about
+   * to be adopted is not in the scheduler yet, and its persisted units still
+   * reference files an edit could delete.
+   */
+  isPostingLocked(submissionId: SubmissionId): boolean {
+    return this.recoveryPending || this.isPosting(submissionId);
   }
 
   /**

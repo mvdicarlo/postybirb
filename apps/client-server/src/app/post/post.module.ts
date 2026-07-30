@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { FileConverterModule } from '../file-converter/file-converter.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { PostParsersModule } from '../post-parsers/post-parsers.module';
+import { PostingLockModule } from '../posting-lock/posting-lock.module';
 import { SettingsModule } from '../settings/settings.module';
 import { SubmissionModule } from '../submission/submission.module';
 import { ValidationModule } from '../validation/validation.module';
@@ -35,6 +36,7 @@ import { PostQueueService } from './services/post-queue/post-queue.service';
     SettingsModule,
     SubmissionModule,
     NotificationsModule,
+    PostingLockModule,
   ],
   controllers: [PostController, PostQueueController, PostManagerController],
   providers: [

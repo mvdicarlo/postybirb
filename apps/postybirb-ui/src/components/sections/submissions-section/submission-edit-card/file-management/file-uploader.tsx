@@ -16,6 +16,7 @@ import { getFileType } from '@postybirb/utils/file-type';
 import { IconPhoto, IconUpload, IconX } from '@tabler/icons-react';
 import { useState } from 'react';
 import fileSubmissionApi from '../../../../../api/file-submission.api';
+import { useIsSubmissionPosting } from '../../../../../stores/ui/posting-state-store';
 import {
     showErrorNotification,
     showUploadErrorNotification,
@@ -59,6 +60,7 @@ function getFileTypeLabel(fileType: FileType): string {
 
 export function FileUploader() {
   const { submission } = useSubmissionEditCardContext();
+  const isPosting = useIsSubmissionPosting(submission.id);
   const [uploading, setUploading] = useState(false);
 
   // Get the existing file type if there are files
@@ -120,7 +122,7 @@ export function FileUploader() {
       ]}
       useFsAccessApi={false}
       loading={uploading}
-      disabled={submission.isArchived}
+      disabled={submission.isArchived || isPosting}
       multiple
     >
       <Group
