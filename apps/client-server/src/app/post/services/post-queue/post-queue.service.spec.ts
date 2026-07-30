@@ -5,6 +5,7 @@ import {
     AccountId,
     DefaultDescription,
     PostRecordResumeMode,
+    ScheduleType,
     SubmissionId,
     SubmissionRating,
     SubmissionType,
@@ -15,6 +16,7 @@ import { CreateAccountDto } from '../../../account/dtos/create-account.dto';
 import { TestPlatformModule } from '../../../platform/testing/test-platform.module';
 import { SettingsService } from '../../../settings/settings.service';
 import { CreateSubmissionDto } from '../../../submission/dtos/create-submission.dto';
+import { UpdateSubmissionDto } from '../../../submission/dtos/update-submission.dto';
 import { SubmissionService } from '../../../submission/services/submission.service';
 import { SubmissionEventPublisher } from '../../../submission/submission-event.publisher';
 import { SubmissionModule } from '../../../submission/submission.module';
@@ -228,6 +230,80 @@ describe('PostQueueService', () => {
       submission.id,
       PostRecordResumeMode.NEW,
     );
+  });
+
+  describe('scheduled submissions', () => {
+    async function createDueSubmission(
+      scheduleType: ScheduleType,
+    ): Promise<SubmissionId> {
+      const account = await accountService.create(createAccountDto());
+      const submission = await submissionService.create(createSubmissionDto());
+      await websiteOptionsService.create(
+        createWebsiteOptionsDto(submission.id, account.id),
+      );
+
+      const update = new UpdateSubmissionDto();
+      update.isScheduled = true;
+      update.scheduleType = scheduleType;
+      update.scheduledFor = new Date(Date.now() - 60_000).toISOString();
+      if (scheduleType === ScheduleType.RECURRING) {
+        update.cron = '0 0 * * *';
+      }
+      await submissionService.update(submission.id, update);
+      return submission.id;
+    }
+
+    /** The cron body no-ops under jest, so drop the NODE_ENV signal for it. */
+    async function runScheduledCheck(): Promise<void> {
+      const nodeEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = 'production';
+      try {
+        await service.checkForScheduledSubmissions();
+      } finally {
+        process.env.NODE_ENV = nodeEnv;
+      }
+    }
+
+    it('posts a recurring schedule fresh rather than resuming it', async () => {
+      const submissionId = await createDueSubmission(ScheduleType.RECURRING);
+
+      await runScheduledCheck();
+      await service.execute();
+
+      expect(mockRelayPostManager.enqueue).toHaveBeenCalledWith(
+        submissionId,
+        PostRecordResumeMode.NEW,
+      );
+    });
+
+    it('leaves a one-shot schedule on the engine default', async () => {
+      const submissionId = await createDueSubmission(ScheduleType.SINGLE);
+
+      await runScheduledCheck();
+      await service.execute();
+
+      expect(mockRelayPostManager.enqueue).toHaveBeenCalledWith(
+        submissionId,
+        undefined,
+      );
+    });
+
+    it('does not leak either mode across a mixed batch', async () => {
+      const recurringId = await createDueSubmission(ScheduleType.RECURRING);
+      const singleId = await createDueSubmission(ScheduleType.SINGLE);
+
+      await runScheduledCheck();
+      await service.execute();
+
+      expect(mockRelayPostManager.enqueue).toHaveBeenCalledWith(
+        recurringId,
+        PostRecordResumeMode.NEW,
+      );
+      expect(mockRelayPostManager.enqueue).toHaveBeenCalledWith(
+        singleId,
+        undefined,
+      );
+    });
   });
 
   it('keeps starting other submissions when one cannot be started', async () => {

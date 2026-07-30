@@ -1,18 +1,18 @@
 import {
-    Injectable,
-    InternalServerErrorException,
+  Injectable,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import {
-    PostQueueRecord,
-    PostQueueRecordRepository,
-    SubmissionRepository,
+  PostQueueRecord,
+  PostQueueRecordRepository,
+  SubmissionRepository,
 } from '@postybirb/database';
 import {
-    EntityId,
-    PostRecordResumeMode,
-    ScheduleType,
-    SubmissionId,
+  EntityId,
+  PostRecordResumeMode,
+  ScheduleType,
+  SubmissionId,
 } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/common';
 import { Mutex } from 'async-mutex';
@@ -74,10 +74,10 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
 
   /**
    * Enqueue submissions for posting (creates a queue record per submission).
-   * `resumeMode` is the user's answer to "how should this re-post treat the
-   * previous attempt?"; it is stored on the record so a restart before the job
-   * starts still honours the choice. When omitted the engine picks its default
-   * (CONTINUE).
+   * `resumeMode` answers "how should this post treat the previous attempt?" —
+   * either the user's choice or, for recurring schedules, the scheduler's. It
+   * is stored on the record so a restart before the job starts still honours
+   * the choice. When omitted the engine picks its default (CONTINUE).
    */
   public async enqueue(
     submissionIds: SubmissionId[],
@@ -177,14 +177,23 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
       );
     if (sorted.length === 0) return;
 
-    await this.enqueue(sorted.map((s) => s.id));
-
-    // Advance recurring schedules to their next run.
     const recurring = sorted.filter(
       (submission) =>
         submission.schedule.scheduleType === ScheduleType.RECURRING &&
         submission.schedule.cron,
     );
+    const recurringIds = new Set(recurring.map((submission) => submission.id));
+
+    await this.enqueue(
+      sorted
+        .filter((submission) => !recurringIds.has(submission.id))
+        .map((submission) => submission.id),
+    );
+    // A recurrence is a new post, not a retry of the last one; resuming would
+    // skip every site the previous cycle already succeeded on.
+    await this.enqueue([...recurringIds], PostRecordResumeMode.NEW);
+
+    // Advance recurring schedules to their next run.
     const scheduleResults = await Promise.allSettled(
       recurring.map(async (submission) => {
         const next = CronGenerator(submission.schedule.cron as string)
