@@ -39,16 +39,6 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
 
   private readonly submissionRepository = new SubmissionRepository();
 
-  /**
-   * Resume mode the user picked, held until the cycle that starts the job
-   * consumes it. In-memory on purpose: a restart should fall back to the
-   * default rather than replay a stale choice.
-   */
-  private readonly requestedResumeModes = new Map<
-    SubmissionId,
-    PostRecordResumeMode
-  >();
-
   constructor(
     private readonly settingsService: SettingsService,
     private readonly relayPostManager: RelayPostManager,
@@ -85,8 +75,9 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
   /**
    * Enqueue submissions for posting (creates a queue record per submission).
    * `resumeMode` is the user's answer to "how should this re-post treat the
-   * previous attempt?"; it is held until the queue cycle actually starts the
-   * job. When omitted the engine picks its default (CONTINUE).
+   * previous attempt?"; it is stored on the record so a restart before the job
+   * starts still honours the choice. When omitted the engine picks its default
+   * (CONTINUE).
    */
   public async enqueue(
     submissionIds: SubmissionId[],
@@ -119,13 +110,8 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
             eq(queueRecord.submissionId, submissionId),
         });
         if (!existing) {
-          await this.repository.insert({ submissionId });
+          await this.repository.insert({ submissionId, resumeMode });
           changedIds.add(submissionId);
-          if (resumeMode) {
-            this.requestedResumeModes.set(submissionId, resumeMode);
-          } else {
-            this.requestedResumeModes.delete(submissionId);
-          }
         }
         // If existing, do nothing (first-in-wins).
       }
@@ -151,7 +137,6 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
 
       submissionIds.forEach((id) => {
         this.relayPostManager.cancel(id);
-        this.requestedResumeModes.delete(id);
       });
 
       const result = await this.repository.deleteById(records.map((r) => r.id));
@@ -287,7 +272,7 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
           try {
             await this.relayPostManager.enqueue(
               submissionId,
-              this.requestedResumeModes.get(submissionId),
+              record.resumeMode,
             );
           } catch (error) {
             // Keep the record queued and move on: one submission that cannot

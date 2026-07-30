@@ -16,6 +16,7 @@ import { TestPlatformModule } from '../../../platform/testing/test-platform.modu
 import { SettingsService } from '../../../settings/settings.service';
 import { CreateSubmissionDto } from '../../../submission/dtos/create-submission.dto';
 import { SubmissionService } from '../../../submission/services/submission.service';
+import { SubmissionEventPublisher } from '../../../submission/submission-event.publisher';
 import { SubmissionModule } from '../../../submission/submission.module';
 import { CreateWebsiteOptionsDto } from '../../../website-options/dtos/create-website-options.dto';
 import { WebsiteOptionsModule } from '../../../website-options/website-options.module';
@@ -185,7 +186,7 @@ describe('PostQueueService', () => {
     );
   });
 
-  it('clears the requested mode when a queue entry is removed', async () => {
+  it('does not carry a resume mode over to a new queue entry', async () => {
     const account = await accountService.create(createAccountDto());
     const submission = await submissionService.create(createSubmissionDto());
     await websiteOptionsService.create(
@@ -202,6 +203,30 @@ describe('PostQueueService', () => {
     expect(mockRelayPostManager.enqueue).toHaveBeenCalledWith(
       submission.id,
       undefined,
+    );
+  });
+
+  it('reads the resume mode back from the database, not memory', async () => {
+    const account = await accountService.create(createAccountDto());
+    const submission = await submissionService.create(createSubmissionDto());
+    await websiteOptionsService.create(
+      createWebsiteOptionsDto(submission.id, account.id),
+    );
+
+    await service.enqueue([submission.id], PostRecordResumeMode.NEW);
+
+    // A second instance has none of the first's in-memory state, standing in
+    // for a restart between the enqueue and the cycle that starts the job.
+    const restarted = new PostQueueService(
+      module.get(SettingsService),
+      mockRelayPostManager,
+      module.get(SubmissionEventPublisher),
+    );
+    await restarted.execute();
+
+    expect(mockRelayPostManager.enqueue).toHaveBeenCalledWith(
+      submission.id,
+      PostRecordResumeMode.NEW,
     );
   });
 

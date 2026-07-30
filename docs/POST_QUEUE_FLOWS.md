@@ -10,15 +10,14 @@ flowchart TD
     A[Manual or scheduled enqueue] --> B[PostQueueService.enqueue]
     B --> C{Queue record exists?}
     C -->|Yes| D[Keep existing record and mode]
-    C -->|No| E[Insert post_queue_record]
-    E --> F[Remember requested resume mode in memory]
+    C -->|No| E[Insert post_queue_record with requested resume mode]
 
     D --> G[One-second queue cycle]
-    F --> G
+    E --> G
     G --> H{Queue paused?}
     H -->|Yes| I[Wait]
     H -->|No| J{Current entry has terminal outcome?}
-    J -->|Yes| K[Dequeue and clear remembered mode]
+    J -->|Yes| K[Dequeue, dropping the record and its mode]
     J -->|No| L{Relay job already active?}
     L -->|Yes| I
     L -->|No| M{Submission dependencies satisfied?}
@@ -27,8 +26,9 @@ flowchart TD
 ```
 
 The first enqueue wins while a queue record exists. The selected resume mode is
-kept in memory until that record is removed. If the process restarts before the
-job starts, the explicit choice is lost and the engine defaults to `CONTINUE`.
+stored on that record, so a restart before the job starts still honours the
+choice. A record with no stored mode falls back to the engine default
+(`CONTINUE`), and the mode is discarded with the record on dequeue.
 
 ## 2. Resume Modes
 

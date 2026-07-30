@@ -1,7 +1,8 @@
 import type {
-  IPostQueueRecord,
-  PostQueueRecordDto,
-  SubmissionId,
+    IPostQueueRecord,
+    PostQueueRecordDto,
+    PostRecordResumeMode,
+    SubmissionId,
 } from '@postybirb/types';
 import type { InferSelectModel } from 'drizzle-orm';
 import { HydrationContext } from '../repositories/base/hydration-context';
@@ -23,6 +24,8 @@ export class PostQueueRecord
 
   public submissionId: SubmissionId;
 
+  public resumeMode?: PostRecordResumeMode;
+
   public submission!: Submission;
 
   constructor(init: Partial<IPostQueueRecord> = {}) {
@@ -34,6 +37,8 @@ export class PostQueueRecord
       configurable: false,
     });
     this.submissionId = init.submissionId ?? '';
+    // The column is nullable; normalize so callers only deal with undefined.
+    this.resumeMode = init.resumeMode ?? undefined;
   }
 
   public toObject(): IPostQueueRecord {
@@ -42,6 +47,7 @@ export class PostQueueRecord
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
       submissionId: this.submissionId,
+      resumeMode: this.resumeMode,
       submission: this.submission,
     };
   }
