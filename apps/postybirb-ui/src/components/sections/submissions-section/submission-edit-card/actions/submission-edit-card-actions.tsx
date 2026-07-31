@@ -4,6 +4,7 @@
 
 import { Trans } from '@lingui/react/macro';
 import { ActionIcon, Group, Tooltip } from '@mantine/core';
+import { NodeStatus, PostRecordResumeMode } from '@postybirb/types';
 import {
     IconArchiveOff,
     IconCancel,
@@ -29,6 +30,11 @@ import {
 } from '../../../../../utils/notifications';
 import { HoldToConfirmButton } from '../../../../hold-to-confirm';
 import { SUBMISSION_EDIT_TOUR_ID } from '../../../../onboarding-tour/tours/submission-edit-tour';
+import {
+    availablePostModes,
+    inspectPostHistory,
+    PostModeModal,
+} from '../../post-mode-modal';
 import { PostPreviewModal } from '../../post-preview-modal';
 import { useSubmissionEditCardContext } from '../context';
 import { ApplyTemplateAction } from './apply-template-action';
@@ -42,13 +48,45 @@ export function SubmissionEditCardActions() {
   const { startTour } = useTourActions();
   const isPosting = useIsSubmissionPosting(submission.id);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [postModeOpen, setPostModeOpen] = useState(false);
+  const [postModeStatus, setPostModeStatus] = useState<NodeStatus>();
+  const [postModeHasNewFiles, setPostModeHasNewFiles] = useState(false);
 
-  const handlePost = async () => {
+  const enqueue = async (resumeMode?: PostRecordResumeMode) => {
     try {
-      await postQueueApi.enqueue([submission.id]);
+      await postQueueApi.enqueue([submission.id], resumeMode);
     } catch {
       showPostErrorNotification();
     }
+  };
+
+  const handlePost = async () => {
+    try {
+      const { hasHistory, newestStatus, hasNewFiles } =
+        await inspectPostHistory(
+          submission.id,
+          submission.files.map((file) => file.id),
+        );
+      if (hasHistory) {
+        if (availablePostModes(newestStatus).length === 0) {
+          showPostErrorNotification();
+          return;
+        }
+        setPostModeStatus(newestStatus);
+        setPostModeHasNewFiles(hasNewFiles);
+        setPostModeOpen(true);
+        return;
+      }
+    } catch {
+      showPostErrorNotification();
+      return;
+    }
+    await enqueue();
+  };
+
+  const handlePostModeConfirm = async (resumeMode: PostRecordResumeMode) => {
+    setPostModeOpen(false);
+    await enqueue(resumeMode);
   };
 
   const handleCancel = async () => {
@@ -91,38 +129,40 @@ export function SubmissionEditCardActions() {
     const hasHistory = true;
     return (
       <Group gap={4} wrap="nowrap" onClick={(e) => e.stopPropagation()}>
-          {hasHistory && (
-            <Tooltip label={<Trans>View history</Trans>}>
-              <ActionIcon
-                variant="subtle"
-                size="sm"
-                onClick={() => useSubmissionHistoryDrawerStore.getState().open(submission.id)}
-              >
-                <IconHistory size={16} />
-              </ActionIcon>
-            </Tooltip>
-          )}
-          <Tooltip label={<Trans>Restore</Trans>}>
+        {hasHistory && (
+          <Tooltip label={<Trans>View history</Trans>}>
             <ActionIcon
               variant="subtle"
               size="sm"
-              color="blue"
-              onClick={handleUnarchive}
+              onClick={() =>
+                useSubmissionHistoryDrawerStore.getState().open(submission.id)
+              }
             >
-              <IconArchiveOff size={16} />
+              <IconHistory size={16} />
             </ActionIcon>
           </Tooltip>
-          <Tooltip label={<Trans>Hold to delete permanently</Trans>}>
-            <HoldToConfirmButton
-              variant="subtle"
-              size="sm"
-              color="red"
-              onConfirm={handleDelete}
-            >
-              <IconTrash size={16} />
-            </HoldToConfirmButton>
-          </Tooltip>
-        </Group>
+        )}
+        <Tooltip label={<Trans>Restore</Trans>}>
+          <ActionIcon
+            variant="subtle"
+            size="sm"
+            color="blue"
+            onClick={handleUnarchive}
+          >
+            <IconArchiveOff size={16} />
+          </ActionIcon>
+        </Tooltip>
+        <Tooltip label={<Trans>Hold to delete permanently</Trans>}>
+          <HoldToConfirmButton
+            variant="subtle"
+            size="sm"
+            color="red"
+            onConfirm={handleDelete}
+          >
+            <IconTrash size={16} />
+          </HoldToConfirmButton>
+        </Tooltip>
+      </Group>
     );
   }
 
@@ -187,7 +227,11 @@ export function SubmissionEditCardActions() {
   return (
     <Group gap={4} wrap="nowrap" onClick={(e) => e.stopPropagation()}>
       <Tooltip label={<Trans>Editor Tour</Trans>}>
-        <ActionIcon variant="subtle" size="sm" onClick={() => startTour(SUBMISSION_EDIT_TOUR_ID)}>
+        <ActionIcon
+          variant="subtle"
+          size="sm"
+          onClick={() => startTour(SUBMISSION_EDIT_TOUR_ID)}
+        >
           <IconHelp size={16} />
         </ActionIcon>
       </Tooltip>
@@ -227,6 +271,13 @@ export function SubmissionEditCardActions() {
         opened={previewOpen}
         onClose={() => setPreviewOpen(false)}
         submissionId={submission.id}
+      />
+      <PostModeModal
+        opened={postModeOpen}
+        newestStatus={postModeStatus}
+        hasNewFiles={postModeHasNewFiles}
+        onClose={() => setPostModeOpen(false)}
+        onConfirm={handlePostModeConfirm}
       />
     </Group>
   );

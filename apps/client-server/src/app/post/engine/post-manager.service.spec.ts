@@ -1,4 +1,10 @@
-import { NodeStatus, SubmissionType, UnitKind } from '@postybirb/types';
+import {
+    NodeStatus,
+    PostRecordResumeMode,
+    SubmissionType,
+    UnitKind,
+} from '@postybirb/types';
+import { AttemptChainError, resolveAttemptChain } from './attempt-chain';
 import { RelayJob, RelayTask, RelayUnit } from './model';
 import { RelayPersistence } from './persistence';
 import { RelayPipelineDeps } from './pipeline-deps';
@@ -13,7 +19,6 @@ import { RelayTracer } from './tracer.service';
 /** Flush pending microtasks/timers so a fire-and-forget drain() can settle. */
 async function flush(times = 5): Promise<void> {
   for (let i = 0; i < times; i++) {
-    
     await new Promise((r) => setImmediate(r));
   }
 }
@@ -46,7 +51,9 @@ function messageWebsite() {
 function makeDeps(submissionId: string) {
   const submission = messageSubmission(submissionId);
   const website = messageWebsite();
-  const dispatchMessage = jest.fn().mockResolvedValue({ sourceUrl: 'https://m/1' });
+  const dispatchMessage = jest
+    .fn()
+    .mockResolvedValue({ sourceUrl: 'https://m/1' });
   const deps = {
     rateLimiter: new RateLimiter(new MemoryRateStore()),
     tracer: new RelayTracer(),
@@ -55,7 +62,9 @@ function makeDeps(submissionId: string) {
     getSubmission: jest.fn().mockReturnValue(submission),
     getWebsite: jest.fn().mockReturnValue(website),
     authenticate: jest.fn().mockResolvedValue(undefined),
-    buildPostData: jest.fn().mockResolvedValue({ postData: {}, sourceUrls: [] }),
+    buildPostData: jest
+      .fn()
+      .mockResolvedValue({ postData: {}, sourceUrls: [] }),
     validate: jest.fn().mockResolvedValue([]),
     processBatch: jest.fn().mockResolvedValue([]),
     dispatchFile: jest.fn(),
@@ -64,7 +73,9 @@ function makeDeps(submissionId: string) {
   return deps as unknown as RelayPipelineDeps & { dispatchMessage: jest.Mock };
 }
 
-function makePersistence(over: Partial<RelayPersistence> = {}): RelayPersistence {
+function makePersistence(
+  over: Partial<RelayPersistence> = {},
+): RelayPersistence {
   return {
     create: jest.fn().mockResolvedValue(undefined),
     save: jest.fn().mockResolvedValue(undefined),
@@ -97,7 +108,12 @@ function succeededOrphan(submissionId: string, jobId: string): RelayJob {
     websiteId: 'mastodon',
   });
   task.status = NodeStatus.SUCCEEDED;
-  const unit = new RelayUnit({ id: `${jobId}:u`, taskId: task.id, kind: UnitKind.MESSAGE, ordinal: 0 });
+  const unit = new RelayUnit({
+    id: `${jobId}:u`,
+    taskId: task.id,
+    kind: UnitKind.MESSAGE,
+    ordinal: 0,
+  });
   unit.status = NodeStatus.SUCCEEDED;
   task.units = [unit];
   job.tasks = [task];
@@ -166,11 +182,36 @@ describe('RelayPostManager hardening', () => {
     await flush();
 
     // The orphan was force-failed...
-    expect(persistence.failJob).toHaveBeenCalledWith('job-bad', 'submission gone');
+    expect(persistence.failJob).toHaveBeenCalledWith(
+      'job-bad',
+      'submission gone',
+    );
     // ...and a fresh, distinct job was created for the submission.
     expect(persistence.create).toHaveBeenCalled();
     expect(jobId).toBeDefined();
     expect(jobId).not.toBe('job-bad');
+  });
+
+  it('does not replace an orphan that cannot be marked failed', async () => {
+    const submissionId = 'sub-still-active';
+    const orphan = succeededOrphan(submissionId, 'job-still-active');
+    const deps = makeDeps(submissionId);
+    (deps.prepare as jest.Mock).mockRejectedValue(new Error('submission gone'));
+    const persistence = makePersistence({
+      loadBySubmission: jest.fn().mockResolvedValue([orphan]),
+      failJob: jest.fn().mockRejectedValue(new Error('db locked')),
+    } as Partial<RelayPersistence>);
+
+    const manager = new RelayPostManager(
+      deps,
+      persistence,
+      makeRegistry(true),
+      { archive: jest.fn().mockResolvedValue(undefined) } as never,
+      { create: jest.fn().mockResolvedValue(undefined) } as never,
+    );
+
+    await expect(manager.enqueue(submissionId)).rejects.toThrow('db locked');
+    expect(persistence.create).not.toHaveBeenCalled();
   });
 
   it('evicts the finished job tree from the scheduler on completion (memory)', async () => {
@@ -198,5 +239,177 @@ describe('RelayPostManager hardening', () => {
     expect(manager.getActiveTrees()).toHaveLength(0);
     // The per-job context was released.
     expect(deps.release).toHaveBeenCalledWith(jobId);
+  });
+
+  it('only reconciles the newest attempt, never an older stranded one', async () => {
+    // An older non-terminal row sitting behind a newer terminal one is dead
+    // history; adopting it would re-run an attempt the user already superseded.
+    const submissionId = 'sub-stale';
+    const stranded = succeededOrphan(submissionId, 'job-stranded');
+    const newest = succeededOrphan(submissionId, 'job-newest');
+    newest.status = NodeStatus.FAILED;
+    const deps = makeDeps(submissionId);
+    const persistence = makePersistence({
+      // loadBySubmission returns newest-first.
+      loadBySubmission: jest.fn().mockResolvedValue([newest, stranded]),
+    } as Partial<RelayPersistence>);
+
+    const manager = new RelayPostManager(
+      deps,
+      persistence,
+      makeRegistry(true),
+      { archive: jest.fn().mockResolvedValue(undefined) } as never,
+      { create: jest.fn().mockResolvedValue(undefined) } as never,
+    );
+
+    const jobId = await manager.enqueue(submissionId);
+    await flush();
+
+    expect(jobId).not.toBe('job-stranded');
+    expect(deps.prepare).not.toHaveBeenCalledWith(stranded);
+    // A resume of the newest failed attempt is a new row linked back to it.
+    const [created] = (persistence.create as jest.Mock).mock.calls[0];
+    expect(created.id).toBe(jobId);
+    expect(created.attemptOf).toBe('job-newest');
+  });
+
+  it('continues from the newest successful attempt by default', async () => {
+    const submissionId = 'sub-done';
+    const previous = succeededOrphan(submissionId, 'job-done');
+    previous.status = NodeStatus.SUCCEEDED;
+    const deps = makeDeps(submissionId);
+    const persistence = makePersistence({
+      loadBySubmission: jest.fn().mockResolvedValue([previous]),
+    } as Partial<RelayPersistence>);
+
+    const manager = new RelayPostManager(
+      deps,
+      persistence,
+      makeRegistry(true),
+      { archive: jest.fn().mockResolvedValue(undefined) } as never,
+      { create: jest.fn().mockResolvedValue(undefined) } as never,
+    );
+
+    const jobId = await manager.enqueue(submissionId);
+    await flush();
+
+    expect(jobId).not.toBe('job-done');
+    const [created] = (persistence.create as jest.Mock).mock.calls[0];
+    expect(created.attemptOf).toBe('job-done');
+    expect(deps.dispatchMessage).not.toHaveBeenCalled();
+  });
+
+  it('starts clean after success when NEW is requested', async () => {
+    const submissionId = 'sub-new';
+    const previous = succeededOrphan(submissionId, 'job-done');
+    previous.status = NodeStatus.SUCCEEDED;
+    const deps = makeDeps(submissionId);
+    const persistence = makePersistence({
+      loadBySubmission: jest.fn().mockResolvedValue([previous]),
+    } as Partial<RelayPersistence>);
+    const manager = new RelayPostManager(
+      deps,
+      persistence,
+      makeRegistry(true),
+      { archive: jest.fn().mockResolvedValue(undefined) } as never,
+      { create: jest.fn().mockResolvedValue(undefined) } as never,
+    );
+
+    await manager.enqueue(submissionId, PostRecordResumeMode.NEW);
+    await flush();
+
+    const [created] = (persistence.create as jest.Mock).mock.calls[0];
+    expect(created.attemptOf).toBeUndefined();
+    expect(deps.dispatchMessage).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects malformed lineage before creating a job', async () => {
+    const submissionId = 'sub-malformed';
+    const newest = succeededOrphan(submissionId, 'job-newest');
+    newest.status = NodeStatus.FAILED;
+    newest.attemptOf = 'job-missing';
+    const deps = makeDeps(submissionId);
+    const persistence = makePersistence({
+      loadBySubmission: jest.fn().mockResolvedValue([newest]),
+    } as Partial<RelayPersistence>);
+    const notifications = {
+      create: jest.fn().mockResolvedValue(undefined),
+    };
+    const manager = new RelayPostManager(
+      deps,
+      persistence,
+      makeRegistry(true),
+      { archive: jest.fn().mockResolvedValue(undefined) } as never,
+      notifications as never,
+    );
+
+    await expect(manager.enqueue(submissionId)).rejects.toBeInstanceOf(
+      AttemptChainError,
+    );
+    expect(persistence.create).not.toHaveBeenCalled();
+    expect(deps.prepare).not.toHaveBeenCalled();
+    expect(notifications.create).toHaveBeenCalledTimes(1);
+  });
+
+  it('refuses to post when the previous attempt cannot be read', async () => {
+    // Fail closed: without history a resume cannot tell what already went out,
+    // and posting blind would duplicate it. The queue record survives the
+    // throw, so a later cycle retries.
+    const submissionId = 'sub-unreadable';
+    const deps = makeDeps(submissionId);
+    const persistence = makePersistence({
+      loadBySubmission: jest.fn().mockRejectedValue(new Error('db locked')),
+    } as Partial<RelayPersistence>);
+
+    const manager = new RelayPostManager(
+      deps,
+      persistence,
+      makeRegistry(true),
+      { archive: jest.fn().mockResolvedValue(undefined) } as never,
+      { create: jest.fn().mockResolvedValue(undefined) } as never,
+    );
+
+    await expect(manager.enqueue(submissionId)).rejects.toThrow('db locked');
+    expect(persistence.create).not.toHaveBeenCalled();
+    expect(deps.dispatchMessage).not.toHaveBeenCalled();
+  });
+});
+
+describe('resolveAttemptChain', () => {
+  function job(id: string, attemptOf?: string): RelayJob {
+    return new RelayJob({ id, submissionId: 'sub', attemptOf });
+  }
+
+  it('follows ids newest-to-oldest without using row adjacency', () => {
+    const origin = job('origin');
+    const middle = job('middle', origin.id);
+    const newest = job('newest', middle.id);
+    const unrelated = job('unrelated');
+
+    expect(
+      resolveAttemptChain(newest, [newest, unrelated, origin, middle]).map(
+        (attempt) => attempt.id,
+      ),
+    ).toEqual(['newest', 'middle', 'origin']);
+  });
+
+  it('stops at an explicit null boundary', () => {
+    const newest = job('newest');
+    expect(resolveAttemptChain(newest, [newest])).toEqual([newest]);
+  });
+
+  it('rejects a missing parent', () => {
+    const newest = job('newest', 'missing');
+    expect(() => resolveAttemptChain(newest, [newest])).toThrow(
+      AttemptChainError,
+    );
+  });
+
+  it('rejects a cycle', () => {
+    const first = job('first', 'second');
+    const second = job('second', 'first');
+    expect(() => resolveAttemptChain(first, [first, second])).toThrow(
+      AttemptChainError,
+    );
   });
 });

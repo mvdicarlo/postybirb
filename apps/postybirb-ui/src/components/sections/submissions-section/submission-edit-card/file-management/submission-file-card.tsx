@@ -4,27 +4,28 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-  ActionIcon,
-  Badge,
-  Button,
-  Box,
-  Collapse,
-  Divider,
-  Flex,
-  Group,
-  Paper,
-  Text,
-  Tooltip,
+    ActionIcon,
+    Badge,
+    Box,
+    Button,
+    Collapse,
+    Divider,
+    Flex,
+    Group,
+    Paper,
+    Text,
+    Tooltip,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { FileType, ISubmissionFileDto } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import {
-  IconGripVertical,
-  IconTrash,
+    IconGripVertical,
+    IconTrash,
 } from '@tabler/icons-react';
 import { memo } from 'react';
 import fileSubmissionApi from '../../../../../api/file-submission.api';
+import { useIsSubmissionPosting } from '../../../../../stores/ui/posting-state-store';
 import { showErrorWithContext } from '../../../../../utils/notifications';
 import { useSubmissionEditCardContext } from '../context';
 import { FileActions } from './file-actions';
@@ -43,10 +44,11 @@ export const SubmissionFileCard = memo(
   ({ file, draggable, totalFiles, dragListeners }: SubmissionFileCardProps) => {
     const { submission } = useSubmissionEditCardContext();
     const accounts = useSubmissionAccounts();
+    const isPosting = useIsSubmissionPosting(submission.id);
     const [expanded, { toggle }] = useDisclosure(false);
     const fileType = getFileType(file.fileName);
 
-    const canDelete = totalFiles > 1 && !submission.isArchived;
+    const canDelete = totalFiles > 1 && !submission.isArchived && !isPosting;
 
     const handleDelete = async () => {
       if (!canDelete) return;

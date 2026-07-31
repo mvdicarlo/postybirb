@@ -12,12 +12,12 @@ import { Injectable, Optional } from '@nestjs/common';
 import { POST_STATE_DELTA } from '@postybirb/socket-events';
 import { JobTreeNode, NodeStatus, UnitKind } from '@postybirb/types';
 import {
-  appendFile,
-  mkdir,
-  readFile,
-  readdir,
-  stat,
-  unlink,
+    appendFile,
+    mkdir,
+    readFile,
+    readdir,
+    stat,
+    unlink,
 } from 'node:fs/promises';
 import { join } from 'node:path';
 import { WSGateway } from '../../web-socket/web-socket-gateway';
@@ -230,6 +230,7 @@ function projectUnit(unit: RelayUnit): JobTreeNode {
         : 'message',
     status: unit.status,
     sourceUrl: unit.sourceUrl,
+    fileIds: unit.fileIds,
     error: unit.error
       ? {
           kind: unit.error.kind,

@@ -1,0 +1,1 @@
+ALTER TABLE `post-queue` ADD `resumeMode` text;

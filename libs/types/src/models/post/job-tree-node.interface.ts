@@ -1,4 +1,5 @@
 import { NodeStatus } from '../../enums';
+import { SubmissionFileId } from '../submission/submission-file.interface';
 
 /**
  * The compact, recursive shape the UI renders for live posting state.
@@ -36,6 +37,9 @@ export interface JobTreeNode {
 
   /** Source URL once posted. */
   sourceUrl?: string;
+
+  /** Files this node posts (present on unit nodes; empty for messages). */
+  fileIds?: SubmissionFileId[];
 
   /** Error summary when failed. */
   error?: { kind: string; stage: string; message: string };

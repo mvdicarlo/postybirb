@@ -87,25 +87,31 @@ export class RelayFileProcessor {
           fileInstance,
         );
 
+        // Copy first: the PostingFile shares the SubmissionFile's metadata
+        // object, so mutating it would leak into every other website's post.
+        const metadata = { ...processed.metadata };
+
         // Propagate source URLs + truncate alt text.
-        processed.metadata.sourceUrls = [
-          ...(processed.metadata.sourceUrls ?? []),
-          ...sourceUrls,
-        ].filter((s) => !!s?.trim());
+        metadata.sourceUrls = [
+          ...new Set(
+            [...(metadata.sourceUrls ?? []), ...sourceUrls].filter(
+              (s) => !!s?.trim(),
+            ),
+          ),
+        ];
 
         const maxAltTextLength =
           instance.decoratedProps.fileOptions?.maxAltTextLength;
         if (
           typeof maxAltTextLength === 'number' &&
           maxAltTextLength > 0 &&
-          processed.metadata.altText &&
-          processed.metadata.altText.length > maxAltTextLength
+          metadata.altText &&
+          metadata.altText.length > maxAltTextLength
         ) {
-          processed.metadata.altText = processed.metadata.altText.slice(
-            0,
-            maxAltTextLength,
-          );
+          metadata.altText = metadata.altText.slice(0, maxAltTextLength);
         }
+
+        processed.withMetadata(metadata);
 
         info.push({
           fileId: file.id,

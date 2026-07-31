@@ -71,6 +71,20 @@
       "when": 1783682073974,
       "tag": "0009_parched_champions",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1785420426429,
+      "tag": "0010_lowly_the_watchers",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1785420446444,
+      "tag": "0011_closed_black_tom",
+      "breakpoints": true
     }
   ]
 }

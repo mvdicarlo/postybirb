@@ -1,16 +1,17 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
-  Alert,
-  Badge,
-  Box,
-  Button,
-  Group,
-  Modal,
-  Stack,
-  Text,
-  Tooltip,
+    Alert,
+    Badge,
+    Box,
+    Button,
+    Group,
+    Modal,
+    SegmentedControl,
+    Stack,
+    Text,
+    Tooltip,
 } from '@mantine/core';
-import type { PostRecordResumeMode, SubmissionId } from '@postybirb/types';
+import { PostRecordResumeMode, type SubmissionId } from '@postybirb/types';
 import { IconClock, IconInfoCircle } from '@tabler/icons-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAccountsMap } from '../../../../stores/entity/account-store';
@@ -19,9 +20,9 @@ import type { SubmissionRecord } from '../../../../stores/records';
 import { ReorderableSubmissionList } from '../../../shared/reorderable-submission-list';
 import { DependencyReorderableTree } from './dependency-reorderable-tree';
 import {
-  buildDependencyForest,
-  flattenForest,
-  type DependencyNode,
+    buildDependencyForest,
+    flattenForest,
+    type DependencyNode,
 } from './dependency-tree';
 import './post-confirm-modal.css';
 
@@ -69,12 +70,16 @@ export function PostConfirmModal({
     SubmissionRecord[]
   >([]);
   const [forest, setForest] = useState<DependencyNode[]>([]);
+  const [postMode, setPostMode] = useState<PostRecordResumeMode>(
+    PostRecordResumeMode.CONTINUE,
+  );
 
   useEffect(() => {
     if (opened) {
       const built = buildDependencyForest(validSubmissions);
       setForest(built);
       setOrderedSubmissions(flattenForest(built));
+      setPostMode(PostRecordResumeMode.CONTINUE);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [opened]);
@@ -229,9 +234,12 @@ export function PostConfirmModal({
   );
 
   const handleConfirm = useCallback(() => {
-    onConfirm(orderedSubmissions.map((s) => s.id));
+    onConfirm(
+      orderedSubmissions.map((s) => s.id),
+      postMode,
+    );
     onClose();
-  }, [orderedSubmissions, onConfirm, onClose]);
+  }, [orderedSubmissions, postMode, onConfirm, onClose]);
 
   const validCount = validSubmissions.length;
   const hasSkippedSubmissions = validCount < totalSelectedCount;
@@ -286,6 +294,31 @@ export function PostConfirmModal({
           )}
         </Text>
 
+        <Stack gap={4}>
+          <Text size="sm" fw={600}>
+            <Trans>Posting mode</Trans>
+          </Text>
+          <SegmentedControl
+            fullWidth
+            value={postMode}
+            onChange={(value) => setPostMode(value as PostRecordResumeMode)}
+            data={[
+              {
+                value: PostRecordResumeMode.CONTINUE,
+                label: t`Continue`,
+              },
+              { value: PostRecordResumeMode.NEW, label: t`Start fresh` },
+            ]}
+          />
+          <Text size="xs" c="dimmed">
+            {postMode === PostRecordResumeMode.NEW ? (
+              <Trans>Post all current content again.</Trans>
+            ) : (
+              <Trans>Keep successful deliveries and post remaining work.</Trans>
+            )}
+          </Text>
+        </Stack>
+
         {/* Dependency explainer (only when a submission has dependencies) */}
         {anyHasDependencies && (
           <Alert
@@ -307,12 +340,28 @@ export function PostConfirmModal({
 
         {/* Flat post-order list: every submission is individually reorderable */}
         {validCount > 0 && (
-          <ReorderableSubmissionList
-            submissions={orderedSubmissions}
-            onReorder={setOrderedSubmissions}
-            renderExtra={renderExtra}
-            fill
-          />
+          <Stack gap="md">
+            <Alert
+              icon={<IconInfoCircle size={16} />}
+              color="blue"
+              variant="light"
+              p="xs"
+              radius="md"
+            >
+              <Text size="xs">
+                <Trans>
+                  To retry every file for an incomplete website, post that
+                  submission individually and choose the retry option.
+                </Trans>
+              </Text>
+            </Alert>
+            <ReorderableSubmissionList
+              submissions={orderedSubmissions}
+              onReorder={setOrderedSubmissions}
+              renderExtra={renderExtra}
+              fill
+            />
+          </Stack>
         )}
 
         {/* Read-only dependency tree for context */}

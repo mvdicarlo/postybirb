@@ -19,7 +19,7 @@ export class PostQueueController extends PostyBirbController<PostQueueRecordRepo
   @Post('enqueue')
   @ApiOkResponse({ description: 'Post(s) queued.' })
   async enqueue(@Body() request: PostQueueActionDto) {
-    return this.service.enqueue(request.submissionIds);
+    return this.service.enqueue(request.submissionIds, request.resumeMode);
   }
 
   @Post('dequeue')

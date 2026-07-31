@@ -1,20 +1,23 @@
-import {
-    Injectable,
-    InternalServerErrorException,
-} from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import {
-    PostQueueRecord,
-    PostQueueRecordRepository,
-    SubmissionRepository,
+  PostQueueRecord,
+  PostQueueRecordRepository,
+  SubmissionRepository,
 } from '@postybirb/database';
-import { EntityId, ScheduleType, SubmissionId } from '@postybirb/types';
+import {
+  EntityId,
+  PostRecordResumeMode,
+  ScheduleType,
+  SubmissionId,
+} from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/common';
 import { Mutex } from 'async-mutex';
 import { Cron as CronGenerator } from 'croner';
 import { PostyBirbService } from '../../../common/service/postybirb-service';
 import { SettingsService } from '../../../settings/settings.service';
 import { SubmissionEventPublisher } from '../../../submission/submission-event.publisher';
+import { AttemptChainError } from '../../engine/attempt-chain';
 import { RelayPostManager } from '../../engine/post-manager.service';
 
 /**
@@ -67,8 +70,17 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
     await this.dequeue([id]);
   }
 
-  /** Enqueue submissions for posting (creates a queue record per submission). */
-  public async enqueue(submissionIds: SubmissionId[]) {
+  /**
+   * Enqueue submissions for posting (creates a queue record per submission).
+   * `resumeMode` answers "how should this post treat the previous attempt?" —
+   * either the user's choice or, for recurring schedules, the scheduler's. It
+   * is stored on the record so a restart before the job starts still honours
+   * the choice. When omitted the engine picks its default (CONTINUE).
+   */
+  public async enqueue(
+    submissionIds: SubmissionId[],
+    resumeMode?: PostRecordResumeMode,
+  ) {
     if (!submissionIds.length) return;
     const release = await this.queueModificationMutex.acquire();
     this.logger.withMetadata({ submissionIds }).info('Enqueueing posts');
@@ -96,7 +108,7 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
             eq(queueRecord.submissionId, submissionId),
         });
         if (!existing) {
-          await this.repository.insert({ submissionId });
+          await this.repository.insert({ submissionId, resumeMode });
           changedIds.add(submissionId);
         }
         // If existing, do nothing (first-in-wins).
@@ -163,14 +175,23 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
       );
     if (sorted.length === 0) return;
 
-    await this.enqueue(sorted.map((s) => s.id));
-
-    // Advance recurring schedules to their next run.
     const recurring = sorted.filter(
       (submission) =>
         submission.schedule.scheduleType === ScheduleType.RECURRING &&
         submission.schedule.cron,
     );
+    const recurringIds = new Set(recurring.map((submission) => submission.id));
+
+    await this.enqueue(
+      sorted
+        .filter((submission) => !recurringIds.has(submission.id))
+        .map((submission) => submission.id),
+    );
+    // A recurrence is a new post, not a retry of the last one; resuming would
+    // skip every site the previous cycle already succeeded on.
+    await this.enqueue([...recurringIds], PostRecordResumeMode.NEW);
+
+    // Advance recurring schedules to their next run.
     const scheduleResults = await Promise.allSettled(
       recurring.map(async (submission) => {
         const next = CronGenerator(submission.schedule.cron as string)
@@ -221,7 +242,9 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
       // itself queued here has not finished (re)posting yet, so its dependents
       // must wait for it — this re-enforces a restored dependency chain rather
       // than letting a stale, pre-archive success satisfy the gate.
-      const queuedIds = new Set<SubmissionId>(records.map((r) => r.submissionId));
+      const queuedIds = new Set<SubmissionId>(
+        records.map((r) => r.submissionId),
+      );
 
       for (const record of records) {
         const { submissionId, submission } = record;
@@ -255,7 +278,30 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
           if (!(await this.areDependenciesSatisfied(submission, queuedIds))) {
             continue;
           }
-          await this.relayPostManager.enqueue(submissionId);
+          try {
+            await this.relayPostManager.enqueue(
+              submissionId,
+              record.resumeMode,
+            );
+          } catch (error) {
+            if (error instanceof AttemptChainError) {
+              await this.dequeue([submissionId]);
+              queuedIds.delete(submissionId);
+              this.logger
+                .withError(error)
+                .withMetadata({ submissionId })
+                .error(
+                  'Removed queued post with malformed attempt history; retry with NEW',
+                );
+              continue;
+            }
+            // Keep the record queued and move on: one submission that cannot
+            // start must not stall the ones behind it every cycle.
+            this.logger
+              .withError(error)
+              .withMetadata({ submissionId })
+              .error('Failed to start post; leaving it queued for retry');
+          }
         }
       }
     } catch (error) {

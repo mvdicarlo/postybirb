@@ -1,31 +1,33 @@
 import {
-  BadRequestException,
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-  UploadedFile,
-  UploadedFiles,
-  UseInterceptors,
+    BadRequestException,
+    Body,
+    Controller,
+    Delete,
+    Get,
+    Param,
+    Patch,
+    Post,
+    UploadedFile,
+    UploadedFiles,
+    UseGuards,
+    UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import {
-  ApiBadRequestResponse,
-  ApiConsumes,
-  ApiOkResponse,
-  ApiTags,
+    ApiBadRequestResponse,
+    ApiConsumes,
+    ApiOkResponse,
+    ApiTags,
 } from '@nestjs/swagger';
 import {
-  EntityId,
-  SubmissionFileMetadata,
-  SubmissionId,
+    EntityId,
+    SubmissionFileMetadata,
+    SubmissionId,
 } from '@postybirb/types';
 import { MulterFileInfo } from '../file/models/multer-file-info';
 import { ReorderSubmissionFilesDto } from './dtos/reorder-submission-files.dto';
 import { UpdateAltFileDto } from './dtos/update-alt-file.dto';
+import { NotWhilePostingGuard } from './guards/not-while-posting.guard';
 import { FileSubmissionService } from './services/file-submission.service';
 import { SubmissionService } from './services/submission.service';
 
@@ -52,6 +54,7 @@ export class FileSubmissionController {
   @ApiConsumes('multipart/form-data')
   @ApiOkResponse({ description: 'File appended.' })
   @ApiBadRequestResponse({ description: 'Bad request made.' })
+  @UseGuards(NotWhilePostingGuard)
   @UseInterceptors(FilesInterceptor('files', undefined, { preservePath: true }))
   async appendFile(
     @Param('target') target: Target,
@@ -76,6 +79,7 @@ export class FileSubmissionController {
   @ApiConsumes('multipart/form-data')
   @ApiOkResponse({ description: 'File replaced.' })
   @ApiBadRequestResponse({ description: 'Bad request made.' })
+  @UseGuards(NotWhilePostingGuard)
   @UseInterceptors(FileInterceptor('file', { preservePath: true }))
   async replaceFile(
     @Param('target') target: Target,
@@ -100,6 +104,7 @@ export class FileSubmissionController {
   @Delete('remove/:target/:id/:fileId')
   @ApiOkResponse({ description: 'File removed.' })
   @ApiBadRequestResponse({ description: 'Bad request made.' })
+  @UseGuards(NotWhilePostingGuard)
   async removeFile(
     @Param('target') target: Target,
     @Param('id') id: SubmissionId,
