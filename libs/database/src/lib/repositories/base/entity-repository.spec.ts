@@ -51,10 +51,11 @@ describe('EntityRepository (SubmissionRepository)', () => {
     const inserted = await repo.insert(buildInsert());
     const all = await repo.findAll();
     expect(all).toHaveLength(1);
-    // `options` / `files` are defaultWith arrays; an empty
+    // `options` / `posts` / `files` are defaultWith arrays; an empty
     // submission has empty arrays, but the keys MUST be present.
     expect(all[0]).toBeInstanceOf(Submission);
     expect(Array.isArray(all[0].options)).toBe(true);
+    expect(Array.isArray(all[0].posts)).toBe(true);
     expect(Array.isArray(all[0].files)).toBe(true);
     expect(all[0].id).toBe(inserted.id);
   });
@@ -71,6 +72,7 @@ describe('EntityRepository (SubmissionRepository)', () => {
     // With an empty `with` override, relations should be undefined since
     // drizzle was instructed to load none.
     expect(row.options).toBeUndefined();
+    expect(row.posts).toBeUndefined();
     expect(row.files).toBeUndefined();
   });
 

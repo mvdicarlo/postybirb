@@ -5,8 +5,9 @@ import type {
 } from '@postybirb/types';
 import {
     DirectoryWatcherImportAction,
-    NodeStatus,
+    PostEventType,
     PostRecordResumeMode,
+    PostRecordState,
     ScheduleType,
     SettingsConstants,
     SubmissionType,
@@ -19,8 +20,9 @@ import { CustomShortcutRepository } from './custom-shortcut.repository';
 import { DirectoryWatcherRepository } from './directory-watcher.repository';
 import { FileBufferRepository } from './file-buffer.repository';
 import { NotificationRepository } from './notification.repository';
-import { PostJobRepository } from './post-job.repository';
+import { PostEventRepository } from './post-event.repository';
 import { PostQueueRecordRepository } from './post-queue-record.repository';
+import { PostRecordRepository } from './post-record.repository';
 import { SettingsRepository } from './settings.repository';
 import { SubmissionFileRepository } from './submission-file.repository';
 import { SubmissionRepository } from './submission.repository';
@@ -37,8 +39,9 @@ describe('RepositoryRegistry + saveFromEntity integration', () => {
     directoryWatcher: DirectoryWatcherRepository,
     fileBuffer: FileBufferRepository,
     notification: NotificationRepository,
+    postEvent: PostEventRepository,
     postQueueRecord: PostQueueRecordRepository,
-    postJob: PostJobRepository,
+    postRecord: PostRecordRepository,
     settings: SettingsRepository,
     submission: SubmissionRepository,
     submissionFile: SubmissionFileRepository,
@@ -57,8 +60,9 @@ describe('RepositoryRegistry + saveFromEntity integration', () => {
     ['directoryWatcher', 'DirectoryWatcherSchema'],
     ['fileBuffer', 'FileBufferSchema'],
     ['notification', 'NotificationSchema'],
+    ['postEvent', 'PostEventSchema'],
     ['postQueueRecord', 'PostQueueRecordSchema'],
-    ['postJob', 'PostJobSchema'],
+    ['postRecord', 'PostRecordSchema'],
     ['settings', 'SettingsSchema'],
     ['submission', 'SubmissionSchema'],
     ['submissionFile', 'SubmissionFileSchema'],
@@ -116,13 +120,19 @@ describe('RepositoryRegistry + saveFromEntity integration', () => {
       width: 1,
       height: 1,
     });
-    const postJob = await repos.postJob.insert({
+    const postRecord = await repos.postRecord.insert({
       submissionId: submission.id,
-      status: NodeStatus.QUEUED,
+      state: PostRecordState.PENDING,
       resumeMode: PostRecordResumeMode.NEW,
+    });
+    const postEvent = await repos.postEvent.insert({
+      postRecordId: postRecord.id,
+      accountId: account.id,
+      eventType: PostEventType.POST_ATTEMPT_STARTED,
     });
     const postQueueRecord = await repos.postQueueRecord.insert({
       submissionId: submission.id,
+      postRecordId: postRecord.id,
     });
     const websiteData = await repos.websiteData.insert({
       id: account.id,
@@ -166,12 +176,17 @@ describe('RepositoryRegistry + saveFromEntity integration', () => {
       convertTo: {},
     });
 
+    // PostEvent is an append-only ledger (no `updatedAt` column in its
+    // schema), so `saveFromEntity` — which is designed for mutable rows
+    // and uses `updatedAt` for optimistic concurrency — is not applicable
+    // to it. The registry assertion above still covers PostEventSchema.
+    void postEvent;
     const allEntities = [
       account,
       submission,
       submissionFile,
       fileBuffer,
-      postJob,
+      postRecord,
       postQueueRecord,
       websiteData,
       websiteOptions,
@@ -188,9 +203,9 @@ describe('RepositoryRegistry + saveFromEntity integration', () => {
     for (const entity of allEntities) {
       const previousUpdatedAt = entity.updatedAt;
       // Force at least 1ms of clock advance for the updatedAt assertion.
-      
+      // eslint-disable-next-line no-await-in-loop
       await new Promise((r) => setTimeout(r, 2));
-      
+      // eslint-disable-next-line no-await-in-loop
       const result = await saveFromEntity(entity);
       expect(result).toBe(entity);
       // updatedAt should have advanced after the update branch.
@@ -198,7 +213,7 @@ describe('RepositoryRegistry + saveFromEntity integration', () => {
 
       // The corresponding registered repo should be able to find it.
       const repo = RepositoryRegistry.get(entity.entitySchemaKey);
-      
+      // eslint-disable-next-line no-await-in-loop
       const reread = await repo.findById(entity.id);
       expect(reread).not.toBeNull();
       expect(reread?.updatedAt).toBe(entity.updatedAt);

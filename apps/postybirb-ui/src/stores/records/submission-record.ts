@@ -3,16 +3,18 @@
  */
 
 import {
-    type ISubmissionDto,
-    type ISubmissionFileDto,
-    type ISubmissionMetadata,
-    type ISubmissionScheduleInfo,
-    type IWebsiteFormFields,
-    type PostQueueRecordDto,
-    type SubmissionId,
-    type SubmissionType,
-    type ValidationResult,
-    type WebsiteOptionsDto
+  type ISubmissionDto,
+  type ISubmissionFileDto,
+  type ISubmissionMetadata,
+  type ISubmissionScheduleInfo,
+  type IWebsiteFormFields,
+  type PostQueueRecordDto,
+  type PostRecordDto,
+  PostRecordState,
+  type SubmissionId,
+  type SubmissionType,
+  type ValidationResult,
+  type WebsiteOptionsDto
 } from '@postybirb/types';
 import { BaseRecord } from './base-record';
 
@@ -28,6 +30,7 @@ export class SubmissionRecord extends BaseRecord {
   readonly schedule: ISubmissionScheduleInfo;
   readonly files: ISubmissionFileDto[];
   readonly options: WebsiteOptionsDto[];
+  readonly posts: PostRecordDto[];
   readonly validations: ValidationResult[];
   readonly postQueueRecord?: PostQueueRecordDto;
   readonly metadata: ISubmissionMetadata;
@@ -36,6 +39,8 @@ export class SubmissionRecord extends BaseRecord {
   // Cached computed values — safe because all data is immutable after construction
   private readonly cachedPrimaryFile: ISubmissionFileDto | undefined;
   private readonly cachedLastModified: Date;
+  private readonly cachedSortedPosts: PostRecordDto[];
+  private readonly cachedSortedPostsDescending: PostRecordDto[];
 
   constructor(dto: ISubmissionDto) {
     super(dto);
@@ -47,6 +52,7 @@ export class SubmissionRecord extends BaseRecord {
     this.schedule = dto.schedule;
     this.files = dto.files ?? [];
     this.options = dto.options ?? [];
+    this.posts = dto.posts ?? [];
     this.validations = dto.validations ?? [];
     this.postQueueRecord = dto.postQueueRecord;
     this.metadata = dto.metadata;
@@ -56,6 +62,16 @@ export class SubmissionRecord extends BaseRecord {
     this.cachedPrimaryFile = this.files.length > 0
       ? [...this.files].sort((a, b) => a.order - b.order)[0]
       : undefined;
+    this.cachedSortedPosts = this.posts.length > 0
+      ? [...this.posts].sort(
+          (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        )
+      : [];
+    this.cachedSortedPostsDescending = this.posts.length > 0
+      ? [...this.posts].sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        )
+      : [];
     this.cachedLastModified = this.computeLastModified();
   }
 
@@ -99,6 +115,13 @@ export class SubmissionRecord extends BaseRecord {
    */
   get isQueued(): boolean {
     return this.postQueueRecord !== undefined;
+  }
+
+  /**
+   * Check if the submission is currently being posted.
+   */
+  get isPosting(): boolean {
+    return this.posts.some((post) => post.state === 'RUNNING');
   }
 
   /**
@@ -177,5 +200,86 @@ export class SubmissionRecord extends BaseRecord {
    */
   get hasScheduleTime(): boolean {
     return Boolean(this.schedule.scheduledFor || this.schedule.cron);
+  }
+
+  // =============================================================================
+  // Post Record Methods
+  // =============================================================================
+
+  /**
+   * Get all post records sorted by creation date (oldest first).
+   * This provides a chronological view of posting attempts.
+   */
+  get sortedPosts(): PostRecordDto[] {
+    return this.cachedSortedPosts;
+  }
+
+  /**
+   * Get all post records sorted by creation date (newest first).
+   * This provides a reverse chronological view for display.
+   */
+  get sortedPostsDescending(): PostRecordDto[] {
+    return this.cachedSortedPostsDescending;
+  }
+
+  /**
+   * Get the most recent post record.
+   */
+  get latestPost(): PostRecordDto | undefined {
+    if (this.posts.length === 0) return undefined;
+    return this.sortedPosts[this.sortedPosts.length - 1];
+  }
+
+  /**
+   * Get the most recent completed post record (DONE or FAILED).
+   */
+  get latestCompletedPost(): PostRecordDto | undefined {
+    const completed = this.sortedPosts.filter(
+      (post) => post.state === PostRecordState.DONE || post.state === PostRecordState.FAILED
+    );
+    return completed[completed.length - 1];
+  }
+
+  /**
+   * Get posting statistics for this submission.
+   * Counts are based on individual post records.
+   */
+  get postingStats(): {
+    totalAttempts: number;
+    successfulAttempts: number;
+    failedAttempts: number;
+    runningAttempts: number;
+  } {
+    const successful = this.posts.filter((p) => p.state === PostRecordState.DONE);
+    const failed = this.posts.filter((p) => p.state === PostRecordState.FAILED);
+    const running = this.posts.filter((p) => p.state === PostRecordState.RUNNING);
+
+    return {
+      totalAttempts: this.posts.length,
+      successfulAttempts: successful.length,
+      failedAttempts: failed.length,
+      runningAttempts: running.length,
+    };
+  }
+
+  /**
+   * Check if this submission has ever been successfully posted.
+   */
+  get hasBeenPostedSuccessfully(): boolean {
+    return this.posts.some((p) => p.state === PostRecordState.DONE);
+  }
+
+  /**
+   * Check if this submission has any failed posting attempts.
+   */
+  get hasFailedPostingAttempts(): boolean {
+    return this.posts.some((p) => p.state === PostRecordState.FAILED);
+  }
+
+  /**
+   * Check if this submission is currently being posted.
+   */
+  get isCurrentlyPosting(): boolean {
+    return this.posts.some((p) => p.state === PostRecordState.RUNNING);
   }
 }

@@ -3,11 +3,7 @@
  */
 
 import { Box, Stack } from '@mantine/core';
-import {
-    ISubmissionScheduleInfo,
-    SubmissionId,
-    SubmissionType,
-} from '@postybirb/types';
+import { ISubmissionScheduleInfo, SubmissionType } from '@postybirb/types';
 import { useCallback } from 'react';
 import submissionApi from '../../../../../api/submission.api';
 import { showUpdateErrorNotification } from '../../../../../utils/notifications';
@@ -15,7 +11,6 @@ import { ComponentErrorBoundary } from '../../../../error-boundary';
 import { AccountSelect, SelectedAccountsForms } from '../account-selection';
 import { useSubmissionEditCardContext } from '../context';
 import { DefaultsForm } from '../defaults-form';
-import { DependsOnForm } from '../depends-on-form';
 import { SubmissionFileManager } from '../file-management';
 import { ScheduleForm } from '../schedule-form';
 
@@ -40,19 +35,6 @@ export function SubmissionEditCardBody() {
     [submission.id],
   );
 
-  const handleDependsOnChange = useCallback(
-    async (dependsOn: SubmissionId[]) => {
-      try {
-        await submissionApi.update(submission.id, {
-          metadata: { ...submission.metadata, dependsOn },
-        });
-      } catch {
-        showUpdateErrorNotification();
-      }
-    },
-    [submission.id, submission.metadata],
-  );
-
   const showFileManagement =
     submission.type === SubmissionType.FILE &&
     !submission.isMultiSubmission &&
@@ -60,10 +42,6 @@ export function SubmissionEditCardBody() {
 
   // Don't show schedule form for templates or multi-submissions
   const showScheduleForm = !submission.isTemplate && !submission.isMultiSubmission;
-
-  // Dependencies only make sense for real, postable submissions.
-  const showDependsOnForm =
-    !submission.isTemplate && !submission.isMultiSubmission;
 
   return (
     <Stack gap="md" p="md">
@@ -85,21 +63,6 @@ export function SubmissionEditCardBody() {
               isScheduled={submission.isScheduled}
               disabled={submission.isArchived}
               onChange={handleScheduleChange}
-            />
-          </Box>
-        </ComponentErrorBoundary>
-      )}
-
-      {/* Depends On - hold this submission until its dependencies finish posting */}
-      {showDependsOnForm && (
-        <ComponentErrorBoundary>
-          <Box data-tour-id="edit-card-depends-on">
-            <DependsOnForm
-              submissionId={submission.id}
-              type={submission.type}
-              value={submission.metadata.dependsOn ?? []}
-              disabled={submission.isArchived}
-              onChange={handleDependsOnChange}
             />
           </Box>
         </ComponentErrorBoundary>

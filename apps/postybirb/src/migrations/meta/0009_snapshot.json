@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "95cca06c-b890-4d30-a203-34d7a855328a",
+  "id": "169334cd-59a9-40ca-8697-41ff6f0373fe",
   "prevId": "5959fd9d-a3c7-437d-b2db-78faeac86ff5",
   "tables": {
     "account": {
@@ -433,8 +433,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "post-job": {
-      "name": "post-job",
+    "post-event": {
+      "name": "post-event",
       "columns": {
         "id": {
           "name": "id",
@@ -450,52 +450,50 @@
           "notNull": true,
           "autoincrement": false
         },
-        "updatedAt": {
-          "name": "updatedAt",
+        "postRecordId": {
+          "name": "postRecordId",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "version": {
-          "name": "version",
+        "accountId": {
+          "name": "accountId",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "submissionId": {
-          "name": "submissionId",
+        "eventType": {
+          "name": "eventType",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "attemptOf": {
-          "name": "attemptOf",
+        "fileId": {
+          "name": "fileId",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "status": {
-          "name": "status",
+        "sourceUrl": {
+          "name": "sourceUrl",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'QUEUED'"
+          "notNull": false,
+          "autoincrement": false
         },
-        "resumeMode": {
-          "name": "resumeMode",
+        "error": {
+          "name": "error",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'NEW'"
+          "notNull": false,
+          "autoincrement": false
         },
-        "completedAt": {
-          "name": "completedAt",
+        "metadata": {
+          "name": "metadata",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -503,36 +501,38 @@
         }
       },
       "indexes": {
-        "post-job_id_unique": {
-          "name": "post-job_id_unique",
+        "post-event_id_unique": {
+          "name": "post-event_id_unique",
           "columns": [
             "id"
           ],
           "isUnique": true
         },
-        "idx_post_job_submission": {
-          "name": "idx_post_job_submission",
+        "idx_post_event_type": {
+          "name": "idx_post_event_type",
           "columns": [
-            "submissionId",
-            "status"
+            "postRecordId",
+            "eventType"
           ],
           "isUnique": false
         },
-        "idx_post_job_status": {
-          "name": "idx_post_job_status",
+        "idx_post_event_account": {
+          "name": "idx_post_event_account",
           "columns": [
-            "status"
+            "postRecordId",
+            "accountId",
+            "eventType"
           ],
           "isUnique": false
         }
       },
       "foreignKeys": {
-        "post-job_submissionId_submission_id_fk": {
-          "name": "post-job_submissionId_submission_id_fk",
-          "tableFrom": "post-job",
-          "tableTo": "submission",
+        "post-event_postRecordId_post-record_id_fk": {
+          "name": "post-event_postRecordId_post-record_id_fk",
+          "tableFrom": "post-event",
+          "tableTo": "post-record",
           "columnsFrom": [
-            "submissionId"
+            "postRecordId"
           ],
           "columnsTo": [
             "id"
@@ -540,12 +540,12 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "post-job_attemptOf_post-job_id_fk": {
-          "name": "post-job_attemptOf_post-job_id_fk",
-          "tableFrom": "post-job",
-          "tableTo": "post-job",
+        "post-event_accountId_account_id_fk": {
+          "name": "post-event_accountId_account_id_fk",
+          "tableFrom": "post-event",
+          "tableTo": "account",
           "columnsFrom": [
-            "attemptOf"
+            "accountId"
           ],
           "columnsTo": [
             "id"
@@ -582,6 +582,13 @@
           "notNull": true,
           "autoincrement": false
         },
+        "postRecordId": {
+          "name": "postRecordId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "submissionId": {
           "name": "submissionId",
           "type": "text",
@@ -600,6 +607,19 @@
         }
       },
       "foreignKeys": {
+        "post-queue_postRecordId_post-record_id_fk": {
+          "name": "post-queue_postRecordId_post-record_id_fk",
+          "tableFrom": "post-queue",
+          "tableTo": "post-record",
+          "columnsFrom": [
+            "postRecordId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
         "post-queue_submissionId_submission_id_fk": {
           "name": "post-queue_submissionId_submission_id_fk",
           "tableFrom": "post-queue",
@@ -618,8 +638,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "post-rate-window": {
-      "name": "post-rate-window",
+    "post-record": {
+      "name": "post-record",
       "columns": {
         "id": {
           "name": "id",
@@ -642,186 +662,67 @@
           "notNull": true,
           "autoincrement": false
         },
-        "key": {
-          "name": "key",
+        "version": {
+          "name": "version",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
-        "lastPostedAt": {
-          "name": "lastPostedAt",
+        "submissionId": {
+          "name": "submissionId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "originPostRecordId": {
+          "name": "originPostRecordId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "completedAt": {
+          "name": "completedAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "resumeMode": {
+          "name": "resumeMode",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false
+          "autoincrement": false,
+          "default": "'CONTINUE'"
+        },
+        "state": {
+          "name": "state",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'PENDING'"
         }
       },
       "indexes": {
-        "post-rate-window_id_unique": {
-          "name": "post-rate-window_id_unique",
+        "post-record_id_unique": {
+          "name": "post-record_id_unique",
           "columns": [
             "id"
           ],
           "isUnique": true
-        },
-        "post-rate-window_key_unique": {
-          "name": "post-rate-window_key_unique",
-          "columns": [
-            "key"
-          ],
-          "isUnique": true
-        }
-      },
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "post-task": {
-      "name": "post-task",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "updatedAt": {
-          "name": "updatedAt",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "jobId": {
-          "name": "jobId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "accountId": {
-          "name": "accountId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "websiteId": {
-          "name": "websiteId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "status": {
-          "name": "status",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'QUEUED'"
-        },
-        "dependency": {
-          "name": "dependency",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "attempts": {
-          "name": "attempts",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 0
-        },
-        "maxAttempts": {
-          "name": "maxAttempts",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 3
-        },
-        "sourceUrl": {
-          "name": "sourceUrl",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "message": {
-          "name": "message",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "error": {
-          "name": "error",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "waitingUntil": {
-          "name": "waitingUntil",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "accountSnapshot": {
-          "name": "accountSnapshot",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        }
-      },
-      "indexes": {
-        "post-task_id_unique": {
-          "name": "post-task_id_unique",
-          "columns": [
-            "id"
-          ],
-          "isUnique": true
-        },
-        "idx_post_task_job": {
-          "name": "idx_post_task_job",
-          "columns": [
-            "jobId",
-            "status"
-          ],
-          "isUnique": false
-        },
-        "idx_post_task_account": {
-          "name": "idx_post_task_account",
-          "columns": [
-            "jobId",
-            "accountId"
-          ],
-          "isUnique": false
         }
       },
       "foreignKeys": {
-        "post-task_jobId_post-job_id_fk": {
-          "name": "post-task_jobId_post-job_id_fk",
-          "tableFrom": "post-task",
-          "tableTo": "post-job",
+        "post-record_submissionId_submission_id_fk": {
+          "name": "post-record_submissionId_submission_id_fk",
+          "tableFrom": "post-record",
+          "tableTo": "submission",
           "columnsFrom": [
-            "jobId"
+            "submissionId"
           ],
           "columnsTo": [
             "id"
@@ -829,129 +730,17 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "post-task_accountId_account_id_fk": {
-          "name": "post-task_accountId_account_id_fk",
-          "tableFrom": "post-task",
-          "tableTo": "account",
+        "post-record_originPostRecordId_post-record_id_fk": {
+          "name": "post-record_originPostRecordId_post-record_id_fk",
+          "tableFrom": "post-record",
+          "tableTo": "post-record",
           "columnsFrom": [
-            "accountId"
+            "originPostRecordId"
           ],
           "columnsTo": [
             "id"
           ],
           "onDelete": "set null",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "post-unit": {
-      "name": "post-unit",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "updatedAt": {
-          "name": "updatedAt",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "taskId": {
-          "name": "taskId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "kind": {
-          "name": "kind",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "ordinal": {
-          "name": "ordinal",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 0
-        },
-        "status": {
-          "name": "status",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'QUEUED'"
-        },
-        "fileIds": {
-          "name": "fileIds",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'[]'"
-        },
-        "sourceUrl": {
-          "name": "sourceUrl",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "error": {
-          "name": "error",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        }
-      },
-      "indexes": {
-        "post-unit_id_unique": {
-          "name": "post-unit_id_unique",
-          "columns": [
-            "id"
-          ],
-          "isUnique": true
-        },
-        "idx_post_unit_task": {
-          "name": "idx_post_unit_task",
-          "columns": [
-            "taskId"
-          ],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {
-        "post-unit_taskId_post-task_id_fk": {
-          "name": "post-unit_taskId_post-task_id_fk",
-          "tableFrom": "post-unit",
-          "tableTo": "post-task",
-          "columnsFrom": [
-            "taskId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -997,7 +786,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'{\"hiddenWebsites\":[],\"allowAd\":true,\"queuePaused\":false,\"desktopNotifications\":{\"enabled\":true,\"showOnPostSuccess\":true,\"showOnPostError\":true,\"showOnDirectoryWatcherError\":true,\"showOnDirectoryWatcherSuccess\":true},\"tagSearchProvider\":{\"showWikiInHelpOnHover\":false}}'"
+          "default": "'{\"hiddenWebsites\":[],\"allowAd\":true,\"queuePaused\":false,\"desktopNotifications\":{\"enabled\":true,\"showOnPostSuccess\":true,\"showOnPostError\":true,\"showOnDirectoryWatcherError\":true,\"showOnDirectoryWatcherSuccess\":true},\"tagSearchProvider\":{\"showWikiInHelpOnHover\":false},\"cloudflareChallenge\":{\"openBrowserWindow\":false}}'"
         }
       },
       "indexes": {

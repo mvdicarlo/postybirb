@@ -86,7 +86,6 @@ export function cloneWebsiteFileOptions(
   if (!fileOptions) {
     return undefined;
   }
-  const { sourceDependencyMode } = fileOptions;
   return {
     ...fileOptions,
     acceptedMimeTypes: [...fileOptions.acceptedMimeTypes],
@@ -94,10 +93,6 @@ export function cloneWebsiteFileOptions(
     acceptedFileSizes: fileOptions.acceptedFileSizes
       ? { ...fileOptions.acceptedFileSizes }
       : undefined,
-    sourceDependencyMode:
-      typeof sourceDependencyMode === 'object'
-        ? { ...sourceDependencyMode }
-        : sourceDependencyMode,
   };
 }
 

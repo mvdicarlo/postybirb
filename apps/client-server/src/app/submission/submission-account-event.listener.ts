@@ -6,12 +6,12 @@ import { Logger } from '@postybirb/logger';
 import { AccountId, IAccountDto, SubmissionType } from '@postybirb/types';
 import { Mutex } from 'async-mutex';
 import {
-    ACCOUNT_REMOVED,
-    ACCOUNT_STATE_CHANGED,
+  ACCOUNT_REMOVED,
+  ACCOUNT_STATE_CHANGED,
 } from '../account/account.events';
 import {
-    EntityRemovedEvent,
-    EntityUpdatedEvent,
+  EntityRemovedEvent,
+  EntityUpdatedEvent,
 } from '../common/events/entity-crud.events';
 import { UnknownWebsite } from '../websites/website';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
@@ -29,6 +29,7 @@ function canonicalize(value: unknown): unknown {
     return Object.keys(value)
       .sort()
       .reduce<Record<string, unknown>>((result, key) => {
+        // eslint-disable-next-line no-param-reassign
         result[key] = canonicalize((value as Record<string, unknown>)[key]);
         return result;
       }, {});

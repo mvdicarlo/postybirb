@@ -22,12 +22,4 @@ export interface IWebsiteMetadata {
    * spam detection measures.
    */
   minimumPostWaitInterval?: number;
-
-  /**
-   * What the rate-limit window is keyed by (Relay engine).
-   *  - 'account'        : per login (default; most sites)
-   *  - 'website'        : global across all accounts on this website
-   *  - 'website+account': both (rare; e.g. shared IP + per-user limits)
-   */
-  rateLimitScope?: 'account' | 'website' | 'website+account';
 }
