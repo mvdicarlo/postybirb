@@ -21,6 +21,7 @@ export class SubmissionRepository extends EntityRepository<
       EntityClass: Submission,
       defaultWith: {
         options: { with: { account: true } },
+        posts: { with: { events: { with: { account: true } } } },
         postQueueRecord: true,
         files: true,
       },

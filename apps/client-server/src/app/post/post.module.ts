@@ -8,23 +8,22 @@ import { ValidationModule } from '../validation/validation.module';
 import { WebsiteOptionsModule } from '../website-options/website-options.module';
 import { WebsiteImplProvider } from '../websites/implementations/provider';
 import { WebsitesModule } from '../websites/websites.module';
-import { RelayFileProcessor } from './engine/file-processor';
-import { RelayPersistence } from './engine/persistence';
-import { RelayPipelineDeps } from './engine/pipeline-deps';
-import { RelayPostManager } from './engine/post-manager.service';
-import { RelayPreviewService } from './engine/preview.service';
-import { RateLimiter } from './engine/rate-limiter';
-import { RelayTracer } from './engine/tracer.service';
 import { PostController } from './post.controller';
+import { PostService } from './post.service';
 import { PostFileResizerService } from './services/post-file-resizer/post-file-resizer.service';
+import {
+  FileSubmissionPostManager,
+  MessageSubmissionPostManager,
+  PostManagerRegistry,
+} from './services/post-manager-v2';
 import { PostManagerController } from './services/post-manager/post-manager.controller';
 import { PostQueueController } from './services/post-queue/post-queue.controller';
 import { PostQueueService } from './services/post-queue/post-queue.service';
+import {
+  PostEventRepository,
+  PostRecordFactory,
+} from './services/post-record-factory';
 
-/**
- * Posting module. The Relay engine is the sole posting executor; the post
- * queue records what to post and the RelayPostManager owns running it.
- */
 @Module({
   imports: [
     WebsiteOptionsModule,
@@ -38,17 +37,16 @@ import { PostQueueService } from './services/post-queue/post-queue.service';
   ],
   controllers: [PostController, PostQueueController, PostManagerController],
   providers: [
+    PostService,
     PostFileResizerService,
     WebsiteImplProvider,
     PostQueueService,
-    RelayTracer,
-    RateLimiter,
-    RelayFileProcessor,
-    RelayPipelineDeps,
-    RelayPreviewService,
-    RelayPersistence,
-    RelayPostManager,
+    PostEventRepository,
+    PostRecordFactory,
+    FileSubmissionPostManager,
+    MessageSubmissionPostManager,
+    PostManagerRegistry,
   ],
-  exports: [RelayPostManager],
+  exports: [PostEventRepository, PostRecordFactory, PostManagerRegistry],
 })
 export class PostModule {}
