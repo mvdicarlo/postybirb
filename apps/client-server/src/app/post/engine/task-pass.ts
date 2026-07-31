@@ -39,6 +39,7 @@ import {
     RelayDispatchData,
     TaskPassResult,
 } from './pipeline-deps.interface';
+import { restoreFileTaskSourceUrl } from './planner';
 import { rateKey } from './rate-limiter';
 import { taskTraceFields } from './tracer.service';
 import { RelayPostResult, RelayWebsite } from './websites';
@@ -281,10 +282,7 @@ export async function runTaskPass(
   const base = taskTraceFields(job, task);
 
   /** Emit the standard "stage completed OK" debug trace line. */
-  const emitStageOk = (
-    stage: string,
-    data?: Record<string, unknown>,
-  ): void => {
+  const emitStageOk = (stage: string, data?: Record<string, unknown>): void => {
     tracer.emit({
       ...base,
       level: 'debug',
@@ -378,6 +376,7 @@ export async function runTaskPass(
   }
 
   // 10. Settle
+  restoreFileTaskSourceUrl(task);
   task.status = NodeStatus.SUCCEEDED;
   tracer.emit({
     ...base,

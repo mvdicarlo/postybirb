@@ -186,7 +186,10 @@ function wireSourceDependencies(job: RelayJob, deps: PipelineDeps): void {
     if (t.status === NodeStatus.SKIPPED) continue;
     const site = deps.getWebsite(job.id, t.websiteId, t.accountId);
     if (!site.acceptsExternalSourceUrls) continue;
-    t.dependency = buildSourceDependency(site.sourceDependencyMode, standardIds);
+    t.dependency = buildSourceDependency(
+      site.sourceDependencyMode,
+      standardIds,
+    );
   }
 }
 
@@ -200,7 +203,7 @@ function wireSourceDependencies(job: RelayJob, deps: PipelineDeps): void {
  * A destination whose units are all done is left SUCCEEDED in *every* mode:
  * re-sending it would duplicate a post that already went out. Which of the
  * previous attempt's work is still "done" is decided by
- * {@link seedFromPreviousAttempt}, so this only has to re-open the rest.
+ * {@link seedFromPreviousAttempts}, so this only has to re-open the rest.
  */
 export function resetForResume(job: RelayJob): void {
   for (const task of job.tasks) {
@@ -233,58 +236,176 @@ function taskKey(task: RelayTask): string {
   return `${task.websiteId}:${task.accountId}`;
 }
 
-/**
- * Rebuild a task's units as "what already posted", followed by "what still has
- * to". Progress is tracked per *file* rather than per batch: batch boundaries
- * shift whenever files are added, removed or reordered, so matching whole
- * batches would make already-posted files look unposted and re-send them.
- *
- * A posted batch keeps only the files that are still planned, so a batch whose
- * files were all removed takes its source URL out of the tree with it.
- */
-function carryOverPostedWork(
-  task: RelayTask,
-  previousTask: RelayTask,
-  batchSize: number,
-): void {
-  const plannedFileIds = task.units.flatMap((unit) => unit.fileIds);
-  const stillPlanned = new Set(plannedFileIds);
-  const postedFileIds = new Set<SubmissionFileId>();
-  const posted: RelayUnit[] = [];
+interface SuccessfulUnitReceipt {
+  groupKey: string;
+  sourceUrl?: string;
+  sequence: number;
+}
 
-  const inOrder = [...previousTask.units].sort((a, b) => a.ordinal - b.ordinal);
-  for (const previousUnit of inOrder) {
-    if (!isDone(previousUnit)) continue;
-    previousUnit.fileIds.forEach((fileId) => postedFileIds.add(fileId));
+interface DestinationDeliveryCheckpoint {
+  fileReceipts: Map<SubmissionFileId, SuccessfulUnitReceipt>;
+  messageReceipt?: SuccessfulUnitReceipt;
+  lastPlannedComplete: boolean;
+}
 
-    const fileIds = previousUnit.fileIds.filter((id) => stillPlanned.has(id));
-    if (previousUnit.kind === UnitKind.BATCH && fileIds.length === 0) continue;
+interface ReceiptGroup {
+  receipt: SuccessfulUnitReceipt;
+  fileIds: SubmissionFileId[];
+}
 
-    const ordinal = posted.length;
-    const unit = new RelayUnit({
-      id:
-        previousUnit.kind === UnitKind.MESSAGE
-          ? `${task.id}:m`
-          : `${task.id}:b${ordinal}`,
-      taskId: task.id,
-      kind: previousUnit.kind,
-      ordinal,
-      fileIds,
-    });
-    unit.status = previousUnit.status;
-    unit.sourceUrl = previousUnit.sourceUrl;
-    posted.push(unit);
+function checkpointFor(
+  checkpoints: Map<string, DestinationDeliveryCheckpoint>,
+  key: string,
+): DestinationDeliveryCheckpoint {
+  let checkpoint = checkpoints.get(key);
+  if (!checkpoint) {
+    checkpoint = {
+      fileReceipts: new Map(),
+      lastPlannedComplete: false,
+    };
+    checkpoints.set(key, checkpoint);
+  }
+  return checkpoint;
+}
+
+function isFullyDelivered(task: RelayTask): boolean {
+  return (
+    task.units.length > 0 &&
+    task.units.every((unit) => unit.status === NodeStatus.SUCCEEDED)
+  );
+}
+
+export function restoreFileTaskSourceUrl(task: RelayTask): void {
+  task.sourceUrl ??= task.units.find(
+    (unit) =>
+      unit.kind === UnitKind.BATCH &&
+      unit.status === NodeStatus.SUCCEEDED &&
+      !!unit.sourceUrl,
+  )?.sourceUrl;
+}
+
+function foldDeliveryCheckpoints(
+  previousAttempts: readonly RelayJob[],
+): Map<string, DestinationDeliveryCheckpoint> {
+  const checkpoints = new Map<string, DestinationDeliveryCheckpoint>();
+  let sequence = 0;
+
+  for (const attempt of [...previousAttempts].reverse()) {
+    for (const task of attempt.tasks) {
+      const checkpoint = checkpointFor(checkpoints, taskKey(task));
+      if (
+        attempt.resumeMode === PostRecordResumeMode.CONTINUE_RETRY &&
+        !checkpoint.lastPlannedComplete
+      ) {
+        checkpoint.fileReceipts.clear();
+        checkpoint.messageReceipt = undefined;
+      }
+
+      for (const unit of [...task.units].sort(
+        (left, right) => left.ordinal - right.ordinal,
+      )) {
+        if (unit.status !== NodeStatus.SUCCEEDED) continue;
+        const receipt: SuccessfulUnitReceipt = {
+          groupKey: unit.id,
+          sourceUrl: unit.sourceUrl,
+          sequence: sequence++,
+        };
+        if (unit.kind === UnitKind.MESSAGE) {
+          checkpoint.messageReceipt = receipt;
+        } else {
+          for (const fileId of unit.fileIds) {
+            checkpoint.fileReceipts.set(fileId, receipt);
+          }
+        }
+      }
+
+      checkpoint.lastPlannedComplete = isFullyDelivered(task);
+    }
   }
 
-  // Nothing that posted survives, so the freshly planned tree already describes
-  // everything left to do.
-  if (posted.length === 0) return;
+  return checkpoints;
+}
 
-  const remaining = plannedFileIds.filter((id) => !postedFileIds.has(id));
+function preferredReceiptGroup(
+  task: RelayTask,
+  groups: ReadonlyMap<string, ReceiptGroup>,
+  previousAttempts: readonly RelayJob[],
+): string | undefined {
+  for (const attempt of previousAttempts) {
+    const historicalTask = attempt.tasks.find(
+      (candidate) => taskKey(candidate) === taskKey(task),
+    );
+    const sourceUrl = historicalTask?.sourceUrl;
+    if (!sourceUrl) continue;
+    const matching = [...groups.entries()]
+      .filter(([, group]) => group.receipt.sourceUrl === sourceUrl)
+      .sort(
+        ([, left], [, right]) => right.receipt.sequence - left.receipt.sequence,
+      );
+    if (matching.length > 0) return matching[0][0];
+  }
+
+  return [...groups.entries()].sort(
+    ([, left], [, right]) => right.receipt.sequence - left.receipt.sequence,
+  )[0]?.[0];
+}
+
+function seedFileTask(
+  task: RelayTask,
+  checkpoint: DestinationDeliveryCheckpoint,
+  batchSize: number,
+  previousAttempts: readonly RelayJob[],
+): void {
+  const plannedFileIds = task.units.flatMap((unit) => unit.fileIds);
+  const groups = new Map<string, ReceiptGroup>();
+  for (const fileId of plannedFileIds) {
+    const receipt = checkpoint.fileReceipts.get(fileId);
+    if (!receipt) continue;
+    const group = groups.get(receipt.groupKey);
+    if (group) {
+      group.fileIds.push(fileId);
+    } else {
+      groups.set(receipt.groupKey, { receipt, fileIds: [fileId] });
+    }
+  }
+  if (groups.size === 0) return;
+
+  const preferred = preferredReceiptGroup(task, groups, previousAttempts);
+  const orderedGroups = [...groups.entries()].sort(
+    ([leftKey, left], [rightKey, right]) => {
+      if (leftKey === preferred) return -1;
+      if (rightKey === preferred) return 1;
+      return left.receipt.sequence - right.receipt.sequence;
+    },
+  );
+  const posted = orderedGroups.map(([, group], ordinal) => {
+    const unit = new RelayUnit({
+      id: `${task.id}:b${ordinal}`,
+      taskId: task.id,
+      kind: UnitKind.BATCH,
+      ordinal,
+      fileIds: group.fileIds,
+    });
+    unit.status = NodeStatus.SUCCEEDED;
+    unit.sourceUrl = group.receipt.sourceUrl;
+    return unit;
+  });
+
+  const remaining = plannedFileIds.filter(
+    (fileId) => !checkpoint.fileReceipts.has(fileId),
+  );
   task.units = [
     ...posted,
     ...buildBatchUnits(task, remaining, batchSize, posted.length),
   ];
+  const hasQueuedWork = task.units.some(
+    (unit) => unit.status === NodeStatus.QUEUED,
+  );
+  task.sourceUrl = hasQueuedWork
+    ? undefined
+    : task.units.find(
+        (unit) => unit.status === NodeStatus.SUCCEEDED && !!unit.sourceUrl,
+      )?.sourceUrl;
 }
 
 /**
@@ -297,32 +418,42 @@ function carryOverPostedWork(
  * Call {@link resetForResume} afterwards to re-open the nodes the chosen mode
  * wants to re-run.
  */
-export function seedFromPreviousAttempt(
+export function seedFromPreviousAttempts(
   job: RelayJob,
-  previous: RelayJob,
+  previousAttempts: readonly RelayJob[],
   mode: PostRecordResumeMode,
   deps: PipelineDeps,
 ): void {
-  const previousTasks = new Map(previous.tasks.map((t) => [taskKey(t), t]));
+  const checkpoints = foldDeliveryCheckpoints(previousAttempts);
 
   for (const task of job.tasks) {
     if (task.status === NodeStatus.SKIPPED) continue;
-    const previousTask = previousTasks.get(taskKey(task));
-    if (!previousTask) continue;
+    const checkpoint = checkpoints.get(taskKey(task));
+    if (!checkpoint) continue;
+    if (
+      mode === PostRecordResumeMode.CONTINUE_RETRY &&
+      !checkpoint.lastPlannedComplete
+    ) {
+      continue;
+    }
 
-    // CONTINUE_RETRY deliberately re-sends an incomplete site in full; a site
-    // that finished is never re-sent, whatever the mode.
-    const wasFullyDone =
-      previousTask.units.length > 0 && previousTask.units.every(isDone);
-    if (mode === PostRecordResumeMode.CONTINUE_RETRY && !wasFullyDone) continue;
+    if (task.units[0]?.kind === UnitKind.MESSAGE) {
+      const receipt = checkpoint.messageReceipt;
+      if (!receipt) continue;
+      const unit = new RelayUnit({
+        id: `${task.id}:m`,
+        taskId: task.id,
+        kind: UnitKind.MESSAGE,
+        ordinal: 0,
+      });
+      unit.status = NodeStatus.SUCCEEDED;
+      unit.sourceUrl = receipt.sourceUrl;
+      task.units = [unit];
+      task.sourceUrl = receipt.sourceUrl;
+      continue;
+    }
 
     const site = deps.getWebsite(job.id, task.websiteId, task.accountId);
-    carryOverPostedWork(task, previousTask, site.fileBatchSize);
-
-    // Downstream sites quote this, so it may only come from work that both
-    // already posted and still exists in the current plan.
-    task.sourceUrl = task.units.find(
-      (unit) => isDone(unit) && unit.sourceUrl,
-    )?.sourceUrl;
+    seedFileTask(task, checkpoint, site.fileBatchSize, previousAttempts);
   }
 }

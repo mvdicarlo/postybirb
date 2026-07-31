@@ -21,13 +21,14 @@ import { NodeStatus } from '@postybirb/types';
 import fastq from 'fastq';
 import { CancellableToken } from '../models/cancellable-token';
 import {
-    DEPENDENCY_STATES,
-    SKIP_REASONS,
-    TRACER_TASK_EVENTS,
+  DEPENDENCY_STATES,
+  SKIP_REASONS,
+  TRACER_TASK_EVENTS,
 } from './constants';
 import { StageError, classify, decideRetry, toTaskError } from './errors';
 import { RelayJob, RelayTask, isTerminal } from './model';
 import { PipelineDeps, TaskPassResult, runTaskPass } from './pipeline';
+import { restoreFileTaskSourceUrl } from './planner';
 import { taskTraceFields } from './tracer.service';
 
 export interface JobReactorOptions {
@@ -303,7 +304,6 @@ export class JobReactor {
     const maxAttempts = 5;
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
-        
         await this.onTaskChanged(job, task);
         return true;
       } catch (err) {
@@ -320,7 +320,7 @@ export class JobReactor {
           });
           return false;
         }
-        
+
         await this.wait(50 * 2 ** (attempt - 1));
       }
     }
@@ -384,7 +384,11 @@ export class JobReactor {
         taskId: task.id,
         level: 'warn',
         event: TRACER_TASK_EVENTS.RETRY,
-        data: { kind: se.kind, delayMs: decision.delayMs, attempt: task.attempts },
+        data: {
+          kind: se.kind,
+          delayMs: decision.delayMs,
+          attempt: task.attempts,
+        },
       });
       await this.persistTaskDurable(job, task);
       await this.interruptibleWait(decision.delayMs, token.signal);
@@ -399,7 +403,13 @@ export class JobReactor {
       return;
     }
 
-    task.status = token.isCancelled ? NodeStatus.CANCELLED : NodeStatus.FAILED;
+    const terminalStatus = token.isCancelled
+      ? NodeStatus.CANCELLED
+      : NodeStatus.FAILED;
+    if (terminalStatus === NodeStatus.FAILED) {
+      restoreFileTaskSourceUrl(task);
+    }
+    task.status = terminalStatus;
     task.error = toTaskError(se);
     await this.persistTaskDurable(job, task);
     this.deps.tracer.emit({

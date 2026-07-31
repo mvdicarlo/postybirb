@@ -1,7 +1,4 @@
-import {
-  Injectable,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import {
   PostQueueRecord,
@@ -20,6 +17,7 @@ import { Cron as CronGenerator } from 'croner';
 import { PostyBirbService } from '../../../common/service/postybirb-service';
 import { SettingsService } from '../../../settings/settings.service';
 import { SubmissionEventPublisher } from '../../../submission/submission-event.publisher';
+import { AttemptChainError } from '../../engine/attempt-chain';
 import { RelayPostManager } from '../../engine/post-manager.service';
 
 /**
@@ -244,7 +242,9 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
       // itself queued here has not finished (re)posting yet, so its dependents
       // must wait for it — this re-enforces a restored dependency chain rather
       // than letting a stale, pre-archive success satisfy the gate.
-      const queuedIds = new Set<SubmissionId>(records.map((r) => r.submissionId));
+      const queuedIds = new Set<SubmissionId>(
+        records.map((r) => r.submissionId),
+      );
 
       for (const record of records) {
         const { submissionId, submission } = record;
@@ -284,6 +284,17 @@ export class PostQueueService extends PostyBirbService<PostQueueRecordRepository
               record.resumeMode,
             );
           } catch (error) {
+            if (error instanceof AttemptChainError) {
+              await this.dequeue([submissionId]);
+              queuedIds.delete(submissionId);
+              this.logger
+                .withError(error)
+                .withMetadata({ submissionId })
+                .error(
+                  'Removed queued post with malformed attempt history; retry with NEW',
+                );
+              continue;
+            }
             // Keep the record queued and move on: one submission that cannot
             // start must not stall the ones behind it every cycle.
             this.logger

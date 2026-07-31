@@ -26,9 +26,10 @@ import { NotificationsService } from '../../notifications/notifications.service'
 import { PostingLockService } from '../../posting-lock/posting-lock.service';
 import { SubmissionService } from '../../submission/services/submission.service';
 import { WebsiteRegistryService } from '../../websites/website-registry.service';
+import { AttemptChainError, resolveAttemptChain } from './attempt-chain';
 import { RelayJob, isTerminal } from './model';
 import { RelayPersistence } from './persistence';
-import { resetForResume, seedFromPreviousAttempt } from './pipeline';
+import { resetForResume, seedFromPreviousAttempts } from './pipeline';
 import { RelayPipelineDeps } from './pipeline-deps';
 import { RelayScheduler } from './scheduler';
 import { projectJob } from './tracer.service';
@@ -76,7 +77,9 @@ export class RelayPostManager implements OnModuleInit {
       onTaskChanged: (job, task) => this.persistence.saveTask(task),
       onJobChanged: (job) => this.persistence.save(job),
     });
-    postingLock?.setSource((submissionId) => this.isPostingLocked(submissionId));
+    postingLock?.setSource((submissionId) =>
+      this.isPostingLocked(submissionId),
+    );
   }
 
   async onModuleInit(): Promise<void> {
@@ -137,7 +140,6 @@ export class RelayPostManager implements OnModuleInit {
       // cannot become a stuck row the user is unable to clear.
       for (const job of active) {
         try {
-          
           await this.deps.prepare(job);
           resetForResume(job);
           this.scheduler.adopt(job);
@@ -146,7 +148,7 @@ export class RelayPostManager implements OnModuleInit {
             .withError(error)
             .withMetadata({ jobId: job.id, submissionId: job.submissionId })
             .error('Failed to recover job; marking it FAILED');
-          
+
           await this.persistence
             .failJob(job.id, (error as Error)?.message ?? 'recovery failed')
             .catch((e) =>
@@ -184,7 +186,6 @@ export class RelayPostManager implements OnModuleInit {
   private async waitForRegistry(): Promise<boolean> {
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
-        
         await this.websiteRegistry.waitForInitialization(60_000);
         return true;
       } catch (error) {
@@ -219,7 +220,8 @@ export class RelayPostManager implements OnModuleInit {
     // be tracked in memory (e.g. crash recovery couldn't bring up the website
     // registry, so the job was never adopted). Adopt + resume it instead of
     // creating a duplicate post_job row that would race the orphan.
-    const [newest] = await this.loadHistory(submissionId);
+    const history = await this.loadHistory(submissionId);
+    const [newest] = history;
     if (newest && !this.isTerminalStatus(newest.status)) {
       const adopted = await this.adoptOrphanJob(newest, submissionId);
       if (adopted) return adopted;
@@ -228,14 +230,20 @@ export class RelayPostManager implements OnModuleInit {
     // A resume is still a *new* job row (so the queue can tell this attempt's
     // outcome apart from the last one's); it is linked to the attempt it
     // continues and seeded with that attempt's progress below. A submission
-    // whose last attempt succeeded is being deliberately re-posted, so it
-    // starts clean.
+    // whose caller requests NEW deliberately starts a clean post cycle.
     const previousAttempt =
-      resumeMode === PostRecordResumeMode.NEW ||
-      !newest ||
-      newest.status === NodeStatus.SUCCEEDED
-        ? undefined
-        : newest;
+      resumeMode === PostRecordResumeMode.NEW || !newest ? undefined : newest;
+    let previousAttempts: RelayJob[] = [];
+    try {
+      previousAttempts = previousAttempt
+        ? resolveAttemptChain(previousAttempt, history)
+        : [];
+    } catch (error) {
+      if (error instanceof AttemptChainError) {
+        await this.reportAttemptChainError(submissionId, error);
+      }
+      throw error;
+    }
 
     const job = this.scheduler.createJob(submissionId, {
       resumeMode,
@@ -246,7 +254,7 @@ export class RelayPostManager implements OnModuleInit {
       await this.deps.prepare(job);
       this.scheduler.plan(job);
       if (previousAttempt) {
-        seedFromPreviousAttempt(job, previousAttempt, resumeMode, this.deps);
+        seedFromPreviousAttempts(job, previousAttempts, resumeMode, this.deps);
         resetForResume(job);
         this.logger
           .withMetadata({
@@ -275,6 +283,31 @@ export class RelayPostManager implements OnModuleInit {
         .withMetadata({ jobId: job.id, submissionId })
         .error('Relay enqueue failed; rolled back in-memory job state');
       throw error;
+    }
+  }
+
+  private async reportAttemptChainError(
+    submissionId: SubmissionId,
+    error: AttemptChainError,
+  ): Promise<void> {
+    this.logger
+      .withError(error)
+      .withMetadata({ submissionId })
+      .error('Malformed Relay attempt chain; refusing to post');
+    try {
+      await this.notifications?.create({
+        type: 'warning',
+        title: 'Post History Error',
+        message:
+          'Posting history is malformed. Start a new post to continue safely.',
+        tags: ['post-history-error'],
+        data: { submissionId },
+      });
+    } catch (notificationError) {
+      this.logger
+        .withError(notificationError)
+        .withMetadata({ submissionId })
+        .error('Failed to notify about malformed Relay attempt chain');
     }
   }
 

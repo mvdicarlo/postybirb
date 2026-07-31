@@ -2,7 +2,7 @@
  * Hook for submission posting handlers.
  */
 
-import { PostRecordResumeMode } from '@postybirb/types';
+import { NodeStatus, PostRecordResumeMode } from '@postybirb/types';
 import { useCallback, useState } from 'react';
 import postManagerApi from '../../../../api/post-manager.api';
 import postQueueApi from '../../../../api/post-queue.api';
@@ -10,7 +10,7 @@ import { useSubmissionStore } from '../../../../stores';
 import { useNavigationStore } from '../../../../stores/ui/navigation-store';
 import { type ViewState } from '../../../../types/view-state';
 import { showPostErrorNotification } from '../../../../utils/notifications';
-import { inspectPreviousAttempt } from '../resume-mode-modal';
+import { availablePostModes, inspectPostHistory } from '../post-mode-modal';
 import { isSubmissionsViewState } from '../types';
 
 interface UseSubmissionPostResult {
@@ -19,15 +19,15 @@ interface UseSubmissionPostResult {
   /** Handle canceling a queued/posting submission */
   handleCancel: (id: string) => Promise<void>;
   /** Handle posting submissions with specified order */
-  handlePostSelected: (orderedIds: string[], resumeMode?: PostRecordResumeMode) => Promise<void>;
-  /** ID of submission waiting for resume mode selection */
-  pendingResumeSubmissionId: string | null;
-  /** Whether that submission gained files since the failed attempt */
-  pendingResumeHasNewFiles: boolean;
-  /** Close the resume mode modal without posting */
-  cancelResume: () => void;
-  /** Post with the selected resume mode */
-  confirmResume: (resumeMode: PostRecordResumeMode) => Promise<void>;
+  handlePostSelected: (
+    orderedIds: string[],
+    resumeMode?: PostRecordResumeMode,
+  ) => Promise<void>;
+  pendingPostModeSubmissionId: string | null;
+  pendingPostModeStatus?: NodeStatus;
+  pendingPostModeHasNewFiles: boolean;
+  cancelPostMode: () => void;
+  confirmPostMode: (resumeMode: PostRecordResumeMode) => Promise<void>;
 }
 
 /**
@@ -36,63 +36,64 @@ interface UseSubmissionPostResult {
  */
 export function useSubmissionPost(): UseSubmissionPostResult {
   const setViewState = useNavigationStore((state) => state.setViewState);
-  const [pendingResumeSubmissionId, setPendingResumeSubmissionId] = useState<
-    string | null
-  >(null);
-  const [pendingResumeHasNewFiles, setPendingResumeHasNewFiles] =
+  const [pendingPostModeSubmissionId, setPendingPostModeSubmissionId] =
+    useState<string | null>(null);
+  const [pendingPostModeStatus, setPendingPostModeStatus] =
+    useState<NodeStatus>();
+  const [pendingPostModeHasNewFiles, setPendingPostModeHasNewFiles] =
     useState(false);
 
   // Handle posting a submission — reads submissionsMap at call time
-  const handlePost = useCallback(
-    async (id: string) => {
-      try {
-        const submission = useSubmissionStore.getState().recordsMap.get(id);
+  const handlePost = useCallback(async (id: string) => {
+    try {
+      const submission = useSubmissionStore.getState().recordsMap.get(id);
 
-        if (!submission) {
-          showPostErrorNotification();
-          return;
-        }
+      if (!submission) {
+        showPostErrorNotification();
+        return;
+      }
 
-        // Re-posting after a failed attempt is ambiguous: ask whether to
-        // continue that attempt or start over, rather than silently re-posting
-        // to websites that already succeeded.
-        const { resumable, hasNewFiles } = await inspectPreviousAttempt(
+      const { hasHistory, newestStatus, hasNewFiles } =
+        await inspectPostHistory(
           id,
           submission.files.map((file) => file.id),
         );
-        if (resumable) {
-          setPendingResumeHasNewFiles(hasNewFiles);
-          setPendingResumeSubmissionId(id);
+      if (hasHistory) {
+        if (availablePostModes(newestStatus).length === 0) {
+          showPostErrorNotification();
           return;
         }
-
-        await postQueueApi.enqueue([id]);
-      } catch {
-        showPostErrorNotification();
+        setPendingPostModeHasNewFiles(hasNewFiles);
+        setPendingPostModeStatus(newestStatus);
+        setPendingPostModeSubmissionId(id);
+        return;
       }
-    },
-    [],
-  );
 
-  // Cancel resume mode selection
-  const cancelResume = useCallback(() => {
-    setPendingResumeSubmissionId(null);
+      await postQueueApi.enqueue([id]);
+    } catch {
+      showPostErrorNotification();
+    }
   }, []);
 
-  // Confirm and post with selected resume mode
-  const confirmResume = useCallback(
+  const cancelPostMode = useCallback(() => {
+    setPendingPostModeSubmissionId(null);
+    setPendingPostModeStatus(undefined);
+  }, []);
+
+  const confirmPostMode = useCallback(
     async (resumeMode: PostRecordResumeMode) => {
-      if (!pendingResumeSubmissionId) return;
+      if (!pendingPostModeSubmissionId) return;
 
       try {
-        await postQueueApi.enqueue([pendingResumeSubmissionId], resumeMode);
-        setPendingResumeSubmissionId(null);
+        await postQueueApi.enqueue([pendingPostModeSubmissionId], resumeMode);
       } catch {
         showPostErrorNotification();
-        setPendingResumeSubmissionId(null);
+      } finally {
+        setPendingPostModeSubmissionId(null);
+        setPendingPostModeStatus(undefined);
       }
     },
-    [pendingResumeSubmissionId],
+    [pendingPostModeSubmissionId],
   );
 
   // Handle canceling a queued/posting submission
@@ -128,16 +129,17 @@ export function useSubmissionPost(): UseSubmissionPostResult {
         showPostErrorNotification();
       }
     },
-    [setViewState]
+    [setViewState],
   );
 
   return {
     handlePost,
     handleCancel,
     handlePostSelected,
-    pendingResumeSubmissionId,
-    pendingResumeHasNewFiles,
-    cancelResume,
-    confirmResume,
+    pendingPostModeSubmissionId,
+    pendingPostModeStatus,
+    pendingPostModeHasNewFiles,
+    cancelPostMode,
+    confirmPostMode,
   };
 }

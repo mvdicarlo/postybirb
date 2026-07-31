@@ -29,7 +29,7 @@ import {
     useSubmissionSelection,
 } from './hooks';
 import { PostConfirmModal } from './post-confirm-modal';
-import { ResumeModeModal } from './resume-mode-modal';
+import { PostModeModal } from './post-mode-modal';
 import { SubmissionList } from './submission-list';
 import { SubmissionSectionHeader } from './submission-section-header';
 import './submissions-section.css';
@@ -89,10 +89,11 @@ export function SubmissionsSection({
     handleCancel,
     handlePostSelected,
     handleScheduleChange,
-    pendingResumeSubmissionId,
-    pendingResumeHasNewFiles,
-    cancelResume,
-    confirmResume,
+    pendingPostModeSubmissionId,
+    pendingPostModeStatus,
+    pendingPostModeHasNewFiles,
+    cancelPostMode,
+    confirmPostMode,
   } = useSubmissionHandlers({
     submissionType,
   });
@@ -281,12 +282,12 @@ export function SubmissionsSection({
         )}
       </SubmissionsProvider>
 
-      {/* Resume mode modal */}
-      <ResumeModeModal
-        opened={pendingResumeSubmissionId !== null}
-        hasNewFiles={pendingResumeHasNewFiles}
-        onClose={cancelResume}
-        onConfirm={confirmResume}
+      <PostModeModal
+        opened={pendingPostModeSubmissionId !== null}
+        newestStatus={pendingPostModeStatus}
+        hasNewFiles={pendingPostModeHasNewFiles}
+        onClose={cancelPostMode}
+        onConfirm={confirmPostMode}
       />
     </Box>
   );

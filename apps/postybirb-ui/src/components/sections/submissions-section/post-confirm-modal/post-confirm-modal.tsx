@@ -6,11 +6,12 @@ import {
     Button,
     Group,
     Modal,
+    SegmentedControl,
     Stack,
     Text,
     Tooltip,
 } from '@mantine/core';
-import type { PostRecordResumeMode, SubmissionId } from '@postybirb/types';
+import { PostRecordResumeMode, type SubmissionId } from '@postybirb/types';
 import { IconClock, IconInfoCircle } from '@tabler/icons-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAccountsMap } from '../../../../stores/entity/account-store';
@@ -69,12 +70,16 @@ export function PostConfirmModal({
     SubmissionRecord[]
   >([]);
   const [forest, setForest] = useState<DependencyNode[]>([]);
+  const [postMode, setPostMode] = useState<PostRecordResumeMode>(
+    PostRecordResumeMode.CONTINUE,
+  );
 
   useEffect(() => {
     if (opened) {
       const built = buildDependencyForest(validSubmissions);
       setForest(built);
       setOrderedSubmissions(flattenForest(built));
+      setPostMode(PostRecordResumeMode.CONTINUE);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [opened]);
@@ -229,9 +234,12 @@ export function PostConfirmModal({
   );
 
   const handleConfirm = useCallback(() => {
-    onConfirm(orderedSubmissions.map((s) => s.id));
+    onConfirm(
+      orderedSubmissions.map((s) => s.id),
+      postMode,
+    );
     onClose();
-  }, [orderedSubmissions, onConfirm, onClose]);
+  }, [orderedSubmissions, postMode, onConfirm, onClose]);
 
   const validCount = validSubmissions.length;
   const hasSkippedSubmissions = validCount < totalSelectedCount;
@@ -286,6 +294,31 @@ export function PostConfirmModal({
           )}
         </Text>
 
+        <Stack gap={4}>
+          <Text size="sm" fw={600}>
+            <Trans>Posting mode</Trans>
+          </Text>
+          <SegmentedControl
+            fullWidth
+            value={postMode}
+            onChange={(value) => setPostMode(value as PostRecordResumeMode)}
+            data={[
+              {
+                value: PostRecordResumeMode.CONTINUE,
+                label: t`Continue`,
+              },
+              { value: PostRecordResumeMode.NEW, label: t`Start fresh` },
+            ]}
+          />
+          <Text size="xs" c="dimmed">
+            {postMode === PostRecordResumeMode.NEW ? (
+              <Trans>Post all current content again.</Trans>
+            ) : (
+              <Trans>Keep successful deliveries and post remaining work.</Trans>
+            )}
+          </Text>
+        </Stack>
+
         {/* Dependency explainer (only when a submission has dependencies) */}
         {anyHasDependencies && (
           <Alert
@@ -307,7 +340,7 @@ export function PostConfirmModal({
 
         {/* Flat post-order list: every submission is individually reorderable */}
         {validCount > 0 && (
-          <>
+          <Stack gap="md">
             <Alert
               icon={<IconInfoCircle size={16} />}
               color="blue"
@@ -317,9 +350,8 @@ export function PostConfirmModal({
             >
               <Text size="xs">
                 <Trans>
-                  Submissions with an incomplete previous attempt continue from
-                  where they stopped. Post one on its own to retry it or start
-                  it over instead.
+                  To retry every file for an incomplete website, post that
+                  submission individually and choose the retry option.
                 </Trans>
               </Text>
             </Alert>
@@ -329,7 +361,7 @@ export function PostConfirmModal({
               renderExtra={renderExtra}
               fill
             />
-          </>
+          </Stack>
         )}
 
         {/* Read-only dependency tree for context */}

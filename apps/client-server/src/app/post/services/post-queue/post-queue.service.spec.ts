@@ -24,6 +24,7 @@ import { CreateWebsiteOptionsDto } from '../../../website-options/dtos/create-we
 import { WebsiteOptionsModule } from '../../../website-options/website-options.module';
 import { WebsiteOptionsService } from '../../../website-options/website-options.service';
 import { WebsitesModule } from '../../../websites/websites.module';
+import { AttemptChainError } from '../../engine/attempt-chain';
 import { RelayPostManager } from '../../engine/post-manager.service';
 import { PostModule } from '../../post.module';
 import { PostQueueService } from './post-queue.service';
@@ -331,6 +332,37 @@ describe('PostQueueService', () => {
     expect(await service.peek()).not.toBeNull();
   });
 
+  it('dequeues malformed lineage and clears its current-cycle dependency gate', async () => {
+    const dependency = await submissionService.create(createSubmissionDto());
+    const account = await accountService.create(createAccountDto());
+    await websiteOptionsService.create(
+      createWebsiteOptionsDto(dependency.id, account.id),
+    );
+    const dependent = await submissionService.create(createSubmissionDto());
+    await websiteOptionsService.create(
+      createWebsiteOptionsDto(dependent.id, account.id),
+    );
+    await submissionService.update(dependent.id, {
+      metadata: { dependsOn: [dependency.id] },
+    } as never);
+
+    await service.enqueue([dependency.id, dependent.id]);
+    mockRelayPostManager.enqueue.mockRejectedValueOnce(
+      new AttemptChainError('missing parent'),
+    );
+    mockRelayPostManager.hasSucceeded.mockResolvedValue(true);
+
+    await expect(service.execute()).resolves.toBeUndefined();
+
+    expect(mockRelayPostManager.enqueue).toHaveBeenCalledWith(
+      dependent.id,
+      undefined,
+    );
+    expect(await service.peek()).toMatchObject({
+      submissionId: dependent.id,
+    });
+  });
+
   it('dequeues a submission whose Relay job has finished', async () => {
     const submission = await submissionService.create(createSubmissionDto());
     await service.enqueue([submission.id]);
@@ -432,8 +464,8 @@ describe('PostQueueService', () => {
 
       await service.enqueue([dependent.id]);
       mockRelayPostManager.isPosting.mockReturnValue(false);
-      mockRelayPostManager.hasSucceeded.mockImplementation(async (id) =>
-        id === depA.id,
+      mockRelayPostManager.hasSucceeded.mockImplementation(
+        async (id) => id === depA.id,
       );
 
       await service.execute();

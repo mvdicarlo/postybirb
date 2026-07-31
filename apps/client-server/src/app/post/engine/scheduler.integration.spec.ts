@@ -1,4 +1,9 @@
-import { NodeStatus, PostErrorKind, PostRecordResumeMode, SubmissionType } from '@postybirb/types';
+import {
+    NodeStatus,
+    PostErrorKind,
+    PostRecordResumeMode,
+    SubmissionType,
+} from '@postybirb/types';
 import { CancellableToken } from '../models/cancellable-token';
 import { PostingFile } from '../models/posting-file';
 import { StageError } from './errors';
@@ -8,7 +13,7 @@ import {
     RelayDispatchData,
     RelaySubmission,
     resetForResume,
-    seedFromPreviousAttempt,
+    seedFromPreviousAttempts,
 } from './pipeline';
 import { MemoryRateStore, RateLimiter } from './rate-limiter';
 import { RelayScheduler } from './scheduler';
@@ -82,7 +87,10 @@ class Harness implements PipelineDeps {
     task: RelayTask,
     upstreamSourceUrls: string[],
   ): Promise<RelayDispatchData> {
-    return { postData: { title: this.submission.title }, sourceUrls: upstreamSourceUrls };
+    return {
+      postData: { title: this.submission.title },
+      sourceUrls: upstreamSourceUrls,
+    };
   }
 
   async validate(): Promise<string[]> {
@@ -96,7 +104,11 @@ class Harness implements PipelineDeps {
     // Mock: produce a posting file per id without real bytes.
     return fileIds.map(
       (id) =>
-        ({ id, fileName: `${id}.jpg`, mimeType: 'image/jpeg' }) as unknown as PostingFile,
+        ({
+          id,
+          fileName: `${id}.jpg`,
+          mimeType: 'image/jpeg',
+        }) as unknown as PostingFile,
     );
   }
 
@@ -127,9 +139,36 @@ function fileSubmission(): RelaySubmission {
     type: SubmissionType.FILE,
     title: 'Test',
     files: [
-      { id: 'f1', fileName: 'f1.jpg', mimeType: 'image/jpeg', width: 1200, height: 1200, bytes: 500_000, hash: 'h1', order: 0 },
-      { id: 'f2', fileName: 'f2.jpg', mimeType: 'image/jpeg', width: 1200, height: 1200, bytes: 500_000, hash: 'h2', order: 1 },
-      { id: 'f3', fileName: 'f3.jpg', mimeType: 'image/jpeg', width: 1200, height: 1200, bytes: 500_000, hash: 'h3', order: 2 },
+      {
+        id: 'f1',
+        fileName: 'f1.jpg',
+        mimeType: 'image/jpeg',
+        width: 1200,
+        height: 1200,
+        bytes: 500_000,
+        hash: 'h1',
+        order: 0,
+      },
+      {
+        id: 'f2',
+        fileName: 'f2.jpg',
+        mimeType: 'image/jpeg',
+        width: 1200,
+        height: 1200,
+        bytes: 500_000,
+        hash: 'h2',
+        order: 1,
+      },
+      {
+        id: 'f3',
+        fileName: 'f3.jpg',
+        mimeType: 'image/jpeg',
+        width: 1200,
+        height: 1200,
+        bytes: 500_000,
+        hash: 'h3',
+        order: 2,
+      },
     ],
     options: [
       { accountId: 'a_fa', websiteId: 'furaffinity' },
@@ -148,10 +187,18 @@ describe('Relay pipeline + scheduler (integration)', () => {
     h.register(fileWebsite({ id: 'furaffinity', fileBatchSize: 1 }));
     h.register(fileWebsite({ id: 'weasyl', fileBatchSize: 3 }));
     h.register(
-      fileWebsite({ id: 'bluesky', fileBatchSize: 4, acceptsExternalSourceUrls: true }),
+      fileWebsite({
+        id: 'bluesky',
+        fileBatchSize: 4,
+        acceptsExternalSourceUrls: true,
+      }),
     );
 
-    const sched = new RelayScheduler(h, { ...instant, maxConcurrentJobs: 2, maxConcurrentTasks: 4 });
+    const sched = new RelayScheduler(h, {
+      ...instant,
+      maxConcurrentJobs: 2,
+      maxConcurrentTasks: 4,
+    });
     const job = sched.enqueue(submission.id);
 
     const fa = job.tasks.find((t) => t.websiteId === 'furaffinity')!;
@@ -180,7 +227,11 @@ describe('Relay pipeline + scheduler (integration)', () => {
     h.register(fileWebsite({ id: 'flaky', fileBatchSize: 3 }));
     h.behavior = (w, _d, batchIndex, attempt) => {
       if (attempt === 1) {
-        throw new StageError({ kind: PostErrorKind.TRANSIENT, stage: 'dispatch', message: '503' });
+        throw new StageError({
+          kind: PostErrorKind.TRANSIENT,
+          stage: 'dispatch',
+          message: '503',
+        });
       }
       return { sourceUrl: `https://flaky/${batchIndex}` };
     };
@@ -218,7 +269,13 @@ describe('Relay pipeline + scheduler (integration)', () => {
     const submission = fileSubmission();
     submission.options = [{ accountId: 'a_fa', websiteId: 'furaffinity' }];
     const h = new Harness(submission);
-    h.register(fileWebsite({ id: 'furaffinity', fileBatchSize: 1, minimumPostWaitInterval: 50 }));
+    h.register(
+      fileWebsite({
+        id: 'furaffinity',
+        fileBatchSize: 1,
+        minimumPostWaitInterval: 50,
+      }),
+    );
 
     const sched = new RelayScheduler(h, { ...instant });
     const job = sched.enqueue(submission.id);
@@ -266,7 +323,11 @@ describe('Relay pipeline + scheduler (integration)', () => {
     // The first batch had already posted before the cancel landed.
     expect(job.tasks[0].units[0].status).toBe(NodeStatus.SUCCEEDED);
     // Remaining batches are cancelled, not left dangling.
-    expect(job.tasks[0].units.slice(1).every((u) => u.status === NodeStatus.CANCELLED)).toBe(true);
+    expect(
+      job.tasks[0].units
+        .slice(1)
+        .every((u) => u.status === NodeStatus.CANCELLED),
+    ).toBe(true);
   });
 
   it('resume (CONTINUE) re-runs only non-done units', async () => {
@@ -278,7 +339,11 @@ describe('Relay pipeline + scheduler (integration)', () => {
     let recovered = false;
     h.behavior = (w, _d, batchIndex) => {
       if (!recovered && batchIndex > 0) {
-        throw new StageError({ kind: PostErrorKind.TRANSIENT, stage: 'dispatch', message: 'down' });
+        throw new StageError({
+          kind: PostErrorKind.TRANSIENT,
+          stage: 'dispatch',
+          message: 'down',
+        });
       }
       return { sourceUrl: `https://dtu/${batchIndex}-${Math.random()}` };
     };
@@ -306,7 +371,13 @@ describe('Relay pipeline + scheduler (integration)', () => {
     const submission = fileSubmission();
     submission.options = [{ accountId: 'a_md', websiteId: 'mastodon' }];
     const h = new Harness(submission);
-    h.register(fileWebsite({ id: 'mastodon', supportsFile: false, supportsMessage: true } as Partial<RelayWebsite>));
+    h.register(
+      fileWebsite({
+        id: 'mastodon',
+        supportsFile: false,
+        supportsMessage: true,
+      } as Partial<RelayWebsite>),
+    );
     // override supportsFile false
     const sched = new RelayScheduler(h, instant);
     const job = sched.enqueue(submission.id);
@@ -366,7 +437,9 @@ describe('Relay pipeline + scheduler (integration)', () => {
     h.authenticate = async () => {
       authCalls += 1;
       if (authCalls === 1) {
-        throw Object.assign(new Error('socket hang up'), { code: 'ECONNRESET' });
+        throw Object.assign(new Error('socket hang up'), {
+          code: 'ECONNRESET',
+        });
       }
     };
 
@@ -447,7 +520,12 @@ describe('Relay pipeline + scheduler (integration)', () => {
     h.register(fileWebsite({ id: 'weasyl', fileBatchSize: 3 }));
     h.register(fileWebsite({ id: 'furaffinity', fileBatchSize: 3 }));
     h.register(
-      fileWebsite({ id: 'crosspost', fileBatchSize: 3, acceptsExternalSourceUrls: true, sourceDependencyMode: 'any' }),
+      fileWebsite({
+        id: 'crosspost',
+        fileBatchSize: 3,
+        acceptsExternalSourceUrls: true,
+        sourceDependencyMode: 'any',
+      }),
     );
 
     const sched = new RelayScheduler(h, instant);
@@ -575,7 +653,12 @@ describe('Relay pipeline + scheduler (integration)', () => {
       const { sched, previous, submission, h } = previousAttempt();
 
       const retry = sched.enqueue(submission.id);
-      seedFromPreviousAttempt(retry, previous, PostRecordResumeMode.CONTINUE, h);
+      seedFromPreviousAttempts(
+        retry,
+        [previous],
+        PostRecordResumeMode.CONTINUE,
+        h,
+      );
       resetForResume(retry);
 
       const { fa, ws } = tasksOf(retry);
@@ -594,7 +677,12 @@ describe('Relay pipeline + scheduler (integration)', () => {
       const { sched, previous, submission, h } = previousAttempt();
 
       const retry = sched.enqueue(submission.id);
-      seedFromPreviousAttempt(retry, previous, PostRecordResumeMode.CONTINUE, h);
+      seedFromPreviousAttempts(
+        retry,
+        [previous],
+        PostRecordResumeMode.CONTINUE,
+        h,
+      );
       // A crash-adopted job carries the attempts it had already burned.
       tasksOf(retry).fa.attempts = 3;
       resetForResume(retry);
@@ -606,9 +694,9 @@ describe('Relay pipeline + scheduler (integration)', () => {
       const { sched, previous, submission, h } = previousAttempt();
 
       const retry = sched.enqueue(submission.id);
-      seedFromPreviousAttempt(
+      seedFromPreviousAttempts(
         retry,
-        previous,
+        [previous],
         PostRecordResumeMode.CONTINUE_RETRY,
         h,
       );
@@ -649,7 +737,12 @@ describe('Relay pipeline + scheduler (integration)', () => {
       submission.files[0] = { ...submission.files[0], id: 'f1-replaced' };
 
       const retry = sched.enqueue(submission.id);
-      seedFromPreviousAttempt(retry, previous, PostRecordResumeMode.CONTINUE, h);
+      seedFromPreviousAttempts(
+        retry,
+        [previous],
+        PostRecordResumeMode.CONTINUE,
+        h,
+      );
       resetForResume(retry);
 
       const { fa } = tasksOf(retry);
@@ -678,7 +771,12 @@ describe('Relay pipeline + scheduler (integration)', () => {
 
       submission.files.push({ ...submission.files[0], id: 'f4', order: 4 });
       const retry = sched.enqueue(submission.id);
-      seedFromPreviousAttempt(retry, previous, PostRecordResumeMode.CONTINUE, h);
+      seedFromPreviousAttempts(
+        retry,
+        [previous],
+        PostRecordResumeMode.CONTINUE,
+        h,
+      );
       resetForResume(retry);
 
       const task = retry.tasks[0];
@@ -687,7 +785,7 @@ describe('Relay pipeline + scheduler (integration)', () => {
         [['f1', 'f2', 'f3'], NodeStatus.SUCCEEDED],
         [['f4'], NodeStatus.QUEUED],
       ]);
-      expect(task.sourceUrl).toBe('https://furaffinity/batch');
+      expect(task.sourceUrl).toBeUndefined();
     });
 
     it('does not re-post earlier files when a new file is ordered first', () => {
@@ -695,7 +793,12 @@ describe('Relay pipeline + scheduler (integration)', () => {
       submission.files.unshift({ ...submission.files[0], id: 'f0', order: -1 });
 
       const retry = sched.enqueue(submission.id);
-      seedFromPreviousAttempt(retry, previous, PostRecordResumeMode.CONTINUE, h);
+      seedFromPreviousAttempts(
+        retry,
+        [previous],
+        PostRecordResumeMode.CONTINUE,
+        h,
+      );
       resetForResume(retry);
 
       const { fa } = tasksOf(retry);
@@ -712,9 +815,9 @@ describe('Relay pipeline + scheduler (integration)', () => {
       submission.files.push({ ...submission.files[0], id: 'f4', order: 4 });
 
       const retry = sched.enqueue(submission.id);
-      seedFromPreviousAttempt(
+      seedFromPreviousAttempts(
         retry,
-        previous,
+        [previous],
         PostRecordResumeMode.CONTINUE_RETRY,
         h,
       );
@@ -736,9 +839,7 @@ describe('Relay pipeline + scheduler (integration)', () => {
 
     it('matches a completed batch when its files are reordered', () => {
       const submission = fileSubmission();
-      submission.options = [
-        { accountId: 'a_fa', websiteId: 'furaffinity' },
-      ];
+      submission.options = [{ accountId: 'a_fa', websiteId: 'furaffinity' }];
       const h = new Harness(submission);
       h.register(fileWebsite({ id: 'furaffinity', fileBatchSize: 3 }));
       const sched = new RelayScheduler(h, instant);
@@ -751,7 +852,12 @@ describe('Relay pipeline + scheduler (integration)', () => {
 
       submission.files.reverse();
       const retry = sched.enqueue(submission.id);
-      seedFromPreviousAttempt(retry, previous, PostRecordResumeMode.CONTINUE, h);
+      seedFromPreviousAttempts(
+        retry,
+        [previous],
+        PostRecordResumeMode.CONTINUE,
+        h,
+      );
       resetForResume(retry);
 
       expect(retry.tasks[0].status).toBe(NodeStatus.SUCCEEDED);
@@ -770,9 +876,9 @@ describe('Relay pipeline + scheduler (integration)', () => {
         attemptOf: previous.id,
       });
       sched.plan(retryOne);
-      seedFromPreviousAttempt(
+      seedFromPreviousAttempts(
         retryOne,
-        previous,
+        [previous],
         PostRecordResumeMode.CONTINUE,
         h,
       );
@@ -788,9 +894,9 @@ describe('Relay pipeline + scheduler (integration)', () => {
         attemptOf: retryOne.id,
       });
       sched.plan(retryTwo);
-      seedFromPreviousAttempt(
+      seedFromPreviousAttempts(
         retryTwo,
-        retryOne,
+        [retryOne, previous],
         PostRecordResumeMode.CONTINUE,
         h,
       );
@@ -810,7 +916,12 @@ describe('Relay pipeline + scheduler (integration)', () => {
       submission.files[1] = { ...submission.files[1], id: 'f2-replaced' };
 
       const retry = sched.enqueue(submission.id);
-      seedFromPreviousAttempt(retry, previous, PostRecordResumeMode.CONTINUE, h);
+      seedFromPreviousAttempts(
+        retry,
+        [previous],
+        PostRecordResumeMode.CONTINUE,
+        h,
+      );
       resetForResume(retry);
 
       const { fa } = tasksOf(retry);
@@ -849,7 +960,12 @@ describe('Relay pipeline + scheduler (integration)', () => {
       previous.status = NodeStatus.FAILED;
 
       const retry = sched.enqueue(submission.id);
-      seedFromPreviousAttempt(retry, previous, PostRecordResumeMode.CONTINUE, h);
+      seedFromPreviousAttempts(
+        retry,
+        [previous],
+        PostRecordResumeMode.CONTINUE,
+        h,
+      );
       resetForResume(retry);
 
       const cp = retry.tasks.find((t) => t.websiteId === 'crosspost')!;
@@ -866,6 +982,641 @@ describe('Relay pipeline + scheduler (integration)', () => {
         .find((e) => e.taskId === cp.id && e.stage === 'parse');
       expect(parseEntry?.data?.upstreamSourceUrls).toEqual([
         'https://furaffinity/upstream',
+      ]);
+    });
+
+    it('restores a destination omitted across multiple intermediate attempts', () => {
+      const submission = fileSubmission();
+      submission.options = [
+        { accountId: 'a_fa', websiteId: 'furaffinity' },
+        { accountId: 'a_ws', websiteId: 'weasyl' },
+      ];
+      const h = new Harness(submission);
+      h.register(fileWebsite({ id: 'furaffinity', fileBatchSize: 10 }));
+      h.register(fileWebsite({ id: 'weasyl', fileBatchSize: 10 }));
+      const sched = new RelayScheduler(h, instant);
+
+      const first = sched.enqueue(submission.id);
+      for (const task of first.tasks) {
+        task.units[0].status = NodeStatus.SUCCEEDED;
+        task.units[0].sourceUrl = `https://${task.websiteId}/first`;
+        task.status = NodeStatus.SUCCEEDED;
+        task.sourceUrl = task.units[0].sourceUrl;
+      }
+      first.status = NodeStatus.SUCCEEDED;
+
+      submission.files.push({ ...submission.files[0], id: 'f4', order: 4 });
+      submission.options = [{ accountId: 'a_fa', websiteId: 'furaffinity' }];
+      const second = sched.createJob(submission.id, {
+        resumeMode: PostRecordResumeMode.CONTINUE,
+        attemptOf: first.id,
+      });
+      sched.plan(second);
+      seedFromPreviousAttempts(
+        second,
+        [first],
+        PostRecordResumeMode.CONTINUE,
+        h,
+      );
+      resetForResume(second);
+      const secondFa = second.tasks[0];
+      secondFa.units[1].status = NodeStatus.SUCCEEDED;
+      secondFa.units[1].sourceUrl = 'https://furaffinity/current';
+      secondFa.status = NodeStatus.SUCCEEDED;
+      secondFa.sourceUrl = secondFa.units[1].sourceUrl;
+      second.status = NodeStatus.SUCCEEDED;
+
+      const third = sched.createJob(submission.id, {
+        resumeMode: PostRecordResumeMode.CONTINUE,
+        attemptOf: second.id,
+      });
+      sched.plan(third);
+      seedFromPreviousAttempts(
+        third,
+        [second, first],
+        PostRecordResumeMode.CONTINUE,
+        h,
+      );
+      resetForResume(third);
+      third.status = NodeStatus.SUCCEEDED;
+
+      submission.options.push({ accountId: 'a_ws', websiteId: 'weasyl' });
+      const restored = sched.createJob(submission.id, {
+        resumeMode: PostRecordResumeMode.CONTINUE,
+        attemptOf: third.id,
+      });
+      sched.plan(restored);
+      seedFromPreviousAttempts(
+        restored,
+        [third, second, first],
+        PostRecordResumeMode.CONTINUE,
+        h,
+      );
+      resetForResume(restored);
+
+      const restoredWs = restored.tasks.find(
+        (task) => task.websiteId === 'weasyl',
+      )!;
+      expect(
+        restoredWs.units.map((unit) => [unit.fileIds, unit.status]),
+      ).toEqual([
+        [['f1', 'f2', 'f3'], NodeStatus.SUCCEEDED],
+        [['f4'], NodeStatus.QUEUED],
+      ]);
+    });
+
+    it('does not resurrect receipts from before a full-retry reset', () => {
+      const { sched, previous, submission, h } = previousAttempt();
+      const previousFa = tasksOf(previous).fa;
+      previousFa.units[1].status = NodeStatus.FAILED;
+      previousFa.units[1].sourceUrl = undefined;
+
+      const fullRetry = sched.createJob(submission.id, {
+        resumeMode: PostRecordResumeMode.CONTINUE_RETRY,
+        attemptOf: previous.id,
+      });
+      sched.plan(fullRetry);
+      seedFromPreviousAttempts(
+        fullRetry,
+        [previous],
+        PostRecordResumeMode.CONTINUE_RETRY,
+        h,
+      );
+      resetForResume(fullRetry);
+      const fullRetryFa = tasksOf(fullRetry).fa;
+      fullRetryFa.units[0].status = NodeStatus.FAILED;
+      fullRetryFa.units[1].status = NodeStatus.SUCCEEDED;
+      fullRetryFa.units[1].sourceUrl = 'https://furaffinity/retry-f2';
+      fullRetryFa.units[2].status = NodeStatus.FAILED;
+      fullRetryFa.status = NodeStatus.FAILED;
+
+      const continued = sched.createJob(submission.id, {
+        resumeMode: PostRecordResumeMode.CONTINUE,
+        attemptOf: fullRetry.id,
+      });
+      sched.plan(continued);
+      seedFromPreviousAttempts(
+        continued,
+        [fullRetry, previous],
+        PostRecordResumeMode.CONTINUE,
+        h,
+      );
+      resetForResume(continued);
+
+      expect(unitsByFile(tasksOf(continued).fa)).toEqual([
+        ['f2', NodeStatus.SUCCEEDED],
+        ['f1', NodeStatus.QUEUED],
+        ['f3', NodeStatus.QUEUED],
+      ]);
+    });
+
+    it('carries a MESSAGE receipt and source URL across an omission', () => {
+      const submission: RelaySubmission = {
+        id: 'message-submission',
+        type: SubmissionType.MESSAGE,
+        title: 'Message',
+        files: [],
+        options: [{ accountId: 'a_msg', websiteId: 'mastodon' }],
+      };
+      const h = new Harness(submission);
+      h.register(
+        fileWebsite({
+          id: 'mastodon',
+          supportsFile: false,
+          supportsMessage: true,
+        }),
+      );
+      const sched = new RelayScheduler(h, instant);
+      const first = sched.enqueue(submission.id);
+      first.tasks[0].units[0].status = NodeStatus.SUCCEEDED;
+      first.tasks[0].units[0].sourceUrl = 'https://mastodon/message';
+      first.tasks[0].status = NodeStatus.SUCCEEDED;
+      first.tasks[0].sourceUrl = 'https://mastodon/message';
+      first.status = NodeStatus.SUCCEEDED;
+
+      submission.options = [];
+      const omitted = sched.createJob(submission.id, {
+        resumeMode: PostRecordResumeMode.CONTINUE,
+        attemptOf: first.id,
+      });
+      sched.plan(omitted);
+      omitted.status = NodeStatus.SUCCEEDED;
+
+      submission.options = [{ accountId: 'a_msg', websiteId: 'mastodon' }];
+      const restored = sched.createJob(submission.id, {
+        resumeMode: PostRecordResumeMode.CONTINUE,
+        attemptOf: omitted.id,
+      });
+      sched.plan(restored);
+      seedFromPreviousAttempts(
+        restored,
+        [omitted, first],
+        PostRecordResumeMode.CONTINUE,
+        h,
+      );
+      resetForResume(restored);
+
+      expect(restored.tasks[0].status).toBe(NodeStatus.SUCCEEDED);
+      expect(restored.tasks[0].sourceUrl).toBe('https://mastodon/message');
+      expect(restored.tasks[0].units[0]).toMatchObject({
+        status: NodeStatus.SUCCEEDED,
+        sourceUrl: 'https://mastodon/message',
+      });
+    });
+
+    it('preserves receipts through a planner-skipped zero-unit checkpoint', () => {
+      const submission = fileSubmission();
+      submission.options = [{ accountId: 'a_fa', websiteId: 'furaffinity' }];
+      const h = new Harness(submission);
+      h.register(fileWebsite({ id: 'furaffinity', fileBatchSize: 1 }));
+      const sched = new RelayScheduler(h, instant);
+      const first = sched.enqueue(submission.id);
+      for (const unit of first.tasks[0].units) {
+        unit.status = NodeStatus.SUCCEEDED;
+      }
+      first.tasks[0].status = NodeStatus.SUCCEEDED;
+      first.status = NodeStatus.SUCCEEDED;
+
+      for (const file of submission.files) {
+        file.ignoredWebsites = ['a_fa'];
+      }
+      const skipped = sched.createJob(submission.id, {
+        resumeMode: PostRecordResumeMode.CONTINUE,
+        attemptOf: first.id,
+      });
+      sched.plan(skipped);
+      expect(skipped.tasks[0]).toMatchObject({
+        status: NodeStatus.SKIPPED,
+        units: [],
+      });
+      skipped.status = NodeStatus.SUCCEEDED;
+
+      for (const file of submission.files) {
+        file.ignoredWebsites = [];
+      }
+      const restored = sched.createJob(submission.id, {
+        resumeMode: PostRecordResumeMode.CONTINUE,
+        attemptOf: skipped.id,
+      });
+      sched.plan(restored);
+      seedFromPreviousAttempts(
+        restored,
+        [skipped, first],
+        PostRecordResumeMode.CONTINUE,
+        h,
+      );
+      resetForResume(restored);
+
+      expect(
+        restored.tasks[0].units.every(
+          (unit) => unit.status === NodeStatus.SUCCEEDED,
+        ),
+      ).toBe(true);
+    });
+
+    it('preserves receipts through a dependency-skipped checkpoint', async () => {
+      const submission = fileSubmission();
+      submission.options = [
+        { accountId: 'a_fa', websiteId: 'furaffinity' },
+        { accountId: 'a_cp', websiteId: 'crosspost' },
+      ];
+      const h = new Harness(submission);
+      h.register(fileWebsite({ id: 'furaffinity', fileBatchSize: 10 }));
+      h.register(
+        fileWebsite({
+          id: 'crosspost',
+          fileBatchSize: 10,
+          acceptsExternalSourceUrls: true,
+          sourceDependencyMode: 'any',
+        }),
+      );
+      const sched = new RelayScheduler(h, instant);
+      const first = sched.enqueue(submission.id);
+      for (const task of first.tasks) {
+        task.units[0].status = NodeStatus.SUCCEEDED;
+        task.status = NodeStatus.SUCCEEDED;
+      }
+      first.status = NodeStatus.SUCCEEDED;
+
+      submission.files.push({ ...submission.files[0], id: 'f4', order: 4 });
+      const skipped = sched.createJob(submission.id, {
+        resumeMode: PostRecordResumeMode.CONTINUE,
+        attemptOf: first.id,
+      });
+      sched.plan(skipped);
+      seedFromPreviousAttempts(
+        skipped,
+        [first],
+        PostRecordResumeMode.CONTINUE,
+        h,
+      );
+      resetForResume(skipped);
+      h.behavior = (website) => {
+        if (website.id === 'furaffinity') {
+          throw new StageError({
+            kind: PostErrorKind.FATAL,
+            stage: 'dispatch',
+            message: 'failed',
+          });
+        }
+        return {};
+      };
+      await sched.runToIdle();
+      expect(
+        skipped.tasks.find((task) => task.websiteId === 'crosspost')?.status,
+      ).toBe(NodeStatus.SKIPPED);
+
+      const continued = sched.createJob(submission.id, {
+        resumeMode: PostRecordResumeMode.CONTINUE,
+        attemptOf: skipped.id,
+      });
+      sched.plan(continued);
+      seedFromPreviousAttempts(
+        continued,
+        [skipped, first],
+        PostRecordResumeMode.CONTINUE,
+        h,
+      );
+      resetForResume(continued);
+      const continuedCp = continued.tasks.find(
+        (task) => task.websiteId === 'crosspost',
+      )!;
+      expect(
+        continuedCp.units.map((unit) => [unit.fileIds, unit.status]),
+      ).toEqual([
+        [['f1', 'f2', 'f3'], NodeStatus.SUCCEEDED],
+        [['f4'], NodeStatus.QUEUED],
+      ]);
+    });
+
+    it('retains a removed file receipt when the same id is re-added', () => {
+      const submission = fileSubmission();
+      submission.options = [{ accountId: 'a_fa', websiteId: 'furaffinity' }];
+      const removed = submission.files[0];
+      const h = new Harness(submission);
+      h.register(fileWebsite({ id: 'furaffinity', fileBatchSize: 1 }));
+      const sched = new RelayScheduler(h, instant);
+      const first = sched.enqueue(submission.id);
+      for (const unit of first.tasks[0].units) {
+        unit.status = NodeStatus.SUCCEEDED;
+      }
+      first.tasks[0].status = NodeStatus.SUCCEEDED;
+      first.status = NodeStatus.SUCCEEDED;
+
+      submission.files = submission.files.slice(1);
+      const second = sched.createJob(submission.id, {
+        resumeMode: PostRecordResumeMode.CONTINUE,
+        attemptOf: first.id,
+      });
+      sched.plan(second);
+      seedFromPreviousAttempts(
+        second,
+        [first],
+        PostRecordResumeMode.CONTINUE,
+        h,
+      );
+      resetForResume(second);
+      second.status = NodeStatus.SUCCEEDED;
+
+      submission.files = [removed, ...submission.files];
+      const restored = sched.createJob(submission.id, {
+        resumeMode: PostRecordResumeMode.CONTINUE,
+        attemptOf: second.id,
+      });
+      sched.plan(restored);
+      seedFromPreviousAttempts(
+        restored,
+        [second, first],
+        PostRecordResumeMode.CONTINUE,
+        h,
+      );
+      resetForResume(restored);
+
+      expect(
+        restored.tasks[0].units.every(
+          (unit) => unit.status === NodeStatus.SUCCEEDED,
+        ),
+      ).toBe(true);
+    });
+
+    it('completes a no-change continuation without dispatching', async () => {
+      const submission = fileSubmission();
+      submission.options = [{ accountId: 'a_fa', websiteId: 'furaffinity' }];
+      const h = new Harness(submission);
+      h.register(fileWebsite({ id: 'furaffinity', fileBatchSize: 10 }));
+      const dispatch = jest.fn().mockReturnValue({});
+      h.behavior = dispatch;
+      const sched = new RelayScheduler(h, instant);
+      const first = sched.enqueue(submission.id);
+      first.tasks[0].units[0].status = NodeStatus.SUCCEEDED;
+      first.tasks[0].status = NodeStatus.SUCCEEDED;
+      first.status = NodeStatus.SUCCEEDED;
+
+      const continued = sched.createJob(submission.id, {
+        resumeMode: PostRecordResumeMode.CONTINUE,
+        attemptOf: first.id,
+      });
+      sched.plan(continued);
+      seedFromPreviousAttempts(
+        continued,
+        [first],
+        PostRecordResumeMode.CONTINUE,
+        h,
+      );
+      resetForResume(continued);
+      await sched.runToIdle();
+
+      expect(continued.status).toBe(NodeStatus.SUCCEEDED);
+      expect(dispatch).not.toHaveBeenCalled();
+    });
+
+    it('resets a delivered MESSAGE after an incomplete skipped checkpoint', () => {
+      const submission: RelaySubmission = {
+        id: 'message-retry',
+        type: SubmissionType.MESSAGE,
+        title: 'Message',
+        files: [],
+        options: [{ accountId: 'a_msg', websiteId: 'mastodon' }],
+      };
+      const h = new Harness(submission);
+      h.register(
+        fileWebsite({
+          id: 'mastodon',
+          supportsFile: false,
+          supportsMessage: true,
+        }),
+      );
+      const sched = new RelayScheduler(h, instant);
+      const first = sched.enqueue(submission.id);
+      first.tasks[0].units[0].status = NodeStatus.SUCCEEDED;
+      first.tasks[0].status = NodeStatus.SUCCEEDED;
+      first.status = NodeStatus.SUCCEEDED;
+
+      h.register(
+        fileWebsite({
+          id: 'mastodon',
+          supportsFile: false,
+          supportsMessage: false,
+        }),
+      );
+      const skipped = sched.createJob(submission.id, {
+        resumeMode: PostRecordResumeMode.CONTINUE,
+        attemptOf: first.id,
+      });
+      sched.plan(skipped);
+      skipped.status = NodeStatus.SUCCEEDED;
+
+      h.register(
+        fileWebsite({
+          id: 'mastodon',
+          supportsFile: false,
+          supportsMessage: true,
+        }),
+      );
+      const retried = sched.createJob(submission.id, {
+        resumeMode: PostRecordResumeMode.CONTINUE_RETRY,
+        attemptOf: skipped.id,
+      });
+      sched.plan(retried);
+      seedFromPreviousAttempts(
+        retried,
+        [skipped, first],
+        PostRecordResumeMode.CONTINUE_RETRY,
+        h,
+      );
+      resetForResume(retried);
+
+      expect(retried.tasks[0].units[0].status).toBe(NodeStatus.QUEUED);
+    });
+
+    it('retries all files for an incomplete destination restored after omission', () => {
+      const { sched, previous, submission, h } = previousAttempt();
+      submission.options = [{ accountId: 'a_ws', websiteId: 'weasyl' }];
+      const omitted = sched.createJob(submission.id, {
+        resumeMode: PostRecordResumeMode.CONTINUE,
+        attemptOf: previous.id,
+      });
+      sched.plan(omitted);
+      omitted.status = NodeStatus.SUCCEEDED;
+
+      submission.options.push({
+        accountId: 'a_fa',
+        websiteId: 'furaffinity',
+      });
+      const restored = sched.createJob(submission.id, {
+        resumeMode: PostRecordResumeMode.CONTINUE_RETRY,
+        attemptOf: omitted.id,
+      });
+      sched.plan(restored);
+      seedFromPreviousAttempts(
+        restored,
+        [omitted, previous],
+        PostRecordResumeMode.CONTINUE_RETRY,
+        h,
+      );
+      resetForResume(restored);
+
+      expect(
+        tasksOf(restored).fa.units.every(
+          (unit) => unit.status === NodeStatus.QUEUED,
+        ),
+      ).toBe(true);
+    });
+
+    it('prefers the current URL and retains it on a third continuation', async () => {
+      const submission = fileSubmission();
+      submission.options = [
+        { accountId: 'a_fa', websiteId: 'furaffinity' },
+        { accountId: 'a_cp', websiteId: 'crosspost' },
+      ];
+      const h = new Harness(submission);
+      h.register(fileWebsite({ id: 'furaffinity', fileBatchSize: 10 }));
+      h.register(
+        fileWebsite({
+          id: 'crosspost',
+          fileBatchSize: 10,
+          acceptsExternalSourceUrls: true,
+          sourceDependencyMode: 'allSettled',
+        }),
+      );
+      const sched = new RelayScheduler(h, instant);
+      const first = sched.enqueue(submission.id);
+      const firstFa = first.tasks.find(
+        (task) => task.websiteId === 'furaffinity',
+      )!;
+      firstFa.units[0].status = NodeStatus.SUCCEEDED;
+      firstFa.units[0].sourceUrl = 'https://furaffinity/old';
+      firstFa.status = NodeStatus.SUCCEEDED;
+      firstFa.sourceUrl = 'https://furaffinity/old';
+      const firstCp = first.tasks.find(
+        (task) => task.websiteId === 'crosspost',
+      )!;
+      firstCp.units[0].status = NodeStatus.FAILED;
+      firstCp.status = NodeStatus.FAILED;
+      first.status = NodeStatus.FAILED;
+
+      submission.files.push({ ...submission.files[0], id: 'f4', order: 4 });
+      const second = sched.createJob(submission.id, {
+        resumeMode: PostRecordResumeMode.CONTINUE,
+        attemptOf: first.id,
+      });
+      sched.plan(second);
+      seedFromPreviousAttempts(
+        second,
+        [first],
+        PostRecordResumeMode.CONTINUE,
+        h,
+      );
+      resetForResume(second);
+      h.behavior = (website) => ({
+        sourceUrl:
+          website.id === 'furaffinity'
+            ? 'https://furaffinity/current'
+            : 'https://crosspost/current',
+      });
+
+      await sched.runToIdle();
+
+      const secondFa = second.tasks.find(
+        (task) => task.websiteId === 'furaffinity',
+      )!;
+      const secondCp = second.tasks.find(
+        (task) => task.websiteId === 'crosspost',
+      )!;
+      expect(secondFa.sourceUrl).toBe('https://furaffinity/current');
+      const parseEntry = h.tracer
+        .getEntries(second.id)
+        .find(
+          (entry) => entry.taskId === secondCp.id && entry.stage === 'parse',
+        );
+      expect(parseEntry?.data?.upstreamSourceUrls).toEqual([
+        'https://furaffinity/current',
+      ]);
+
+      const third = sched.createJob(submission.id, {
+        resumeMode: PostRecordResumeMode.CONTINUE,
+        attemptOf: second.id,
+      });
+      sched.plan(third);
+      seedFromPreviousAttempts(
+        third,
+        [second, first],
+        PostRecordResumeMode.CONTINUE,
+        h,
+      );
+      resetForResume(third);
+      expect(
+        third.tasks.find((task) => task.websiteId === 'furaffinity')?.sourceUrl,
+      ).toBe('https://furaffinity/current');
+    });
+
+    it('restores a historical URL before an allSettled dependent runs after failure', async () => {
+      const submission = fileSubmission();
+      submission.options = [
+        { accountId: 'a_fa', websiteId: 'furaffinity' },
+        { accountId: 'a_cp', websiteId: 'crosspost' },
+      ];
+      const h = new Harness(submission);
+      h.register(fileWebsite({ id: 'furaffinity', fileBatchSize: 10 }));
+      h.register(
+        fileWebsite({
+          id: 'crosspost',
+          fileBatchSize: 10,
+          acceptsExternalSourceUrls: true,
+          sourceDependencyMode: 'allSettled',
+        }),
+      );
+      const sched = new RelayScheduler(h, instant);
+      const first = sched.enqueue(submission.id);
+      const firstFa = first.tasks.find(
+        (task) => task.websiteId === 'furaffinity',
+      )!;
+      firstFa.units[0].status = NodeStatus.SUCCEEDED;
+      firstFa.units[0].sourceUrl = 'https://furaffinity/old';
+      firstFa.status = NodeStatus.SUCCEEDED;
+      firstFa.sourceUrl = 'https://furaffinity/old';
+      first.status = NodeStatus.FAILED;
+
+      submission.files.push({ ...submission.files[0], id: 'f4', order: 4 });
+      const retry = sched.createJob(submission.id, {
+        resumeMode: PostRecordResumeMode.CONTINUE,
+        attemptOf: first.id,
+      });
+      sched.plan(retry);
+      seedFromPreviousAttempts(
+        retry,
+        [first],
+        PostRecordResumeMode.CONTINUE,
+        h,
+      );
+      resetForResume(retry);
+      h.behavior = (website) => {
+        if (website.id === 'furaffinity') {
+          throw new StageError({
+            kind: PostErrorKind.FATAL,
+            stage: 'dispatch',
+            message: 'failed',
+          });
+        }
+        return { sourceUrl: 'https://crosspost/current' };
+      };
+
+      await sched.runToIdle();
+
+      const retryFa = retry.tasks.find(
+        (task) => task.websiteId === 'furaffinity',
+      )!;
+      const retryCp = retry.tasks.find(
+        (task) => task.websiteId === 'crosspost',
+      )!;
+      expect(retryFa.sourceUrl).toBe('https://furaffinity/old');
+      const parseEntry = h.tracer
+        .getEntries(retry.id)
+        .find(
+          (entry) => entry.taskId === retryCp.id && entry.stage === 'parse',
+        );
+      expect(parseEntry?.data?.upstreamSourceUrls).toEqual([
+        'https://furaffinity/old',
       ]);
     });
   });

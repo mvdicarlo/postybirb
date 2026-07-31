@@ -6,6 +6,7 @@
 import {
     ISubmissionScheduleInfo,
     IWebsiteFormFields,
+    NodeStatus,
     PostRecordResumeMode,
     SubmissionType,
 } from '@postybirb/types';
@@ -49,7 +50,10 @@ interface UseSubmissionHandlersResult {
   /** Handle deleting all selected submissions */
   handleDeleteSelected: () => Promise<void>;
   /** Handle posting submissions with specified order */
-  handlePostSelected: (orderedIds: string[]) => Promise<void>;
+  handlePostSelected: (
+    orderedIds: string[],
+    resumeMode?: PostRecordResumeMode,
+  ) => Promise<void>;
   /** Handle duplicating a submission */
   handleDuplicate: (id: string) => Promise<void>;
   /** Handle archiving a submission */
@@ -71,14 +75,11 @@ interface UseSubmissionHandlersResult {
     schedule: ISubmissionScheduleInfo,
     isScheduled: boolean,
   ) => Promise<void>;
-  /** ID of submission waiting for resume mode selection */
-  pendingResumeSubmissionId: string | null;
-  /** Whether that submission gained files since the failed attempt */
-  pendingResumeHasNewFiles: boolean;
-  /** Close the resume mode modal without posting */
-  cancelResume: () => void;
-  /** Post with the selected resume mode */
-  confirmResume: (resumeMode: PostRecordResumeMode) => Promise<void>;
+  pendingPostModeSubmissionId: string | null;
+  pendingPostModeStatus?: NodeStatus;
+  pendingPostModeHasNewFiles: boolean;
+  cancelPostMode: () => void;
+  confirmPostMode: (resumeMode: PostRecordResumeMode) => Promise<void>;
 }
 
 /**
@@ -106,10 +107,11 @@ export function useSubmissionHandlers({
     handlePost,
     handleCancel,
     handlePostSelected,
-    pendingResumeSubmissionId,
-    pendingResumeHasNewFiles,
-    cancelResume,
-    confirmResume,
+    pendingPostModeSubmissionId,
+    pendingPostModeStatus,
+    pendingPostModeHasNewFiles,
+    cancelPostMode,
+    confirmPostMode,
   } = useSubmissionPost();
 
   const {
@@ -139,9 +141,10 @@ export function useSubmissionHandlers({
     handleCancel,
     handlePostSelected,
     handleScheduleChange,
-    pendingResumeSubmissionId,
-    pendingResumeHasNewFiles,
-    cancelResume,
-    confirmResume,
+    pendingPostModeSubmissionId,
+    pendingPostModeStatus,
+    pendingPostModeHasNewFiles,
+    cancelPostMode,
+    confirmPostMode,
   };
 }
