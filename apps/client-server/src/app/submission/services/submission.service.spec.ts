@@ -162,6 +162,7 @@ describe('SubmissionService', () => {
       metadata: {},
       files: [],
       order: 1,
+      posts: [],
       postQueueRecord: undefined,
       options: [record.options[0].toDTO()],
       validations: [],
@@ -178,60 +179,6 @@ describe('SubmissionService', () => {
 
     await service.remove(record.id);
     expect(await service.findAll()).toHaveLength(0);
-  });
-
-  describe('dependsOn dependencies', () => {
-    it('persists a valid dependsOn set', async () => {
-      const dependency = await service.create(createSubmissionDto());
-      const dependent = await service.create(createSubmissionDto());
-
-      await service.update(dependent.id, {
-        metadata: { dependsOn: [dependency.id] },
-      } as never);
-
-      const updated = await service.findById(dependent.id);
-      expect(updated?.metadata.dependsOn).toEqual([dependency.id]);
-    });
-
-    it('rejects a self-dependency', async () => {
-      const submission = await service.create(createSubmissionDto());
-
-      await expect(
-        service.update(submission.id, {
-          metadata: { dependsOn: [submission.id] },
-        } as never),
-      ).rejects.toThrow(BadRequestException);
-    });
-
-    it('rejects a dependency that would create a cycle', async () => {
-      const a = await service.create(createSubmissionDto());
-      const b = await service.create(createSubmissionDto());
-
-      // b depends on a
-      await service.update(b.id, {
-        metadata: { dependsOn: [a.id] },
-      } as never);
-
-      // a depends on b would close the cycle -> rejected
-      await expect(
-        service.update(a.id, {
-          metadata: { dependsOn: [b.id] },
-        } as never),
-      ).rejects.toThrow(BadRequestException);
-    });
-
-    it('strips the deleted id from dependents on removal', async () => {
-      const dependency = await service.create(createSubmissionDto());
-      const dependent = await service.create(createSubmissionDto());
-      await service.update(dependent.id, {
-        metadata: { dependsOn: [dependency.id] },
-      } as never);
-
-      await service.remove(dependency.id);
-
-      const updated = await service.findById(dependent.id);
-      expect(updated?.metadata.dependsOn ?? []).not.toContain(dependency.id);
-    });
   });
 
   it('should throw exception on message submission with provided file', async () => {
@@ -307,6 +254,7 @@ describe('SubmissionService', () => {
           order: file.order,
         },
       ],
+      posts: [],
       order: 1,
       options: [defaultOptions.toObject()],
       validations: [],

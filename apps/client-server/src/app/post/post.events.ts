@@ -1,11 +1,11 @@
-import { POST_STATE_DELTA } from '@postybirb/socket-events';
-import { JobTreeNode } from '@postybirb/types';
+import { POST_WAIT_STATE } from '@postybirb/socket-events';
+import { IPostWaitState } from '@postybirb/types';
 import { WebsocketEvent } from '../web-socket/models/web-socket-event';
 
-export type PostEventTypes = PostStateDeltaEvent;
+export type PostEventTypes = PostWaitStateEvent;
 
-class PostStateDeltaEvent implements WebsocketEvent<JobTreeNode> {
-  event: string = POST_STATE_DELTA;
+class PostWaitStateEvent implements WebsocketEvent<IPostWaitState[]> {
+  event: string = POST_WAIT_STATE;
 
-  data: JobTreeNode = {} as JobTreeNode;
+  data: IPostWaitState[] = [];
 }
