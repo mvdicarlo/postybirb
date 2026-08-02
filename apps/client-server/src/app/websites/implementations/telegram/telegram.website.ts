@@ -372,23 +372,14 @@ export default class Telegram
           break;
 
         case FileType.VIDEO:
-          console.log(
-            {
-              duration: file.metadata.duration ?? 0,
-              w: file.width,
-              h: file.height,
-            },
-            {
-              duration: file.metadata.duration ?? 0,
-              w: file.metadata.dimensions.default.width,
-              h: file.metadata.dimensions.default.height,
-            },
-          );
           attributes.push(
             new Api.DocumentAttributeVideo({
               duration: file.metadata.duration ?? 0,
               w: file.width,
               h: file.height,
+              supportsStreaming: true,
+              nosound: true,
+              videoCodec: 'h264',
             }),
           );
           break;
