@@ -14,7 +14,15 @@
  */
 'use strict';
 
-const sharp = require('sharp');
+/**
+ * Original sharp crashes on arm64 due to glibc version mismatch, so we need to use patched community fork
+ *
+ * https://github.com/mvdicarlo/postybirb/issues/973
+ * https://github.com/electron/electron/issues/46323#issuecomment-4909766458
+ *
+ * @type {typeof import('sharp')}
+ */
+const sharp = require('@janhapke/sharp-electron');
 const os = require('os');
 
 // Configure sharp for this process
@@ -509,7 +517,9 @@ async function processImage(input) {
       // Create a tiny 1x1 JPEG, read it back — exercises the full
       // sharp pipeline including native bindings
       const pixel = Buffer.from([255, 0, 0]); // 1 red pixel
-      const testImg = await sharp(pixel, { raw: { width: 1, height: 1, channels: 3 } })
+      const testImg = await sharp(pixel, {
+        raw: { width: 1, height: 1, channels: 3 },
+      })
         .jpeg({ quality: 50 })
         .toBuffer();
       const testMeta = await sharp(testImg).metadata();
@@ -553,8 +563,7 @@ async function processImage(input) {
 
       // Detect if the source is animated (multi-frame GIF/WebP)
       const sourceIsAnimated =
-        isAnimatedFormat(input.mimeType) &&
-        (await isAnimated(input.buffer));
+        isAnimatedFormat(input.mimeType) && (await isAnimated(input.buffer));
 
       // Determine the effective output MIME type
       const effectiveOutputMime = resize.outputMimeType || input.mimeType;
@@ -590,7 +599,12 @@ async function processImage(input) {
           (resize.height && resize.height < srcHeight)
         ) {
           modified = true;
-          const result = await resizeImage(buffer, resize.width, resize.height, keepAnimated);
+          const result = await resizeImage(
+            buffer,
+            resize.width,
+            resize.height,
+            keepAnimated,
+          );
           buffer = result.buffer;
           finalWidth = result.width;
           finalHeight = result.height;
@@ -727,4 +741,3 @@ if (process.parentPort) {
     process.parentPort.postMessage(await dispatch(event.data));
   });
 }
-
