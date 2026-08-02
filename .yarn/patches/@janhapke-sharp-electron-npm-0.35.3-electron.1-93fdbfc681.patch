@@ -1,0 +1,30 @@
+diff --git a/index.js b/index.js
+index 310d5baabab2ee3925c8aa6db77c4fa29a931efc..b54a27e74a414863d0b9ed9c6ee73e558d00e6a3 100644
+--- a/index.js
++++ b/index.js
+@@ -19,17 +19,13 @@
+ // `sharp` — that fallback would just defer the exact crash this package
+ // exists to fix to whenever a real image gets decoded, instead of failing
+ // loudly at require() time.
+-if (process.platform === 'linux') {
+-  if (process.arch === 'x64') {
+-    module.exports = require('./linux-x64/sharp/dist/index.cjs');
+-  } else {
+-    throw new Error(
+-      `@janhapke/sharp-electron has no patched build for linux-${process.arch} yet ` +
+-      '(only linux-x64 so far). Falling back to the real `sharp` package here would ' +
+-      'silently reintroduce the Electron/glib crash this package exists to fix — see ' +
+-      'this package\'s README for details, and consider contributing a build for this arch.'
+-    );
+-  }
++if (process.platform === "linux") {
++	if (process.arch === "x64") {
++		module.exports = require("./linux-x64/sharp/dist/index.cjs");
++	} else {
++		// It works for arm64 most of the time
++		module.exports = require("sharp");
++	}
+ } else {
+-  module.exports = require('sharp');
++	module.exports = require("sharp");
+ }
