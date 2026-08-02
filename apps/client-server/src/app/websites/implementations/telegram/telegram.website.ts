@@ -353,12 +353,67 @@ export default class Telegram
         ? Api.InputMediaUploadedPhoto
         : Api.InputMediaUploadedDocument;
 
+      const isGif = file.mimeType === 'image/gif';
+
+      // Telegram may parse file and extract its metadata by itself
+      // but it also may not. In that case the file will display as "Unknown track"
+      // even if its video, audio or any other file type. To fix this,
+      // we manually add the metadata to file attributes
+
+      const attributes: Api.TypeDocumentAttribute[] = [];
+
+      switch (file.fileType) {
+        case FileType.AUDIO:
+          attributes.push(
+            new Api.DocumentAttributeAudio({
+              duration: file.metadata.duration ?? 0,
+            }),
+          );
+          break;
+
+        case FileType.VIDEO:
+          console.log(
+            {
+              duration: file.metadata.duration ?? 0,
+              w: file.width,
+              h: file.height,
+            },
+            {
+              duration: file.metadata.duration ?? 0,
+              w: file.metadata.dimensions.default.width,
+              h: file.metadata.dimensions.default.height,
+            },
+          );
+          attributes.push(
+            new Api.DocumentAttributeVideo({
+              duration: file.metadata.duration ?? 0,
+              w: file.width,
+              h: file.height,
+            }),
+          );
+          break;
+
+        case FileType.IMAGE:
+          if (isGif) {
+            attributes.push(new Api.DocumentAttributeAnimated());
+          }
+
+          // Normal image is not document and does not require any attributes
+          // Telegram extracts dimensions from it by itself
+          break;
+
+        default:
+          attributes.push(
+            new Api.DocumentAttributeFilename({ fileName: file.fileName }),
+          );
+      }
+
       const media = new UploadedMedia({
         spoiler: postData.options.spoiler,
         file: uploadedFile,
         mimeType: file.mimeType,
-        attributes: [],
-        nosoundVideo: file.mimeType === 'image/gif',
+        attributes,
+        nosoundVideo: isGif,
       });
 
       medias.push(media);

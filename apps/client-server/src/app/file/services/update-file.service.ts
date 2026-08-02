@@ -2,11 +2,17 @@
 // @ts-expect-error No types on npm
 import * as rtf from '@iarna/rtf-to-html';
 import {
-    BadRequestException,
-    Injectable,
-    NotFoundException,
+  BadRequestException,
+  Injectable,
+  NotFoundException,
 } from '@nestjs/common';
-import { FileBufferRepository, SubmissionFile, SubmissionFileRepository, TransactionContext, withTransactionContext } from '@postybirb/database';
+import {
+  FileBufferRepository,
+  SubmissionFile,
+  SubmissionFileRepository,
+  TransactionContext,
+  withTransactionContext,
+} from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import { EntityId, FileType } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
@@ -18,7 +24,7 @@ import { parse } from 'path';
 import { promisify } from 'util';
 import { SharpInstanceManager } from '../../image-processing/sharp-instance-manager';
 import { MulterFileInfo } from '../models/multer-file-info';
-import { ImageUtil } from '../utils/image.util';
+import { MediaUtils } from '../utils/media.util';
 import { CreateFileService } from './create-file.service';
 
 /**
@@ -72,7 +78,11 @@ export class UpdateFileService {
     file: MulterFileInfo,
     buf: Buffer,
   ) {
-    const thumbnailDetails = await this.getImageDetails(file, buf);
+    const thumbnailDetails = await this.getMetadata(FileType.IMAGE, file, buf);
+    if (!thumbnailDetails) {
+      throw new BadRequestException('File is not an image');
+    }
+
     let { thumbnailId } = submissionFile;
 
     if (!thumbnailId) {
@@ -80,7 +90,7 @@ export class UpdateFileService {
       const thumbnail = await this.createFileService.createFileBufferEntity(
         ctx,
         submissionFile,
-        thumbnailDetails.buffer,
+        buf,
         {
           width: thumbnailDetails.width,
           height: thumbnailDetails.height,
@@ -94,8 +104,8 @@ export class UpdateFileService {
         .getDb()
         .update(this.fileBufferRepository.table)
         .set({
-          buffer: thumbnailDetails.buffer,
-          size: thumbnailDetails.buffer.length,
+          buffer: buf,
+          size: buf.length,
           mimeType: file.mimetype,
           width: thumbnailDetails.width,
           height: thumbnailDetails.height,
@@ -104,7 +114,7 @@ export class UpdateFileService {
     }
 
     // Recompute hash from thumbnail buffer so the frontend cache-buster updates
-    const thumbnailHash = await hash(thumbnailDetails.buffer, {
+    const thumbnailHash = await hash(buf, {
       algorithm: 'sha256',
     });
 
@@ -140,8 +150,18 @@ export class UpdateFileService {
     // Only need to replace when unique file is given
     if (submissionFile.hash !== fileHash) {
       const fileType = getFileType(file.filename);
-      if (fileType === FileType.IMAGE) {
-        await this.updateImageFileProps(ctx, submissionFile, file, buf);
+      if (
+        fileType === FileType.IMAGE ||
+        fileType === FileType.VIDEO ||
+        fileType === FileType.AUDIO
+      ) {
+        await this.updateMediaFileMetadata(
+          ctx,
+          submissionFile,
+          file,
+          buf,
+          fileType,
+        );
       }
 
       // Update submission file entity
@@ -169,10 +189,7 @@ export class UpdateFileService {
           mimeType: file.mimetype,
         })
         .where(
-          eq(
-            this.fileBufferRepository.table.id,
-            submissionFile.primaryFileId,
-          ),
+          eq(this.fileBufferRepository.table.id, submissionFile.primaryFileId),
         );
 
       if (
@@ -252,13 +269,15 @@ export class UpdateFileService {
     return altText ? Buffer.from(altText) : null;
   }
 
-  private async updateImageFileProps(
+  private async updateMediaFileMetadata(
     ctx: TransactionContext,
     submissionFile: SubmissionFile,
     file: MulterFileInfo,
     buf: Buffer,
+    fileType: FileType,
   ) {
-    const { width, height } = await this.getImageDetails(file, buf);
+    const metadata = await this.getMetadata(fileType, file, buf);
+    const { width, height } = metadata;
     await ctx
       .getDb()
       .update(this.fileRepository.table)
@@ -276,10 +295,7 @@ export class UpdateFileService {
         height,
       })
       .where(
-        eq(
-          this.fileBufferRepository.table.id,
-          submissionFile.primaryFileId,
-        ),
+        eq(this.fileBufferRepository.table.id, submissionFile.primaryFileId),
       );
 
     // Reset metadata dimensions so they don't reference the old file size
@@ -290,6 +306,11 @@ export class UpdateFileService {
         default: { width, height },
       };
     }
+
+    if ('duration' in metadata) {
+      updatedMetadata.duration = metadata.duration;
+    }
+
     await ctx
       .getDb()
       .update(this.fileRepository.table)
@@ -320,27 +341,34 @@ export class UpdateFileService {
           fileName: `thumbnail_${fileNameWithoutExt}.${thumbnailExt}`,
         })
         .where(
-          eq(
-            this.fileBufferRepository.table.id,
-            submissionFile.thumbnailId,
-          ),
+          eq(this.fileBufferRepository.table.id, submissionFile.thumbnailId),
         );
     }
   }
 
-  /**
-   * Details of a multer file.
-   *
-   * @param {MulterFileInfo} file
-   */
-  private async getImageDetails(file: MulterFileInfo, buf: Buffer) {
-    if (ImageUtil.isImage(file.mimetype, false)) {
-      const { height, width } =
-        await this.sharpInstanceManager.getMetadata(buf);
-      return { buffer: buf, width, height };
+  private async getMetadata(
+    fileType: FileType,
+    file: MulterFileInfo,
+    buf: Buffer,
+  ) {
+    if (fileType === FileType.IMAGE) {
+      return this.sharpInstanceManager.getMetadata(buf);
     }
 
-    throw new BadRequestException('File is not an image');
+    if (fileType === FileType.VIDEO || fileType === FileType.AUDIO) {
+      try {
+        return await MediaUtils.getMetadata(file, buf);
+      } catch (e) {
+        this.logger
+          .withError(e)
+          .error(`Failed to get metadata for ${file.filename}`);
+      }
+    }
+
+    return {
+      width: 0,
+      height: 0,
+    };
   }
 
   /**
