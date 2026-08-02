@@ -15,7 +15,9 @@ import {
     DefaultSubmissionFileMetadata,
     ScheduleType,
     SubmissionType,
+    UnitOfWorkState,
 } from '@postybirb/types';
+import { PostingManager } from './posting-manager';
 import { PostingService } from './posting.service';
 
 describe('PostingService', () => {
@@ -26,10 +28,20 @@ describe('PostingService', () => {
   let submissionRepository: SubmissionRepository;
   let unitOfWorkRepository: UnitOfWorkRepository;
   let websiteOptionsRepository: WebsiteOptionsRepository;
+  let postingManager: {
+    submit: jest.Mock;
+    cancel: jest.Mock;
+  };
 
   beforeEach(() => {
     clearDatabase();
-    service = new PostingService();
+    postingManager = {
+      submit: jest.fn().mockResolvedValue(true),
+      cancel: jest.fn().mockResolvedValue(true),
+    };
+    service = new PostingService(
+      postingManager as unknown as PostingManager,
+    );
     accountRepository = new AccountRepository();
     postRepository = new PostRepository();
     fileRepository = new SubmissionFileRepository();
@@ -358,5 +370,91 @@ describe('PostingService', () => {
         where: (post, { eq }) => eq(post.submissionId, submission.id),
       }),
     ).toHaveLength(1);
+  });
+
+  it('submits active posts but skips cancelled posts', async () => {
+    const activeSubmission = await seedSubmission();
+    const cancelledSubmission = await seedSubmission();
+    const account = await seedAccount('cron-account');
+    const activePost = await postRepository.insert({
+      submissionId: activeSubmission.id,
+    });
+    const cancelledPost = await postRepository.insert({
+      submissionId: cancelledSubmission.id,
+      cancelled: true,
+    });
+    await unitOfWorkRepository.insert([
+      {
+        postId: activePost.id,
+        submissionId: activeSubmission.id,
+        accountId: account.id,
+      },
+      {
+        postId: cancelledPost.id,
+        submissionId: cancelledSubmission.id,
+        accountId: account.id,
+      },
+    ]);
+
+    await service.handlePendingWork();
+
+    expect(postingManager.submit).toHaveBeenCalledTimes(1);
+    expect(postingManager.submit).toHaveBeenCalledWith(activePost.id);
+  });
+
+  it('completes a post with no remaining work', async () => {
+    const submission = await seedSubmission();
+    const post = await postRepository.insert({ submissionId: submission.id });
+
+    await service.handlePendingWork();
+
+    await expect(postRepository.findByIdOrThrow(post.id)).resolves.toMatchObject({
+      completed: true,
+      cancelled: false,
+    });
+    expect(postingManager.submit).not.toHaveBeenCalled();
+  });
+
+  it('completes a post when all remaining work is terminal', async () => {
+    const submission = await seedSubmission();
+    const account = await seedAccount('terminal-work-account');
+    const post = await postRepository.insert({ submissionId: submission.id });
+    await unitOfWorkRepository.insert([
+      {
+        postId: post.id,
+        submissionId: submission.id,
+        accountId: account.id,
+        state: UnitOfWorkState.FAILED,
+      },
+      {
+        postId: post.id,
+        submissionId: submission.id,
+        accountId: account.id,
+        state: UnitOfWorkState.CANCELLED,
+      },
+    ]);
+
+    await service.handlePendingWork();
+
+    await expect(postRepository.findByIdOrThrow(post.id)).resolves.toMatchObject({
+      completed: true,
+    });
+    expect(postingManager.submit).not.toHaveBeenCalled();
+  });
+
+  it('persists cancellation and forwards it to the manager', async () => {
+    const submission = await seedSubmission();
+    const post = await postRepository.insert({ submissionId: submission.id });
+
+    await service.cancelPost(post.id, 'User requested cancellation');
+
+    expect(postingManager.cancel).toHaveBeenCalledWith(
+      post.id,
+      'User requested cancellation',
+    );
+    await expect(postRepository.findByIdOrThrow(post.id)).resolves.toMatchObject({
+      completed: true,
+      cancelled: true,
+    });
   });
 });

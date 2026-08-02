@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Param, Post } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { GetIncompleteWorkDto } from './dtos/get-incomplete-work.dto';
 import { PostingService } from './posting.service';
@@ -21,5 +21,10 @@ export class PostingController {
       request.submissionId,
       request.evictions,
     );
+  }
+
+  @Post('/cancel/:postId')
+  cancelPost(@Body() request: { reason?: string }, @Param('postId') postId: string) {
+    return this.service.cancelPost(postId, request.reason);
   }
 }

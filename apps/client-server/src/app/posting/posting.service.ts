@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import {
     AccountRepository,
     Post,
@@ -14,11 +15,13 @@ import {
 } from '@postybirb/database';
 import {
     AccountId,
+    PostId,
     SubmissionFileId,
     SubmissionId,
     UnitOfWorkState,
 } from '@postybirb/types';
 import { eq as equals, inArray } from 'drizzle-orm';
+import { PostingManager } from './posting-manager';
 
 export type UnitOfWorkEvictions = Record<AccountId, SubmissionFileId[]>;
 
@@ -41,6 +44,56 @@ export class PostingService {
     protected readonly accountRepository = new AccountRepository();
 
     protected readonly websiteOptionsRepository = new WebsiteOptionsRepository();
+
+    constructor(private readonly postingManager: PostingManager) {}
+
+    @Cron(CronExpression.EVERY_SECOND)
+    async handlePendingWork(): Promise<void> {
+        // Note: Might want to use a new field like "queuedAt" to determine which
+        // work is pending instead of relying on the "updatedAt" field, as it may not
+        // accurately reflect the state of the work.
+        const pendingWork = await this.postRepository.find({
+            where: (post, { and, eq }) => and(
+                eq(post.completed, false),
+                eq(post.cancelled, false),
+            ),
+            orderBy: (post, { asc }) => asc(post.updatedAt),
+            with: {
+                unitsOfWork: true,
+            },
+        });
+
+        for (const post of pendingWork) {
+            const allottedWork = post.unitsOfWork.filter(
+                (unit) => !unit.evicted && !unit.isTerminated,
+            );
+            if (allottedWork.length === 0) {
+                await this.completePost(post.id);
+                continue;
+            }
+
+            // TODO need to work out a filter for the RATE_LIMITED work as it should be retried
+            // after a certain amount of time has passed. This will likely be a database that tracks
+            // the last known rate limit for each account and the time it was last hit. Then we can filter out any work that is rate limited and has not yet passed the time limit.
+
+
+            // TODO filter out posts if their parent submission has not resolved their dependsOn
+            // relationship (not yet implemented)
+
+            // TODO send to manager for processing
+            await this.postingManager.submit(post.id);
+        }
+    }
+
+    public async cancelPost(postId: PostId, reason?: string): Promise<void> {
+        await Promise.all([
+            this.postRepository.update(postId, {
+                completed: true,
+                cancelled: true,
+            }),
+            this.postingManager.cancel(postId, reason ?? 'Cancelled by user'),
+        ]);
+    }
 
     public async getPost(submissionId: SubmissionId): Promise<Post | null> {
         return this.postRepository.findOne({
@@ -213,5 +266,9 @@ export class PostingService {
             evicted: false,
             state: UnitOfWorkState.NEW,
         });
+    }
+
+    private async completePost(postId: PostId): Promise<void> {
+        await this.postRepository.update(postId, { completed: true });
     }
 }

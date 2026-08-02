@@ -1,0 +1,82 @@
+import { Injectable } from '@nestjs/common';
+import { Logger } from '@postybirb/logger';
+import { PostId } from '@postybirb/types';
+import { Mutex } from 'async-mutex';
+import { PostingWorker } from './posting-worker';
+
+@Injectable()
+export class PostingManager {
+  private readonly logger = Logger(PostingManager.name);
+
+  private readonly submitMutex = new Mutex();
+
+  private readonly acceptedJobs = new Set<PostId>();
+
+  private readonly maxAcceptedJobs = 3;
+
+  private readonly workers: Map<PostId, PostingWorker> = new Map();
+
+  public submit(postId: PostId): Promise<boolean> {
+    return this.submitMutex.runExclusive(() => {
+      if (this.acceptedJobs.has(postId)) {
+        return false;
+      }
+
+      if (this.acceptedJobs.size >= this.maxAcceptedJobs) {
+        return false;
+      }
+
+      this.acceptedJobs.add(postId);
+      this.logger.debug(`Accepted post '${postId}'`);
+      this.allocateWorker(postId);
+      return true;
+    });
+  }
+
+  public cancel(postId: PostId, reason: string): Promise<boolean> {
+    return this.submitMutex.runExclusive(() => {
+      const worker = this.workers.get(postId);
+      if (!worker) {
+        this.logger.warn(
+          `Attempted to cancel post '${postId}' but it was not accepted`,
+        );
+        return false;
+      }
+
+      worker.cancel(reason);
+      this.logger.info(`Cancellation requested for post '${postId}'`);
+      return true;
+    });
+  }
+
+  private allocateWorker(postId: PostId): void {
+    this.logger.info(`Allocating worker for post '${postId}'`);
+    const worker = this.createWorker(postId, () =>
+      this.releaseWorker(postId, worker),
+    );
+    this.workers.set(postId, worker);
+    worker.start().catch((error) => {
+      this.logger.withError(error).error(`Worker for post '${postId}' failed`);
+      return this.releaseWorker(postId, worker);
+    });
+  }
+
+  protected createWorker(
+    postId: PostId,
+    onAfterDispose: () => void | Promise<void>,
+  ): PostingWorker {
+    return new PostingWorker(postId, onAfterDispose);
+  }
+
+  private releaseWorker(postId: PostId, worker: PostingWorker): Promise<void> {
+    return this.submitMutex.runExclusive(() => {
+      if (this.workers.get(postId) !== worker) {
+        return;
+      }
+
+      this.workers.delete(postId);
+      this.acceptedJobs.delete(postId);
+      this.logger.debug(`Released post '${postId}'`);
+    });
+  }
+}
