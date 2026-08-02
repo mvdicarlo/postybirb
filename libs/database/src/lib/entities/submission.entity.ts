@@ -15,6 +15,7 @@ import {
     type PostQueueRecordRow,
 } from './post-queue-record.entity';
 import { PostRecord, type PostRecordRow } from './post-record.entity';
+import { Post, type PostRow } from './post.entity';
 import {
     SubmissionFile,
     type SubmissionFileRow,
@@ -27,6 +28,7 @@ import {
 export type SubmissionRow = InferSelectModel<typeof SubmissionSchema> & {
   options?: WebsiteOptionsRow[];
   posts?: PostRecordRow[];
+  postRuns?: PostRow[];
   files?: SubmissionFileRow[];
   postQueueRecord?: PostQueueRecordRow;
 };
@@ -60,6 +62,8 @@ export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
   public metadata: T;
 
   public posts!: PostRecord[];
+
+  public postRuns!: Post[];
 
   public order: number;
 
@@ -99,6 +103,7 @@ export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
       files: this.files,
       metadata: this.metadata,
       posts: this.posts,
+      postRuns: this.postRuns,
       order: this.order,
     } as ISubmission<T>;
   }
@@ -109,6 +114,7 @@ export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
       files: this.files?.map((f) => f.toDTO()),
       options: this.options?.map((o) => o.toDTO()),
       posts: this.posts?.map((p) => p.toDTO()),
+      postRuns: this.postRuns?.map((p) => p.toDTO()),
       postQueueRecord: this.postQueueRecord?.toDTO(),
       validations: [],
     };
@@ -134,6 +140,7 @@ export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
         if (row.options) e.options = ctx.hydrateMany(WebsiteOptions, row.options);
         if (row.files) e.files = ctx.hydrateMany(SubmissionFile, row.files);
         if (row.posts) e.posts = ctx.hydrateMany(PostRecord, row.posts);
+        if (row.postRuns) e.postRuns = ctx.hydrateMany(Post, row.postRuns);
         if (row.postQueueRecord) {
           e.postQueueRecord = ctx.hydrateOne(
             PostQueueRecord,

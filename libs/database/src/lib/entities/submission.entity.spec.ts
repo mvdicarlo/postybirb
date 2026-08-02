@@ -8,6 +8,7 @@ import {
 } from '@postybirb/types';
 import { HydrationContext } from '../repositories/base/hydration-context';
 import { assertRowRoundtrips } from '../repositories/base/test-utils';
+import { Post } from './post.entity';
 import { Submission, type SubmissionRow } from './submission.entity';
 import { WebsiteOptions } from './website-options.entity';
 
@@ -37,8 +38,28 @@ describe('Submission.fromRow', () => {
     assertRowRoundtrips(
       row,
       entity as unknown as Record<string, unknown> & { id: string },
-      ['options', 'posts', 'files', 'postQueueRecord'],
+      ['options', 'posts', 'postRuns', 'files', 'postQueueRecord'],
     );
+  });
+
+  it('hydrates post runs when present', () => {
+    const row = buildRow({
+      postRuns: [
+        {
+          id: 'post-1',
+          createdAt: '2025-01-01T00:00:00.000Z',
+          updatedAt: '2025-01-01T00:00:00.000Z',
+          submissionId: 'sub-1',
+          completed: false,
+          cancelled: false,
+          unitsOfWork: [],
+        },
+      ],
+    });
+    const entity = Submission.fromRow(row);
+
+    expect(entity.postRuns).toHaveLength(1);
+    expect(entity.postRuns[0]).toBeInstanceOf(Post);
   });
 
   it('hydrates options when present', () => {

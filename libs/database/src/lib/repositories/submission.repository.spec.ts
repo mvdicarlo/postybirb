@@ -14,6 +14,7 @@ import { Account } from '../entities/account.entity';
 import { PostEvent } from '../entities/post-event.entity';
 import { PostQueueRecord } from '../entities/post-queue-record.entity';
 import { PostRecord } from '../entities/post-record.entity';
+import { Post } from '../entities/post.entity';
 import { SubmissionFile } from '../entities/submission-file.entity';
 import { Submission } from '../entities/submission.entity';
 import { WebsiteOptions } from '../entities/website-options.entity';
@@ -22,6 +23,7 @@ import { createTestRepositories } from './base/test-utils';
 import { PostEventRepository } from './post-event.repository';
 import { PostQueueRecordRepository } from './post-queue-record.repository';
 import { PostRecordRepository } from './post-record.repository';
+import { PostRepository } from './post.repository';
 import { SubmissionFileRepository } from './submission-file.repository';
 import { SubmissionRepository } from './submission.repository';
 import { WebsiteOptionsRepository } from './website-options.repository';
@@ -43,6 +45,7 @@ import { WebsiteOptionsRepository } from './website-options.repository';
  *     ├── posts: PostRecord[]
  *     │      └── events: PostEvent[]
  *     │             └── account: Account
+ *     ├── postRuns: Post[]
  *     └── postQueueRecord: PostQueueRecord
  *
  * It also exercises cascade behaviour on delete across every dependent
@@ -55,6 +58,7 @@ describe('SubmissionRepository (full dependency tree)', () => {
     file: SubmissionFileRepository,
     options: WebsiteOptionsRepository,
     record: PostRecordRepository,
+    post: PostRepository,
     event: PostEventRepository,
     queue: PostQueueRecordRepository,
   });
@@ -66,6 +70,7 @@ describe('SubmissionRepository (full dependency tree)', () => {
     fileIds: string[];
     optionsIds: { default: string; secondary: string };
     recordIds: { origin: string; chained: string };
+    postRunId: string;
     eventIds: {
       originStarted: string;
       originFinished: string;
@@ -154,6 +159,9 @@ describe('SubmissionRepository (full dependency tree)', () => {
       resumeMode: PostRecordResumeMode.CONTINUE,
       originPostRecordId: originRecord.id,
     });
+    const postRun = await repos.post.insert({
+      submissionId: submission.id,
+    });
 
     const originStarted = await repos.event.insert({
       postRecordId: originRecord.id,
@@ -187,6 +195,7 @@ describe('SubmissionRepository (full dependency tree)', () => {
         secondary: secondaryOptions.id,
       },
       recordIds: { origin: originRecord.id, chained: chainedRecord.id },
+      postRunId: postRun.id,
       eventIds: {
         originStarted: originStarted.id,
         originFinished: originFinished.id,
@@ -247,6 +256,11 @@ describe('SubmissionRepository (full dependency tree)', () => {
       expect(chained?.events).toHaveLength(1);
       expect(chained?.events[0].account?.id).toBe(seed.accountBId);
 
+      // --- current post runs ---
+      expect(fetched?.postRuns).toHaveLength(1);
+      expect(fetched?.postRuns[0]).toBeInstanceOf(Post);
+      expect(fetched?.postRuns[0].id).toBe(seed.postRunId);
+
       // --- queue ---
       expect(fetched?.postQueueRecord).toBeInstanceOf(PostQueueRecord);
       expect(fetched?.postQueueRecord?.id).toBe(seed.queueId);
@@ -262,6 +276,7 @@ describe('SubmissionRepository (full dependency tree)', () => {
       expect(all[0].files).toHaveLength(2);
       expect(all[0].options).toHaveLength(2);
       expect(all[0].posts).toHaveLength(2);
+      expect(all[0].postRuns).toHaveLength(1);
       expect(all[0].postQueueRecord).toBeDefined();
     });
 
@@ -280,6 +295,7 @@ describe('SubmissionRepository (full dependency tree)', () => {
       expect(empty.files).toEqual([]);
       expect(empty.options).toEqual([]);
       expect(empty.posts).toEqual([]);
+      expect(empty.postRuns).toEqual([]);
       expect(empty.postQueueRecord).toBeUndefined();
     });
 
@@ -301,6 +317,7 @@ describe('SubmissionRepository (full dependency tree)', () => {
       expect(row.files).toBeUndefined();
       expect(row.options).toBeUndefined();
       expect(row.posts).toBeUndefined();
+      expect(row.postRuns).toBeUndefined();
       expect(row.postQueueRecord).toBeUndefined();
     });
 
@@ -310,6 +327,7 @@ describe('SubmissionRepository (full dependency tree)', () => {
       expect(row.files).toHaveLength(2);
       expect(row.options).toBeUndefined();
       expect(row.posts).toBeUndefined();
+      expect(row.postRuns).toBeUndefined();
       expect(row.postQueueRecord).toBeUndefined();
       expect(row.files.map((f) => f.id).sort()).toEqual(
         [...seed.fileIds].sort(),
@@ -322,7 +340,7 @@ describe('SubmissionRepository (full dependency tree)', () => {
   // ---------------------------------------------------------------------
 
   describe('cascade behaviour on delete', () => {
-    it('deleting a submission cascades to files, options, posts, events, and queue', async () => {
+    it('deleting a submission cascades to files, options, post records, post runs, events, and queue', async () => {
       const seed = await seedFullGraph();
 
       await repos.submission.deleteById([seed.submissionId]);
@@ -344,6 +362,9 @@ describe('SubmissionRepository (full dependency tree)', () => {
       // post records cascade directly off submission
       expect(await repos.record.findById(seed.recordIds.origin)).toBeNull();
       expect(await repos.record.findById(seed.recordIds.chained)).toBeNull();
+
+      // current post runs cascade directly off submission
+      expect(await repos.post.findById(seed.postRunId)).toBeNull();
 
       // events cascade transitively through the deleted post records
       expect(

@@ -8,6 +8,7 @@ import {
 import { CommonSchema, submissionType } from './common.schema';
 import { PostQueueRecordSchema } from './post-queue-record.schema';
 import { PostRecordSchema } from './post-record.schema';
+import { PostSchema } from './post.schema';
 import { SubmissionFileSchema } from './submission-file.schema';
 import { WebsiteOptionsSchema } from './website-options.schema';
 
@@ -29,6 +30,7 @@ export const SubmissionRelations = relations(
   ({ one, many }) => ({
     options: many(WebsiteOptionsSchema),
     posts: many(PostRecordSchema),
+    postRuns: many(PostSchema),
     files: many(SubmissionFileSchema),
     postQueueRecord: one(PostQueueRecordSchema),
   }),
