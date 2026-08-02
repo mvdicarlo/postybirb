@@ -38,28 +38,26 @@ describe('Submission.fromRow', () => {
     assertRowRoundtrips(
       row,
       entity as unknown as Record<string, unknown> & { id: string },
-      ['options', 'posts', 'postRuns', 'files', 'postQueueRecord'],
+      ['options', 'posts', 'post', 'files', 'postQueueRecord'],
     );
   });
 
-  it('hydrates post runs when present', () => {
+  it('hydrates the post when present', () => {
     const row = buildRow({
-      postRuns: [
-        {
-          id: 'post-1',
-          createdAt: '2025-01-01T00:00:00.000Z',
-          updatedAt: '2025-01-01T00:00:00.000Z',
-          submissionId: 'sub-1',
-          completed: false,
-          cancelled: false,
-          unitsOfWork: [],
-        },
-      ],
+      post: {
+        id: 'post-1',
+        createdAt: '2025-01-01T00:00:00.000Z',
+        updatedAt: '2025-01-01T00:00:00.000Z',
+        submissionId: 'sub-1',
+        completed: false,
+        cancelled: false,
+        unitsOfWork: [],
+      },
     });
     const entity = Submission.fromRow(row);
 
-    expect(entity.postRuns).toHaveLength(1);
-    expect(entity.postRuns[0]).toBeInstanceOf(Post);
+    expect(entity.post).toBeInstanceOf(Post);
+    expect(entity.post?.id).toBe('post-1');
   });
 
   it('hydrates options when present', () => {

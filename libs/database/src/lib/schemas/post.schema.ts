@@ -8,6 +8,7 @@ export const PostSchema = sqliteTable('post', {
   ...CommonSchema(),
   submissionId: id()
     .notNull()
+    .unique()
     .references((): AnySQLiteColumn => SubmissionSchema.id, {
       onDelete: 'cascade',
     }),

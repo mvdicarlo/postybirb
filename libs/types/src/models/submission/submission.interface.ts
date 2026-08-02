@@ -95,10 +95,10 @@ export interface ISubmission<
   posts: IPostRecord[];
 
   /**
-   * The posts created for this submission by the current posting model.
-   * @type {Collection<IPost>}
+   * The post created for this submission by the current posting model.
+   * @type {IPost}
    */
-  postRuns: IPost[];
+  post?: IPost;
 
   /**
    * The index of the submission for display purposes.

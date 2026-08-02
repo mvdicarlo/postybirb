@@ -2,13 +2,12 @@ import type {
     IEntityDto,
     IPost,
     SubmissionId,
-    UnitOfWorkId,
 } from '@postybirb/types';
 import type { InferSelectModel } from 'drizzle-orm';
 import { HydrationContext } from '../repositories/base/hydration-context';
 import type { PostSchema } from '../schemas';
 import { DatabaseEntity } from './database-entity';
-import type { UnitOfWorkRow } from './unit-of-work.entity';
+import { UnitOfWork, type UnitOfWorkRow } from './unit-of-work.entity';
 
 export type PostRow = InferSelectModel<typeof PostSchema> & {
   unitsOfWork?: UnitOfWorkRow[];
@@ -19,13 +18,17 @@ export class Post extends DatabaseEntity<IPost> implements IPost {
 
   public submissionId: SubmissionId;
 
-  public unitsOfWork: UnitOfWorkId[];
+  public unitsOfWork: UnitOfWork[];
 
   public completed: boolean;
 
   public cancelled: boolean;
 
-  constructor(init: Partial<IPost> = {}) {
+  constructor(
+    init: Partial<Omit<IPost, 'unitsOfWork'>> & {
+      unitsOfWork?: UnitOfWork[];
+    } = {},
+  ) {
     super(init);
     Object.defineProperty(this, 'entitySchemaKey', {
       value: 'PostSchema',
@@ -59,15 +62,10 @@ export class Post extends DatabaseEntity<IPost> implements IPost {
     row: PostRow,
     ctx: HydrationContext = new HydrationContext(),
   ): Post {
-    const post: IPost = {
-      id: row.id,
-      createdAt: row.createdAt,
-      updatedAt: row.updatedAt,
-      submissionId: row.submissionId,
-      unitsOfWork: row.unitsOfWork?.map(({ id }) => id) ?? [],
-      completed: row.completed,
-      cancelled: row.cancelled,
-    };
-    return ctx.hydrate('PostSchema', post, Post);
+    return ctx.hydrate('PostSchema', row, Post, (e) => {
+      e.unitsOfWork = row.unitsOfWork
+        ? ctx.hydrateMany(UnitOfWork, row.unitsOfWork)
+        : [];
+    });
   }
 }

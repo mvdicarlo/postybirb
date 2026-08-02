@@ -613,6 +613,13 @@
             "id"
           ],
           "isUnique": true
+        },
+        "post_submissionId_unique": {
+          "name": "post_submissionId_unique",
+          "columns": [
+            "submissionId"
+          ],
+          "isUnique": true
         }
       },
       "foreignKeys": {

@@ -1,4 +1,4 @@
-import type {
+import {
     AccountId,
     EntityId,
     IEntityDto,
@@ -44,6 +44,18 @@ export class UnitOfWork
   public batch?: EntityId;
 
   public state: UnitOfWorkState;
+
+  public get compositeKey(): string {
+    return `${this.submissionId}:${this.accountId}:${this.fileId ?? ''}`;
+  }
+
+  public get isTerminated(): boolean {
+    return (
+      this.state === UnitOfWorkState.SUCCEEDED ||
+      this.state === UnitOfWorkState.FAILED ||
+      this.state === UnitOfWorkState.CANCELLED
+    );
+  }
 
   constructor(init: Partial<IUnitOfWork> = {}) {
     super(init);

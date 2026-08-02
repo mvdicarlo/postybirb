@@ -15,13 +15,13 @@ export type ISubmissionDto<
 > = IEntityDto<
   Omit<
     ISubmission<T>,
-    'files' | 'options' | 'posts' | 'postRuns' | 'postQueueRecord'
+    'files' | 'options' | 'posts' | 'post' | 'postQueueRecord'
   >
 > & {
   files: ISubmissionFileDto[];
   options: WebsiteOptionsDto[];
   posts: PostRecordDto[];
-  postRuns: Array<IEntityDto<IPost>>;
+  post?: IEntityDto<IPost>;
   validations: ValidationResult[];
   postQueueRecord?: PostQueueRecordDto;
 };

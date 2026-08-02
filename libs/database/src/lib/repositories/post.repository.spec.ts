@@ -1,5 +1,6 @@
 import type { ISubmissionMetadata } from '@postybirb/types';
 import { ScheduleType, SubmissionType } from '@postybirb/types';
+import { UnitOfWork } from '../entities/unit-of-work.entity';
 import { AccountRepository } from './account.repository';
 import { createTestRepositories } from './base/test-utils';
 import { PostRepository } from './post.repository';
@@ -44,7 +45,7 @@ describe('PostRepository', () => {
     expect(fetched?.unitsOfWork).toEqual([]);
   });
 
-  it('loads related unit-of-work ids', async () => {
+  it('loads related units of work', async () => {
     const { account, post, submission } = await seedDependencies();
     const unitOfWork = await repos.unitOfWork.insert({
       postId: post.id,
@@ -53,7 +54,17 @@ describe('PostRepository', () => {
     });
 
     const fetched = await repos.post.findById(post.id);
-    expect(fetched?.unitsOfWork).toEqual([unitOfWork.id]);
+    expect(fetched?.unitsOfWork).toHaveLength(1);
+    expect(fetched?.unitsOfWork[0]).toBeInstanceOf(UnitOfWork);
+    expect(fetched?.unitsOfWork[0].id).toBe(unitOfWork.id);
+  });
+
+  it('allows only one post per submission', async () => {
+    const { submission } = await seedDependencies();
+
+    await expect(
+      repos.post.insert({ submissionId: submission.id }),
+    ).rejects.toThrow();
   });
 
   it('deleting a post cascades to its units of work', async () => {

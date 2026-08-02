@@ -1,7 +1,7 @@
 import { UnitOfWorkState } from '@postybirb/types';
 import { assertRowRoundtrips } from '../repositories/base/test-utils';
 import { Post, type PostRow } from './post.entity';
-import type { UnitOfWorkRow } from './unit-of-work.entity';
+import { UnitOfWork, type UnitOfWorkRow } from './unit-of-work.entity';
 
 function buildRow(overrides: Partial<PostRow> = {}): PostRow {
   return {
@@ -48,11 +48,13 @@ describe('Post.fromRow', () => {
     expect(entity.unitsOfWork).toEqual([]);
   });
 
-  it('maps related units of work to their ids', () => {
+  it('hydrates related units of work', () => {
     const entity = Post.fromRow(
       buildRow({ unitsOfWork: [buildUnitOfWorkRow()] }),
     );
 
-    expect(entity.unitsOfWork).toEqual(['unit-1']);
+    expect(entity.unitsOfWork).toHaveLength(1);
+    expect(entity.unitsOfWork[0]).toBeInstanceOf(UnitOfWork);
+    expect(entity.unitsOfWork[0].id).toBe('unit-1');
   });
 });

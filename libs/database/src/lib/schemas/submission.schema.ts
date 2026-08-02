@@ -30,7 +30,7 @@ export const SubmissionRelations = relations(
   ({ one, many }) => ({
     options: many(WebsiteOptionsSchema),
     posts: many(PostRecordSchema),
-    postRuns: many(PostSchema),
+    post: one(PostSchema),
     files: many(SubmissionFileSchema),
     postQueueRecord: one(PostQueueRecordSchema),
   }),

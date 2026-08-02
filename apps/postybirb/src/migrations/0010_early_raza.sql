@@ -9,6 +9,7 @@ CREATE TABLE `post` (
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `post_id_unique` ON `post` (`id`);--> statement-breakpoint
+CREATE UNIQUE INDEX `post_submissionId_unique` ON `post` (`submissionId`);--> statement-breakpoint
 CREATE TABLE `unit-of-work` (
 	`id` text PRIMARY KEY NOT NULL,
 	`createdAt` text NOT NULL,

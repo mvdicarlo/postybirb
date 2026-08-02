@@ -45,7 +45,7 @@ import { WebsiteOptionsRepository } from './website-options.repository';
  *     ├── posts: PostRecord[]
  *     │      └── events: PostEvent[]
  *     │             └── account: Account
- *     ├── postRuns: Post[]
+ *     ├── post: Post
  *     └── postQueueRecord: PostQueueRecord
  *
  * It also exercises cascade behaviour on delete across every dependent
@@ -70,7 +70,7 @@ describe('SubmissionRepository (full dependency tree)', () => {
     fileIds: string[];
     optionsIds: { default: string; secondary: string };
     recordIds: { origin: string; chained: string };
-    postRunId: string;
+    postId: string;
     eventIds: {
       originStarted: string;
       originFinished: string;
@@ -195,7 +195,7 @@ describe('SubmissionRepository (full dependency tree)', () => {
         secondary: secondaryOptions.id,
       },
       recordIds: { origin: originRecord.id, chained: chainedRecord.id },
-      postRunId: postRun.id,
+      postId: postRun.id,
       eventIds: {
         originStarted: originStarted.id,
         originFinished: originFinished.id,
@@ -256,10 +256,9 @@ describe('SubmissionRepository (full dependency tree)', () => {
       expect(chained?.events).toHaveLength(1);
       expect(chained?.events[0].account?.id).toBe(seed.accountBId);
 
-      // --- current post runs ---
-      expect(fetched?.postRuns).toHaveLength(1);
-      expect(fetched?.postRuns[0]).toBeInstanceOf(Post);
-      expect(fetched?.postRuns[0].id).toBe(seed.postRunId);
+      // --- current post ---
+      expect(fetched?.post).toBeInstanceOf(Post);
+      expect(fetched?.post?.id).toBe(seed.postId);
 
       // --- queue ---
       expect(fetched?.postQueueRecord).toBeInstanceOf(PostQueueRecord);
@@ -276,7 +275,7 @@ describe('SubmissionRepository (full dependency tree)', () => {
       expect(all[0].files).toHaveLength(2);
       expect(all[0].options).toHaveLength(2);
       expect(all[0].posts).toHaveLength(2);
-      expect(all[0].postRuns).toHaveLength(1);
+      expect(all[0].post?.id).toBeDefined();
       expect(all[0].postQueueRecord).toBeDefined();
     });
 
@@ -295,7 +294,7 @@ describe('SubmissionRepository (full dependency tree)', () => {
       expect(empty.files).toEqual([]);
       expect(empty.options).toEqual([]);
       expect(empty.posts).toEqual([]);
-      expect(empty.postRuns).toEqual([]);
+      expect(empty.post).toBeUndefined();
       expect(empty.postQueueRecord).toBeUndefined();
     });
 
@@ -317,7 +316,7 @@ describe('SubmissionRepository (full dependency tree)', () => {
       expect(row.files).toBeUndefined();
       expect(row.options).toBeUndefined();
       expect(row.posts).toBeUndefined();
-      expect(row.postRuns).toBeUndefined();
+      expect(row.post).toBeUndefined();
       expect(row.postQueueRecord).toBeUndefined();
     });
 
@@ -327,7 +326,7 @@ describe('SubmissionRepository (full dependency tree)', () => {
       expect(row.files).toHaveLength(2);
       expect(row.options).toBeUndefined();
       expect(row.posts).toBeUndefined();
-      expect(row.postRuns).toBeUndefined();
+      expect(row.post).toBeUndefined();
       expect(row.postQueueRecord).toBeUndefined();
       expect(row.files.map((f) => f.id).sort()).toEqual(
         [...seed.fileIds].sort(),
@@ -340,7 +339,7 @@ describe('SubmissionRepository (full dependency tree)', () => {
   // ---------------------------------------------------------------------
 
   describe('cascade behaviour on delete', () => {
-    it('deleting a submission cascades to files, options, post records, post runs, events, and queue', async () => {
+    it('deleting a submission cascades to files, options, post records, post, events, and queue', async () => {
       const seed = await seedFullGraph();
 
       await repos.submission.deleteById([seed.submissionId]);
@@ -363,8 +362,8 @@ describe('SubmissionRepository (full dependency tree)', () => {
       expect(await repos.record.findById(seed.recordIds.origin)).toBeNull();
       expect(await repos.record.findById(seed.recordIds.chained)).toBeNull();
 
-      // current post runs cascade directly off submission
-      expect(await repos.post.findById(seed.postRunId)).toBeNull();
+      // current post cascades directly off submission
+      expect(await repos.post.findById(seed.postId)).toBeNull();
 
       // events cascade transitively through the deleted post records
       expect(

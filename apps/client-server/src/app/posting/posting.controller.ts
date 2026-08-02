@@ -1,0 +1,25 @@
+import { Body, Controller, Post } from '@nestjs/common';
+import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { GetIncompleteWorkDto } from './dtos/get-incomplete-work.dto';
+import { PostingService } from './posting.service';
+
+@ApiTags('posting')
+@Controller('posting')
+export class PostingController {
+  constructor(readonly service: PostingService) {}
+
+  @Post()
+  @ApiOkResponse({ description: 'Creates or resumes posting work.' })
+  post(@Body() request: GetIncompleteWorkDto) {
+    return this.service.post(request.submissionId, request.evictions);
+  }
+
+  @Post('incomplete-work')
+  @ApiOkResponse({ description: 'Missing, removed, and evicted posting work.' })
+  getIncompleteWork(@Body() request: GetIncompleteWorkDto) {
+    return this.service.getIncompleteWork(
+      request.submissionId,
+      request.evictions,
+    );
+  }
+}
