@@ -4,13 +4,13 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase, EntityNotFoundError } from '@postybirb/database';
 import { PostyBirbDirectories, writeSync } from '@postybirb/fs';
 import {
-    FileSubmissionMetadata,
-    ISubmissionMetadata,
-    IWebsiteFormFields,
-    ScheduleType,
-    SubmissionRating,
-    SubmissionType,
-    WebsiteOptionsDto,
+  FileSubmissionMetadata,
+  ISubmissionMetadata,
+  IWebsiteFormFields,
+  ScheduleType,
+  SubmissionRating,
+  SubmissionType,
+  WebsiteOptionsDto,
 } from '@postybirb/types';
 import { readFileSync } from 'fs';
 import { join } from 'path';
@@ -223,9 +223,11 @@ describe('SubmissionService', () => {
       metadata: {},
       files: [
         {
+          altFile: undefined,
           createdAt: file.createdAt,
           primaryFileId: file.primaryFileId,
           fileName: fileInfo.originalname,
+          file: undefined,
           hasThumbnail: true,
           hasCustomThumbnail: false,
           hasAltFile: false,
@@ -247,6 +249,7 @@ describe('SubmissionService', () => {
                 width: 138,
               },
             },
+            duration: 0,
             ignoredWebsites: [],
             sourceUrls: [],
             spoilerText: '',
@@ -255,6 +258,8 @@ describe('SubmissionService', () => {
         },
       ],
       posts: [],
+      thumbnail: undefined,
+      submission: undefined,
       order: 1,
       options: [defaultOptions.toObject()],
       validations: [],
