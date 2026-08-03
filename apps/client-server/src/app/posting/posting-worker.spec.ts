@@ -1,3 +1,5 @@
+import { PostParsersService } from '../post-parsers/post-parsers.service';
+import { ValidationService } from '../validation/validation.service';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { PostingWorker } from './posting-worker';
 
@@ -6,6 +8,7 @@ interface WorkerMocks {
     findByIdOrThrow: jest.Mock;
   };
   onAfterDispose: jest.Mock;
+  postParsersService: PostParsersService;
   postRepository: {
     findByIdOrThrow: jest.Mock;
     update: jest.Mock;
@@ -17,6 +20,7 @@ interface WorkerMocks {
     find: jest.Mock;
     update: jest.Mock;
   };
+  validationService: ValidationService;
   websiteRegistry: {
     findInstance: jest.Mock;
   };
@@ -31,6 +35,7 @@ function createWorker(): { worker: PostingWorker; mocks: WorkerMocks } {
       findByIdOrThrow: jest.fn().mockResolvedValue({ id: 'account-1' }),
     },
     onAfterDispose: jest.fn().mockResolvedValue(undefined),
+    postParsersService: {} as PostParsersService,
     postRepository: {
       findByIdOrThrow: jest.fn().mockResolvedValue({
         id: 'post-1',
@@ -49,6 +54,7 @@ function createWorker(): { worker: PostingWorker; mocks: WorkerMocks } {
       ]),
       update: jest.fn().mockResolvedValue(undefined),
     },
+    validationService: {} as ValidationService,
     websiteRegistry: {
       findInstance: jest.fn().mockReturnValue({}),
     },
@@ -59,6 +65,8 @@ function createWorker(): { worker: PostingWorker; mocks: WorkerMocks } {
   const worker = new PostingWorker(
     'post-1',
     mocks.websiteRegistry as unknown as WebsiteRegistryService,
+    mocks.validationService,
+    mocks.postParsersService,
     mocks.onAfterDispose,
   );
   Object.assign(worker, {

@@ -1,9 +1,13 @@
 import { PostId } from '@postybirb/types';
+import { PostParsersService } from '../post-parsers/post-parsers.service';
+import { ValidationService } from '../validation/validation.service';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { PostingManager } from './posting-manager';
 import { PostingWorker } from './posting-worker';
 
 const stubRegistry = {} as unknown as WebsiteRegistryService;
+const stubValidationService = {} as ValidationService;
+const stubPostParsersService = {} as PostParsersService;
 
 interface WorkerHarness {
   cancel: jest.Mock;
@@ -32,7 +36,11 @@ describe('PostingManager', () => {
   let manager: TestPostingManager;
 
   beforeEach(() => {
-    manager = new TestPostingManager(stubRegistry);
+    manager = new TestPostingManager(
+      stubRegistry,
+      stubValidationService,
+      stubPostParsersService,
+    );
   });
 
   it('accepts a new job', async () => {

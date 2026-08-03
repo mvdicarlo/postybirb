@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import { PostId } from '@postybirb/types';
 import { Mutex } from 'async-mutex';
+import { PostParsersService } from '../post-parsers/post-parsers.service';
+import { ValidationService } from '../validation/validation.service';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { PostingWorker } from './posting-worker';
 
@@ -17,7 +19,11 @@ export class PostingManager {
 
   private readonly workers: Map<PostId, PostingWorker> = new Map();
 
-  constructor(private readonly websiteRegistry: WebsiteRegistryService) {}
+  constructor(
+    private readonly websiteRegistry: WebsiteRegistryService,
+    private readonly validationService: ValidationService,
+    private readonly postParsersService: PostParsersService,
+  ) {}
 
   public submit(postId: PostId): Promise<boolean> {
     return this.submitMutex.runExclusive(() => {
@@ -68,7 +74,13 @@ export class PostingManager {
     postId: PostId,
     onAfterDispose: () => void | Promise<void>,
   ): PostingWorker {
-    return new PostingWorker(postId, this.websiteRegistry, onAfterDispose);
+    return new PostingWorker(
+      postId,
+      this.websiteRegistry,
+      this.validationService,
+      this.postParsersService,
+      onAfterDispose,
+    );
   }
 
   private releaseWorker(postId: PostId, worker: PostingWorker): Promise<void> {

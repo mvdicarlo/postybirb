@@ -11,8 +11,10 @@ import {
   WebsiteOptionsRepository,
 } from '@postybirb/database';
 import { Logger, PostyBirbLogger } from '@postybirb/logger';
-import { AccountId, PostId, UnitOfWorkState } from '@postybirb/types';
+import { AccountId, IWebsiteFormFields, PostData, PostId, UnitOfWorkState } from '@postybirb/types';
 import { chunk } from 'lodash';
+import { PostParsersService } from '../post-parsers/post-parsers.service';
+import { ValidationService } from '../validation/validation.service';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { CancellationToken } from './cancellation-token';
 
@@ -53,6 +55,8 @@ export class PostingWorker {
   constructor(
     protected readonly postId: PostId,
     protected readonly websiteRegistry: WebsiteRegistryService,
+    protected readonly validationService: ValidationService,
+    protected readonly postParsersService: PostParsersService,
     protected readonly onAfterDispose: () => void | Promise<void>,
   ) {
     this.logger = Logger(`PostingWorker[${postId}]`);
@@ -114,6 +118,21 @@ export class PostingWorker {
         submission,
         unitsOfWork,
       });
+
+      const unitsOfWorkAfterExecution = await this.unitOfWorkRepository.find({
+        where: (unit, { and, eq, ne }) => and(
+          eq(unit.postId, post.id),
+          eq(unit.evicted, false),
+          ne(unit.state, UnitOfWorkState.SUCCEEDED),
+        ),
+      });
+
+      if (unitsOfWorkAfterExecution.length === 0) {
+        this.logger.info(`All units of work for post '${post.id}' have been completed`);
+        await this.completePost();
+      } else {
+        this.logger.info(`Some units of work for post '${post.id}' are still pending or failed`);
+      }
     } catch (error) {
       if (this.cancellationToken.aborted) {
         this.logger.info(`Worker for post '${this.postId}' was cancelled`);
@@ -197,7 +216,7 @@ export class PostingWorker {
   }
 
   private async post(accountId: AccountId, unitsOfWork: UnitOfWork[], context: PostingWorkerContext): Promise<void> {
-    await this.updateUnitsOfWorkState(unitsOfWork, UnitOfWorkState.EXECUTING);
+    await this.updateUnitsOfWorkState(unitsOfWork, UnitOfWorkState.VALIDATING);
 
     const account = await this.accountRepository.findByIdOrThrow(accountId);
     const websiteInstance = this.websiteRegistry.findInstance(account);
@@ -206,11 +225,127 @@ export class PostingWorker {
       this.logger.warn(
         `No website instance found for account '${accountId}'`,
       );
+      await this.markUnitsOfWorkAsFailed(unitsOfWork, {
+        error: `No website instance found for account '${accountId}'`,
+      });
+      return;
     }
+
+    if (this.cancellationToken.aborted) {
+      this.logger.info(`Cancellation requested before posting for account '${accountId}'`);
+      await this.updateUnitsOfWorkState(unitsOfWork, UnitOfWorkState.CANCELLED);
+      return;
+    }
+
+    try {
+      // Login check
+      const loginState = await websiteInstance.login();
+      if (!loginState.isLoggedIn) {
+        this.logger.warn(
+          `Login failed for account '${accountId}': ${loginState.status}`,
+        );
+        await this.markUnitsOfWorkAsFailed(unitsOfWork, {
+          error: `Login failed for account '${accountId}': ${loginState.status}`,
+        });
+        return;
+      }
+    } catch (error) {
+      this.logger.withError(error).error(
+        `Login failed for account '${accountId}'`,
+      );
+      await this.markUnitsOfWorkAsFailed(unitsOfWork, {
+        error: `Login failed for account '${accountId}'`,
+      });
+      return;
+    }
+
+    // Website Option Selection
+    const websiteOption = context.options.find(opt => opt.accountId === accountId);
+    if (!websiteOption) {
+      this.logger.warn(`No website options found for account '${accountId}'`);
+      await this.markUnitsOfWorkAsFailed(unitsOfWork, {
+        error: `No website options found for account '${accountId}'`,
+      });
+      return;
+    }
+
+    let postData: PostData<IWebsiteFormFields>;
+    try {
+      // Post data parsing
+      postData = await this.postParsersService.parse(context.submission, websiteInstance, websiteOption, false);
+    } catch (error) {
+      this.logger.withError(error).error(
+        `Error parsing post data for account '${accountId}'`,
+      );
+      await this.markUnitsOfWorkAsFailed(unitsOfWork, {
+        error: `Error parsing post data for account '${accountId}'`,
+      });
+      return;
+    }
+
+    await this.updateUnitsOfWorkData(unitsOfWork, { postData });
+
+    try {
+      // Submission Validation
+      const validationResult = await this.validationService.validate(context.submission, websiteOption);
+      if (validationResult.errors.length > 0) {
+        this.logger.withMetadata({ errors: validationResult.errors }).warn(
+          `Validation failed for account '${accountId}'`,
+        );
+        await this.markUnitsOfWorkAsFailed(unitsOfWork, {
+          error: `Validation failed for account '${accountId}'`,
+        });
+        return;
+      }
+    } catch (error) {
+      this.logger.withError(error).error(
+        `Error validating post data for account '${accountId}'`,
+      );
+      await this.markUnitsOfWorkAsFailed(unitsOfWork, {
+        error: `Error validating post data for account '${accountId}'`,
+      });
+      return;
+    }
+
+    // Pre-flight checks passed, proceed with posting
+
+    // TODO create unit of work batches based on batch id then post batch by batch
+    // TODO perform resize check against file for file units of work and resize if necessary before posting
+    const batchedUnitsOfWork: UnitOfWork[][] = [];
+    context.unitsOfWork.forEach(unit => {
+      const batchId = unit.batch ?? 'unknown';
+      let batch = batchedUnitsOfWork.find(b => b[0]?.batch === batchId);
+      if (!batch) {
+        batch = [];
+        batchedUnitsOfWork.push(batch);
+      }
+      batch.push(unit);
+    });
+
+    if (this.cancellationToken.aborted) {
+      this.logger.info(`Cancellation requested before posting for account '${accountId}'`);
+      await this.updateUnitsOfWorkState(unitsOfWork, UnitOfWorkState.CANCELLED);
+      return;
+    }
+
+
   }
 
   private async updateUnitsOfWorkState(units: UnitOfWork[], state: UnitOfWorkState): Promise<void> {
     await Promise.all(units.map(unit => this.unitOfWorkRepository.update(unit.id, { state })));
+  }
+
+  private async markUnitsOfWorkAsFailed(units: UnitOfWork[], response?: Record<string, unknown>): Promise<void> {
+    await Promise.all(units.map(unit => this.unitOfWorkRepository.update(unit.id, {
+      state: UnitOfWorkState.FAILED,
+      response: response ?? { error: 'Unknown error' },
+    })));
+  }
+
+  private async updateUnitsOfWorkData(units: UnitOfWork[], data: Record<string, unknown>): Promise<void> {
+    await Promise.all(units.map(unit => this.unitOfWorkRepository.update(unit.id, {
+      data,
+    })));
   }
 
   private async completePost(): Promise<void> {
