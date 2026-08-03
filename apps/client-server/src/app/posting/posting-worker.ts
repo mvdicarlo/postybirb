@@ -1,15 +1,28 @@
 import {
-    AccountRepository,
-    PostRepository,
-    SubmissionFileRepository,
-    SubmissionRepository,
-    UnitOfWorkRepository,
-    WebsiteOptionsRepository,
+  AccountRepository,
+  Post,
+  PostRepository,
+  Submission,
+  SubmissionFileRepository,
+  SubmissionRepository,
+  UnitOfWork,
+  UnitOfWorkRepository,
+  WebsiteOptions,
+  WebsiteOptionsRepository,
 } from '@postybirb/database';
 import { Logger, PostyBirbLogger } from '@postybirb/logger';
 import { PostId } from '@postybirb/types';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { CancellationToken } from './cancellation-token';
+
+type PostingWorkerContext = {
+  options: WebsiteOptions[];
+  post: Post;
+  submission: Submission;
+  unitsOfWork: UnitOfWork[];
+}
+
+type UnitsOfWorkByAccountId = Record<string, UnitOfWork[]>;
 
 export class PostingWorker {
   private readonly logger: PostyBirbLogger;
@@ -85,8 +98,12 @@ export class PostingWorker {
         await this.completePost();
       }
 
-      // TODO real posting logic here. Pass cancellationToken.signal to APIs and
-      // call throwIfAborted between stages that do not accept an AbortSignal.
+      await this.execute({
+        options: websiteOptions,
+        post,
+        submission,
+        unitsOfWork,
+      });
     } catch (error) {
       if (this.cancellationToken.aborted) {
         this.logger.info(`Worker for post '${this.postId}' was cancelled`);
@@ -110,6 +127,23 @@ export class PostingWorker {
     this.logger.info(`Cancelling worker due to reason: ${reason}`);
     this.cancellationToken.abort(reason);
     return true;
+  }
+
+  private async execute(context: PostingWorkerContext): Promise<void> {
+    try {
+      const { options, post, submission, unitsOfWork } = context;
+      const unitsOfWorkByAccountId: UnitsOfWorkByAccountId = {};
+      for (const unit of unitsOfWork) {
+        if (!unitsOfWorkByAccountId[unit.accountId]) {
+          unitsOfWorkByAccountId[unit.accountId] = [];
+        }
+        unitsOfWorkByAccountId[unit.accountId].push(unit);
+      }
+
+      // TODO send off by account to website for processing, and handle results
+    } catch (error) {
+      this.logger.withError(error).error('Error during execution');
+    }
   }
 
   private async completePost(): Promise<void> {

@@ -1,22 +1,22 @@
 import {
-    AccountRepository,
-    clearDatabase,
-    PostRepository,
-    SubmissionFileRepository,
-    SubmissionRepository,
-    UnitOfWorkRepository,
-    WebsiteOptionsRepository,
+  AccountRepository,
+  clearDatabase,
+  PostRepository,
+  SubmissionFileRepository,
+  SubmissionRepository,
+  UnitOfWorkRepository,
+  WebsiteOptionsRepository,
 } from '@postybirb/database';
 import type {
-    ISubmissionMetadata,
-    IWebsiteFormFields,
-    SubmissionId,
+  ISubmissionMetadata,
+  IWebsiteFormFields,
+  SubmissionId,
 } from '@postybirb/types';
 import {
-    DefaultSubmissionFileMetadata,
-    ScheduleType,
-    SubmissionType,
-    UnitOfWorkState,
+  DefaultSubmissionFileMetadata,
+  ScheduleType,
+  SubmissionType,
+  UnitOfWorkState,
 } from '@postybirb/types';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { PostingManager } from './posting-manager';
@@ -133,7 +133,7 @@ describe('PostingService', () => {
     const submission = await seedSubmission();
     const account = await seedAccount('batched-account');
     const files = await fileRepository.insert(
-      [0, 1, 2, 3, 4].map((order) => ({
+      [3, 0, 4, 1, 2].map((order) => ({
         submissionId: submission.id,
         fileName: `image-${order}.png`,
         hash: `hash-${order}`,
@@ -163,11 +163,12 @@ describe('PostingService', () => {
 
     const result = await service.getIncompleteWork(submission.id);
 
+    const filesByOrder = new Map(files.map((file) => [file.order, file]));
     expect(result.remainingWork.map((unit) => unit.fileId)).toEqual([
-      files[0].id,
-      files[2].id,
-      files[3].id,
-      files[4].id,
+      filesByOrder.get(0)?.id,
+      filesByOrder.get(2)?.id,
+      filesByOrder.get(3)?.id,
+      filesByOrder.get(4)?.id,
     ]);
     const batches = result.remainingWork.map((unit) => unit.batch);
     const uuidV4 =

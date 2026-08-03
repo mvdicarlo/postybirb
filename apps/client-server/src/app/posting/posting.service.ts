@@ -86,7 +86,6 @@ export class PostingService {
             // after a certain amount of time has passed. This will likely be a database that tracks
             // the last known rate limit for each account and the time it was last hit. Then we can filter out any work that is rate limited and has not yet passed the time limit.
 
-
             await this.postingManager.submit(post.id);
         }
     }
@@ -146,10 +145,13 @@ export class PostingService {
         submissionId: SubmissionId,
         evictions: UnitOfWorkEvictions = {},
     ): Promise<IncompleteWork> {
+        // Rebuild the desired account/file targets from the submission's current
+        // files and website options, then reconcile them with active persisted work.
         const existingWork = await this.getExistingWork(submissionId);
         const potentialWork = await this.getPotentialWork(submissionId);
 
         if (!existingWork) {
+            // On the first post every generated target is new and needs a batch.
             await this.assignBatches(potentialWork.unitsOfWork);
             return {
                 remainingWork: potentialWork.unitsOfWork,
@@ -158,26 +160,38 @@ export class PostingService {
             };
         }
 
+        // The composite key identifies the same logical account/file target across
+        // generations, allowing active work and its attempt state to be reused.
         const existingByKey = new Map(
             existingWork.unitsOfWork.map((unit) => [unit.compositeKey, unit]),
         );
         const potentialKeys = new Set(
             potentialWork.unitsOfWork.map((unit) => unit.compositeKey),
         );
+        // A target becomes removed when current submission data no longer generates
+        // it, for example after removing an account/file or changing an ignore list.
         const removedWork = existingWork.unitsOfWork.filter(
             (unit) => !potentialKeys.has(unit.compositeKey),
         );
+
+        // Explicit evictions request a fresh attempt even when the target still
+        // exists. This is how callers selectively repost completed or failed work.
         const evicted = existingWork.unitsOfWork.filter((unit) => {
             const fileIds = evictions[unit.accountId];
             if (!fileIds) {
                 return false;
             }
+            // An empty list means every unit for the account; otherwise only listed files.
             return fileIds.length === 0 || (
                 unit.fileId !== undefined && fileIds.includes(unit.fileId)
             );
         });
         const evictedIds = new Set(evicted.map((unit) => unit.id));
         const newWork: UnitOfWork[] = [];
+
+        // Reconcile from the desired targets so removed work cannot leak into the
+        // next run. Reuse active matches, replace explicitly evicted matches, and
+        // omit unchanged terminated matches because they have no work remaining.
         const remainingWork = potentialWork.unitsOfWork.flatMap((potential) => {
             const existing = existingByKey.get(potential.compositeKey);
             if (!existing || evictedIds.has(existing.id)) {
@@ -186,8 +200,12 @@ export class PostingService {
             }
             return existing.isTerminated ? [] : [existing];
         });
+
+        // Reused rows keep their original batch; only fresh rows are grouped again.
         await this.assignBatches(newWork);
 
+        // post() persists removedWork and evicted as historical rows, while
+        // remainingWork is the active work that should exist after reconciliation.
         return {
             remainingWork,
             removedWork,
@@ -199,15 +217,24 @@ export class PostingService {
         submissionId: SubmissionId,
         evictions: UnitOfWorkEvictions = {},
     ): Promise<Post> {
+        // Finish all asynchronous generation, account lookup, and batching before
+        // opening the synchronous SQLite transaction below.
         const incompleteWork = await this.getIncompleteWork(
             submissionId,
             evictions,
         );
+
+        // A submission owns one Post row. Reposting reopens that row instead of
+        // creating a second post and attaches only newly generated units to it.
         const existingPost = await this.getPost(submissionId);
         const post = existingPost ?? new Post({ submissionId });
+        // Generated units have no postId until they are attached in the transaction below.
         const newWork = incompleteWork.remainingWork.filter(
             (unit) => !unit.postId,
         );
+
+        // Removed targets and explicit retries follow the same persistence path:
+        // retain the old row for history, but exclude it from future scheduling.
         const evictedIds = [
             ...new Set(
                 [...incompleteWork.evicted, ...incompleteWork.removedWork]
@@ -215,8 +242,10 @@ export class PostingService {
             ),
         ];
 
+        // Keep historical units as evicted rows and insert their replacements atomically.
         this.postRepository.db.transaction((tx) => {
             if (existingPost) {
+                // Reopen completed or cancelled posts now that active work changed.
                 tx.update(this.postRepository.table)
                     .set({ completed: false, cancelled: false })
                     .where(equals(this.postRepository.table.id, post.id))
@@ -235,6 +264,7 @@ export class PostingService {
             }
 
             if (evictedIds.length > 0) {
+                // Eviction is a soft delete so prior attempts remain inspectable.
                 tx.update(this.unitOfWorkRepository.table)
                     .set({ evicted: true })
                     .where(
@@ -244,6 +274,7 @@ export class PostingService {
             }
 
             if (newWork.length > 0) {
+                // Fresh units include new targets and replacements for explicit evictions.
                 tx.insert(this.unitOfWorkRepository.table)
                     .values(
                         newWork.map((unit) => ({
@@ -255,6 +286,7 @@ export class PostingService {
             }
         });
 
+        // Reload so callers receive database values and the complete unit history.
         return this.postRepository.findByIdOrThrow(post.id);
     }
 
@@ -266,6 +298,7 @@ export class PostingService {
         if (!post) {
             return undefined;
         }
+        // Previously evicted generations are history and must not participate in reconciliation.
         const unitsOfWork = await this.unitOfWorkRepository.find({
             where: (unit, { and, eq }) => and(
                 eq(unit.postId, post.id),
