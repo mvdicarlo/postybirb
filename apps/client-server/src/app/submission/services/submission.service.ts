@@ -1,11 +1,11 @@
 /* eslint-disable no-param-reassign */
 import {
-    BadRequestException,
-    forwardRef,
-    Inject,
-    Injectable,
-    NotFoundException,
-    OnModuleInit,
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+  OnModuleInit,
 } from '@nestjs/common';
 import {
   FileBufferSchema,
@@ -19,18 +19,19 @@ import {
   withTransactionContext
 } from '@postybirb/database';
 import {
-    FileSubmission,
-    FileSubmissionMetadata,
-    ISubmissionDto,
-    ISubmissionMetadata,
-    MessageSubmission,
-    NULL_ACCOUNT_ID,
-    ScheduleType,
-    SubmissionId,
-    SubmissionMetadataType,
-    SubmissionType,
+  FileSubmission,
+  FileSubmissionMetadata,
+  ISubmissionDto,
+  ISubmissionMetadata,
+  MessageSubmission,
+  NULL_ACCOUNT_ID,
+  ScheduleType,
+  SubmissionId,
+  SubmissionMetadataType,
+  SubmissionType,
 } from '@postybirb/types';
 import { toError } from '@postybirb/utils/common';
+import { Mutex } from 'async-mutex';
 import { eq } from 'drizzle-orm';
 import * as path from 'path';
 import { PostyBirbService } from '../../common/service/postybirb-service';
@@ -56,6 +57,8 @@ export class SubmissionService
   extends PostyBirbService<SubmissionRepository>
   implements OnModuleInit
 {
+  private readonly dependencyMutationMutex = new Mutex();
+
   constructor(
     @Inject(forwardRef(() => WebsiteOptionsService))
     private readonly websiteOptionsService: WebsiteOptionsService,
@@ -327,7 +330,10 @@ export class SubmissionService
       order: (await this.repository.count()) + 1,
     });
 
-    submission = await this.repository.insert(submission);
+    submission = await this.dependencyMutationMutex.runExclusive(async () => {
+      await this.assertNoDependencyCycle(submission.id, submission.dependsOn);
+      return this.repository.insert(submission);
+    });
 
     // Determine the submission name/title
     let name = 'New submission';
@@ -508,8 +514,9 @@ export class SubmissionService
       update.scheduleType ?? submission.schedule.scheduleType;
     const updates: Pick<
       SubmissionEntity,
-      'metadata' | 'isArchived' | 'isScheduled' | 'schedule'
+      'dependsOn' | 'metadata' | 'isArchived' | 'isScheduled' | 'schedule'
     > = {
+      dependsOn: update.dependsOn ?? submission.dependsOn,
       metadata: {
         ...submission.metadata,
         ...(update.metadata ?? {}),
@@ -537,45 +544,87 @@ export class SubmissionService
             },
     };
 
-    const optionChanges: Promise<unknown>[] = [];
-
-    // Removes unused website options
-    if (update.deletedWebsiteOptions?.length) {
-      update.deletedWebsiteOptions.forEach((deletedOptionId) => {
-        optionChanges.push(this.websiteOptionsService.remove(deletedOptionId));
-      });
-    }
-
-    // Creates or updates new website options
-    if (update.newOrUpdatedOptions?.length) {
-      update.newOrUpdatedOptions.forEach((option) => {
-        if (option.createdAt) {
-          optionChanges.push(
-            this.websiteOptionsService.update(option.id, {
-              data: option.data,
-            }),
-          );
-        } else {
-          optionChanges.push(
-            this.websiteOptionsService.create({
-              accountId: option.accountId,
-              data: option.data,
-              submissionId: submission.id,
-            }),
-          );
-        }
-      });
-    }
-
-    await Promise.allSettled(optionChanges);
-
     try {
-      // Update Here
-      await this.repository.update(id, updates);
+      if (update.dependsOn !== undefined) {
+        await this.dependencyMutationMutex.runExclusive(async () => {
+          await this.assertNoDependencyCycle(id, updates.dependsOn);
+          await this.repository.update(id, updates);
+        });
+      } else {
+        await this.repository.update(id, updates);
+      }
+
+      const optionChanges: Promise<unknown>[] = [];
+      if (update.deletedWebsiteOptions?.length) {
+        update.deletedWebsiteOptions.forEach((deletedOptionId) => {
+          optionChanges.push(this.websiteOptionsService.remove(deletedOptionId));
+        });
+      }
+      if (update.newOrUpdatedOptions?.length) {
+        update.newOrUpdatedOptions.forEach((option) => {
+          if (option.createdAt) {
+            optionChanges.push(
+              this.websiteOptionsService.update(option.id, {
+                data: option.data,
+              }),
+            );
+          } else {
+            optionChanges.push(
+              this.websiteOptionsService.create({
+                accountId: option.accountId,
+                data: option.data,
+                submissionId: submission.id,
+              }),
+            );
+          }
+        });
+      }
+      await Promise.allSettled(optionChanges);
       this.markChanged(id);
       return await this.findByIdOrThrow(id);
     } catch (err) {
       throw new BadRequestException(err);
+    }
+  }
+
+  private async assertNoDependencyCycle(
+    submissionId: SubmissionId,
+    dependsOn: SubmissionId[],
+  ): Promise<void> {
+    const submissions = await this.repository.find({ with: {} });
+    const graph = new Map<SubmissionId, SubmissionId[]>(
+      submissions.map((submission) => [
+        submission.id,
+        submission.dependsOn,
+      ]),
+    );
+    graph.set(submissionId, dependsOn);
+
+    const visiting = new Set<SubmissionId>();
+    const visited = new Set<SubmissionId>();
+    const hasCycle = (currentId: SubmissionId): boolean => {
+      if (visiting.has(currentId)) {
+        return true;
+      }
+      if (visited.has(currentId)) {
+        return false;
+      }
+
+      visiting.add(currentId);
+      for (const dependencyId of graph.get(currentId) ?? []) {
+        if (hasCycle(dependencyId)) {
+          return true;
+        }
+      }
+      visiting.delete(currentId);
+      visited.add(currentId);
+      return false;
+    };
+
+    if (hasCycle(submissionId)) {
+      throw new BadRequestException(
+        `Submission '${submissionId}' has a circular dependency`,
+      );
     }
   }
 
@@ -763,6 +812,7 @@ export class SubmissionService
           .getDb()
           .insert(SubmissionSchema)
           .values({
+            dependsOn: entityToDuplicate.dependsOn,
             metadata: entityToDuplicate.metadata,
             type: entityToDuplicate.type,
             isScheduled: entityToDuplicate.isScheduled,

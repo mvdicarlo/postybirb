@@ -32,4 +32,5 @@ CREATE TABLE `unit-of-work` (
 	FOREIGN KEY (`fileId`) REFERENCES `submission-file`(`id`) ON UPDATE no action ON DELETE set null
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `unit-of-work_id_unique` ON `unit-of-work` (`id`);
+CREATE UNIQUE INDEX `unit-of-work_id_unique` ON `unit-of-work` (`id`);--> statement-breakpoint
+ALTER TABLE `submission` ADD `dependsOn` text DEFAULT '[]' NOT NULL;

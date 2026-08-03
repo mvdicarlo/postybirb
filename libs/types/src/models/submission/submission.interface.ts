@@ -101,6 +101,11 @@ export interface ISubmission<
   post?: IPost;
 
   /**
+   * Submission IDs that must complete before this submission can post.
+   */
+  dependsOn: SubmissionId[];
+
+  /**
    * The index of the submission for display purposes.
    * @type {number}
    */

@@ -15,7 +15,7 @@ export class PostingController {
   }
 
   @Post('incomplete-work')
-  @ApiOkResponse({ description: 'Missing, removed, and evicted posting work.' })
+  @ApiOkResponse({ description: 'Remaining, removed, and evicted posting work.' })
   getIncompleteWork(@Body() request: GetIncompleteWorkDto) {
     return this.service.getIncompleteWork(
       request.submissionId,

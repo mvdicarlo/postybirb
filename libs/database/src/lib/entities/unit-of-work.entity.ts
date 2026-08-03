@@ -50,11 +50,7 @@ export class UnitOfWork
   }
 
   public get isTerminated(): boolean {
-    return (
-      this.state === UnitOfWorkState.SUCCEEDED ||
-      this.state === UnitOfWorkState.FAILED ||
-      this.state === UnitOfWorkState.CANCELLED
-    );
+    return this.state === UnitOfWorkState.SUCCEEDED;
   }
 
   constructor(init: Partial<IUnitOfWork> = {}) {

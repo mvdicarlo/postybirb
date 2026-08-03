@@ -21,7 +21,7 @@ describe('PostingController', () => {
 
   it('forwards incomplete-work request data to the service', async () => {
     const result = {
-      missingWork: [],
+      remainingWork: [],
       removedWork: [],
       evicted: [],
     };

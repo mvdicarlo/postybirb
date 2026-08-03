@@ -21,12 +21,15 @@ import {
     UnitOfWorkState,
 } from '@postybirb/types';
 import { eq as equals, inArray } from 'drizzle-orm';
+import { chunk } from 'lodash';
+import { v4 as uuid } from 'uuid';
+import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { PostingManager } from './posting-manager';
 
 export type UnitOfWorkEvictions = Record<AccountId, SubmissionFileId[]>;
 
 export interface IncompleteWork {
-    missingWork: UnitOfWork[];
+    remainingWork: UnitOfWork[];
     removedWork: UnitOfWork[];
     evicted: UnitOfWork[];
 }
@@ -45,7 +48,10 @@ export class PostingService {
 
     protected readonly websiteOptionsRepository = new WebsiteOptionsRepository();
 
-    constructor(private readonly postingManager: PostingManager) {}
+    constructor(
+        private readonly postingManager: PostingManager,
+        private readonly websiteRegistry: WebsiteRegistryService,
+    ) {}
 
     @Cron(CronExpression.EVERY_SECOND)
     async handlePendingWork(): Promise<void> {
@@ -64,6 +70,10 @@ export class PostingService {
         });
 
         for (const post of pendingWork) {
+            if (!(await this.areDependenciesCompleted(post.submissionId))) {
+                continue;
+            }
+
             const allottedWork = post.unitsOfWork.filter(
                 (unit) => !unit.evicted && !unit.isTerminated,
             );
@@ -77,12 +87,33 @@ export class PostingService {
             // the last known rate limit for each account and the time it was last hit. Then we can filter out any work that is rate limited and has not yet passed the time limit.
 
 
-            // TODO filter out posts if their parent submission has not resolved their dependsOn
-            // relationship (not yet implemented)
-
-            // TODO send to manager for processing
             await this.postingManager.submit(post.id);
         }
+    }
+
+    public async areDependenciesCompleted(
+        submissionId: SubmissionId,
+    ): Promise<boolean> {
+        const submission = await this.submissionRepository.findByIdOrThrow(
+            submissionId,
+        );
+        const dependencyIds = [...new Set(submission.dependsOn)];
+        if (dependencyIds.length === 0) {
+            return true;
+        }
+
+        const completedDependencyPosts = await this.postRepository.find({
+            where: (post, { and, eq, inArray: whereInArray }) => and(
+                whereInArray(post.submissionId, dependencyIds),
+                eq(post.completed, true),
+            ),
+        });
+        const completedDependencyIds = new Set(
+            completedDependencyPosts.map((post) => post.submissionId),
+        );
+        return dependencyIds.every((dependencyId) =>
+            completedDependencyIds.has(dependencyId),
+        );
     }
 
     public async cancelPost(postId: PostId, reason?: string): Promise<void> {
@@ -119,36 +150,48 @@ export class PostingService {
         const potentialWork = await this.getPotentialWork(submissionId);
 
         if (!existingWork) {
+            await this.assignBatches(potentialWork.unitsOfWork);
             return {
-                missingWork: potentialWork.unitsOfWork,
+                remainingWork: potentialWork.unitsOfWork,
                 removedWork: [],
                 evicted: [],
             };
         }
 
-        const existingKeys = new Set(
-            existingWork.unitsOfWork.map((unit) => unit.compositeKey),
+        const existingByKey = new Map(
+            existingWork.unitsOfWork.map((unit) => [unit.compositeKey, unit]),
         );
         const potentialKeys = new Set(
             potentialWork.unitsOfWork.map((unit) => unit.compositeKey),
         );
+        const removedWork = existingWork.unitsOfWork.filter(
+            (unit) => !potentialKeys.has(unit.compositeKey),
+        );
+        const evicted = existingWork.unitsOfWork.filter((unit) => {
+            const fileIds = evictions[unit.accountId];
+            if (!fileIds) {
+                return false;
+            }
+            return fileIds.length === 0 || (
+                unit.fileId !== undefined && fileIds.includes(unit.fileId)
+            );
+        });
+        const evictedIds = new Set(evicted.map((unit) => unit.id));
+        const newWork: UnitOfWork[] = [];
+        const remainingWork = potentialWork.unitsOfWork.flatMap((potential) => {
+            const existing = existingByKey.get(potential.compositeKey);
+            if (!existing || evictedIds.has(existing.id)) {
+                newWork.push(potential);
+                return [potential];
+            }
+            return existing.isTerminated ? [] : [existing];
+        });
+        await this.assignBatches(newWork);
 
         return {
-            missingWork: potentialWork.unitsOfWork.filter(
-                (unit) => !existingKeys.has(unit.compositeKey),
-            ),
-            removedWork: existingWork.unitsOfWork.filter(
-                (unit) => !potentialKeys.has(unit.compositeKey),
-            ),
-            evicted: existingWork.unitsOfWork.filter((unit) => {
-                const fileIds = evictions[unit.accountId];
-                if (!fileIds) {
-                    return false;
-                }
-                return fileIds.length === 0 || (
-                    unit.fileId !== undefined && fileIds.includes(unit.fileId)
-                );
-            }),
+            remainingWork,
+            removedWork,
+            evicted,
         };
     }
 
@@ -162,6 +205,9 @@ export class PostingService {
         );
         const existingPost = await this.getPost(submissionId);
         const post = existingPost ?? new Post({ submissionId });
+        const newWork = incompleteWork.remainingWork.filter(
+            (unit) => !unit.postId,
+        );
         const evictedIds = [
             ...new Set(
                 [...incompleteWork.evicted, ...incompleteWork.removedWork]
@@ -197,10 +243,10 @@ export class PostingService {
                     .run();
             }
 
-            if (incompleteWork.missingWork.length > 0) {
+            if (newWork.length > 0) {
                 tx.insert(this.unitOfWorkRepository.table)
                     .values(
-                        incompleteWork.missingWork.map((unit) => ({
+                        newWork.map((unit) => ({
                             ...unit.toObject(),
                             postId: post.id,
                         })),
@@ -234,6 +280,7 @@ export class PostingService {
         const submission = await this.submissionRepository.findByIdOrThrow(submissionId);
         const files = await this.fileRepository.find({
             where: (c, { eq }) => eq(c.submissionId, submissionId),
+            orderBy: (file, { asc }) => asc(file.order),
         });
         const websiteOptions = await this.websiteOptionsRepository.find({
             where: (c, { eq }) => eq(c.submissionId, submissionId),
@@ -245,6 +292,33 @@ export class PostingService {
             }
             return [this.createUnitOfWork(submission, option)];
         }).filter((uow): uow is UnitOfWork => uow !== undefined);
+    }
+
+    private async assignBatches(unitsOfWork: UnitOfWork[]): Promise<void> {
+        const workByAccount = new Map<AccountId, UnitOfWork[]>();
+        for (const unit of unitsOfWork) {
+            const accountWork = workByAccount.get(unit.accountId) ?? [];
+            accountWork.push(unit);
+            workByAccount.set(unit.accountId, accountWork);
+        }
+
+        await Promise.all(
+            [...workByAccount.entries()].map(async ([accountId, accountWork]) => {
+                const account = await this.accountRepository.findByIdOrThrow(accountId);
+                const website = await this.websiteRegistry.ensureInstance(account);
+                const batchSize = Math.max(
+                    website.decoratedProps.fileOptions?.fileBatchSize ?? 1,
+                    1,
+                );
+
+                for (const batch of chunk(accountWork, batchSize)) {
+                    const batchId = uuid();
+                    for (const unit of batch) {
+                        unit.batch = batchId;
+                    }
+                }
+            }),
+        );
     }
 
     private createUnitOfWork(submission: Submission, option: WebsiteOptions, file?: SubmissionFile): UnitOfWork | undefined {

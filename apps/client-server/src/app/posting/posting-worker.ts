@@ -8,6 +8,7 @@ import {
 } from '@postybirb/database';
 import { Logger, PostyBirbLogger } from '@postybirb/logger';
 import { PostId } from '@postybirb/types';
+import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { CancellationToken } from './cancellation-token';
 
 export class PostingWorker {
@@ -33,6 +34,7 @@ export class PostingWorker {
 
   constructor(
     protected readonly postId: PostId,
+    protected readonly websiteRegistry: WebsiteRegistryService,
     protected readonly onAfterDispose: () => void | Promise<void>,
   ) {
     this.logger = Logger(`PostingWorker[${postId}]`);

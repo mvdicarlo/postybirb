@@ -151,6 +151,7 @@ describe('SubmissionService', () => {
       createdAt: record.createdAt,
       updatedAt: record.updatedAt,
       type: record.type,
+      dependsOn: [],
       isScheduled: false,
       isTemplate: false,
       isArchived: false,
@@ -211,6 +212,7 @@ describe('SubmissionService', () => {
       createdAt: record.createdAt,
       updatedAt: record.updatedAt,
       type: record.type,
+      dependsOn: [],
       isScheduled: false,
       postQueueRecord: undefined,
       isTemplate: false,
@@ -306,12 +308,68 @@ describe('SubmissionService', () => {
     updateDto.metadata = {
       test: 'test',
     } as unknown as ISubmissionMetadata;
+    updateDto.dependsOn = ['00000000-0000-4000-8000-000000000001'];
 
     const updatedRecord = await service.update(record.id, updateDto);
     expect(updatedRecord.isScheduled).toEqual(updateDto.isScheduled);
     expect(updatedRecord.schedule.scheduleType).toEqual(updateDto.scheduleType);
     expect(updatedRecord.schedule.scheduledFor).toEqual(updateDto.scheduledFor);
     expect(updatedRecord.metadata).toEqual(updateDto.metadata);
+    expect(updatedRecord.dependsOn).toEqual(updateDto.dependsOn);
+  });
+
+  it('should reject a direct dependency cycle', async () => {
+    const submission = await service.create(createSubmissionDto());
+    const updateDto = new UpdateSubmissionDto();
+    updateDto.dependsOn = [submission.id];
+    updateDto.deletedWebsiteOptions = [submission.options[0].id];
+
+    await expect(service.update(submission.id, updateDto)).rejects.toThrow(
+      BadRequestException,
+    );
+    await expect(service.findByIdOrThrow(submission.id)).resolves.toMatchObject({
+      dependsOn: [],
+      options: [{ id: submission.options[0].id }],
+    });
+  });
+
+  it('should reject a transitive dependency cycle', async () => {
+    const first = await service.create(createSubmissionDto());
+    const second = await service.create(createSubmissionDto());
+    const third = await service.create(createSubmissionDto());
+
+    await service.update(second.id, { dependsOn: [first.id] });
+    await service.update(third.id, { dependsOn: [second.id] });
+
+    await expect(
+      service.update(first.id, { dependsOn: [third.id] }),
+    ).rejects.toThrow(BadRequestException);
+    await expect(service.findByIdOrThrow(first.id)).resolves.toMatchObject({
+      dependsOn: [],
+    });
+  });
+
+  it('should serialize reciprocal dependency updates', async () => {
+    const first = await service.create(createSubmissionDto());
+    const second = await service.create(createSubmissionDto());
+
+    const results = await Promise.allSettled([
+      service.update(first.id, { dependsOn: [second.id] }),
+      service.update(second.id, { dependsOn: [first.id] }),
+    ]);
+
+    expect(results.filter((result) => result.status === 'fulfilled')).toHaveLength(1);
+    expect(results.filter((result) => result.status === 'rejected')).toHaveLength(1);
+    const [updatedFirst, updatedSecond] = await Promise.all([
+      service.findByIdOrThrow(first.id),
+      service.findByIdOrThrow(second.id),
+    ]);
+    expect(
+      [
+        updatedFirst.dependsOn.includes(second.id),
+        updatedSecond.dependsOn.includes(first.id),
+      ].filter(Boolean),
+    ).toHaveLength(1);
   });
 
   it('should remove entity options', async () => {
@@ -491,6 +549,7 @@ describe('SubmissionService', () => {
     const account = await createAccount();
     const createDto = createSubmissionDto();
     createDto.type = SubmissionType.FILE;
+    createDto.dependsOn = ['00000000-0000-4000-8000-000000000001'];
     const path = setup();
     const fileInfo = createMulterData(path);
 
@@ -513,6 +572,7 @@ describe('SubmissionService', () => {
     expect(duplicated?.options).toHaveLength(2);
     expect(duplicated?.files).toHaveLength(1);
     expect(duplicated?.order).toEqual(record.order);
+    expect(duplicated?.dependsOn).toEqual(record.dependsOn);
 
     // Check that the metadata references the new file IDs
     const duplicatedFileId = duplicated?.files[0].id;

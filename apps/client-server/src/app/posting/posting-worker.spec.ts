@@ -1,4 +1,7 @@
+import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { PostingWorker } from './posting-worker';
+
+const stubRegistry = {} as unknown as WebsiteRegistryService;
 
 interface WorkerMocks {
   onAfterDispose: jest.Mock;
@@ -39,7 +42,7 @@ function createWorker(): { worker: PostingWorker; mocks: WorkerMocks } {
       find: jest.fn().mockResolvedValue([{ id: 'options-1' }]),
     },
   };
-  const worker = new PostingWorker('post-1', mocks.onAfterDispose);
+  const worker = new PostingWorker('post-1', stubRegistry, mocks.onAfterDispose);
   Object.assign(worker, {
     postRepository: mocks.postRepository,
     submissionRepository: mocks.submissionRepository,

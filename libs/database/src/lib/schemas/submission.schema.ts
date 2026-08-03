@@ -4,6 +4,7 @@ import { integer, real, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import {
   ISubmissionMetadata,
   ISubmissionScheduleInfo,
+  SubmissionId,
 } from '../../../../types/src/index';
 import { CommonSchema, submissionType } from './common.schema';
 import { PostQueueRecordSchema } from './post-queue-record.schema';
@@ -15,6 +16,10 @@ import { WebsiteOptionsSchema } from './website-options.schema';
 export const SubmissionSchema = sqliteTable('submission', {
   ...CommonSchema(),
   ...submissionType(),
+  dependsOn: text({ mode: 'json' })
+    .notNull()
+    .$type<SubmissionId[]>()
+    .default([]),
   isArchived: integer({ mode: 'boolean' }).default(false),
   isInitialized: integer({ mode: 'boolean' }).default(false),
   isMultiSubmission: integer({ mode: 'boolean' }).notNull(),

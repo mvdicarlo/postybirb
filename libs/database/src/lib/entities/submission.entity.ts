@@ -3,6 +3,7 @@ import type {
   ISubmissionDto,
   ISubmissionMetadata,
   ISubmissionScheduleInfo,
+  SubmissionId,
   SubmissionType,
 } from '@postybirb/types';
 import { ScheduleType } from '@postybirb/types';
@@ -65,6 +66,8 @@ export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
 
   public post?: Post;
 
+  public dependsOn: SubmissionId[];
+
   public order: number;
 
   constructor(init: Partial<ISubmission<T>> = {}) {
@@ -83,6 +86,7 @@ export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
     this.isInitialized = init.isInitialized ?? false;
     this.schedule = init.schedule ?? { scheduleType: ScheduleType.NONE };
     this.metadata = (init.metadata ?? ({} as T)) as T;
+    this.dependsOn = [...(init.dependsOn ?? [])];
     this.order = init.order ?? 0;
   }
 
@@ -104,6 +108,7 @@ export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
       metadata: this.metadata,
       posts: this.posts,
       post: this.post,
+      dependsOn: [...this.dependsOn],
       order: this.order,
     } as ISubmission<T>;
   }

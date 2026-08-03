@@ -18,6 +18,7 @@ function buildRow(overrides: Partial<SubmissionRow> = {}): SubmissionRow {
     createdAt: '2025-01-01T00:00:00.000Z',
     updatedAt: '2025-01-01T00:00:00.000Z',
     type: SubmissionType.FILE,
+    dependsOn: ['sub-0'],
     isScheduled: false,
     isTemplate: false,
     isMultiSubmission: false,
@@ -40,6 +41,10 @@ describe('Submission.fromRow', () => {
       entity as unknown as Record<string, unknown> & { id: string },
       ['options', 'posts', 'post', 'files', 'postQueueRecord'],
     );
+  });
+
+  it('defaults dependencies to an empty list', () => {
+    expect(new Submission().dependsOn).toEqual([]);
   });
 
   it('hydrates the post when present', () => {
