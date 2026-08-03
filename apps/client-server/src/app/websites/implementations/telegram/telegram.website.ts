@@ -377,9 +377,6 @@ export default class Telegram
               duration: file.metadata.duration ?? 0,
               w: file.width,
               h: file.height,
-              supportsStreaming: true,
-              nosound: true,
-              videoCodec: 'h264',
             }),
           );
           break;
