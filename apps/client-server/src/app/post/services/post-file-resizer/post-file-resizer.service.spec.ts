@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import {
-  DefaultSubmissionFileMetadata,
-  ISubmission,
-  ISubmissionFile,
+    DefaultSubmissionFileMetadata,
+    ISubmission,
+    ISubmissionFile,
 } from '@postybirb/types';
 import { readFileSync } from 'fs';
 import { join } from 'path';
@@ -107,7 +107,7 @@ describe('PostFileResizerService', () => {
     expect(resized.buffer.length).toBeLessThan(testFile.length);
     expect(resized.thumbnail?.buffer.length).toBeLessThan(testFile.length);
     expect(resized.fileName).toBe('test.jpeg');
-    expect(resized.thumbnail?.fileName).toBe('test.jpg');
+    expect(resized.thumbnail?.fileName).toBe('thumbnail_test.jpg');
     expect(resized.mimeType).toBe('image/jpeg');
   });
 
@@ -133,7 +133,39 @@ describe('PostFileResizerService', () => {
     expect(resized.buffer.length).toBeLessThan(noAlphaFile.length);
     expect(resized.fileName).toBe('test.png');
     expect(resized.thumbnail?.buffer.length).toBeLessThan(noAlphaFile.length);
-    expect(resized.thumbnail?.fileName).toBe('test.png');
+    expect(resized.thumbnail?.fileName).toBe('thumbnail_test.png');
+  });
+
+  it('uses generated metadata for a custom thumbnail whose format changes', async () => {
+    const pngFile = readFileSync(
+      join(__dirname, '../../../../test-files/png_with_alpha.png'),
+    );
+    const tf = createFile('test.jpg', 'image/jpeg', 202, 138, testFile);
+    tf.hasThumbnail = true;
+    tf.hasCustomThumbnail = true;
+    tf.thumbnail = {
+      ...tf.file,
+      id: 'custom-thumbnail',
+      fileName: 'custom-thumbnail.webp',
+      mimeType: 'image/webp',
+      buffer: pngFile,
+      size: pngFile.length,
+      width: 600,
+      height: 600,
+    };
+
+    const resized = await service.resize({ file: tf });
+    const thumbnailMetadata = await sharpManager.getMetadata(
+      resized.thumbnail!.buffer,
+    );
+
+    expect(resized.thumbnail).toEqual(
+      expect.objectContaining({
+        fileName: 'thumbnail_custom-thumbnail.png',
+        mimeType: 'image/png',
+      }),
+    );
+    expect(thumbnailMetadata.mimeType).toBe(resized.thumbnail?.mimeType);
   });
 
   it('should respect both dimension and byte limits simultaneously (HF bug)', async () => {

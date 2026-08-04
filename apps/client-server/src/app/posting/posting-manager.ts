@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import { PostId } from '@postybirb/types';
 import { Mutex } from 'async-mutex';
+import { FileConverterService } from '../file-converter/file-converter.service';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
 import { PostFileResizerService } from '../post/services/post-file-resizer/post-file-resizer.service';
 import { ValidationService } from '../validation/validation.service';
@@ -25,6 +26,7 @@ export class PostingManager {
     private readonly validationService: ValidationService,
     private readonly postParsersService: PostParsersService,
     private readonly postFileResizerService: PostFileResizerService,
+    private readonly fileConverterService: FileConverterService,
   ) {}
 
   public submit(postId: PostId): Promise<boolean> {
@@ -82,6 +84,7 @@ export class PostingManager {
       this.validationService,
       this.postParsersService,
       this.postFileResizerService,
+      this.fileConverterService,
       onAfterDispose,
     );
   }

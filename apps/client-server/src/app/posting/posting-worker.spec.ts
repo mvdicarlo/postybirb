@@ -1,3 +1,4 @@
+import { FileConverterService } from '../file-converter/file-converter.service';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
 import { PostFileResizerService } from '../post/services/post-file-resizer/post-file-resizer.service';
 import { ValidationService } from '../validation/validation.service';
@@ -8,8 +9,17 @@ interface WorkerMocks {
   accountRepository: {
     findByIdOrThrow: jest.Mock;
   };
+  fileRepository: {
+    findByIdOrThrow: jest.Mock;
+  };
+  fileConverterService: {
+    canConvert: jest.Mock;
+    convert: jest.Mock;
+  };
   onAfterDispose: jest.Mock;
-  postFileResizerService: PostFileResizerService;
+  postFileResizerService: {
+    resize: jest.Mock;
+  };
   postParsersService: {
     parse: jest.Mock;
   };
@@ -40,8 +50,17 @@ function createWorker(): { worker: PostingWorker; mocks: WorkerMocks } {
     accountRepository: {
       findByIdOrThrow: jest.fn().mockResolvedValue({ id: 'account-1' }),
     },
+    fileRepository: {
+      findByIdOrThrow: jest.fn(),
+    },
+    fileConverterService: {
+      canConvert: jest.fn().mockResolvedValue(false),
+      convert: jest.fn(),
+    },
     onAfterDispose: jest.fn().mockResolvedValue(undefined),
-    postFileResizerService: {} as PostFileResizerService,
+    postFileResizerService: {
+      resize: jest.fn().mockResolvedValue({}),
+    },
     postParsersService: {
       parse: jest.fn().mockResolvedValue({ options: {} }),
     },
@@ -86,11 +105,13 @@ function createWorker(): { worker: PostingWorker; mocks: WorkerMocks } {
     mocks.websiteRegistry as unknown as WebsiteRegistryService,
     mocks.validationService as unknown as ValidationService,
     mocks.postParsersService as unknown as PostParsersService,
-    mocks.postFileResizerService,
+    mocks.postFileResizerService as unknown as PostFileResizerService,
+    mocks.fileConverterService as unknown as FileConverterService,
     mocks.onAfterDispose,
   );
   Object.assign(worker, {
     accountRepository: mocks.accountRepository,
+    fileRepository: mocks.fileRepository,
     postRepository: mocks.postRepository,
     submissionRepository: mocks.submissionRepository,
     unitOfWorkRepository: mocks.unitOfWorkRepository,
@@ -286,6 +307,243 @@ describe('PostingWorker', () => {
     releases.get('external-account-1')?.();
     releases.get('external-account-2')?.();
     await execution;
+  });
+
+  it('resizes every image in a batch using the stricter user and website dimensions', async () => {
+    const { worker, mocks } = createWorker();
+    mocks.unitOfWorkRepository.find.mockResolvedValue([
+      {
+        id: 'image-work-1',
+        accountId: 'account-1',
+        fileId: 'image-1',
+        batch: 'batch-1',
+      },
+      {
+        id: 'image-work-2',
+        accountId: 'account-1',
+        fileId: 'image-2',
+        batch: 'batch-1',
+      },
+      {
+        id: 'text-work',
+        accountId: 'account-1',
+        fileId: 'text-1',
+        batch: 'batch-1',
+      },
+    ]);
+    const files = {
+      'image-1': {
+        id: 'image-1',
+        fileName: 'image-1.png',
+        mimeType: 'image/png',
+        size: 2000,
+        width: 1200,
+        height: 1000,
+        file: {},
+        metadata: {
+          dimensions: {
+            'account-1': { width: 800, height: 600 },
+          },
+        },
+      },
+      'image-2': {
+        id: 'image-2',
+        fileName: 'image-2.png',
+        mimeType: 'image/png',
+        size: 2000,
+        width: 1200,
+        height: 1000,
+        file: {},
+        metadata: {
+          dimensions: {
+            'account-1': { width: 400, height: 900 },
+          },
+        },
+      },
+      'text-1': {
+        id: 'text-1',
+        fileName: 'notes.txt',
+        mimeType: 'text/plain',
+        file: {},
+        metadata: {},
+      },
+    };
+    mocks.fileRepository.findByIdOrThrow.mockImplementation(
+      (fileId: keyof typeof files) => Promise.resolve(files[fileId]),
+    );
+    mocks.websiteRegistry.findInstance.mockReturnValue({
+      accountId: 'account-1',
+      decoratedProps: {},
+      calculateImageResize: jest.fn().mockReturnValue({
+        width: 500,
+        height: 700,
+        outputMimeType: 'image/jpeg',
+      }),
+      login: jest.fn().mockResolvedValue({
+        isLoggedIn: true,
+        status: 'loggedIn',
+      }),
+    });
+
+    await worker.start();
+
+    expect(mocks.postFileResizerService.resize).toHaveBeenCalledTimes(2);
+    expect(mocks.postFileResizerService.resize).toHaveBeenNthCalledWith(1, {
+      file: files['image-1'],
+      resize: {
+        width: 500,
+        height: 700,
+        outputMimeType: 'image/jpeg',
+      },
+    });
+    expect(mocks.postFileResizerService.resize).toHaveBeenNthCalledWith(2, {
+      file: files['image-2'],
+      resize: {
+        width: 400,
+        height: 900,
+        outputMimeType: 'image/jpeg',
+      },
+    });
+  });
+
+  it('converts an unsupported file before resizing without mutating the stored file', async () => {
+    const { worker, mocks } = createWorker();
+    mocks.unitOfWorkRepository.find.mockResolvedValue([
+      {
+        id: 'image-work',
+        accountId: 'account-1',
+        fileId: 'image-1',
+        batch: 'batch-1',
+      },
+    ]);
+    const originalBuffer = {
+      id: 'buffer-1',
+      submissionFileId: 'image-1',
+      fileName: 'image.png',
+      mimeType: 'image/png',
+      buffer: Buffer.from('png'),
+      size: 3,
+      width: 1200,
+      height: 800,
+    };
+    const convertedBuffer = {
+      ...originalBuffer,
+      fileName: 'image.jpg',
+      mimeType: 'image/jpeg',
+      buffer: Buffer.from('jpeg'),
+      size: 4,
+      width: 600,
+      height: 400,
+    };
+    const storedFile = {
+      id: 'image-1',
+      fileName: 'image.png',
+      mimeType: 'image/png',
+      size: 3,
+      width: 1200,
+      height: 800,
+      file: originalBuffer,
+      metadata: {},
+    };
+    mocks.fileRepository.findByIdOrThrow.mockResolvedValue(storedFile);
+    mocks.fileConverterService.canConvert.mockResolvedValue(true);
+    mocks.fileConverterService.convert.mockResolvedValue(convertedBuffer);
+    const calculateImageResize = jest.fn().mockReturnValue({
+      width: 500,
+      height: 500,
+    });
+    mocks.websiteRegistry.findInstance.mockReturnValue({
+      accountId: 'account-1',
+      decoratedProps: {
+        fileOptions: { acceptedMimeTypes: ['image/jpeg'] },
+      },
+      calculateImageResize,
+      login: jest.fn().mockResolvedValue({
+        isLoggedIn: true,
+        status: 'loggedIn',
+      }),
+    });
+
+    await worker.start();
+
+    expect(mocks.fileConverterService.canConvert).toHaveBeenCalledWith(
+      'image/png',
+      ['image/jpeg'],
+    );
+    expect(mocks.fileConverterService.convert).toHaveBeenCalledWith(
+      originalBuffer,
+      ['image/jpeg'],
+    );
+    expect(mocks.postFileResizerService.resize).toHaveBeenCalledWith({
+      file: expect.objectContaining({
+        file: convertedBuffer,
+        fileName: 'image.jpg',
+        mimeType: 'image/jpeg',
+        size: 4,
+        width: 600,
+        height: 400,
+      }),
+      resize: { width: 500, height: 500 },
+    });
+    expect(calculateImageResize).toHaveBeenCalledWith(
+      expect.objectContaining({
+        file: convertedBuffer,
+        mimeType: 'image/jpeg',
+      }),
+    );
+    expect(mocks.fileConverterService.convert.mock.invocationCallOrder[0]).toBeLessThan(
+      mocks.postFileResizerService.resize.mock.invocationCallOrder[0],
+    );
+    expect(storedFile).toEqual({
+      id: 'image-1',
+      fileName: 'image.png',
+      mimeType: 'image/png',
+      size: 3,
+      width: 1200,
+      height: 800,
+      file: originalBuffer,
+      metadata: {},
+    });
+  });
+
+  it('does not convert a file whose MIME type is already accepted', async () => {
+    const { worker, mocks } = createWorker();
+    mocks.unitOfWorkRepository.find.mockResolvedValue([
+      {
+        id: 'text-work',
+        accountId: 'account-1',
+        fileId: 'text-1',
+        batch: 'batch-1',
+      },
+    ]);
+    mocks.fileRepository.findByIdOrThrow.mockResolvedValue({
+      id: 'text-1',
+      fileName: 'notes.txt',
+      mimeType: 'text/plain',
+      file: {
+        id: 'buffer-1',
+        fileName: 'notes.txt',
+        mimeType: 'text/plain',
+        buffer: Buffer.from('notes'),
+      },
+      metadata: {},
+    });
+    mocks.websiteRegistry.findInstance.mockReturnValue({
+      accountId: 'account-1',
+      decoratedProps: {
+        fileOptions: { acceptedMimeTypes: ['text/*'] },
+      },
+      login: jest.fn().mockResolvedValue({
+        isLoggedIn: true,
+        status: 'loggedIn',
+      }),
+    });
+
+    await worker.start();
+
+    expect(mocks.fileConverterService.canConvert).not.toHaveBeenCalled();
+    expect(mocks.fileConverterService.convert).not.toHaveBeenCalled();
+    expect(mocks.postFileResizerService.resize).not.toHaveBeenCalled();
   });
 
   it('completes a post that has no work', async () => {

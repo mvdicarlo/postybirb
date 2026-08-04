@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import {
-    FileType,
-    IFileBuffer,
-    ImageResizeProps,
-    ISubmissionFile,
+  FileType,
+  IFileBuffer,
+  ImageResizeProps,
+  ISubmissionFile,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { SharpInstanceManager } from '../../../image-processing/sharp-instance-manager';
@@ -105,8 +105,8 @@ export class PostFileResizerService {
 
     return {
       buffer: result.buffer,
-      fileName: thumb.fileName,
-      mimeType: thumb.mimeType,
+      fileName: result.fileName,
+      mimeType: result.mimeType,
       height: result.height,
       width: result.width,
     };

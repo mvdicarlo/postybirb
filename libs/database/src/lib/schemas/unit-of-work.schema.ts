@@ -48,6 +48,7 @@ export const UnitOfWorkSchema = sqliteTable(
         UnitOfWorkState.NEW,
         UnitOfWorkState.PENDING,
         UnitOfWorkState.EXECUTING,
+        UnitOfWorkState.VALIDATING,
         UnitOfWorkState.SUCCEEDED,
         UnitOfWorkState.FAILED,
         UnitOfWorkState.CANCELLED,

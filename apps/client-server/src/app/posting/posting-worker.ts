@@ -3,6 +3,7 @@ import {
   Post,
   PostRepository,
   Submission,
+  SubmissionFile,
   SubmissionFileRepository,
   SubmissionRepository,
   UnitOfWork,
@@ -11,11 +12,25 @@ import {
   WebsiteOptionsRepository,
 } from '@postybirb/database';
 import { Logger, PostyBirbLogger } from '@postybirb/logger';
-import { AccountId, IWebsiteFormFields, PostData, PostId, UnitOfWorkState } from '@postybirb/types';
+import {
+  AccountId,
+  FileType,
+  IFileBuffer,
+  ISubmissionFile,
+  IWebsiteFormFields,
+  PostData,
+  PostId,
+  UnitOfWorkState,
+} from '@postybirb/types';
+import { getFileType } from '@postybirb/utils/file-type';
 import { chunk } from 'lodash';
+import { FileConverterService } from '../file-converter/file-converter.service';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
+import { PostingFile } from '../post/models/posting-file';
+import { getImageResizeParameters } from '../post/services/post-file-resizer/image-resize-parameters';
 import { PostFileResizerService } from '../post/services/post-file-resizer/post-file-resizer.service';
 import { ValidationService } from '../validation/validation.service';
+import { UnknownWebsite } from '../websites/website';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { CancellationToken } from './cancellation-token';
 
@@ -29,6 +44,19 @@ type PostingWorkerContext = {
 type UnitsOfWorkByAccountId = Record<string, UnitOfWork[]>;
 
 type AccountWork = [accountId: AccountId, unitsOfWork: UnitOfWork[]];
+
+function mimeTypeIsAccepted(mimeType: string, patterns: string[]): boolean {
+  return patterns.some((pattern) => {
+    if (pattern === mimeType) return true;
+    if (pattern.endsWith('/*')) {
+      return mimeType.startsWith(pattern.slice(0, -1));
+    }
+    if (pattern.endsWith('/')) {
+      return mimeType.startsWith(pattern);
+    }
+    return false;
+  });
+}
 
 export class PostingWorker {
   private readonly logger: PostyBirbLogger;
@@ -59,6 +87,7 @@ export class PostingWorker {
     protected readonly validationService: ValidationService,
     protected readonly postParsersService: PostParsersService,
     protected readonly postFileResizerService: PostFileResizerService,
+    protected readonly fileConverterService: FileConverterService,
     protected readonly onAfterDispose: () => void | Promise<void>,
   ) {
     this.logger = Logger(`PostingWorker[${postId}]`);
@@ -311,10 +340,8 @@ export class PostingWorker {
 
     // Pre-flight checks passed, proceed with posting
 
-    // TODO create unit of work batches based on batch id then post batch by batch
-    // TODO perform resize check against file for file units of work and resize if necessary before posting
     const batchedUnitsOfWork: UnitOfWork[][] = [];
-    context.unitsOfWork.forEach(unit => {
+    unitsOfWork.forEach(unit => {
       const batchId = unit.batch ?? 'unknown';
       let batch = batchedUnitsOfWork.find(b => b[0]?.batch === batchId);
       if (!batch) {
@@ -336,14 +363,149 @@ export class PostingWorker {
         await this.updateUnitsOfWorkState(batch, UnitOfWorkState.CANCELLED);
         continue;
       }
-      await this.postBatch(accountId, batch, context);
+      await this.postBatch(websiteInstance, batch);
     }
   }
 
-  private async postBatch(accountId: AccountId, unitsOfWork: UnitOfWork[], context: PostingWorkerContext): Promise<void> {
-    // TODO implement posting logic for a batch of units of work
+  private async postBatch(websiteInstance: UnknownWebsite, unitsOfWork: UnitOfWork[]): Promise<void> {
     await this.updateUnitsOfWorkState(unitsOfWork, UnitOfWorkState.EXECUTING);
-    
+
+    try {
+      await this.prepareBatchFiles(websiteInstance, unitsOfWork);
+    } catch (error) {
+      this.logger.withError(error).error('Error preparing files for posting');
+      await this.markUnitsOfWorkAsFailed(unitsOfWork, {
+        error: 'Error preparing files for posting',
+      });
+    }
+  }
+
+  private async prepareBatchFiles(
+    websiteInstance: UnknownWebsite,
+    unitsOfWork: UnitOfWork[],
+  ): Promise<PostingFile[]> {
+    const fileIds = unitsOfWork.flatMap((unit) =>
+      unit.fileId ? [unit.fileId] : [],
+    );
+    const files = await Promise.all(
+      fileIds.map((fileId) => this.fileRepository.findByIdOrThrow(fileId)),
+    );
+
+    return Promise.all(
+      files.map(async (file) => {
+        if (!file.file) {
+          await file.load();
+        }
+
+        const preparedFile = await this.convertFileIfNeeded(
+          websiteInstance,
+          file,
+        );
+        if (getFileType(preparedFile.mimeType) === FileType.IMAGE) {
+          return this.resizeImage(websiteInstance, preparedFile);
+        }
+
+        return new PostingFile(
+          preparedFile.id,
+          preparedFile.file,
+          preparedFile.thumbnail,
+        ).withMetadata(preparedFile.metadata);
+      }),
+    );
+  }
+
+  private async convertFileIfNeeded(
+    websiteInstance: UnknownWebsite,
+    file: SubmissionFile,
+  ): Promise<ISubmissionFile> {
+    const acceptedMimeTypes =
+      websiteInstance.decoratedProps.fileOptions?.acceptedMimeTypes ?? [];
+    if (
+      acceptedMimeTypes.length === 0 ||
+      mimeTypeIsAccepted(file.file.mimeType, acceptedMimeTypes)
+    ) {
+      return file;
+    }
+
+    const primaryFile = await this.convertToAcceptedMimeType(
+      file.file,
+      acceptedMimeTypes,
+    );
+    if (primaryFile) {
+      return this.withPreparedFile(file, primaryFile);
+    }
+
+    if (!file.altFile && file.altFileId) {
+      await file.load('alt');
+    }
+    if (file.altFile) {
+      const alternateFile = mimeTypeIsAccepted(
+        file.altFile.mimeType,
+        acceptedMimeTypes,
+      )
+        ? file.altFile
+        : await this.convertToAcceptedMimeType(
+            file.altFile,
+            acceptedMimeTypes,
+          );
+      if (alternateFile) {
+        return this.withPreparedFile(file, alternateFile);
+      }
+    }
+
+    throw new Error(
+      `File '${file.fileName}' has unsupported MIME type '${file.mimeType}' and cannot be converted for account '${websiteInstance.accountId}'`,
+    );
+  }
+
+  private async convertToAcceptedMimeType(
+    file: IFileBuffer,
+    acceptedMimeTypes: string[],
+  ): Promise<IFileBuffer | undefined> {
+    if (
+      !(await this.fileConverterService.canConvert(
+        file.mimeType,
+        acceptedMimeTypes,
+      ))
+    ) {
+      return undefined;
+    }
+
+    const convertedFile = await this.fileConverterService.convert(
+      file,
+      acceptedMimeTypes,
+    );
+    if (!mimeTypeIsAccepted(convertedFile.mimeType, acceptedMimeTypes)) {
+      throw new Error(
+        `File converter returned unsupported MIME type '${convertedFile.mimeType}'`,
+      );
+    }
+    return convertedFile;
+  }
+
+  private withPreparedFile(
+    file: SubmissionFile,
+    preparedFile: IFileBuffer,
+  ): ISubmissionFile {
+    return {
+      ...file,
+      file: preparedFile,
+      fileName: preparedFile.fileName,
+      mimeType: preparedFile.mimeType,
+      size: preparedFile.buffer.length,
+      width: preparedFile.width,
+      height: preparedFile.height,
+    };
+  }
+
+  private async resizeImage(
+    websiteInstance: UnknownWebsite,
+    file: ISubmissionFile,
+  ): Promise<PostingFile> {
+    return this.postFileResizerService.resize({
+      file,
+      resize: getImageResizeParameters(websiteInstance, file),
+    });
   }
 
   private async updateUnitsOfWorkState(units: UnitOfWork[], state: UnitOfWorkState): Promise<void> {
