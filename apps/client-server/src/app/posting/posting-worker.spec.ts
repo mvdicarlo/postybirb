@@ -1,4 +1,5 @@
 import { PostParsersService } from '../post-parsers/post-parsers.service';
+import { PostFileResizerService } from '../post/services/post-file-resizer/post-file-resizer.service';
 import { ValidationService } from '../validation/validation.service';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { PostingWorker } from './posting-worker';
@@ -8,7 +9,10 @@ interface WorkerMocks {
     findByIdOrThrow: jest.Mock;
   };
   onAfterDispose: jest.Mock;
-  postParsersService: PostParsersService;
+  postFileResizerService: PostFileResizerService;
+  postParsersService: {
+    parse: jest.Mock;
+  };
   postRepository: {
     findByIdOrThrow: jest.Mock;
     update: jest.Mock;
@@ -20,7 +24,9 @@ interface WorkerMocks {
     find: jest.Mock;
     update: jest.Mock;
   };
-  validationService: ValidationService;
+  validationService: {
+    validate: jest.Mock;
+  };
   websiteRegistry: {
     findInstance: jest.Mock;
   };
@@ -35,7 +41,10 @@ function createWorker(): { worker: PostingWorker; mocks: WorkerMocks } {
       findByIdOrThrow: jest.fn().mockResolvedValue({ id: 'account-1' }),
     },
     onAfterDispose: jest.fn().mockResolvedValue(undefined),
-    postParsersService: {} as PostParsersService,
+    postFileResizerService: {} as PostFileResizerService,
+    postParsersService: {
+      parse: jest.fn().mockResolvedValue({ options: {} }),
+    },
     postRepository: {
       findByIdOrThrow: jest.fn().mockResolvedValue({
         id: 'post-1',
@@ -54,19 +63,30 @@ function createWorker(): { worker: PostingWorker; mocks: WorkerMocks } {
       ]),
       update: jest.fn().mockResolvedValue(undefined),
     },
-    validationService: {} as ValidationService,
+    validationService: {
+      validate: jest.fn().mockResolvedValue({ errors: [], warnings: [] }),
+    },
     websiteRegistry: {
-      findInstance: jest.fn().mockReturnValue({}),
+      findInstance: jest.fn().mockReturnValue({
+        decoratedProps: {},
+        login: jest.fn().mockResolvedValue({
+          isLoggedIn: true,
+          status: 'loggedIn',
+        }),
+      }),
     },
     websiteOptionsRepository: {
-      find: jest.fn().mockResolvedValue([{ id: 'options-1' }]),
+      find: jest.fn().mockResolvedValue([
+        { id: 'options-1', accountId: 'account-1' },
+      ]),
     },
   };
   const worker = new PostingWorker(
     'post-1',
     mocks.websiteRegistry as unknown as WebsiteRegistryService,
-    mocks.validationService,
-    mocks.postParsersService,
+    mocks.validationService as unknown as ValidationService,
+    mocks.postParsersService as unknown as PostParsersService,
+    mocks.postFileResizerService,
     mocks.onAfterDispose,
   );
   Object.assign(worker, {
@@ -181,10 +201,10 @@ describe('PostingWorker', () => {
 
     await worker.start();
 
-    const executingOrder = mocks.unitOfWorkRepository.update.mock.calls
-      .filter(([, update]) => update.state === 'EXECUTING')
+    const validatingOrder = mocks.unitOfWorkRepository.update.mock.calls
+      .filter(([, update]) => update.state === 'VALIDATING')
       .map(([unitId]) => unitId);
-    expect(executingOrder).toEqual([
+    expect(validatingOrder).toEqual([
       'missing-work',
       'standard-work',
       'external-work',

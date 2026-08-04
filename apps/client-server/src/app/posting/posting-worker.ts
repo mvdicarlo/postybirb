@@ -14,6 +14,7 @@ import { Logger, PostyBirbLogger } from '@postybirb/logger';
 import { AccountId, IWebsiteFormFields, PostData, PostId, UnitOfWorkState } from '@postybirb/types';
 import { chunk } from 'lodash';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
+import { PostFileResizerService } from '../post/services/post-file-resizer/post-file-resizer.service';
 import { ValidationService } from '../validation/validation.service';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { CancellationToken } from './cancellation-token';
@@ -57,6 +58,7 @@ export class PostingWorker {
     protected readonly websiteRegistry: WebsiteRegistryService,
     protected readonly validationService: ValidationService,
     protected readonly postParsersService: PostParsersService,
+    protected readonly postFileResizerService: PostFileResizerService,
     protected readonly onAfterDispose: () => void | Promise<void>,
   ) {
     this.logger = Logger(`PostingWorker[${postId}]`);
@@ -328,7 +330,20 @@ export class PostingWorker {
       return;
     }
 
+    for (const batch of batchedUnitsOfWork) {
+      if (this.cancellationToken.aborted) {
+        this.logger.info(`Cancellation requested during posting for account '${accountId}'`);
+        await this.updateUnitsOfWorkState(batch, UnitOfWorkState.CANCELLED);
+        continue;
+      }
+      await this.postBatch(accountId, batch, context);
+    }
+  }
 
+  private async postBatch(accountId: AccountId, unitsOfWork: UnitOfWork[], context: PostingWorkerContext): Promise<void> {
+    // TODO implement posting logic for a batch of units of work
+    await this.updateUnitsOfWorkState(unitsOfWork, UnitOfWorkState.EXECUTING);
+    
   }
 
   private async updateUnitsOfWorkState(units: UnitOfWork[], state: UnitOfWorkState): Promise<void> {

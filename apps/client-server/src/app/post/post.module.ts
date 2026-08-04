@@ -47,6 +47,11 @@ import {
     MessageSubmissionPostManager,
     PostManagerRegistry,
   ],
-  exports: [PostEventRepository, PostRecordFactory, PostManagerRegistry],
+  exports: [
+    PostEventRepository,
+    PostFileResizerService,
+    PostRecordFactory,
+    PostManagerRegistry,
+  ],
 })
 export class PostModule {}

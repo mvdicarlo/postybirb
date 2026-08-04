@@ -1,5 +1,6 @@
 import { PostId } from '@postybirb/types';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
+import { PostFileResizerService } from '../post/services/post-file-resizer/post-file-resizer.service';
 import { ValidationService } from '../validation/validation.service';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { PostingManager } from './posting-manager';
@@ -8,6 +9,7 @@ import { PostingWorker } from './posting-worker';
 const stubRegistry = {} as unknown as WebsiteRegistryService;
 const stubValidationService = {} as ValidationService;
 const stubPostParsersService = {} as PostParsersService;
+const stubPostFileResizerService = {} as PostFileResizerService;
 
 interface WorkerHarness {
   cancel: jest.Mock;
@@ -40,6 +42,7 @@ describe('PostingManager', () => {
       stubRegistry,
       stubValidationService,
       stubPostParsersService,
+      stubPostFileResizerService,
     );
   });
 

@@ -3,6 +3,7 @@ import { Logger } from '@postybirb/logger';
 import { PostId } from '@postybirb/types';
 import { Mutex } from 'async-mutex';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
+import { PostFileResizerService } from '../post/services/post-file-resizer/post-file-resizer.service';
 import { ValidationService } from '../validation/validation.service';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { PostingWorker } from './posting-worker';
@@ -23,6 +24,7 @@ export class PostingManager {
     private readonly websiteRegistry: WebsiteRegistryService,
     private readonly validationService: ValidationService,
     private readonly postParsersService: PostParsersService,
+    private readonly postFileResizerService: PostFileResizerService,
   ) {}
 
   public submit(postId: PostId): Promise<boolean> {
@@ -79,6 +81,7 @@ export class PostingManager {
       this.websiteRegistry,
       this.validationService,
       this.postParsersService,
+      this.postFileResizerService,
       onAfterDispose,
     );
   }
