@@ -1,10 +1,10 @@
 import {
-  ImageResizeProps,
-  ISubmissionFile,
-  LoginResult,
-  PostData,
-  PostResponse,
-  SubmissionRating,
+    ImageResizeProps,
+    ISubmissionFile,
+    LoginResult,
+    PostData,
+    PostResponse,
+    SubmissionRating,
 } from '@postybirb/types';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
@@ -155,7 +155,7 @@ export default class Artconomy
       thumbnailAsset = thumbnailUpload.body.id;
     }
 
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     // Create submission using PostBuilder
     const postResponse = await new PostBuilder(this, cancellationToken)
@@ -200,7 +200,7 @@ export default class Artconomy
     postData: PostData<ArtconomyMessageSubmission>,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     const { username, csrfToken } = this.getWebsiteData();
 

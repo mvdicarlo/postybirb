@@ -97,7 +97,7 @@ export default class Picarto
     files: PostingFile[],
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     const { accessToken, channelId } = this.sessionData;
     if (!accessToken || !channelId) {
       throw new Error('Not authenticated with Picarto');

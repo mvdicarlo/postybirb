@@ -1,13 +1,13 @@
 import { SelectOption } from '@postybirb/form-builder';
 
 import {
-  FileType,
-  ImageResizeProps,
-  LoginResult,
-  PostData,
-  PostResponse,
-  SimpleValidationResult,
-  SubmissionRating,
+    FileType,
+    ImageResizeProps,
+    LoginResult,
+    PostData,
+    PostResponse,
+    SimpleValidationResult,
+    SubmissionRating,
 } from '@postybirb/types';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
@@ -267,7 +267,7 @@ export default class Itaku
     files: PostingFile[],
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     const isBatch = files.length > 1;
 
     const uploadedFiles = await Promise.all(
@@ -321,7 +321,7 @@ export default class Itaku
     postData: PostData<ItakuMessageSubmission>,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     return this.postSubmission(postData, cancellationToken);
   }
 

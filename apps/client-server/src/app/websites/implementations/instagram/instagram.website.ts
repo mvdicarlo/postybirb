@@ -278,7 +278,7 @@ export default class Instagram
     files: PostingFile[],
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     const { accessToken, igUserId } = this.websiteDataStore.getData();
     if (!accessToken || !igUserId) {
@@ -292,7 +292,7 @@ export default class Instagram
     const uploadedBlobs: Array<{ url: string; blobName: string }> = [];
     try {
       for (const file of files) {
-        cancellationToken.throwIfCancelled();
+        cancellationToken.throwIfAborted();
         const blob = await InstagramBlobService.upload(
           file.buffer,
           file.mimeType,
@@ -315,7 +315,7 @@ export default class Instagram
         );
 
         await InstagramApiService.pollUntilReady(accessToken, container.id);
-        cancellationToken.throwIfCancelled();
+        cancellationToken.throwIfAborted();
 
         publishResult = await InstagramApiService.publishMedia(
           accessToken,
@@ -327,7 +327,7 @@ export default class Instagram
         const childIds: string[] = [];
 
         for (let i = 0; i < filesToPost.length; i++) {
-          cancellationToken.throwIfCancelled();
+          cancellationToken.throwIfAborted();
           const altText = files[i]?.metadata?.altText || '';
           const child = await InstagramApiService.createImageContainer(
             accessToken,
@@ -350,7 +350,7 @@ export default class Instagram
 
         // Poll until ready
         await InstagramApiService.pollUntilReady(accessToken, carousel.id);
-        cancellationToken.throwIfCancelled();
+        cancellationToken.throwIfAborted();
 
         // Publish
         publishResult = await InstagramApiService.publishMedia(

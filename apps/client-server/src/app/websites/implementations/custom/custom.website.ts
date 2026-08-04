@@ -122,7 +122,7 @@ export default class Custom
     files: PostingFile[],
     cancellationToken: CancellableToken,
   ): Promise<IPostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     const data = this.websiteDataStore.getData();
 
@@ -220,7 +220,7 @@ export default class Custom
     cancellationToken: CancellableToken,
   ): Promise<IPostResponse> {
     try {
-      cancellationToken.throwIfCancelled();
+      cancellationToken.throwIfAborted();
 
       const data = this.websiteDataStore.getData();
 

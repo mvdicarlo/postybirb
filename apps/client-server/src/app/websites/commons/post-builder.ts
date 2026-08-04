@@ -1,7 +1,7 @@
 import {
-  FormFile,
-  HttpRequestOptions,
-  PostOptions,
+    FormFile,
+    HttpRequestOptions,
+    PostOptions,
 } from '@postybirb/http/types';
 import { Logger } from '@postybirb/logger';
 import { FileType, PostResponse } from '@postybirb/types';
@@ -394,7 +394,7 @@ export class PostBuilder {
    * ```
    */
   async send<ReturnValue>(url: string) {
-    this.cancellationToken.throwIfCancelled();
+    this.cancellationToken.throwIfAborted();
     const data = this.build();
     this.logger
       .withMetadata({

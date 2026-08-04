@@ -1,14 +1,14 @@
 import {
-  FileType,
-  ImageResizeProps,
-  IPostResponse,
-  LoginResult,
-  OAuthRouteHandlers,
-  PostData,
-  PostResponse,
-  SofurryAccountData,
-  SofurryOAuthRoutes,
-  SubmissionRating,
+    FileType,
+    ImageResizeProps,
+    IPostResponse,
+    LoginResult,
+    OAuthRouteHandlers,
+    PostData,
+    PostResponse,
+    SofurryAccountData,
+    SofurryOAuthRoutes,
+    SubmissionRating,
 } from '@postybirb/types';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
@@ -242,7 +242,7 @@ export default class Sofurry
     }
 
     // Step 1: Create an empty draft submission.
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     const createRes = await this.platform.http.put<SofurrySubmissionResponse>(
       `${this.BASE_URL}/v1/submission`,
       {
@@ -264,7 +264,7 @@ export default class Sofurry
     // Step 2: Upload files one at a time to maintain content order.
     const contentIds: string[] = [];
     for (const file of files) {
-      cancellationToken.throwIfCancelled();
+      cancellationToken.throwIfAborted();
       const uploadRes = await new PostBuilder(this, cancellationToken)
         .asMultipart()
         .withHeader('Authorization', `Bearer ${token}`)
@@ -298,7 +298,7 @@ export default class Sofurry
       : defaults.type;
 
     // Step 3: Finalize the submission with metadata.
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     const finalizeRes = await new PostBuilder(this, cancellationToken)
       .asJson()
       .withHeader('Authorization', `Bearer ${token}`)

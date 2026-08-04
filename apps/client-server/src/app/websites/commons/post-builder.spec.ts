@@ -1,6 +1,7 @@
 import { FormFile } from '@postybirb/http/types';
 import { IFileBuffer } from '@postybirb/types';
 import { CancellableToken } from '../../post/models/cancellable-token';
+import { CancellationError } from '../../post/models/cancellation-error';
 import { PostingFile } from '../../post/models/posting-file';
 import { PostBuilder } from './post-builder';
 
@@ -149,7 +150,7 @@ describe('PostBuilder', () => {
   });
 
   it('should throw if cancelled before send', async () => {
-    token.cancel();
+    token.abort(new CancellationError());
     await expect(builder.send('http://test')).rejects.toThrow(
       'Task was cancelled.',
     );

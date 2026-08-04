@@ -1,5 +1,6 @@
 import { PostId } from '@postybirb/types';
 import { FileConverterService } from '../file-converter/file-converter.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
 import { PostFileResizerService } from '../post/services/post-file-resizer/post-file-resizer.service';
 import { ValidationService } from '../validation/validation.service';
@@ -12,6 +13,7 @@ const stubValidationService = {} as ValidationService;
 const stubPostParsersService = {} as PostParsersService;
 const stubPostFileResizerService = {} as PostFileResizerService;
 const stubFileConverterService = {} as FileConverterService;
+const stubNotificationService = {} as NotificationsService;
 
 interface WorkerHarness {
   cancel: jest.Mock;
@@ -46,6 +48,7 @@ describe('PostingManager', () => {
       stubPostParsersService,
       stubPostFileResizerService,
       stubFileConverterService,
+      stubNotificationService,
     );
   });
 

@@ -186,7 +186,7 @@ export default class Twitter
     files: PostingFile[],
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     const filePartitions = chunk(files, 4);
     const { accessToken, accessTokenSecret, apiKey, apiSecret } =
       this.getWebsiteData();
@@ -205,7 +205,7 @@ export default class Twitter
         results.length > 0 ? results[results.length - 1].id : undefined,
       );
 
-      if (!result.success || cancellationToken.isCancelled) {
+      if (!result.success || cancellationToken.aborted) {
         const cleanupSuccess = await this.cleanUpFailedPost(
           results,
           apiKey,
@@ -290,7 +290,7 @@ export default class Twitter
     postData: PostData<TwitterMessageSubmission>,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     const { accessToken, accessTokenSecret, apiKey, apiSecret } =
       this.getWebsiteData();
 

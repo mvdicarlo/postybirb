@@ -121,7 +121,7 @@ export default class E621
     url: string,
     form?: Record<string, unknown>,
   ) {
-    cancellableToken.throwIfCancelled();
+    cancellableToken.throwIfAborted();
 
     if (method === 'get') {
       return this.platform.http.get<T>(`${this.BASE_URL}${url}`, {
@@ -142,7 +142,7 @@ export default class E621
     files: PostingFile[],
     cancellableToken: CancellableToken,
   ): Promise<PostResponse> {
-    cancellableToken.throwIfCancelled();
+    cancellableToken.throwIfAborted();
     const accountData = this.websiteDataStore.getData();
     const file = files[0];
 

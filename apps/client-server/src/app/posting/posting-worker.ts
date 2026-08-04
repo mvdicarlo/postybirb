@@ -16,6 +16,7 @@ import {
   AccountId,
   FileType,
   IFileBuffer,
+  IPostResponse,
   ISubmissionFile,
   IWebsiteFormFields,
   PostData,
@@ -25,11 +26,13 @@ import {
 import { getFileType } from '@postybirb/utils/file-type';
 import { chunk } from 'lodash';
 import { FileConverterService } from '../file-converter/file-converter.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
 import { PostingFile } from '../post/models/posting-file';
 import { getImageResizeParameters } from '../post/services/post-file-resizer/image-resize-parameters';
 import { PostFileResizerService } from '../post/services/post-file-resizer/post-file-resizer.service';
 import { ValidationService } from '../validation/validation.service';
+import { PostBatchData } from '../websites/models/website-modifiers/file-website';
 import { UnknownWebsite } from '../websites/website';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { CancellationToken } from './cancellation-token';
@@ -79,6 +82,8 @@ export class PostingWorker {
 
   private disposed = false;
 
+  private readonly notifiedFailureAccounts = new Set<AccountId>();
+
   private readonly maxConcurrentBatchSize = 3;
 
   constructor(
@@ -88,6 +93,7 @@ export class PostingWorker {
     protected readonly postParsersService: PostParsersService,
     protected readonly postFileResizerService: PostFileResizerService,
     protected readonly fileConverterService: FileConverterService,
+    protected readonly notificationService: NotificationsService,
     protected readonly onAfterDispose: () => void | Promise<void>,
   ) {
     this.logger = Logger(`PostingWorker[${postId}]`);
@@ -272,31 +278,45 @@ export class PostingWorker {
       // Login check
       const loginState = await websiteInstance.login();
       if (!loginState.isLoggedIn) {
+        const message =
+          `Login failed for account '${accountId}': ${loginState.status}`;
         this.logger.warn(
-          `Login failed for account '${accountId}': ${loginState.status}`,
+          message,
         );
-        await this.markUnitsOfWorkAsFailed(unitsOfWork, {
-          error: `Login failed for account '${accountId}': ${loginState.status}`,
-        });
+        await this.failUnitsOfWork(
+          unitsOfWork,
+          websiteInstance,
+          context.submission,
+          message,
+        );
         return;
       }
     } catch (error) {
+      const message = `Login failed for account '${accountId}'`;
       this.logger.withError(error).error(
-        `Login failed for account '${accountId}'`,
+        message,
       );
-      await this.markUnitsOfWorkAsFailed(unitsOfWork, {
-        error: `Login failed for account '${accountId}'`,
-      });
+      await this.failUnitsOfWork(
+        unitsOfWork,
+        websiteInstance,
+        context.submission,
+        this.getErrorMessage(error, message),
+        { error: message },
+      );
       return;
     }
 
     // Website Option Selection
     const websiteOption = context.options.find(opt => opt.accountId === accountId);
     if (!websiteOption) {
-      this.logger.warn(`No website options found for account '${accountId}'`);
-      await this.markUnitsOfWorkAsFailed(unitsOfWork, {
-        error: `No website options found for account '${accountId}'`,
-      });
+      const message = `No website options found for account '${accountId}'`;
+      this.logger.warn(message);
+      await this.failUnitsOfWork(
+        unitsOfWork,
+        websiteInstance,
+        context.submission,
+        message,
+      );
       return;
     }
 
@@ -305,12 +325,17 @@ export class PostingWorker {
       // Post data parsing
       postData = await this.postParsersService.parse(context.submission, websiteInstance, websiteOption, false);
     } catch (error) {
+      const message = `Error parsing post data for account '${accountId}'`;
       this.logger.withError(error).error(
-        `Error parsing post data for account '${accountId}'`,
+        message,
       );
-      await this.markUnitsOfWorkAsFailed(unitsOfWork, {
-        error: `Error parsing post data for account '${accountId}'`,
-      });
+      await this.failUnitsOfWork(
+        unitsOfWork,
+        websiteInstance,
+        context.submission,
+        this.getErrorMessage(error, message),
+        { error: message },
+      );
       return;
     }
 
@@ -320,21 +345,30 @@ export class PostingWorker {
       // Submission Validation
       const validationResult = await this.validationService.validate(context.submission, websiteOption);
       if (validationResult.errors.length > 0) {
+        const message = `Validation failed for account '${accountId}'`;
         this.logger.withMetadata({ errors: validationResult.errors }).warn(
-          `Validation failed for account '${accountId}'`,
+          message,
         );
-        await this.markUnitsOfWorkAsFailed(unitsOfWork, {
-          error: `Validation failed for account '${accountId}'`,
-        });
+        await this.failUnitsOfWork(
+          unitsOfWork,
+          websiteInstance,
+          context.submission,
+          message,
+        );
         return;
       }
     } catch (error) {
+      const message = `Error validating post data for account '${accountId}'`;
       this.logger.withError(error).error(
-        `Error validating post data for account '${accountId}'`,
+        message,
       );
-      await this.markUnitsOfWorkAsFailed(unitsOfWork, {
-        error: `Error validating post data for account '${accountId}'`,
-      });
+      await this.failUnitsOfWork(
+        unitsOfWork,
+        websiteInstance,
+        context.submission,
+        this.getErrorMessage(error, message),
+        { error: message },
+      );
       return;
     }
 
@@ -357,27 +391,141 @@ export class PostingWorker {
       return;
     }
 
-    for (const batch of batchedUnitsOfWork) {
+    for (const [batchIndex, batch] of batchedUnitsOfWork.entries()) {
       if (this.cancellationToken.aborted) {
         this.logger.info(`Cancellation requested during posting for account '${accountId}'`);
         await this.updateUnitsOfWorkState(batch, UnitOfWorkState.CANCELLED);
         continue;
       }
-      await this.postBatch(websiteInstance, batch);
+
+      try {
+        await this.postBatch(
+          websiteInstance,
+          batch,
+          postData,
+          context.submission,
+          {
+            index: batchIndex,
+            totalBatches: batchedUnitsOfWork.length,
+          },
+        );
+      } catch (error) {
+        const message = `Error posting batch for account '${accountId}'`;
+        this.logger.withError(error).error(
+          message,
+        );
+        await this.failUnitsOfWork(
+          batch,
+          websiteInstance,
+          context.submission,
+          this.getErrorMessage(error, message),
+          { error: message },
+        );
+      }
     }
   }
 
-  private async postBatch(websiteInstance: UnknownWebsite, unitsOfWork: UnitOfWork[]): Promise<void> {
+  private async postBatch(
+    websiteInstance: UnknownWebsite,
+    unitsOfWork: UnitOfWork[],
+    postData: PostData<IWebsiteFormFields>,
+    submission: Submission,
+    batch: PostBatchData,
+  ): Promise<void> {
     await this.updateUnitsOfWorkState(unitsOfWork, UnitOfWorkState.EXECUTING);
 
-    try {
-      await this.prepareBatchFiles(websiteInstance, unitsOfWork);
-    } catch (error) {
-      this.logger.withError(error).error('Error preparing files for posting');
-      await this.markUnitsOfWorkAsFailed(unitsOfWork, {
-        error: 'Error preparing files for posting',
-      });
+    const preparedFiles = await this.prepareBatchFiles(
+      websiteInstance,
+      unitsOfWork,
+    );
+    const propagatedSourceUrls = websiteInstance.decoratedProps.fileOptions
+      ?.acceptsExternalSourceUrls
+      ? await this.getPropagatedSourceUrls(unitsOfWork)
+      : [];
+    const files = preparedFiles.map((file) =>
+      file.withMetadata({
+        ...file.metadata,
+        sourceUrls: [
+          ...(file.metadata.sourceUrls ?? []),
+          ...propagatedSourceUrls,
+        ]
+          .map((url) => url.trim())
+          .filter((url, index, urls) => url && urls.indexOf(url) === index),
+      }),
+    );
+    this.cancellationToken.throwIfAborted();
+    const response = await websiteInstance.post(
+      postData,
+      files,
+      batch,
+      this.cancellationToken,
+    );
+    const responseData = this.getResponseData(response);
+
+    if (response.exception) {
+      await this.failUnitsOfWork(
+        unitsOfWork,
+        websiteInstance,
+        submission,
+        response.message ?? response.exception.message ?? 'Unknown error',
+        responseData,
+      );
+      return;
     }
+
+    await Promise.all(
+      unitsOfWork.map((unit) =>
+        this.unitOfWorkRepository.update(unit.id, {
+          state: UnitOfWorkState.SUCCEEDED,
+          response: responseData,
+          url: response.sourceUrl,
+        }),
+      ),
+    );
+  }
+
+  private async getPropagatedSourceUrls(
+    unitsOfWork: UnitOfWork[],
+  ): Promise<string[]> {
+    const accountId = unitsOfWork[0]?.accountId;
+    if (!accountId) {
+      return [];
+    }
+
+    const sourceUnits = await this.unitOfWorkRepository.find({
+      where: (unit, { and, eq, ne }) => and(
+        eq(unit.postId, this.postId),
+        eq(unit.evicted, false),
+        ne(unit.accountId, accountId),
+      ),
+    });
+
+    return sourceUnits
+      .filter(
+        (unit) =>
+          unit.postId === this.postId &&
+          !unit.evicted &&
+          unit.accountId !== accountId,
+      )
+      .map((unit) => unit.url?.trim())
+      .filter(
+        (url, index, urls): url is string =>
+          Boolean(url) && urls.indexOf(url) === index,
+      );
+  }
+
+  private getResponseData(response: IPostResponse): Record<string, unknown> {
+    const { exception, ...responseData } = response;
+    return exception
+      ? {
+          ...responseData,
+          exception: {
+            name: exception.name,
+            message: exception.message,
+            stack: exception.stack,
+          },
+        }
+      : responseData;
   }
 
   private async prepareBatchFiles(
@@ -517,6 +665,51 @@ export class PostingWorker {
       state: UnitOfWorkState.FAILED,
       response: response ?? { error: 'Unknown error' },
     })));
+  }
+
+  private async failUnitsOfWork(
+    units: UnitOfWork[],
+    websiteInstance: UnknownWebsite,
+    submission: Submission,
+    message: string,
+    response: Record<string, unknown> = { error: message },
+  ): Promise<void> {
+    await this.markUnitsOfWorkAsFailed(units, response);
+    await this.notifyPostFailure(websiteInstance, submission, message);
+  }
+
+  private async notifyPostFailure(
+    websiteInstance: UnknownWebsite,
+    submission: Submission,
+    message: string,
+  ): Promise<void> {
+    if (this.notifiedFailureAccounts.has(websiteInstance.accountId)) {
+      return;
+    }
+    this.notifiedFailureAccounts.add(websiteInstance.accountId);
+
+    const { metadata } = websiteInstance.decoratedProps;
+    try {
+      await this.notificationService.create({
+        type: 'error',
+        title: `Failed to post to ${metadata.displayName}`,
+        message,
+        tags: ['post-failure', metadata.name],
+        data: {
+          submissionId: submission.id,
+          submissionType: submission.type,
+        },
+      });
+    } catch (error) {
+      this.logger.withError(error).error('Failed to create post notification');
+    }
+  }
+
+  private getErrorMessage(error: unknown, fallback: string): string {
+    if (error instanceof Error && error.message) {
+      return error.message;
+    }
+    return typeof error === 'string' && error ? error : fallback;
   }
 
   private async updateUnitsOfWorkData(units: UnitOfWork[], data: Record<string, unknown>): Promise<void> {

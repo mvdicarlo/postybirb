@@ -422,7 +422,7 @@ export default class Patreon
     files: PostingFile[],
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     const initializedPost = await this.initializePost();
 
     const uploadThumbnail =
@@ -480,7 +480,7 @@ export default class Patreon
       included: [...tags, ...accessTiers],
     };
 
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     await this.finalizePost(initializedPost.links.self, postAttributes);
 
     return PostResponse.fromWebsite(this)
@@ -506,7 +506,7 @@ export default class Patreon
     postData: PostData<PatreonMessageSubmission>,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     const initializedPost = await this.initializePost();
 
     const tags = this.createTagsSegment(postData.options.tags || []);
@@ -526,7 +526,7 @@ export default class Patreon
       included: [...tags, ...accessTiers],
     };
 
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     await this.finalizePost(initializedPost.links.self, postAttributes);
 
     return PostResponse.fromWebsite(this)

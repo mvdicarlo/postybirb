@@ -1,15 +1,15 @@
 import {
-  FileType,
-  ImageResizeProps,
-  ISubmissionFile,
-  LoginResult,
-  MegalodonAccountData,
-  MegalodonOAuthRoutes,
-  OAuthRouteHandlers,
-  PostData,
-  PostResponse,
-  SimpleValidationResult,
-  SubmissionRating,
+    FileType,
+    ImageResizeProps,
+    ISubmissionFile,
+    LoginResult,
+    MegalodonAccountData,
+    MegalodonOAuthRoutes,
+    OAuthRouteHandlers,
+    PostData,
+    PostResponse,
+    SimpleValidationResult,
+    SubmissionRating,
 } from '@postybirb/types';
 import { toError } from '@postybirb/utils/common';
 import { isObject } from 'lodash';
@@ -24,8 +24,8 @@ import { MessageWebsite } from '../../models/website-modifiers/message-website';
 import { OAuthWebsite } from '../../models/website-modifiers/oauth-website';
 import { Website } from '../../website';
 import {
-  FediverseInstanceTypes,
-  MegalodonApiService,
+    FediverseInstanceTypes,
+    MegalodonApiService,
 } from './megalodon-api-service';
 import { MegalodonFileSubmission } from './models/megalodon-file-submission';
 import { MegalodonMessageSubmission } from './models/megalodon-message-submission';
@@ -511,7 +511,7 @@ export abstract class MegalodonWebsite
     files: PostingFile[],
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     const data = this.websiteDataStore.getData();
 
@@ -527,7 +527,7 @@ export abstract class MegalodonWebsite
       // Upload media files
       const mediaIds: string[] = [];
       for (const file of files) {
-        cancellationToken.throwIfCancelled();
+        cancellationToken.throwIfAborted();
 
         this.logger
           .withMetadata({
@@ -578,7 +578,7 @@ export abstract class MegalodonWebsite
         | Awaited<ReturnType<typeof client.postStatus>>;
 
       for (let attempt = 0; attempt <= maxRetries; attempt++) {
-        cancellationToken.throwIfCancelled();
+        cancellationToken.throwIfAborted();
         try {
           statusResult = await client.postStatus(
             postData.options.description || '',
@@ -636,7 +636,7 @@ export abstract class MegalodonWebsite
     postData: PostData<MegalodonMessageSubmission>,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     const data = this.websiteDataStore.getData();
     if (!data.accessToken) throw new Error('No accessToken exists');

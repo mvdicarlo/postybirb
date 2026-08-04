@@ -1,13 +1,13 @@
 import { clearDatabase, PostRecord, Submission } from '@postybirb/database';
 import {
-  AccountId,
-  EntityId,
-  IPostResponse,
-  PostData,
-  PostEventType,
-  PostRecordState,
-  SubmissionRating,
-  SubmissionType,
+    AccountId,
+    EntityId,
+    IPostResponse,
+    PostData,
+    PostEventType,
+    PostRecordState,
+    SubmissionRating,
+    SubmissionType,
 } from '@postybirb/types';
 import 'reflect-metadata';
 import { NotificationsService } from '../../../notifications/notifications.service';
@@ -17,6 +17,7 @@ import { MessageWebsite } from '../../../websites/models/website-modifiers/messa
 import { UnknownWebsite } from '../../../websites/website';
 import { WebsiteRegistryService } from '../../../websites/website-registry.service';
 import { CancellableToken } from '../../models/cancellable-token';
+import { CancellationError } from '../../models/cancellation-error';
 import { PostEventRepository } from '../post-record-factory';
 import { MessageSubmissionPostManager } from './message-submission-post-manager.service';
 
@@ -312,7 +313,7 @@ describe('MessageSubmissionPostManager', () => {
 
     it('should check cancel token during posting', async () => {
       // Cancel immediately
-      cancelToken.cancel();
+      cancelToken.abort(new CancellationError());
 
       await expect(
         (manager as any).attemptToPost(

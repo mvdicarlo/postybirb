@@ -1,12 +1,12 @@
 import { Injectable, Optional } from '@nestjs/common';
+import { PostRecord } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import {
-  AccountId,
-  PostData,
-  PostEventType,
-  SubmissionType,
+    AccountId,
+    PostData,
+    PostEventType,
+    SubmissionType,
 } from '@postybirb/types';
-import { PostRecord } from '@postybirb/database';
 import { NotificationsService } from '../../../notifications/notifications.service';
 import { PostParsersService } from '../../../post-parsers/post-parsers.service';
 import { SubmissionEventPublisher } from '../../../submission/submission-event.publisher';
@@ -63,7 +63,7 @@ export class MessageSubmissionPostManager extends BasePostManager {
     await this.waitForPostingWaitInterval(accountId, instance);
 
     if (!this.cancelToken) throw new Error('No cancel token is defined');
-    this.cancelToken.throwIfCancelled();
+    this.cancelToken.throwIfAborted();
 
     const result = await (
       instance as unknown as MessageWebsite

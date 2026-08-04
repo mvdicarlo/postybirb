@@ -117,7 +117,7 @@ export default class Toyhouse
     files: PostingFile[],
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     const page = await this.platform.http.get<string>(`${this.BASE_URL}/~images/upload`, {
       partition: this.accountId,

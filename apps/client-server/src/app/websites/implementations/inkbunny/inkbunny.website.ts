@@ -172,7 +172,7 @@ export default class Inkbunny
     batch: PostBatchData,
   ): Promise<IPostResponse> {
     try {
-      cancellationToken.throwIfCancelled();
+      cancellationToken.throwIfAborted();
 
       const data = this.websiteDataStore.getData();
       const { options } = postData;

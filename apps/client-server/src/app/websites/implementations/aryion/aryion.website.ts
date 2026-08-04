@@ -157,7 +157,7 @@ export default class Aryion
     files: PostingFile[],
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     const { options } = postData;
     const file = files[0];

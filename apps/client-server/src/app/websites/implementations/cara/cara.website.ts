@@ -245,7 +245,7 @@ export default class Cara
     order: number,
     cancellationToken: CancellableToken,
   ): Promise<CaraUploadResult> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     // Upload primary image
     const primaryImageRequest: S3UploadRequest = {
@@ -260,11 +260,11 @@ export default class Cara
     const primaryCredentials =
       await this.getS3UploadCredentials(primaryImageRequest);
 
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     await this.uploadToS3(primaryCredentials, file.buffer, file.mimeType);
 
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     // Create primary media item
     const primaryMedia: CaraMediaItem = {
@@ -294,7 +294,7 @@ export default class Cara
       const coverCredentials =
         await this.getS3UploadCredentials(coverImageRequest);
 
-      cancellationToken.throwIfCancelled();
+      cancellationToken.throwIfAborted();
 
       const thumbnailBuffer = file.thumbnail?.buffer || file.buffer;
       const thumbnailMimeType = file.thumbnail?.mimeType || file.mimeType;

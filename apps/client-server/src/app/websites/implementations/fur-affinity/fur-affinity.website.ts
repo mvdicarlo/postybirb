@@ -1,14 +1,14 @@
 import { SelectOption } from '@postybirb/form-builder';
 
 import {
-  FileType,
-  ImageResizeProps,
-  IPostResponse,
-  LoginResult,
-  PostData,
-  PostResponse,
-  SimpleValidationResult,
-  SubmissionRating,
+    FileType,
+    ImageResizeProps,
+    IPostResponse,
+    LoginResult,
+    PostData,
+    PostResponse,
+    SimpleValidationResult,
+    SubmissionRating,
 } from '@postybirb/types';
 import { HTMLElement, parse } from 'node-html-parser';
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -199,7 +199,7 @@ export default class FurAffinity
       await new Promise<void>((resolve) => {
         setTimeout(resolve, floodCooldown - elapsed + 1000);
       });
-      cancellationToken.throwIfCancelled();
+      cancellationToken.throwIfAborted();
 
       // Ensure that concurent calls have flood protection too
       // (e.g. schedule & manual post at the same time)

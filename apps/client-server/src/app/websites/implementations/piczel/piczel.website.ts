@@ -1,9 +1,9 @@
 import {
-  ImageResizeProps,
-  LoginResult,
-  PostData,
-  PostResponse,
-  SubmissionRating,
+    ImageResizeProps,
+    LoginResult,
+    PostData,
+    PostResponse,
+    SubmissionRating,
 } from '@postybirb/types';
 import parse from 'node-html-parser';
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -133,7 +133,7 @@ export default class Piczel
     files: PostingFile[],
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     const { options } = postData;
     const builder = new PostBuilder(this, cancellationToken)
       .asJson()

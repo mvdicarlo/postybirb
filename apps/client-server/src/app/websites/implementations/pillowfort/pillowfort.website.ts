@@ -1,9 +1,9 @@
 import {
-  ImageResizeProps,
-  LoginResult,
-  PostData,
-  PostResponse,
-  SubmissionRating,
+    ImageResizeProps,
+    LoginResult,
+    PostData,
+    PostResponse,
+    SubmissionRating,
 } from '@postybirb/types';
 import { parse } from 'node-html-parser';
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -117,7 +117,7 @@ export default class Pillowfort
       const uploadedImages: Array<{ full_image: string; small_image: string }> =
         [];
       for (const file of files) {
-        cancellationToken.throwIfCancelled();
+        cancellationToken.throwIfAborted();
 
         // Upload the image
         const upload = await this.platform.http.post<{

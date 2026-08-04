@@ -120,7 +120,7 @@ export default class Discord
     cancellationToken: CancellableToken,
     batch: PostBatchData,
   ): Promise<IPostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     const { webhook } = this.websiteDataStore.getData();
     const payload = {
       ...(batch.index === 0
@@ -154,7 +154,7 @@ export default class Discord
     });
 
     formData.payload_json = JSON.stringify(payload);
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     return this.platform.http
       .post(webhook, {
         partition: undefined,
@@ -171,7 +171,7 @@ export default class Discord
     postData: PostData<DiscordMessageSubmission>,
     cancellationToken: CancellableToken,
   ): Promise<IPostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     const { webhook } = this.websiteDataStore.getData();
     const messageData = this.buildDescription(
       postData.options.title,
@@ -179,7 +179,7 @@ export default class Discord
       postData.options.useTitle,
       postData.options.useEmbed,
     );
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     return this.platform.http
       .post(webhook, {
         partition: undefined,

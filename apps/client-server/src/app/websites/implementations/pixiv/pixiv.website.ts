@@ -85,7 +85,7 @@ export default class Pixiv
     files: PostingFile[],
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     // Get the create page to check for version and get tokens
     const page = await this.platform.http.get<string>(

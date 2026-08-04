@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { FileConverterModule } from '../file-converter/file-converter.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 import { PostParsersModule } from '../post-parsers/post-parsers.module';
 import { PostModule } from '../post/post.module';
 import { ValidationModule } from '../validation/validation.module';
@@ -15,6 +16,7 @@ import { PostingService } from './posting.service';
     PostParsersModule,
     PostModule,
     FileConverterModule,
+    NotificationsModule,
   ],
   controllers: [PostingController],
   providers: [PostingManager, PostingService],

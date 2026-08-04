@@ -195,7 +195,7 @@ export default class DeviantArt
     files: PostingFile[],
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     // File upload step
     const uploadBuilder = new PostBuilder(this, cancellationToken)
@@ -233,7 +233,7 @@ export default class DeviantArt
       const csrf = await this.getCSRF();
       for (const file of files.slice(1)) {
         index++;
-        cancellationToken.throwIfCancelled();
+        cancellationToken.throwIfAborted();
         const upload = await new PostBuilder(this, cancellationToken)
           .asMultipart()
           .addFile('attachment_file', file)
@@ -364,7 +364,7 @@ export default class DeviantArt
     postData: PostData<DeviantArtMessageSubmission>,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     const commonFormData = {
       csrf_token: await this.getCSRF(),
       da_minor_version: this.DA_API_VERSION,

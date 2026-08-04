@@ -119,7 +119,7 @@ export class FileSubmissionPostManager extends BasePostManager {
     const batches = chunk(files, fileBatchSize);
 
     for (const [batchIndex, batch] of batches.entries()) {
-      this.cancelToken.throwIfCancelled();
+      this.cancelToken.throwIfAborted();
 
       // Get source URLs from other accounts for cross-website propagation
       // 1. From current post attempt (other accounts that have already posted)
@@ -178,7 +178,7 @@ export class FileSubmissionPostManager extends BasePostManager {
       this.verifyPostingFiles(instance, processedFiles);
 
       // Post
-      this.cancelToken.throwIfCancelled();
+      this.cancelToken.throwIfAborted();
       const fileIds = batch.map((f) => f.id);
       this.logger
         .withMetadata({
@@ -191,7 +191,7 @@ export class FileSubmissionPostManager extends BasePostManager {
         .info(`Posting file batch to ${instance.id}`);
 
       await this.waitForPostingWaitInterval(accountId, instance);
-      this.cancelToken.throwIfCancelled();
+      this.cancelToken.throwIfAborted();
 
       const result = await instance.onPostFileSubmission(
         data,
