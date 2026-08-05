@@ -3,23 +3,17 @@
  */
 
 import { Trans, useLingui } from '@lingui/react/macro';
+import { Box, ScrollArea, SegmentedControl, Stack, Text } from '@mantine/core';
 import {
-    Box,
-    ScrollArea,
-    SegmentedControl,
-    Stack,
-    Text
-} from '@mantine/core';
-import {
-    DefaultDescription,
-    Description,
-    SubmissionId,
-    SubmissionRating,
-    SubmissionType,
-    Tag,
+  DefaultDescription,
+  Description,
+  SubmissionId,
+  SubmissionRating,
+  SubmissionType,
+  Tag,
 } from '@postybirb/types';
 import { IconFileText, IconTemplate } from '@tabler/icons-react';
-import { useState } from 'react';
+import { useLocalStorage } from 'react-use';
 import { DescriptionEditor } from '../../../shared/description-editor';
 import { RatingInput } from '../../../shared/rating-input';
 import { SimpleTagInput } from '../../../shared/simple-tag-input';
@@ -27,6 +21,8 @@ import { TemplatePicker } from '../../../shared/template-picker/template-picker'
 import './file-submission-modal.css';
 
 type OptionsMode = 'custom' | 'template';
+
+const CREATE_SUBMISSION_MODE_KEY = 'postybirb-create-submission-mode';
 
 export interface SubmissionOptionsProps {
   /** Submission type for template filtering */
@@ -65,7 +61,10 @@ export function SubmissionOptions({
   onTemplateChange,
 }: SubmissionOptionsProps) {
   const { t } = useLingui();
-  const [mode, setMode] = useState<OptionsMode>('custom');
+  const [mode, setMode] = useLocalStorage<OptionsMode>(
+    CREATE_SUBMISSION_MODE_KEY,
+    'custom',
+  );
 
   const handleModeChange = (newMode: string) => {
     setMode(newMode as OptionsMode);
