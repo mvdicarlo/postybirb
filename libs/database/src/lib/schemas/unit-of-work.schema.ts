@@ -43,6 +43,7 @@ export const UnitOfWorkSchema = sqliteTable(
     evicted: integer({ mode: 'boolean' }).notNull().default(false),
     url: text(),
     batch: text(),
+    rateLimitedUntil: text(),
     state: text({
       enum: [
         UnitOfWorkState.NEW,

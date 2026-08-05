@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "0e0dd8e5-52f4-459c-b28e-c9eb5358f053",
+  "id": "6cd2ef7a-1ec2-44eb-8af6-4e4623c05d02",
   "prevId": "169334cd-59a9-40ca-8697-41ff6f0373fe",
   "tables": {
     "account": {
@@ -1424,6 +1424,13 @@
         },
         "batch": {
           "name": "batch",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "rateLimitedUntil": {
+          "name": "rateLimitedUntil",
           "type": "text",
           "primaryKey": false,
           "notNull": false,

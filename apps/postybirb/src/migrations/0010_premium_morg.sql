@@ -25,6 +25,7 @@ CREATE TABLE `unit-of-work` (
 	`evicted` integer DEFAULT false NOT NULL,
 	`url` text,
 	`batch` text,
+	`rateLimitedUntil` text,
 	`state` text DEFAULT 'NEW' NOT NULL,
 	FOREIGN KEY (`postId`) REFERENCES `post`(`id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`submissionId`) REFERENCES `submission`(`id`) ON UPDATE no action ON DELETE cascade,

@@ -25,6 +25,7 @@ import { PixivFileSubmission } from './models/pixiv-file-submission';
   name: 'pixiv',
   displayName: 'Pixiv',
   minimumPostWaitInterval: 60000 * 5, // 5 minutes between posts
+  rateLimitScope: 'website',
 })
 @UserLoginFlow('https://www.pixiv.net')
 @SupportsFiles({

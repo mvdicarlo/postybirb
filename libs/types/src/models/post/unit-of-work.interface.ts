@@ -22,5 +22,6 @@ export interface IUnitOfWork extends IEntity {
   evicted: boolean;
   url?: string;
   batch?: EntityId;
+  rateLimitedUntil?: string;
   state: UnitOfWorkState;
 }

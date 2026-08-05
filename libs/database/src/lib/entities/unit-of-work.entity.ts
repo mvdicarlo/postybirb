@@ -43,6 +43,8 @@ export class UnitOfWork
 
   public batch?: EntityId;
 
+  public rateLimitedUntil?: string;
+
   public state: UnitOfWorkState;
 
   public get compositeKey(): string {
@@ -72,6 +74,7 @@ export class UnitOfWork
     this.evicted = init.evicted ?? false;
     this.url = init.url ?? undefined;
     this.batch = init.batch ?? undefined;
+    this.rateLimitedUntil = init.rateLimitedUntil ?? undefined;
     this.state = init.state ?? ('' as UnitOfWorkState);
   }
 
@@ -91,6 +94,7 @@ export class UnitOfWork
       evicted: this.evicted,
       url: this.url,
       batch: this.batch,
+      rateLimitedUntil: this.rateLimitedUntil,
       state: this.state,
     };
   }

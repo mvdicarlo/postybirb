@@ -21,6 +21,7 @@ function buildRow(overrides: Partial<UnitOfWorkRow> = {}): UnitOfWorkRow {
     evicted: true,
     url: 'https://example.com/post/1',
     batch: 'batch-1',
+    rateLimitedUntil: '2025-01-01T00:05:00.000Z',
     state: UnitOfWorkState.SUCCEEDED,
     ...overrides,
   };
@@ -46,6 +47,7 @@ describe('UnitOfWork.fromRow', () => {
         response: null,
         url: null,
         batch: null,
+        rateLimitedUntil: null,
       }),
     );
 
@@ -55,5 +57,6 @@ describe('UnitOfWork.fromRow', () => {
     expect(entity.response).toBeUndefined();
     expect(entity.url).toBeUndefined();
     expect(entity.batch).toBeUndefined();
+    expect(entity.rateLimitedUntil).toBeUndefined();
   });
 });
