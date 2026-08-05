@@ -8,6 +8,7 @@ import { PostParsersService } from '../post-parsers/post-parsers.service';
 import { PostFileResizerService } from '../post/services/post-file-resizer/post-file-resizer.service';
 import { ValidationService } from '../validation/validation.service';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
+import { PostingRateLimiterService } from './posting-rate-limiter.service';
 import { PostingWorker } from './posting-worker';
 
 @Injectable()
@@ -29,6 +30,7 @@ export class PostingManager {
     private readonly postFileResizerService: PostFileResizerService,
     private readonly fileConverterService: FileConverterService,
     private readonly notificationService: NotificationsService,
+    private readonly postingRateLimiter: PostingRateLimiterService,
   ) {}
 
   public submit(postId: PostId): Promise<boolean> {
@@ -88,6 +90,7 @@ export class PostingManager {
       this.postFileResizerService,
       this.fileConverterService,
       this.notificationService,
+      this.postingRateLimiter,
       onAfterDispose,
     );
   }

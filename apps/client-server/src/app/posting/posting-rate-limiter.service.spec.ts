@@ -1,9 +1,8 @@
 import { IWebsiteMetadata } from '@postybirb/types';
+import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { PostingRateLimiterService } from './posting-rate-limiter.service';
 
-function metadata(
-  overrides: Partial<IWebsiteMetadata> = {},
-): IWebsiteMetadata {
+function metadata(overrides: Partial<IWebsiteMetadata> = {}): IWebsiteMetadata {
   return {
     name: 'test-website',
     displayName: 'Test Website',
@@ -13,76 +12,179 @@ function metadata(
 }
 
 describe('PostingRateLimiterService', () => {
+  function createLimiter() {
+    const websiteRegistry = {
+      getWebsiteDefinitions: jest.fn().mockReturnValue([]),
+    };
+    const accountRepository = {
+      findAll: jest.fn().mockResolvedValue([]),
+    };
+    const unitOfWorkRepository = {
+      find: jest.fn().mockResolvedValue([]),
+    };
+    const limiter = new PostingRateLimiterService(
+      websiteRegistry as unknown as WebsiteRegistryService,
+    );
+    Object.assign(limiter, {
+      accountRepository,
+      unitOfWorkRepository,
+    });
+    return {
+      accountRepository,
+      limiter,
+      unitOfWorkRepository,
+      websiteRegistry,
+    };
+  }
+
   afterEach(() => {
     jest.restoreAllMocks();
   });
 
   it.each([undefined, 0, -1, Number.NaN, Number.POSITIVE_INFINITY])(
     'allows an interval of %s without storing a reservation',
-    (minimumPostWaitInterval) => {
-      const limiter = new PostingRateLimiterService();
+    async (minimumPostWaitInterval) => {
+      const { limiter } = createLimiter();
       const website = metadata({ minimumPostWaitInterval });
 
-      expect(limiter.acquire('account-1', website)).toEqual({
+      await expect(limiter.acquire('account-1', website)).resolves.toEqual({
         acquired: true,
       });
-      expect(limiter.acquire('account-1', website)).toEqual({
+      await expect(limiter.acquire('account-1', website)).resolves.toEqual({
         acquired: true,
       });
     },
   );
 
-  it('limits account-scoped reservations independently', () => {
-    const limiter = new PostingRateLimiterService();
+  it('limits account-scoped reservations independently', async () => {
+    const { limiter } = createLimiter();
     jest.spyOn(Date, 'now').mockReturnValue(1_000);
 
-    expect(limiter.acquire('account-1', metadata())).toEqual({
+    await expect(limiter.acquire('account-1', metadata())).resolves.toEqual({
       acquired: true,
       rateLimitedUntil: new Date(2_000).toISOString(),
     });
 
     jest.spyOn(Date, 'now').mockReturnValue(1_500);
-    expect(
-      limiter.acquire(
-        'account-1',
-        metadata({ name: 'another-website' }),
-      ),
-    ).toEqual({
+    await expect(
+      limiter.acquire('account-1', metadata({ name: 'another-website' })),
+    ).resolves.toEqual({
       acquired: false,
       rateLimitedUntil: new Date(2_000).toISOString(),
     });
-    expect(limiter.acquire('account-2', metadata())).toEqual({
+    await expect(limiter.acquire('account-2', metadata())).resolves.toEqual({
       acquired: true,
       rateLimitedUntil: new Date(2_500).toISOString(),
     });
   });
 
-  it('shares website-scoped reservations across accounts', () => {
-    const limiter = new PostingRateLimiterService();
+  it('shares website-scoped reservations across accounts', async () => {
+    const { limiter } = createLimiter();
     const pixiv = metadata({ name: 'pixiv', rateLimitScope: 'website' });
     jest.spyOn(Date, 'now').mockReturnValue(1_000);
 
-    expect(limiter.acquire('account-1', pixiv).acquired).toBe(true);
+    await expect(limiter.acquire('account-1', pixiv)).resolves.toMatchObject({
+      acquired: true,
+    });
 
     jest.spyOn(Date, 'now').mockReturnValue(1_500);
-    expect(limiter.acquire('account-2', pixiv).acquired).toBe(false);
-    expect(
+    await expect(limiter.acquire('account-2', pixiv)).resolves.toMatchObject({
+      acquired: false,
+    });
+    await expect(
       limiter.acquire(
         'account-2',
         metadata({ name: 'other', rateLimitScope: 'website' }),
-      ).acquired,
-    ).toBe(true);
+      ),
+    ).resolves.toMatchObject({ acquired: true });
   });
 
-  it('allows a new reservation when the previous one expires', () => {
-    const limiter = new PostingRateLimiterService();
+  it('allows a new reservation when the previous one expires', async () => {
+    const { limiter } = createLimiter();
     jest.spyOn(Date, 'now').mockReturnValue(1_000);
-    limiter.acquire('account-1', metadata());
+    await limiter.acquire('account-1', metadata());
 
     jest.spyOn(Date, 'now').mockReturnValue(2_000);
-    expect(limiter.acquire('account-1', metadata())).toEqual({
+    await expect(limiter.acquire('account-1', metadata())).resolves.toEqual({
       acquired: true,
       rateLimitedUntil: new Date(3_000).toISOString(),
     });
+  });
+
+  it('hydrates the latest website-scoped reservation once', async () => {
+    const {
+      accountRepository,
+      limiter,
+      unitOfWorkRepository,
+      websiteRegistry,
+    } = createLimiter();
+    jest.spyOn(Date, 'now').mockReturnValue(1_000);
+    unitOfWorkRepository.find.mockResolvedValue([
+      {
+        accountId: 'account-1',
+        rateLimitedUntil: new Date(2_000).toISOString(),
+      },
+      {
+        accountId: 'account-2',
+        rateLimitedUntil: new Date(3_000).toISOString(),
+      },
+      {
+        accountId: 'account-3',
+        rateLimitedUntil: new Date(500).toISOString(),
+      },
+    ]);
+    accountRepository.findAll.mockResolvedValue([
+      { id: 'account-1', website: 'pixiv' },
+      { id: 'account-2', website: 'pixiv' },
+      { id: 'account-3', website: 'pixiv' },
+    ]);
+    websiteRegistry.getWebsiteDefinitions.mockReturnValue([
+      {
+        id: 'pixiv',
+        metadata: metadata({
+          name: 'pixiv',
+          rateLimitScope: 'website',
+        }),
+      },
+    ]);
+
+    await Promise.all([limiter.initialize(), limiter.initialize()]);
+
+    expect(accountRepository.findAll).toHaveBeenCalledTimes(1);
+    expect(unitOfWorkRepository.find).toHaveBeenCalledTimes(1);
+    await expect(
+      limiter.acquire(
+        'account-4',
+        metadata({ name: 'pixiv', rateLimitScope: 'website' }),
+      ),
+    ).resolves.toEqual({
+      acquired: false,
+      rateLimitedUntil: new Date(3_000).toISOString(),
+    });
+  });
+
+  it('serializes concurrent acquisitions after initialization', async () => {
+    const { limiter } = createLimiter();
+    jest.spyOn(Date, 'now').mockReturnValue(1_000);
+
+    const reservations = await Promise.all([
+      limiter.acquire('account-1', metadata()),
+      limiter.acquire('account-1', metadata()),
+    ]);
+
+    expect(reservations.filter(({ acquired }) => acquired)).toHaveLength(1);
+    expect(reservations.filter(({ acquired }) => !acquired)).toHaveLength(1);
+  });
+
+  it('retries hydration after a transient initialization failure', async () => {
+    const { limiter, unitOfWorkRepository } = createLimiter();
+    unitOfWorkRepository.find
+      .mockRejectedValueOnce(new Error('Database unavailable'))
+      .mockResolvedValueOnce([]);
+
+    await expect(limiter.initialize()).rejects.toThrow('Database unavailable');
+    await expect(limiter.initialize()).resolves.toBeUndefined();
+
+    expect(unitOfWorkRepository.find).toHaveBeenCalledTimes(2);
   });
 });

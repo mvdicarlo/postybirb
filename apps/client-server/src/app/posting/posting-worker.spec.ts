@@ -5,6 +5,7 @@ import { PostFileResizerService } from '../post/services/post-file-resizer/post-
 import { ValidationService } from '../validation/validation.service';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { CancellationToken } from './cancellation-token';
+import { PostingRateLimiterService } from './posting-rate-limiter.service';
 import { PostingWorker } from './posting-worker';
 
 interface WorkerMocks {
@@ -29,8 +30,13 @@ interface WorkerMocks {
     parse: jest.Mock;
   };
   postRepository: {
+    cancel: jest.Mock;
+    completeIfAllActiveUnitsSucceeded: jest.Mock;
     findByIdOrThrow: jest.Mock;
     update: jest.Mock;
+  };
+  postingRateLimiter: {
+    acquire: jest.Mock;
   };
   submissionRepository: {
     findByIdOrThrow: jest.Mock;
@@ -77,6 +83,8 @@ function createWorker(): { worker: PostingWorker; mocks: WorkerMocks } {
       parse: jest.fn().mockResolvedValue({ options: {} }),
     },
     postRepository: {
+      cancel: jest.fn().mockResolvedValue(undefined),
+      completeIfAllActiveUnitsSucceeded: jest.fn().mockResolvedValue(false),
       findByIdOrThrow: jest.fn().mockResolvedValue({
         id: 'post-1',
         submissionId: 'submission-1',
@@ -85,6 +93,9 @@ function createWorker(): { worker: PostingWorker; mocks: WorkerMocks } {
       }),
       update: jest.fn().mockResolvedValue(undefined),
     },
+    postingRateLimiter: {
+      acquire: jest.fn().mockResolvedValue({ acquired: true }),
+    },
     submissionRepository: {
       findByIdOrThrow: jest.fn().mockResolvedValue({
         id: 'submission-1',
@@ -92,9 +103,9 @@ function createWorker(): { worker: PostingWorker; mocks: WorkerMocks } {
       }),
     },
     unitOfWorkRepository: {
-      find: jest.fn().mockResolvedValue([
-        { id: 'work-1', accountId: 'account-1' },
-      ]),
+      find: jest
+        .fn()
+        .mockResolvedValue([{ id: 'work-1', accountId: 'account-1' }]),
       update: jest.fn().mockResolvedValue(undefined),
     },
     validationService: {
@@ -117,9 +128,9 @@ function createWorker(): { worker: PostingWorker; mocks: WorkerMocks } {
       }),
     },
     websiteOptionsRepository: {
-      find: jest.fn().mockResolvedValue([
-        { id: 'options-1', accountId: 'account-1' },
-      ]),
+      find: jest
+        .fn()
+        .mockResolvedValue([{ id: 'options-1', accountId: 'account-1' }]),
     },
     websitePost,
   };
@@ -131,6 +142,7 @@ function createWorker(): { worker: PostingWorker; mocks: WorkerMocks } {
     mocks.postFileResizerService as unknown as PostFileResizerService,
     mocks.fileConverterService as unknown as FileConverterService,
     mocks.notificationService as unknown as NotificationsService,
+    mocks.postingRateLimiter as unknown as PostingRateLimiterService,
     mocks.onAfterDispose,
   );
   Object.assign(worker, {
@@ -181,6 +193,153 @@ describe('PostingWorker', () => {
       url: 'https://example.com/post/1',
     });
     expect(mocks.notificationService.create).not.toHaveBeenCalled();
+  });
+
+  it('leaves a deferred-only post untouched and releases the worker', async () => {
+    const { worker, mocks } = createWorker();
+    mocks.unitOfWorkRepository.find.mockResolvedValue([
+      {
+        id: 'work-1',
+        accountId: 'account-1',
+        batch: 'batch-1',
+        state: 'RATE_LIMITED',
+        rateLimitedUntil: new Date(Date.now() + 60_000).toISOString(),
+      },
+    ]);
+
+    await worker.start();
+
+    expect(mocks.unitOfWorkRepository.update).not.toHaveBeenCalled();
+    expect(mocks.postingRateLimiter.acquire).not.toHaveBeenCalled();
+    expect(mocks.websitePost).not.toHaveBeenCalled();
+    expect(mocks.onAfterDispose).toHaveBeenCalledTimes(1);
+  });
+
+  it('marks a denied batch as rate limited without preparing or notifying', async () => {
+    const { worker, mocks } = createWorker();
+    const rateLimitedUntil = new Date(Date.now() + 60_000).toISOString();
+    mocks.postingRateLimiter.acquire.mockResolvedValue({
+      acquired: false,
+      rateLimitedUntil,
+    });
+
+    await worker.start();
+
+    expect(mocks.unitOfWorkRepository.update).toHaveBeenCalledWith('work-1', {
+      state: 'RATE_LIMITED',
+      rateLimitedUntil,
+    });
+    expect(mocks.fileRepository.findByIdOrThrow).not.toHaveBeenCalled();
+    expect(mocks.websitePost).not.toHaveBeenCalled();
+    expect(mocks.notificationService.create).not.toHaveBeenCalled();
+  });
+
+  it('executes only ready batches in a mixed post', async () => {
+    const { worker, mocks } = createWorker();
+    mocks.unitOfWorkRepository.find.mockResolvedValue([
+      {
+        id: 'deferred-work',
+        accountId: 'account-1',
+        batch: 'batch-1',
+        state: 'RATE_LIMITED',
+        rateLimitedUntil: new Date(Date.now() + 60_000).toISOString(),
+      },
+      {
+        id: 'ready-work',
+        accountId: 'account-1',
+        batch: 'batch-2',
+        state: 'FAILED',
+      },
+    ]);
+
+    await worker.start();
+
+    expect(mocks.postingRateLimiter.acquire).toHaveBeenCalledTimes(1);
+    expect(mocks.unitOfWorkRepository.update).not.toHaveBeenCalledWith(
+      'deferred-work',
+      expect.anything(),
+    );
+    expect(mocks.unitOfWorkRepository.update).toHaveBeenCalledWith(
+      'ready-work',
+      expect.objectContaining({ state: 'SUCCEEDED' }),
+    );
+  });
+
+  it('persists and retains an acquired reservation after success', async () => {
+    const { worker, mocks } = createWorker();
+    const rateLimitedUntil = new Date(Date.now() + 60_000).toISOString();
+    mocks.postingRateLimiter.acquire.mockResolvedValue({
+      acquired: true,
+      rateLimitedUntil,
+    });
+
+    await worker.start();
+
+    expect(mocks.unitOfWorkRepository.update).toHaveBeenCalledWith('work-1', {
+      state: 'EXECUTING',
+      rateLimitedUntil,
+    });
+    expect(mocks.unitOfWorkRepository.update).toHaveBeenCalledWith(
+      'work-1',
+      expect.objectContaining({ state: 'SUCCEEDED' }),
+    );
+    expect(mocks.unitOfWorkRepository.update).not.toHaveBeenCalledWith(
+      'work-1',
+      expect.objectContaining({ rateLimitedUntil: null }),
+    );
+  });
+
+  it('preserves original batch metadata when resuming after a succeeded batch', async () => {
+    const { worker, mocks } = createWorker();
+    mocks.submissionRepository.findByIdOrThrow.mockResolvedValue({
+      id: 'submission-1',
+      type: 'FILE',
+      files: [
+        { id: 'file-1', order: 0 },
+        { id: 'file-2', order: 1 },
+      ],
+    });
+    mocks.unitOfWorkRepository.find.mockResolvedValue([
+      {
+        id: 'succeeded-work',
+        accountId: 'account-1',
+        fileId: 'file-1',
+        batch: 'batch-1',
+        state: 'SUCCEEDED',
+      },
+      {
+        id: 'ready-work',
+        accountId: 'account-1',
+        fileId: 'file-2',
+        batch: 'batch-2',
+        state: 'FAILED',
+      },
+    ]);
+    mocks.fileRepository.findByIdOrThrow.mockResolvedValue({
+      id: 'file-2',
+      fileName: 'notes.txt',
+      mimeType: 'text/plain',
+      file: {
+        id: 'buffer-2',
+        fileName: 'notes.txt',
+        mimeType: 'text/plain',
+        buffer: Buffer.from('notes'),
+      },
+      metadata: {},
+    });
+
+    await worker.start();
+
+    expect(mocks.websitePost).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      { index: 1, totalBatches: 2 },
+      expect.any(CancellationToken),
+    );
+    expect(mocks.unitOfWorkRepository.update).not.toHaveBeenCalledWith(
+      'succeeded-work',
+      expect.anything(),
+    );
   });
 
   it('merges user and non-evicted cross-account source URLs without mutating stored metadata', async () => {
@@ -237,10 +396,7 @@ describe('PostingWorker', () => {
     const storedMetadata = {
       dimensions: {},
       ignoredWebsites: [],
-      sourceUrls: [
-        'https://example.com/user',
-        'https://example.com/source',
-      ],
+      sourceUrls: ['https://example.com/user', 'https://example.com/source'],
     };
     mocks.fileRepository.findByIdOrThrow.mockResolvedValue({
       id: 'file-1',
@@ -285,8 +441,7 @@ describe('PostingWorker', () => {
       'https://example.com/source',
     ]);
 
-    const sourceWhere =
-      mocks.unitOfWorkRepository.find.mock.calls[1][0].where;
+    const sourceWhere = mocks.unitOfWorkRepository.find.mock.calls[1][0].where;
     const columns = {
       postId: 'postId',
       evicted: 'evicted',
@@ -315,6 +470,11 @@ describe('PostingWorker', () => {
   it('stores a failed response returned by the website', async () => {
     const { worker, mocks } = createWorker();
     const exception = new Error('Website rejected the post');
+    const rateLimitedUntil = new Date(Date.now() + 60_000).toISOString();
+    mocks.postingRateLimiter.acquire.mockResolvedValue({
+      acquired: true,
+      rateLimitedUntil,
+    });
     mocks.websitePost.mockResolvedValue({
       instanceId: 'website-1',
       message: exception.message,
@@ -336,6 +496,10 @@ describe('PostingWorker', () => {
           stack: exception.stack,
         },
       },
+    });
+    expect(mocks.unitOfWorkRepository.update).toHaveBeenCalledWith('work-1', {
+      state: 'EXECUTING',
+      rateLimitedUntil,
     });
     expect(mocks.notificationService.create).toHaveBeenCalledWith({
       type: 'error',
@@ -377,6 +541,11 @@ describe('PostingWorker', () => {
 
   it('does not hide a posting failure when cancellation is also requested', async () => {
     const { worker, mocks } = createWorker();
+    const rateLimitedUntil = new Date(Date.now() + 60_000).toISOString();
+    mocks.postingRateLimiter.acquire.mockResolvedValue({
+      acquired: true,
+      rateLimitedUntil,
+    });
     mocks.websitePost.mockImplementation(() => {
       worker.cancel('Cancelled during dispatch');
       throw new Error('Website failed during dispatch');
@@ -389,6 +558,10 @@ describe('PostingWorker', () => {
       response: {
         error: "Error posting batch for account 'account-1'",
       },
+    });
+    expect(mocks.unitOfWorkRepository.update).toHaveBeenCalledWith('work-1', {
+      state: 'EXECUTING',
+      rateLimitedUntil,
     });
     expect(mocks.unitOfWorkRepository.update).not.toHaveBeenCalledWith(
       'work-1',
@@ -414,6 +587,19 @@ describe('PostingWorker', () => {
     expect(mocks.onAfterDispose).toHaveBeenCalledTimes(1);
   });
 
+  it('cancels a post internally when all website options are missing', async () => {
+    const { worker, mocks } = createWorker();
+    mocks.websiteOptionsRepository.find.mockResolvedValue([]);
+
+    await worker.start();
+
+    expect(mocks.postRepository.cancel).toHaveBeenCalledWith('post-1');
+    expect(mocks.websitePost).not.toHaveBeenCalled();
+    expect(
+      mocks.postRepository.completeIfAllActiveUnitsSucceeded,
+    ).not.toHaveBeenCalled();
+  });
+
   it('honors cancellation requested before start', async () => {
     const { worker, mocks } = createWorker();
 
@@ -422,14 +608,14 @@ describe('PostingWorker', () => {
     await worker.start();
 
     expect(mocks.postRepository.findByIdOrThrow).not.toHaveBeenCalled();
-    expect(mocks.postRepository.update).toHaveBeenCalledWith('post-1', {
-      completed: true,
-      cancelled: true,
-    });
+    expect(mocks.postRepository.cancel).not.toHaveBeenCalled();
+    expect(
+      mocks.postRepository.completeIfAllActiveUnitsSucceeded,
+    ).not.toHaveBeenCalled();
     expect(mocks.onAfterDispose).toHaveBeenCalledTimes(1);
   });
 
-  it('loads only non-evicted, non-succeeded work for the post', async () => {
+  it('loads all non-evicted work for batch metadata', async () => {
     const { worker, mocks } = createWorker();
     mocks.unitOfWorkRepository.find.mockResolvedValue([]);
 
@@ -439,7 +625,6 @@ describe('PostingWorker', () => {
     const columns = {
       postId: 'postId',
       evicted: 'evicted',
-      state: 'state',
     };
     const operators = {
       and: jest.fn((...conditions: unknown[]) => conditions),
@@ -448,17 +633,11 @@ describe('PostingWorker', () => {
         operator: 'eq',
         value,
       })),
-      ne: jest.fn((column: string, value: unknown) => ({
-        column,
-        operator: 'ne',
-        value,
-      })),
     };
 
     expect(where(columns, operators)).toEqual([
       { column: 'postId', operator: 'eq', value: 'post-1' },
       { column: 'evicted', operator: 'eq', value: false },
-      { column: 'state', operator: 'ne', value: 'SUCCEEDED' },
     ]);
   });
 
@@ -758,7 +937,9 @@ describe('PostingWorker', () => {
         mimeType: 'image/jpeg',
       }),
     );
-    expect(mocks.fileConverterService.convert.mock.invocationCallOrder[0]).toBeLessThan(
+    expect(
+      mocks.fileConverterService.convert.mock.invocationCallOrder[0],
+    ).toBeLessThan(
       mocks.postFileResizerService.resize.mock.invocationCallOrder[0],
     );
     expect(storedFile).toEqual({
@@ -815,14 +996,16 @@ describe('PostingWorker', () => {
 
   it('completes a post that has no work', async () => {
     const { worker, mocks } = createWorker();
+    mocks.postRepository.completeIfAllActiveUnitsSucceeded.mockResolvedValue(
+      true,
+    );
     mocks.unitOfWorkRepository.find.mockResolvedValue([]);
 
     await worker.start();
 
-    expect(mocks.postRepository.update).toHaveBeenCalledWith('post-1', {
-      completed: true,
-      cancelled: false,
-    });
+    expect(
+      mocks.postRepository.completeIfAllActiveUnitsSucceeded,
+    ).toHaveBeenCalledWith('post-1');
     expect(mocks.onAfterDispose).toHaveBeenCalledTimes(1);
   });
 });

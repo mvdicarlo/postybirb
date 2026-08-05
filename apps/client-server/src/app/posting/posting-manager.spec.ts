@@ -6,6 +6,7 @@ import { PostFileResizerService } from '../post/services/post-file-resizer/post-
 import { ValidationService } from '../validation/validation.service';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { PostingManager } from './posting-manager';
+import { PostingRateLimiterService } from './posting-rate-limiter.service';
 import { PostingWorker } from './posting-worker';
 
 const stubRegistry = {} as unknown as WebsiteRegistryService;
@@ -14,6 +15,7 @@ const stubPostParsersService = {} as PostParsersService;
 const stubPostFileResizerService = {} as PostFileResizerService;
 const stubFileConverterService = {} as FileConverterService;
 const stubNotificationService = {} as NotificationsService;
+const stubPostingRateLimiter = {} as PostingRateLimiterService;
 
 interface WorkerHarness {
   cancel: jest.Mock;
@@ -49,6 +51,7 @@ describe('PostingManager', () => {
       stubPostFileResizerService,
       stubFileConverterService,
       stubNotificationService,
+      stubPostingRateLimiter,
     );
   });
 

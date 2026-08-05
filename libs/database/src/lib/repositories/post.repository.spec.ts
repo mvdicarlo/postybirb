@@ -1,5 +1,9 @@
 import type { ISubmissionMetadata } from '@postybirb/types';
-import { ScheduleType, SubmissionType } from '@postybirb/types';
+import {
+  ScheduleType,
+  SubmissionType,
+  UnitOfWorkState,
+} from '@postybirb/types';
 import { UnitOfWork } from '../entities/unit-of-work.entity';
 import { AccountRepository } from './account.repository';
 import { createTestRepositories } from './base/test-utils';
@@ -77,5 +81,101 @@ describe('PostRepository', () => {
 
     await repos.post.deleteById([post.id]);
     expect(await repos.unitOfWork.findById(unitOfWork.id)).toBeNull();
+  });
+
+  it('completes a post when every active unit has succeeded', async () => {
+    const { account, post, submission } = await seedDependencies();
+    await repos.unitOfWork.insert([
+      {
+        postId: post.id,
+        submissionId: submission.id,
+        accountId: account.id,
+        state: UnitOfWorkState.SUCCEEDED,
+      },
+      {
+        postId: post.id,
+        submissionId: submission.id,
+        accountId: account.id,
+        state: UnitOfWorkState.FAILED,
+        evicted: true,
+      },
+    ]);
+
+    await expect(
+      repos.post.completeIfAllActiveUnitsSucceeded(post.id),
+    ).resolves.toBe(true);
+    await expect(repos.post.findByIdOrThrow(post.id)).resolves.toMatchObject({
+      completed: true,
+      cancelled: false,
+    });
+  });
+
+  it.each([
+    UnitOfWorkState.NEW,
+    UnitOfWorkState.FAILED,
+    UnitOfWorkState.RATE_LIMITED,
+    UnitOfWorkState.CANCELLED,
+  ])('does not complete a post with active %s work', async (state) => {
+    const { account, post, submission } = await seedDependencies();
+    await repos.unitOfWork.insert({
+      postId: post.id,
+      submissionId: submission.id,
+      accountId: account.id,
+      state,
+    });
+
+    await expect(
+      repos.post.completeIfAllActiveUnitsSucceeded(post.id),
+    ).resolves.toBe(false);
+    await expect(repos.post.findByIdOrThrow(post.id)).resolves.toMatchObject({
+      completed: false,
+    });
+  });
+
+  it('cancels a post and only its active non-succeeded work', async () => {
+    const { account, post, submission } = await seedDependencies();
+    const [pending, succeeded, evicted] = await repos.unitOfWork.insert([
+      {
+        postId: post.id,
+        submissionId: submission.id,
+        accountId: account.id,
+        state: UnitOfWorkState.PENDING,
+      },
+      {
+        postId: post.id,
+        submissionId: submission.id,
+        accountId: account.id,
+        state: UnitOfWorkState.SUCCEEDED,
+      },
+      {
+        postId: post.id,
+        submissionId: submission.id,
+        accountId: account.id,
+        state: UnitOfWorkState.FAILED,
+        evicted: true,
+      },
+    ]);
+
+    await repos.post.cancel(post.id);
+
+    await expect(repos.post.findByIdOrThrow(post.id)).resolves.toMatchObject({
+      completed: false,
+      cancelled: true,
+    });
+    await expect(
+      repos.unitOfWork.findByIdOrThrow(pending.id),
+    ).resolves.toMatchObject({
+      state: UnitOfWorkState.CANCELLED,
+    });
+    await expect(
+      repos.unitOfWork.findByIdOrThrow(succeeded.id),
+    ).resolves.toMatchObject({
+      state: UnitOfWorkState.SUCCEEDED,
+    });
+    await expect(
+      repos.unitOfWork.findByIdOrThrow(evicted.id),
+    ).resolves.toMatchObject({
+      state: UnitOfWorkState.FAILED,
+    });
   });
 });

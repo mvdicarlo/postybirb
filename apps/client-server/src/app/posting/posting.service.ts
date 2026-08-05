@@ -25,6 +25,8 @@ import { chunk } from 'lodash';
 import { v4 as uuid } from 'uuid';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { PostingManager } from './posting-manager';
+import { PostingRateLimiterService } from './posting-rate-limiter.service';
+import { partitionUnitsOfWorkByRateLimit } from './unit-of-work-rate-limit';
 
 export type UnitOfWorkEvictions = Record<AccountId, SubmissionFileId[]>;
 
@@ -51,10 +53,13 @@ export class PostingService {
     constructor(
         private readonly postingManager: PostingManager,
         private readonly websiteRegistry: WebsiteRegistryService,
+        private readonly postingRateLimiter: PostingRateLimiterService,
     ) {}
 
     @Cron(CronExpression.EVERY_SECOND)
     async handlePendingWork(): Promise<void> {
+        await this.postingRateLimiter.initialize();
+
         // Note: Might want to use a new field like "queuedAt" to determine which
         // work is pending instead of relying on the "updatedAt" field, as it may not
         // accurately reflect the state of the work.
@@ -82,9 +87,10 @@ export class PostingService {
                 continue;
             }
 
-            // TODO need to work out a filter for the RATE_LIMITED work as it should be retried
-            // after a certain amount of time has passed. This will likely be a database that tracks
-            // the last known rate limit for each account and the time it was last hit. Then we can filter out any work that is rate limited and has not yet passed the time limit.
+            const { ready } = partitionUnitsOfWorkByRateLimit(allottedWork);
+            if (ready.length === 0) {
+                continue;
+            }
 
             await this.postingManager.submit(post.id);
         }
@@ -117,10 +123,7 @@ export class PostingService {
 
     public async cancelPost(postId: PostId, reason?: string): Promise<void> {
         await Promise.all([
-            this.postRepository.update(postId, {
-                completed: true,
-                cancelled: true,
-            }),
+            this.postRepository.cancel(postId),
             this.postingManager.cancel(postId, reason ?? 'Cancelled by user'),
         ]);
     }
@@ -376,6 +379,6 @@ export class PostingService {
     }
 
     private async completePost(postId: PostId): Promise<void> {
-        await this.postRepository.update(postId, { completed: true });
+        await this.postRepository.completeIfAllActiveUnitsSucceeded(postId);
     }
 }

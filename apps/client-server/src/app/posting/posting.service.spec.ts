@@ -1,25 +1,26 @@
 import {
-  AccountRepository,
-  clearDatabase,
-  PostRepository,
-  SubmissionFileRepository,
-  SubmissionRepository,
-  UnitOfWorkRepository,
-  WebsiteOptionsRepository,
+    AccountRepository,
+    clearDatabase,
+    PostRepository,
+    SubmissionFileRepository,
+    SubmissionRepository,
+    UnitOfWorkRepository,
+    WebsiteOptionsRepository,
 } from '@postybirb/database';
 import type {
-  ISubmissionMetadata,
-  IWebsiteFormFields,
-  SubmissionId,
+    ISubmissionMetadata,
+    IWebsiteFormFields,
+    SubmissionId,
 } from '@postybirb/types';
 import {
-  DefaultSubmissionFileMetadata,
-  ScheduleType,
-  SubmissionType,
-  UnitOfWorkState,
+    DefaultSubmissionFileMetadata,
+    ScheduleType,
+    SubmissionType,
+    UnitOfWorkState,
 } from '@postybirb/types';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { PostingManager } from './posting-manager';
+import { PostingRateLimiterService } from './posting-rate-limiter.service';
 import { PostingService } from './posting.service';
 
 describe('PostingService', () => {
@@ -37,6 +38,9 @@ describe('PostingService', () => {
   let websiteRegistry: {
     ensureInstance: jest.Mock;
   };
+  let postingRateLimiter: {
+    initialize: jest.Mock;
+  };
 
   beforeEach(() => {
     clearDatabase();
@@ -51,9 +55,13 @@ describe('PostingService', () => {
         },
       }),
     };
+    postingRateLimiter = {
+      initialize: jest.fn().mockResolvedValue(undefined),
+    };
     service = new PostingService(
       postingManager as unknown as PostingManager,
       websiteRegistry as unknown as WebsiteRegistryService,
+      postingRateLimiter as unknown as PostingRateLimiterService,
     );
     accountRepository = new AccountRepository();
     postRepository = new PostRepository();
@@ -239,8 +247,12 @@ describe('PostingService', () => {
     expect(result.removedWork[0].compositeKey).toBe(
       `${submission.id}:${removedAccount.id}:${file.id}`,
     );
-    expect(result.remainingWork.map((unit) => unit.id)).toContain(sharedWork.id);
-    expect(result.removedWork.map((unit) => unit.id)).not.toContain(sharedWork.id);
+    expect(result.remainingWork.map((unit) => unit.id)).toContain(
+      sharedWork.id,
+    );
+    expect(result.removedWork.map((unit) => unit.id)).not.toContain(
+      sharedWork.id,
+    );
     expect(result.evicted).toEqual([]);
   });
 
@@ -494,9 +506,7 @@ describe('PostingService', () => {
       result.unitsOfWork.find((unit) => unit.id === removedWork.id)?.evicted,
     ).toBe(true);
     expect(
-      result.unitsOfWork.find(
-        (unit) => unit.accountId === addedAccount.id,
-      ),
+      result.unitsOfWork.find((unit) => unit.accountId === addedAccount.id),
     ).toMatchObject({
       postId: existingPost.id,
       submissionId: submission.id,
@@ -559,7 +569,9 @@ describe('PostingService', () => {
 
     await service.handlePendingWork();
 
-    await expect(postRepository.findByIdOrThrow(post.id)).resolves.toMatchObject({
+    await expect(
+      postRepository.findByIdOrThrow(post.id),
+    ).resolves.toMatchObject({
       completed: true,
       cancelled: false,
     });
@@ -587,9 +599,116 @@ describe('PostingService', () => {
 
     await service.handlePendingWork();
 
-    await expect(postRepository.findByIdOrThrow(post.id)).resolves.toMatchObject({
+    await expect(
+      postRepository.findByIdOrThrow(post.id),
+    ).resolves.toMatchObject({
       completed: false,
     });
+    expect(postingManager.submit).toHaveBeenCalledWith(post.id);
+  });
+
+  it('does not submit a post when every outstanding batch is deferred', async () => {
+    const submission = await seedSubmission();
+    const account = await seedAccount('deferred-account');
+    const post = await postRepository.insert({ submissionId: submission.id });
+    await unitOfWorkRepository.insert({
+      postId: post.id,
+      submissionId: submission.id,
+      accountId: account.id,
+      batch: 'deferred-batch',
+      state: UnitOfWorkState.RATE_LIMITED,
+      rateLimitedUntil: new Date(Date.now() + 60_000).toISOString(),
+    });
+
+    await service.handlePendingWork();
+
+    expect(postingManager.submit).not.toHaveBeenCalled();
+    await expect(
+      postRepository.findByIdOrThrow(post.id),
+    ).resolves.toMatchObject({
+      completed: false,
+      cancelled: false,
+    });
+  });
+
+  it('continues to later posts when an earlier post is fully deferred', async () => {
+    const deferredSubmission = await seedSubmission();
+    const readySubmission = await seedSubmission();
+    const account = await seedAccount('deferred-order-account');
+    const deferredPost = await postRepository.insert({
+      submissionId: deferredSubmission.id,
+      updatedAt: '2026-08-05T00:00:00.000Z',
+    });
+    const readyPost = await postRepository.insert({
+      submissionId: readySubmission.id,
+      updatedAt: '2026-08-05T00:00:01.000Z',
+    });
+    await unitOfWorkRepository.insert([
+      {
+        postId: deferredPost.id,
+        submissionId: deferredSubmission.id,
+        accountId: account.id,
+        batch: 'deferred-batch',
+        state: UnitOfWorkState.RATE_LIMITED,
+        rateLimitedUntil: new Date(Date.now() + 60_000).toISOString(),
+      },
+      {
+        postId: readyPost.id,
+        submissionId: readySubmission.id,
+        accountId: account.id,
+        batch: 'ready-batch',
+        state: UnitOfWorkState.NEW,
+      },
+    ]);
+
+    await service.handlePendingWork();
+
+    expect(postingManager.submit).toHaveBeenCalledTimes(1);
+    expect(postingManager.submit).toHaveBeenCalledWith(readyPost.id);
+  });
+
+  it('submits a mixed post when at least one whole batch is ready', async () => {
+    const submission = await seedSubmission();
+    const account = await seedAccount('mixed-rate-limit-account');
+    const post = await postRepository.insert({ submissionId: submission.id });
+    await unitOfWorkRepository.insert([
+      {
+        postId: post.id,
+        submissionId: submission.id,
+        accountId: account.id,
+        batch: 'deferred-batch',
+        state: UnitOfWorkState.FAILED,
+        rateLimitedUntil: new Date(Date.now() + 60_000).toISOString(),
+      },
+      {
+        postId: post.id,
+        submissionId: submission.id,
+        accountId: account.id,
+        batch: 'ready-batch',
+        state: UnitOfWorkState.FAILED,
+      },
+    ]);
+
+    await service.handlePendingWork();
+
+    expect(postingManager.submit).toHaveBeenCalledWith(post.id);
+  });
+
+  it('submits work when its rate limit has expired', async () => {
+    const submission = await seedSubmission();
+    const account = await seedAccount('expired-rate-limit-account');
+    const post = await postRepository.insert({ submissionId: submission.id });
+    await unitOfWorkRepository.insert({
+      postId: post.id,
+      submissionId: submission.id,
+      accountId: account.id,
+      batch: 'expired-batch',
+      state: UnitOfWorkState.RATE_LIMITED,
+      rateLimitedUntil: new Date(Date.now() - 1).toISOString(),
+    });
+
+    await service.handlePendingWork();
+
     expect(postingManager.submit).toHaveBeenCalledWith(post.id);
   });
 
@@ -622,9 +741,9 @@ describe('PostingService', () => {
       },
     ]);
 
-    await expect(
-      service.areDependenciesCompleted(submission.id),
-    ).resolves.toBe(false);
+    await expect(service.areDependenciesCompleted(submission.id)).resolves.toBe(
+      false,
+    );
     await service.handlePendingWork();
 
     expect(postingManager.submit).toHaveBeenCalledTimes(1);
@@ -637,9 +756,9 @@ describe('PostingService', () => {
     });
     postingManager.submit.mockClear();
 
-    await expect(
-      service.areDependenciesCompleted(submission.id),
-    ).resolves.toBe(true);
+    await expect(service.areDependenciesCompleted(submission.id)).resolves.toBe(
+      true,
+    );
     await service.handlePendingWork();
 
     expect(postingManager.submit).toHaveBeenCalledTimes(1);
@@ -656,8 +775,10 @@ describe('PostingService', () => {
       post.id,
       'User requested cancellation',
     );
-    await expect(postRepository.findByIdOrThrow(post.id)).resolves.toMatchObject({
-      completed: true,
+    await expect(
+      postRepository.findByIdOrThrow(post.id),
+    ).resolves.toMatchObject({
+      completed: false,
       cancelled: true,
     });
   });

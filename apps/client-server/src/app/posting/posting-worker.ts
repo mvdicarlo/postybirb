@@ -1,27 +1,27 @@
 import {
-  AccountRepository,
-  Post,
-  PostRepository,
-  Submission,
-  SubmissionFile,
-  SubmissionFileRepository,
-  SubmissionRepository,
-  UnitOfWork,
-  UnitOfWorkRepository,
-  WebsiteOptions,
-  WebsiteOptionsRepository,
+    AccountRepository,
+    Post,
+    PostRepository,
+    Submission,
+    SubmissionFile,
+    SubmissionFileRepository,
+    SubmissionRepository,
+    UnitOfWork,
+    UnitOfWorkRepository,
+    WebsiteOptions,
+    WebsiteOptionsRepository,
 } from '@postybirb/database';
 import { Logger, PostyBirbLogger } from '@postybirb/logger';
 import {
-  AccountId,
-  FileType,
-  IFileBuffer,
-  IPostResponse,
-  ISubmissionFile,
-  IWebsiteFormFields,
-  PostData,
-  PostId,
-  UnitOfWorkState,
+    AccountId,
+    FileType,
+    IFileBuffer,
+    IPostResponse,
+    ISubmissionFile,
+    IWebsiteFormFields,
+    PostData,
+    PostId,
+    UnitOfWorkState,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { chunk } from 'lodash';
@@ -36,8 +36,11 @@ import { PostBatchData } from '../websites/models/website-modifiers/file-website
 import { UnknownWebsite } from '../websites/website';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { CancellationToken } from './cancellation-token';
+import { PostingRateLimiterService } from './posting-rate-limiter.service';
+import { partitionUnitsOfWorkByRateLimit } from './unit-of-work-rate-limit';
 
 type PostingWorkerContext = {
+  allUnitsOfWork: UnitOfWork[];
   options: WebsiteOptions[];
   post: Post;
   submission: Submission;
@@ -94,6 +97,7 @@ export class PostingWorker {
     protected readonly postFileResizerService: PostFileResizerService,
     protected readonly fileConverterService: FileConverterService,
     protected readonly notificationService: NotificationsService,
+    protected readonly postingRateLimiter: PostingRateLimiterService,
     protected readonly onAfterDispose: () => void | Promise<void>,
   ) {
     this.logger = Logger(`PostingWorker[${postId}]`);
@@ -122,13 +126,16 @@ export class PostingWorker {
       const websiteOptions = await this.websiteOptionsRepository.find({
         where: (options, { eq }) => eq(options.submissionId, submission.id),
       });
-      const unitsOfWork = await this.unitOfWorkRepository.find({
-        where: (unit, { and, eq, ne }) => and(
+      const allUnitsOfWork = await this.unitOfWorkRepository.find({
+        where: (unit, { and, eq }) => and(
           eq(unit.postId, post.id),
           eq(unit.evicted, false),
-          ne(unit.state, UnitOfWorkState.SUCCEEDED),
         ),
+        orderBy: (unit, { asc }) => asc(unit.createdAt),
       });
+      const unitsOfWork = allUnitsOfWork.filter(
+        (unit) => unit.state !== UnitOfWorkState.SUCCEEDED,
+      );
 
       if (unitsOfWork.length === 0) {
         this.logger.warn(`No unit of work found for post '${post.id}'`);
@@ -140,33 +147,28 @@ export class PostingWorker {
         this.logger.warn(
           `No website options found for submission '${submission.id}'`,
         );
-        // If there are no website options, we cannot proceed with posting.
-        // Mark all units of work as cancelled and complete the post.
-        await this.updateUnitsOfWorkState(unitsOfWork, UnitOfWorkState.CANCELLED);
-        await this.completePost();
+        await this.postRepository.cancel(post.id);
         return;
       }
 
-      await this.updateUnitsOfWorkState(unitsOfWork, UnitOfWorkState.PENDING);
+      const { ready } = partitionUnitsOfWorkByRateLimit(unitsOfWork);
+      if (ready.length === 0) {
+        this.logger.info(`All work for post '${post.id}' is rate limited`);
+        return;
+      }
+
+      await this.updateUnitsOfWorkState(ready, UnitOfWorkState.PENDING);
 
       await this.execute({
+        allUnitsOfWork,
         options: websiteOptions,
         post,
         submission,
-        unitsOfWork,
+        unitsOfWork: ready,
       });
 
-      const unitsOfWorkAfterExecution = await this.unitOfWorkRepository.find({
-        where: (unit, { and, eq, ne }) => and(
-          eq(unit.postId, post.id),
-          eq(unit.evicted, false),
-          ne(unit.state, UnitOfWorkState.SUCCEEDED),
-        ),
-      });
-
-      if (unitsOfWorkAfterExecution.length === 0) {
+      if (await this.completePost()) {
         this.logger.info(`All units of work for post '${post.id}' have been completed`);
-        await this.completePost();
       } else {
         this.logger.info(`Some units of work for post '${post.id}' are still pending or failed`);
       }
@@ -177,9 +179,6 @@ export class PostingWorker {
         this.logger.withError(error).error('Error during processing');
       }
     } finally {
-      if (this.cancellationToken.aborted) {
-        await this.completePost();
-      }
       await this.dispose();
     }
   }
@@ -374,16 +373,12 @@ export class PostingWorker {
 
     // Pre-flight checks passed, proceed with posting
 
-    const batchedUnitsOfWork: UnitOfWork[][] = [];
-    unitsOfWork.forEach(unit => {
-      const batchId = unit.batch ?? 'unknown';
-      let batch = batchedUnitsOfWork.find(b => b[0]?.batch === batchId);
-      if (!batch) {
-        batch = [];
-        batchedUnitsOfWork.push(batch);
-      }
-      batch.push(unit);
-    });
+    const batchedUnitsOfWork = this.getAccountBatches(
+      accountId,
+      context.allUnitsOfWork,
+      unitsOfWork,
+      context.submission,
+    );
 
     if (this.cancellationToken.aborted) {
       this.logger.info(`Cancellation requested before posting for account '${accountId}'`);
@@ -391,23 +386,20 @@ export class PostingWorker {
       return;
     }
 
-    for (const [batchIndex, batch] of batchedUnitsOfWork.entries()) {
+    for (const { metadata, units } of batchedUnitsOfWork) {
       if (this.cancellationToken.aborted) {
         this.logger.info(`Cancellation requested during posting for account '${accountId}'`);
-        await this.updateUnitsOfWorkState(batch, UnitOfWorkState.CANCELLED);
+        await this.updateUnitsOfWorkState(units, UnitOfWorkState.CANCELLED);
         continue;
       }
 
       try {
         await this.postBatch(
           websiteInstance,
-          batch,
+          units,
           postData,
           context.submission,
-          {
-            index: batchIndex,
-            totalBatches: batchedUnitsOfWork.length,
-          },
+          metadata,
         );
       } catch (error) {
         const message = `Error posting batch for account '${accountId}'`;
@@ -415,7 +407,7 @@ export class PostingWorker {
           message,
         );
         await this.failUnitsOfWork(
-          batch,
+          units,
           websiteInstance,
           context.submission,
           this.getErrorMessage(error, message),
@@ -432,7 +424,33 @@ export class PostingWorker {
     submission: Submission,
     batch: PostBatchData,
   ): Promise<void> {
-    await this.updateUnitsOfWorkState(unitsOfWork, UnitOfWorkState.EXECUTING);
+    const reservation = await this.postingRateLimiter.acquire(
+      websiteInstance.accountId,
+      websiteInstance.decoratedProps.metadata,
+    );
+    if (!reservation.acquired) {
+      if (!reservation.rateLimitedUntil) {
+        throw new Error('Rate limiter denied a batch without an expiry');
+      }
+      await Promise.all(
+        unitsOfWork.map((unit) =>
+          this.unitOfWorkRepository.update(unit.id, {
+            state: UnitOfWorkState.RATE_LIMITED,
+            rateLimitedUntil: reservation.rateLimitedUntil,
+          }),
+        ),
+      );
+      return;
+    }
+
+    await Promise.all(
+      unitsOfWork.map((unit) =>
+        this.unitOfWorkRepository.update(unit.id, {
+          state: UnitOfWorkState.EXECUTING,
+          rateLimitedUntil: reservation.rateLimitedUntil ?? null,
+        }),
+      ),
+    );
 
     const preparedFiles = await this.prepareBatchFiles(
       websiteInstance,
@@ -482,6 +500,56 @@ export class PostingWorker {
         }),
       ),
     );
+  }
+
+  private getAccountBatches(
+    accountId: AccountId,
+    allUnitsOfWork: UnitOfWork[],
+    readyUnitsOfWork: UnitOfWork[],
+    submission: Submission,
+  ): Array<{ metadata: PostBatchData; units: UnitOfWork[] }> {
+    const readyIds = new Set(readyUnitsOfWork.map((unit) => unit.id));
+    const fileOrder = new Map(
+      (submission.files ?? []).map((file) => [file.id, file.order]),
+    );
+    const batches = new Map<string, {
+      firstSeen: number;
+      order: number;
+      units: UnitOfWork[];
+    }>();
+
+    allUnitsOfWork
+      .filter((unit) => unit.accountId === accountId)
+      .forEach((unit, index) => {
+        const batchId = unit.batch ?? 'unknown';
+        const grouped = batches.get(batchId) ?? {
+          firstSeen: index,
+          order: Number.MAX_SAFE_INTEGER,
+          units: [],
+        };
+        grouped.units.push(unit);
+        if (unit.fileId) {
+          grouped.order = Math.min(
+            grouped.order,
+            fileOrder.get(unit.fileId) ?? Number.MAX_SAFE_INTEGER,
+          );
+        }
+        batches.set(batchId, grouped);
+      });
+
+    const orderedBatches = [...batches.values()].sort(
+      (left, right) =>
+        left.order - right.order || left.firstSeen - right.firstSeen,
+    );
+    return orderedBatches.flatMap((grouped, index) => {
+      const readyUnits = grouped.units.filter((unit) => readyIds.has(unit.id));
+      return readyUnits.length > 0
+        ? [{
+            metadata: { index, totalBatches: orderedBatches.length },
+            units: readyUnits,
+          }]
+        : [];
+    });
   }
 
   private async getPropagatedSourceUrls(
@@ -718,14 +786,14 @@ export class PostingWorker {
     })));
   }
 
-  private async completePost(): Promise<void> {
+  private async completePost(): Promise<boolean> {
     try {
-      await this.postRepository.update(this.postId, {
-        completed: true,
-        cancelled: this.cancellationToken.aborted,
-      });
+      return await this.postRepository.completeIfAllActiveUnitsSucceeded(
+        this.postId,
+      );
     } catch (error) {
       this.logger.withError(error).error('Error during post completion');
+      return false;
     }
   }
 

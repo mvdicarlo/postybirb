@@ -6,6 +6,7 @@ import { PostModule } from '../post/post.module';
 import { ValidationModule } from '../validation/validation.module';
 import { WebsitesModule } from '../websites/websites.module';
 import { PostingManager } from './posting-manager';
+import { PostingRateLimiterService } from './posting-rate-limiter.service';
 import { PostingController } from './posting.controller';
 import { PostingService } from './posting.service';
 
@@ -19,7 +20,7 @@ import { PostingService } from './posting.service';
     NotificationsModule,
   ],
   controllers: [PostingController],
-  providers: [PostingManager, PostingService],
+  providers: [PostingManager, PostingRateLimiterService, PostingService],
   exports: [PostingManager, PostingService],
 })
 export class PostingModule {}
