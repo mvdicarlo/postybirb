@@ -31,7 +31,7 @@ interface WorkerMocks {
   };
   postRepository: {
     cancel: jest.Mock;
-    completeIfAllActiveUnitsSucceeded: jest.Mock;
+    completeIfAllActiveUnitsSettled: jest.Mock;
     findByIdOrThrow: jest.Mock;
     update: jest.Mock;
   };
@@ -84,7 +84,7 @@ function createWorker(): { worker: PostingWorker; mocks: WorkerMocks } {
     },
     postRepository: {
       cancel: jest.fn().mockResolvedValue(undefined),
-      completeIfAllActiveUnitsSucceeded: jest.fn().mockResolvedValue(false),
+      completeIfAllActiveUnitsSettled: jest.fn().mockResolvedValue(false),
       findByIdOrThrow: jest.fn().mockResolvedValue({
         id: 'post-1',
         submissionId: 'submission-1',
@@ -193,6 +193,10 @@ describe('PostingWorker', () => {
       url: 'https://example.com/post/1',
     });
     expect(mocks.notificationService.create).not.toHaveBeenCalled();
+    expect(mocks.unitOfWorkRepository.update).not.toHaveBeenCalledWith(
+      'work-1',
+      { state: 'PENDING' },
+    );
   });
 
   it('leaves a deferred-only post untouched and releases the worker', async () => {
@@ -248,7 +252,7 @@ describe('PostingWorker', () => {
         id: 'ready-work',
         accountId: 'account-1',
         batch: 'batch-2',
-        state: 'FAILED',
+        state: 'NEW',
       },
     ]);
 
@@ -312,7 +316,7 @@ describe('PostingWorker', () => {
         accountId: 'account-1',
         fileId: 'file-2',
         batch: 'batch-2',
-        state: 'FAILED',
+        state: 'NEW',
       },
     ]);
     mocks.fileRepository.findByIdOrThrow.mockResolvedValue({
@@ -569,6 +573,50 @@ describe('PostingWorker', () => {
     );
   });
 
+  it('marks token-originated cancellation without reporting a failure', async () => {
+    const { worker, mocks } = createWorker();
+    mocks.websitePost.mockImplementation(
+      (
+        _postData: unknown,
+        _files: unknown,
+        _batch: unknown,
+        cancellationToken: CancellationToken,
+      ) => {
+        worker.cancel('Cancelled during dispatch');
+        cancellationToken.throwIfAborted();
+      },
+    );
+
+    await worker.start();
+
+    expect(mocks.unitOfWorkRepository.update).toHaveBeenCalledWith('work-1', {
+      state: 'CANCELLED',
+    });
+    expect(mocks.unitOfWorkRepository.update).not.toHaveBeenCalledWith(
+      'work-1',
+      expect.objectContaining({ state: 'FAILED' }),
+    );
+    expect(mocks.notificationService.create).not.toHaveBeenCalled();
+  });
+
+  it('marks a returned cancellation response without reporting a failure', async () => {
+    const { worker, mocks } = createWorker();
+    mocks.websitePost.mockImplementation(() => {
+      worker.cancel('Cancelled during dispatch');
+      return Promise.resolve({
+        instanceId: 'website-1',
+        exception: (worker as any).cancellationToken.signal.reason,
+      });
+    });
+
+    await worker.start();
+
+    expect(mocks.unitOfWorkRepository.update).toHaveBeenCalledWith('work-1', {
+      state: 'CANCELLED',
+    });
+    expect(mocks.notificationService.create).not.toHaveBeenCalled();
+  });
+
   it('leaves a post that is already cancelled unchanged', async () => {
     const { worker, mocks } = createWorker();
     mocks.postRepository.findByIdOrThrow.mockResolvedValue({
@@ -596,7 +644,7 @@ describe('PostingWorker', () => {
     expect(mocks.postRepository.cancel).toHaveBeenCalledWith('post-1');
     expect(mocks.websitePost).not.toHaveBeenCalled();
     expect(
-      mocks.postRepository.completeIfAllActiveUnitsSucceeded,
+      mocks.postRepository.completeIfAllActiveUnitsSettled,
     ).not.toHaveBeenCalled();
   });
 
@@ -610,7 +658,7 @@ describe('PostingWorker', () => {
     expect(mocks.postRepository.findByIdOrThrow).not.toHaveBeenCalled();
     expect(mocks.postRepository.cancel).not.toHaveBeenCalled();
     expect(
-      mocks.postRepository.completeIfAllActiveUnitsSucceeded,
+      mocks.postRepository.completeIfAllActiveUnitsSettled,
     ).not.toHaveBeenCalled();
     expect(mocks.onAfterDispose).toHaveBeenCalledTimes(1);
   });
@@ -676,6 +724,103 @@ describe('PostingWorker', () => {
       'standard-work',
       'external-work',
     ]);
+  });
+
+  it('leaves external-source work untouched while a source producer is deferred', async () => {
+    const { worker, mocks } = createWorker();
+    mocks.unitOfWorkRepository.find.mockResolvedValue([
+      {
+        id: 'source-work',
+        accountId: 'source-account',
+        batch: 'source-batch',
+        state: 'RATE_LIMITED',
+        rateLimitedUntil: new Date(Date.now() + 60_000).toISOString(),
+      },
+      {
+        id: 'external-work',
+        accountId: 'external-account',
+        batch: 'external-batch',
+        state: 'NEW',
+      },
+    ]);
+    mocks.accountRepository.findByIdOrThrow.mockImplementation(
+      (accountId: string) => Promise.resolve({ id: accountId }),
+    );
+    mocks.websiteRegistry.findInstance.mockImplementation(
+      (account: { id: string }) => ({
+        decoratedProps: {
+          fileOptions: {
+            acceptsExternalSourceUrls: account.id === 'external-account',
+          },
+        },
+      }),
+    );
+
+    await worker.start();
+
+    expect(mocks.unitOfWorkRepository.update).not.toHaveBeenCalled();
+    expect(mocks.websitePost).not.toHaveBeenCalled();
+  });
+
+  it('stops external-source work when a producer is denied during acquisition', async () => {
+    const { worker, mocks } = createWorker();
+    mocks.unitOfWorkRepository.find.mockResolvedValue([
+      {
+        id: 'source-work',
+        accountId: 'source-account',
+        batch: 'source-batch',
+        state: 'NEW',
+      },
+      {
+        id: 'external-work',
+        accountId: 'external-account',
+        batch: 'external-batch',
+        state: 'NEW',
+      },
+    ]);
+    mocks.accountRepository.findByIdOrThrow.mockImplementation(
+      (accountId: string) => Promise.resolve({ id: accountId }),
+    );
+    mocks.websiteRegistry.findInstance.mockImplementation(
+      (account: { id: string }) => ({
+        accountId: account.id,
+        decoratedProps: {
+          metadata: {
+            displayName: account.id,
+            name: account.id,
+          },
+          fileOptions: {
+            acceptsExternalSourceUrls: account.id === 'external-account',
+          },
+        },
+        login: jest.fn().mockResolvedValue({
+          isLoggedIn: true,
+          status: 'loggedIn',
+        }),
+        post: mocks.websitePost,
+      }),
+    );
+    mocks.websiteOptionsRepository.find.mockResolvedValue([
+      { id: 'source-options', accountId: 'source-account' },
+      { id: 'external-options', accountId: 'external-account' },
+    ]);
+    mocks.postingRateLimiter.acquire.mockResolvedValueOnce({
+      acquired: false,
+      rateLimitedUntil: new Date(Date.now() + 60_000).toISOString(),
+    });
+
+    await worker.start();
+
+    expect(mocks.postingRateLimiter.acquire).toHaveBeenCalledTimes(1);
+    expect(mocks.unitOfWorkRepository.update).toHaveBeenCalledWith(
+      'source-work',
+      expect.objectContaining({ state: 'RATE_LIMITED' }),
+    );
+    expect(mocks.unitOfWorkRepository.update).not.toHaveBeenCalledWith(
+      'external-work',
+      expect.objectContaining({ state: 'EXECUTING' }),
+    );
+    expect(mocks.websitePost).not.toHaveBeenCalled();
   });
 
   it('limits concurrent accounts without mixing external-source accounts', async () => {
@@ -996,7 +1141,7 @@ describe('PostingWorker', () => {
 
   it('completes a post that has no work', async () => {
     const { worker, mocks } = createWorker();
-    mocks.postRepository.completeIfAllActiveUnitsSucceeded.mockResolvedValue(
+    mocks.postRepository.completeIfAllActiveUnitsSettled.mockResolvedValue(
       true,
     );
     mocks.unitOfWorkRepository.find.mockResolvedValue([]);
@@ -1004,7 +1149,7 @@ describe('PostingWorker', () => {
     await worker.start();
 
     expect(
-      mocks.postRepository.completeIfAllActiveUnitsSucceeded,
+      mocks.postRepository.completeIfAllActiveUnitsSettled,
     ).toHaveBeenCalledWith('post-1');
     expect(mocks.onAfterDispose).toHaveBeenCalledTimes(1);
   });

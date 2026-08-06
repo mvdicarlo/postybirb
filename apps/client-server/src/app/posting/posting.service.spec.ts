@@ -37,6 +37,7 @@ describe('PostingService', () => {
   };
   let websiteRegistry: {
     ensureInstance: jest.Mock;
+    findInstance: jest.Mock;
   };
   let postingRateLimiter: {
     initialize: jest.Mock;
@@ -52,6 +53,11 @@ describe('PostingService', () => {
       ensureInstance: jest.fn().mockResolvedValue({
         decoratedProps: {
           fileOptions: { fileBatchSize: 1 },
+        },
+      }),
+      findInstance: jest.fn().mockReturnValue({
+        decoratedProps: {
+          fileOptions: { acceptsExternalSourceUrls: false },
         },
       }),
     };
@@ -285,6 +291,7 @@ describe('PostingService', () => {
       fileHash: file.hash,
       state: UnitOfWorkState.SUCCEEDED,
     });
+    await postRepository.update(post.id, { completed: true });
 
     const unchanged = await service.getIncompleteWork(submission.id);
 
@@ -321,7 +328,41 @@ describe('PostingService', () => {
     });
     expect(replacement).toMatchObject({
       postId: post.id,
-      state: UnitOfWorkState.NEW,
+      state: UnitOfWorkState.PENDING,
+      evicted: false,
+    });
+  });
+
+  it('reuses failed work as pending when a user starts the post again', async () => {
+    const submission = await seedSubmission();
+    const account = await seedAccount('failed-repost-account');
+    await websiteOptionsRepository.insert({
+      accountId: account.id,
+      submissionId: submission.id,
+      data: {} as IWebsiteFormFields,
+      isDefault: false,
+    });
+    const post = await postRepository.insert({
+      submissionId: submission.id,
+      completed: true,
+    });
+    const failed = await unitOfWorkRepository.insert({
+      postId: post.id,
+      submissionId: submission.id,
+      accountId: account.id,
+      state: UnitOfWorkState.FAILED,
+    });
+
+    const repost = await service.post(submission.id);
+
+    expect(repost.completed).toBe(false);
+    expect(repost.unitsOfWork).toHaveLength(1);
+    expect(repost.unitsOfWork[0]).toMatchObject({
+      id: failed.id,
+      postId: post.id,
+      submissionId: submission.id,
+      accountId: account.id,
+      state: UnitOfWorkState.PENDING,
       evicted: false,
     });
   });
@@ -426,6 +467,7 @@ describe('PostingService', () => {
       accountId: account.id,
       fileId: file.id,
       fileHash: file.hash,
+      state: UnitOfWorkState.PENDING,
       evicted: false,
     });
     expect(result.unitsOfWork[0].batch).toMatch(
@@ -512,6 +554,7 @@ describe('PostingService', () => {
       submissionId: submission.id,
       fileId: file.id,
       fileHash: file.hash,
+      state: UnitOfWorkState.PENDING,
       evicted: false,
     });
     expect(
@@ -524,6 +567,7 @@ describe('PostingService', () => {
       submissionId: submission.id,
       fileId: file.id,
       fileHash: file.hash,
+      state: UnitOfWorkState.PENDING,
       evicted: false,
     });
     expect(
@@ -531,6 +575,19 @@ describe('PostingService', () => {
         where: (post, { eq }) => eq(post.submissionId, submission.id),
       }),
     ).toHaveLength(1);
+  });
+
+  it('rejects posting while the persisted post is open', async () => {
+    const submission = await seedSubmission();
+    const post = await postRepository.insert({
+      submissionId: submission.id,
+      completed: false,
+      cancelled: false,
+    });
+
+    await expect(service.post(submission.id)).rejects.toThrow(
+      `Post '${post.id}' is currently active`,
+    );
   });
 
   it('submits active posts but skips cancelled posts', async () => {
@@ -578,7 +635,7 @@ describe('PostingService', () => {
     expect(postingManager.submit).not.toHaveBeenCalled();
   });
 
-  it('continues failed and cancelled work', async () => {
+  it('continues cancelled work while leaving failed work settled', async () => {
     const submission = await seedSubmission();
     const account = await seedAccount('terminal-work-account');
     const post = await postRepository.insert({ submissionId: submission.id });
@@ -605,6 +662,90 @@ describe('PostingService', () => {
       completed: false,
     });
     expect(postingManager.submit).toHaveBeenCalledWith(post.id);
+  });
+
+  it('completes a post when all active work has succeeded or failed', async () => {
+    const submission = await seedSubmission();
+    const account = await seedAccount('settled-work-account');
+    const post = await postRepository.insert({ submissionId: submission.id });
+    await unitOfWorkRepository.insert([
+      {
+        postId: post.id,
+        submissionId: submission.id,
+        accountId: account.id,
+        state: UnitOfWorkState.SUCCEEDED,
+      },
+      {
+        postId: post.id,
+        submissionId: submission.id,
+        accountId: account.id,
+        state: UnitOfWorkState.FAILED,
+      },
+    ]);
+
+    await service.handlePendingWork();
+
+    await expect(
+      postRepository.findByIdOrThrow(post.id),
+    ).resolves.toMatchObject({ completed: true });
+    expect(postingManager.submit).not.toHaveBeenCalled();
+  });
+
+  it('completes failed work even when its reservation has not expired', async () => {
+    const submission = await seedSubmission();
+    const account = await seedAccount('reserved-failure-account');
+    const post = await postRepository.insert({ submissionId: submission.id });
+    await unitOfWorkRepository.insert({
+      postId: post.id,
+      submissionId: submission.id,
+      accountId: account.id,
+      state: UnitOfWorkState.FAILED,
+      rateLimitedUntil: new Date(Date.now() + 60_000).toISOString(),
+    });
+
+    await service.handlePendingWork();
+
+    await expect(
+      postRepository.findByIdOrThrow(post.id),
+    ).resolves.toMatchObject({ completed: true });
+    expect(postingManager.submit).not.toHaveBeenCalled();
+  });
+
+  it('does not submit external-source work while a source producer is deferred', async () => {
+    const submission = await seedSubmission();
+    const sourceAccount = await seedAccount('source-account');
+    const externalAccount = await seedAccount('external-account');
+    const post = await postRepository.insert({ submissionId: submission.id });
+    await unitOfWorkRepository.insert([
+      {
+        postId: post.id,
+        submissionId: submission.id,
+        accountId: sourceAccount.id,
+        batch: 'source-batch',
+        state: UnitOfWorkState.RATE_LIMITED,
+        rateLimitedUntil: new Date(Date.now() + 60_000).toISOString(),
+      },
+      {
+        postId: post.id,
+        submissionId: submission.id,
+        accountId: externalAccount.id,
+        batch: 'external-batch',
+        state: UnitOfWorkState.NEW,
+      },
+    ]);
+    websiteRegistry.findInstance.mockImplementation(
+      (account: { id: string }) => ({
+        decoratedProps: {
+          fileOptions: {
+            acceptsExternalSourceUrls: account.id === externalAccount.id,
+          },
+        },
+      }),
+    );
+
+    await service.handlePendingWork();
+
+    expect(postingManager.submit).not.toHaveBeenCalled();
   });
 
   it('does not submit a post when every outstanding batch is deferred', async () => {
@@ -677,7 +818,7 @@ describe('PostingService', () => {
         submissionId: submission.id,
         accountId: account.id,
         batch: 'deferred-batch',
-        state: UnitOfWorkState.FAILED,
+        state: UnitOfWorkState.RATE_LIMITED,
         rateLimitedUntil: new Date(Date.now() + 60_000).toISOString(),
       },
       {
@@ -685,7 +826,7 @@ describe('PostingService', () => {
         submissionId: submission.id,
         accountId: account.id,
         batch: 'ready-batch',
-        state: UnitOfWorkState.FAILED,
+        state: UnitOfWorkState.NEW,
       },
     ]);
 
@@ -765,6 +906,20 @@ describe('PostingService', () => {
     expect(postingManager.submit).toHaveBeenCalledWith(post.id);
   });
 
+  it('does not satisfy dependencies with a cancelled completed post', async () => {
+    const dependency = await seedSubmission();
+    const submission = await seedSubmission([dependency.id]);
+    await postRepository.insert({
+      submissionId: dependency.id,
+      completed: true,
+      cancelled: true,
+    });
+
+    await expect(service.areDependenciesCompleted(submission.id)).resolves.toBe(
+      false,
+    );
+  });
+
   it('persists cancellation and forwards it to the manager', async () => {
     const submission = await seedSubmission();
     const post = await postRepository.insert({ submissionId: submission.id });
@@ -778,7 +933,7 @@ describe('PostingService', () => {
     await expect(
       postRepository.findByIdOrThrow(post.id),
     ).resolves.toMatchObject({
-      completed: false,
+      completed: true,
       cancelled: true,
     });
   });

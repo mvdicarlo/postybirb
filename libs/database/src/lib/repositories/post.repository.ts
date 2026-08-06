@@ -1,5 +1,5 @@
 import { PostId, UnitOfWorkState } from '@postybirb/types';
-import { and, eq, ne } from 'drizzle-orm';
+import { and, eq, ne, notInArray } from 'drizzle-orm';
 import { getDatabase } from '../database';
 import { Post } from '../entities/post.entity';
 import { PostSchema, UnitOfWorkSchema } from '../schemas';
@@ -16,7 +16,7 @@ export class PostRepository extends EntityRepository<'PostSchema', Post> {
     });
   }
 
-  public async completeIfAllActiveUnitsSucceeded(
+  public async completeIfAllActiveUnitsSettled(
     postId: PostId,
   ): Promise<boolean> {
     return this.db.transaction((tx) => {
@@ -27,7 +27,10 @@ export class PostRepository extends EntityRepository<'PostSchema', Post> {
           and(
             eq(UnitOfWorkSchema.postId, postId),
             eq(UnitOfWorkSchema.evicted, false),
-            ne(UnitOfWorkSchema.state, UnitOfWorkState.SUCCEEDED),
+            notInArray(UnitOfWorkSchema.state, [
+              UnitOfWorkState.SUCCEEDED,
+              UnitOfWorkState.FAILED,
+            ]),
           ),
         )
         .limit(1)
@@ -40,7 +43,7 @@ export class PostRepository extends EntityRepository<'PostSchema', Post> {
       const result = tx
         .update(PostSchema)
         .set({ completed: true })
-        .where(and(eq(PostSchema.id, postId), eq(PostSchema.cancelled, false)))
+        .where(eq(PostSchema.id, postId))
         .run();
       return result.changes > 0;
     });
@@ -49,7 +52,7 @@ export class PostRepository extends EntityRepository<'PostSchema', Post> {
   public async cancel(postId: PostId): Promise<void> {
     this.db.transaction((tx) => {
       tx.update(PostSchema)
-        .set({ cancelled: true })
+        .set({ completed: true, cancelled: true })
         .where(eq(PostSchema.id, postId))
         .run();
 

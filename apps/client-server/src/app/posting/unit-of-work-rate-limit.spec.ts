@@ -1,4 +1,9 @@
-import { partitionUnitsOfWorkByRateLimit } from './unit-of-work-rate-limit';
+import { UnitOfWorkState } from '@postybirb/types';
+import {
+    filterSourceDependentWork,
+    isUnitOfWorkAttemptSettled,
+    partitionUnitsOfWorkByRateLimit,
+} from './unit-of-work-rate-limit';
 
 interface TestUnit {
   id: string;
@@ -81,5 +86,60 @@ describe('partitionUnitsOfWorkByRateLimit', () => {
 
     expect(result.ready).toHaveLength(1);
     expect(result.deferred).toHaveLength(0);
+  });
+});
+
+describe('isUnitOfWorkAttemptSettled', () => {
+  it.each([UnitOfWorkState.SUCCEEDED, UnitOfWorkState.FAILED])(
+    'treats %s as settled',
+    (state) => {
+      expect(isUnitOfWorkAttemptSettled({ state })).toBe(true);
+    },
+  );
+
+  it.each([
+    UnitOfWorkState.NEW,
+    UnitOfWorkState.PENDING,
+    UnitOfWorkState.VALIDATING,
+    UnitOfWorkState.EXECUTING,
+    UnitOfWorkState.CANCELLED,
+    UnitOfWorkState.RATE_LIMITED,
+  ])('treats %s as unsettled', (state) => {
+    expect(isUnitOfWorkAttemptSettled({ state })).toBe(false);
+  });
+});
+
+describe('filterSourceDependentWork', () => {
+  it('defers external-source targets while a source producer is deferred', async () => {
+    const ready = [
+      unit('standard-ready', { accountId: 'standard-ready' }),
+      unit('external-ready', { accountId: 'external-ready' }),
+    ];
+    const deferred = [
+      unit('standard-deferred', { accountId: 'standard-deferred' }),
+    ];
+
+    await expect(
+      filterSourceDependentWork(
+        ready,
+        deferred,
+        async (accountId) => accountId.startsWith('external-'),
+      ),
+    ).resolves.toEqual([ready[0]]);
+  });
+
+  it('does not block targets when only external-source accounts are deferred', async () => {
+    const ready = [unit('external-ready', { accountId: 'external-ready' })];
+    const deferred = [
+      unit('external-deferred', { accountId: 'external-deferred' }),
+    ];
+
+    await expect(
+      filterSourceDependentWork(
+        ready,
+        deferred,
+        async (accountId) => accountId.startsWith('external-'),
+      ),
+    ).resolves.toEqual(ready);
   });
 });

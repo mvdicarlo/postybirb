@@ -1,8 +1,8 @@
 import type { ISubmissionMetadata } from '@postybirb/types';
 import {
-  ScheduleType,
-  SubmissionType,
-  UnitOfWorkState,
+    ScheduleType,
+    SubmissionType,
+    UnitOfWorkState,
 } from '@postybirb/types';
 import { UnitOfWork } from '../entities/unit-of-work.entity';
 import { AccountRepository } from './account.repository';
@@ -83,7 +83,7 @@ describe('PostRepository', () => {
     expect(await repos.unitOfWork.findById(unitOfWork.id)).toBeNull();
   });
 
-  it('completes a post when every active unit has succeeded', async () => {
+  it('completes a post when every active unit has settled', async () => {
     const { account, post, submission } = await seedDependencies();
     await repos.unitOfWork.insert([
       {
@@ -97,12 +97,11 @@ describe('PostRepository', () => {
         submissionId: submission.id,
         accountId: account.id,
         state: UnitOfWorkState.FAILED,
-        evicted: true,
       },
     ]);
 
     await expect(
-      repos.post.completeIfAllActiveUnitsSucceeded(post.id),
+      repos.post.completeIfAllActiveUnitsSettled(post.id),
     ).resolves.toBe(true);
     await expect(repos.post.findByIdOrThrow(post.id)).resolves.toMatchObject({
       completed: true,
@@ -112,7 +111,6 @@ describe('PostRepository', () => {
 
   it.each([
     UnitOfWorkState.NEW,
-    UnitOfWorkState.FAILED,
     UnitOfWorkState.RATE_LIMITED,
     UnitOfWorkState.CANCELLED,
   ])('does not complete a post with active %s work', async (state) => {
@@ -125,7 +123,7 @@ describe('PostRepository', () => {
     });
 
     await expect(
-      repos.post.completeIfAllActiveUnitsSucceeded(post.id),
+      repos.post.completeIfAllActiveUnitsSettled(post.id),
     ).resolves.toBe(false);
     await expect(repos.post.findByIdOrThrow(post.id)).resolves.toMatchObject({
       completed: false,
@@ -159,7 +157,7 @@ describe('PostRepository', () => {
     await repos.post.cancel(post.id);
 
     await expect(repos.post.findByIdOrThrow(post.id)).resolves.toMatchObject({
-      completed: false,
+      completed: true,
       cancelled: true,
     });
     await expect(

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import {
     AccountRepository,
@@ -20,13 +20,17 @@ import {
     SubmissionId,
     UnitOfWorkState,
 } from '@postybirb/types';
-import { eq as equals, inArray } from 'drizzle-orm';
+import { and as allOf, eq as equals, inArray } from 'drizzle-orm';
 import { chunk } from 'lodash';
 import { v4 as uuid } from 'uuid';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { PostingManager } from './posting-manager';
 import { PostingRateLimiterService } from './posting-rate-limiter.service';
-import { partitionUnitsOfWorkByRateLimit } from './unit-of-work-rate-limit';
+import {
+    filterSourceDependentWork,
+    isUnitOfWorkAttemptSettled,
+    partitionUnitsOfWorkByRateLimit,
+} from './unit-of-work-rate-limit';
 
 export type UnitOfWorkEvictions = Record<AccountId, SubmissionFileId[]>;
 
@@ -59,10 +63,6 @@ export class PostingService {
     @Cron(CronExpression.EVERY_SECOND)
     async handlePendingWork(): Promise<void> {
         await this.postingRateLimiter.initialize();
-
-        // Note: Might want to use a new field like "queuedAt" to determine which
-        // work is pending instead of relying on the "updatedAt" field, as it may not
-        // accurately reflect the state of the work.
         const pendingWork = await this.postRepository.find({
             where: (post, { and, eq }) => and(
                 eq(post.completed, false),
@@ -80,15 +80,22 @@ export class PostingService {
             }
 
             const allottedWork = post.unitsOfWork.filter(
-                (unit) => !unit.evicted && !unit.isTerminated,
+                (unit) =>
+                    !unit.evicted && !isUnitOfWorkAttemptSettled(unit),
             );
             if (allottedWork.length === 0) {
                 await this.completePost(post.id);
                 continue;
             }
 
-            const { ready } = partitionUnitsOfWorkByRateLimit(allottedWork);
-            if (ready.length === 0) {
+            const { ready, deferred } =
+                partitionUnitsOfWorkByRateLimit(allottedWork);
+            const executable = await filterSourceDependentWork(
+                ready,
+                deferred,
+                (accountId) => this.acceptsExternalSourceUrls(accountId),
+            );
+            if (executable.length === 0) {
                 continue;
             }
 
@@ -108,10 +115,12 @@ export class PostingService {
         }
 
         const completedDependencyPosts = await this.postRepository.find({
-            where: (post, { and, eq, inArray: whereInArray }) => and(
-                whereInArray(post.submissionId, dependencyIds),
-                eq(post.completed, true),
-            ),
+            where: (post, { and, eq, inArray: whereInArray }) =>
+                and(
+                    whereInArray(post.submissionId, dependencyIds),
+                    eq(post.completed, true),
+                    eq(post.cancelled, false),
+                ),
         });
         const completedDependencyIds = new Set(
             completedDependencyPosts.map((post) => post.submissionId),
@@ -126,6 +135,14 @@ export class PostingService {
             this.postRepository.cancel(postId),
             this.postingManager.cancel(postId, reason ?? 'Cancelled by user'),
         ]);
+    }
+
+    private async acceptsExternalSourceUrls(
+        accountId: AccountId,
+    ): Promise<boolean> {
+        const account = await this.accountRepository.findByIdOrThrow(accountId);
+        return this.websiteRegistry.findInstance(account)?.decoratedProps
+            .fileOptions?.acceptsExternalSourceUrls ?? false;
     }
 
     public async getPost(submissionId: SubmissionId): Promise<Post | null> {
@@ -177,13 +194,11 @@ export class PostingService {
             (unit) => !potentialKeys.has(unit.compositeKey),
         );
 
-        // Explicit evictions request a fresh attempt even when the target still
-        // exists. This is how callers selectively repost completed or failed work.
+        // Explicit evictions request a fresh unit. Other non-succeeded work,
+        // including failed units, is reused and staged as pending by post().
         const evicted = existingWork.unitsOfWork.filter((unit) => {
             const fileIds = evictions[unit.accountId];
-            if (!fileIds) {
-                return false;
-            }
+            if (!fileIds) return false;
             // An empty list means every unit for the account; otherwise only listed files.
             return fileIds.length === 0 || (
                 unit.fileId !== undefined && fileIds.includes(unit.fileId)
@@ -220,6 +235,20 @@ export class PostingService {
         submissionId: SubmissionId,
         evictions: UnitOfWorkEvictions = {},
     ): Promise<Post> {
+        const existingPost = await this.getPost(submissionId);
+        if (existingPost && !existingPost.completed) {
+            throw new ConflictException(
+                `Post '${existingPost.id}' is currently active`,
+            );
+        }
+        return this.persistPost(submissionId, evictions, existingPost ?? undefined);
+    }
+
+    private async persistPost(
+        submissionId: SubmissionId,
+        evictions: UnitOfWorkEvictions,
+        knownPost?: Post,
+    ): Promise<Post> {
         // Finish all asynchronous generation, account lookup, and batching before
         // opening the synchronous SQLite transaction below.
         const incompleteWork = await this.getIncompleteWork(
@@ -229,12 +258,15 @@ export class PostingService {
 
         // A submission owns one Post row. Reposting reopens that row instead of
         // creating a second post and attaches only newly generated units to it.
-        const existingPost = await this.getPost(submissionId);
+        const existingPost = knownPost ?? await this.getPost(submissionId);
         const post = existingPost ?? new Post({ submissionId });
         // Generated units have no postId until they are attached in the transaction below.
         const newWork = incompleteWork.remainingWork.filter(
             (unit) => !unit.postId,
         );
+        const reusedWorkIds = incompleteWork.remainingWork
+            .filter((unit) => unit.postId)
+            .map((unit) => unit.id);
 
         // Removed targets and explicit retries follow the same persistence path:
         // retain the old row for history, but exclude it from future scheduling.
@@ -249,10 +281,18 @@ export class PostingService {
         this.postRepository.db.transaction((tx) => {
             if (existingPost) {
                 // Reopen completed or cancelled posts now that active work changed.
-                tx.update(this.postRepository.table)
+                const claimed = tx.update(this.postRepository.table)
                     .set({ completed: false, cancelled: false })
-                    .where(equals(this.postRepository.table.id, post.id))
+                    .where(allOf(
+                        equals(this.postRepository.table.id, post.id),
+                        equals(this.postRepository.table.completed, true),
+                    ))
                     .run();
+                if (claimed.changes === 0) {
+                    throw new ConflictException(
+                        `Post '${post.id}' is currently active`,
+                    );
+                }
             } else {
                 tx.insert(this.postRepository.table)
                     .values({
@@ -276,13 +316,26 @@ export class PostingService {
                     .run();
             }
 
+            if (reusedWorkIds.length > 0) {
+                tx.update(this.unitOfWorkRepository.table)
+                    .set({ state: UnitOfWorkState.PENDING })
+                    .where(
+                        inArray(
+                            this.unitOfWorkRepository.table.id,
+                            reusedWorkIds,
+                        ),
+                    )
+                    .run();
+            }
+
             if (newWork.length > 0) {
-                // Fresh units include new targets and replacements for explicit evictions.
+                // Fresh units include new targets and replacements for prior attempts.
                 tx.insert(this.unitOfWorkRepository.table)
                     .values(
                         newWork.map((unit) => ({
                             ...unit.toObject(),
                             postId: post.id,
+                            state: UnitOfWorkState.PENDING,
                         })),
                     )
                     .run();
@@ -379,6 +432,6 @@ export class PostingService {
     }
 
     private async completePost(postId: PostId): Promise<void> {
-        await this.postRepository.completeIfAllActiveUnitsSucceeded(postId);
+        await this.postRepository.completeIfAllActiveUnitsSettled(postId);
     }
 }

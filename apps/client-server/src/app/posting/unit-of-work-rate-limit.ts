@@ -1,4 +1,4 @@
-import { IUnitOfWork } from '@postybirb/types';
+import { IUnitOfWork, UnitOfWorkState } from '@postybirb/types';
 
 type RateLimitedUnit = Pick<
   IUnitOfWork,
@@ -8,6 +8,53 @@ type RateLimitedUnit = Pick<
 export interface PartitionedUnitsOfWork<T extends RateLimitedUnit> {
   ready: T[];
   deferred: T[];
+}
+
+export async function filterSourceDependentWork<T extends RateLimitedUnit>(
+  ready: readonly T[],
+  deferred: readonly T[],
+  acceptsExternalSourceUrls: (accountId: string) => Promise<boolean>,
+): Promise<T[]> {
+  if (deferred.length === 0) {
+    return [...ready];
+  }
+
+  const deferredAccountIds = [
+    ...new Set(deferred.map((unit) => unit.accountId)),
+  ];
+  const deferredAccountTypes = await Promise.all(
+    deferredAccountIds.map((accountId) =>
+      acceptsExternalSourceUrls(accountId),
+    ),
+  );
+  if (deferredAccountTypes.every(Boolean)) {
+    return [...ready];
+  }
+
+  const readyAccountIds = [...new Set(ready.map((unit) => unit.accountId))];
+  const readyAccountTypes = await Promise.all(
+    readyAccountIds.map(async (accountId) => [
+      accountId,
+      await acceptsExternalSourceUrls(accountId),
+    ] as const),
+  );
+  const externalSourceAccounts = new Set(
+    readyAccountTypes.flatMap(([accountId, acceptsExternalSources]) =>
+      acceptsExternalSources ? [accountId] : [],
+    ),
+  );
+  return ready.filter(
+    (unit) => !externalSourceAccounts.has(unit.accountId),
+  );
+}
+
+export function isUnitOfWorkAttemptSettled(
+  unit: Pick<IUnitOfWork, 'state'>,
+): boolean {
+  return (
+    unit.state === UnitOfWorkState.SUCCEEDED ||
+    unit.state === UnitOfWorkState.FAILED
+  );
 }
 
 export function partitionUnitsOfWorkByRateLimit<T extends RateLimitedUnit>(

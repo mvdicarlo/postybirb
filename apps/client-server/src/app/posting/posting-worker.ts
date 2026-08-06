@@ -1,27 +1,27 @@
 import {
-    AccountRepository,
-    Post,
-    PostRepository,
-    Submission,
-    SubmissionFile,
-    SubmissionFileRepository,
-    SubmissionRepository,
-    UnitOfWork,
-    UnitOfWorkRepository,
-    WebsiteOptions,
-    WebsiteOptionsRepository,
+  AccountRepository,
+  Post,
+  PostRepository,
+  Submission,
+  SubmissionFile,
+  SubmissionFileRepository,
+  SubmissionRepository,
+  UnitOfWork,
+  UnitOfWorkRepository,
+  WebsiteOptions,
+  WebsiteOptionsRepository,
 } from '@postybirb/database';
 import { Logger, PostyBirbLogger } from '@postybirb/logger';
 import {
-    AccountId,
-    FileType,
-    IFileBuffer,
-    IPostResponse,
-    ISubmissionFile,
-    IWebsiteFormFields,
-    PostData,
-    PostId,
-    UnitOfWorkState,
+  AccountId,
+  FileType,
+  IFileBuffer,
+  IPostResponse,
+  ISubmissionFile,
+  IWebsiteFormFields,
+  PostData,
+  PostId,
+  UnitOfWorkState,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { chunk } from 'lodash';
@@ -37,7 +37,11 @@ import { UnknownWebsite } from '../websites/website';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { CancellationToken } from './cancellation-token';
 import { PostingRateLimiterService } from './posting-rate-limiter.service';
-import { partitionUnitsOfWorkByRateLimit } from './unit-of-work-rate-limit';
+import {
+  filterSourceDependentWork,
+  isUnitOfWorkAttemptSettled,
+  partitionUnitsOfWorkByRateLimit,
+} from './unit-of-work-rate-limit';
 
 type PostingWorkerContext = {
   allUnitsOfWork: UnitOfWork[];
@@ -50,6 +54,11 @@ type PostingWorkerContext = {
 type UnitsOfWorkByAccountId = Record<string, UnitOfWork[]>;
 
 type AccountWork = [accountId: AccountId, unitsOfWork: UnitOfWork[]];
+
+type AccountWorkBatches = {
+  standard: AccountWork[][];
+  acceptsExternalSources: AccountWork[][];
+};
 
 function mimeTypeIsAccepted(mimeType: string, patterns: string[]): boolean {
   return patterns.some((pattern) => {
@@ -86,6 +95,8 @@ export class PostingWorker {
   private disposed = false;
 
   private readonly notifiedFailureAccounts = new Set<AccountId>();
+
+  private sourceProducerWasRateLimited = false;
 
   private readonly maxConcurrentBatchSize = 3;
 
@@ -134,7 +145,7 @@ export class PostingWorker {
         orderBy: (unit, { asc }) => asc(unit.createdAt),
       });
       const unitsOfWork = allUnitsOfWork.filter(
-        (unit) => unit.state !== UnitOfWorkState.SUCCEEDED,
+        (unit) => !isUnitOfWorkAttemptSettled(unit),
       );
 
       if (unitsOfWork.length === 0) {
@@ -151,20 +162,24 @@ export class PostingWorker {
         return;
       }
 
-      const { ready } = partitionUnitsOfWorkByRateLimit(unitsOfWork);
-      if (ready.length === 0) {
+      const { ready, deferred } =
+        partitionUnitsOfWorkByRateLimit(unitsOfWork);
+      const executable = await filterSourceDependentWork(
+        ready,
+        deferred,
+        (accountId) => this.acceptsExternalSourceUrls(accountId),
+      );
+      if (executable.length === 0) {
         this.logger.info(`All work for post '${post.id}' is rate limited`);
         return;
       }
-
-      await this.updateUnitsOfWorkState(ready, UnitOfWorkState.PENDING);
 
       await this.execute({
         allUnitsOfWork,
         options: websiteOptions,
         post,
         submission,
-        unitsOfWork: ready,
+        unitsOfWork: executable,
       });
 
       if (await this.completePost()) {
@@ -208,35 +223,54 @@ export class PostingWorker {
       const accountWorkBatches = await this.createAccountWorkBatches(
         Object.entries(unitsOfWorkByAccountId),
       );
-      for (const batch of accountWorkBatches) {
-        await Promise.all(batch.map(async ([accountId, accountWork]) => {
-          try {
-            this.logger.info(
-              `Processing ${accountWork.length} units of work for account '${accountId}'`,
-            );
-
-            await this.post(accountId, accountWork, context);
-          } catch (error) {
-            this.logger.withError(error).error('Error during posting');
-          }
-        }));
+      await this.processAccountWorkBatches(
+        accountWorkBatches.standard,
+        context,
+      );
+      if (this.sourceProducerWasRateLimited) {
+        this.logger.info(
+          'Deferring external-source accounts until source producers resume',
+        );
+        return;
       }
+      await this.processAccountWorkBatches(
+        accountWorkBatches.acceptsExternalSources,
+        context,
+      );
     } catch (error) {
       this.logger.withError(error).error('Error during execution');
     }
   }
 
-  private async createAccountWorkBatches(accountWork: AccountWork[]): Promise<AccountWork[][]> {
+  private async processAccountWorkBatches(
+    accountWorkBatches: AccountWork[][],
+    context: PostingWorkerContext,
+  ): Promise<void> {
+    for (const batch of accountWorkBatches) {
+      await Promise.all(batch.map(async ([accountId, accountWork]) => {
+        try {
+          this.logger.info(
+            `Processing ${accountWork.length} units of work for account '${accountId}'`,
+          );
+
+          await this.post(accountId, accountWork, context);
+        } catch (error) {
+          this.logger.withError(error).error('Error during posting');
+        }
+      }));
+    }
+  }
+
+  private async createAccountWorkBatches(
+    accountWork: AccountWork[],
+  ): Promise<AccountWorkBatches> {
     const standard: AccountWork[] = [];
     const acceptsExternalSources: AccountWork[] = [];
 
     for (const entry of accountWork) {
       const [accountId] = entry;
-      const account = await this.accountRepository.findByIdOrThrow(accountId);
-      const websiteInstance = this.websiteRegistry.findInstance(account);
       const acceptsExternalSourceUrls =
-        websiteInstance?.decoratedProps.fileOptions
-          ?.acceptsExternalSourceUrls ?? false;
+        await this.acceptsExternalSourceUrls(accountId);
 
       if (acceptsExternalSourceUrls) {
         acceptsExternalSources.push(entry);
@@ -245,10 +279,21 @@ export class PostingWorker {
       }
     }
 
-    return [
-      ...chunk(standard, this.maxConcurrentBatchSize),
-      ...chunk(acceptsExternalSources, this.maxConcurrentBatchSize),
-    ];
+    return {
+      standard: chunk(standard, this.maxConcurrentBatchSize),
+      acceptsExternalSources: chunk(
+        acceptsExternalSources,
+        this.maxConcurrentBatchSize,
+      ),
+    };
+  }
+
+  private async acceptsExternalSourceUrls(
+    accountId: AccountId,
+  ): Promise<boolean> {
+    const account = await this.accountRepository.findByIdOrThrow(accountId);
+    return this.websiteRegistry.findInstance(account)?.decoratedProps
+      .fileOptions?.acceptsExternalSourceUrls ?? false;
   }
 
   private async post(accountId: AccountId, unitsOfWork: UnitOfWork[], context: PostingWorkerContext): Promise<void> {
@@ -402,6 +447,17 @@ export class PostingWorker {
           metadata,
         );
       } catch (error) {
+        if (error === this.cancellationToken.signal.reason) {
+          this.logger.info(
+            `Posting cancelled during batch for account '${accountId}'`,
+          );
+          await this.updateUnitsOfWorkState(
+            units,
+            UnitOfWorkState.CANCELLED,
+          );
+          continue;
+        }
+
         const message = `Error posting batch for account '${accountId}'`;
         this.logger.withError(error).error(
           message,
@@ -440,6 +496,12 @@ export class PostingWorker {
           }),
         ),
       );
+      if (
+        !websiteInstance.decoratedProps.fileOptions
+          ?.acceptsExternalSourceUrls
+      ) {
+        this.sourceProducerWasRateLimited = true;
+      }
       return;
     }
 
@@ -481,6 +543,9 @@ export class PostingWorker {
     const responseData = this.getResponseData(response);
 
     if (response.exception) {
+      if (response.exception === this.cancellationToken.signal.reason) {
+        throw response.exception;
+      }
       await this.failUnitsOfWork(
         unitsOfWork,
         websiteInstance,
@@ -788,7 +853,7 @@ export class PostingWorker {
 
   private async completePost(): Promise<boolean> {
     try {
-      return await this.postRepository.completeIfAllActiveUnitsSucceeded(
+      return await this.postRepository.completeIfAllActiveUnitsSettled(
         this.postId,
       );
     } catch (error) {
