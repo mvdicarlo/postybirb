@@ -1,3 +1,4 @@
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   AccountRepository,
   Post,
@@ -21,6 +22,7 @@ import {
   IWebsiteFormFields,
   PostData,
   PostId,
+  SubmissionId,
   UnitOfWorkState,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
@@ -31,6 +33,7 @@ import { PostParsersService } from '../post-parsers/post-parsers.service';
 import { PostingFile } from '../post/models/posting-file';
 import { getImageResizeParameters } from '../post/services/post-file-resizer/image-resize-parameters';
 import { PostFileResizerService } from '../post/services/post-file-resizer/post-file-resizer.service';
+import { publishSubmissionProjectionChanged } from '../submission/submission.events';
 import { ValidationService } from '../validation/validation.service';
 import { PostBatchData } from '../websites/models/website-modifiers/file-website';
 import { UnknownWebsite } from '../websites/website';
@@ -115,6 +118,7 @@ export class PostingWorker {
     protected readonly notificationService: NotificationsService,
     protected readonly postingRateLimiter: PostingRateLimiterService,
     protected readonly onAfterDispose: () => void | Promise<void>,
+    protected readonly eventEmitter?: EventEmitter2,
   ) {
     this.logger = Logger(`PostingWorker[${postId}]`);
   }
@@ -155,7 +159,7 @@ export class PostingWorker {
 
       if (unitsOfWork.length === 0) {
         this.logger.warn(`No unit of work found for post '${post.id}'`);
-        await this.completePost();
+        await this.completePost(post.submissionId);
         return;
       }
 
@@ -164,6 +168,7 @@ export class PostingWorker {
           `No website options found for submission '${submission.id}'`,
         );
         await this.postRepository.cancel(post.id);
+        publishSubmissionProjectionChanged(this.eventEmitter, post.submissionId);
         return;
       }
 
@@ -183,7 +188,7 @@ export class PostingWorker {
         unitsOfWork: executable,
       });
 
-      if (await this.completePost()) {
+      if (await this.completePost(post.submissionId)) {
         this.logger.info(`All units of work for post '${post.id}' have been completed`);
       } else {
         this.logger.info(`Some units of work for post '${post.id}' are still pending or failed`);
@@ -767,8 +772,16 @@ export class PostingWorker {
     units: UnitOfWork[],
     changes: UnitOfWorkChanges,
   ): Promise<void> {
+    if (units.length === 0) {
+      return;
+    }
+
     await Promise.all(
       units.map((unit) => this.unitOfWorkRepository.update(unit.id, changes)),
+    );
+    publishSubmissionProjectionChanged(
+      this.eventEmitter,
+      units.map((unit) => unit.submissionId),
     );
   }
 
@@ -845,11 +858,15 @@ export class PostingWorker {
     return typeof error === 'string' && error ? error : fallback;
   }
 
-  private async completePost(): Promise<boolean> {
+  private async completePost(submissionId: SubmissionId): Promise<boolean> {
     try {
-      return await this.postRepository.completeIfAllActiveUnitsSettled(
+      const completed = await this.postRepository.completeIfAllActiveUnitsSettled(
         this.postId,
       );
+      if (completed) {
+        publishSubmissionProjectionChanged(this.eventEmitter, submissionId);
+      }
+      return completed;
     } catch (error) {
       this.logger.withError(error).error('Error during post completion');
       return false;

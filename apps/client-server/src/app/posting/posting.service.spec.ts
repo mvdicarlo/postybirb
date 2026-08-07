@@ -1,3 +1,4 @@
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   AccountRepository,
   clearDatabase,
@@ -18,6 +19,7 @@ import {
   SubmissionType,
   UnitOfWorkState,
 } from '@postybirb/types';
+import { SUBMISSION_PROJECTION_CHANGED } from '../submission/submission.events';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { PostingManager } from './posting-manager';
 import { PostingRateLimiterService } from './posting-rate-limiter.service';
@@ -42,6 +44,9 @@ describe('PostingService', () => {
   let postingRateLimiter: {
     initialize: jest.Mock;
   };
+  let eventEmitter: {
+    emit: jest.Mock;
+  };
 
   beforeEach(() => {
     clearDatabase();
@@ -64,10 +69,14 @@ describe('PostingService', () => {
     postingRateLimiter = {
       initialize: jest.fn().mockResolvedValue(undefined),
     };
+    eventEmitter = {
+      emit: jest.fn(),
+    };
     service = new PostingService(
       postingManager as unknown as PostingManager,
       websiteRegistry as unknown as WebsiteRegistryService,
       postingRateLimiter as unknown as PostingRateLimiterService,
+      eventEmitter as unknown as EventEmitter2,
     );
     // A fresh service is paused by its startup lock.
     service.unpausePosts();
@@ -1093,5 +1102,9 @@ describe('PostingService', () => {
       completed: true,
       cancelled: true,
     });
+    expect(eventEmitter.emit).toHaveBeenCalledWith(
+      SUBMISSION_PROJECTION_CHANGED,
+      [expect.objectContaining({ submissionIds: [submission.id] })],
+    );
   });
 });

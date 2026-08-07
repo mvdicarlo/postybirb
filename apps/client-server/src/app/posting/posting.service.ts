@@ -1,4 +1,5 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Inject, Injectable, Optional } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import {
     AccountRepository,
@@ -24,6 +25,7 @@ import {
 import { and as allOf, eq as equals, inArray } from 'drizzle-orm';
 import { chunk, groupBy } from 'lodash';
 import { v4 as uuid } from 'uuid';
+import { publishSubmissionProjectionChanged } from '../submission/submission.events';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { PostingManager } from './posting-manager';
 import { PostingRateLimiterService } from './posting-rate-limiter.service';
@@ -73,6 +75,9 @@ export class PostingService {
         private readonly postingManager: PostingManager,
         private readonly websiteRegistry: WebsiteRegistryService,
         private readonly postingRateLimiter: PostingRateLimiterService,
+        @Optional()
+        @Inject(EventEmitter2)
+        private readonly eventEmitter?: EventEmitter2,
     ) { }
 
     public arePostsPaused(): boolean {
@@ -130,7 +135,12 @@ export class PostingService {
             (unit) => !unit.evicted && !isUnitOfWorkAttemptSettled(unit),
         );
         if (allottedWork.length === 0) {
-            await this.postRepository.completeIfAllActiveUnitsSettled(post.id);
+            if (await this.postRepository.completeIfAllActiveUnitsSettled(post.id)) {
+                publishSubmissionProjectionChanged(
+                    this.eventEmitter,
+                    post.submissionId,
+                );
+            }
             return;
         }
 
@@ -169,10 +179,17 @@ export class PostingService {
     }
 
     public async cancelPost(postId: PostId, reason?: string): Promise<void> {
+        const post = await this.postRepository.findById(postId);
         await Promise.all([
             this.postRepository.cancel(postId),
             this.postingManager.cancel(postId, reason ?? 'Cancelled by user'),
         ]);
+        if (post) {
+            publishSubmissionProjectionChanged(
+                this.eventEmitter,
+                post.submissionId,
+            );
+        }
     }
 
     private async acceptsExternalSourceUrls(
@@ -398,6 +415,8 @@ export class PostingService {
                     .run();
             }
         });
+
+        publishSubmissionProjectionChanged(this.eventEmitter, submissionId);
 
         // Reload so callers receive database values and the complete unit history.
         return this.postRepository.findByIdOrThrow(post.id);

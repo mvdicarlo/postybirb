@@ -1,7 +1,9 @@
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { FileConverterService } from '../file-converter/file-converter.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
 import { PostFileResizerService } from '../post/services/post-file-resizer/post-file-resizer.service';
+import { SUBMISSION_PROJECTION_CHANGED } from '../submission/submission.events';
 import { ValidationService } from '../validation/validation.service';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { CancellationToken } from './cancellation-token';
@@ -11,6 +13,9 @@ import { PostingWorker } from './posting-worker';
 interface WorkerMocks {
   accountRepository: {
     findByIdOrThrow: jest.Mock;
+  };
+  eventEmitter: {
+    emit: jest.Mock;
   };
   fileRepository: {
     findByIdOrThrow: jest.Mock;
@@ -65,6 +70,9 @@ function createWorker(): { worker: PostingWorker; mocks: WorkerMocks } {
     accountRepository: {
       findByIdOrThrow: jest.fn().mockResolvedValue({ id: 'account-1' }),
     },
+    eventEmitter: {
+      emit: jest.fn(),
+    },
     fileRepository: {
       findByIdOrThrow: jest.fn(),
     },
@@ -105,7 +113,13 @@ function createWorker(): { worker: PostingWorker; mocks: WorkerMocks } {
     unitOfWorkRepository: {
       find: jest
         .fn()
-        .mockResolvedValue([{ id: 'work-1', accountId: 'account-1' }]),
+        .mockResolvedValue([
+          {
+            id: 'work-1',
+            accountId: 'account-1',
+            submissionId: 'submission-1',
+          },
+        ]),
       update: jest.fn().mockResolvedValue(undefined),
     },
     validationService: {
@@ -144,6 +158,7 @@ function createWorker(): { worker: PostingWorker; mocks: WorkerMocks } {
     mocks.notificationService as unknown as NotificationsService,
     mocks.postingRateLimiter as unknown as PostingRateLimiterService,
     mocks.onAfterDispose,
+    mocks.eventEmitter as unknown as EventEmitter2,
   );
   Object.assign(worker, {
     accountRepository: mocks.accountRepository,
@@ -163,6 +178,17 @@ describe('PostingWorker', () => {
     await worker.start();
 
     expect(mocks.onAfterDispose).toHaveBeenCalledTimes(1);
+  });
+
+  it('publishes a submission change when unit state advances', async () => {
+    const { worker, mocks } = createWorker();
+
+    await worker.start();
+
+    expect(mocks.eventEmitter.emit).toHaveBeenCalledWith(
+      SUBMISSION_PROJECTION_CHANGED,
+      [expect.objectContaining({ submissionIds: ['submission-1'] })],
+    );
   });
 
   it('posts a prepared batch and stores the successful response', async () => {

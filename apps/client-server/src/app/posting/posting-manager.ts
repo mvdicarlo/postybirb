@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, Optional } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Logger } from '@postybirb/logger';
 import { PostId } from '@postybirb/types';
 import { Mutex } from 'async-mutex';
@@ -31,6 +32,9 @@ export class PostingManager {
     private readonly fileConverterService: FileConverterService,
     private readonly notificationService: NotificationsService,
     private readonly postingRateLimiter: PostingRateLimiterService,
+    @Optional()
+    @Inject(EventEmitter2)
+    private readonly eventEmitter?: EventEmitter2,
   ) {}
 
   public submit(postId: PostId): Promise<boolean> {
@@ -92,6 +96,7 @@ export class PostingManager {
       this.notificationService,
       this.postingRateLimiter,
       onAfterDispose,
+      this.eventEmitter,
     );
   }
 
