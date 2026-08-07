@@ -24,7 +24,7 @@ import {
   UnitOfWorkState,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
-import { chunk } from 'lodash';
+import { chunk, groupBy } from 'lodash';
 import { FileConverterService } from '../file-converter/file-converter.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
@@ -38,9 +38,8 @@ import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { CancellationToken } from './cancellation-token';
 import { PostingRateLimiterService } from './posting-rate-limiter.service';
 import {
-  filterSourceDependentWork,
   isUnitOfWorkAttemptSettled,
-  partitionUnitsOfWorkByRateLimit,
+  selectExecutableWork,
 } from './unit-of-work-rate-limit';
 
 type PostingWorkerContext = {
@@ -51,8 +50,6 @@ type PostingWorkerContext = {
   unitsOfWork: UnitOfWork[];
 }
 
-type UnitsOfWorkByAccountId = Record<string, UnitOfWork[]>;
-
 type AccountWork = [accountId: AccountId, unitsOfWork: UnitOfWork[]];
 
 type AccountWorkBatches = {
@@ -60,17 +57,25 @@ type AccountWorkBatches = {
   acceptsExternalSources: AccountWork[][];
 };
 
+type UnitOfWorkChanges = Parameters<UnitOfWorkRepository['update']>[1];
+
 function mimeTypeIsAccepted(mimeType: string, patterns: string[]): boolean {
   return patterns.some((pattern) => {
     if (pattern === mimeType) return true;
-    if (pattern.endsWith('/*')) {
-      return mimeType.startsWith(pattern.slice(0, -1));
-    }
-    if (pattern.endsWith('/')) {
-      return mimeType.startsWith(pattern);
-    }
-    return false;
+    // Both 'image/*' and 'image/' mean "any subtype of image".
+    const prefix = pattern.endsWith('/*') ? pattern.slice(0, -1) : pattern;
+    return prefix.endsWith('/') && mimeType.startsWith(prefix);
   });
+}
+
+function uniqueUrls(urls: Array<string | null | undefined>): string[] {
+  return [
+    ...new Set(
+      urls
+        .map((url) => url?.trim())
+        .filter((url): url is string => Boolean(url)),
+    ),
+  ];
 }
 
 export class PostingWorker {
@@ -162,12 +167,8 @@ export class PostingWorker {
         return;
       }
 
-      const { ready, deferred } =
-        partitionUnitsOfWorkByRateLimit(unitsOfWork);
-      const executable = await filterSourceDependentWork(
-        ready,
-        deferred,
-        (accountId) => this.acceptsExternalSourceUrls(accountId),
+      const executable = await selectExecutableWork(unitsOfWork, (accountId) =>
+        this.acceptsExternalSourceUrls(accountId),
       );
       if (executable.length === 0) {
         this.logger.info(`All work for post '${post.id}' is rate limited`);
@@ -211,17 +212,8 @@ export class PostingWorker {
 
   private async execute(context: PostingWorkerContext): Promise<void> {
     try {
-      const { unitsOfWork } = context;
-      const unitsOfWorkByAccountId: UnitsOfWorkByAccountId = {};
-      for (const unit of unitsOfWork) {
-        if (!unitsOfWorkByAccountId[unit.accountId]) {
-          unitsOfWorkByAccountId[unit.accountId] = [];
-        }
-        unitsOfWorkByAccountId[unit.accountId].push(unit);
-      }
-
       const accountWorkBatches = await this.createAccountWorkBatches(
-        Object.entries(unitsOfWorkByAccountId),
+        Object.entries(groupBy(context.unitsOfWork, (unit) => unit.accountId)),
       );
       await this.processAccountWorkBatches(
         accountWorkBatches.standard,
@@ -297,24 +289,26 @@ export class PostingWorker {
   }
 
   private async post(accountId: AccountId, unitsOfWork: UnitOfWork[], context: PostingWorkerContext): Promise<void> {
-    await this.updateUnitsOfWorkState(unitsOfWork, UnitOfWorkState.VALIDATING);
+    await this.updateUnits(unitsOfWork, {
+      state: UnitOfWorkState.VALIDATING,
+    });
 
     const account = await this.accountRepository.findByIdOrThrow(accountId);
     const websiteInstance = this.websiteRegistry.findInstance(account);
 
     if (!websiteInstance) {
-      this.logger.warn(
-        `No website instance found for account '${accountId}'`,
-      );
-      await this.markUnitsOfWorkAsFailed(unitsOfWork, {
-        error: `No website instance found for account '${accountId}'`,
-      });
+      const message = `No website instance found for account '${accountId}'`;
+      this.logger.warn(message);
+      await this.markUnitsOfWorkAsFailed(unitsOfWork, { error: message });
       return;
     }
 
-    if (this.cancellationToken.aborted) {
-      this.logger.info(`Cancellation requested before posting for account '${accountId}'`);
-      await this.updateUnitsOfWorkState(unitsOfWork, UnitOfWorkState.CANCELLED);
+    if (
+      await this.cancelUnitsIfAborted(
+        unitsOfWork,
+        `before posting for account '${accountId}'`,
+      )
+    ) {
       return;
     }
 
@@ -336,16 +330,12 @@ export class PostingWorker {
         return;
       }
     } catch (error) {
-      const message = `Login failed for account '${accountId}'`;
-      this.logger.withError(error).error(
-        message,
-      );
-      await this.failUnitsOfWork(
+      await this.failUnitsOfWorkWithError(
         unitsOfWork,
         websiteInstance,
         context.submission,
-        this.getErrorMessage(error, message),
-        { error: message },
+        `Login failed for account '${accountId}'`,
+        error,
       );
       return;
     }
@@ -369,21 +359,17 @@ export class PostingWorker {
       // Post data parsing
       postData = await this.postParsersService.parse(context.submission, websiteInstance, websiteOption, false);
     } catch (error) {
-      const message = `Error parsing post data for account '${accountId}'`;
-      this.logger.withError(error).error(
-        message,
-      );
-      await this.failUnitsOfWork(
+      await this.failUnitsOfWorkWithError(
         unitsOfWork,
         websiteInstance,
         context.submission,
-        this.getErrorMessage(error, message),
-        { error: message },
+        `Error parsing post data for account '${accountId}'`,
+        error,
       );
       return;
     }
 
-    await this.updateUnitsOfWorkData(unitsOfWork, { postData });
+    await this.updateUnits(unitsOfWork, { data: { postData } });
 
     try {
       // Submission Validation
@@ -402,16 +388,12 @@ export class PostingWorker {
         return;
       }
     } catch (error) {
-      const message = `Error validating post data for account '${accountId}'`;
-      this.logger.withError(error).error(
-        message,
-      );
-      await this.failUnitsOfWork(
+      await this.failUnitsOfWorkWithError(
         unitsOfWork,
         websiteInstance,
         context.submission,
-        this.getErrorMessage(error, message),
-        { error: message },
+        `Error validating post data for account '${accountId}'`,
+        error,
       );
       return;
     }
@@ -425,16 +407,22 @@ export class PostingWorker {
       context.submission,
     );
 
-    if (this.cancellationToken.aborted) {
-      this.logger.info(`Cancellation requested before posting for account '${accountId}'`);
-      await this.updateUnitsOfWorkState(unitsOfWork, UnitOfWorkState.CANCELLED);
+    if (
+      await this.cancelUnitsIfAborted(
+        unitsOfWork,
+        `before posting for account '${accountId}'`,
+      )
+    ) {
       return;
     }
 
     for (const { metadata, units } of batchedUnitsOfWork) {
-      if (this.cancellationToken.aborted) {
-        this.logger.info(`Cancellation requested during posting for account '${accountId}'`);
-        await this.updateUnitsOfWorkState(units, UnitOfWorkState.CANCELLED);
+      if (
+        await this.cancelUnitsIfAborted(
+          units,
+          `during posting for account '${accountId}'`,
+        )
+      ) {
         continue;
       }
 
@@ -451,26 +439,38 @@ export class PostingWorker {
           this.logger.info(
             `Posting cancelled during batch for account '${accountId}'`,
           );
-          await this.updateUnitsOfWorkState(
-            units,
-            UnitOfWorkState.CANCELLED,
-          );
+          await this.updateUnits(units, {
+            state: UnitOfWorkState.CANCELLED,
+          });
           continue;
         }
 
-        const message = `Error posting batch for account '${accountId}'`;
-        this.logger.withError(error).error(
-          message,
-        );
-        await this.failUnitsOfWork(
+        await this.failUnitsOfWorkWithError(
           units,
           websiteInstance,
           context.submission,
-          this.getErrorMessage(error, message),
-          { error: message },
+          `Error posting batch for account '${accountId}'`,
+          error,
         );
       }
     }
+  }
+
+  /**
+   * Marks the units as cancelled when the worker was aborted. Returns whether
+   * the caller should stop working on them.
+   */
+  private async cancelUnitsIfAborted(
+    units: UnitOfWork[],
+    phase: string,
+  ): Promise<boolean> {
+    if (!this.cancellationToken.aborted) {
+      return false;
+    }
+
+    this.logger.info(`Cancellation requested ${phase}`);
+    await this.updateUnits(units, { state: UnitOfWorkState.CANCELLED });
+    return true;
   }
 
   private async postBatch(
@@ -480,6 +480,9 @@ export class PostingWorker {
     submission: Submission,
     batch: PostBatchData,
   ): Promise<void> {
+    const acceptsExternalSourceUrls =
+      websiteInstance.decoratedProps.fileOptions?.acceptsExternalSourceUrls ??
+      false;
     const reservation = await this.postingRateLimiter.acquire(
       websiteInstance.accountId,
       websiteInstance.decoratedProps.metadata,
@@ -488,49 +491,35 @@ export class PostingWorker {
       if (!reservation.rateLimitedUntil) {
         throw new Error('Rate limiter denied a batch without an expiry');
       }
-      await Promise.all(
-        unitsOfWork.map((unit) =>
-          this.unitOfWorkRepository.update(unit.id, {
-            state: UnitOfWorkState.RATE_LIMITED,
-            rateLimitedUntil: reservation.rateLimitedUntil,
-          }),
-        ),
-      );
-      if (
-        !websiteInstance.decoratedProps.fileOptions
-          ?.acceptsExternalSourceUrls
-      ) {
+      await this.updateUnits(unitsOfWork, {
+        state: UnitOfWorkState.RATE_LIMITED,
+        rateLimitedUntil: reservation.rateLimitedUntil,
+      });
+      if (!acceptsExternalSourceUrls) {
         this.sourceProducerWasRateLimited = true;
       }
       return;
     }
 
-    await Promise.all(
-      unitsOfWork.map((unit) =>
-        this.unitOfWorkRepository.update(unit.id, {
-          state: UnitOfWorkState.EXECUTING,
-          rateLimitedUntil: reservation.rateLimitedUntil ?? null,
-        }),
-      ),
-    );
+    await this.updateUnits(unitsOfWork, {
+      state: UnitOfWorkState.EXECUTING,
+      rateLimitedUntil: reservation.rateLimitedUntil ?? null,
+    });
 
     const preparedFiles = await this.prepareBatchFiles(
       websiteInstance,
       unitsOfWork,
     );
-    const propagatedSourceUrls = websiteInstance.decoratedProps.fileOptions
-      ?.acceptsExternalSourceUrls
+    const propagatedSourceUrls = acceptsExternalSourceUrls
       ? await this.getPropagatedSourceUrls(unitsOfWork)
       : [];
     const files = preparedFiles.map((file) =>
       file.withMetadata({
         ...file.metadata,
-        sourceUrls: [
+        sourceUrls: uniqueUrls([
           ...(file.metadata.sourceUrls ?? []),
           ...propagatedSourceUrls,
-        ]
-          .map((url) => url.trim())
-          .filter((url, index, urls) => url && urls.indexOf(url) === index),
+        ]),
       }),
     );
     this.cancellationToken.throwIfAborted();
@@ -540,7 +529,6 @@ export class PostingWorker {
       batch,
       this.cancellationToken,
     );
-    const responseData = this.getResponseData(response);
 
     if (response.exception) {
       if (response.exception === this.cancellationToken.signal.reason) {
@@ -551,20 +539,16 @@ export class PostingWorker {
         websiteInstance,
         submission,
         response.message ?? response.exception.message ?? 'Unknown error',
-        responseData,
+        this.getResponseData(response),
       );
       return;
     }
 
-    await Promise.all(
-      unitsOfWork.map((unit) =>
-        this.unitOfWorkRepository.update(unit.id, {
-          state: UnitOfWorkState.SUCCEEDED,
-          response: responseData,
-          url: response.sourceUrl,
-        }),
-      ),
-    );
+    await this.updateUnits(unitsOfWork, {
+      state: UnitOfWorkState.SUCCEEDED,
+      response: this.getResponseData(response),
+      url: response.sourceUrl,
+    });
   }
 
   private getAccountBatches(
@@ -617,6 +601,7 @@ export class PostingWorker {
     });
   }
 
+  /** Source URLs already produced by the other accounts on this post. */
   private async getPropagatedSourceUrls(
     unitsOfWork: UnitOfWork[],
   ): Promise<string[]> {
@@ -633,18 +618,7 @@ export class PostingWorker {
       ),
     });
 
-    return sourceUnits
-      .filter(
-        (unit) =>
-          unit.postId === this.postId &&
-          !unit.evicted &&
-          unit.accountId !== accountId,
-      )
-      .map((unit) => unit.url?.trim())
-      .filter(
-        (url, index, urls): url is string =>
-          Boolean(url) && urls.indexOf(url) === index,
-      );
+    return uniqueUrls(sourceUnits.map((unit) => unit.url));
   }
 
   private getResponseData(response: IPostResponse): Record<string, unknown> {
@@ -789,15 +763,23 @@ export class PostingWorker {
     });
   }
 
-  private async updateUnitsOfWorkState(units: UnitOfWork[], state: UnitOfWorkState): Promise<void> {
-    await Promise.all(units.map(unit => this.unitOfWorkRepository.update(unit.id, { state })));
+  private async updateUnits(
+    units: UnitOfWork[],
+    changes: UnitOfWorkChanges,
+  ): Promise<void> {
+    await Promise.all(
+      units.map((unit) => this.unitOfWorkRepository.update(unit.id, changes)),
+    );
   }
 
-  private async markUnitsOfWorkAsFailed(units: UnitOfWork[], response?: Record<string, unknown>): Promise<void> {
-    await Promise.all(units.map(unit => this.unitOfWorkRepository.update(unit.id, {
+  private async markUnitsOfWorkAsFailed(
+    units: UnitOfWork[],
+    response: Record<string, unknown>,
+  ): Promise<void> {
+    await this.updateUnits(units, {
       state: UnitOfWorkState.FAILED,
-      response: response ?? { error: 'Unknown error' },
-    })));
+      response,
+    });
   }
 
   private async failUnitsOfWork(
@@ -809,6 +791,24 @@ export class PostingWorker {
   ): Promise<void> {
     await this.markUnitsOfWorkAsFailed(units, response);
     await this.notifyPostFailure(websiteInstance, submission, message);
+  }
+
+  /** Logs a thrown error and fails the units with its message. */
+  private async failUnitsOfWorkWithError(
+    units: UnitOfWork[],
+    websiteInstance: UnknownWebsite,
+    submission: Submission,
+    message: string,
+    error: unknown,
+  ): Promise<void> {
+    this.logger.withError(error).error(message);
+    await this.failUnitsOfWork(
+      units,
+      websiteInstance,
+      submission,
+      this.getErrorMessage(error, message),
+      { error: message },
+    );
   }
 
   private async notifyPostFailure(
@@ -843,12 +843,6 @@ export class PostingWorker {
       return error.message;
     }
     return typeof error === 'string' && error ? error : fallback;
-  }
-
-  private async updateUnitsOfWorkData(units: UnitOfWork[], data: Record<string, unknown>): Promise<void> {
-    await Promise.all(units.map(unit => this.unitOfWorkRepository.update(unit.id, {
-      data,
-    })));
   }
 
   private async completePost(): Promise<boolean> {

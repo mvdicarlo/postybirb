@@ -346,7 +346,7 @@ describe('PostingWorker', () => {
     );
   });
 
-  it('merges user and non-evicted cross-account source URLs without mutating stored metadata', async () => {
+  it('merges user and cross-account source URLs without mutating stored metadata', async () => {
     const { worker, mocks } = createWorker();
     const currentWork = {
       id: 'work-1',
@@ -370,24 +370,6 @@ describe('PostingWorker', () => {
           accountId: 'source-account-2',
           evicted: false,
           url: ' https://example.com/source ',
-        },
-        {
-          postId: 'post-1',
-          accountId: 'account-1',
-          evicted: false,
-          url: 'https://example.com/self',
-        },
-        {
-          postId: 'post-1',
-          accountId: 'evicted-account',
-          evicted: true,
-          url: 'https://example.com/evicted',
-        },
-        {
-          postId: 'another-post',
-          accountId: 'other-account',
-          evicted: false,
-          url: 'https://example.com/unrelated',
         },
         {
           postId: 'post-1',

@@ -48,6 +48,18 @@ export async function filterSourceDependentWork<T extends RateLimitedUnit>(
   );
 }
 
+/**
+ * Units that may run right now: not rate limited, and not depending on a
+ * source producer that is still deferred.
+ */
+export async function selectExecutableWork<T extends RateLimitedUnit>(
+  units: readonly T[],
+  acceptsExternalSourceUrls: (accountId: string) => Promise<boolean>,
+): Promise<T[]> {
+  const { ready, deferred } = partitionUnitsOfWorkByRateLimit(units);
+  return filterSourceDependentWork(ready, deferred, acceptsExternalSourceUrls);
+}
+
 export function isUnitOfWorkAttemptSettled(
   unit: Pick<IUnitOfWork, 'state'>,
 ): boolean {

@@ -1,4 +1,4 @@
-import { Body, Controller, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { GetIncompleteWorkDto } from './dtos/get-incomplete-work.dto';
 import { PostingService } from './posting.service';
@@ -14,6 +14,14 @@ export class PostingController {
     return this.service.post(request.submissionId, request.evictions);
   }
 
+  @Post('dry-run')
+  @ApiOkResponse({
+    description: 'Work that would run if the post were started now.',
+  })
+  dryRun(@Body() request: GetIncompleteWorkDto) {
+    return this.service.dryRun(request.submissionId, request.evictions);
+  }
+
   @Post('incomplete-work')
   @ApiOkResponse({ description: 'Remaining, removed, and evicted posting work.' })
   getIncompleteWork(@Body() request: GetIncompleteWorkDto) {
@@ -21,6 +29,19 @@ export class PostingController {
       request.submissionId,
       request.evictions,
     );
+  }
+
+  @Get('is-paused')
+  @ApiOkResponse({ description: 'Get if posting is paused.' })
+  isPaused() {
+    return { paused: this.service.arePostsPaused() };
+  }
+
+  @Post('unpause')
+  @ApiOkResponse({ description: 'Posting resumed.' })
+  unpause() {
+    this.service.unpausePosts();
+    return { paused: this.service.arePostsPaused() };
   }
 
   @Post('/cancel/:postId')

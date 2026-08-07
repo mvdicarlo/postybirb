@@ -1,22 +1,22 @@
 import {
-    AccountRepository,
-    clearDatabase,
-    PostRepository,
-    SubmissionFileRepository,
-    SubmissionRepository,
-    UnitOfWorkRepository,
-    WebsiteOptionsRepository,
+  AccountRepository,
+  clearDatabase,
+  PostRepository,
+  SubmissionFileRepository,
+  SubmissionRepository,
+  UnitOfWorkRepository,
+  WebsiteOptionsRepository,
 } from '@postybirb/database';
 import type {
-    ISubmissionMetadata,
-    IWebsiteFormFields,
-    SubmissionId,
+  ISubmissionMetadata,
+  IWebsiteFormFields,
+  SubmissionId,
 } from '@postybirb/types';
 import {
-    DefaultSubmissionFileMetadata,
-    ScheduleType,
-    SubmissionType,
-    UnitOfWorkState,
+  DefaultSubmissionFileMetadata,
+  ScheduleType,
+  SubmissionType,
+  UnitOfWorkState,
 } from '@postybirb/types';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { PostingManager } from './posting-manager';
@@ -69,6 +69,8 @@ describe('PostingService', () => {
       websiteRegistry as unknown as WebsiteRegistryService,
       postingRateLimiter as unknown as PostingRateLimiterService,
     );
+    // A fresh service is paused by its startup lock.
+    service.unpausePosts();
     accountRepository = new AccountRepository();
     postRepository = new PostRepository();
     fileRepository = new SubmissionFileRepository();
@@ -111,6 +113,100 @@ describe('PostingService', () => {
     const result = await service.getPost(submission.id);
 
     expect(result?.id).toBe(post.id);
+  });
+
+  it('holds posting until the startup lock is released', async () => {
+    const pausedService = new PostingService(
+      postingManager as unknown as PostingManager,
+      websiteRegistry as unknown as WebsiteRegistryService,
+      postingRateLimiter as unknown as PostingRateLimiterService,
+    );
+    const submission = await seedSubmission();
+    const account = await seedAccount('startup-lock-account');
+    const post = await postRepository.insert({ submissionId: submission.id });
+    await unitOfWorkRepository.insert({
+      postId: post.id,
+      submissionId: submission.id,
+      accountId: account.id,
+      batch: 'ready-batch',
+      state: UnitOfWorkState.NEW,
+    });
+
+    expect(pausedService.arePostsPaused()).toBe(true);
+    await pausedService.handlePendingWork();
+    expect(postingManager.submit).not.toHaveBeenCalled();
+
+    pausedService.unpausePosts();
+
+    expect(pausedService.arePostsPaused()).toBe(false);
+    await pausedService.handlePendingWork();
+    expect(postingManager.submit).toHaveBeenCalledWith(post.id);
+  });
+
+  it('dry runs the work that would run without persisting it', async () => {
+    const submission = await seedSubmission();
+    const account = await seedAccount('dry-run-account');
+    await websiteOptionsRepository.insert({
+      accountId: account.id,
+      submissionId: submission.id,
+      data: {} as IWebsiteFormFields,
+      isDefault: false,
+    });
+
+    const result = await service.dryRun(submission.id);
+
+    expect(result.paused).toBe(false);
+    expect(result.dependenciesCompleted).toBe(true);
+    expect(result.executableWork.map((unit) => unit.compositeKey)).toEqual([
+      `${submission.id}:${account.id}:`,
+    ]);
+    expect(result.deferredWork).toEqual([]);
+    expect(result.remainingWork).toHaveLength(1);
+    await expect(service.getPost(submission.id)).resolves.toBeNull();
+    await expect(unitOfWorkRepository.findAll()).resolves.toEqual([]);
+  });
+
+  it('dry runs rate limited work as deferred', async () => {
+    const submission = await seedSubmission();
+    const account = await seedAccount('dry-run-deferred-account');
+    await websiteOptionsRepository.insert({
+      accountId: account.id,
+      submissionId: submission.id,
+      data: {} as IWebsiteFormFields,
+      isDefault: false,
+    });
+    const post = await postRepository.insert({ submissionId: submission.id });
+    await unitOfWorkRepository.insert({
+      postId: post.id,
+      submissionId: submission.id,
+      accountId: account.id,
+      batch: 'deferred-batch',
+      state: UnitOfWorkState.RATE_LIMITED,
+      rateLimitedUntil: new Date(Date.now() + 60_000).toISOString(),
+    });
+
+    const result = await service.dryRun(submission.id);
+
+    expect(result.executableWork).toEqual([]);
+    expect(result.deferredWork).toHaveLength(1);
+  });
+
+  it('dry runs nothing as executable while a dependency is incomplete', async () => {
+    const dependency = await seedSubmission();
+    const submission = await seedSubmission([dependency.id]);
+    const account = await seedAccount('dry-run-dependency-account');
+    await websiteOptionsRepository.insert({
+      accountId: account.id,
+      submissionId: submission.id,
+      data: {} as IWebsiteFormFields,
+      isDefault: false,
+    });
+
+    const result = await service.dryRun(submission.id);
+
+    expect(result.dependenciesCompleted).toBe(false);
+    expect(result.executableWork).toEqual([]);
+    expect(result.deferredWork).toHaveLength(1);
   });
 
   it('returns all potential work as remaining when no post exists', async () => {
@@ -806,6 +902,67 @@ describe('PostingService', () => {
 
     expect(postingManager.submit).toHaveBeenCalledTimes(1);
     expect(postingManager.submit).toHaveBeenCalledWith(readyPost.id);
+  });
+
+  it('continues to later posts when an earlier post throws', async () => {
+    const failingSubmission = await seedSubmission();
+    const readySubmission = await seedSubmission();
+    const account = await seedAccount('isolated-failure-account');
+    const failingPost = await postRepository.insert({
+      submissionId: failingSubmission.id,
+      updatedAt: '2026-08-05T00:00:00.000Z',
+    });
+    const readyPost = await postRepository.insert({
+      submissionId: readySubmission.id,
+      updatedAt: '2026-08-05T00:00:01.000Z',
+    });
+    await unitOfWorkRepository.insert([
+      {
+        postId: failingPost.id,
+        submissionId: failingSubmission.id,
+        accountId: account.id,
+        batch: 'failing-batch',
+        state: UnitOfWorkState.NEW,
+      },
+      {
+        postId: readyPost.id,
+        submissionId: readySubmission.id,
+        accountId: account.id,
+        batch: 'ready-batch',
+        state: UnitOfWorkState.NEW,
+      },
+    ]);
+    jest
+      .spyOn(service, 'areDependenciesCompleted')
+      .mockImplementation(async (submissionId) => {
+        if (submissionId === failingSubmission.id) {
+          throw new Error('dependency lookup failed');
+        }
+        return true;
+      });
+
+    await expect(service.handlePendingWork()).resolves.toBeUndefined();
+
+    expect(postingManager.submit).toHaveBeenCalledTimes(1);
+    expect(postingManager.submit).toHaveBeenCalledWith(readyPost.id);
+  });
+
+  it('skips the cycle when rate limit hydration fails', async () => {
+    const submission = await seedSubmission();
+    const account = await seedAccount('hydration-failure-account');
+    const post = await postRepository.insert({ submissionId: submission.id });
+    await unitOfWorkRepository.insert({
+      postId: post.id,
+      submissionId: submission.id,
+      accountId: account.id,
+      batch: 'ready-batch',
+      state: UnitOfWorkState.NEW,
+    });
+    postingRateLimiter.initialize.mockRejectedValue(new Error('hydration'));
+
+    await expect(service.handlePendingWork()).resolves.toBeUndefined();
+
+    expect(postingManager.submit).not.toHaveBeenCalled();
   });
 
   it('submits a mixed post when at least one whole batch is ready', async () => {
