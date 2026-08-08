@@ -32,7 +32,7 @@ describe('getImageResizeParameters', () => {
           'account-1': { width: 800, height: 600 },
         },
       },
-    } as ISubmissionFile;
+    } as unknown as ISubmissionFile;
 
     expect(getImageResizeParameters(instance, file)).toEqual({
       width: 700,
@@ -72,7 +72,7 @@ describe('getImageResizeParameters', () => {
           'account-1': { width: 500, height: 800 },
         },
       },
-    } as ISubmissionFile;
+    } as unknown as ISubmissionFile;
 
     expect(getImageResizeParameters(instance, file)).toEqual({
       width: 500,
@@ -98,7 +98,7 @@ describe('getImageResizeParameters', () => {
           'account-1': { width: 800, height: 600 },
         },
       },
-    } as ISubmissionFile;
+    } as unknown as ISubmissionFile;
 
     expect(getImageResizeParameters(instance, file)).toEqual({
       width: 800,
