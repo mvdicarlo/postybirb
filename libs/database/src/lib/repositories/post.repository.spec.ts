@@ -66,9 +66,21 @@ describe('PostRepository', () => {
   it('allows only one post per submission', async () => {
     const { submission } = await seedDependencies();
 
-    await expect(
-      repos.post.insert({ submissionId: submission.id }),
-    ).rejects.toThrow();
+    // `better-sqlite3`'s `SqliteError` is not a genuine `[object Error]`, so
+    // `expect(...).rejects.toThrow()` only recognises it when `expect` happens
+    // to be loaded in the same realm as the driver — which depends on the
+    // installed `node_modules` layout and differs between local and CI.
+    // Assert on the rejection value itself instead.
+    const rejection = await repos.post
+      .insert({ submissionId: submission.id })
+      .then(
+        () => undefined,
+        (error: Error) => error,
+      );
+
+    expect(rejection?.message).toMatch(
+      /UNIQUE constraint failed: post\.submissionId/,
+    );
   });
 
   it('deleting a post cascades to its units of work', async () => {
