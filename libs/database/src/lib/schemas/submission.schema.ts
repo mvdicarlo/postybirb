@@ -4,16 +4,22 @@ import { integer, real, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import {
   ISubmissionMetadata,
   ISubmissionScheduleInfo,
+  SubmissionId,
 } from '../../../../types/src/index';
 import { CommonSchema, submissionType } from './common.schema';
 import { PostQueueRecordSchema } from './post-queue-record.schema';
 import { PostRecordSchema } from './post-record.schema';
+import { PostSchema } from './post.schema';
 import { SubmissionFileSchema } from './submission-file.schema';
 import { WebsiteOptionsSchema } from './website-options.schema';
 
 export const SubmissionSchema = sqliteTable('submission', {
   ...CommonSchema(),
   ...submissionType(),
+  dependsOn: text({ mode: 'json' })
+    .notNull()
+    .$type<SubmissionId[]>()
+    .default([]),
   isArchived: integer({ mode: 'boolean' }).default(false),
   isInitialized: integer({ mode: 'boolean' }).default(false),
   isMultiSubmission: integer({ mode: 'boolean' }).notNull(),
@@ -29,6 +35,7 @@ export const SubmissionRelations = relations(
   ({ one, many }) => ({
     options: many(WebsiteOptionsSchema),
     posts: many(PostRecordSchema),
+    post: one(PostSchema),
     files: many(SubmissionFileSchema),
     postQueueRecord: one(PostQueueRecordSchema),
   }),

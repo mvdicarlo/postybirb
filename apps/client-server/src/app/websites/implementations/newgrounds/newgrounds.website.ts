@@ -162,7 +162,7 @@ export default class Newgrounds
         .atStage('get userkey');
     }
 
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     // Step 2: Initialize the project
     const initRes = await new PostBuilder(this, cancellationToken)
@@ -305,7 +305,7 @@ export default class Newgrounds
           .atStage('content validation');
       }
 
-      cancellationToken.throwIfCancelled();
+      cancellationToken.throwIfAborted();
 
       // Step 7: Publish the project
       if (contentUpdateRes?.body?.can_publish) {
@@ -378,7 +378,7 @@ export default class Newgrounds
         .atStage('get userkey');
     }
 
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     // Step 2: Submit the news post
     const builder = new PostBuilder(this, cancellationToken)

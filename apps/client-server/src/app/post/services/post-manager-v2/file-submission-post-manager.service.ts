@@ -1,30 +1,27 @@
 import { Injectable, Optional } from '@nestjs/common';
-import { Logger } from '@postybirb/logger';
-import {
-  AccountId,
-  FileSubmission,
-  FileSubmissionMetadata,
-  FileType,
-  ImageResizeProps,
-  PostData,
-  PostEventType,
-  SubmissionType,
-} from '@postybirb/types';
-import { getFileType } from '@postybirb/utils/file-type';
-import { chunk } from 'lodash';
 import {
   FileBuffer,
   PostRecord,
   Submission,
   SubmissionFile,
 } from '@postybirb/database';
+import { Logger } from '@postybirb/logger';
+import {
+  AccountId,
+  FileSubmissionMetadata,
+  FileType,
+  PostData,
+  PostEventType,
+  SubmissionType
+} from '@postybirb/types';
+import { getFileType } from '@postybirb/utils/file-type';
+import { chunk } from 'lodash';
 import { FileConverterService } from '../../../file-converter/file-converter.service';
 import { NotificationsService } from '../../../notifications/notifications.service';
 import { PostParsersService } from '../../../post-parsers/post-parsers.service';
 import { SubmissionEventPublisher } from '../../../submission/submission-event.publisher';
 import { ValidationService } from '../../../validation/validation.service';
 import { WSGateway } from '../../../web-socket/web-socket-gateway';
-import { getSupportedFileSize } from '../../../websites/decorators/supports-files.decorator';
 import {
   ImplementedFileWebsite,
   isFileWebsite,
@@ -32,6 +29,7 @@ import {
 import { UnknownWebsite } from '../../../websites/website';
 import { WebsiteRegistryService } from '../../../websites/website-registry.service';
 import { PostingFile } from '../../models/posting-file';
+import { getImageResizeParameters } from '../post-file-resizer/image-resize-parameters';
 import { PostFileResizerService } from '../post-file-resizer/post-file-resizer.service';
 import { PostEventRepository } from '../post-record-factory';
 import { BasePostManager } from './base-post-manager.service';
@@ -121,7 +119,7 @@ export class FileSubmissionPostManager extends BasePostManager {
     const batches = chunk(files, fileBatchSize);
 
     for (const [batchIndex, batch] of batches.entries()) {
-      this.cancelToken.throwIfCancelled();
+      this.cancelToken.throwIfAborted();
 
       // Get source URLs from other accounts for cross-website propagation
       // 1. From current post attempt (other accounts that have already posted)
@@ -151,7 +149,7 @@ export class FileSubmissionPostManager extends BasePostManager {
       const processedFiles: PostingFile[] = (
         await Promise.all(
           batch.map((submissionFile) =>
-            this.resizeOrModifyFile(submissionFile, submission, instance),
+            this.resizeOrModifyFile(submissionFile, instance),
           ),
         )
       ).map((f) => {
@@ -180,7 +178,7 @@ export class FileSubmissionPostManager extends BasePostManager {
       this.verifyPostingFiles(instance, processedFiles);
 
       // Post
-      this.cancelToken.throwIfCancelled();
+      this.cancelToken.throwIfAborted();
       const fileIds = batch.map((f) => f.id);
       this.logger
         .withMetadata({
@@ -193,7 +191,7 @@ export class FileSubmissionPostManager extends BasePostManager {
         .info(`Posting file batch to ${instance.id}`);
 
       await this.waitForPostingWaitInterval(accountId, instance);
-      this.cancelToken.throwIfCancelled();
+      this.cancelToken.throwIfAborted();
 
       const result = await instance.onPostFileSubmission(
         data,
@@ -336,13 +334,11 @@ export class FileSubmissionPostManager extends BasePostManager {
    * Resize or modify a file for posting.
    * @private
    * @param {SubmissionFile} file - The submission file
-   * @param {FileSubmission} submission - The file submission
    * @param {ImplementedFileWebsite} instance - The website instance
    * @returns {Promise<PostingFile>} The posting file
    */
   private async resizeOrModifyFile(
     file: SubmissionFile,
-    submission: FileSubmission,
     instance: ImplementedFileWebsite,
   ): Promise<PostingFile> {
     if (!file.file) {
@@ -366,7 +362,7 @@ export class FileSubmissionPostManager extends BasePostManager {
         );
       }
 
-      const resizeParams = this.getResizeParameters(submission, instance, file);
+      const resizeParams = getImageResizeParameters(instance, file);
 
       // We pass to resize even if no resize parameters are set
       // as it handles the bundling to PostingFile
@@ -403,61 +399,4 @@ export class FileSubmissionPostManager extends BasePostManager {
     );
   }
 
-  /**
-   * Get resize parameters for a file.
-   * @private
-   * @param {FileSubmission} submission - The file submission
-   * @param {ImplementedFileWebsite} instance - The website instance
-   * @param {SubmissionFile} file - The submission file
-   * @returns {ImageResizeProps | undefined} The resize parameters
-   */
-  private getResizeParameters(
-    submission: FileSubmission,
-    instance: ImplementedFileWebsite,
-    file: SubmissionFile,
-  ): ImageResizeProps | undefined {
-    // Use website's own calculation method. Copy to avoid mutating any
-    // shared/cached object the website implementation may return.
-    const websiteParams = instance.calculateImageResize(file);
-    let resizeParams: ImageResizeProps | undefined = websiteParams
-      ? { ...websiteParams }
-      : undefined;
-
-    // Apply user-defined dimensions if set. Prefer per-account override,
-    // otherwise fall back to the 'default' entry.
-    // eslint-disable-next-line @typescript-eslint/dot-notation
-    const fileParams =
-      file.metadata.dimensions?.[instance.accountId] ??
-      // eslint-disable-next-line @typescript-eslint/dot-notation
-      file.metadata.dimensions?.['default'];
-    if (fileParams) {
-      if (fileParams.width) {
-        resizeParams = resizeParams ?? {};
-        resizeParams.width = Math.min(
-          file.width || Infinity,
-          fileParams.width,
-          resizeParams.width ?? Infinity,
-        );
-      }
-      if (fileParams.height) {
-        resizeParams = resizeParams ?? {};
-        resizeParams.height = Math.min(
-          file.height || Infinity,
-          fileParams.height,
-          resizeParams.height ?? Infinity,
-        );
-      }
-    }
-
-    // Fall back to supported file size if needed
-    if (!resizeParams?.maxBytes) {
-      const supportedFileSize = getSupportedFileSize(instance, file);
-      if (supportedFileSize && file.size > supportedFileSize) {
-        resizeParams = resizeParams ?? {};
-        resizeParams.maxBytes = supportedFileSize;
-      }
-    }
-
-    return resizeParams;
-  }
 }

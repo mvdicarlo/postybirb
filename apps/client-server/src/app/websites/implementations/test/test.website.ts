@@ -1,14 +1,14 @@
 import {
-  ImageResizeProps,
-  IPostResponse,
-  IWebsiteFormFields,
-  IWebsiteMetadata,
-  LoginResult,
-  OAuthRouteHandlers,
-  OAuthRoutes,
-  PostData,
-  PostResponse,
-  SimpleValidationResult,
+    ImageResizeProps,
+    IPostResponse,
+    IWebsiteFormFields,
+    IWebsiteMetadata,
+    LoginResult,
+    OAuthRouteHandlers,
+    OAuthRoutes,
+    PostData,
+    PostResponse,
+    SimpleValidationResult,
 } from '@postybirb/types';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
@@ -71,7 +71,7 @@ export default class TestWebsite
     files: PostingFile[],
     cancellationToken: CancellableToken,
   ): Promise<IPostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     return PostResponse.fromWebsite(this)
       .atStage('test')
       .withMessage('test message');
@@ -90,7 +90,7 @@ export default class TestWebsite
     postData: PostData<TestMessageSubmission>,
     cancellationToken: CancellableToken,
   ): Promise<IPostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     if (this.account.name === 'FAIL') {
       return PostResponse.fromWebsite(this)
         .atStage('validation')

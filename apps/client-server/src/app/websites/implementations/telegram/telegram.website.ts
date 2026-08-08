@@ -2,20 +2,20 @@
 import { SelectOption, SelectOptionSingle } from '@postybirb/form-builder';
 
 import {
-  FileType,
-  ImageResizeProps,
-  ISubmissionFile,
-  LoginResult,
-  OAuthRouteHandlers,
-  PostData,
-  PostResponse,
-  SimpleValidationResult,
-  TelegramAccountData,
-  TelegramOAuthRoutes,
+    FileType,
+    ImageResizeProps,
+    ISubmissionFile,
+    LoginResult,
+    OAuthRouteHandlers,
+    PostData,
+    PostResponse,
+    SimpleValidationResult,
+    TelegramAccountData,
+    TelegramOAuthRoutes,
 } from '@postybirb/types';
 import {
-  calculateImageResize,
-  supportsImage,
+    calculateImageResize,
+    supportsImage,
 } from '@postybirb/utils/file-type';
 import { Api, TelegramClient } from 'teleproto';
 import { CustomFile } from 'teleproto/client/uploads';
@@ -34,8 +34,8 @@ import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
 import {
-  FileWebsite,
-  PostBatchData,
+    FileWebsite,
+    PostBatchData,
 } from '../../models/website-modifiers/file-website';
 import { MessageWebsite } from '../../models/website-modifiers/message-website';
 import { OAuthWebsite } from '../../models/website-modifiers/oauth-website';
@@ -327,7 +327,7 @@ export default class Telegram
     cancellationToken: CancellableToken,
     batch: PostBatchData,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     const telegram = await this.getTelegramClient();
 
     const medias: (
@@ -336,7 +336,7 @@ export default class Telegram
     )[] = [];
 
     for (const file of files) {
-      cancellationToken.throwIfCancelled();
+      cancellationToken.throwIfAborted();
 
       const customFile = new CustomFile(
         file.fileName,
@@ -386,7 +386,7 @@ export default class Telegram
     let response: Api.TypeUpdates | undefined;
 
     for (const channel of postData.options.channels) {
-      cancellationToken.throwIfCancelled();
+      cancellationToken.throwIfAborted();
 
       // Only add description to the media in first batch
       const firstInBatch = batch.index === 0;
@@ -563,7 +563,7 @@ export default class Telegram
     postData: PostData<TelegramMessageSubmission>,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     let response: Api.TypeUpdates | undefined;
     const [description, entities] = TelegramConverter.fromJson(
       postData.options.description,
@@ -571,7 +571,7 @@ export default class Telegram
     const telegram = await this.getTelegramClient();
 
     for (const channel of postData.options.channels) {
-      cancellationToken.throwIfCancelled();
+      cancellationToken.throwIfAborted();
 
       const { peer, topic } = this.getPeer(channel);
       response = await telegram.invoke(

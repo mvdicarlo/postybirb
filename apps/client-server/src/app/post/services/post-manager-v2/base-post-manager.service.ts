@@ -1,37 +1,37 @@
 import { Optional } from '@nestjs/common';
 import {
-  PostRecord,
-  PostRecordRepository,
-  Submission,
-  WebsiteOptions,
+    PostRecord,
+    PostRecordRepository,
+    Submission,
+    WebsiteOptions,
 } from '@postybirb/database';
 import {
-  Logger,
-  trackEvent,
-  trackException,
-  trackMetric,
+    Logger,
+    trackEvent,
+    trackException,
+    trackMetric,
 } from '@postybirb/logger';
 import { POST_WAIT_STATE } from '@postybirb/socket-events';
 import {
-  AccountId,
-  DynamicObject,
-  EntityId,
-  IPostWaitState,
-  PostData,
-  PostEventType,
-  PostRecordState,
-  PostResponse,
-  SubmissionType,
+    AccountId,
+    DynamicObject,
+    EntityId,
+    IPostWaitState,
+    PostData,
+    PostEventType,
+    PostRecordState,
+    PostResponse,
+    SubmissionType,
 } from '@postybirb/types';
 
 import { NotificationsService } from '../../../notifications/notifications.service';
 import { PostParsersService } from '../../../post-parsers/post-parsers.service';
+import { CancellationToken } from '../../../posting/cancellation-token';
 import { SubmissionEventPublisher } from '../../../submission/submission-event.publisher';
 import { ValidationService } from '../../../validation/validation.service';
 import { WSGateway } from '../../../web-socket/web-socket-gateway';
 import { UnknownWebsite, Website } from '../../../websites/website';
 import { WebsiteRegistryService } from '../../../websites/website-registry.service';
-import { CancellableToken } from '../../models/cancellable-token';
 import { CancellationError } from '../../models/cancellation-error';
 import { PostEventRepository, ResumeContext } from '../post-record-factory';
 
@@ -68,7 +68,7 @@ export abstract class BasePostManager {
   /**
    * The current cancel token for the current post.
    */
-  protected cancelToken: CancellableToken | null = null;
+  protected cancelToken: CancellationToken | null = null;
 
   /**
    * Resume context from prior attempts.
@@ -105,7 +105,7 @@ export abstract class BasePostManager {
   public async cancelIfRunning(submissionId: EntityId): Promise<boolean> {
     if (this.currentPost && this.currentPost.submissionId === submissionId) {
       this.logger.info(`Cancelling current post`);
-      this.cancelToken?.cancel();
+      this.cancelToken?.abort(new CancellationError());
       return true;
     }
     return false;
@@ -136,7 +136,7 @@ export abstract class BasePostManager {
         return;
       }
 
-      this.cancelToken = new CancellableToken();
+      this.cancelToken = new CancellationToken();
       this.resumeContext = resumeContext || null;
 
       this.logger.withMetadata(entity.toDTO()).info(`Initializing post`);
@@ -153,7 +153,7 @@ export abstract class BasePostManager {
 
       this.logger.info(`Posting to websites`);
       for (const websites of postOrderGroups) {
-        this.cancelToken.throwIfCancelled();
+        this.cancelToken.throwIfAborted();
         await Promise.allSettled(
           websites.map((w) => this.postToWebsite(entity, w)),
         );

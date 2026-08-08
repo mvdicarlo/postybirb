@@ -355,7 +355,7 @@ export default class Tumblr
     const mediaBlocks: DynamicObject[] = [];
 
     for (const file of files) {
-      cancellationToken.throwIfCancelled();
+      cancellationToken.throwIfAborted();
 
       try {
         const uploadedMedia = await this.uploadSingleFile(file, blogId);

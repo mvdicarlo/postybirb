@@ -157,14 +157,14 @@ export default class Bluesky
     files: PostingFile[],
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     const agent = this.getLoggedInAgent();
     const profile = await agent.getProfile({ actor: agent.session.did });
     const reply = await this.getReplyRef(agent, postData.options.replyToUrl);
 
     const embed = await this.uploadEmbeds(agent, files, cancellationToken);
-    const postResult = await this.post(postData, agent, embed, reply);
+    const postResult = await this.createPost(postData, agent, embed, reply);
 
     return this.createPostResponse(postResult, profile, postData, agent);
   }
@@ -173,17 +173,17 @@ export default class Bluesky
     postData: PostData<BlueskyMessageSubmission>,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     const agent = this.getLoggedInAgent();
     const profile = await agent.getProfile({ actor: agent.session.did });
     const reply = await this.getReplyRef(agent, postData.options.replyToUrl);
-    const postResult = await this.post(postData, agent, undefined, reply);
+    const postResult = await this.createPost(postData, agent, undefined, reply);
 
     return this.createPostResponse(postResult, profile, postData, agent);
   }
 
-  private async post(
+  private async createPost(
     postData: PostData<BlueskyFileSubmission>,
     agent: LoggedInAgent,
     embed:
@@ -474,7 +474,7 @@ export default class Bluesky
     if (fileCount.videos === 0 && fileCount.gifs === 0) {
       const uploadedImages: AppBskyEmbedImages.Image[] = [];
       for (const file of files) {
-        cancellationToken.throwIfCancelled();
+        cancellationToken.throwIfAborted();
 
         const altText = file.metadata.altText || '';
         const ref = await this.uploadImage(agent, file);
@@ -490,7 +490,7 @@ export default class Bluesky
     }
 
     for (const file of files) {
-      cancellationToken.throwIfCancelled();
+      cancellationToken.throwIfAborted();
 
       if (
         file.fileType === FileType.VIDEO ||

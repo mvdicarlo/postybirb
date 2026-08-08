@@ -452,7 +452,7 @@ export default abstract class BaseSubscribeStar
     const uploadedFileIds: string[] = [];
     try {
       for (const file of files) {
-        cancellationToken.throwIfCancelled();
+        cancellationToken.throwIfAborted();
         const fileId = await this.uploadFile(file, uploadData);
         if (fileId) {
           uploadedFileIds.push(fileId);
@@ -479,7 +479,7 @@ export default abstract class BaseSubscribeStar
       });
     }
 
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     try {
       const post = await this.completePost({

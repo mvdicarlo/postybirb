@@ -235,7 +235,7 @@ export default class Misskey
     files: PostingFile[],
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     const { accessToken, instanceUrl } = this.websiteDataStore.getData();
     if (!accessToken || !instanceUrl) {
@@ -248,7 +248,7 @@ export default class Misskey
       // Upload files to Misskey Drive
       const fileIds: string[] = [];
       for (const file of files) {
-        cancellationToken.throwIfCancelled();
+        cancellationToken.throwIfAborted();
 
         this.logger
           .withMetadata({
@@ -274,7 +274,7 @@ export default class Misskey
         fileIds.push(driveFile.id);
       }
 
-      cancellationToken.throwIfCancelled();
+      cancellationToken.throwIfAborted();
 
       // Create the note
       const note = await MisskeyApiService.createNote(
@@ -334,7 +334,7 @@ export default class Misskey
     postData: PostData<MisskeyMessageSubmission>,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     const { accessToken, instanceUrl } = this.websiteDataStore.getData();
     if (!accessToken || !instanceUrl) {

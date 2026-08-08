@@ -20,6 +20,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { PlatformModule } from './platform/platform.module';
 import { PostParsersModule } from './post-parsers/post-parsers.module';
 import { PostModule } from './post/post.module';
+import { PostingModule } from './posting/posting.module';
 import { RemotePasswordMiddleware } from './remote/remote.middleware';
 import { RemoteModule } from './remote/remote.module';
 import { SettingsModule } from './settings/settings.module';
@@ -58,6 +59,7 @@ import { WebsitesModule } from './websites/websites.module';
     DirectoryWatchersModule,
     UpdateModule,
     PostModule,
+    PostingModule,
     PostParsersModule,
     ValidationModule,
     FileConverterModule,

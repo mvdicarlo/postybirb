@@ -25,6 +25,7 @@ import { PixivFileSubmission } from './models/pixiv-file-submission';
   name: 'pixiv',
   displayName: 'Pixiv',
   minimumPostWaitInterval: 60000 * 5, // 5 minutes between posts
+  rateLimitScope: 'website',
 })
 @UserLoginFlow('https://www.pixiv.net')
 @SupportsFiles({
@@ -85,7 +86,7 @@ export default class Pixiv
     files: PostingFile[],
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     // Get the create page to check for version and get tokens
     const page = await this.platform.http.get<string>(

@@ -1,22 +1,22 @@
 import {
-  clearDatabase,
-  FileBuffer,
-  PostRecord,
-  Submission,
-  SubmissionFile,
+    clearDatabase,
+    FileBuffer,
+    PostRecord,
+    Submission,
+    SubmissionFile,
 } from '@postybirb/database';
 import {
-  AccountId,
-  DefaultSubmissionFileMetadata,
-  EntityId,
-  FileSubmissionMetadata,
-  FileType,
-  IPostResponse,
-  PostData,
-  PostEventType,
-  PostRecordState,
-  SubmissionRating,
-  SubmissionType,
+    AccountId,
+    DefaultSubmissionFileMetadata,
+    EntityId,
+    FileSubmissionMetadata,
+    FileType,
+    IPostResponse,
+    PostData,
+    PostEventType,
+    PostRecordState,
+    SubmissionRating,
+    SubmissionType,
 } from '@postybirb/types';
 import 'reflect-metadata';
 import { FileConverterService } from '../../../file-converter/file-converter.service';
@@ -24,13 +24,14 @@ import { NotificationsService } from '../../../notifications/notifications.servi
 import { PostParsersService } from '../../../post-parsers/post-parsers.service';
 import { ValidationService } from '../../../validation/validation.service';
 import {
-  FileWebsite,
-  ImplementedFileWebsite,
-  PostBatchData,
+    FileWebsite,
+    ImplementedFileWebsite,
+    PostBatchData,
 } from '../../../websites/models/website-modifiers/file-website';
 import { UnknownWebsite } from '../../../websites/website';
 import { WebsiteRegistryService } from '../../../websites/website-registry.service';
 import { CancellableToken } from '../../models/cancellable-token';
+import { CancellationError } from '../../models/cancellation-error';
 import { PostingFile } from '../../models/posting-file';
 import { PostFileResizerService } from '../post-file-resizer/post-file-resizer.service';
 import { PostEventRepository } from '../post-record-factory';
@@ -414,7 +415,7 @@ describe('FileSubmissionPostManager', () => {
 
     it('should check cancel token during posting', async () => {
       // Cancel immediately
-      cancelToken.cancel();
+      cancelToken.abort(new CancellationError());
 
       await expect(
         (manager as any).attemptToPost(
