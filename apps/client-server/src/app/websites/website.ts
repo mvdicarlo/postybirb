@@ -440,7 +440,7 @@ export abstract class Website<
       websiteDataRepository,
       () => this.notifyAccountProjectionChanged(),
     );
-    this.subscribeToCookieChanges();
+    // this.subscribeToCookieChanges();
     this.startLoginRefresh();
   }
 
