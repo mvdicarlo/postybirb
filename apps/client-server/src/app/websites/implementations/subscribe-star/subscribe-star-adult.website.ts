@@ -13,7 +13,7 @@ import BaseSubscribeStar from './base-subscribe-star.website';
 @CustomLoginFlow('SubscribeStarAdult')
 @SupportsUsernameShortcut({
   id: 'subscribe-star-adult',
-  url: 'https://www.subscribestar.adult/$1',
+  url: 'https://www.subscribestar.art/$1',
 })
 @SupportsFiles({
   fileBatchSize: 20,
@@ -85,5 +85,5 @@ import BaseSubscribeStar from './base-subscribe-star.website';
 })
 @DisableAds()
 export default class SubscribeStarAdult extends BaseSubscribeStar {
-  protected BASE_URL = 'https://www.subscribestar.adult';
+  protected BASE_URL = 'https://www.subscribestar.art';
 }
