@@ -630,7 +630,38 @@ export class SubmissionService
 
   public async remove(id: SubmissionId): Promise<void> {
     await super.remove(id);
+    const dependents = await this.dependencyMutationMutex.runExclusive(() =>
+      this.dropDependencyReferences(id),
+    );
     this.markRemoved(id);
+    if (dependents.length > 0) {
+      this.markChanged(dependents);
+    }
+  }
+
+  /**
+   * Strips a deleted submission's id from every `dependsOn` that references it.
+   * A dangling id blocks posting forever, since dependency completion requires a
+   * completed post for each listed id and no post can ever exist for it.
+   */
+  private async dropDependencyReferences(
+    removedId: SubmissionId,
+  ): Promise<SubmissionId[]> {
+    const dependents = (await this.repository.find({ with: {} })).filter(
+      (submission) => submission.dependsOn.includes(removedId),
+    );
+
+    await Promise.all(
+      dependents.map((submission) =>
+        this.repository.update(submission.id, {
+          dependsOn: submission.dependsOn.filter(
+            (dependencyId) => dependencyId !== removedId,
+          ),
+        }),
+      ),
+    );
+
+    return dependents.map((submission) => submission.id);
   }
 
   async applyMultiSubmission(applyMultiSubmissionDto: ApplyMultiSubmissionDto) {

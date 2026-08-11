@@ -372,6 +372,24 @@ describe('SubmissionService', () => {
     ).toHaveLength(1);
   });
 
+  it('should drop a removed submission from dependent dependsOn arrays', async () => {
+    const removed = await service.create(createSubmissionDto());
+    const kept = await service.create(createSubmissionDto());
+    const dependent = await service.create(createSubmissionDto());
+    const unrelated = await service.create(createSubmissionDto());
+
+    await service.update(dependent.id, { dependsOn: [removed.id, kept.id] });
+
+    await service.remove(removed.id);
+
+    await expect(service.findByIdOrThrow(dependent.id)).resolves.toMatchObject({
+      dependsOn: [kept.id],
+    });
+    await expect(service.findByIdOrThrow(unrelated.id)).resolves.toMatchObject({
+      dependsOn: [],
+    });
+  });
+
   it('should remove entity options', async () => {
     const createDto = createSubmissionDto();
     const record = await service.create(createDto);
