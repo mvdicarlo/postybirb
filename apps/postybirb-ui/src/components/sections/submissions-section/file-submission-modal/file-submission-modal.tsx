@@ -35,6 +35,7 @@ import {
 } from '@postybirb/types';
 import { IconPlus } from '@tabler/icons-react';
 import { useCallback, useEffect, useState } from 'react';
+import { useLocalStorage } from 'react-use';
 import {
   showUploadErrorNotification,
   showUploadSuccessNotification,
@@ -68,6 +69,9 @@ export interface FileSubmissionModalProps {
   initialFiles?: FileWithPath[];
 }
 
+const DEFAULT_TEMPLATE_ID_KEY =
+  'postybirb-create-submission-default-template-id';
+
 /**
  * FileSubmissionModal - Enhanced file upload modal.
  */
@@ -92,6 +96,11 @@ export function FileSubmissionModal({
     }
   }, [opened, initialFiles]);
 
+  // Template state
+  const [selectedTemplateId, setSelectedTemplateId] = useLocalStorage<
+    SubmissionId | undefined
+  >(DEFAULT_TEMPLATE_ID_KEY, undefined);
+
   // Clear files when modal is closed
   useEffect(() => {
     if (!opened) {
@@ -102,7 +111,7 @@ export function FileSubmissionModal({
       setSelectedTemplateId(undefined);
       setProgress(0);
     }
-  }, [opened]);
+  }, [opened, setSelectedTemplateId]);
 
   // Default options state
   const [tags, setTags] = useState<Tag[]>([]);
@@ -111,11 +120,6 @@ export function FileSubmissionModal({
   const [rating, setRating] = useState<SubmissionRating>(
     SubmissionRating.GENERAL,
   );
-
-  // Template state
-  const [selectedTemplateId, setSelectedTemplateId] = useState<
-    SubmissionId | undefined
-  >();
 
   // Upload state
   const [isUploading, setIsUploading] = useState(false);
@@ -245,6 +249,7 @@ export function FileSubmissionModal({
     description,
     rating,
     selectedTemplateId,
+    setSelectedTemplateId,
     onUpload,
     onClose,
   ]);
