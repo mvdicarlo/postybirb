@@ -18,10 +18,13 @@ import { Logger, PostyBirbLogger } from '@postybirb/logger';
 import {
     AccountId,
     PostId,
+    ScheduleType,
     SubmissionFileId,
     SubmissionId,
     UnitOfWorkState,
 } from '@postybirb/types';
+import { IsTestEnvironment } from '@postybirb/utils/common';
+import { Cron as CronGenerator } from 'croner';
 import { and as allOf, eq as equals, inArray } from 'drizzle-orm';
 import { chunk, groupBy } from 'lodash';
 import { v4 as uuid } from 'uuid';
@@ -33,6 +36,7 @@ import {
     isUnitOfWorkAttemptSettled,
     selectExecutableWork,
 } from './unit-of-work-rate-limit';
+
 
 export type UnitOfWorkEvictions = Record<AccountId, SubmissionFileId[]>;
 
@@ -87,6 +91,117 @@ export class PostingService {
     public unpausePosts(): void {
         this.postsPaused = false;
         this.startupLock = 0;
+    }
+
+    @Cron(CronExpression.EVERY_30_SECONDS)
+    async handleScheduledSubmissions(): Promise<void> {
+        if (IsTestEnvironment()) {
+            return;
+        }
+
+        if (this.arePostsPaused()) {
+            return;
+        }
+
+        const scheduledSubmissions = await this.submissionRepository.find({
+            where: (submission, { and, eq }) =>
+                and(
+                    eq(submission.isScheduled, true),
+                    eq(submission.isInitialized, true),
+                    eq(submission.isArchived, false)
+                ),
+            with: {
+                post: true
+            }
+        });
+
+        const now = Date.now();
+        const eligibleSubmissions = scheduledSubmissions
+            .filter(submission => !submission.post?.completed)
+            .filter((e) =>
+                e.schedule.scheduledFor &&
+                new Date(e.schedule.scheduledFor).getTime() <= now,
+            )
+            .sort((a, b) => new Date(a.schedule.scheduledFor ?? 0).getTime() - new Date(b.schedule.scheduledFor ?? 0).getTime());
+
+        for (const submission of eligibleSubmissions) {
+            const { schedule } = submission;
+            const { scheduleType } = schedule;
+
+            if (scheduleType === ScheduleType.SINGLE) {
+                await this.scheduleSingleTypeSubmission(submission);
+                publishSubmissionProjectionChanged(
+                    this.eventEmitter,
+                    submission.id,
+                );
+                continue;
+            }
+
+            if (scheduleType === ScheduleType.RECURRING) {
+                await this.scheduleRecurringTypeSubmission(submission);
+                publishSubmissionProjectionChanged(
+                    this.eventEmitter,
+                    submission.id,
+                );
+                continue;
+            }
+
+            this.logger.warn(
+                `Submission '${submission.id}' has an unrecognized schedule type: ${scheduleType}`,
+            );
+        }
+    }
+
+    public async scheduleRecurringTypeSubmission(submission: Submission): Promise<void> {
+        if (this.arePostsPaused()) {
+            return;
+        }
+
+        try {
+            this.logger.info(`Scheduling recurring submission '${submission.id}'`);
+            await this.post(submission.id);
+
+            const { schedule } = submission;
+            if (schedule.cron) {
+                const next = CronGenerator(submission.schedule.cron as string)
+                    .nextRun()
+                    ?.toISOString();
+                if (!next) {
+                    await this.submissionRepository.update(submission.id, { isScheduled: false });
+                } else {
+                    await this.submissionRepository.update(submission.id, { schedule: { ...schedule, scheduledFor: next } });
+                }
+            } else {
+                await this.submissionRepository.update(submission.id, { isScheduled: false });
+            }
+
+            this.logger
+                .withMetadata(submission.schedule)
+                .info(`Scheduled submission '${submission.id}'`);
+        } catch (error) {
+            this.logger
+                .withError(error)
+                .error(`Unable to post scheduled submission '${submission.id}'`);
+        }
+    }
+
+    public async scheduleSingleTypeSubmission(submission: Submission): Promise<void> {
+        if (this.arePostsPaused()) {
+            return;
+        }
+
+        try {
+            this.logger.info(`Scheduling single submission '${submission.id}'`);
+            await this.post(submission.id);
+            this.submissionRepository.update(submission.id, { isScheduled: false });
+            this.logger
+                .withMetadata(submission.schedule)
+                .info(`Scheduled submission '${submission.id}'`);
+        } catch (error) {
+            this.logger
+                .withError(error)
+                .error(`Unable to post scheduled submission '${submission.id}'`);
+        }
     }
 
     @Cron(CronExpression.EVERY_SECOND)
@@ -319,9 +434,9 @@ export class PostingService {
             );
         }
 
-         // Disable the startup lock after the first post to allow
-         // subsequent posts to run immediately.
-         // This allows users users to cancel the lock by submitting.
+        // Disable the startup lock after the first post to allow
+        // subsequent posts to run immediately.
+        // This allows users users to cancel the lock by submitting.
         this.startupLock = Date.now() - 1_000;
         return this.persistPost(submissionId, evictions, existingPost);
     }
