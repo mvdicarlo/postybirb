@@ -117,7 +117,7 @@ export class PostingService {
 
         const now = Date.now();
         const eligibleSubmissions = scheduledSubmissions
-            .filter(submission => !submission.post?.completed)
+            .filter((submission) => !submission.post || submission.post.completed)
             .filter((e) =>
                 e.schedule.scheduledFor &&
                 new Date(e.schedule.scheduledFor).getTime() <= now,
@@ -159,13 +159,14 @@ export class PostingService {
 
         try {
             this.logger.info(`Scheduling recurring submission '${submission.id}'`);
-            await this.post(submission.id);
-
             const { schedule } = submission;
+            const next = schedule.cron
+                ? CronGenerator(schedule.cron).nextRun()?.toISOString()
+                : undefined;
+
+            await this.postRecurringSubmission(submission.id);
+
             if (schedule.cron) {
-                const next = CronGenerator(submission.schedule.cron as string)
-                    .nextRun()
-                    ?.toISOString();
                 if (!next) {
                     await this.submissionRepository.update(submission.id, { isScheduled: false });
                 } else {
@@ -193,7 +194,7 @@ export class PostingService {
         try {
             this.logger.info(`Scheduling single submission '${submission.id}'`);
             await this.post(submission.id);
-            this.submissionRepository.update(submission.id, { isScheduled: false });
+            await this.submissionRepository.update(submission.id, { isScheduled: false });
             this.logger
                 .withMetadata(submission.schedule)
                 .info(`Scheduled submission '${submission.id}'`);
@@ -202,6 +203,19 @@ export class PostingService {
                 .withError(error)
                 .error(`Unable to post scheduled submission '${submission.id}'`);
         }
+    }
+
+    private async postRecurringSubmission(
+        submissionId: SubmissionId,
+    ): Promise<Post> {
+        const existingPost = await this.getPost(submissionId);
+        const evictions: UnitOfWorkEvictions = {};
+        for (const unit of existingPost?.unitsOfWork ?? []) {
+            if (!unit.evicted) {
+                evictions[unit.accountId] = [];
+            }
+        }
+        return this.post(submissionId, evictions);
     }
 
     @Cron(CronExpression.EVERY_SECOND)

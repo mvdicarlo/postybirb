@@ -1,23 +1,23 @@
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
-  AccountRepository,
-  clearDatabase,
-  PostRepository,
-  SubmissionFileRepository,
-  SubmissionRepository,
-  UnitOfWorkRepository,
-  WebsiteOptionsRepository,
+    AccountRepository,
+    clearDatabase,
+    PostRepository,
+    SubmissionFileRepository,
+    SubmissionRepository,
+    UnitOfWorkRepository,
+    WebsiteOptionsRepository,
 } from '@postybirb/database';
 import type {
-  ISubmissionMetadata,
-  IWebsiteFormFields,
-  SubmissionId,
+    ISubmissionMetadata,
+    IWebsiteFormFields,
+    SubmissionId,
 } from '@postybirb/types';
 import {
-  DefaultSubmissionFileMetadata,
-  ScheduleType,
-  SubmissionType,
-  UnitOfWorkState,
+    DefaultSubmissionFileMetadata,
+    ScheduleType,
+    SubmissionType,
+    UnitOfWorkState,
 } from '@postybirb/types';
 import { SUBMISSION_PROJECTION_CHANGED } from '../submission/submission.events';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
@@ -114,6 +114,220 @@ describe('PostingService', () => {
       groups: [],
     });
   }
+
+  async function seedScheduledSubmission(
+    scheduleType: ScheduleType,
+    scheduledFor = new Date(Date.now() - 1_000).toISOString(),
+    cron?: string,
+  ) {
+    return submissionRepository.insert({
+      type: SubmissionType.FILE,
+      isScheduled: true,
+      isTemplate: false,
+      isMultiSubmission: false,
+      isArchived: false,
+      isInitialized: true,
+      schedule: { scheduleType, scheduledFor, cron },
+      metadata: {} as ISubmissionMetadata,
+      dependsOn: [],
+      order: 0,
+    });
+  }
+
+  it('runs due schedules oldest first while skipping active and future posts', async () => {
+    const now = Date.now();
+    const completedRecurring = await seedScheduledSubmission(
+      ScheduleType.RECURRING,
+      new Date(now - 2_000).toISOString(),
+      '* * * * * *',
+    );
+    const newSingle = await seedScheduledSubmission(
+      ScheduleType.SINGLE,
+      new Date(now - 1_000).toISOString(),
+    );
+    const activeSingle = await seedScheduledSubmission(
+      ScheduleType.SINGLE,
+      new Date(now - 3_000).toISOString(),
+    );
+    await seedScheduledSubmission(
+      ScheduleType.SINGLE,
+      new Date(now + 60_000).toISOString(),
+    );
+    await postRepository.insert({
+      submissionId: completedRecurring.id,
+      completed: true,
+    });
+    await postRepository.insert({ submissionId: activeSingle.id });
+    const scheduled: string[] = [];
+    jest
+      .spyOn(service, 'scheduleRecurringTypeSubmission')
+      .mockImplementation(async (submission) => {
+        scheduled.push(submission.id);
+      });
+    jest
+      .spyOn(service, 'scheduleSingleTypeSubmission')
+      .mockImplementation(async (submission) => {
+        scheduled.push(submission.id);
+      });
+
+    const nodeEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = 'development';
+    try {
+      await service.handleScheduledSubmissions();
+    } finally {
+      process.env.NODE_ENV = nodeEnv;
+    }
+
+    expect(scheduled).toEqual([completedRecurring.id, newSingle.id]);
+  });
+
+  it('schedules a single submission and waits for it to be unscheduled', async () => {
+    const submission = await seedScheduledSubmission(ScheduleType.SINGLE);
+    const post = await postRepository.insert({ submissionId: submission.id });
+    const postSubmission = jest.spyOn(service, 'post').mockResolvedValue(post);
+    const serviceSubmissionRepository = Reflect.get(
+      service,
+      'submissionRepository',
+    ) as SubmissionRepository;
+    let resolveUpdate!: (updated: typeof submission) => void;
+    const updatePromise = new Promise<typeof submission>((resolve) => {
+      resolveUpdate = resolve;
+    });
+    const update = jest
+      .spyOn(serviceSubmissionRepository, 'update')
+      .mockReturnValue(updatePromise);
+    let completed = false;
+
+    const scheduling = service
+      .scheduleSingleTypeSubmission(submission)
+      .then(() => {
+        completed = true;
+      });
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(update).toHaveBeenCalledWith(submission.id, {
+      isScheduled: false,
+    });
+    expect(postSubmission).toHaveBeenCalledWith(submission.id);
+    expect(completed).toBe(false);
+
+    resolveUpdate(submission);
+    await scheduling;
+    expect(completed).toBe(true);
+  });
+
+  it('schedules a single submission and persists its post', async () => {
+    const submission = await seedScheduledSubmission(ScheduleType.SINGLE);
+    const account = await seedAccount('scheduled-single-account');
+    await websiteOptionsRepository.insert({
+      accountId: account.id,
+      submissionId: submission.id,
+      data: {} as IWebsiteFormFields,
+      isDefault: false,
+    });
+
+    await service.scheduleSingleTypeSubmission(submission);
+
+    await expect(
+      submissionRepository.findByIdOrThrow(submission.id),
+    ).resolves.toMatchObject({ isScheduled: false });
+    const post = await service.getPost(submission.id);
+    expect(post).toMatchObject({ completed: false, cancelled: false });
+    expect(post?.unitsOfWork).toHaveLength(1);
+    expect(post?.unitsOfWork[0]).toMatchObject({
+      accountId: account.id,
+      state: UnitOfWorkState.PENDING,
+      evicted: false,
+    });
+  });
+
+  it('advances a recurring submission with a fresh generation of work', async () => {
+    const scheduledFor = new Date(Date.now() - 1_000).toISOString();
+    const submission = await seedScheduledSubmission(
+      ScheduleType.RECURRING,
+      scheduledFor,
+      '* * * * * *',
+    );
+    const account = await seedAccount('scheduled-recurring-account');
+    const secondAccount = await seedAccount(
+      'second-scheduled-recurring-account',
+    );
+    await websiteOptionsRepository.insert({
+      accountId: account.id,
+      submissionId: submission.id,
+      data: {} as IWebsiteFormFields,
+      isDefault: false,
+    });
+    await websiteOptionsRepository.insert({
+      accountId: secondAccount.id,
+      submissionId: submission.id,
+      data: {} as IWebsiteFormFields,
+      isDefault: false,
+    });
+    const post = await postRepository.insert({
+      submissionId: submission.id,
+      completed: true,
+    });
+    const previousWork = await unitOfWorkRepository.insert({
+      postId: post.id,
+      submissionId: submission.id,
+      accountId: account.id,
+      state: UnitOfWorkState.SUCCEEDED,
+    });
+    const secondPreviousWork = await unitOfWorkRepository.insert({
+      postId: post.id,
+      submissionId: submission.id,
+      accountId: secondAccount.id,
+      state: UnitOfWorkState.SUCCEEDED,
+    });
+
+    const schedulingStartedAt = Date.now();
+    await service.scheduleRecurringTypeSubmission(submission);
+
+    const updatedSubmission = await submissionRepository.findByIdOrThrow(
+      submission.id,
+    );
+    expect(updatedSubmission.isScheduled).toBe(true);
+    expect(updatedSubmission.schedule.scheduledFor).not.toBe(scheduledFor);
+    expect(
+      new Date(updatedSubmission.schedule.scheduledFor as string).getTime(),
+    ).toBeGreaterThan(schedulingStartedAt);
+    const updatedPost = await postRepository.findByIdOrThrow(post.id);
+    expect(updatedPost).toMatchObject({ completed: false, cancelled: false });
+    expect(updatedPost.unitsOfWork).toHaveLength(4);
+    for (const previous of [previousWork, secondPreviousWork]) {
+      expect(
+        updatedPost.unitsOfWork.find((unit) => unit.id === previous.id),
+      ).toMatchObject({
+        state: UnitOfWorkState.SUCCEEDED,
+        evicted: true,
+      });
+    }
+    for (const accountId of [account.id, secondAccount.id]) {
+      expect(
+        updatedPost.unitsOfWork.find(
+          (unit) =>
+            unit.id !== previousWork.id &&
+            unit.id !== secondPreviousWork.id &&
+            unit.accountId === accountId,
+        ),
+      ).toMatchObject({
+        state: UnitOfWorkState.PENDING,
+        evicted: false,
+      });
+    }
+  });
+
+  it('unschedules a recurring submission that has no cron expression', async () => {
+    const submission = await seedScheduledSubmission(ScheduleType.RECURRING);
+
+    await service.scheduleRecurringTypeSubmission(submission);
+
+    await expect(
+      submissionRepository.findByIdOrThrow(submission.id),
+    ).resolves.toMatchObject({ isScheduled: false });
+  });
 
   it('gets the post by its submission relationship', async () => {
     const submission = await seedSubmission();

@@ -128,13 +128,16 @@ export class PostingWorker {
       this.logger.warn(`Worker for post '${this.postId}' is already started`);
       return;
     }
-    this.started = true;
 
+    this.started = true;
     this.logger.info(`Starting worker for post '${this.postId}'`);
     try {
-      this.cancellationToken.throwIfAborted();
-      const post = await this.postRepository.findByIdOrThrow(this.postId);
+      if (this.cancellationToken.aborted) {
+        this.logger.info(`Worker for post '${this.postId}' was cancelled`);
+        return;
+      }
 
+      const post = await this.postRepository.findByIdOrThrow(this.postId);
       if (post.completed || post.cancelled) {
         this.logger.info(`Post '${post.id}' is no longer eligible for work`);
         return;
@@ -194,11 +197,7 @@ export class PostingWorker {
         this.logger.info(`Some units of work for post '${post.id}' are still pending or failed`);
       }
     } catch (error) {
-      if (this.cancellationToken.aborted) {
-        this.logger.info(`Worker for post '${this.postId}' was cancelled`);
-      } else {
-        this.logger.withError(error).error('Error during processing');
-      }
+      this.logger.withError(error).error('Error during processing');
     } finally {
       await this.dispose();
     }
