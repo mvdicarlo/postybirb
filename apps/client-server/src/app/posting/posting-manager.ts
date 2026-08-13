@@ -9,6 +9,7 @@ import { PostParsersService } from '../post-parsers/post-parsers.service';
 import { PostFileResizerService } from '../post/services/post-file-resizer/post-file-resizer.service';
 import { ValidationService } from '../validation/validation.service';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
+import { PostingActivityService } from './posting-activity.service';
 import { PostingRateLimiterService } from './posting-rate-limiter.service';
 import { PostingWorker } from './posting-worker';
 
@@ -17,8 +18,6 @@ export class PostingManager {
   private readonly logger = Logger(PostingManager.name);
 
   private readonly submitMutex = new Mutex();
-
-  private readonly acceptedJobs = new Set<PostId>();
 
   private readonly maxAcceptedJobs = 3;
 
@@ -32,22 +31,22 @@ export class PostingManager {
     private readonly fileConverterService: FileConverterService,
     private readonly notificationService: NotificationsService,
     private readonly postingRateLimiter: PostingRateLimiterService,
+    private readonly postingActivity: PostingActivityService,
     @Optional()
     @Inject(EventEmitter2)
     private readonly eventEmitter?: EventEmitter2,
   ) {}
 
+  public isAccepted(postId: PostId): boolean {
+    return this.postingActivity.isAccepted(postId);
+  }
+
   public submit(postId: PostId): Promise<boolean> {
     return this.submitMutex.runExclusive(() => {
-      if (this.acceptedJobs.has(postId)) {
+      if (!this.postingActivity.accept(postId, this.maxAcceptedJobs)) {
         return false;
       }
 
-      if (this.acceptedJobs.size >= this.maxAcceptedJobs) {
-        return false;
-      }
-
-      this.acceptedJobs.add(postId);
       this.logger.debug(`Accepted post '${postId}'`);
       this.allocateWorker(postId);
       return true;
@@ -107,7 +106,7 @@ export class PostingManager {
       }
 
       this.workers.delete(postId);
-      this.acceptedJobs.delete(postId);
+      this.postingActivity.release(postId);
       this.logger.debug(`Released post '${postId}'`);
     });
   }

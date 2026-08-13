@@ -36,6 +36,7 @@ import { eq } from 'drizzle-orm';
 import * as path from 'path';
 import { PostyBirbService } from '../../common/service/postybirb-service';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
+import { PostingActivityService } from '../../posting/posting-activity.service';
 import { WebsiteOptionsService } from '../../website-options/website-options.service';
 import { ApplyMultiSubmissionDto } from '../dtos/apply-multi-submission.dto';
 import { ApplyTemplateOptionsDto } from '../dtos/apply-template-options.dto';
@@ -66,6 +67,7 @@ export class SubmissionService
     private readonly fileSubmissionService: FileSubmissionService,
     private readonly messageSubmissionService: MessageSubmissionService,
     private readonly submissionEventPublisher: SubmissionEventPublisher,
+    private readonly postingActivity: PostingActivityService,
   ) {
     super(new SubmissionRepository());
   }
@@ -447,6 +449,7 @@ export class SubmissionService
       .withMetadata({ id, templateId })
       .info('Applying template to submission');
     const submission = await this.findByIdOrThrow(id);
+    await this.postingActivity.assertSubmissionsMutable(id);
     const template: Submission = await this.findByIdOrThrow(templateId);
 
     if (!template.metadata.template) {
@@ -509,6 +512,7 @@ export class SubmissionService
   async update(id: SubmissionId, update: UpdateSubmissionDto) {
     this.logger.withMetadata(update).info(`Updating Submission '${id}'`);
     const submission = await this.findByIdOrThrow(id);
+    await this.postingActivity.assertSubmissionsMutable(id);
 
     const scheduleType =
       update.scheduleType ?? submission.schedule.scheduleType;
@@ -629,13 +633,21 @@ export class SubmissionService
   }
 
   public async remove(id: SubmissionId): Promise<void> {
-    await super.remove(id);
-    const dependents = await this.dependencyMutationMutex.runExclusive(() =>
-      this.dropDependencyReferences(id),
+    const dependents = await this.dependencyMutationMutex.runExclusive(
+      async () => {
+        const affected = await this.findDependencyReferences(id);
+        await this.postingActivity.assertSubmissionsMutable([
+          id,
+          ...affected.map((submission) => submission.id),
+        ]);
+        await super.remove(id);
+        await this.dropDependencyReferences(id, affected);
+        return affected;
+      },
     );
     this.markRemoved(id);
     if (dependents.length > 0) {
-      this.markChanged(dependents);
+      this.markChanged(dependents.map((submission) => submission.id));
     }
   }
 
@@ -646,11 +658,8 @@ export class SubmissionService
    */
   private async dropDependencyReferences(
     removedId: SubmissionId,
-  ): Promise<SubmissionId[]> {
-    const dependents = (await this.repository.find({ with: {} })).filter(
-      (submission) => submission.dependsOn.includes(removedId),
-    );
-
+    dependents: SubmissionEntity[],
+  ): Promise<void> {
     await Promise.all(
       dependents.map((submission) =>
         this.repository.update(submission.id, {
@@ -660,8 +669,14 @@ export class SubmissionService
         }),
       ),
     );
+  }
 
-    return dependents.map((submission) => submission.id);
+  private async findDependencyReferences(
+    removedId: SubmissionId,
+  ): Promise<SubmissionEntity[]> {
+    return (await this.repository.find({ with: {} })).filter(
+      (submission) => submission.dependsOn.includes(removedId),
+    );
   }
 
   async applyMultiSubmission(applyMultiSubmissionDto: ApplyMultiSubmissionDto) {
@@ -670,6 +685,9 @@ export class SubmissionService
     const submissions = await this.repository.find({
       where: (submission, { inArray }) => inArray(submission.id, submissionIds),
     });
+    await this.postingActivity.assertSubmissionsMutable(
+      submissions.map((submission) => submission.id),
+    );
     if (merge) {
       // Keeps unique options, overwrites overlapping options
       for (const submission of submissions) {
@@ -735,6 +753,7 @@ export class SubmissionService
   }> {
     const { targetSubmissionIds, options, overrideTitle, overrideDescription } =
       dto;
+    await this.postingActivity.assertSubmissionsMutable(targetSubmissionIds);
 
     this.logger
       .withMetadata({
@@ -969,6 +988,7 @@ export class SubmissionService
     updateSubmissionDto: UpdateSubmissionTemplateNameDto,
   ) {
     const entity = await this.findByIdOrThrow(id);
+    await this.postingActivity.assertSubmissionsMutable(id);
 
     if (!entity.isTemplate) {
       throw new BadRequestException(`Submission '${id}' is not a template`);
@@ -997,6 +1017,7 @@ export class SubmissionService
     position: 'before' | 'after',
   ) {
     const moving = await this.findByIdOrThrow(id);
+    await this.postingActivity.assertSubmissionsMutable(id);
     const target = await this.findByIdOrThrow(targetId);
 
     // Ensure same type (FILE or MESSAGE)
@@ -1045,6 +1066,7 @@ export class SubmissionService
 
   async unarchive(id: SubmissionId) {
     const submission = await this.findByIdOrThrow(id);
+    await this.postingActivity.assertSubmissionsMutable(id);
     if (!submission.isArchived) {
       throw new BadRequestException(`Submission '${id}' is not archived`);
     }
@@ -1056,6 +1078,7 @@ export class SubmissionService
 
   async archive(id: SubmissionId) {
     const submission = await this.findByIdOrThrow(id);
+    await this.postingActivity.assertSubmissionsMutable(id);
     if (submission.isArchived) {
       throw new BadRequestException(`Submission '${id}' is already archived`);
     }

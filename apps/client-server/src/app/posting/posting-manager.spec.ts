@@ -5,6 +5,7 @@ import { PostParsersService } from '../post-parsers/post-parsers.service';
 import { PostFileResizerService } from '../post/services/post-file-resizer/post-file-resizer.service';
 import { ValidationService } from '../validation/validation.service';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
+import { PostingActivityService } from './posting-activity.service';
 import { PostingManager } from './posting-manager';
 import { PostingRateLimiterService } from './posting-rate-limiter.service';
 import { PostingWorker } from './posting-worker';
@@ -52,11 +53,18 @@ describe('PostingManager', () => {
       stubFileConverterService,
       stubNotificationService,
       stubPostingRateLimiter,
+      new PostingActivityService(),
     );
   });
 
   it('accepts a new job', async () => {
+    expect(manager.isAccepted('post-1')).toBe(false);
     await expect(manager.submit('post-1')).resolves.toBe(true);
+    expect(manager.isAccepted('post-1')).toBe(true);
+
+    await manager.workerHarnesses.get('post-1')?.dispose();
+
+    expect(manager.isAccepted('post-1')).toBe(false);
   });
 
   it('rejects a job that has already been accepted', async () => {

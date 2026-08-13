@@ -1,7 +1,11 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, ConflictException } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
-import { clearDatabase, EntityNotFoundError } from '@postybirb/database';
+import {
+    clearDatabase,
+    EntityNotFoundError,
+    PostRepository,
+} from '@postybirb/database';
 import { PostyBirbDirectories, writeSync } from '@postybirb/fs';
 import {
     FileSubmissionMetadata,
@@ -26,6 +30,8 @@ import { FormGeneratorModule } from '../../form-generator/form-generator.module'
 import { SharpInstanceManager } from '../../image-processing/sharp-instance-manager';
 import { TestPlatformModule } from '../../platform/testing/test-platform.module';
 import { PostParsersModule } from '../../post-parsers/post-parsers.module';
+import { PostingActivityModule } from '../../posting/posting-activity.module';
+import { PostingActivityService } from '../../posting/posting-activity.service';
 import { waitUntilPromised } from '../../utils/wait.util';
 import { ValidationService } from '../../validation/validation.service';
 import { WebsiteOptionsService } from '../../website-options/website-options.service';
@@ -44,6 +50,8 @@ describe('SubmissionService', () => {
   let service: SubmissionService;
   let websiteOptionsService: WebsiteOptionsService;
   let accountService: AccountService;
+  let postingActivity: PostingActivityService;
+  let postRepository: PostRepository;
   let module: TestingModule;
 
   beforeAll(() => {
@@ -63,6 +71,7 @@ describe('SubmissionService', () => {
           WebsitesModule,
           PostParsersModule,
           FormGeneratorModule,
+          PostingActivityModule,
         ],
         providers: [
           SubmissionService,
@@ -87,6 +96,10 @@ describe('SubmissionService', () => {
         WebsiteOptionsService,
       );
       accountService = module.get<AccountService>(AccountService);
+      postingActivity = module.get<PostingActivityService>(
+        PostingActivityService,
+      );
+      postRepository = new PostRepository();
       await accountService.onModuleInit();
     } catch (e) {
       console.error(e);
@@ -132,6 +145,11 @@ describe('SubmissionService', () => {
       path,
       origin: undefined,
     };
+  }
+
+  async function acceptSubmission(submissionId: string): Promise<void> {
+    const post = await postRepository.insert({ submissionId });
+    expect(postingActivity.accept(post.id, 3)).toBe(true);
   }
 
   it('should be defined', () => {
@@ -318,6 +336,41 @@ describe('SubmissionService', () => {
     expect(updatedRecord.dependsOn).toEqual(updateDto.dependsOn);
   });
 
+  it('should reject updates while a submission is accepted', async () => {
+    const record = await service.create(createSubmissionDto());
+    await acceptSubmission(record.id);
+
+    await expect(
+      service.update(record.id, {
+        metadata: { changed: true } as unknown as ISubmissionMetadata,
+      }),
+    ).rejects.toBeInstanceOf(ConflictException);
+    await expect(service.findByIdOrThrow(record.id)).resolves.toMatchObject({
+      metadata: {},
+    });
+  });
+
+  it('should reject file changes while a submission is accepted', async () => {
+    const createDto = createSubmissionDto();
+    createDto.type = SubmissionType.FILE;
+    const record = await service.create(
+      createDto,
+      createMulterData(setup()),
+    );
+    const file = record.files[0];
+    await acceptSubmission(record.id);
+
+    await expect(
+      module.get(FileSubmissionService).updateMetadata(file.id, {
+        ...file.metadata,
+        spoilerText: 'blocked',
+      }),
+    ).rejects.toBeInstanceOf(ConflictException);
+    await expect(service.findByIdOrThrow(record.id)).resolves.toMatchObject({
+      files: [{ metadata: { spoilerText: '' } }],
+    });
+  });
+
   it('should reject a direct dependency cycle', async () => {
     const submission = await service.create(createSubmissionDto());
     const updateDto = new UpdateSubmissionDto();
@@ -387,6 +440,21 @@ describe('SubmissionService', () => {
     });
     await expect(service.findByIdOrThrow(unrelated.id)).resolves.toMatchObject({
       dependsOn: [],
+    });
+  });
+
+  it('should reject deletion that would rewrite an accepted dependent', async () => {
+    const removed = await service.create(createSubmissionDto());
+    const dependent = await service.create(createSubmissionDto());
+    await service.update(dependent.id, { dependsOn: [removed.id] });
+    await acceptSubmission(dependent.id);
+
+    await expect(service.remove(removed.id)).rejects.toBeInstanceOf(
+      ConflictException,
+    );
+    await expect(service.findByIdOrThrow(removed.id)).resolves.toBeDefined();
+    await expect(service.findByIdOrThrow(dependent.id)).resolves.toMatchObject({
+      dependsOn: [removed.id],
     });
   });
 
