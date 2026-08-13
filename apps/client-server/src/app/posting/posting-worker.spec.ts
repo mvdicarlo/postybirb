@@ -372,6 +372,220 @@ describe('PostingWorker', () => {
     );
   });
 
+  it('orders files by submission order instead of unit encounter order', async () => {
+    const { worker, mocks } = createWorker();
+    mocks.submissionRepository.findByIdOrThrow.mockResolvedValue({
+      id: 'submission-1',
+      type: 'FILE',
+      files: [
+        { id: 'file-4', order: 4 },
+        { id: 'file-3', order: 3 },
+      ],
+    });
+    mocks.unitOfWorkRepository.find.mockResolvedValue([
+      {
+        id: 'work-4',
+        accountId: 'account-1',
+        fileId: 'file-4',
+        batch: 'batch-1',
+      },
+      {
+        id: 'work-3',
+        accountId: 'account-1',
+        fileId: 'file-3',
+        batch: 'batch-1',
+      },
+    ]);
+    mocks.fileRepository.findByIdOrThrow.mockImplementation((fileId) =>
+      Promise.resolve({
+        id: fileId,
+        fileName: `${fileId}.txt`,
+        mimeType: 'text/plain',
+        file: {
+          id: `buffer-${fileId}`,
+          fileName: `${fileId}.txt`,
+          mimeType: 'text/plain',
+          buffer: Buffer.from(fileId),
+        },
+        metadata: {},
+      }),
+    );
+
+    await worker.start();
+
+    const postedFiles = mocks.websitePost.mock.calls[0][1];
+    expect(postedFiles.map((file: { id: string }) => file.id)).toEqual([
+      'file-3',
+      'file-4',
+    ]);
+  });
+
+  it('splits interleaved persisted batches to preserve global file order', async () => {
+    const { worker, mocks } = createWorker();
+    mocks.submissionRepository.findByIdOrThrow.mockResolvedValue({
+      id: 'submission-1',
+      type: 'FILE',
+      files: [
+        { id: 'file-0', order: 0 },
+        { id: 'file-1', order: 1 },
+        { id: 'file-2', order: 2 },
+      ],
+    });
+    mocks.unitOfWorkRepository.find.mockResolvedValue([
+      {
+        id: 'work-0',
+        accountId: 'account-1',
+        fileId: 'file-0',
+        batch: 'batch-a',
+      },
+      {
+        id: 'work-2',
+        accountId: 'account-1',
+        fileId: 'file-2',
+        batch: 'batch-a',
+      },
+      {
+        id: 'work-1',
+        accountId: 'account-1',
+        fileId: 'file-1',
+        batch: 'batch-b',
+      },
+    ]);
+    mocks.fileRepository.findByIdOrThrow.mockImplementation((fileId) =>
+      Promise.resolve({
+        id: fileId,
+        fileName: `${fileId}.txt`,
+        mimeType: 'text/plain',
+        file: {
+          id: `buffer-${fileId}`,
+          fileName: `${fileId}.txt`,
+          mimeType: 'text/plain',
+          buffer: Buffer.from(fileId),
+        },
+        metadata: {},
+      }),
+    );
+
+    await worker.start();
+
+    expect(
+      mocks.websitePost.mock.calls.flatMap(([, files]) =>
+        files.map((file: { id: string }) => file.id),
+      ),
+    ).toEqual(['file-0', 'file-1', 'file-2']);
+    expect(
+      mocks.websitePost.mock.calls.map(([, , metadata]) => metadata),
+    ).toEqual([
+      { index: 0, totalBatches: 3 },
+      { index: 1, totalBatches: 3 },
+      { index: 2, totalBatches: 3 },
+    ]);
+  });
+
+  it('adds fresh account source URL history to each batch', async () => {
+    const { worker, mocks } = createWorker();
+    const work1 = {
+      id: 'work-1',
+      accountId: 'account-1',
+      batch: 'batch-1',
+    };
+    const work2 = {
+      id: 'work-2',
+      accountId: 'account-1',
+      batch: 'batch-2',
+    };
+    const priorSource = {
+      id: 'prior-source',
+      evicted: false,
+      url: ' https://example.com/prior ',
+      updatedAt: '2026-08-13T10:00:00.000Z',
+    };
+    const laterDuplicate = {
+      id: 'prior-source-duplicate',
+      evicted: false,
+      url: 'https://example.com/prior',
+      updatedAt: '2026-08-13T10:01:00.000Z',
+    };
+    mocks.unitOfWorkRepository.find
+      .mockResolvedValueOnce([work1, work2])
+      .mockResolvedValueOnce([
+        priorSource,
+        laterDuplicate,
+        {
+          ...work1,
+          evicted: false,
+          url: 'https://example.com/current-stale',
+          updatedAt: '2026-08-13T10:02:00.000Z',
+        },
+      ])
+      .mockResolvedValueOnce([
+        priorSource,
+        laterDuplicate,
+        {
+          ...work1,
+          evicted: false,
+          url: 'https://example.com/first-batch',
+          updatedAt: '2026-08-13T10:02:00.000Z',
+        },
+        {
+          ...work2,
+          evicted: false,
+          url: 'https://example.com/current-stale',
+          updatedAt: '2026-08-13T10:03:00.000Z',
+        },
+      ]);
+
+    await worker.start();
+
+    expect(mocks.websitePost.mock.calls.map(([, , metadata]) => metadata))
+      .toEqual([
+        {
+          index: 0,
+          totalBatches: 2,
+          sourceUrls: [
+            {
+              url: 'https://example.com/prior',
+              timestamp: '2026-08-13T10:00:00.000Z',
+            },
+          ],
+        },
+        {
+          index: 1,
+          totalBatches: 2,
+          sourceUrls: [
+            {
+              url: 'https://example.com/prior',
+              timestamp: '2026-08-13T10:00:00.000Z',
+            },
+            {
+              url: 'https://example.com/first-batch',
+              timestamp: '2026-08-13T10:02:00.000Z',
+            },
+          ],
+        },
+      ]);
+
+    const sourceWhere = mocks.unitOfWorkRepository.find.mock.calls[1][0].where;
+    const columns = {
+      postId: 'postId',
+      accountId: 'accountId',
+      evicted: 'evicted',
+    };
+    const operators = {
+      and: jest.fn((...conditions: unknown[]) => conditions),
+      eq: jest.fn((column: string, value: unknown) => ({
+        column,
+        operator: 'eq',
+        value,
+      })),
+    };
+    expect(sourceWhere(columns, operators)).toEqual([
+      { column: 'postId', operator: 'eq', value: 'post-1' },
+      { column: 'accountId', operator: 'eq', value: 'account-1' },
+      { column: 'evicted', operator: 'eq', value: false },
+    ]);
+  });
+
   it('merges user and cross-account source URLs without mutating stored metadata', async () => {
     const { worker, mocks } = createWorker();
     const currentWork = {

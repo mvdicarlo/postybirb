@@ -35,7 +35,10 @@ import { getImageResizeParameters } from '../post/services/post-file-resizer/ima
 import { PostFileResizerService } from '../post/services/post-file-resizer/post-file-resizer.service';
 import { publishSubmissionProjectionChanged } from '../submission/submission.events';
 import { ValidationService } from '../validation/validation.service';
-import { PostBatchData } from '../websites/models/website-modifiers/file-website';
+import {
+  PostBatchData,
+  PostBatchSourceUrl,
+} from '../websites/models/website-modifiers/file-website';
 import { UnknownWebsite } from '../websites/website';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { CancellationToken } from './cancellation-token';
@@ -388,6 +391,10 @@ export class PostingWorker {
           websiteInstance,
           context.submission,
           message,
+          {
+            error: message,
+            validationResult
+          },
         );
         return;
       }
@@ -403,7 +410,6 @@ export class PostingWorker {
     }
 
     // Pre-flight checks passed, proceed with posting
-
     const batchedUnitsOfWork = this.getAccountBatches(
       accountId,
       context.allUnitsOfWork,
@@ -517,6 +523,10 @@ export class PostingWorker {
     const propagatedSourceUrls = acceptsExternalSourceUrls
       ? await this.getPropagatedSourceUrls(unitsOfWork)
       : [];
+    const accountSourceUrls = await this.getAccountSourceUrls(
+      websiteInstance.accountId,
+      unitsOfWork,
+    );
     const files = preparedFiles.map((file) =>
       file.withMetadata({
         ...file.metadata,
@@ -530,7 +540,12 @@ export class PostingWorker {
     const response = await websiteInstance.post(
       postData,
       files,
-      batch,
+      {
+        ...batch,
+        ...(accountSourceUrls.length > 0
+          ? { sourceUrls: accountSourceUrls }
+          : {}),
+      },
       this.cancellationToken,
     );
 
@@ -565,44 +580,81 @@ export class PostingWorker {
     const fileOrder = new Map(
       (submission.files ?? []).map((file) => [file.id, file.order]),
     );
-    const batches = new Map<string, {
-      firstSeen: number;
-      order: number;
-      units: UnitOfWork[];
-    }>();
-
-    allUnitsOfWork
+    const getFileOrder = (unit: UnitOfWork): number =>
+      (unit.fileId ? fileOrder.get(unit.fileId) : undefined) ??
+      Number.MAX_SAFE_INTEGER;
+    const orderedUnits = allUnitsOfWork
       .filter((unit) => unit.accountId === accountId)
-      .forEach((unit, index) => {
-        const batchId = unit.batch ?? 'unknown';
-        const grouped = batches.get(batchId) ?? {
-          firstSeen: index,
-          order: Number.MAX_SAFE_INTEGER,
-          units: [],
-        };
-        grouped.units.push(unit);
-        if (unit.fileId) {
-          grouped.order = Math.min(
-            grouped.order,
-            fileOrder.get(unit.fileId) ?? Number.MAX_SAFE_INTEGER,
-          );
-        }
-        batches.set(batchId, grouped);
-      });
+      .sort(
+        (left, right) =>
+          getFileOrder(left) - getFileOrder(right) ||
+          (left.fileId ?? '').localeCompare(right.fileId ?? '') ||
+          left.id.localeCompare(right.id),
+      );
+    const batches: Array<{
+      batchId: string;
+      units: UnitOfWork[];
+    }> = [];
 
-    const orderedBatches = [...batches.values()].sort(
-      (left, right) =>
-        left.order - right.order || left.firstSeen - right.firstSeen,
-    );
-    return orderedBatches.flatMap((grouped, index) => {
+    // Split an interleaved persisted batch instead of allowing it to jump
+    // across another file's current submission order.
+    for (const unit of orderedUnits) {
+      const batchId = unit.batch ?? 'unknown';
+      const currentBatch = batches[batches.length - 1];
+      if (!currentBatch || currentBatch.batchId !== batchId) {
+        batches.push({ batchId, units: [unit] });
+      } else {
+        currentBatch.units.push(unit);
+      }
+    }
+
+    return batches.flatMap((grouped, index) => {
       const readyUnits = grouped.units.filter((unit) => readyIds.has(unit.id));
       return readyUnits.length > 0
         ? [{
-            metadata: { index, totalBatches: orderedBatches.length },
+            metadata: { index, totalBatches: batches.length },
             units: readyUnits,
           }]
         : [];
     });
+  }
+
+  /** Source URLs previously produced by this account on the current post. */
+  private async getAccountSourceUrls(
+    accountId: AccountId,
+    currentUnits: UnitOfWork[],
+  ): Promise<PostBatchSourceUrl[]> {
+    const currentUnitIds = new Set(currentUnits.map((unit) => unit.id));
+    const sourceUnits = await this.unitOfWorkRepository.find({
+      where: (unit, { and, eq }) => and(
+        eq(unit.postId, this.postId),
+        eq(unit.accountId, accountId),
+        eq(unit.evicted, false),
+      ),
+    });
+    const sourceUrls = new Map<string, PostBatchSourceUrl>();
+
+    for (const unit of sourceUnits) {
+      const url = unit.url?.trim();
+      if (!url || unit.evicted || currentUnitIds.has(unit.id)) {
+        continue;
+      }
+
+      const candidate = { url, timestamp: unit.updatedAt };
+      const existing = sourceUrls.get(url);
+      if (
+        !existing ||
+        candidate.timestamp.localeCompare(existing.timestamp) < 0
+      ) {
+        sourceUrls.set(url, candidate);
+      }
+    }
+
+    return [...sourceUrls.values()].sort(
+      (left, right) =>
+        left.timestamp.localeCompare(right.timestamp) ||
+        left.url.localeCompare(right.url),
+    );
   }
 
   /** Source URLs already produced by the other accounts on this post. */
@@ -839,7 +891,7 @@ export class PostingWorker {
         type: 'error',
         title: `Failed to post to ${metadata.displayName}`,
         message,
-        tags: ['post-failure', metadata.name],
+        tags: ['post-failure', metadata.displayName],
         data: {
           submissionId: submission.id,
           submissionType: submission.type,

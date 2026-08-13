@@ -15,9 +15,17 @@ export const FileWebsiteKey = 'createFileModel';
 
 export type ImplementedFileWebsite = FileWebsite & UnknownWebsite;
 
+export interface PostBatchSourceUrl {
+  url: string;
+  /** Unit timestamp from when the source URL was persisted. */
+  timestamp: string;
+}
+
 export interface PostBatchData {
   index: number;
   totalBatches: number;
+  /** Unique URLs produced by prior non-evicted units for this account. */
+  sourceUrls?: PostBatchSourceUrl[];
 }
 
 /**
