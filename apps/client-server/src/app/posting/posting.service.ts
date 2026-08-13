@@ -580,7 +580,8 @@ export class PostingService {
             orderBy: (file, { asc }) => asc(file.order),
         });
         const websiteOptions = await this.websiteOptionsRepository.find({
-            where: (c, { eq }) => eq(c.submissionId, submissionId),
+            where: (c, { and, eq }) =>
+                and(eq(c.submissionId, submissionId), eq(c.isDefault, false)),
         });
 
         return websiteOptions.flatMap((option) => {

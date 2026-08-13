@@ -731,7 +731,7 @@ describe('PostingWorker', () => {
       type: 'error',
       title: 'Failed to post to Test Website',
       message: exception.message,
-      tags: ['post-failure', 'test-website'],
+      tags: ['post-failure', 'Test Website'],
       data: {
         submissionId: 'submission-1',
         submissionType: 'FILE',
