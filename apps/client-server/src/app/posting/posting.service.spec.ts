@@ -1,23 +1,23 @@
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
-  AccountRepository,
-  clearDatabase,
-  PostRepository,
-  SubmissionFileRepository,
-  SubmissionRepository,
-  UnitOfWorkRepository,
-  WebsiteOptionsRepository,
+    AccountRepository,
+    clearDatabase,
+    PostRepository,
+    SubmissionFileRepository,
+    SubmissionRepository,
+    UnitOfWorkRepository,
+    WebsiteOptionsRepository,
 } from '@postybirb/database';
 import type {
-  ISubmissionMetadata,
-  IWebsiteFormFields,
-  SubmissionId,
+    ISubmissionMetadata,
+    IWebsiteFormFields,
+    SubmissionId,
 } from '@postybirb/types';
 import {
-  DefaultSubmissionFileMetadata,
-  ScheduleType,
-  SubmissionType,
-  UnitOfWorkState,
+    DefaultSubmissionFileMetadata,
+    ScheduleType,
+    SubmissionType,
+    UnitOfWorkState,
 } from '@postybirb/types';
 import { SUBMISSION_PROJECTION_CHANGED } from '../submission/submission.events';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
@@ -1316,6 +1316,32 @@ describe('PostingService', () => {
     ).resolves.toMatchObject({
       completed: true,
       cancelled: true,
+    });
+    expect(eventEmitter.emit).toHaveBeenCalledWith(
+      SUBMISSION_PROJECTION_CHANGED,
+      [expect.objectContaining({ submissionIds: [submission.id] })],
+    );
+  });
+
+  it('evicts a unit of work by id and publishes the submission update', async () => {
+    const submission = await seedSubmission();
+    const account = await seedAccount('eviction-target');
+    const post = await postRepository.insert({ submissionId: submission.id });
+    const unit = await unitOfWorkRepository.insert({
+      postId: post.id,
+      submissionId: submission.id,
+      accountId: account.id,
+      attempt: 0,
+      evicted: false,
+      state: UnitOfWorkState.PENDING,
+    });
+
+    await expect(service.evictUnitOfWork(unit.id)).resolves.toMatchObject({
+      id: unit.id,
+      evicted: true,
+    });
+    await expect(unitOfWorkRepository.findByIdOrThrow(unit.id)).resolves.toMatchObject({
+      evicted: true,
     });
     expect(eventEmitter.emit).toHaveBeenCalledWith(
       SUBMISSION_PROJECTION_CHANGED,

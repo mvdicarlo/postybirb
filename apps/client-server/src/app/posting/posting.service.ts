@@ -21,6 +21,7 @@ import {
     ScheduleType,
     SubmissionFileId,
     SubmissionId,
+    UnitOfWorkId,
     UnitOfWorkState,
 } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/common';
@@ -321,6 +322,18 @@ export class PostingService {
                 post.submissionId,
             );
         }
+    }
+
+    public async evictUnitOfWork(unitOfWorkId: UnitOfWorkId): Promise<UnitOfWork> {
+        const unit = await this.unitOfWorkRepository.findByIdOrThrow(unitOfWorkId);
+        const evicted = await this.unitOfWorkRepository.update(unitOfWorkId, {
+            evicted: true,
+        });
+        publishSubmissionProjectionChanged(
+            this.eventEmitter,
+            unit.submissionId,
+        );
+        return evicted;
     }
 
     private async acceptsExternalSourceUrls(

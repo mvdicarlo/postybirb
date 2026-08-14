@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import type { UnitOfWorkId } from '@postybirb/types';
 import { GetIncompleteWorkDto } from './dtos/get-incomplete-work.dto';
 import { PostingService } from './posting.service';
 
@@ -42,6 +43,12 @@ export class PostingController {
   unpause() {
     this.service.unpausePosts();
     return { paused: this.service.arePostsPaused() };
+  }
+
+  @Post('evict/:unitOfWorkId')
+  @ApiOkResponse({ description: 'Unit of work evicted.' })
+  evictUnitOfWork(@Param('unitOfWorkId') unitOfWorkId: UnitOfWorkId) {
+    return this.service.evictUnitOfWork(unitOfWorkId);
   }
 
   @Post('/cancel/:postId')

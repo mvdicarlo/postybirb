@@ -1,7 +1,9 @@
 import {
     AccountId,
+    IUnitOfWork,
     SubmissionFileId,
     SubmissionId,
+    UnitOfWorkId,
 } from '@postybirb/types';
 import { HttpClient } from '../transports/http-client';
 
@@ -35,6 +37,10 @@ class PostingApi {
 
   unpause() {
     return this.client.post<{ paused: boolean }>('unpause', {});
+  }
+
+  evictUnitOfWork(unitOfWorkId: UnitOfWorkId) {
+    return this.client.post<IUnitOfWork>(`evict/${unitOfWorkId}`, {});
   }
 
   cancelPost(postId: string, reason?: string) {

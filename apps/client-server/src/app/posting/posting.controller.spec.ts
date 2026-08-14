@@ -90,4 +90,15 @@ describe('PostingController', () => {
     expect(controller.unpause()).toEqual({ paused: false });
     expect(unpausePosts).toHaveBeenCalledTimes(1);
   });
+
+  it('forwards a unit-of-work eviction to the service', async () => {
+    const result = { id: 'unit-1', evicted: true };
+    const evictUnitOfWork = jest.fn().mockResolvedValue(result);
+    const controller = new PostingController({
+      evictUnitOfWork,
+    } as unknown as PostingService);
+
+    await expect(controller.evictUnitOfWork('unit-1')).resolves.toBe(result);
+    expect(evictUnitOfWork).toHaveBeenCalledWith('unit-1');
+  });
 });

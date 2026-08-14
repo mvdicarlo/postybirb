@@ -5,6 +5,7 @@
 import { Trans } from '@lingui/react/macro';
 import {
     Accordion,
+    ActionIcon,
     Badge,
     Group,
     Stack,
@@ -13,9 +14,16 @@ import {
     Tooltip,
 } from '@mantine/core';
 import { EntityId, IUnitOfWork, UnitOfWorkState } from '@postybirb/types';
-import { IconExternalLink, IconInfoCircle } from '@tabler/icons-react';
+import {
+    IconExternalLink,
+    IconInfoCircle,
+    IconRefresh,
+} from '@tabler/icons-react';
+import { useState } from 'react';
+import postingApi from '../../../../api/posting.api';
 import { useLocale } from '../../../../hooks';
 import type { AccountRecord, SubmissionRecord } from '../../../../stores/records';
+import { showErrorNotification } from '../../../../utils/notifications';
 import { CopyToClipboard } from '../../../shared/copy-to-clipboard';
 import { ExternalLink } from '../../../shared/external-link';
 import {
@@ -92,6 +100,57 @@ function UnitDetailsCell({ unit }: { unit: IUnitOfWork }) {
   );
 }
 
+function UnitEvictCell({ unit }: { unit: IUnitOfWork }) {
+  const [isEvicting, setIsEvicting] = useState(false);
+
+  // Evicting mid-flight would race the worker writing the unit's result.
+  const isInFlight =
+    unit.state === UnitOfWorkState.EXECUTING ||
+    unit.state === UnitOfWorkState.VALIDATING;
+
+  if (unit.evicted) {
+    return (
+      <Text size="xs" c="dimmed">
+        -
+      </Text>
+    );
+  }
+
+  const handleEvict = async () => {
+    setIsEvicting(true);
+    try {
+      await postingApi.evictUnitOfWork(unit.id);
+    } catch {
+      showErrorNotification(<Trans>Unable to evict this work</Trans>);
+    } finally {
+      setIsEvicting(false);
+    }
+  };
+
+  return (
+    <Tooltip
+      label={
+        isInFlight ? (
+          <Trans>Cannot evict work that is currently posting</Trans>
+        ) : (
+          <Trans>Evict so this is posted again on the next attempt</Trans>
+        )
+      }
+    >
+      <ActionIcon
+        variant="subtle"
+        size="sm"
+        color="orange"
+        loading={isEvicting}
+        data-disabled={isInFlight || undefined}
+        onClick={isInFlight ? undefined : handleEvict}
+      >
+        <IconRefresh size={16} />
+      </ActionIcon>
+    </Tooltip>
+  );
+}
+
 /**
  * Displays one account's units of work as an Accordion.Item.
  */
@@ -164,6 +223,9 @@ export function AccountUnitGroup({
               <Table.Th>
                 <Trans>Details</Trans>
               </Table.Th>
+              <Table.Th w={60}>
+                <Trans>Evict</Trans>
+              </Table.Th>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
@@ -212,6 +274,9 @@ export function AccountUnitGroup({
                   </Table.Td>
                   <Table.Td>
                     <UnitDetailsCell unit={unit} />
+                  </Table.Td>
+                  <Table.Td>
+                    <UnitEvictCell unit={unit} />
                   </Table.Td>
                 </Table.Tr>
               );
