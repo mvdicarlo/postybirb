@@ -12,8 +12,8 @@ import {
     IconSend,
     IconTrash,
 } from '@tabler/icons-react';
-import postManagerApi from '../../../../../api/post-manager.api';
 import postQueueApi from '../../../../../api/post-queue.api';
+import postingApi from '../../../../../api/posting.api';
 import submissionApi from '../../../../../api/submission.api';
 import { useSubmissionHistoryDrawerStore } from '../../../../../stores/ui/submission-history-drawer-store';
 import { useTourActions } from '../../../../../stores/ui/tour-store';
@@ -46,8 +46,9 @@ export function SubmissionEditCardActions() {
   };
 
   const handleCancel = async () => {
+    if (!submission.post) return;
     try {
-      await postManagerApi.cancelIfRunning(submission.id);
+      await postingApi.cancelPost(submission.post.id);
     } catch {
       // Silently handle if not running
     }
@@ -82,7 +83,7 @@ export function SubmissionEditCardActions() {
 
   // Archived submissions: show history (if available), unarchive and delete
   if (submission.isArchived) {
-    const hasHistory = submission.posts.length > 0;
+    const hasHistory = submission.hasPostHistory;
     return (
       <Group gap={4} wrap="nowrap" onClick={(e) => e.stopPropagation()}>
           {hasHistory && (

@@ -2,9 +2,9 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase, Post, PostRepository } from '@postybirb/database';
 import {
-  SubmissionRating,
-  SubmissionType,
-  UnitOfWorkState,
+    SubmissionRating,
+    SubmissionType,
+    UnitOfWorkState,
 } from '@postybirb/types';
 import { AccountModule } from '../account/account.module';
 import { AccountService } from '../account/account.service';
