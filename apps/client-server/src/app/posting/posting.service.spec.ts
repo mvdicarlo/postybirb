@@ -1,23 +1,23 @@
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
-    AccountRepository,
-    clearDatabase,
-    PostRepository,
-    SubmissionFileRepository,
-    SubmissionRepository,
-    UnitOfWorkRepository,
-    WebsiteOptionsRepository,
+  AccountRepository,
+  clearDatabase,
+  PostRepository,
+  SubmissionFileRepository,
+  SubmissionRepository,
+  UnitOfWorkRepository,
+  WebsiteOptionsRepository,
 } from '@postybirb/database';
 import type {
-    ISubmissionMetadata,
-    IWebsiteFormFields,
-    SubmissionId,
+  ISubmissionMetadata,
+  IWebsiteFormFields,
+  SubmissionId,
 } from '@postybirb/types';
 import {
-    DefaultSubmissionFileMetadata,
-    ScheduleType,
-    SubmissionType,
-    UnitOfWorkState,
+  DefaultSubmissionFileMetadata,
+  ScheduleType,
+  SubmissionType,
+  UnitOfWorkState,
 } from '@postybirb/types';
 import { SUBMISSION_PROJECTION_CHANGED } from '../submission/submission.events';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
@@ -281,6 +281,7 @@ describe('PostingService', () => {
       accountId: secondAccount.id,
       state: UnitOfWorkState.SUCCEEDED,
     });
+    await submissionRepository.update(submission.id, { isScheduled: true });
 
     const schedulingStartedAt = Date.now();
     await service.scheduleRecurringTypeSubmission(submission);

@@ -1,4 +1,5 @@
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { UnitOfWorkState } from '@postybirb/types';
 import { FileConverterService } from '../file-converter/file-converter.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
@@ -45,6 +46,7 @@ interface WorkerMocks {
   };
   submissionRepository: {
     findByIdOrThrow: jest.Mock;
+    update: jest.Mock;
   };
   unitOfWorkRepository: {
     find: jest.Mock;
@@ -107,8 +109,12 @@ function createWorker(): { worker: PostingWorker; mocks: WorkerMocks } {
     submissionRepository: {
       findByIdOrThrow: jest.fn().mockResolvedValue({
         id: 'submission-1',
+        isArchived: false,
+        isScheduled: false,
+        schedule: { scheduleType: 'NONE' },
         type: 'FILE',
       }),
+      update: jest.fn().mockResolvedValue(undefined),
     },
     unitOfWorkRepository: {
       find: jest
@@ -171,7 +177,74 @@ function createWorker(): { worker: PostingWorker; mocks: WorkerMocks } {
   return { worker, mocks };
 }
 
+function mockCompletedUnitStates(
+  mocks: WorkerMocks,
+  states: UnitOfWorkState[],
+): void {
+  mocks.unitOfWorkRepository.find
+    .mockResolvedValue(
+      states.map((state, index) => ({
+        id: `work-${index + 1}`,
+        accountId: 'account-1',
+        submissionId: 'submission-1',
+        state,
+      })),
+    )
+    .mockResolvedValueOnce([
+      {
+        id: 'work-1',
+        accountId: 'account-1',
+        submissionId: 'submission-1',
+      },
+    ]);
+}
+
 describe('PostingWorker', () => {
+  it('archives a submission after all active work succeeds', async () => {
+    const { worker, mocks } = createWorker();
+    mocks.postRepository.completeIfAllActiveUnitsSettled.mockResolvedValue(true);
+    mockCompletedUnitStates(mocks, [UnitOfWorkState.SUCCEEDED]);
+
+    await worker.start();
+
+    expect(mocks.submissionRepository.update).toHaveBeenCalledWith(
+      'submission-1',
+      { isArchived: true },
+    );
+  });
+
+  it.each([UnitOfWorkState.FAILED, UnitOfWorkState.CANCELLED])(
+    'does not archive a submission when any active work is %s',
+    async (state) => {
+      const { worker, mocks } = createWorker();
+      mocks.postRepository.completeIfAllActiveUnitsSettled.mockResolvedValue(
+        true,
+      );
+      mockCompletedUnitStates(mocks, [UnitOfWorkState.SUCCEEDED, state]);
+
+      await worker.start();
+
+      expect(mocks.submissionRepository.update).not.toHaveBeenCalled();
+    },
+  );
+
+  it('does not archive a recurring scheduled submission after success', async () => {
+    const { worker, mocks } = createWorker();
+    mocks.postRepository.completeIfAllActiveUnitsSettled.mockResolvedValue(true);
+    mocks.submissionRepository.findByIdOrThrow.mockResolvedValue({
+      id: 'submission-1',
+      isArchived: false,
+      isScheduled: true,
+      schedule: { scheduleType: 'RECURRING' },
+      type: 'FILE',
+    });
+    mockCompletedUnitStates(mocks, [UnitOfWorkState.SUCCEEDED]);
+
+    await worker.start();
+
+    expect(mocks.submissionRepository.update).not.toHaveBeenCalled();
+  });
+
   it('disposes after its work settles', async () => {
     const { worker, mocks } = createWorker();
 

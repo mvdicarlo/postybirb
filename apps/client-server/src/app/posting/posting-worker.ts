@@ -22,6 +22,7 @@ import {
   IWebsiteFormFields,
   PostData,
   PostId,
+  ScheduleType,
   SubmissionId,
   UnitOfWorkState,
 } from '@postybirb/types';
@@ -915,6 +916,27 @@ export class PostingWorker {
         this.postId,
       );
       if (completed) {
+        const units = await this.unitOfWorkRepository.find({
+          where: (unit, { and, eq }) =>
+            and(eq(unit.postId, this.postId), eq(unit.evicted, false)),
+        });
+        const allSucceeded =
+          units.length > 0 &&
+          units.every((unit) => unit.state === UnitOfWorkState.SUCCEEDED);
+
+        if (allSucceeded) {
+          const submission = await this.submissionRepository.findByIdOrThrow(
+            submissionId,
+          );
+          const isRecurringScheduled =
+            submission.isScheduled &&
+            submission.schedule.scheduleType === ScheduleType.RECURRING;
+          if (!isRecurringScheduled && !submission.isArchived) {
+            await this.submissionRepository.update(submissionId, {
+              isArchived: true,
+            });
+          }
+        }
         publishSubmissionProjectionChanged(this.eventEmitter, submissionId);
       }
       return completed;

@@ -170,7 +170,9 @@ export class PostingService {
                 if (!next) {
                     await this.submissionRepository.update(submission.id, { isScheduled: false });
                 } else {
-                    await this.submissionRepository.update(submission.id, { schedule: { ...schedule, scheduledFor: next } });
+                    await this.submissionRepository.update(submission.id, {
+                        schedule: { ...schedule, scheduledFor: next },
+                    });
                 }
             } else {
                 await this.submissionRepository.update(submission.id, { isScheduled: false });

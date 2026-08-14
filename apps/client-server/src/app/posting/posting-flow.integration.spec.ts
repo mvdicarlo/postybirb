@@ -134,5 +134,8 @@ describe('Posting flow integration', () => {
       }),
     );
     expect(postingManager.isAccepted(completedPost.id)).toBe(false);
+    expect((await submissionService.findByIdOrThrow(submission.id)).isArchived).toBe(
+      true,
+    );
   }, 10_000);
 });
