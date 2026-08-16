@@ -2,18 +2,18 @@
 
 // eslint-disable-next-line max-classes-per-file
 import {
-    E621AccountData,
-    E621OAuthRoutes,
-    E621TagCategory,
-    ImageResizeProps,
-    ISubmissionFile,
-    LoginResult,
-    OAuthRouteHandlers,
-    PostData,
-    PostResponse,
-    SimpleValidationResult,
-    SubmissionRating,
-    TipTapNode,
+  E621AccountData,
+  E621OAuthRoutes,
+  E621TagCategory,
+  ImageResizeProps,
+  ISubmissionFile,
+  LoginResult,
+  OAuthRouteHandlers,
+  PostData,
+  PostResponse,
+  SimpleValidationResult,
+  SubmissionRating,
+  TipTapNode,
 } from '@postybirb/types';
 import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
 import { BBCodeConverter } from '../../../post-parsers/models/description-node/converters/bbcode-converter';
@@ -179,16 +179,17 @@ export default class E621
         .withSourceUrl(`https://e621.net${result.body.location}`);
     }
 
+    const errorText =
+      typeof result.body === 'string'
+        ? result.body
+        : `${result.body.reason || ''} || ${result.body.message || ''}`;
+
     return PostResponse.fromWebsite(this)
       .withAdditionalInfo({
         body: result.body,
         statusCode: result.statusCode,
       })
-      .withException(
-        new Error(
-          `${result.body.reason || ''} || ${result.body.message || ''}`,
-        ),
-      );
+      .withException(new Error(errorText));
   }
 
   async onValidateFileSubmission(
