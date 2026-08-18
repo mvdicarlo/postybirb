@@ -1,2 +1,5 @@
-export { PostConfirmModal, type PostConfirmModalProps } from './post-confirm-modal';
+export {
+    BulkPostPreviewModal as PostConfirmModal,
+    type BulkPostPreviewModalProps as PostConfirmModalProps
+} from './bulk-post-preview-modal';
 

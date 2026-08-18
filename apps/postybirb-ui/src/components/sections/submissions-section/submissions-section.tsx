@@ -13,21 +13,21 @@ import { IconArchive, IconFiles, IconMessage } from '@tabler/icons-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { tinykeys } from 'tinykeys';
 import {
-  DeleteSelectedKeybinding,
-  toTinykeysFormat,
+    DeleteSelectedKeybinding,
+    toTinykeysFormat,
 } from '../../../config/keybindings';
 import { useSubmissionsLoading } from '../../../stores/entity/submission-store';
-import { useSubmissionHistoryDrawerStore } from '../../../stores/ui/submission-history-drawer-store';
 import type { SubmissionRecord } from '../../../stores/records';
+import { useSubmissionHistoryDrawerStore } from '../../../stores/ui/submission-history-drawer-store';
 import { ConfirmActionModal } from '../../confirm-action-modal';
 import { ArchivedSubmissionList } from './archived-submission-list';
 import { SubmissionsProvider } from './context';
 import { FileSubmissionModal } from './file-submission-modal';
 import {
-  useGlobalDropzone,
-  useSubmissionHandlers,
-  useSubmissions,
-  useSubmissionSelection,
+    useGlobalDropzone,
+    useSubmissionHandlers,
+    useSubmissions,
+    useSubmissionSelection,
 } from './hooks';
 import { PostConfirmModal } from './post-confirm-modal';
 import { PostPreviewModal } from './post-preview-modal';

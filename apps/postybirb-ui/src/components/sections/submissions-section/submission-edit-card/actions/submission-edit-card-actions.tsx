@@ -12,8 +12,8 @@ import {
     IconSend,
     IconTrash,
 } from '@tabler/icons-react';
-  import { useState } from 'react';
-  import postManagerApi from '../../../../../api/post-manager.api';
+import { useState } from 'react';
+import postManagerApi from '../../../../../api/post-manager.api';
 import postingApi from '../../../../../api/posting.api';
 import submissionApi from '../../../../../api/submission.api';
 import { useSubmissionHistoryDrawerStore } from '../../../../../stores/ui/submission-history-drawer-store';

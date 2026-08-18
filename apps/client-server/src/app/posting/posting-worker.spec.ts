@@ -1,4 +1,5 @@
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { trackEvent, trackException, trackMetric } from '@postybirb/logger';
 import { UnitOfWorkState } from '@postybirb/types';
 import { FileConverterService } from '../file-converter/file-converter.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -10,6 +11,13 @@ import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { CancellationToken } from './cancellation-token';
 import { PostingRateLimiterService } from './posting-rate-limiter.service';
 import { PostingWorker } from './posting-worker';
+
+jest.mock('@postybirb/logger', () => ({
+  ...jest.requireActual('@postybirb/logger'),
+  trackEvent: jest.fn(),
+  trackException: jest.fn(),
+  trackMetric: jest.fn(),
+}));
 
 interface WorkerMocks {
   accountRepository: {
@@ -202,6 +210,12 @@ function mockCompletedUnitStates(
 }
 
 describe('PostingWorker', () => {
+  beforeEach(() => {
+    jest.mocked(trackEvent).mockClear();
+    jest.mocked(trackException).mockClear();
+    jest.mocked(trackMetric).mockClear();
+  });
+
   it('archives a submission after all active work succeeds', async () => {
     const { worker, mocks } = createWorker();
     mocks.postRepository.completeIfAllActiveUnitsSettled.mockResolvedValue(true);
@@ -268,7 +282,12 @@ describe('PostingWorker', () => {
 
   it('posts a prepared batch and stores the successful response', async () => {
     const { worker, mocks } = createWorker();
-    const postData = { options: { title: 'Prepared title' } };
+    const postData = {
+      options: {
+        description: 'Private description',
+        title: 'Prepared title',
+      },
+    };
     mocks.postParsersService.parse.mockResolvedValue(postData);
     mocks.websitePost.mockResolvedValue({
       instanceId: 'website-1',
@@ -294,6 +313,29 @@ describe('PostingWorker', () => {
       url: 'https://example.com/post/1',
     });
     expect(mocks.notificationService.create).not.toHaveBeenCalled();
+    expect(trackEvent).toHaveBeenCalledWith('PostSuccess', {
+      website: 'test-website',
+      accountId: 'account-1',
+      submissionId: 'submission-1',
+      submissionType: 'FILE',
+      hasSourceUrl: 'true',
+      fileCount: '0',
+      options: JSON.stringify({
+        options: {
+          description: '[REDACTED 19]',
+          title: 'Prepared title',
+        },
+      }),
+    });
+    expect(trackMetric).toHaveBeenCalledWith(
+      'post.success.test-website',
+      1,
+      {
+        website: 'test-website',
+        submissionType: 'FILE',
+      },
+    );
+    expect(trackException).not.toHaveBeenCalled();
     expect(mocks.unitOfWorkRepository.update).not.toHaveBeenCalledWith(
       'work-1',
       { state: 'PENDING' },
@@ -337,6 +379,9 @@ describe('PostingWorker', () => {
     expect(mocks.fileRepository.findByIdOrThrow).not.toHaveBeenCalled();
     expect(mocks.websitePost).not.toHaveBeenCalled();
     expect(mocks.notificationService.create).not.toHaveBeenCalled();
+    expect(trackEvent).not.toHaveBeenCalled();
+    expect(trackException).not.toHaveBeenCalled();
+    expect(trackMetric).not.toHaveBeenCalled();
   });
 
   it('executes only ready batches in a mixed post', async () => {
@@ -865,6 +910,32 @@ describe('PostingWorker', () => {
         submissionType: 'FILE',
       },
     });
+    expect(trackEvent).toHaveBeenCalledWith('PostFailure', {
+      website: 'test-website',
+      accountId: 'account-1',
+      submissionId: 'submission-1',
+      submissionType: 'FILE',
+      errorMessage: exception.message,
+      stage: 'submission',
+      hasException: 'true',
+      fileCount: '0',
+      options: JSON.stringify({ options: {} }),
+    });
+    expect(trackMetric).toHaveBeenCalledWith(
+      'post.failure.test-website',
+      1,
+      {
+        website: 'test-website',
+        submissionType: 'FILE',
+      },
+    );
+    expect(trackException).toHaveBeenCalledWith(exception, {
+      website: 'test-website',
+      accountId: 'account-1',
+      submissionId: 'submission-1',
+      stage: 'submission',
+      errorMessage: exception.message,
+    });
   });
 
   it('cancels later batches after a website returns a failure', async () => {
@@ -989,6 +1060,9 @@ describe('PostingWorker', () => {
       expect.objectContaining({ state: 'FAILED' }),
     );
     expect(mocks.notificationService.create).not.toHaveBeenCalled();
+    expect(trackEvent).not.toHaveBeenCalled();
+    expect(trackException).not.toHaveBeenCalled();
+    expect(trackMetric).not.toHaveBeenCalled();
   });
 
   it('marks a returned cancellation response without reporting a failure', async () => {

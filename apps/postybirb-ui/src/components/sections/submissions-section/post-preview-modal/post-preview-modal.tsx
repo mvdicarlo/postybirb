@@ -1,52 +1,52 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
-  Alert,
-  Badge,
-  Box,
-  Button,
-  Checkbox,
-  Divider,
-  Group,
-  LoadingOverlay,
-  Modal,
-  ScrollArea,
-  Stack,
-  Text,
-  ThemeIcon,
+    Alert,
+    Badge,
+    Box,
+    Button,
+    Checkbox,
+    Divider,
+    Group,
+    LoadingOverlay,
+    Modal,
+    ScrollArea,
+    Stack,
+    Text,
+    ThemeIcon,
 } from '@mantine/core';
 import {
-  type IUnitOfWork,
-  type UnitOfWorkId,
-  UnitOfWorkState,
+    type IUnitOfWork,
+    type UnitOfWorkId,
+    UnitOfWorkState,
 } from '@postybirb/types';
 import {
-  IconAlertCircle,
-  IconFile,
-  IconHourglass,
-  IconMessage,
-  IconPlayerPause,
-  IconRefresh,
-  IconSend,
-  IconUser,
-  IconWorld,
+    IconAlertCircle,
+    IconFile,
+    IconHourglass,
+    IconMessage,
+    IconPlayerPause,
+    IconRefresh,
+    IconSend,
+    IconUser,
+    IconWorld,
 } from '@tabler/icons-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import postingApi, {
-  type PostingDryRun,
-  type UnitOfWorkEvictions,
+    type PostingDryRun,
+    type UnitOfWorkEvictions,
 } from '../../../../api/posting.api';
 import { useAccountsMap } from '../../../../stores/entity/account-store';
 import type { SubmissionRecord } from '../../../../stores/records';
 import { showPostErrorNotification } from '../../../../utils/notifications';
 import { getUnitFileName } from '../submission-history/history-utils';
-import {
-  buildUnitOfWorkEvictions,
-  getUnitSelectionState,
-  groupUnitsByWebsite,
-  type PostPreviewWebsiteGroup,
-  updateUnitSelection,
-} from './post-preview-modal.utils';
 import './post-preview-modal.css';
+import {
+    buildUnitOfWorkEvictions,
+    getUnitSelectionState,
+    groupUnitsByWebsite,
+    type PostPreviewWebsiteGroup,
+    updateUnitSelection,
+} from './post-preview-modal.utils';
 
 export interface PostPreviewModalProps {
   opened: boolean;
@@ -99,78 +99,76 @@ function PreviewWorkList({
   }
 
   return (
-    <ScrollArea.Autosize mah={260} type="auto">
-      <Stack gap={0} className="postybirb__post_preview_list">
-        {groups.map((websiteGroup) => (
-          <Box
-            key={websiteGroup.website}
-            className="postybirb__post_preview_website"
+    <Stack gap={0} className="postybirb__post_preview_list">
+      {groups.map((websiteGroup) => (
+        <Box
+          key={websiteGroup.website}
+          className="postybirb__post_preview_website"
+        >
+          <Group
+            justify="space-between"
+            wrap="nowrap"
+            className="postybirb__post_preview_website_header"
           >
-            <Group
-              justify="space-between"
-              wrap="nowrap"
-              className="postybirb__post_preview_website_header"
+            <Group gap="xs" wrap="nowrap">
+              <ThemeIcon variant="light" size="sm" color="gray">
+                <IconWorld size={14} />
+              </ThemeIcon>
+              <Text size="sm" fw={600}>
+                {websiteGroup.websiteDisplayName || (
+                  <Trans>Unknown website</Trans>
+                )}
+              </Text>
+            </Group>
+            <Badge size="sm" variant="light" color="gray">
+              {websiteGroup.accounts.reduce(
+                (count, accountGroup) => count + accountGroup.units.length,
+                0,
+              )}
+            </Badge>
+          </Group>
+
+          {websiteGroup.accounts.map((accountGroup) => (
+            <Box
+              key={accountGroup.accountId}
+              className="postybirb__post_preview_account"
             >
-              <Group gap="xs" wrap="nowrap">
-                <ThemeIcon variant="light" size="sm" color="gray">
-                  <IconWorld size={14} />
-                </ThemeIcon>
-                <Text size="sm" fw={600}>
-                  {websiteGroup.websiteDisplayName || (
-                    <Trans>Unknown website</Trans>
-                  )}
+              <Group
+                gap="xs"
+                wrap="nowrap"
+                className="postybirb__post_preview_account_header"
+              >
+                <IconUser size={14} />
+                <Text size="xs" fw={500} truncate>
+                  {accountGroup.account?.name ?? accountGroup.accountId}
                 </Text>
               </Group>
-              <Badge size="sm" variant="light" color="gray">
-                {websiteGroup.accounts.reduce(
-                  (count, accountGroup) => count + accountGroup.units.length,
-                  0,
-                )}
-              </Badge>
-            </Group>
-
-            {websiteGroup.accounts.map((accountGroup) => (
-              <Box
-                key={accountGroup.accountId}
-                className="postybirb__post_preview_account"
-              >
+              {accountGroup.units.map((unit) => (
                 <Group
-                  gap="xs"
+                  key={unit.id}
+                  justify="space-between"
                   wrap="nowrap"
-                  className="postybirb__post_preview_account_header"
+                  className="postybirb__post_preview_unit"
                 >
-                  <IconUser size={14} />
-                  <Text size="xs" fw={500} truncate>
-                    {accountGroup.account?.name ?? accountGroup.accountId}
-                  </Text>
-                </Group>
-                {accountGroup.units.map((unit) => (
-                  <Group
-                    key={unit.id}
-                    justify="space-between"
-                    wrap="nowrap"
-                    className="postybirb__post_preview_unit"
+                  <UnitTarget submission={submission} unit={unit} />
+                  <Badge
+                    size="xs"
+                    variant="light"
+                    color={executableUnitIds.has(unit.id) ? 'green' : 'gray'}
                   >
-                    <UnitTarget submission={submission} unit={unit} />
-                    <Badge
-                      size="xs"
-                      variant="light"
-                      color={executableUnitIds.has(unit.id) ? 'green' : 'gray'}
-                    >
-                      {executableUnitIds.has(unit.id) ? (
-                        <Trans>Ready</Trans>
-                      ) : (
-                        <Trans>Waiting</Trans>
-                      )}
-                    </Badge>
-                  </Group>
-                ))}
-              </Box>
-            ))}
-          </Box>
-        ))}
-      </Stack>
-    </ScrollArea.Autosize>
+                    {executableUnitIds.has(unit.id) ? (
+                      <Trans>Ready</Trans>
+                    ) : (
+                      <Trans>Waiting</Trans>
+                    )}
+                  </Badge>
+                </Group>
+              ))}
+            </Box>
+          ))}
+        </Box>
+      ))}
+    </Stack>
   );
 }
 
@@ -188,120 +186,117 @@ function CompletedWorkList({
   onSelectionChange,
 }: CompletedWorkListProps) {
   return (
-    <ScrollArea.Autosize mah={280} type="auto">
-      <Stack gap={0} className="postybirb__post_preview_list">
-        {groups.map((websiteGroup) => {
-          const websiteUnits = websiteGroup.accounts.flatMap(
-            (accountGroup) => accountGroup.units,
-          );
-          const websiteSelection = getUnitSelectionState(
-            selectedUnitIds,
-            websiteUnits,
-          );
+    <Stack gap={0} className="postybirb__post_preview_list">
+      {groups.map((websiteGroup) => {
+        const websiteUnits = websiteGroup.accounts.flatMap(
+          (accountGroup) => accountGroup.units,
+        );
+        const websiteSelection = getUnitSelectionState(
+          selectedUnitIds,
+          websiteUnits,
+        );
 
-          return (
-            <Box
-              key={websiteGroup.website}
-              className="postybirb__post_preview_website"
+        return (
+          <Box
+            key={websiteGroup.website}
+            className="postybirb__post_preview_website"
+          >
+            <Group
+              justify="space-between"
+              wrap="nowrap"
+              className="postybirb__post_preview_website_header"
             >
-              <Group
-                justify="space-between"
-                wrap="nowrap"
-                className="postybirb__post_preview_website_header"
-              >
-                <Checkbox
-                  size="sm"
-                  checked={websiteSelection.checked}
-                  indeterminate={websiteSelection.indeterminate}
-                  onChange={(event) =>
-                    onSelectionChange(
-                      websiteUnits,
-                      event.currentTarget.checked,
-                    )
-                  }
-                  label={
-                    <Group gap="xs" wrap="nowrap">
-                      <ThemeIcon variant="light" size="sm" color="gray">
-                        <IconWorld size={14} />
-                      </ThemeIcon>
-                      <Text size="sm" fw={600}>
-                        {websiteGroup.websiteDisplayName || (
-                          <Trans>Unknown website</Trans>
-                        )}
-                      </Text>
-                    </Group>
-                  }
-                />
-                <Badge size="sm" variant="light" color="gray">
-                  {websiteUnits.length}
-                </Badge>
-              </Group>
+              <Checkbox
+                size="sm"
+                checked={websiteSelection.checked}
+                indeterminate={websiteSelection.indeterminate}
+                onChange={(event) =>
+                  onSelectionChange(
+                    websiteUnits,
+                    event.currentTarget.checked,
+                  )
+                }
+                label={
+                  <Group gap="xs" wrap="nowrap">
+                    <ThemeIcon variant="light" size="sm" color="gray">
+                      <IconWorld size={14} />
+                    </ThemeIcon>
+                    <Text size="sm" fw={600}>
+                      {websiteGroup.websiteDisplayName || (
+                        <Trans>Unknown website</Trans>
+                      )}
+                    </Text>
+                  </Group>
+                }
+              />
+              <Badge size="sm" variant="light" color="gray">
+                {websiteUnits.length}
+              </Badge>
+            </Group>
 
-              {websiteGroup.accounts.map((accountGroup) => {
-                const accountSelection = getUnitSelectionState(
-                  selectedUnitIds,
-                  accountGroup.units,
-                );
+            {websiteGroup.accounts.map((accountGroup) => {
+              const accountSelection = getUnitSelectionState(
+                selectedUnitIds,
+                accountGroup.units,
+              );
 
-                return (
-                  <Box
-                    key={accountGroup.accountId}
-                    className="postybirb__post_preview_account"
-                  >
-                    <Checkbox
-                      size="xs"
-                      checked={accountSelection.checked}
-                      indeterminate={accountSelection.indeterminate}
-                      onChange={(event) =>
-                        onSelectionChange(
-                          accountGroup.units,
-                          event.currentTarget.checked,
-                        )
-                      }
-                      className="postybirb__post_preview_account_header"
-                      label={
-                        <Group gap="xs" wrap="nowrap">
-                          <IconUser size={14} />
-                          <Text size="xs" fw={500} truncate>
-                            {accountGroup.account?.name ??
-                              accountGroup.accountId}
-                          </Text>
-                        </Group>
-                      }
-                    />
-                    {accountGroup.units.map((unit) => (
-                      <Group
-                        key={unit.id}
-                        justify="space-between"
-                        wrap="nowrap"
-                        className="postybirb__post_preview_unit"
-                      >
-                        <Checkbox
-                          size="xs"
-                          checked={selectedUnitIds.has(unit.id)}
-                          onChange={(event) =>
-                            onSelectionChange(
-                              [unit],
-                              event.currentTarget.checked,
-                            )
-                          }
-                          label={
-                            <UnitTarget submission={submission} unit={unit} />
-                          }
-                        />
-                        <Badge size="xs" variant="outline" color="green">
-                          <Trans>Posted</Trans>
-                        </Badge>
+              return (
+                <Box
+                  key={accountGroup.accountId}
+                  className="postybirb__post_preview_account"
+                >
+                  <Checkbox
+                    size="xs"
+                    checked={accountSelection.checked}
+                    indeterminate={accountSelection.indeterminate}
+                    onChange={(event) =>
+                      onSelectionChange(
+                        accountGroup.units,
+                        event.currentTarget.checked,
+                      )
+                    }
+                    className="postybirb__post_preview_account_header"
+                    label={
+                      <Group gap="xs" wrap="nowrap">
+                        <IconUser size={14} />
+                        <Text size="xs" fw={500} truncate>
+                          {accountGroup.account?.name ?? accountGroup.accountId}
+                        </Text>
                       </Group>
-                    ))}
-                  </Box>
-                );
-              })}
-            </Box>
-          );
-        })}
-      </Stack>
-    </ScrollArea.Autosize>
+                    }
+                  />
+                  {accountGroup.units.map((unit) => (
+                    <Group
+                      key={unit.id}
+                      justify="space-between"
+                      wrap="nowrap"
+                      className="postybirb__post_preview_unit"
+                    >
+                      <Checkbox
+                        size="xs"
+                        checked={selectedUnitIds.has(unit.id)}
+                        onChange={(event) =>
+                          onSelectionChange(
+                            [unit],
+                            event.currentTarget.checked,
+                          )
+                        }
+                        label={
+                          <UnitTarget submission={submission} unit={unit} />
+                        }
+                      />
+                      <Badge size="xs" variant="outline" color="green">
+                        <Trans>Posted</Trans>
+                      </Badge>
+                    </Group>
+                  ))}
+                </Box>
+              );
+            })}
+          </Box>
+        );
+      })}
+    </Stack>
   );
 }
 
@@ -434,10 +429,20 @@ export function PostPreviewModal({
           </Text>
         </Group>
       }
-      classNames={{ body: 'postybirb__post_preview_modal_body' }}
+      classNames={{
+        content: 'postybirb__post_preview_modal_content',
+        header: 'postybirb__post_preview_modal_header',
+        body: 'postybirb__post_preview_modal_body',
+      }}
     >
-      <Stack gap="md">
-        <Group justify="space-between" align="flex-start" wrap="wrap">
+      <Box className="postybirb__post_preview_modal_layout">
+        <ScrollArea
+          type="auto"
+          offsetScrollbars
+          className="postybirb__post_preview_modal_scroll"
+        >
+          <Stack gap="md" p="md" pt="xs">
+            <Group justify="space-between" align="flex-start" wrap="wrap">
           <Text size="sm" fw={500} maw="70%" truncate>
             {submission.title || <Trans>Untitled submission</Trans>}
           </Text>
@@ -451,9 +456,9 @@ export function PostPreviewModal({
               </Badge>
             )}
           </Group>
-        </Group>
+          </Group>
 
-        {preview?.paused && (
+          {preview?.paused && (
           <Alert
             color="yellow"
             variant="light"
@@ -462,9 +467,9 @@ export function PostPreviewModal({
           >
             <Trans>Confirmed work will wait until posting resumes.</Trans>
           </Alert>
-        )}
+          )}
 
-        {preview && !preview.dependenciesCompleted && (
+          {preview && !preview.dependenciesCompleted && (
           <Alert
             color="blue"
             variant="light"
@@ -473,9 +478,9 @@ export function PostPreviewModal({
           >
             <Trans>Work will begin after dependent submissions finish.</Trans>
           </Alert>
-        )}
+          )}
 
-        {previewError && (
+          {previewError && (
           <Alert
             color="red"
             variant="light"
@@ -493,9 +498,9 @@ export function PostPreviewModal({
               <Trans>Retry</Trans>
             </Button>
           </Alert>
-        )}
+          )}
 
-        <Box pos="relative" mih={120}>
+          <Box pos="relative" mih={120}>
           <LoadingOverlay
             visible={isLoadingPreview}
             overlayProps={{ blur: 1, backgroundOpacity: 0.45 }}
@@ -518,9 +523,9 @@ export function PostPreviewModal({
               executableUnitIds={executableUnitIds}
             />
           </Stack>
-        </Box>
+          </Box>
 
-        {completedGroups.length > 0 && (
+          {completedGroups.length > 0 && (
           <>
             <Divider />
             <Stack gap="xs">
@@ -552,9 +557,16 @@ export function PostPreviewModal({
               />
             </Stack>
           </>
-        )}
+            )}
+          </Stack>
+        </ScrollArea>
 
-        <Group justify="flex-end" gap="sm">
+        <Group
+          justify="flex-end"
+          gap="sm"
+          p="md"
+          className="postybirb__post_preview_modal_footer"
+        >
           <Button variant="default" onClick={onClose} disabled={isPosting}>
             <Trans>Cancel</Trans>
           </Button>
@@ -569,7 +581,7 @@ export function PostPreviewModal({
             {t`Post`}
           </Button>
         </Group>
-      </Stack>
+      </Box>
     </Modal>
   );
 }

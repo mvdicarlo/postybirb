@@ -12,7 +12,13 @@ import {
   WebsiteOptions,
   WebsiteOptionsRepository,
 } from '@postybirb/database';
-import { Logger, PostyBirbLogger } from '@postybirb/logger';
+import {
+  Logger,
+  PostyBirbLogger,
+  trackEvent,
+  trackException,
+  trackMetric,
+} from '@postybirb/logger';
 import {
   AccountId,
   FileType,
@@ -70,6 +76,12 @@ type PostBatchResult = {
   failed?: boolean;
   rateLimitedUntil?: string;
   response?: IPostResponse;
+};
+
+type PostFailureTelemetry = {
+  error?: unknown;
+  postData?: PostData<IWebsiteFormFields>;
+  stage?: string;
 };
 
 function mimeTypeIsAccepted(mimeType: string, patterns: string[]): boolean {
@@ -402,6 +414,7 @@ export class PostingWorker {
             error: message,
             validationResult
           },
+          { postData },
         );
         return;
       }
@@ -412,6 +425,7 @@ export class PostingWorker {
         context.submission,
         `Error validating post data for account '${accountId}'`,
         error,
+        postData,
       );
       return;
     }
@@ -470,6 +484,7 @@ export class PostingWorker {
           context.submission,
           `Error posting batch for account '${accountId}'`,
           error,
+          postData,
         );
         result = { failed: true };
       }
@@ -602,6 +617,11 @@ export class PostingWorker {
         submission,
         response.message ?? response.exception.message ?? 'Unknown error',
         this.getResponseData(response),
+        {
+          error: response.exception,
+          postData,
+          stage: response.stage,
+        },
       );
       return { failed: true };
     }
@@ -611,6 +631,13 @@ export class PostingWorker {
       response: this.getResponseData(response),
       url: response.sourceUrl,
     });
+    this.trackPostSuccess(
+      websiteInstance,
+      submission,
+      unitsOfWork,
+      postData,
+      response,
+    );
     return {};
   }
 
@@ -733,6 +760,95 @@ export class PostingWorker {
           },
         }
       : responseData;
+  }
+
+  private trackPostSuccess(
+    websiteInstance: UnknownWebsite,
+    submission: Submission,
+    units: UnitOfWork[],
+    postData: PostData<IWebsiteFormFields>,
+    response: IPostResponse,
+  ): void {
+    const websiteName = this.getWebsiteName(websiteInstance);
+    trackEvent('PostSuccess', {
+      website: websiteName,
+      accountId: websiteInstance.accountId,
+      submissionId: submission.id,
+      submissionType: submission.type,
+      hasSourceUrl: response.sourceUrl ? 'true' : 'false',
+      fileCount: this.getFileCount(units),
+      options: this.redactPostDataForTelemetry(postData),
+    });
+    trackMetric(`post.success.${websiteName}`, 1, {
+      website: websiteName,
+      submissionType: submission.type,
+    });
+  }
+
+  private trackPostFailure(
+    websiteInstance: UnknownWebsite,
+    submission: Submission,
+    units: UnitOfWork[],
+    message: string,
+    telemetry: PostFailureTelemetry,
+  ): void {
+    const websiteName = this.getWebsiteName(websiteInstance);
+    const exception =
+      telemetry.error === undefined
+        ? undefined
+        : telemetry.error instanceof Error
+          ? telemetry.error
+          : new Error(this.getErrorMessage(telemetry.error, message));
+    trackEvent('PostFailure', {
+      website: websiteName,
+      accountId: websiteInstance.accountId,
+      submissionId: submission.id,
+      submissionType: submission.type,
+      errorMessage: message,
+      stage: telemetry.stage ?? 'unknown',
+      hasException: exception ? 'true' : 'false',
+      fileCount: this.getFileCount(units),
+      options: this.redactPostDataForTelemetry(telemetry.postData),
+    });
+    trackMetric(`post.failure.${websiteName}`, 1, {
+      website: websiteName,
+      submissionType: submission.type,
+    });
+    if (exception) {
+      trackException(exception, {
+        website: websiteName,
+        accountId: websiteInstance.accountId,
+        submissionId: submission.id,
+        stage: telemetry.stage ?? 'unknown',
+        errorMessage: message,
+      });
+    }
+  }
+
+  private getFileCount(units: UnitOfWork[]): string {
+    return String(units.filter((unit) => unit.fileId).length);
+  }
+
+  private getWebsiteName(websiteInstance: UnknownWebsite): string {
+    return websiteInstance.decoratedProps?.metadata?.name ?? 'unknown';
+  }
+
+  private redactPostDataForTelemetry(
+    postData?: PostData<IWebsiteFormFields>,
+  ): string {
+    if (!postData) {
+      return '';
+    }
+
+    const options = { ...postData.options };
+    if (options.description) {
+      options.description = `[REDACTED ${options.description.length}]`;
+    }
+    try {
+      return JSON.stringify({ options });
+    } catch {
+      return '';
+    }
   }
 
   private async prepareBatchFiles(
@@ -896,9 +1012,17 @@ export class PostingWorker {
     submission: Submission,
     message: string,
     response: Record<string, unknown> = { error: message },
+    telemetry: PostFailureTelemetry = {},
   ): Promise<void> {
     await this.markUnitsOfWorkAsFailed(units, response);
     await this.notifyPostFailure(websiteInstance, submission, message);
+    this.trackPostFailure(
+      websiteInstance,
+      submission,
+      units,
+      message,
+      telemetry,
+    );
   }
 
   /** Logs a thrown error and fails the units with its message. */
@@ -908,6 +1032,7 @@ export class PostingWorker {
     submission: Submission,
     message: string,
     error: unknown,
+    postData?: PostData<IWebsiteFormFields>,
   ): Promise<void> {
     this.logger.withError(error).error(message);
     await this.failUnitsOfWork(
@@ -916,6 +1041,7 @@ export class PostingWorker {
       submission,
       this.getErrorMessage(error, message),
       { error: message },
+      { error, postData },
     );
   }
 

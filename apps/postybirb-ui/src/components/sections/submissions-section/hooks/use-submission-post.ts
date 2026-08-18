@@ -2,11 +2,11 @@
  * Hook for submission posting handlers.
  */
 
-import { PostRecordResumeMode } from '@postybirb/types';
 import { useCallback } from 'react';
 import postManagerApi from '../../../../api/post-manager.api';
-import postQueueApi from '../../../../api/post-queue.api';
-import postingApi from '../../../../api/posting.api';
+import postingApi, {
+    type PostingRequest,
+} from '../../../../api/posting.api';
 import { useSubmissionStore } from '../../../../stores';
 import { useNavigationStore } from '../../../../stores/ui/navigation-store';
 import { type ViewState } from '../../../../types/view-state';
@@ -17,7 +17,7 @@ interface UseSubmissionPostResult {
   /** Handle canceling a queued/posting submission */
   handleCancel: (id: string) => Promise<void>;
   /** Handle posting submissions with specified order */
-  handlePostSelected: (orderedIds: string[], resumeMode?: PostRecordResumeMode) => Promise<void>;
+  handlePostSelected: (requests: PostingRequest[]) => Promise<void>;
 }
 
 /**
@@ -43,25 +43,35 @@ export function useSubmissionPost(): UseSubmissionPostResult {
 
   // Handle posting submissions in the specified order — reads viewState at call time
   const handlePostSelected = useCallback(
-    async (orderedIds: string[], resumeMode?: PostRecordResumeMode) => {
-      if (orderedIds.length === 0) return;
+    async (requests: PostingRequest[]) => {
+      if (requests.length === 0) return;
 
-      try {
-        await postQueueApi.enqueue(orderedIds, resumeMode);
-
-        // Clear selection after posting
-        const currentViewState = useNavigationStore.getState().viewState;
-        if (isSubmissionsViewState(currentViewState)) {
-          setViewState({
-            ...currentViewState,
-            params: {
-              ...currentViewState.params,
-              selectedIds: [],
-              mode: 'single',
-            },
-          } as ViewState);
+      const failedSubmissionIds: string[] = [];
+      for (const request of requests) {
+        try {
+          // Sequential staging preserves the order selected in the modal.
+          await postingApi.post(request.submissionId, request.evictions);
+        } catch {
+          failedSubmissionIds.push(request.submissionId);
         }
-      } catch {
+      }
+
+      const currentViewState = useNavigationStore.getState().viewState;
+      if (isSubmissionsViewState(currentViewState)) {
+        setViewState({
+          ...currentViewState,
+          params: {
+            ...currentViewState.params,
+            selectedIds: failedSubmissionIds,
+            mode:
+              failedSubmissionIds.length === 0
+                ? 'single'
+                : currentViewState.params.mode,
+          },
+        } as ViewState);
+      }
+
+      if (failedSubmissionIds.length > 0) {
         showPostErrorNotification();
       }
     },

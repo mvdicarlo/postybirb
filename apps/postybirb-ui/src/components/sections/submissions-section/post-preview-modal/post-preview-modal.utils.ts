@@ -1,7 +1,7 @@
 import type {
-  AccountId,
-  IUnitOfWork,
-  UnitOfWorkId,
+    AccountId,
+    IUnitOfWork,
+    UnitOfWorkId,
 } from '@postybirb/types';
 import type { UnitOfWorkEvictions } from '../../../../api/posting.api';
 

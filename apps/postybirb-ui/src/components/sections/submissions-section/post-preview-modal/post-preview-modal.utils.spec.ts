@@ -1,9 +1,9 @@
 import type { IUnitOfWork } from '@postybirb/types';
 import {
-  buildUnitOfWorkEvictions,
-  getUnitSelectionState,
-  groupUnitsByWebsite,
-  updateUnitSelection,
+    buildUnitOfWorkEvictions,
+    getUnitSelectionState,
+    groupUnitsByWebsite,
+    updateUnitSelection,
 } from './post-preview-modal.utils';
 
 function unit(

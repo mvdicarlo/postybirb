@@ -1,14 +1,19 @@
 import {
-    AccountId,
-    IPost,
-    IUnitOfWork,
-    SubmissionFileId,
-    SubmissionId,
-    UnitOfWorkId,
+  AccountId,
+  IPost,
+  IUnitOfWork,
+  SubmissionFileId,
+  SubmissionId,
+  UnitOfWorkId,
 } from '@postybirb/types';
 import { HttpClient } from '../transports/http-client';
 
 export type UnitOfWorkEvictions = Record<AccountId, SubmissionFileId[]>;
+
+export interface PostingRequest {
+  submissionId: SubmissionId;
+  evictions: UnitOfWorkEvictions;
+}
 
 export interface IncompleteWork {
   remainingWork: IUnitOfWork[];

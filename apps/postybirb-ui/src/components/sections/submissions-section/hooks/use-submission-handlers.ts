@@ -8,6 +8,7 @@ import {
     IWebsiteFormFields,
     SubmissionType,
 } from '@postybirb/types';
+import type { PostingRequest } from '../../../../api/posting.api';
 import {
     FileSubmissionUploadParams,
     useSubmissionCreate,
@@ -48,7 +49,7 @@ interface UseSubmissionHandlersResult {
   /** Handle deleting all selected submissions */
   handleDeleteSelected: () => Promise<void>;
   /** Handle posting submissions with specified order */
-  handlePostSelected: (orderedIds: string[]) => Promise<void>;
+  handlePostSelected: (requests: PostingRequest[]) => Promise<void>;
   /** Handle duplicating a submission */
   handleDuplicate: (id: string) => Promise<void>;
   /** Handle archiving a submission */
