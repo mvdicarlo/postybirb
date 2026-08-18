@@ -653,39 +653,44 @@ describe('PostingService', () => {
     });
   });
 
-  it('reuses failed work as pending when a user starts the post again', async () => {
-    const submission = await seedSubmission();
-    const account = await seedAccount('failed-repost-account');
-    await websiteOptionsRepository.insert({
-      accountId: account.id,
-      submissionId: submission.id,
-      data: {} as IWebsiteFormFields,
-      isDefault: false,
-    });
-    const post = await postRepository.insert({
-      submissionId: submission.id,
-      completed: true,
-    });
-    const failed = await unitOfWorkRepository.insert({
-      postId: post.id,
-      submissionId: submission.id,
-      accountId: account.id,
-      state: UnitOfWorkState.FAILED,
-    });
+  it.each([UnitOfWorkState.FAILED, UnitOfWorkState.CANCELLED])(
+    'reuses %s work as pending when a user starts the post again',
+    async (state) => {
+      const submission = await seedSubmission();
+      const account = await seedAccount(
+        `${state.toLowerCase()}-repost-account`,
+      );
+      await websiteOptionsRepository.insert({
+        accountId: account.id,
+        submissionId: submission.id,
+        data: {} as IWebsiteFormFields,
+        isDefault: false,
+      });
+      const post = await postRepository.insert({
+        submissionId: submission.id,
+        completed: true,
+      });
+      const previous = await unitOfWorkRepository.insert({
+        postId: post.id,
+        submissionId: submission.id,
+        accountId: account.id,
+        state,
+      });
 
-    const repost = await service.post(submission.id);
+      const repost = await service.post(submission.id);
 
-    expect(repost.completed).toBe(false);
-    expect(repost.unitsOfWork).toHaveLength(1);
-    expect(repost.unitsOfWork[0]).toMatchObject({
-      id: failed.id,
-      postId: post.id,
-      submissionId: submission.id,
-      accountId: account.id,
-      state: UnitOfWorkState.PENDING,
-      evicted: false,
-    });
-  });
+      expect(repost.completed).toBe(false);
+      expect(repost.unitsOfWork).toHaveLength(1);
+      expect(repost.unitsOfWork[0]).toMatchObject({
+        id: previous.id,
+        postId: post.id,
+        submissionId: submission.id,
+        accountId: account.id,
+        state: UnitOfWorkState.PENDING,
+        evicted: false,
+      });
+    },
+  );
 
   it('evicts selected files or every unit for an account', async () => {
     const submission = await seedSubmission();
@@ -955,7 +960,7 @@ describe('PostingService', () => {
     expect(postingManager.submit).not.toHaveBeenCalled();
   });
 
-  it('continues cancelled work while leaving failed work settled', async () => {
+  it('treats failed and cancelled work as settled', async () => {
     const submission = await seedSubmission();
     const account = await seedAccount('terminal-work-account');
     const post = await postRepository.insert({ submissionId: submission.id });
@@ -979,9 +984,9 @@ describe('PostingService', () => {
     await expect(
       postRepository.findByIdOrThrow(post.id),
     ).resolves.toMatchObject({
-      completed: false,
+      completed: true,
     });
-    expect(postingManager.submit).toHaveBeenCalledWith(post.id);
+    expect(postingManager.submit).not.toHaveBeenCalled();
   });
 
   it('completes a post when all active work has succeeded or failed', async () => {

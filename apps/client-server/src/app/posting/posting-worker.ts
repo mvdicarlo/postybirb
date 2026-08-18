@@ -66,6 +66,12 @@ type AccountWorkBatches = {
 
 type UnitOfWorkChanges = Parameters<UnitOfWorkRepository['update']>[1];
 
+type PostBatchResult = {
+  failed?: boolean;
+  rateLimitedUntil?: string;
+  response?: IPostResponse;
+};
+
 function mimeTypeIsAccepted(mimeType: string, patterns: string[]): boolean {
   return patterns.some((pattern) => {
     if (pattern === mimeType) return true;
@@ -427,7 +433,8 @@ export class PostingWorker {
       return;
     }
 
-    for (const { metadata, units } of batchedUnitsOfWork) {
+    for (let index = 0; index < batchedUnitsOfWork.length; index += 1) {
+      const { metadata, units } = batchedUnitsOfWork[index];
       if (
         await this.cancelUnitsIfAborted(
           units,
@@ -437,8 +444,9 @@ export class PostingWorker {
         continue;
       }
 
+      let result: PostBatchResult;
       try {
-        await this.postBatch(
+        result = await this.postBatch(
           websiteInstance,
           units,
           postData,
@@ -463,6 +471,31 @@ export class PostingWorker {
           `Error posting batch for account '${accountId}'`,
           error,
         );
+        result = { failed: true };
+      }
+
+      if (result.rateLimitedUntil) {
+        const remainingUnits = batchedUnitsOfWork
+          .slice(index)
+          .flatMap((remainingBatch) => remainingBatch.units);
+        await this.updateUnits(remainingUnits, {
+          state: UnitOfWorkState.RATE_LIMITED,
+          rateLimitedUntil: result.rateLimitedUntil,
+          ...(result.response
+            ? { response: this.getResponseData(result.response) }
+            : {}),
+        });
+        break;
+      }
+
+      if (result.failed) {
+        const remainingUnits = batchedUnitsOfWork
+          .slice(index + 1)
+          .flatMap((remainingBatch) => remainingBatch.units);
+        await this.updateUnits(remainingUnits, {
+          state: UnitOfWorkState.CANCELLED,
+        });
+        break;
       }
     }
   }
@@ -490,26 +523,23 @@ export class PostingWorker {
     postData: PostData<IWebsiteFormFields>,
     submission: Submission,
     batch: PostBatchData,
-  ): Promise<void> {
+  ): Promise<PostBatchResult> {
     const acceptsExternalSourceUrls =
       websiteInstance.decoratedProps.fileOptions?.acceptsExternalSourceUrls ??
       false;
+    const { metadata } = websiteInstance.decoratedProps;
     const reservation = await this.postingRateLimiter.acquire(
       websiteInstance.accountId,
-      websiteInstance.decoratedProps.metadata,
+      metadata,
     );
     if (!reservation.acquired) {
       if (!reservation.rateLimitedUntil) {
         throw new Error('Rate limiter denied a batch without an expiry');
       }
-      await this.updateUnits(unitsOfWork, {
-        state: UnitOfWorkState.RATE_LIMITED,
-        rateLimitedUntil: reservation.rateLimitedUntil,
-      });
       if (!acceptsExternalSourceUrls) {
         this.sourceProducerWasRateLimited = true;
       }
-      return;
+      return { rateLimitedUntil: reservation.rateLimitedUntil };
     }
 
     await this.updateUnits(unitsOfWork, {
@@ -550,6 +580,18 @@ export class PostingWorker {
       this.cancellationToken,
     );
 
+    if (response.rateLimitedUntil) {
+      const rateLimitedUntil = await this.postingRateLimiter.setRateLimit(
+        websiteInstance.accountId,
+        metadata,
+        response.rateLimitedUntil,
+      );
+      if (!acceptsExternalSourceUrls) {
+        this.sourceProducerWasRateLimited = true;
+      }
+      return { rateLimitedUntil, response };
+    }
+
     if (response.exception) {
       if (response.exception === this.cancellationToken.signal.reason) {
         throw response.exception;
@@ -561,7 +603,7 @@ export class PostingWorker {
         response.message ?? response.exception.message ?? 'Unknown error',
         this.getResponseData(response),
       );
-      return;
+      return { failed: true };
     }
 
     await this.updateUnits(unitsOfWork, {
@@ -569,6 +611,7 @@ export class PostingWorker {
       response: this.getResponseData(response),
       url: response.sourceUrl,
     });
+    return {};
   }
 
   private getAccountBatches(

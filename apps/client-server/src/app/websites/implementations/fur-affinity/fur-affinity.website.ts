@@ -1,14 +1,14 @@
 import { SelectOption } from '@postybirb/form-builder';
 
 import {
-    FileType,
-    ImageResizeProps,
-    IPostResponse,
-    LoginResult,
-    PostData,
-    PostResponse,
-    SimpleValidationResult,
-    SubmissionRating,
+  FileType,
+  ImageResizeProps,
+  IPostResponse,
+  LoginResult,
+  PostData,
+  PostResponse,
+  SimpleValidationResult,
+  SubmissionRating,
 } from '@postybirb/types';
 import { HTMLElement, parse } from 'node-html-parser';
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -187,27 +187,21 @@ export default class FurAffinity
     return undefined;
   }
 
-  private lastPostTime = 0;
-
-  private async waitForFloodProtection(
-    cancellationToken: CancellableToken,
-  ): Promise<void> {
-    const elapsed = Date.now() - this.lastPostTime;
-    const floodCooldown = 15 * 1000;
-
-    if (elapsed < floodCooldown) {
-      await new Promise<void>((resolve) => {
-        setTimeout(resolve, floodCooldown - elapsed + 1000);
-      });
-      cancellationToken.throwIfAborted();
-
-      // Ensure that concurent calls have flood protection too
-      // (e.g. schedule & manual post at the same time)
-      return this.waitForFloodProtection(cancellationToken);
+  private processForRateLimit(body: string): IPostResponse | undefined {
+    const match = parse(body).textContent.match(
+      /Flood protection\.\s*Please wait\s+(\d+)\s+seconds?\s+before trying to upload another submission\.\s*/i,
+    );
+    if (!match) {
+      return undefined;
     }
 
-    this.lastPostTime = Date.now();
-    return Promise.resolve();
+    const waitSeconds = Number.parseInt(match[1], 10);
+    return PostResponse.fromWebsite(this)
+      .withMessage(match[0].trim())
+      .withRateLimit(
+        new Date(Date.now() + waitSeconds * 1000).toISOString(),
+      )
+      .withAdditionalInfo(body);
   }
 
   async onPostFileSubmission(
@@ -215,8 +209,6 @@ export default class FurAffinity
     files: PostingFile[],
     cancellationToken: CancellableToken,
   ): Promise<IPostResponse> {
-    await this.waitForFloodProtection(cancellationToken);
-
     const part1 = await this.platform.http.get<string>(
       `${this.BASE_URL}/submit/`,
       {
@@ -226,6 +218,11 @@ export default class FurAffinity
         },
       },
     );
+
+    const part1RateLimit = this.processForRateLimit(part1.body);
+    if (part1RateLimit) {
+      return part1RateLimit;
+    }
 
     PostResponse.validateBody(this, part1);
     const err = this.processForError(part1.body);
@@ -258,6 +255,11 @@ export default class FurAffinity
       .addThumbnail('thumbnail', files[0])
       .withHeader('Referer', 'https://www.furaffinity.net/submit/')
       .send<string>(`${this.BASE_URL}/submit/upload`);
+
+    const part2RateLimit = this.processForRateLimit(part2.body);
+    if (part2RateLimit) {
+      return part2RateLimit;
+    }
 
     const err2 = this.processForError(part2.body);
     if (err2) {
@@ -305,6 +307,11 @@ export default class FurAffinity
     const postResponse = await builder.send<string>(
       `${this.BASE_URL}/submit/finalize`,
     );
+
+    const finalizeRateLimit = this.processForRateLimit(postResponse.body);
+    if (finalizeRateLimit) {
+      return finalizeRateLimit;
+    }
 
     if (!postResponse?.responseUrl?.includes('?upload-successful')) {
       const err3 = this.processForError(postResponse.body);
@@ -373,6 +380,12 @@ export default class FurAffinity
         partition: this.accountId,
       },
     );
+
+    const pageRateLimit = this.processForRateLimit(page.body);
+    if (pageRateLimit) {
+      return pageRateLimit;
+    }
+
     PostResponse.validateBody(this, page);
 
     const key = parse(page.body)
@@ -397,6 +410,11 @@ export default class FurAffinity
     const post = await builder.send<string>(
       `${this.BASE_URL}/controls/journal/`,
     );
+
+    const postRateLimit = this.processForRateLimit(post.body);
+    if (postRateLimit) {
+      return postRateLimit;
+    }
 
     if (
       /^https:\/\/www\.furaffinity\.net\/journal\/\d+\/$/.test(post.responseUrl)

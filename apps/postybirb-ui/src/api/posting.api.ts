@@ -1,5 +1,6 @@
 import {
     AccountId,
+    IPost,
     IUnitOfWork,
     SubmissionFileId,
     SubmissionId,
@@ -7,7 +8,20 @@ import {
 } from '@postybirb/types';
 import { HttpClient } from '../transports/http-client';
 
-type UnitOfWorkEvictions = Record<AccountId, SubmissionFileId[]>;
+export type UnitOfWorkEvictions = Record<AccountId, SubmissionFileId[]>;
+
+export interface IncompleteWork {
+  remainingWork: IUnitOfWork[];
+  removedWork: IUnitOfWork[];
+  evicted: IUnitOfWork[];
+}
+
+export interface PostingDryRun extends IncompleteWork {
+  paused: boolean;
+  dependenciesCompleted: boolean;
+  executableWork: IUnitOfWork[];
+  deferredWork: IUnitOfWork[];
+}
 
 class PostingApi {
   private readonly client: HttpClient;
@@ -17,18 +31,24 @@ class PostingApi {
   }
 
   post(submissionId: SubmissionId, evictions: UnitOfWorkEvictions = {}) {
-    return this.client.post('', { submissionId, evictions });
+    return this.client.post<IPost>('', { submissionId, evictions });
   }
 
   dryRun(submissionId: SubmissionId, evictions: UnitOfWorkEvictions = {}) {
-    return this.client.post('dry-run', { submissionId, evictions });
+    return this.client.post<PostingDryRun>('dry-run', {
+      submissionId,
+      evictions,
+    });
   }
 
   getIncompleteWork(
     submissionId: SubmissionId,
     evictions: UnitOfWorkEvictions = {},
   ) {
-    return this.client.post('incomplete-work', { submissionId, evictions });
+    return this.client.post<IncompleteWork>('incomplete-work', {
+      submissionId,
+      evictions,
+    });
   }
 
   isPaused() {

@@ -90,7 +90,11 @@ describe('partitionUnitsOfWorkByRateLimit', () => {
 });
 
 describe('isUnitOfWorkAttemptSettled', () => {
-  it.each([UnitOfWorkState.SUCCEEDED, UnitOfWorkState.FAILED])(
+  it.each([
+    UnitOfWorkState.SUCCEEDED,
+    UnitOfWorkState.FAILED,
+    UnitOfWorkState.CANCELLED,
+  ])(
     'treats %s as settled',
     (state) => {
       expect(isUnitOfWorkAttemptSettled({ state })).toBe(true);
@@ -102,7 +106,6 @@ describe('isUnitOfWorkAttemptSettled', () => {
     UnitOfWorkState.PENDING,
     UnitOfWorkState.VALIDATING,
     UnitOfWorkState.EXECUTING,
-    UnitOfWorkState.CANCELLED,
     UnitOfWorkState.RATE_LIMITED,
   ])('treats %s as unsettled', (state) => {
     expect(isUnitOfWorkAttemptSettled({ state })).toBe(false);

@@ -65,7 +65,8 @@ export function isUnitOfWorkAttemptSettled(
 ): boolean {
   return (
     unit.state === UnitOfWorkState.SUCCEEDED ||
-    unit.state === UnitOfWorkState.FAILED
+    unit.state === UnitOfWorkState.FAILED ||
+    unit.state === UnitOfWorkState.CANCELLED
   );
 }
 

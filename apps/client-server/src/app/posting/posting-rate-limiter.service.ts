@@ -37,11 +37,6 @@ export class PostingRateLimiterService {
   ): Promise<PostingRateLimitReservation> {
     await this.initialize();
 
-    const interval = metadata.minimumPostWaitInterval ?? 0;
-    if (!Number.isFinite(interval) || interval <= 0) {
-      return { acquired: true };
-    }
-
     const now = Date.now();
     const key = this.getKey(accountId, metadata);
     const nextAvailableAt = this.nextAvailableAt.get(key);
@@ -53,12 +48,38 @@ export class PostingRateLimiterService {
       };
     }
 
+    const interval = metadata.minimumPostWaitInterval ?? 0;
+    if (!Number.isFinite(interval) || interval <= 0) {
+      return { acquired: true };
+    }
+
     const reservedUntil = now + interval;
     this.nextAvailableAt.set(key, reservedUntil);
     return {
       acquired: true,
       rateLimitedUntil: new Date(reservedUntil).toISOString(),
     };
+  }
+
+  public async setRateLimit(
+    accountId: AccountId,
+    metadata: IWebsiteMetadata,
+    rateLimitedUntil: string,
+  ): Promise<string> {
+    await this.initialize();
+
+    const expiresAt = Date.parse(rateLimitedUntil);
+    if (!Number.isFinite(expiresAt)) {
+      throw new Error(`Invalid rate limit timestamp '${rateLimitedUntil}'`);
+    }
+
+    const key = this.getKey(accountId, metadata);
+    const effectiveExpiry = Math.max(
+      expiresAt,
+      this.nextAvailableAt.get(key) ?? 0,
+    );
+    this.nextAvailableAt.set(key, effectiveExpiry);
+    return new Date(effectiveExpiry).toISOString();
   }
 
   private async hydrate(): Promise<void> {
@@ -93,11 +114,6 @@ export class PostingRateLimiterService {
           this.logger.warn(
             `Unable to hydrate rate limit for account '${unit.accountId}'`,
           );
-          continue;
-        }
-
-        const interval = metadata.minimumPostWaitInterval ?? 0;
-        if (!Number.isFinite(interval) || interval <= 0) {
           continue;
         }
 

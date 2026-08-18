@@ -3,22 +3,22 @@
  */
 
 import {
-  type AccountId,
-  type IEntityDto,
-  type IPost,
-  type ISubmissionDto,
-  type ISubmissionFileDto,
-  type ISubmissionMetadata,
-  type ISubmissionScheduleInfo,
-  type IUnitOfWork,
-  type IWebsiteFormFields,
-  type PostQueueRecordDto,
-  type PostRecordDto,
-  type SubmissionId,
-  type SubmissionType,
-  UnitOfWorkState,
-  type ValidationResult,
-  type WebsiteOptionsDto
+    type AccountId,
+    type IEntityDto,
+    type IPost,
+    type ISubmissionDto,
+    type ISubmissionFileDto,
+    type ISubmissionMetadata,
+    type ISubmissionScheduleInfo,
+    type IUnitOfWork,
+    type IWebsiteFormFields,
+    type PostQueueRecordDto,
+    type PostRecordDto,
+    type SubmissionId,
+    type SubmissionType,
+    UnitOfWorkState,
+    type ValidationResult,
+    type WebsiteOptionsDto
 } from '@postybirb/types';
 import { BaseRecord } from './base-record';
 
@@ -51,6 +51,7 @@ export class SubmissionRecord extends BaseRecord {
   readonly validations: ValidationResult[];
   readonly postQueueRecord?: PostQueueRecordDto;
   readonly metadata: ISubmissionMetadata;
+  readonly dependsOn: SubmissionId[];
   readonly order: number;
 
   // Cached computed values — safe because all data is immutable after construction
@@ -77,6 +78,7 @@ export class SubmissionRecord extends BaseRecord {
     this.validations = dto.validations ?? [];
     this.postQueueRecord = dto.postQueueRecord;
     this.metadata = dto.metadata;
+    this.dependsOn = dto.dependsOn;
     this.order = dto.order;
 
     // Pre-compute expensive derived values

@@ -110,6 +110,12 @@ describe('PostRepository', () => {
         accountId: account.id,
         state: UnitOfWorkState.FAILED,
       },
+      {
+        postId: post.id,
+        submissionId: submission.id,
+        accountId: account.id,
+        state: UnitOfWorkState.CANCELLED,
+      },
     ]);
 
     await expect(
@@ -124,7 +130,6 @@ describe('PostRepository', () => {
   it.each([
     UnitOfWorkState.NEW,
     UnitOfWorkState.RATE_LIMITED,
-    UnitOfWorkState.CANCELLED,
   ])('does not complete a post with active %s work', async (state) => {
     const { account, post, submission } = await seedDependencies();
     await repos.unitOfWork.insert({

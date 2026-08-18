@@ -43,6 +43,7 @@ interface WorkerMocks {
   };
   postingRateLimiter: {
     acquire: jest.Mock;
+    setRateLimit: jest.Mock;
   };
   submissionRepository: {
     findByIdOrThrow: jest.Mock;
@@ -105,6 +106,7 @@ function createWorker(): { worker: PostingWorker; mocks: WorkerMocks } {
     },
     postingRateLimiter: {
       acquire: jest.fn().mockResolvedValue({ acquired: true }),
+      setRateLimit: jest.fn(),
     },
     submissionRepository: {
       findByIdOrThrow: jest.fn().mockResolvedValue({
@@ -390,6 +392,59 @@ describe('PostingWorker', () => {
       'work-1',
       expect.objectContaining({ rateLimitedUntil: null }),
     );
+  });
+
+  it('immediately rate limits every remaining batch after a cooldown response', async () => {
+    const { worker, mocks } = createWorker();
+    const rateLimitedUntil = new Date(Date.now() + 1_000).toISOString();
+    mocks.unitOfWorkRepository.find.mockResolvedValue([
+      {
+        id: 'work-1',
+        accountId: 'account-1',
+        batch: 'batch-1',
+        state: UnitOfWorkState.NEW,
+      },
+      {
+        id: 'work-2',
+        accountId: 'account-1',
+        batch: 'batch-2',
+        state: UnitOfWorkState.NEW,
+      },
+      {
+        id: 'work-3',
+        accountId: 'account-1',
+        batch: 'batch-3',
+        state: UnitOfWorkState.NEW,
+      },
+    ]);
+    mocks.websitePost.mockResolvedValue({
+      instanceId: 'website-1',
+      message: 'Flood protection',
+      rateLimitedUntil,
+    });
+    mocks.postingRateLimiter.setRateLimit.mockResolvedValue(rateLimitedUntil);
+
+    await worker.start();
+
+    expect(mocks.postingRateLimiter.setRateLimit).toHaveBeenCalledWith(
+      'account-1',
+      expect.objectContaining({ name: 'test-website' }),
+      rateLimitedUntil,
+    );
+    for (const unitId of ['work-1', 'work-2', 'work-3']) {
+      expect(mocks.unitOfWorkRepository.update).toHaveBeenCalledWith(unitId, {
+        state: UnitOfWorkState.RATE_LIMITED,
+        rateLimitedUntil,
+        response: {
+          instanceId: 'website-1',
+          message: 'Flood protection',
+          rateLimitedUntil,
+        },
+      });
+    }
+    expect(mocks.postingRateLimiter.acquire).toHaveBeenCalledTimes(1);
+    expect(mocks.websitePost).toHaveBeenCalledTimes(1);
+    expect(mocks.notificationService.create).not.toHaveBeenCalled();
   });
 
   it('preserves original batch metadata when resuming after a succeeded batch', async () => {
@@ -812,7 +867,7 @@ describe('PostingWorker', () => {
     });
   });
 
-  it('creates only one failure notification when multiple batches fail for an account', async () => {
+  it('cancels later batches after a website returns a failure', async () => {
     const { worker, mocks } = createWorker();
     mocks.unitOfWorkRepository.find.mockResolvedValue([
       {
@@ -834,8 +889,50 @@ describe('PostingWorker', () => {
 
     await worker.start();
 
-    expect(mocks.websitePost).toHaveBeenCalledTimes(2);
+    expect(mocks.websitePost).toHaveBeenCalledTimes(1);
+    expect(mocks.unitOfWorkRepository.update).toHaveBeenCalledWith(
+      'work-1',
+      expect.objectContaining({ state: UnitOfWorkState.FAILED }),
+    );
+    expect(mocks.unitOfWorkRepository.update).toHaveBeenCalledWith('work-2', {
+      state: UnitOfWorkState.CANCELLED,
+    });
     expect(mocks.notificationService.create).toHaveBeenCalledTimes(1);
+  });
+
+  it('cancels later batches after posting throws', async () => {
+    const { worker, mocks } = createWorker();
+    mocks.unitOfWorkRepository.find.mockResolvedValue([
+      {
+        id: 'work-1',
+        accountId: 'account-1',
+        batch: 'batch-1',
+      },
+      {
+        id: 'work-2',
+        accountId: 'account-1',
+        batch: 'batch-2',
+      },
+      {
+        id: 'work-3',
+        accountId: 'account-1',
+        batch: 'batch-3',
+      },
+    ]);
+    mocks.websitePost.mockRejectedValue(new Error('Dispatch failed'));
+
+    await worker.start();
+
+    expect(mocks.websitePost).toHaveBeenCalledTimes(1);
+    expect(mocks.unitOfWorkRepository.update).toHaveBeenCalledWith(
+      'work-1',
+      expect.objectContaining({ state: UnitOfWorkState.FAILED }),
+    );
+    for (const unitId of ['work-2', 'work-3']) {
+      expect(mocks.unitOfWorkRepository.update).toHaveBeenCalledWith(unitId, {
+        state: UnitOfWorkState.CANCELLED,
+      });
+    }
   });
 
   it('does not hide a posting failure when cancellation is also requested', async () => {

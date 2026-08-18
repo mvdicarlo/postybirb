@@ -30,6 +30,7 @@ export class PostRepository extends EntityRepository<'PostSchema', Post> {
             notInArray(UnitOfWorkSchema.state, [
               UnitOfWorkState.SUCCEEDED,
               UnitOfWorkState.FAILED,
+              UnitOfWorkState.CANCELLED,
             ]),
           ),
         )

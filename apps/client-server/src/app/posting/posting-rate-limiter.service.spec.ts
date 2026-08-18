@@ -111,6 +111,59 @@ describe('PostingRateLimiterService', () => {
     });
   });
 
+  it('extends an existing reservation from a server-directed timestamp', async () => {
+    const { limiter } = createLimiter();
+    jest.spyOn(Date, 'now').mockReturnValue(1_000);
+    await limiter.acquire('account-1', metadata());
+
+    await expect(
+      limiter.setRateLimit(
+        'account-1',
+        metadata(),
+        new Date(3_000).toISOString(),
+      ),
+    ).resolves.toBe(new Date(3_000).toISOString());
+    await expect(
+      limiter.setRateLimit(
+        'account-1',
+        metadata(),
+        new Date(1_500).toISOString(),
+      ),
+    ).resolves.toBe(new Date(3_000).toISOString());
+
+    jest.spyOn(Date, 'now').mockReturnValue(2_500);
+    await expect(limiter.acquire('account-1', metadata())).resolves.toEqual({
+      acquired: false,
+      rateLimitedUntil: new Date(3_000).toISOString(),
+    });
+  });
+
+  it('honors a server-directed reservation without a static interval', async () => {
+    const { limiter } = createLimiter();
+    jest.spyOn(Date, 'now').mockReturnValue(1_000);
+    const website = metadata({ minimumPostWaitInterval: undefined });
+
+    await limiter.setRateLimit(
+      'account-1',
+      website,
+      new Date(3_000).toISOString(),
+    );
+
+    jest.spyOn(Date, 'now').mockReturnValue(2_000);
+    await expect(limiter.acquire('account-1', website)).resolves.toEqual({
+      acquired: false,
+      rateLimitedUntil: new Date(3_000).toISOString(),
+    });
+  });
+
+  it('rejects an invalid server-directed timestamp', async () => {
+    const { limiter } = createLimiter();
+
+    await expect(
+      limiter.setRateLimit('account-1', metadata(), 'not-a-date'),
+    ).rejects.toThrow("Invalid rate limit timestamp 'not-a-date'");
+  });
+
   it('hydrates the latest website-scoped reservation once', async () => {
     const {
       accountRepository,
@@ -156,6 +209,62 @@ describe('PostingRateLimiterService', () => {
       limiter.acquire(
         'account-4',
         metadata({ name: 'pixiv', rateLimitScope: 'website' }),
+      ),
+    ).resolves.toEqual({
+      acquired: false,
+      rateLimitedUntil: new Date(3_000).toISOString(),
+    });
+  });
+
+  it('hydrates a server-directed reservation without a static interval', async () => {
+    const {
+      accountRepository,
+      limiter,
+      unitOfWorkRepository,
+      websiteRegistry,
+    } = createLimiter();
+    jest.spyOn(Date, 'now').mockReturnValue(1_000);
+    unitOfWorkRepository.find.mockResolvedValue([
+      {
+        accountId: 'account-1',
+        rateLimitedUntil: new Date(3_000).toISOString(),
+      },
+    ]);
+    accountRepository.findAll.mockResolvedValue([
+      { id: 'account-1', website: 'dynamic-website' },
+    ]);
+    websiteRegistry.getWebsiteDefinitions.mockReturnValue([
+      {
+        id: 'dynamic-website',
+        metadata: metadata({
+          name: 'dynamic-website',
+          minimumPostWaitInterval: undefined,
+        }),
+      },
+    ]);
+
+    await limiter.initialize();
+
+    jest.spyOn(Date, 'now').mockReturnValue(2_000);
+    await expect(
+      limiter.acquire(
+        'account-2',
+        metadata({
+          name: 'dynamic-website',
+          minimumPostWaitInterval: undefined,
+          rateLimitScope: 'website',
+        }),
+      ),
+    ).resolves.toEqual({
+      acquired: true,
+    });
+    await expect(
+      limiter.acquire(
+        'account-1',
+        metadata({
+          name: 'dynamic-website',
+          minimumPostWaitInterval: undefined,
+        }),
       ),
     ).resolves.toEqual({
       acquired: false,
