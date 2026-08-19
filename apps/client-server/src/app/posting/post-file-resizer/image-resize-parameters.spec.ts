@@ -1,8 +1,8 @@
 import {
-    DefaultSubmissionFileMetadata,
-    ISubmissionFile,
+  DefaultSubmissionFileMetadata,
+  ISubmissionFile,
 } from '@postybirb/types';
-import { UnknownWebsite } from '../../../websites/website';
+import { UnknownWebsite } from '../../websites/website';
 import { getImageResizeParameters } from './image-resize-parameters';
 
 describe('getImageResizeParameters', () => {

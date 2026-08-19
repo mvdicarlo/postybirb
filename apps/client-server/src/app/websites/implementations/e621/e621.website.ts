@@ -1,6 +1,4 @@
 // eslint-disable-next-line max-classes-per-file
-
-// eslint-disable-next-line max-classes-per-file
 import {
   E621AccountData,
   E621OAuthRoutes,
@@ -140,9 +138,9 @@ export default class E621
   async onPostFileSubmission(
     postData: PostData<E621FileSubmission>,
     files: PostingFile[],
-    CancellationToken: CancellationToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
-    CancellationToken.throwIfAborted();
+    cancellationToken.throwIfAborted();
     const accountData = this.websiteDataStore.getData();
     const file = files[0];
 
@@ -171,7 +169,7 @@ export default class E621
       location: string;
       reason: string;
       message: string;
-    }>(CancellationToken, 'post', `/uploads.json`, formData);
+    }>(cancellationToken, 'post', `/uploads.json`, formData);
 
     if (result.body.success && result.body.location) {
       return PostResponse.fromWebsite(this)
