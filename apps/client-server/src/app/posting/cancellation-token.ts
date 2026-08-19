@@ -10,7 +10,9 @@ export class CancellationToken {
   }
 
   public abort(reason?: unknown): void {
-    this.controller.abort(reason);
+    const abortReason: Error =
+      reason instanceof Error ? reason : new Error(String(reason));
+    this.controller.abort(abortReason);
   }
 
   public throwIfAborted(): void {
