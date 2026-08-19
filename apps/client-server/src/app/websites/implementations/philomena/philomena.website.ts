@@ -1,14 +1,14 @@
 import {
-    ImageResizeProps,
-    ISubmissionFile,
-    LoginResult,
-    PostData,
-    PostResponse,
-    SubmissionRating,
+  ImageResizeProps,
+  ISubmissionFile,
+  LoginResult,
+  PostData,
+  PostResponse,
+  SubmissionRating,
 } from '@postybirb/types';
 import parse from 'node-html-parser';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import { PostBuilder } from '../../commons/post-builder';
 import { validatorPassthru } from '../../commons/validator-passthru';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
@@ -153,7 +153,7 @@ export abstract class PhilomenaWebsite<
   async onPostFileSubmission(
     postData: PostData<TFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
     const fields = await this.getUploadFormFields();
     const { rating, tags, description } = postData.options;

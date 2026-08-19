@@ -1,17 +1,17 @@
 import { SelectOption } from '@postybirb/form-builder';
 
 import {
-    FileType,
-    ImageResizeProps,
-    LoginResult,
-    PostData,
-    PostResponse,
-    SubmissionRating,
+  FileType,
+  ImageResizeProps,
+  LoginResult,
+  PostData,
+  PostResponse,
+  SubmissionRating,
 } from '@postybirb/types';
 import { getFileTypeFromMimeType } from '@postybirb/utils/file-type';
 import { parse } from 'node-html-parser';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { PostBuilder } from '../../commons/post-builder';
 import { validatorPassthru } from '../../commons/validator-passthru';
@@ -181,7 +181,7 @@ export default class Weasyl
   async onPostFileSubmission(
     postData: PostData<WeasylFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
     const fileType = getFileTypeFromMimeType(files[0].mimeType);
     const contentType = this.getContentType(fileType);
@@ -296,7 +296,7 @@ export default class Weasyl
 
   async onPostMessageSubmission(
     postData: PostData<WeasylMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
     const url = `${this.BASE_URL}/submit/journal`;
     const submissionPage = await this.platform.http.get<string>(url, {

@@ -1,42 +1,42 @@
 // eslint-disable-next-line max-classes-per-file
 import {
-    $Typed,
-    AppBskyActorGetProfile,
-    AppBskyEmbedImages,
-    AppBskyEmbedVideo,
-    AppBskyFeedThreadgate,
-    AppBskyVideoGetJobStatus,
-    AppBskyVideoGetUploadLimits,
-    AppBskyVideoUploadVideo,
-    AtpAgent,
-    AtUri,
-    BlobRef,
-    ComAtprotoLabelDefs,
+  $Typed,
+  AppBskyActorGetProfile,
+  AppBskyEmbedImages,
+  AppBskyEmbedVideo,
+  AppBskyFeedThreadgate,
+  AppBskyVideoGetJobStatus,
+  AppBskyVideoGetUploadLimits,
+  AppBskyVideoUploadVideo,
+  AtpAgent,
+  AtUri,
+  BlobRef,
+  ComAtprotoLabelDefs,
 } from '@atproto/api';
 import { ReplyRef } from '@atproto/api/dist/client/types/app/bsky/feed/post';
 import { isMention } from '@atproto/api/dist/client/types/app/bsky/richtext/facet';
 import { JobStatus } from '@atproto/api/dist/client/types/app/bsky/video/defs';
 import {
-    BlueskyAccountData,
-    BlueskyOAuthRoutes,
-    FileType,
-    ImageResizeProps,
-    ISubmissionFile,
-    LoginResult,
-    OAuthRouteHandlers,
-    PostData,
-    PostResponse,
-    SimpleValidationResult,
-    SubmissionRating,
+  BlueskyAccountData,
+  BlueskyOAuthRoutes,
+  FileType,
+  ImageResizeProps,
+  ISubmissionFile,
+  LoginResult,
+  OAuthRouteHandlers,
+  PostData,
+  PostResponse,
+  SimpleValidationResult,
+  SubmissionRating,
 } from '@postybirb/types';
 import {
-    calculateImageResize,
-    getFileTypeFromMimeType,
+  calculateImageResize,
+  getFileTypeFromMimeType,
 } from '@postybirb/utils/file-type';
 import { SetNonNullable } from 'type-fest';
 import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { SubmissionValidator } from '../../commons/validator';
 import { DisableAds } from '../../decorators/disable-ads.decorator';
@@ -155,7 +155,7 @@ export default class Bluesky
   async onPostFileSubmission(
     postData: PostData<BlueskyFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfAborted();
 
@@ -171,7 +171,7 @@ export default class Bluesky
 
   async onPostMessageSubmission(
     postData: PostData<BlueskyMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfAborted();
 
@@ -465,7 +465,7 @@ export default class Bluesky
   private async uploadEmbeds(
     agent: LoggedInAgent,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<$Typed<AppBskyEmbedImages.Main> | $Typed<AppBskyEmbedVideo.Main>> {
     // Bluesky supports either images or a video as an embed
     // GIFs must be treated as video on bsky

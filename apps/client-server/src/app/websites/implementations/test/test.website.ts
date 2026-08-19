@@ -1,17 +1,17 @@
 import {
-    ImageResizeProps,
-    IPostResponse,
-    IWebsiteFormFields,
-    IWebsiteMetadata,
-    LoginResult,
-    OAuthRouteHandlers,
-    OAuthRoutes,
-    PostData,
-    PostResponse,
-    SimpleValidationResult,
+  ImageResizeProps,
+  IPostResponse,
+  IWebsiteFormFields,
+  IWebsiteMetadata,
+  LoginResult,
+  OAuthRouteHandlers,
+  OAuthRoutes,
+  PostData,
+  PostResponse,
+  SimpleValidationResult,
 } from '@postybirb/types';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import { wait } from '../../../utils/wait.util';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
@@ -69,7 +69,7 @@ export default class TestWebsite
   async onPostFileSubmission(
     postData: PostData<IWebsiteFormFields>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<IPostResponse> {
     cancellationToken.throwIfAborted();
     return PostResponse.fromWebsite(this)
@@ -88,7 +88,7 @@ export default class TestWebsite
 
   async onPostMessageSubmission(
     postData: PostData<TestMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<IPostResponse> {
     cancellationToken.throwIfAborted();
     if (this.account.name === 'FAIL') {

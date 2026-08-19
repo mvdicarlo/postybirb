@@ -1,8 +1,7 @@
 import { FormFile } from '@postybirb/http/types';
 import { IFileBuffer } from '@postybirb/types';
-import { CancellableToken } from '../../post/models/cancellable-token';
-import { CancellationError } from '../../post/models/cancellation-error';
-import { PostingFile } from '../../post/models/posting-file';
+import { CancellationToken } from '../../posting/cancellation-token';
+import { PostingFile } from '../../posting/models/posting-file';
 import { PostBuilder } from './post-builder';
 
 // Mocks
@@ -48,10 +47,10 @@ function createPostingFile(overrides = {}) {
 
 describe('PostBuilder', () => {
   let builder: PostBuilder;
-  let token: CancellableToken;
+  let token: CancellationToken;
 
   beforeEach(() => {
-    token = new CancellableToken();
+    token = new CancellationToken();
     builder = new PostBuilder(mockWebsite as any, token);
   });
 
@@ -150,7 +149,7 @@ describe('PostBuilder', () => {
   });
 
   it('should throw if cancelled before send', async () => {
-    token.abort(new CancellationError());
+    token.abort('Task was cancelled.');
     await expect(builder.send('http://test')).rejects.toThrow(
       'Task was cancelled.',
     );

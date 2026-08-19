@@ -1,22 +1,22 @@
 import {
-    FileType,
-    ImageResizeProps,
-    ISubmissionFile,
-    LoginResult,
-    MegalodonAccountData,
-    MegalodonOAuthRoutes,
-    OAuthRouteHandlers,
-    PostData,
-    PostResponse,
-    SimpleValidationResult,
-    SubmissionRating,
+  FileType,
+  ImageResizeProps,
+  ISubmissionFile,
+  LoginResult,
+  MegalodonAccountData,
+  MegalodonOAuthRoutes,
+  OAuthRouteHandlers,
+  PostData,
+  PostResponse,
+  SimpleValidationResult,
+  SubmissionRating,
 } from '@postybirb/types';
 import { toError } from '@postybirb/utils/common';
 import { isObject } from 'lodash';
 import { detector, Entity } from 'megalodon';
 import { Readable } from 'stream';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import { wait } from '../../../utils/wait.util';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
 import { FileWebsite } from '../../models/website-modifiers/file-website';
@@ -24,8 +24,8 @@ import { MessageWebsite } from '../../models/website-modifiers/message-website';
 import { OAuthWebsite } from '../../models/website-modifiers/oauth-website';
 import { Website } from '../../website';
 import {
-    FediverseInstanceTypes,
-    MegalodonApiService,
+  FediverseInstanceTypes,
+  MegalodonApiService,
 } from './megalodon-api-service';
 import { MegalodonFileSubmission } from './models/megalodon-file-submission';
 import { MegalodonMessageSubmission } from './models/megalodon-message-submission';
@@ -509,7 +509,7 @@ export abstract class MegalodonWebsite
   async onPostFileSubmission(
     postData: PostData<MegalodonFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfAborted();
 
@@ -634,7 +634,7 @@ export abstract class MegalodonWebsite
 
   async onPostMessageSubmission(
     postData: PostData<MegalodonMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfAborted();
 

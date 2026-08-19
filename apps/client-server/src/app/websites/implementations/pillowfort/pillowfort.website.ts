@@ -1,13 +1,13 @@
 import {
-    ImageResizeProps,
-    LoginResult,
-    PostData,
-    PostResponse,
-    SubmissionRating,
+  ImageResizeProps,
+  LoginResult,
+  PostData,
+  PostResponse,
+  SubmissionRating,
 } from '@postybirb/types';
 import { parse } from 'node-html-parser';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { PostBuilder } from '../../commons/post-builder';
 import { validatorPassthru } from '../../commons/validator-passthru';
@@ -90,7 +90,7 @@ export default class Pillowfort
   async onPostFileSubmission(
     postData: PostData<PillowfortFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
     try {
       // Get form page and CSRF token
@@ -205,7 +205,7 @@ export default class Pillowfort
 
   async onPostMessageSubmission(
     postData: PostData<PillowfortMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
     try {
       // Get form page and CSRF token

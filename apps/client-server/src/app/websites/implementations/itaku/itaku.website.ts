@@ -1,16 +1,16 @@
 import { SelectOption } from '@postybirb/form-builder';
 
 import {
-    FileType,
-    ImageResizeProps,
-    LoginResult,
-    PostData,
-    PostResponse,
-    SimpleValidationResult,
-    SubmissionRating,
+  FileType,
+  ImageResizeProps,
+  LoginResult,
+  PostData,
+  PostResponse,
+  SimpleValidationResult,
+  SubmissionRating,
 } from '@postybirb/types';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { PostBuilder } from '../../commons/post-builder';
 import { validatorPassthru } from '../../commons/validator-passthru';
@@ -176,7 +176,7 @@ export default class Itaku
     postData: PostData<ItakuFileSubmission>,
     file: PostingFile,
     isBatch: boolean,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<{ id: number }> {
     const maxContentWarningLength =
       new ItakuFileSubmission().getFormFieldFor('contentWarning')?.maxLength ??
@@ -229,7 +229,7 @@ export default class Itaku
 
   async postSubmission(
     postData: PostData<ItakuFileSubmission | ItakuMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
     uploadedFiles?: { id: number }[],
   ): Promise<PostResponse> {
     const builder = new PostBuilder(this, cancellationToken)
@@ -265,7 +265,7 @@ export default class Itaku
   async onPostFileSubmission(
     postData: PostData<ItakuFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfAborted();
     const isBatch = files.length > 1;
@@ -319,7 +319,7 @@ export default class Itaku
 
   async onPostMessageSubmission(
     postData: PostData<ItakuMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfAborted();
     return this.postSubmission(postData, cancellationToken);

@@ -1,12 +1,12 @@
 import {
-    FormFile,
-    HttpRequestOptions,
-    PostOptions,
+  FormFile,
+  HttpRequestOptions,
+  PostOptions,
 } from '@postybirb/http/types';
 import { Logger } from '@postybirb/logger';
 import { FileType, PostResponse } from '@postybirb/types';
-import { CancellableToken } from '../../post/models/cancellable-token';
-import { PostingFile } from '../../post/models/posting-file';
+import { CancellationToken } from '../../posting/cancellation-token';
+import { PostingFile } from '../../posting/models/posting-file';
 import { UnknownWebsite } from '../website';
 
 /**
@@ -85,7 +85,7 @@ export class PostBuilder {
    */
   constructor(
     private readonly website: UnknownWebsite,
-    private readonly cancellationToken: CancellableToken,
+    private readonly cancellationToken: CancellationToken,
   ) {}
 
   /**

@@ -1,18 +1,18 @@
 import { SelectOption } from '@postybirb/form-builder';
 
 import {
-    ImageResizeProps,
-    ISubmissionFile,
-    LoginResult,
-    PostData,
-    PostResponse,
-    SimpleValidationResult,
+  ImageResizeProps,
+  ISubmissionFile,
+  LoginResult,
+  PostData,
+  PostResponse,
+  SimpleValidationResult,
 } from '@postybirb/types';
 import parse, { HTMLElement } from 'node-html-parser';
 import { parse as parseFileName } from 'path';
 import { v4 } from 'uuid';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
 import { FileWebsite } from '../../models/website-modifiers/file-website';
 import { MessageWebsite } from '../../models/website-modifiers/message-website';
@@ -445,7 +445,7 @@ export default abstract class BaseSubscribeStar
   async onPostFileSubmission(
     postData: PostData<SubscribeStarFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
     const uploadData = await this.getPostData();
 
@@ -542,7 +542,7 @@ export default abstract class BaseSubscribeStar
 
   async onPostMessageSubmission(
     postData: PostData<SubscribeStarMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
     const uploadData = await this.getPostData();
 

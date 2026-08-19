@@ -2,24 +2,24 @@
 
 // eslint-disable-next-line max-classes-per-file
 import {
-    E621AccountData,
-    E621OAuthRoutes,
-    E621TagCategory,
-    ImageResizeProps,
-    ISubmissionFile,
-    LoginResult,
-    OAuthRouteHandlers,
-    PostData,
-    PostResponse,
-    SimpleValidationResult,
-    SubmissionRating,
-    TipTapNode,
+  E621AccountData,
+  E621OAuthRoutes,
+  E621TagCategory,
+  ImageResizeProps,
+  ISubmissionFile,
+  LoginResult,
+  OAuthRouteHandlers,
+  PostData,
+  PostResponse,
+  SimpleValidationResult,
+  SubmissionRating,
+  TipTapNode,
 } from '@postybirb/types';
 import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
 import { BBCodeConverter } from '../../../post-parsers/models/description-node/converters/bbcode-converter';
 import { ConversionContext } from '../../../post-parsers/models/description-node/description-node.base';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { SubmissionValidator } from '../../commons/validator';
 import { DisableAds } from '../../decorators/disable-ads.decorator';
@@ -116,12 +116,12 @@ export default class E621
   }
 
   private async request<T>(
-    cancellableToken: CancellableToken,
+    cancellationToken: CancellationToken,
     method: 'get' | 'post',
     url: string,
     form?: Record<string, unknown>,
   ) {
-    cancellableToken.throwIfAborted();
+    cancellationToken.throwIfAborted();
 
     if (method === 'get') {
       return this.platform.http.get<T>(`${this.BASE_URL}${url}`, {
@@ -140,9 +140,9 @@ export default class E621
   async onPostFileSubmission(
     postData: PostData<E621FileSubmission>,
     files: PostingFile[],
-    cancellableToken: CancellableToken,
+    CancellationToken: CancellationToken,
   ): Promise<PostResponse> {
-    cancellableToken.throwIfAborted();
+    CancellationToken.throwIfAborted();
     const accountData = this.websiteDataStore.getData();
     const file = files[0];
 
@@ -171,7 +171,7 @@ export default class E621
       location: string;
       reason: string;
       message: string;
-    }>(cancellableToken, 'post', `/uploads.json`, formData);
+    }>(CancellationToken, 'post', `/uploads.json`, formData);
 
     if (result.body.success && result.body.location) {
       return PostResponse.fromWebsite(this)
@@ -354,7 +354,7 @@ export default class E621
     if (cached) return cached;
 
     const response = await this.request<object>(
-      new CancellableToken(),
+      new CancellationToken(),
       'get',
       url,
     );

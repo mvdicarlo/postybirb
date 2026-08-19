@@ -1,20 +1,20 @@
 import { Logger } from '@postybirb/logger';
 import {
-    ImageResizeProps,
-    ISubmissionFile,
-    LoginResult,
-    MisskeyAccountData,
-    MisskeyOAuthRoutes,
-    OAuthRouteHandlers,
-    PostData,
-    PostResponse,
-    SimpleValidationResult,
+  ImageResizeProps,
+  ISubmissionFile,
+  LoginResult,
+  MisskeyAccountData,
+  MisskeyOAuthRoutes,
+  OAuthRouteHandlers,
+  PostData,
+  PostResponse,
+  SimpleValidationResult,
 } from '@postybirb/types';
 import { toError } from '@postybirb/utils/common';
 import { calculateImageResize } from '@postybirb/utils/file-type';
 import { v4 as uuidv4 } from 'uuid';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { DisableAds } from '../../decorators/disable-ads.decorator';
 import { CustomLoginFlow } from '../../decorators/login-flow.decorator';
@@ -233,7 +233,7 @@ export default class Misskey
   async onPostFileSubmission(
     postData: PostData<MisskeyFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfAborted();
 
@@ -332,7 +332,7 @@ export default class Misskey
 
   async onPostMessageSubmission(
     postData: PostData<MisskeyMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfAborted();
 

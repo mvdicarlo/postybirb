@@ -1,16 +1,16 @@
 import {
-    CustomAccountData,
-    DescriptionType,
-    ImageResizeProps,
-    IPostResponse,
-    ISubmissionFile,
-    LoginResult,
-    PostData,
-    PostResponse,
+  CustomAccountData,
+  DescriptionType,
+  ImageResizeProps,
+  IPostResponse,
+  ISubmissionFile,
+  LoginResult,
+  PostData,
+  PostResponse,
 } from '@postybirb/types';
 import { chunk } from 'lodash';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import { PostBuilder } from '../../commons/post-builder';
 import { validatorPassthru } from '../../commons/validator-passthru';
 import { CustomLoginFlow } from '../../decorators/login-flow.decorator';
@@ -92,7 +92,7 @@ export default class Custom
 
   private buildBaseForm(
     postData: PostData<CustomMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
     data: CustomAccountData,
   ) {
     const { options } = postData;
@@ -120,7 +120,7 @@ export default class Custom
   async onPostFileSubmission(
     postData: PostData<CustomFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<IPostResponse> {
     cancellationToken.throwIfAborted();
 
@@ -217,7 +217,7 @@ export default class Custom
 
   async onPostMessageSubmission(
     postData: PostData<CustomMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<IPostResponse> {
     try {
       cancellationToken.throwIfAborted();

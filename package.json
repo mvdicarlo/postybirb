@@ -239,7 +239,7 @@
     "cypress": "^7.3.0",
     "dotenv": "10.0.0",
     "drizzle-kit": "^0.31.7",
-    "electron": "^41",
+    "electron": "41.9.2",
     "electron-builder": "^26.11.1",
     "electron-builder-squirrel-windows": "24.13.3",
     "eslint": "8.57.1",

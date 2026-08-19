@@ -5,8 +5,7 @@ import {
     PostData,
     SubmissionRating,
 } from '@postybirb/types';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FurAffinity from './fur-affinity.website';
 import { FurAffinityFileSubmission } from './models/fur-affinity-file-submission';
 import { FurAffinityMessageSubmission } from './models/fur-affinity-message-submission';
@@ -125,7 +124,7 @@ describe('FurAffinity flood protection', () => {
       const response = await website.onPostFileSubmission(
         filePostData,
         [createFile()],
-        new CancellableToken(),
+        new CancellationToken(),
       );
 
       expectRateLimited(response);
@@ -153,7 +152,7 @@ describe('FurAffinity flood protection', () => {
 
       const response = await website.onPostMessageSubmission(
         messagePostData,
-        new CancellableToken(),
+        new CancellationToken(),
       );
 
       expectRateLimited(response);

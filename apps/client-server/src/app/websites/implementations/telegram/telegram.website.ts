@@ -2,20 +2,20 @@
 import { SelectOption, SelectOptionSingle } from '@postybirb/form-builder';
 
 import {
-    FileType,
-    ImageResizeProps,
-    ISubmissionFile,
-    LoginResult,
-    OAuthRouteHandlers,
-    PostData,
-    PostResponse,
-    SimpleValidationResult,
-    TelegramAccountData,
-    TelegramOAuthRoutes,
+  FileType,
+  ImageResizeProps,
+  ISubmissionFile,
+  LoginResult,
+  OAuthRouteHandlers,
+  PostData,
+  PostResponse,
+  SimpleValidationResult,
+  TelegramAccountData,
+  TelegramOAuthRoutes,
 } from '@postybirb/types';
 import {
-    calculateImageResize,
-    supportsImage,
+  calculateImageResize,
+  supportsImage,
 } from '@postybirb/utils/file-type';
 import { Api, TelegramClient } from 'teleproto';
 import { CustomFile } from 'teleproto/client/uploads';
@@ -25,8 +25,8 @@ import { returnBigInt } from 'teleproto/Helpers';
 import { ProxyInterface } from 'teleproto/network/connection/TCPMTProxy';
 import { StringSession } from 'teleproto/sessions';
 import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { SubmissionValidator } from '../../commons/validator';
 import { CustomLoginFlow } from '../../decorators/login-flow.decorator';
@@ -34,8 +34,8 @@ import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
 import {
-    FileWebsite,
-    PostBatchData,
+  FileWebsite,
+  PostBatchData,
 } from '../../models/website-modifiers/file-website';
 import { MessageWebsite } from '../../models/website-modifiers/message-website';
 import { OAuthWebsite } from '../../models/website-modifiers/oauth-website';
@@ -324,7 +324,7 @@ export default class Telegram
   async onPostFileSubmission(
     postData: PostData<TelegramFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
     batch: PostBatchData,
   ): Promise<PostResponse> {
     cancellationToken.throwIfAborted();
@@ -561,7 +561,7 @@ export default class Telegram
 
   async onPostMessageSubmission(
     postData: PostData<TelegramMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfAborted();
     let response: Api.TypeUpdates | undefined;

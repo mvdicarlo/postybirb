@@ -7,8 +7,8 @@ import {
   ISubmissionFile,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
-import { SharpInstanceManager } from '../../../image-processing/sharp-instance-manager';
-import { PostingFile, ThumbnailOptions } from '../../models/posting-file';
+import { SharpInstanceManager } from '../../image-processing/sharp-instance-manager';
+import { PostingFile, ThumbnailOptions } from '../models/posting-file';
 
 type ResizeRequest = {
   file: ISubmissionFile;

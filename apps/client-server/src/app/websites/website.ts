@@ -13,11 +13,11 @@ import {
   LoginResult,
   LoginState,
   PostData,
-  SubmissionType
+  SubmissionType,
 } from '@postybirb/types';
 import { Mutex } from 'async-mutex';
-import { CancellableToken } from '../post/models/cancellable-token';
-import { PostingFile } from '../post/models/posting-file';
+import { CancellationToken } from '../posting/cancellation-token';
+import { PostingFile } from '../posting/models/posting-file';
 import { SubmissionValidator } from './commons/validator';
 import {
   cloneWebsiteDecoratorProps,
@@ -327,7 +327,10 @@ export abstract class Website<
   }
 
   public syncAccount(account: Account): void {
-    if (account.id !== this.accountId || account.website !== this.account.website) {
+    if (
+      account.id !== this.accountId ||
+      account.website !== this.account.website
+    ) {
       throw new Error('Cannot change the identity of a Website instance');
     }
     this.account = account;
@@ -365,20 +368,29 @@ export abstract class Website<
    * @param {PostData} postData - The data of the post.
    * @param {PostingFile[]} files - The files associated with the post.
    * @param {PostBatchData} batch - The batch data for the post.
-   * @param {CancellableToken} cancellationToken - The cancellation token.
+   * @param {CancellationToken} cancellationToken - The cancellation token.
    */
-  public post(postData: PostData,
+  public post(
+    postData: PostData,
     files: PostingFile[],
     batch: PostBatchData,
-    cancellationToken: CancellableToken
+    cancellationToken: CancellationToken,
   ) {
     // Message Submission
     if (files.length === 0) {
-      return (this as unknown as MessageWebsite).onPostMessageSubmission(postData, cancellationToken);
+      return (this as unknown as MessageWebsite).onPostMessageSubmission(
+        postData,
+        cancellationToken,
+      );
     }
 
     // File Submission
-    return (this as unknown as FileWebsite).onPostFileSubmission(postData, files, cancellationToken, batch);
+    return (this as unknown as FileWebsite).onPostFileSubmission(
+      postData,
+      files,
+      cancellationToken,
+      batch,
+    );
   }
 
   // -------------- End Externally Accessed Methods --------------
@@ -464,9 +476,8 @@ export abstract class Website<
     onWebsiteDataChanged?: (account: IAccountDto) => void,
   ): Promise<void> {
     this.onAccountProjectionChanged = onWebsiteDataChanged;
-    await this.websiteDataStore.initialize(
-      websiteDataRepository,
-      () => this.notifyAccountProjectionChanged(),
+    await this.websiteDataStore.initialize(websiteDataRepository, () =>
+      this.notifyAccountProjectionChanged(),
     );
     this.subscribeToCookieChanges();
     this.startLoginRefresh();

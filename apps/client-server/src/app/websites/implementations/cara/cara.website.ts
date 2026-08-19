@@ -1,19 +1,19 @@
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 
 import {
-    FileType,
-    ImageResizeProps,
-    ISubmissionFile,
-    LoginResult,
-    PostData,
-    PostResponse,
-    SimpleValidationResult,
-    SubmissionRating,
+  FileType,
+  ImageResizeProps,
+  ISubmissionFile,
+  LoginResult,
+  PostData,
+  PostResponse,
+  SimpleValidationResult,
+  SubmissionRating,
 } from '@postybirb/types';
 import parse from 'node-html-parser';
 import { v4 as uuid } from 'uuid';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import { PostBuilder } from '../../commons/post-builder';
 import { DisableAds } from '../../decorators/disable-ads.decorator';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
@@ -243,7 +243,7 @@ export default class Cara
     username: string,
     uploadCover: boolean,
     order: number,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<CaraUploadResult> {
     cancellationToken.throwIfAborted();
 
@@ -328,7 +328,7 @@ export default class Cara
   async onPostFileSubmission(
     postData: PostData<CaraFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
     const hasImage = files.some((f) => f.fileType === FileType.IMAGE);
 
@@ -418,7 +418,7 @@ export default class Cara
 
   async onPostMessageSubmission(
     postData: PostData<CaraMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
     const builder = new PostBuilder(this, cancellationToken)
       .asJson()

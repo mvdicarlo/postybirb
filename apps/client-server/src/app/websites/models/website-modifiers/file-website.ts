@@ -6,8 +6,8 @@ import {
   PostData,
   SimpleValidationResult,
 } from '@postybirb/types';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import { UnknownWebsite } from '../../website';
 import { BaseWebsiteOptions } from '../base-website-options';
 
@@ -46,13 +46,13 @@ export interface FileWebsite<
    * @param {PostData<T>} postData
    * @param {PostingFile[]} files - The files to post
    * @param {number} batchIndex - The index of the batch (if batching is required)
-   * @param {CancellableToken} cancellationToken
+   * @param {CancellationToken} cancellationToken
    * @return {*}  {Promise<IPostResponse>}
    */
   onPostFileSubmission(
     postData: PostData<T>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
     batch: PostBatchData,
   ): Promise<IPostResponse>;
 

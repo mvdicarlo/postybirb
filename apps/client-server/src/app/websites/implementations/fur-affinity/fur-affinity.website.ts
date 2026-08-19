@@ -11,8 +11,8 @@ import {
   SubmissionRating,
 } from '@postybirb/types';
 import { HTMLElement, parse } from 'node-html-parser';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { PostBuilder } from '../../commons/post-builder';
 import { SubmissionValidator } from '../../commons/validator';
@@ -198,16 +198,14 @@ export default class FurAffinity
     const waitSeconds = Number.parseInt(match[1], 10);
     return PostResponse.fromWebsite(this)
       .withMessage(match[0].trim())
-      .withRateLimit(
-        new Date(Date.now() + waitSeconds * 1000).toISOString(),
-      )
+      .withRateLimit(new Date(Date.now() + waitSeconds * 1000).toISOString())
       .withAdditionalInfo(body);
   }
 
   async onPostFileSubmission(
     postData: PostData<FurAffinityFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<IPostResponse> {
     const part1 = await this.platform.http.get<string>(
       `${this.BASE_URL}/submit/`,
@@ -372,7 +370,7 @@ export default class FurAffinity
 
   async onPostMessageSubmission(
     postData: PostData<FurAffinityMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<IPostResponse> {
     const page = await this.platform.http.get<string>(
       `${this.BASE_URL}/controls/journal`,

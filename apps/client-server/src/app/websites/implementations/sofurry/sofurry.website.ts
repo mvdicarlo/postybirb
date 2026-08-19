@@ -1,17 +1,17 @@
 import {
-    FileType,
-    ImageResizeProps,
-    IPostResponse,
-    LoginResult,
-    OAuthRouteHandlers,
-    PostData,
-    PostResponse,
-    SofurryAccountData,
-    SofurryOAuthRoutes,
-    SubmissionRating,
+  FileType,
+  ImageResizeProps,
+  IPostResponse,
+  LoginResult,
+  OAuthRouteHandlers,
+  PostData,
+  PostResponse,
+  SofurryAccountData,
+  SofurryOAuthRoutes,
+  SubmissionRating,
 } from '@postybirb/types';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import { PostBuilder } from '../../commons/post-builder';
 import { validatorPassthru } from '../../commons/validator-passthru';
 import { CustomLoginFlow } from '../../decorators/login-flow.decorator';
@@ -232,7 +232,7 @@ export default class Sofurry
   async onPostFileSubmission(
     postData: PostData<SofurryFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<IPostResponse> {
     const { token } = this.websiteDataStore.getData();
     if (!token) {

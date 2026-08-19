@@ -1,13 +1,13 @@
 import {
-    ImageResizeProps,
-    LoginResult,
-    PostData,
-    PostResponse,
-    SubmissionRating,
+  ImageResizeProps,
+  LoginResult,
+  PostData,
+  PostResponse,
+  SubmissionRating,
 } from '@postybirb/types';
 import parse from 'node-html-parser';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { PostBuilder } from '../../commons/post-builder';
 import { validatorPassthru } from '../../commons/validator-passthru';
@@ -131,7 +131,7 @@ export default class Piczel
   async onPostFileSubmission(
     postData: PostData<PiczelFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfAborted();
     const { options } = postData;

@@ -1,16 +1,15 @@
-
 import {
-    ImageResizeProps,
-    IPostResponse,
-    ISubmissionFile,
-    LoginResult,
-    PostData,
-    PostResponse,
+  ImageResizeProps,
+  IPostResponse,
+  ISubmissionFile,
+  LoginResult,
+  PostData,
+  PostResponse,
 } from '@postybirb/types';
 import { calculateImageResize } from '@postybirb/utils/file-type';
 import { parse } from 'node-html-parser';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { PostBuilder } from '../../commons/post-builder';
 import { validatorPassthru } from '../../commons/validator-passthru';
@@ -100,12 +99,15 @@ export default class HentaiFoundry
   async onPostFileSubmission(
     postData: PostData<HentaiFoundryFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<IPostResponse> {
     // Get the form page first
-    const page = await this.platform.http.get<string>(`${this.BASE_URL}/pictures/create`, {
-      partition: this.accountId,
-    });
+    const page = await this.platform.http.get<string>(
+      `${this.BASE_URL}/pictures/create`,
+      {
+        partition: this.accountId,
+      },
+    );
 
     PostResponse.validateBody(this, page);
 
@@ -188,7 +190,12 @@ export default class HentaiFoundry
       )
       .setConditional('Pictures[rating_rape]', postData.options.rape, '1', '0')
       .setField('Pictures[media_id]', postData.options.media)
-      .setField('Pictures[time_taken]', postData.options.timeTaken != null ? String(postData.options.timeTaken) : '')
+      .setField(
+        'Pictures[time_taken]',
+        postData.options.timeTaken != null
+          ? String(postData.options.timeTaken)
+          : '',
+      )
       .setField('Pictures[reference]', postData.options.reference || '')
       .setField('Pictures[license_id]', '0');
 
@@ -210,11 +217,14 @@ export default class HentaiFoundry
 
   async onPostMessageSubmission(
     postData: PostData<HentaiFoundryMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<IPostResponse> {
-    const page = await this.platform.http.get<string>(`${this.BASE_URL}/UserBlogs/create`, {
-      partition: this.accountId,
-    });
+    const page = await this.platform.http.get<string>(
+      `${this.BASE_URL}/UserBlogs/create`,
+      {
+        partition: this.accountId,
+      },
+    );
 
     PostResponse.validateBody(this, page);
 

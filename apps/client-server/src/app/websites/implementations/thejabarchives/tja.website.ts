@@ -1,12 +1,12 @@
 import { SelectOption } from '@postybirb/form-builder';
 import {
-    ImageResizeProps,
-    LoginResult,
-    PostData,
-    PostResponse,
+  ImageResizeProps,
+  LoginResult,
+  PostData,
+  PostResponse,
 } from '@postybirb/types';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import { PostBuilder } from '../../commons/post-builder';
 import { validatorPassthru } from '../../commons/validator-passthru';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
@@ -108,7 +108,7 @@ export default class TheJabArchives
   async onPostFileSubmission(
     postData: PostData<TJAFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
     const { options } = postData;
 

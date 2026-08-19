@@ -1,19 +1,19 @@
 import {
-    FileType,
-    ImageResizeProps,
-    ISubmissionFile,
-    LoginResult,
-    OAuthRouteHandlers,
-    PostData,
-    PostResponse,
-    SimpleValidationResult,
-    TwitterAccountData,
-    TwitterOAuthRoutes,
+  FileType,
+  ImageResizeProps,
+  ISubmissionFile,
+  LoginResult,
+  OAuthRouteHandlers,
+  PostData,
+  PostResponse,
+  SimpleValidationResult,
+  TwitterAccountData,
+  TwitterOAuthRoutes,
 } from '@postybirb/types';
 import { chunk } from 'lodash';
 import { parseTweet } from 'twitter-text';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { DisableAds } from '../../decorators/disable-ads.decorator';
 import { CustomLoginFlow } from '../../decorators/login-flow.decorator';
@@ -27,8 +27,8 @@ import { Website } from '../../website';
 import { TwitterFileSubmission } from './models/twitter-file-submission';
 import { TwitterMessageSubmission } from './models/twitter-message-submission';
 import {
-    TweetResultMeta,
-    TwitterApiServiceV2,
+  TweetResultMeta,
+  TwitterApiServiceV2,
 } from './twitter-api-service/twitter-api-service';
 
 @WebsiteMetadata({
@@ -184,7 +184,7 @@ export default class Twitter
   async onPostFileSubmission(
     postData: PostData<TwitterFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfAborted();
     const filePartitions = chunk(files, 4);
@@ -288,7 +288,7 @@ export default class Twitter
 
   async onPostMessageSubmission(
     postData: PostData<TwitterMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfAborted();
     const { accessToken, accessTokenSecret, apiKey, apiSecret } =

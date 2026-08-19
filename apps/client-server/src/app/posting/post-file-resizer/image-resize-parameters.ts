@@ -1,6 +1,6 @@
 import { ImageResizeProps, ISubmissionFile } from '@postybirb/types';
-import { getSupportedFileSize } from '../../../websites/decorators/supports-files.decorator';
-import { UnknownWebsite } from '../../../websites/website';
+import { getSupportedFileSize } from '../../websites/decorators/supports-files.decorator';
+import { UnknownWebsite } from '../../websites/website';
 
 type ImageResizeWebsite = UnknownWebsite & {
   calculateImageResize?: (

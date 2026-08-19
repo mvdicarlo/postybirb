@@ -1,17 +1,17 @@
 import {
-    ImageResizeProps,
-    InkbunnyAccountData,
-    InkbunnyOAuthRoutes,
-    IPostResponse,
-    LoginResult,
-    OAuthRouteHandlers,
-    PostData,
-    PostResponse,
-    SubmissionRating,
+  ImageResizeProps,
+  InkbunnyAccountData,
+  InkbunnyOAuthRoutes,
+  IPostResponse,
+  LoginResult,
+  OAuthRouteHandlers,
+  PostData,
+  PostResponse,
+  SubmissionRating,
 } from '@postybirb/types';
 import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { PostBuilder } from '../../commons/post-builder';
 import { validatorPassthru } from '../../commons/validator-passthru';
@@ -21,8 +21,8 @@ import { SupportsUsernameShortcut } from '../../decorators/supports-username-sho
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
 import {
-    FileWebsite,
-    PostBatchData,
+  FileWebsite,
+  PostBatchData,
 } from '../../models/website-modifiers/file-website';
 import { OAuthWebsite } from '../../models/website-modifiers/oauth-website';
 import { WithCustomDescriptionParser } from '../../models/website-modifiers/with-custom-description-parser';
@@ -168,7 +168,7 @@ export default class Inkbunny
   async onPostFileSubmission(
     postData: PostData<InkbunnyFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
     batch: PostBatchData,
   ): Promise<IPostResponse> {
     try {
