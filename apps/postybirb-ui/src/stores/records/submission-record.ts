@@ -3,20 +3,35 @@
  */
 
 import {
-  type ISubmissionDto,
-  type ISubmissionFileDto,
-  type ISubmissionMetadata,
-  type ISubmissionScheduleInfo,
-  type IWebsiteFormFields,
-  type PostQueueRecordDto,
-  type PostRecordDto,
-  PostRecordState,
-  type SubmissionId,
-  type SubmissionType,
-  type ValidationResult,
-  type WebsiteOptionsDto
+    type AccountId,
+    type IEntityDto,
+    type IPost,
+    type ISubmissionDto,
+    type ISubmissionFileDto,
+    type ISubmissionMetadata,
+    type ISubmissionScheduleInfo,
+    type IUnitOfWork,
+    type IWebsiteFormFields,
+    type PostQueueRecordDto,
+    type PostRecordDto,
+    type SubmissionId,
+    type SubmissionType,
+    UnitOfWorkState,
+    type ValidationResult,
+    type WebsiteOptionsDto
 } from '@postybirb/types';
 import { BaseRecord } from './base-record';
+
+/** Aggregate counts of a post's active (non-evicted) units of work. */
+export interface UnitOfWorkStats {
+  total: number;
+  succeeded: number;
+  failed: number;
+  running: number;
+  pending: number;
+  cancelled: number;
+  rateLimited: number;
+}
 
 /**
  * Record class representing a submission entity.
@@ -30,17 +45,23 @@ export class SubmissionRecord extends BaseRecord {
   readonly schedule: ISubmissionScheduleInfo;
   readonly files: ISubmissionFileDto[];
   readonly options: WebsiteOptionsDto[];
+  /** @deprecated Legacy post records; only the post-creation flow still reads these. */
   readonly posts: PostRecordDto[];
+  readonly post?: IEntityDto<IPost>;
   readonly validations: ValidationResult[];
   readonly postQueueRecord?: PostQueueRecordDto;
   readonly metadata: ISubmissionMetadata;
+  readonly dependsOn: SubmissionId[];
   readonly order: number;
 
   // Cached computed values — safe because all data is immutable after construction
   private readonly cachedPrimaryFile: ISubmissionFileDto | undefined;
   private readonly cachedLastModified: Date;
   private readonly cachedSortedPosts: PostRecordDto[];
-  private readonly cachedSortedPostsDescending: PostRecordDto[];
+  private readonly cachedUnitsOfWork: IUnitOfWork[];
+  private readonly cachedActiveUnitsOfWork: IUnitOfWork[];
+  private readonly cachedUnitsOfWorkByAccount: Map<AccountId, IUnitOfWork[]>;
+  private readonly cachedUnitStats: UnitOfWorkStats;
 
   constructor(dto: ISubmissionDto) {
     super(dto);
@@ -53,9 +74,11 @@ export class SubmissionRecord extends BaseRecord {
     this.files = dto.files ?? [];
     this.options = dto.options ?? [];
     this.posts = dto.posts ?? [];
+    this.post = dto.post;
     this.validations = dto.validations ?? [];
     this.postQueueRecord = dto.postQueueRecord;
     this.metadata = dto.metadata;
+    this.dependsOn = dto.dependsOn;
     this.order = dto.order;
 
     // Pre-compute expensive derived values
@@ -67,11 +90,12 @@ export class SubmissionRecord extends BaseRecord {
           (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
         )
       : [];
-    this.cachedSortedPostsDescending = this.posts.length > 0
-      ? [...this.posts].sort(
-          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        )
-      : [];
+    this.cachedUnitsOfWork = this.post?.unitsOfWork ?? [];
+    this.cachedActiveUnitsOfWork = this.cachedUnitsOfWork.filter(
+      (unit) => !unit.evicted
+    );
+    this.cachedUnitsOfWorkByAccount = this.groupUnitsOfWorkByAccount();
+    this.cachedUnitStats = this.computeUnitStats();
     this.cachedLastModified = this.computeLastModified();
   }
 
@@ -121,7 +145,7 @@ export class SubmissionRecord extends BaseRecord {
    * Check if the submission is currently being posted.
    */
   get isPosting(): boolean {
-    return this.posts.some((post) => post.state === 'RUNNING');
+    return this.post !== undefined && !this.post.completed;
   }
 
   /**
@@ -203,83 +227,142 @@ export class SubmissionRecord extends BaseRecord {
   }
 
   // =============================================================================
-  // Post Record Methods
+  // Post / Unit of Work Methods
   // =============================================================================
 
   /**
-   * Get all post records sorted by creation date (oldest first).
-   * This provides a chronological view of posting attempts.
+   * Every unit of work on the current post, including evicted (superseded) ones.
    */
-  get sortedPosts(): PostRecordDto[] {
-    return this.cachedSortedPosts;
+  get unitsOfWork(): IUnitOfWork[] {
+    return this.cachedUnitsOfWork;
   }
 
   /**
-   * Get all post records sorted by creation date (newest first).
-   * This provides a reverse chronological view for display.
+   * Units of work that still count toward the current attempt.
    */
-  get sortedPostsDescending(): PostRecordDto[] {
-    return this.cachedSortedPostsDescending;
+  get activeUnitsOfWork(): IUnitOfWork[] {
+    return this.cachedActiveUnitsOfWork;
+  }
+
+  /**
+   * Units of work grouped by account, active units first, each group oldest first.
+   */
+  get unitsOfWorkByAccount(): Map<AccountId, IUnitOfWork[]> {
+    return this.cachedUnitsOfWorkByAccount;
+  }
+
+  /**
+   * Counts of active units by state.
+   */
+  get unitStats(): UnitOfWorkStats {
+    return this.cachedUnitStats;
+  }
+
+  /**
+   * Check if the submission has any recorded posting work.
+   */
+  get hasPostHistory(): boolean {
+    return this.cachedUnitsOfWork.length > 0;
+  }
+
+  /**
+   * Check if any active unit of work failed.
+   */
+  get hasFailedUnits(): boolean {
+    return this.cachedActiveUnitsOfWork.some(
+      (unit) => unit.state === UnitOfWorkState.FAILED
+    );
+  }
+
+  /**
+   * When the current post was created.
+   */
+  get postStartedAt(): string | undefined {
+    return this.post?.createdAt;
+  }
+
+  /**
+   * When the current post settled, derived from its most recently updated unit.
+   */
+  get postFinishedAt(): string | undefined {
+    if (!this.post?.completed || this.cachedActiveUnitsOfWork.length === 0) {
+      return undefined;
+    }
+    return this.cachedActiveUnitsOfWork.reduce(
+      (latest, unit) => (unit.updatedAt > latest ? unit.updatedAt : latest),
+      this.cachedActiveUnitsOfWork[0].updatedAt
+    );
   }
 
   /**
    * Get the most recent post record.
+   *
+   * @deprecated Legacy post record accessor; only the post-creation flow still reads this.
    */
   get latestPost(): PostRecordDto | undefined {
-    if (this.posts.length === 0) return undefined;
-    return this.sortedPosts[this.sortedPosts.length - 1];
+    if (this.cachedSortedPosts.length === 0) return undefined;
+    return this.cachedSortedPosts[this.cachedSortedPosts.length - 1];
   }
 
-  /**
-   * Get the most recent completed post record (DONE or FAILED).
-   */
-  get latestCompletedPost(): PostRecordDto | undefined {
-    const completed = this.sortedPosts.filter(
-      (post) => post.state === PostRecordState.DONE || post.state === PostRecordState.FAILED
-    );
-    return completed[completed.length - 1];
+  private groupUnitsOfWorkByAccount(): Map<AccountId, IUnitOfWork[]> {
+    const grouped = new Map<AccountId, IUnitOfWork[]>();
+
+    for (const unit of this.cachedUnitsOfWork) {
+      const existing = grouped.get(unit.accountId);
+      if (existing) {
+        existing.push(unit);
+      } else {
+        grouped.set(unit.accountId, [unit]);
+      }
+    }
+
+    for (const units of grouped.values()) {
+      units.sort((a, b) => {
+        if (a.evicted !== b.evicted) {
+          return a.evicted ? 1 : -1;
+        }
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      });
+    }
+
+    return grouped;
   }
 
-  /**
-   * Get posting statistics for this submission.
-   * Counts are based on individual post records.
-   */
-  get postingStats(): {
-    totalAttempts: number;
-    successfulAttempts: number;
-    failedAttempts: number;
-    runningAttempts: number;
-  } {
-    const successful = this.posts.filter((p) => p.state === PostRecordState.DONE);
-    const failed = this.posts.filter((p) => p.state === PostRecordState.FAILED);
-    const running = this.posts.filter((p) => p.state === PostRecordState.RUNNING);
-
-    return {
-      totalAttempts: this.posts.length,
-      successfulAttempts: successful.length,
-      failedAttempts: failed.length,
-      runningAttempts: running.length,
+  private computeUnitStats(): UnitOfWorkStats {
+    const stats: UnitOfWorkStats = {
+      total: this.cachedActiveUnitsOfWork.length,
+      succeeded: 0,
+      failed: 0,
+      running: 0,
+      pending: 0,
+      cancelled: 0,
+      rateLimited: 0,
     };
-  }
 
-  /**
-   * Check if this submission has ever been successfully posted.
-   */
-  get hasBeenPostedSuccessfully(): boolean {
-    return this.posts.some((p) => p.state === PostRecordState.DONE);
-  }
+    for (const unit of this.cachedActiveUnitsOfWork) {
+      switch (unit.state) {
+        case UnitOfWorkState.SUCCEEDED:
+          stats.succeeded += 1;
+          break;
+        case UnitOfWorkState.FAILED:
+          stats.failed += 1;
+          break;
+        case UnitOfWorkState.EXECUTING:
+        case UnitOfWorkState.VALIDATING:
+          stats.running += 1;
+          break;
+        case UnitOfWorkState.CANCELLED:
+          stats.cancelled += 1;
+          break;
+        case UnitOfWorkState.RATE_LIMITED:
+          stats.rateLimited += 1;
+          break;
+        default:
+          stats.pending += 1;
+          break;
+      }
+    }
 
-  /**
-   * Check if this submission has any failed posting attempts.
-   */
-  get hasFailedPostingAttempts(): boolean {
-    return this.posts.some((p) => p.state === PostRecordState.FAILED);
-  }
-
-  /**
-   * Check if this submission is currently being posted.
-   */
-  get isCurrentlyPosting(): boolean {
-    return this.posts.some((p) => p.state === PostRecordState.RUNNING);
+    return stats;
   }
 }

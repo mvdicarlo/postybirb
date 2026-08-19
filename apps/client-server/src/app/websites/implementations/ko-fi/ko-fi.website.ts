@@ -1,16 +1,16 @@
 import { SelectOption } from '@postybirb/form-builder';
 
 import {
-    ImageResizeProps,
-    IPostResponse,
-    ISubmissionFile,
-    LoginResult,
-    PostData,
-    PostResponse,
+  ImageResizeProps,
+  IPostResponse,
+  ISubmissionFile,
+  LoginResult,
+  PostData,
+  PostResponse,
 } from '@postybirb/types';
 import { parse } from 'node-html-parser';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import { PostBuilder } from '../../commons/post-builder';
 import { validatorPassthru } from '../../commons/validator-passthru';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
@@ -145,7 +145,7 @@ export default class KoFi
   async onPostFileSubmission(
     postData: PostData<KoFiFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
     // Upload each file and collect image upload IDs
     const imageUploadIds = [];
@@ -234,7 +234,7 @@ export default class KoFi
 
   async onPostMessageSubmission(
     postData: PostData<KoFiMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<IPostResponse> {
     const builder = new PostBuilder(this, cancellationToken)
       .asMultipart()

@@ -1,1 +1,0 @@
-ALTER TABLE `submission-file` ADD `duration` integer DEFAULT 0 NOT NULL;

@@ -81,7 +81,8 @@ export const SubmissionCard = memo(
     const canPost =
       !submission.hasErrors &&
       submission.hasWebsiteOptions &&
-      !submission.isQueued;
+      !submission.isQueued &&
+      !submission.isPosting;
 
     // Check if the primary file is an image that can be previewed (only for FILE type)
     const canPreviewImage =
@@ -204,7 +205,7 @@ export const SubmissionCard = memo(
                 canPost={canPost}
                 schedule={submission.schedule}
                 isScheduled={submission.isScheduled}
-                isQueued={submission.isQueued}
+                isQueued={submission.isQueued || submission.isPosting}
                 hasHistory
                 onPost={handlePost}
                 onCancel={handleCancel}

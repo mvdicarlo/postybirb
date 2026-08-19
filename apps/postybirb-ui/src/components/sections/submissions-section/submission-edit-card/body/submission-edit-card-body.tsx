@@ -2,12 +2,18 @@
  * SubmissionEditCardBody - Body content of the submission edit card.
  */
 
+import { Trans } from '@lingui/react/macro';
 import { Box, Stack } from '@mantine/core';
-import { ISubmissionScheduleInfo, SubmissionType } from '@postybirb/types';
+import {
+  ISubmissionScheduleInfo,
+  SubmissionId,
+  SubmissionType,
+} from '@postybirb/types';
 import { useCallback } from 'react';
 import submissionApi from '../../../../../api/submission.api';
 import { showUpdateErrorNotification } from '../../../../../utils/notifications';
 import { ComponentErrorBoundary } from '../../../../error-boundary';
+import { SubmissionPicker } from '../../../../shared';
 import { AccountSelect, SelectedAccountsForms } from '../account-selection';
 import { useSubmissionEditCardContext } from '../context';
 import { DefaultsForm } from '../defaults-form';
@@ -27,6 +33,19 @@ export function SubmissionEditCardBody() {
         await submissionApi.update(submission.id, {
           isScheduled,
           ...schedule,
+        });
+      } catch {
+        showUpdateErrorNotification();
+      }
+    },
+    [submission.id],
+  );
+
+  const handleDependenciesChange = useCallback(
+    async (dependsOn: string[]) => {
+      try {
+        await submissionApi.update(submission.id, {
+          dependsOn: dependsOn as SubmissionId[],
         });
       } catch {
         showUpdateErrorNotification();
@@ -67,6 +86,19 @@ export function SubmissionEditCardBody() {
           </Box>
         </ComponentErrorBoundary>
       )}
+
+      <ComponentErrorBoundary>
+        <Box data-tour-id="edit-card-dependencies">
+          <SubmissionPicker
+            value={submission.dependsOn}
+            onChange={handleDependenciesChange}
+            type={submission.type}
+            excludeIds={[submission.id]}
+            label={<Trans>Depends on submissions</Trans>}
+            disabled={submission.isArchived}
+          />
+        </Box>
+      </ComponentErrorBoundary>
 
       {/* Defaults Form - global options like title, description, tags */}
       <ComponentErrorBoundary>

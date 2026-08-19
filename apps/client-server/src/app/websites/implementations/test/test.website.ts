@@ -10,8 +10,8 @@ import {
   PostResponse,
   SimpleValidationResult,
 } from '@postybirb/types';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import { wait } from '../../../utils/wait.util';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
@@ -69,9 +69,9 @@ export default class TestWebsite
   async onPostFileSubmission(
     postData: PostData<IWebsiteFormFields>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<IPostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     return PostResponse.fromWebsite(this)
       .atStage('test')
       .withMessage('test message');
@@ -88,9 +88,9 @@ export default class TestWebsite
 
   async onPostMessageSubmission(
     postData: PostData<TestMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<IPostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     if (this.account.name === 'FAIL') {
       return PostResponse.fromWebsite(this)
         .atStage('validation')

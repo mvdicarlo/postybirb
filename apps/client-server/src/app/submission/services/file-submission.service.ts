@@ -1,24 +1,25 @@
 import {
-    BadRequestException,
-    forwardRef,
-    Inject,
-    Injectable,
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
 } from '@nestjs/common';
 import { SubmissionRepository } from '@postybirb/database';
 import {
-    EntityId,
-    FileSubmission,
-    FileType,
-    isFileSubmission,
-    ISubmission,
-    SubmissionFileMetadata,
-    SubmissionId,
-    SubmissionType,
+  EntityId,
+  FileSubmission,
+  FileType,
+  isFileSubmission,
+  ISubmission,
+  SubmissionFileMetadata,
+  SubmissionId,
+  SubmissionType,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { PostyBirbService } from '../../common/service/postybirb-service';
 import { FileService } from '../../file/file.service';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
+import { PostingActivityService } from '../../posting/posting-activity.service';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
 import { ReorderSubmissionFilesDto } from '../dtos/reorder-submission-files.dto';
 import { UpdateAltFileDto } from '../dtos/update-alt-file.dto';
@@ -43,6 +44,7 @@ export class FileSubmissionService
     @Inject(forwardRef(() => SubmissionService))
     private readonly submissionService: SubmissionService,
     private readonly submissionEventPublisher: SubmissionEventPublisher,
+    private readonly postingActivity: PostingActivityService,
   ) {
     super(new SubmissionRepository());
   }
@@ -107,6 +109,19 @@ export class FileSubmissionService
     }
   }
 
+  private async assertFileMutable(
+    submissionId: SubmissionId,
+    fileId: EntityId,
+  ): Promise<void> {
+    const file = await this.fileService.findFile(fileId);
+    if (file.submissionId !== submissionId) {
+      throw new BadRequestException(
+        `File '${fileId}' does not belong to submission '${submissionId}'`,
+      );
+    }
+    await this.postingActivity.assertSubmissionsMutable(file.submissionId);
+  }
+
   /**
    * Adds a file to a submission.
    *
@@ -120,6 +135,7 @@ export class FileSubmissionService
         : id
     ) as FileSubmission;
 
+    await this.postingActivity.assertSubmissionsMutable(submission.id);
     this.guardIsFileSubmission(submission);
     this.guardFileTypeCompatibility(submission, file);
 
@@ -141,6 +157,7 @@ export class FileSubmissionService
       id,
     )) as unknown as FileSubmission;
     this.guardIsFileSubmission(submission);
+    await this.assertFileMutable(submission.id, fileId);
 
     await this.fileService.update(file, fileId, false);
     this.submissionEventPublisher?.markChanged(submission.id);
@@ -162,6 +179,7 @@ export class FileSubmissionService
       id,
     )) as unknown as FileSubmission;
     this.guardIsFileSubmission(submission);
+    await this.assertFileMutable(submission.id, fileId);
 
     await this.fileService.update(file, fileId, true);
     this.submissionEventPublisher?.markChanged(submission.id);
@@ -178,6 +196,7 @@ export class FileSubmissionService
       id,
     )) as unknown as FileSubmission;
     this.guardIsFileSubmission(submission);
+    await this.assertFileMutable(submission.id, fileId);
 
     await this.fileService.remove(fileId);
     await this.repository.update(submission.id, {
@@ -192,6 +211,7 @@ export class FileSubmissionService
 
   async updateAltFileText(id: EntityId, update: UpdateAltFileDto) {
     const submissionId = await this.fileService.findSubmissionIdForBuffer(id);
+    await this.postingActivity.assertSubmissionsMutable(submissionId);
     const result = await this.fileService.updateAltText(id, update);
     this.submissionEventPublisher?.markChanged(submissionId);
     return result;
@@ -199,6 +219,9 @@ export class FileSubmissionService
 
   async updateMetadata(id: EntityId, update: SubmissionFileMetadata) {
     const submissionFile = await this.fileService.findFile(id);
+    await this.postingActivity.assertSubmissionsMutable(
+      submissionFile.submissionId,
+    );
     const result = await this.fileService.updateMetadata(id, update);
     this.submissionEventPublisher?.markChanged(submissionFile.submissionId);
     return result;
@@ -207,6 +230,9 @@ export class FileSubmissionService
   async reorderFiles(update: ReorderSubmissionFilesDto) {
     const submissionFiles = await Promise.all(
       Object.keys(update.order).map((id) => this.fileService.findFile(id)),
+    );
+    await this.postingActivity.assertSubmissionsMutable(
+      submissionFiles.map((file) => file.submissionId),
     );
     const result = await this.fileService.reorderFiles(update);
     this.submissionEventPublisher?.markChanged(

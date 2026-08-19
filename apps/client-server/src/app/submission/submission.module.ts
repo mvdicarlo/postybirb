@@ -6,6 +6,7 @@ import { extname } from 'path';
 import { v4 } from 'uuid';
 import { AccountModule } from '../account/account.module';
 import { FileModule } from '../file/file.module';
+import { PostingActivityModule } from '../posting/posting-activity.module';
 import { WebsiteOptionsModule } from '../website-options/website-options.module';
 import { WebsitesModule } from '../websites/websites.module';
 import { FileSubmissionController } from './file-submission.controller';
@@ -22,6 +23,7 @@ import { SubmissionController } from './submission.controller';
     WebsitesModule,
     AccountModule,
     FileModule,
+    PostingActivityModule,
     forwardRef(() => WebsiteOptionsModule),
     MulterModule.register({
       limits: {

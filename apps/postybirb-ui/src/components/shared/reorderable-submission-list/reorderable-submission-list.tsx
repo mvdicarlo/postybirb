@@ -3,28 +3,27 @@
  * Supports drag-and-drop and keyboard navigation (Tab to focus, Arrow keys to reorder).
  */
 
-import { Trans } from '@lingui/react/macro';
-import { Box, Paper, ScrollArea, Stack, Text } from '@mantine/core';
-import { PostRecordState } from '@postybirb/types';
-import { IconGripVertical } from '@tabler/icons-react';
-import { useCallback, useEffect, useRef } from 'react';
 import {
-  closestCenter,
-  DndContext,
-  DragEndEvent,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
+    closestCenter,
+    DndContext,
+    DragEndEvent,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
 } from '@dnd-kit/core';
 import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-  verticalListSortingStrategy,
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    useSortable,
+    verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { Trans } from '@lingui/react/macro';
+import { Box, Paper, ScrollArea, Stack, Text } from '@mantine/core';
+import { IconGripVertical } from '@tabler/icons-react';
+import { useCallback, useEffect, useRef } from 'react';
 import type { SubmissionRecord } from '../../../stores/records';
 import { cn } from '../../../utils/class-names';
 import './reorderable-submission-list.css';
@@ -187,9 +186,7 @@ function SortableReorderableItem({
   };
 
   const title = submission.getDefaultOptions()?.data?.title;
-  const lastPost = submission.latestPost;
-  const hasFailedPost =
-    lastPost && lastPost.state === PostRecordState.FAILED;
+  const hasFailedPost = submission.hasFailedUnits;
 
   return (
     <Paper

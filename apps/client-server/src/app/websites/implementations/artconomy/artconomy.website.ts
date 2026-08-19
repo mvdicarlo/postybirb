@@ -6,8 +6,8 @@ import {
   PostResponse,
   SubmissionRating,
 } from '@postybirb/types';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { PostBuilder } from '../../commons/post-builder';
 import { validatorPassthru } from '../../commons/validator-passthru';
@@ -103,7 +103,7 @@ export default class Artconomy
   async onPostFileSubmission(
     postData: PostData<ArtconomyFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
     const { id, username, csrfToken } = this.getWebsiteData();
 
@@ -155,7 +155,7 @@ export default class Artconomy
       thumbnailAsset = thumbnailUpload.body.id;
     }
 
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     // Create submission using PostBuilder
     const postResponse = await new PostBuilder(this, cancellationToken)
@@ -198,9 +198,9 @@ export default class Artconomy
 
   async onPostMessageSubmission(
     postData: PostData<ArtconomyMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     const { username, csrfToken } = this.getWebsiteData();
 

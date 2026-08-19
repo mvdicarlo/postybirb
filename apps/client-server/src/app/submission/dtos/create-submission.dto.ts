@@ -3,6 +3,7 @@ import {
     ICreateSubmissionDefaultOptions,
     ICreateSubmissionDto,
     IFileMetadata,
+    SubmissionId,
     SubmissionType,
 } from '@postybirb/types';
 import { Transform } from 'class-transformer';
@@ -13,6 +14,7 @@ import {
     IsObject,
     IsOptional,
     IsString,
+    IsUUID,
 } from 'class-validator';
 
 /**
@@ -55,6 +57,13 @@ export class CreateSubmissionDto implements ICreateSubmissionDto {
   @IsBoolean()
   @Transform(({ value }) => value === 'true' || value === true)
   isMultiSubmission?: boolean;
+
+  @ApiProperty({ type: [String] })
+  @IsOptional()
+  @IsArray()
+  @IsUUID('4', { each: true })
+  @Transform(({ value }) => parseJsonField<SubmissionId[]>(value))
+  dependsOn?: SubmissionId[];
 
   @ApiProperty({ description: 'Default options to apply to all created submissions' })
   @IsOptional()

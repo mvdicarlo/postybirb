@@ -1,16 +1,16 @@
 import { FormFile, HttpResponse } from '@postybirb/http/types';
 import {
-    ISubmissionFile,
-    LoginResult,
-    PostData,
-    PostFields,
-    PostResponse,
-    SimpleValidationResult,
-    SubmissionRating,
+  ISubmissionFile,
+  LoginResult,
+  PostData,
+  PostFields,
+  PostResponse,
+  SimpleValidationResult,
+  SubmissionRating,
 } from '@postybirb/types';
 import { HTMLElement, parse } from 'node-html-parser';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
@@ -115,13 +115,16 @@ export default class Toyhouse
   async onPostFileSubmission(
     postData: PostData<ToyhouseFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
-    const page = await this.platform.http.get<string>(`${this.BASE_URL}/~images/upload`, {
-      partition: this.accountId,
-    });
+    const page = await this.platform.http.get<string>(
+      `${this.BASE_URL}/~images/upload`,
+      {
+        partition: this.accountId,
+      },
+    );
 
     if (!isLoggedIn(page)) {
       return PostResponse.fromWebsite(this).withException(
@@ -185,11 +188,14 @@ export default class Toyhouse
       'character_ids[]': [...postData.options.characters, ''],
     };
 
-    const result = await this.platform.http.post<string>(`${this.BASE_URL}/~images/upload`, {
-      partition: this.accountId,
-      data: formData,
-      type: 'multipart',
-    });
+    const result = await this.platform.http.post<string>(
+      `${this.BASE_URL}/~images/upload`,
+      {
+        partition: this.accountId,
+        data: formData,
+        type: 'multipart',
+      },
+    );
 
     if (result.statusCode === 200 && !result.body.includes('alert-danger')) {
       return PostResponse.fromWebsite(this)

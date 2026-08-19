@@ -12,9 +12,12 @@ import {
   IWebsiteFormFields,
   LoginResult,
   LoginState,
-  SubmissionType
+  PostData,
+  SubmissionType,
 } from '@postybirb/types';
 import { Mutex } from 'async-mutex';
+import { CancellationToken } from '../posting/cancellation-token';
+import { PostingFile } from '../posting/models/posting-file';
 import { SubmissionValidator } from './commons/validator';
 import {
   cloneWebsiteDecoratorProps,
@@ -23,11 +26,14 @@ import {
 } from './decorators/website-decorator-props';
 import { DataPropertyAccessibility } from './models/data-property-accessibility';
 import {
+  FileWebsite,
   FileWebsiteKey,
   isFileWebsite,
+  PostBatchData,
 } from './models/website-modifiers/file-website';
 import {
   isMessageWebsite,
+  MessageWebsite,
   MessageWebsiteKey,
 } from './models/website-modifiers/message-website';
 import WebsiteDataManager from './website-data-manager';
@@ -321,7 +327,10 @@ export abstract class Website<
   }
 
   public syncAccount(account: Account): void {
-    if (account.id !== this.accountId || account.website !== this.account.website) {
+    if (
+      account.id !== this.accountId ||
+      account.website !== this.account.website
+    ) {
       throw new Error('Cannot change the identity of a Website instance');
     }
     this.account = account;
@@ -351,6 +360,37 @@ export abstract class Website<
    */
   protected async onWebsiteDataChange(newData: D) {
     // Nothing to do here yet, but this is a hook for future if we want to trigger any actions on data change
+  }
+
+  /**
+   * Handles the submission of a post.
+   * Delegates to the appropriate method based on the type of submission (message or file).
+   * @param {PostData} postData - The data of the post.
+   * @param {PostingFile[]} files - The files associated with the post.
+   * @param {PostBatchData} batch - The batch data for the post.
+   * @param {CancellationToken} cancellationToken - The cancellation token.
+   */
+  public post(
+    postData: PostData,
+    files: PostingFile[],
+    batch: PostBatchData,
+    cancellationToken: CancellationToken,
+  ) {
+    // Message Submission
+    if (files.length === 0) {
+      return (this as unknown as MessageWebsite).onPostMessageSubmission(
+        postData,
+        cancellationToken,
+      );
+    }
+
+    // File Submission
+    return (this as unknown as FileWebsite).onPostFileSubmission(
+      postData,
+      files,
+      cancellationToken,
+      batch,
+    );
   }
 
   // -------------- End Externally Accessed Methods --------------
@@ -436,9 +476,8 @@ export abstract class Website<
     onWebsiteDataChanged?: (account: IAccountDto) => void,
   ): Promise<void> {
     this.onAccountProjectionChanged = onWebsiteDataChanged;
-    await this.websiteDataStore.initialize(
-      websiteDataRepository,
-      () => this.notifyAccountProjectionChanged(),
+    await this.websiteDataStore.initialize(websiteDataRepository, () =>
+      this.notifyAccountProjectionChanged(),
     );
     // this.subscribeToCookieChanges();
     this.startLoginRefresh();

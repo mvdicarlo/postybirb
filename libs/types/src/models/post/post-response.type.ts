@@ -25,6 +25,12 @@ export type IPostResponse = {
   stage?: string;
 
   /**
+   * The timestamp after which this post may be retried.
+   * @type {string}
+   */
+  rateLimitedUntil?: string;
+
+  /**
    * The response message to return to a user.
    * Flexible for different types of responses.
    * @type {string}
@@ -50,6 +56,8 @@ export class PostResponse implements IPostResponse {
   sourceUrl?: string;
 
   stage?: string;
+
+  rateLimitedUntil?: string;
 
   message?: string;
 
@@ -111,6 +119,11 @@ export class PostResponse implements IPostResponse {
 
   atStage(stage: string) {
     this.stage = stage;
+    return this;
+  }
+
+  withRateLimit(rateLimitedUntil: string) {
+    this.rateLimitedUntil = rateLimitedUntil;
     return this;
   }
 }

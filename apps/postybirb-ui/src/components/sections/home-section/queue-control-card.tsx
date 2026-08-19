@@ -8,6 +8,7 @@ import { Button, Loader, Paper, Stack } from '@mantine/core';
 import { IconPlayerPause, IconPlayerPlay } from '@tabler/icons-react';
 import { useState } from 'react';
 import postQueueApi from '../../../api/post-queue.api';
+import postingApi from '../../../api/posting.api';
 import { useQueuePaused } from '../../../stores/entity/settings-store';
 
 /**
@@ -22,7 +23,7 @@ export function QueueControlCard() {
     setIsLoading(true);
     try {
       if (queuePaused) {
-        await postQueueApi.resume();
+        await postingApi.unpause();
       } else {
         await postQueueApi.pause();
       }

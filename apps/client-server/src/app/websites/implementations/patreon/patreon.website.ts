@@ -1,20 +1,20 @@
 import { SelectOption } from '@postybirb/form-builder';
 import { FormFile } from '@postybirb/http/types';
 import {
-    DynamicObject,
-    FileType,
-    ImageResizeProps,
-    ISubmissionFile,
-    LoginResult,
-    PostData,
-    PostResponse,
-    SimpleValidationResult,
+  DynamicObject,
+  FileType,
+  ImageResizeProps,
+  ISubmissionFile,
+  LoginResult,
+  PostData,
+  PostResponse,
+  SimpleValidationResult,
 } from '@postybirb/types';
 import parse from 'node-html-parser';
 import { parse as parseFileName } from 'path';
 import { v4 } from 'uuid';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { wait } from '../../../utils/wait.util';
 import { PostBuilder } from '../../commons/post-builder';
@@ -32,9 +32,9 @@ import { PatreonCampaignResponse } from './models/patreon-campaign-types';
 import { PatreonCollectionResponse } from './models/patreon-collection-types';
 import { PatreonFileSubmission } from './models/patreon-file-submission';
 import {
-    PatreonMediaType,
-    PatreonMediaUploadRequest,
-    PatreonMediaUploadResponse,
+  PatreonMediaType,
+  PatreonMediaUploadRequest,
+  PatreonMediaUploadResponse,
 } from './models/patreon-media-upload-types';
 import { PatreonMessageSubmission } from './models/patreon-message-submission';
 import { PatreonNewPostResponse } from './models/patreon-post-types';
@@ -336,7 +336,7 @@ export default class Patreon
     file: FormFile,
     fileType: FileType,
     asAttachment: boolean,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PatreonMediaUploadResponse> {
     const { ext } = parseFileName(file.fileName);
     const fileNameGUID = `${v4().toUpperCase()}${ext}`;
@@ -420,9 +420,9 @@ export default class Patreon
   async onPostFileSubmission(
     postData: PostData<PatreonFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     const initializedPost = await this.initializePost();
 
     const uploadThumbnail =
@@ -480,7 +480,7 @@ export default class Patreon
       included: [...tags, ...accessTiers],
     };
 
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     await this.finalizePost(initializedPost.links.self, postAttributes);
 
     return PostResponse.fromWebsite(this)
@@ -504,9 +504,9 @@ export default class Patreon
 
   async onPostMessageSubmission(
     postData: PostData<PatreonMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     const initializedPost = await this.initializePost();
 
     const tags = this.createTagsSegment(postData.options.tags || []);
@@ -526,7 +526,7 @@ export default class Patreon
       included: [...tags, ...accessTiers],
     };
 
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     await this.finalizePost(initializedPost.links.self, postAttributes);
 
     return PostResponse.fromWebsite(this)

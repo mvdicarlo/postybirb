@@ -2,22 +2,22 @@
 // No need to import BlockNote in the server-side website implementation
 
 import {
-    DynamicObject,
-    FileType,
-    ImageResizeProps,
-    ISubmissionFile,
-    LoginResult,
-    NPFContentBlock,
-    PostData,
-    PostResponse,
-    SimpleValidationResult,
-    SubmissionRating,
+  DynamicObject,
+  FileType,
+  ImageResizeProps,
+  ISubmissionFile,
+  LoginResult,
+  NPFContentBlock,
+  PostData,
+  PostResponse,
+  SimpleValidationResult,
+  SubmissionRating,
 } from '@postybirb/types';
 import parse from 'node-html-parser';
 import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
 import { NpfConverter } from '../../../post-parsers/models/description-node/converters/npf-converter';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { PostBuilder } from '../../commons/post-builder';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
@@ -167,7 +167,7 @@ export default class Tumblr
   async onPostFileSubmission(
     postData: PostData<TumblrFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
     // Update csrf token
     await this.onLogin();
@@ -256,7 +256,7 @@ export default class Tumblr
 
   async onPostMessageSubmission(
     postData: PostData<TumblrMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
     // Update csrf token
     await this.onLogin();
@@ -350,12 +350,12 @@ export default class Tumblr
   private async uploadFiles(
     files: PostingFile[],
     blogId: string,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<DynamicObject[]> {
     const mediaBlocks: DynamicObject[] = [];
 
     for (const file of files) {
-      cancellationToken.throwIfCancelled();
+      cancellationToken.throwIfAborted();
 
       try {
         const uploadedMedia = await this.uploadSingleFile(file, blogId);
@@ -413,7 +413,7 @@ export default class Tumblr
     blogId: string,
   ): Promise<DynamicObject[]> {
     // Upload file using multipart form data
-    const uploadBuilder = new PostBuilder(this, new CancellableToken())
+    const uploadBuilder = new PostBuilder(this, new CancellationToken())
       .asMultipart()
       .withHeader('Authorization', `Bearer ${this.sessionData.apiToken}`)
       .withHeader('Referer', 'https://www.tumblr.com')
