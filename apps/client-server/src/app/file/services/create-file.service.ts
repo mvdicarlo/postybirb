@@ -1,7 +1,18 @@
 // @ts-expect-error No types on npm
 import * as rtf from '@iarna/rtf-to-html';
 import { Injectable } from '@nestjs/common';
-import { FileBuffer, FileBufferRepository, FileBufferRow, Insert, Select, SubmissionFile, SubmissionFileRepository, SubmissionFileRow, TransactionContext, withTransactionContext } from '@postybirb/database';
+import {
+  FileBuffer,
+  FileBufferRepository,
+  FileBufferRow,
+  Insert,
+  Select,
+  SubmissionFile,
+  SubmissionFileRepository,
+  SubmissionFileRow,
+  TransactionContext,
+  withTransactionContext,
+} from '@postybirb/database';
 import { removeFile } from '@postybirb/fs';
 import { Logger } from '@postybirb/logger';
 import {
@@ -21,7 +32,7 @@ import { v4 as uuid } from 'uuid';
 
 import { SharpInstanceManager } from '../../image-processing/sharp-instance-manager';
 import { MulterFileInfo } from '../models/multer-file-info';
-import { ImageUtil } from '../utils/image.util';
+import { MediaUtils } from '../utils/media.util';
 
 /**
  * A Service that defines operations for creating a SubmissionFile.
@@ -60,12 +71,24 @@ export class CreateFileService {
             buf,
           );
 
-          if (ImageUtil.isImage(file.mimetype, true)) {
-            this.logger.info('[Mutation] Populating as Image');
-            entity = await this.populateAsImageFile(ctx, entity, file, buf);
+          const fileType = getFileType(file.originalname);
+
+          if (
+            fileType === FileType.VIDEO ||
+            fileType === FileType.AUDIO ||
+            fileType === FileType.IMAGE
+          ) {
+            this.logger.info(`[Mutation] Populating as ${fileType}`);
+            entity = await this.populateMediaFileMetadata(
+              ctx,
+              entity,
+              file,
+              buf,
+              fileType,
+            );
           }
 
-          if (getFileType(file.originalname) === FileType.TEXT) {
+          if (fileType === FileType.TEXT) {
             await this.createSubmissionTextAltFile(ctx, entity, file, buf);
           }
 
@@ -225,21 +248,28 @@ export class CreateFileService {
    * @param {Buffer} buf
    * @return {*}  {Promise<void>}
    */
-  private async populateAsImageFile(
+  private async populateMediaFileMetadata(
     ctx: TransactionContext,
     entity: SubmissionFile,
     file: MulterFileInfo,
     buf: Buffer,
+    fileType: FileType,
   ): Promise<SubmissionFile> {
-    const meta = await this.sharpInstanceManager.getMetadata(buf);
-    const thumbnail = await this.createFileThumbnail(ctx, entity, file, buf);
+    const meta = await this.getMetadata(fileType, file, buf);
+
+    let thumbnail;
+    if (fileType === FileType.IMAGE) {
+      thumbnail = await this.createFileThumbnail(ctx, entity, file, buf);
+    }
+
     const update: Partial<Select<'SubmissionFileSchema'>> = {
       width: meta.width ?? 0,
       height: meta.height ?? 0,
-      hasThumbnail: true,
-      thumbnailId: thumbnail.id,
+      hasThumbnail: !!thumbnail,
+      thumbnailId: thumbnail ? thumbnail.id : undefined,
       metadata: {
         ...entity.metadata,
+        duration: 'duration' in meta ? meta.duration : 0,
         dimensions: {
           default: {
             width: meta.width ?? 0,
@@ -257,6 +287,31 @@ export class CreateFileService {
         .where(eq(this.fileRepository.table.id, entity.id))
         .returning()) as SubmissionFileRow[],
     )[0];
+  }
+
+  private async getMetadata(
+    fileType: FileType,
+    file: MulterFileInfo,
+    buf: Buffer,
+  ) {
+    if (fileType === FileType.IMAGE) {
+      return this.sharpInstanceManager.getMetadata(buf);
+    }
+
+    if (fileType === FileType.VIDEO || fileType === FileType.AUDIO) {
+      try {
+        return await MediaUtils.getMetadata(file, buf);
+      } catch (e) {
+        this.logger
+          .withError(e)
+          .error(`Failed to get metadata for ${file.filename}`);
+      }
+    }
+
+    return {
+      width: 0,
+      height: 0,
+    };
   }
 
   /**

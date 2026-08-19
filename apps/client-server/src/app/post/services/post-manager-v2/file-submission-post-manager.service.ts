@@ -1,4 +1,10 @@
 import { Injectable, Optional } from '@nestjs/common';
+import {
+  FileBuffer,
+  PostRecord,
+  Submission,
+  SubmissionFile,
+} from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import {
   AccountId,
@@ -12,12 +18,6 @@ import {
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { chunk } from 'lodash';
-import {
-  FileBuffer,
-  PostRecord,
-  Submission,
-  SubmissionFile,
-} from '@postybirb/database';
 import { FileConverterService } from '../../../file-converter/file-converter.service';
 import { NotificationsService } from '../../../notifications/notifications.service';
 import { PostParsersService } from '../../../post-parsers/post-parsers.service';
