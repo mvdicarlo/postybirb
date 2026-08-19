@@ -5,6 +5,7 @@ import { PostParsersModule } from '../post-parsers/post-parsers.module';
 import { PostModule } from '../post/post.module';
 import { ValidationModule } from '../validation/validation.module';
 import { WebsitesModule } from '../websites/websites.module';
+import { LegacyPostHistoryMigrationService } from './legacy-post-history-migration.service';
 import { PostingActivityModule } from './posting-activity.module';
 import { PostingManager } from './posting-manager';
 import { PostingRateLimiterService } from './posting-rate-limiter.service';
@@ -22,7 +23,12 @@ import { PostingService } from './posting.service';
     NotificationsModule,
   ],
   controllers: [PostingController],
-  providers: [PostingManager, PostingRateLimiterService, PostingService],
+  providers: [
+    LegacyPostHistoryMigrationService,
+    PostingManager,
+    PostingRateLimiterService,
+    PostingService,
+  ],
   exports: [PostingManager, PostingService],
 })
 export class PostingModule {}
