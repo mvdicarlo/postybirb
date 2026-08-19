@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "6cd2ef7a-1ec2-44eb-8af6-4e4623c05d02",
+  "id": "f6166449-0b6b-47b5-8934-c9f25ee8a9b6",
   "prevId": "169334cd-59a9-40ca-8697-41ff6f0373fe",
   "tables": {
     "account": {
@@ -988,6 +988,14 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
+        },
+        "duration": {
+          "name": "duration",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
         },
         "mimeType": {
           "name": "mimeType",

@@ -27,6 +27,7 @@ export const SubmissionFileSchema = sqliteTable('submission-file', {
   hasThumbnail: integer({ mode: 'boolean' }).notNull(),
   hash: text().notNull(),
   height: integer().notNull(),
+  duration: integer().default(0).notNull(),
   mimeType: text().notNull(),
   size: integer().notNull(),
   width: integer().notNull(),

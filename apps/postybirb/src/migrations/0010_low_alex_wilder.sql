@@ -34,4 +34,5 @@ CREATE TABLE `unit-of-work` (
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `unit-of-work_id_unique` ON `unit-of-work` (`id`);--> statement-breakpoint
+ALTER TABLE `submission-file` ADD `duration` integer DEFAULT 0 NOT NULL;--> statement-breakpoint
 ALTER TABLE `submission` ADD `dependsOn` text DEFAULT '[]' NOT NULL;
