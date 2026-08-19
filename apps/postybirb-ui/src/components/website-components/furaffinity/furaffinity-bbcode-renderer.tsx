@@ -1,6 +1,6 @@
 /* eslint-disable lingui/no-unlocalized-strings */
-import { Box } from '@mantine/core';
 import { descriptionPreviewRendererByWebsite } from '../../sections/submissions-section/submission-edit-card/account-selection/form/fields/description-preview-panel';
+import { SafeHtml } from '../../shared/safe-html/safe-html';
 import { furaffinityBBCodeRenderToHTML } from './furaffinity-bbcode';
 
 descriptionPreviewRendererByWebsite.set('fur-affinity', ({ description }) => {
@@ -8,5 +8,5 @@ descriptionPreviewRendererByWebsite.set('fur-affinity', ({ description }) => {
     automaticParagraphs: true,
   });
 
-  return <Box dangerouslySetInnerHTML={{ __html: view }} />;
+  return <SafeHtml html={view} />;
 });

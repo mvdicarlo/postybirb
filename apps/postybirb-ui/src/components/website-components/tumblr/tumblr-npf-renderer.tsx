@@ -1,12 +1,13 @@
 /* eslint-disable lingui/no-unlocalized-strings */
 import { Box, Image, Stack, Text, Title } from '@mantine/core';
 import {
-  NPFContentBlock,
-  NPFImageBlock,
-  NPFLinkBlock,
-  NPFTextBlock,
+    NPFContentBlock,
+    NPFImageBlock,
+    NPFLinkBlock,
+    NPFTextBlock,
 } from '@postybirb/types';
 import { descriptionPreviewRendererByWebsite } from '../../sections/submissions-section/submission-edit-card/account-selection/form/fields/description-preview-panel';
+import { SafeHtml } from '../../shared/safe-html/safe-html';
 
 descriptionPreviewRendererByWebsite.set('tumblr', ({ description }) => {
   if (!description) {
@@ -98,8 +99,7 @@ function renderTextBlock(block: NPFTextBlock): React.ReactNode {
   // Replace newlines with <br/>
   text = text.replace(/\r?\n/g, '<br/>');
 
-  // eslint-disable-next-line react/no-danger
-  const innerHtml = <div dangerouslySetInnerHTML={{ __html: text }} />;
+  const innerHtml = <SafeHtml html={text} />;
 
   // Apply block‑level styling based on subtype
   switch (block.subtype) {

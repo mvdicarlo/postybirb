@@ -6,30 +6,31 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-  ActionIcon,
-  Alert,
-  Box,
-  CopyButton,
-  Group,
-  Loader,
-  ScrollArea,
-  Tabs,
-  Text,
-  Textarea,
-  Tooltip,
-  Typography,
+    ActionIcon,
+    Alert,
+    Box,
+    CopyButton,
+    Group,
+    Loader,
+    ScrollArea,
+    Tabs,
+    Text,
+    Textarea,
+    Tooltip,
+    Typography,
 } from '@mantine/core';
 import {
-  DescriptionType,
-  IDescriptionPreviewResult,
-  SubmissionId,
-  WebsiteOptionsDto,
+    DescriptionType,
+    IDescriptionPreviewResult,
+    SubmissionId,
+    WebsiteOptionsDto,
 } from '@postybirb/types';
 import { IconCheck, IconCopy } from '@tabler/icons-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import websiteOptionsApi from '../../../../../../../api/website-options.api';
 import { useWebsitesMap } from '../../../../../../../stores/entity/website-store';
 import { ComponentErrorBoundary } from '../../../../../../error-boundary';
+import { SafeHtml } from '../../../../../../shared/safe-html/safe-html';
 
 interface DescriptionPreviewPanelProps {
   /** The submission ID */
@@ -180,9 +181,7 @@ export const descriptionPreviewRendererByWebsite = new Map<
 
 descriptionPreviewRendererByType.set(
   DescriptionType.HTML,
-  ({ description }) => (
-    <Box dangerouslySetInnerHTML={{ __html: description }} />
-  ),
+  ({ description }) => <SafeHtml html={description} />,
 );
 
 descriptionPreviewRendererByType.set(
