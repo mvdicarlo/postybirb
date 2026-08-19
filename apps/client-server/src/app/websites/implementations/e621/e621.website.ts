@@ -179,16 +179,17 @@ export default class E621
         .withSourceUrl(`https://e621.net${result.body.location}`);
     }
 
+    const errorText =
+      typeof result.body === 'string'
+        ? result.body
+        : `${result.body.reason || ''} || ${result.body.message || ''}`;
+
     return PostResponse.fromWebsite(this)
       .withAdditionalInfo({
         body: result.body,
         statusCode: result.statusCode,
       })
-      .withException(
-        new Error(
-          `${result.body.reason || ''} || ${result.body.message || ''}`,
-        ),
-      );
+      .withException(new Error(errorText));
   }
 
   async onValidateFileSubmission(

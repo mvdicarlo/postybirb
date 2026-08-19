@@ -5,20 +5,21 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-  Alert,
-  Box,
-  Button,
-  Group,
-  Modal,
-  Progress,
-  ScrollArea,
-  Stack,
-  Text,
-  Title,
+    Alert,
+    Box,
+    Button,
+    Group,
+    Modal,
+    Progress,
+    ScrollArea,
+    Stack,
+    Text,
+    Title,
 } from '@mantine/core';
 import { UpdateState } from '@postybirb/types';
 import { IconDeviceDesktopUp, IconDownload } from '@tabler/icons-react';
 import updateApi from '../../api/update.api';
+import { SafeHtml } from '../shared/safe-html/safe-html';
 
 interface UpdateModalProps {
   /** Whether the modal is open */
@@ -136,12 +137,13 @@ export function UpdateModal({
                     </Text>
                     {note.note && (
                       <Text
+                        component="div"
                         size="xs"
                         c="dimmed"
                         mt={4}
-                        // eslint-disable-next-line react/no-danger
-                        dangerouslySetInnerHTML={{ __html: note.note }}
-                      />
+                      >
+                        <SafeHtml html={note.note} />
+                      </Text>
                     )}
                   </Box>
                 ))}

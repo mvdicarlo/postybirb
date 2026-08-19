@@ -479,7 +479,7 @@ export abstract class Website<
     await this.websiteDataStore.initialize(websiteDataRepository, () =>
       this.notifyAccountProjectionChanged(),
     );
-    this.subscribeToCookieChanges();
+    // this.subscribeToCookieChanges();
     this.startLoginRefresh();
   }
 

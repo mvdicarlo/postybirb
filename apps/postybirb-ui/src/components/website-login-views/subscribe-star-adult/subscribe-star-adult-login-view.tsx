@@ -15,7 +15,7 @@ import { LoginWebview } from '../../sections/accounts-section/login-webview';
 import type { LoginViewProps } from '../types';
 
 const SUBSCRIBESTAR_COM_LOGIN = 'https://www.subscribestar.com/login';
-const SUBSCRIBESTAR_ADULT_LOGIN = 'https://www.subscribestar.adult/login';
+const SUBSCRIBESTAR_ADULT_LOGIN = 'https://www.subscribestar.art/login';
 
 export default function SubscribeStarAdultLoginView(
   props: LoginViewProps,
@@ -32,7 +32,7 @@ export default function SubscribeStarAdultLoginView(
         <Text size="sm">
           <Trans>
             SubscribeStar Adult requires you to be logged in to both
-            subscribestar.com AND subscribestar.adult if you have an account on
+            subscribestar.com AND subscribestar.art if you have an account on
             both sites.
           </Trans>
         </Text>
@@ -48,7 +48,7 @@ export default function SubscribeStarAdultLoginView(
         value={activeTab}
         onChange={setActiveTab}
         data={[
-          { label: 'subscribestar.adult', value: 'adult' },
+          { label: 'subscribestar.art', value: 'adult' },
           { label: 'subscribestar.com', value: 'com' },
         ]}
         fullWidth
