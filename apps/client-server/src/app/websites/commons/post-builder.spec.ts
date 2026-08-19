@@ -149,10 +149,10 @@ describe('PostBuilder', () => {
   });
 
   it('should throw if cancelled before send', async () => {
-    token.abort('Task was cancelled.');
-    await expect(builder.send('http://test')).rejects.toThrow(
-      'Task was cancelled.',
-    );
+    const reason = new Error('Task was cancelled.');
+    token.abort(reason);
+
+    await expect(builder.send('http://test')).rejects.toThrow(reason);
   });
 
   it('should call platform.http.post and return value on send', async () => {

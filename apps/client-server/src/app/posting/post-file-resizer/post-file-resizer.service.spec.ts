@@ -1,13 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import {
-    DefaultSubmissionFileMetadata,
-    ISubmission,
-    ISubmissionFile,
+  DefaultSubmissionFileMetadata,
+  ISubmission,
+  ISubmissionFile,
 } from '@postybirb/types';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { SharpInstanceManager } from '../../../image-processing/sharp-instance-manager';
-import { TestPlatformModule } from '../../../platform/testing/test-platform.module';
+import { SharpInstanceManager } from '../../image-processing/sharp-instance-manager';
+import { TestPlatformModule } from '../../platform/testing/test-platform.module';
 import { PostFileResizerService } from './post-file-resizer.service';
 
 describe('PostFileResizerService', () => {
@@ -59,7 +59,7 @@ describe('PostFileResizerService', () => {
 
   beforeAll(async () => {
     testFile = readFileSync(
-      join(__dirname, '../../../../test-files/small_image.jpg'),
+      join(__dirname, '../../../test-files/small_image.jpg'),
     );
     file = createFile('test.jpg', 'image/jpeg', 202, 138, testFile);
 
@@ -122,7 +122,7 @@ describe('PostFileResizerService', () => {
 
   it('should not convert png thumbnail with alpha to jpeg', async () => {
     const noAlphaFile = readFileSync(
-      join(__dirname, '../../../../test-files/png_with_alpha.png'),
+      join(__dirname, '../../../test-files/png_with_alpha.png'),
     );
     const tf = createFile('test.png', 'image/png', 600, 600, noAlphaFile);
     const resized = await service.resize({
@@ -138,7 +138,7 @@ describe('PostFileResizerService', () => {
 
   it('uses generated metadata for a custom thumbnail whose format changes', async () => {
     const pngFile = readFileSync(
-      join(__dirname, '../../../../test-files/png_with_alpha.png'),
+      join(__dirname, '../../../test-files/png_with_alpha.png'),
     );
     const tf = createFile('test.jpg', 'image/jpeg', 202, 138, testFile);
     tf.hasThumbnail = true;
@@ -183,7 +183,7 @@ describe('PostFileResizerService', () => {
     const MAX_BYTES = 2 * 1024 * 1024; // 2 MB
 
     const largeFile = readFileSync(
-      join(__dirname, '../../../../test-files/test_image_large.jpg'),
+      join(__dirname, '../../../test-files/test_image_large.jpg'),
     );
     const tf = createFile(
       'test.jpg',

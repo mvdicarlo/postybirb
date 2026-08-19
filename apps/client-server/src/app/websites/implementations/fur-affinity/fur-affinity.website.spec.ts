@@ -1,10 +1,11 @@
 import { Account } from '@postybirb/database';
 import { PlatformService } from '@postybirb/platform';
 import {
-    IFileBuffer,
-    PostData,
-    SubmissionRating,
+  IFileBuffer,
+  PostData,
+  SubmissionRating,
 } from '@postybirb/types';
+import { CancellationToken } from '../../../posting/cancellation-token';
 import { PostingFile } from '../../../posting/models/posting-file';
 import FurAffinity from './fur-affinity.website';
 import { FurAffinityFileSubmission } from './models/fur-affinity-file-submission';
