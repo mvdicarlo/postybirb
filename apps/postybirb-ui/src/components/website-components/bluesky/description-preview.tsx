@@ -1,6 +1,6 @@
 /* eslint-disable lingui/no-unlocalized-strings */
-import { Box } from '@mantine/core';
 import { descriptionPreviewRendererByWebsite } from '../../sections/submissions-section/submission-edit-card/account-selection/form/fields/description-preview-panel';
+import { SafeHtml } from '../../shared/safe-html/safe-html';
 
 descriptionPreviewRendererByWebsite.set('bluesky', ({ description }) => {
   const parsed = JSON.parse(description) as {
@@ -26,5 +26,5 @@ descriptionPreviewRendererByWebsite.set('bluesky', ({ description }) => {
     '<span style="color: var(--mantine-primary-color-filled)">#$1<span/>',
   );
 
-  return <Box dangerouslySetInnerHTML={{ __html: text }} />;
+  return <SafeHtml html={text} />;
 });
