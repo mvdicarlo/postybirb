@@ -7,7 +7,7 @@ import {
   PostResponse,
   SimpleValidationResult,
 } from '@postybirb/types';
-import { CancellableToken } from '../../../post/models/cancellable-token';
+import { CancellationToken } from '../../../posting/cancellation-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 {{#if hasFile}}
@@ -72,7 +72,7 @@ export default class {{pascalWebsiteName}} extends Website<{{pascalWebsiteName}}
   async onPostFileSubmission(
     postData: PostData<{{pascalWebsiteName}}FileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
     batch: PostBatchData
   ): Promise<PostResponse> {
     cancellationToken.throwIfCancelled();
@@ -119,7 +119,7 @@ export default class {{pascalWebsiteName}} extends Website<{{pascalWebsiteName}}
 
   async onPostMessageSubmission(
     postData: PostData<{{pascalWebsiteName}}MessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfCancelled();
     const formData = {
