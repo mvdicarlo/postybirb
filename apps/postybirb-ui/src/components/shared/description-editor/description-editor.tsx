@@ -20,7 +20,6 @@ import {
 import { AnyExtension, Extension } from '@tiptap/core';
 import Bold from '@tiptap/extension-bold';
 import BulletList from '@tiptap/extension-bullet-list';
-
 import Color from '@tiptap/extension-color';
 import Document from '@tiptap/extension-document';
 import Dropcursor from '@tiptap/extension-dropcursor';
@@ -38,8 +37,10 @@ import Placeholder from '@tiptap/extension-placeholder';
 import Strike from '@tiptap/extension-strike';
 import TextNode from '@tiptap/extension-text';
 import TextAlign from '@tiptap/extension-text-align';
+
 import { TextStyle } from '@tiptap/extension-text-style';
 import Underline from '@tiptap/extension-underline';
+import { Fragment, Node, Slice } from '@tiptap/pm/model';
 import { PluginKey } from '@tiptap/pm/state';
 import { Editor, EditorContent, ReactRenderer, useEditor } from '@tiptap/react';
 import Suggestion from '@tiptap/suggestion';
@@ -463,6 +464,62 @@ export function DescriptionEditor({
         if (readOnly) return;
         onChangeRef.current(e.getJSON() as Description);
       },
+      editorProps: {
+        transformPasted: (slice, view) => {
+          if (!view.editable) return slice;
+
+          const defaultColor = getComputedStyle(view.dom).color;
+          const { textStyle } = view.state.schema.marks;
+          if (!textStyle) return slice;
+
+          const normalizeDefault = rgbToHex(defaultColor);
+
+          // Recursively traverse the fragment and remove matching color marks
+          function transformFragment(fragment: Fragment): Fragment {
+            const nodes: Node[] = [];
+            fragment.forEach((node) => {
+              let newNode = node;
+              if (node.isText) {
+                const filteredMarks = node.marks.filter((mark) => {
+                  if (mark.type === textStyle) {
+                    const colorAttr = mark.attrs.color;
+                    if (colorAttr && rgbToHex(colorAttr) === normalizeDefault) {
+                      return false; // remove this mark
+                    }
+                  }
+                  return true;
+                });
+                if (filteredMarks.length !== node.marks.length) {
+                  newNode = view.state.schema.text(
+                    node.text ?? '',
+                    filteredMarks,
+                  );
+                }
+              } else if (node.isBlock) {
+                // Recurse into block content
+                const newContent = transformFragment(node.content);
+                if (newContent !== node.content) {
+                  newNode = node.type.create(
+                    node.attrs,
+                    newContent,
+                    node.marks,
+                  );
+                }
+              }
+              nodes.push(newNode);
+            });
+            return Fragment.fromArray(nodes);
+          }
+
+          const newContent = transformFragment(slice.content);
+          const newSlice = new Slice(
+            newContent,
+            slice.openStart,
+            slice.openEnd,
+          );
+          return newSlice;
+        },
+      },
     },
     [id],
   );
@@ -508,4 +565,25 @@ export function DescriptionEditor({
       )}
     </Box>
   );
+}
+
+/**
+ * Normalize a CSS color string to a 6‑digit hex (e.g. '#c9c9c9').
+ * Handles rgb/rgba and hex shorthand.
+ */
+function rgbToHex(color: string): string {
+  const trimmed = color.trim().toLowerCase();
+  // rgb/rgba
+  const rgbMatch = trimmed.match(/^rgba?\s*\((\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
+  if (rgbMatch) {
+    const r = parseInt(rgbMatch[1], 10);
+    const g = parseInt(rgbMatch[2], 10);
+    const b = parseInt(rgbMatch[3], 10);
+    return `#${[r, g, b].map((c) => c.toString(16).padStart(2, '0')).join('')}`;
+  }
+  // hex shorthand
+  if (trimmed.startsWith('#') && trimmed.length === 4) {
+    return `#${trimmed[1]}${trimmed[1]}${trimmed[2]}${trimmed[2]}${trimmed[3]}${trimmed[3]}`;
+  }
+  return trimmed; // fallback (assumes full hex or named color)
 }
