@@ -472,31 +472,35 @@ export function DescriptionEditor({
           const { textStyle } = view.state.schema.marks;
           if (!textStyle) return slice;
 
-          const normalizeDefault = rgbToHex(defaultColor);
+          const defaultHex = cssColorToHex(defaultColor);
 
-          // Recursively traverse the fragment and remove matching color marks
-          function transformFragment(fragment: Fragment): Fragment {
+          const transformFragment = (fragment: Fragment): Fragment => {
             const nodes: Node[] = [];
             fragment.forEach((node) => {
               let newNode = node;
+
               if (node.isText) {
-                const filteredMarks = node.marks.filter((mark) => {
-                  if (mark.type === textStyle) {
-                    const colorAttr = mark.attrs.color;
-                    if (colorAttr && rgbToHex(colorAttr) === normalizeDefault) {
-                      return false; // remove this mark
-                    }
-                  }
-                  return true;
-                });
-                if (filteredMarks.length !== node.marks.length) {
-                  newNode = view.state.schema.text(
-                    node.text ?? '',
-                    filteredMarks,
-                  );
+                // Process marks: normalize color, drop default ones
+                const newMarks = node.marks
+                  .map((mark) => {
+                    if (mark.type !== textStyle) return mark;
+                    const { color } = mark.attrs;
+                    const hex = color ? cssColorToHex(color) : defaultHex;
+                    return hex === defaultHex
+                      ? null // drop default-colored mark
+                      : textStyle.create({ ...mark.attrs, color: hex });
+                  })
+                  .filter((e) => e !== null);
+
+                // Replace text node only if marks actually changed
+                const changed =
+                  newMarks.length !== node.marks.length ||
+                  newMarks.some((m, i) => m !== node.marks[i]);
+
+                if (changed) {
+                  newNode = view.state.schema.text(node.text ?? '', newMarks);
                 }
               } else if (node.isBlock) {
-                // Recurse into block content
                 const newContent = transformFragment(node.content);
                 if (newContent !== node.content) {
                   newNode = node.type.create(
@@ -506,18 +510,14 @@ export function DescriptionEditor({
                   );
                 }
               }
+
               nodes.push(newNode);
             });
             return Fragment.fromArray(nodes);
-          }
+          };
 
           const newContent = transformFragment(slice.content);
-          const newSlice = new Slice(
-            newContent,
-            slice.openStart,
-            slice.openEnd,
-          );
-          return newSlice;
+          return new Slice(newContent, slice.openStart, slice.openEnd);
         },
       },
     },
@@ -569,21 +569,22 @@ export function DescriptionEditor({
 
 /**
  * Normalize a CSS color string to a 6‑digit hex (e.g. '#c9c9c9').
- * Handles rgb/rgba and hex shorthand.
+ * Handles rgb/rgba/okhl/other
  */
-function rgbToHex(color: string): string {
-  const trimmed = color.trim().toLowerCase();
-  // rgb/rgba
-  const rgbMatch = trimmed.match(/^rgba?\s*\((\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
-  if (rgbMatch) {
-    const r = parseInt(rgbMatch[1], 10);
-    const g = parseInt(rgbMatch[2], 10);
-    const b = parseInt(rgbMatch[3], 10);
-    return `#${[r, g, b].map((c) => c.toString(16).padStart(2, '0')).join('')}`;
-  }
-  // hex shorthand
-  if (trimmed.startsWith('#') && trimmed.length === 4) {
-    return `#${trimmed[1]}${trimmed[1]}${trimmed[2]}${trimmed[2]}${trimmed[3]}${trimmed[3]}`;
-  }
-  return trimmed; // fallback (assumes full hex or named color)
+function cssColorToHex(color: string): string {
+  const el = document.createElement('div');
+  el.style.color = color;
+  el.style.display = 'none';
+  document.body.appendChild(el);
+  const computed = getComputedStyle(el).color;
+  document.body.removeChild(el);
+
+  // computed is like "rgb(r, g, b)" or "rgba(r, g, b, a)"
+  const rgbMatch = computed.match(/^rgba?\s*\((\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
+  if (!rgbMatch) return '';
+
+  const r = parseInt(rgbMatch[1], 10);
+  const g = parseInt(rgbMatch[2], 10);
+  const b = parseInt(rgbMatch[3], 10);
+  return `#${[r, g, b].map((c) => c.toString(16).padStart(2, '0')).join('')}`;
 }
