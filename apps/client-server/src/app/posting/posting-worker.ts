@@ -1,36 +1,36 @@
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
-  AccountRepository,
-  Post,
-  PostRepository,
-  Submission,
-  SubmissionFile,
-  SubmissionFileRepository,
-  SubmissionRepository,
-  UnitOfWork,
-  UnitOfWorkRepository,
-  WebsiteOptions,
-  WebsiteOptionsRepository,
+    AccountRepository,
+    Post,
+    PostRepository,
+    Submission,
+    SubmissionFile,
+    SubmissionFileRepository,
+    SubmissionRepository,
+    UnitOfWork,
+    UnitOfWorkRepository,
+    WebsiteOptions,
+    WebsiteOptionsRepository,
 } from '@postybirb/database';
 import {
-  Logger,
-  PostyBirbLogger,
-  trackEvent,
-  trackException,
-  trackMetric,
+    Logger,
+    PostyBirbLogger,
+    trackEvent,
+    trackException,
+    trackMetric,
 } from '@postybirb/logger';
 import {
-  AccountId,
-  FileType,
-  IFileBuffer,
-  IPostResponse,
-  ISubmissionFile,
-  IWebsiteFormFields,
-  PostData,
-  PostId,
-  ScheduleType,
-  SubmissionId,
-  UnitOfWorkState,
+    AccountId,
+    FileType,
+    IFileBuffer,
+    IPostResponse,
+    ISubmissionFile,
+    IWebsiteFormFields,
+    PostData,
+    PostId,
+    ScheduleType,
+    SubmissionId,
+    UnitOfWorkState,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { chunk, groupBy } from 'lodash';
@@ -40,8 +40,8 @@ import { PostParsersService } from '../post-parsers/post-parsers.service';
 import { publishSubmissionProjectionChanged } from '../submission/submission.events';
 import { ValidationService } from '../validation/validation.service';
 import {
-  PostBatchData,
-  PostBatchSourceUrl,
+    PostBatchData,
+    PostBatchSourceUrl,
 } from '../websites/models/website-modifiers/file-website';
 import { UnknownWebsite } from '../websites/website';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
@@ -51,8 +51,8 @@ import { getImageResizeParameters } from './post-file-resizer/image-resize-param
 import { PostFileResizerService } from './post-file-resizer/post-file-resizer.service';
 import { PostingRateLimiterService } from './posting-rate-limiter.service';
 import {
-  isUnitOfWorkAttemptSettled,
-  selectExecutableWork,
+    isUnitOfWorkAttemptSettled,
+    selectExecutableWork,
 } from './unit-of-work-rate-limit';
 
 type PostingWorkerContext = {
@@ -395,7 +395,9 @@ export class PostingWorker {
       return;
     }
 
-    await this.updateUnits(unitsOfWork, { data: { postData } });
+    await this.updateUnits(unitsOfWork, {
+      data: { postData: { options: postData.options } },
+    });
 
     try {
       // Submission Validation
@@ -1057,16 +1059,19 @@ export class PostingWorker {
 
     const { metadata } = websiteInstance.decoratedProps;
     try {
-      await this.notificationService.create({
-        type: 'error',
-        title: `Failed to post to ${metadata.displayName}`,
-        message,
-        tags: ['post-failure', metadata.displayName],
-        data: {
-          submissionId: submission.id,
-          submissionType: submission.type,
+      await this.notificationService.create(
+        {
+          type: 'error',
+          title: `Failed to post to ${metadata.displayName}`,
+          message,
+          tags: ['post', 'post-failure', metadata.displayName],
+          data: {
+            submissionId: submission.id,
+            submissionType: submission.type,
+          },
         },
-      });
+        true,
+      );
     } catch (error) {
       this.logger.withError(error).error('Failed to create post notification');
     }
@@ -1092,11 +1097,11 @@ export class PostingWorker {
         const allSucceeded =
           units.length > 0 &&
           units.every((unit) => unit.state === UnitOfWorkState.SUCCEEDED);
+        const submission = await this.submissionRepository.findByIdOrThrow(
+          submissionId,
+        );
 
         if (allSucceeded) {
-          const submission = await this.submissionRepository.findByIdOrThrow(
-            submissionId,
-          );
           const isRecurringScheduled =
             submission.isScheduled &&
             submission.schedule.scheduleType === ScheduleType.RECURRING;
@@ -1106,12 +1111,62 @@ export class PostingWorker {
             });
           }
         }
+        await this.notifyPostCompletion(submission, units, allSucceeded);
         publishSubmissionProjectionChanged(this.eventEmitter, submissionId);
       }
       return completed;
     } catch (error) {
       this.logger.withError(error).error('Error during post completion');
       return false;
+    }
+  }
+
+  private async notifyPostCompletion(
+    submission: Submission,
+    units: UnitOfWork[],
+    allSucceeded: boolean,
+  ): Promise<void> {
+    const submissionName = submission.getSubmissionName() ?? 'Submission';
+    const data = {
+      submissionId: submission.id,
+      submissionType: submission.type,
+    };
+
+    try {
+      if (allSucceeded) {
+        await this.notificationService.create(
+          {
+            type: 'success',
+            title: 'Post Completed',
+            message: `Successfully posted "${submissionName}" to all websites`,
+            tags: ['post', 'post-success'],
+            data,
+          },
+          true,
+        );
+        return;
+      }
+
+      const failedCount = units.filter(
+        (unit) => unit.state === UnitOfWorkState.FAILED,
+      ).length;
+      await this.notificationService.create(
+        {
+          type: 'warning',
+          title: 'Post Incomplete',
+          message:
+            failedCount > 0
+              ? `"${submissionName}" failed to post to ${failedCount} website(s)`
+              : `"${submissionName}" failed to post`,
+          tags: ['post', 'post-incomplete'],
+          data: { ...data, failedCount },
+        },
+        true,
+      );
+    } catch (error) {
+      this.logger
+        .withError(error)
+        .error('Failed to create post completion notification');
     }
   }
 

@@ -44,6 +44,8 @@ export default class TestWebsite
 
   protected BASE_URL = 'http://localhost:3000';
 
+  private limited = false;
+
   public async onLogin(): Promise<LoginResult> {
     if (this.account.id === 'FAIL') {
       return { loggedIn: false };
@@ -72,6 +74,15 @@ export default class TestWebsite
     cancellationToken: CancellationToken,
   ): Promise<IPostResponse> {
     cancellationToken.throwIfAborted();
+
+    if (this.account.name === 'RATE_LIMIT' && !this.limited) {
+      this.limited = true;
+      return PostResponse.fromWebsite(this)
+        .atStage('validation')
+        .withMessage('Forced rate limit for testing purposes.')
+        .withRateLimit(15_000);
+    }
+
     return PostResponse.fromWebsite(this)
       .atStage('test')
       .withMessage('test message');

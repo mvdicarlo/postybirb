@@ -16,7 +16,7 @@ import {
   SubmissionSchema,
   WebsiteOptions,
   WebsiteOptionsSchema,
-  withTransactionContext
+  withTransactionContext,
 } from '@postybirb/database';
 import {
   FileSubmission,
@@ -109,8 +109,7 @@ export class SubmissionService
 
     for (const submission of submissions) {
       const hasDefault = (submission.options ?? []).some(
-        (option) =>
-          option.isDefault || option.accountId === NULL_ACCOUNT_ID,
+        (option) => option.isDefault || option.accountId === NULL_ACCOUNT_ID,
       );
       if (hasDefault) {
         continue;
@@ -191,7 +190,10 @@ export class SubmissionService
    * (e.g., from a crash during creation).
    */
   private async cleanupUninitializedSubmissions() {
-    const all = await super.findAll();
+    const all = await this.repository.find({
+      // eslint-disable-next-line @typescript-eslint/no-shadow
+      where: (submission, { eq }) => eq(submission.isInitialized, false),
+    });
     const uninitialized = all.filter((s) => !s.isInitialized);
     if (uninitialized.length > 0) {
       const ids = uninitialized.map((s) => s.id);
@@ -219,10 +221,11 @@ export class SubmissionService
     }
 
     const submissions = await this.repository.find({
-      where: (submission, { inArray }) =>
-        inArray(submission.id, uniqueIds),
+      where: (submission, { inArray }) => inArray(submission.id, uniqueIds),
     });
-    const byId = new Map(submissions.map((submission) => [submission.id, submission]));
+    const byId = new Map(
+      submissions.map((submission) => [submission.id, submission]),
+    );
     const initialized = uniqueIds.flatMap((id) => {
       const submission = byId.get(id);
       return submission?.isInitialized ? [submission] : [];
@@ -561,7 +564,9 @@ export class SubmissionService
       const optionChanges: Promise<unknown>[] = [];
       if (update.deletedWebsiteOptions?.length) {
         update.deletedWebsiteOptions.forEach((deletedOptionId) => {
-          optionChanges.push(this.websiteOptionsService.remove(deletedOptionId));
+          optionChanges.push(
+            this.websiteOptionsService.remove(deletedOptionId),
+          );
         });
       }
       if (update.newOrUpdatedOptions?.length) {
@@ -597,10 +602,7 @@ export class SubmissionService
   ): Promise<void> {
     const submissions = await this.repository.find({ with: {} });
     const graph = new Map<SubmissionId, SubmissionId[]>(
-      submissions.map((submission) => [
-        submission.id,
-        submission.dependsOn,
-      ]),
+      submissions.map((submission) => [submission.id, submission.dependsOn]),
     );
     graph.set(submissionId, dependsOn);
 
@@ -674,8 +676,8 @@ export class SubmissionService
   private async findDependencyReferences(
     removedId: SubmissionId,
   ): Promise<SubmissionEntity[]> {
-    return (await this.repository.find({ with: {} })).filter(
-      (submission) => submission.dependsOn.includes(removedId),
+    return (await this.repository.find({ with: {} })).filter((submission) =>
+      submission.dependsOn.includes(removedId),
     );
   }
 

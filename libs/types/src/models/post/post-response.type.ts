@@ -122,8 +122,11 @@ export class PostResponse implements IPostResponse {
     return this;
   }
 
-  withRateLimit(rateLimitedUntil: string) {
-    this.rateLimitedUntil = rateLimitedUntil;
+  withRateLimit(rateLimitedUntil: string | number) {
+    this.rateLimitedUntil =
+      typeof rateLimitedUntil === 'number'
+        ? new Date(Date.now() + rateLimitedUntil).toISOString()
+        : rateLimitedUntil;
     return this;
   }
 }

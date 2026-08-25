@@ -123,6 +123,7 @@ function createWorker(): { worker: PostingWorker; mocks: WorkerMocks } {
         isScheduled: false,
         schedule: { scheduleType: 'NONE' },
         type: 'FILE',
+        getSubmissionName: () => 'Test Submission',
       }),
       update: jest.fn().mockResolvedValue(undefined),
     },
@@ -244,6 +245,54 @@ describe('PostingWorker', () => {
     },
   );
 
+  it('notifies when a post completes successfully', async () => {
+    const { worker, mocks } = createWorker();
+    mocks.postRepository.completeIfAllActiveUnitsSettled.mockResolvedValue(true);
+    mockCompletedUnitStates(mocks, [UnitOfWorkState.SUCCEEDED]);
+
+    await worker.start();
+
+    expect(mocks.notificationService.create).toHaveBeenCalledWith(
+      {
+        type: 'success',
+        title: 'Post Completed',
+        message: 'Successfully posted "Test Submission" to all websites',
+        tags: ['post', 'post-success'],
+        data: {
+          submissionId: 'submission-1',
+          submissionType: 'FILE',
+        },
+      },
+      true,
+    );
+  });
+
+  it('notifies when a post completes with failed work', async () => {
+    const { worker, mocks } = createWorker();
+    mocks.postRepository.completeIfAllActiveUnitsSettled.mockResolvedValue(true);
+    mockCompletedUnitStates(mocks, [
+      UnitOfWorkState.SUCCEEDED,
+      UnitOfWorkState.FAILED,
+    ]);
+
+    await worker.start();
+
+    expect(mocks.notificationService.create).toHaveBeenCalledWith(
+      {
+        type: 'warning',
+        title: 'Post Incomplete',
+        message: '"Test Submission" failed to post to 1 website(s)',
+        tags: ['post', 'post-incomplete'],
+        data: {
+          submissionId: 'submission-1',
+          submissionType: 'FILE',
+          failedCount: 1,
+        },
+      },
+      true,
+    );
+  });
+
   it('does not archive a recurring scheduled submission after success', async () => {
     const { worker, mocks } = createWorker();
     mocks.postRepository.completeIfAllActiveUnitsSettled.mockResolvedValue(true);
@@ -253,6 +302,7 @@ describe('PostingWorker', () => {
       isScheduled: true,
       schedule: { scheduleType: 'RECURRING' },
       type: 'FILE',
+      getSubmissionName: () => 'Test Submission',
     });
     mockCompletedUnitStates(mocks, [UnitOfWorkState.SUCCEEDED]);
 
@@ -340,6 +390,9 @@ describe('PostingWorker', () => {
       'work-1',
       { state: 'PENDING' },
     );
+    expect(mocks.unitOfWorkRepository.update).toHaveBeenCalledWith('work-1', {
+      data: { postData: { options: postData.options } },
+    });
   });
 
   it('leaves a deferred-only post untouched and releases the worker', async () => {
@@ -900,16 +953,19 @@ describe('PostingWorker', () => {
       state: 'EXECUTING',
       rateLimitedUntil,
     });
-    expect(mocks.notificationService.create).toHaveBeenCalledWith({
-      type: 'error',
-      title: 'Failed to post to Test Website',
-      message: exception.message,
-      tags: ['post-failure', 'Test Website'],
-      data: {
-        submissionId: 'submission-1',
-        submissionType: 'FILE',
+    expect(mocks.notificationService.create).toHaveBeenCalledWith(
+      {
+        type: 'error',
+        title: 'Failed to post to Test Website',
+        message: exception.message,
+        tags: ['post', 'post-failure', 'Test Website'],
+        data: {
+          submissionId: 'submission-1',
+          submissionType: 'FILE',
+        },
       },
-    });
+      true,
+    );
     expect(trackEvent).toHaveBeenCalledWith('PostFailure', {
       website: 'test-website',
       accountId: 'account-1',

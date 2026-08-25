@@ -842,7 +842,7 @@ export function BulkPostPreviewModal({
                 submissions={visibleOrderedSubmissions}
                 onReorder={setOrderedSubmissions}
                 renderExtra={renderExtra}
-                maxHeight="360px"
+                scrollable={false}
               />
             </Stack>
 
