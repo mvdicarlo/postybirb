@@ -378,7 +378,7 @@ export class NpfConverter extends BaseConverter {
               start,
               end,
               type: 'color',
-              hex: mark.attrs.color,
+              hex: rgbToHex(mark.attrs.color),
             });
           }
           break;
@@ -416,4 +416,25 @@ export class NpfConverter extends BaseConverter {
     };
     return ext ? mimeMap[ext] : undefined;
   }
+}
+
+/**
+ * Normalize a CSS color string to a 6‑digit hex (e.g. '#c9c9c9').
+ * Handles rgb/rgba and hex shorthand.
+ */
+function rgbToHex(color: string): string {
+  const trimmed = color.trim().toLowerCase();
+  // rgb/rgba
+  const rgbMatch = trimmed.match(/^rgba?\s*\((\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
+  if (rgbMatch) {
+    const r = parseInt(rgbMatch[1], 10);
+    const g = parseInt(rgbMatch[2], 10);
+    const b = parseInt(rgbMatch[3], 10);
+    return `#${[r, g, b].map((c) => c.toString(16).padStart(2, '0')).join('')}`;
+  }
+  // hex shorthand
+  if (trimmed.startsWith('#') && trimmed.length === 4) {
+    return `#${trimmed[1]}${trimmed[1]}${trimmed[2]}${trimmed[2]}${trimmed[3]}${trimmed[3]}`;
+  }
+  return trimmed; // fallback (assumes full hex or named color)
 }
