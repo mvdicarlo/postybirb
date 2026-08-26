@@ -17,10 +17,11 @@ import '../submissions-section.css';
 import { SubmissionActions } from './submission-actions';
 import { SubmissionBadges } from './submission-badges';
 import { SubmissionQuickEditActions } from './submission-quick-edit-actions';
+import { SubmissionScheduleBadge } from './submission-schedule-badge';
 import { SubmissionThumbnail } from './submission-thumbnail';
 import { SubmissionTitle } from './submission-title';
 import type { SubmissionCardProps } from './types';
-import { getThumbnailUrl } from './utils';
+import { getNextPostAt, getThumbnailUrl } from './utils';
 
 /**
  * Card component for displaying a submission in the section list.
@@ -51,6 +52,7 @@ export const SubmissionCard = memo(
     } = useSubmissionActions(submission.id);
 
     const thumbnailUrl = getThumbnailUrl(submission);
+    const nextPostAt = getNextPostAt(submission);
 
     const handleKeyDown = useCallback(
       (event: React.KeyboardEvent) => {
@@ -220,16 +222,26 @@ export const SubmissionCard = memo(
             {!isCompact && (
               <SubmissionQuickEditActions submission={submission} />
             )}
-            {!isCompact && (
-              <Text
-                ta="right"
-                size="11px"
-                c="dimmed"
-                className="postybirb__submission__card_modified"
+            {(nextPostAt || !isCompact) && (
+              <Group
+                gap="xs"
+                wrap="nowrap"
+                justify="flex-end"
+                align="center"
+                className="postybirb__submission__card_footer"
               >
-                <Trans>Modified</Trans>{' '}
-                {formatDateTime(submission.lastModified)}
-              </Text>
+                <SubmissionScheduleBadge submission={submission} />
+                {!isCompact && (
+                  <Text
+                    size="11px"
+                    c="dimmed"
+                    className="postybirb__submission__card_modified"
+                  >
+                    <Trans>Modified</Trans>{' '}
+                    {formatDateTime(submission.lastModified)}
+                  </Text>
+                )}
+              </Group>
             )}
           </Stack>
         </Group>

@@ -275,6 +275,45 @@ export class SubmissionRecord extends BaseRecord {
   }
 
   /**
+   * Check if any active unit of work is currently executing or validating.
+   */
+  get hasRunningUnits(): boolean {
+    return this.cachedUnitStats.running > 0;
+  }
+
+  /**
+   * Check if any active unit of work is waiting out a rate limit.
+   */
+  get hasRateLimitedUnits(): boolean {
+    return this.cachedUnitStats.rateLimited > 0;
+  }
+
+  /**
+   * Earliest time a rate limited unit of work is allowed to retry.
+   */
+  get nextRateLimitRetryAt(): string | undefined {
+    return this.cachedActiveUnitsOfWork
+      .filter((unit) => unit.state === UnitOfWorkState.RATE_LIMITED)
+      .map((unit) => unit.rateLimitedUntil)
+      .filter((value): value is string => Boolean(value))
+      .sort()[0];
+  }
+
+  /**
+   * Check if the current post finished without being cancelled.
+   */
+  get isPostCompleted(): boolean {
+    return Boolean(this.post?.completed && !this.post.cancelled);
+  }
+
+  /**
+   * Check if the current post was cancelled.
+   */
+  get isPostCancelled(): boolean {
+    return Boolean(this.post?.cancelled);
+  }
+
+  /**
    * When the current post was created.
    */
   get postStartedAt(): string | undefined {
