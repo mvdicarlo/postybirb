@@ -128,7 +128,7 @@ export function SubmissionBadges({ submission }: SubmissionBadgesProps) {
         return {
           id: dependencyId,
           title: dependency?.title || dependencyId,
-          isCompleted: dependency?.isPostCompleted ?? false,
+          isCompleted: dependency?.isPostSuccessful ?? false,
         };
       })
       .filter((dependency) => !dependency.isCompleted);

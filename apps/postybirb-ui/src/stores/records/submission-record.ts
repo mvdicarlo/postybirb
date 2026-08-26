@@ -307,6 +307,20 @@ export class SubmissionRecord extends BaseRecord {
   }
 
   /**
+   * Check if the current post finished with every active unit succeeding.
+   * Dependent submissions are only released once this is true.
+   */
+  get isPostSuccessful(): boolean {
+    return (
+      this.isPostCompleted &&
+      this.cachedActiveUnitsOfWork.length > 0 &&
+      this.cachedActiveUnitsOfWork.every(
+        (unit) => unit.state === UnitOfWorkState.SUCCEEDED
+      )
+    );
+  }
+
+  /**
    * Check if the current post was cancelled.
    */
   get isPostCancelled(): boolean {

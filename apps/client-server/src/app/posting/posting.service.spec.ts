@@ -1247,7 +1247,7 @@ describe('PostingService', () => {
       incompleteDependency.id,
     ]);
     const account = await seedAccount('dependency-account');
-    await postRepository.insert({
+    const completedDependencyPost = await postRepository.insert({
       submissionId: completedDependency.id,
       completed: true,
     });
@@ -1255,7 +1255,13 @@ describe('PostingService', () => {
       submissionId: incompleteDependency.id,
     });
     const post = await postRepository.insert({ submissionId: submission.id });
-    await unitOfWorkRepository.insert([
+    const [, incompleteDependencyUnit] = await unitOfWorkRepository.insert([
+      {
+        postId: completedDependencyPost.id,
+        submissionId: completedDependency.id,
+        accountId: account.id,
+        state: UnitOfWorkState.SUCCEEDED,
+      },
       {
         postId: incompleteDependencyPost.id,
         submissionId: incompleteDependency.id,
@@ -1278,6 +1284,9 @@ describe('PostingService', () => {
       incompleteDependencyPost.id,
     );
 
+    await unitOfWorkRepository.update(incompleteDependencyUnit.id, {
+      state: UnitOfWorkState.SUCCEEDED,
+    });
     await postRepository.update(incompleteDependencyPost.id, {
       completed: true,
     });
@@ -1299,6 +1308,76 @@ describe('PostingService', () => {
       submissionId: dependency.id,
       completed: true,
       cancelled: true,
+    });
+
+    await expect(service.areDependenciesCompleted(submission.id)).resolves.toBe(
+      false,
+    );
+  });
+
+  it('does not satisfy dependencies when a completed post has unsuccessful work', async () => {
+    const dependency = await seedSubmission();
+    const submission = await seedSubmission([dependency.id]);
+    const account = await seedAccount('failed-dependency-account');
+    const dependencyPost = await postRepository.insert({
+      submissionId: dependency.id,
+      completed: true,
+    });
+    await unitOfWorkRepository.insert([
+      {
+        postId: dependencyPost.id,
+        submissionId: dependency.id,
+        accountId: account.id,
+        state: UnitOfWorkState.SUCCEEDED,
+      },
+      {
+        postId: dependencyPost.id,
+        submissionId: dependency.id,
+        accountId: account.id,
+        state: UnitOfWorkState.FAILED,
+      },
+    ]);
+
+    await expect(service.areDependenciesCompleted(submission.id)).resolves.toBe(
+      false,
+    );
+  });
+
+  it('ignores evicted work when resolving dependency success', async () => {
+    const dependency = await seedSubmission();
+    const submission = await seedSubmission([dependency.id]);
+    const account = await seedAccount('evicted-dependency-account');
+    const dependencyPost = await postRepository.insert({
+      submissionId: dependency.id,
+      completed: true,
+    });
+    await unitOfWorkRepository.insert([
+      {
+        postId: dependencyPost.id,
+        submissionId: dependency.id,
+        accountId: account.id,
+        state: UnitOfWorkState.FAILED,
+        evicted: true,
+      },
+      {
+        postId: dependencyPost.id,
+        submissionId: dependency.id,
+        accountId: account.id,
+        state: UnitOfWorkState.SUCCEEDED,
+      },
+    ]);
+
+    await expect(service.areDependenciesCompleted(submission.id)).resolves.toBe(
+      true,
+    );
+  });
+
+  it('does not satisfy dependencies when a completed post has no work', async () => {
+    const dependency = await seedSubmission();
+    const submission = await seedSubmission([dependency.id]);
+    await postRepository.insert({
+      submissionId: dependency.id,
+      completed: true,
     });
 
     await expect(service.areDependenciesCompleted(submission.id)).resolves.toBe(

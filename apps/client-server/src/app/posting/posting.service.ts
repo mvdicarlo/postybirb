@@ -301,12 +301,30 @@ export class PostingService {
                     eq(post.completed, true),
                     eq(post.cancelled, false),
                 ),
+            with: {
+                unitsOfWork: true,
+            },
         });
-        const completedDependencyIds = new Set(
-            completedDependencyPosts.map((post) => post.submissionId),
+
+        // A post completes once its work settles, which includes failures and
+        // cancellations, so dependents may only run when every active unit succeeded.
+        const succeededDependencyIds = new Set(
+            completedDependencyPosts
+                .filter((post) => {
+                    const activeUnits = post.unitsOfWork.filter(
+                        (unit) => !unit.evicted,
+                    );
+                    return (
+                        activeUnits.length > 0 &&
+                        activeUnits.every(
+                            (unit) => unit.state === UnitOfWorkState.SUCCEEDED,
+                        )
+                    );
+                })
+                .map((post) => post.submissionId),
         );
         return dependencyIds.every((dependencyId) =>
-            completedDependencyIds.has(dependencyId),
+            succeededDependencyIds.has(dependencyId),
         );
     }
 

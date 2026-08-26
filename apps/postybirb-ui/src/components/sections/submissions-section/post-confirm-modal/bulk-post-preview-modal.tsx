@@ -133,9 +133,7 @@ function SubmissionDependencies({
           const dependency = submissions.get(dependencyId);
           const dependencyIndex = batchIndexes.get(dependencyId);
           const isStaged = stagedSubmissionIds.has(dependencyId);
-          const isCompleted = Boolean(
-            dependency?.post?.completed && !dependency.post.cancelled,
-          );
+          const isCompleted = dependency?.isPostSuccessful ?? false;
 
           let status = <Trans>Outside batch</Trans>;
           let color = 'yellow';
