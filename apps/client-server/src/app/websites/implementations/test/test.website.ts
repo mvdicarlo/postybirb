@@ -83,6 +83,21 @@ export default class TestWebsite
         .withRateLimit(15_000);
     }
 
+    if (this.account.name === 'FAIL') {
+      return PostResponse.fromWebsite(this)
+        .atStage('validation')
+        .withMessage('Forced failure for testing purposes.')
+        .withException(new Error('Forced failure'));
+    }
+
+    if (this.account.name === 'SUCCESS') {
+      await wait(15_000);
+      return PostResponse.fromWebsite(this)
+        .atStage('validation')
+        .withMessage('Forced success for testing purposes.')
+        .withSourceUrl('http://example.com/success');
+    }
+
     return PostResponse.fromWebsite(this)
       .atStage('test')
       .withMessage('test message');

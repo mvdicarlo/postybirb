@@ -99,10 +99,7 @@ export function PostHistoryContent({ submission }: PostHistoryContentProps) {
     [accountGroups, accountsMap],
   );
 
-  const debugJson = useMemo(
-    () => buildPostDebugJson(submission),
-    [submission],
-  );
+  const debugJson = useMemo(() => buildPostDebugJson(submission), [submission]);
 
   const stats = submission.unitStats;
   const { post } = submission;
@@ -157,23 +154,6 @@ export function PostHistoryContent({ submission }: PostHistoryContentProps) {
           </Group>
         </Stack>
       </Card>
-
-      {sortedGroups.length === 0 ? (
-        <EmptyState preset="no-records" size="sm" />
-      ) : (
-        <Accordion variant="separated">
-          {sortedGroups.map(([accountId, units]) => (
-            <AccountUnitGroup
-              key={accountId}
-              accountId={accountId}
-              units={units}
-              submission={submission}
-              account={accountsMap.get(accountId)}
-            />
-          ))}
-        </Accordion>
-      )}
-
       <Accordion variant="contained">
         <Accordion.Item value="json-data">
           <Accordion.Control>
@@ -214,6 +194,21 @@ export function PostHistoryContent({ submission }: PostHistoryContentProps) {
           </Accordion.Panel>
         </Accordion.Item>
       </Accordion>
+      {sortedGroups.length === 0 ? (
+        <EmptyState preset="no-records" size="sm" />
+      ) : (
+        <Accordion variant="separated">
+          {sortedGroups.map(([accountId, units]) => (
+            <AccountUnitGroup
+              key={accountId}
+              accountId={accountId}
+              units={units}
+              submission={submission}
+              account={accountsMap.get(accountId)}
+            />
+          ))}
+        </Accordion>
+      )}
     </Stack>
   );
 }

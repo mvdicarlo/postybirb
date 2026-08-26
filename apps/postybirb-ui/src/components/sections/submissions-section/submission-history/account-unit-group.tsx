@@ -4,33 +4,36 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-    Accordion,
-    ActionIcon,
-    Badge,
-    Group,
-    Stack,
-    Table,
-    Text,
-    Tooltip,
+  Accordion,
+  ActionIcon,
+  Badge,
+  Group,
+  Stack,
+  Table,
+  Text,
+  Tooltip,
 } from '@mantine/core';
 import { EntityId, IUnitOfWork, UnitOfWorkState } from '@postybirb/types';
 import {
-    IconExternalLink,
-    IconInfoCircle,
-    IconRefresh,
+  IconExternalLink,
+  IconInfoCircle,
+  IconRefresh,
 } from '@tabler/icons-react';
 import { useState } from 'react';
 import postingApi from '../../../../api/posting.api';
 import { useLocale } from '../../../../hooks';
-import type { AccountRecord, SubmissionRecord } from '../../../../stores/records';
+import type {
+  AccountRecord,
+  SubmissionRecord,
+} from '../../../../stores/records';
 import { showErrorNotification } from '../../../../utils/notifications';
 import { CopyToClipboard } from '../../../shared/copy-to-clipboard';
 import { ExternalLink } from '../../../shared/external-link';
 import {
-    getAccountUnitCounts,
-    getUnitErrorMessages,
-    getUnitFileName,
-    getUnitStateInfo,
+  getAccountUnitCounts,
+  getUnitErrorMessages,
+  getUnitFileName,
+  getUnitStateInfo,
 } from './history-utils';
 
 interface AccountUnitGroupProps {
@@ -194,11 +197,6 @@ export function AccountUnitGroup({
             {pending > 0 && (
               <Badge size="sm" variant="light" color="gray">
                 <Trans>{pending} waiting</Trans>
-              </Badge>
-            )}
-            {evicted > 0 && (
-              <Badge size="sm" variant="outline" color="gray">
-                <Trans>{evicted} superseded</Trans>
               </Badge>
             )}
           </Group>
