@@ -91,6 +91,10 @@ export interface HoldToConfirmButtonProps
   duration?: number;
   /** Color of the progress bar (default: inherits from button color) */
   progressColor?: string;
+  /** Click handler, useful for stopping propagation to parent elements */
+  onClick?: React.MouseEventHandler<HTMLButtonElement>;
+  /** Accessible label for the button */
+  'aria-label'?: string;
   /** Children to render inside the button */
   children: React.ReactNode;
 }
