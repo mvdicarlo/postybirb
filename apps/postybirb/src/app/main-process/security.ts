@@ -11,9 +11,10 @@ import { app, session, shell } from 'electron';
  *  - **Untrusted**: third-party content loaded by login flows — `<webview>`
  *    elements and the hidden BrowserWindow used to read account localStorage.
  *
- * Trusted content gets full privileges; untrusted content is sandboxed, denied
- * popups, and denied dangerous device permissions, while still being free to
- * navigate (logins must reach arbitrary identity providers).
+ * Trusted content gets full privileges but may not navigate or pop up away from
+ * the app origin; untrusted content is sandboxed and denied dangerous device
+ * permissions, while still being free to navigate and open popups (logins must
+ * reach arbitrary identity providers, some of which use popup windows).
  */
 const logger = Logger('Security');
 
@@ -139,6 +140,11 @@ export function hardenMainWindowWebContents(
       openExternalUrl(url);
     }
   });
+
+  contents.setWindowOpenHandler((details) => {
+    openExternalUrl(details.url);
+    return { action: 'deny' };
+  });
 }
 
 /**
@@ -146,13 +152,10 @@ export function hardenMainWindowWebContents(
  * ready and before any window is created.
  */
 export function installAppSecurity(): void {
-  // Deny popups everywhere and harden every <webview> that gets attached.
+  // Harden every <webview> that gets attached. Popups are intentionally left
+  // alone here: login flows (e.g. Google) rely on real popup windows, so only
+  // the main window denies them (see hardenMainWindowWebContents).
   app.on('web-contents-created', (_event, contents) => {
-    contents.setWindowOpenHandler(({ url }) => {
-      openExternalUrl(url);
-      return { action: 'deny' };
-    });
-
     contents.on('will-attach-webview', (_e, webPreferences) => {
       // Login webviews must never run with a preload, Node integration, or a
       // shared (non-isolated) context. params.src is intentionally left
