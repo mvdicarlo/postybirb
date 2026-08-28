@@ -20,7 +20,6 @@ import {
 import { AnyExtension, Extension } from '@tiptap/core';
 import Bold from '@tiptap/extension-bold';
 import BulletList from '@tiptap/extension-bullet-list';
-
 import Color from '@tiptap/extension-color';
 import Document from '@tiptap/extension-document';
 import Dropcursor from '@tiptap/extension-dropcursor';
@@ -38,8 +37,10 @@ import Placeholder from '@tiptap/extension-placeholder';
 import Strike from '@tiptap/extension-strike';
 import TextNode from '@tiptap/extension-text';
 import TextAlign from '@tiptap/extension-text-align';
+
 import { TextStyle } from '@tiptap/extension-text-style';
 import Underline from '@tiptap/extension-underline';
+import { Fragment, Node, Slice } from '@tiptap/pm/model';
 import { PluginKey } from '@tiptap/pm/state';
 import { Editor, EditorContent, ReactRenderer, useEditor } from '@tiptap/react';
 import Suggestion from '@tiptap/suggestion';
@@ -463,6 +464,62 @@ export function DescriptionEditor({
         if (readOnly) return;
         onChangeRef.current(e.getJSON() as Description);
       },
+      editorProps: {
+        transformPasted: (slice, view) => {
+          if (!view.editable) return slice;
+
+          const defaultColor = getComputedStyle(view.dom).color;
+          const { textStyle } = view.state.schema.marks;
+          if (!textStyle) return slice;
+
+          const defaultHex = cssColorToHex(defaultColor);
+
+          const transformFragment = (fragment: Fragment): Fragment => {
+            const nodes: Node[] = [];
+            fragment.forEach((node) => {
+              let newNode = node;
+
+              if (node.isText) {
+                // Process marks: normalize color, drop default ones
+                const newMarks = node.marks
+                  .map((mark) => {
+                    if (mark.type !== textStyle) return mark;
+                    const { color } = mark.attrs;
+                    const hex = color ? cssColorToHex(color) : defaultHex;
+                    return hex === defaultHex
+                      ? null // drop default-colored mark
+                      : textStyle.create({ ...mark.attrs, color: hex });
+                  })
+                  .filter((e) => e !== null);
+
+                // Replace text node only if marks actually changed
+                const changed =
+                  newMarks.length !== node.marks.length ||
+                  newMarks.some((m, i) => m !== node.marks[i]);
+
+                if (changed) {
+                  newNode = view.state.schema.text(node.text ?? '', newMarks);
+                }
+              } else if (node.isBlock) {
+                const newContent = transformFragment(node.content);
+                if (newContent !== node.content) {
+                  newNode = node.type.create(
+                    node.attrs,
+                    newContent,
+                    node.marks,
+                  );
+                }
+              }
+
+              nodes.push(newNode);
+            });
+            return Fragment.fromArray(nodes);
+          };
+
+          const newContent = transformFragment(slice.content);
+          return new Slice(newContent, slice.openStart, slice.openEnd);
+        },
+      },
     },
     [id],
   );
@@ -508,4 +565,26 @@ export function DescriptionEditor({
       )}
     </Box>
   );
+}
+
+/**
+ * Normalize a CSS color string to a 6‑digit hex (e.g. '#c9c9c9').
+ * Handles rgb/rgba/okhl/other
+ */
+function cssColorToHex(color: string): string {
+  const el = document.createElement('div');
+  el.style.color = color;
+  el.style.display = 'none';
+  document.body.appendChild(el);
+  const computed = getComputedStyle(el).color;
+  document.body.removeChild(el);
+
+  // computed is like "rgb(r, g, b)" or "rgba(r, g, b, a)"
+  const rgbMatch = computed.match(/^rgba?\s*\((\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
+  if (!rgbMatch) return '';
+
+  const r = parseInt(rgbMatch[1], 10);
+  const g = parseInt(rgbMatch[2], 10);
+  const b = parseInt(rgbMatch[3], 10);
+  return `#${[r, g, b].map((c) => c.toString(16).padStart(2, '0')).join('')}`;
 }
