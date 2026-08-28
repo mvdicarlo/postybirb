@@ -14738,16 +14738,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"electron@npm:41.9.2":
-  version: 41.9.2
-  resolution: "electron@npm:41.9.2"
+"electron@npm:42.10.1":
+  version: 42.10.1
+  resolution: "electron@npm:42.10.1"
   dependencies:
     "@electron-internal/extract-zip": "npm:^1.0.1"
     "@electron/get": "npm:^5.0.0"
     "@types/node": "npm:^24.9.0"
   bin:
     electron: cli.js
-  checksum: 10c0/7a0d2f17637549339e3647564dcd458b6bf2c90f76f360f8bed49bee97fda724edcfb17e54cc51c850fb57f5d120cce8f7077eb9301d1e4029b04137fd316c2b
+    install-electron: install.js
+  checksum: 10c0/d7772be32e31375897ed1e80859c3b8af35b001f344e0e7cf74ebe7a8310e40571cfc0ec9c996b895eedc6ce96932a79a70c819b32fe4aeb0c569e53917c6bac
   languageName: node
   linkType: hard
 
@@ -22776,7 +22777,7 @@ __metadata:
     dotenv: "npm:10.0.0"
     drizzle-kit: "npm:^0.31.7"
     drizzle-orm: "npm:^0.45.2"
-    electron: "npm:41.9.2"
+    electron: "npm:42.10.1"
     electron-builder: "npm:^26.11.1"
     electron-builder-squirrel-windows: "npm:26.15.3"
     electron-context-menu: "npm:^3.1.1"
