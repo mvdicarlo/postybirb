@@ -10,8 +10,10 @@ import {
   SimpleValidationResult,
   SubmissionRating,
 } from '@postybirb/types';
+import { Mutex } from 'async-mutex';
 import { HTMLElement, parse } from 'node-html-parser';
 import { CancellableToken } from '../../../post/models/cancellable-token';
+import { CancellationError } from '../../../post/models/cancellation-error';
 import { PostingFile } from '../../../post/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { PostBuilder } from '../../commons/post-builder';
@@ -187,143 +189,134 @@ export default class FurAffinity
     return undefined;
   }
 
-  private lastPostTime = 0;
-
-  private async waitForFloodProtection(
-    cancellationToken: CancellableToken,
-  ): Promise<void> {
-    const elapsed = Date.now() - this.lastPostTime;
-    const floodCooldown = 15 * 1000;
-
-    if (elapsed < floodCooldown) {
-      await new Promise<void>((resolve) => {
-        setTimeout(resolve, floodCooldown - elapsed + 1000);
-      });
-      cancellationToken.throwIfCancelled();
-
-      // Ensure that concurent calls have flood protection too
-      // (e.g. schedule & manual post at the same time)
-      return this.waitForFloodProtection(cancellationToken);
-    }
-
-    this.lastPostTime = Date.now();
-    return Promise.resolve();
-  }
+  private postLock = new Mutex(new CancellationError('furaffinity anti flood'));
 
   async onPostFileSubmission(
     postData: PostData<FurAffinityFileSubmission>,
     files: PostingFile[],
     cancellationToken: CancellableToken,
   ): Promise<IPostResponse> {
-    await this.waitForFloodProtection(cancellationToken);
+    const releaseLock = await this.postLock.acquire();
 
-    const part1 = await this.platform.http.get<string>(
-      `${this.BASE_URL}/submit/`,
-      {
-        partition: this.accountId,
-        headers: {
-          Referer: 'https://www.furaffinity.net/submit/',
+    try {
+      cancellationToken.throwIfCancelled();
+
+      const part1 = await this.platform.http.get<string>(
+        `${this.BASE_URL}/submit/`,
+        {
+          partition: this.accountId,
+          headers: {
+            Referer: 'https://www.furaffinity.net/submit/',
+          },
         },
-      },
-    );
-
-    PostResponse.validateBody(this, part1);
-    const err = this.processForError(part1.body);
-    if (err) {
-      return PostResponse.fromWebsite(this)
-        .withException(new Error(err))
-        .withAdditionalInfo(part1.body);
-    }
-
-    const key =
-      parse(part1.body)
-        .querySelector('#upload_form input[name="key"]')
-        ?.getAttribute('value') ??
-      parse(part1.body)
-        .querySelector('#myform input[name="key"]')
-        ?.getAttribute('value');
-    if (!key) {
-      return PostResponse.fromWebsite(this)
-        .withException(new Error('Failed to retrieve key for file submission'))
-        .withAdditionalInfo(part1.body)
-        .atStage('part 1');
-    }
-
-    // In theory, post-manager handles the alt file
-    const part2 = await new PostBuilder(this, cancellationToken)
-      .asMultipart()
-      .setField('key', key)
-      .setField('submission_type', this.getContentType(files[0].fileType))
-      .addFile('submission', files[0])
-      .addThumbnail('thumbnail', files[0])
-      .withHeader('Referer', 'https://www.furaffinity.net/submit/')
-      .send<string>(`${this.BASE_URL}/submit/upload`);
-
-    const err2 = this.processForError(part2.body);
-    if (err2) {
-      return PostResponse.fromWebsite(this)
-        .withException(new Error(err2))
-        .withAdditionalInfo(part2.body)
-        .atStage('part 2');
-    }
-
-    const finalizeKey = parse(part2.body)
-      .querySelector('#myform input[name="key"]')
-      ?.getAttribute('value');
-
-    if (!finalizeKey) {
-      return PostResponse.fromWebsite(this)
-        .withException(new Error('Failed to retrieve key for file submission'))
-        .withAdditionalInfo(part2.body)
-        .atStage('finalize key get');
-    }
-
-    const builder = new PostBuilder(this, cancellationToken)
-      .asUrlEncoded()
-      .setField('key', finalizeKey)
-      .setField('title', postData.options.title)
-      .setField('message', postData.options.description)
-      .setField('keywords', postData.options.tags.join(' '))
-      .setField('rating', this.getRating(postData.options.rating))
-      .setField('atype', postData.options.theme || '1')
-      .setField('species', postData.options.species)
-      .setField('gender', postData.options.gender)
-      .setConditional(
-        'cat',
-        files[0].fileType === FileType.IMAGE,
-        postData.options.category,
-        this.getContentCategory(files[0].fileType),
-      )
-      .setConditional('lock_comments', postData.options.disableComments, 'on')
-      .setConditional('scrap', postData.options.scraps, '1')
-      .setConditional(
-        'folder_ids',
-        (postData.options.folders ?? []).length > 0,
-        postData.options.folders,
       );
 
-    const postResponse = await builder.send<string>(
-      `${this.BASE_URL}/submit/finalize`,
-    );
-
-    if (!postResponse?.responseUrl?.includes('?upload-successful')) {
-      const err3 = this.processForError(postResponse.body);
-      if (err3) {
+      PostResponse.validateBody(this, part1);
+      const err = this.processForError(part1.body);
+      if (err) {
         return PostResponse.fromWebsite(this)
-          .withMessage(err3)
-          .withException(new Error(err3))
+          .withException(new Error(err))
+          .withAdditionalInfo(part1.body);
+      }
+
+      const key =
+        parse(part1.body)
+          .querySelector('#upload_form input[name="key"]')
+          ?.getAttribute('value') ??
+        parse(part1.body)
+          .querySelector('#myform input[name="key"]')
+          ?.getAttribute('value');
+      if (!key) {
+        return PostResponse.fromWebsite(this)
+          .withException(
+            new Error('Failed to retrieve key for file submission'),
+          )
+          .withAdditionalInfo(part1.body)
+          .atStage('part 1');
+      }
+
+      // In theory, post-manager handles the alt file
+      const part2 = await new PostBuilder(this, cancellationToken)
+        .asMultipart()
+        .setField('key', key)
+        .setField('submission_type', this.getContentType(files[0].fileType))
+        .addFile('submission', files[0])
+        .addThumbnail('thumbnail', files[0])
+        .withHeader('Referer', 'https://www.furaffinity.net/submit/')
+        .send<string>(`${this.BASE_URL}/submit/upload`);
+
+      const err2 = this.processForError(part2.body);
+      if (err2) {
+        return PostResponse.fromWebsite(this)
+          .withException(new Error(err2))
+          .withAdditionalInfo(part2.body)
+          .atStage('part 2');
+      }
+
+      const finalizeKey = parse(part2.body)
+        .querySelector('#myform input[name="key"]')
+        ?.getAttribute('value');
+
+      if (!finalizeKey) {
+        return PostResponse.fromWebsite(this)
+          .withException(
+            new Error('Failed to retrieve key for file submission'),
+          )
+          .withAdditionalInfo(part2.body)
+          .atStage('finalize key get');
+      }
+
+      const builder = new PostBuilder(this, cancellationToken)
+        .asUrlEncoded()
+        .setField('key', finalizeKey)
+        .setField('title', postData.options.title)
+        .setField('message', postData.options.description)
+        .setField('keywords', postData.options.tags.join(' '))
+        .setField('rating', this.getRating(postData.options.rating))
+        .setField('atype', postData.options.theme || '1')
+        .setField('species', postData.options.species)
+        .setField('gender', postData.options.gender)
+        .setConditional(
+          'cat',
+          files[0].fileType === FileType.IMAGE,
+          postData.options.category,
+          this.getContentCategory(files[0].fileType),
+        )
+        .setConditional('lock_comments', postData.options.disableComments, 'on')
+        .setConditional('scrap', postData.options.scraps, '1')
+        .setConditional(
+          'folder_ids',
+          (postData.options.folders ?? []).length > 0,
+          postData.options.folders,
+        );
+
+      const postResponse = await builder.send<string>(
+        `${this.BASE_URL}/submit/finalize`,
+      );
+
+      if (!postResponse?.responseUrl?.includes('?upload-successful')) {
+        const err3 = this.processForError(postResponse.body);
+        if (err3) {
+          return PostResponse.fromWebsite(this)
+            .withMessage(err3)
+            .withException(new Error(err3))
+            .withAdditionalInfo(postResponse.body);
+        }
+
+        return PostResponse.fromWebsite(this)
+          .withException(new Error('Failed to post file submission'))
           .withAdditionalInfo(postResponse.body);
       }
 
       return PostResponse.fromWebsite(this)
-        .withException(new Error('Failed to post file submission'))
+        .withSourceUrl(
+          postResponse.responseUrl.replace('?upload-successful', ''),
+        )
+        .withMessage('File posted successfully')
         .withAdditionalInfo(postResponse.body);
+    } finally {
+      setTimeout(releaseLock, 15000);
     }
-
-    return PostResponse.fromWebsite(this)
-      .withSourceUrl(postResponse.responseUrl.replace('?upload-successful', ''))
-      .withMessage('File posted successfully')
-      .withAdditionalInfo(postResponse.body);
   }
 
   async onValidateFileSubmission(
