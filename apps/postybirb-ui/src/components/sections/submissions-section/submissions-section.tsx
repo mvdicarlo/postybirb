@@ -13,23 +13,24 @@ import { IconArchive, IconFiles, IconMessage } from '@tabler/icons-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { tinykeys } from 'tinykeys';
 import {
-  DeleteSelectedKeybinding,
-  toTinykeysFormat,
+    DeleteSelectedKeybinding,
+    toTinykeysFormat,
 } from '../../../config/keybindings';
 import { useSubmissionsLoading } from '../../../stores/entity/submission-store';
+import type { SubmissionRecord } from '../../../stores/records';
 import { useSubmissionHistoryDrawerStore } from '../../../stores/ui/submission-history-drawer-store';
 import { ConfirmActionModal } from '../../confirm-action-modal';
 import { ArchivedSubmissionList } from './archived-submission-list';
 import { SubmissionsProvider } from './context';
 import { FileSubmissionModal } from './file-submission-modal';
 import {
-  useGlobalDropzone,
-  useSubmissionHandlers,
-  useSubmissions,
-  useSubmissionSelection,
+    useGlobalDropzone,
+    useSubmissionHandlers,
+    useSubmissions,
+    useSubmissionSelection,
 } from './hooks';
 import { PostConfirmModal } from './post-confirm-modal';
-import { ResumeModeModal } from './resume-mode-modal';
+import { PostPreviewModal } from './post-preview-modal';
 import { SubmissionList } from './submission-list';
 import { SubmissionSectionHeader } from './submission-section-header';
 import './submissions-section.css';
@@ -85,13 +86,9 @@ export function SubmissionsSection({
     handleArchive,
     handleEdit,
     handleDefaultOptionChange,
-    handlePost,
     handleCancel,
     handlePostSelected,
     handleScheduleChange,
-    pendingResumeSubmissionId,
-    cancelResume,
-    confirmResume,
   } = useSubmissionHandlers({
     submissionType,
   });
@@ -114,6 +111,10 @@ export function SubmissionsSection({
   // Post confirmation modal
   const [postModalOpened, postModal] = useDisclosure(false);
 
+  // Individual post preview modal
+  const [postPreviewSubmission, setPostPreviewSubmission] =
+    useState<SubmissionRecord | null>(null);
+
   // Handle delete with confirmation
   const handleDeleteWithConfirm = useCallback(() => {
     if (selectedIds.length > 0) {
@@ -127,6 +128,19 @@ export function SubmissionsSection({
       postModal.open();
     }
   }, [selectedIds.length, postModal]);
+
+  const handleOpenPostPreview = useCallback(
+    (id: string) => {
+      setPostPreviewSubmission(
+        orderedSubmissions.find((submission) => submission.id === id) ?? null,
+      );
+    },
+    [orderedSubmissions],
+  );
+
+  const handleClosePostPreview = useCallback(() => {
+    setPostPreviewSubmission(null);
+  }, []);
 
   // Delete key handler
   useEffect(() => {
@@ -188,6 +202,14 @@ export function SubmissionsSection({
         selectedSubmissions={selectedSubmissions}
         totalSelectedCount={selectedIds.length}
       />
+
+      {postPreviewSubmission && (
+        <PostPreviewModal
+          opened
+          submission={postPreviewSubmission}
+          onClose={handleClosePostPreview}
+        />
+      )}
 
       {/* File submission modal */}
       {submissionType === SubmissionType.FILE && (
@@ -262,7 +284,7 @@ export function SubmissionsSection({
         onDelete={handleDelete}
         onDuplicate={handleDuplicate}
         onEdit={handleEdit}
-        onPost={handlePost}
+        onPost={handleOpenPostPreview}
         onCancel={handleCancel}
         onArchive={handleArchive}
         onViewHistory={handleViewHistory}
@@ -280,12 +302,6 @@ export function SubmissionsSection({
         )}
       </SubmissionsProvider>
 
-      {/* Resume mode modal */}
-      <ResumeModeModal
-        opened={pendingResumeSubmissionId !== null}
-        onClose={cancelResume}
-        onConfirm={confirmResume}
-      />
     </Box>
   );
 }

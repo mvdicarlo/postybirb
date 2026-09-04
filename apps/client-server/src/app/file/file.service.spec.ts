@@ -16,6 +16,7 @@ import { DescriptionParserService } from '../post-parsers/parsers/description-pa
 import { TagParserService } from '../post-parsers/parsers/tag-parser.service';
 import { TitleParser } from '../post-parsers/parsers/title-parser';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
+import { PostingActivityModule } from '../posting/posting-activity.module';
 import { SettingsService } from '../settings/settings.service';
 import { CreateSubmissionDto } from '../submission/dtos/create-submission.dto';
 import { FileSubmissionService } from '../submission/services/file-submission.service';
@@ -99,7 +100,7 @@ describe('FileService', () => {
   beforeEach(async () => {
     clearDatabase();
     module = await Test.createTestingModule({
-      imports: [EventEmitterModule.forRoot()],
+      imports: [EventEmitterModule.forRoot(), PostingActivityModule],
       providers: [
         AccountTemplateDefaultsService,
         SubmissionService,

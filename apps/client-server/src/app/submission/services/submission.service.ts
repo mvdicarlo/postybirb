@@ -1,11 +1,11 @@
 /* eslint-disable no-param-reassign */
 import {
-    BadRequestException,
-    forwardRef,
-    Inject,
-    Injectable,
-    NotFoundException,
-    OnModuleInit,
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+  OnModuleInit,
 } from '@nestjs/common';
 import {
   FileBufferSchema,
@@ -16,25 +16,27 @@ import {
   SubmissionSchema,
   WebsiteOptions,
   WebsiteOptionsSchema,
-  withTransactionContext
+  withTransactionContext,
 } from '@postybirb/database';
 import {
-    FileSubmission,
-    FileSubmissionMetadata,
-    ISubmissionDto,
-    ISubmissionMetadata,
-    MessageSubmission,
-    NULL_ACCOUNT_ID,
-    ScheduleType,
-    SubmissionId,
-    SubmissionMetadataType,
-    SubmissionType,
+  FileSubmission,
+  FileSubmissionMetadata,
+  ISubmissionDto,
+  ISubmissionMetadata,
+  MessageSubmission,
+  NULL_ACCOUNT_ID,
+  ScheduleType,
+  SubmissionId,
+  SubmissionMetadataType,
+  SubmissionType,
 } from '@postybirb/types';
 import { toError } from '@postybirb/utils/common';
+import { Mutex } from 'async-mutex';
 import { eq } from 'drizzle-orm';
 import * as path from 'path';
 import { PostyBirbService } from '../../common/service/postybirb-service';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
+import { PostingActivityService } from '../../posting/posting-activity.service';
 import { WebsiteOptionsService } from '../../website-options/website-options.service';
 import { ApplyMultiSubmissionDto } from '../dtos/apply-multi-submission.dto';
 import { ApplyTemplateOptionsDto } from '../dtos/apply-template-options.dto';
@@ -56,6 +58,8 @@ export class SubmissionService
   extends PostyBirbService<SubmissionRepository>
   implements OnModuleInit
 {
+  private readonly dependencyMutationMutex = new Mutex();
+
   constructor(
     @Inject(forwardRef(() => WebsiteOptionsService))
     private readonly websiteOptionsService: WebsiteOptionsService,
@@ -63,6 +67,7 @@ export class SubmissionService
     private readonly fileSubmissionService: FileSubmissionService,
     private readonly messageSubmissionService: MessageSubmissionService,
     private readonly submissionEventPublisher: SubmissionEventPublisher,
+    private readonly postingActivity: PostingActivityService,
   ) {
     super(new SubmissionRepository());
   }
@@ -104,8 +109,7 @@ export class SubmissionService
 
     for (const submission of submissions) {
       const hasDefault = (submission.options ?? []).some(
-        (option) =>
-          option.isDefault || option.accountId === NULL_ACCOUNT_ID,
+        (option) => option.isDefault || option.accountId === NULL_ACCOUNT_ID,
       );
       if (hasDefault) {
         continue;
@@ -186,7 +190,10 @@ export class SubmissionService
    * (e.g., from a crash during creation).
    */
   private async cleanupUninitializedSubmissions() {
-    const all = await super.findAll();
+    const all = await this.repository.find({
+      // eslint-disable-next-line @typescript-eslint/no-shadow
+      where: (submission, { eq }) => eq(submission.isInitialized, false),
+    });
     const uninitialized = all.filter((s) => !s.isInitialized);
     if (uninitialized.length > 0) {
       const ids = uninitialized.map((s) => s.id);
@@ -214,10 +221,11 @@ export class SubmissionService
     }
 
     const submissions = await this.repository.find({
-      where: (submission, { inArray }) =>
-        inArray(submission.id, uniqueIds),
+      where: (submission, { inArray }) => inArray(submission.id, uniqueIds),
     });
-    const byId = new Map(submissions.map((submission) => [submission.id, submission]));
+    const byId = new Map(
+      submissions.map((submission) => [submission.id, submission]),
+    );
     const initialized = uniqueIds.flatMap((id) => {
       const submission = byId.get(id);
       return submission?.isInitialized ? [submission] : [];
@@ -327,7 +335,10 @@ export class SubmissionService
       order: (await this.repository.count()) + 1,
     });
 
-    submission = await this.repository.insert(submission);
+    submission = await this.dependencyMutationMutex.runExclusive(async () => {
+      await this.assertNoDependencyCycle(submission.id, submission.dependsOn);
+      return this.repository.insert(submission);
+    });
 
     // Determine the submission name/title
     let name = 'New submission';
@@ -441,6 +452,7 @@ export class SubmissionService
       .withMetadata({ id, templateId })
       .info('Applying template to submission');
     const submission = await this.findByIdOrThrow(id);
+    await this.postingActivity.assertSubmissionsMutable(id);
     const template: Submission = await this.findByIdOrThrow(templateId);
 
     if (!template.metadata.template) {
@@ -503,13 +515,15 @@ export class SubmissionService
   async update(id: SubmissionId, update: UpdateSubmissionDto) {
     this.logger.withMetadata(update).info(`Updating Submission '${id}'`);
     const submission = await this.findByIdOrThrow(id);
+    await this.postingActivity.assertSubmissionsMutable(id);
 
     const scheduleType =
       update.scheduleType ?? submission.schedule.scheduleType;
     const updates: Pick<
       SubmissionEntity,
-      'metadata' | 'isArchived' | 'isScheduled' | 'schedule'
+      'dependsOn' | 'metadata' | 'isArchived' | 'isScheduled' | 'schedule'
     > = {
+      dependsOn: update.dependsOn ?? submission.dependsOn,
       metadata: {
         ...submission.metadata,
         ...(update.metadata ?? {}),
@@ -537,41 +551,44 @@ export class SubmissionService
             },
     };
 
-    const optionChanges: Promise<unknown>[] = [];
-
-    // Removes unused website options
-    if (update.deletedWebsiteOptions?.length) {
-      update.deletedWebsiteOptions.forEach((deletedOptionId) => {
-        optionChanges.push(this.websiteOptionsService.remove(deletedOptionId));
-      });
-    }
-
-    // Creates or updates new website options
-    if (update.newOrUpdatedOptions?.length) {
-      update.newOrUpdatedOptions.forEach((option) => {
-        if (option.createdAt) {
-          optionChanges.push(
-            this.websiteOptionsService.update(option.id, {
-              data: option.data,
-            }),
-          );
-        } else {
-          optionChanges.push(
-            this.websiteOptionsService.create({
-              accountId: option.accountId,
-              data: option.data,
-              submissionId: submission.id,
-            }),
-          );
-        }
-      });
-    }
-
-    await Promise.allSettled(optionChanges);
-
     try {
-      // Update Here
-      await this.repository.update(id, updates);
+      if (update.dependsOn !== undefined) {
+        await this.dependencyMutationMutex.runExclusive(async () => {
+          await this.assertNoDependencyCycle(id, updates.dependsOn);
+          await this.repository.update(id, updates);
+        });
+      } else {
+        await this.repository.update(id, updates);
+      }
+
+      const optionChanges: Promise<unknown>[] = [];
+      if (update.deletedWebsiteOptions?.length) {
+        update.deletedWebsiteOptions.forEach((deletedOptionId) => {
+          optionChanges.push(
+            this.websiteOptionsService.remove(deletedOptionId),
+          );
+        });
+      }
+      if (update.newOrUpdatedOptions?.length) {
+        update.newOrUpdatedOptions.forEach((option) => {
+          if (option.createdAt) {
+            optionChanges.push(
+              this.websiteOptionsService.update(option.id, {
+                data: option.data,
+              }),
+            );
+          } else {
+            optionChanges.push(
+              this.websiteOptionsService.create({
+                accountId: option.accountId,
+                data: option.data,
+                submissionId: submission.id,
+              }),
+            );
+          }
+        });
+      }
+      await Promise.allSettled(optionChanges);
       this.markChanged(id);
       return await this.findByIdOrThrow(id);
     } catch (err) {
@@ -579,9 +596,89 @@ export class SubmissionService
     }
   }
 
+  private async assertNoDependencyCycle(
+    submissionId: SubmissionId,
+    dependsOn: SubmissionId[],
+  ): Promise<void> {
+    const submissions = await this.repository.find({ with: {} });
+    const graph = new Map<SubmissionId, SubmissionId[]>(
+      submissions.map((submission) => [submission.id, submission.dependsOn]),
+    );
+    graph.set(submissionId, dependsOn);
+
+    const visiting = new Set<SubmissionId>();
+    const visited = new Set<SubmissionId>();
+    const hasCycle = (currentId: SubmissionId): boolean => {
+      if (visiting.has(currentId)) {
+        return true;
+      }
+      if (visited.has(currentId)) {
+        return false;
+      }
+
+      visiting.add(currentId);
+      for (const dependencyId of graph.get(currentId) ?? []) {
+        if (hasCycle(dependencyId)) {
+          return true;
+        }
+      }
+      visiting.delete(currentId);
+      visited.add(currentId);
+      return false;
+    };
+
+    if (hasCycle(submissionId)) {
+      throw new BadRequestException(
+        `Submission '${submissionId}' has a circular dependency`,
+      );
+    }
+  }
+
   public async remove(id: SubmissionId): Promise<void> {
-    await super.remove(id);
+    const dependents = await this.dependencyMutationMutex.runExclusive(
+      async () => {
+        const affected = await this.findDependencyReferences(id);
+        await this.postingActivity.assertSubmissionsMutable([
+          id,
+          ...affected.map((submission) => submission.id),
+        ]);
+        await super.remove(id);
+        await this.dropDependencyReferences(id, affected);
+        return affected;
+      },
+    );
     this.markRemoved(id);
+    if (dependents.length > 0) {
+      this.markChanged(dependents.map((submission) => submission.id));
+    }
+  }
+
+  /**
+   * Strips a deleted submission's id from every `dependsOn` that references it.
+   * A dangling id blocks posting forever, since dependency completion requires a
+   * completed post for each listed id and no post can ever exist for it.
+   */
+  private async dropDependencyReferences(
+    removedId: SubmissionId,
+    dependents: SubmissionEntity[],
+  ): Promise<void> {
+    await Promise.all(
+      dependents.map((submission) =>
+        this.repository.update(submission.id, {
+          dependsOn: submission.dependsOn.filter(
+            (dependencyId) => dependencyId !== removedId,
+          ),
+        }),
+      ),
+    );
+  }
+
+  private async findDependencyReferences(
+    removedId: SubmissionId,
+  ): Promise<SubmissionEntity[]> {
+    return (await this.repository.find({ with: {} })).filter((submission) =>
+      submission.dependsOn.includes(removedId),
+    );
   }
 
   async applyMultiSubmission(applyMultiSubmissionDto: ApplyMultiSubmissionDto) {
@@ -590,6 +687,9 @@ export class SubmissionService
     const submissions = await this.repository.find({
       where: (submission, { inArray }) => inArray(submission.id, submissionIds),
     });
+    await this.postingActivity.assertSubmissionsMutable(
+      submissions.map((submission) => submission.id),
+    );
     if (merge) {
       // Keeps unique options, overwrites overlapping options
       for (const submission of submissions) {
@@ -655,6 +755,7 @@ export class SubmissionService
   }> {
     const { targetSubmissionIds, options, overrideTitle, overrideDescription } =
       dto;
+    await this.postingActivity.assertSubmissionsMutable(targetSubmissionIds);
 
     this.logger
       .withMetadata({
@@ -763,6 +864,7 @@ export class SubmissionService
           .getDb()
           .insert(SubmissionSchema)
           .values({
+            dependsOn: entityToDuplicate.dependsOn,
             metadata: entityToDuplicate.metadata,
             type: entityToDuplicate.type,
             isScheduled: entityToDuplicate.isScheduled,
@@ -888,6 +990,7 @@ export class SubmissionService
     updateSubmissionDto: UpdateSubmissionTemplateNameDto,
   ) {
     const entity = await this.findByIdOrThrow(id);
+    await this.postingActivity.assertSubmissionsMutable(id);
 
     if (!entity.isTemplate) {
       throw new BadRequestException(`Submission '${id}' is not a template`);
@@ -916,6 +1019,7 @@ export class SubmissionService
     position: 'before' | 'after',
   ) {
     const moving = await this.findByIdOrThrow(id);
+    await this.postingActivity.assertSubmissionsMutable(id);
     const target = await this.findByIdOrThrow(targetId);
 
     // Ensure same type (FILE or MESSAGE)
@@ -964,6 +1068,7 @@ export class SubmissionService
 
   async unarchive(id: SubmissionId) {
     const submission = await this.findByIdOrThrow(id);
+    await this.postingActivity.assertSubmissionsMutable(id);
     if (!submission.isArchived) {
       throw new BadRequestException(`Submission '${id}' is not archived`);
     }
@@ -975,6 +1080,7 @@ export class SubmissionService
 
   async archive(id: SubmissionId) {
     const submission = await this.findByIdOrThrow(id);
+    await this.postingActivity.assertSubmissionsMutable(id);
     if (submission.isArchived) {
       throw new BadRequestException(`Submission '${id}' is already archived`);
     }

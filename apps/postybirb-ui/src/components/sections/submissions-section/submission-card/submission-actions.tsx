@@ -18,7 +18,6 @@ import {
     IconTrash,
 } from '@tabler/icons-react';
 import { useCallback } from 'react';
-import { HoldToConfirmButton } from '../../../hold-to-confirm';
 import { SchedulePopover } from '../../../shared/schedule-popover';
 
 interface SubmissionActionsProps {
@@ -119,6 +118,14 @@ export function SubmissionActions({
     [onCancel],
   );
 
+  const handlePost = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      onPost?.();
+    },
+    [onPost],
+  );
+
   const handleScheduleChange = useCallback(
     (newSchedule: ISubmissionScheduleInfo, newIsScheduled: boolean) => {
       onScheduleChange?.(newSchedule, newIsScheduled);
@@ -160,9 +167,9 @@ export function SubmissionActions({
             </ActionIcon>
           </Tooltip>
         ) : (
-          <Tooltip label={<Trans>Hold to post</Trans>}>
-            <HoldToConfirmButton
-              onConfirm={onPost ?? (() => {})}
+          <Tooltip label={<Trans>Review and post</Trans>}>
+            <ActionIcon
+              onClick={handlePost}
               disabled={!canPost}
               variant="subtle"
               size="sm"
@@ -170,7 +177,7 @@ export function SubmissionActions({
               aria-label="Post submission"
             >
               <IconSend size={16} />
-            </HoldToConfirmButton>
+            </ActionIcon>
           </Tooltip>
         )}
       {/* Actions menu */}

@@ -11,31 +11,30 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-  ActionIcon,
-  Badge,
-  Box,
-  Group,
-  Paper,
-  Progress,
-  Stack,
-  Text,
-  ThemeIcon,
-  Tooltip,
+    ActionIcon,
+    Badge,
+    Box,
+    Group,
+    Paper,
+    Progress,
+    Stack,
+    Text,
+    ThemeIcon,
+    Tooltip,
 } from '@mantine/core';
 import {
-  EntityId,
-  IPostWaitState,
-  PostEventType,
-  PostRecordState,
-  SubmissionType,
+    EntityId,
+    IPostWaitState,
+    SubmissionType,
+    UnitOfWorkState,
 } from '@postybirb/types';
 import {
-  IconCheck,
-  IconClock,
-  IconLoader,
-  IconPlayerStop,
-  IconSend,
-  IconX,
+    IconCheck,
+    IconClock,
+    IconLoader,
+    IconPlayerStop,
+    IconSend,
+    IconX,
 } from '@tabler/icons-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import postQueueApi from '../../../api/post-queue.api';
@@ -44,16 +43,16 @@ import { useQueuedSubmissions } from '../../../stores/entity/submission-store';
 import type { SubmissionRecord } from '../../../stores/records';
 import { useViewStateActions } from '../../../stores/ui/navigation-store';
 import {
-  useWaitStateActions,
-  useWaitStates,
+    useWaitStateActions,
+    useWaitStates,
 } from '../../../stores/ui/wait-state-store';
 import {
-  createFileSubmissionsViewState,
-  createMessageSubmissionsViewState,
+    createFileSubmissionsViewState,
+    createMessageSubmissionsViewState,
 } from '../../../types/view-state';
 import {
-  type AccountPostStatusEntry,
-  getAccountPostStatusMap,
+    type AccountPostStatusEntry,
+    getAccountPostStatusMap,
 } from '../submissions-section/submission-history';
 
 // =============================================================================
@@ -112,7 +111,7 @@ function formatRemainingTime(ms: number): string {
 }
 
 /**
- * Get file progress from post events for a submission.
+ * Get file progress from a submission's units of work.
  */
 function getFileProgress(submission: SubmissionRecord): {
   posted: number;
@@ -124,19 +123,15 @@ function getFileProgress(submission: SubmissionRecord): {
   const totalFiles = submission.files.length;
   if (totalFiles === 0) return null;
 
-  const { latestPost } = submission;
-  if (!latestPost?.events) return { posted: 0, failed: 0, total: totalFiles };
-
   const posted = new Set<string>();
   const failed = new Set<string>();
 
-  for (const event of latestPost.events) {
-    if (event.fileId) {
-      if (event.eventType === PostEventType.FILE_POSTED) {
-        posted.add(event.fileId);
-      } else if (event.eventType === PostEventType.FILE_FAILED) {
-        failed.add(event.fileId);
-      }
+  for (const unit of submission.activeUnitsOfWork) {
+    if (!unit.fileId) continue;
+    if (unit.state === UnitOfWorkState.SUCCEEDED) {
+      posted.add(unit.fileId);
+    } else if (unit.state === UnitOfWorkState.FAILED) {
+      failed.add(unit.fileId);
     }
   }
 
@@ -490,14 +485,13 @@ export function PostingActivityPanel() {
     return () => clearInterval(interval);
   }, [pruneExpired]);
 
-  // Split into active (RUNNING) and queued (PENDING or no post record)
+  // Split into active (open post) and queued (awaiting a post)
   const { active, queued } = useMemo(() => {
     const activeList: SubmissionRecord[] = [];
     const queuedList: SubmissionRecord[] = [];
 
     for (const sub of queuedSubmissions) {
-      const { latestPost } = sub;
-      if (latestPost?.state === PostRecordState.RUNNING) {
+      if (sub.isPosting) {
         activeList.push(sub);
       } else {
         queuedList.push(sub);

@@ -1,14 +1,14 @@
 import {
-    FileType,
-    ImageResizeProps,
-    LoginResult,
-    PostData,
-    PostResponse,
-    SubmissionRating,
+  FileType,
+  ImageResizeProps,
+  LoginResult,
+  PostData,
+  PostResponse,
+  SubmissionRating,
 } from '@postybirb/types';
 import parse from 'node-html-parser';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { PostBuilder } from '../../commons/post-builder';
 import { validatorPassthru } from '../../commons/validator-passthru';
@@ -25,6 +25,7 @@ import { PixivFileSubmission } from './models/pixiv-file-submission';
   name: 'pixiv',
   displayName: 'Pixiv',
   minimumPostWaitInterval: 60000 * 5, // 5 minutes between posts
+  rateLimitScope: 'website',
 })
 @UserLoginFlow('https://www.pixiv.net')
 @SupportsFiles({
@@ -83,9 +84,9 @@ export default class Pixiv
   async onPostFileSubmission(
     postData: PostData<PixivFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     // Get the create page to check for version and get tokens
     const page = await this.platform.http.get<string>(

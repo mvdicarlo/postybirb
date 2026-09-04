@@ -12,20 +12,21 @@ import {
     IconSend,
     IconTrash,
 } from '@tabler/icons-react';
+import { useState } from 'react';
 import postManagerApi from '../../../../../api/post-manager.api';
-import postQueueApi from '../../../../../api/post-queue.api';
+import postingApi from '../../../../../api/posting.api';
 import submissionApi from '../../../../../api/submission.api';
 import { useSubmissionHistoryDrawerStore } from '../../../../../stores/ui/submission-history-drawer-store';
 import { useTourActions } from '../../../../../stores/ui/tour-store';
 import {
     showDeletedNotification,
     showDeleteErrorNotification,
-    showPostErrorNotification,
     showRestoredNotification,
     showRestoreErrorNotification,
 } from '../../../../../utils/notifications';
 import { HoldToConfirmButton } from '../../../../hold-to-confirm';
 import { SUBMISSION_EDIT_TOUR_ID } from '../../../../onboarding-tour/tours/submission-edit-tour';
+import { PostPreviewModal } from '../../post-preview-modal';
 import { useSubmissionEditCardContext } from '../context';
 import { ApplyTemplateAction } from './apply-template-action';
 import { SaveToManyAction } from './save-to-many-action';
@@ -36,18 +37,15 @@ import { SaveToManyAction } from './save-to-many-action';
 export function SubmissionEditCardActions() {
   const { submission } = useSubmissionEditCardContext();
   const { startTour } = useTourActions();
-
-  const handlePost = async () => {
-    try {
-      await postQueueApi.enqueue([submission.id]);
-    } catch {
-      showPostErrorNotification();
-    }
-  };
+  const [postPreviewOpened, setPostPreviewOpened] = useState(false);
 
   const handleCancel = async () => {
     try {
-      await postManagerApi.cancelIfRunning(submission.id);
+      if (submission.post && !submission.post.completed) {
+        await postingApi.cancelPost(submission.post.id);
+      } else {
+        await postManagerApi.cancelIfRunning(submission.id);
+      }
     } catch {
       // Silently handle if not running
     }
@@ -82,7 +80,7 @@ export function SubmissionEditCardActions() {
 
   // Archived submissions: show history (if available), unarchive and delete
   if (submission.isArchived) {
-    const hasHistory = submission.posts.length > 0;
+    const hasHistory = submission.hasPostHistory;
     return (
       <Group gap={4} wrap="nowrap" onClick={(e) => e.stopPropagation()}>
           {hasHistory && (
@@ -139,7 +137,7 @@ export function SubmissionEditCardActions() {
   }
 
   // If currently posting, show cancel button
-  if (submission.isPosting) {
+  if (submission.isPosting || submission.isQueued) {
     return (
       <Group gap={4} wrap="nowrap" onClick={(e) => e.stopPropagation()}>
         <Tooltip label={<Trans>Cancel posting</Trans>}>
@@ -170,7 +168,7 @@ export function SubmissionEditCardActions() {
   const canPost = !submission.hasErrors && submission.hasWebsiteOptions;
 
   // Determine tooltip message for disabled post button
-  let postTooltip: React.ReactNode = <Trans>Hold to post</Trans>;
+  let postTooltip: React.ReactNode = <Trans>Review and post</Trans>;
   if (submission.hasErrors) {
     postTooltip = <Trans>Submission has validation errors</Trans>;
   } else if (!submission.hasWebsiteOptions) {
@@ -179,34 +177,41 @@ export function SubmissionEditCardActions() {
 
   // Normal state: show template, post and delete
   return (
-    <Group gap={4} wrap="nowrap" onClick={(e) => e.stopPropagation()}>
-      <Tooltip label={<Trans>Editor Tour</Trans>}>
-        <ActionIcon variant="subtle" size="sm" onClick={() => startTour(SUBMISSION_EDIT_TOUR_ID)}>
-          <IconHelp size={16} />
-        </ActionIcon>
-      </Tooltip>
-      <ApplyTemplateAction />
-      <Tooltip label={postTooltip}>
-        <HoldToConfirmButton
-          variant="subtle"
-          size="sm"
-          color="blue"
-          onConfirm={handlePost}
-          disabled={!canPost}
-        >
-          <IconSend size={16} />
-        </HoldToConfirmButton>
-      </Tooltip>
-      <Tooltip label={<Trans>Hold to delete</Trans>}>
-        <HoldToConfirmButton
-          variant="subtle"
-          size="sm"
-          color="red"
-          onConfirm={handleDelete}
-        >
-          <IconTrash size={16} />
-        </HoldToConfirmButton>
-      </Tooltip>
-    </Group>
+    <>
+      <Group gap={4} wrap="nowrap" onClick={(e) => e.stopPropagation()}>
+        <Tooltip label={<Trans>Editor Tour</Trans>}>
+          <ActionIcon variant="subtle" size="sm" onClick={() => startTour(SUBMISSION_EDIT_TOUR_ID)}>
+            <IconHelp size={16} />
+          </ActionIcon>
+        </Tooltip>
+        <ApplyTemplateAction />
+        <Tooltip label={postTooltip}>
+          <ActionIcon
+            variant="subtle"
+            size="sm"
+            color="blue"
+            onClick={() => setPostPreviewOpened(true)}
+            disabled={!canPost}
+          >
+            <IconSend size={16} />
+          </ActionIcon>
+        </Tooltip>
+        <Tooltip label={<Trans>Hold to delete</Trans>}>
+          <HoldToConfirmButton
+            variant="subtle"
+            size="sm"
+            color="red"
+            onConfirm={handleDelete}
+          >
+            <IconTrash size={16} />
+          </HoldToConfirmButton>
+        </Tooltip>
+      </Group>
+      <PostPreviewModal
+        opened={postPreviewOpened}
+        submission={submission}
+        onClose={() => setPostPreviewOpened(false)}
+      />
+    </>
   );
 }

@@ -15,8 +15,8 @@ import { toError } from '@postybirb/utils/common';
 import { isObject } from 'lodash';
 import { detector, Entity } from 'megalodon';
 import { Readable } from 'stream';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import { wait } from '../../../utils/wait.util';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
 import { FileWebsite } from '../../models/website-modifiers/file-website';
@@ -509,9 +509,9 @@ export abstract class MegalodonWebsite
   async onPostFileSubmission(
     postData: PostData<MegalodonFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     const data = this.websiteDataStore.getData();
 
@@ -527,7 +527,7 @@ export abstract class MegalodonWebsite
       // Upload media files
       const mediaIds: string[] = [];
       for (const file of files) {
-        cancellationToken.throwIfCancelled();
+        cancellationToken.throwIfAborted();
 
         this.logger
           .withMetadata({
@@ -578,7 +578,7 @@ export abstract class MegalodonWebsite
         | Awaited<ReturnType<typeof client.postStatus>>;
 
       for (let attempt = 0; attempt <= maxRetries; attempt++) {
-        cancellationToken.throwIfCancelled();
+        cancellationToken.throwIfAborted();
         try {
           statusResult = await client.postStatus(
             postData.options.description || '',
@@ -637,9 +637,9 @@ export abstract class MegalodonWebsite
 
   async onPostMessageSubmission(
     postData: PostData<MegalodonMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     const data = this.websiteDataStore.getData();
     if (!data.accessToken) throw new Error('No accessToken exists');

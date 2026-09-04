@@ -35,8 +35,8 @@ import {
 } from '@postybirb/utils/file-type';
 import { SetNonNullable } from 'type-fest';
 import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { SubmissionValidator } from '../../commons/validator';
 import { DisableAds } from '../../decorators/disable-ads.decorator';
@@ -155,35 +155,35 @@ export default class Bluesky
   async onPostFileSubmission(
     postData: PostData<BlueskyFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     const agent = this.getLoggedInAgent();
     const profile = await agent.getProfile({ actor: agent.session.did });
     const reply = await this.getReplyRef(agent, postData.options.replyToUrl);
 
     const embed = await this.uploadEmbeds(agent, files, cancellationToken);
-    const postResult = await this.post(postData, agent, embed, reply);
+    const postResult = await this.createPost(postData, agent, embed, reply);
 
     return this.createPostResponse(postResult, profile, postData, agent);
   }
 
   async onPostMessageSubmission(
     postData: PostData<BlueskyMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     const agent = this.getLoggedInAgent();
     const profile = await agent.getProfile({ actor: agent.session.did });
     const reply = await this.getReplyRef(agent, postData.options.replyToUrl);
-    const postResult = await this.post(postData, agent, undefined, reply);
+    const postResult = await this.createPost(postData, agent, undefined, reply);
 
     return this.createPostResponse(postResult, profile, postData, agent);
   }
 
-  private async post(
+  private async createPost(
     postData: PostData<BlueskyFileSubmission>,
     agent: LoggedInAgent,
     embed:
@@ -465,7 +465,7 @@ export default class Bluesky
   private async uploadEmbeds(
     agent: LoggedInAgent,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<$Typed<AppBskyEmbedImages.Main> | $Typed<AppBskyEmbedVideo.Main>> {
     // Bluesky supports either images or a video as an embed
     // GIFs must be treated as video on bsky
@@ -474,7 +474,7 @@ export default class Bluesky
     if (fileCount.videos === 0 && fileCount.gifs === 0) {
       const uploadedImages: AppBskyEmbedImages.Image[] = [];
       for (const file of files) {
-        cancellationToken.throwIfCancelled();
+        cancellationToken.throwIfAborted();
 
         const altText = file.metadata.altText || '';
         const ref = await this.uploadImage(agent, file);
@@ -490,7 +490,7 @@ export default class Bluesky
     }
 
     for (const file of files) {
-      cancellationToken.throwIfCancelled();
+      cancellationToken.throwIfAborted();
 
       if (
         file.fileType === FileType.VIDEO ||

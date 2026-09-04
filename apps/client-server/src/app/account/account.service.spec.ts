@@ -1,18 +1,33 @@
+import { ConflictException } from '@nestjs/common';
 import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
-import { Account, clearDatabase } from '@postybirb/database';
-import { NULL_ACCOUNT_ID } from '@postybirb/types';
 import {
-  EntityRemovedEvent,
-  EntityUpdatedEvent,
+    Account,
+    clearDatabase,
+    PostRepository,
+    SubmissionRepository,
+    WebsiteOptionsRepository,
+} from '@postybirb/database';
+import {
+    ISubmissionMetadata,
+    IWebsiteFormFields,
+    NULL_ACCOUNT_ID,
+    ScheduleType,
+    SubmissionType,
+} from '@postybirb/types';
+import {
+    EntityRemovedEvent,
+    EntityUpdatedEvent,
 } from '../common/events/entity-crud.events';
 import { noopPlatformProvider } from '../platform/testing/noop-platform-providers';
+import { PostingActivityModule } from '../posting/posting-activity.module';
+import { PostingActivityService } from '../posting/posting-activity.service';
 import { waitUntil } from '../utils/wait.util';
 import { WebsiteImplProvider } from '../websites/implementations/provider';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import {
-  ACCOUNT_REMOVED,
-  ACCOUNT_STATE_CHANGED,
+    ACCOUNT_REMOVED,
+    ACCOUNT_STATE_CHANGED,
 } from './account.events';
 import { AccountService } from './account.service';
 import { CreateAccountDto } from './dtos/create-account.dto';
@@ -23,6 +38,7 @@ describe('AccountsService', () => {
   let module: TestingModule;
   let eventEmitter: EventEmitter2;
   let emit: jest.SpyInstance;
+  let postingActivity: PostingActivityService;
 
   // Mock objects for deleteUnregisteredAccounts tests
   let mockRepository: any;
@@ -53,7 +69,7 @@ describe('AccountsService', () => {
   beforeEach(async () => {
     clearDatabase();
     module = await Test.createTestingModule({
-      imports: [EventEmitterModule.forRoot()],
+      imports: [EventEmitterModule.forRoot(), PostingActivityModule],
       providers: [
         AccountService,
         WebsiteRegistryService,
@@ -68,6 +84,9 @@ describe('AccountsService', () => {
     );
     eventEmitter = module.get<EventEmitter2>(EventEmitter2);
     emit = jest.spyOn(eventEmitter, 'emit');
+    postingActivity = module.get<PostingActivityService>(
+      PostingActivityService,
+    );
 
     await module.init();
   });
@@ -238,6 +257,43 @@ describe('AccountsService', () => {
     expect(
       emit.mock.calls.some(([event]) => event === ACCOUNT_REMOVED),
     ).toBe(false);
+  });
+
+  it('rejects account deletion when it would remove accepted submission options', async () => {
+    const account = await service.create({
+      name: 'active-account',
+      website: 'test',
+      groups: [],
+    });
+    const submissionRepository = new SubmissionRepository();
+    const optionRepository = new WebsiteOptionsRepository();
+    const postRepository = new PostRepository();
+    const submission = await submissionRepository.insert({
+      type: SubmissionType.MESSAGE,
+      isScheduled: false,
+      isTemplate: false,
+      isMultiSubmission: false,
+      isArchived: false,
+      isInitialized: true,
+      schedule: { scheduleType: ScheduleType.NONE },
+      metadata: {} as ISubmissionMetadata,
+      dependsOn: [],
+      order: 0,
+    });
+    const option = await optionRepository.insert({
+      accountId: account.id,
+      submissionId: submission.id,
+      data: {} as IWebsiteFormFields,
+      isDefault: false,
+    });
+    const post = await postRepository.insert({ submissionId: submission.id });
+    postingActivity.accept(post.id, 3);
+
+    await expect(service.remove(account.id)).rejects.toBeInstanceOf(
+      ConflictException,
+    );
+    await expect(service.findById(account.id)).resolves.toBeDefined();
+    await expect(optionRepository.findById(option.id)).resolves.toBeDefined();
   });
 
   describe('deleteUnregisteredAccounts', () => {

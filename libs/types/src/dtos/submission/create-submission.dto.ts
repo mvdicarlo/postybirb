@@ -1,5 +1,6 @@
 import { SubmissionRating, SubmissionType } from '../../enums';
 import { DescriptionValue } from '../../models/submission/description-value.type';
+import { SubmissionId } from '../../models/submission/submission.interface';
 import { Tag } from '../../models/tag/tag.type';
 
 /**
@@ -25,6 +26,7 @@ export interface ICreateSubmissionDto {
   name: string;
   type: SubmissionType;
   isTemplate?: boolean;
+  dependsOn?: SubmissionId[];
   /** Default options (tags, description, rating) to apply to all created submissions */
   defaultOptions?: ICreateSubmissionDefaultOptions;
   /** Per-file metadata for batch uploads (title overrides per file) */

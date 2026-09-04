@@ -1,18 +1,18 @@
 import { SelectOption, SelectOptionSingle } from '@postybirb/form-builder';
 
 import {
-    FileType,
-    ImageResizeProps,
-    ISubmissionFile,
-    LoginResult,
-    PostData,
-    PostResponse,
-    SimpleValidationResult,
-    SubmissionRating,
+  FileType,
+  ImageResizeProps,
+  ISubmissionFile,
+  LoginResult,
+  PostData,
+  PostResponse,
+  SimpleValidationResult,
+  SubmissionRating,
 } from '@postybirb/types';
 import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { SelectOptionUtil } from '../../../utils/select-option.util';
 import { PostBuilder } from '../../commons/post-builder';
@@ -193,9 +193,9 @@ export default class DeviantArt
   async onPostFileSubmission(
     postData: PostData<DeviantArtFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     // File upload step
     const uploadBuilder = new PostBuilder(this, cancellationToken)
@@ -233,7 +233,7 @@ export default class DeviantArt
       const csrf = await this.getCSRF();
       for (const file of files.slice(1)) {
         index++;
-        cancellationToken.throwIfCancelled();
+        cancellationToken.throwIfAborted();
         const upload = await new PostBuilder(this, cancellationToken)
           .asMultipart()
           .addFile('attachment_file', file)
@@ -362,9 +362,9 @@ export default class DeviantArt
 
   async onPostMessageSubmission(
     postData: PostData<DeviantArtMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     const commonFormData = {
       csrf_token: await this.getCSRF(),
       da_minor_version: this.DA_API_VERSION,

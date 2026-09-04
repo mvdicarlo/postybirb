@@ -1,16 +1,16 @@
 import { SelectOption } from '@postybirb/form-builder';
 
 import {
-    FileType,
-    ImageResizeProps,
-    LoginResult,
-    PostData,
-    PostResponse,
-    SimpleValidationResult,
+  FileType,
+  ImageResizeProps,
+  LoginResult,
+  PostData,
+  PostResponse,
+  SimpleValidationResult,
 } from '@postybirb/types';
 import { HTMLElement, parse } from 'node-html-parser';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { SelectOptionUtil } from '../../../utils/select-option.util';
 import { PostBuilder } from '../../commons/post-builder';
@@ -155,9 +155,9 @@ export default class Aryion
   async onPostFileSubmission(
     postData: PostData<AryionFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     const { options } = postData;
     const file = files[0];

@@ -1,15 +1,15 @@
 import { HttpResponse } from '@postybirb/http/types';
 import {
-    DiscordAccountData,
-    ImageResizeProps,
-    IPostResponse,
-    LoginResult,
-    PostData,
-    PostResponse,
+  DiscordAccountData,
+  ImageResizeProps,
+  IPostResponse,
+  LoginResult,
+  PostData,
+  PostResponse,
 } from '@postybirb/types';
 import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { validatorPassthru } from '../../commons/validator-passthru';
 import { DisableAds } from '../../decorators/disable-ads.decorator';
@@ -18,14 +18,14 @@ import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
 import {
-    FileWebsite,
-    PostBatchData,
+  FileWebsite,
+  PostBatchData,
 } from '../../models/website-modifiers/file-website';
 import { MessageWebsite } from '../../models/website-modifiers/message-website';
 import { WithCustomDescriptionParser } from '../../models/website-modifiers/with-custom-description-parser';
 import {
-    DynamicFileSizeLimits,
-    WithDynamicFileSizeLimits,
+  DynamicFileSizeLimits,
+  WithDynamicFileSizeLimits,
 } from '../../models/website-modifiers/with-dynamic-file-size-limits';
 import { Website } from '../../website';
 import { DiscordDescriptionConverter } from './discord-description-converter';
@@ -117,10 +117,10 @@ export default class Discord
   onPostFileSubmission(
     postData: PostData<DiscordFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
     batch: PostBatchData,
   ): Promise<IPostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     const { webhook } = this.websiteDataStore.getData();
     const payload = {
       ...(batch.index === 0
@@ -154,7 +154,7 @@ export default class Discord
     });
 
     formData.payload_json = JSON.stringify(payload);
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     return this.platform.http
       .post(webhook, {
         partition: undefined,
@@ -169,9 +169,9 @@ export default class Discord
 
   onPostMessageSubmission(
     postData: PostData<DiscordMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<IPostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     const { webhook } = this.websiteDataStore.getData();
     const messageData = this.buildDescription(
       postData.options.title,
@@ -179,7 +179,7 @@ export default class Discord
       postData.options.useTitle,
       postData.options.useEmbed,
     );
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     return this.platform.http
       .post(webhook, {
         partition: undefined,

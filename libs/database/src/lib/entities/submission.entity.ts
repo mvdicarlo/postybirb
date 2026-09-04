@@ -1,9 +1,10 @@
 import type {
-    ISubmission,
-    ISubmissionDto,
-    ISubmissionMetadata,
-    ISubmissionScheduleInfo,
-    SubmissionType,
+  ISubmission,
+  ISubmissionDto,
+  ISubmissionMetadata,
+  ISubmissionScheduleInfo,
+  SubmissionId,
+  SubmissionType,
 } from '@postybirb/types';
 import { ScheduleType } from '@postybirb/types';
 import type { InferSelectModel } from 'drizzle-orm';
@@ -11,22 +12,24 @@ import { HydrationContext } from '../repositories/base/hydration-context';
 import type { SubmissionSchema } from '../schemas';
 import { DatabaseEntity } from './database-entity';
 import {
-    PostQueueRecord,
-    type PostQueueRecordRow,
+  PostQueueRecord,
+  type PostQueueRecordRow,
 } from './post-queue-record.entity';
 import { PostRecord, type PostRecordRow } from './post-record.entity';
+import { Post, type PostRow } from './post.entity';
 import {
-    SubmissionFile,
-    type SubmissionFileRow,
+  SubmissionFile,
+  type SubmissionFileRow,
 } from './submission-file.entity';
 import {
-    WebsiteOptions,
-    type WebsiteOptionsRow,
+  WebsiteOptions,
+  type WebsiteOptionsRow,
 } from './website-options.entity';
 
 export type SubmissionRow = InferSelectModel<typeof SubmissionSchema> & {
   options?: WebsiteOptionsRow[];
   posts?: PostRecordRow[];
+  post?: PostRow;
   files?: SubmissionFileRow[];
   postQueueRecord?: PostQueueRecordRow;
 };
@@ -61,6 +64,10 @@ export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
 
   public posts!: PostRecord[];
 
+  public post?: Post;
+
+  public dependsOn: SubmissionId[];
+
   public order: number;
 
   constructor(init: Partial<ISubmission<T>> = {}) {
@@ -79,6 +86,7 @@ export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
     this.isInitialized = init.isInitialized ?? false;
     this.schedule = init.schedule ?? { scheduleType: ScheduleType.NONE };
     this.metadata = (init.metadata ?? ({} as T)) as T;
+    this.dependsOn = [...(init.dependsOn ?? [])];
     this.order = init.order ?? 0;
   }
 
@@ -99,6 +107,8 @@ export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
       files: this.files,
       metadata: this.metadata,
       posts: this.posts,
+      post: this.post,
+      dependsOn: [...this.dependsOn],
       order: this.order,
     } as ISubmission<T>;
   }
@@ -109,6 +119,7 @@ export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
       files: this.files?.map((f) => f.toDTO()),
       options: this.options?.map((o) => o.toDTO()),
       posts: this.posts?.map((p) => p.toDTO()),
+      post: this.post?.toDTO(),
       postQueueRecord: this.postQueueRecord?.toDTO(),
       validations: [],
     };
@@ -134,6 +145,7 @@ export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
         if (row.options) e.options = ctx.hydrateMany(WebsiteOptions, row.options);
         if (row.files) e.files = ctx.hydrateMany(SubmissionFile, row.files);
         if (row.posts) e.posts = ctx.hydrateMany(PostRecord, row.posts);
+        if (row.post) e.post = ctx.hydrateOne(Post, row.post);
         if (row.postQueueRecord) {
           e.postQueueRecord = ctx.hydrateOne(
             PostQueueRecord,

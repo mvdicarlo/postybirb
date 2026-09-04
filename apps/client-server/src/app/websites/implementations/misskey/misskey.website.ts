@@ -1,20 +1,20 @@
 import { Logger } from '@postybirb/logger';
 import {
-    ImageResizeProps,
-    ISubmissionFile,
-    LoginResult,
-    MisskeyAccountData,
-    MisskeyOAuthRoutes,
-    OAuthRouteHandlers,
-    PostData,
-    PostResponse,
-    SimpleValidationResult,
+  ImageResizeProps,
+  ISubmissionFile,
+  LoginResult,
+  MisskeyAccountData,
+  MisskeyOAuthRoutes,
+  OAuthRouteHandlers,
+  PostData,
+  PostResponse,
+  SimpleValidationResult,
 } from '@postybirb/types';
 import { toError } from '@postybirb/utils/common';
 import { calculateImageResize } from '@postybirb/utils/file-type';
 import { v4 as uuidv4 } from 'uuid';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { DisableAds } from '../../decorators/disable-ads.decorator';
 import { CustomLoginFlow } from '../../decorators/login-flow.decorator';
@@ -233,9 +233,9 @@ export default class Misskey
   async onPostFileSubmission(
     postData: PostData<MisskeyFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     const { accessToken, instanceUrl } = this.websiteDataStore.getData();
     if (!accessToken || !instanceUrl) {
@@ -248,7 +248,7 @@ export default class Misskey
       // Upload files to Misskey Drive
       const fileIds: string[] = [];
       for (const file of files) {
-        cancellationToken.throwIfCancelled();
+        cancellationToken.throwIfAborted();
 
         this.logger
           .withMetadata({
@@ -274,7 +274,7 @@ export default class Misskey
         fileIds.push(driveFile.id);
       }
 
-      cancellationToken.throwIfCancelled();
+      cancellationToken.throwIfAborted();
 
       // Create the note
       const note = await MisskeyApiService.createNote(
@@ -332,9 +332,9 @@ export default class Misskey
 
   async onPostMessageSubmission(
     postData: PostData<MisskeyMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     const { accessToken, instanceUrl } = this.websiteDataStore.getData();
     if (!accessToken || !instanceUrl) {
