@@ -48,6 +48,7 @@ import { E621FileSubmission } from './models/e621-file-submission';
     'video/webm',
     'video/mp4',
     'video/webm',
+    'image/webp',
   ],
   acceptedFileSizes: {
     'image/png': FileSize.megabytes(100),
@@ -56,6 +57,7 @@ import { E621FileSubmission } from './models/e621-file-submission';
     'image/apng': FileSize.megabytes(20),
     'video/webm': FileSize.megabytes(100),
     'video/mp4': FileSize.megabytes(100),
+    'image/webp': FileSize.megabytes(100),
   },
   acceptsExternalSourceUrls: true,
   fileBatchSize: 1,
