@@ -4,12 +4,13 @@ import {
   ActionIcon,
   Button,
   CloseButton,
-  ColorInput,
+  ColorPicker,
   Divider,
   Group,
   Modal,
   Popover,
   Stack,
+  Text,
   TextInput,
   Tooltip,
 } from '@mantine/core';
@@ -21,6 +22,8 @@ import {
   IconArrowBackUp,
   IconArrowForwardUp,
   IconBold,
+  IconColorPicker,
+  IconEraser,
   IconEye,
   IconH1,
   IconH2,
@@ -38,7 +41,7 @@ import {
   IconUnderline,
 } from '@tabler/icons-react';
 import type { Editor } from '@tiptap/react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface DescriptionToolbarProps {
   editor: Editor | null;
@@ -357,23 +360,86 @@ function TextColorButton({ editor }: { editor: Editor }) {
   const currentColor = editor.getAttributes('textStyle')?.color || '';
 
   const handleChange = useCallback(
-    (color: string) => {
-      if (color) {
-        editor.chain().focus().setColor(color).run();
+    (newColor: string) => {
+      setColor(newColor);
+      const range = savedRangeRef.current;
+      let chain = editor.chain();
+      if (range) {
+        chain = chain.setTextSelection(range);
+      }
+      if (newColor && newColor.trim() !== '') {
+        chain.setColor(newColor).run();
       } else {
-        editor.chain().focus().unsetColor().run();
+        chain.unsetColor().run();
       }
     },
     [editor],
   );
 
+  const [color, setColor] = useState(currentColor);
+  const [isPicking, setIsPicking] = useState(false);
+  const savedRangeRef = useRef<{ from: number; to: number } | null>(null);
+
+  // Sync local state when editor color changes externally
+  useEffect(() => {
+    setColor(currentColor);
+  }, [currentColor]);
+
+  // Save selection when popover opens
+  useEffect(() => {
+    if (opened) {
+      const { from, to } = editor.state.selection;
+      if (from !== to) {
+        savedRangeRef.current = { from, to };
+      } else {
+        savedRangeRef.current = null;
+      }
+    }
+  }, [opened, editor]);
+
+  const handleReset = useCallback(() => {
+    // unsetColor
+    handleChange('');
+  }, [handleChange]);
+
+  const handleEyeDropper = useCallback(async () => {
+    if (!('EyeDropper' in window)) return;
+    try {
+      setIsPicking(true);
+      const eyeDropper = new (
+        window as unknown as {
+          EyeDropper: { new (): { open(): Promise<{ sRGBHex: string }> } };
+        }
+      ).EyeDropper();
+      const result = await eyeDropper.open();
+      const hexColor = result.sRGBHex;
+      if (hexColor) {
+        handleChange(hexColor);
+      }
+    } catch {
+      // user cancelled
+    } finally {
+      setIsPicking(false);
+    }
+  }, [handleChange]);
+
+  const handleClose = useCallback(() => {
+    close();
+    if (savedRangeRef.current) {
+      editor.chain().focus().setTextSelection(savedRangeRef.current).run();
+      savedRangeRef.current = null;
+    } else {
+      editor.commands.focus();
+    }
+  }, [close, editor]);
+
   return (
     <Popover
       opened={opened}
-      onClose={close}
-      width={220}
+      onClose={handleClose}
+      width={280}
       shadow="md"
-      position="bottom"
+      position="top"
     >
       <Popover.Target>
         <Tooltip label="Text Color" withArrow openDelay={500}>
@@ -390,26 +456,19 @@ function TextColorButton({ editor }: { editor: Editor }) {
       </Popover.Target>
       <Popover.Dropdown
         onKeyDown={(e: React.KeyboardEvent) => {
-          if (e.key === 'Escape') {
-            close();
-            editor.commands.focus();
-          }
+          if (e.key === 'Escape') handleClose();
         }}
       >
         <Stack gap={4}>
-          <Group justify="flex-end">
-            <CloseButton
-              size="xs"
-              onClick={() => {
-                close();
-                editor.commands.focus();
-              }}
-            />
+          <Group justify="space-between">
+            <Text>Pick Color</Text>
+            <CloseButton size="sm" onClick={handleClose} />
           </Group>
-          <ColorInput
-            size="xs"
-            value={currentColor}
+
+          <ColorPicker
+            value={color}
             onChange={handleChange}
+            format="hex"
             swatches={[
               '#000000',
               '#868e96',
@@ -428,6 +487,41 @@ function TextColorButton({ editor }: { editor: Editor }) {
             ]}
             swatchesPerRow={7}
           />
+
+          <Group gap={4} align="center">
+            <TextInput
+              size="xs"
+              style={{ flex: 1 }}
+              value={color}
+              onChange={(e) => handleChange(e.currentTarget.value)}
+              placeholder="Enter hex color (e.g. #ff0000)"
+            />
+            {'EyeDropper' in window && (
+              <Tooltip label="Pick color from screen" withArrow openDelay={500}>
+                <ActionIcon
+                  size="sm"
+                  variant="subtle"
+                  color="gray"
+                  onClick={handleEyeDropper}
+                  disabled={isPicking}
+                  aria-label="Pick color from screen"
+                >
+                  <IconColorPicker size={16} />
+                </ActionIcon>
+              </Tooltip>
+            )}
+            <Tooltip label="Reset color" withArrow openDelay={500}>
+              <ActionIcon
+                size="xs"
+                variant="subtle"
+                color="red"
+                onClick={handleReset}
+                aria-label="Reset color"
+              >
+                <IconEraser size={16} />
+              </ActionIcon>
+            </Tooltip>
+          </Group>
         </Stack>
       </Popover.Dropdown>
     </Popover>

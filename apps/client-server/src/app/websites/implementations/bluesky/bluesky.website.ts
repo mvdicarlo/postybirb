@@ -80,9 +80,9 @@ type LoggedInAgent = SetNonNullable<AtpAgent, 'session' | 'pdsUrl'>;
   ],
   acceptedFileSizes: {
     '*': 2_000_000,
-    [FileType.VIDEO]: FileSize.megabytes(50),
+    [FileType.VIDEO]: FileSize.megabytes(300),
   },
-  fileBatchSize: 4,
+  fileBatchSize: 10,
 })
 @DisableAds()
 export default class Bluesky

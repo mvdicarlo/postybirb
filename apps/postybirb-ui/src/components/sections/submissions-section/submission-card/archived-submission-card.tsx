@@ -5,28 +5,25 @@
 
 import { Trans } from '@lingui/react/macro';
 import {
-    ActionIcon,
-    Card,
-    Group,
-    Menu,
-    Stack,
-    Tooltip,
+  ActionIcon,
+  Button,
+  Card,
+  Checkbox,
+  Group,
+  Stack,
+  Tooltip,
 } from '@mantine/core';
 import { SubmissionType } from '@postybirb/types';
-import {
-    IconArchiveOff,
-    IconDotsVertical,
-    IconHistory,
-    IconTrash
-} from '@tabler/icons-react';
+import { IconArchiveOff, IconHistory, IconTrash } from '@tabler/icons-react';
 import { memo, useCallback, useMemo } from 'react';
 import submissionApi from '../../../../api/submission.api';
 import {
-    showDeletedNotification,
-    showDeleteErrorNotification,
-    showRestoredNotification,
-    showRestoreErrorNotification,
+  showDeletedNotification,
+  showDeleteErrorNotification,
+  showRestoredNotification,
+  showRestoreErrorNotification,
 } from '../../../../utils/notifications';
+import { HoldToConfirmButton } from '../../../hold-to-confirm';
 import { useSubmissionsActions } from '../context';
 import { SubmissionBadges } from './submission-badges';
 import { SubmissionThumbnail } from './submission-thumbnail';
@@ -80,6 +77,22 @@ export const ArchivedSubmissionCard = memo(({
     [onSelect, submission.id],
   );
 
+  const handleCheckboxChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const nativeEvent = event.nativeEvent as MouseEvent;
+      onSelect(
+        submission.id,
+        {
+          shiftKey: nativeEvent.shiftKey,
+          ctrlKey: nativeEvent.ctrlKey,
+          metaKey: nativeEvent.metaKey,
+        } as React.MouseEvent,
+        true, // isCheckbox - enables toggle behavior
+      );
+    },
+    [onSelect, submission.id],
+  );
+
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent) => {
       if (event.target !== event.currentTarget) return;
@@ -116,18 +129,14 @@ export const ArchivedSubmissionCard = memo(({
     [submission.submissionId],
   );
 
-  const handleDelete = useCallback(
-    async (e: React.MouseEvent) => {
-      e.stopPropagation();
-      try {
-        await submissionApi.remove([submission.submissionId]);
-        showDeletedNotification();
-      } catch {
-        showDeleteErrorNotification();
-      }
-    },
-    [submission.submissionId],
-  );
+  const handleDelete = useCallback(async () => {
+    try {
+      await submissionApi.remove([submission.submissionId]);
+      showDeletedNotification();
+    } catch {
+      showDeleteErrorNotification();
+    }
+  }, [submission.submissionId]);
 
   const handleViewHistory = useCallback(
     (e: React.MouseEvent) => {
@@ -154,6 +163,24 @@ export const ArchivedSubmissionCard = memo(({
         align="flex-start"
         className="postybirb__submission__card_layout"
       >
+          {/* Selection checkbox */}
+          <Stack
+            gap={4}
+            align="center"
+            justify="center"
+            style={{ alignSelf: 'stretch' }}
+            className="postybirb__submission__card_actions_column"
+          >
+            <Checkbox
+              size="xs"
+              checked={isSelected}
+              onChange={handleCheckboxChange}
+              onClick={(e) => e.stopPropagation()}
+              // eslint-disable-next-line lingui/no-unlocalized-strings
+              aria-label={`Select ${submission.title}`}
+            />
+          </Stack>
+
           {/* Thumbnail - only for FILE type */}
           {showThumbnail && (
             <SubmissionThumbnail
@@ -178,57 +205,45 @@ export const ArchivedSubmissionCard = memo(({
         <Group
           gap={4}
           wrap="nowrap"
+          align="center"
           className="postybirb__submission__card_actions"
         >
-            {/* Unarchive button */}
-            <Tooltip label={<Trans>Restore</Trans>}>
-              <ActionIcon
-                variant="subtle"
-                size="sm"
-                color="blue"
-                onClick={handleUnarchive}
-                onKeyDown={(e) => e.stopPropagation()}
-              >
-                <IconArchiveOff size={16} />
-              </ActionIcon>
-            </Tooltip>
+          <Button
+            variant="subtle"
+            size="compact-sm"
+            color="blue"
+            leftSection={<IconArchiveOff size={14} />}
+            onClick={handleUnarchive}
+            onKeyDown={(e) => e.stopPropagation()}
+          >
+            <Trans>Restore</Trans>
+          </Button>
 
-            {/* Actions menu */}
-            <Menu position="bottom-end" withinPortal trapFocus returnFocus>
-              <Menu.Target>
-                <ActionIcon
-                  variant="subtle"
-                  size="sm"
-                  color="gray"
-                  onClick={(e) => e.stopPropagation()}
-                  onKeyDown={(e) => e.stopPropagation()}
-                >
-                  <IconDotsVertical size={16} />
-                </ActionIcon>
-              </Menu.Target>
-              <Menu.Dropdown>
-                <Menu.Item
-                  leftSection={<IconHistory size={14} />}
-                  onClick={handleViewHistory}
-                >
-                  <Trans>View history</Trans>
-                </Menu.Item>
-                <Menu.Item
-                  leftSection={<IconArchiveOff size={14} />}
-                  onClick={handleUnarchive}
-                >
-                  <Trans>Restore</Trans>
-                </Menu.Item>
-                <Menu.Divider />
-                <Menu.Item
-                  leftSection={<IconTrash size={14} />}
-                  color="red"
-                  onClick={handleDelete}
-                >
-                  <Trans>Delete permanently</Trans>
-                </Menu.Item>
-              </Menu.Dropdown>
-            </Menu>
+          <Tooltip label={<Trans>View history</Trans>}>
+            <ActionIcon
+              variant="subtle"
+              size="sm"
+              color="gray"
+              onClick={handleViewHistory}
+              onKeyDown={(e) => e.stopPropagation()}
+            >
+              <IconHistory size={16} />
+            </ActionIcon>
+          </Tooltip>
+
+          <Tooltip label={<Trans>Hold to delete permanently</Trans>}>
+            <HoldToConfirmButton
+              onConfirm={handleDelete}
+              variant="subtle"
+              size="sm"
+              color="red"
+              onClick={(e) => e.stopPropagation()}
+              // eslint-disable-next-line lingui/no-unlocalized-strings
+              aria-label="Delete permanently"
+            >
+              <IconTrash size={16} />
+            </HoldToConfirmButton>
+          </Tooltip>
         </Group>
       </Group>
     </Card>
