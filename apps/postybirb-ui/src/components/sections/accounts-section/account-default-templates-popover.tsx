@@ -31,7 +31,7 @@ export function AccountDefaultTemplatesPopover({
   account: AccountRecord;
 }) {
   const [opened, { toggle, close }] = useDisclosure(false);
-  const { supports } = account.instanceCapabilities;
+  const supports = account.instanceCapabilities?.supports ?? [];
 
   const updateTemplate = useCallback(
     async (

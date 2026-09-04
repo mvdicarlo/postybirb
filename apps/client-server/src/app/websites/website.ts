@@ -2,8 +2,7 @@ import { Account, WebsiteDataRepository } from '@postybirb/database';
 import { Logger, PostyBirbLogger } from '@postybirb/logger';
 import {
   PlatformCookieChange,
-  PlatformCookieDetails,
-  PlatformService,
+  PlatformService
 } from '@postybirb/platform';
 import {
   DynamicObject,
@@ -650,67 +649,67 @@ export abstract class Website<
    * @protected - called internally by {@link login}.
    */
   protected async onBeforeLogin() {
-    try {
-      if (this.decoratedProps.loginFlow.type === 'user') {
-        const cookiesList = await this.platform.session.getCookies(
-          this.accountId,
-        );
-        for (const cookie of cookiesList) {
-          // Check for expired cookies
-          if (
-            cookie.expirationDate &&
-            cookie.expirationDate < Date.now() / 1000
-          ) {
-            this.logger.debug(
-              `Found expired cookie: ${cookie.name} (${cookie.domain}) - Expired at ${new Date(cookie.expirationDate * 1000).toISOString()}`,
-            );
-            await this.cycleCookies();
-          }
+    // try {
+    //   if (this.decoratedProps.loginFlow.type === 'user') {
+    //     const cookiesList = await this.platform.session.getCookies(
+    //       this.accountId,
+    //     );
+    //     for (const cookie of cookiesList) {
+    //       // Check for expired cookies
+    //       if (
+    //         cookie.expirationDate &&
+    //         cookie.expirationDate < Date.now() / 1000
+    //       ) {
+    //         this.logger.debug(
+    //           `Found expired cookie: ${cookie.name} (${cookie.domain}) - Expired at ${new Date(cookie.expirationDate * 1000).toISOString()}`,
+    //         );
+    //         await this.cycleCookies();
+    //       }
 
-          if (cookie.session) {
-            const setCookie: PlatformCookieDetails = {
-              url: `${cookie.secure ? 'https' : 'http'}://${cookie.domain?.replace(/^\./, '')}${cookie.path}`,
-              name: `${CookiePrefix}${cookie.name}`,
-              value: cookie.value,
-              domain: cookie.domain,
-              path: cookie.path,
-              secure: cookie.secure,
-              httpOnly: cookie.httpOnly,
-              sameSite: cookie.sameSite,
-              expirationDate:
-                Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 365,
-            };
-            await this.platform.session.setCookie(this.accountId, setCookie);
-            await this.platform.session.flushCookies(this.accountId);
-          } else if (cookie.name.startsWith(CookiePrefix)) {
-            const sessionCookieAlreadyPopulated = cookiesList.some(
-              (c) => c.name === cookie.name.replace(CookiePrefix, ''),
-            );
-            if (!sessionCookieAlreadyPopulated) {
-              this.logger.debug(
-                `Rehydrating session cookie: ${cookie.name} (${cookie.domain})`,
-              );
-              const setCookie: PlatformCookieDetails = {
-                url: `${cookie.secure ? 'https' : 'http'}://${cookie.domain?.replace(/^\./, '')}${cookie.path}`,
-                name: cookie.name.replace(CookiePrefix, ''),
-                value: cookie.value,
-                domain: cookie.domain,
-                path: cookie.path,
-                secure: cookie.secure,
-                httpOnly: cookie.httpOnly,
-                sameSite: cookie.sameSite,
-              };
-              await this.platform.session.setCookie(this.accountId, setCookie);
-              await this.platform.session.flushCookies(this.accountId);
-            }
-          }
-        }
-      }
-    } catch (err) {
-      this.logger
-        .withError(err)
-        .error('Error during onBeforeLogin cookie handling:');
-    }
+    //       if (cookie.session) {
+    //         const setCookie: PlatformCookieDetails = {
+    //           url: `${cookie.secure ? 'https' : 'http'}://${cookie.domain?.replace(/^\./, '')}${cookie.path}`,
+    //           name: `${CookiePrefix}${cookie.name}`,
+    //           value: cookie.value,
+    //           domain: cookie.domain,
+    //           path: cookie.path,
+    //           secure: cookie.secure,
+    //           httpOnly: cookie.httpOnly,
+    //           sameSite: cookie.sameSite,
+    //           expirationDate:
+    //             Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 365,
+    //         };
+    //         await this.platform.session.setCookie(this.accountId, setCookie);
+    //         await this.platform.session.flushCookies(this.accountId);
+    //       } else if (cookie.name.startsWith(CookiePrefix)) {
+    //         const sessionCookieAlreadyPopulated = cookiesList.some(
+    //           (c) => c.name === cookie.name.replace(CookiePrefix, ''),
+    //         );
+    //         if (!sessionCookieAlreadyPopulated) {
+    //           this.logger.debug(
+    //             `Rehydrating session cookie: ${cookie.name} (${cookie.domain})`,
+    //           );
+    //           const setCookie: PlatformCookieDetails = {
+    //             url: `${cookie.secure ? 'https' : 'http'}://${cookie.domain?.replace(/^\./, '')}${cookie.path}`,
+    //             name: cookie.name.replace(CookiePrefix, ''),
+    //             value: cookie.value,
+    //             domain: cookie.domain,
+    //             path: cookie.path,
+    //             secure: cookie.secure,
+    //             httpOnly: cookie.httpOnly,
+    //             sameSite: cookie.sameSite,
+    //           };
+    //           await this.platform.session.setCookie(this.accountId, setCookie);
+    //           await this.platform.session.flushCookies(this.accountId);
+    //         }
+    //       }
+    //     }
+    //   }
+    // } catch (err) {
+    //   this.logger
+    //     .withError(err)
+    //     .error('Error during onBeforeLogin cookie handling:');
+    // }
   }
 
   /**

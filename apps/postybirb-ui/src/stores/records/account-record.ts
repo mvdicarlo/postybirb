@@ -30,7 +30,10 @@ export class AccountRecord extends BaseRecord {
     this.groups = dto.groups ?? [];
     this.state = dto.state;
     this.data = dto.data;
-    this.instanceCapabilities = dto.instanceCapabilities;
+    this.instanceCapabilities = dto.instanceCapabilities ?? {
+      websiteDisplayName: dto.website,
+      supports: [],
+    };
     this.defaultFileTemplateId = dto.defaultFileTemplateId ?? null;
     this.defaultMessageTemplateId = dto.defaultMessageTemplateId ?? null;
   }
@@ -64,7 +67,7 @@ export class AccountRecord extends BaseRecord {
   }
 
   get websiteDisplayName(): string {
-    return this.instanceCapabilities.websiteDisplayName;
+    return this.instanceCapabilities?.websiteDisplayName ?? this.website;
   }
 
   /**
