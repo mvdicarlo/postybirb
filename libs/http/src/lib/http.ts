@@ -26,7 +26,7 @@ export type {
   HttpOptions,
   HttpRequestOptions,
   HttpResponse,
-  PostOptions,
+  PostOptions
 } from './types';
 
 // https://www.electronjs.org/docs/api/client-request#instance-methods
@@ -57,6 +57,8 @@ interface CloudflareAwareHttpResponse<T> extends HttpResponse<T> {
 }
 
 const DEFAULT_CLOUDFLARE_CHALLENGE_TIMEOUT = 5 * 60 * 1000;
+const CLOUDFLARE_INVISIBLE_CHALLENGE_TIMEOUT = 3 * 1000;
+const CLOUDFLARE_CHALLENGE_CHECK_INTERVAL = 1000;
 
 function getPartitionKey(partition: string): string {
   return `persist:${partition}`;
@@ -398,14 +400,12 @@ export class Http {
 
       if (response.isCloudflareChallenge) {
         Http.logger.warn(`Cloudflare challenge detected for GET ${url}`);
-        if (!options.cloudflareChallenge?.openBrowserWindow) {
-          return Http.toHttpResponse(response);
-        }
-        return await Http.performBrowserWindowGetRequest<T>(
+        const browserResponse = await Http.performBrowserWindowGetRequest<T>(
           url,
           options,
           crOptions,
         );
+        return browserResponse ?? Http.toHttpResponse(response);
       }
       return Http.toHttpResponse(response);
     } catch (err) {
@@ -493,6 +493,11 @@ export class Http {
           options,
           crOptions ?? {},
         );
+        if (!response) {
+          throw new Error(
+            'Cloudflare challenge detected. Enable the interactive Cloudflare challenge window in settings to continue.',
+          );
+        }
         statusCode = response.statusCode ?? 0;
         success = statusCode >= 200 && statusCode < 400;
         return response;
@@ -522,15 +527,13 @@ export class Http {
         Http.logger.warn(
           `Cloudflare challenge detected for ${method.toUpperCase()} ${url}`,
         );
-        if (!options.cloudflareChallenge?.openBrowserWindow) {
-          return Http.toHttpResponse(response);
-        }
-        return await Http.performBrowserWindowPostRequest<T>(
+        const browserResponse = await Http.performBrowserWindowPostRequest<T>(
           url,
           options,
           crOptions,
           true,
         );
+        return browserResponse ?? Http.toHttpResponse(response);
       }
       return Http.toHttpResponse(response);
     } catch (err) {
@@ -553,7 +556,7 @@ export class Http {
     url: string,
     options: HttpOptions,
     crOptions?: ClientRequestConstructorOptions,
-  ): Promise<HttpResponse<T>> {
+  ): Promise<HttpResponse<T> | undefined> {
     const window = new BrowserWindow({
       show: false,
       webPreferences: {
@@ -585,7 +588,7 @@ export class Http {
     options: PostOptions | BinaryPostOptions,
     crOptions: ClientRequestConstructorOptions,
     challengeExpected = false,
-  ): Promise<HttpResponse<T>> {
+  ): Promise<HttpResponse<T> | undefined> {
     const { contentType, buffer } = Http.createPostBody(options);
     const headers = Object.entries({
       ...(options.headers ?? {}),
@@ -654,18 +657,16 @@ export class Http {
     ].some((pattern) => pattern.test(html));
   }
 
-  private static async awaitCloudflareChallengePage(
+  private static async waitForCloudflareChallengeResolution(
     window: BrowserWindow,
     timeoutMs: number,
-  ): Promise<void> {
-    const checkInterval = 1000; // 1 second
-    const attempts = Math.ceil(timeoutMs / checkInterval);
-
-    window.show();
-    window.focus();
+  ): Promise<boolean> {
+    const attempts = Math.ceil(
+      timeoutMs / CLOUDFLARE_CHALLENGE_CHECK_INTERVAL,
+    );
 
     for (let i = 0; i < attempts; i++) {
-      await Http.awaitCheckInterval(checkInterval);
+      await Http.awaitCheckInterval(CLOUDFLARE_CHALLENGE_CHECK_INTERVAL);
       if (window.isDestroyed()) {
         throw new Error('Cloudflare challenge window was closed.');
       }
@@ -673,8 +674,40 @@ export class Http {
         'document.documentElement?.outerHTML ?? ""',
       );
       if (!Http.isOnCloudflareChallengePage(html)) {
-        return;
+        return true;
       }
+    }
+
+    return false;
+  }
+
+  private static async awaitCloudflareChallengePage(
+    window: BrowserWindow,
+    options?: CloudflareChallengeOptions,
+  ): Promise<boolean> {
+    const resolvedInvisibly =
+      await Http.waitForCloudflareChallengeResolution(
+        window,
+        CLOUDFLARE_INVISIBLE_CHALLENGE_TIMEOUT,
+      );
+    if (resolvedInvisibly) {
+      return true;
+    }
+
+    if (!options?.openBrowserWindow) {
+      return false;
+    }
+
+    window.show();
+    window.focus();
+
+    const resolvedInteractively =
+      await Http.waitForCloudflareChallengeResolution(
+        window,
+        options.timeoutMs ?? DEFAULT_CLOUDFLARE_CHALLENGE_TIMEOUT,
+      );
+    if (resolvedInteractively) {
+      return true;
     }
 
     throw new Error('Timed out waiting for the Cloudflare challenge.');
@@ -692,21 +725,19 @@ export class Http {
     window: BrowserWindow,
     options?: CloudflareChallengeOptions,
     challengeExpected = false,
-  ): Promise<HttpResponse<T>> {
+  ): Promise<HttpResponse<T> | undefined> {
     let html = await window.webContents.executeJavaScript(
       'document.documentElement?.outerHTML ?? ""',
     );
 
     if (challengeExpected || Http.isOnCloudflareChallengePage(html)) {
-      if (!options?.openBrowserWindow) {
-        throw new Error(
-          'Cloudflare challenge detected. Enable the interactive Cloudflare challenge window in settings to continue.',
-        );
-      }
-      await Http.awaitCloudflareChallengePage(
+      const challengeResolved = await Http.awaitCloudflareChallengePage(
         window,
-        options.timeoutMs ?? DEFAULT_CLOUDFLARE_CHALLENGE_TIMEOUT,
+        options,
       );
+      if (!challengeResolved) {
+        return undefined;
+      }
       html = await window.webContents.executeJavaScript(
         'document.documentElement?.outerHTML ?? ""',
       );

@@ -1,12 +1,12 @@
 import { SelectOption } from '@postybirb/form-builder';
 
 import {
-    FileType,
-    ImageResizeProps,
-    LoginResult,
-    PostData,
-    PostResponse,
-    SubmissionRating,
+  FileType,
+  ImageResizeProps,
+  LoginResult,
+  PostData,
+  PostResponse,
+  SubmissionRating,
 } from '@postybirb/types';
 import { getFileTypeFromMimeType } from '@postybirb/utils/file-type';
 import { parse } from 'node-html-parser';
@@ -259,6 +259,11 @@ export default class Weasyl
 
     if (
       body.includes('Submission Information') ||
+      // Currently unknown issue with Weasyl where they return a security error page instead of the submission page
+      // However usually the post is made successfully, so we will treat this as a success and return the source URL
+      body.includes(
+        'We weren’t able to process your request for security reasons',
+      ) ||
       // If they set a rating of adult and didn't set nsfw when they logged in
       body.includes(
         'This page contains content that you cannot view according to your current allowed ratings',
@@ -285,7 +290,9 @@ export default class Weasyl
         body: result.body,
         statusCode: result.statusCode,
       })
-      .withException(new Error('Unknown response from Weasyl'));
+      .withException(
+        new Error(`Unknown response from Weasyl at ${result.responseUrl}`),
+      );
   }
 
   onValidateFileSubmission = validatorPassthru;
