@@ -32,9 +32,10 @@ export function SubmissionScheduleBadge({
     color = 'blue';
   }
 
+  const formattedNextPostAt = formatDateTime(nextPostAt);
   const tooltip = submission.isScheduled
-    ? formatDateTime(nextPostAt)
-    : t`${formatDateTime(nextPostAt)} (scheduling is off)`;
+    ? formattedNextPostAt
+    : t`${formattedNextPostAt} (scheduling is off)`;
 
   return (
     <Tooltip label={tooltip} withArrow>

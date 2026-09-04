@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "ea5d7b2c-7123-4b98-adf1-0b2db56149a8",
-  "prevId": "169334cd-59a9-40ca-8697-41ff6f0373fe",
+  "id": "ae08b040-3a30-4fbe-8195-06f48944ab4b",
+  "prevId": "ea5d7b2c-7123-4b98-adf1-0b2db56149a8",
   "tables": {
     "account": {
       "name": "account",
@@ -67,7 +67,9 @@
       "indexes": {
         "account_id_unique": {
           "name": "account_id_unique",
-          "columns": ["id"],
+          "columns": [
+            "id"
+          ],
           "isUnique": true
         }
       },
@@ -76,8 +78,12 @@
           "name": "account_defaultFileTemplateId_submission_id_fk",
           "tableFrom": "account",
           "tableTo": "submission",
-          "columnsFrom": ["defaultFileTemplateId"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "defaultFileTemplateId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -85,8 +91,12 @@
           "name": "account_defaultMessageTemplateId_submission_id_fk",
           "tableFrom": "account",
           "tableTo": "submission",
-          "columnsFrom": ["defaultMessageTemplateId"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "defaultMessageTemplateId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -138,12 +148,16 @@
       "indexes": {
         "custom-shortcut_id_unique": {
           "name": "custom-shortcut_id_unique",
-          "columns": ["id"],
+          "columns": [
+            "id"
+          ],
           "isUnique": true
         },
         "custom-shortcut_name_unique": {
           "name": "custom-shortcut_name_unique",
-          "columns": ["name"],
+          "columns": [
+            "name"
+          ],
           "isUnique": true
         }
       },
@@ -202,7 +216,9 @@
       "indexes": {
         "directory-watcher_id_unique": {
           "name": "directory-watcher_id_unique",
-          "columns": ["id"],
+          "columns": [
+            "id"
+          ],
           "isUnique": true
         }
       },
@@ -211,8 +227,12 @@
           "name": "directory-watcher_templateId_submission_id_fk",
           "tableFrom": "directory-watcher",
           "tableTo": "submission",
-          "columnsFrom": ["templateId"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "templateId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -298,7 +318,9 @@
       "indexes": {
         "file-buffer_id_unique": {
           "name": "file-buffer_id_unique",
-          "columns": ["id"],
+          "columns": [
+            "id"
+          ],
           "isUnique": true
         }
       },
@@ -307,8 +329,12 @@
           "name": "file-buffer_submissionFileId_submission-file_id_fk",
           "tableFrom": "file-buffer",
           "tableTo": "submission-file",
-          "columnsFrom": ["submissionFileId"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "submissionFileId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -396,7 +422,9 @@
       "indexes": {
         "notification_id_unique": {
           "name": "notification_id_unique",
-          "columns": ["id"],
+          "columns": [
+            "id"
+          ],
           "isUnique": true
         }
       },
@@ -475,17 +503,26 @@
       "indexes": {
         "post-event_id_unique": {
           "name": "post-event_id_unique",
-          "columns": ["id"],
+          "columns": [
+            "id"
+          ],
           "isUnique": true
         },
         "idx_post_event_type": {
           "name": "idx_post_event_type",
-          "columns": ["postRecordId", "eventType"],
+          "columns": [
+            "postRecordId",
+            "eventType"
+          ],
           "isUnique": false
         },
         "idx_post_event_account": {
           "name": "idx_post_event_account",
-          "columns": ["postRecordId", "accountId", "eventType"],
+          "columns": [
+            "postRecordId",
+            "accountId",
+            "eventType"
+          ],
           "isUnique": false
         }
       },
@@ -494,8 +531,12 @@
           "name": "post-event_postRecordId_post-record_id_fk",
           "tableFrom": "post-event",
           "tableTo": "post-record",
-          "columnsFrom": ["postRecordId"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "postRecordId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -503,8 +544,12 @@
           "name": "post-event_accountId_account_id_fk",
           "tableFrom": "post-event",
           "tableTo": "account",
-          "columnsFrom": ["accountId"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "accountId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -555,7 +600,9 @@
       "indexes": {
         "post-queue_id_unique": {
           "name": "post-queue_id_unique",
-          "columns": ["id"],
+          "columns": [
+            "id"
+          ],
           "isUnique": true
         }
       },
@@ -564,8 +611,12 @@
           "name": "post-queue_postRecordId_post-record_id_fk",
           "tableFrom": "post-queue",
           "tableTo": "post-record",
-          "columnsFrom": ["postRecordId"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "postRecordId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -573,8 +624,12 @@
           "name": "post-queue_submissionId_submission_id_fk",
           "tableFrom": "post-queue",
           "tableTo": "submission",
-          "columnsFrom": ["submissionId"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "submissionId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -655,7 +710,9 @@
       "indexes": {
         "post-record_id_unique": {
           "name": "post-record_id_unique",
-          "columns": ["id"],
+          "columns": [
+            "id"
+          ],
           "isUnique": true
         }
       },
@@ -664,8 +721,12 @@
           "name": "post-record_submissionId_submission_id_fk",
           "tableFrom": "post-record",
           "tableTo": "submission",
-          "columnsFrom": ["submissionId"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "submissionId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -673,9 +734,96 @@
           "name": "post-record_originPostRecordId_post-record_id_fk",
           "tableFrom": "post-record",
           "tableTo": "post-record",
-          "columnsFrom": ["originPostRecordId"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "originPostRecordId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "post": {
+      "name": "post",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "submissionId": {
+          "name": "submissionId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "completed": {
+          "name": "completed",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "cancelled": {
+          "name": "cancelled",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        }
+      },
+      "indexes": {
+        "post_id_unique": {
+          "name": "post_id_unique",
+          "columns": [
+            "id"
+          ],
+          "isUnique": true
+        },
+        "post_submissionId_unique": {
+          "name": "post_submissionId_unique",
+          "columns": [
+            "submissionId"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "post_submissionId_submission_id_fk": {
+          "name": "post_submissionId_submission_id_fk",
+          "tableFrom": "post",
+          "tableTo": "submission",
+          "columnsFrom": [
+            "submissionId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -727,12 +875,16 @@
       "indexes": {
         "settings_id_unique": {
           "name": "settings_id_unique",
-          "columns": ["id"],
+          "columns": [
+            "id"
+          ],
           "isUnique": true
         },
         "settings_profile_unique": {
           "name": "settings_profile_unique",
-          "columns": ["profile"],
+          "columns": [
+            "profile"
+          ],
           "isUnique": true
         }
       },
@@ -886,7 +1038,9 @@
       "indexes": {
         "submission-file_id_unique": {
           "name": "submission-file_id_unique",
-          "columns": ["id"],
+          "columns": [
+            "id"
+          ],
           "isUnique": true
         }
       },
@@ -895,8 +1049,12 @@
           "name": "submission-file_submissionId_submission_id_fk",
           "tableFrom": "submission-file",
           "tableTo": "submission",
-          "columnsFrom": ["submissionId"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "submissionId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -904,8 +1062,12 @@
           "name": "submission-file_primaryFileId_file-buffer_id_fk",
           "tableFrom": "submission-file",
           "tableTo": "file-buffer",
-          "columnsFrom": ["primaryFileId"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "primaryFileId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -913,8 +1075,12 @@
           "name": "submission-file_thumbnailId_file-buffer_id_fk",
           "tableFrom": "submission-file",
           "tableTo": "file-buffer",
-          "columnsFrom": ["thumbnailId"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "thumbnailId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -922,8 +1088,12 @@
           "name": "submission-file_altFileId_file-buffer_id_fk",
           "tableFrom": "submission-file",
           "tableTo": "file-buffer",
-          "columnsFrom": ["altFileId"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "altFileId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -962,6 +1132,14 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
+        },
+        "dependsOn": {
+          "name": "dependsOn",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'[]'"
         },
         "isArchived": {
           "name": "isArchived",
@@ -1025,7 +1203,9 @@
       "indexes": {
         "submission_id_unique": {
           "name": "submission_id_unique",
-          "columns": ["id"],
+          "columns": [
+            "id"
+          ],
           "isUnique": true
         }
       },
@@ -1076,12 +1256,16 @@
       "indexes": {
         "tag-converter_id_unique": {
           "name": "tag-converter_id_unique",
-          "columns": ["id"],
+          "columns": [
+            "id"
+          ],
           "isUnique": true
         },
         "tag-converter_tag_unique": {
           "name": "tag-converter_tag_unique",
-          "columns": ["tag"],
+          "columns": [
+            "tag"
+          ],
           "isUnique": true
         }
       },
@@ -1132,16 +1316,206 @@
       "indexes": {
         "tag-group_id_unique": {
           "name": "tag-group_id_unique",
-          "columns": ["id"],
+          "columns": [
+            "id"
+          ],
           "isUnique": true
         },
         "tag-group_name_unique": {
           "name": "tag-group_name_unique",
-          "columns": ["name"],
+          "columns": [
+            "name"
+          ],
           "isUnique": true
         }
       },
       "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "unit-of-work": {
+      "name": "unit-of-work",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "postId": {
+          "name": "postId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "submissionId": {
+          "name": "submissionId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "accountId": {
+          "name": "accountId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "fileId": {
+          "name": "fileId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "fileHash": {
+          "name": "fileHash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "attempt": {
+          "name": "attempt",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "data": {
+          "name": "data",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "response": {
+          "name": "response",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "evicted": {
+          "name": "evicted",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "url": {
+          "name": "url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "batch": {
+          "name": "batch",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "rateLimitedUntil": {
+          "name": "rateLimitedUntil",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "state": {
+          "name": "state",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'NEW'"
+        }
+      },
+      "indexes": {
+        "unit-of-work_id_unique": {
+          "name": "unit-of-work_id_unique",
+          "columns": [
+            "id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "unit-of-work_postId_post_id_fk": {
+          "name": "unit-of-work_postId_post_id_fk",
+          "tableFrom": "unit-of-work",
+          "tableTo": "post",
+          "columnsFrom": [
+            "postId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "unit-of-work_submissionId_submission_id_fk": {
+          "name": "unit-of-work_submissionId_submission_id_fk",
+          "tableFrom": "unit-of-work",
+          "tableTo": "submission",
+          "columnsFrom": [
+            "submissionId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "unit-of-work_accountId_account_id_fk": {
+          "name": "unit-of-work_accountId_account_id_fk",
+          "tableFrom": "unit-of-work",
+          "tableTo": "account",
+          "columnsFrom": [
+            "accountId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "unit-of-work_fileId_submission-file_id_fk": {
+          "name": "unit-of-work_fileId_submission-file_id_fk",
+          "tableFrom": "unit-of-work",
+          "tableTo": "submission-file",
+          "columnsFrom": [
+            "fileId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
@@ -1188,12 +1562,16 @@
       "indexes": {
         "user-converter_id_unique": {
           "name": "user-converter_id_unique",
-          "columns": ["id"],
+          "columns": [
+            "id"
+          ],
           "isUnique": true
         },
         "user-converter_username_unique": {
           "name": "user-converter_username_unique",
-          "columns": ["username"],
+          "columns": [
+            "username"
+          ],
           "isUnique": true
         }
       },
@@ -1238,7 +1616,9 @@
       "indexes": {
         "website-data_id_unique": {
           "name": "website-data_id_unique",
-          "columns": ["id"],
+          "columns": [
+            "id"
+          ],
           "isUnique": true
         }
       },
@@ -1247,8 +1627,12 @@
           "name": "website-data_id_account_id_fk",
           "tableFrom": "website-data",
           "tableTo": "account",
-          "columnsFrom": ["id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1313,7 +1697,9 @@
       "indexes": {
         "website-options_id_unique": {
           "name": "website-options_id_unique",
-          "columns": ["id"],
+          "columns": [
+            "id"
+          ],
           "isUnique": true
         }
       },
@@ -1322,8 +1708,12 @@
           "name": "website-options_accountId_account_id_fk",
           "tableFrom": "website-options",
           "tableTo": "account",
-          "columnsFrom": ["accountId"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "accountId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1331,8 +1721,12 @@
           "name": "website-options_submissionId_submission_id_fk",
           "tableFrom": "website-options",
           "tableTo": "submission",
-          "columnsFrom": ["submissionId"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "submissionId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
