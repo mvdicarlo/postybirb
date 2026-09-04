@@ -1,37 +1,37 @@
 // eslint-disable-next-line max-classes-per-file
 import {
-    $Typed,
-    AppBskyActorGetProfile,
-    AppBskyEmbedImages,
-    AppBskyEmbedVideo,
-    AppBskyFeedThreadgate,
-    AppBskyVideoGetJobStatus,
-    AppBskyVideoGetUploadLimits,
-    AppBskyVideoUploadVideo,
-    AtpAgent,
-    AtUri,
-    BlobRef,
-    ComAtprotoLabelDefs,
+  $Typed,
+  AppBskyActorGetProfile,
+  AppBskyEmbedImages,
+  AppBskyEmbedVideo,
+  AppBskyFeedThreadgate,
+  AppBskyVideoGetJobStatus,
+  AppBskyVideoGetUploadLimits,
+  AppBskyVideoUploadVideo,
+  AtpAgent,
+  AtUri,
+  BlobRef,
+  ComAtprotoLabelDefs,
 } from '@atproto/api';
 import { ReplyRef } from '@atproto/api/dist/client/types/app/bsky/feed/post';
 import { isMention } from '@atproto/api/dist/client/types/app/bsky/richtext/facet';
 import { JobStatus } from '@atproto/api/dist/client/types/app/bsky/video/defs';
 import {
-    BlueskyAccountData,
-    BlueskyOAuthRoutes,
-    FileType,
-    ImageResizeProps,
-    ISubmissionFile,
-    LoginResult,
-    OAuthRouteHandlers,
-    PostData,
-    PostResponse,
-    SimpleValidationResult,
-    SubmissionRating,
+  BlueskyAccountData,
+  BlueskyOAuthRoutes,
+  FileType,
+  ImageResizeProps,
+  ISubmissionFile,
+  LoginResult,
+  OAuthRouteHandlers,
+  PostData,
+  PostResponse,
+  SimpleValidationResult,
+  SubmissionRating,
 } from '@postybirb/types';
 import {
-    calculateImageResize,
-    getFileTypeFromMimeType,
+  calculateImageResize,
+  getFileTypeFromMimeType,
 } from '@postybirb/utils/file-type';
 import { SetNonNullable } from 'type-fest';
 import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
@@ -80,9 +80,9 @@ type LoggedInAgent = SetNonNullable<AtpAgent, 'session' | 'pdsUrl'>;
   ],
   acceptedFileSizes: {
     '*': 2_000_000,
-    [FileType.VIDEO]: FileSize.megabytes(50),
+    [FileType.VIDEO]: FileSize.megabytes(300),
   },
-  fileBatchSize: 4,
+  fileBatchSize: 10,
 })
 @DisableAds()
 export default class Bluesky
