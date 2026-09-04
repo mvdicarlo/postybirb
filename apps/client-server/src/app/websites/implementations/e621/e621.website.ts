@@ -40,8 +40,25 @@ import { E621FileSubmission } from './models/e621-file-submission';
 })
 @CustomLoginFlow('e621')
 @SupportsFiles({
-  acceptedMimeTypes: ['image/png', 'image/jpeg', 'image/gif', 'video/webm'],
-  acceptedFileSizes: { '*': FileSize.megabytes(100) },
+  acceptedMimeTypes: [
+    'image/png',
+    'image/jpeg',
+    'image/gif',
+    'image/apng',
+    'video/webm',
+    'video/mp4',
+    'video/webm',
+    'image/webp',
+  ],
+  acceptedFileSizes: {
+    'image/png': FileSize.megabytes(100),
+    'image/jpeg': FileSize.megabytes(100),
+    'image/gif': FileSize.megabytes(20),
+    'image/apng': FileSize.megabytes(20),
+    'video/webm': FileSize.megabytes(100),
+    'video/mp4': FileSize.megabytes(100),
+    'image/webp': FileSize.megabytes(100),
+  },
   acceptsExternalSourceUrls: true,
   fileBatchSize: 1,
 })
