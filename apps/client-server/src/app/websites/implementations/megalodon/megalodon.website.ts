@@ -586,7 +586,10 @@ export abstract class MegalodonWebsite
               media_ids: mediaIds,
               sensitive: isSensitiveRating || false,
               visibility: postData.options.visibility || 'public',
-              spoiler_text: postData.options.spoilerText || undefined,
+              spoiler_text:
+                postData.options.spoilerText ||
+                files[0]?.metadata?.spoilerText ||
+                undefined,
               language: undefined,
             },
           );
