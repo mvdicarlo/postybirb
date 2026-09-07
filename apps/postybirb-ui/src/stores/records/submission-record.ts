@@ -12,7 +12,6 @@ import {
     type ISubmissionScheduleInfo,
     type IUnitOfWork,
     type IWebsiteFormFields,
-    type PostQueueRecordDto,
     type PostRecordDto,
     type SubmissionId,
     type SubmissionType,
@@ -49,7 +48,6 @@ export class SubmissionRecord extends BaseRecord {
   readonly posts: PostRecordDto[];
   readonly post?: IEntityDto<IPost>;
   readonly validations: ValidationResult[];
-  readonly postQueueRecord?: PostQueueRecordDto;
   readonly metadata: ISubmissionMetadata;
   readonly dependsOn: SubmissionId[];
   readonly order: number;
@@ -76,7 +74,6 @@ export class SubmissionRecord extends BaseRecord {
     this.posts = dto.posts ?? [];
     this.post = dto.post;
     this.validations = dto.validations ?? [];
-    this.postQueueRecord = dto.postQueueRecord;
     this.metadata = dto.metadata;
     this.dependsOn = dto.dependsOn;
     this.order = dto.order;
@@ -135,10 +132,10 @@ export class SubmissionRecord extends BaseRecord {
   }
 
   /**
-   * Check if the submission is queued for posting.
+    * Check if the submission has open posting work, including running work.
    */
   get isQueued(): boolean {
-    return this.postQueueRecord !== undefined;
+    return this.isPosting;
   }
 
   /**

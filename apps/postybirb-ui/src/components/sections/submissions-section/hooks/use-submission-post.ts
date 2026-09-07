@@ -3,7 +3,6 @@
  */
 
 import { useCallback } from 'react';
-import postManagerApi from '../../../../api/post-manager.api';
 import postingApi, {
     type PostingRequest,
 } from '../../../../api/posting.api';
@@ -33,8 +32,6 @@ export function useSubmissionPost(): UseSubmissionPostResult {
       const submission = useSubmissionStore.getState().recordsMap.get(id);
       if (submission?.post && !submission.post.completed) {
         await postingApi.cancelPost(submission.post.id);
-      } else {
-        await postManagerApi.cancelIfRunning(id);
       }
     } catch {
       // Silently handle if not running

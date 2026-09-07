@@ -20,7 +20,7 @@ import {
     SubmissionType,
     UnitOfWorkState,
 } from '@postybirb/types';
-  import { SettingsService } from '../settings/settings.service';
+import { SettingsService } from '../settings/settings.service';
 import { SUBMISSION_PROJECTION_CHANGED } from '../submission/submission.events';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { PostingManager } from './posting-manager';

@@ -24,8 +24,8 @@ import { WebsiteOptionsService } from '../website-options/website-options.servic
 import TestWebsite from '../websites/implementations/test/test.website';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { PostingManager } from './posting-manager';
-import { PostingModule } from './posting.module';
 import { PostingController } from './posting.controller';
+import { PostingModule } from './posting.module';
 import { PostingService } from './posting.service';
 
 describe('Posting flow integration', () => {
