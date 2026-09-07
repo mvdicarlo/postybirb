@@ -60,6 +60,10 @@ class PostingApi {
     return this.client.get<{ paused: boolean }>('is-paused');
   }
 
+  pause() {
+    return this.client.post<{ paused: boolean }>('pause', {});
+  }
+
   unpause() {
     return this.client.post<{ paused: boolean }>('unpause', {});
   }

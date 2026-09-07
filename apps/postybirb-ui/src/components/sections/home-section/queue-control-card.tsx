@@ -4,29 +4,47 @@
  */
 
 import { Trans } from '@lingui/react/macro';
-import { Button, Loader, Paper, Stack } from '@mantine/core';
+import { Button, Loader, Paper, Stack, Text } from '@mantine/core';
 import { IconPlayerPause, IconPlayerPlay } from '@tabler/icons-react';
 import { useState } from 'react';
-import postQueueApi from '../../../api/post-queue.api';
+import { useQuery, useQueryClient } from 'react-query';
 import postingApi from '../../../api/posting.api';
-import { useQueuePaused } from '../../../stores/entity/settings-store';
+
+const postingPausedQueryKey = 'posting-paused';
 
 /**
  * QueueControlCard component for the home dashboard.
  * Shows queue status and allows pause/resume control.
  */
 export function QueueControlCard() {
-  const queuePaused = useQueuePaused();
   const [isLoading, setIsLoading] = useState(false);
+  const [updateFailed, setUpdateFailed] = useState(false);
+  const queryClient = useQueryClient();
+  const {
+    data: queuePaused,
+    isLoading: isLoadingStatus,
+    isError,
+  } = useQuery(
+    postingPausedQueryKey,
+    async () => (await postingApi.isPaused()).body.paused,
+    { refetchInterval: 1000, enabled: !isLoading },
+  );
 
   const handleToggle = async () => {
+    if (queuePaused === undefined) {
+      return;
+    }
+
     setIsLoading(true);
+    setUpdateFailed(false);
     try {
-      if (queuePaused) {
-        await postingApi.unpause();
-      } else {
-        await postQueueApi.pause();
-      }
+      await queryClient.cancelQueries(postingPausedQueryKey);
+      const response = queuePaused
+        ? await postingApi.unpause()
+        : await postingApi.pause();
+      queryClient.setQueryData(postingPausedQueryKey, response.body.paused);
+    } catch {
+      setUpdateFailed(true);
     } finally {
       setIsLoading(false);
     }
@@ -40,7 +58,7 @@ export function QueueControlCard() {
           color={queuePaused ? 'green' : 'orange'}
           size="xs"
           leftSection={
-            isLoading ? (
+            isLoading || isLoadingStatus ? (
               <Loader size={14} />
             ) : queuePaused ? (
               <IconPlayerPlay size={14} />
@@ -49,7 +67,7 @@ export function QueueControlCard() {
             )
           }
           onClick={handleToggle}
-          disabled={isLoading}
+          disabled={isLoading || queuePaused === undefined || isError}
           fullWidth
         >
           {queuePaused ? (
@@ -58,6 +76,16 @@ export function QueueControlCard() {
             <Trans>Pause Posting</Trans>
           )}
         </Button>
+        {isError && (
+          <Text size="xs" c="red" role="alert">
+            <Trans>Unable to load posting status.</Trans>
+          </Text>
+        )}
+        {updateFailed && (
+          <Text size="xs" c="red" role="alert">
+            <Trans>Unable to update posting status.</Trans>
+          </Text>
+        )}
       </Stack>
     </Paper>
   );

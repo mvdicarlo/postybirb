@@ -34,15 +34,22 @@ export class PostingController {
 
   @Get('is-paused')
   @ApiOkResponse({ description: 'Get if posting is paused.' })
-  isPaused() {
-    return { paused: this.service.arePostsPaused() };
+  async isPaused() {
+    return { paused: await this.service.arePostsPaused() };
+  }
+
+  @Post('pause')
+  @ApiOkResponse({ description: 'Posting paused.' })
+  async pause() {
+    await this.service.pausePosts();
+    return { paused: await this.service.arePostsPaused() };
   }
 
   @Post('unpause')
   @ApiOkResponse({ description: 'Posting resumed.' })
-  unpause() {
-    this.service.unpausePosts();
-    return { paused: this.service.arePostsPaused() };
+  async unpause() {
+    await this.service.unpausePosts();
+    return { paused: await this.service.arePostsPaused() };
   }
 
   @Post('evict/:unitOfWorkId')

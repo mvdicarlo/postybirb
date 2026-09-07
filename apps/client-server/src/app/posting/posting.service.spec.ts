@@ -16,9 +16,11 @@ import type {
 import {
     DefaultSubmissionFileMetadata,
     ScheduleType,
+    SettingsConstants,
     SubmissionType,
     UnitOfWorkState,
 } from '@postybirb/types';
+  import { SettingsService } from '../settings/settings.service';
 import { SUBMISSION_PROJECTION_CHANGED } from '../submission/submission.events';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { PostingManager } from './posting-manager';
@@ -36,6 +38,7 @@ describe('PostingService', () => {
   let postingManager: {
     submit: jest.Mock;
     cancel: jest.Mock;
+    isAccepted: jest.Mock;
   };
   let websiteRegistry: {
     ensureInstance: jest.Mock;
@@ -44,15 +47,20 @@ describe('PostingService', () => {
   let postingRateLimiter: {
     initialize: jest.Mock;
   };
+  let settingsService: {
+    getDefaultSettings: jest.Mock;
+    update: jest.Mock;
+  };
   let eventEmitter: {
     emit: jest.Mock;
   };
 
-  beforeEach(() => {
+  beforeEach(async () => {
     clearDatabase();
     postingManager = {
       submit: jest.fn().mockResolvedValue(true),
       cancel: jest.fn().mockResolvedValue(true),
+      isAccepted: jest.fn().mockReturnValue(false),
     };
     websiteRegistry = {
       ensureInstance: jest.fn().mockResolvedValue({
@@ -69,6 +77,17 @@ describe('PostingService', () => {
     postingRateLimiter = {
       initialize: jest.fn().mockResolvedValue(undefined),
     };
+    const defaultSettings = {
+      id: 'settings-1',
+      settings: { ...SettingsConstants.DEFAULT_SETTINGS, queuePaused: false },
+    };
+    settingsService = {
+      getDefaultSettings: jest.fn().mockResolvedValue(defaultSettings),
+      update: jest.fn().mockImplementation(async (_settingsId, update) => {
+        Object.assign(defaultSettings, update);
+        return defaultSettings;
+      }),
+    };
     eventEmitter = {
       emit: jest.fn(),
     };
@@ -76,10 +95,12 @@ describe('PostingService', () => {
       postingManager as unknown as PostingManager,
       websiteRegistry as unknown as WebsiteRegistryService,
       postingRateLimiter as unknown as PostingRateLimiterService,
+      settingsService as unknown as SettingsService,
       eventEmitter as unknown as EventEmitter2,
     );
     // A fresh service is paused by its startup lock.
-    service.unpausePosts();
+    await service.unpausePosts();
+    settingsService.update.mockClear();
     accountRepository = new AccountRepository();
     postRepository = new PostRepository();
     fileRepository = new SubmissionFileRepository();
@@ -344,6 +365,7 @@ describe('PostingService', () => {
       postingManager as unknown as PostingManager,
       websiteRegistry as unknown as WebsiteRegistryService,
       postingRateLimiter as unknown as PostingRateLimiterService,
+      settingsService as unknown as SettingsService,
     );
     const submission = await seedSubmission();
     const account = await seedAccount('startup-lock-account');
@@ -356,15 +378,79 @@ describe('PostingService', () => {
       state: UnitOfWorkState.NEW,
     });
 
-    expect(pausedService.arePostsPaused()).toBe(true);
+    await expect(pausedService.arePostsPaused()).resolves.toBe(true);
     await pausedService.handlePendingWork();
     expect(postingManager.submit).not.toHaveBeenCalled();
 
-    pausedService.unpausePosts();
+    await pausedService.unpausePosts();
 
-    expect(pausedService.arePostsPaused()).toBe(false);
+    await expect(pausedService.arePostsPaused()).resolves.toBe(false);
     await pausedService.handlePendingWork();
     expect(postingManager.submit).toHaveBeenCalledWith(post.id);
+  });
+
+  it('keeps manually staged posts paused until posting is resumed', async () => {
+    const submission = await seedSubmission();
+    const account = await seedAccount('paused-account');
+    await websiteOptionsRepository.insert({
+      accountId: account.id,
+      submissionId: submission.id,
+      data: {} as IWebsiteFormFields,
+      isDefault: false,
+    });
+
+    await service.pausePosts();
+    const post = await service.post(submission.id);
+    await expect(service.arePostsPaused()).resolves.toBe(true);
+    await expect(settingsService.getDefaultSettings()).resolves.toMatchObject({
+      settings: { queuePaused: true },
+    });
+    await service.handlePendingWork();
+    expect(postingManager.submit).not.toHaveBeenCalled();
+
+    await service.unpausePosts();
+    await expect(service.arePostsPaused()).resolves.toBe(false);
+    await service.handlePendingWork();
+    expect(postingManager.submit).toHaveBeenCalledWith(post.id);
+  });
+
+  it('honors the saved pause setting after a new service startup lock expires', async () => {
+    await service.pausePosts();
+    const restartedService = new PostingService(
+      postingManager as unknown as PostingManager,
+      websiteRegistry as unknown as WebsiteRegistryService,
+      postingRateLimiter as unknown as PostingRateLimiterService,
+      settingsService as unknown as SettingsService,
+    );
+    const clock = jest.spyOn(Date, 'now').mockReturnValue(Date.now() + 180_000);
+
+    try {
+      await expect(restartedService.arePostsPaused()).resolves.toBe(true);
+    } finally {
+      clock.mockRestore();
+    }
+  });
+
+  it('stops dispatching later posts when paused during a pending-work scan', async () => {
+    for (const name of ['first-paused-account', 'second-paused-account']) {
+      const submission = await seedSubmission();
+      const account = await seedAccount(name);
+      const post = await postRepository.insert({ submissionId: submission.id });
+      await unitOfWorkRepository.insert({
+        postId: post.id,
+        submissionId: submission.id,
+        accountId: account.id,
+        state: UnitOfWorkState.PENDING,
+      });
+    }
+    postingManager.submit.mockImplementationOnce(async () => {
+      await service.pausePosts();
+      return true;
+    });
+
+    await service.handlePendingWork();
+
+    expect(postingManager.submit).toHaveBeenCalledTimes(1);
   });
 
   it('dry runs the work that would run without persisting it', async () => {
@@ -913,6 +999,56 @@ describe('PostingService', () => {
     await expect(service.post(submission.id)).rejects.toThrow(
       `Post '${post.id}' is currently active`,
     );
+  });
+
+  it('rejects reopening a cancelled post while its worker is still accepted', async () => {
+    const submission = await seedSubmission();
+    const post = await postRepository.insert({
+      submissionId: submission.id,
+      completed: true,
+      cancelled: true,
+    });
+    postingManager.isAccepted.mockReturnValue(true);
+
+    await expect(service.post(submission.id)).rejects.toThrow(
+      `Post '${post.id}' is currently active`,
+    );
+    await expect(postRepository.findByIdOrThrow(post.id)).resolves.toMatchObject({
+      completed: true,
+      cancelled: true,
+    });
+  });
+
+  it('rechecks worker ownership before committing a retry', async () => {
+    const submission = await seedSubmission();
+    const account = await seedAccount('retry-race-account');
+    const post = await postRepository.insert({
+      submissionId: submission.id,
+      completed: true,
+      cancelled: true,
+    });
+    const unit = await unitOfWorkRepository.insert({
+      postId: post.id,
+      submissionId: submission.id,
+      accountId: account.id,
+      state: UnitOfWorkState.CANCELLED,
+    });
+    postingManager.isAccepted
+      .mockReturnValueOnce(false)
+      .mockReturnValue(true);
+
+    await expect(service.post(submission.id)).rejects.toThrow(
+      `Post '${post.id}' is currently active`,
+    );
+    expect(postingManager.isAccepted).toHaveBeenCalledTimes(2);
+    await expect(postRepository.findByIdOrThrow(post.id)).resolves.toMatchObject({
+      completed: true,
+      cancelled: true,
+    });
+    await expect(unitOfWorkRepository.findByIdOrThrow(unit.id)).resolves.toMatchObject({
+      state: UnitOfWorkState.CANCELLED,
+      evicted: false,
+    });
   });
 
   it('submits active posts but skips cancelled posts', async () => {

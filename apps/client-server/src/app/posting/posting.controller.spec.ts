@@ -70,24 +70,56 @@ describe('PostingController', () => {
     );
   });
 
-  it('reports the paused state', () => {
-    const arePostsPaused = jest.fn().mockReturnValue(true);
+  it('reports the paused state', async () => {
+    const arePostsPaused = jest.fn().mockResolvedValue(true);
     const controller = new PostingController({
       arePostsPaused,
     } as unknown as PostingService);
 
-    expect(controller.isPaused()).toEqual({ paused: true });
+    await expect(controller.isPaused()).resolves.toEqual({ paused: true });
   });
 
-  it('unpauses posting and reports the resulting state', () => {
-    const arePostsPaused = jest.fn().mockReturnValue(false);
-    const unpausePosts = jest.fn();
+  it('pauses posting before reporting the resulting state', async () => {
+    let paused = false;
+    const arePostsPaused = jest.fn().mockImplementation(async () => paused);
+    const pausePosts = jest.fn().mockImplementation(async () => {
+      await Promise.resolve();
+      paused = true;
+    });
+    const controller = new PostingController({
+      arePostsPaused,
+      pausePosts,
+    } as unknown as PostingService);
+
+    await expect(controller.pause()).resolves.toEqual({ paused: true });
+    expect(pausePosts).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not report a successful pause when saving it fails', async () => {
+    const arePostsPaused = jest.fn().mockResolvedValue(false);
+    const pausePosts = jest.fn().mockRejectedValue(new Error('Unable to save settings'));
+    const controller = new PostingController({
+      arePostsPaused,
+      pausePosts,
+    } as unknown as PostingService);
+
+    await expect(controller.pause()).rejects.toThrow('Unable to save settings');
+    expect(arePostsPaused).not.toHaveBeenCalled();
+  });
+
+  it('unpauses posting before reporting the resulting state', async () => {
+    let paused = true;
+    const arePostsPaused = jest.fn().mockImplementation(async () => paused);
+    const unpausePosts = jest.fn().mockImplementation(async () => {
+      await Promise.resolve();
+      paused = false;
+    });
     const controller = new PostingController({
       arePostsPaused,
       unpausePosts,
     } as unknown as PostingService);
 
-    expect(controller.unpause()).toEqual({ paused: false });
+    await expect(controller.unpause()).resolves.toEqual({ paused: false });
     expect(unpausePosts).toHaveBeenCalledTimes(1);
   });
 

@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { FileConverterModule } from '../file-converter/file-converter.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { PostParsersModule } from '../post-parsers/post-parsers.module';
+import { SettingsModule } from '../settings/settings.module';
 import { ValidationModule } from '../validation/validation.module';
 import { WebsitesModule } from '../websites/websites.module';
 import { LegacyPostHistoryMigrationService } from './legacy-post-history-migration.service';
@@ -18,6 +19,7 @@ import { PostingService } from './posting.service';
     WebsitesModule,
     ValidationModule,
     PostParsersModule,
+    SettingsModule,
     FileConverterModule,
     NotificationsModule,
   ],

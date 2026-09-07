@@ -14,6 +14,7 @@ import { AccountService } from '../account/account.service';
 import { CreateAccountDto } from '../account/dtos/create-account.dto';
 import { MulterFileInfo } from '../file/models/multer-file-info';
 import { TestPlatformModule } from '../platform/testing/test-platform.module';
+import { SettingsService } from '../settings/settings.service';
 import { CreateSubmissionDto } from '../submission/dtos/create-submission.dto';
 import { SubmissionService } from '../submission/services/submission.service';
 import { SubmissionModule } from '../submission/submission.module';
@@ -24,6 +25,7 @@ import TestWebsite from '../websites/implementations/test/test.website';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { PostingManager } from './posting-manager';
 import { PostingModule } from './posting.module';
+import { PostingController } from './posting.controller';
 import { PostingService } from './posting.service';
 
 describe('Posting flow integration', () => {
@@ -110,6 +112,24 @@ describe('Posting flow integration', () => {
     };
   }
 
+  async function createMessageSubmission(name: string) {
+    const accountDto = new CreateAccountDto();
+    accountDto.name = name;
+    accountDto.website = 'test';
+    accountDto.groups = [];
+    const account = await accountService.create(accountDto);
+    const submissionDto = new CreateSubmissionDto();
+    submissionDto.name = name;
+    submissionDto.type = SubmissionType.MESSAGE;
+    const submission = await submissionService.create(submissionDto);
+    await websiteOptionsService.create({
+      accountId: account.id,
+      submissionId: submission.id,
+      data: { title: name, rating: SubmissionRating.GENERAL },
+    } as CreateWebsiteOptionsDto);
+    return submission;
+  }
+
   it('creates and posts a message submission while tracking its outcome', async () => {
     const accountDto = new CreateAccountDto();
     accountDto.name = 'Integration account';
@@ -164,6 +184,74 @@ describe('Posting flow integration', () => {
     expect(
       (await submissionService.findByIdOrThrow(submission.id)).isArchived,
     ).toBe(true);
+  }, 10_000);
+
+  it('persists pause controls and holds manually staged work until resumed', async () => {
+    const submission = await createMessageSubmission('Paused integration message');
+    const controller = module.get(PostingController);
+    const settingsService = module.get(SettingsService);
+
+    await expect(controller.pause()).resolves.toEqual({ paused: true });
+    const post = await postingService.post(submission.id);
+    await expect(controller.isPaused()).resolves.toEqual({ paused: true });
+    await expect(settingsService.getDefaultSettings()).resolves.toMatchObject({
+      settings: { queuePaused: true },
+    });
+    await postingService.handlePendingWork();
+    expect(postingManager.isAccepted(post.id)).toBe(false);
+    expect((await postRepository.findByIdOrThrow(post.id)).unitsOfWork[0].state)
+      .toBe(UnitOfWorkState.PENDING);
+
+    await expect(controller.unpause()).resolves.toEqual({ paused: false });
+    await expect(settingsService.getDefaultSettings()).resolves.toMatchObject({
+      settings: { queuePaused: false },
+    });
+    await postingService.handlePendingWork();
+    const completed = await waitForCompletedPost(post.id);
+    expect(completed.unitsOfWork[0].state).toBe(UnitOfWorkState.SUCCEEDED);
+  }, 10_000);
+
+  it('rejects retry until the cancelled worker drains, then posts the retry successfully', async () => {
+    const submission = await createMessageSubmission('Cancel and retry integration message');
+    const post = await postingService.post(submission.id);
+    let releaseDispatch: (() => void) | undefined;
+    let signalDispatchStarted!: () => void;
+    const dispatchStarted = new Promise<void>((resolve) => {
+      signalDispatchStarted = resolve;
+    });
+    const send = jest.spyOn(TestWebsite.prototype, 'onPostMessageSubmission')
+      .mockImplementationOnce(async (_postData, cancellationToken) => {
+        await new Promise<void>((resolve) => {
+          releaseDispatch = resolve;
+          signalDispatchStarted();
+        });
+        cancellationToken.throwIfAborted();
+        return { instanceId: 'test' };
+      });
+
+    try {
+      await postingService.handlePendingWork();
+      await dispatchStarted;
+      await postingService.cancelPost(post.id);
+      expect(postingManager.isAccepted(post.id)).toBe(true);
+      await expect(postingService.post(submission.id)).rejects.toThrow(
+        `Post '${post.id}' is currently active`,
+      );
+      expect((await postRepository.findByIdOrThrow(post.id)).unitsOfWork[0].state)
+        .toBe(UnitOfWorkState.CANCELLED);
+
+      releaseDispatch?.();
+      await waitForCompletedPost(post.id);
+      const retry = await postingService.post(submission.id);
+      expect(retry.unitsOfWork[0].state).toBe(UnitOfWorkState.PENDING);
+      await postingService.handlePendingWork();
+      const completed = await waitForCompletedPost(retry.id);
+      expect(completed.unitsOfWork[0].state).toBe(UnitOfWorkState.SUCCEEDED);
+      expect(send).toHaveBeenCalledTimes(2);
+    } finally {
+      releaseDispatch?.();
+      await waitForCompletedPost(post.id);
+    }
   }, 10_000);
 
   it('creates and posts a file submission with its persisted file', async () => {

@@ -29,6 +29,7 @@ import { Cron as CronGenerator } from 'croner';
 import { and as allOf, eq as equals, inArray } from 'drizzle-orm';
 import { chunk, groupBy } from 'lodash';
 import { v4 as uuid } from 'uuid';
+import { SettingsService } from '../settings/settings.service';
 import { publishSubmissionProjectionChanged } from '../submission/submission.events';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { PostingManager } from './posting-manager';
@@ -74,23 +75,37 @@ export class PostingService {
     // users to cancel or modify submissions before posting begins.
     protected startupLock = Date.now() + 2 * 60 * 1000; // 2 minutes
 
-    protected postsPaused = false;
-
     constructor(
         private readonly postingManager: PostingManager,
         private readonly websiteRegistry: WebsiteRegistryService,
         private readonly postingRateLimiter: PostingRateLimiterService,
+        private readonly settingsService: SettingsService,
         @Optional()
         @Inject(EventEmitter2)
         private readonly eventEmitter?: EventEmitter2,
     ) { }
 
-    public arePostsPaused(): boolean {
-        return this.postsPaused || Date.now() < this.startupLock;
+    public async arePostsPaused(): Promise<boolean> {
+        if (Date.now() < this.startupLock) {
+            return true;
+        }
+
+        const settings = await this.settingsService.getDefaultSettings();
+        return settings.settings.queuePaused;
     }
 
-    public unpausePosts(): void {
-        this.postsPaused = false;
+    public async pausePosts(): Promise<void> {
+        const settings = await this.settingsService.getDefaultSettings();
+        await this.settingsService.update(settings.id, {
+            settings: { ...settings.settings, queuePaused: true },
+        });
+    }
+
+    public async unpausePosts(): Promise<void> {
+        const settings = await this.settingsService.getDefaultSettings();
+        await this.settingsService.update(settings.id, {
+            settings: { ...settings.settings, queuePaused: false },
+        });
         this.startupLock = 0;
     }
 
@@ -100,7 +115,7 @@ export class PostingService {
             return;
         }
 
-        if (this.arePostsPaused()) {
+        if (await this.arePostsPaused()) {
             return;
         }
 
@@ -154,7 +169,7 @@ export class PostingService {
     }
 
     public async scheduleRecurringTypeSubmission(submission: Submission): Promise<void> {
-        if (this.arePostsPaused()) {
+        if (await this.arePostsPaused()) {
             return;
         }
 
@@ -190,7 +205,7 @@ export class PostingService {
     }
 
     public async scheduleSingleTypeSubmission(submission: Submission): Promise<void> {
-        if (this.arePostsPaused()) {
+        if (await this.arePostsPaused()) {
             return;
         }
 
@@ -223,7 +238,7 @@ export class PostingService {
 
     @Cron(CronExpression.EVERY_SECOND)
     async handlePendingWork(): Promise<void> {
-        if (this.arePostsPaused()) {
+        if (await this.arePostsPaused()) {
             return;
         }
 
@@ -248,6 +263,9 @@ export class PostingService {
 
         for (const post of pendingWork) {
             try {
+                if (await this.arePostsPaused()) {
+                    break;
+                }
                 await this.submitWhenExecutable(post);
             } catch (error) {
                 // Leave the post queued so it cannot starve the posts behind it.
@@ -461,7 +479,7 @@ export class PostingService {
 
         return {
             ...work,
-            paused: this.arePostsPaused(),
+            paused: await this.arePostsPaused(),
             dependenciesCompleted,
             executableWork,
             deferredWork: work.remainingWork.filter(
@@ -475,7 +493,10 @@ export class PostingService {
         evictions: UnitOfWorkEvictions = {},
     ): Promise<Post> {
         const existingPost = await this.getPost(submissionId);
-        if (existingPost && !existingPost.completed) {
+        if (
+            existingPost &&
+            (!existingPost.completed || this.postingManager.isAccepted(existingPost.id))
+        ) {
             throw new ConflictException(
                 `Post '${existingPost.id}' is currently active`,
             );
@@ -522,6 +543,9 @@ export class PostingService {
         // Keep historical units as evicted rows and insert their replacements atomically.
         this.postRepository.db.transaction((tx) => {
             if (existingPost) {
+                if (this.postingManager.isAccepted(post.id)) {
+                    throw new ConflictException(`Post '${post.id}' is currently active`);
+                }
                 // Reopen completed or cancelled posts now that active work changed.
                 const claimed = tx
                     .update(this.postRepository.table)
