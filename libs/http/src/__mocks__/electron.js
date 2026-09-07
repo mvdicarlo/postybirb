@@ -127,14 +127,22 @@ module.exports = {
   },
 
   BrowserWindow: (function () {
-    function BrowserWindow() {}
+    function BrowserWindow() {
+      this.destroyed = false;
+    }
     BrowserWindow.prototype.loadURL = function () {
       return Promise.resolve();
     };
-    BrowserWindow.prototype.destroy = function () {};
+    BrowserWindow.prototype.destroy = function () {
+      this.destroyed = true;
+    };
+    BrowserWindow.prototype.isDestroyed = function () {
+      return this.destroyed;
+    };
     BrowserWindow.prototype.show = function () {};
     BrowserWindow.prototype.focus = function () {};
     Object.defineProperty(BrowserWindow.prototype, 'webContents', {
+      configurable: true,
       get: function () {
         return {
           executeJavaScript: async function () {

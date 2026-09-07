@@ -4,7 +4,7 @@
 
 import { useCallback } from 'react';
 import postingApi, {
-    type PostingRequest,
+  type PostingRequest,
 } from '../../../../api/posting.api';
 import { useSubmissionStore } from '../../../../stores';
 import { useNavigationStore } from '../../../../stores/ui/navigation-store';

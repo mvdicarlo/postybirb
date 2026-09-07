@@ -5,12 +5,12 @@
 import { Trans } from '@lingui/react/macro';
 import { ActionIcon, Group, Tooltip } from '@mantine/core';
 import {
-    IconArchiveOff,
-    IconCancel,
-    IconHelp,
-    IconHistory,
-    IconSend,
-    IconTrash,
+  IconArchiveOff,
+  IconCancel,
+  IconHelp,
+  IconHistory,
+  IconSend,
+  IconTrash,
 } from '@tabler/icons-react';
 import { useState } from 'react';
 import postingApi from '../../../../../api/posting.api';
@@ -18,10 +18,10 @@ import submissionApi from '../../../../../api/submission.api';
 import { useSubmissionHistoryDrawerStore } from '../../../../../stores/ui/submission-history-drawer-store';
 import { useTourActions } from '../../../../../stores/ui/tour-store';
 import {
-    showDeletedNotification,
-    showDeleteErrorNotification,
-    showRestoredNotification,
-    showRestoreErrorNotification,
+  showDeletedNotification,
+  showDeleteErrorNotification,
+  showRestoredNotification,
+  showRestoreErrorNotification,
 } from '../../../../../utils/notifications';
 import { HoldToConfirmButton } from '../../../../hold-to-confirm';
 import { SUBMISSION_EDIT_TOUR_ID } from '../../../../onboarding-tour/tours/submission-edit-tour';

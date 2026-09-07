@@ -1,7 +1,7 @@
 import {
-  FormFile,
-  HttpRequestOptions,
-  PostOptions,
+    FormFile,
+    HttpRequestOptions,
+    PostOptions,
 } from '@postybirb/http/types';
 import { Logger } from '@postybirb/logger';
 import { FileType, PostResponse } from '@postybirb/types';

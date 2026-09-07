@@ -1,40 +1,40 @@
 import { Account, WebsiteDataRepository } from '@postybirb/database';
 import { Logger, PostyBirbLogger } from '@postybirb/logger';
 import {
-  PlatformCookieChange,
-  PlatformCookieDetails,
-  PlatformService,
+    PlatformCookieChange,
+    PlatformCookieDetails,
+    PlatformService,
 } from '@postybirb/platform';
 import {
-  DynamicObject,
-  IAccountDto,
-  ILoginState,
-  IWebsiteFormFields,
-  LoginResult,
-  LoginState,
-  PostData,
-  SubmissionType,
+    DynamicObject,
+    IAccountDto,
+    ILoginState,
+    IWebsiteFormFields,
+    LoginResult,
+    LoginState,
+    PostData,
+    SubmissionType,
 } from '@postybirb/types';
 import { Mutex } from 'async-mutex';
 import { CancellationToken } from '../posting/cancellation-token';
 import { PostingFile } from '../posting/models/posting-file';
 import { SubmissionValidator } from './commons/validator';
 import {
-  cloneWebsiteDecoratorProps,
-  cloneWebsiteFileOptions,
-  WebsiteDecoratorProps,
+    cloneWebsiteDecoratorProps,
+    cloneWebsiteFileOptions,
+    WebsiteDecoratorProps,
 } from './decorators/website-decorator-props';
 import { DataPropertyAccessibility } from './models/data-property-accessibility';
 import {
-  FileWebsite,
-  FileWebsiteKey,
-  isFileWebsite,
-  PostBatchData,
+    FileWebsite,
+    FileWebsiteKey,
+    isFileWebsite,
+    PostBatchData,
 } from './models/website-modifiers/file-website';
 import {
-  isMessageWebsite,
-  MessageWebsite,
-  MessageWebsiteKey,
+    isMessageWebsite,
+    MessageWebsite,
+    MessageWebsiteKey,
 } from './models/website-modifiers/message-website';
 import WebsiteDataManager from './website-data-manager';
 
