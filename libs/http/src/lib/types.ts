@@ -14,8 +14,9 @@ export interface HttpRequestOptions {
 
 export interface CloudflareChallengeOptions {
   /**
-   * Opens an Electron BrowserWindow so the user can complete the challenge.
-   * The window uses the request partition so clearance cookies are retained.
+  * Shows the hidden challenge BrowserWindow so the user can intervene when
+  * automatic resolution fails. The window uses the request partition so
+  * clearance cookies are retained.
    */
   openBrowserWindow?: boolean;
   /** Maximum time to wait for the user to complete the challenge. */

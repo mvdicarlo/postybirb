@@ -23,6 +23,7 @@ const SUPPORTED_MIME: string[] = [
   'image/ktx',
   'image/ktx2',
   'image/png',
+  'image/apng',
   'image/x-png',
   'image/vnd.mozilla.apng',
   'image/prs.btif',

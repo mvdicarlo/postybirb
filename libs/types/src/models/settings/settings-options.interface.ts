@@ -50,7 +50,7 @@ export type DesktopNotificationSettings = {
 
 export type CloudflareChallengeSettings = {
   /**
-   * Opens an Electron BrowserWindow so the user can complete a challenge.
+   * Shows the hidden challenge BrowserWindow when user intervention is needed.
    */
   openBrowserWindow: boolean;
 };
