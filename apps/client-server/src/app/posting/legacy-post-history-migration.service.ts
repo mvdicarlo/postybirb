@@ -1,18 +1,18 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import {
-    AccountSchema,
-    getDatabase,
-    PostEventSchema,
-    PostRecordSchema,
-    PostSchema,
-    Select,
-    SubmissionFileSchema,
-    UnitOfWorkSchema,
+  AccountSchema,
+  getDatabase,
+  PostEventSchema,
+  PostRecordSchema,
+  PostSchema,
+  Select,
+  SubmissionFileSchema,
+  UnitOfWorkSchema,
 } from '@postybirb/database';
 import { Logger, PostyBirbLogger } from '@postybirb/logger';
 import {
-    PostEventType,
-    UnitOfWorkState,
+  PostEventType,
+  UnitOfWorkState,
 } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/common';
 import { asc, eq } from 'drizzle-orm';

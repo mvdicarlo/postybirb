@@ -26,8 +26,8 @@ import { WebsiteOptionsModule } from '../website-options/website-options.module'
 import { WebsiteOptionsService } from '../website-options/website-options.service';
 import TestWebsite from '../websites/implementations/test/test.website';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
-import { PostingManager } from './posting-manager';
 import { LegacyPostHistoryMigrationService } from './legacy-post-history-migration.service';
+import { PostingManager } from './posting-manager';
 import { PostingController } from './posting.controller';
 import { PostingModule } from './posting.module';
 import { PostingService } from './posting.service';

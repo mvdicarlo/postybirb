@@ -13,6 +13,134 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#. placeholder {0}: stats.cancelled
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-history-content.tsx
+msgid "{0} cancelled"
+msgstr "{0} cancelled"
+
+#. placeholder {0}: stats.rateLimited
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-history-content.tsx
+msgid "{0} rate limited"
+msgstr "{0} rate limited"
+
+#. placeholder {0}: stats.running
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-history-content.tsx
+msgid "{0} running"
+msgstr "{0} running"
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/account-unit-group.tsx
+msgid "{succeeded} of {total} succeeded"
+msgstr "{succeeded} of {total} succeeded"
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-history-content.tsx
+msgid "{waiting} waiting"
+msgstr "{waiting} waiting"
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-history-content.tsx
+msgid "Account activity"
+msgstr "Account activity"
+
+#. placeholder {0}: unit.attempt + 1
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/account-unit-group.tsx
+msgid "Attempt {0}"
+msgstr "Attempt {0}"
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-history-content.tsx
+msgid "Cancelled"
+msgstr "Cancelled"
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/account-unit-group.tsx
+msgid "Cannot evict work that is currently posting"
+msgstr "Cannot evict work that is currently posting"
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-history-content.tsx
+msgid "Completed"
+msgstr "Completed"
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-history-content.tsx
+msgid "Completed with errors"
+msgstr "Completed with errors"
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-history-content.tsx
+msgid "Download JSON"
+msgstr "Download JSON"
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/account-unit-group.tsx
+msgid "Evict so this is posted again on the next attempt"
+msgstr "Evict so this is posted again on the next attempt"
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/account-unit-group.tsx
+msgid "Hide response"
+msgstr "Hide response"
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-history-content.tsx
+msgid "In progress"
+msgstr "In progress"
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-history-content.tsx
+msgid "Post data (JSON)"
+msgstr "Post data (JSON)"
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-history-content.tsx
+msgid "Posting outcomes"
+msgstr "Posting outcomes"
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-history-content.tsx
+msgid "Posting summary"
+msgstr "Posting summary"
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/account-unit-group.tsx
+msgid "Previous attempts ({evicted})"
+msgstr "Previous attempts ({evicted})"
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-history-content.tsx
+msgid "Rate limited"
+msgstr "Rate limited"
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-history-content.tsx
+msgid "Remaining"
+msgstr "Remaining"
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/account-unit-group.tsx
+msgid "Removed file"
+msgstr "Removed file"
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/account-unit-group.tsx
+msgid "Repost on next attempt"
+msgstr "Repost on next attempt"
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/account-unit-group.tsx
+msgid "Retries {retryTime}"
+msgstr "Retries {retryTime}"
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-history-content.tsx
+msgid "Succeeded"
+msgstr "Succeeded"
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/account-unit-group.tsx
+msgid "Superseded"
+msgstr "Superseded"
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/account-unit-group.tsx
+msgid "Unable to evict this work"
+msgstr "Unable to evict this work"
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/account-unit-group.tsx
+msgid "Unknown website"
+msgstr "Unknown website"
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/account-unit-group.tsx
+msgid "View post"
+msgstr "View post"
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/account-unit-group.tsx
+msgid "View response"
+msgstr "View response"
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/account-unit-group.tsx
+msgid "Website response"
+msgstr "Website response"
+
 #: apps/postybirb-ui/src/i18n/validation-translation.tsx
 msgid "({fileName}) Alt text length is greater then maximum ({currentLength} / {maxLength}) and will be trimmed."
 msgstr ""
