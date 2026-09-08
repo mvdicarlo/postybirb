@@ -92,7 +92,7 @@ function UnitDetailsCell({ unit }: { unit: IUnitOfWork }) {
           </Stack>
         }
       >
-        <IconInfoCircle size={16} color="var(--mantine-color-red-5)" />
+        <IconInfoCircle size={16} />
       </Tooltip>
       <CopyToClipboard
         value={JSON.stringify(unit.response ?? {}, null, 2)}
@@ -111,7 +111,7 @@ function UnitEvictCell({ unit }: { unit: IUnitOfWork }) {
     unit.state === UnitOfWorkState.EXECUTING ||
     unit.state === UnitOfWorkState.VALIDATING;
 
-  if (unit.evicted) {
+  if (unit.evicted || unit.state === UnitOfWorkState.FAILED) {
     return (
       <Text size="xs" c="dimmed">
         -

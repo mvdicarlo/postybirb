@@ -318,9 +318,9 @@ export class Http {
         resolve(response);
       }, abortRequest);
       request.on('abort', () => rejectRequest(new Error('HTTP request aborted')));
-      request.on('close', () => rejectRequest(
-        new Error('HTTP request closed before the response completed'),
-      ));
+      // request.on('close', () => rejectRequest(
+      //   new Error('HTTP request closed before the response completed'),
+      // ));
 
       try {
         if (body) {

@@ -12,7 +12,6 @@ import {
 import { Logger, PostyBirbLogger } from '@postybirb/logger';
 import {
     PostEventType,
-    PostRecordState,
     UnitOfWorkState,
 } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/common';
@@ -110,10 +109,7 @@ export class LegacyPostHistoryMigrationService implements OnModuleInit {
     const fileIds = new Set(files.map((file) => file.id));
 
     for (const [submissionId, submissionRecords] of recordsBySubmission) {
-      if (
-        migratedSubmissionIds.has(submissionId) ||
-        submissionRecords.some((record) => !this.isTerminal(record))
-      ) {
+      if (migratedSubmissionIds.has(submissionId)) {
         stats.submissionsSkipped += 1;
         continue;
       }
@@ -305,13 +301,6 @@ export class LegacyPostHistoryMigrationService implements OnModuleInit {
           additionalInfo: metadata.additionalInfo,
         }
       : null;
-  }
-
-  private isTerminal(record: LegacyPostRecord): boolean {
-    return (
-      record.state === PostRecordState.DONE ||
-      record.state === PostRecordState.FAILED
-    );
   }
 
   private groupBy<T>(

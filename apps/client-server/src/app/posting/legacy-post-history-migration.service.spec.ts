@@ -21,7 +21,7 @@ describe(LegacyPostHistoryMigrationService.name, () => {
   beforeEach(() => clearDatabase());
   afterEach(() => clearDatabase());
 
-  it('collapses legacy attempts into ordered, idempotent unit history', async () => {
+  it.each(Object.values(PostRecordState))('preserves outcomes without re-queuing a %s legacy attempt', async (state) => {
     const db = getDatabase();
     const submissionId = 'legacy-submission';
     const accountId = 'legacy-account';
@@ -67,7 +67,7 @@ describe(LegacyPostHistoryMigrationService.name, () => {
         submissionId,
         originPostRecordId: originId,
         resumeMode: PostRecordResumeMode.CONTINUE_RETRY,
-        state: PostRecordState.FAILED,
+        state,
       },
     ]);
     await db.insert(PostEventSchema).values([
@@ -121,7 +121,7 @@ describe(LegacyPostHistoryMigrationService.name, () => {
     expect(firstRun).toEqual(
       expect.objectContaining({ postsCreated: 1, unitsCreated: 2 }),
     );
-    expect(post).toEqual(expect.objectContaining({ completed: true }));
+    expect(post).toEqual(expect.objectContaining({ completed: true, cancelled: false }));
     expect(post?.unitsOfWork).toHaveLength(2);
     expect(post?.unitsOfWork).toEqual([
       expect.objectContaining({

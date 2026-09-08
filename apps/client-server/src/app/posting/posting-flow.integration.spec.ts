@@ -1,8 +1,11 @@
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
-import { clearDatabase, Post, PostRepository } from '@postybirb/database';
+import { clearDatabase, getDatabase, Post, PostEventSchema, PostRecordSchema, PostRepository } from '@postybirb/database';
 import { PostyBirbDirectories, writeSync } from '@postybirb/fs';
 import {
+  PostEventType,
+  PostRecordResumeMode,
+  PostRecordState,
   SubmissionRating,
   SubmissionType,
   UnitOfWorkState,
@@ -24,6 +27,7 @@ import { WebsiteOptionsService } from '../website-options/website-options.servic
 import TestWebsite from '../websites/implementations/test/test.website';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { PostingManager } from './posting-manager';
+import { LegacyPostHistoryMigrationService } from './legacy-post-history-migration.service';
 import { PostingController } from './posting.controller';
 import { PostingModule } from './posting.module';
 import { PostingService } from './posting.service';
@@ -129,6 +133,59 @@ describe('Posting flow integration', () => {
     } as CreateWebsiteOptionsDto);
     return submission;
   }
+
+  it.each(Object.values(PostRecordState).filter(
+    (state) => state !== PostRecordState.DONE && state !== PostRecordState.FAILED,
+  ))('resumes partial legacy %s work only after manual re-queue', async (state) => {
+    const submission = await createMessageSubmission('Partial legacy message');
+    const initialWork = await postingService.getIncompleteWork(submission.id);
+    const succeededAccountId = initialWork.remainingWork[0].accountId;
+    const unfinishedAccount = await accountService.create({
+      name: 'Unfinished legacy account', website: 'test', groups: [],
+    } as CreateAccountDto);
+    await websiteOptionsService.create({
+      accountId: unfinishedAccount.id,
+      submissionId: submission.id,
+      data: { title: 'Partial legacy message', rating: SubmissionRating.GENERAL },
+    } as CreateWebsiteOptionsDto);
+    const db = getDatabase();
+    await db.insert(PostRecordSchema).values({
+      id: 'partial-legacy', submissionId: submission.id,
+      resumeMode: PostRecordResumeMode.CONTINUE, state,
+    });
+    await db.insert(PostEventSchema).values([
+      {
+        id: 'legacy-success', postRecordId: 'partial-legacy',
+        accountId: succeededAccountId, eventType: PostEventType.MESSAGE_POSTED,
+        sourceUrl: 'https://example.com/already-posted',
+      },
+      {
+        id: 'legacy-unfinished', postRecordId: 'partial-legacy',
+        accountId: unfinishedAccount.id, eventType: PostEventType.POST_ATTEMPT_STARTED,
+      },
+    ]);
+
+    await module.get(LegacyPostHistoryMigrationService).migrate();
+    const migrated = await postingService.getPost(submission.id);
+    expect(migrated).toMatchObject({ completed: true, cancelled: false });
+    await postingService.unpausePosts();
+    await postingService.handlePendingWork();
+    expect(postingManager.isAccepted(migrated.id)).toBe(false);
+    expect((await postingService.getPost(submission.id)).completed).toBe(true);
+
+    const remaining = await postingService.getIncompleteWork(submission.id);
+    expect(remaining.remainingWork).toHaveLength(1);
+    expect(remaining.remainingWork[0].accountId).toBe(unfinishedAccount.id);
+    const send = jest.spyOn(TestWebsite.prototype, 'onPostMessageSubmission');
+    const staged = await postingService.post(submission.id);
+    await postingService.handlePendingWork();
+    const completed = await waitForCompletedPost(staged.id);
+    expect(send).toHaveBeenCalledTimes(1);
+    expect(completed.unitsOfWork).toHaveLength(2);
+    expect(completed.unitsOfWork.every((unit) => unit.state === UnitOfWorkState.SUCCEEDED)).toBe(true);
+    expect(completed.unitsOfWork.find((unit) => unit.accountId === succeededAccountId))
+      .toMatchObject({ url: 'https://example.com/already-posted', state: UnitOfWorkState.SUCCEEDED });
+  }, 10_000);
 
   it('creates and posts a message submission while tracking its outcome', async () => {
     const accountDto = new CreateAccountDto();
