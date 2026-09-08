@@ -14,15 +14,19 @@ describe('Bluesky video processing', () => {
     jest.useFakeTimers();
     jest.mocked(delay).mockImplementation((milliseconds, value, options) =>
       new Promise((resolve, reject) => {
+        const signal = options?.signal;
+        if (!signal) {
+          throw new Error('Expected polling delay to receive an abort signal');
+        }
         const onAbort = () => {
           clearTimeout(timer);
-          reject(options.signal.reason);
+          reject(signal.reason);
         };
         const timer = setTimeout(() => {
-          options.signal.removeEventListener('abort', onAbort);
+          signal.removeEventListener('abort', onAbort);
           resolve(value);
         }, milliseconds);
-        options.signal.addEventListener('abort', onAbort, { once: true });
+        signal.addEventListener('abort', onAbort, { once: true });
       }));
     website = new Bluesky(new Account({ id: 'bluesky-account', website: 'bluesky' }), {} as PlatformService);
     jest.spyOn(website['logger'], 'debug').mockImplementation(() => undefined);
@@ -75,18 +79,22 @@ describe('Bluesky video processing', () => {
   });
 
   it.each(['headers', 'body'])('aborts a status request stalled on %s', async (stage) => {
-    let signal: AbortSignal;
-    fetchMock.mockImplementation((_url, options: RequestInit) => {
-      signal = options.signal;
+    let signal: AbortSignal | undefined;
+    fetchMock.mockImplementation((_url, options?: RequestInit) => {
+      const requestSignal = options?.signal;
+      if (!requestSignal) {
+        throw new Error('Expected status request to receive an abort signal');
+      }
+      signal = requestSignal;
       const stalled = new Promise((_resolve, reject) => {
-        signal.addEventListener('abort', () => reject(signal.reason), { once: true });
+        requestSignal.addEventListener('abort', () => reject(requestSignal.reason), { once: true });
       });
       return stage === 'headers' ? stalled : Promise.resolve({ status: 200, json: () => stalled });
     });
     const result = expect(poll()).rejects.toThrow('Bluesky video processing timed out after 15 minutes');
     await jest.advanceTimersByTimeAsync(15 * 60 * 1000);
     await result;
-    expect(signal.aborted).toBe(true);
+    expect(signal?.aborted).toBe(true);
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(jest.getTimerCount()).toBe(0);
   });

@@ -10,12 +10,18 @@ export function buildBulkPostingRequests(
   orderedSubmissionIds: SubmissionId[],
   completedUnitsBySubmission: ReadonlyMap<SubmissionId, IUnitOfWork[]>,
   selectedUnitIds: ReadonlySet<UnitOfWorkId>,
+  targeted = false,
 ): PostingRequest[] {
-  return orderedSubmissionIds.map((submissionId) => ({
-    submissionId,
-    evictions: buildUnitOfWorkEvictions(
+  return orderedSubmissionIds.flatMap((submissionId) => {
+    const selection = buildUnitOfWorkEvictions(
       completedUnitsBySubmission.get(submissionId) ?? [],
       selectedUnitIds,
-    ),
-  }));
+    );
+    if (targeted && Object.keys(selection).length === 0) return [];
+    return [{
+      submissionId,
+      evictions: targeted ? {} : selection,
+      ...(targeted ? { targets: selection } : {}),
+    }];
+  });
 }

@@ -19,6 +19,7 @@ import { MulterFileInfo } from '../file/models/multer-file-info';
 import { TestPlatformModule } from '../platform/testing/test-platform.module';
 import { SettingsService } from '../settings/settings.service';
 import { CreateSubmissionDto } from '../submission/dtos/create-submission.dto';
+import { FileSubmissionService } from '../submission/services/file-submission.service';
 import { SubmissionService } from '../submission/services/submission.service';
 import { SubmissionModule } from '../submission/submission.module';
 import { CreateWebsiteOptionsDto } from '../website-options/dtos/create-website-options.dto';
@@ -167,11 +168,14 @@ describe('Posting flow integration', () => {
 
     await module.get(LegacyPostHistoryMigrationService).migrate();
     const migrated = await postingService.getPost(submission.id);
+    if (!migrated) {
+      throw new Error('Expected the legacy migration to create a post');
+    }
     expect(migrated).toMatchObject({ completed: true, cancelled: false });
     await postingService.unpausePosts();
     await postingService.handlePendingWork();
     expect(postingManager.isAccepted(migrated.id)).toBe(false);
-    expect((await postingService.getPost(submission.id)).completed).toBe(true);
+    expect(await postingService.getPost(submission.id)).toMatchObject({ completed: true });
 
     const remaining = await postingService.getIncompleteWork(submission.id);
     expect(remaining.remainingWork).toHaveLength(1);
@@ -185,6 +189,36 @@ describe('Posting flow integration', () => {
     expect(completed.unitsOfWork.every((unit) => unit.state === UnitOfWorkState.SUCCEEDED)).toBe(true);
     expect(completed.unitsOfWork.find((unit) => unit.accountId === succeededAccountId))
       .toMatchObject({ url: 'https://example.com/already-posted', state: UnitOfWorkState.SUCCEEDED });
+  }, 10_000);
+
+  it('posts and re-posts only the selected account through the controller', async () => {
+    const submission = await createMessageSubmission('Targeted message');
+    const initial = await postingService.getIncompleteWork(submission.id);
+    const accountId = initial.remainingWork[0].accountId;
+    const other = await accountService.create({ name: 'Unselected account', website: 'test', groups: [] } as CreateAccountDto);
+    await websiteOptionsService.create({
+      accountId: other.id, submissionId: submission.id,
+      data: { title: 'Targeted message', rating: SubmissionRating.GENERAL },
+    } as CreateWebsiteOptionsDto);
+    const controller = module.get(PostingController);
+    const request = { submissionId: submission.id, evictions: {}, targets: { [accountId]: [] } };
+    const send = jest.spyOn(TestWebsite.prototype, 'onPostMessageSubmission');
+    const preview = await controller.dryRun(request);
+    expect(preview.remainingWork).toHaveLength(1);
+    const post = await controller.post(request);
+    await postingService.handlePendingWork();
+    await waitForCompletedPost(post.id);
+    const repost = await controller.post(request);
+    await postingService.handlePendingWork();
+    const completed = await waitForCompletedPost(repost.id);
+    expect(send).toHaveBeenCalledTimes(2);
+    expect(completed.unitsOfWork).toHaveLength(2);
+    expect(completed.unitsOfWork.every((unit) => unit.accountId === accountId)).toBe(true);
+    expect(completed.unitsOfWork.filter((unit) => !unit.evicted)).toEqual([
+      expect.objectContaining({ state: UnitOfWorkState.SUCCEEDED }),
+    ]);
+    const next = await postingService.getIncompleteWork(submission.id);
+    expect(next.remainingWork.map((unit) => unit.accountId)).toEqual([other.id]);
   }, 10_000);
 
   it('creates and posts a message submission while tracking its outcome', async () => {
@@ -309,6 +343,40 @@ describe('Posting flow integration', () => {
       releaseDispatch?.();
       await waitForCompletedPost(post.id);
     }
+  }, 10_000);
+
+  it('re-posts only the selected file from a completed two-file submission', async () => {
+    const account = await accountService.create({
+      name: 'Targeted file account', website: 'test', groups: [],
+    } as CreateAccountDto);
+    const submission = await submissionService.create({
+      name: 'Targeted files', type: SubmissionType.FILE,
+    } as CreateSubmissionDto, createTestFile().file);
+    await module.get(FileSubmissionService).appendFile(submission.id, createTestFile().file);
+    const { files } = await submissionService.findByIdOrThrow(submission.id);
+    expect(files).toHaveLength(2);
+    await websiteOptionsService.create({
+      accountId: account.id, submissionId: submission.id,
+      data: { title: 'Targeted files', rating: SubmissionRating.GENERAL },
+    } as CreateWebsiteOptionsDto);
+    const initial = await postingService.post(submission.id);
+    await postingService.handlePendingWork();
+    const previous = await waitForCompletedPost(initial.id);
+    expect(previous.unitsOfWork.every((unit) => unit.state === UnitOfWorkState.SUCCEEDED)).toBe(true);
+
+    const send = jest.spyOn(TestWebsite.prototype, 'onPostFileSubmission');
+    const targets = { [account.id]: [files[1].id] };
+    const preview = await postingService.dryRun(submission.id, {}, targets);
+    expect(preview.remainingWork.map((unit) => unit.fileId)).toEqual([files[1].id]);
+    const repost = await postingService.post(submission.id, {}, targets);
+    await postingService.handlePendingWork();
+    const completed = await waitForCompletedPost(repost.id);
+    expect(send).toHaveBeenCalledTimes(1);
+    expect(send.mock.calls[0][1].map((file) => file.id)).toEqual([files[1].id]);
+    expect(completed.unitsOfWork.filter((unit) => !unit.evicted)).toHaveLength(2);
+    expect(completed.unitsOfWork.filter((unit) => unit.evicted)).toEqual([
+      expect.objectContaining({ fileId: files[1].id, state: UnitOfWorkState.SUCCEEDED }),
+    ]);
   }, 10_000);
 
   it('creates and posts a file submission with its persisted file', async () => {

@@ -12,7 +12,7 @@ export class PostingController {
   @Post()
   @ApiOkResponse({ description: 'Creates or resumes posting work.' })
   post(@Body() request: GetIncompleteWorkDto) {
-    return this.service.post(request.submissionId, request.evictions);
+    return this.service.post(request.submissionId, request.evictions, request.targets);
   }
 
   @Post('dry-run')
@@ -20,7 +20,7 @@ export class PostingController {
     description: 'Work that would run if the post were started now.',
   })
   dryRun(@Body() request: GetIncompleteWorkDto) {
-    return this.service.dryRun(request.submissionId, request.evictions);
+    return this.service.dryRun(request.submissionId, request.evictions, request.targets);
   }
 
   @Post('incomplete-work')
@@ -29,6 +29,7 @@ export class PostingController {
     return this.service.getIncompleteWork(
       request.submissionId,
       request.evictions,
+      request.targets,
     );
   }
 

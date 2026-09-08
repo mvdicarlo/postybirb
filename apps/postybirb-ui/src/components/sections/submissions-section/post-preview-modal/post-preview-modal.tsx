@@ -10,6 +10,7 @@ import {
     LoadingOverlay,
     Modal,
     ScrollArea,
+    SegmentedControl,
     Stack,
     Text,
     ThemeIcon,
@@ -38,9 +39,10 @@ import postingApi, {
 import { useAccountsMap } from '../../../../stores/entity/account-store';
 import type { SubmissionRecord } from '../../../../stores/records';
 import { showPostErrorNotification } from '../../../../utils/notifications';
-import { getUnitFileName } from '../submission-history/history-utils';
+import { getUnitFileName, getUnitStateInfo } from '../submission-history/history-utils';
 import './post-preview-modal.css';
 import {
+  buildSelectablePostingUnits,
     buildUnitOfWorkEvictions,
     getUnitSelectionState,
     groupUnitsByWebsite,
@@ -285,8 +287,8 @@ function CompletedWorkList({
                           <UnitTarget submission={submission} unit={unit} />
                         }
                       />
-                      <Badge size="xs" variant="outline" color="green">
-                        <Trans>Posted</Trans>
+                      <Badge size="xs" variant="outline" color={getUnitStateInfo(unit.state).color}>
+                        {getUnitStateInfo(unit.state).label}
                       </Badge>
                     </Group>
                   ))}
@@ -316,6 +318,12 @@ export function PostPreviewModal({
   const [isLoadingPreview, setIsLoadingPreview] = useState(true);
   const [isPosting, setIsPosting] = useState(false);
   const [retryVersion, setRetryVersion] = useState(0);
+  const [selectionMode, setSelectionMode] = useState('remaining');
+  const availableTargets = useMemo(() => buildSelectablePostingUnits(submission), [submission]);
+  const targets = useMemo(
+    () => selectionMode === 'selected' ? buildUnitOfWorkEvictions(availableTargets, selectedUnitIds) : undefined,
+    [availableTargets, selectedUnitIds, selectionMode],
+  );
 
   const completedUnits = useMemo(
     () =>
@@ -336,12 +344,13 @@ export function PostPreviewModal({
     [completedUnits, preview, removedUnitIds],
   );
   const evictions = useMemo<UnitOfWorkEvictions>(
-    () => buildUnitOfWorkEvictions(completedUnits, selectedUnitIds),
-    [completedUnits, selectedUnitIds],
+    () => selectionMode === 'selected' ? {} : buildUnitOfWorkEvictions(completedUnits, selectedUnitIds),
+    [completedUnits, selectedUnitIds, selectionMode],
   );
+  const selectionUnits = selectionMode === 'selected' ? availableTargets : selectableCompletedUnits;
   const completedGroups = useMemo(
-    () => groupUnitsByWebsite(selectableCompletedUnits, accountsMap),
-    [accountsMap, selectableCompletedUnits],
+    () => groupUnitsByWebsite(selectionUnits, accountsMap),
+    [accountsMap, selectionUnits],
   );
   const previewGroups = useMemo(
     () => groupUnitsByWebsite(preview?.remainingWork ?? [], accountsMap),
@@ -353,6 +362,14 @@ export function PostPreviewModal({
   );
 
   useEffect(() => {
+    if (!opened) {
+      setSelectedUnitIds(new Set());
+      setSelectionMode('remaining');
+      setPreview(null);
+    }
+  }, [opened]);
+
+  useEffect(() => {
     if (!opened) return undefined;
 
     const currentRequest = requestVersion.current + 1;
@@ -360,8 +377,14 @@ export function PostPreviewModal({
     setIsLoadingPreview(true);
     setPreviewError(false);
 
+    if (targets && Object.keys(targets).length === 0) {
+      setPreview(null);
+      setIsLoadingPreview(false);
+      return undefined;
+    }
+
     postingApi
-      .dryRun(submission.submissionId, evictions)
+      .dryRun(submission.submissionId, evictions, targets)
       .then((response) => {
         if (requestVersion.current === currentRequest) {
           setPreview(response.body);
@@ -383,12 +406,13 @@ export function PostPreviewModal({
         requestVersion.current += 1;
       }
     };
-  }, [evictions, opened, retryVersion, submission.submissionId]);
+  }, [evictions, opened, retryVersion, submission.submissionId, targets]);
 
   const handleSelectionChange = (
     units: IUnitOfWork[],
     selected: boolean,
   ) => {
+    setPreview(null);
     setSelectedUnitIds((current) =>
       updateUnitSelection(current, units, selected),
     );
@@ -397,7 +421,7 @@ export function PostPreviewModal({
   const handlePost = async () => {
     setIsPosting(true);
     try {
-      await postingApi.post(submission.submissionId, evictions);
+      await postingApi.post(submission.submissionId, evictions, targets);
       onClose();
     } catch {
       showPostErrorNotification();
@@ -407,8 +431,8 @@ export function PostPreviewModal({
   };
 
   const expectedCount = preview?.remainingWork.length ?? 0;
-  const selectedCompletedCount = selectableCompletedUnits.filter((unit) =>
-    selectedUnitIds.has(unit.id),
+  const selectedCompletedCount = selectionUnits.filter((unit) =>
+    unit.state === UnitOfWorkState.SUCCEEDED && selectedUnitIds.has(unit.id),
   ).length;
 
   return (
@@ -441,7 +465,21 @@ export function PostPreviewModal({
           offsetScrollbars
           className="postybirb__post_preview_modal_scroll"
         >
-          <Stack gap="md" p="md" pt="xs">
+          <Stack renderRoot={(props) => <fieldset {...props} disabled={isPosting} />} gap="md" p="md" pt="xs" m={0} style={{ border: 0, minWidth: 0 }}>
+            <SegmentedControl
+              fullWidth
+              value={selectionMode}
+              aria-label={t`Posting scope`}
+              data={[
+                { value: 'remaining', label: t`Incomplete work` },
+                { value: 'selected', label: t`Selected targets` },
+              ]}
+              onChange={(mode) => {
+                setPreview(null);
+                setSelectedUnitIds(new Set());
+                setSelectionMode(mode);
+              }}
+            />
             <Group justify="space-between" align="flex-start" wrap="wrap">
           <Text size="sm" fw={500} maw="70%" truncate>
             {submission.title || <Trans>Untitled submission</Trans>}
@@ -532,18 +570,18 @@ export function PostPreviewModal({
               <Group justify="space-between">
                 <Group gap="xs">
                   <Text size="sm" fw={600}>
-                    <Trans>Post again</Trans>
+                    {selectionMode === 'selected' ? <Trans>Posting targets</Trans> : <Trans>Post again</Trans>}
                   </Text>
                   <Badge size="sm" variant="light" color="gray">
-                    {selectableCompletedUnits.length}
+                    {selectionUnits.length}
                   </Badge>
                 </Group>
-                {selectedCompletedCount > 0 && (
+                {selectedUnitIds.size > 0 && (
                   <Button
                     variant="subtle"
                     color="gray"
                     size="compact-xs"
-                    onClick={() => setSelectedUnitIds(new Set())}
+                    onClick={() => { setPreview(null); setSelectedUnitIds(new Set()); }}
                   >
                     <Trans>Clear</Trans>
                   </Button>

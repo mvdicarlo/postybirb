@@ -10,6 +10,7 @@ import {
     Loader,
     Modal,
     ScrollArea,
+    SegmentedControl,
     Stack,
     Text,
     ThemeIcon,
@@ -44,12 +45,13 @@ import { ReorderableSubmissionList } from '../../../shared/reorderable-submissio
 import '../post-preview-modal/post-preview-modal.css';
 import {
     buildUnitOfWorkEvictions,
+    buildSelectablePostingUnits,
     getUnitSelectionState,
     groupUnitsByWebsite,
     type PostPreviewWebsiteGroup,
     updateUnitSelection,
 } from '../post-preview-modal/post-preview-modal.utils';
-import { getUnitFileName } from '../submission-history/history-utils';
+import { getUnitFileName, getUnitStateInfo } from '../submission-history/history-utils';
 import './post-confirm-modal.css';
 import { buildBulkPostingRequests } from './post-confirm-modal.utils';
 
@@ -284,8 +286,8 @@ function BulkCompletedWorkList({
                           />
                         }
                       />
-                      <Badge size="xs" variant="outline" color="green">
-                        <Trans>Posted</Trans>
+                      <Badge size="xs" variant="outline" color={getUnitStateInfo(unit.state).color}>
+                        {getUnitStateInfo(unit.state).label}
                       </Badge>
                     </Group>
                   ))}
@@ -329,6 +331,7 @@ export function BulkPostPreviewModal({
   const [loadingIds, setLoadingIds] = useState<Set<SubmissionId>>(new Set());
   const [errorIds, setErrorIds] = useState<Set<SubmissionId>>(new Set());
   const [isPosting, setIsPosting] = useState(false);
+  const [selectionMode, setSelectionMode] = useState('remaining');
 
   const validSubmissions = useMemo(
     () =>
@@ -385,16 +388,17 @@ export function BulkPostPreviewModal({
       new Map(
         validSubmissions.map((submission) => [
           submission.submissionId,
-          completedUnits(submission),
+          selectionMode === 'selected' ? buildSelectablePostingUnits(submission) : completedUnits(submission),
         ]),
       ),
-    [validSubmissions],
+    [validSubmissions, selectionMode],
   );
 
   const loadPreviews = useCallback(
     (
       submissions: SubmissionRecord[],
       selection: ReadonlySet<UnitOfWorkId>,
+      mode = selectionMode,
     ) => {
       const submissionIds = submissions.map(
         (submission) => submission.submissionId,
@@ -411,12 +415,26 @@ export function BulkPostPreviewModal({
         const version = (requestVersions.current.get(submissionId) ?? 0) + 1;
         requestVersions.current.set(submissionId, version);
         const evictions = buildUnitOfWorkEvictions(
-          completedUnits(submission),
+          mode === 'selected' ? buildSelectablePostingUnits(submission) : completedUnits(submission),
           selection,
         );
 
+        if (mode === 'selected' && Object.keys(evictions).length === 0) {
+          setPreviews((current) => {
+            const next = new Map(current);
+            next.delete(submissionId);
+            return next;
+          });
+          setLoadingIds((current) => {
+            const next = new Set(current);
+            next.delete(submissionId);
+            return next;
+          });
+          continue;
+        }
+
         postingApi
-          .dryRun(submissionId, evictions)
+          .dryRun(submissionId, mode === 'selected' ? {} : evictions, mode === 'selected' ? evictions : undefined)
           .then((response) => {
             if (requestVersions.current.get(submissionId) !== version) return;
             setPreviews((current) => {
@@ -439,7 +457,7 @@ export function BulkPostPreviewModal({
           });
       }
     },
-    [],
+    [selectionMode],
   );
 
   useEffect(() => {
@@ -453,7 +471,8 @@ export function BulkPostPreviewModal({
     setLoadingIds(new Set());
     setErrorIds(new Set());
     setOrderedSubmissions(validSubmissions);
-    loadPreviews(validSubmissions, emptySelection);
+    setSelectionMode('remaining');
+    loadPreviews(validSubmissions, emptySelection, 'remaining');
 
     return () => {
       for (const [submissionId, version] of versions) {
@@ -467,6 +486,7 @@ export function BulkPostPreviewModal({
   const selectableCompletedUnits = useMemo(
     () =>
       validSubmissions.flatMap((submission) => {
+        if (selectionMode === 'selected') return buildSelectablePostingUnits(submission);
         const preview = previews.get(submission.submissionId);
         if (!preview) return [];
         const removedIds = new Set(
@@ -476,7 +496,7 @@ export function BulkPostPreviewModal({
           (unit) => !removedIds.has(unit.id),
         );
       }),
-    [previews, validSubmissions],
+    [previews, validSubmissions, selectionMode],
   );
 
   const completedGroups = useMemo(
@@ -702,6 +722,7 @@ export function BulkPostPreviewModal({
     postableSubmissionIds,
     completedUnitsBySubmission,
     selectedUnitIds,
+    selectionMode === 'selected',
   );
   const expectedUnitCount = postableSubmissionIds.reduce(
     (count, submissionId) =>
@@ -709,7 +730,7 @@ export function BulkPostPreviewModal({
     0,
   );
   const selectedCompletedCount = selectableCompletedUnits.filter((unit) =>
-    selectedUnitIds.has(unit.id),
+    unit.state === UnitOfWorkState.SUCCEEDED && selectedUnitIds.has(unit.id),
   ).length;
   const dependencyWaitCount = [...previews.values()].filter(
     (preview) => !preview.dependenciesCompleted,
@@ -760,7 +781,24 @@ export function BulkPostPreviewModal({
           offsetScrollbars
           className="postybirb__post_preview_modal_scroll"
         >
-          <Stack gap="md" p="md" pt="xs">
+          <Stack renderRoot={(props) => <fieldset {...props} disabled={isPosting} />} gap="md" p="md" pt="xs" m={0} style={{ border: 0, minWidth: 0 }}>
+            <SegmentedControl
+              fullWidth
+              value={selectionMode}
+              aria-label={t`Posting scope`}
+              data={[
+                { value: 'remaining', label: t`Incomplete work` },
+                { value: 'selected', label: t`Selected targets` },
+              ]}
+              onChange={(mode) => {
+                const emptySelection = new Set<UnitOfWorkId>();
+                selectedUnitIdsRef.current = emptySelection;
+                setSelectedUnitIds(emptySelection);
+                setSelectionMode(mode);
+                setPreviews(new Map());
+                loadPreviews(validSubmissions, emptySelection, mode);
+              }}
+            />
             <Group justify="space-between" wrap="wrap">
               <Text size="sm">
                 <Trans>
@@ -838,7 +876,9 @@ export function BulkPostPreviewModal({
               </Group>
               <ReorderableSubmissionList
                 submissions={visibleOrderedSubmissions}
-                onReorder={setOrderedSubmissions}
+                onReorder={(submissions) => {
+                  if (!isPosting) setOrderedSubmissions(submissions);
+                }}
                 renderExtra={renderExtra}
                 scrollable={false}
               />
@@ -851,13 +891,13 @@ export function BulkPostPreviewModal({
                   <Group justify="space-between">
                     <Group gap="xs">
                       <Text size="sm" fw={600}>
-                        <Trans>Post again</Trans>
+                        {selectionMode === 'selected' ? <Trans>Posting targets</Trans> : <Trans>Post again</Trans>}
                       </Text>
                       <Badge size="sm" variant="light" color="gray">
                         {selectableCompletedUnits.length}
                       </Badge>
                     </Group>
-                    {selectedCompletedCount > 0 && (
+                    {selectedUnitIds.size > 0 && (
                       <Button
                         variant="subtle"
                         color="gray"
@@ -868,12 +908,12 @@ export function BulkPostPreviewModal({
                       </Button>
                     )}
                   </Group>
-                  <Text size="xs" c="dimmed">
+                  {selectionMode === 'remaining' && <Text size="xs" c="dimmed">
                     <Trans>
                       Select completed work by website, account, or individual
                       record to include it again.
                     </Trans>
-                  </Text>
+                  </Text>}
                   <BulkCompletedWorkList
                     groups={completedGroups}
                     submissions={submissionsMap}

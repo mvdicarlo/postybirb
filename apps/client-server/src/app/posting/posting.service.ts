@@ -1,4 +1,4 @@
-import { ConflictException, Inject, Injectable, Optional } from '@nestjs/common';
+import { BadRequestException, ConflictException, Inject, Injectable, Optional } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import {
@@ -41,6 +41,7 @@ import {
 
 
 export type UnitOfWorkEvictions = Record<AccountId, SubmissionFileId[]>;
+export type PostingTargets = Record<AccountId, SubmissionFileId[]>;
 
 export interface IncompleteWork {
     remainingWork: UnitOfWork[];
@@ -391,11 +392,20 @@ export class PostingService {
     public async getIncompleteWork(
         submissionId: SubmissionId,
         evictions: UnitOfWorkEvictions = {},
+        targets?: PostingTargets,
     ): Promise<IncompleteWork> {
         // Rebuild the desired account/file targets from the submission's current
         // files and website options, then reconcile them with active persisted work.
         const existingWork = await this.getExistingWork(submissionId);
         const potentialWork = await this.generateUnitsOfWork(submissionId);
+
+        if (targets !== undefined) {
+            return this.getTargetedWork(
+                potentialWork,
+                existingWork?.unitsOfWork ?? [],
+                targets,
+            );
+        }
 
         if (!existingWork) {
             // On the first post every generated target is new and needs a batch.
@@ -459,6 +469,55 @@ export class PostingService {
         };
     }
 
+    private async getTargetedWork(
+        potentialWork: UnitOfWork[],
+        existingUnits: UnitOfWork[],
+        targets: PostingTargets,
+    ): Promise<IncompleteWork> {
+        if (
+            !targets ||
+            typeof targets !== 'object' ||
+            Array.isArray(targets) ||
+            Object.keys(targets).length === 0
+        ) {
+            throw new BadRequestException('Select at least one posting target');
+        }
+
+        for (const [accountId, fileIds] of Object.entries(targets)) {
+            const available = potentialWork.filter((unit) => unit.accountId === accountId);
+            if (
+                !Array.isArray(fileIds) ||
+                fileIds.some((fileId) => typeof fileId !== 'string') ||
+                available.length === 0 ||
+                fileIds.some((fileId) => !available.some((unit) => unit.fileId === fileId))
+            ) {
+                throw new BadRequestException('Selected posting targets are not available on this submission');
+            }
+        }
+
+        const selected = potentialWork.filter((unit) => {
+            if (!Object.prototype.hasOwnProperty.call(targets, unit.accountId)) return false;
+            const fileIds = targets[unit.accountId];
+            return fileIds.length === 0 || (unit.fileId !== undefined && fileIds.includes(unit.fileId));
+        });
+        const selectedKeys = new Set(selected.map((unit) => unit.compositeKey));
+        const potentialKeys = new Set(potentialWork.map((unit) => unit.compositeKey));
+        const postingSelectionId = uuid();
+        for (const unit of selected) {
+            unit.data = { postingSelectionId };
+        }
+        await this.assignBatches(selected);
+
+        return {
+            remainingWork: selected,
+            removedWork: existingUnits.filter((unit) => !potentialKeys.has(unit.compositeKey)),
+            evicted: existingUnits.filter((unit) =>
+                potentialKeys.has(unit.compositeKey) &&
+                (selectedKeys.has(unit.compositeKey) || !unit.isTerminated),
+            ),
+        };
+    }
+
     /**
      * Reports what `post()` would schedule, and which of it the next cycle
      * would actually run, without persisting anything.
@@ -466,8 +525,9 @@ export class PostingService {
     public async dryRun(
         submissionId: SubmissionId,
         evictions: UnitOfWorkEvictions = {},
+        targets?: PostingTargets,
     ): Promise<PostingDryRun> {
-        const work = await this.getIncompleteWork(submissionId, evictions);
+        const work = await this.getIncompleteWork(submissionId, evictions, targets);
         const dependenciesCompleted =
             await this.areDependenciesCompleted(submissionId);
         const executableWork = dependenciesCompleted
@@ -491,6 +551,7 @@ export class PostingService {
     public async post(
         submissionId: SubmissionId,
         evictions: UnitOfWorkEvictions = {},
+        targets?: PostingTargets,
     ): Promise<Post> {
         const existingPost = await this.getPost(submissionId);
         if (
@@ -506,19 +567,21 @@ export class PostingService {
         // subsequent posts to run immediately.
         // This allows users users to cancel the lock by submitting.
         this.startupLock = Date.now() - 1_000;
-        return this.persistPost(submissionId, evictions, existingPost);
+        return this.persistPost(submissionId, evictions, existingPost, targets);
     }
 
     private async persistPost(
         submissionId: SubmissionId,
         evictions: UnitOfWorkEvictions,
         existingPost: Post | null,
+        targets?: PostingTargets,
     ): Promise<Post> {
         // Finish all asynchronous generation, account lookup, and batching before
         // opening the synchronous SQLite transaction below.
         const incompleteWork = await this.getIncompleteWork(
             submissionId,
             evictions,
+            targets,
         );
 
         // A submission owns one Post row. Reposting reopens that row instead of

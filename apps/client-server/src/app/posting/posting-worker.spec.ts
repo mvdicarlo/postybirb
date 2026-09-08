@@ -545,7 +545,7 @@ describe('PostingWorker', () => {
     expect(mocks.notificationService.create).not.toHaveBeenCalled();
   });
 
-  it('preserves original batch metadata when resuming after a succeeded batch', async () => {
+  it.each([false, true])('scopes batch metadata after a succeeded batch (targeted=%s)', async (targeted) => {
     const { worker, mocks } = createWorker();
     mocks.submissionRepository.findByIdOrThrow.mockResolvedValue({
       id: 'submission-1',
@@ -565,6 +565,7 @@ describe('PostingWorker', () => {
       },
       {
         id: 'ready-work',
+        data: targeted ? { postingSelectionId: 'selection-1' } : undefined,
         accountId: 'account-1',
         fileId: 'file-2',
         batch: 'batch-2',
@@ -589,13 +590,18 @@ describe('PostingWorker', () => {
     expect(mocks.websitePost).toHaveBeenCalledWith(
       expect.anything(),
       expect.anything(),
-      { index: 1, totalBatches: 2 },
+      targeted ? { index: 0, totalBatches: 1 } : { index: 1, totalBatches: 2 },
       expect.any(CancellationToken),
     );
     expect(mocks.unitOfWorkRepository.update).not.toHaveBeenCalledWith(
       'succeeded-work',
       expect.anything(),
     );
+    if (targeted) {
+      expect(mocks.unitOfWorkRepository.update).toHaveBeenCalledWith('ready-work', {
+        data: expect.objectContaining({ postingSelectionId: 'selection-1', postData: expect.anything() }),
+      });
+    }
   });
 
   it('orders files by submission order instead of unit encounter order', async () => {
@@ -708,17 +714,19 @@ describe('PostingWorker', () => {
     ]);
   });
 
-  it('adds fresh account source URL history to each batch', async () => {
+  it.each([false, true])('scopes fresh account source URL history to each batch (targeted=%s)', async (targeted) => {
     const { worker, mocks } = createWorker();
     const work1 = {
       id: 'work-1',
       accountId: 'account-1',
       batch: 'batch-1',
+      data: targeted ? { postingSelectionId: 'selection-1' } : undefined,
     };
     const work2 = {
       id: 'work-2',
       accountId: 'account-1',
       batch: 'batch-2',
+      data: targeted ? { postingSelectionId: 'selection-1' } : undefined,
     };
     const priorSource = {
       id: 'prior-source',
@@ -763,26 +771,22 @@ describe('PostingWorker', () => {
 
     await worker.start();
 
+    const priorUrls = targeted ? [] : [{
+      url: 'https://example.com/prior',
+      timestamp: '2026-08-13T10:00:00.000Z',
+    }];
     expect(mocks.websitePost.mock.calls.map(([, , metadata]) => metadata))
       .toEqual([
         {
           index: 0,
           totalBatches: 2,
-          sourceUrls: [
-            {
-              url: 'https://example.com/prior',
-              timestamp: '2026-08-13T10:00:00.000Z',
-            },
-          ],
+          ...(targeted ? {} : { sourceUrls: priorUrls }),
         },
         {
           index: 1,
           totalBatches: 2,
           sourceUrls: [
-            {
-              url: 'https://example.com/prior',
-              timestamp: '2026-08-13T10:00:00.000Z',
-            },
+            ...priorUrls,
             {
               url: 'https://example.com/first-batch',
               timestamp: '2026-08-13T10:02:00.000Z',

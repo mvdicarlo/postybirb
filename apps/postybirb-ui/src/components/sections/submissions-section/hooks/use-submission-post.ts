@@ -47,7 +47,7 @@ export function useSubmissionPost(): UseSubmissionPostResult {
       for (const request of requests) {
         try {
           // Sequential staging preserves the order selected in the modal.
-          await postingApi.post(request.submissionId, request.evictions);
+          await postingApi.post(request.submissionId, request.evictions, request.targets);
         } catch {
           failedSubmissionIds.push(request.submissionId);
         }

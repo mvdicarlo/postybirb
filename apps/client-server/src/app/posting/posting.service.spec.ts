@@ -668,6 +668,101 @@ describe('PostingService', () => {
     expect(result.evicted).toEqual([]);
   });
 
+  it('targets a succeeded file without scheduling other incomplete work', async () => {
+    const submission = await seedSubmission();
+    const selectedAccount = await seedAccount('selected-account');
+    const otherAccount = await seedAccount('other-account');
+    const files = await fileRepository.insert([0, 1].map((order) => ({
+      submissionId: submission.id, fileName: `image-${order}.png`,
+      hash: `hash-${order}`, mimeType: 'image/png', size: 1, width: 1, height: 1,
+      hasThumbnail: false, order, metadata: DefaultSubmissionFileMetadata(),
+    })));
+    await websiteOptionsRepository.insert([selectedAccount, otherAccount].map((account) => ({
+      submissionId: submission.id, accountId: account.id,
+      data: {} as IWebsiteFormFields, isDefault: false,
+    })));
+    const post = await postRepository.insert({ submissionId: submission.id, completed: true });
+    const [succeeded, unfinished, otherSucceeded, otherPending] = await unitOfWorkRepository.insert([
+      { accountId: selectedAccount.id, fileId: files[0].id, state: UnitOfWorkState.SUCCEEDED },
+      { accountId: selectedAccount.id, fileId: files[1].id, state: UnitOfWorkState.FAILED },
+      { accountId: otherAccount.id, fileId: files[0].id, state: UnitOfWorkState.SUCCEEDED },
+      { accountId: otherAccount.id, fileId: files[1].id, state: UnitOfWorkState.PENDING },
+    ].map((unit) => ({ ...unit, postId: post.id, submissionId: submission.id })));
+    const targets = { [selectedAccount.id]: [files[0].id] };
+
+    const preview = await service.dryRun(submission.id, {}, targets);
+    expect(preview.remainingWork).toHaveLength(1);
+    expect(preview.remainingWork[0]).toMatchObject({ accountId: selectedAccount.id, fileId: files[0].id });
+    expect((await postRepository.findByIdOrThrow(post.id)).completed).toBe(true);
+
+    const staged = await service.post(submission.id, {}, targets);
+    const activePending = staged.unitsOfWork.filter((unit) => !unit.evicted && unit.state === UnitOfWorkState.PENDING);
+    expect(activePending).toHaveLength(1);
+    expect(activePending[0]).toMatchObject({ accountId: selectedAccount.id, fileId: files[0].id });
+    expect(activePending[0].id).not.toBe(succeeded.id);
+    for (const previous of [succeeded, unfinished, otherPending]) {
+      expect(staged.unitsOfWork.find((unit) => unit.id === previous.id)).toMatchObject({ evicted: true, state: previous.state });
+    }
+    expect(staged.unitsOfWork.find((unit) => unit.id === otherSucceeded.id)).toMatchObject({ evicted: false, state: UnitOfWorkState.SUCCEEDED });
+  });
+
+  it.each(Object.values(UnitOfWorkState))('allows explicit account targeting after %s while retaining history', async (state) => {
+    const submission = await seedSubmission();
+    const account = await seedAccount('target-account');
+    const excluded = await seedAccount('excluded-account');
+    await websiteOptionsRepository.insert([account, excluded].map((entry) => ({
+      accountId: entry.id, submissionId: submission.id, isDefault: false, data: {} as IWebsiteFormFields,
+    })));
+    const post = await postRepository.insert({ submissionId: submission.id, completed: true });
+    const previous = await unitOfWorkRepository.insert({
+      postId: post.id, submissionId: submission.id, accountId: account.id, state,
+      response: { message: 'Previous result' },
+    });
+    const staged = await service.post(submission.id, {}, { [account.id]: [] });
+    expect(staged.unitsOfWork.filter((unit) => !unit.evicted)).toEqual([
+      expect.objectContaining({ accountId: account.id, state: UnitOfWorkState.PENDING }),
+    ]);
+    expect(staged.unitsOfWork.find((unit) => unit.id === previous.id)).toMatchObject({
+      evicted: true, state, response: { message: 'Previous result' },
+    });
+  });
+
+  it.each([{}, { unknown: [] }, { unknown: ['foreign-file'] }, { unknown: 'not-an-array' }, null])(
+    'rejects invalid target selections without opening a post (%j)', async (targets) => {
+      const submission = await seedSubmission();
+      await expect(service.post(submission.id, {}, targets as never)).rejects.toThrow();
+      expect(await service.getPost(submission.id)).toBeNull();
+    },
+  );
+
+  it('keeps account-wide targets within eligible files and rejects ignored files', async () => {
+    const submission = await seedSubmission();
+    const account = await seedAccount('target-account');
+    await websiteOptionsRepository.insert({
+      accountId: account.id, submissionId: submission.id, isDefault: false, data: {} as IWebsiteFormFields,
+    });
+    const files = await fileRepository.insert([false, true].map((ignored) => ({
+      submissionId: submission.id, fileName: `${ignored}.png`, hash: `${ignored}`, mimeType: 'image/png',
+      size: 1, width: 1, height: 1, hasThumbnail: false,
+      metadata: { ...DefaultSubmissionFileMetadata(), ignoredWebsites: ignored ? [account.id] : [] },
+    })));
+    const preview = await service.dryRun(submission.id, {}, { [account.id]: [] });
+    expect(preview.remainingWork.map((unit) => unit.fileId)).toEqual([files[0].id]);
+    await expect(service.post(submission.id, {}, { [account.id]: [files[1].id] })).rejects.toThrow();
+    expect(await service.getPost(submission.id)).toBeNull();
+  });
+
+  it('rejects an unavailable file on a configured account without changing history', async () => {
+    const submission = await seedSubmission();
+    const account = await seedAccount('target-account');
+    await websiteOptionsRepository.insert({ accountId: account.id, submissionId: submission.id, isDefault: false, data: {} as IWebsiteFormFields });
+    const post = await postRepository.insert({ submissionId: submission.id, completed: true });
+    await expect(service.post(submission.id, {}, { [account.id]: ['foreign-file'] })).rejects.toThrow();
+    expect((await postRepository.findByIdOrThrow(post.id)).completed).toBe(true);
+    postingManager.isAccepted.mockReturnValue(true);
+    await expect(service.post(submission.id, {}, { [account.id]: [] })).rejects.toThrow('currently active');
+  });
+
   it('skips succeeded work unless it is explicitly evicted', async () => {
     const submission = await seedSubmission();
     const account = await seedAccount('succeeded-account');

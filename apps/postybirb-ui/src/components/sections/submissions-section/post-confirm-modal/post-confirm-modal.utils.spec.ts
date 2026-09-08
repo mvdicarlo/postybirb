@@ -1,6 +1,19 @@
 import type { IUnitOfWork, SubmissionId } from '@postybirb/types';
 import { buildBulkPostingRequests } from './post-confirm-modal.utils';
 
+it('omits unselected submissions and sends only selected targets in batch order', () => {
+  const units = new Map([
+    ['first', [{ id: 'file-unit', accountId: 'account-1', fileId: 'file-1' } as IUnitOfWork]],
+    ['second', [{ id: 'message-unit', accountId: 'account-2' } as IUnitOfWork]],
+    ['skipped', [{ id: 'other-unit', accountId: 'account-3' } as IUnitOfWork]],
+  ]);
+  expect(buildBulkPostingRequests(['second', 'skipped', 'first'], units, new Set(['file-unit', 'message-unit']), true)).toEqual([
+    { submissionId: 'second', evictions: {}, targets: { 'account-2': [] } },
+    { submissionId: 'first', evictions: {}, targets: { 'account-1': ['file-1'] } },
+  ]);
+  expect(buildBulkPostingRequests(['first'], units, new Set(), true)).toEqual([]);
+});
+
 function unit(
   id: string,
   submissionId: string,

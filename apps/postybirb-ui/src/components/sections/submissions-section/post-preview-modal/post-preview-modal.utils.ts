@@ -1,9 +1,40 @@
-import type {
-    AccountId,
-    IUnitOfWork,
-    UnitOfWorkId,
+import {
+  type AccountId,
+  type IUnitOfWork,
+  type UnitOfWorkId,
+  UnitOfWorkState,
 } from '@postybirb/types';
 import type { UnitOfWorkEvictions } from '../../../../api/posting.api';
+import type { SubmissionRecord } from '../../../../stores/records';
+
+export function buildSelectablePostingUnits(
+  submission: Pick<SubmissionRecord, 'submissionId' | 'files' | 'options' | 'activeUnitsOfWork' | 'createdAt' | 'updatedAt'>,
+): IUnitOfWork[] {
+  return submission.options.filter((option) => !option.isDefault).flatMap((option) => {
+    const files = submission.files.length === 0
+      ? [undefined]
+      : submission.files.filter((file) => !file.metadata.ignoredWebsites.includes(option.accountId));
+    return files.map((file) => {
+      const previous = submission.activeUnitsOfWork.find((unit) =>
+        unit.accountId === option.accountId && unit.fileId === file?.id,
+      );
+      return {
+        ...previous,
+        id: JSON.stringify([submission.submissionId, option.accountId, file?.id ?? null]),
+        submissionId: submission.submissionId,
+        accountId: option.accountId,
+        fileId: file?.id,
+        fileHash: file?.hash,
+        postId: previous?.postId ?? '',
+        createdAt: previous?.createdAt ?? new Date(submission.createdAt).toISOString(),
+        updatedAt: previous?.updatedAt ?? new Date(submission.updatedAt).toISOString(),
+        attempt: previous?.attempt ?? 0,
+        evicted: false,
+        state: previous?.state ?? UnitOfWorkState.NEW,
+      };
+    });
+  });
+}
 
 export interface PostPreviewAccount {
   id: AccountId;

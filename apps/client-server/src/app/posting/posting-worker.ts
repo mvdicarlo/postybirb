@@ -395,9 +395,9 @@ export class PostingWorker {
       return;
     }
 
-    await this.updateUnits(unitsOfWork, {
-      data: { postData: { options: postData.options } },
-    });
+    await Promise.all(unitsOfWork.map((unit) => this.updateUnits([unit], {
+      data: { ...unit.data, postData: { options: postData.options } },
+    })));
 
     try {
       // Submission Validation
@@ -650,6 +650,10 @@ export class PostingWorker {
     submission: Submission,
   ): Array<{ metadata: PostBatchData; units: UnitOfWork[] }> {
     const readyIds = new Set(readyUnitsOfWork.map((unit) => unit.id));
+    const selectionId = readyUnitsOfWork[0]?.data?.postingSelectionId;
+    const isSingleSelection = selectionId && readyUnitsOfWork.every(
+      (unit) => unit.data?.postingSelectionId === selectionId,
+    );
     const fileOrder = new Map(
       (submission.files ?? []).map((file) => [file.id, file.order]),
     );
@@ -658,6 +662,7 @@ export class PostingWorker {
       Number.MAX_SAFE_INTEGER;
     const orderedUnits = allUnitsOfWork
       .filter((unit) => unit.accountId === accountId)
+      .filter((unit) => !isSingleSelection || unit.data?.postingSelectionId === selectionId)
       .sort(
         (left, right) =>
           getFileOrder(left) - getFileOrder(right) ||
@@ -698,6 +703,7 @@ export class PostingWorker {
     currentUnits: UnitOfWork[],
   ): Promise<PostBatchSourceUrl[]> {
     const currentUnitIds = new Set(currentUnits.map((unit) => unit.id));
+    const selectionId = currentUnits[0]?.data?.postingSelectionId;
     const sourceUnits = await this.unitOfWorkRepository.find({
       where: (unit, { and, eq }) => and(
         eq(unit.postId, this.postId),
@@ -708,6 +714,7 @@ export class PostingWorker {
     const sourceUrls = new Map<string, PostBatchSourceUrl>();
 
     for (const unit of sourceUnits) {
+      if (selectionId && unit.data?.postingSelectionId !== selectionId) continue;
       const url = unit.url?.trim();
       if (!url || unit.evicted || currentUnitIds.has(unit.id)) {
         continue;
