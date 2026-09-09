@@ -1,24 +1,24 @@
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
-    AccountRepository,
-    clearDatabase,
-    PostRepository,
-    SubmissionFileRepository,
-    SubmissionRepository,
-    UnitOfWorkRepository,
-    WebsiteOptionsRepository,
+  AccountRepository,
+  clearDatabase,
+  PostRepository,
+  SubmissionFileRepository,
+  SubmissionRepository,
+  UnitOfWorkRepository,
+  WebsiteOptionsRepository,
 } from '@postybirb/database';
 import type {
-    ISubmissionMetadata,
-    IWebsiteFormFields,
-    SubmissionId,
+  ISubmissionMetadata,
+  IWebsiteFormFields,
+  SubmissionId,
 } from '@postybirb/types';
 import {
-    DefaultSubmissionFileMetadata,
-    ScheduleType,
-    SettingsConstants,
-    SubmissionType,
-    UnitOfWorkState,
+  DefaultSubmissionFileMetadata,
+  ScheduleType,
+  SettingsConstants,
+  SubmissionType,
+  UnitOfWorkState,
 } from '@postybirb/types';
 import { SettingsService } from '../settings/settings.service';
 import { SUBMISSION_PROJECTION_CHANGED } from '../submission/submission.events';
@@ -214,9 +214,16 @@ describe('PostingService', () => {
     const updatePromise = new Promise<typeof submission>((resolve) => {
       resolveUpdate = resolve;
     });
+    let markUpdateStarted!: () => void;
+    const updateStarted = new Promise<void>((resolve) => {
+      markUpdateStarted = resolve;
+    });
     const update = jest
       .spyOn(serviceSubmissionRepository, 'update')
-      .mockReturnValue(updatePromise);
+      .mockImplementation(() => {
+        markUpdateStarted();
+        return updatePromise;
+      });
     let completed = false;
 
     const scheduling = service
@@ -224,8 +231,7 @@ describe('PostingService', () => {
       .then(() => {
         completed = true;
       });
-    await Promise.resolve();
-    await Promise.resolve();
+    await Promise.race([updateStarted, scheduling]);
 
     expect(update).toHaveBeenCalledWith(submission.id, {
       isScheduled: false,

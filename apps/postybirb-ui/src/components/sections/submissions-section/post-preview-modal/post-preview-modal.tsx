@@ -42,7 +42,7 @@ import { showPostErrorNotification } from '../../../../utils/notifications';
 import { getUnitFileName, getUnitStateInfo } from '../submission-history/history-utils';
 import './post-preview-modal.css';
 import {
-  buildSelectablePostingUnits,
+    buildSelectablePostingUnits,
     buildUnitOfWorkEvictions,
     getUnitSelectionState,
     groupUnitsByWebsite,

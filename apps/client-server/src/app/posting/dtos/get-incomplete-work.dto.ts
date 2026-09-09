@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-    AccountId,
-    SubmissionFileId,
-    SubmissionId,
+  AccountId,
+  SubmissionFileId,
+  SubmissionId,
 } from '@postybirb/types';
 import { IsObject, IsOptional, IsString } from 'class-validator';
 

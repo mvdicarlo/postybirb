@@ -2,7 +2,7 @@ import { PostingController } from './posting.controller';
 import type { PostingService } from './posting.service';
 
 describe('PostingController', () => {
-  it('forwards a post request to the service', async () => {
+  it.each([undefined, { 'account-1': ['file-1'] }])('forwards a post request to the service (targets=%j)', async (targets) => {
     const result = { id: 'post-1' };
     const post = jest.fn().mockResolvedValue(result);
     const controller = new PostingController({
@@ -10,16 +10,17 @@ describe('PostingController', () => {
     } as unknown as PostingService);
     const request = {
       submissionId: 'submission-1',
+      targets,
       evictions: {
         'account-1': ['file-1'],
       },
     };
 
     await expect(controller.post(request)).resolves.toBe(result);
-    expect(post).toHaveBeenCalledWith(request.submissionId, request.evictions);
+    expect(post).toHaveBeenCalledWith(request.submissionId, request.evictions, targets);
   });
 
-  it('forwards incomplete-work request data to the service', async () => {
+  it.each([undefined, { 'account-1': ['file-1'] }])('forwards incomplete-work request data to the service (targets=%j)', async (targets) => {
     const result = {
       remainingWork: [],
       removedWork: [],
@@ -31,6 +32,7 @@ describe('PostingController', () => {
     } as unknown as PostingService);
     const request = {
       submissionId: 'submission-1',
+      targets,
       evictions: {
         'account-1': ['file-1'],
         'account-2': [],
@@ -41,10 +43,11 @@ describe('PostingController', () => {
     expect(getIncompleteWork).toHaveBeenCalledWith(
       request.submissionId,
       request.evictions,
+      targets,
     );
   });
 
-  it('forwards dry-run request data to the service', async () => {
+  it.each([undefined, { 'account-1': ['file-1'] }])('forwards dry-run request data to the service (targets=%j)', async (targets) => {
     const result = {
       remainingWork: [],
       removedWork: [],
@@ -60,6 +63,7 @@ describe('PostingController', () => {
     } as unknown as PostingService);
     const request = {
       submissionId: 'submission-1',
+      targets,
       evictions: { 'account-1': ['file-1'] },
     };
 
@@ -67,6 +71,7 @@ describe('PostingController', () => {
     expect(dryRun).toHaveBeenCalledWith(
       request.submissionId,
       request.evictions,
+      targets,
     );
   });
 

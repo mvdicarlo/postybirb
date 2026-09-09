@@ -1,6 +1,6 @@
 import type { IUnitOfWork } from '@postybirb/types';
 import {
-  buildSelectablePostingUnits,
+    buildSelectablePostingUnits,
     buildUnitOfWorkEvictions,
     getUnitSelectionState,
     groupUnitsByWebsite,

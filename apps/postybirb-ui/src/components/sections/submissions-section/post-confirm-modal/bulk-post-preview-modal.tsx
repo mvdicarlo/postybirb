@@ -44,8 +44,8 @@ import type { SubmissionRecord } from '../../../../stores/records';
 import { ReorderableSubmissionList } from '../../../shared/reorderable-submission-list';
 import '../post-preview-modal/post-preview-modal.css';
 import {
-    buildUnitOfWorkEvictions,
     buildSelectablePostingUnits,
+    buildUnitOfWorkEvictions,
     getUnitSelectionState,
     groupUnitsByWebsite,
     type PostPreviewWebsiteGroup,
