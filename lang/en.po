@@ -13,6 +13,42 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+msgid "Today"
+msgstr "Today"
+
+msgid "Previous"
+msgstr "Previous"
+
+msgid "Calendar view"
+msgstr "Calendar view"
+
+msgid "Month"
+msgstr "Month"
+
+msgid "Week"
+msgstr "Week"
+
+msgid "Day"
+msgstr "Day"
+
+msgid "Submission"
+msgstr "Submission"
+
+msgid "No submissions"
+msgstr "No submissions"
+
+msgid "Files ({0})"
+msgstr "Files ({0})"
+
+msgid "Search submissions"
+msgstr "Search submissions"
+
+msgid "Clear search"
+msgstr "Clear search"
+
+msgid "Submission type"
+msgstr "Submission type"
+
 #: apps/postybirb-ui/src/components/sections/submissions-section/file-submission-modal/image-editor.tsx
 msgid "Crop"
 msgstr "Crop"
