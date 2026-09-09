@@ -1,13 +1,13 @@
 import {
-    DynamicObject,
-    ImageResizeProps,
-    IPostResponse,
-    ISubmissionFile,
-    LoginResult,
-    PostData,
+  DynamicObject,
+  ImageResizeProps,
+  IPostResponse,
+  ISubmissionFile,
+  LoginResult,
+  PostData,
 } from '@postybirb/types';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import { validatorPassthru } from '../../commons/validator-passthru';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { BaseWebsiteOptions } from '../../models/base-website-options';
@@ -35,7 +35,7 @@ export default class DefaultWebsite
 
   onPostMessageSubmission(
     postData: PostData<DefaultWebsiteOptions>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<IPostResponse> {
     throw new Error('Method not implemented.');
   }
@@ -49,7 +49,7 @@ export default class DefaultWebsite
   onPostFileSubmission(
     postData: PostData<DefaultWebsiteOptions>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<IPostResponse> {
     throw new Error('Method not implemented.');
   }

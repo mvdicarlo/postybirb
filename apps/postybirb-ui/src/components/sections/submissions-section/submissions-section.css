@@ -152,8 +152,11 @@
   min-width: 0;
 }
 
-.postybirb__submission__card_modified {
+.postybirb__submission__card_footer {
   margin-top: auto;
+}
+
+.postybirb__submission__card_modified {
   line-height: 1.2;
   font-variant-numeric: tabular-nums;
 }
@@ -302,7 +305,12 @@
 
 .postybirb__submission__status_badge {
   display: flex;
+  min-width: 0;
   max-width: 100%;
+}
+
+.postybirb__submission__schedule_badge {
+  flex: 0 0 auto;
 }
 
 .postybirb__submission__status_badge .mantine-Badge-label {

@@ -1,18 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import {
-    ImageResizeProps,
-    IPostResponse,
-    ISubmissionFile,
-    LoginResult,
-    PostData,
-    PostResponse,
-    SimpleValidationResult,
-    SubmissionRating,
+  ImageResizeProps,
+  IPostResponse,
+  ISubmissionFile,
+  LoginResult,
+  PostData,
+  PostResponse,
+  SimpleValidationResult,
+  SubmissionRating,
 } from '@postybirb/types';
 import { parse } from 'node-html-parser';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { PostBuilder } from '../../commons/post-builder';
 import { validatorPassthru } from '../../commons/validator-passthru';
@@ -146,7 +146,7 @@ export default class Newgrounds
   async onPostFileSubmission(
     postData: PostData<NewgroundsFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<IPostResponse> {
     // Step 1: Get the user key from the page
     const userKey: string = await this.platform.browser.runScriptOnPage(
@@ -162,7 +162,7 @@ export default class Newgrounds
         .atStage('get userkey');
     }
 
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     // Step 2: Initialize the project
     const initRes = await new PostBuilder(this, cancellationToken)
@@ -305,7 +305,7 @@ export default class Newgrounds
           .atStage('content validation');
       }
 
-      cancellationToken.throwIfCancelled();
+      cancellationToken.throwIfAborted();
 
       // Step 7: Publish the project
       if (contentUpdateRes?.body?.can_publish) {
@@ -353,7 +353,7 @@ export default class Newgrounds
 
   async onPostMessageSubmission(
     postData: PostData<NewgroundsMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<IPostResponse> {
     // Step 1: Get the page to extract userkey
     const page = await this.platform.http.get<string>(
@@ -378,7 +378,7 @@ export default class Newgrounds
         .atStage('get userkey');
     }
 
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     // Step 2: Submit the news post
     const builder = new PostBuilder(this, cancellationToken)

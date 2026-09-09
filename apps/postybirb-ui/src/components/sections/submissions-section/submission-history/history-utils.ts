@@ -3,203 +3,11 @@
  */
 
 import {
-  EntityId,
-  PostEventDto,
-  PostEventType,
-  PostRecordDto,
-  PostRecordState,
+    EntityId,
+    IUnitOfWork,
+    UnitOfWorkState,
 } from '@postybirb/types';
 import type { SubmissionRecord } from '../../../../stores/records';
-
-/**
- * Lifecycle status for an individual website post within a post record.
- * - 'pending'  : account appears in events (or is expected) but no START yet
- * - 'running'  : POST_ATTEMPT_STARTED received, no terminal event yet
- * - 'success'  : POST_ATTEMPT_COMPLETED received
- * - 'failed'   : POST_ATTEMPT_FAILED received
- */
-export type DerivedWebsitePostStatus =
-  | 'pending'
-  | 'running'
-  | 'success'
-  | 'failed';
-
-/**
- * Derived website post information from events.
- */
-export interface DerivedWebsitePost {
-  accountId: EntityId;
-  accountName: string;
-  websiteName: string;
-  status: DerivedWebsitePostStatus;
-  sourceUrls: string[];
-  errors: string[];
-}
-
-// =============================================================================
-// Shared per-account event accumulator (used by both extractWebsitePostsFromEvents
-// and getAccountPostStatusMap to avoid duplicating the event classification logic).
-// =============================================================================
-
-interface AccountEventAccumulator {
-  started: boolean;
-  completed: boolean;
-  failed: boolean;
-  errors: string[];
-  sourceUrls: string[];
-  accountName: string;
-  websiteName: string;
-}
-
-/**
- * Accumulate per-account lifecycle flags from a list of post events.
- */
-function accumulateAccountEvents(
-  events: PostEventDto[],
-): Map<EntityId, AccountEventAccumulator> {
-  const map = new Map<EntityId, AccountEventAccumulator>();
-
-  for (const event of events) {
-    if (!event.accountId) continue;
-
-    let entry = map.get(event.accountId);
-    if (!entry) {
-      const snap = event.metadata?.accountSnapshot;
-      entry = {
-        started: false,
-        completed: false,
-        failed: false,
-        errors: [],
-        sourceUrls: [],
-        // eslint-disable-next-line lingui/no-unlocalized-strings
-        accountName: snap?.name ?? 'Unknown',
-        // eslint-disable-next-line lingui/no-unlocalized-strings
-        websiteName: snap?.website ?? '?',
-      };
-      map.set(event.accountId, entry);
-    }
-
-    switch (event.eventType) {
-      case PostEventType.POST_ATTEMPT_STARTED:
-        entry.started = true;
-        break;
-      case PostEventType.POST_ATTEMPT_COMPLETED:
-        entry.completed = true;
-        break;
-      case PostEventType.POST_ATTEMPT_FAILED:
-        entry.failed = true;
-        if (event.error?.message) {
-          entry.errors.push(event.error.message);
-        }
-        break;
-      case PostEventType.MESSAGE_POSTED:
-      case PostEventType.FILE_POSTED:
-        if (event.sourceUrl) {
-          entry.sourceUrls.push(event.sourceUrl);
-        }
-        break;
-      case PostEventType.MESSAGE_FAILED:
-      case PostEventType.FILE_FAILED:
-        if (event.error?.message) {
-          entry.errors.push(event.error.message);
-        }
-        break;
-      default:
-        break;
-    }
-  }
-
-  return map;
-}
-
-/**
- * Classify lifecycle flags into a single status.
- * Priority: completed > failed > started > pending.
- */
-function classifyStatus(entry: {
-  started: boolean;
-  completed: boolean;
-  failed: boolean;
-}): DerivedWebsitePostStatus {
-  if (entry.completed) return 'success';
-  if (entry.failed) return 'failed';
-  if (entry.started) return 'running';
-  return 'pending';
-}
-
-/**
- * Extract website post results from post events.
- * Aggregates events per account to determine lifecycle status and source URLs.
- * An account that has only POST_ATTEMPT_STARTED is reported as 'running'
- * (rather than incorrectly defaulting to 'failed').
- */
-export function extractWebsitePostsFromEvents(
-  events: PostEventDto[] | undefined,
-): DerivedWebsitePost[] {
-  if (!events || events.length === 0) return [];
-
-  const accumulated = accumulateAccountEvents(events);
-
-  return Array.from(accumulated.entries()).map(([accountId, entry]) => ({
-    accountId,
-    accountName: entry.accountName,
-    websiteName: entry.websiteName,
-    status: classifyStatus(entry),
-    sourceUrls: entry.sourceUrls,
-    errors: entry.errors,
-  }));
-}
-
-/**
- * Export post record to a JSON file (browser download).
- */
-export function exportPostRecordToFile(record: PostRecordDto): string {
-  const jsonString = JSON.stringify(record, null, 2);
-  const blob = new Blob([jsonString], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-
-  const formattedDate = new Date(record.createdAt).toISOString().split('T')[0];
-  const filename = `post-record-${record.id}-${formattedDate}.json`;
-
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
-
-  return filename;
-}
-
-/**
- * Get icon for post record state (used in PostRecordCard).
- * Returns a React element — import from React consumers only.
- */
-export function getPostRecordStateInfo(state: PostRecordState): {
-  color: string;
-  label: string;
-} {
-  switch (state) {
-    case PostRecordState.DONE:
-      // eslint-disable-next-line lingui/no-unlocalized-strings
-      return { color: 'var(--mantine-color-green-5)', label: 'Done' };
-    case PostRecordState.FAILED:
-      // eslint-disable-next-line lingui/no-unlocalized-strings
-      return { color: 'var(--mantine-color-red-5)', label: 'Failed' };
-    case PostRecordState.RUNNING:
-      // eslint-disable-next-line lingui/no-unlocalized-strings
-      return { color: 'var(--mantine-color-blue-5)', label: 'Running' };
-    case PostRecordState.PENDING:
-    default:
-      // eslint-disable-next-line lingui/no-unlocalized-strings
-      return { color: 'var(--mantine-color-gray-5)', label: 'Pending' };
-  }
-}
-
-// =============================================================================
-// Per-account post status derivation (Phase 3)
-// =============================================================================
 
 /**
  * Possible per-account post status values.
@@ -210,6 +18,7 @@ export type AccountPostStatus =
   | 'running'
   | 'waiting'
   | 'rate-limited'
+  | 'cancelled'
   | null;
 
 /**
@@ -223,63 +32,165 @@ export interface AccountPostStatusEntry {
 }
 
 /**
- * Derive a per-account post status map from the submission's latest post record.
+ * Display metadata for a unit of work state.
+ */
+export interface UnitStateInfo {
+  color: string;
+  cssColor: string;
+  label: string;
+}
+
+/**
+ * Get color and label information for a unit of work state.
+ */
+export function getUnitStateInfo(state: UnitOfWorkState): UnitStateInfo {
+  switch (state) {
+    case UnitOfWorkState.SUCCEEDED:
+      return {
+        color: 'green',
+        cssColor: 'var(--mantine-color-green-5)',
+        // eslint-disable-next-line lingui/no-unlocalized-strings
+        label: 'Succeeded',
+      };
+    case UnitOfWorkState.FAILED:
+      return {
+        color: 'red',
+        cssColor: 'var(--mantine-color-red-5)',
+        // eslint-disable-next-line lingui/no-unlocalized-strings
+        label: 'Failed',
+      };
+    case UnitOfWorkState.EXECUTING:
+      return {
+        color: 'blue',
+        cssColor: 'var(--mantine-color-blue-5)',
+        // eslint-disable-next-line lingui/no-unlocalized-strings
+        label: 'Posting',
+      };
+    case UnitOfWorkState.VALIDATING:
+      return {
+        color: 'blue',
+        cssColor: 'var(--mantine-color-blue-5)',
+        // eslint-disable-next-line lingui/no-unlocalized-strings
+        label: 'Validating',
+      };
+    case UnitOfWorkState.RATE_LIMITED:
+      return {
+        color: 'yellow',
+        cssColor: 'var(--mantine-color-yellow-6)',
+        // eslint-disable-next-line lingui/no-unlocalized-strings
+        label: 'Rate limited',
+      };
+    case UnitOfWorkState.CANCELLED:
+      return {
+        color: 'gray',
+        cssColor: 'var(--mantine-color-gray-6)',
+        // eslint-disable-next-line lingui/no-unlocalized-strings
+        label: 'Cancelled',
+      };
+    case UnitOfWorkState.NEW:
+    case UnitOfWorkState.PENDING:
+    default:
+      return {
+        color: 'gray',
+        cssColor: 'var(--mantine-color-gray-5)',
+        // eslint-disable-next-line lingui/no-unlocalized-strings
+        label: 'Waiting',
+      };
+  }
+}
+
+function readStringField(
+  source: Record<string, unknown>,
+  field: string,
+): string | undefined {
+  const value = source[field];
+  return typeof value === 'string' && value.trim() ? value : undefined;
+}
+
+/**
+ * Extract human readable error messages from a unit of work's website response.
+ */
+export function getUnitErrorMessages(unit: IUnitOfWork): string[] {
+  const { response } = unit;
+  if (!response) return [];
+
+  const messages: string[] = [];
+  const exception = response.exception as Record<string, unknown> | undefined;
+
+  if (exception) {
+    const exceptionMessage =
+      readStringField(exception, 'message') ??
+      readStringField(exception, 'name');
+    if (exceptionMessage) {
+      messages.push(exceptionMessage);
+    }
+  }
+
+  const error = readStringField(response, 'error');
+  if (error) messages.push(error);
+
+  const message = readStringField(response, 'message');
+  if (message) messages.push(message);
+
+  return [...new Set(messages)];
+}
+
+/**
+ * Extract the full stack trace from a unit of work's website response.
+ */
+export function getUnitErrorStack(unit: IUnitOfWork): string | undefined {
+  const exception = unit.response?.exception as
+    | Record<string, unknown>
+    | undefined;
+  return exception ? readStringField(exception, 'stack') : undefined;
+}
+
+function classifyAccountStatus(units: IUnitOfWork[]): AccountPostStatus {
+  const has = (state: UnitOfWorkState) =>
+    units.some((unit) => unit.state === state);
+
+  if (has(UnitOfWorkState.FAILED)) return 'failed';
+  if (has(UnitOfWorkState.EXECUTING) || has(UnitOfWorkState.VALIDATING)) {
+    return 'running';
+  }
+  if (has(UnitOfWorkState.RATE_LIMITED)) return 'rate-limited';
+  if (has(UnitOfWorkState.NEW) || has(UnitOfWorkState.PENDING)) return 'waiting';
+  if (has(UnitOfWorkState.SUCCEEDED)) return 'success';
+  if (has(UnitOfWorkState.CANCELLED)) return 'cancelled';
+  return 'waiting';
+}
+
+/**
+ * Derive a per-account post status map from the submission's units of work.
  *
- * Uses `latestPost` (not `latestCompletedPost`) so that RUNNING and PENDING
- * states are surfaced. Status is derived purely from the event lifecycle:
- *
- * | Events for account                                  | Status    |
- * |-----------------------------------------------------|-----------|
- * | Post record is PENDING (no events)                  | 'waiting' |
- * | POST_ATTEMPT_STARTED only (no terminal event)       | 'running' |
- * | POST_ATTEMPT_COMPLETED present                      | 'success' |
- * | POST_ATTEMPT_FAILED present                         | 'failed'  |
- * | Account not in events at all (later batch)          | 'waiting' |
- * | No latestPost exists                                | empty map |
+ * Status is aggregated across every active unit belonging to an account, using
+ * the priority failed > running > rate-limited > waiting > success > cancelled
+ * so the most actionable state wins.
  */
 export function getAccountPostStatusMap(
   submission: SubmissionRecord,
 ): Map<EntityId, AccountPostStatusEntry> {
   const result = new Map<EntityId, AccountPostStatusEntry>();
-  const { latestPost } = submission;
 
-  if (!latestPost) return result;
+  for (const [accountId, units] of submission.unitsOfWorkByAccount) {
+    const activeUnits = units.filter((unit) => !unit.evicted);
+    if (activeUnits.length === 0) continue;
 
-  // If the post record is PENDING, no events have been created yet.
-  // All accounts that have options in this submission are "waiting".
-  if (latestPost.state === PostRecordState.PENDING) {
-    for (const option of submission.options) {
-      if (!option.isDefault) {
-        result.set(option.accountId, { status: 'waiting', errors: [] });
-      }
-    }
-    return result;
+    const errors = activeUnits.flatMap(getUnitErrorMessages);
+    const waitUntil = activeUnits
+      .filter((unit) => unit.state === UnitOfWorkState.RATE_LIMITED)
+      .map((unit) => unit.rateLimitedUntil)
+      .filter((value): value is string => Boolean(value))
+      .sort()[0];
+
+    result.set(accountId, {
+      status: classifyAccountStatus(activeUnits),
+      errors: [...new Set(errors)],
+      waitUntil,
+    });
   }
 
-  // For RUNNING, DONE, or FAILED records — inspect events
-  const { events } = latestPost;
-  if (!events || events.length === 0) {
-    // Record exists but no events yet — treat all accounts as waiting
-    for (const option of submission.options) {
-      if (!option.isDefault) {
-        result.set(option.accountId, { status: 'waiting', errors: [] });
-      }
-    }
-    return result;
-  }
-
-  // Reuse the shared accumulator and classifier
-  const accumulated = accumulateAccountEvents(events);
-
-  for (const [accountId, entry] of accumulated) {
-    const status = classifyStatus(entry);
-    // Map DerivedWebsitePostStatus to AccountPostStatus
-    const mappedStatus: AccountPostStatus =
-      status === 'pending' ? 'waiting' : status;
-    result.set(accountId, { status: mappedStatus, errors: entry.errors });
-  }
-
-  // Accounts with options but no events yet are "waiting" (later batch)
+  // Accounts configured on the submission with no units yet are queued for a later batch.
   for (const option of submission.options) {
     if (!option.isDefault && !result.has(option.accountId)) {
       result.set(option.accountId, { status: 'waiting', errors: [] });
@@ -287,4 +198,59 @@ export function getAccountPostStatusMap(
   }
 
   return result;
+}
+
+/**
+ * Resolve a display name for the file a unit of work targets.
+ */
+export function getUnitFileName(
+  submission: SubmissionRecord,
+  unit: IUnitOfWork,
+): string | undefined {
+  if (!unit.fileId) return undefined;
+  return submission.files.find((file) => file.id === unit.fileId)?.fileName;
+}
+
+/**
+ * Count units by state for a single account's group.
+ */
+export function getAccountUnitCounts(units: IUnitOfWork[]): {
+  succeeded: number;
+  failed: number;
+  running: number;
+  pending: number;
+  evicted: number;
+} {
+  const counts = {
+    succeeded: 0,
+    failed: 0,
+    running: 0,
+    pending: 0,
+    evicted: 0,
+  };
+
+  for (const unit of units) {
+    if (unit.evicted) {
+      counts.evicted += 1;
+      continue;
+    }
+
+    switch (unit.state) {
+      case UnitOfWorkState.SUCCEEDED:
+        counts.succeeded += 1;
+        break;
+      case UnitOfWorkState.FAILED:
+        counts.failed += 1;
+        break;
+      case UnitOfWorkState.EXECUTING:
+      case UnitOfWorkState.VALIDATING:
+        counts.running += 1;
+        break;
+      default:
+        counts.pending += 1;
+        break;
+    }
+  }
+
+  return counts;
 }

@@ -33,10 +33,11 @@ import {
   calculateImageResize,
   getFileTypeFromMimeType,
 } from '@postybirb/utils/file-type';
+import { setTimeout as delay } from 'timers/promises';
 import { SetNonNullable } from 'type-fest';
 import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { SubmissionValidator } from '../../commons/validator';
 import { DisableAds } from '../../decorators/disable-ads.decorator';
@@ -155,35 +156,35 @@ export default class Bluesky
   async onPostFileSubmission(
     postData: PostData<BlueskyFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     const agent = this.getLoggedInAgent();
     const profile = await agent.getProfile({ actor: agent.session.did });
     const reply = await this.getReplyRef(agent, postData.options.replyToUrl);
 
     const embed = await this.uploadEmbeds(agent, files, cancellationToken);
-    const postResult = await this.post(postData, agent, embed, reply);
+    const postResult = await this.createPost(postData, agent, embed, reply);
 
     return this.createPostResponse(postResult, profile, postData, agent);
   }
 
   async onPostMessageSubmission(
     postData: PostData<BlueskyMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     const agent = this.getLoggedInAgent();
     const profile = await agent.getProfile({ actor: agent.session.did });
     const reply = await this.getReplyRef(agent, postData.options.replyToUrl);
-    const postResult = await this.post(postData, agent, undefined, reply);
+    const postResult = await this.createPost(postData, agent, undefined, reply);
 
     return this.createPostResponse(postResult, profile, postData, agent);
   }
 
-  private async post(
+  private async createPost(
     postData: PostData<BlueskyFileSubmission>,
     agent: LoggedInAgent,
     embed:
@@ -465,7 +466,7 @@ export default class Bluesky
   private async uploadEmbeds(
     agent: LoggedInAgent,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<$Typed<AppBskyEmbedImages.Main> | $Typed<AppBskyEmbedVideo.Main>> {
     // Bluesky supports either images or a video as an embed
     // GIFs must be treated as video on bsky
@@ -474,7 +475,7 @@ export default class Bluesky
     if (fileCount.videos === 0 && fileCount.gifs === 0) {
       const uploadedImages: AppBskyEmbedImages.Image[] = [];
       for (const file of files) {
-        cancellationToken.throwIfCancelled();
+        cancellationToken.throwIfAborted();
 
         const altText = file.metadata.altText || '';
         const ref = await this.uploadImage(agent, file);
@@ -490,7 +491,7 @@ export default class Bluesky
     }
 
     for (const file of files) {
-      cancellationToken.throwIfCancelled();
+      cancellationToken.throwIfAborted();
 
       if (
         file.fileType === FileType.VIDEO ||
@@ -616,42 +617,50 @@ export default class Bluesky
   private async waitForVideoProcessing(jobId: string): Promise<BlobRef> {
     const encodedJobId = encodeURIComponent(jobId);
     const url = `https://video.bsky.app/xrpc/app.bsky.video.getJobStatus?jobId=${encodedJobId}`;
-    let jobStatus: JobStatus;
-    do {
-      await new Promise((r) => {
-        setTimeout(r, 4000);
-      });
-      this.logger.debug(`Polling video processing status at ${url}`);
-      const req: RequestInit = {
-        method: 'GET',
-        headers: {
-          'atproto-accept-labelers': 'did:plc:ar7c4by46qjdydhdevvrndac;redact',
-        },
-      };
-      const res =
-        await this.checkFetchResult<AppBskyVideoGetJobStatus.OutputSchema>(
-          fetch(url, req),
-        ).catch((err) => {
-          this.logger.error(err);
-          throw new Error('Checking video processing status failed', {
-            cause: err,
+    const controller = new AbortController();
+    const timeoutError = new Error('Bluesky video processing timed out after 15 minutes');
+    const timeout = setTimeout(() => controller.abort(timeoutError), 15 * 60 * 1000);
+    try {
+      let jobStatus: JobStatus;
+      do {
+        await delay(4000, undefined, { signal: controller.signal });
+        this.logger.debug(`Polling video processing status at ${url}`);
+        const req: RequestInit = {
+          method: 'GET',
+          signal: controller.signal,
+          headers: {
+            'atproto-accept-labelers': 'did:plc:ar7c4by46qjdydhdevvrndac;redact',
+          },
+        };
+        const res =
+          await this.checkFetchResult<AppBskyVideoGetJobStatus.OutputSchema>(
+            fetch(url, req),
+          ).catch((err) => {
+            this.logger.error(err);
+            throw new Error('Checking video processing status failed', {
+              cause: err,
+            });
           });
-        });
 
-      this.logger.debug(`Job status: ${JSON.stringify(res)}`);
-      jobStatus = res.jobStatus;
-    } while (
-      jobStatus.state !== 'JOB_STATE_COMPLETED' &&
-      jobStatus.state !== 'JOB_STATE_FAILED'
-    );
+        this.logger.debug(`Job status: ${JSON.stringify(res)}`);
+        jobStatus = res.jobStatus;
+      } while (
+        jobStatus.state !== 'JOB_STATE_COMPLETED' &&
+        jobStatus.state !== 'JOB_STATE_FAILED'
+      );
 
-    if (jobStatus.state === 'JOB_STATE_COMPLETED') {
-      if (jobStatus.blob) return jobStatus.blob;
+      if (jobStatus.state === 'JOB_STATE_COMPLETED') {
+        if (jobStatus.blob) return jobStatus.blob;
 
-      throw new Error('No blob ref after video processing');
+        throw new Error('No blob ref after video processing');
+      }
+
+      throw new Error(`Video processing failed: ${jobStatus.message}`);
+    } catch (error) {
+      throw controller.signal.aborted ? timeoutError : error;
+    } finally {
+      clearTimeout(timeout);
     }
-
-    throw new Error(`Video processing failed: ${jobStatus.message}`);
   }
 
   private async checkFetchResult<T>(

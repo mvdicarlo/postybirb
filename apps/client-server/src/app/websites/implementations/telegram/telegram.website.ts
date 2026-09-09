@@ -25,8 +25,8 @@ import { returnBigInt } from 'teleproto/Helpers';
 import { ProxyInterface } from 'teleproto/network/connection/TCPMTProxy';
 import { StringSession } from 'teleproto/sessions';
 import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { SubmissionValidator } from '../../commons/validator';
 import { CustomLoginFlow } from '../../decorators/login-flow.decorator';
@@ -324,10 +324,10 @@ export default class Telegram
   async onPostFileSubmission(
     postData: PostData<TelegramFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
     batch: PostBatchData,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     const telegram = await this.getTelegramClient();
 
     const medias: (
@@ -336,7 +336,7 @@ export default class Telegram
     )[] = [];
 
     for (const file of files) {
-      cancellationToken.throwIfCancelled();
+      cancellationToken.throwIfAborted();
 
       const customFile = new CustomFile(
         file.fileName,
@@ -429,7 +429,7 @@ export default class Telegram
     let response: Api.TypeUpdates | undefined;
 
     for (const channel of postData.options.channels) {
-      cancellationToken.throwIfCancelled();
+      cancellationToken.throwIfAborted();
 
       // Only add description to the media in first batch
       const firstInBatch = batch.index === 0;
@@ -604,9 +604,9 @@ export default class Telegram
 
   async onPostMessageSubmission(
     postData: PostData<TelegramMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     let response: Api.TypeUpdates | undefined;
     const [description, entities] = TelegramConverter.fromJson(
       postData.options.description,
@@ -614,7 +614,7 @@ export default class Telegram
     const telegram = await this.getTelegramClient();
 
     for (const channel of postData.options.channels) {
-      cancellationToken.throwIfCancelled();
+      cancellationToken.throwIfAborted();
 
       const { peer, topic } = this.getPeer(channel);
       response = await telegram.invoke(

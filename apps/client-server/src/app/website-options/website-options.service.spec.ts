@@ -1,6 +1,7 @@
+import { ConflictException } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
-import { clearDatabase } from '@postybirb/database';
+import { clearDatabase, PostRepository } from '@postybirb/database';
 import {
     DefaultDescriptionValue,
     DefaultTagValue,
@@ -19,6 +20,8 @@ import { FormGeneratorModule } from '../form-generator/form-generator.module';
 import { SharpInstanceManager } from '../image-processing/sharp-instance-manager';
 import { TestPlatformModule } from '../platform/testing/test-platform.module';
 import { PostParsersModule } from '../post-parsers/post-parsers.module';
+import { PostingActivityModule } from '../posting/posting-activity.module';
+import { PostingActivityService } from '../posting/posting-activity.service';
 import { CreateSubmissionDto } from '../submission/dtos/create-submission.dto';
 import { FileSubmissionService } from '../submission/services/file-submission.service';
 import { MessageSubmissionService } from '../submission/services/message-submission.service';
@@ -36,6 +39,8 @@ describe('WebsiteOptionsService', () => {
   let submissionService: SubmissionService;
   let accountService: AccountService;
   let module: TestingModule;
+  let postingActivity: PostingActivityService;
+  let postRepository: PostRepository;
   const markChanged = jest.fn();
   const markRemoved = jest.fn();
 
@@ -58,6 +63,11 @@ describe('WebsiteOptionsService', () => {
     return record;
   }
 
+  async function acceptSubmission(submissionId: string): Promise<void> {
+    const post = await postRepository.insert({ submissionId });
+    expect(postingActivity.accept(post.id, 3)).toBe(true);
+  }
+
   beforeEach(async () => {
     clearDatabase();
     markChanged.mockReset();
@@ -71,6 +81,7 @@ describe('WebsiteOptionsService', () => {
           AccountModule,
           PostParsersModule,
           FormGeneratorModule,
+          PostingActivityModule,
         ],
         providers: [
           SubmissionService,
@@ -97,6 +108,10 @@ describe('WebsiteOptionsService', () => {
       service = module.get<WebsiteOptionsService>(WebsiteOptionsService);
       submissionService = module.get<SubmissionService>(SubmissionService);
       accountService = module.get<AccountService>(AccountService);
+      postingActivity = module.get<PostingActivityService>(
+        PostingActivityService,
+      );
+      postRepository = new PostRepository();
       await accountService.onModuleInit();
     } catch (e) {
       console.error(e);
@@ -249,6 +264,73 @@ describe('WebsiteOptionsService', () => {
     });
 
     expect(update.data.title).toEqual('title updated');
+  });
+
+  it('rejects option updates and removals while its submission is accepted', async () => {
+    const account = await createAccount();
+    const submission = await createSubmission();
+    const record = await service.create({
+      accountId: account.id,
+      submissionId: submission.id,
+      data: {
+        title: 'original',
+        tags: DefaultTagValue(),
+        description: DefaultDescriptionValue(),
+        rating: SubmissionRating.GENERAL,
+      },
+    });
+    await acceptSubmission(submission.id);
+
+    await expect(
+      service.update(record.id, {
+        data: { ...record.data, title: 'blocked' },
+      }),
+    ).rejects.toBeInstanceOf(ConflictException);
+    await expect(service.remove(record.id)).rejects.toBeInstanceOf(
+      ConflictException,
+    );
+    await expect(service.findByIdOrThrow(record.id)).resolves.toMatchObject({
+      data: { title: 'original' },
+    });
+  });
+
+  it('allows shortcut cleanup while an affected submission is accepted', async () => {
+    const submission = await createSubmission();
+    const option = submission.options[0];
+    const description = DefaultDescriptionValue();
+    description.description.content = [
+      {
+        type: 'paragraph',
+        content: [
+          { type: 'customShortcut', attrs: { id: 'active-shortcut' } },
+        ],
+      },
+    ];
+    await service.update(option.id, {
+      data: { ...option.data, description },
+    });
+    await acceptSubmission(submission.id);
+    const deleteShortcut = Reflect.get(
+      service,
+      'onCustomShortcutDelete',
+    ) as (id: string) => Promise<void>;
+
+    await expect(
+      deleteShortcut.call(service, 'active-shortcut'),
+    ).resolves.toBeUndefined();
+    await expect(service.findByIdOrThrow(option.id)).resolves.toMatchObject({
+      data: {
+        description: {
+          description: {
+            content: [
+              {
+                content: [],
+              },
+            ],
+          },
+        },
+      },
+    });
   });
 
   it('filters nested inline content', async () => {

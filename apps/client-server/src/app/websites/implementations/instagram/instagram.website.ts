@@ -1,19 +1,19 @@
 import {
-    FileType,
-    ImageResizeProps,
-    InstagramAccountData,
-    InstagramOAuthRoutes,
-    ISubmissionFile,
-    LoginResult,
-    OAuthRouteHandlers,
-    PostData,
-    PostResponse,
-    SimpleValidationResult,
+  FileType,
+  ImageResizeProps,
+  InstagramAccountData,
+  InstagramOAuthRoutes,
+  ISubmissionFile,
+  LoginResult,
+  OAuthRouteHandlers,
+  PostData,
+  PostResponse,
+  SimpleValidationResult,
 } from '@postybirb/types';
 import { calculateImageResize } from '@postybirb/utils/file-type';
 import { v4 as uuidv4 } from 'uuid';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { DisableAds } from '../../decorators/disable-ads.decorator';
 import { CustomLoginFlow } from '../../decorators/login-flow.decorator';
@@ -24,8 +24,8 @@ import { DataPropertyAccessibility } from '../../models/data-property-accessibil
 import { FileWebsite } from '../../models/website-modifiers/file-website';
 import { Website } from '../../website';
 import {
-    InstagramApiService,
-    retrieveOAuthCode,
+  InstagramApiService,
+  retrieveOAuthCode,
 } from './instagram-api-service/instagram-api-service';
 import { InstagramBlobService } from './instagram-blob-service/instagram-blob-service';
 import { InstagramFileSubmission } from './models/instagram-file-submission';
@@ -276,9 +276,9 @@ export default class Instagram
   async onPostFileSubmission(
     postData: PostData<InstagramFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     const { accessToken, igUserId } = this.websiteDataStore.getData();
     if (!accessToken || !igUserId) {
@@ -292,7 +292,7 @@ export default class Instagram
     const uploadedBlobs: Array<{ url: string; blobName: string }> = [];
     try {
       for (const file of files) {
-        cancellationToken.throwIfCancelled();
+        cancellationToken.throwIfAborted();
         const blob = await InstagramBlobService.upload(
           file.buffer,
           file.mimeType,
@@ -315,7 +315,7 @@ export default class Instagram
         );
 
         await InstagramApiService.pollUntilReady(accessToken, container.id);
-        cancellationToken.throwIfCancelled();
+        cancellationToken.throwIfAborted();
 
         publishResult = await InstagramApiService.publishMedia(
           accessToken,
@@ -327,7 +327,7 @@ export default class Instagram
         const childIds: string[] = [];
 
         for (let i = 0; i < filesToPost.length; i++) {
-          cancellationToken.throwIfCancelled();
+          cancellationToken.throwIfAborted();
           const altText = files[i]?.metadata?.altText || '';
           const child = await InstagramApiService.createImageContainer(
             accessToken,
@@ -350,7 +350,7 @@ export default class Instagram
 
         // Poll until ready
         await InstagramApiService.pollUntilReady(accessToken, carousel.id);
-        cancellationToken.throwIfCancelled();
+        cancellationToken.throwIfAborted();
 
         // Publish
         publishResult = await InstagramApiService.publishMedia(

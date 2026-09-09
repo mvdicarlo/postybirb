@@ -1,47 +1,48 @@
 import {
-    BadRequestException,
-    forwardRef,
-    Inject,
-    Injectable,
-    NotFoundException,
-    OnModuleInit,
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+  OnModuleInit,
 } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { Account, CustomShortcutRepository, Insert, Submission, SubmissionRepository, WebsiteOptions, WebsiteOptionsRepository } from '@postybirb/database';
 import {
-    AccountId,
-    Description,
-    DescriptionType,
-    DescriptionValue,
-    DynamicObject,
-    EntityId,
-    IDescriptionPreviewResult,
-    ISubmission,
-    ISubmissionMetadata,
-    IWebsiteFormFields,
-    NULL_ACCOUNT_ID,
-    SubmissionId,
-    SubmissionMetadataType,
-    SubmissionType,
-    TipTapNode,
-    ValidationResult,
+  AccountId,
+  Description,
+  DescriptionType,
+  DescriptionValue,
+  DynamicObject,
+  EntityId,
+  IDescriptionPreviewResult,
+  ISubmission,
+  ISubmissionMetadata,
+  IWebsiteFormFields,
+  NULL_ACCOUNT_ID,
+  SubmissionId,
+  SubmissionMetadataType,
+  SubmissionType,
+  TipTapNode,
+  ValidationResult,
 } from '@postybirb/types';
 import { AccountTemplateDefaultsService } from '../account/account-template-defaults.service';
 import { AccountService } from '../account/account.service';
 import {
-    EntityRemovedEvent,
-    getEntityCrudEventNames,
+  EntityRemovedEvent,
+  getEntityCrudEventNames,
 } from '../common/events/entity-crud.events';
 import { PostyBirbService } from '../common/service/postybirb-service';
 import { CUSTOM_SHORTCUT_EVENT_PREFIX } from '../custom-shortcuts/custom-shortcut.events';
 
 import { FormGeneratorService } from '../form-generator/form-generator.service';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
+import { PostingActivityService } from '../posting/posting-activity.service';
 import { SubmissionService } from '../submission/services/submission.service';
 import { SubmissionEventPublisher } from '../submission/submission-event.publisher';
 import {
-    isBlockNoteFormat,
-    migrateDescription,
+  isBlockNoteFormat,
+  migrateDescription,
 } from '../utils/blocknote-to-tiptap';
 import { ValidationService } from '../validation/validation.service';
 import { DefaultWebsiteOptions } from '../websites/models/default-website-options';
@@ -69,6 +70,7 @@ export class WebsiteOptionsService
     private readonly postParsersService: PostParsersService,
     private readonly websiteRegistry: WebsiteRegistryService,
     private readonly submissionEventPublisher: SubmissionEventPublisher,
+    private readonly postingActivity: PostingActivityService,
   ) {
     super(new WebsiteOptionsRepository());
   }
@@ -163,6 +165,7 @@ export class WebsiteOptionsService
     data: DynamicObject,
     title?: string,
   ): Promise<WebsiteOptions> {
+    await this.postingActivity.assertSubmissionsMutable(submission.id);
     const option = await this.createOptionInsertObject(
       submission,
       accountId,
@@ -249,6 +252,7 @@ export class WebsiteOptionsService
    * @return {*}
    */
   async create(createDto: CreateWebsiteOptionsDto) {
+    await this.postingActivity.assertSubmissionsMutable(createDto.submissionId);
     const account = await this.accountService.findByIdOrThrow(createDto.accountId);
 
     let submission: ISubmission<SubmissionMetadataType>;
@@ -312,6 +316,8 @@ export class WebsiteOptionsService
 
   async update(id: EntityId, update: UpdateWebsiteOptionsDto) {
     this.logger.withMetadata(update).info(`Updating WebsiteOptions '${id}'`);
+    const option = await this.repository.findByIdOrThrow(id);
+    await this.postingActivity.assertSubmissionsMutable(option.submissionId);
     const result = await this.repository.update(id, update);
     this.markChanged(result.submissionId);
     return result;
@@ -334,6 +340,7 @@ export class WebsiteOptionsService
     this.logger
       .withMetadata({ id: submission.id })
       .info('Creating Default Website Options');
+    await this.postingActivity.assertSubmissionsMutable(submission.id);
 
     const options: Insert<'WebsiteOptionsSchema'> = {
       isDefault: true,
@@ -354,6 +361,9 @@ export class WebsiteOptionsService
 
   public override async remove(id: EntityId): Promise<void> {
     const option = await this.repository.findById(id);
+    if (option) {
+      await this.postingActivity.assertSubmissionsMutable(option.submissionId);
+    }
     await super.remove(id);
     if (option) {
       this.markChanged(option.submissionId, true);
@@ -490,6 +500,7 @@ export class WebsiteOptionsService
     submissionId: SubmissionId,
     updateDto: UpdateSubmissionWebsiteOptionsDto,
   ) {
+    await this.postingActivity.assertSubmissionsMutable(submissionId);
     const submission = await this.submissionService.findByIdOrThrow(submissionId);
     let optionsChanged = false;
 
@@ -526,6 +537,10 @@ export class WebsiteOptionsService
 
   private async onCustomShortcutDelete(id: EntityId) {
     const websiteOptions = await this.findAll();
+    const updates: Array<{
+      option: WebsiteOptions;
+      description: DescriptionValue;
+    }> = [];
     for (const option of websiteOptions) {
       const { data } = option;
       const descValue: DescriptionValue | undefined = data?.description;
@@ -541,19 +556,24 @@ export class WebsiteOptionsService
         String(id),
       );
       if (changed) {
-        const updatedDescription: DescriptionValue = {
-          ...(descValue as DescriptionValue),
-          description: { type: 'doc', content: filtered },
-        };
-
-        await this.repository.update(option.id, {
-          data: {
-            ...data,
-            description: updatedDescription,
+        updates.push({
+          option,
+          description: {
+            ...(descValue as DescriptionValue),
+            description: { type: 'doc', content: filtered },
           },
         });
-        this.markChanged(option.submissionId);
       }
+    }
+
+    for (const { option, description } of updates) {
+      await this.repository.update(option.id, {
+        data: {
+          ...option.data,
+          description,
+        },
+      });
+      this.markChanged(option.submissionId);
     }
   }
 

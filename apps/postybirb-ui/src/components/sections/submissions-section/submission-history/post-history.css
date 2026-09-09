@@ -1,0 +1,248 @@
+.post-history {
+  --mantine-color-dimmed: light-dark(
+    var(--mantine-color-gray-7),
+    var(--mantine-color-dark-1)
+  );
+
+  min-width: 0;
+  container-type: inline-size;
+  letter-spacing: 0;
+}
+
+.post-history .mantine-Badge-root {
+  letter-spacing: 0;
+}
+
+.post-history-summary {
+  padding-bottom: var(--mantine-spacing-lg);
+  border-bottom: 1px solid var(--mantine-color-default-border);
+}
+
+.post-history-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--mantine-spacing-sm);
+  padding-block: var(--mantine-spacing-lg);
+}
+
+.post-history-stat {
+  min-width: 0;
+  padding-left: var(--mantine-spacing-md);
+  border-left: 1px solid var(--mantine-color-default-border);
+}
+
+.post-history-stat:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+
+.post-history-stat-value {
+  font-size: 26px;
+  line-height: 1.35;
+  font-variant-numeric: tabular-nums;
+}
+
+.post-history-stat-label svg {
+  flex-shrink: 0;
+}
+
+.post-history-stat-label p {
+  overflow-wrap: anywhere;
+}
+
+.post-history-accounts {
+  min-width: 0;
+  border-top: 1px solid var(--mantine-color-default-border);
+}
+
+.post-history-account-control {
+  padding-inline: 8px;
+}
+
+.post-history-account-overview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--mantine-spacing-sm);
+  padding-right: var(--mantine-spacing-sm);
+}
+
+.post-history-account-identity {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-sm);
+  min-width: 0;
+}
+
+.post-history-account-names {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.post-history-account-outcomes {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+  gap: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+.post-history-account-content {
+  padding: 0 8px 12px 52px;
+}
+
+.post-history-unit {
+  padding-block: 12px;
+  border-top: 1px solid var(--mantine-color-default-border);
+}
+
+.post-history-unit-main {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: var(--mantine-spacing-sm);
+}
+
+.post-history-unit-body {
+  min-width: 0;
+}
+
+.post-history-unit-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--mantine-spacing-xs);
+}
+
+.post-history-unit-heading > .mantine-Stack-root {
+  flex-shrink: 0;
+}
+
+.post-history-unit-name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.post-history-unit-meta {
+  row-gap: 2px;
+}
+
+.post-history-unit-meta time {
+  font-variant-numeric: tabular-nums;
+}
+
+.post-history-unit-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 8px;
+  color: light-dark(var(--mantine-color-red-8), var(--mantine-color-red-4));
+  overflow-wrap: anywhere;
+}
+
+.post-history-unit-error svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.post-history-source-link {
+  text-decoration: none;
+}
+
+.post-history-source-link:hover {
+  text-decoration: underline;
+}
+
+.post-history-unit-details {
+  min-width: 0;
+  margin-top: var(--mantine-spacing-xs);
+}
+
+.post-history-response {
+  max-height: 240px;
+  overflow: auto;
+  font-size: var(--mantine-font-size-xs);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.post-history-previous > summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-block: var(--mantine-spacing-xs);
+  color: var(--mantine-color-dimmed);
+  cursor: pointer;
+  list-style: none;
+}
+
+.post-history-previous > summary::-webkit-details-marker {
+  display: none;
+}
+
+.post-history-previous > summary:hover {
+  color: var(--mantine-color-text);
+}
+
+.post-history-previous-chevron {
+  margin-left: auto;
+}
+
+.post-history-previous[open] > summary .post-history-previous-chevron {
+  transform: rotate(180deg);
+}
+
+.post-history-unit[data-evicted] .post-history-unit-name {
+  color: var(--mantine-color-dimmed);
+}
+
+.post-history-debug {
+  color: var(--mantine-color-dimmed);
+}
+
+.post-history-debug .mantine-Accordion-item {
+  border-bottom: 0;
+}
+
+.post-history-debug .mantine-Accordion-control {
+  padding-inline: 0;
+  color: var(--mantine-color-dimmed);
+}
+
+.post-history-debug .mantine-Accordion-content {
+  padding-inline: 0;
+}
+
+@container (max-width: 440px) {
+  .post-history-account-content {
+    padding-left: 8px;
+  }
+
+  .post-history-account-overview {
+    flex-wrap: wrap;
+  }
+
+  .post-history-account-outcomes {
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--mantine-spacing-xs);
+    margin-left: 46px;
+  }
+
+  .post-history-unit-heading {
+    flex-wrap: wrap;
+  }
+}
+
+@container (max-width: 360px) {
+  .post-history-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: var(--mantine-spacing-md);
+  }
+
+  .post-history-stat:nth-child(3) {
+    padding-left: 0;
+    border-left: 0;
+  }
+}

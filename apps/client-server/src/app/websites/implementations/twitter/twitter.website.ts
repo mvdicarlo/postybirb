@@ -12,8 +12,8 @@ import {
 } from '@postybirb/types';
 import { chunk } from 'lodash';
 import { parseTweet } from 'twitter-text';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { DisableAds } from '../../decorators/disable-ads.decorator';
 import { CustomLoginFlow } from '../../decorators/login-flow.decorator';
@@ -184,9 +184,9 @@ export default class Twitter
   async onPostFileSubmission(
     postData: PostData<TwitterFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     const filePartitions = chunk(files, 4);
     const { accessToken, accessTokenSecret, apiKey, apiSecret } =
       this.getWebsiteData();
@@ -205,7 +205,7 @@ export default class Twitter
         results.length > 0 ? results[results.length - 1].id : undefined,
       );
 
-      if (!result.success || cancellationToken.isCancelled) {
+      if (!result.success || cancellationToken.aborted) {
         const cleanupSuccess = await this.cleanUpFailedPost(
           results,
           apiKey,
@@ -288,9 +288,9 @@ export default class Twitter
 
   async onPostMessageSubmission(
     postData: PostData<TwitterMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     const { accessToken, accessTokenSecret, apiKey, apiSecret } =
       this.getWebsiteData();
 

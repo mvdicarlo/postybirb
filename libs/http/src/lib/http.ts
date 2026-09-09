@@ -57,6 +57,8 @@ interface CloudflareAwareHttpResponse<T> extends HttpResponse<T> {
 }
 
 const DEFAULT_CLOUDFLARE_CHALLENGE_TIMEOUT = 5 * 60 * 1000;
+const DEFAULT_REQUEST_TIMEOUT = 60 * 1000;
+const DEFAULT_UPLOAD_TIMEOUT = 15 * 60 * 1000;
 const CLOUDFLARE_INVISIBLE_CHALLENGE_TIMEOUT = 3 * 1000;
 const CLOUDFLARE_CHALLENGE_CHECK_INTERVAL = 1000;
 
@@ -272,6 +274,66 @@ export class Http {
     });
   }
 
+  private static timeoutError(timeoutMs: number): Error {
+    return Object.assign(new Error(`HTTP request timed out after ${timeoutMs}ms`), {
+      name: 'TimeoutError',
+    });
+  }
+
+  private static request<T>(
+    url: string,
+    options: HttpOptions,
+    crOptions: ClientRequestConstructorOptions & { url: string },
+    body?: CreateBodyData,
+  ): Promise<CloudflareAwareHttpResponse<T>> {
+    const timeoutMs = body ? DEFAULT_UPLOAD_TIMEOUT : DEFAULT_REQUEST_TIMEOUT;
+
+    return new Promise((resolve, reject) => {
+      const request = Http.createClientRequest(options, crOptions);
+      let settled = false;
+
+      const cleanup = () => {
+        clearTimeout(timer);
+      };
+      const rejectRequest = (reason?: Error) => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        reject(reason);
+      };
+      const abortRequest = (reason: Error = new Error('HTTP request aborted')) => {
+        if (settled) return;
+        rejectRequest(reason);
+        request.abort();
+      };
+      const timer = setTimeout(() => {
+        abortRequest(Http.timeoutError(timeoutMs));
+      }, timeoutMs);
+
+      Http.handleError(request, abortRequest);
+      Http.handleResponse<T>(url, request, (response) => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        resolve(response);
+      }, abortRequest);
+      request.on('abort', () => rejectRequest(new Error('HTTP request aborted')));
+      // request.on('close', () => rejectRequest(
+      //   new Error('HTTP request closed before the response completed'),
+      // ));
+
+      try {
+        if (body) {
+          request.setHeader('Content-Type', body.contentType);
+          request.write(body.buffer);
+        }
+        request.end();
+      } catch (error) {
+        abortRequest(error instanceof Error ? error : new Error(String(error)));
+      }
+    });
+  }
+
   private static handleResponse<T>(
     url: string,
     req: ClientRequest,
@@ -383,17 +445,10 @@ export class Http {
     let error: Error | undefined;
 
     try {
-      const response = await new Promise<CloudflareAwareHttpResponse<T>>(
-        (resolve, reject) => {
-          const req = Http.createClientRequest(options, {
-            ...(crOptions ?? {}),
-            url,
-          });
-          Http.handleError(req, reject);
-          Http.handleResponse(url, req, resolve, reject);
-          req.end();
-        },
-      );
+      const response = await Http.request<T>(url, options, {
+        ...(crOptions ?? {}),
+        url,
+      });
 
       statusCode = response.statusCode ?? 0;
       success = statusCode >= 200 && statusCode < 400;
@@ -485,6 +540,7 @@ export class Http {
     let error: Error | undefined;
 
     try {
+      const body = Http.createPostBody(options);
       // When uploadAsRawData is set, bypass net.request and send via
       // BrowserWindow.loadURL with the body as raw bytes.
       if (options.uploadAsRawData) {
@@ -492,6 +548,8 @@ export class Http {
           url,
           options,
           crOptions ?? {},
+          false,
+          body,
         );
         if (!response) {
           throw new Error(
@@ -503,21 +561,11 @@ export class Http {
         return response;
       }
 
-      const response = await new Promise<CloudflareAwareHttpResponse<T>>(
-        (resolve, reject) => {
-          const req = Http.createClientRequest(options, {
-            ...(crOptions ?? {}),
-            url,
-            method,
-          });
-          Http.handleError(req, reject);
-          Http.handleResponse(url, req, resolve, reject);
-
-          const { contentType, buffer } = Http.createPostBody(options);
-          req.setHeader('Content-Type', contentType);
-          req.write(buffer);
-          req.end();
-        },
+      const response = await Http.request<T>(
+        url,
+        options,
+        { ...(crOptions ?? {}), url, method },
+        body,
       );
 
       statusCode = response.statusCode ?? 0;
@@ -532,6 +580,7 @@ export class Http {
           options,
           crOptions,
           true,
+          body,
         );
         return browserResponse ?? Http.toHttpResponse(response);
       }
@@ -557,30 +606,9 @@ export class Http {
     options: HttpOptions,
     crOptions?: ClientRequestConstructorOptions,
   ): Promise<HttpResponse<T> | undefined> {
-    const window = new BrowserWindow({
-      show: false,
-      webPreferences: {
-        partition: options.partition
-          ? getPartitionKey(options.partition)
-          : undefined,
-      },
-    });
-
-    try {
-      await window.loadURL(getRequestUrl(url, options));
-      return await Http.handleCloudflareChallengePage<T>(
-        window,
-        options.cloudflareChallenge,
-        true,
-      );
-    } catch (err) {
-      console.error(err);
-      return await Promise.reject(err);
-    } finally {
-      if (!window.isDestroyed()) {
-        window.destroy();
-      }
-    }
+    return Http.performBrowserWindowRequest<T>(
+      url, options, DEFAULT_CLOUDFLARE_CHALLENGE_TIMEOUT, undefined, true,
+    );
   }
 
   private static async performBrowserWindowPostRequest<T>(
@@ -588,8 +616,9 @@ export class Http {
     options: PostOptions | BinaryPostOptions,
     crOptions: ClientRequestConstructorOptions,
     challengeExpected = false,
+    body = Http.createPostBody(options),
   ): Promise<HttpResponse<T> | undefined> {
-    const { contentType, buffer } = Http.createPostBody(options);
+    const { contentType, buffer } = body;
     const headers = Object.entries({
       ...(options.headers ?? {}),
       'Content-Type': contentType,
@@ -597,6 +626,19 @@ export class Http {
       .map(([key, value]) => `${key}: ${value}`)
       .join('\n');
 
+    return Http.performBrowserWindowRequest<T>(url, options, DEFAULT_UPLOAD_TIMEOUT, {
+      extraHeaders: headers,
+      postData: [{ type: 'rawData', bytes: buffer }],
+    }, challengeExpected);
+  }
+
+  private static async performBrowserWindowRequest<T>(
+    url: string,
+    options: HttpOptions,
+    timeoutMs: number,
+    loadOptions?: Parameters<BrowserWindow['loadURL']>[1],
+    challengeExpected = false,
+  ): Promise<HttpResponse<T> | undefined> {
     const window = new BrowserWindow({
       show: false,
       webPreferences: {
@@ -607,23 +649,36 @@ export class Http {
     });
 
     try {
-      await window.loadURL(getRequestUrl(url, options), {
-        extraHeaders: headers,
-        postData: [
-          {
-            type: 'rawData',
-            bytes: buffer,
-          },
-        ],
+      return await new Promise<HttpResponse<T> | undefined>((resolve, reject) => {
+        let settled = false;
+        const cleanup = () => {
+          clearTimeout(timer);
+        };
+        const stop = (reason: unknown) => {
+          if (settled) return;
+          settled = true;
+          cleanup();
+          if (!window.isDestroyed()) window.destroy();
+          reject(reason);
+        };
+        const timer = setTimeout(() => stop(Http.timeoutError(timeoutMs)), timeoutMs);
+
+        const load = async () => {
+          await window.loadURL(getRequestUrl(url, options), loadOptions);
+          if (window.isDestroyed()) throw new Error('HTTP request window was closed');
+          return Http.handleCloudflareChallengePage<T>(
+            window,
+            options.cloudflareChallenge,
+            challengeExpected,
+          );
+        };
+        load().then((response) => {
+          if (settled) return;
+          settled = true;
+          cleanup();
+          resolve(response);
+        }, stop);
       });
-      return await Http.handleCloudflareChallengePage<T>(
-        window,
-        options.cloudflareChallenge,
-        challengeExpected,
-      );
-    } catch (err) {
-      console.error(err);
-      return await Promise.reject(err);
     } finally {
       if (!window.isDestroyed()) {
         window.destroy();

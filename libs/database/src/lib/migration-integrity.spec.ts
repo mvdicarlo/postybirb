@@ -77,9 +77,7 @@ function defaultForType(type: string): string | number {
 function tableExists(sqlite: Database.Database, table: string): boolean {
   return (
     sqlite
-      .prepare(
-        `SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?`,
-      )
+      .prepare(`SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?`)
       .get(table) !== undefined
   );
 }
@@ -189,6 +187,10 @@ describe('migration integrity', () => {
         'defaultMessageTemplateId',
       ]),
     );
+    const unitOfWorkColumns = (
+      sqlite.prepare(`PRAGMA table_info("unit-of-work")`).all() as ColumnInfo[]
+    ).map((column) => column.name);
+    expect(unitOfWorkColumns).toContain('rateLimitedUntil');
 
     sqlite.close();
   });
@@ -204,7 +206,12 @@ describe('migration integrity', () => {
     applyMigrations(sqlite, allButLast);
     seedAccountGraph(sqlite);
 
-    const critical = ['account', 'submission', 'website-options', 'website-data'];
+    const critical = [
+      'account',
+      'submission',
+      'website-options',
+      'website-data',
+    ];
     const before = critical
       .filter((table) => tableExists(sqlite, table))
       .map((table) => [table, countRows(sqlite, table)] as const);

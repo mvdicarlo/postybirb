@@ -5,55 +5,49 @@
  * Shows:
  * - Actively posting submissions with per-account status rows
  * - Queued submissions waiting to be posted
- * - Rate-limit wait countdowns (via ephemeral WebSocket + API)
+ * - Rate-limit wait countdowns from persisted units of work
  * - File batch progress for file submissions
  */
 
 import { Trans } from '@lingui/react/macro';
 import {
-  ActionIcon,
-  Badge,
-  Box,
-  Group,
-  Paper,
-  Progress,
-  Stack,
-  Text,
-  ThemeIcon,
-  Tooltip,
+    ActionIcon,
+    Badge,
+    Box,
+    Group,
+    Paper,
+    Progress,
+    Stack,
+    Text,
+    ThemeIcon,
+    Tooltip,
 } from '@mantine/core';
 import {
-  EntityId,
-  IPostWaitState,
-  PostEventType,
-  PostRecordState,
-  SubmissionType,
+    EntityId,
+    SubmissionType,
+    UnitOfWorkState,
 } from '@postybirb/types';
 import {
-  IconCheck,
-  IconClock,
-  IconLoader,
-  IconPlayerStop,
-  IconSend,
-  IconX,
+    IconCheck,
+    IconClock,
+    IconLoader,
+    IconPlayerStop,
+    IconSend,
+    IconX,
 } from '@tabler/icons-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import postQueueApi from '../../../api/post-queue.api';
+import postingApi from '../../../api/posting.api';
 import { useAccountsMap } from '../../../stores/entity/account-store';
 import { useQueuedSubmissions } from '../../../stores/entity/submission-store';
 import type { SubmissionRecord } from '../../../stores/records';
 import { useViewStateActions } from '../../../stores/ui/navigation-store';
 import {
-  useWaitStateActions,
-  useWaitStates,
-} from '../../../stores/ui/wait-state-store';
-import {
-  createFileSubmissionsViewState,
-  createMessageSubmissionsViewState,
+    createFileSubmissionsViewState,
+    createMessageSubmissionsViewState,
 } from '../../../types/view-state';
 import {
-  type AccountPostStatusEntry,
-  getAccountPostStatusMap,
+    type AccountPostStatusEntry,
+    getAccountPostStatusMap,
 } from '../submissions-section/submission-history';
 
 // =============================================================================
@@ -112,7 +106,7 @@ function formatRemainingTime(ms: number): string {
 }
 
 /**
- * Get file progress from post events for a submission.
+ * Get file progress from a submission's units of work.
  */
 function getFileProgress(submission: SubmissionRecord): {
   posted: number;
@@ -124,19 +118,15 @@ function getFileProgress(submission: SubmissionRecord): {
   const totalFiles = submission.files.length;
   if (totalFiles === 0) return null;
 
-  const { latestPost } = submission;
-  if (!latestPost?.events) return { posted: 0, failed: 0, total: totalFiles };
-
   const posted = new Set<string>();
   const failed = new Set<string>();
 
-  for (const event of latestPost.events) {
-    if (event.fileId) {
-      if (event.eventType === PostEventType.FILE_POSTED) {
-        posted.add(event.fileId);
-      } else if (event.eventType === PostEventType.FILE_FAILED) {
-        failed.add(event.fileId);
-      }
+  for (const unit of submission.activeUnitsOfWork) {
+    if (!unit.fileId) continue;
+    if (unit.state === UnitOfWorkState.SUCCEEDED) {
+      posted.add(unit.fileId);
+    } else if (unit.state === UnitOfWorkState.FAILED) {
+      failed.add(unit.fileId);
     }
   }
 
@@ -180,16 +170,13 @@ function AccountStatusRow({
   accountId,
   accountName,
   entry,
-  waitState,
 }: {
   accountId: EntityId;
   accountName: string;
   entry: AccountPostStatusEntry;
-  waitState?: IPostWaitState;
 }) {
-  const effectiveStatus = waitState ? 'rate-limited' : entry.status;
-  const color = getStatusColor(effectiveStatus);
-  const icon = getStatusIcon(effectiveStatus);
+  const color = getStatusColor(entry.status);
+  const icon = getStatusIcon(entry.status);
 
   return (
     <Group gap="xs" wrap="nowrap">
@@ -201,10 +188,10 @@ function AccountStatusRow({
       <Text size="xs" style={{ flex: 1, minWidth: 0 }} truncate>
         {accountName}
       </Text>
-      {effectiveStatus === 'rate-limited' && waitState && (
-        <WaitCountdown waitUntil={waitState.waitUntil} />
+      {entry.status === 'rate-limited' && entry.waitUntil && (
+        <WaitCountdown waitUntil={entry.waitUntil} />
       )}
-      {effectiveStatus === 'failed' && entry.errors.length > 0 && (
+      {entry.status === 'failed' && entry.errors.length > 0 && (
         <Tooltip label={entry.errors.join(' | ')} multiline w={300} withArrow>
           <Text size="xs" c="red.6" style={{ cursor: 'help' }}>
             <Trans>Error</Trans>
@@ -220,10 +207,8 @@ function AccountStatusRow({
  */
 function ActivePostCard({
   submission,
-  waitStates,
 }: {
   submission: SubmissionRecord;
-  waitStates: IPostWaitState[];
 }) {
   const { setViewState } = useViewStateActions();
   const accountsMap = useAccountsMap();
@@ -231,16 +216,6 @@ function ActivePostCard({
     () => getAccountPostStatusMap(submission),
     [submission],
   );
-
-  const waitStateMap = useMemo(() => {
-    const map = new Map<EntityId, IPostWaitState>();
-    for (const ws of waitStates) {
-      if (ws.submissionId === submission.id) {
-        map.set(ws.accountId, ws);
-      }
-    }
-    return map;
-  }, [waitStates, submission.id]);
 
   // Group accounts by website for display
   const websiteGroups = useMemo(() => {
@@ -375,7 +350,6 @@ function ActivePostCard({
                     accountId={accountId}
                     accountName={accountName}
                     entry={entry}
-                    waitState={waitStateMap.get(accountId)}
                   />
                 ))}
               </Stack>
@@ -413,13 +387,17 @@ function QueuedSubmissionCard({
   }, [submission.id, submission.type, setViewState]);
 
   const handleCancel = useCallback(async () => {
+    if (!submission.post || submission.post.completed) {
+      return;
+    }
+
     setIsCancelling(true);
     try {
-      await postQueueApi.dequeue([submission.id]);
+      await postingApi.cancelPost(submission.post.id);
     } finally {
       setIsCancelling(false);
     }
-  }, [submission.id]);
+  }, [submission.post]);
 
   return (
     <Paper withBorder p="xs" radius="sm" bg="var(--mantine-color-default)">
@@ -476,28 +454,14 @@ function QueuedSubmissionCard({
  */
 export function PostingActivityPanel() {
   const queuedSubmissions = useQueuedSubmissions();
-  const waitStates = useWaitStates();
-  const { fetchWaitStates, pruneExpired } = useWaitStateActions();
 
-  // Fetch wait states on mount (for page reload resilience)
-  useEffect(() => {
-    fetchWaitStates();
-  }, [fetchWaitStates]);
-
-  // Prune expired wait states periodically
-  useEffect(() => {
-    const interval = setInterval(pruneExpired, 5000);
-    return () => clearInterval(interval);
-  }, [pruneExpired]);
-
-  // Split into active (RUNNING) and queued (PENDING or no post record)
+  // Split running or rate-limited work from posts awaiting a worker.
   const { active, queued } = useMemo(() => {
     const activeList: SubmissionRecord[] = [];
     const queuedList: SubmissionRecord[] = [];
 
     for (const sub of queuedSubmissions) {
-      const { latestPost } = sub;
-      if (latestPost?.state === PostRecordState.RUNNING) {
+      if (sub.hasRunningUnits || sub.hasRateLimitedUnits) {
         activeList.push(sub);
       } else {
         queuedList.push(sub);
@@ -536,7 +500,6 @@ export function PostingActivityPanel() {
               <ActivePostCard
                 key={sub.id}
                 submission={sub}
-                waitStates={waitStates}
               />
             ))}
           </Stack>

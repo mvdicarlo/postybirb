@@ -3,11 +3,11 @@ import { Logger, PostyBirbLogger } from '@postybirb/logger';
 import { PostData } from '@postybirb/types';
 import { toError } from '@postybirb/utils/common';
 import {
-  InlineErrorV2,
-  TweetV2PostTweetResult,
-  TwitterApi,
+    InlineErrorV2,
+    TweetV2PostTweetResult,
+    TwitterApi,
 } from 'twitter-api-v2';
-import { PostingFile } from '../../../../post/models/posting-file';
+import { PostingFile } from '../../../../posting/models/posting-file';
 import { TwitterFileSubmission } from '../models/twitter-file-submission';
 import { TwitterMessageSubmission } from '../models/twitter-message-submission';
 

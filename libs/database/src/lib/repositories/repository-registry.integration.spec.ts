@@ -11,6 +11,7 @@ import {
     ScheduleType,
     SettingsConstants,
     SubmissionType,
+    UnitOfWorkState,
 } from '@postybirb/types';
 import { saveFromEntity } from '../save-from-entity';
 import { AccountRepository } from './account.repository';
@@ -23,11 +24,13 @@ import { NotificationRepository } from './notification.repository';
 import { PostEventRepository } from './post-event.repository';
 import { PostQueueRecordRepository } from './post-queue-record.repository';
 import { PostRecordRepository } from './post-record.repository';
+import { PostRepository } from './post.repository';
 import { SettingsRepository } from './settings.repository';
 import { SubmissionFileRepository } from './submission-file.repository';
 import { SubmissionRepository } from './submission.repository';
 import { TagConverterRepository } from './tag-converter.repository';
 import { TagGroupRepository } from './tag-group.repository';
+import { UnitOfWorkRepository } from './unit-of-work.repository';
 import { UserConverterRepository } from './user-converter.repository';
 import { WebsiteDataRepository } from './website-data.repository';
 import { WebsiteOptionsRepository } from './website-options.repository';
@@ -40,6 +43,7 @@ describe('RepositoryRegistry + saveFromEntity integration', () => {
     fileBuffer: FileBufferRepository,
     notification: NotificationRepository,
     postEvent: PostEventRepository,
+    post: PostRepository,
     postQueueRecord: PostQueueRecordRepository,
     postRecord: PostRecordRepository,
     settings: SettingsRepository,
@@ -47,6 +51,7 @@ describe('RepositoryRegistry + saveFromEntity integration', () => {
     submissionFile: SubmissionFileRepository,
     tagConverter: TagConverterRepository,
     tagGroup: TagGroupRepository,
+    unitOfWork: UnitOfWorkRepository,
     userConverter: UserConverterRepository,
     websiteData: WebsiteDataRepository,
     websiteOptions: WebsiteOptionsRepository,
@@ -61,6 +66,7 @@ describe('RepositoryRegistry + saveFromEntity integration', () => {
     ['fileBuffer', 'FileBufferSchema'],
     ['notification', 'NotificationSchema'],
     ['postEvent', 'PostEventSchema'],
+    ['post', 'PostSchema'],
     ['postQueueRecord', 'PostQueueRecordSchema'],
     ['postRecord', 'PostRecordSchema'],
     ['settings', 'SettingsSchema'],
@@ -68,6 +74,7 @@ describe('RepositoryRegistry + saveFromEntity integration', () => {
     ['submissionFile', 'SubmissionFileSchema'],
     ['tagConverter', 'TagConverterSchema'],
     ['tagGroup', 'TagGroupSchema'],
+    ['unitOfWork', 'UnitOfWorkSchema'],
     ['userConverter', 'UserConverterSchema'],
     ['websiteData', 'WebsiteDataSchema'],
     ['websiteOptions', 'WebsiteOptionsSchema'],
@@ -134,6 +141,14 @@ describe('RepositoryRegistry + saveFromEntity integration', () => {
       submissionId: submission.id,
       postRecordId: postRecord.id,
     });
+    const post = await repos.post.insert({ submissionId: submission.id });
+    const unitOfWork = await repos.unitOfWork.insert({
+      postId: post.id,
+      submissionId: submission.id,
+      accountId: account.id,
+      fileId: submissionFile.id,
+      state: UnitOfWorkState.NEW,
+    });
     const websiteData = await repos.websiteData.insert({
       id: account.id,
       data: { v: 1 },
@@ -188,6 +203,8 @@ describe('RepositoryRegistry + saveFromEntity integration', () => {
       fileBuffer,
       postRecord,
       postQueueRecord,
+      post,
+      unitOfWork,
       websiteData,
       websiteOptions,
       directoryWatcher,

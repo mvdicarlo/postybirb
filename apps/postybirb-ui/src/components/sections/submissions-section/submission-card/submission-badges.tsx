@@ -14,35 +14,209 @@ import {
   ThemeIcon,
   UnstyledButton,
 } from '@mantine/core';
+import type { EntityId, IUnitOfWork } from '@postybirb/types';
+import { UnitOfWorkState } from '@postybirb/types';
 import {
   IconAlertCircle,
   IconAlertTriangle,
   IconArchive,
+  IconBan,
   IconCalendar,
   IconCircleCheck,
+  IconClockPause,
+  IconGitBranch,
   IconGlobe,
   IconLoader,
+  IconSend,
   IconX,
 } from '@tabler/icons-react';
+import { useMemo, type ReactNode } from 'react';
 import { useLocale } from '../../../../hooks';
 import { ValidationTranslation } from '../../../../i18n/validation-translation';
+import { useAccountsMap, useSubmissionsMap } from '../../../../stores';
 import type { SubmissionRecord } from '../../../../stores/records';
+import { getUnitErrorMessages } from '../submission-history/history-utils';
+import { getNextPostAt } from './utils';
 
 interface SubmissionBadgesProps {
   /** The submission record to display badges for */
   submission: SubmissionRecord;
 }
 
+/** Most actionable state first, so a partially settled account reports the state worth acting on. */
+const UNIT_STATE_PRIORITY = [
+  UnitOfWorkState.FAILED,
+  UnitOfWorkState.EXECUTING,
+  UnitOfWorkState.VALIDATING,
+  UnitOfWorkState.RATE_LIMITED,
+  UnitOfWorkState.PENDING,
+  UnitOfWorkState.NEW,
+  UnitOfWorkState.SUCCEEDED,
+  UnitOfWorkState.CANCELLED,
+];
+
+function pickRepresentativeUnit(units: IUnitOfWork[]): IUnitOfWork {
+  for (const state of UNIT_STATE_PRIORITY) {
+    const match = units.find((unit) => unit.state === state);
+    if (match) return match;
+  }
+  return units[0];
+}
+
+function UnitStateBadge({ state }: { state: UnitOfWorkState }) {
+  switch (state) {
+    case UnitOfWorkState.SUCCEEDED:
+      return (
+        <Badge size="xs" variant="light" color="green">
+          <Trans>Posted</Trans>
+        </Badge>
+      );
+    case UnitOfWorkState.FAILED:
+      return (
+        <Badge size="xs" variant="light" color="red">
+          <Trans>Failed</Trans>
+        </Badge>
+      );
+    case UnitOfWorkState.EXECUTING:
+      return (
+        <Badge size="xs" variant="light" color="blue">
+          <Trans>Posting</Trans>
+        </Badge>
+      );
+    case UnitOfWorkState.VALIDATING:
+      return (
+        <Badge size="xs" variant="light" color="blue">
+          <Trans>Validating</Trans>
+        </Badge>
+      );
+    case UnitOfWorkState.RATE_LIMITED:
+      return (
+        <Badge size="xs" variant="light" color="yellow">
+          <Trans>Rate limited</Trans>
+        </Badge>
+      );
+    case UnitOfWorkState.CANCELLED:
+      return (
+        <Badge size="xs" variant="light" color="gray">
+          <Trans>Cancelled</Trans>
+        </Badge>
+      );
+    default:
+      return (
+        <Badge size="xs" variant="light" color="gray">
+          <Trans>Waiting</Trans>
+        </Badge>
+      );
+  }
+}
+
 /**
  * Displays one stable status badge. Additional state is available without
  * changing the card's dimensions.
  */
-export function SubmissionBadges({
-  submission,
-}: SubmissionBadgesProps) {
+export function SubmissionBadges({ submission }: SubmissionBadgesProps) {
   const { t } = useLingui();
-  const { formatDateTime } = useLocale();
+  const { formatDateTime, formatRelativeTime } = useLocale();
+  const submissionsMap = useSubmissionsMap();
+  const accountsMap = useAccountsMap();
+
+  const pendingDependencies = useMemo(() => {
+    if (submission.dependsOn.length === 0) return [];
+    return submission.dependsOn
+      .map((dependencyId) => {
+        const dependency = submissionsMap.get(dependencyId);
+        return {
+          id: dependencyId,
+          title: dependency?.title || dependencyId,
+          isCompleted: dependency?.isPostSuccessful ?? false,
+        };
+      })
+      .filter((dependency) => !dependency.isCompleted);
+  }, [submission.dependsOn, submissionsMap]);
+
+  const accountProgress = useMemo(() => {
+    const entries: {
+      accountId: EntityId;
+      website: string;
+      name: string;
+      state: UnitOfWorkState;
+      rateLimitedUntil?: string;
+      errors: string[];
+      attempts: number;
+    }[] = [];
+
+    for (const [accountId, units] of submission.unitsOfWorkByAccount) {
+      const activeUnits = units.filter((unit) => !unit.evicted);
+      if (activeUnits.length === 0) continue;
+
+      const account = accountsMap.get(accountId);
+      const representative = pickRepresentativeUnit(activeUnits);
+      entries.push({
+        accountId,
+        website: account?.websiteDisplayName ?? '',
+        name: account?.name ?? accountId,
+        state: representative.state,
+        rateLimitedUntil: representative.rateLimitedUntil ?? undefined,
+        errors: [...new Set(activeUnits.flatMap(getUnitErrorMessages))],
+        attempts: units.length,
+      });
+    }
+
+    return entries;
+  }, [submission.unitsOfWorkByAccount, accountsMap]);
+
+  const nextPostAt = useMemo(() => getNextPostAt(submission), [submission]);
+
+  const { unitStats } = submission;
+  const isAwaitingDependencies =
+    (submission.isQueued || submission.isPosting) &&
+    !submission.hasRunningUnits &&
+    pendingDependencies.length > 0;
+  const websiteCount = submission.options.filter(
+    (option) => !option.isDefault,
+  ).length;
+
   const statuses = [
+    submission.hasRunningUnits
+      ? {
+          key: 'posting',
+          color: 'blue',
+          icon: <IconSend size={10} />,
+          label: <Trans>Posting</Trans>,
+        }
+      : null,
+    submission.hasRateLimitedUnits
+      ? {
+          key: 'rate-limited',
+          color: 'yellow',
+          icon: <IconClockPause size={10} />,
+          label: <Trans>Rate limited</Trans>,
+        }
+      : null,
+    isAwaitingDependencies
+      ? {
+          key: 'awaiting-dependencies',
+          color: 'grape',
+          icon: <IconGitBranch size={10} />,
+          label: <Trans>Dependencies</Trans>,
+        }
+      : null,
+    submission.isPostCancelled
+      ? {
+          key: 'post-cancelled',
+          color: 'gray',
+          icon: <IconBan size={10} />,
+          label: <Trans>Post cancelled</Trans>,
+        }
+      : null,
+    submission.hasFailedUnits
+      ? {
+          key: 'post-failed',
+          color: 'red',
+          icon: <IconAlertCircle size={10} />,
+          label: <Trans>Post failed</Trans>,
+        }
+      : null,
     submission.isArchived
       ? {
           key: 'archived',
@@ -103,6 +277,45 @@ export function SubmissionBadges({
       : null,
   ].filter((status) => status !== null);
   const primaryStatus = statuses[0];
+  const statusHints: Record<string, ReactNode> = {
+    posting: <Trans>Currently sending this submission to its websites.</Trans>,
+    'rate-limited': (
+      <Trans>
+        A website asked PostyBirb to slow down. The remaining posts retry
+        automatically.
+      </Trans>
+    ),
+    'awaiting-dependencies': (
+      <Trans>
+        This submission posts once every submission it depends on has finished.
+      </Trans>
+    ),
+    'post-cancelled': (
+      <Trans>The last post attempt was cancelled before it finished.</Trans>
+    ),
+    'post-failed': (
+      <Trans>
+        Some websites did not accept this submission. Retry them from the post
+        history.
+      </Trans>
+    ),
+    archived: (
+      <Trans>Posting finished, so this submission moved to the archive.</Trans>
+    ),
+    queued: <Trans>Waiting in the post queue for its turn.</Trans>,
+    errors: <Trans>Fix the validation errors below before posting.</Trans>,
+    warnings: (
+      <Trans>
+        This submission can post, but some websites may change the result.
+      </Trans>
+    ),
+    scheduled: <Trans>This submission posts automatically when scheduled.</Trans>,
+    websites: <Trans>Add at least one website before posting.</Trans>,
+    ready: (
+      <Trans>Ready to post to {websiteCount} website(s).</Trans>
+    ),
+  };
+  const statusHint = statusHints[primaryStatus.key];
   const errorCount = submission.validations.reduce(
     (total, validation) => total + validation.errors.length,
     0,
@@ -163,8 +376,134 @@ export function SubmissionBadges({
             </Badge>
           </Group>
 
+          {statuses.length > 1 && (
+            <Group gap={5}>
+              {statuses.slice(1).map((status) => (
+                <Badge
+                  key={status.key}
+                  size="xs"
+                  variant="light"
+                  color={status.color}
+                  leftSection={status.icon}
+                >
+                  {status.label}
+                </Badge>
+              ))}
+            </Group>
+          )}
+
+          {statusHint && (
+            <Text size="xs" c="dimmed" lh={1.35}>
+              {statusHint}
+            </Text>
+          )}
+
+          {unitStats.total > 0 && (
+            <>
+              <Divider />
+              <Stack gap={6}>
+                <Group justify="space-between" gap="xs" wrap="nowrap">
+                  <Text size="xs" fw={600}>
+                    <Trans>Post progress</Trans>
+                  </Text>
+                  <Text size="xs" c="dimmed">
+                    <Trans>
+                      {unitStats.succeeded} of {unitStats.total} done
+                    </Trans>
+                  </Text>
+                </Group>
+                <Group gap={6}>
+                  {unitStats.running > 0 && (
+                    <Badge size="xs" variant="light" color="blue">
+                      <Trans>{unitStats.running} in progress</Trans>
+                    </Badge>
+                  )}
+                  {unitStats.pending > 0 && (
+                    <Badge size="xs" variant="light" color="gray">
+                      <Trans>{unitStats.pending} waiting</Trans>
+                    </Badge>
+                  )}
+                  {unitStats.rateLimited > 0 && (
+                    <Badge size="xs" variant="light" color="yellow">
+                      <Trans>{unitStats.rateLimited} rate limited</Trans>
+                    </Badge>
+                  )}
+                  {unitStats.failed > 0 && (
+                    <Badge size="xs" variant="light" color="red">
+                      <Trans>{unitStats.failed} failed</Trans>
+                    </Badge>
+                  )}
+                  {unitStats.cancelled > 0 && (
+                    <Badge size="xs" variant="light" color="gray">
+                      <Trans>{unitStats.cancelled} cancelled</Trans>
+                    </Badge>
+                  )}
+                </Group>
+                <ScrollArea.Autosize mah={180} type="auto" offsetScrollbars>
+                  <Stack gap={7} pr={4}>
+                    {accountProgress.map((entry) => (
+                      <Stack key={entry.accountId} gap={2}>
+                        <Group
+                          justify="space-between"
+                          gap="xs"
+                          wrap="nowrap"
+                          align="flex-start"
+                        >
+                          <Text size="xs" lineClamp={1}>
+                            {entry.website ? `${entry.website} · ` : ''}
+                            {entry.name}
+                          </Text>
+                          <UnitStateBadge state={entry.state} />
+                        </Group>
+                        {entry.state === UnitOfWorkState.RATE_LIMITED &&
+                          entry.rateLimitedUntil && (
+                            <Text size="xs" c="dimmed">
+                              <Trans>
+                                Retries{' '}
+                                {formatRelativeTime(entry.rateLimitedUntil)}
+                              </Trans>
+                            </Text>
+                          )}
+                        {entry.attempts > 1 && (
+                          <Text size="xs" c="dimmed">
+                            <Trans>{entry.attempts} attempts</Trans>
+                          </Text>
+                        )}
+                        {entry.errors.map((error) => (
+                          <Text key={error} size="xs" c="red" lineClamp={2}>
+                            {error}
+                          </Text>
+                        ))}
+                      </Stack>
+                    ))}
+                  </Stack>
+                </ScrollArea.Autosize>
+              </Stack>
+            </>
+          )}
+
+          {isAwaitingDependencies && (
+            <>
+              <Divider />
+              <Stack gap={5}>
+                <Group gap={7} wrap="nowrap">
+                  <IconGitBranch size={14} />
+                  <Text size="xs" fw={600}>
+                    <Trans>Waiting for these submissions to finish</Trans>
+                  </Text>
+                </Group>
+                {pendingDependencies.map((dependency) => (
+                  <Text key={dependency.id} size="xs" c="dimmed" lineClamp={1}>
+                    {dependency.title}
+                  </Text>
+                ))}
+              </Stack>
+            </>
+          )}
+
           {validationsWithIssues.length > 0 && (
             <Stack gap={6}>
+              <Divider />
               <Group gap={6}>
                 {errorCount > 0 && (
                   <Badge size="xs" variant="light" color="red">
@@ -242,16 +581,29 @@ export function SubmissionBadges({
           {submission.hasScheduleTime && (
             <>
               <Divider />
-              <Group gap={7} wrap="nowrap">
-                <IconCalendar size={14} />
-                <Text size="xs">
-                  {submission.scheduledDate ? (
-                    formatDateTime(submission.scheduledDate)
-                  ) : (
-                    <Trans>Recurring schedule configured</Trans>
-                  )}
-                </Text>
-              </Group>
+              <Stack gap={4}>
+                <Group gap={7} wrap="nowrap">
+                  <IconCalendar size={14} />
+                  <Text size="xs">
+                    {nextPostAt ? (
+                      formatDateTime(nextPostAt)
+                    ) : (
+                      <Trans>Recurring schedule configured</Trans>
+                    )}
+                  </Text>
+                </Group>
+                {nextPostAt && (
+                  <Text size="xs" c="dimmed">
+                    {submission.isScheduled ? (
+                      <Trans>Posts {formatRelativeTime(nextPostAt)}</Trans>
+                    ) : (
+                      <Trans>
+                        Scheduling is off, so this will not post on its own.
+                      </Trans>
+                    )}
+                  </Text>
+                )}
+              </Stack>
             </>
           )}
         </Stack>

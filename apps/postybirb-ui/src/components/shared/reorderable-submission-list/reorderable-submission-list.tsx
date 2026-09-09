@@ -3,11 +3,6 @@
  * Supports drag-and-drop and keyboard navigation (Tab to focus, Arrow keys to reorder).
  */
 
-import { Trans } from '@lingui/react/macro';
-import { Box, Paper, ScrollArea, Stack, Text } from '@mantine/core';
-import { PostRecordState } from '@postybirb/types';
-import { IconGripVertical } from '@tabler/icons-react';
-import { useCallback, useEffect, useRef } from 'react';
 import {
   closestCenter,
   DndContext,
@@ -25,6 +20,10 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { Trans } from '@lingui/react/macro';
+import { Box, Paper, ScrollArea, Stack, Text } from '@mantine/core';
+import { IconGripVertical } from '@tabler/icons-react';
+import { useCallback, useEffect, useRef } from 'react';
 import type { SubmissionRecord } from '../../../stores/records';
 import { cn } from '../../../utils/class-names';
 import './reorderable-submission-list.css';
@@ -41,6 +40,11 @@ export interface ReorderableSubmissionListProps {
   ) => React.ReactNode;
   /** Maximum height of the list */
   maxHeight?: string | number;
+  /**
+   * Whether the list manages its own scroll area. Set to false when the list
+   * is rendered inside another scroll container to avoid nested scroll traps.
+   */
+  scrollable?: boolean;
 }
 
 /**
@@ -52,6 +56,7 @@ export function ReorderableSubmissionList({
   onReorder,
   renderExtra,
   maxHeight = '400px',
+  scrollable = true,
 }: ReorderableSubmissionListProps) {
   const focusedIndexRef = useRef<number>(-1);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -124,37 +129,45 @@ export function ReorderableSubmissionList({
     );
   }
 
+  const listContent = (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragEnd={handleDragEnd}
+    >
+      <SortableContext
+        items={submissions.map((s) => s.id)}
+        strategy={verticalListSortingStrategy}
+      >
+        <Stack gap="xs" ref={containerRef}>
+          {submissions.map((submission, index) => (
+            <SortableReorderableItem
+              key={submission.id}
+              submission={submission}
+              index={index}
+              onKeyDown={handleKeyDown}
+              renderExtra={renderExtra}
+            />
+          ))}
+        </Stack>
+      </SortableContext>
+    </DndContext>
+  );
+
   return (
     <Box className="postybirb__reorderable-container">
       <Text size="xs" c="dimmed" mb="xs">
         <Trans>Drag or use arrow keys to reorder</Trans>
       </Text>
-      <Box style={{ overflow: 'hidden', maxHeight }}>
-        <ScrollArea h="100%" scrollbars="y">
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-          >
-            <SortableContext
-              items={submissions.map((s) => s.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              <Stack gap="xs" ref={containerRef}>
-                {submissions.map((submission, index) => (
-                  <SortableReorderableItem
-                    key={submission.id}
-                    submission={submission}
-                    index={index}
-                    onKeyDown={handleKeyDown}
-                    renderExtra={renderExtra}
-                  />
-                ))}
-              </Stack>
-            </SortableContext>
-          </DndContext>
-        </ScrollArea>
-      </Box>
+      {scrollable ? (
+        <Box style={{ overflow: 'hidden', maxHeight }}>
+          <ScrollArea h="100%" scrollbars="y">
+            {listContent}
+          </ScrollArea>
+        </Box>
+      ) : (
+        listContent
+      )}
     </Box>
   );
 }
@@ -187,9 +200,7 @@ function SortableReorderableItem({
   };
 
   const title = submission.getDefaultOptions()?.data?.title;
-  const lastPost = submission.latestPost;
-  const hasFailedPost =
-    lastPost && lastPost.state === PostRecordState.FAILED;
+  const hasFailedPost = submission.hasFailedUnits;
 
   return (
     <Paper

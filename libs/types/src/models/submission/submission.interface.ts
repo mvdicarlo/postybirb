@@ -2,6 +2,7 @@ import { SubmissionType } from '../../enums';
 import { EntityId, IEntity } from '../database/entity.interface';
 import { IPostQueueRecord } from '../post/post-queue-record.interface';
 import { IPostRecord } from '../post/post-record.interface';
+import { IPost } from '../post/post.interface';
 import { IWebsiteOptions } from '../website-options/website-options.interface';
 import { ISubmissionFile } from './submission-file.interface';
 import { ISubmissionMetadata } from './submission-metadata.interface';
@@ -92,6 +93,17 @@ export interface ISubmission<
    * @type {Collection<IPostRecord>}
    */
   posts: IPostRecord[];
+
+  /**
+   * The post created for this submission by the current posting model.
+   * @type {IPost}
+   */
+  post?: IPost;
+
+  /**
+   * Submission IDs that must complete before this submission can post.
+   */
+  dependsOn: SubmissionId[];
 
   /**
    * The index of the submission for display purposes.

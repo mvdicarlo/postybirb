@@ -6,9 +6,9 @@
 import {
     ISubmissionScheduleInfo,
     IWebsiteFormFields,
-    PostRecordResumeMode,
     SubmissionType,
 } from '@postybirb/types';
+import type { PostingRequest } from '../../../../api/posting.api';
 import {
     FileSubmissionUploadParams,
     useSubmissionCreate,
@@ -49,7 +49,7 @@ interface UseSubmissionHandlersResult {
   /** Handle deleting all selected submissions */
   handleDeleteSelected: () => Promise<void>;
   /** Handle posting submissions with specified order */
-  handlePostSelected: (orderedIds: string[]) => Promise<void>;
+  handlePostSelected: (requests: PostingRequest[]) => Promise<void>;
   /** Handle duplicating a submission */
   handleDuplicate: (id: string) => Promise<void>;
   /** Handle archiving a submission */
@@ -61,8 +61,6 @@ interface UseSubmissionHandlersResult {
     id: string,
     update: Partial<IWebsiteFormFields>,
   ) => Promise<void>;
-  /** Handle posting a submission */
-  handlePost: (id: string) => Promise<void>;
   /** Handle canceling a queued/posting submission */
   handleCancel: (id: string) => Promise<void>;
   /** Handle schedule changes */
@@ -71,12 +69,6 @@ interface UseSubmissionHandlersResult {
     schedule: ISubmissionScheduleInfo,
     isScheduled: boolean,
   ) => Promise<void>;
-  /** ID of submission waiting for resume mode selection */
-  pendingResumeSubmissionId: string | null;
-  /** Close the resume mode modal without posting */
-  cancelResume: () => void;
-  /** Post with the selected resume mode */
-  confirmResume: (resumeMode: PostRecordResumeMode) => Promise<void>;
 }
 
 /**
@@ -101,12 +93,8 @@ export function useSubmissionHandlers({
   const { handleDelete, handleDeleteSelected } = useSubmissionDelete();
 
   const {
-    handlePost,
     handleCancel,
     handlePostSelected,
-    pendingResumeSubmissionId,
-    cancelResume,
-    confirmResume,
   } = useSubmissionPost();
 
   const {
@@ -132,12 +120,8 @@ export function useSubmissionHandlers({
     handleArchive,
     handleEdit,
     handleDefaultOptionChange,
-    handlePost,
     handleCancel,
     handlePostSelected,
     handleScheduleChange,
-    pendingResumeSubmissionId,
-    cancelResume,
-    confirmResume,
   };
 }

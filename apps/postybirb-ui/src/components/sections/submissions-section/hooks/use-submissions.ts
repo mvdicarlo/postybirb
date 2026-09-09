@@ -55,11 +55,10 @@ export function useSubmissions({
       case 'queued':
         result = result
           .filter((s) => s.isQueued)
-          .sort((a, b) => {
-            // Sort by postQueueRecord.createdAt ascending (oldest first = top of queue)
-            const aCreatedAt = a.postQueueRecord?.createdAt ?? '';
-            const bCreatedAt = b.postQueueRecord?.createdAt ?? '';
-            return aCreatedAt.localeCompare(bCreatedAt);
+          .sort((first, second) => {
+            const firstQueuedAt = first.post?.updatedAt ?? '';
+            const secondQueuedAt = second.post?.updatedAt ?? '';
+            return firstQueuedAt.localeCompare(secondQueuedAt);
           });
         break;
       case 'scheduled':

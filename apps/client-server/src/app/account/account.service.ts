@@ -17,6 +17,7 @@ import {
 } from '@postybirb/types';
 import { ne } from 'drizzle-orm';
 import { PostyBirbService } from '../common/service/postybirb-service';
+import { PostingActivityService } from '../posting/posting-activity.service';
 import { publishSubmissionProjectionChanged } from '../submission/submission.events';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { publishAccountRemoved } from './account.events';
@@ -37,6 +38,7 @@ export class AccountService
   constructor(
     private readonly websiteRegistry: WebsiteRegistryService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly postingActivity: PostingActivityService,
   ) {
     super(new AccountRepository());
   }
@@ -253,6 +255,9 @@ export class AccountService
       where: (option, { eq }) => eq(option.accountId, id),
       with: {},
     });
+    await this.postingActivity.assertSubmissionsMutable(
+      affectedOptions.map((option) => option.submissionId),
+    );
     await this.websiteRegistry.remove(account);
     try {
       const result = await this.repository.deleteById([id]);

@@ -28,6 +28,7 @@ import { FormGeneratorService } from '../form-generator/form-generator.service';
 import { SharpInstanceManager } from '../image-processing/sharp-instance-manager';
 import { TestPlatformModule } from '../platform/testing/test-platform.module';
 import { PostParsersModule } from '../post-parsers/post-parsers.module';
+import { PostingActivityModule } from '../posting/posting-activity.module';
 import { CreateSubmissionDto } from '../submission/dtos/create-submission.dto';
 import { FileSubmissionService } from '../submission/services/file-submission.service';
 import { MessageSubmissionService } from '../submission/services/message-submission.service';
@@ -74,6 +75,7 @@ describe('Account default template association', () => {
         AccountModule,
         PostParsersModule,
         FormGeneratorModule,
+        PostingActivityModule,
       ],
       providers: [
         SubmissionService,

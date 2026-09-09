@@ -8,6 +8,7 @@ import {
 } from '@postybirb/types';
 import { HydrationContext } from '../repositories/base/hydration-context';
 import { assertRowRoundtrips } from '../repositories/base/test-utils';
+import { Post } from './post.entity';
 import { Submission, type SubmissionRow } from './submission.entity';
 import { WebsiteOptions } from './website-options.entity';
 
@@ -17,6 +18,7 @@ function buildRow(overrides: Partial<SubmissionRow> = {}): SubmissionRow {
     createdAt: '2025-01-01T00:00:00.000Z',
     updatedAt: '2025-01-01T00:00:00.000Z',
     type: SubmissionType.FILE,
+    dependsOn: ['sub-0'],
     isScheduled: false,
     isTemplate: false,
     isMultiSubmission: false,
@@ -37,8 +39,30 @@ describe('Submission.fromRow', () => {
     assertRowRoundtrips(
       row,
       entity as unknown as Record<string, unknown> & { id: string },
-      ['options', 'posts', 'files', 'postQueueRecord'],
+      ['options', 'posts', 'post', 'files', 'postQueueRecord'],
     );
+  });
+
+  it('defaults dependencies to an empty list', () => {
+    expect(new Submission().dependsOn).toEqual([]);
+  });
+
+  it('hydrates the post when present', () => {
+    const row = buildRow({
+      post: {
+        id: 'post-1',
+        createdAt: '2025-01-01T00:00:00.000Z',
+        updatedAt: '2025-01-01T00:00:00.000Z',
+        submissionId: 'sub-1',
+        completed: false,
+        cancelled: false,
+        unitsOfWork: [],
+      },
+    });
+    const entity = Submission.fromRow(row);
+
+    expect(entity.post).toBeInstanceOf(Post);
+    expect(entity.post?.id).toBe('post-1');
   });
 
   it('hydrates options when present', () => {
