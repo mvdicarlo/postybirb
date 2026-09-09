@@ -4,34 +4,37 @@
  * FileMetadata - Form for editing file metadata (alt text, spoiler, sources, skip accounts, dimensions).
  */
 
+import { t } from '@lingui/core/macro';
 import { Trans } from '@lingui/react/macro';
 import {
-  ActionIcon,
-  Badge,
-  Box,
-  Button,
-  Divider,
-  Grid,
-  Group,
-  NumberInput,
-  Select,
-  Text,
-  TextInput,
-  Tooltip,
+    ActionIcon,
+    Badge,
+    Box,
+    Divider,
+    Group,
+    NumberInput,
+    SegmentedControl,
+    Select,
+    Stack,
+    Text,
+    Textarea,
+    TextInput,
+    Tooltip,
 } from '@mantine/core';
 import {
-  AccountId,
-  FileType,
-  IAccountDto,
-  ISubmissionFileDto,
-  ModifiedFileDimension,
+    AccountId,
+    FileType,
+    IAccountDto,
+    ISubmissionFileDto,
+    ModifiedFileDimension,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import {
-  IconInfoCircle,
-  IconPlus,
-  IconRestore,
-  IconTrash,
+    IconInfoCircle,
+    IconLink,
+    IconPlus,
+    IconRestore,
+    IconTrash,
 } from '@tabler/icons-react';
 import { debounce } from 'lodash';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -52,6 +55,21 @@ export function FileMetadata({ file, accounts }: FileMetadataProps) {
   const [ignoredWebsites, setIgnoredWebsites] = useState<AccountId[]>(
     metadata.ignoredWebsites ?? [],
   );
+  const [altText, setAltText] = useState(metadata.altText ?? '');
+  const [spoilerText, setSpoilerText] = useState(metadata.spoilerText ?? '');
+  const focusedTextField = useRef<'altText' | 'spoilerText' | null>(null);
+
+  useEffect(() => {
+    if (focusedTextField.current !== 'altText') {
+      setAltText(metadata.altText ?? '');
+    }
+  }, [metadata.altText]);
+
+  useEffect(() => {
+    if (focusedTextField.current !== 'spoilerText') {
+      setSpoilerText(metadata.spoilerText ?? '');
+    }
+  }, [metadata.spoilerText]);
 
   // Sync local state when file prop changes (e.g. after bulk edit)
   useEffect(() => {
@@ -66,70 +84,72 @@ export function FileMetadata({ file, accounts }: FileMetadataProps) {
   }, [file.id, metadata]);
 
   return (
-    <Box>
-      {/* Skip Accounts */}
-      <Grid gutter="xs">
-        <Grid.Col span={12}>
-          <BasicWebsiteSelect
-            label={<Trans>Skip Accounts</Trans>}
-            size="xs"
-            selected={ignoredWebsites}
-            onSelect={(selectedAccounts) => {
-              const ids = selectedAccounts.map((acc) => acc.id);
-              setIgnoredWebsites(ids);
-              metadata.ignoredWebsites = ids;
-              save();
-            }}
-          />
-        </Grid.Col>
+    <Stack gap="md">
+      <Textarea
+        label={<Trans>Alt Text</Trans>}
+        value={altText}
+        size="sm"
+        autosize
+        minRows={3}
+        maxRows={8}
+        onFocus={() => {
+          focusedTextField.current = 'altText';
+        }}
+        onChange={(event) => setAltText(event.currentTarget.value)}
+        onBlur={(event) => {
+          focusedTextField.current = null;
+          metadata.altText = event.target.value.trim();
+          setAltText(metadata.altText);
+          save();
+        }}
+      />
+      <div className="postybirb-file-secondary-fields">
+        <TextInput
+          label={<Trans>Spoiler Text</Trans>}
+          value={spoilerText}
+          size="sm"
+          onFocus={() => {
+            focusedTextField.current = 'spoilerText';
+          }}
+          onChange={(event) => setSpoilerText(event.currentTarget.value)}
+          onBlur={(event) => {
+            focusedTextField.current = null;
+            metadata.spoilerText = event.target.value.trim();
+            setSpoilerText(metadata.spoilerText);
+            save();
+          }}
+        />
+        <BasicWebsiteSelect
+          label={<Trans>Skip Accounts</Trans>}
+          size="sm"
+          selected={ignoredWebsites}
+          onSelect={(selectedAccounts) => {
+            const ids = selectedAccounts.map((acc) => acc.id);
+            setIgnoredWebsites(ids);
+            metadata.ignoredWebsites = ids;
+            save();
+          }}
+        />
+      </div>
 
-        {/* Alt Text */}
-        <Grid.Col span={6}>
-          <TextInput
-            key={`alt-${file.id}-${file.updatedAt}`}
-            label={<Trans>Alt Text</Trans>}
-            defaultValue={metadata.altText}
-            size="xs"
-            onBlur={(event) => {
-              metadata.altText = event.target.value.trim();
-              save();
-            }}
-          />
-        </Grid.Col>
-
-        {/* Spoiler Text */}
-        <Grid.Col span={6}>
-          <TextInput
-            key={`spoiler-${file.id}-${file.updatedAt}`}
-            label={<Trans>Spoiler Text</Trans>}
-            defaultValue={metadata.spoilerText}
-            size="xs"
-            onBlur={(event) => {
-              metadata.spoilerText = event.target.value.trim();
-              save();
-            }}
-          />
-        </Grid.Col>
-      </Grid>
-
-      {/* Dimensions (for images only) */}
-      {fileType === FileType.IMAGE && (
-        <FileDimensions file={file} accounts={accounts} save={save} />
-      )}
-
-      {/* Source URLs (for non-text files) */}
       {fileType !== FileType.TEXT && (
         <FileSourceUrls metadata={metadata} save={save} />
       )}
 
-      {/* Fallback Text Editor (for TEXT files only - excludes PDF) */}
+      {fileType === FileType.IMAGE && (
+        <>
+          <Divider />
+          <FileDimensions file={file} accounts={accounts} save={save} />
+        </>
+      )}
+
       {fileType === FileType.TEXT && (
         <>
-          <Divider my="sm" variant="dashed" />
+          <Divider />
           <FileAltTextEditor file={file} />
         </>
       )}
-    </Box>
+    </Stack>
   );
 }
 
@@ -199,7 +219,7 @@ function FileDimensions({ file, accounts, save }: FileDimensionsProps) {
   const reset = () => applyDimensions(original.h, original.w);
 
   return (
-    <Box pt="md">
+    <Box>
       <Group justify="space-between" mb="xs" wrap="nowrap">
         <Group gap={6}>
           <Text size="sm" fw={600}>
@@ -222,62 +242,50 @@ function FileDimensions({ file, accounts, save }: FileDimensionsProps) {
           </Badge>
         </Group>
         <Tooltip label={<Trans>Reset</Trans>}>
-          <ActionIcon size="sm" variant="subtle" onClick={reset}>
-            <IconRestore size={14} />
+          <ActionIcon variant="subtle" onClick={reset} aria-label={t`Reset`}>
+            <IconRestore size={16} />
           </ActionIcon>
         </Tooltip>
       </Group>
 
-      <Group gap="xs" align="end" wrap="nowrap" mb="sm">
-        <NumberInput
-          label={<Trans>Height</Trans>}
-          value={height}
-          max={original.h}
-          min={1}
+      <Group gap="sm" align="end" mb="md">
+        <div className="postybirb-file-dimension-inputs">
+          <NumberInput
+            label={<Trans>Width</Trans>}
+            value={width}
+            max={original.w}
+            min={1}
+            size="sm"
+            step={10}
+            onChange={(val) => setWidthLocked(Number(val) || 1)}
+          />
+          <NumberInput
+            label={<Trans>Height</Trans>}
+            value={height}
+            max={original.h}
+            min={1}
+            size="sm"
+            step={10}
+            onChange={(val) => setHeightLocked(Number(val) || 1)}
+          />
+        </div>
+        <SegmentedControl
           size="xs"
-          step={10}
-          onChange={(val) => setHeightLocked(Number(val) || 1)}
-          styles={{ input: { width: 90 } }}
-        />
-        <Text px={4} pb={4}>
-          ×
-        </Text>
-        <NumberInput
-          label={<Trans>Width</Trans>}
-          value={width}
-          max={original.w}
-          min={1}
-          size="xs"
-          step={10}
-          onChange={(val) => setWidthLocked(Number(val) || 1)}
-          styles={{ input: { width: 90 } }}
-        />
-        <Group gap={4} mb={6}>
-          {([100, 75, 50, 25] as const).map((p) => {
-            const active = scale === p;
-            return (
-              <Button
-                key={p}
-                size="compact-xs"
-                variant={active ? 'filled' : 'light'}
-                color={active ? 'blue' : 'gray'}
-                onClick={() => {
-                  const targetH = Math.max(
-                    1,
-                    Math.round(original.h * (p / 100)),
-                  );
-                  setHeightLocked(targetH);
-                }}
-              >
-                {p}%
-              </Button>
+          value={String(scale)}
+          aria-label={t`Dimensions`}
+          data={[100, 75, 50, 25].map((percentage) => ({
+            value: String(percentage),
+            label: `${percentage}%`,
+          }))}
+          onChange={(percentage) => {
+            setHeightLocked(
+              Math.max(1, Math.round(original.h * (Number(percentage) / 100))),
             );
-          })}
-        </Group>
+          }}
+        />
       </Group>
 
       {/* Per-account dimensions */}
-      <Divider my="xs" variant="dashed" />
       <CustomAccountDimensions
         accounts={accounts}
         file={file}
@@ -369,22 +377,25 @@ function CustomAccountDimensions({
       {availableAccounts.length > 0 && (
         <Group gap="xs" mb="xs" wrap="nowrap">
           <Select
-            size="xs"
+            size="sm"
+            aria-label={t`Per-Account Dimensions`}
             data={accountOptions}
             value={selectedAccountId}
             onChange={setSelectedAccountId}
             searchable
             clearable
-            style={{ flex: 1 }}
+            style={{ flex: 1, minWidth: 0 }}
           />
-          <ActionIcon
-            size="sm"
-            variant="light"
-            disabled={!selectedAccountId}
-            onClick={addAccountDimension}
-          >
-            <IconPlus size={14} />
-          </ActionIcon>
+          <Tooltip label={<Trans>Add account</Trans>}>
+            <ActionIcon
+              variant="light"
+              disabled={!selectedAccountId}
+              onClick={addAccountDimension}
+              aria-label={t`Add account`}
+            >
+              <IconPlus size={16} />
+            </ActionIcon>
+          </Tooltip>
         </Group>
       )}
 
@@ -398,51 +409,59 @@ function CustomAccountDimensions({
           if (!account) return null;
 
           return (
-            <Group key={accountId} gap="xs" mb="xs" wrap="nowrap">
-              <Badge size="xs" variant="light" color="gray">
-                {websitesMap.get(account.website)?.displayName ?? account.website}
-              </Badge>
-              <Text size="xs" style={{ minWidth: 80 }} truncate>
-                {account.name}
-              </Text>
-              <NumberInput
-                value={dims.height}
-                min={1}
-                max={file.height}
-                size="xs"
-                styles={{ input: { width: 60 } }}
-                onChange={(val) =>
-                  updateAccountDimension(
-                    accountId,
-                    Number(val) || 1,
-                    dims.width,
-                  )
-                }
-              />
-              <Text size="xs">×</Text>
-              <NumberInput
-                value={dims.width}
-                min={1}
-                max={file.width}
-                size="xs"
-                styles={{ input: { width: 60 } }}
-                onChange={(val) =>
-                  updateAccountDimension(
-                    accountId,
-                    dims.height,
-                    Number(val) || 1,
-                  )
-                }
-              />
-              <ActionIcon
-                size="xs"
-                variant="subtle"
-                color="red"
-                onClick={() => removeAccountDimension(accountId)}
-              >
-                <IconTrash size={12} />
-              </ActionIcon>
-            </Group>
+            <Box key={accountId} mt="sm">
+              <Group gap="xs" mb={4}>
+                <Badge size="xs" variant="light" color="gray">
+                  {websitesMap.get(account.website)?.displayName ??
+                    account.website}
+                </Badge>
+                <Text size="xs" className="postybirb-file-name">
+                  {account.name}
+                </Text>
+              </Group>
+              <Group gap="xs" wrap="nowrap" align="end">
+                <div className="postybirb-file-dimension-inputs">
+                  <NumberInput
+                    label={<Trans>Width</Trans>}
+                    value={dims.width}
+                    min={1}
+                    max={file.width}
+                    size="sm"
+                    onChange={(val) =>
+                      updateAccountDimension(
+                        accountId,
+                        dims.height,
+                        Number(val) || 1,
+                      )
+                    }
+                  />
+                  <NumberInput
+                    label={<Trans>Height</Trans>}
+                    value={dims.height}
+                    min={1}
+                    max={file.height}
+                    size="sm"
+                    onChange={(val) =>
+                      updateAccountDimension(
+                        accountId,
+                        Number(val) || 1,
+                        dims.width,
+                      )
+                    }
+                  />
+                </div>
+                <Tooltip label={<Trans>Delete</Trans>}>
+                  <ActionIcon
+                    variant="subtle"
+                    color="red"
+                    onClick={() => removeAccountDimension(accountId)}
+                    aria-label={t`Delete`}
+                  >
+                    <IconTrash size={16} />
+                  </ActionIcon>
+                </Tooltip>
+              </Group>
+            </Box>
           );
         })
       )}
@@ -505,34 +524,36 @@ function FileSourceUrls({ metadata, save }: FileSourceUrlsProps) {
   };
 
   return (
-    <Box pt="md">
-      <Text size="sm" fw={600} mb="xs">
-        <Trans>Source URLs</Trans>
-      </Text>
+    <Stack gap="xs">
       {urls.map((url, index) => (
-        <Group key={index} gap="xs" mb="xs">
+        <Group key={index} gap="xs" wrap="nowrap" align="end">
           <TextInput
+            label={index === 0 ? <Trans>Source URLs</Trans> : undefined}
+            aria-label={t`Source URLs`}
             placeholder="https://..."
+            leftSection={<IconLink size={16} />}
             value={url}
-            size="xs"
-            style={{ flex: 1 }}
+            size="sm"
+            style={{ flex: 1, minWidth: 0 }}
             error={url.trim() && !isValidUrl(url.trim())}
             onChange={(e) => updateUrl(index, e.target.value)}
             onBlur={commitUrls}
           />
           {url.trim() && (
-            <ActionIcon
-              size="sm"
-              variant="subtle"
-              color="red"
-              onClick={() => removeUrl(index)}
-            >
-              <IconTrash size={14} />
-            </ActionIcon>
+            <Tooltip label={<Trans>Delete</Trans>}>
+              <ActionIcon
+                variant="subtle"
+                color="red"
+                onClick={() => removeUrl(index)}
+                aria-label={t`Delete`}
+              >
+                <IconTrash size={16} />
+              </ActionIcon>
+            </Tooltip>
           )}
         </Group>
       ))}
-    </Box>
+    </Stack>
   );
 }
 
