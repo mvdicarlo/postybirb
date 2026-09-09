@@ -135,7 +135,15 @@ describe('schedule calendar helpers', () => {
   it('distinguishes message events and prevents moves while posting', () => {
     const record = submission({
       type: SubmissionType.MESSAGE,
-      post: { completed: false, unitsOfWork: [] } as ISubmissionDto['post'],
+      post: {
+        id: 'post-1',
+        submissionId: 'submission-1',
+        createdAt: new Date(2026, 8, 9, 12).toISOString(),
+        updatedAt: new Date(2026, 8, 9, 12).toISOString(),
+        completed: false,
+        cancelled: false,
+        unitsOfWork: [],
+      },
     });
     const [event] = buildScheduleEvents([record], 'Untitled');
     expect(event.classNames).toContain('schedule-event-message');
