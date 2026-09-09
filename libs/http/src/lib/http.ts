@@ -708,7 +708,6 @@ export class Http {
       /<title[^>]*>\s*just a moment(?:\.\.\.)?\s*<\/title>/i,
       /(?:id|class)=["'][^"']*challenge-error-title/i,
       /window\._cf_chl_opt/i,
-      /\/cdn-cgi\/challenge-platform\//i,
     ].some((pattern) => pattern.test(html));
   }
 
