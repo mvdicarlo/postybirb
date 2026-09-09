@@ -8,13 +8,13 @@ import {
 } from '@postybirb/database';
 import { PostyBirbDirectories, writeSync } from '@postybirb/fs';
 import {
-  FileSubmissionMetadata,
-  ISubmissionMetadata,
-  IWebsiteFormFields,
-  ScheduleType,
-  SubmissionRating,
-  SubmissionType,
-  WebsiteOptionsDto,
+    FileSubmissionMetadata,
+    ISubmissionMetadata,
+    IWebsiteFormFields,
+    ScheduleType,
+    SubmissionRating,
+    SubmissionType,
+    WebsiteOptionsDto,
 } from '@postybirb/types';
 import { readFileSync } from 'fs';
 import { join } from 'path';
@@ -285,6 +285,43 @@ describe('SubmissionService', () => {
       validations: [],
     });
   });
+
+  it.each(['image', 'text'])(
+    'should allow mixed file types starting with %s',
+    async (firstFileType) => {
+      const createDto = createSubmissionDto();
+      createDto.type = SubmissionType.FILE;
+      const imageFile = createMulterData(setup());
+      const text = 'Mixed file submission';
+      const textPath = `${PostyBirbDirectories.DATA_DIRECTORY}/${Date.now()}.txt`;
+      writeSync(textPath, text);
+      const textFile: MulterFileInfo = {
+        ...createMulterData(textPath),
+        originalname: 'submission.txt',
+        filename: 'submission.txt',
+        mimetype: 'text/plain',
+        size: Buffer.byteLength(text),
+      };
+      const [firstFile, secondFile] =
+        firstFileType === 'image'
+          ? [imageFile, textFile]
+          : [textFile, imageFile];
+      const record = await service.create(createDto, firstFile);
+
+      await module
+        .get(FileSubmissionService)
+        .appendFile(record.id, secondFile);
+
+      const updated = await service.findByIdOrThrow(record.id);
+      expect(updated.files.map((file) => file.fileName)).toEqual([
+        firstFile.originalname,
+        secondFile.originalname,
+      ]);
+      expect(
+        updated.files.every((file) => file.submissionId === record.id),
+      ).toBe(true);
+    },
+  );
 
   it('should throw on missing file on file submission', async () => {
     const createDto = createSubmissionDto();
