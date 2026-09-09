@@ -178,24 +178,56 @@ export default abstract class BaseSubscribeStar
         this.accountId,
         url,
         `
-      async function getInfo() {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(JSON.parse(document.querySelector('.new_post')
-                ?.querySelector('.new_post-inner')
-                ?.getAttribute('data-form-template')).replace(/\\u([0-9a-fA-F]{4})/g, (match, hex) =>
+        async function getInfo() {
+          let attempt = 0;
+          let out = undefined;
+          while (attempt < 8 && out === undefined) {
+            try {
+              if (attempt > 0) {
+                await new Promise((resolve) => setTimeout(resolve, 1_000));
+              }
+
+              attempt++;
+              const parser = new DOMParser();
+              const doc = parser.parseFromString(
+                JSON.parse(
+                  document
+                    .querySelector(".new_post")
+                    ?.querySelector(".new_post-inner")
+                    ?.getAttribute("data-form-template"),
+                ).replace(/\\u([0-9a-fA-F]{4})/g, (match, hex) =>
                   String.fromCharCode(parseInt(hex, 16)),
-                ) , 'text/html');
-        
-        const s3UploadPath = doc.querySelector('.post_xodal').getAttribute('data-s3-upload-path');
-        const s3Url = doc.querySelector('.post_xodal').getAttribute('data-s3-url');
-        const authenticityToken = [...doc.querySelectorAll('form input')].find((input) => input.getAttribute('name') === 'authenticity_token')
-          .getAttribute('value') ;
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                ),
+                "text/html",
+              );
 
-        const out = { authenticityToken, s3UploadPath, s3Url, csrfToken };
+              const s3UploadPath = doc
+                .querySelector(".post_xodal")
+                .getAttribute("data-s3-upload-path");
+              const s3Url = doc
+                .querySelector(".post_xodal")
+                .getAttribute("data-s3-url");
+              const authenticityToken = [...doc.querySelectorAll("form input")]
+                .find((input) => input.getAttribute("name") === "authenticity_token")
+                .getAttribute("value");
+              const csrfToken = document
+                .querySelector('meta[name="csrf-token"]')
+                .getAttribute("content");
 
-        return out;
-      }
+              out = { authenticityToken, s3UploadPath, s3Url, csrfToken };
+              return out;
+            } catch (error) {
+              console.error("Failed to get info:", error);
+            }
+          }
+
+          if (out === undefined) {
+            throw new Error("Failed to get info after multiple attempts");
+          }
+
+          return out;
+        }
+
       
       return getInfo();
     `,
