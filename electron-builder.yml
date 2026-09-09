@@ -124,9 +124,11 @@ portable:
   artifactName: '${productName}-${version}-portable-${arch}.${ext}'
 
 files:
-  - 'dist/**/*'
+  - 'dist/apps/postybirb/**/*'
+  - 'dist/apps/postybirb-ui/**/*'
   - 'node_modules/**/*'
   - 'package.json'
+  - '!**/*.map'
   - '!**/*.log'
   - '!**/*.md'
   - '!**/README*'
