@@ -30,6 +30,7 @@ export default defineConfig({
 
   build: {
     outDir: '../../dist/apps/postybirb-ui',
+    emptyOutDir: true,
     reportCompressedSize: true,
     commonjsOptions: { transformMixedEsModules: true },
 
@@ -37,7 +38,7 @@ export default defineConfig({
     // in production we dont really need to care about this
     chunkSizeWarningLimit: 10000,
 
-    minify: false,
+    minify: 'esbuild',
   },
 
   preview: {
