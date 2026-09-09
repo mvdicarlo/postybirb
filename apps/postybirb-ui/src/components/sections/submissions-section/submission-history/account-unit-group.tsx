@@ -327,7 +327,7 @@ export function AccountUnitGroup({
               size={34}
               radius="sm"
               color="gray"
-              name={websiteName}
+              name={websiteName?.substring(0, 2)}
               aria-hidden
             />
             <div className="post-history-account-names">
