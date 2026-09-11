@@ -2,15 +2,26 @@ import {
   BooleanField,
   DescriptionField,
   TagField,
+  TitleField,
 } from '@postybirb/form-builder';
 import { DescriptionType, DescriptionValue, TagValue } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
 export class DiscordMessageSubmission extends BaseWebsiteOptions {
+  @TitleField<DiscordMessageSubmission>({
+    required: false,
+    customDerive(_, target) {
+      this.maxLength = target.useEmbed && target.useTitle ? 256 : undefined;
+    },
+  })
+  declare title: string;
+
   @DescriptionField<DiscordMessageSubmission>({
     descriptionType: DescriptionType.CUSTOM,
+    required: false,
     maxDescriptionLength: 2000,
     customDerive(_, target) {
+      this.maxDescriptionLength = target.useEmbed ? 4096 : 2000;
       if (target.useEmbed) {
         this.expectsInlineTitle = !target.useTitle;
       } else {

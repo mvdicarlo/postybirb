@@ -11,7 +11,6 @@ import { BaseConverter } from '../../../post-parsers/models/description-node/con
 import { CancellationToken } from '../../../posting/cancellation-token';
 import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
-import { validatorPassthru } from '../../commons/validator-passthru';
 import { DisableAds } from '../../decorators/disable-ads.decorator';
 import { CustomLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
@@ -121,7 +120,8 @@ export default class Discord
     batch: PostBatchData,
   ): Promise<IPostResponse> {
     cancellationToken.throwIfAborted();
-    const { webhook } = this.websiteDataStore.getData();
+    const { isForum } = this.websiteDataStore.getData();
+    const webhookUrl = this.getWebhookUrl(batch);
     const payload = {
       ...(batch.index === 0
         ? {
@@ -130,9 +130,14 @@ export default class Discord
               postData.options.description,
               postData.options.useTitle,
               postData.options.useEmbed,
+              files.length > 0,
             ),
           }
         : {}),
+      thread_name:
+        isForum && !webhookUrl.searchParams.has('thread_id')
+          ? postData.options.title.trim() || 'PostyBirb Post'
+          : undefined,
       attachments: [] as object[],
     };
 
@@ -156,7 +161,7 @@ export default class Discord
     formData.payload_json = JSON.stringify(payload);
     cancellationToken.throwIfAborted();
     return this.platform.http
-      .post(webhook, {
+      .post(webhookUrl.toString(), {
         partition: undefined,
         type: 'multipart',
         data: formData,
@@ -165,23 +170,32 @@ export default class Discord
       .catch((error) => this.handleError(error, payload));
   }
 
-  onValidateFileSubmission = validatorPassthru;
+  async onValidateFileSubmission(postData: PostData<DiscordFileSubmission>) {
+    return this.validateContent(postData, true);
+  }
 
   onPostMessageSubmission(
     postData: PostData<DiscordMessageSubmission>,
     cancellationToken: CancellationToken,
   ): Promise<IPostResponse> {
     cancellationToken.throwIfAborted();
-    const { webhook } = this.websiteDataStore.getData();
-    const messageData = this.buildDescription(
-      postData.options.title,
-      postData.options.description,
-      postData.options.useTitle,
-      postData.options.useEmbed,
-    );
+    const { isForum } = this.websiteDataStore.getData();
+    const webhookUrl = this.getWebhookUrl();
+    const messageData = {
+      ...this.buildDescription(
+        postData.options.title,
+        postData.options.description,
+        postData.options.useTitle,
+        postData.options.useEmbed,
+      ),
+      thread_name:
+        isForum && !webhookUrl.searchParams.has('thread_id')
+          ? postData.options.title.trim() || 'PostyBirb Post'
+          : undefined,
+    };
     cancellationToken.throwIfAborted();
     return this.platform.http
-      .post(webhook, {
+      .post(webhookUrl.toString(), {
         partition: undefined,
         type: 'json',
         data: messageData,
@@ -190,15 +204,130 @@ export default class Discord
       .catch((error) => this.handleError(error, messageData));
   }
 
-  onValidateMessageSubmission = validatorPassthru;
+  async onValidateMessageSubmission(
+    postData: PostData<DiscordMessageSubmission>,
+  ) {
+    return this.validateContent(postData, false);
+  }
 
-  private handleResponse(res: HttpResponse<unknown>): IPostResponse {
-    if (res.statusCode >= 300) {
-      throw new Error(
-        `Failed to post message: ${res.statusCode ?? -1} ${res.body}`,
+  private validateContent(
+    postData: PostData<DiscordMessageSubmission>,
+    hasFiles: boolean,
+  ) {
+    const validator = this.createValidator<DiscordMessageSubmission>();
+    const { title, description, useTitle, useEmbed } = postData.options;
+    if (
+      !hasFiles &&
+      !description.trim() &&
+      !(useEmbed && useTitle && title.trim())
+    ) {
+      validator.error('validation.description.required', {}, 'description');
+    }
+    const maxLength = useEmbed ? 4096 : 2000;
+    if (description.length > maxLength) {
+      validator.error(
+        'validation.description.max-length',
+        { currentLength: description.length, maxLength },
+        'description',
       );
     }
-    return PostResponse.fromWebsite(this).withAdditionalInfo(res.body);
+    const { isForum, webhook } = this.websiteDataStore.getData();
+    const createsThread =
+      isForum && !new URL(webhook).searchParams.has('thread_id');
+    const maxTitleLength = createsThread
+      ? 100
+      : useEmbed && useTitle
+        ? 256
+        : undefined;
+    if (maxTitleLength && title.trim().length > maxTitleLength) {
+      validator.error(
+        'validation.title.max-length',
+        { currentLength: title.trim().length, maxLength: maxTitleLength },
+        'title',
+      );
+    }
+    const mentionLength = useEmbed
+      ? this.extractMentions(description).join(' ').length
+      : 0;
+    if (mentionLength > 2000) {
+      validator.error(
+        'validation.description.max-length',
+        { currentLength: mentionLength, maxLength: 2000 },
+        'description',
+      );
+    }
+    return validator.result;
+  }
+
+  private getWebhookUrl(batch?: PostBatchData): URL {
+    const { webhook, isForum } = this.websiteDataStore.getData();
+    const webhookUrl = new URL(webhook);
+    webhookUrl.searchParams.set('wait', 'true');
+
+    if (
+      isForum &&
+      batch &&
+      batch.index > 0 &&
+      !webhookUrl.searchParams.has('thread_id')
+    ) {
+      for (const source of batch.sourceUrls ?? []) {
+        let sourceUrl: URL;
+        try {
+          sourceUrl = new URL(source.url);
+        } catch {
+          continue;
+        }
+        if (
+          sourceUrl.hostname !== 'discord.com' &&
+          sourceUrl.hostname !== 'discordapp.com'
+        ) {
+          continue;
+        }
+        const match = sourceUrl.pathname.match(
+          /^\/channels\/(?:\d+|@me)\/(\d+)\/\d+\/?$/,
+        );
+        if (match) {
+          webhookUrl.searchParams.set('thread_id', match[1]);
+          break;
+        }
+      }
+
+      if (!webhookUrl.searchParams.has('thread_id')) {
+        throw new Error(
+          'Cannot continue Discord forum post without its thread ID. Set thread_id in the webhook URL or repost all files.',
+        );
+      }
+    }
+
+    return webhookUrl;
+  }
+
+  private handleResponse(res: HttpResponse<unknown>): IPostResponse {
+    if (res.statusCode < 200 || res.statusCode >= 300) {
+      throw new Error(
+        `Failed to post message: ${res.statusCode ?? -1} ${JSON.stringify(res.body)}`,
+      );
+    }
+    const message = res.body as {
+      id?: string;
+      channel_id?: string;
+      guild_id?: string;
+    } | null;
+    if (
+      typeof message?.id !== 'string' ||
+      typeof message.channel_id !== 'string' ||
+      !/^\d+$/.test(message.id) ||
+      !/^\d+$/.test(message.channel_id)
+    ) {
+      throw new Error(
+        'Discord did not confirm the posted message. Check the channel before retrying.',
+      );
+    }
+    return PostResponse.fromWebsite(this)
+      .withAdditionalInfo(res.body)
+      .withSourceUrl(
+        `https://discord.com/channels/${message.guild_id || '@me'}/${message.channel_id}/${message.id}`,
+      );
   }
 
   private handleError(error: Error, payload: unknown): IPostResponse {
@@ -218,41 +347,58 @@ export default class Discord
     description: string,
     useTitle: boolean,
     useEmbed: boolean,
+    hasFiles = false,
   ) {
-    const { isForum } = this.websiteDataStore.getData();
+    const embedTitle = useEmbed && useTitle ? title.trim() : '';
+    const hasDescription = description.trim().length > 0;
+
+    if (!hasDescription && !embedTitle && !hasFiles) {
+      throw new Error('No content to post');
+    }
 
     if (!useEmbed) {
-      if (!description) throw new Error('No content to post');
-
       return {
-        content: description,
+        content: hasDescription ? description : undefined,
         allowed_mentions: {
           parse: ['everyone', 'users', 'roles'],
         },
         embeds: [],
-        thread_name: isForum ? title || 'PostyBirb Post' : undefined,
       };
     }
 
-    if (!description && !useTitle) {
-      throw new Error('No content to post');
-    }
-
-    const mentions =
-      description?.match(/(<){0,1}@(&){0,1}[a-zA-Z0-9]+(>){0,1}/g) || [];
+    const mentions = this.extractMentions(description);
 
     return {
       content: mentions.length ? mentions.join(' ') : undefined,
       allowed_mentions: {
         parse: ['everyone', 'users', 'roles'],
       },
-      embeds: [
-        {
-          title: useTitle ? title : undefined,
-          description: description?.length ? description : undefined,
-        },
-      ],
-      thread_name: isForum ? title || 'PostyBirb Post' : undefined,
+      embeds:
+        embedTitle || hasDescription
+          ? [
+              {
+                title: embedTitle || undefined,
+                description: hasDescription ? description : undefined,
+              },
+            ]
+          : [],
     };
+  }
+
+  private extractMentions(description: string): string[] {
+    const text = description
+      .replace(/\\[\s\S]/g, '_')
+      .replace(
+        /^ {0,3}(`{3,}|~{3,})[^\n]*\n[\s\S]*?(?:^ {0,3}\1[~`]*[ \t]*(?:\n|$)|(?![\s\S]))/gm,
+        ' ',
+      )
+      .replace(/(?<!`)(`+)(?!`)[\s\S]*?(?<!`)\1(?!`)/g, ' ')
+      .replace(/https?:\/\/\S+|[\p{L}\p{N}_.+-]+@[\p{L}\p{N}_.-]+/gu, ' ');
+
+    return [
+      ...new Set(
+        text.match(/<@[!&]?\d+>|(?<![\w@])@(?:everyone|here)\b/g) ?? [],
+      ),
+    ];
   }
 }
