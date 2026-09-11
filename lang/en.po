@@ -13,6 +13,14 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#: libs/translations/src/lib/field-translations.ts
+msgid "Media position"
+msgstr "Media position"
+
+#: libs/translations/src/lib/field-translations.ts
+msgid "Gallery arrangement"
+msgstr "Gallery arrangement"
+
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-preview-modal/post-preview-modal.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/bulk-post-preview-modal.tsx
 msgid "Incomplete work"

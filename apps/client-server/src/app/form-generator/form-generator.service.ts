@@ -63,6 +63,16 @@ export class FormGeneratorService {
       );
     }
 
+    Object.entries(request.fieldValues ?? {}).forEach(([key, value]) => {
+      if (
+        Object.prototype.hasOwnProperty.call(formModel, key) &&
+        ['string', 'number', 'boolean'].includes(typeof value) &&
+        typeof value === typeof Reflect.get(formModel, key)
+      ) {
+        Reflect.set(formModel, key, value);
+      }
+    });
+
     const form = formBuilder(formModel, data);
     const formWithPopulatedDefaults = await this.populateUserDefaults(
       form,

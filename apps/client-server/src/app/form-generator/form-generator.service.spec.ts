@@ -5,8 +5,75 @@ import { SubmissionType } from '@postybirb/types';
 import { AccountModule } from '../account/account.module';
 import { AccountService } from '../account/account.service';
 import { TestPlatformModule } from '../platform/testing/test-platform.module';
+import { DiscordFileSubmission } from '../websites/implementations/discord/models/discord-file-submission';
 import { WebsitesModule } from '../websites/websites.module';
 import { FormGeneratorService } from './form-generator.service';
+
+describe('FormGeneratorService field values', () => {
+  const instance = {
+    supportsFile: true,
+    getFormProperties: () => ({}),
+    createFileModel: () => new DiscordFileSubmission(),
+    onPostFileSubmission: jest.fn(),
+  };
+  const service = new FormGeneratorService(
+    { findInstance: async () => instance } as unknown as ConstructorParameters<
+      typeof FormGeneratorService
+    >[0],
+    { resolveDefaults: async () => undefined } as unknown as ConstructorParameters<
+      typeof FormGeneratorService
+    >[1],
+    { findByIdOrThrow: async () => ({ id: 'discord' }) } as unknown as ConstructorParameters<
+      typeof FormGeneratorService
+    >[2],
+  );
+
+  it.each([
+    [true, 3990],
+    [false, 4000],
+  ])('derives the Discord text budget with useTitle=%s', async (useTitle, maxDescriptionLength) => {
+    const form = await service.generateForm({
+      accountId: 'discord',
+      type: SubmissionType.FILE,
+      fieldValues: { useTitle, title: 'Artwork' },
+    });
+    expect(form.useTitle.hidden).not.toBe(true);
+    expect(form.description).toMatchObject({
+      maxDescriptionLength,
+      expectsInlineTitle: !useTitle,
+    });
+    expect(form.title).not.toHaveProperty('maxLength');
+    expect(form).not.toHaveProperty('useEmbed');
+    expect(form).not.toHaveProperty('useComponentsV2');
+  });
+
+  it('ignores unexpected keys and values with a different model type', async () => {
+    const form = await service.generateForm({
+      accountId: 'discord',
+      type: SubmissionType.FILE,
+      fieldValues: { useTitle: 'true', title: false, constructor: 'invalid' },
+    });
+    expect(form.description).toMatchObject({
+      maxDescriptionLength: 4000,
+      expectsInlineTitle: false,
+    });
+  });
+
+  it.each([undefined, { useComponentsV2: false, useEmbed: false }])('uses component fields for old requests: %j', async (fieldValues) => {
+    const form = await service.generateForm({
+      accountId: 'discord',
+      type: SubmissionType.FILE,
+      fieldValues,
+    });
+    expect(form.description).toMatchObject({ maxDescriptionLength: 4000 });
+    expect(form.title).not.toHaveProperty('maxLength');
+    expect(form.useTitle.hidden).not.toBe(true);
+    expect(form.mediaPosition.showWhen).toBeUndefined();
+    expect(form.galleryArrangement.showWhen).toBeUndefined();
+    expect(form).not.toHaveProperty('useEmbed');
+    expect(form).not.toHaveProperty('useComponentsV2');
+  });
+});
 
 describe('FormGeneratorService', () => {
   let service: FormGeneratorService;

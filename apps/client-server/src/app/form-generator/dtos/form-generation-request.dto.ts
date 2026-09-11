@@ -4,7 +4,7 @@ import {
   IFormGenerationRequestDto,
   SubmissionType,
 } from '@postybirb/types';
-import { IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsEnum, IsObject, IsOptional, IsString } from 'class-validator';
 
 export class FormGenerationRequestDto implements IFormGenerationRequestDto {
   @ApiProperty()
@@ -19,4 +19,9 @@ export class FormGenerationRequestDto implements IFormGenerationRequestDto {
   @IsOptional()
   @IsBoolean()
   isMultiSubmission?: boolean;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsObject()
+  fieldValues?: Record<string, string | number | boolean>;
 }

@@ -44,7 +44,8 @@ import { Fragment, Node, Slice } from '@tiptap/pm/model';
 import { PluginKey } from '@tiptap/pm/state';
 import { Editor, EditorContent, ReactRenderer, useEditor } from '@tiptap/react';
 import Suggestion from '@tiptap/suggestion';
-import { useCallback, useMemo, useRef } from 'react';
+import { isEqual } from 'lodash';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import tippy, { type Instance as TippyInstance } from 'tippy.js';
 
 import { useCustomShortcuts } from '../../../stores/entity/custom-shortcut-store';
@@ -74,7 +75,7 @@ import './custom-blocks/shortcut.css';
 import './description-editor.css';
 
 export type DescriptionEditorProps = {
-  /** Initial content for the editor. */
+  /** Content for the editor, including externally applied updates. */
   value?: Description;
   /** Callback when the editor content changes. */
   onChange: (value: Description) => void;
@@ -526,6 +527,24 @@ export function DescriptionEditor({
 
   // Keep ref in sync with editor for callbacks
   editorRef.current = editor;
+
+  const lastValueRef = useRef({ editor, value });
+  useEffect(() => {
+    const previous = lastValueRef.current;
+    lastValueRef.current = { editor, value };
+
+    if (
+      !editor ||
+      (previous.editor === editor && isEqual(previous.value, value)) ||
+      isEqual(editor.getJSON(), value)
+    ) {
+      return;
+    }
+
+    editor.commands.setContent(value?.content?.length ? value : '', {
+      emitUpdate: false,
+    });
+  }, [editor, value]);
 
   return (
     <Box

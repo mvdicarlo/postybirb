@@ -27,6 +27,11 @@ import {
   WithDynamicFileSizeLimits,
 } from '../../models/website-modifiers/with-dynamic-file-size-limits';
 import { Website } from '../../website';
+import {
+  buildDiscordComponents,
+  DISCORD_COMPONENT_TEXT_LIMIT,
+  getDiscordComponentTextLength,
+} from './discord-components';
 import { DiscordDescriptionConverter } from './discord-description-converter';
 import { DiscordFileSubmission } from './models/discord-file-submission';
 import { DiscordMessageSubmission } from './models/discord-message-submission';
@@ -122,41 +127,39 @@ export default class Discord
     cancellationToken.throwIfAborted();
     const { isForum } = this.websiteDataStore.getData();
     const webhookUrl = this.getWebhookUrl(batch);
-    const payload = {
-      ...(batch.index === 0
-        ? {
-            ...this.buildDescription(
-              postData.options.title,
-              postData.options.description,
-              postData.options.useTitle,
-              postData.options.useEmbed,
-              files.length > 0,
-            ),
-          }
-        : {}),
-      thread_name:
-        isForum && !webhookUrl.searchParams.has('thread_id')
-          ? postData.options.title.trim() || 'PostyBirb Post'
-          : undefined,
-      attachments: [] as object[],
-    };
-
-    const formData: {
-      [key: string]: unknown;
-    } = {};
+    const formData: { [key: string]: unknown } = {};
     const { isSpoiler } = postData.options;
-    files.forEach((file, i) => {
+    const attachments = files.map((file, index) => {
       const postableFile = file.toPostFormat();
       if (isSpoiler) {
         postableFile.setFileName(`SPOILER_${postableFile.fileName}`);
       }
-      formData[`files[${i}]`] = postableFile;
-      payload.attachments.push({
-        id: i,
+      formData[`files[${index}]`] = postableFile;
+      return {
+        id: index,
         filename: postableFile.fileName,
         description: file.metadata.altText,
-      });
+        mimeType: file.mimeType,
+      };
     });
+    const payload = {
+      ...buildDiscordComponents(
+        {
+          ...postData.options,
+          ...(batch.index > 0 ? { title: '', description: '' } : {}),
+        },
+        attachments,
+      ),
+      thread_name:
+        isForum && !webhookUrl.searchParams.has('thread_id')
+          ? postData.options.title.trim() || 'PostyBirb Post'
+          : undefined,
+      attachments: attachments.map(({ id, filename, description }) => ({
+        id,
+        filename,
+        description,
+      })),
+    };
 
     formData.payload_json = JSON.stringify(payload);
     cancellationToken.throwIfAborted();
@@ -182,12 +185,7 @@ export default class Discord
     const { isForum } = this.websiteDataStore.getData();
     const webhookUrl = this.getWebhookUrl();
     const messageData = {
-      ...this.buildDescription(
-        postData.options.title,
-        postData.options.description,
-        postData.options.useTitle,
-        postData.options.useEmbed,
-      ),
+      ...buildDiscordComponents(postData.options),
       thread_name:
         isForum && !webhookUrl.searchParams.has('thread_id')
           ? postData.options.title.trim() || 'PostyBirb Post'
@@ -215,45 +213,31 @@ export default class Discord
     hasFiles: boolean,
   ) {
     const validator = this.createValidator<DiscordMessageSubmission>();
-    const { title, description, useTitle, useEmbed } = postData.options;
+    const { title, description, useTitle } = postData.options;
     if (
       !hasFiles &&
       !description.trim() &&
-      !(useEmbed && useTitle && title.trim())
+      !(useTitle && title.trim())
     ) {
       validator.error('validation.description.required', {}, 'description');
     }
-    const maxLength = useEmbed ? 4096 : 2000;
-    if (description.length > maxLength) {
+    const maxLength = DISCORD_COMPONENT_TEXT_LIMIT;
+    const currentLength = getDiscordComponentTextLength(postData.options);
+    if (currentLength > maxLength) {
       validator.error(
         'validation.description.max-length',
-        { currentLength: description.length, maxLength },
+        { currentLength, maxLength },
         'description',
       );
     }
     const { isForum, webhook } = this.websiteDataStore.getData();
     const createsThread =
       isForum && !new URL(webhook).searchParams.has('thread_id');
-    const maxTitleLength = createsThread
-      ? 100
-      : useEmbed && useTitle
-        ? 256
-        : undefined;
-    if (maxTitleLength && title.trim().length > maxTitleLength) {
+    if (createsThread && title.trim().length > 100) {
       validator.error(
         'validation.title.max-length',
-        { currentLength: title.trim().length, maxLength: maxTitleLength },
+        { currentLength: title.trim().length, maxLength: 100 },
         'title',
-      );
-    }
-    const mentionLength = useEmbed
-      ? this.extractMentions(description).join(' ').length
-      : 0;
-    if (mentionLength > 2000) {
-      validator.error(
-        'validation.description.max-length',
-        { currentLength: mentionLength, maxLength: 2000 },
-        'description',
       );
     }
     return validator.result;
@@ -263,6 +247,7 @@ export default class Discord
     const { webhook, isForum } = this.websiteDataStore.getData();
     const webhookUrl = new URL(webhook);
     webhookUrl.searchParams.set('wait', 'true');
+    webhookUrl.searchParams.set('with_components', 'true');
 
     if (
       isForum &&
@@ -340,65 +325,5 @@ export default class Discord
     return PostResponse.fromWebsite(this)
       .withException(error)
       .withAdditionalInfo(payload);
-  }
-
-  private buildDescription(
-    title: string,
-    description: string,
-    useTitle: boolean,
-    useEmbed: boolean,
-    hasFiles = false,
-  ) {
-    const embedTitle = useEmbed && useTitle ? title.trim() : '';
-    const hasDescription = description.trim().length > 0;
-
-    if (!hasDescription && !embedTitle && !hasFiles) {
-      throw new Error('No content to post');
-    }
-
-    if (!useEmbed) {
-      return {
-        content: hasDescription ? description : undefined,
-        allowed_mentions: {
-          parse: ['everyone', 'users', 'roles'],
-        },
-        embeds: [],
-      };
-    }
-
-    const mentions = this.extractMentions(description);
-
-    return {
-      content: mentions.length ? mentions.join(' ') : undefined,
-      allowed_mentions: {
-        parse: ['everyone', 'users', 'roles'],
-      },
-      embeds:
-        embedTitle || hasDescription
-          ? [
-              {
-                title: embedTitle || undefined,
-                description: hasDescription ? description : undefined,
-              },
-            ]
-          : [],
-    };
-  }
-
-  private extractMentions(description: string): string[] {
-    const text = description
-      .replace(/\\[\s\S]/g, '_')
-      .replace(
-        /^ {0,3}(`{3,}|~{3,})[^\n]*\n[\s\S]*?(?:^ {0,3}\1[~`]*[ \t]*(?:\n|$)|(?![\s\S]))/gm,
-        ' ',
-      )
-      .replace(/(?<!`)(`+)(?!`)[\s\S]*?(?<!`)\1(?!`)/g, ' ')
-      .replace(/https?:\/\/\S+|[\p{L}\p{N}_.+-]+@[\p{L}\p{N}_.-]+/gu, ' ');
-
-    return [
-      ...new Set(
-        text.match(/<@[!&]?\d+>|(?<![\w@])@(?:everyone|here)\b/g) ?? [],
-      ),
-    ];
   }
 }

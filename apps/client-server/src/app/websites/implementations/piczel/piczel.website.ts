@@ -142,9 +142,7 @@ export default class Piczel
       .setField('title', options.title || 'New Submission')
       .setField('tags', options.tags)
       .setField('uploadMode', 'PUBLISH')
-      .setField('queue', false)
-      .setField('publish_at', '')
-      .setField('thumbnail_id', '0')
+      .setField('thumbnail_id', 0)
       .setField(
         'files',
         files.map((file) => ({
@@ -160,7 +158,7 @@ export default class Piczel
       });
 
     const result = await builder.send<{ id?: string }>(
-      `${this.BASE_URL}/api/gallery`,
+      'https://api.piczel.tv/gallery',
     );
 
     if (result.body?.id) {

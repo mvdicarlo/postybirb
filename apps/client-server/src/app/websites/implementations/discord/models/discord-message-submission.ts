@@ -6,28 +6,30 @@ import {
 } from '@postybirb/form-builder';
 import { DescriptionType, DescriptionValue, TagValue } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
+import {
+  DISCORD_COMPONENT_TEXT_LIMIT,
+  getDiscordComponentHeading,
+} from '../discord-components';
 
 export class DiscordMessageSubmission extends BaseWebsiteOptions {
-  @TitleField<DiscordMessageSubmission>({
+  @TitleField({
     required: false,
-    customDerive(_, target) {
-      this.maxLength = target.useEmbed && target.useTitle ? 256 : undefined;
-    },
   })
   declare title: string;
 
   @DescriptionField<DiscordMessageSubmission>({
     descriptionType: DescriptionType.CUSTOM,
     required: false,
-    maxDescriptionLength: 2000,
+    maxDescriptionLength: DISCORD_COMPONENT_TEXT_LIMIT,
     customDerive(_, target) {
-      this.maxDescriptionLength = target.useEmbed ? 4096 : 2000;
-      if (target.useEmbed) {
-        this.expectsInlineTitle = !target.useTitle;
-      } else {
-        // Use title is not applicable when useEmbed is disabled
-        this.expectsInlineTitle = true;
-      }
+      this.maxDescriptionLength = Math.max(
+        0,
+        DISCORD_COMPONENT_TEXT_LIMIT -
+          (target.useTitle
+            ? getDiscordComponentHeading(target.title).length
+            : 0),
+      );
+      this.expectsInlineTitle = !target.useTitle;
     },
   })
   declare description: DescriptionValue;
@@ -37,14 +39,11 @@ export class DiscordMessageSubmission extends BaseWebsiteOptions {
   })
   declare tags: TagValue;
 
-  @BooleanField<DiscordMessageSubmission>({
+  @BooleanField({
     label: 'useTitle',
     section: 'website',
+    order: 0,
     span: 6,
-    showWhen: [['useEmbed', [true]]],
   })
   useTitle = true;
-
-  @BooleanField({ label: 'useEmbed', section: 'website', span: 6 })
-  useEmbed = true;
 }
