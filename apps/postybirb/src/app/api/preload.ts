@@ -44,6 +44,7 @@ const bridge: PreloadBridge = {
   platform: metadata.platform,
   app_port: metadata.app_port,
   app_version: metadata.app_version,
+  systemLocale: metadata.systemLocale,
 
   setSpellCheckerEnabled: (value: boolean) =>
     ipcRenderer.invoke(IPC_CHANNELS.setSpellcheckerEnabled, value),

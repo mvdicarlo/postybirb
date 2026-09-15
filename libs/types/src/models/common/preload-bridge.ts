@@ -14,6 +14,7 @@ export interface PreloadBridge {
   platform: NodeJS.Platform;
   app_port: string;
   app_version: string;
+  systemLocale?: string;
 
   setSpellCheckerEnabled(value: boolean): void;
   setSpellcheckerLanguages: (languages: string[]) => Promise<void>;

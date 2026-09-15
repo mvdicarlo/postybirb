@@ -11,41 +11,42 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import { t } from '@lingui/core/macro';
 import { Trans } from '@lingui/react/macro';
 import {
-    ActionIcon,
-    Button,
-    Group,
-    Popover,
-    SegmentedControl,
-    Text,
-    Tooltip,
+  ActionIcon,
+  Button,
+  Group,
+  Popover,
+  SegmentedControl,
+  Text,
+  Tooltip,
 } from '@mantine/core';
 import { DatePicker, DayOfWeek } from '@mantine/dates';
 import { SubmissionType } from '@postybirb/types';
 import {
-    IconCalendar,
-    IconChevronDown,
-    IconChevronLeft,
-    IconChevronRight,
-    IconFile,
-    IconLayoutSidebarLeftCollapse,
-    IconLayoutSidebarLeftExpand,
-    IconMessage,
-    IconPlayerPause,
-    IconPlus,
-    IconRepeat,
+  IconCalendar,
+  IconChevronDown,
+  IconChevronLeft,
+  IconChevronRight,
+  IconFile,
+  IconLayoutSidebarLeftCollapse,
+  IconLayoutSidebarLeftExpand,
+  IconMessage,
+  IconPlayerPause,
+  IconPlus,
+  IconRepeat,
 } from '@tabler/icons-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import submissionApi from '../../../api/submission.api';
 import { useLocale } from '../../../hooks';
 import { useSubmissionsWithSchedule } from '../../../stores/entity/submission-store';
 import {
-    showScheduleUpdatedNotification,
-    showUpdateErrorNotification,
+  showScheduleUpdatedNotification,
+  showUpdateErrorNotification,
 } from '../../../utils/notifications';
 import { ScheduleRequest } from './schedule-editor-modal';
 import { buildScheduleEvents } from './schedule-utils';
 
-function renderCalendarEvent(info: EventContentArg) {
+function CalendarEvent({ info }: { info: EventContentArg }) {
+  const { formatTime } = useLocale();
   return (
     <div className="schedule-event-content">
       <span className="schedule-event-icon">
@@ -61,17 +62,57 @@ function renderCalendarEvent(info: EventContentArg) {
         )}
       </span>
       {info.timeText && (
-        <span className="schedule-event-time">{info.timeText}</span>
+        <span className="schedule-event-time">
+          {info.event.start ? formatTime(info.event.start) : info.timeText}
+        </span>
       )}
       <span className="schedule-event-title">{info.event.title}</span>
     </div>
   );
 }
 
+function renderCalendarEvent(info: EventContentArg) {
+  return <CalendarEvent info={info} />;
+}
+
 /**
  * Calendar component for schedule drawer.
  * Shows all scheduled submissions (both FILE and MESSAGE types).
  */
+function CalendarDayHeader({
+  date,
+  showDate,
+  weekday,
+}: {
+  date: Date;
+  showDate: boolean;
+  weekday: string;
+}) {
+  const { formatDate } = useLocale();
+  return (
+    <>
+      {weekday}
+      {showDate && (
+        <span style={{ display: 'block', fontSize: 11 }}>{formatDate(date)}</span>
+      )}
+    </>
+  );
+}
+
+function renderCalendarDayHeader(info: {
+  date: Date;
+  text: string;
+  view: { type: string };
+}) {
+  return (
+    <CalendarDayHeader
+      date={info.date}
+      weekday={info.text}
+      showDate={info.view.type !== 'dayGridMonth'}
+    />
+  );
+}
+
 export function ScheduleCalendar({
   onSchedule,
   queueOpen,
@@ -81,15 +122,33 @@ export function ScheduleCalendar({
   queueOpen: boolean;
   onToggleQueue: () => void;
 }) {
-  const { calendarLocale, locale, startOfWeek, hourCycle } = useLocale();
+  const {
+    calendarLocale,
+    dateLocale,
+    startOfWeek,
+    hourCycle,
+    formatDate,
+    formatTime,
+  } = useLocale();
   const submissions = useSubmissionsWithSchedule();
   const calendarRef = useRef<FullCalendar>(null);
-  const [title, setTitle] = useState('');
+  const [dateRange, setDateRange] = useState<{
+    start: Date;
+    end: Date;
+  } | null>(null);
   const [initialView] = useState(() =>
     window.innerWidth < 600 ? 'timeGridDay' : 'dayGridMonth',
   );
   const [view, setView] = useState(initialView);
   const [currentDate, setCurrentDate] = useState(new Date());
+  const rangeEnd = dateRange ? new Date(dateRange.end) : new Date(currentDate);
+  rangeEnd.setDate(rangeEnd.getDate() - 1);
+  const title =
+    view === 'dayGridMonth'
+      ? formatDate(currentDate, { month: 'long', year: 'numeric' })
+      : view === 'timeGridDay'
+        ? formatDate(currentDate)
+        : `${formatDate(dateRange?.start ?? currentDate)} - ${formatDate(rangeEnd)}`;
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const untitled = t`Untitled Submission`;
   const events = useMemo(
@@ -205,7 +264,7 @@ export function ScheduleCalendar({
             </Popover.Target>
             <Popover.Dropdown>
               <DatePicker
-                locale={locale}
+                locale={dateLocale}
                 firstDayOfWeek={startOfWeek as DayOfWeek}
                 value={currentDate}
                 defaultDate={currentDate}
@@ -293,17 +352,11 @@ export function ScheduleCalendar({
           slotLabelInterval="01:00:00"
           scrollTime="08:00:00"
           dayHeaderFormat={{ weekday: 'short' }}
-          views={{
-            timeGridWeek: {
-              dayHeaderFormat: { weekday: 'short', day: 'numeric' },
-            },
-            timeGridDay: {
-              dayHeaderFormat: { weekday: 'long', day: 'numeric' },
-            },
-          }}
+          dayHeaderContent={renderCalendarDayHeader}
           nowIndicator
           eventDurationEditable={false}
           slotLabelFormat={timeFormat}
+          slotLabelContent={(info) => formatTime(info.date)}
           droppable
           drop={handleExternalDrop}
           eventDisplay="block"
@@ -311,7 +364,10 @@ export function ScheduleCalendar({
           eventOrder="start,title"
           navLinks
           datesSet={(info) => {
-            setTitle(info.view.title);
+            setDateRange({
+              start: info.view.currentStart,
+              end: info.view.currentEnd,
+            });
             setView(info.view.type);
             setCurrentDate(info.view.calendar.getDate());
           }}

@@ -31,6 +31,10 @@ export const languages = [
 
 export const supportedLocaleCodes = languages.map(([, code]) => code);
 
+export function getNativeLanguageName(code: string): string {
+  return new Intl.DisplayNames([code], { type: 'language' }).of(code) ?? code;
+}
+
 export const dateLocaleMap: Record<string, string> = {
   en: 'en',
   de: 'de',

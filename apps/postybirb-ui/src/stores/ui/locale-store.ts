@@ -8,9 +8,9 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import { useShallow } from 'zustand/react/shallow';
 import { supportedLocaleCodes } from '../../i18n/languages';
 
-type HourCycle = 'h12' | 'h24' | 'locale';
+type HourCycle = 'h12' | 'h24' | 'system' | 'locale';
 
-type StartOfWeek = number | 'locale';
+type StartOfWeek = number | 'system' | 'locale';
 
 // ============================================================================
 // Types
@@ -25,13 +25,13 @@ interface LocaleState {
 
   /**
    * 24 hours or 12 hours (AM/PM)
-   * locale defaults to current locale info
+  * system and the legacy locale value use the viewing device's region
    */
   hourCycle: HourCycle;
 
   /**
    * 0=Sunday, 1=Monday, 6=Saturday
-   * locale defaults to current locale info
+  * system and the legacy locale value use the viewing device's region
    */
   startOfWeek: StartOfWeek;
 }
@@ -100,8 +100,8 @@ const getDefaultLanguage = (): string => {
  */
 const initialState: LocaleState = {
   language: getDefaultLanguage(),
-  startOfWeek: 'locale',
-  hourCycle: 'locale',
+  startOfWeek: 'system',
+  hourCycle: 'system',
 };
 
 // ============================================================================

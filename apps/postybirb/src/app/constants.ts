@@ -52,4 +52,5 @@ export type AppMetadata = {
   platform: NodeJS.Platform;
   app_port: string;
   app_version: string;
+  systemLocale?: string;
 };

@@ -5,25 +5,20 @@
 
 import { Trans, useLingui as useLinguiMacro } from '@lingui/react/macro';
 import {
-  Anchor,
-  Box,
-  Chip,
-  Group,
-  SegmentedControl,
-  Select,
-  Stack,
-  Text,
-  TextInput,
-  Tooltip,
-  useMantineColorScheme,
+    Anchor,
+    Box,
+    Chip,
+    Group,
+    SegmentedControl,
+    Select,
+    Stack,
+    Text,
+    TextInput,
+    Tooltip,
+    useMantineColorScheme,
 } from '@mantine/core';
-import { TimeInput } from '@mantine/dates';
-import {
-  IconAt,
-  IconCalendar,
-  IconCode,
-  IconExternalLink,
-} from '@tabler/icons-react';
+import { TimePicker } from '@mantine/dates';
+import { IconCalendar, IconCode, IconExternalLink } from '@tabler/icons-react';
 import { Cron } from 'croner';
 import cronstrue from 'cronstrue';
 import { useCallback, useMemo, useState } from 'react';
@@ -40,29 +35,12 @@ type Frequency = 'daily' | 'weekly' | 'monthly';
 type CronMode = 'builder' | 'custom';
 
 /* eslint-disable lingui/no-unlocalized-strings */
-// Days of week for chip selection
-const DAYS_OF_WEEK = [
-  { value: '1', label: 'Mon' },
-  { value: '2', label: 'Tue' },
-  { value: '3', label: 'Wed' },
-  { value: '4', label: 'Thu' },
-  { value: '5', label: 'Fri' },
-  { value: '6', label: 'Sat' },
-  { value: '0', label: 'Sun' },
-];
-
 // Days of month options
 const DAYS_OF_MONTH = Array.from({ length: 31 }, (_, i) => ({
   value: String(i + 1),
-  label: `${i + 1}${getOrdinalSuffix(i + 1)}`,
+  label: String(i + 1),
 }));
 /* eslint-enable lingui/no-unlocalized-strings */
-
-function getOrdinalSuffix(n: number): string {
-  const s = ['th', 'st', 'nd', 'rd'];
-  const v = n % 100;
-  return s[(v - 20) % 10] || s[v] || s[0];
-}
 
 /**
  * Parse a CRON expression to extract frequency, days, and time.
@@ -163,7 +141,8 @@ function buildCron(
  */
 export function CronPicker({ value, onChange }: CronPickerProps) {
   const { t } = useLinguiMacro();
-  const { cronstrueLocale, formatDateTime } = useLocale();
+  const { cronstrueLocale, formatDateTime, weekdays, hourCycle, amPmLabels } =
+    useLocale();
   const { colorScheme } = useMantineColorScheme();
   const [mode, setMode] = useState<CronMode>('builder');
   const [manualCron, setManualCron] = useState(value);
@@ -173,13 +152,15 @@ export function CronPicker({ value, onChange }: CronPickerProps) {
 
   // Helper to emit new cron from builder with updated field
   const emitBuilderChange = useCallback(
-    (updates: Partial<{
-      frequency: Frequency;
-      selectedDays: string[];
-      dayOfMonth: string;
-      hour: number;
-      minute: number;
-    }>) => {
+    (
+      updates: Partial<{
+        frequency: Frequency;
+        selectedDays: string[];
+        dayOfMonth: string;
+        hour: number;
+        minute: number;
+      }>,
+    ) => {
       const newFrequency = updates.frequency ?? parsed.frequency;
       const newSelectedDays = updates.selectedDays ?? parsed.selectedDays;
       const newDayOfMonth = updates.dayOfMonth ?? parsed.dayOfMonth;
@@ -274,11 +255,14 @@ export function CronPicker({ value, onChange }: CronPickerProps) {
   // Get human-readable description
   const cronDescription = useMemo(() => {
     try {
-      return cronstrue.toString(cronToValidate, { locale: cronstrueLocale });
+      return cronstrue.toString(cronToValidate, {
+        locale: cronstrueLocale,
+        use24HourTimeFormat: hourCycle === 'h24',
+      });
     } catch {
       return null;
     }
-  }, [cronToValidate, cronstrueLocale]);
+  }, [cronToValidate, cronstrueLocale, hourCycle]);
 
   // Format time for TimeInput - derived from parsed value
   const timeValue = useMemo(() => {
@@ -343,7 +327,7 @@ export function CronPicker({ value, onChange }: CronPickerProps) {
                 onChange={handleDaysChange}
               >
                 <Group gap={4}>
-                  {DAYS_OF_WEEK.map((day) => (
+                  {weekdays.map((day) => (
                     <Chip key={day.value} value={day.value} size="xs">
                       {day.label}
                     </Chip>
@@ -366,11 +350,14 @@ export function CronPicker({ value, onChange }: CronPickerProps) {
           )}
 
           {/* Time picker */}
-          <TimeInput
+          <TimePicker
+            key={`${hourCycle}-${amPmLabels.am}-${amPmLabels.pm}`}
             label={<Trans>Time</Trans>}
             size="xs"
             value={timeValue}
-            onChange={(e) => handleTimeChange(e.currentTarget.value)}
+            onChange={handleTimeChange}
+            format={hourCycle === 'h12' ? '12h' : '24h'}
+            amPmLabels={amPmLabels}
           />
         </Stack>
       ) : (
@@ -408,15 +395,14 @@ export function CronPicker({ value, onChange }: CronPickerProps) {
       )}
 
       {/* Description and next run */}
-      {isValidCron && cronDescription && (
+      {isValidCron && nextRun && (
         <Box p="xs">
           <Text size="xs" fw={500} c="green">
-            {cronDescription}
+            <Trans>Next scheduled occurrence: {formatDateTime(nextRun)}</Trans>
           </Text>
-          {nextRun && (
+          {mode === 'custom' && cronDescription && (
             <Text size="xs" c="dimmed">
-              <IconAt size="1em" style={{ verticalAlign: 'middle' }} />{' '}
-              {formatDateTime(nextRun)}
+              {cronDescription}
             </Text>
           )}
         </Box>

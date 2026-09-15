@@ -17,6 +17,7 @@ import {
 } from '@mantine/core';
 import { IconMoon, IconSun, IconSunMoon } from '@tabler/icons-react';
 import { useMemo } from 'react';
+import { getWeekdays } from '../../../../hooks/locale-utils';
 import { useLocale } from '../../../../hooks/use-locale';
 import {
   type ColorScheme,
@@ -83,37 +84,22 @@ export function AppearanceSettingsSection() {
   const { t } = useLingui();
 
   const weekdayOptions = useMemo(() => {
-    // Build localized weekday names (Sunday to Saturday)
-    const baseDate = new Date(2024, 0, 7); // known Sunday
-    const weekdayNames = Array.from({ length: 7 }, (_, i) => {
-      const date = new Date(baseDate);
-      date.setDate(baseDate.getDate() + i);
-
-      const name = new Intl.DateTimeFormat(locale.locale, {
-        weekday: 'long',
-      }).format(date);
-      return capitalize(name);
-    });
-
-    const defaultStartOfWeek = weekdayNames[locale.defaultStartOfWeek];
-    const options = [
-      { value: 'locale', label: t`Locale default (${defaultStartOfWeek})` },
+    const weekdayNames = getWeekdays(locale.locale, 1, 'long');
+    const defaultStartOfWeek = weekdayNames.find(
+      (day) => day.value === String(locale.defaultStartOfWeek),
+    )?.label;
+    return [
+      { value: 'system', label: t`System region (${defaultStartOfWeek})` },
+      ...weekdayNames,
     ];
-
-    // Add numeric options (0 = Sunday ... 6 = Saturday)
-    for (const [i, label] of weekdayNames.entries()) {
-      options.push({ value: i.toString(), label });
-    }
-
-    return options;
   }, [locale.defaultStartOfWeek, locale.locale, t]);
 
   const defaultLocaleHours = locale.defaultHourCycle.slice(1);
   const hourCycleOptions = useMemo(
     () => [
       {
-        value: 'locale',
-        label: <Trans>Locale default ({defaultLocaleHours})</Trans>,
+        value: 'system',
+        label: <Trans>System region ({defaultLocaleHours}h)</Trans>,
       },
       { value: 'h12', label: '12h' },
       { value: 'h24', label: '24h' },
@@ -121,11 +107,10 @@ export function AppearanceSettingsSection() {
     [defaultLocaleHours],
   );
 
-  // Handle start of week change: if 'locale' is selected, store the numeric default
   const handleStartOfWeekChange = (value: string | null) => {
     if (value === null) return;
-    if (value === 'locale') {
-      setStartOfWeek('locale');
+    if (value === 'system') {
+      setStartOfWeek('system');
     } else {
       setStartOfWeek(parseInt(value, 10));
     }
@@ -183,8 +168,8 @@ export function AppearanceSettingsSection() {
           <Trans>Hour cycle</Trans>
         </Text>
         <SegmentedControl
-          value={hourCycle}
-          onChange={(value) => setHourCycle(value as 'locale' | 'h12' | 'h24')}
+          value={hourCycle === 'locale' ? 'system' : hourCycle}
+          onChange={(value) => setHourCycle(value as 'system' | 'h12' | 'h24')}
           data={hourCycleOptions}
           fullWidth
         />
@@ -197,13 +182,12 @@ export function AppearanceSettingsSection() {
         </Text>
         <Select
           value={
-            startOfWeek === locale.defaultStartOfWeek
-              ? 'locale'
-              : startOfWeek.toString()
+            typeof startOfWeek === 'number' ? String(startOfWeek) : 'system'
           }
           onChange={handleStartOfWeekChange}
           data={weekdayOptions}
           allowDeselect={false}
+          maxDropdownHeight={360}
         />
       </Box>
     </Stack>
