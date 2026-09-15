@@ -2,6 +2,10 @@
  * File management section styles.
  */
 
+.postybirb-file-list[data-scrollable] {
+  max-height: min(70vh, 720px);
+}
+
 .postybirb-sortable-file {
   transition:
     box-shadow 150ms ease,
@@ -18,4 +22,101 @@
 
 .postybirb-sortable-file.sortable-chosen {
   box-shadow: var(--mantine-shadow-md);
+}
+
+.postybirb-file-card {
+  container-type: inline-size;
+}
+
+.postybirb-file-name {
+  overflow-wrap: anywhere;
+}
+
+.postybirb-file-drag-handle {
+  cursor: grab;
+  touch-action: none;
+}
+
+.postybirb-file-editor {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  gap: var(--mantine-spacing-lg);
+  align-items: start;
+}
+
+.postybirb-file-media {
+  min-width: 0;
+}
+
+.postybirb-file-previews {
+  display: grid;
+  gap: var(--mantine-spacing-lg);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.postybirb-file-preview-frame {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 180px;
+  min-width: 0;
+  overflow: hidden;
+  border-radius: var(--mantine-radius-sm);
+  background: var(--mantine-color-default-hover);
+}
+
+.postybirb-file-preview-frame :is(img, video, audio) {
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.postybirb-file-thumbnail-frame {
+  height: 104px;
+}
+
+.postybirb-file-fields {
+  container-type: inline-size;
+  border: 0;
+  border-inline-start: 1px solid var(--mantine-color-default-border);
+  margin: 0;
+  padding: 0 0 0 var(--mantine-spacing-lg);
+  min-width: 0;
+}
+
+.postybirb-file-secondary-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--mantine-spacing-sm);
+}
+
+.postybirb-file-dimension-inputs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--mantine-spacing-xs);
+  width: 240px;
+  max-width: 100%;
+  min-width: 0;
+}
+
+@container (max-width: 400px) {
+  .postybirb-file-secondary-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@container (max-width: 700px) {
+  .postybirb-file-editor {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .postybirb-file-previews {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--mantine-spacing-sm);
+  }
+
+  .postybirb-file-fields {
+    border-inline-start: 0;
+    border-top: 1px solid var(--mantine-color-default-border);
+    padding: var(--mantine-spacing-md) 0 0;
+  }
 }

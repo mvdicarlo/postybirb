@@ -21,6 +21,66 @@ msgstr "Media position"
 msgid "Gallery arrangement"
 msgstr "Gallery arrangement"
 
+msgid "Today"
+msgstr "Today"
+
+msgid "Previous"
+msgstr "Previous"
+
+msgid "Calendar view"
+msgstr "Calendar view"
+
+msgid "Month"
+msgstr "Month"
+
+msgid "Week"
+msgstr "Week"
+
+msgid "Day"
+msgstr "Day"
+
+msgid "Submission"
+msgstr "Submission"
+
+msgid "No submissions"
+msgstr "No submissions"
+
+msgid "Files ({0})"
+msgstr "Files ({0})"
+
+msgid "Search submissions"
+msgstr "Search submissions"
+
+msgid "Clear search"
+msgstr "Clear search"
+
+msgid "Submission type"
+msgstr "Submission type"
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/file-submission-modal/image-editor.tsx
+msgid "Crop"
+msgstr "Crop"
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/file-submission-modal/image-editor.tsx
+msgid "Free"
+msgstr "Free"
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/file-submission-modal/image-editor.tsx
+msgid "Original"
+msgstr "Original"
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/file-submission-modal/image-editor.tsx
+msgid "Move"
+msgstr "Move"
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/file-submission-modal/image-editor.tsx
+msgid "Failed to edit image"
+msgstr "Failed to edit image"
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/file-submission-modal/image-editor.tsx
+msgid "{0} × {1} px"
+msgstr "{0} × {1} px"
+
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-preview-modal/post-preview-modal.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/bulk-post-preview-modal.tsx
 msgid "Incomplete work"

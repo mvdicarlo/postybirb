@@ -3,37 +3,36 @@
  * Horizontal layout for compact display.
  */
 
+import { t } from '@lingui/core/macro';
 import { Trans } from '@lingui/react/macro';
 import {
-  ActionIcon,
-  Badge,
-  Box,
-  Divider,
-  FileButton,
-  Group,
-  Image,
-  Stack,
-  Text,
-  Tooltip,
+    ActionIcon,
+    Box,
+    FileButton,
+    Group,
+    Image,
+    Stack,
+    Text,
+    Tooltip,
 } from '@mantine/core';
 import { FileWithPath } from '@mantine/dropzone';
 import { FileType, ISubmissionFileDto, SubmissionId } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import {
-  IconCrop,
-  IconFileUpload,
-  IconPencil,
-  IconReplace,
+    IconCrop,
+    IconFileUpload,
+    IconPencil,
+    IconReplace,
 } from '@tabler/icons-react';
 import { useState } from 'react';
 import fileSubmissionApi, {
-  FileUpdateTarget,
+    FileUpdateTarget,
 } from '../../../../../api/file-submission.api';
 import { getBaseUrl } from '../../../../../transports/http-client';
 import {
-  showErrorNotification,
-  showErrorWithContext,
-  showErrorWithTitleNotification,
+    showErrorNotification,
+    showErrorWithContext,
+    showErrorWithTitleNotification,
 } from '../../../../../utils/notifications';
 import { ImageEditor } from '../../file-submission-modal/image-editor';
 import { useSubmissionEditCardContext } from '../context';
@@ -175,36 +174,17 @@ export function FileActions({ file, submissionId }: FileActionsProps) {
         />
       )}
 
-      {/* Horizontal Layout */}
-      <Group gap="sm" align="flex-start" wrap="nowrap">
-        {/* Primary File Section */}
-        <Stack gap={4} align="center">
-          <Badge
-            variant="outline"
-            radius="sm"
-            size="xs"
-            style={{ textTransform: 'none' }}
-          >
+      <div className="postybirb-file-previews">
+        <Stack gap="xs">
+          <Text size="sm" fw={500}>
             <Trans>Primary</Trans>
-          </Badge>
+          </Text>
 
-          <Box
-            style={{
-              borderRadius: 6,
-              overflow: 'hidden',
-              // eslint-disable-next-line lingui/no-unlocalized-strings
-              border: '1px solid var(--mantine-color-dark-7)',
-              width: 80,
-              height: 80,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <FilePreview file={file} size={70} />
+          <Box className="postybirb-file-preview-frame">
+            <FilePreview file={file} size={180} />
           </Box>
 
-          <Group gap={4}>
+          <Group gap="xs">
             {/* Edit primary - only for editable images */}
             {fileType === FileType.IMAGE &&
               (file.mimeType === 'image/png' ||
@@ -214,11 +194,12 @@ export function FileActions({ file, submissionId }: FileActionsProps) {
                     disabled={isArchived}
                     variant="light"
                     color="grape"
-                    size="xs"
+                    size="md"
+                    aria-label={t`Edit file`}
                     onClick={handleEditPrimary}
                     loading={isLoadingPrimary}
                   >
-                    <IconPencil size={12} />
+                    <IconPencil size={16} />
                   </ActionIcon>
                 </Tooltip>
               )}
@@ -230,10 +211,11 @@ export function FileActions({ file, submissionId }: FileActionsProps) {
                     {...buttonProps}
                     variant="light"
                     color="blue"
-                    size="xs"
+                    size="md"
+                    aria-label={t`Replace file`}
                     disabled={isArchived}
                   >
-                    <IconReplace size={12} />
+                    <IconReplace size={16} />
                   </ActionIcon>
                 </Tooltip>
               )}
@@ -241,49 +223,30 @@ export function FileActions({ file, submissionId }: FileActionsProps) {
           </Group>
         </Stack>
 
-        <Divider orientation="vertical" />
-
         {/* Thumbnail Section */}
-        <Stack gap={4} align="center">
-          <Badge
-            variant="outline"
-            color="gray"
-            radius="sm"
-            size="xs"
-            style={{ textTransform: 'none' }}
-          >
+        <Stack gap="xs">
+          <Text size="sm" fw={500}>
             <Trans>Thumbnail</Trans>
-          </Badge>
+          </Text>
 
-          <Box
-            style={{
-              borderRadius: 6,
-              overflow: 'hidden',
-              // eslint-disable-next-line lingui/no-unlocalized-strings
-              border: '1px solid var(--mantine-color-dark-7)',
-              width: 80,
-              height: 80,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
+          <Box className="postybirb-file-preview-frame postybirb-file-thumbnail-frame">
             <ThumbnailDisplay file={file} />
           </Box>
 
-          <Group gap={4}>
+          <Group gap="xs">
             {/* Crop from primary - only for images */}
             {fileType === FileType.IMAGE && (
               <Tooltip label={<Trans>Crop from primary</Trans>} withArrow>
                 <ActionIcon
                   variant="light"
                   color="teal"
-                  size="xs"
+                  size="md"
+                  aria-label={t`Crop from primary`}
                   disabled={isArchived}
                   onClick={handleCropFromPrimary}
                   loading={isLoadingPrimary}
                 >
-                  <IconCrop size={12} />
+                  <IconCrop size={16} />
                 </ActionIcon>
               </Tooltip>
             )}
@@ -300,17 +263,18 @@ export function FileActions({ file, submissionId }: FileActionsProps) {
                     {...buttonProps}
                     variant="light"
                     color="indigo"
-                    size="xs"
+                    size="md"
+                    aria-label={t`Upload thumbnail`}
                     disabled={isArchived}
                   >
-                    <IconFileUpload size={12} />
+                    <IconFileUpload size={16} />
                   </ActionIcon>
                 </Tooltip>
               )}
             </FileButton>
           </Group>
         </Stack>
-      </Group>
+      </div>
     </>
   );
 }
@@ -333,8 +297,8 @@ function ThumbnailDisplay({ file }: { file: ISubmissionFileDto }) {
   return (
     <Image
       radius={0}
-      height={70}
-      width={70}
+      h={96}
+      w={96}
       fit="contain"
       loading="lazy"
       alt={file.fileName}

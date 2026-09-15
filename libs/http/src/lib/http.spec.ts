@@ -16,8 +16,16 @@ import type {
 
 const CHALLENGE_HTML = '<html><title>Just a moment...</title></html>';
 const RESOLVED_HTML = '<html><body>resolved</body></html>';
+const BACKGROUND_DETECTION_HTML =
+  '<html><head><title>Homepage - Derpibooru</title></head><body>Logout' +
+  '<script src="/cdn-cgi/challenge-platform/scripts/precursor/main.js"></script>' +
+  '<script src="/cdn-cgi/challenge-platform/scripts/jsd/api.js"></script></body></html>';
 
 interface HttpInternals {
+  isCloudflareChallengeResponse(
+    headers: Record<string, string | string[]>,
+    body: string,
+  ): boolean;
   performBrowserWindowGetRequest(
     url: string,
     options: HttpOptions,
@@ -99,6 +107,12 @@ class TestServer {
       if (req.url === '/cloudflare') {
         res.setHeader('cf-mitigated', 'challenge');
         res.end(CHALLENGE_HTML);
+      }
+
+      if (req.url === '/background-detection') {
+        res.setHeader('Content-Type', 'text/html');
+        res.setHeader('Server', 'cloudflare');
+        res.end(BACKGROUND_DETECTION_HTML);
       }
     });
   }
@@ -326,6 +340,44 @@ describe('http', () => {
     expect(res.body).toEqual({ test: 'hello' });
   });
 
+  it.each(['get', 'post'] as const)(
+    'does not retry a %s containing background detection scripts in a browser',
+    async (method) => {
+      const browserGet = jest
+        .spyOn(httpInternals, 'performBrowserWindowGetRequest')
+        .mockResolvedValue(undefined);
+      const browserPost = jest
+        .spyOn(httpInternals, 'performBrowserWindowPostRequest')
+        .mockResolvedValue(undefined);
+      const url = 'http://localhost:3000/background-detection';
+      const response = method === 'get'
+        ? await Http.get<string>(url, { partition: 'test' })
+        : await Http.post<string>(url, {
+          partition: 'test', type: 'json', data: {},
+        });
+
+      expect(response.body).toBe(BACKGROUND_DETECTION_HTML);
+      expect(response.statusCode).toBe(200);
+      expect(browserGet).not.toHaveBeenCalled();
+      expect(browserPost).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each([
+    { 'cf-mitigated': 'challenge' },
+    { 'CF-Mitigated': [' challenge '] },
+  ])('detects a challenge header without HTML markers: %j', (headers) => {
+    expect(httpInternals.isCloudflareChallengeResponse(headers, '')).toBe(true);
+  });
+
+  it.each([
+    CHALLENGE_HTML,
+    '<html><body><div class="challenge-error-title">Error</div></body></html>',
+    '<html><body><script>window._cf_chl_opt = {};</script></body></html>',
+  ])('retains challenge-specific HTML detection: %s', (html) => {
+    expect(httpInternals.isCloudflareChallengeResponse({}, html)).toBe(true);
+  });
+
   it('attempts an invisible browser resolution for a GET when interaction is disabled', async () => {
     const browserResponse: HttpResponse<string> = {
       body: 'resolved',
@@ -398,6 +450,36 @@ describe('Cloudflare browser resolution', () => {
 
   afterEach(() => {
     jest.useRealTimers();
+  });
+
+  it('returns a normal page with background detection without waiting', async () => {
+    const { show, window } = createChallengeWindow(
+      [], BACKGROUND_DETECTION_HTML,
+    );
+
+    await expect(httpInternals.handleCloudflareChallengePage(
+      window, { openBrowserWindow: true },
+    )).resolves.toMatchObject({ body: BACKGROUND_DETECTION_HTML });
+    expect(jest.getTimerCount()).toBe(0);
+    expect(show).not.toHaveBeenCalled();
+  });
+
+  it('resolves a challenge to a page that retains background detection', async () => {
+    const { focus, show, window } = createChallengeWindow(
+      [CHALLENGE_HTML], BACKGROUND_DETECTION_HTML,
+    );
+    const responsePromise = httpInternals.handleCloudflareChallengePage(
+      window, { openBrowserWindow: true },
+    );
+
+    await jest.advanceTimersByTimeAsync(1000);
+
+    await expect(responsePromise).resolves.toMatchObject({
+      body: BACKGROUND_DETECTION_HTML,
+    });
+    expect(show).not.toHaveBeenCalled();
+    expect(focus).not.toHaveBeenCalled();
+    expect(jest.getTimerCount()).toBe(0);
   });
 
   it('resolves a challenge invisibly when interaction is disabled', async () => {

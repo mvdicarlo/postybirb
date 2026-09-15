@@ -27,7 +27,6 @@ import {
   Collapse,
   Divider,
   Group,
-  Paper,
   ScrollArea,
   Stack,
   Text,
@@ -109,17 +108,12 @@ function SortableFileCard({
 
   return (
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      onKeyDown={handleKeyDown}
-    >
+    <div ref={setNodeRef} style={style} onKeyDown={handleKeyDown}>
       <SubmissionFileCard
         file={file}
         draggable={isDraggable}
         totalFiles={totalFiles}
-        dragListeners={isDraggable ? listeners : undefined}
+        dragListeners={isDraggable ? { ...attributes, ...listeners } : undefined}
       />
     </div>
   );
@@ -208,14 +202,14 @@ export function SubmissionFileManager() {
   const isDraggable = orderedFiles.length > 1 && !submission.isArchived;
 
   return (
-    <Paper withBorder p={0} radius="md">
-      <Box p="xs">
+    <Box>
+      <Box py="xs">
         <Group justify="space-between">
           <Text size="sm" fw={600}>
             <Trans>Files</Trans> ({orderedFiles.length})
           </Text>
           <Group gap="xs">
-            {orderedFiles.length > 1 && (
+            {orderedFiles.length > 1 && !submission.isArchived && (
               <Button
                 size="xs"
                 variant={bulkOpen ? 'filled' : 'subtle'}
@@ -239,18 +233,22 @@ export function SubmissionFileManager() {
       </Box>
 
       {/* Bulk edit panel */}
-      <Collapse in={bulkOpen && orderedFiles.length > 1}>
+      <Collapse
+        in={bulkOpen && orderedFiles.length > 1 && !submission.isArchived}
+      >
         <Divider />
         <BulkFileEditor files={orderedFiles} />
         <Divider />
       </Collapse>
 
-      <ScrollArea
-        h={orderedFiles.length === 1 ? 'auto' : 350}
-        p="md"
-        offsetScrollbars
-        scrollbarSize={6}
+      <ScrollArea.Autosize
+        data-scrollable={orderedFiles.length > 2 || undefined}
+        my="sm"
         type="auto"
+        scrollbars="y"
+        offsetScrollbars="y"
+        scrollbarSize={8}
+        className="postybirb-file-list"
       >
         <DndContext
           sensors={sensors}
@@ -275,11 +273,11 @@ export function SubmissionFileManager() {
             </Stack>
           </SortableContext>
         </DndContext>
-      </ScrollArea>
+      </ScrollArea.Autosize>
 
-      <Box p="md" pt={0}>
+      <Box pt="sm">
         <FileUploader />
       </Box>
-    </Paper>
+    </Box>
   );
 }

@@ -3,430 +3,335 @@
  * Supports drag-drop from external elements, event moving, and click-to-manage.
  */
 
-import {
-  createPlugin,
-  EventClickArg,
-  EventDropArg,
-  EventInput,
-  LocaleInput,
-} from '@fullcalendar/core';
-import { EventImpl, VerboseFormattingArg } from '@fullcalendar/core/internal';
+import { EventContentArg, EventDropArg, LocaleInput } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin, { DropArg } from '@fullcalendar/interaction';
 import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
+import { t } from '@lingui/core/macro';
 import { Trans } from '@lingui/react/macro';
 import {
-  Badge,
-  Button,
-  Divider,
-  Group,
-  Modal,
-  Stack,
-  Text,
-  ThemeIcon,
+    ActionIcon,
+    Button,
+    Group,
+    Popover,
+    SegmentedControl,
+    Text,
+    Tooltip,
 } from '@mantine/core';
-import { TimePicker } from '@mantine/dates';
-import { useDebouncedCallback } from '@mantine/hooks';
-import { ScheduleType, SubmissionType } from '@postybirb/types';
+import { DatePicker, DayOfWeek } from '@mantine/dates';
+import { SubmissionType } from '@postybirb/types';
 import {
-  IconCalendarOff,
-  IconCalendarTime,
-  IconClock,
-  IconFile,
-  IconMessage,
+    IconCalendar,
+    IconChevronDown,
+    IconChevronLeft,
+    IconChevronRight,
+    IconFile,
+    IconLayoutSidebarLeftCollapse,
+    IconLayoutSidebarLeftExpand,
+    IconMessage,
+    IconPlayerPause,
+    IconPlus,
+    IconRepeat,
 } from '@tabler/icons-react';
-import Cron from 'croner';
-import dayjs from 'dayjs';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import submissionApi from '../../../api/submission.api';
 import { useLocale } from '../../../hooks';
 import { useSubmissionsWithSchedule } from '../../../stores/entity/submission-store';
 import {
-  showInfoNotification,
-  showScheduleUpdatedNotification,
-  showUpdateErrorNotification,
+    showScheduleUpdatedNotification,
+    showUpdateErrorNotification,
 } from '../../../utils/notifications';
+import { ScheduleRequest } from './schedule-editor-modal';
+import { buildScheduleEvents } from './schedule-utils';
 
-const dayjsPlugin = createPlugin({
-  name: 'dayjs',
-  cmdFormatter(cmdStr: string, arg: VerboseFormattingArg): string {
-    const locale = arg.localeCodes[0];
-    if (arg.end) {
-      const start = dayjs(new Date(...(arg.start.array as [number]))).locale(
-        locale,
-      );
-      const end = dayjs(new Date(...(arg.end.array as [number]))).locale(
-        locale,
-      );
-      return `${start.format(cmdStr)} – ${end.format(cmdStr)}`;
-    }
-
-    return dayjs(new Date(...(arg.date.array as [number])))
-      .locale(locale)
-      .format(cmdStr);
-  },
-});
+function renderCalendarEvent(info: EventContentArg) {
+  return (
+    <div className="schedule-event-content">
+      <span className="schedule-event-icon">
+        {!info.event.extendedProps.isScheduled ? (
+          <IconPlayerPause size={12} />
+        ) : info.event.extendedProps.recurring ? (
+          <IconRepeat size={12} />
+        ) : info.event.extendedProps.submissionType ===
+          SubmissionType.MESSAGE ? (
+          <IconMessage size={12} />
+        ) : (
+          <IconFile size={12} />
+        )}
+      </span>
+      {info.timeText && (
+        <span className="schedule-event-time">{info.timeText}</span>
+      )}
+      <span className="schedule-event-title">{info.event.title}</span>
+    </div>
+  );
+}
 
 /**
  * Calendar component for schedule drawer.
  * Shows all scheduled submissions (both FILE and MESSAGE types).
  */
-export function ScheduleCalendar() {
-  const {
-    calendarLocale,
-    formatRelativeTime,
-    formatDate,
-    startOfWeek,
-    hourCycle,
-  } = useLocale();
-  const scheduledSubmissions = useSubmissionsWithSchedule();
-  const [selectedEvent, setSelectedEvent] = useState<EventImpl | null>(null);
-  const [modalOpened, setModalOpened] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const calendarRef = useRef<any>(null);
-
-  // Format events for FullCalendar
-  const events: EventInput[] = useMemo(
-    () =>
-      scheduledSubmissions.flatMap((submission) => {
-        const result: EventInput[] = [];
-        const { title } = submission;
-        const isMessageType = submission.type === SubmissionType.MESSAGE;
-
-        if (submission.schedule.cron) {
-          // Add main scheduled event
-          if (submission.schedule.scheduledFor) {
-            result.push({
-              id: submission.id,
-              title,
-              start: dayjs(submission.schedule.scheduledFor).toISOString(),
-              backgroundColor: isMessageType ? '#40c057' : '#339af0',
-              borderColor: isMessageType ? '#40c057' : '#339af0',
-              textColor: '#ffffff',
-              extendedProps: {
-                type: 'scheduled',
-                submissionType: submission.type,
-                isScheduled: true,
-              },
-            });
-          }
-
-          // Add future recurring events
-          const cron = Cron(submission.schedule.cron);
-          const nextRuns = cron.nextRuns(4);
-          nextRuns.forEach((nextRun, index) => {
-            result.push({
-              id: `${submission.id}-recurring-${index}`,
-              title,
-              start: dayjs(nextRun).toISOString(),
-              backgroundColor: isMessageType ? '#69db7c' : '#74c0fc',
-              borderColor: isMessageType ? '#69db7c' : '#74c0fc',
-              textColor: '#ffffff',
-              extendedProps: {
-                type: 'recurring',
-                submissionType: submission.type,
-                parentId: submission.id,
-              },
-            });
-          });
-        } else if (submission.schedule.scheduledFor) {
-          // Regular scheduled event
-          result.push({
-            id: submission.id,
-            title,
-            start: dayjs(submission.schedule.scheduledFor).toISOString(),
-            backgroundColor: submission.isScheduled
-              ? isMessageType
-                ? '#40c057'
-                : '#339af0'
-              : '#909296',
-            borderColor: submission.isScheduled
-              ? isMessageType
-                ? '#40c057'
-                : '#339af0'
-              : '#909296',
-            textColor: '#ffffff',
-            extendedProps: {
-              type: submission.isScheduled ? 'scheduled' : 'unscheduled',
-              submissionType: submission.type,
-              isScheduled: submission.isScheduled,
-            },
-          });
-        }
-
-        return result;
-      }),
-    [scheduledSubmissions],
+export function ScheduleCalendar({
+  onSchedule,
+  queueOpen,
+  onToggleQueue,
+}: {
+  onSchedule: (request: ScheduleRequest) => void;
+  queueOpen: boolean;
+  onToggleQueue: () => void;
+}) {
+  const { calendarLocale, locale, startOfWeek, hourCycle } = useLocale();
+  const submissions = useSubmissionsWithSchedule();
+  const calendarRef = useRef<FullCalendar>(null);
+  const [title, setTitle] = useState('');
+  const [initialView] = useState(() =>
+    window.innerWidth < 600 ? 'timeGridDay' : 'dayGridMonth',
   );
+  const [view, setView] = useState(initialView);
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const untitled = t`Untitled Submission`;
+  const events = useMemo(
+    () => buildScheduleEvents(submissions, untitled),
+    [submissions, untitled],
+  );
+  useEffect(() => {
+    calendarRef.current?.getApi().updateSize();
+  }, [queueOpen]);
 
-  // Handle event drop (for existing events)
-  const handleEventDrop = useCallback((info: EventDropArg) => {
-    const { event } = info;
-    // Skip recurring previews
-    if (event.id.includes('-recurring-')) {
+  const handleEventDrop = async (info: EventDropArg) => {
+    if (info.event.extendedProps.preview || !info.event.start) {
       info.revert();
       return;
     }
-    if (event.start) {
-      submissionApi.update(event.id, {
-        scheduledFor: event.start.toISOString(),
-        scheduleType: ScheduleType.SINGLE,
-      });
-    }
-  }, []);
-
-  // Handle external elements being dropped onto the calendar
-  const handleExternalDrop = useCallback((dropInfo: DropArg) => {
-    const submissionId = dropInfo.draggedEl.getAttribute('data-submission-id');
-
-    if (!submissionId) return;
-
-    const dropDate = dropInfo.date;
-
-    submissionApi.update(submissionId, {
-      scheduledFor: dropDate.toISOString(),
-      scheduleType: ScheduleType.SINGLE,
-      isScheduled: false,
-    });
-  }, []);
-
-  // Handle event click
-  const handleEventClick = useCallback((info: EventClickArg) => {
-    // Skip recurring previews
-    if (info.event.id.includes('-recurring-')) {
+    if (
+      info.event.extendedProps.isScheduled &&
+      info.event.start.getTime() <= Date.now()
+    ) {
+      info.revert();
+      showUpdateErrorNotification(t`Date is in the past`);
       return;
     }
-    setSelectedEvent(info.event);
-    setModalOpened(true);
-  }, []);
-
-  const handleUnschedule = () => {
-    if (!selectedEvent) return;
-
-    submissionApi
-      .update(selectedEvent.id, {
-        scheduledFor: undefined,
-        scheduleType: ScheduleType.NONE,
-        isScheduled: false,
-      })
-      .then(() => {
-        showInfoNotification(
-          selectedEvent.title,
-          <Trans>Submission unscheduled</Trans>,
-        );
-      })
-      .catch((error) => {
-        showUpdateErrorNotification(error.message);
+    try {
+      await submissionApi.update(info.event.id, {
+        scheduledFor: info.event.start.toISOString(),
       });
-
-    setModalOpened(false);
+      showScheduleUpdatedNotification(info.event.title);
+    } catch (error) {
+      info.revert();
+      showUpdateErrorNotification(
+        error instanceof Error ? error.message : undefined,
+      );
+    }
   };
-
-  const toggleScheduledState = () => {
-    if (!selectedEvent) return;
-
-    const currentScheduledState =
-      selectedEvent.extendedProps?.isScheduled || false;
-
-    submissionApi
-      .update(selectedEvent.id, { isScheduled: !currentScheduledState })
-      .then(() => {
-        showScheduleUpdatedNotification(selectedEvent.title);
-      })
-      .catch((error) => {
-        showUpdateErrorNotification(error.message);
-      });
-
-    setModalOpened(false);
+  const handleExternalDrop = (info: DropArg) => {
+    const submissionId = info.draggedEl.getAttribute('data-submission-id');
+    if (submissionId)
+      onSchedule({ submissionId, date: info.date, allDay: info.allDay });
   };
-
-  const handleScheduleTimeChange = useDebouncedCallback(
-    (time: string) => {
-      if (!time || !selectedEvent?.start) return;
-      const [hours, minutes] = time.split(':').map((n) => parseInt(n, 10));
-
-      if (typeof hours !== 'number' || typeof minutes !== 'number') return;
-
-      const scheduledFor = new Date(selectedEvent.start);
-
-      scheduledFor.setHours(hours);
-      scheduledFor.setMinutes(minutes);
-
-      submissionApi
-        .update(selectedEvent.id, { scheduledFor: scheduledFor.toISOString() })
-        .then(() => {
-          showScheduleUpdatedNotification(selectedEvent.title);
-        })
-        .catch((error) => {
-          showUpdateErrorNotification(error.message);
-        });
-    },
-    { delay: 500, flushOnUnmount: false },
-  );
-
-  // eslint-disable-next-line lingui/no-unlocalized-strings
-  const timeFormat = hourCycle === 'h12' ? 'hh:mm A' : 'HH:mm';
+  const timeFormat = {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: hourCycle === 'h12',
+  } as const;
 
   return (
-    <div style={{ overflow: 'auto', position: 'relative', height: '100%' }}>
-      <FullCalendar
-        ref={calendarRef}
-        plugins={[
-          dayGridPlugin,
-          timeGridPlugin,
-          interactionPlugin,
-          dayjsPlugin,
-        ]}
-        headerToolbar={{
-          // eslint-disable-next-line lingui/no-unlocalized-strings
-          left: 'prev,next today',
-          center: 'title',
-          right: 'dayGridMonth,timeGridWeek,timeGridDay',
-        }}
-        initialView="dayGridMonth"
-        editable
-        selectable
-        selectMirror
-        dayMaxEvents
-        allDaySlot={false}
-        // fixes issue with offset on drag
-        fixedMirrorParent={document.body}
-        weekends
-        events={events}
-        locale={calendarLocale as LocaleInput}
-        firstDay={startOfWeek}
-        eventTimeFormat={timeFormat}
-        eventDrop={handleEventDrop}
-        height="100%"
-        themeSystem="standard"
-        snapDuration="00:01:00"
-        slotLabelInterval="00:60:00"
-        dayHeaderFormat={{ day: 'numeric' }}
-        slotLabelFormat={timeFormat}
-        droppable
-        drop={handleExternalDrop}
-        eventClick={handleEventClick}
-      />
-
-      {/* Event details modal */}
-      <Modal
-        opened={modalOpened}
-        onClose={() => setModalOpened(false)}
-        title={selectedEvent?.title}
-        centered
-        size="sm"
-        zIndex="var(--z-popover)"
-      >
-        <Stack gap="md">
-          {/* Schedule time info */}
-          <Group gap="xs" align="center">
-            <ThemeIcon size="sm" variant="light" color="blue">
-              <IconClock size={14} />
-            </ThemeIcon>
-            <Text size="sm" c="dimmed">
-              {selectedEvent?.start ? formatDate(selectedEvent.start) : ''}
-            </Text>
-            <TimePicker
-              defaultValue={selectedEvent?.start?.toTimeString() ?? ''}
-              format={hourCycle === 'h12' ? '12h' : '24h'}
-              onChange={handleScheduleTimeChange}
-            />
-          </Group>
-          {selectedEvent?.start && (
-            <Text size="xs" c="dimmed">
-              {formatRelativeTime(selectedEvent.start)}
-            </Text>
-          )}
-
-          {/* Status badges */}
-          <Group gap="xs">
-            {/* Submission type badge */}
-            {selectedEvent?.extendedProps?.submissionType && (
-              <Badge
-                size="sm"
-                variant="light"
-                color={
-                  selectedEvent.extendedProps.submissionType ===
-                  SubmissionType.MESSAGE
-                    ? 'green'
-                    : 'blue'
-                }
-                leftSection={
-                  selectedEvent.extendedProps.submissionType ===
-                  SubmissionType.MESSAGE ? (
-                    <IconMessage size={12} />
-                  ) : (
-                    <IconFile size={12} />
-                  )
-                }
-              >
-                {selectedEvent.extendedProps.submissionType ===
-                SubmissionType.MESSAGE ? (
-                  <Trans>Message</Trans>
-                ) : (
-                  <Trans>File</Trans>
-                )}
-              </Badge>
-            )}
-            {selectedEvent?.extendedProps?.type === 'recurring' && (
-              <Badge size="sm" variant="light" color="cyan">
-                <Trans>Recurring</Trans>
-              </Badge>
-            )}
-            {selectedEvent?.extendedProps?.isScheduled !== undefined && (
-              <Badge
-                size="sm"
-                variant="light"
-                color={
-                  selectedEvent.extendedProps.isScheduled ? 'green' : 'orange'
-                }
-              >
-                {selectedEvent.extendedProps.isScheduled ? (
-                  <Trans>Active</Trans>
-                ) : (
-                  <Trans>Paused</Trans>
-                )}
-              </Badge>
-            )}
-          </Group>
-
-          <Divider />
-
-          {/* Action buttons */}
-          <Group gap="xs">
-            <Button
-              variant="light"
-              color="red"
-              size="sm"
-              leftSection={<IconCalendarOff size={16} />}
-              onClick={handleUnschedule}
-              flex={1}
+    <div className="schedule-calendar-layout">
+      <div className="schedule-calendar-toolbar">
+        <Group gap="xs" wrap="nowrap" className="schedule-calendar-navigation">
+          <Tooltip label={<Trans>Unscheduled Submissions</Trans>}>
+            <ActionIcon
+              variant="default"
+              size="md"
+              aria-label={t`Unscheduled Submissions`}
+              aria-expanded={queueOpen}
+              onClick={onToggleQueue}
             >
-              <Trans>Unschedule</Trans>
-            </Button>
-
-            <Button
-              variant={
-                selectedEvent?.extendedProps?.isScheduled ? 'light' : 'filled'
-              }
-              color={
-                selectedEvent?.extendedProps?.isScheduled ? 'orange' : 'green'
-              }
-              size="sm"
-              leftSection={<IconCalendarTime size={16} />}
-              onClick={toggleScheduledState}
-              flex={1}
-            >
-              {selectedEvent?.extendedProps?.isScheduled ? (
-                <Trans>Pause</Trans>
+              {queueOpen ? (
+                <IconLayoutSidebarLeftCollapse size={18} />
               ) : (
-                <Trans>Activate</Trans>
+                <IconLayoutSidebarLeftExpand size={18} />
               )}
-            </Button>
-          </Group>
-        </Stack>
-      </Modal>
+            </ActionIcon>
+          </Tooltip>
+          <Button
+            variant="default"
+            size="xs"
+            onClick={() => calendarRef.current?.getApi().today()}
+          >
+            <Trans>Today</Trans>
+          </Button>
+          <ActionIcon.Group>
+            <Tooltip label={<Trans>Previous</Trans>}>
+              <ActionIcon
+                variant="subtle"
+                color="gray"
+                size="md"
+                aria-label={t`Previous`}
+                onClick={() => calendarRef.current?.getApi().prev()}
+              >
+                <IconChevronLeft size={18} />
+              </ActionIcon>
+            </Tooltip>
+            <Tooltip label={<Trans>Next</Trans>}>
+              <ActionIcon
+                variant="subtle"
+                color="gray"
+                size="md"
+                aria-label={t`Next`}
+                onClick={() => calendarRef.current?.getApi().next()}
+              >
+                <IconChevronRight size={18} />
+              </ActionIcon>
+            </Tooltip>
+          </ActionIcon.Group>
+          <Popover
+            opened={datePickerOpen}
+            onChange={setDatePickerOpen}
+            position="bottom-start"
+            withinPortal={false}
+          >
+            <Popover.Target>
+              <Button
+                variant="subtle"
+                color="gray"
+                className="schedule-calendar-title"
+                rightSection={<IconChevronDown size={14} />}
+                onClick={() => setDatePickerOpen((opened) => !opened)}
+              >
+                {title}
+              </Button>
+            </Popover.Target>
+            <Popover.Dropdown>
+              <DatePicker
+                locale={locale}
+                firstDayOfWeek={startOfWeek as DayOfWeek}
+                value={currentDate}
+                defaultDate={currentDate}
+                onChange={(date) => {
+                  if (date) {
+                    calendarRef.current?.getApi().gotoDate(date);
+                    setDatePickerOpen(false);
+                  }
+                }}
+              />
+            </Popover.Dropdown>
+          </Popover>
+        </Group>
+        <Group
+          gap="sm"
+          wrap="nowrap"
+          className="schedule-calendar-view-controls"
+        >
+          <SegmentedControl
+            size="xs"
+            value={view}
+            aria-label={t`Calendar view`}
+            onChange={(nextView) =>
+              calendarRef.current?.getApi().changeView(nextView)
+            }
+            data={[
+              { value: 'dayGridMonth', label: t`Month` },
+              { value: 'timeGridWeek', label: t`Week` },
+              { value: 'timeGridDay', label: t`Day` },
+            ]}
+          />
+          <Button
+            size="xs"
+            leftSection={<IconPlus size={15} />}
+            onClick={() => onSchedule({})}
+          >
+            <Trans>Schedule</Trans>
+          </Button>
+        </Group>
+      </div>
+      <div className="schedule-calendar-meta">
+        <Group gap="md" className="schedule-calendar-legend">
+          <span>
+            <i className="schedule-legend-file" />
+            <Trans>File</Trans>
+          </span>
+          <span>
+            <i className="schedule-legend-message" />
+            <Trans>Message</Trans>
+          </span>
+          <span>
+            <IconPlayerPause size={12} />
+            <Trans>Paused</Trans>
+          </span>
+          <span>
+            <IconRepeat size={12} />
+            <Trans>Recurring</Trans>
+          </span>
+        </Group>
+        <Text size="xs" c="dimmed" className="schedule-timezone">
+          <IconCalendar size={13} />
+          {Intl.DateTimeFormat().resolvedOptions().timeZone}
+        </Text>
+      </div>
+      <div className="schedule-calendar-grid">
+        <FullCalendar
+          ref={calendarRef}
+          plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+          headerToolbar={false}
+          initialView={initialView}
+          editable
+          dayMaxEvents={3}
+          allDaySlot={false}
+          // fixes issue with offset on drag
+          fixedMirrorParent={document.body}
+          weekends
+          events={events}
+          locale={calendarLocale as LocaleInput}
+          firstDay={startOfWeek}
+          eventTimeFormat={timeFormat}
+          eventDrop={handleEventDrop}
+          height="100%"
+          themeSystem="standard"
+          snapDuration="00:15:00"
+          slotLabelInterval="01:00:00"
+          scrollTime="08:00:00"
+          dayHeaderFormat={{ weekday: 'short' }}
+          views={{
+            timeGridWeek: {
+              dayHeaderFormat: { weekday: 'short', day: 'numeric' },
+            },
+            timeGridDay: {
+              dayHeaderFormat: { weekday: 'long', day: 'numeric' },
+            },
+          }}
+          nowIndicator
+          eventDurationEditable={false}
+          slotLabelFormat={timeFormat}
+          droppable
+          drop={handleExternalDrop}
+          eventDisplay="block"
+          eventInteractive
+          eventOrder="start,title"
+          navLinks
+          datesSet={(info) => {
+            setTitle(info.view.title);
+            setView(info.view.type);
+            setCurrentDate(info.view.calendar.getDate());
+          }}
+          dateClick={(info) =>
+            onSchedule({ date: info.date, allDay: info.allDay })
+          }
+          eventClick={(info) =>
+            onSchedule({ submissionId: info.event.extendedProps.submissionId })
+          }
+          eventDidMount={(info) => {
+            const status = info.event.extendedProps.isScheduled
+              ? t`Active`
+              : t`Paused`;
+            const label = `${info.event.title} - ${status}`;
+            info.el.setAttribute('title', label);
+            info.el.setAttribute('aria-label', label);
+          }}
+          eventContent={renderCalendarEvent}
+        />
+      </div>
     </div>
   );
 }

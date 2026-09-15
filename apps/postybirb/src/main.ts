@@ -38,11 +38,15 @@ validateEnvConfigOrExit({
   onValidationFailed: () => app.quit(),
 });
 
-crashReporter.start({
-  productName: 'PostyBirb',
-  companyName: 'PostyBirb',
-  uploadToServer: false,
-});
+const isLinuxAppImage = process.platform === 'linux' && !!process.env.APPIMAGE;
+
+if (!isLinuxAppImage) {
+  crashReporter.start({
+    productName: 'PostyBirb',
+    companyName: 'PostyBirb',
+    uploadToServer: false,
+  });
+}
 
 // Enforce a single running instance; subsequent launches are funneled to the
 // existing window by the 'second-instance' handler in PostyBirbApp.

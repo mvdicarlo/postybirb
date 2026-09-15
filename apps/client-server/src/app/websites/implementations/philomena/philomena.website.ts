@@ -34,23 +34,44 @@ export abstract class PhilomenaWebsite<
     {} as DataPropertyAccessibility<PhilomenaAccountData>;
 
   /**
-   * Check if the user is logged in by looking for the logout link
-   * and extracting the username from the data-user-name attribute.
+   * Check structured session indicators, falling back to a header logout action.
    */
   public async onLogin(): Promise<LoginResult> {
     const res = await this.platform.http.get<string>(`${this.BASE_URL}`, {
       partition: this.accountId,
     });
 
-    if (res.body.includes('Logout')) {
-      const document = parse(res.body);
+    const statusCode = res.statusCode ?? 0;
+    if (statusCode < 200 || statusCode >= 300) {
+      throw new Error(`Unable to check login: HTTP ${statusCode}`);
+    }
+    if (typeof res.body !== 'string') {
+      throw new Error('Unable to determine login state: expected HTML');
+    }
+
+    const document = parse(res.body);
+    const sessionElement = document.querySelector('[data-user-is-signed-in]');
+    if (sessionElement) {
+      const signedIn = sessionElement.getAttribute('data-user-is-signed-in');
+      if (signedIn === 'true') {
+        const username =
+          sessionElement.getAttribute('data-user-name')?.trim() || 'Unknown';
+        return { loggedIn: true, username };
+      }
+      if (signedIn === 'false') {
+        return { loggedIn: false };
+      }
+      throw new Error('Unable to determine login state: invalid session indicator');
+    }
+
+    if (document.querySelector('header a[href="/sessions"][data-method="delete"]')) {
       const usernameElement = document.querySelector('[data-user-name]');
       const username =
-        usernameElement?.getAttribute('data-user-name') || 'Unknown';
+        usernameElement?.getAttribute('data-user-name')?.trim() || 'Unknown';
       return { loggedIn: true, username };
     }
 
-    return { loggedIn: false };
+    throw new Error('Unable to determine login state: missing session indicators');
   }
 
   abstract createFileModel(): TFileSubmission;
