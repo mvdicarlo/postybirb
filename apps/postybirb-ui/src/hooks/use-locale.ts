@@ -4,17 +4,25 @@
  * Auto-subscribes to locale changes via lingui.
  */
 
+import { useLingui } from '@lingui/react/macro';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import duration from 'dayjs/plugin/duration';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { useEffect, useMemo } from 'react';
 import {
-  calendarLanguageMap,
-  cronstrueLocaleMap,
-  dateLocaleMap,
+    calendarLanguageMap,
+    cronstrueLocaleMap,
+    dateLocaleMap,
 } from '../i18n/languages';
 import { useLocaleStore } from '../stores/ui/locale-store';
+import {
+    createDateFormatters,
+    getDayjsDateTimeFormat,
+    getLocaleInfo,
+    getWeekdays,
+    resolveRegionalLocale,
+} from './locale-utils';
 
 dayjs.extend(relativeTime);
 dayjs.extend(customParseFormat);
@@ -26,6 +34,12 @@ dayjs.extend(duration);
 export interface UseLocaleResult {
   /** Current app locale code (e.g., 'en', 'de', 'pt-BR') */
   locale: string;
+
+  regionalLocale: string;
+
+  weekdays: { value: string; label: string }[];
+
+  amPmLabels: { am: string; pm: string };
 
   /** Locale code for date libraries (dayjs) */
   dateLocale: string;
@@ -41,10 +55,10 @@ export interface UseLocaleResult {
 
   hourCycle: 'h12' | 'h24';
 
-  /** Default value for current locale */
+  /** Default value for the viewing device's region */
   defaultStartOfWeek: number;
 
-  /** Default value for current locale */
+  /** Default value for the viewing device's region */
   defaultHourCycle: 'h12' | 'h24';
 
   dayjsDateTimeFormat: string;
@@ -74,24 +88,6 @@ export interface UseLocaleResult {
   ) => string;
 }
 
-const DEFAULT_DATETIME_OPTIONS: Intl.DateTimeFormatOptions = {
-  month: 'short',
-  day: 'numeric',
-  hour: 'numeric',
-  minute: '2-digit',
-};
-
-const DEFAULT_DATE_OPTIONS: Intl.DateTimeFormatOptions = {
-  month: 'short',
-  day: 'numeric',
-  year: 'numeric',
-};
-
-const DEFAULT_TIME_OPTIONS: Intl.DateTimeFormatOptions = {
-  hour: 'numeric',
-  minute: '2-digit',
-};
-
 /**
  * Centralized hook for locale-aware formatting.
  * Uses lingui's i18n context to automatically re-render on locale changes.
@@ -108,28 +104,38 @@ const DEFAULT_TIME_OPTIONS: Intl.DateTimeFormatOptions = {
  * ```
  */
 export function useLocale(): UseLocaleResult {
+  const { t } = useLingui();
   const store = useLocaleStore();
   const locale = store.language;
+  const regionalLocale = resolveRegionalLocale(
+    typeof window === 'undefined' ? undefined : window.electron?.systemLocale,
+    Intl.DateTimeFormat().resolvedOptions().locale,
+    typeof navigator === 'undefined' ? undefined : navigator.language,
+  );
 
   // Map the app locale to library-specific locale codes
   const dateLocale = dateLocaleMap[locale] || locale;
   const calendarLocale = calendarLanguageMap[locale] || 'en-US';
   const cronstrueLocale = cronstrueLocaleMap[locale] || 'en';
 
-  const defaultLocaleInfo = useMemo(() => getLocaleInfo(locale), [locale]);
+  const defaultLocaleInfo = useMemo(
+    () => getLocaleInfo(regionalLocale),
+    [regionalLocale],
+  );
 
   const startOfWeek =
-    store.startOfWeek === 'locale'
+    typeof store.startOfWeek !== 'number'
       ? defaultLocaleInfo.startOfWeek
       : store.startOfWeek;
   const hourCycle =
-    store.hourCycle === 'locale'
+    store.hourCycle === 'locale' || store.hourCycle === 'system'
       ? defaultLocaleInfo.hourCycle
       : store.hourCycle;
 
-  const dayjsDateTimeFormat =
-    // eslint-disable-next-line lingui/no-unlocalized-strings
-    hourCycle === 'h24' ? 'YYYY-MM-DD HH:mm' : 'YYYY-MM-DD hh:mm A';
+  const dayjsDateTimeFormat = getDayjsDateTimeFormat(regionalLocale, hourCycle);
+  const weekdays = getWeekdays(locale, startOfWeek);
+  const am = t`AM`;
+  const pm = t`PM`;
 
   // Set dayjs locale as a proper side effect (not inside useMemo)
   useEffect(() => {
@@ -139,52 +145,23 @@ export function useLocale(): UseLocaleResult {
   // Memoize the formatting functions to avoid recreating on each render
   const formatters = useMemo(() => {
     const formatRelativeTime = (date: Date | string): string =>
-      dayjs(date).fromNow();
+      dayjs(date).locale(dateLocale).fromNow();
 
     const formatDuration = (time: number) =>
       // eslint-disable-next-line lingui/no-unlocalized-strings
       dayjs.duration(time).format('HH:mm:ss');
 
-    const formatDateTime = (
-      date: Date | string,
-      options: Intl.DateTimeFormatOptions = {
-        ...DEFAULT_DATETIME_OPTIONS,
-        hourCycle,
-      },
-    ): string => {
-      const d = typeof date === 'string' ? new Date(date) : date;
-      return d.toLocaleString(locale, options);
-    };
-
-    const formatDate = (
-      date: Date | string,
-      options: Intl.DateTimeFormatOptions = DEFAULT_DATE_OPTIONS,
-    ): string => {
-      const d = typeof date === 'string' ? new Date(date) : date;
-      return d.toLocaleDateString(locale, options);
-    };
-
-    const formatTime = (
-      date: Date | string,
-      options: Intl.DateTimeFormatOptions = {
-        ...DEFAULT_TIME_OPTIONS,
-        hourCycle,
-      },
-    ): string => {
-      const d = typeof date === 'string' ? new Date(date) : date;
-      return d.toLocaleTimeString(locale, options);
-    };
-
     return {
+      ...createDateFormatters(locale, regionalLocale, hourCycle, { am, pm }),
       formatRelativeTime,
-      formatDateTime,
-      formatDate,
-      formatTime,
       formatDuration,
     };
-  }, [locale, hourCycle]);
+  }, [locale, regionalLocale, hourCycle, dateLocale, am, pm]);
 
   return {
+    regionalLocale,
+    weekdays,
+    amPmLabels: { am, pm },
     startOfWeek,
     hourCycle,
     defaultHourCycle: defaultLocaleInfo.hourCycle,
@@ -196,38 +173,4 @@ export function useLocale(): UseLocaleResult {
     cronstrueLocale,
     ...formatters,
   };
-}
-
-function getLocaleInfo(locale: string) {
-  try {
-    const intlLocale = new Intl.Locale(locale);
-
-    // @ts-expect-error typings were included into typescript 6.0
-    const weekInfo = intlLocale.getWeekInfo() as WeekInfo;
-
-    const rawHourCycle = intlLocale.hourCycle ?? 'h23';
-    return {
-      // % 7 Converts a first-day-of-week value from Monday-based (1–7) to Sunday-based (0–6)
-      startOfWeek: weekInfo.firstDay % 7,
-      // Normalize h11→h12 and h23→h24: both pairs differ only in zero-padding
-      // which is irrelevant to the app's binary 12h-vs-24h toggle.
-      hourCycle:
-        rawHourCycle === 'h11' || rawHourCycle === 'h12'
-          ? ('h12' as const)
-          : ('h24' as const),
-    };
-  } catch (e) {
-    // eslint-disable-next-line lingui/no-unlocalized-strings, no-console
-    console.error('Failed to get locale info', e);
-    return {
-      startOfWeek: 0,
-      hourCycle: 'h24' as const,
-    };
-  }
-}
-
-interface WeekInfo {
-  firstDay: number; // 1 (Monday) to 7 (Sunday)
-  weekend: number[]; // Days of the weekend (e.g., [6, 7])
-  minimalDays: number; // Minimal days for the first week of the year (1-7)
 }

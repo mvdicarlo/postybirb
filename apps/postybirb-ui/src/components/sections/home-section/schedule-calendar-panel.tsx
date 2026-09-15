@@ -3,7 +3,7 @@
  * Displays a month view with indicators for days with scheduled posts.
  */
 
-import { Trans, useLingui } from '@lingui/react/macro';
+import { Trans } from '@lingui/react/macro';
 import {
     ActionIcon,
     Box,
@@ -23,27 +23,9 @@ import {
 } from '@tabler/icons-react';
 import { useCallback, useMemo, useState } from 'react';
 import { useLocale } from '../../../hooks';
+import { getMonthPadding } from '../../../hooks/locale-utils';
 import { useScheduledSubmissions } from '../../../stores/entity/submission-store';
 import { useDrawerActions } from '../../../stores/ui/drawer-store';
-
-/**
- * Get weekday abbreviations for calendar header.
- */
-function useWeekdays() {
-  const { t } = useLingui();
-  return useMemo(
-    () => [
-      { key: 'sun', label: t`Su` },
-      { key: 'mon', label: t`Mo` },
-      { key: 'tue', label: t`Tu` },
-      { key: 'wed', label: t`We` },
-      { key: 'thu', label: t`Th` },
-      { key: 'fri', label: t`Fr` },
-      { key: 'sat', label: t`Sa` },
-    ],
-    [t],
-  );
-}
 
 /**
  * Day cell data for the calendar grid.
@@ -55,11 +37,14 @@ type DayCell =
 /**
  * Get all days in a month as a grid (includes padding days from prev/next month).
  */
-function getMonthDays(year: number, month: number): DayCell[] {
-  const firstDay = new Date(year, month, 1);
+function getMonthDays(
+  year: number,
+  month: number,
+  startOfWeek: number,
+): DayCell[] {
   const lastDay = new Date(year, month + 1, 0);
   const daysInMonth = lastDay.getDate();
-  const startDayOfWeek = firstDay.getDay();
+  const startDayOfWeek = getMonthPadding(year, month, startOfWeek);
 
   const days: DayCell[] = [];
 
@@ -94,9 +79,8 @@ function isSameDay(date1: Date, date2: Date): boolean {
 export function ScheduleCalendarPanel() {
   const scheduledSubmissions = useScheduledSubmissions();
   const { openDrawer } = useDrawerActions();
-  const { locale } = useLocale();
+  const { locale, startOfWeek, weekdays } = useLocale();
   const [currentMonth, setCurrentMonth] = useState(() => new Date());
-  const weekdays = useWeekdays();
 
   /**
    * Format month name using the current locale.
@@ -124,8 +108,13 @@ export function ScheduleCalendarPanel() {
   }, [scheduledSubmissions]);
 
   const days = useMemo(
-    () => getMonthDays(currentMonth.getFullYear(), currentMonth.getMonth()),
-    [currentMonth],
+    () =>
+      getMonthDays(
+        currentMonth.getFullYear(),
+        currentMonth.getMonth(),
+        startOfWeek,
+      ),
+    [currentMonth, startOfWeek],
   );
 
   const today = new Date();
@@ -182,7 +171,7 @@ export function ScheduleCalendarPanel() {
         {/* Weekday Headers */}
         <SimpleGrid cols={7} spacing={2}>
           {weekdays.map((day) => (
-            <Text key={day.key} size="xs" c="dimmed" ta="center" fw={500}>
+            <Text key={day.value} size="xs" c="dimmed" ta="center" fw={500}>
               {day.label}
             </Text>
           ))}

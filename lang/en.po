@@ -13,6 +13,21 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+msgid "System region ({defaultStartOfWeek})"
+msgstr "System region ({defaultStartOfWeek})"
+
+msgid "System region ({defaultLocaleHours}h)"
+msgstr "System region ({defaultLocaleHours}h)"
+
+msgid "Next scheduled occurrence: {0}"
+msgstr "Next scheduled occurrence: {0}"
+
+msgid "AM"
+msgstr "AM"
+
+msgid "PM"
+msgstr "PM"
+
 msgid "Today"
 msgstr "Today"
 

@@ -8,10 +8,10 @@
  */
 import { Logger } from '@postybirb/logger';
 import {
-  getPartitionKey,
-  PostyBirbEnvConfig,
-  type RemoteConfig,
-  RemoteConfigManager,
+    getPartitionKey,
+    PostyBirbEnvConfig,
+    type RemoteConfig,
+    RemoteConfigManager,
 } from '@postybirb/utils/common';
 import { app, BrowserWindow, dialog, ipcMain, session } from 'electron';
 import { environment } from '../../environments/environment';
@@ -51,6 +51,7 @@ export function bootstrapElectronEvents(): Electron.IpcMain {
       platform: process.platform,
       app_port: String(PostyBirbEnvConfig.port),
       app_version: environment.version,
+      systemLocale: app.getSystemLocale(),
     };
     event.returnValue = metadata;
     /* eslint-enable no-param-reassign */

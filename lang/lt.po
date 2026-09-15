@@ -11,6 +11,21 @@ msgstr ""
 "Content-Transfer-Encoding: \n"
 "Plural-Forms: \n"
 
+msgid "System region ({defaultStartOfWeek})"
+msgstr "Sistemos regionas ({defaultStartOfWeek})"
+
+msgid "System region ({defaultLocaleHours}h)"
+msgstr "Sistemos regionas ({defaultLocaleHours}h)"
+
+msgid "Next scheduled occurrence: {0}"
+msgstr "Kitas suplanuotas laikas: {0}"
+
+msgid "AM"
+msgstr "pr. p."
+
+msgid "PM"
+msgstr "pop."
+
 #: apps/postybirb-ui/src/i18n/validation-translation.tsx
 msgid "({fileName}) Alt text length is greater then maximum ({currentLength} / {maxLength}) and will be trimmed."
 msgstr ""

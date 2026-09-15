@@ -3,21 +3,21 @@
  * Displays as a NavLink-style component with a menu popup for language selection.
  */
 
-import { Trans, useLingui } from '@lingui/react/macro';
+import { Trans } from '@lingui/react/macro';
 import {
-  Badge,
-  Box,
-  Group,
-  Kbd,
-  NavLink as MantineNavLink,
-  Menu,
-  Text,
-  Tooltip,
+    Badge,
+    Box,
+    Group,
+    Kbd,
+    NavLink as MantineNavLink,
+    Menu,
+    Text,
+    Tooltip,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { IconCheck, IconLanguage, IconWorld } from '@tabler/icons-react';
 import { useState } from 'react';
-import { languages } from '../../i18n/languages';
+import { getNativeLanguageName, languages } from '../../i18n/languages';
 import { formatKeybindingDisplay } from '../../shared/platform-utils';
 import { useLanguageActions } from '../../stores/ui/locale-store';
 import '../../styles/layout.css';
@@ -38,14 +38,15 @@ export function LanguagePicker({
   collapsed = false,
   kbd,
 }: LanguagePickerProps) {
-  const { t } = useLingui();
   const { language: locale, setLanguage: setLocale } = useLanguageActions();
   const [opened, { toggle, close }] = useDisclosure(false);
   const [hoveredLang, setHoveredLang] = useState<string | null>(null);
 
   // Get current language display name
   const currentLanguage = languages.find(([, code]) => code === locale);
-  const currentLanguageName = currentLanguage ? t(currentLanguage[0]) : locale;
+  const currentLanguageName = currentLanguage
+    ? getNativeLanguageName(locale)
+    : locale;
 
   const labelContent = collapsed ? undefined : (
     <Box className="postybirb__nav_item_label">
@@ -114,7 +115,7 @@ export function LanguagePicker({
           </Group>
         </Menu.Label>
 
-        {languages.map(([label, value]) => {
+        {languages.map(([, value]) => {
           const isActive = value === locale;
           const isHovered = value === hoveredLang;
 
@@ -143,7 +144,7 @@ export function LanguagePicker({
               }
               fw={isActive ? 500 : undefined}
             >
-              {t(label)}
+              <span lang={value}>{getNativeLanguageName(value)}</span>
             </Menu.Item>
           );
         })}
