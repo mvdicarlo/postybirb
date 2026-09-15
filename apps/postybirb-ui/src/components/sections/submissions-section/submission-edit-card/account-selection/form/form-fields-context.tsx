@@ -8,6 +8,7 @@ import {
   FormBuilderMetadata,
 } from '@postybirb/form-builder';
 import { SubmissionType, WebsiteOptionsDto } from '@postybirb/types';
+import { isEqual } from 'lodash';
 import {
   createContext,
   PropsWithChildren,
@@ -96,7 +97,7 @@ export function FormFieldsProvider({
         for (const [key, value] of Object.entries(prev)) {
           // Keep local value only if it differs from server (pending update)
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          if ((option.data as any)[key] !== value) {
+          if (!isEqual((option.data as any)[key], value)) {
             newLocal[key] = value;
           }
         }
