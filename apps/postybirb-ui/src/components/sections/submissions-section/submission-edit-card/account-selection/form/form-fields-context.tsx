@@ -3,7 +3,6 @@
  */
 
 import { Trans } from '@lingui/react/macro';
-import { useDebouncedValue } from '@mantine/hooks';
 import {
   FieldAggregateType,
   FormBuilderMetadata,
@@ -85,23 +84,6 @@ export function FormFieldsProvider({
     [account?.state.isLoggedIn, account?.state.status, account?.data],
   );
 
-  const currentValues: Record<string, unknown> = {
-    ...option.data,
-    ...(optionIdRef.current === option.id ? localValues : {}),
-  };
-  const currentTitle = currentValues.title;
-  const fieldValuesKey =
-    account?.website === 'discord'
-      ? JSON.stringify({
-          useTitle: currentValues.useTitle ?? true,
-          title:
-            typeof currentTitle === 'string' && currentTitle.trim()
-              ? currentTitle
-              : (submission.getDefaultOptions()?.data.title ?? ''),
-        })
-      : undefined;
-  const [debouncedFieldValuesKey] = useDebouncedValue(fieldValuesKey, 150);
-
   // Sync local state when option changes (server confirmed update or option switch)
   useEffect(() => {
     if (optionIdRef.current !== option.id) {
@@ -136,20 +118,15 @@ export function FormFieldsProvider({
       submission.type,
       submission.isMultiSubmission,
       accountFormFingerprint,
-      debouncedFieldValuesKey,
     ],
     queryFn: async () => {
       const response = await formGeneratorApi.getForm({
         accountId: option.accountId,
         type: submission.type as SubmissionType,
         isMultiSubmission: submission.isMultiSubmission,
-        fieldValues: debouncedFieldValuesKey
-          ? JSON.parse(debouncedFieldValuesKey)
-          : undefined,
       });
       return response.body;
     },
-    keepPreviousData: account?.website === 'discord',
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
