@@ -238,7 +238,7 @@ export default class DeviantArt
           .asMultipart()
           .addFile('attachment_file', file)
           .setField('da_minor_version', this.DA_API_VERSION)
-          .setField('type', 'additional_image')
+          .setField('type', 'additional_media')
           .setField('position', index)
           .setField('csrf_token', csrf)
           .setField('deviationid', fileUpload.body.deviationId)
