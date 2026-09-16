@@ -761,6 +761,10 @@ msgctxt "template.picker-modal-header"
 msgid "Choose Templates"
 msgstr "Escolher modelos"
 
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/post-preview-tour.tsx
+msgid "Choose What To Post"
+msgstr "Escolha o que publicar"
+
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/submission-edit-tour.tsx
 msgid "Choose which accounts to post to. Click to open the dropdown, then select individual accounts or entire website groups."
 msgstr "Escolha em quais contas publicar. Clique para abrir a lista e selecione contas individuais ou grupos inteiros de sites."
@@ -1244,12 +1248,32 @@ msgstr "Excluído com sucesso"
 msgid "Dependencies"
 msgstr "Dependências"
 
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/post-preview-tour.tsx
+msgid "Dependencies Before Posting"
+msgstr "Dependências antes de publicar"
+
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/submission-edit-tour.tsx
+msgid "Dependencies keep related posts in sequence. For example, make part two depend on part one so part one finishes successfully before part two starts."
+msgstr "As dependências mantêm publicações relacionadas em sequência. Por exemplo, faça a parte dois depender da parte um para que a primeira seja publicada com sucesso antes de a segunda começar."
+
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/post-preview-tour.tsx
+msgid "Dependencies must finish successfully before this post can start. Start or schedule them separately; failed or cancelled prerequisites keep this post waiting. Set dependencies in the submission editor."
+msgstr "Os envios dos quais esta publicação depende precisam ser concluídos com sucesso antes que ela comece. Inicie ou agende esses envios separadamente; falhas ou cancelamentos mantêm esta publicação aguardando. Defina as dependências no editor de envios."
+
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/post-preview-tour.tsx
+msgid "Dependencies still apply, regardless of batch order. A post waits for all its prerequisites to finish successfully. Any unfinished prerequisites outside this batch must be started separately."
+msgstr "As dependências valem independentemente da ordem do lote. Uma publicação aguarda a conclusão bem-sucedida de todos os envios dos quais depende. Envios pendentes fora deste lote precisam ser iniciados separadamente."
+
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/bulk-post-preview-modal.tsx
 msgid "Depends on"
 msgstr "Depende de"
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/body/submission-edit-card-body.tsx
 msgid "Depends on submissions"
+msgstr "Depende dos envios"
+
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/submission-edit-tour.tsx
+msgid "Depends On Submissions"
 msgstr "Depende dos envios"
 
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/settings-dialog.tsx
@@ -1415,6 +1439,10 @@ msgstr "Cada envio aparece como um cartão com título, indicadores de status e 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/templates-tour.tsx
 msgid "Each template appears as a card. Click to select it and open the editor. Use the action buttons to rename, duplicate, or delete a template."
 msgstr "Cada modelo aparece como um cartão. Clique para selecioná-lo e abrir o editor. Use os botões de ação para renomear, duplicar ou excluir um modelo."
+
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/post-preview-tour.tsx
+msgid "Each unit is one file or message for one account. The same file going to three accounts counts as three units."
+msgstr "Cada unidade é um arquivo ou uma mensagem para uma conta. O mesmo arquivo enviado para três contas conta como três unidades."
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/file-watchers-tour.tsx
 msgid "Each watcher card lets you pick a folder path, choose an import action, and optionally apply a template to imported files. Save your changes or delete the watcher using the buttons at the bottom."
@@ -2117,6 +2145,10 @@ msgstr "Inativo"
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-preview-modal/post-preview-modal.tsx
 msgid "Incomplete work"
 msgstr "Unidades pendentes"
+
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/post-preview-tour.tsx
+msgid "Incomplete work picks up where you left off, skipping successful posts. Selected targets posts only what you choose, including anything you've posted before."
+msgstr "Unidades pendentes retoma de onde você parou, sem repetir publicações bem-sucedidas. Destinos selecionados publica apenas o que você escolher, mesmo que já tenha sido publicado."
 
 #: apps/postybirb-ui/src/components/drawers/notifications-drawer/notifications-drawer.tsx
 msgid "Info"
@@ -2864,6 +2896,10 @@ msgstr "As publicações estão pausadas"
 msgid "Posting order"
 msgstr "Ordem de publicação"
 
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/post-preview-tour.tsx
+msgid "Posting Order"
+msgstr "Ordem de publicação"
+
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-history-content.tsx
 msgid "Posting outcomes"
 msgstr "Resultados das publicações"
@@ -2995,6 +3031,10 @@ msgstr "Filtro de status de leitura"
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/submission-badges.tsx
 msgid "Ready"
 msgstr "Pronto"
+
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/post-preview-tour.tsx
+msgid "Ready And Waiting Work"
+msgstr "Unidades prontas e aguardando"
 
 #: apps/postybirb-ui/src/components/update-button/update-button.tsx
 #: apps/postybirb-ui/src/components/update-button/update-modal.tsx
@@ -3449,6 +3489,10 @@ msgstr "Selecionar idioma"
 msgid "Select submissions"
 msgstr "Selecionar envios"
 
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/post-preview-tour.tsx
+msgid "Select Targets Or Post Again"
+msgstr "Selecionar destinos ou publicar novamente"
+
 #: apps/postybirb-ui/src/components/shared/template-picker/template-picker-modal.tsx
 msgid "Select templates or submissions to import"
 msgstr "Selecione modelos ou envios para importar"
@@ -3477,6 +3521,10 @@ msgstr "A opção selecionada é inválida ou está ausente"
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-preview-modal/post-preview-modal.tsx
 msgid "Selected targets"
 msgstr "Destinos selecionados"
+
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/post-preview-tour.tsx
+msgid "Selecting previously successful work creates a new post on the website, not an update to the original. In Incomplete work mode, Post again adds it to the unfinished work."
+msgstr "Selecionar unidades já publicadas com sucesso cria uma nova publicação no site, sem alterar a original. No modo Unidades pendentes, Publicar novamente inclui essas unidades junto às pendentes."
 
 #: apps/postybirb-ui/src/components/website-login-views/telegram/telegram-login-view.tsx
 msgid "Send Code"
@@ -3692,12 +3740,23 @@ msgstr "Iniciar autorização do Instagram"
 msgid "Start of week"
 msgstr "Início da semana"
 
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/submission-edit-tour.tsx
+msgid "Start or schedule those submissions separately. This post waits until all their files and messages succeed; failed or cancelled work keeps it waiting. Avoid circular dependencies, where posts wait for each other."
+msgstr "Inicie ou agende esses envios separadamente. Esta publicação aguarda até que todos os arquivos e mensagens deles sejam publicados com sucesso; falhas ou cancelamentos mantêm a espera. Evite dependências circulares, em que publicações aguardam umas pelas outras."
+
 #: apps/postybirb-ui/src/components/website-login-views/instagram/instagram-login-view.tsx
 #: apps/postybirb-ui/src/components/website-login-views/instagram/instagram-login-view.tsx
 #: apps/postybirb-ui/src/components/website-login-views/twitter/twitter-login-view.tsx
 #: apps/postybirb-ui/src/components/website-login-views/twitter/twitter-login-view.tsx
 msgid "Start Over"
 msgstr "Recomeçar"
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/bulk-post-preview-modal.tsx
+#: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/bulk-post-preview-modal.tsx
+#: apps/postybirb-ui/src/components/sections/submissions-section/post-preview-modal/post-preview-modal.tsx
+#: apps/postybirb-ui/src/components/sections/submissions-section/post-preview-modal/post-preview-modal.tsx
+msgid "Start tour"
+msgstr "Iniciar tour"
 
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/app-settings-section.tsx
 msgid "Startup Settings"
@@ -4053,6 +4112,10 @@ msgstr "Ocorreu um erro neste componente e ele não pôde ser exibido corretamen
 #: apps/postybirb-ui/src/components/website-login-views/discord/discord-login-view.tsx
 msgid "This is a forum channel"
 msgstr "Este é um canal de fórum"
+
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/post-preview-tour.tsx
+msgid "This is the order submissions will start, not necessarily finish. Each unit is one file or message for one account. Submissions with no selected work are left out."
+msgstr "Esta é a ordem em que os envios começarão, não necessariamente em que terminarão. Cada unidade é um arquivo ou uma mensagem para uma conta. Envios sem unidades selecionadas ficam de fora."
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/submission-edit-tour.tsx
 msgid "This is the submission editor where you configure all the details for your post. Set up files, scheduling, descriptions, tags, and per-website options."
@@ -4518,6 +4581,10 @@ msgstr "Aguardando a conclusão destes envios"
 msgid "Waiting in the post queue for its turn."
 msgstr "Aguardando sua vez na fila de publicações."
 
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/post-preview-tour.tsx
+msgid "Waiting work is included, but needs a cooldown, earlier work, or a dependency to finish first. Paused posting holds all work until you resume."
+msgstr "As unidades em espera estão incluídas, mas precisam aguardar o intervalo entre publicações, unidades anteriores ou uma dependência. Se a publicação estiver pausada, todas as unidades aguardam até você retomá-la."
+
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/account-option-row.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/selected-accounts-forms.tsx
 msgid "Warning"
@@ -4613,6 +4680,10 @@ msgstr "Ao selecionar um envio, seu editor completo aparece aqui. Configure tít
 msgid "When a template is selected, its settings appear here. Configure titles, descriptions, tags, and website-specific options just like a regular submission."
 msgstr "Ao selecionar um modelo, suas configurações aparecem aqui. Configure títulos, descrições, tags e opções de cada site, como em um envio comum."
 
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/submission-edit-tour.tsx
+msgid "When Dependencies Are Ready"
+msgstr "Quando as dependências estão prontas"
+
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/account-default-template-modal.tsx
 msgid "When you create a new file submission, the option for this account will be pre-filled using the values from the template you choose here."
 msgstr "Ao criar um envio de arquivo, as opções desta conta serão preenchidas com os valores do modelo escolhido aqui."
@@ -4634,6 +4705,10 @@ msgstr "Largura"
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-preview-modal/post-preview-modal.tsx
 msgid "Will post"
+msgstr "Será publicado"
+
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/post-preview-tour.tsx
+msgid "Will Post"
 msgstr "Será publicado"
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-preview-modal/post-preview-modal.tsx

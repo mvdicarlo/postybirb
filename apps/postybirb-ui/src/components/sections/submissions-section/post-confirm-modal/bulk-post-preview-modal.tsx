@@ -1,5 +1,6 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
+    ActionIcon,
     Alert,
     Badge,
     Box,
@@ -14,6 +15,7 @@ import {
     Stack,
     Text,
     ThemeIcon,
+    Tooltip,
 } from '@mantine/core';
 import {
     type IUnitOfWork,
@@ -25,6 +27,7 @@ import {
     IconAlertCircle,
     IconFile,
     IconGitBranch,
+    IconHelp,
     IconHourglass,
     IconMessage,
     IconPlayerPause,
@@ -41,6 +44,8 @@ import postingApi, {
 import { useAccountsMap } from '../../../../stores/entity/account-store';
 import { useSubmissionsMap } from '../../../../stores/entity/submission-store';
 import type { SubmissionRecord } from '../../../../stores/records';
+import { BULK_POST_PREVIEW_TOUR_ID } from '../../../onboarding-tour/tours/post-preview-tour';
+import { useModalTour } from '../../../onboarding-tour/use-modal-tour';
 import { ReorderableSubmissionList } from '../../../shared/reorderable-submission-list';
 import '../post-preview-modal/post-preview-modal.css';
 import {
@@ -332,6 +337,11 @@ export function BulkPostPreviewModal({
   const [errorIds, setErrorIds] = useState<Set<SubmissionId>>(new Set());
   const [isPosting, setIsPosting] = useState(false);
   const [selectionMode, setSelectionMode] = useState('remaining');
+  const { isActive: isTourActive, startTour } = useModalTour(
+    BULK_POST_PREVIEW_TOUR_ID,
+    opened,
+    loadingIds.size === 0 && !isPosting,
+  );
 
   const validSubmissions = useMemo(
     () =>
@@ -755,8 +765,9 @@ export function BulkPostPreviewModal({
     <Modal
       opened={opened}
       onClose={onClose}
-      closeOnClickOutside={!isPosting}
-      closeOnEscape={!isPosting}
+      closeOnClickOutside={!isPosting && !isTourActive}
+      closeOnEscape={!isPosting && !isTourActive}
+      trapFocus={!isTourActive}
       withCloseButton={!isPosting}
       centered
       radius="sm"
@@ -767,6 +778,18 @@ export function BulkPostPreviewModal({
           <Text fw={600}>
             <Trans>Review posts</Trans>
           </Text>
+          <Tooltip label={t`Start tour`}>
+            <ActionIcon
+              variant="subtle"
+              color="gray"
+              size="sm"
+              aria-label={t`Start tour`}
+              onClick={startTour}
+              disabled={isPosting || isLoading || isTourActive}
+            >
+              <IconHelp size={18} />
+            </ActionIcon>
+          </Tooltip>
         </Group>
       }
       classNames={{
@@ -783,6 +806,7 @@ export function BulkPostPreviewModal({
         >
           <Stack renderRoot={(props) => <fieldset {...props} disabled={isPosting} />} gap="md" p="md" pt="xs" m={0} style={{ border: 0, minWidth: 0 }}>
             <SegmentedControl
+              data-tour-id="bulk-post-preview-scope"
               fullWidth
               value={selectionMode}
               aria-label={t`Posting scope`}
@@ -860,7 +884,7 @@ export function BulkPostPreviewModal({
               </Alert>
             )}
 
-            <Stack gap="xs">
+            <Stack gap="xs" data-tour-id="bulk-post-preview-work">
               <Group justify="space-between">
                 <Text size="sm" fw={600}>
                   <Trans>Posting order</Trans>
@@ -887,7 +911,7 @@ export function BulkPostPreviewModal({
             {completedGroups.length > 0 && (
               <>
                 <Divider />
-                <Stack gap="xs">
+                <Stack gap="xs" data-tour-id="bulk-post-preview-selection">
                   <Group justify="space-between">
                     <Group gap="xs">
                       <Text size="sm" fw={600}>
@@ -930,6 +954,7 @@ export function BulkPostPreviewModal({
           justify="space-between"
           gap="sm"
           p="md"
+          data-tour-id="bulk-post-preview-confirm"
           className="postybirb__post_preview_modal_footer"
         >
           <Text size="xs" c="dimmed">

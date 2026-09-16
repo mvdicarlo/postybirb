@@ -760,6 +760,10 @@ msgctxt "template.picker-modal-header"
 msgid "Choose Templates"
 msgstr "Pasirinkite šablonus"
 
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/post-preview-tour.tsx
+msgid "Choose What To Post"
+msgstr "Pasirinkite, ką skelbti"
+
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/submission-edit-tour.tsx
 msgid "Choose which accounts to post to. Click to open the dropdown, then select individual accounts or entire website groups."
 msgstr ""
@@ -1243,6 +1247,22 @@ msgstr ""
 msgid "Dependencies"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/post-preview-tour.tsx
+msgid "Dependencies Before Posting"
+msgstr "Priklausomybės prieš skelbiant"
+
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/submission-edit-tour.tsx
+msgid "Dependencies keep related posts in sequence. For example, make part two depend on part one so part one finishes successfully before part two starts."
+msgstr "Priklausomybės užtikrina susijusių įrašų eilę. Pavyzdžiui, nustatykite, kad antra dalis priklausytų nuo pirmos: antra dalis bus pradėta tik sėkmingai paskelbus pirmąją."
+
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/post-preview-tour.tsx
+msgid "Dependencies must finish successfully before this post can start. Start or schedule them separately; failed or cancelled prerequisites keep this post waiting. Set dependencies in the submission editor."
+msgstr "Pateikimai, nuo kurių priklauso šis įrašas, turi būti sėkmingai paskelbti prieš jį pradedant. Paleiskite arba suplanuokite juos atskirai; jiems nepavykus ar juos atšaukus, šis įrašas lauks toliau. Priklausomybes nustatykite pateikimo redaktoriuje."
+
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/post-preview-tour.tsx
+msgid "Dependencies still apply, regardless of batch order. A post waits for all its prerequisites to finish successfully. Any unfinished prerequisites outside this batch must be started separately."
+msgstr "Priklausomybės galioja nepriklausomai nuo eilės grupėje. Įrašas laukia, kol visi būtini pateikimai bus sėkmingai paskelbti. Dar nebaigtus pateikimus už šios grupės ribų reikia paleisti atskirai."
+
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/bulk-post-preview-modal.tsx
 msgid "Depends on"
 msgstr ""
@@ -1250,6 +1270,10 @@ msgstr ""
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/body/submission-edit-card-body.tsx
 msgid "Depends on submissions"
 msgstr ""
+
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/submission-edit-tour.tsx
+msgid "Depends On Submissions"
+msgstr "Priklauso nuo kitų pateikimų"
 
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/settings-dialog.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/file-submission-modal/submission-options.tsx
@@ -1414,6 +1438,10 @@ msgstr ""
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/templates-tour.tsx
 msgid "Each template appears as a card. Click to select it and open the editor. Use the action buttons to rename, duplicate, or delete a template."
 msgstr ""
+
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/post-preview-tour.tsx
+msgid "Each unit is one file or message for one account. The same file going to three accounts counts as three units."
+msgstr "Vienas vienetas yra failas arba žinutė vienai paskyrai. Tas pats failas, siunčiamas į tris paskyras, skaičiuojamas kaip trys vienetai."
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/file-watchers-tour.tsx
 msgid "Each watcher card lets you pick a folder path, choose an import action, and optionally apply a template to imported files. Save your changes or delete the watcher using the buttons at the bottom."
@@ -2116,6 +2144,10 @@ msgstr ""
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-preview-modal/post-preview-modal.tsx
 msgid "Incomplete work"
 msgstr ""
+
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/post-preview-tour.tsx
+msgid "Incomplete work picks up where you left off, skipping successful posts. Selected targets posts only what you choose, including anything you've posted before."
+msgstr "Režimas \"Incomplete work\" tęsia nuo ten, kur sustojote, praleisdamas sėkmingai paskelbtus įrašus. \"Selected targets\" skelbia tik tai, ką pasirinkote, net jei tai jau buvo paskelbta."
 
 #: apps/postybirb-ui/src/components/drawers/notifications-drawer/notifications-drawer.tsx
 msgid "Info"
@@ -2863,6 +2895,10 @@ msgstr ""
 msgid "Posting order"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/post-preview-tour.tsx
+msgid "Posting Order"
+msgstr "Skelbimo eilė"
+
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-history-content.tsx
 msgid "Posting outcomes"
 msgstr ""
@@ -2994,6 +3030,10 @@ msgstr ""
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/submission-badges.tsx
 msgid "Ready"
 msgstr ""
+
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/post-preview-tour.tsx
+msgid "Ready And Waiting Work"
+msgstr "Paruošti ir laukiantys vienetai"
 
 #: apps/postybirb-ui/src/components/update-button/update-button.tsx
 #: apps/postybirb-ui/src/components/update-button/update-modal.tsx
@@ -3448,6 +3488,10 @@ msgstr ""
 msgid "Select submissions"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/post-preview-tour.tsx
+msgid "Select Targets Or Post Again"
+msgstr "Pasirinkite gavėjus arba skelbkite dar kartą"
+
 #: apps/postybirb-ui/src/components/shared/template-picker/template-picker-modal.tsx
 msgid "Select templates or submissions to import"
 msgstr ""
@@ -3476,6 +3520,10 @@ msgstr ""
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-preview-modal/post-preview-modal.tsx
 msgid "Selected targets"
 msgstr ""
+
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/post-preview-tour.tsx
+msgid "Selecting previously successful work creates a new post on the website, not an update to the original. In Incomplete work mode, Post again adds it to the unfinished work."
+msgstr "Pasirinkus jau sėkmingai paskelbtus vienetus, svetainėje sukuriamas naujas įrašas, o ne atnaujinamas pradinis. Režime \"Incomplete work\" parinktis \"Post again\" prideda juos prie nebaigtų vienetų."
 
 #: apps/postybirb-ui/src/components/website-login-views/telegram/telegram-login-view.tsx
 msgid "Send Code"
@@ -3691,12 +3739,23 @@ msgstr ""
 msgid "Start of week"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/submission-edit-tour.tsx
+msgid "Start or schedule those submissions separately. This post waits until all their files and messages succeed; failed or cancelled work keeps it waiting. Avoid circular dependencies, where posts wait for each other."
+msgstr "Paleiskite arba suplanuokite tuos pateikimus atskirai. Šis įrašas laukia, kol visi jų failai ir žinutės bus sėkmingai paskelbti; klaidos ar atšaukimai pratęsia laukimą. Venkite ciklinių priklausomybių, kai įrašai laukia vienas kito."
+
 #: apps/postybirb-ui/src/components/website-login-views/instagram/instagram-login-view.tsx
 #: apps/postybirb-ui/src/components/website-login-views/instagram/instagram-login-view.tsx
 #: apps/postybirb-ui/src/components/website-login-views/twitter/twitter-login-view.tsx
 #: apps/postybirb-ui/src/components/website-login-views/twitter/twitter-login-view.tsx
 msgid "Start Over"
 msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/bulk-post-preview-modal.tsx
+#: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/bulk-post-preview-modal.tsx
+#: apps/postybirb-ui/src/components/sections/submissions-section/post-preview-modal/post-preview-modal.tsx
+#: apps/postybirb-ui/src/components/sections/submissions-section/post-preview-modal/post-preview-modal.tsx
+msgid "Start tour"
+msgstr "Pradėti apžvalgą"
 
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/app-settings-section.tsx
 msgid "Startup Settings"
@@ -4052,6 +4111,10 @@ msgstr ""
 #: apps/postybirb-ui/src/components/website-login-views/discord/discord-login-view.tsx
 msgid "This is a forum channel"
 msgstr ""
+
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/post-preview-tour.tsx
+msgid "This is the order submissions will start, not necessarily finish. Each unit is one file or message for one account. Submissions with no selected work are left out."
+msgstr "Tai pateikimų pradžios, nebūtinai pabaigos, eilė. Vienas vienetas yra failas arba žinutė vienai paskyrai. Pateikimai be pasirinktų vienetų praleidžiami."
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/submission-edit-tour.tsx
 msgid "This is the submission editor where you configure all the details for your post. Set up files, scheduling, descriptions, tags, and per-website options."
@@ -4517,6 +4580,10 @@ msgstr ""
 msgid "Waiting in the post queue for its turn."
 msgstr ""
 
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/post-preview-tour.tsx
+msgid "Waiting work is included, but needs a cooldown, earlier work, or a dependency to finish first. Paused posting holds all work until you resume."
+msgstr "Laukiantys vienetai įtraukti, tačiau turi praeiti laukimo intervalas arba būti baigti ankstesni darbai ar būtini pateikimai. Pristabdžius skelbimą, visi vienetai laukia, kol jį pratęsite."
+
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/account-option-row.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/selected-accounts-forms.tsx
 msgid "Warning"
@@ -4612,6 +4679,10 @@ msgstr ""
 msgid "When a template is selected, its settings appear here. Configure titles, descriptions, tags, and website-specific options just like a regular submission."
 msgstr ""
 
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/submission-edit-tour.tsx
+msgid "When Dependencies Are Ready"
+msgstr "Kada įvykdomos priklausomybių sąlygos"
+
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/account-default-template-modal.tsx
 msgid "When you create a new file submission, the option for this account will be pre-filled using the values from the template you choose here."
 msgstr ""
@@ -4634,6 +4705,10 @@ msgstr "Plotis"
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-preview-modal/post-preview-modal.tsx
 msgid "Will post"
 msgstr ""
+
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/post-preview-tour.tsx
+msgid "Will Post"
+msgstr "Bus paskelbta"
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-preview-modal/post-preview-modal.tsx
 msgid "Work will begin after dependent submissions finish."

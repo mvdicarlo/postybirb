@@ -1,5 +1,6 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
+    ActionIcon,
     Alert,
     Badge,
     Box,
@@ -14,6 +15,7 @@ import {
     Stack,
     Text,
     ThemeIcon,
+    Tooltip,
 } from '@mantine/core';
 import {
     type IUnitOfWork,
@@ -23,6 +25,7 @@ import {
 import {
     IconAlertCircle,
     IconFile,
+    IconHelp,
     IconHourglass,
     IconMessage,
     IconPlayerPause,
@@ -39,6 +42,8 @@ import postingApi, {
 import { useAccountsMap } from '../../../../stores/entity/account-store';
 import type { SubmissionRecord } from '../../../../stores/records';
 import { showPostErrorNotification } from '../../../../utils/notifications';
+import { POST_PREVIEW_TOUR_ID } from '../../../onboarding-tour/tours/post-preview-tour';
+import { useModalTour } from '../../../onboarding-tour/use-modal-tour';
 import { getUnitFileName, getUnitStateInfo } from '../submission-history/history-utils';
 import './post-preview-modal.css';
 import {
@@ -319,6 +324,11 @@ export function PostPreviewModal({
   const [isPosting, setIsPosting] = useState(false);
   const [retryVersion, setRetryVersion] = useState(0);
   const [selectionMode, setSelectionMode] = useState('remaining');
+  const { isActive: isTourActive, startTour } = useModalTour(
+    POST_PREVIEW_TOUR_ID,
+    opened,
+    !isLoadingPreview && !isPosting,
+  );
   const availableTargets = useMemo(() => buildSelectablePostingUnits(submission), [submission]);
   const targets = useMemo(
     () => selectionMode === 'selected' ? buildUnitOfWorkEvictions(availableTargets, selectedUnitIds) : undefined,
@@ -439,8 +449,9 @@ export function PostPreviewModal({
     <Modal
       opened={opened}
       onClose={onClose}
-      closeOnClickOutside={!isPosting}
-      closeOnEscape={!isPosting}
+      closeOnClickOutside={!isPosting && !isTourActive}
+      closeOnEscape={!isPosting && !isTourActive}
+      trapFocus={!isTourActive}
       withCloseButton={!isPosting}
       centered
       radius="sm"
@@ -451,6 +462,18 @@ export function PostPreviewModal({
           <Text fw={600}>
             <Trans>Review post</Trans>
           </Text>
+          <Tooltip label={t`Start tour`}>
+            <ActionIcon
+              variant="subtle"
+              color="gray"
+              size="sm"
+              aria-label={t`Start tour`}
+              onClick={startTour}
+              disabled={isPosting || isLoadingPreview || isTourActive}
+            >
+              <IconHelp size={18} />
+            </ActionIcon>
+          </Tooltip>
         </Group>
       }
       classNames={{
@@ -467,6 +490,7 @@ export function PostPreviewModal({
         >
           <Stack renderRoot={(props) => <fieldset {...props} disabled={isPosting} />} gap="md" p="md" pt="xs" m={0} style={{ border: 0, minWidth: 0 }}>
             <SegmentedControl
+              data-tour-id="post-preview-scope"
               fullWidth
               value={selectionMode}
               aria-label={t`Posting scope`}
@@ -538,7 +562,7 @@ export function PostPreviewModal({
           </Alert>
           )}
 
-          <Box pos="relative" mih={120}>
+          <Box pos="relative" mih={120} data-tour-id="post-preview-work">
           <LoadingOverlay
             visible={isLoadingPreview}
             overlayProps={{ blur: 1, backgroundOpacity: 0.45 }}
@@ -566,7 +590,7 @@ export function PostPreviewModal({
           {completedGroups.length > 0 && (
           <>
             <Divider />
-            <Stack gap="xs">
+            <Stack gap="xs" data-tour-id="post-preview-selection">
               <Group justify="space-between">
                 <Group gap="xs">
                   <Text size="sm" fw={600}>
@@ -603,6 +627,7 @@ export function PostPreviewModal({
           justify="flex-end"
           gap="sm"
           p="md"
+          data-tour-id="post-preview-confirm"
           className="postybirb__post_preview_modal_footer"
         >
           <Button variant="default" onClick={onClose} disabled={isPosting}>
