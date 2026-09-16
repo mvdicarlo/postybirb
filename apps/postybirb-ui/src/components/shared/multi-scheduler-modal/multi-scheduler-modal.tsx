@@ -165,7 +165,7 @@ export function MultiSchedulerModal({
 
       showSuccessNotification(
         <Trans>
-          Successfully scheduled ${orderedSubmissions.length} submissions
+          Successfully scheduled {orderedSubmissions.length} submissions
         </Trans>,
       );
       onClose();

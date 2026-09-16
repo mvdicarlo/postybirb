@@ -1,43 +1,43 @@
 /* eslint-disable lingui/no-unlocalized-strings */
 import { Trans } from '@lingui/react/macro';
 import {
-  Alert,
-  Box,
-  Button,
-  Group,
-  Loader,
-  Paper,
-  PasswordInput,
-  Stack,
-  Stepper,
-  Text,
-  TextInput,
-  Title,
+    Alert,
+    Box,
+    Button,
+    Group,
+    Loader,
+    Paper,
+    PasswordInput,
+    Stack,
+    Stepper,
+    Text,
+    TextInput,
+    Title,
 } from '@mantine/core';
 import { InstagramAccountData, InstagramOAuthRoutes } from '@postybirb/types';
 import {
-  IconArrowLeft,
-  IconCheck,
-  IconKey,
-  IconLogin,
-  IconRefresh,
+    IconArrowLeft,
+    IconCheck,
+    IconKey,
+    IconLogin,
+    IconRefresh,
 } from '@tabler/icons-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import websitesApi from '../../../api/websites.api';
 import { showErrorNotification, showSuccessNotification } from '../../../utils';
 import type { WebviewTag } from '../../sections/accounts-section/webview-tag';
 import {
-  createLoginHttpErrorHandler,
-  notifyLoginFailed,
-  notifyLoginSuccess,
+    createLoginHttpErrorHandler,
+    notifyLoginFailed,
+    notifyLoginSuccess,
 } from '../helpers';
 import { LoginViewContainer } from '../login-view-container';
 import type { LoginViewProps } from '../types';
 import {
-  getInstagramRedirectUri,
-  getInstagramRedirectUriError,
-  instagramCallbackPath,
-  InstagramSetupGuide,
+    getInstagramRedirectUri,
+    getInstagramRedirectUriError,
+    instagramCallbackPath,
+    InstagramSetupGuide,
 } from './instagram-setup-guide';
 
 export default function InstagramLoginView(
@@ -417,7 +417,7 @@ export default function InstagramLoginView(
                           })
                           .catch(
                             createLoginHttpErrorHandler(
-                              <Trans>Failed to generate auth URL</Trans>,
+                              <Trans>Failed to generate authorization URL</Trans>,
                             ),
                           )
                           .finally(() => setIsGettingAuthUrl(false));

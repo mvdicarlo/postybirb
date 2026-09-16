@@ -285,7 +285,11 @@ export function LoginWebview({ src, accountId }: LoginWebviewProps) {
             </Badge>
           ) : isLoggedIn ? (
             <Badge size="xs" color="green" variant="light">
-              <Trans>Logged in{username ? ` as ${username}` : ''}</Trans>
+              {username ? (
+                <Trans>Logged in as {username}</Trans>
+              ) : (
+                <Trans>Logged in</Trans>
+              )}
             </Badge>
           ) : (
             <Badge size="xs" color="gray" variant="light">
