@@ -13,6 +13,7 @@ import { FILE_WATCHERS_TOUR_ID, useFileWatchersTourSteps } from './tours/file-wa
 import { HOME_TOUR_ID, useHomeTourSteps } from './tours/home-tour';
 import { LAYOUT_TOUR_ID, useLayoutTourSteps } from './tours/layout-tour';
 import { NOTIFICATIONS_TOUR_ID, useNotificationsTourSteps } from './tours/notifications-tour';
+import { BULK_POST_PREVIEW_TOUR_ID, POST_PREVIEW_TOUR_ID, usePostPreviewTourSteps } from './tours/post-preview-tour';
 import { SCHEDULE_TOUR_ID, useScheduleTourSteps } from './tours/schedule-tour';
 import { SUBMISSION_EDIT_TOUR_ID, useSubmissionEditTourSteps } from './tours/submission-edit-tour';
 import { SUBMISSIONS_TOUR_ID, useSubmissionsTourSteps } from './tours/submissions-tour';
@@ -39,6 +40,8 @@ function useTourSteps(tourId: string | null) {
   const tagConvertersSteps = useTagConvertersTourSteps();
   const userConvertersSteps = useUserConvertersTourSteps();
   const notificationsSteps = useNotificationsTourSteps();
+  const postPreviewSteps = usePostPreviewTourSteps();
+  const bulkPostPreviewSteps = usePostPreviewTourSteps(true);
 
   return useMemo(() => {
     switch (tourId) {
@@ -68,10 +71,14 @@ function useTourSteps(tourId: string | null) {
         return userConvertersSteps;
       case NOTIFICATIONS_TOUR_ID:
         return notificationsSteps;
+      case POST_PREVIEW_TOUR_ID:
+        return postPreviewSteps;
+      case BULK_POST_PREVIEW_TOUR_ID:
+        return bulkPostPreviewSteps;
       default:
         return [];
     }
-  }, [tourId, layoutSteps, accountsSteps, homeSteps, templatesSteps, tagGroupsSteps, customShortcutsSteps, fileWatchersSteps, scheduleSteps, submissionsSteps, submissionEditSteps, tagConvertersSteps, userConvertersSteps, notificationsSteps]);
+  }, [tourId, layoutSteps, accountsSteps, homeSteps, templatesSteps, tagGroupsSteps, customShortcutsSteps, fileWatchersSteps, scheduleSteps, submissionsSteps, submissionEditSteps, tagConvertersSteps, userConvertersSteps, notificationsSteps, postPreviewSteps, bulkPostPreviewSteps]);
 }
 
 export function TourProvider({ children }: { children: React.ReactNode }) {
@@ -80,6 +87,8 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
   const { completeTour, skipTour, endTour, startTour } = useTourActions();
   const layoutTourCompleted = useIsTourCompleted(LAYOUT_TOUR_ID);
   const allSteps = useTourSteps(activeTourId);
+  const isPostPreviewTour = activeTourId === POST_PREVIEW_TOUR_ID ||
+    activeTourId === BULK_POST_PREVIEW_TOUR_ID;
 
   // Auto-start layout tour on first app load if never completed
   useEffect(() => {
@@ -139,7 +148,20 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
         continuous
         onEvent={handleEvent}
         tooltipComponent={MantineTooltip}
+        floatingOptions={isPostPreviewTour ? {
+          flipOptions: { boundary: [], rootBoundary: 'viewport' },
+          shiftOptions: { boundary: [], rootBoundary: 'viewport', crossAxis: true },
+        } : undefined}
         options={{
+          skipScroll: isPostPreviewTour,
+          before: isPostPreviewTour ? async ({ step }) => {
+            if (typeof step.target === 'string') {
+              document.querySelector(step.target)?.scrollIntoView({
+                block: 'nearest',
+                inline: 'nearest',
+              });
+            }
+          } : undefined,
           overlayClickAction: false,
           // eslint-disable-next-line lingui/no-unlocalized-strings
           overlayColor: 'rgba(0, 0, 0, 0.5)',

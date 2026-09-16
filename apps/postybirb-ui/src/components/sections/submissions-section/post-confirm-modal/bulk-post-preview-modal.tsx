@@ -1,55 +1,60 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
-    Alert,
-    Badge,
-    Box,
-    Button,
-    Checkbox,
-    Divider,
-    Group,
-    Loader,
-    Modal,
-    ScrollArea,
-    SegmentedControl,
-    Stack,
-    Text,
-    ThemeIcon,
+  ActionIcon,
+  Alert,
+  Badge,
+  Box,
+  Button,
+  Checkbox,
+  Divider,
+  Group,
+  Loader,
+  Modal,
+  ScrollArea,
+  SegmentedControl,
+  Stack,
+  Text,
+  ThemeIcon,
+  Tooltip,
 } from '@mantine/core';
 import {
-    type IUnitOfWork,
-    type SubmissionId,
-    type UnitOfWorkId,
-    UnitOfWorkState,
+  type IUnitOfWork,
+  type SubmissionId,
+  type UnitOfWorkId,
+  UnitOfWorkState,
 } from '@postybirb/types';
 import {
-    IconAlertCircle,
-    IconFile,
-    IconGitBranch,
-    IconHourglass,
-    IconMessage,
-    IconPlayerPause,
-    IconRefresh,
-    IconSend,
-    IconUser,
-    IconWorld,
+  IconAlertCircle,
+  IconFile,
+  IconGitBranch,
+  IconHelp,
+  IconHourglass,
+  IconMessage,
+  IconPlayerPause,
+  IconRefresh,
+  IconSend,
+  IconUser,
+  IconWorld,
 } from '@tabler/icons-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import postingApi, {
-    type PostingDryRun,
-    type PostingRequest,
+  type PostingDryRun,
+  type PostingRequest,
 } from '../../../../api/posting.api';
 import { useAccountsMap } from '../../../../stores/entity/account-store';
 import { useSubmissionsMap } from '../../../../stores/entity/submission-store';
 import type { SubmissionRecord } from '../../../../stores/records';
+import { BULK_POST_PREVIEW_TOUR_ID } from '../../../onboarding-tour/tours/post-preview-tour';
+import { useModalTour } from '../../../onboarding-tour/use-modal-tour';
 import { ReorderableSubmissionList } from '../../../shared/reorderable-submission-list';
 import '../post-preview-modal/post-preview-modal.css';
 import {
-    buildSelectablePostingUnits,
-    buildUnitOfWorkEvictions,
-    getUnitSelectionState,
-    groupUnitsByWebsite,
-    type PostPreviewWebsiteGroup,
-    updateUnitSelection,
+  buildSelectablePostingUnits,
+  buildUnitOfWorkEvictions,
+  getUnitSelectionState,
+  groupUnitsByWebsite,
+  type PostPreviewWebsiteGroup,
+  updateUnitSelection,
 } from '../post-preview-modal/post-preview-modal.utils';
 import { getUnitFileName, getUnitStateInfo } from '../submission-history/history-utils';
 import './post-confirm-modal.css';
@@ -332,6 +337,11 @@ export function BulkPostPreviewModal({
   const [errorIds, setErrorIds] = useState<Set<SubmissionId>>(new Set());
   const [isPosting, setIsPosting] = useState(false);
   const [selectionMode, setSelectionMode] = useState('remaining');
+  const { isActive: isTourActive, startTour } = useModalTour(
+    BULK_POST_PREVIEW_TOUR_ID,
+    opened,
+    loadingIds.size === 0 && !isPosting,
+  );
 
   const validSubmissions = useMemo(
     () =>
@@ -736,6 +746,9 @@ export function BulkPostPreviewModal({
     (preview) => !preview.dependenciesCompleted,
   ).length;
   const isPaused = [...previews.values()].some((preview) => preview.paused);
+  const isStartupGracePeriod = isPaused && [...previews.values()].every(
+    (preview) => !preview.paused || preview.pauseReason === 'startup',
+  );
   const hasSkippedSubmissions =
     validSubmissions.length < totalSelectedCount;
   const isLoading = loadingIds.size > 0;
@@ -755,8 +768,9 @@ export function BulkPostPreviewModal({
     <Modal
       opened={opened}
       onClose={onClose}
-      closeOnClickOutside={!isPosting}
-      closeOnEscape={!isPosting}
+      closeOnClickOutside={!isPosting && !isTourActive}
+      closeOnEscape={!isPosting && !isTourActive}
+      trapFocus={!isTourActive}
       withCloseButton={!isPosting}
       centered
       radius="sm"
@@ -767,6 +781,18 @@ export function BulkPostPreviewModal({
           <Text fw={600}>
             <Trans>Review posts</Trans>
           </Text>
+          <Tooltip label={t`Start tour`}>
+            <ActionIcon
+              variant="subtle"
+              color="gray"
+              size="sm"
+              aria-label={t`Start tour`}
+              onClick={startTour}
+              disabled={isPosting || isLoading || isTourActive}
+            >
+              <IconHelp size={18} />
+            </ActionIcon>
+          </Tooltip>
         </Group>
       }
       classNames={{
@@ -783,6 +809,7 @@ export function BulkPostPreviewModal({
         >
           <Stack renderRoot={(props) => <fieldset {...props} disabled={isPosting} />} gap="md" p="md" pt="xs" m={0} style={{ border: 0, minWidth: 0 }}>
             <SegmentedControl
+              data-tour-id="bulk-post-preview-scope"
               fullWidth
               value={selectionMode}
               aria-label={t`Posting scope`}
@@ -840,9 +867,16 @@ export function BulkPostPreviewModal({
                 color="yellow"
                 variant="light"
                 icon={<IconPlayerPause size={17} />}
-                title={<Trans>Posting is paused</Trans>}
+                title={isStartupGracePeriod ? <Trans>Startup grace period</Trans> : <Trans>Posting is paused</Trans>}
               >
-                <Trans>Confirmed work will wait until posting resumes.</Trans>
+                {isStartupGracePeriod ? (
+                  <Trans>
+                    PostyBirb pauses posting for two minutes after startup so you can
+                    review queued posts. Submitting a post ends this grace period early.
+                  </Trans>
+                ) : (
+                  <Trans>Confirmed work will wait until posting resumes.</Trans>
+                )}
               </Alert>
             )}
 
@@ -860,7 +894,7 @@ export function BulkPostPreviewModal({
               </Alert>
             )}
 
-            <Stack gap="xs">
+            <Stack gap="xs" data-tour-id="bulk-post-preview-work">
               <Group justify="space-between">
                 <Text size="sm" fw={600}>
                   <Trans>Posting order</Trans>
@@ -887,7 +921,7 @@ export function BulkPostPreviewModal({
             {completedGroups.length > 0 && (
               <>
                 <Divider />
-                <Stack gap="xs">
+                <Stack gap="xs" data-tour-id="bulk-post-preview-selection">
                   <Group justify="space-between">
                     <Group gap="xs">
                       <Text size="sm" fw={600}>
@@ -930,6 +964,7 @@ export function BulkPostPreviewModal({
           justify="space-between"
           gap="sm"
           p="md"
+          data-tour-id="bulk-post-preview-confirm"
           className="postybirb__post_preview_modal_footer"
         >
           <Text size="xs" c="dimmed">

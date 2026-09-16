@@ -33,8 +33,12 @@ export function MantineTooltip({
       shadow="lg"
       radius="md"
       p="md"
-      maw={420}
-      miw={300}
+      style={{
+        width: 'min(420px, calc(100vw - 24px))',
+        // eslint-disable-next-line lingui/no-unlocalized-strings
+        maxHeight: 'calc(100vh - 24px)',
+        overflowY: 'auto',
+      }}
       {...tooltipProps}
     >
       {/* Header with close button */}

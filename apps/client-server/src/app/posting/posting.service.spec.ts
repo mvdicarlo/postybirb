@@ -472,6 +472,7 @@ describe('PostingService', () => {
     const result = await service.dryRun(submission.id);
 
     expect(result.paused).toBe(false);
+    expect(result.pauseReason).toBeNull();
     expect(result.dependenciesCompleted).toBe(true);
     expect(result.executableWork.map((unit) => unit.compositeKey)).toEqual([
       `${submission.id}:${account.id}:`,
@@ -481,6 +482,63 @@ describe('PostingService', () => {
     await expect(service.getPost(submission.id)).resolves.toBeNull();
     await expect(unitOfWorkRepository.findAll()).resolves.toEqual([]);
   });
+
+  it('reports startup grace until the two-minute period expires without ending it during preview', async () => {
+    const submission = await seedSubmission();
+    const now = Date.now();
+    const clock = jest.spyOn(Date, 'now').mockReturnValue(now);
+
+    try {
+      const restartedService = new PostingService(
+        postingManager as unknown as PostingManager,
+        websiteRegistry as unknown as WebsiteRegistryService,
+        postingRateLimiter as unknown as PostingRateLimiterService,
+        settingsService as unknown as SettingsService,
+      );
+
+      await expect(restartedService.dryRun(submission.id)).resolves.toMatchObject({
+        paused: true,
+        pauseReason: 'startup',
+      });
+      await expect(restartedService.arePostsPaused()).resolves.toBe(true);
+      await expect(restartedService.getPost(submission.id)).resolves.toBeNull();
+
+      clock.mockReturnValue(now + 120_000);
+      await expect(restartedService.dryRun(submission.id)).resolves.toMatchObject({
+        paused: false,
+        pauseReason: null,
+      });
+    } finally {
+      clock.mockRestore();
+    }
+  });
+
+  it.each([false, true])(
+    'ends startup grace on posting while preserving manual pause=%s',
+    async (manuallyPaused) => {
+      const submission = await seedSubmission();
+      const restartedService = new PostingService(
+        postingManager as unknown as PostingManager,
+        websiteRegistry as unknown as WebsiteRegistryService,
+        postingRateLimiter as unknown as PostingRateLimiterService,
+        settingsService as unknown as SettingsService,
+      );
+      if (manuallyPaused) await restartedService.pausePosts();
+
+      await expect(restartedService.dryRun(submission.id)).resolves.toMatchObject({
+        paused: true,
+        pauseReason: manuallyPaused ? 'manual' : 'startup',
+      });
+
+      await restartedService.post(submission.id);
+
+      await expect(restartedService.dryRun(submission.id)).resolves.toMatchObject({
+        paused: manuallyPaused,
+        pauseReason: manuallyPaused ? 'manual' : null,
+      });
+      await expect(restartedService.arePostsPaused()).resolves.toBe(manuallyPaused);
+    },
+  );
 
   it('dry runs rate limited work as deferred', async () => {
     const submission = await seedSubmission();

@@ -77,6 +77,37 @@ export function useSubmissionEditTourSteps(): Step[] {
       ),
     },
     {
+      target: '[data-tour-id="edit-card-dependencies"]',
+      placement: 'bottom',
+      skipBeacon: true,
+      title: <Trans>Depends On Submissions</Trans>,
+      content: (
+        <Text size="sm" c="dimmed">
+          <Trans>
+            Dependencies keep related posts in sequence. For example, make
+            part two depend on part one so part one finishes successfully
+            before part two starts.
+          </Trans>
+        </Text>
+      ),
+    },
+    {
+      target: '[data-tour-id="edit-card-dependencies"]',
+      placement: 'bottom',
+      skipBeacon: true,
+      title: <Trans>When Dependencies Are Ready</Trans>,
+      content: (
+        <Text size="sm" c="dimmed">
+          <Trans>
+            Start or schedule those submissions separately. This post waits
+            until all their files and messages succeed; failed or cancelled
+            work keeps it waiting. Avoid circular dependencies, where posts
+            wait for each other.
+          </Trans>
+        </Text>
+      ),
+    },
+    {
       target: '[data-tour-id="edit-card-defaults"]',
       placement: 'bottom',
       skipBeacon: true,

@@ -760,6 +760,10 @@ msgctxt "template.picker-modal-header"
 msgid "Choose Templates"
 msgstr "வார்ப்புருக்களைத் தேர்வுசெய்க"
 
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/post-preview-tour.tsx
+msgid "Choose What To Post"
+msgstr "எதை வெளியிட வேண்டும் என்பதைத் தேர்ந்தெடுக்கவும்"
+
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/submission-edit-tour.tsx
 msgid "Choose which accounts to post to. Click to open the dropdown, then select individual accounts or entire website groups."
 msgstr ""
@@ -1243,6 +1247,22 @@ msgstr ""
 msgid "Dependencies"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/post-preview-tour.tsx
+msgid "Dependencies Before Posting"
+msgstr "வெளியிடுவதற்கு முன் சார்புகள்"
+
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/submission-edit-tour.tsx
+msgid "Dependencies keep related posts in sequence. For example, make part two depend on part one so part one finishes successfully before part two starts."
+msgstr "தொடர்புடைய இடுகைகளை வரிசையாக வெளியிடச் சார்புகள் உதவுகின்றன. எடுத்துக்காட்டாக, இரண்டாம் பகுதி முதல் பகுதியைச் சார்ந்திருக்குமாறு அமைத்தால், முதல் பகுதி வெற்றிகரமாக வெளியான பிறகே இரண்டாம் பகுதி தொடங்கும்."
+
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/post-preview-tour.tsx
+msgid "Dependencies must finish successfully before this post can start. Start or schedule them separately; failed or cancelled prerequisites keep this post waiting. Set dependencies in the submission editor."
+msgstr "இந்த இடுகை தொடங்குவதற்கு முன், இது சார்ந்துள்ள சமர்ப்பிப்புகள் வெற்றிகரமாக முடிய வேண்டும். அவற்றைத் தனித்தனியாகத் தொடங்கவும் அல்லது திட்டமிடவும்; அவை தோல்வியடைந்தாலோ ரத்துசெய்யப்பட்டாலோ இந்த இடுகை தொடர்ந்து காத்திருக்கும். சமர்ப்பிப்பு திருத்தியில் சார்புகளை அமைக்கவும்."
+
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/post-preview-tour.tsx
+msgid "Dependencies still apply, regardless of batch order. A post waits for all its prerequisites to finish successfully. Any unfinished prerequisites outside this batch must be started separately."
+msgstr "தொகுதியின் வரிசை எதுவாக இருந்தாலும் சார்புகள் பொருந்தும். ஓர் இடுகை, அது சார்ந்துள்ள அனைத்து சமர்ப்பிப்புகளும் வெற்றிகரமாக முடியும் வரை காத்திருக்கும். இந்தத் தொகுதிக்கு வெளியே உள்ள, இன்னும் முடியாத சார்புகளைத் தனியாகத் தொடங்க வேண்டும்."
+
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/bulk-post-preview-modal.tsx
 msgid "Depends on"
 msgstr ""
@@ -1250,6 +1270,10 @@ msgstr ""
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/body/submission-edit-card-body.tsx
 msgid "Depends on submissions"
 msgstr ""
+
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/submission-edit-tour.tsx
+msgid "Depends On Submissions"
+msgstr "சார்ந்துள்ள சமர்ப்பிப்புகள்"
 
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/settings-dialog.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/file-submission-modal/submission-options.tsx
@@ -1414,6 +1438,10 @@ msgstr ""
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/templates-tour.tsx
 msgid "Each template appears as a card. Click to select it and open the editor. Use the action buttons to rename, duplicate, or delete a template."
 msgstr ""
+
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/post-preview-tour.tsx
+msgid "Each unit is one file or message for one account. The same file going to three accounts counts as three units."
+msgstr "ஓர் அலகு என்பது ஒரு கணக்கிற்கான ஒரு கோப்பு அல்லது செய்தி. ஒரே கோப்பை மூன்று கணக்குகளுக்கு அனுப்புவது மூன்று அலகுகளாகக் கணக்கிடப்படும்."
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/file-watchers-tour.tsx
 msgid "Each watcher card lets you pick a folder path, choose an import action, and optionally apply a template to imported files. Save your changes or delete the watcher using the buttons at the bottom."
@@ -2116,6 +2144,10 @@ msgstr ""
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-preview-modal/post-preview-modal.tsx
 msgid "Incomplete work"
 msgstr ""
+
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/post-preview-tour.tsx
+msgid "Incomplete work picks up where you left off, skipping successful posts. Selected targets posts only what you choose, including anything you've posted before."
+msgstr "\"Incomplete work\" நீங்கள் நிறுத்திய இடத்திலிருந்து தொடரும்; ஏற்கெனவே வெற்றிகரமாக வெளியிட்டவற்றைத் தவிர்க்கும். \"Selected targets\" நீங்கள் தேர்ந்தெடுத்தவற்றை மட்டும் வெளியிடும், அவை முன்பே வெளியிடப்பட்டிருந்தாலும்."
 
 #: apps/postybirb-ui/src/components/drawers/notifications-drawer/notifications-drawer.tsx
 msgid "Info"
@@ -2863,6 +2895,10 @@ msgstr ""
 msgid "Posting order"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/post-preview-tour.tsx
+msgid "Posting Order"
+msgstr "வெளியிடும் வரிசை"
+
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/post-history-content.tsx
 msgid "Posting outcomes"
 msgstr ""
@@ -2885,6 +2921,11 @@ msgstr ""
 #. placeholder {0}: formatRelativeTime(nextPostAt)
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/submission-badges.tsx
 msgid "Posts {0}"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/bulk-post-preview-modal.tsx
+#: apps/postybirb-ui/src/components/sections/submissions-section/post-preview-modal/post-preview-modal.tsx
+msgid "PostyBirb pauses posting for two minutes after startup so you can review queued posts. Submitting a post ends this grace period early."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/discord/discord-login-view.tsx
@@ -2994,6 +3035,10 @@ msgstr ""
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/submission-badges.tsx
 msgid "Ready"
 msgstr ""
+
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/post-preview-tour.tsx
+msgid "Ready And Waiting Work"
+msgstr "தயாராகவும் காத்திருப்பிலும் உள்ள பணிகள்"
 
 #: apps/postybirb-ui/src/components/update-button/update-button.tsx
 #: apps/postybirb-ui/src/components/update-button/update-modal.tsx
@@ -3448,6 +3493,10 @@ msgstr ""
 msgid "Select submissions"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/post-preview-tour.tsx
+msgid "Select Targets Or Post Again"
+msgstr "இலக்குகளைத் தேர்ந்தெடுக்கவும் அல்லது மீண்டும் வெளியிடவும்"
+
 #: apps/postybirb-ui/src/components/shared/template-picker/template-picker-modal.tsx
 msgid "Select templates or submissions to import"
 msgstr ""
@@ -3476,6 +3525,10 @@ msgstr ""
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-preview-modal/post-preview-modal.tsx
 msgid "Selected targets"
 msgstr ""
+
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/post-preview-tour.tsx
+msgid "Selecting previously successful work creates a new post on the website, not an update to the original. In Incomplete work mode, Post again adds it to the unfinished work."
+msgstr "ஏற்கெனவே வெற்றிகரமாக வெளியிட்டவற்றைத் தேர்ந்தெடுத்தால், தளத்தில் புதிய இடுகை உருவாகும்; பழைய இடுகை புதுப்பிக்கப்படாது. \"Incomplete work\" முறையில், \"Post again\" அவற்றை முடிக்காத பணிகளுடன் சேர்க்கும்."
 
 #: apps/postybirb-ui/src/components/website-login-views/telegram/telegram-login-view.tsx
 msgid "Send Code"
@@ -3691,11 +3744,27 @@ msgstr ""
 msgid "Start of week"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/submission-edit-tour.tsx
+msgid "Start or schedule those submissions separately. This post waits until all their files and messages succeed; failed or cancelled work keeps it waiting. Avoid circular dependencies, where posts wait for each other."
+msgstr "அந்தச் சமர்ப்பிப்புகளைத் தனித்தனியாகத் தொடங்கவும் அல்லது திட்டமிடவும். அவற்றின் எல்லா கோப்புகளும் செய்திகளும் வெற்றிகரமாக வெளியிடப்படும் வரை இந்த இடுகை காத்திருக்கும்; தோல்விகளும் ரத்துசெய்தல்களும் காத்திருப்பை நீட்டிக்கும். இடுகைகள் ஒன்றுக்கொன்று காத்திருக்கும் சுழற்சிச் சார்புகளைத் தவிர்க்கவும்."
+
 #: apps/postybirb-ui/src/components/website-login-views/instagram/instagram-login-view.tsx
 #: apps/postybirb-ui/src/components/website-login-views/instagram/instagram-login-view.tsx
 #: apps/postybirb-ui/src/components/website-login-views/twitter/twitter-login-view.tsx
 #: apps/postybirb-ui/src/components/website-login-views/twitter/twitter-login-view.tsx
 msgid "Start Over"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/bulk-post-preview-modal.tsx
+#: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/bulk-post-preview-modal.tsx
+#: apps/postybirb-ui/src/components/sections/submissions-section/post-preview-modal/post-preview-modal.tsx
+#: apps/postybirb-ui/src/components/sections/submissions-section/post-preview-modal/post-preview-modal.tsx
+msgid "Start tour"
+msgstr "வழிகாட்டியைத் தொடங்கு"
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/bulk-post-preview-modal.tsx
+#: apps/postybirb-ui/src/components/sections/submissions-section/post-preview-modal/post-preview-modal.tsx
+msgid "Startup grace period"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/app-settings-section.tsx
@@ -4052,6 +4121,10 @@ msgstr ""
 #: apps/postybirb-ui/src/components/website-login-views/discord/discord-login-view.tsx
 msgid "This is a forum channel"
 msgstr ""
+
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/post-preview-tour.tsx
+msgid "This is the order submissions will start, not necessarily finish. Each unit is one file or message for one account. Submissions with no selected work are left out."
+msgstr "சமர்ப்பிப்புகள் இந்த வரிசையில் தொடங்கும்; இதே வரிசையில் முடிய வேண்டியதில்லை. ஓர் அலகு என்பது ஒரு கணக்கிற்கான ஒரு கோப்பு அல்லது செய்தி. எந்தப் பணியும் தேர்ந்தெடுக்கப்படாத சமர்ப்பிப்புகள் தவிர்க்கப்படும்."
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/submission-edit-tour.tsx
 msgid "This is the submission editor where you configure all the details for your post. Set up files, scheduling, descriptions, tags, and per-website options."
@@ -4517,6 +4590,10 @@ msgstr ""
 msgid "Waiting in the post queue for its turn."
 msgstr ""
 
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/post-preview-tour.tsx
+msgid "Waiting work is included, but needs a cooldown, earlier work, or a dependency to finish first. Paused posting holds all work until you resume."
+msgstr "காத்திருக்கும் பணிகளும் சேர்க்கப்பட்டுள்ளன; ஆனால் வெளியீடுகளுக்கு இடையிலான இடைவெளி, முந்தைய பணி அல்லது சார்பு முதலில் முடிய வேண்டும். வெளியிடுதல் இடைநிறுத்தப்பட்டிருந்தால், நீங்கள் தொடரும் வரை எல்லா பணிகளும் காத்திருக்கும்."
+
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/account-option-row.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/selected-accounts-forms.tsx
 msgid "Warning"
@@ -4612,6 +4689,10 @@ msgstr ""
 msgid "When a template is selected, its settings appear here. Configure titles, descriptions, tags, and website-specific options just like a regular submission."
 msgstr ""
 
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/submission-edit-tour.tsx
+msgid "When Dependencies Are Ready"
+msgstr "சார்புகள் எப்போது நிறைவடையும்"
+
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/account-default-template-modal.tsx
 msgid "When you create a new file submission, the option for this account will be pre-filled using the values from the template you choose here."
 msgstr ""
@@ -4634,6 +4715,10 @@ msgstr "அகலம்"
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-preview-modal/post-preview-modal.tsx
 msgid "Will post"
 msgstr ""
+
+#: apps/postybirb-ui/src/components/onboarding-tour/tours/post-preview-tour.tsx
+msgid "Will Post"
+msgstr "வெளியிடப்படும்"
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-preview-modal/post-preview-modal.tsx
 msgid "Work will begin after dependent submissions finish."
