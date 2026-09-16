@@ -34,7 +34,7 @@ export function useSubmissionsTourSteps(): Step[] {
       target: '[data-tour-id="submissions-select-all"]',
       placement: 'bottom',
       skipBeacon: true,
-      title: <Trans>Select All</Trans>,
+      title: <Trans>Select all</Trans>,
       content: (
         <Text size="sm" c="dimmed">
           <Trans>
@@ -77,7 +77,7 @@ export function useSubmissionsTourSteps(): Step[] {
       target: '[data-tour-id="submissions-search"]',
       placement: 'bottom',
       skipBeacon: true,
-      title: <Trans>Search Submissions</Trans>,
+      title: <Trans>Search submissions</Trans>,
       content: (
         <Text size="sm" c="dimmed">
           <Trans>

@@ -193,7 +193,7 @@ export function BulkFileEditor({ files }: BulkFileEditorProps) {
             />
           </Box>
           <Button size="xs" variant="light" color="gray" onClick={selectAll}>
-            <Trans>Select All</Trans>
+            <Trans>Select all</Trans>
           </Button>
         </Group>
 
