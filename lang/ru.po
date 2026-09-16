@@ -2923,6 +2923,11 @@ msgstr ""
 msgid "Posts {0}"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/bulk-post-preview-modal.tsx
+#: apps/postybirb-ui/src/components/sections/submissions-section/post-preview-modal/post-preview-modal.tsx
+msgid "PostyBirb pauses posting for two minutes after startup so you can review queued posts. Submitting a post ends this grace period early."
+msgstr ""
+
 #: apps/postybirb-ui/src/components/website-login-views/discord/discord-login-view.tsx
 msgid "PostyBirb uses Discord webhooks to post content to your server. Make sure you have the necessary permissions to create webhooks in your target channel."
 msgstr ""
@@ -3756,6 +3761,11 @@ msgstr ""
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-preview-modal/post-preview-modal.tsx
 msgid "Start tour"
 msgstr "Начать обзор"
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/bulk-post-preview-modal.tsx
+#: apps/postybirb-ui/src/components/sections/submissions-section/post-preview-modal/post-preview-modal.tsx
+msgid "Startup grace period"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/app-settings-section.tsx
 msgid "Startup Settings"

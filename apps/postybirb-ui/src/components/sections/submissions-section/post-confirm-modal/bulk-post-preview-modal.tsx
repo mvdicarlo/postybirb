@@ -1,45 +1,45 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
-    ActionIcon,
-    Alert,
-    Badge,
-    Box,
-    Button,
-    Checkbox,
-    Divider,
-    Group,
-    Loader,
-    Modal,
-    ScrollArea,
-    SegmentedControl,
-    Stack,
-    Text,
-    ThemeIcon,
-    Tooltip,
+  ActionIcon,
+  Alert,
+  Badge,
+  Box,
+  Button,
+  Checkbox,
+  Divider,
+  Group,
+  Loader,
+  Modal,
+  ScrollArea,
+  SegmentedControl,
+  Stack,
+  Text,
+  ThemeIcon,
+  Tooltip,
 } from '@mantine/core';
 import {
-    type IUnitOfWork,
-    type SubmissionId,
-    type UnitOfWorkId,
-    UnitOfWorkState,
+  type IUnitOfWork,
+  type SubmissionId,
+  type UnitOfWorkId,
+  UnitOfWorkState,
 } from '@postybirb/types';
 import {
-    IconAlertCircle,
-    IconFile,
-    IconGitBranch,
-    IconHelp,
-    IconHourglass,
-    IconMessage,
-    IconPlayerPause,
-    IconRefresh,
-    IconSend,
-    IconUser,
-    IconWorld,
+  IconAlertCircle,
+  IconFile,
+  IconGitBranch,
+  IconHelp,
+  IconHourglass,
+  IconMessage,
+  IconPlayerPause,
+  IconRefresh,
+  IconSend,
+  IconUser,
+  IconWorld,
 } from '@tabler/icons-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import postingApi, {
-    type PostingDryRun,
-    type PostingRequest,
+  type PostingDryRun,
+  type PostingRequest,
 } from '../../../../api/posting.api';
 import { useAccountsMap } from '../../../../stores/entity/account-store';
 import { useSubmissionsMap } from '../../../../stores/entity/submission-store';
@@ -49,12 +49,12 @@ import { useModalTour } from '../../../onboarding-tour/use-modal-tour';
 import { ReorderableSubmissionList } from '../../../shared/reorderable-submission-list';
 import '../post-preview-modal/post-preview-modal.css';
 import {
-    buildSelectablePostingUnits,
-    buildUnitOfWorkEvictions,
-    getUnitSelectionState,
-    groupUnitsByWebsite,
-    type PostPreviewWebsiteGroup,
-    updateUnitSelection,
+  buildSelectablePostingUnits,
+  buildUnitOfWorkEvictions,
+  getUnitSelectionState,
+  groupUnitsByWebsite,
+  type PostPreviewWebsiteGroup,
+  updateUnitSelection,
 } from '../post-preview-modal/post-preview-modal.utils';
 import { getUnitFileName, getUnitStateInfo } from '../submission-history/history-utils';
 import './post-confirm-modal.css';
@@ -746,6 +746,9 @@ export function BulkPostPreviewModal({
     (preview) => !preview.dependenciesCompleted,
   ).length;
   const isPaused = [...previews.values()].some((preview) => preview.paused);
+  const isStartupGracePeriod = isPaused && [...previews.values()].every(
+    (preview) => !preview.paused || preview.pauseReason === 'startup',
+  );
   const hasSkippedSubmissions =
     validSubmissions.length < totalSelectedCount;
   const isLoading = loadingIds.size > 0;
@@ -864,9 +867,16 @@ export function BulkPostPreviewModal({
                 color="yellow"
                 variant="light"
                 icon={<IconPlayerPause size={17} />}
-                title={<Trans>Posting is paused</Trans>}
+                title={isStartupGracePeriod ? <Trans>Startup grace period</Trans> : <Trans>Posting is paused</Trans>}
               >
-                <Trans>Confirmed work will wait until posting resumes.</Trans>
+                {isStartupGracePeriod ? (
+                  <Trans>
+                    PostyBirb pauses posting for two minutes after startup so you can
+                    review queued posts. Submitting a post ends this grace period early.
+                  </Trans>
+                ) : (
+                  <Trans>Confirmed work will wait until posting resumes.</Trans>
+                )}
               </Alert>
             )}
 

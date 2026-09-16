@@ -525,9 +525,16 @@ export function PostPreviewModal({
             color="yellow"
             variant="light"
             icon={<IconPlayerPause size={17} />}
-            title={<Trans>Posting is paused</Trans>}
+            title={preview.pauseReason === 'startup' ? <Trans>Startup grace period</Trans> : <Trans>Posting is paused</Trans>}
           >
-            <Trans>Confirmed work will wait until posting resumes.</Trans>
+            {preview.pauseReason === 'startup' ? (
+              <Trans>
+                PostyBirb pauses posting for two minutes after startup so you can
+                review queued posts. Submitting a post ends this grace period early.
+              </Trans>
+            ) : (
+              <Trans>Confirmed work will wait until posting resumes.</Trans>
+            )}
           </Alert>
           )}
 

@@ -51,6 +51,7 @@ export interface IncompleteWork {
 
 export interface PostingDryRun extends IncompleteWork {
     paused: boolean;
+    pauseReason: 'startup' | 'manual' | null;
     dependenciesCompleted: boolean;
     executableWork: UnitOfWork[];
     deferredWork: UnitOfWork[];
@@ -87,12 +88,15 @@ export class PostingService {
     ) { }
 
     public async arePostsPaused(): Promise<boolean> {
-        if (Date.now() < this.startupLock) {
-            return true;
-        }
+        return (await this.getPauseReason()) !== null;
+    }
 
+    private async getPauseReason(): Promise<PostingDryRun['pauseReason']> {
         const settings = await this.settingsService.getDefaultSettings();
-        return settings.settings.queuePaused;
+        if (settings.settings.queuePaused) {
+            return 'manual';
+        }
+        return Date.now() < this.startupLock ? 'startup' : null;
     }
 
     public async pausePosts(): Promise<void> {
@@ -536,10 +540,12 @@ export class PostingService {
             )
             : [];
         const executableIds = new Set(executableWork.map((unit) => unit.id));
+        const pauseReason = await this.getPauseReason();
 
         return {
             ...work,
-            paused: await this.arePostsPaused(),
+            paused: pauseReason !== null,
+            pauseReason,
             dependenciesCompleted,
             executableWork,
             deferredWork: work.remainingWork.filter(

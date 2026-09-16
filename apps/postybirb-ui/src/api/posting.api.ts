@@ -1,10 +1,10 @@
 import {
-  AccountId,
-  IPost,
-  IUnitOfWork,
-  SubmissionFileId,
-  SubmissionId,
-  UnitOfWorkId,
+    AccountId,
+    IPost,
+    IUnitOfWork,
+    SubmissionFileId,
+    SubmissionId,
+    UnitOfWorkId,
 } from '@postybirb/types';
 import { HttpClient } from '../transports/http-client';
 
@@ -25,6 +25,7 @@ export interface IncompleteWork {
 
 export interface PostingDryRun extends IncompleteWork {
   paused: boolean;
+  pauseReason: 'startup' | 'manual' | null;
   dependenciesCompleted: boolean;
   executableWork: IUnitOfWork[];
   deferredWork: IUnitOfWork[];
