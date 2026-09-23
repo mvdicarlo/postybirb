@@ -5,7 +5,6 @@ import {
   PostResponse,
   SubmissionRating,
 } from '@postybirb/types';
-import parse from 'node-html-parser';
 import { CancellationToken } from '../../../posting/cancellation-token';
 import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
@@ -49,47 +48,21 @@ export default class Piczel
     };
 
   public async onLogin(): Promise<LoginResult> {
-    const res = await this.platform.http.get<string>(
-      `${this.BASE_URL}/gallery/upload`,
+    const res = await this.platform.http.get<{ id: number; username: string }>(
+      'https://api.piczel.tv/users/me',
       {
         partition: this.accountId,
       },
     );
 
-    if (res.body.includes('/signup')) {
+    if (!res.body || !res.body.username) {
       return { loggedIn: false };
     }
 
     try {
-      const $ = parse(res.body);
-      const jsonMatches =
-        $.getElementById('_R_')?.textContent.match(
-          /JSON\.parse\(\s*(["'])((?:\\.|(?!\1).)*)\1\s*\)/gm,
-        ) ?? [];
-      const stateJson =
-        jsonMatches.find((match) => match.includes('username')) ?? '';
-      const escapedJson = stateJson.match(
-        /JSON\.parse\(\s*(["'])((?:\\.|(?!\1).)*)\1\s*\)/,
-      )?.[2];
-      // The captured content is the escaped body of a string literal that was
-      // passed to JSON.parse. Unescape it properly (handles \uXXXX, \\, \n,
-      // etc.) by parsing it as a JSON string, instead of stripping backslashes,
-      // which corrupted any non-ASCII/escaped data and broke login detection.
-      const unescapedJson = escapedJson
-        ? (JSON.parse(`"${escapedJson}"`) as string)
-        : '';
-      const preloadedData = JSON.parse(unescapedJson || '{}');
-
-      if (!preloadedData.currentUser) {
-        return { loggedIn: false };
-      }
-      const { username } = preloadedData.currentUser.data;
-      if (!username) {
-        return { loggedIn: false };
-      }
-
+      const { username } = res.body;
       // Fetch folders
-      await this.getFolders(username);
+      await this.getFolders();
 
       return { loggedIn: true, username };
     } catch (error) {
@@ -97,10 +70,10 @@ export default class Piczel
     }
   }
 
-  private async getFolders(username: string): Promise<void> {
+  private async getFolders(): Promise<void> {
     try {
       const res = await this.platform.http.get<{ id: number; name: string }[]>(
-        `${this.BASE_URL}/api/users/${username}/gallery/folders`,
+        'https://api.piczel.tv/users/me/gallery/folders',
         {
           partition: this.accountId,
         },
