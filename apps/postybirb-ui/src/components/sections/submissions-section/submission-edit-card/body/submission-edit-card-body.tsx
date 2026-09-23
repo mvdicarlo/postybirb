@@ -94,7 +94,12 @@ export function SubmissionEditCardBody() {
             onChange={handleDependenciesChange}
             type={submission.type}
             excludeIds={[submission.id]}
-            label={<Trans>Depends on submissions</Trans>}
+            label={<Trans>Post after</Trans>}
+            description={
+              <Trans>
+                Choose which submissions should be posted before this one.
+              </Trans>
+            }
             disabled={submission.isArchived}
           />
         </Box>
