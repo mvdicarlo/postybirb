@@ -768,6 +768,10 @@ msgstr "எதை வெளியிட வேண்டும் என்பத
 msgid "Choose which accounts to post to. Click to open the dropdown, then select individual accounts or entire website groups."
 msgstr ""
 
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/body/submission-edit-card-body.tsx
+msgid "Choose which submissions should be posted before this one."
+msgstr ""
+
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/bulk-post-preview-modal.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-preview-modal/post-preview-modal.tsx
 msgid "Clear"
@@ -1265,10 +1269,6 @@ msgstr "தொகுதியின் வரிசை எதுவாக இர
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/bulk-post-preview-modal.tsx
 msgid "Depends on"
-msgstr ""
-
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/body/submission-edit-card-body.tsx
-msgid "Depends on submissions"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/submission-edit-tour.tsx
@@ -2821,6 +2821,10 @@ msgstr "இடுகை"
 #. placeholder {0}: requests.length
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/bulk-post-preview-modal.tsx
 msgid "Post {0}"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/body/submission-edit-card-body.tsx
+msgid "Post after"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/bulk-post-preview-modal.tsx

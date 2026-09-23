@@ -769,6 +769,10 @@ msgstr "Escolha o que publicar"
 msgid "Choose which accounts to post to. Click to open the dropdown, then select individual accounts or entire website groups."
 msgstr "Escolha em quais contas publicar. Clique para abrir a lista e selecione contas individuais ou grupos inteiros de sites."
 
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/body/submission-edit-card-body.tsx
+msgid "Choose which submissions should be posted before this one."
+msgstr ""
+
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/bulk-post-preview-modal.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-preview-modal/post-preview-modal.tsx
 msgid "Clear"
@@ -1267,10 +1271,6 @@ msgstr "As dependências valem independentemente da ordem do lote. Uma publicaç
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/bulk-post-preview-modal.tsx
 msgid "Depends on"
 msgstr "Depende de"
-
-#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/body/submission-edit-card-body.tsx
-msgid "Depends on submissions"
-msgstr "Depende dos envios"
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/submission-edit-tour.tsx
 msgid "Depends On Submissions"
@@ -2823,6 +2823,10 @@ msgstr "Publicar"
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/bulk-post-preview-modal.tsx
 msgid "Post {0}"
 msgstr "Publicar {0}"
+
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/body/submission-edit-card-body.tsx
+msgid "Post after"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/bulk-post-preview-modal.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-preview-modal/post-preview-modal.tsx
