@@ -28,6 +28,7 @@ export { default as Pillowfort } from './pillowfort/pillowfort.website';
 export { default as Pixelfed } from './pixelfed/pixelfed.website';
 export { default as Pixiv } from './pixiv/pixiv.website';
 export { default as Pleroma } from './pleroma/pleroma.website';
+export { default as Prometheus } from './prometheus/prometheus.website';
 export { default as Sofurry } from './sofurry/sofurry.website';
 export { default as SubscribeStarAdult } from './subscribe-star/subscribe-star-adult.website';
 export { default as SubscribeStar } from './subscribe-star/subscribe-star.website';

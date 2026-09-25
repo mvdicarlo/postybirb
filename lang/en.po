@@ -429,6 +429,10 @@ msgstr "An error occurred"
 msgid "and {remainingCount} more"
 msgstr "and {remainingCount} more"
 
+#: apps/postybirb-ui/src/components/website-login-views/prometheus/prometheus-login-view.tsx
+msgid "API Key"
+msgstr "API Key"
+
 #: apps/postybirb-ui/src/components/website-login-views/twitter/twitter-login-view.tsx
 msgid "API Key (Consumer Key)"
 msgstr "API Key (Consumer Key)"
@@ -3588,6 +3592,10 @@ msgstr "Set up your website accounts here. Log in to the sites you want to post 
 msgid "Settings"
 msgstr "Settings"
 
+#: apps/postybirb-ui/src/components/website-login-views/prometheus/prometheus-login-view.tsx
+msgid "Settings / Security"
+msgstr "Settings / Security"
+
 #: libs/translations/src/lib/field-translations.ts
 msgid "Sexual Themes"
 msgstr "Sexual Themes"
@@ -4477,6 +4485,7 @@ msgstr "Used for other sites (like e621) as source url base. Independent from cu
 
 #: apps/postybirb-ui/src/components/website-login-views/e621/e621-login-view.tsx
 #: apps/postybirb-ui/src/components/website-login-views/inkbunny/inkbunny-login-view.tsx
+#: apps/postybirb-ui/src/components/website-login-views/prometheus/prometheus-login-view.tsx
 msgid "Username"
 msgstr "Username"
 
