@@ -1083,7 +1083,7 @@ describe('PostingWorker', () => {
     expect(mocks.unitOfWorkRepository.update).toHaveBeenCalledWith('work-1', {
       state: 'FAILED',
       response: {
-        error: "Error posting batch for account 'account-1'",
+        error: 'Website failed during dispatch',
       },
     });
     expect(mocks.unitOfWorkRepository.update).toHaveBeenCalledWith('work-1', {

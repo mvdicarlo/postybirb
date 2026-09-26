@@ -1044,12 +1044,13 @@ export class PostingWorker {
     postData?: PostData<IWebsiteFormFields>,
   ): Promise<void> {
     this.logger.withError(error).error(message);
+    const errorMessage = this.getErrorMessage(error, message);
     await this.failUnitsOfWork(
       units,
       websiteInstance,
       submission,
-      this.getErrorMessage(error, message),
-      { error: message },
+      errorMessage,
+      { error: errorMessage },
       { error, postData },
     );
   }
