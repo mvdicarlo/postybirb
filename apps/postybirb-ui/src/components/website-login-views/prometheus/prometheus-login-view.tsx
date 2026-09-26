@@ -4,9 +4,9 @@ import { PrometheusAccountData, PrometheusOAuthRoutes } from '@postybirb/types';
 import { useState } from 'react';
 import websitesApi from '../../../api/websites.api';
 import {
-  createLoginHttpErrorHandler,
-  notifyLoginFailed,
-  notifyLoginSuccess,
+    createLoginHttpErrorHandler,
+    notifyLoginFailed,
+    notifyLoginSuccess,
 } from '../helpers';
 import { LoginViewContainer } from '../login-view-container';
 import type { LoginViewProps } from '../types';

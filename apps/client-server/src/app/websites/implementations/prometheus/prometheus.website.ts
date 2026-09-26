@@ -1,15 +1,15 @@
 import { FormFile, HttpResponse } from '@postybirb/http/types';
 import {
-  ImageResizeProps,
-  IPostResponse,
-  LoginResult,
-  OAuthRouteHandlers,
-  PostData,
-  PostResponse,
-  PrometheusAccountData,
-  PrometheusOAuthRoutes,
-  SimpleValidationResult,
-  SubmissionRating,
+    ImageResizeProps,
+    IPostResponse,
+    LoginResult,
+    OAuthRouteHandlers,
+    PostData,
+    PostResponse,
+    PrometheusAccountData,
+    PrometheusOAuthRoutes,
+    SimpleValidationResult,
+    SubmissionRating,
 } from '@postybirb/types';
 import { extname } from 'path';
 import { CancellationToken } from '../../../posting/cancellation-token';
