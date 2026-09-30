@@ -1,12 +1,12 @@
 import { SelectOption } from '@postybirb/form-builder';
 
 import {
-  ImageResizeProps,
-  ISubmissionFile,
-  LoginResult,
-  PostData,
-  PostResponse,
-  SimpleValidationResult,
+    ImageResizeProps,
+    ISubmissionFile,
+    LoginResult,
+    PostData,
+    PostResponse,
+    SimpleValidationResult,
 } from '@postybirb/types';
 import parse, { HTMLElement } from 'node-html-parser';
 import { parse as parseFileName } from 'path';
@@ -24,6 +24,7 @@ import { SubscribeStarMessageSubmission } from './models/subscribe-star-message-
 type SubscribeStarSession = {
   userId: string;
   csrfToken?: string;
+  profileUrl?: string;
 };
 
 type SubscribeStarUploadData = {
@@ -96,18 +97,71 @@ export default abstract class BaseSubscribeStar
         this.logger.warn('Failed to find csrf-token meta element during login');
         return { loggedIn: false };
       }
-      this.sessionData.csrfToken = csrfToken;
       const userId = topBar.querySelector('img')?.getAttribute('data-user-id');
       if (!userId) {
         this.logger.warn('Failed to find user-id img element during login');
         return { loggedIn: false };
       }
+      const profileUrl = this.getProfileUrl($);
+      if (!profileUrl) {
+        this.logger.warn('Failed to find profile page URL during login');
+        return { loggedIn: false };
+      }
+      this.sessionData.csrfToken = csrfToken;
       this.sessionData.userId = userId;
+      this.sessionData.profileUrl = profileUrl;
       this.loadTiers($);
       return { loggedIn: true, username: username || 'unknown' };
     }
 
     return { loggedIn: false };
+  }
+
+  private getProfileUrl(page: HTMLElement): string | undefined {
+    const selector = 'a.user_menu-item.for-star';
+    let profilePath = page.querySelector(selector)?.getAttribute('href');
+
+    if (!profilePath) {
+      for (const template of page.querySelectorAll('[data-safe-html]')) {
+        const templateHtml = template.getAttribute('data-safe-html');
+        if (!templateHtml) {
+          continue;
+        }
+        try {
+          const html: unknown = JSON.parse(templateHtml);
+          if (typeof html !== 'string') {
+            continue;
+          }
+          profilePath = parse(html).querySelector(selector)?.getAttribute('href');
+          if (profilePath) {
+            break;
+          }
+        } catch {
+          continue;
+        }
+      }
+    }
+
+    if (!profilePath) {
+      return undefined;
+    }
+
+    try {
+      const baseUrl = new URL(this.BASE_URL);
+      const profileUrl = new URL(profilePath, baseUrl);
+      if (
+        profileUrl.protocol !== baseUrl.protocol ||
+        profileUrl.host.replace(/^www\./, '') !== baseUrl.host.replace(/^www\./, '') ||
+        profileUrl.username ||
+        profileUrl.password ||
+        profileUrl.pathname === '/'
+      ) {
+        return undefined;
+      }
+      return profileUrl.href;
+    } catch {
+      return undefined;
+    }
   }
 
   private loadTiers($: HTMLElement) {
@@ -156,7 +210,10 @@ export default abstract class BaseSubscribeStar
   }
 
   private async getPostData(): Promise<SubscribeStarUploadData> {
-    const url = `${this.BASE_URL}/${this.username}`;
+    const url = this.sessionData.profileUrl;
+    if (!url) {
+      throw new Error('Missing profile page URL. Please log in again.');
+    }
     try {
       return await this.acquireUploadTokens(url);
     } catch (error) {
@@ -231,7 +288,7 @@ export default abstract class BaseSubscribeStar
       
       return getInfo();
     `,
-        1000,
+        1_000,
       );
 
     if (authenticityToken && s3UploadPath && s3Url && csrfToken) {
@@ -250,6 +307,10 @@ export default abstract class BaseSubscribeStar
     file: PostingFile,
     uploadData: SubscribeStarUploadData,
   ): Promise<string | undefined> {
+    const { profileUrl } = this.sessionData;
+    if (!profileUrl) {
+      throw new Error('Missing profile page URL. Please log in again.');
+    }
     const bucket = uploadData.s3Url.split('//')[1].split('.')[0];
 
     const signId = v4();
@@ -328,7 +389,7 @@ export default abstract class BaseSubscribeStar
           headers: {
             'X-CSRF-Token': uploadData.csrfToken,
             Accept: 'application/json',
-            Referer: `${this.BASE_URL}/${this.username}`,
+            Referer: profileUrl,
           },
         },
       );
