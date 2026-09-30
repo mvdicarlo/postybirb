@@ -11,6 +11,7 @@ import { InkbunnyLoginView } from './inkbunny';
 import { InstagramLoginView } from './instagram';
 import { MegalodonLoginView } from './megalodon';
 import { MisskeyLoginView } from './misskey';
+import { PrometheusLoginView } from './prometheus';
 import { SofurryLoginView } from './sofurry';
 import { SubscribeStarAdultLoginView } from './subscribe-star-adult';
 import { TelegramLoginView } from './telegram';
@@ -44,6 +45,7 @@ const loginViewRegistry: Record<string, LoginViewComponent<any>> = {
   Misskey: MisskeyLoginView,
   Pixelfed: MegalodonLoginView,
   Pleroma: MegalodonLoginView,
+  Prometheus: PrometheusLoginView,
   Sofurry: SofurryLoginView,
   SubscribeStarAdult: SubscribeStarAdultLoginView,
   Telegram: TelegramLoginView,
