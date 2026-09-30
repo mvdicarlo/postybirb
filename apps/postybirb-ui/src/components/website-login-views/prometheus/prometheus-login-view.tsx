@@ -3,6 +3,7 @@ import { Button, PasswordInput, Stack, TextInput } from '@mantine/core';
 import { PrometheusAccountData, PrometheusOAuthRoutes } from '@postybirb/types';
 import { useState } from 'react';
 import websitesApi from '../../../api/websites.api';
+import { ExternalLink } from '../../shared/external-link';
 import {
     createLoginHttpErrorHandler,
     notifyLoginFailed,
@@ -54,7 +55,11 @@ export default function PrometheusLoginView({
           />
           <PasswordInput
             label={<Trans>API Key</Trans>}
-            description={<Trans>Settings / Security</Trans>}
+            description={
+              <ExternalLink href="https://prometheus-archive.net/settings?tab=security">
+                <Trans>Settings / Security</Trans>
+              </ExternalLink>
+            }
             name="password"
             autoComplete="off"
             required

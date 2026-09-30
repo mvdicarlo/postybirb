@@ -1,14 +1,14 @@
 import {
-    BooleanField,
-    DescriptionField,
-    SelectField,
-    TextField,
-    TitleField,
+  BooleanField,
+  DescriptionField,
+  SelectField,
+  TextField,
+  TitleField,
 } from '@postybirb/form-builder';
 import {
-    DescriptionType,
-    DescriptionValue,
-    PrometheusAccountData,
+  DescriptionType,
+  DescriptionValue,
+  PrometheusAccountData,
 } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
@@ -22,6 +22,15 @@ export class PrometheusFileSubmission extends BaseWebsiteOptions {
     descriptionType: DescriptionType.BBCODE,
   })
   declare description: DescriptionValue;
+
+    @TextField({
+    label: 'contentWarning',
+    hidden: false,
+    formField: 'textarea',
+    maxLength: 1000,
+    span: 12,
+  })
+  declare contentWarning: string;
 
   @SelectField<PrometheusAccountData>({
     label: 'folder',
@@ -43,6 +52,14 @@ export class PrometheusFileSubmission extends BaseWebsiteOptions {
   })
   pools: string[] = [];
 
+  @TextField({
+    label: { untranslated: 'Parent entry ID' },
+    maxLength: 32,
+    section: 'website',
+    span: 6,
+  })
+  subEntryOf = '';
+
   @SelectField({
     label: { untranslated: 'Visibility' },
     defaultValue: 'inherit',
@@ -58,35 +75,19 @@ export class PrometheusFileSubmission extends BaseWebsiteOptions {
   })
   visibility: string;
 
-  @BooleanField({
-    label: { untranslated: 'Display on gallery' },
-    defaultValue: true,
-    section: 'website',
-    span: 6,
-  })
-  displayOnGallery: boolean;
-
   @TextField({
     label: { untranslated: 'Entry password' },
     showWhen: [['visibility', ['password']]],
     section: 'website',
-    span: 12,
+    span: 6,
   })
   accessPassword = '';
 
-  @TextField({
-    label: 'contentWarning',
-    hidden: false,
-    formField: 'textarea',
-    maxLength: 1000,
-  })
-  declare contentWarning: string;
-
-  @TextField({
-    label: { untranslated: 'Parent entry ID' },
-    maxLength: 32,
+  @BooleanField({
+    label: { untranslated: 'Display on gallery' },
+    defaultValue: true,
     section: 'website',
     span: 12,
   })
-  subEntryOf = '';
+  displayOnGallery: boolean;
 }
