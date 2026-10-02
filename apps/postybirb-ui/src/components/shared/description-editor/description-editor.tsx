@@ -528,8 +528,12 @@ export function DescriptionEditor({
   // Keep ref in sync with editor for callbacks
   editorRef.current = editor;
 
+  // When value passed externally updates, update the editor too
   const lastValueRef = useRef({ editor, value });
   useEffect(() => {
+    // Don't update the editor while user is typing to prevent shortcuts from disappearing
+    if (!editor || editor.isFocused) return;
+
     const previous = lastValueRef.current;
     lastValueRef.current = { editor, value };
 
