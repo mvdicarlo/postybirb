@@ -109,22 +109,19 @@ export default class Piczel
     cancellationToken.throwIfAborted();
     const { options } = postData;
     const builder = new PostBuilder(this, cancellationToken)
-      .asJson()
-      .setField('nsfw', options.rating !== SubmissionRating.GENERAL)
+      .asMultipart()
+      .setConditional(
+        'nsfw',
+        options.rating === SubmissionRating.GENERAL,
+        'false',
+        'true',
+      )
       .setField('description', options.description || '')
       .setField('title', options.title || 'New Submission')
-      .setField('tags', options.tags)
+      .setField('tags[]', options.tags)
       .setField('uploadMode', 'PUBLISH')
       .setField('thumbnail_id', 0)
-      .setField(
-        'files',
-        files.map((file) => ({
-          name: file.fileName,
-          size: file.buffer.length,
-          type: file.mimeType,
-          data: `data:${file.mimeType};base64,${file.buffer.toString('base64')}`,
-        })),
-      )
+      .addFiles('files[]', files)
       .setConditional('folder_id', !!options.folder, options.folder)
       .withHeaders({
         Accept: '*/*',
