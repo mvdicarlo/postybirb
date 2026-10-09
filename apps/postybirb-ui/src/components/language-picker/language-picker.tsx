@@ -3,7 +3,7 @@
  * Displays as a NavLink-style component with a menu popup for language selection.
  */
 
-import { Trans } from '@lingui/react/macro';
+import { Trans, useLingui } from '@lingui/react/macro';
 import {
     Badge,
     Box,
@@ -38,6 +38,7 @@ export function LanguagePicker({
   collapsed = false,
   kbd,
 }: LanguagePickerProps) {
+  const { t } = useLingui();
   const { language: locale, setLanguage: setLocale } = useLanguageActions();
   const [opened, { toggle, close }] = useDisclosure(false);
   const [hoveredLang, setHoveredLang] = useState<string | null>(null);
@@ -57,6 +58,8 @@ export function LanguagePicker({
 
   const navLinkContent = (
     <MantineNavLink
+      component="button"
+      aria-label={t`Language: ${currentLanguageName}`}
       label={labelContent}
       leftSection={<IconLanguage size={20} />}
       active={opened}

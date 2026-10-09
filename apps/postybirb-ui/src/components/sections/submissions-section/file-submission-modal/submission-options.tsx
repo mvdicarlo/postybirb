@@ -13,18 +13,19 @@ import {
   Tag,
 } from '@postybirb/types';
 import { IconFileText, IconTemplate } from '@tabler/icons-react';
-import { useLocalStorage } from 'react-use';
 import { DescriptionEditor } from '../../../shared/description-editor';
 import { RatingInput } from '../../../shared/rating-input';
 import { SimpleTagInput } from '../../../shared/simple-tag-input';
 import { TemplatePicker } from '../../../shared/template-picker/template-picker';
 import './file-submission-modal.css';
 
-type OptionsMode = 'custom' | 'template';
-
-const CREATE_SUBMISSION_MODE_KEY = 'postybirb-create-submission-mode';
+export type OptionsMode = 'custom' | 'template';
 
 export interface SubmissionOptionsProps {
+  /** Active options mode */
+  mode: OptionsMode;
+  /** Options mode change handler */
+  onModeChange: (mode: OptionsMode) => void;
   /** Submission type for template filtering */
   type: SubmissionType;
   /** Current rating */
@@ -50,6 +51,8 @@ export interface SubmissionOptionsProps {
  * Users can choose between custom options OR a template, not both.
  */
 export function SubmissionOptions({
+  mode,
+  onModeChange,
   type,
   rating,
   onRatingChange,
@@ -61,13 +64,9 @@ export function SubmissionOptions({
   onTemplateChange,
 }: SubmissionOptionsProps) {
   const { t } = useLingui();
-  const [mode, setMode] = useLocalStorage<OptionsMode>(
-    CREATE_SUBMISSION_MODE_KEY,
-    'custom',
-  );
 
   const handleModeChange = (newMode: string) => {
-    setMode(newMode as OptionsMode);
+    onModeChange(newMode as OptionsMode);
     // Clear the other mode's data when switching
     if (newMode === 'template') {
       // Clear custom options when switching to template

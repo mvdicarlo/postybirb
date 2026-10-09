@@ -4,7 +4,7 @@
  * Handles view, drawer, and custom navigation items.
  */
 
-import { Trans } from '@lingui/react/macro';
+import { Trans, useLingui } from '@lingui/react/macro';
 import {
   Box,
   Divider,
@@ -15,6 +15,7 @@ import {
   Text,
   Title,
   Tooltip,
+  VisuallyHidden,
 } from '@mantine/core';
 import {
   IconChevronLeft,
@@ -44,8 +45,17 @@ function TourButton({ collapsed }: { collapsed: boolean }) {
 
   const navLink = (
     <MantineNavLink
+      component="button"
       leftSection={<IconHelp size={20} />}
-      label={collapsed ? undefined : <Trans>Take the Tour</Trans>}
+      label={
+        collapsed ? (
+          <VisuallyHidden>
+            <Trans>Take the Tour</Trans>
+          </VisuallyHidden>
+        ) : (
+          <Trans>Take the Tour</Trans>
+        )
+      }
       onClick={() => startTour(LAYOUT_TOUR_ID)}
     />
   );
@@ -95,7 +105,9 @@ function NavItemRenderer({
   }
 
   // Build the label with optional keyboard shortcut (only for non-theme items)
-  const labelContent = collapsed ? undefined : (
+  const labelContent = collapsed ? (
+    <VisuallyHidden>{item.label}</VisuallyHidden>
+  ) : (
     <Box className="postybirb__nav_item_label">
       <span>{item.label}</span>
       {item.kbd && <Kbd size="xs">{formatKeybindingDisplay(item.kbd)}</Kbd>}
@@ -114,8 +126,10 @@ function NavItemRenderer({
   if (item.type === 'view') {
     navLinkContent = (
       <MantineNavLink
+        component="button"
         onClick={() => setViewState(item.viewState)}
         active={isActive}
+        aria-current={isActive ? 'page' : undefined}
         {...commonProps}
       />
     );
@@ -132,13 +146,21 @@ function NavItemRenderer({
   } else if (item.type === 'drawer') {
     navLinkContent = (
       <MantineNavLink
+        component="button"
         onClick={() => toggleDrawer(item.drawerKey)}
         active={isActive}
+        aria-expanded={isActive}
         {...commonProps}
       />
     );
   } else if (item.type === 'custom') {
-    navLinkContent = <MantineNavLink onClick={item.onClick} {...commonProps} />;
+    navLinkContent = (
+      <MantineNavLink
+        component="button"
+        onClick={item.onClick}
+        {...commonProps}
+      />
+    );
   }
 
   if (collapsed) {
@@ -175,11 +197,14 @@ function NavItemRenderer({
  * Shows icons + labels when expanded, icons only when collapsed.
  */
 export function SideNav({ items, collapsed, onCollapsedChange }: SideNavProps) {
+  const { t } = useLingui();
   const viewState = useViewState();
   const activeDrawer = useActiveDrawer();
 
   return (
     <Box
+      component="nav"
+      aria-label={t`Main navigation`}
       className={cn(['postybirb__sidenav'], {
         'postybirb__sidenav--collapsed': collapsed,
       })}
@@ -208,26 +233,30 @@ export function SideNav({ items, collapsed, onCollapsedChange }: SideNavProps) {
         <Box className="postybirb__sidenav_nav">
           {/* Collapse/Expand toggle as first nav item */}
 
-          <MantineNavLink
-            leftSection={
-              collapsed ? (
-                <IconChevronRight size={20} />
-              ) : (
-                <IconChevronLeft size={20} />
-              )
-            }
-            onClick={() => onCollapsedChange(!collapsed)}
-            aria-label={
-              // eslint-disable-next-line lingui/no-unlocalized-strings
-              collapsed ? 'Expand navigation' : 'Collapse navigation'
-            }
-          />
+          <Tooltip
+            label={collapsed ? t`Expand navigation` : t`Collapse navigation`}
+            position="right"
+            withArrow
+          >
+            <MantineNavLink
+              component="button"
+              leftSection={
+                collapsed ? (
+                  <IconChevronRight size={20} />
+                ) : (
+                  <IconChevronLeft size={20} />
+                )
+              }
+              onClick={() => onCollapsedChange(!collapsed)}
+              aria-label={
+                collapsed ? t`Expand navigation` : t`Collapse navigation`
+              }
+              aria-expanded={!collapsed}
+            />
+          </Tooltip>
 
           {/* Update button - shows when update is available */}
           <UpdateButton collapsed={collapsed} />
-
-          {/* Tour button */}
-          <TourButton collapsed={collapsed} />
 
           {items.map((item) => {
             // Handle divider
@@ -250,6 +279,8 @@ export function SideNav({ items, collapsed, onCollapsedChange }: SideNavProps) {
               />
             );
           })}
+          <Divider my="xs" />
+          <TourButton collapsed={collapsed} />
         </Box>
       </ScrollArea>
     </Box>

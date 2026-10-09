@@ -45,7 +45,7 @@ import { FileList } from './file-list';
 import './file-submission-modal.css';
 import { FileItem, getDefaultTitle } from './file-submission-modal.utils';
 import { ImageEditor } from './image-editor';
-import { SubmissionOptions } from './submission-options';
+import { OptionsMode, SubmissionOptions } from './submission-options';
 
 export interface FileSubmissionModalProps {
   /** Whether the modal is open */
@@ -71,6 +71,7 @@ export interface FileSubmissionModalProps {
 
 const DEFAULT_TEMPLATE_ID_KEY =
   'postybirb-create-submission-default-template-id';
+const CREATE_SUBMISSION_MODE_KEY = 'postybirb-create-submission-mode';
 
 /**
  * FileSubmissionModal - Enhanced file upload modal.
@@ -97,9 +98,28 @@ export function FileSubmissionModal({
   }, [opened, initialFiles]);
 
   // Template state
-  const [selectedTemplateId, setSelectedTemplateId] = useLocalStorage<
-    SubmissionId | undefined
-  >(DEFAULT_TEMPLATE_ID_KEY, undefined);
+  const [
+    selectedTemplateId,
+    setStoredTemplateId,
+    removeStoredTemplateId,
+  ] = useLocalStorage<SubmissionId | undefined>(
+    DEFAULT_TEMPLATE_ID_KEY,
+    undefined,
+  );
+  const setSelectedTemplateId = useCallback(
+    (templateId: SubmissionId | undefined) => {
+      if (templateId === undefined) {
+        removeStoredTemplateId();
+      } else {
+        setStoredTemplateId(templateId);
+      }
+    },
+    [removeStoredTemplateId, setStoredTemplateId],
+  );
+  const [optionsMode, setOptionsMode] = useLocalStorage<OptionsMode>(
+    CREATE_SUBMISSION_MODE_KEY,
+    'custom',
+  );
 
   // Clear files when modal is closed
   useEffect(() => {
@@ -219,7 +239,8 @@ export function FileSubmissionModal({
           description: description.content?.length ? description : undefined,
           rating: rating !== SubmissionRating.GENERAL ? rating : undefined,
         },
-        templateId: selectedTemplateId,
+        templateId:
+          optionsMode === 'template' ? selectedTemplateId : undefined,
       });
 
       clearInterval(interval);
@@ -249,6 +270,7 @@ export function FileSubmissionModal({
     description,
     rating,
     selectedTemplateId,
+    optionsMode,
     setSelectedTemplateId,
     onUpload,
     onClose,
@@ -321,6 +343,8 @@ export function FileSubmissionModal({
 
                 {/* Right column - Options */}
                 <SubmissionOptions
+                  mode={optionsMode ?? 'custom'}
+                  onModeChange={setOptionsMode}
                   type={type}
                   rating={rating}
                   onRatingChange={setRating}

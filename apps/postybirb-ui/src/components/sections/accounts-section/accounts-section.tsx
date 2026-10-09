@@ -4,7 +4,16 @@
  */
 
 import { Trans } from '@lingui/react/macro';
-import { Box, Divider, Loader, ScrollArea, Stack } from '@mantine/core';
+import {
+  Box,
+  Button,
+  Divider,
+  Group,
+  Loader,
+  ScrollArea,
+  Stack,
+} from '@mantine/core';
+import { IconFilterOff, IconEye } from '@tabler/icons-react';
 import { useMemo } from 'react';
 import accountApi from '../../../api/account.api';
 import {
@@ -44,7 +53,14 @@ export function AccountsSection({ viewState }: AccountsSectionProps) {
   const accounts = useAccounts();
   const { isLoading: websitesLoading } = useWebsitesLoading();
   const { isLoading: accountsLoading } = useAccountsLoading();
-  const { searchQuery, loginFilter, hiddenWebsites } = useAccountsFilter();
+  const {
+    searchQuery,
+    loginFilter,
+    hiddenWebsites,
+    setSearchQuery,
+    setLoginFilter,
+    setHiddenWebsites,
+  } = useAccountsFilter();
   const setViewState = useNavigationStore((state) => state.setViewState);
 
   // Get selected account ID from view state
@@ -212,7 +228,36 @@ export function AccountsSection({ viewState }: AccountsSectionProps) {
             <Loader size="sm" />
           </Box>
         ) : sortedWebsites.length === 0 ? (
-          <EmptyState preset="no-results" />
+          <EmptyState
+            preset="no-results"
+            action={
+              <Group gap="xs" justify="center">
+                {(searchQuery || loginFilter !== AccountLoginFilter.All) && (
+                  <Button
+                    size="xs"
+                    variant="light"
+                    leftSection={<IconFilterOff size={14} />}
+                    onClick={() => {
+                      setSearchQuery('');
+                      setLoginFilter(AccountLoginFilter.All);
+                    }}
+                  >
+                    <Trans>Clear filters</Trans>
+                  </Button>
+                )}
+                {hiddenWebsites.length > 0 && (
+                  <Button
+                    size="xs"
+                    variant="default"
+                    leftSection={<IconEye size={14} />}
+                    onClick={() => setHiddenWebsites([])}
+                  >
+                    <Trans>Show hidden websites</Trans>
+                  </Button>
+                )}
+              </Group>
+            }
+          />
         ) : (
           <AccountsProvider
             selectedAccountId={selectedAccountId}

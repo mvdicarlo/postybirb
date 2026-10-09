@@ -3,7 +3,7 @@
  * Uses a sidebar navigation pattern similar to Discord/Slack settings.
  */
 
-import { Trans } from '@lingui/react/macro';
+import { Trans, useLingui } from '@lingui/react/macro';
 import {
   Box,
   CloseButton,
@@ -119,6 +119,7 @@ const NAV_ITEMS: NavItem[] = [
 // ============================================================================
 
 export function SettingsDialog() {
+  const { t } = useLingui();
   const activeDrawer = useActiveDrawer();
   const { closeDrawer } = useDrawerActions();
   const [activeSection, setActiveSection] =
@@ -158,6 +159,8 @@ export function SettingsDialog() {
 
   return (
     <Modal
+      title={<Trans>Settings</Trans>}
+      styles={{ header: { display: 'none' } }}
       opened={opened}
       onClose={closeDrawer}
       size="xl"
@@ -171,7 +174,7 @@ export function SettingsDialog() {
     >
       <div className={classes.container}>
         {/* Sidebar Navigation */}
-        <nav className={classes.sidebar}>
+        <nav className={classes.sidebar} aria-label={t`Settings categories`}>
           <div className={classes.sidebarHeader}>
             <Title order={4}>
               <Trans>Settings</Trans>
@@ -181,10 +184,12 @@ export function SettingsDialog() {
             <Stack gap={2}>
               {NAV_ITEMS.map((item) => (
                 <NavLink
+                  component="button"
                   key={item.id}
                   label={item.label}
                   leftSection={item.icon}
                   active={activeSection === item.id}
+                  aria-current={activeSection === item.id ? 'page' : undefined}
                   onClick={() => setActiveSection(item.id)}
                   className={classes.navLink}
                 />
@@ -207,7 +212,11 @@ export function SettingsDialog() {
                   {NAV_ITEMS.find((item) => item.id === activeSection)?.label}
                 </Text>
               </Group>
-              <CloseButton onClick={closeDrawer} size="lg" />
+              <CloseButton
+                onClick={closeDrawer}
+                size="lg"
+                aria-label={t`Close settings`}
+              />
             </Group>
           </header>
 

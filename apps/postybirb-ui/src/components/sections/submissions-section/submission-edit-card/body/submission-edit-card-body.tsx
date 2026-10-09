@@ -54,13 +54,14 @@ export function SubmissionEditCardBody() {
     [submission.id],
   );
 
+  const isMultiOrTemplate =
+    submission.isMultiSubmission || submission.isTemplate;
+
   const showFileManagement =
-    submission.type === SubmissionType.FILE &&
-    !submission.isMultiSubmission &&
-    !submission.isTemplate;
+    submission.type === SubmissionType.FILE && !isMultiOrTemplate;
 
   // Don't show schedule form for templates or multi-submissions
-  const showScheduleForm = !submission.isTemplate && !submission.isMultiSubmission;
+  const showScheduleForm = !isMultiOrTemplate;
 
   return (
     <Stack gap="md" p="md">
@@ -87,23 +88,25 @@ export function SubmissionEditCardBody() {
         </ComponentErrorBoundary>
       )}
 
-      <ComponentErrorBoundary>
-        <Box data-tour-id="edit-card-dependencies">
-          <SubmissionPicker
-            value={submission.dependsOn}
-            onChange={handleDependenciesChange}
-            type={submission.type}
-            excludeIds={[submission.id]}
-            label={<Trans>Post after</Trans>}
-            description={
-              <Trans>
-                Choose which submissions should be posted before this one.
-              </Trans>
-            }
-            disabled={submission.isArchived}
-          />
-        </Box>
-      </ComponentErrorBoundary>
+      {showScheduleForm && (
+        <ComponentErrorBoundary>
+          <Box data-tour-id="edit-card-dependencies">
+            <SubmissionPicker
+              value={submission.dependsOn}
+              onChange={handleDependenciesChange}
+              type={submission.type}
+              excludeIds={[submission.id]}
+              label={<Trans>Post after</Trans>}
+              description={
+                <Trans>
+                  Choose which submissions should be posted before this one.
+                </Trans>
+              }
+              disabled={submission.isArchived}
+            />
+          </Box>
+        </ComponentErrorBoundary>
+      )}
 
       {/* Defaults Form - global options like title, description, tags */}
       <ComponentErrorBoundary>

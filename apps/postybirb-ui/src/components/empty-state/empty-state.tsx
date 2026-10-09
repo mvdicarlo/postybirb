@@ -26,6 +26,7 @@ interface EmptyStateProps {
   message?: ReactNode;
   /** Optional secondary helper text */
   description?: ReactNode;
+  action?: ReactNode;
   /** Size variant */
   size?: 'sm' | 'md' | 'lg';
 }
@@ -105,6 +106,7 @@ export function EmptyState({
   icon,
   message,
   description,
+  action,
   size = 'md',
 }: EmptyStateProps) {
   const sizes = getSizes(size);
@@ -112,8 +114,8 @@ export function EmptyState({
   const displayMessage = message ?? getPresetMessage(preset);
 
   return (
-    <Center py={sizes.py}>
-      <Stack align="center" gap={sizes.gap}>
+    <Center py={sizes.py} px="md">
+      <Stack align="center" gap={sizes.gap} maw="100%">
         <ThemeIcon
           variant="light"
           color="gray"
@@ -130,6 +132,7 @@ export function EmptyState({
             {description}
           </Text>
         )}
+        {action}
       </Stack>
     </Center>
   );
