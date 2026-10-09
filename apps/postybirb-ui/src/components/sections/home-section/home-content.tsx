@@ -3,18 +3,14 @@
  * Displays stats, queue control, and status panels.
  */
 
-import { Trans } from '@lingui/react/macro';
+import { Trans, useLingui } from '@lingui/react/macro';
 import {
   ActionIcon,
-  Button,
-  Center,
   Container,
   Group,
   ScrollArea,
   SimpleGrid,
   Stack,
-  Text,
-  ThemeIcon,
   Title,
   Tooltip,
 } from '@mantine/core';
@@ -23,14 +19,11 @@ import {
   IconCalendar,
   IconFile,
   IconHelp,
-  IconHome,
   IconMessage,
   IconStack2,
 } from '@tabler/icons-react';
-import { useAccounts } from '../../../stores/entity/account-store';
 import {
   useQueuedSubmissions,
-  useRegularSubmissions,
   useScheduledSubmissions,
   useSubmissionsByType,
 } from '../../../stores/entity/submission-store';
@@ -43,7 +36,6 @@ import {
   createMessageSubmissionsViewState,
 } from '../../../types/view-state';
 import { HOME_TOUR_ID } from '../../onboarding-tour/tours/home-tour';
-import { LAYOUT_TOUR_ID } from '../../onboarding-tour/tours/layout-tour';
 import { AccountHealthPanel } from './account-health-panel';
 import { PostingActivityPanel } from './posting-activity-panel';
 import { QueueControlCard } from './queue-control-card';
@@ -53,88 +45,16 @@ import { StatCard } from './stat-card';
 import { UpcomingPostsPanel } from './upcoming-posts-panel';
 import { ValidationIssuesPanel } from './validation-issues-panel';
 
-/**
- * Empty state for new users with onboarding tips.
- */
-function WelcomeEmptyState() {
-  const { startTour } = useTourActions();
-
-  return (
-    <Center h="100%">
-      <Stack align="center" gap="lg" maw={500}>
-        <ThemeIcon size={80} variant="light" color="blue" radius="xl">
-          <IconHome size={48} stroke={1.5} />
-        </ThemeIcon>
-        <Title order={2} ta="center">
-          <Trans>Welcome to PostyBirb!</Trans>
-        </Title>
-        <Text size="md" c="dimmed" ta="center">
-          <Trans>
-            Get started by adding your accounts and creating your first
-            submission.
-          </Trans>
-        </Text>
-        <Button
-          variant="gradient"
-          size="md"
-          radius="xl"
-          onClick={() => startTour(LAYOUT_TOUR_ID)}
-        >
-          <Trans>Take the Tour</Trans>
-        </Button>
-        <Stack gap="xs" align="center">
-          <Text size="sm" fw={500}>
-            <Trans>Quick tips to get started:</Trans>
-          </Text>
-          <Stack gap={4}>
-            <Text size="sm" c="dimmed">
-              • <Trans>Go to Accounts to add and log into your websites</Trans>
-            </Text>
-            <Text size="sm" c="dimmed">
-              •{' '}
-              <Trans>
-                Create a File or Message submission to start posting
-              </Trans>
-            </Text>
-            <Text size="sm" c="dimmed">
-              • <Trans>Use templates to save time on repeated posts</Trans>
-            </Text>
-            <Text size="sm" c="dimmed">
-              •{' '}
-              <Trans>
-                Schedule posts to automatically publish at specific times
-              </Trans>
-            </Text>
-          </Stack>
-        </Stack>
-      </Stack>
-    </Center>
-  );
-}
-
-/**
- * HomeContent component.
- * Shows dashboard with stats and panels for returning users,
- * or welcome screen for new users.
- */
 export function HomeContent() {
+  const { t } = useLingui();
   const { setViewState } = useViewStateActions();
   const { openDrawer } = useDrawerActions();
-  const regularSubmissions = useRegularSubmissions();
-  const accounts = useAccounts();
   const fileSubmissions = useSubmissionsByType(SubmissionType.FILE);
   const messageSubmissions = useSubmissionsByType(SubmissionType.MESSAGE);
   const queuedSubmissions = useQueuedSubmissions();
   const scheduledSubmissions = useScheduledSubmissions();
 
   const { startTour } = useTourActions();
-
-  // New user detection: no submissions and no accounts
-  const isNewUser = regularSubmissions.length === 0 && accounts.length === 0;
-
-  if (isNewUser) {
-    return <WelcomeEmptyState />;
-  }
 
   // Filter to only non-template submissions for stats
   const fileCount = fileSubmissions
@@ -155,6 +75,7 @@ export function HomeContent() {
             </Title>
             <Tooltip label={<Trans>Dashboard Tour</Trans>}>
               <ActionIcon
+                aria-label={t`Dashboard Tour`}
                 variant="subtle"
                 size="sm"
                 onClick={() => startTour(HOME_TOUR_ID)}
@@ -167,7 +88,11 @@ export function HomeContent() {
           <QueueControlCard />
           <PostingActivityPanel />
           {/* Stats Row */}
-          <SimpleGrid cols={{ base: 4 }} spacing="md" data-tour-id="home-stat-cards">
+          <SimpleGrid
+            cols={{ base: 2, md: 4 }}
+            spacing="md"
+            data-tour-id="home-stat-cards"
+          >
             <StatCard
               icon={<IconFile size={20} />}
               count={fileCount}

@@ -12,6 +12,7 @@ import {
   ActionIcon,
   Badge,
   Box,
+  Button,
   Card,
   Checkbox,
   Collapse,
@@ -814,6 +815,18 @@ export function ConverterDrawer<
           ) : (
             <EmptyState
               preset={searchQuery.trim() ? 'no-results' : 'no-records'}
+              action={
+                searchQuery.trim() ? (
+                  <Button
+                    size="xs"
+                    variant="light"
+                    leftSection={<IconX size={14} />}
+                    onClick={() => setSearchQuery('')}
+                  >
+                    <Trans>Clear search</Trans>
+                  </Button>
+                ) : undefined
+              }
             />
           )}
         </Box>

@@ -4,7 +4,14 @@
  */
 
 import { Trans } from '@lingui/react/macro';
-import { Box, Kbd, NavLink as MantineNavLink, Tooltip, useMantineColorScheme } from '@mantine/core';
+import {
+  Box,
+  Kbd,
+  NavLink as MantineNavLink,
+  Tooltip,
+  VisuallyHidden,
+  useComputedColorScheme,
+} from '@mantine/core';
 import { IconMoon, IconSun } from '@tabler/icons-react';
 import { formatKeybindingDisplay } from '../../shared/platform-utils';
 import { useAppearanceActions } from '../../stores/ui/appearance-store';
@@ -22,11 +29,11 @@ interface ThemePickerProps {
  * Shows sun icon in dark mode (to switch to light) and moon icon in light mode (to switch to dark).
  */
 export function ThemePicker({ collapsed = false, kbd }: ThemePickerProps) {
-  const { colorScheme: mantineColorScheme } = useMantineColorScheme();
+  const colorScheme = useComputedColorScheme('light');
   const { setColorScheme } = useAppearanceActions();
   
   // Use Mantine's computed color scheme (handles 'auto' resolution)
-  const isDark = mantineColorScheme === 'dark';
+  const isDark = colorScheme === 'dark';
 
   const toggleTheme = () => {
     // Toggle between light and dark (explicit choice, not auto)
@@ -34,15 +41,22 @@ export function ThemePicker({ collapsed = false, kbd }: ThemePickerProps) {
   };
 
   const themeIcon = isDark ? <IconSun size={20} /> : <IconMoon size={20} />;
-  const themeLabel = collapsed ? undefined : (
+  const themeLabel = collapsed ? (
+    <VisuallyHidden>
+      {isDark ? <Trans>Light Mode</Trans> : <Trans>Dark Mode</Trans>}
+    </VisuallyHidden>
+  ) : (
     <Box className="postybirb__nav_item_label">
-      <span>{isDark ? <Trans>Light Mode</Trans> : <Trans>Dark Mode</Trans>}</span>
+      <span>
+        {isDark ? <Trans>Light Mode</Trans> : <Trans>Dark Mode</Trans>}
+      </span>
       {kbd && <Kbd size="xs">{formatKeybindingDisplay(kbd)}</Kbd>}
     </Box>
   );
 
   const themeContent = (
     <MantineNavLink
+      component="button"
       onClick={toggleTheme}
       label={themeLabel}
       leftSection={themeIcon}

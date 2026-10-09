@@ -8,6 +8,7 @@ import { Trans } from '@lingui/react/macro';
 import {
   ActionIcon,
   Box,
+  Button,
   Card,
   Collapse,
   Group,
@@ -423,7 +424,21 @@ export function CustomShortcutsDrawer({
         <ScrollArea flex={1} offsetScrollbars>
           {isEmpty && !isCreating && <EmptyState />}
 
-          {noResults && <EmptyState />}
+          {noResults && (
+            <EmptyState
+              preset="no-results"
+              action={
+                <Button
+                  size="xs"
+                  variant="light"
+                  leftSection={<IconX size={14} />}
+                  onClick={() => setSearchQuery('')}
+                >
+                  <Trans>Clear search</Trans>
+                </Button>
+              }
+            />
+          )}
 
           <Stack gap="xs">
             {filteredShortcuts.map((shortcut) => (

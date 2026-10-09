@@ -22,12 +22,15 @@ import {
     sortableKeyboardCoordinates,
     verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { Box, Loader, ScrollArea } from '@mantine/core';
+import { Trans } from '@lingui/react/macro';
+import { Box, Button, Loader, ScrollArea } from '@mantine/core';
+import { IconFilterOff } from '@tabler/icons-react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import submissionApi from '../../../api/submission.api';
 import type { SubmissionRecord } from '../../../stores/records';
 import { useIsCompactView } from '../../../stores/ui/appearance-store';
+import { useSubmissionsFilter } from '../../../stores/ui/submissions-ui-store';
 import { EmptyState } from '../../empty-state';
 import { useSubmissionsData } from './context';
 import { SortableSubmissionCard, SubmissionCard } from './submission-card';
@@ -61,6 +64,9 @@ export function SubmissionList({
   const { submissionType, selectedIds, isDragEnabled } =
     useSubmissionsData();
   const isCompact = useIsCompactView();
+  const { filter, searchQuery, setFilter, setSearchQuery } =
+    useSubmissionsFilter(submissionType);
+  const hasFilters = filter !== 'all' || Boolean(searchQuery);
 
   // Ref for the Mantine ScrollArea viewport - used for virtualization
   const viewportRef = useRef<HTMLDivElement>(null);
@@ -150,7 +156,27 @@ export function SubmissionList({
   }
 
   if (submissions.length === 0) {
-    return <EmptyState preset="no-results" />;
+    return (
+      <EmptyState
+        preset={hasFilters ? 'no-results' : 'no-records'}
+        message={hasFilters ? undefined : <Trans>No submissions yet</Trans>}
+        action={
+          hasFilters ? (
+            <Button
+              size="xs"
+              variant="light"
+              leftSection={<IconFilterOff size={14} />}
+              onClick={() => {
+                setFilter('all');
+                setSearchQuery('');
+              }}
+            >
+              <Trans>Clear filters</Trans>
+            </Button>
+          ) : undefined
+        }
+      />
+    );
   }
 
   const virtualItems = virtualizer.getVirtualItems();

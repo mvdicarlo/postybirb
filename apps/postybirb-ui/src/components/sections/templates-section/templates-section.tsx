@@ -29,6 +29,7 @@ import {
   IconSortAscendingLetters,
   IconSortDescendingLetters,
   IconTemplate,
+  IconX,
 } from '@tabler/icons-react';
 import { useCallback, useMemo, useState } from 'react';
 import submissionApi from '../../../api/submission.api';
@@ -165,6 +166,7 @@ export function TemplatesSection({ viewState }: TemplatesSectionProps) {
           </Group>
           <Tooltip label={<Trans>Templates Tour</Trans>}>
             <ActionIcon
+              aria-label={t`Templates Tour`}
               variant="subtle"
               size="sm"
               onClick={() => startTour(TEMPLATES_TOUR_ID)}
@@ -184,13 +186,22 @@ export function TemplatesSection({ viewState }: TemplatesSectionProps) {
               onClear={() => setSearchQuery('')}
             />
           </Box>
-          <ActionIcon variant="light" size="sm" onClick={toggleSortOrder}>
-            {sortOrder === 'asc' ? (
-              <IconSortAscendingLetters size={14} />
-            ) : (
-              <IconSortDescendingLetters size={14} />
-            )}
-          </ActionIcon>
+          <Tooltip
+            label={sortOrder === 'asc' ? t`Sort Z to A` : t`Sort A to Z`}
+          >
+            <ActionIcon
+              variant="light"
+              size="sm"
+              onClick={toggleSortOrder}
+              aria-label={sortOrder === 'asc' ? t`Sort Z to A` : t`Sort A to Z`}
+            >
+              {sortOrder === 'asc' ? (
+                <IconSortAscendingLetters size={14} />
+              ) : (
+                <IconSortDescendingLetters size={14} />
+              )}
+            </ActionIcon>
+          </Tooltip>
         </Group>
 
         {/* Tabs */}
@@ -281,7 +292,34 @@ export function TemplatesSection({ viewState }: TemplatesSectionProps) {
               <Loader size="sm" />
             </Box>
           ) : filteredTemplates.length === 0 ? (
-            <EmptyState preset="no-results" size="sm" />
+            <EmptyState
+              preset={searchQuery ? 'no-results' : 'no-records'}
+              message={
+                searchQuery ? undefined : <Trans>No templates yet</Trans>
+              }
+              size="sm"
+              action={
+                searchQuery ? (
+                  <Button
+                    size="xs"
+                    variant="light"
+                    leftSection={<IconX size={14} />}
+                    onClick={() => setSearchQuery('')}
+                  >
+                    <Trans>Clear search</Trans>
+                  </Button>
+                ) : (
+                  <Button
+                    size="xs"
+                    variant="light"
+                    leftSection={<IconPlus size={14} />}
+                    onClick={openModal}
+                  >
+                    <Trans>Create New Template</Trans>
+                  </Button>
+                )
+              }
+            />
           ) : (
             filteredTemplates.map((template) => (
               <TemplateCard

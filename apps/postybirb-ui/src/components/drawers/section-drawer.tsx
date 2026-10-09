@@ -6,8 +6,9 @@
  * internal focus management in components like Select/Combobox.
  */
 
+import { useLingui } from '@lingui/react/macro';
 import { Box, CloseButton, Portal, Title } from '@mantine/core';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import '../../styles/layout.css';
 import { cn } from '../../utils/class-names';
 import { ComponentErrorBoundary } from '../error-boundary';
@@ -42,12 +43,37 @@ export function SectionDrawer({
   closeOnEscape = true,
   closeOnClickOutside = true,
 }: SectionDrawerProps) {
-  const drawerRef = useRef<HTMLDivElement>(null);
+  const { t } = useLingui();
+  const titleId = useId();
+  const drawerRef = useRef<HTMLDivElement | null>(null);
+  const triggerRef = useRef<HTMLElement | null>(null);
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
+  const setDrawerRef = useCallback(
+    (element: HTMLDivElement | null) => {
+      if (!element) {
+        if (
+          triggerRef.current?.isConnected &&
+          (document.activeElement === document.body ||
+            drawerRef.current?.contains(document.activeElement))
+        ) {
+          triggerRef.current.focus({ preventScroll: true });
+        }
+        triggerRef.current = null;
+      } else if (opened) {
+        triggerRef.current =
+          document.activeElement instanceof HTMLElement
+            ? document.activeElement
+            : null;
+        element.focus({ preventScroll: true });
+      }
+      drawerRef.current = element;
+    },
+    [opened],
+  );
 
   // Get portal target on mount
   useEffect(() => {
-    const target = document.getElementById('postybirb__primary_content_area');
+    const target = document.getElementById('postybirb-content-split');
     setPortalTarget(target);
   }, []);
 
@@ -56,7 +82,7 @@ export function SectionDrawer({
     if (!opened || !closeOnEscape) return undefined;
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+      if (event.key === 'Escape' && !event.defaultPrevented) {
         event.preventDefault();
         onClose();
       }
@@ -86,7 +112,10 @@ export function SectionDrawer({
     }
   };
 
-  const drawerStyle = width ? { width } : undefined;
+  const drawerStyle = {
+    width,
+    visibility: opened ? ('visible' as const) : ('hidden' as const),
+  };
 
   // Don't render until portal target is available
   if (!portalTarget) return null;
@@ -104,24 +133,25 @@ export function SectionDrawer({
 
       {/* Drawer Panel */}
       <Box
-        ref={drawerRef}
+        ref={setDrawerRef}
         className={cn(['postybirb__section_drawer'], {
           'postybirb__section_drawer--open': opened,
         })}
         style={drawerStyle}
+        tabIndex={-1}
+        aria-hidden={!opened}
         role="dialog"
         aria-modal="true"
-        aria-labelledby="section-drawer-title"
+        aria-labelledby={titleId}
       >
         {/* Header */}
         <Box className="postybirb__section_drawer_header">
-          <Title order={4} id="section-drawer-title">
+          <Title order={4} id={titleId}>
             {title}
           </Title>
           <CloseButton
             onClick={onClose}
-            // eslint-disable-next-line lingui/no-unlocalized-strings
-            aria-label="Close drawer"
+            aria-label={t`Close drawer`}
             size="md"
           />
         </Box>

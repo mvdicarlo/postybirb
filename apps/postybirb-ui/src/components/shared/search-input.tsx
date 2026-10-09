@@ -6,6 +6,7 @@
 import { useLingui } from '@lingui/react/macro';
 import { ActionIcon, TextInput, type TextInputProps } from '@mantine/core';
 import { IconSearch, IconX } from '@tabler/icons-react';
+import { useRef } from 'react';
 
 type SearchInputSize = 'xs' | 'sm' | 'md';
 
@@ -42,18 +43,23 @@ export function SearchInput({
   size = 'sm',
   showClear = true,
   onClear,
+  onKeyDown,
   ...props
 }: SearchInputProps) {
   const { t } = useLingui();
+  const inputRef = useRef<HTMLInputElement>(null);
   const iconSizes = ICON_SIZES[size];
 
   const handleClear = () => {
     onChange('');
     onClear?.();
+    inputRef.current?.focus();
   };
 
   return (
     <TextInput
+      ref={inputRef}
+      aria-label={t`Search`}
       placeholder={t`Search...`}
       size={size}
       leftSection={<IconSearch size={iconSizes.search} />}
@@ -63,8 +69,7 @@ export function SearchInput({
             size={size}
             variant="subtle"
             onClick={handleClear}
-            // eslint-disable-next-line lingui/no-unlocalized-strings
-            aria-label="Clear search"
+            aria-label={t`Clear search`}
           >
             <IconX size={iconSizes.clear} />
           </ActionIcon>
@@ -72,6 +77,14 @@ export function SearchInput({
       }
       value={value}
       onChange={(e) => onChange(e.currentTarget.value)}
+      onKeyDown={(event) => {
+        onKeyDown?.(event);
+        if (event.key === 'Escape' && value && !event.defaultPrevented) {
+          event.preventDefault();
+          event.stopPropagation();
+          handleClear();
+        }
+      }}
       {...props}
     />
   );
