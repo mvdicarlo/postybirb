@@ -2,12 +2,14 @@ import { msg } from '@lingui/core/macro';
 
 import 'cronstrue/locales/de';
 import 'cronstrue/locales/es';
+import 'cronstrue/locales/nl';
 import 'cronstrue/locales/pt_BR';
 import 'cronstrue/locales/ru';
 
 import 'dayjs/locale/de';
 import 'dayjs/locale/es';
 import 'dayjs/locale/lt';
+import 'dayjs/locale/nl';
 import 'dayjs/locale/pt-br';
 import 'dayjs/locale/ru';
 import 'dayjs/locale/ta';
@@ -15,14 +17,17 @@ import 'dayjs/locale/ta';
 import calendarDE from '@fullcalendar/core/locales/de';
 import calendarES from '@fullcalendar/core/locales/es';
 import calendarLT from '@fullcalendar/core/locales/lt';
+import calendarNL from '@fullcalendar/core/locales/nl';
 import calendarPT_BR from '@fullcalendar/core/locales/pt-br';
 import calendarRU from '@fullcalendar/core/locales/ru';
 import calendarTA from '@fullcalendar/core/locales/ta-in';
+
 
 export const languages = [
   [msg`English`, 'en'],
   [msg`German`, 'de'],
   [msg`Lithuanian`, 'lt'],
+  [msg`Dutch`, 'nl'],
   [msg`Portuguese (Brazil)`, 'pt-BR'],
   [msg`Russian`, 'ru'],
   [msg`Spanish`, 'es'],
@@ -39,6 +44,7 @@ export const dateLocaleMap: Record<string, string> = {
   en: 'en',
   de: 'de',
   lt: 'lt',
+  nl: 'nl',
   'pt-BR': 'pt-br',
   ru: 'ru',
   es: 'es',
@@ -50,6 +56,7 @@ export const calendarLanguageMap: Record<string, string | object> = {
   en: 'en-US',
   de: calendarDE,
   lt: calendarLT,
+  nl: calendarNL,
   ru: calendarRU,
   es: calendarES,
   ta: calendarTA,
@@ -65,6 +72,7 @@ export const cronstrueLocaleMap: Record<string, string> = {
   de: 'de',
   lt: 'en', // Lithuanian not supported, fallback to English
   'pt-BR': 'pt_BR',
+  nl: 'nl',
   ru: 'ru',
   es: 'es',
   ta: 'en', // Tamil not supported, fallback to English

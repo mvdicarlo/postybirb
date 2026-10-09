@@ -775,7 +775,7 @@ msgstr ""
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/bulk-post-preview-modal.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-preview-modal/post-preview-modal.tsx
 msgid "Clear"
-msgstr ""
+msgstr "Valyti"
 
 #: apps/postybirb-ui/src/components/drawers/schedule-drawer/submission-list.tsx
 msgid "Clear search"
@@ -1062,7 +1062,7 @@ msgstr ""
 #: apps/postybirb-ui/src/components/sections/submissions-section/file-submission-modal/image-editor.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/file-submission-modal/image-editor.tsx
 msgid "Crop"
-msgstr ""
+msgstr "Apkirpti"
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/file-management/file-actions.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/file-management/file-actions.tsx
@@ -3407,6 +3407,10 @@ msgstr ""
 msgid "Scheduling is off, so this will not post on its own."
 msgstr ""
 
+#: apps/postybirb-ui/src/components/shared/search-input.tsx
+msgid "Search"
+msgstr "Ieškoti"
+
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/tag-converters-tour.tsx
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/tag-groups-tour.tsx
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/user-converters-tour.tsx
@@ -4646,7 +4650,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/accounts-tour.tsx
 msgid "Website Visibility"
-msgstr ""
+msgstr "Svetainės matomumas"
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/submission-edit-tour.tsx
 msgid "Website-Specific Options"
